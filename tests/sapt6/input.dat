@@ -2,7 +2,7 @@
 #! total IE are being computed correctly for SAPT2+3(CCD)dMP2/aug-cc-pvdz and
 #! all lesser methods thereof.
 
-h2kc = p4const.psi_hartree2kcalmol
+h2kc = psi_hartree2kcalmol
 digits = 3
 
 #set print 3  # shows psivars being computed

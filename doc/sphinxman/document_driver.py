@@ -44,7 +44,7 @@ def pts(category, pyfile):
     print 'Auto-documenting %s file %s' % (category, pyfile)
 
 
-# Main driver modules in psi4/share/psi4/python
+# Main driver modules in psi4/driver
 fdriver = open('source/autodoc_driver.rst', 'w')
 fdriver.write('\n.. include:: /autodoc_abbr_options_c.rst\n\n')
 fdriver.write('.. _`sec:driver`:\n\n')
@@ -52,7 +52,7 @@ fdriver.write('=============\n')
 fdriver.write('Python Driver\n')
 fdriver.write('=============\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
+for pyfile in glob.glob(DriverPath + '../../psi4/driver/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -77,7 +77,7 @@ for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
             fdriver.write('   :exclude-members: cbs, complete_basis_set, xtpl_highest_1,\n')
             fdriver.write('       scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
 #        elif basename == 'physconst':
-#            fdriver.write('\n.. literalinclude:: %sshare/psi4/python/%s\n' % (IncludePath, filename))
+#            fdriver.write('\n.. literalinclude:: %sdriver/%s\n' % (IncludePath, filename))
         elif basename == 'diatomic':
             fdriver.write('   :exclude-members: anharmonicity\n')
 #        elif basename == 'interface_dftd3':
@@ -94,8 +94,8 @@ for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
     fdriver.write('\n')
 
 
-# Python-only plugin modules in psi4/share/psi4/python
-for basename in os.walk(DriverPath + '../../psi4/share/psi4/python').next()[1]:
+# Python-only plugin modules in psi4/driver
+for basename in os.walk(DriverPath + '../../psi4/driver').next()[1]:
     div = '=' * len(basename)
 
     if basename not in ['grendel']:
@@ -108,7 +108,7 @@ for basename in os.walk(DriverPath + '../../psi4/share/psi4/python').next()[1]:
         fdriver.write('   :members:\n')
         fdriver.write('   :undoc-members:\n')
 
-        for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/' + basename + '/*py'):
+        for pyfile in glob.glob(DriverPath + '../../psi4/driver/' + basename + '/*py'):
             filename = os.path.split(pyfile)[1]
             basename2 = os.path.splitext(filename)[0]
             div = '=' * len(basename2)

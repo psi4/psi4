@@ -109,7 +109,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_cfour.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodir_psivariables/module__cfour.rst
         DEPENDS ${CCSD}/document_cfour.py
-                ${psi4_SOURCE_DIR}/psi4/share/psi4/python/qcdb/cfour.py
+                ${psi4_SOURCE_DIR}/psi4/driver/qcdb/cfour.py
                 ${CCBD}/source/autodoc_psivariables_bymodule.rst
         COMMENT "Autodoc Cfour PSI variables")
 
@@ -134,13 +134,13 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMENT "Autodoc test cases")
 
 
-    # Autodoc driver
-    add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_driver.py ${CCSD}
-        OUTPUT  ${CCBD}/source/autodoc_driver.rst
-        DEPENDS ${psi4_SOURCE_DIR}/psi4/share/psi4/python/*.py
-                ${CCSD}/document_driver.py
-        COMMENT "Autodoc driver")
+#    # Autodoc driver
+#    add_custom_command(
+#        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_driver.py ${CCSD}
+#        OUTPUT  ${CCBD}/source/autodoc_driver.rst
+#        DEPENDS ${psi4_SOURCE_DIR}/psi4/driver/*.py
+#                ${CCSD}/document_driver.py
+#        COMMENT "Autodoc driver")
 
 
 #    # Autodoc psi4 module
@@ -179,7 +179,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_dft_dhybrid.rst
                 #${CCBD}/source/autodoc_dft_scsdhybrid.rst  # commented until populated again to appease Sphinx
                 ${CCBD}/source/autodoc_dft_disp.rst
-        DEPENDS ${psi4_SOURCE_DIR}/psi4/share/psi4/python/procedures/functional.py
+        DEPENDS ${psi4_SOURCE_DIR}/psi4/driver/procedures/dft_functional.py
                 ${psi4_SOURCE_DIR}/tests/docs-dft/input.dat
                 ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4
         COMMENT "Autodoc functionals")
@@ -190,9 +190,9 @@ if(PERL_FOUND AND SPHINX_FOUND)
         COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR} ctest -R docs-bases
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/tests/docs-bases/autodoc_basissets_byfamily.rst ${CCBD}/source
         OUTPUT ${CCBD}/source/autodoc_basissets_byfamily.rst
-        DEPENDS ${psi4_SOURCE_DIR}/psi4/share/psi4/python/p4util/basislist.py
-                ${psi4_SOURCE_DIR}/psi4/share/psi4/python/p4util/basislistdunning.py
-                ${psi4_SOURCE_DIR}/psi4/share/psi4/python/p4util/basislistother.py
+        DEPENDS ${psi4_SOURCE_DIR}/psi4/driver/qcdb/basislist.py
+                ${psi4_SOURCE_DIR}/psi4/driver/qcdb/basislistdunning.py
+                ${psi4_SOURCE_DIR}/psi4/driver/qcdb/basislistother.py
                 ${psi4_SOURCE_DIR}/tests/docs-bases/input.dat
                 ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4
         COMMENT "Autodoc auxiliary basis sets")
@@ -268,7 +268,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_available_databases.rst
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
-                ${CCBD}/source/autodoc_driver.rst
+#                ${CCBD}/source/autodoc_driver.rst
 #                ${CCBD}/source/autodoc_psimod.rst
 #                ${CCBD}/source/autodoc_man_psi4.txt
                 ${CCBD}/source/autodoc_dft_energy.rst

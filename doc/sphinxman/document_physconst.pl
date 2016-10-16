@@ -38,7 +38,7 @@ if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
 # First, grab the license
 #
 
-my $LicenseFile = $DriverPath . "../../psi4/share/psi4/python/source.template";
+my $LicenseFile = $DriverPath . "../../psi4/driver/source.template";
 my $license = read_file($LicenseFile);
 
 sub read_file {
@@ -56,7 +56,7 @@ sub read_file {
 # Now, grab the physical constants
 #
 my $PhysconstFile = $DriverPath . "../../psi4/include/psi4/physconst.h";
-my $PyPhysconstFile = $DriverPath . "../../psi4/share/psi4/python/p4const/physconst.py";
+my $PyPhysconstFile = $DriverPath . "../../psi4/driver/p4const/physconst.py";
 open(PHYSCONST, "<$PhysconstFile") or die "I can't open $PhysconstFile\n";
 open(TEXOUT, ">physconst.tex") or die "I can't write to physconst.tex\n";
 open(PYOUT, ">$PyPhysconstFile") or die "I can't write to $PyPhysconstFile\n";
