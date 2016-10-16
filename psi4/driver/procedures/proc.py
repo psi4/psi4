@@ -3064,7 +3064,7 @@ def run_sapt(name, **kwargs):
         sapt_dimer.fix_com(True)
         sapt_dimer.update_geometry()
 
-    if *core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0")::
+    if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
         raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
     nfrag = sapt_dimer.nfragments()
@@ -3098,17 +3098,22 @@ def run_sapt(name, **kwargs):
     p4util.banner('Dimer HF')
     core.print_out('\n')
 
-    if sapt_basis == 'dimer' and ri == 'DF':
+    # Compute dimer wavefunction
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
+
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     if do_delta_mp2:
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.get_variable('MP2 CORRELATION ENERGY')
-    if sapt_basis == 'dimer':
+
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
-    if sapt_basis == 'dimer':
+    # Compute Monomer A wavefunction
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+
     core.IO.set_default_namespace('monomerA')
     core.print_out('\n')
     p4util.banner('Monomer A HF')
@@ -3118,20 +3123,23 @@ def run_sapt(name, **kwargs):
         select_mp2(name, ref_wfn=monomerA_wfn, **kwargs)
         mp2_corl_interaction_e -= core.get_variable('MP2 CORRELATION ENERGY')
 
-    if sapt_basis == 'dimer' and ri == 'df':
+    # Compute Monomer B wavefunction
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     core.IO.set_default_namespace('monomerB')
     core.print_out('\n')
     p4util.banner('Monomer B HF')
     core.print_out('\n')
     monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
+
+    # Delta MP2
     if do_delta_mp2:
         select_mp2(name, ref_wfn=monomerB_wfn, **kwargs)
         mp2_corl_interaction_e -= core.get_variable('MP2 CORRELATION ENERGY')
         core.set_variable('SAPT MP2 CORRELATION ENERGY', mp2_corl_interaction_e)
     core.set_global_option('DF_INTS_IO', df_ints_io)
 
-    if scf_ref == 'RHF':
+    if core.get_option('SCF', 'REFERENCE') == 'RHF':
         core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
         core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
@@ -3167,7 +3175,7 @@ def run_sapt(name, **kwargs):
 
     # Make sure we are not going to run CPHF on ROHF, since its MO Hessian
     # is not SPD
-    if scf_ref == 'ROHF':
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         core.set_local_option('SAPT','COUPLED_INDUCTION',False)
         core.print_out('  Coupled induction not available for ROHF.\n')
         core.print_out('  Proceeding with uncoupled induction only.\n')
