@@ -31,28 +31,37 @@ import sys
 import time
 import subprocess
 
-if len(sys.argv) not in [5, 6, 7, 8, 9]:
+if len(sys.argv) not in [5, 6, 7, 8, 9, 10]:
     print("""Usage: %s input_file logfile doperltest top_srcdir doreaptest alt_output_file alt_psi4_exe alt_psi4datadir""" % (sys.argv[0]))
     sys.exit(1)
 
 # extract run condition from arguments
+python_exec = sys.argv[0]
 infile = sys.argv[1]
 logfile = sys.argv[2]
 psiautotest = sys.argv[3]
 top_srcdir = sys.argv[4]
 sowreap = sys.argv[5]
+
 if len(sys.argv) in [7, 8, 9]:
     outfile = sys.argv[6]
 else:
     outfile = 'output.dat'
+
 if len(sys.argv) in [8, 9]:
     psi = sys.argv[7]
 else:
     psi = '../../bin/psi4'
+
 if len(sys.argv) == 9:
     psidatadir = sys.argv[8]
 else:
     psidatadir = os.path.dirname(os.path.realpath(psi)) + '/../share/psi4'
+
+if len(sys.argv) == 10:
+    psilibdir = sys.argv[9] + os.path.sep
+else:
+    psilibdir = os.path.abspath('/../')
 
 # open logfile and print test case header
 try:
@@ -95,7 +104,14 @@ def backtick(exelist):
     #   the proper exit code, 2nd while loop very necessary.
 
 # run psi4 and collect testing status from any compare_* in input file
-pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
+if "tests/python" in infile:
+    infile = infile.replace(".dat", ".py")
+    os.environ["PYTHONPATH"] = psilibdir
+    outfile = os.path.dirname(infile) + os.path.sep + outfile
+    pyexitcode = backtick(["python", infile, " > ", outfile])
+else:
+    pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
+
 if sowreap == 'true':
     try:
         retcode = subprocess.Popen([sys.executable, '%s/tests/reap.py' %

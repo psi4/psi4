@@ -30,6 +30,9 @@ from .import_core import register_numpy_file
 from .driver import *
 from version import print_header
 
+# A few python level niceties
+from psi4.driver.inputparser import parse_options_block
+
 # Move anything from core up if desired
 from core import *
 

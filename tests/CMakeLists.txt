@@ -81,6 +81,7 @@ endforeach()
 
 # Add internal projects
 add_subdirectory(psi4numpy)
+add_subdirectory(python)
 
 
 message(STATUS "Adding test cases: Psi4")

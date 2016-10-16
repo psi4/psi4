@@ -44,6 +44,7 @@ from . import driver_util
 from . import driver_cbs
 from . import driver_nbody
 from . import p4util
+from psi4.driver.inputparser import parse_options_block
 
 from .procedures import *
 from .p4util.exceptions import *

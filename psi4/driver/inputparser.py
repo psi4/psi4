@@ -786,6 +786,32 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
 
     return temp
 
+def parse_options_block(temp):
+
+    # Nuke all comments
+    comment = re.compile(r'(^|[^\\])#.*')
+    temp = re.sub(comment, '', temp)
+    print(temp)
+
+    # Now, nuke any escapes from comment lines
+    comment = re.compile(r'\\#')
+    temp = re.sub(comment, '#', temp)
+    print(temp)
+
+    # First, remove everything from lines containing only spaces
+    blankline = re.compile(r'^\s*$')
+    temp = re.sub(blankline, '', temp, re.MULTILINE)
+
+    temp = process_multiline_arrays(temp)
+    print(temp)
+
+    # Process all "set name? { ... }"
+    set_commands = re.compile(r'^(\s*?)set\s*([-,\w]*?)[\s=]*\{(.*?)\}',
+                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(set_commands, process_set_commands, temp)
+    print(temp)
+    return True
+
 if __name__ == "__main__":
     result = process_input("""
 molecule h2 {
