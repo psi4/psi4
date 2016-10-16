@@ -33,7 +33,7 @@ from psi4 import core
 
 class PsiException(Exception):
     """Error class for Psi."""
-    psi4.__success_flag__ = False
+    psi4._success_flag_ = False
     pass
 
 
@@ -46,7 +46,7 @@ class ValidationError(PsiException):
         PsiException.__init__(self, msg)
         self.message = msg
         core.print_out('\nPsiException: %s\n\n' % (msg))
-        psi4.__success_flag__ = False
+        psi4._success_flag_ = False
 
 class ParsingError(PsiException):
     """Error called for problems parsing a text file. Prints error message
