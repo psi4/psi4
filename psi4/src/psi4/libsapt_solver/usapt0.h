@@ -95,6 +95,8 @@ protected:
     std::shared_ptr<BasisSet> primary_B_;
     // Dimer -RI or -MP2FIT auxiliary basis set 
     std::shared_ptr<BasisSet> mp2fit_;
+    // Dimer -JKFIT auxiliary basis set 
+    std::shared_ptr<BasisSet> jkfit_;
 
     // Dimer SCF energy
     double E_dimer_;
