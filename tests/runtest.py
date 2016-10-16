@@ -43,22 +43,22 @@ psiautotest = sys.argv[3]
 top_srcdir = sys.argv[4]
 sowreap = sys.argv[5]
 
-if len(sys.argv) in [7, 8, 9]:
+if len(sys.argv) >= 7:
     outfile = sys.argv[6]
 else:
     outfile = 'output.dat'
 
-if len(sys.argv) in [8, 9]:
+if len(sys.argv) >= 8:
     psi = sys.argv[7]
 else:
     psi = '../../bin/psi4'
 
-if len(sys.argv) == 9:
+if len(sys.argv) >= 9:
     psidatadir = sys.argv[8]
 else:
     psidatadir = os.path.dirname(os.path.realpath(psi)) + '/../share/psi4'
 
-if len(sys.argv) == 10:
+if len(sys.argv) >= 10:
     psilibdir = sys.argv[9] + os.path.sep
 else:
     psilibdir = os.path.abspath('/../')
