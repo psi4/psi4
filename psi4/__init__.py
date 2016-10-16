@@ -35,16 +35,16 @@ from core import *
 
 # Exit printing
 def exit_printing():
-    if __success_flag__:
+    if _success_flag_:
         core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
     else:
         core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
 
-__success_flag__ = True
+_success_flag_ = True
 
 
 # Working directory
-__input_dir__ = os.getcwd()
+_input_dir_ = os.getcwd()
 
 def get_input_directory():
-    return __input_dir__
+    return _input_dir_

@@ -134,7 +134,7 @@ if args["prefix"] is not None:
 psi4.core.set_environment("PSIDATADIR", data_dir)
 psi4.core.set_nthread(int(args["nthread"]))
 psi4.core.set_memory(524288000, True)
-psi4.__input_dir__ = os.path.dirname(os.path.abspath(args["input"]))
+psi4._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 
 # Read input
