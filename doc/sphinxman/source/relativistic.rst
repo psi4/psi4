@@ -104,12 +104,12 @@ The X2C module in |PSIfour| supports different combinations of basis set.
 By default, if the input file specifies only |mints__basis|, then the X2C
 module will solve the modified Dirac equation in an uncontracted basis and then
 recontract the X2C Hamiltonian in the original basis.
-Alternatively, the user can use |globals__rel_basis| to specify a different
+Alternatively, the user can use |globals__basis_relativistic| to specify a different
 basis set to solve the modified Dirac equation. ::
 
     set {
         basis cc-pvdz-dk
-        rel_basis cc-pvtz-dk
+        basis_relativistic cc-pvtz-dk
         relativistic x2c
     }
 
@@ -167,5 +167,5 @@ Keywords
 ~~~~~~~~
 
 .. include:: autodir_options_c/globals__relativistic.rst
-.. include:: autodir_options_c/globals__rel_basis.rst
+.. include:: autodir_options_c/globals__basis_relativistic.rst
 

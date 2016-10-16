@@ -56,7 +56,7 @@ documentation targets to be available.
 
    >>> which sphinx-build
    //anaconda/bin/sphinx-build
-   >>> sphinx-build --version  # needs >= 1.3
+   >>> sphinx-build --version  # needs >= 1.4
    Sphinx (sphinx-build) 1.4.1
    >>> cmake
    ...
@@ -86,7 +86,7 @@ Much of the documentation is auto-generated from the source. At present,
 this covers:
 
 * Physical Constants: :source:`psi4/include/psi4/physconst.h`
-* Python Driver: docstrings from \*.py files in :source:`psi4/share/psi4/python`
+* Python Driver: docstrings from \*.py files in :source:`psi4/driver`
 * Databases: docstrings from \*.py files in :source:`psi4/share/psi4/databases`
 * Basis Sets: \*.gbs files in :source:`psi4/share/psi4/basis`
 * C++ Keywords: :source:`psi4/src/read_options.cc`
@@ -95,11 +95,11 @@ this covers:
 * Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories (disabled at the moment)
 * PSI Files: scratch file names and numbers in :source:`psi4/include/psi4/psifiles.h`
 
-Some documentation is even extracted from Psi4 objects at runtime.
+Some documentation is even extracted from |PSIfour| objects at runtime.
 
 * psi4: docstrings for the psi4 built-in module constructed in :source:`psi4/src/psi4`
-* DFT: functional availibility and characteristics as encoded in :source:`psi4/share/psi4/python/procedures/functional.py`
-* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`psi4/share/psi4/python/qcdb/basislistdunning.py` and :source:`psi4/share/psi4/python/qcdb/basislistother.py`
+* DFT: functional availibility and characteristics as encoded in :source:`psi4/driver/procedures/dft_functional.py`
+* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`psi4/driver/qcdb/basislistdunning.py` and :source:`psi4/driver/qcdb/basislistother.py`
 
 Building all the documentation takes ~15 minutes. There is now good
 dependency structure built into the :source:`doc/sphinxman/CMakeLists.txt`

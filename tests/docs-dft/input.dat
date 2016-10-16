@@ -67,7 +67,7 @@ for sfunc in superfunctional_list:
         'is_x_hybrid'            : sfunc.is_x_hybrid(),
         'is_c_hybrid'            : sfunc.is_c_hybrid(),
         'is_c_scs_hybrid'        : sfunc.is_c_scs_hybrid(),
-        'dispersion'             : disp
+        'dispersion'             : True if '-d' in sfunc.name().lower() else False
          }
 
     #print funcdict[sfname]
@@ -155,7 +155,8 @@ def body(filep, funcdict, fctl):
 
     if funcdict[fctl]['dispersion']:
         filep.write(' %20s | %75s |\n' %
-            (funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
+            ('Y', ''))
+            #(funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
     else:
         filep.write(' %20s | %75s |\n' %
             ('   ---    ', '   ---    '))
@@ -193,7 +194,8 @@ header(fdhybrid, 'dhybrid', 'Double-Hybrid functionals available in |PSIfour|')
 fscsdhybrid= open('autodoc_dft_scsdhybrid.rst', 'w')
 header(fscsdhybrid, 'scsdhybrid', 'Spin-Component-Scaled Double-Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
-dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+#dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
 fenergy = open('autodoc_dft_energy.rst', 'w')
 fenergy.write('\n.. _`table:energy_dft`:\n\n')
@@ -237,11 +239,13 @@ for fctl in sorted(funcdict.keys()):
             body(fscsdhybrid, funcdict, fctl)
 
         if funcdict[fctl]['dispersion']:
-            dispbody(fdisp, funcdict, fctl)
+            body(fdisp, funcdict, fctl)
+            #dispbody(fdisp, funcdict, fctl)
 
         if funcdict[fctl]['dispersion']:
             fenergy.write('| %-27s | %-140s |\n' %
-                (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+                (funcdict[fctl]['name'].lower(), ''))
+                #(funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
         else:
             fenergy.write('| %-27s | %-140s |\n' %
                 (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
@@ -251,7 +255,8 @@ for fctl in sorted(funcdict.keys()):
         if ((not funcdict[fctl]['is_c_hybrid']) and (not funcdict[fctl]['is_c_lrc']) and (not funcdict[fctl]['is_x_lrc'])):
             if funcdict[fctl]['dispersion']:
                 fopt.write('| %-27s | %-140s |\n' %
-                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+                    (funcdict[fctl]['name'].lower(), ''))
+                    #(funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
             else:
                 fopt.write('| %-27s | %-140s |\n' %
                     (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
