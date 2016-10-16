@@ -58,6 +58,9 @@ vec2.set(0, 0, 13)
 
 
 irrep_mat = Matrix("Matrix with two zero irreps", dim1, dim2)
+irrep_mat.set(0, 0, 0, 4)
+irrep_mat.set(0, 0, 1, 3)
+irrep_mat.set(0, 1, 0, -5)
 
 arr = irrep_mat.to_array()
 
@@ -87,5 +90,21 @@ dense_arr = irreped_vec.to_array(dense=True)
 irreped_vec2 = Vector.from_array(dense_arr, dim1=(1, 0, 2))
 
 irreped_arr = irreped_vec2.to_array()
+
+# Test save
+irreped_mat.np_write("irreped_mat")
+read_irreped_mat = psi4.Matrix.np_read("irreped_mat")
+
+irreped_vec.np_write("irreped_vec")
+read_irreped_vec = psi4.Vector.np_read("irreped_vec")
+
+
+fkeys = irreped_mat.np_write(prefix='mat ')
+fkeys.update(irreped_vec.np_write(prefix='vec '))
+np.savez("compound", **fkeys)
+
+read_irreped_mat = psi4.Matrix.np_read("compound", prefix='mat ')
+
+read_irreped_vec = psi4.Vector.np_read("compound", prefix='vec ')
 
 

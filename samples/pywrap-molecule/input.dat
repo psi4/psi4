@@ -1,7 +1,7 @@
 #! Check that C++ Molecule class and qcdb molecule class
 #! are reading molecule input strings identically
 
-import qcdb
+from psi4.driver import qcdb
 
 mol1 = """
     0 3
