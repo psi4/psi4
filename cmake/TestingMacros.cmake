@@ -11,6 +11,8 @@ macro(add_regression_test _name _labels)
     unset(_labels)
     # This is the psi command to actually run the tests
     set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4)
+    # This is the path to the psi4 library
+    set(PSILIB ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${PROJECT_SOURCE_DIR}/tests/runtest.py)
     # This is the psidatadir directory that the script that we call, to call psi4, to run the tests gets its info
@@ -65,7 +67,7 @@ macro(add_regression_test _name _labels)
     # Serial build
     add_test(NAME "${_name}"
       WORKING_DIRECTORY "${TEST_RUN_DIR}"
-      COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${psi4_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}" "${PSIDATADIR}"
+      COMMAND "${PYTHON_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${psi4_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}" "${PSIDATADIR}" "${PSILIB}"
     )
 
     if(labels)
