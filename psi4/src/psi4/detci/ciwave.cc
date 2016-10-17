@@ -157,7 +157,7 @@ double CIWavefunction::compute_energy() {
     }
 
     // Finished CI, setting wavefunction parameters
-    if (!Parameters_->zaptn & Parameters_->opdm) {
+    if (!Parameters_->zaptn && (Parameters_->opdm || Parameters_->transdens)) {
         form_opdm();
     }
 

@@ -39,15 +39,12 @@
 
 using namespace psi;
 
-// Just a little patch until we can figure out options python-side.
-std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
-    return JK::build_JK(basis, Process::environment.options);
-}
-
 void export_fock(py::module& m)
 {
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
-           .def_static("build_JK", py_build_JK, "docstring")
+           .def_static("build_JK", [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
+                return JK::build_JK(basis, aux, Process::environment.options);
+            })
            .def("initialize", &JK::initialize)
            .def("set_cutoff", &JK::set_cutoff)
            .def("set_memory", &JK::set_memory)
@@ -84,7 +81,6 @@ void export_fock(py::module& m)
 
     py::class_<DFTensor, std::shared_ptr<DFTensor> >(m, "DFTensor", "docstring")
             .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
-            .def(py::init<std::shared_ptr<Wavefunction>, const std::string&>())
             .def("Qso", &DFTensor::Qso, "doctsring")
             .def("Qmo", &DFTensor::Qmo, "doctsring")
             .def("Qoo", &DFTensor::Qoo, "doctsring")
@@ -114,8 +110,8 @@ void export_fock(py::module& m)
             .def("gradient", &SOMCSCF::gradient)
             .def("gradient_rms", &SOMCSCF::gradient_rms);
 
-    py::class_<DFSOMCSCF, std::shared_ptr<DFSOMCSCF>>(m, "DFSOMCSCF", py::base<SOMCSCF>(), "docstring");
-    py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>>(m, "DiskSOMCSCF", py::base<SOMCSCF>(), "docstring");
+    py::class_<DFSOMCSCF, std::shared_ptr<DFSOMCSCF>, SOMCSCF>(m, "DFSOMCSCF", "docstring");
+    py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
 
 
 }

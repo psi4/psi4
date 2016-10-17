@@ -480,5 +480,5 @@ def _civec_buffer(self):
     "Returns a view of the CIVector's buffer"
     return translate_interface(self.array_interface())
 
-psi4.CIVector.np = _civec_view
-psi4.CIVector.__array_interface__ = _civec_buffer
+core.CIVector.np = _civec_view
+core.CIVector.__array_interface__ = _civec_buffer
