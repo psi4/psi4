@@ -1025,13 +1025,19 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                         puream=wfn.basisset().has_puream())
         wfn.set_basisset("DF_BASIS_SCF", aux_basis)
 
-
     if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
         decon_basis = core.BasisSet.build(wfn.molecule(), "BASIS_RELATIVISTIC",
                                         core.get_option("SCF", "BASIS_RELATIVISTIC"),
                                         "DECON", core.get_global_option('BASIS'),
                                         puream=wfn.basisset().has_puream())
         wfn.set_basisset("BASIS_RELATIVISTIC", decon_basis)
+
+    if (core.get_option("SCF", "GUESS") == "SAD"):
+        sad_basis_list = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SAD",
+                                        core.get_option("SCF", "DF_BASIS_SAD"),
+                                        puream=wfn.basisset().has_puream(),
+                                        return_atomlist=True)
+
     return wfn
 
 

@@ -944,8 +944,11 @@ class LibmintsMolecule(object):
             for i in range(self.natom()):
                 text += """    %8s\n""" % (self.label(i))
                 for bas in self.atoms[i].basissets().keys():
-                    text += """              %-15s %-20s %s\n""" % (bas,
-                        self.atoms[i].basissets()[bas], self.atoms[i].shells()[bas])
+                    text += """              %-15s %-20s""" % (bas,
+                        self.atoms[i].basissets()[bas])
+                    if bas in self.atoms[i].shells():
+                        text += """%s""" % (self.atoms[i].shells()[bas])
+                    text += '\n'
             text += "\n"
         else:
             text += "  No atoms in this molecule.\n"
@@ -1613,11 +1616,11 @@ class LibmintsMolecule(object):
         if self.lock_frame:
             return
 
-        #print "beginning update_geometry:"
+        #print("beginning update_geometry:")
         #self.print_full()
         if self.PYreinterpret_coordentries:
             self.reinterpret_coordentries()
-        #print "after reinterpret_coordentries:"
+        #print("after reinterpret_coordentries:")
         #self.print_full()
 
         if self.PYmove_to_com:

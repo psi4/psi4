@@ -378,12 +378,15 @@ class BasisSet(object):
         # Create a "molecule", i.e., an atom, with 1 fragment
         mol = bs.molecule
         self.molecule = Molecule()
-        self.molecule.add_atom(mol.Z(center), 0.0, 0.0, 0.0, \
+        self.molecule.add_atom(mol.Z(center),
+            mol.x(center), mol.y(center), mol.z(center),
             mol.label(center), mol.mass(center), mol.charge(center))
         self.molecule.fragments.append([0, 0])
         self.molecule.fragment_types.append('Real')
         self.molecule.fragment_charges.append(0)
         self.molecule.fragment_multiplicities.append(1)
+        self.molecule.PYmove_to_com = False
+        self.molecule.set_units('Bohr')
         self.molecule.update_geometry()
 
         # Allocate arrays
@@ -408,7 +411,7 @@ class BasisSet(object):
         self.shell_center = [0] * self.n_shells
         self.center_to_nshell = [0]
         self.center_to_shell = [0]
-        self.xyz = [0.0, 0.0, 0.0]
+        self.xyz = mol.xyz(center)
 
         # Now loop over shell for this atom, and point to the appropriate unique data
         shell_count = 0
@@ -555,7 +558,7 @@ class BasisSet(object):
 #TRIAL#            return bsdict
 
     @staticmethod
-    def pyconstruct(mol, key, target, fitrole='BASIS', other=None):
+    def pyconstruct(mol, key, target, fitrole='BASIS', other=None, return_atomlist=False):
         """Builds a BasisSet object for *mol* (either a qcdb.Molecule or
         a string that can be instantiated into one) from basis set
         specifications passed in as python functions or as a string that
@@ -624,7 +627,8 @@ class BasisSet(object):
         parser = Gaussian94BasisSetParser()
 
         # Molecule and parser prepped, call the constructor
-        bs, msg = BasisSet.construct(parser, mol, fitrole, None if fitrole == 'BASIS' else fitrole, basstrings[fitrole])
+        bs, msg = BasisSet.construct(parser, mol, fitrole, None if fitrole == 'BASIS' else fitrole, basstrings[fitrole],
+                                     return_atomlist=return_atomlist)
 #        mol.update_geometry()
 
         text = """   => Loading Basis Set <=\n\n"""
@@ -632,6 +636,21 @@ class BasisSet(object):
         text += """    Keyword: %s\n""" % (key)
         text += """    Name: %s\n""" % (target)
         text += msg
+
+        if return_atomlist:
+            if returnBasisSet:
+                return bs
+            else:
+                atom_basis_list = []
+                for atbs in bs:
+                    bsdict = {}
+                    bsdict['message'] = text
+                    bsdict['name'] = atbs.name
+                    bsdict['puream'] = int(atbs.has_puream())
+                    bsdict['shell_map'] = atbs.export_for_libmints(fitrole)
+                    bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule()
+                    atom_basis_list.append(bsdict)
+                return atom_basis_list
 
         if returnBasisSet:
             #print(text)
@@ -645,7 +664,7 @@ class BasisSet(object):
             return bsdict
 
     @classmethod
-    def construct(cls, parser, mol, role, deffit=None, basstrings=None):
+    def construct(cls, parser, mol, role, deffit=None, basstrings=None, return_atomlist=False):
         """Returns a new BasisSet object configured from the *mol*
         Molecule object for *role* (generally a Psi4 keyword: BASIS,
         DF_BASIS_SCF, etc.). Fails utterly if a basis has not been set for
@@ -789,9 +808,13 @@ class BasisSet(object):
         basisset = BasisSet(role, mol, atom_basis_shell)
 
         # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
+        atom_basis_list = []
         for at in range(mol.natom()):
             oneatombasis = BasisSet(basisset, at)
             oneatombasishash = hashlib.sha1(oneatombasis.print_detail(numbersonly=True).encode('utf-8')).hexdigest()
+            if return_atomlist:
+                oneatombasis.molecule.set_shell_by_number(0, oneatombasishash, role=role)
+                atom_basis_list.append(oneatombasis)
             mol.set_shell_by_number(at, oneatombasishash, role=role)
         mol.update_geometry()  # re-evaluate symmetry taking basissets into account
 
@@ -818,7 +841,10 @@ class BasisSet(object):
         for ats, msg in tmp2.items():
             text += """    atoms %s %s\n""" % (ats.ljust(maxsats), msg)
 
-        return basisset, text
+        if return_atomlist:
+            return atom_basis_list, text
+        else:
+            return basisset, text
 
     # <<< Simple Methods for Basic BasisSet Information >>>
 
