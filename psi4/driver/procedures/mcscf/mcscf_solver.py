@@ -27,67 +27,63 @@
 
 
 import os
-import psi4
 import numpy as np
 import diis_helper
-from augmented_hessian import ah_iteration
-from quadratic_step import qc_iteration
 
-# Relative hack for now
-import sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../../")))
-sys.path.append(path_dir)
-import p4util
-from p4util.exceptions import *
-np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
-import scipy.linalg
+from psi4 import core
+from psi4.driver import p4util
+from psi4.driver import qcdb
+
+from .augmented_hessian import ah_iteration
+
+#np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype):
-    psi4.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
+    core.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
                     (mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype))
 
 def mcscf_solver(ref_wfn):
 
     # Build CIWavefunction
-    psi4.prepare_options_for_module("DETCI")
-    ciwfn = psi4.CIWavefunction(ref_wfn)
+    core.prepare_options_for_module("DETCI")
+    ciwfn = core.CIWavefunction(ref_wfn)
 
     # Hush a lot of CI output
     ciwfn.set_print(0)
 
     # Begin with a normal two-step
     step_type = 'Initial CI'
-    total_step = psi4.Matrix("Total step", ciwfn.get_dimension('OA'), ciwfn.get_dimension('AV'))
+    total_step = core.Matrix("Total step", ciwfn.get_dimension('OA'), ciwfn.get_dimension('AV'))
     start_orbs = ciwfn.get_orbitals("ROT").clone()
     ciwfn.set_orbitals("ROT", start_orbs)
 
     # Grab da options
-    mcscf_orb_grad_conv = psi4.get_option("DETCI", "MCSCF_R_CONVERGENCE")
-    mcscf_e_conv = psi4.get_option("DETCI", "MCSCF_E_CONVERGENCE")
-    mcscf_max_macroiteration = psi4.get_option("DETCI", "MCSCF_MAXITER")
-    mcscf_type = psi4.get_option("DETCI", "MCSCF_TYPE")
-    mcscf_d_file = psi4.get_option("DETCI", "CI_FILE_START") + 3
-    mcscf_nroots = psi4.get_option("DETCI", "NUM_ROOTS")
-    mcscf_wavefunction_type = psi4.get_option("DETCI", "WFN")
+    mcscf_orb_grad_conv = core.get_option("DETCI", "MCSCF_R_CONVERGENCE")
+    mcscf_e_conv = core.get_option("DETCI", "MCSCF_E_CONVERGENCE")
+    mcscf_max_macroiteration = core.get_option("DETCI", "MCSCF_MAXITER")
+    mcscf_type = core.get_option("DETCI", "MCSCF_TYPE")
+    mcscf_d_file = core.get_option("DETCI", "CI_FILE_START") + 3
+    mcscf_nroots = core.get_option("DETCI", "NUM_ROOTS")
+    mcscf_wavefunction_type = core.get_option("DETCI", "WFN")
     mcscf_ndet = ciwfn.ndet()
     mcscf_nuclear_energy = ciwfn.molecule().nuclear_repulsion_energy()
-    mcscf_steplimit = psi4.get_option("DETCI", "MCSCF_MAX_ROT")
-    mcscf_rotate = psi4.get_option("DETCI", "MCSCF_ROTATE")
+    mcscf_steplimit = core.get_option("DETCI", "MCSCF_MAX_ROT")
+    mcscf_rotate = core.get_option("DETCI", "MCSCF_ROTATE")
 
     # DIIS info
-    mcscf_diis_start = psi4.get_option("DETCI", "MCSCF_DIIS_START")
-    mcscf_diis_freq = psi4.get_option("DETCI", "MCSCF_DIIS_FREQ")
-    mcscf_diis_error_type = psi4.get_option("DETCI", "MCSCF_DIIS_ERROR_TYPE")
-    mcscf_diis_max_vecs = psi4.get_option("DETCI", "MCSCF_DIIS_MAX_VECS")
+    mcscf_diis_start = core.get_option("DETCI", "MCSCF_DIIS_START")
+    mcscf_diis_freq = core.get_option("DETCI", "MCSCF_DIIS_FREQ")
+    mcscf_diis_error_type = core.get_option("DETCI", "MCSCF_DIIS_ERROR_TYPE")
+    mcscf_diis_max_vecs = core.get_option("DETCI", "MCSCF_DIIS_MAX_VECS")
 
     # One-step info
-    mcscf_target_conv_type = psi4.get_option("DETCI", "MCSCF_ALGORITHM")
-    mcscf_so_start_grad = psi4.get_option("DETCI", "MCSCF_SO_START_GRAD")
-    mcscf_so_start_e = psi4.get_option("DETCI", "MCSCF_SO_START_E")
+    mcscf_target_conv_type = core.get_option("DETCI", "MCSCF_ALGORITHM")
+    mcscf_so_start_grad = core.get_option("DETCI", "MCSCF_SO_START_GRAD")
+    mcscf_so_start_e = core.get_option("DETCI", "MCSCF_SO_START_E")
     mcscf_current_step_type = 'Initial CI'
 
     # Start with SCF energy and other params
-    scf_energy = psi4.get_variable("HF TOTAL ENERGY")
+    scf_energy = core.get_variable("HF TOTAL ENERGY")
     eold = scf_energy
     norb_iter = 1
     converged = False
@@ -105,15 +101,15 @@ def mcscf_solver(ref_wfn):
     # Execute the rotate command
     for rot in mcscf_rotate:
         if len(rot) != 4:
-            raise PsiException("Each element of the MCSCF rotate command requires 4 arguements (irrep, orb1, orb2, theta).")
+            raise p4util.PsiException("Each element of the MCSCF rotate command requires 4 arguements (irrep, orb1, orb2, theta).")
 
         irrep, orb1, orb2, theta = rot
         if irrep > ciwfn.Ca().nirrep():
-            raise PsiException("MCSCF_ROTATE: Expression %s irrep number is larger than the number of irreps" %
+            raise p4util.PsiException("MCSCF_ROTATE: Expression %s irrep number is larger than the number of irreps" %
                                     (str(rot)))
 
         if max(orb1, orb2) > ciwfn.Ca().coldim()[irrep]:
-            raise PsiException("MCSCF_ROTATE: Expression %s orbital number exceeds number of orbitals in irrep" %
+            raise p4util.PsiException("MCSCF_ROTATE: Expression %s orbital number exceeds number of orbitals in irrep" %
                                     (str(rot)))
 
         theta = np.deg2rad(theta)
@@ -123,26 +119,26 @@ def mcscf_solver(ref_wfn):
 
         xp = np.cos(theta) * x - np.sin(theta) * y
         yp = np.sin(theta) * x + np.cos(theta) * y
-        
+
         ciwfn.Ca().nph[irrep][:, orb1] = xp
         ciwfn.Ca().nph[irrep][:, orb2] = yp
 
 
     # Limited RAS functionality
-    if psi4.get_local_option("DETCI", "WFN") == "RASSCF" and mcscf_target_conv_type != "TS":
-        psi4.print_out("\n  Warning! Only the TS algorithm for RASSCF wavefunction is currently supported.\n")
-        psi4.print_out("             Switching to the TS algorithm.\n\n")
+    if core.get_local_option("DETCI", "WFN") == "RASSCF" and mcscf_target_conv_type != "TS":
+        core.print_out("\n  Warning! Only the TS algorithm for RASSCF wavefunction is currently supported.\n")
+        core.print_out("             Switching to the TS algorithm.\n\n")
         mcscf_target_conv_type = "TS"
 
     # Print out headers
     if mcscf_type == "CONV":
         mtype = "   @MCSCF"
-        psi4.print_out("\n   ==> Starting MCSCF iterations <==\n\n")
-        psi4.print_out("        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
+        core.print_out("\n   ==> Starting MCSCF iterations <==\n\n")
+        core.print_out("        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
     else:
         mtype = "   @DF-MCSCF"
-        psi4.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n")
-        psi4.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
+        core.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n")
+        core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
 
     # Iterate !
     for mcscf_iter in range(1, mcscf_max_macroiteration + 1):
@@ -153,13 +149,17 @@ def mcscf_solver(ref_wfn):
 
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
-        ci_grad_rms = psi4.get_variable("DETCI AVG DVEC NORM")
+        ci_grad_rms = core.get_variable("DETCI AVG DVEC NORM")
 
         # Update MCSCF object
-        mcscf_obj.update(ciwfn.get_orbitals("DOCC"), ciwfn.get_orbitals("ACT"),
-                         ciwfn.get_orbitals("VIR"), ciwfn.get_opdm(-1, -1, "SUM", False),
-                         ciwfn.get_tpdm("SUM", True))
-        current_energy = psi4.get_variable('CURRENT ENERGY')
+        Cocc = ciwfn.get_orbitals("DOCC")
+        Cact = ciwfn.get_orbitals("ACT")
+        Cvir = ciwfn.get_orbitals("VIR")
+        opdm = ciwfn.get_opdm(-1, -1, "SUM", False)
+        tpdm = ciwfn.get_tpdm("SUM", True)
+        mcscf_obj.update(Cocc, Cact, Cvir, opdm, tpdm)
+
+        current_energy = core.get_variable('CURRENT ENERGY')
 
         orb_grad_rms = mcscf_obj.gradient_rms()
         ediff = current_energy - eold
@@ -176,7 +176,7 @@ def mcscf_solver(ref_wfn):
         if (orb_grad_rms < mcscf_orb_grad_conv) and (abs(ediff) < abs(mcscf_e_conv)) and\
             (mcscf_iter > 3) and not qc_step:
 
-            psi4.print_out("\n       %s has converged!\n\n" % mtype);
+            core.print_out("\n       %s has converged!\n\n" % mtype);
             converged = True
             break
 
@@ -189,7 +189,7 @@ def mcscf_solver(ref_wfn):
             if converged:
                 mcscf_current_step_type = 'AH'
             else:
-                psi4.print_out("      !Warning. Augmented Hessian did not converge. Taking an approx step.\n")
+                core.print_out("      !Warning. Augmented Hessian did not converge. Taking an approx step.\n")
                 step = mcscf_obj.approx_solve()
                 mcscf_current_step_type = 'TS, AH failure'
 
@@ -199,7 +199,7 @@ def mcscf_solver(ref_wfn):
 
         maxstep = step.absmax()
         if maxstep > mcscf_steplimit:
-            psi4.print_out('      Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
+            core.print_out('      Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
             step.scale(mcscf_steplimit / maxstep)
 
         total_step.add(step)
@@ -209,7 +209,7 @@ def mcscf_solver(ref_wfn):
 
             # Figure out DIIS error vector
             if mcscf_diis_error_type == "GRAD":
-                error = psi4.Matrix.triplet(ciwfn.get_orbitals("OA"),
+                error = core.Matrix.triplet(ciwfn.get_orbitals("OA"),
                                             mcscf_obj.gradient(),
                                             ciwfn.get_orbitals("AV"),
                                             False, False, True)
@@ -237,7 +237,7 @@ def mcscf_solver(ref_wfn):
                 break
             else:
                 continue
-        #raise PsiException("")
+        #raise p4util.PsiException("")
 
     # If we converged do not do onestep
     if converged or (mcscf_target_conv_type != 'OS'):
@@ -264,9 +264,13 @@ def mcscf_solver(ref_wfn):
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
 
-        mcscf_obj.update(ciwfn.get_orbitals("DOCC"), ciwfn.get_orbitals("ACT"),
-                         ciwfn.get_orbitals("VIR"), ciwfn.get_opdm(-1, -1, "SUM", False),
-                         ciwfn.get_tpdm("SUM", True))
+        # Update MCSCF object
+        Cocc = ciwfn.get_orbitals("DOCC")
+        Cact = ciwfn.get_orbitals("ACT")
+        Cvir = ciwfn.get_orbitals("VIR")
+        opdm = ciwfn.get_opdm(-1, -1, "SUM", False)
+        tpdm = ciwfn.get_tpdm("SUM", True)
+        mcscf_obj.update(Cocc, Cact, Cvir, opdm, tpdm)
 
         orb_grad_rms = mcscf_obj.gradient_rms()
 
@@ -274,8 +278,8 @@ def mcscf_solver(ref_wfn):
         current_energy = mcscf_obj.current_total_energy()
         current_energy += mcscf_nuclear_energy
 
-        psi4.set_variable("CI ROOT %d TOTAL ENERGY" % 1, current_energy)
-        psi4.set_variable("CURRENT ENERGY", current_energy)
+        core.set_variable("CI ROOT %d TOTAL ENERGY" % 1, current_energy)
+        core.set_variable("CURRENT ENERGY", current_energy)
 
         docc_energy = mcscf_obj.current_docc_energy()
         ci_energy = mcscf_obj.current_ci_energy()
@@ -298,7 +302,7 @@ def mcscf_solver(ref_wfn):
 
         if (orb_grad_rms < mcscf_orb_grad_conv) and (abs(ediff) < abs(mcscf_e_conv)):
 
-            psi4.print_out("\n       %s has converged!\n\n" % mtype);
+            core.print_out("\n       %s has converged!\n\n" % mtype);
             converged = True
             break
 
@@ -311,57 +315,64 @@ def mcscf_solver(ref_wfn):
         ciwfn.set_orbitals("ROT", orbs_mat)
 
 
-    psi4.print_out(mtype + " Final Energy: %20.15f\n" % current_energy)
+    core.print_out(mtype + " Final Energy: %20.15f\n" % current_energy)
 
     # Die if we did not converge
     if (not converged):
-        if psi4.get_global_option("DIE_IF_NOT_CONVERGED"):
-            raise PsiException("MCSCF: Iterations did not converge!")
+        if core.get_global_option("DIE_IF_NOT_CONVERGED"):
+            raise p4util.PsiException("MCSCF: Iterations did not converge!")
         else:
-            psi4.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
+            core.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
 
     # Print out energetics
-    psi4.print_out("\n   ==> Energetics <==\n\n")
-    psi4.print_out("    SCF energy =         %20.15f\n" % scf_energy)
-    psi4.print_out("    Total CI energy =    %20.15f\n\n" % current_energy)
+    core.print_out("\n   ==> Energetics <==\n\n")
+    core.print_out("    SCF energy =         %20.15f\n" % scf_energy)
+    core.print_out("    Total CI energy =    %20.15f\n\n" % current_energy)
 
     # Print out CI vector information
     if mcscf_target_conv_type != 'SO':
         dvec = ciwfn.new_civector(mcscf_nroots, mcscf_d_file, True, True)
         dvec.init_io_files(True)
 
+    irrep_labels = ciwfn.molecule().irrep_labels()
     for root in range(mcscf_nroots):
-        psi4.print_out("\n   ==> CI root %d information <==\n\n" % (root + 1))
+        core.print_out("\n   ==> CI root %d information <==\n\n" % (root + 1))
 
         # Print total energy
-        root_e = psi4.get_variable("CI ROOT %d TOTAL ENERGY" % (root + 1))
-        psi4.print_out("    CI Root %2d energy =  %20.15f\n" % (root + 1, root_e))
+        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root + 1))
+        core.print_out("    CI Root %2d energy =  %20.15f\n" % (root + 1, root_e))
 
         # Print natural occupations
-        psi4.print_out("\n   Natural occupation numbers:\n\n")
-        ropdm = ciwfn.get_opdm(root, root, "SUM", False).to_array(dense=True)
-        nocc, rot = np.linalg.eigh(ropdm)
-        nocc = nocc[::-1]
+        core.print_out("\n   Natural occupation numbers:\n\n")
 
-        irrep_info = ['??' for x in range(nocc.shape[0])]
+        occs_list = []
+        r_opdm = ciwfn.get_opdm(root, root, "SUM", False)
+        for h in range(len(r_opdm.nph)):
+            if 0 in r_opdm.nph[h].shape:
+                continue
+            nocc, rot = np.linalg.eigh(r_opdm.nph[h])
+            for e in nocc:
+                occs_list.append((e, irrep_labels[h]))
+
+        occs_list.sort(key=lambda x: -x[0])
+
 
         cnt = 0
-        for ln in range(nocc.shape[0] // 3 + 1):
-            for sp in range(3):
-                if cnt >= nocc.shape[0]: break
-
-                psi4.print_out("      %4s  % 8.6f" % (irrep_info[cnt], nocc[cnt]))
-                cnt += 1
-            psi4.print_out("\n")
+        for value, label in occs_list:
+            value, label = occs_list[cnt]
+            core.print_out("      %4s  % 8.6f" % (label, value))
+            cnt += 1
+            if (cnt % 3) == 0:
+                core.print_out("\n")
 
         # Print CIVector information
         ciwfn.print_vector(dvec, root)
 
 
     # What do we need to cleanup?
-    if psi4.get_option("DETCI", "MCSCF_CI_CLEANUP"):
+    if core.get_option("DETCI", "MCSCF_CI_CLEANUP"):
         ciwfn.cleanup_ci()
-    if psi4.get_option("DETCI", "MCSCF_DPD_CLEANUP"):
+    if core.get_option("DETCI", "MCSCF_DPD_CLEANUP"):
         # print('Cleaning up DPD data!')
         ciwfn.cleanup_dpd()
 

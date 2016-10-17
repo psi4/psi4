@@ -12,6 +12,7 @@ set {
     restricted_docc [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
     scf_type        out_of_core
+    mcscf_algorithm ah
 }
 
 casscf_energy = energy('casscf')

@@ -2921,10 +2921,21 @@ def run_detci(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    ci_wfn = core.detci(ref_wfn)
+    ciwfn = core.detci(ref_wfn)
+
+    if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
+        # We always would like to print a little dipole information
+        oeprop = core.OEProp(ciwfn)
+        oeprop.set_title(name.upper())
+        oeprop.add("DIPOLE")
+        oeprop.compute()
+        ciwfn.set_oeprop(oeprop)
+        core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
+        core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
+        core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
 
     optstash.restore()
-    return ci_wfn
+    return ciwfn
 
 
 def run_dfmp2(name, **kwargs):
@@ -3986,13 +3997,13 @@ def run_detcas(name, **kwargs):
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
-        if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and\
-                    (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF'):
-            psi4.set_global_option('ONEPDM', True)
-            psi4.set_global_option('OPDM_RELAX', False)
-            ref_wfn = run_dfmp2_gradient(name, **kwargs)
-        else:
-            ref_wfn = scf_helper(name, **kwargs)
+        # if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and\
+        #             (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF'):
+        #     psi4.set_global_option('ONEPDM', True)
+        #     psi4.set_global_option('OPDM_RELAX', False)
+        #     ref_wfn = run_dfmp2_gradient(name, **kwargs)
+        # else:
+        ref_wfn = scf_helper(name, **kwargs)
 
         # Ensure IWL files have been written
         if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):

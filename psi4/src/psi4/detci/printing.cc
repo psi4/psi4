@@ -72,12 +72,8 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
    char configstring[CONFIG_STRING_MAX];
    int Ia_abs, Ib_abs;
 
-   #ifdef FLAG_NONBLOCKS
-   int found_inblock=0;
-   #endif
-
    /* print out the list of most important determinants */
-   outfile->Printf("\n\n   The %d most important determinants:\n\n", nprint) ;
+   outfile->Printf("\n   The %d most important determinants:\n\n", nprint) ;
    for (unsigned int i=0; i<nprint; i++) {
       if (fabs(coeff[i]) < MIN_COEFF) continue;
 
@@ -85,6 +81,7 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       Ib_abs = str_rel2abs(Ibidx[i], Iblist[i], BetaG_);
 
       #ifdef FLAG_NONBLOCKS
+      int found_inblock=0;
       for (unsigned int j=0, found_inblock=0; j<H0block_->size; j++) {
          if (Iaidx[i] == H0block_->alpidx[j] &&
              Ibidx[i] == H0block_->betidx[j] &&

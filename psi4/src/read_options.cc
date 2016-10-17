@@ -470,31 +470,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         Warning: This will hold 4 dense active TPDM's in memory !expert -*/
     options.add_bool("TPDM", false);
 
-    /*- Do print the one-particle density matrix for each root? -*/
-    options.add_bool("OPDM_PRINT", false);
-
-    /*- Build natural orbitals? The orbtials will be reordered by occuption number.-*/
-    options.add_bool("NAT_ORBS", false);
-
-    /*- Do average the OPDM over several roots in
-    order to obtain a state-average one-particle density matrix?  This
-    density matrix can be diagonalized to obtain the CI natural orbitals. -*/
-    options.add_bool("OPDM_AVG", false);
-
-    /*- Do print the two-particle density matrix? (Warning: large tensor) -*/
-    options.add_bool("TPDM_PRINT", false);
-
     /*- Do compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
     does not compute states of different irreps within the same
     computation; to do this, lower the symmetry of the computation.-*/
     options.add_bool("TDM", false);
-
-    /*- Do write the transition density? -*/
-    options.add_bool("TDM_WRITE", false);
-
-    /*- Do print the transition density? -*/
-    options.add_bool("TDM_PRINT", false);
 
     /*- Do compute the dipole moment? -*/
     options.add_bool("DIPMOM", false);
@@ -768,7 +748,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
     to TS for RASSCF. -*/
-    options.add_str("MCSCF_ALGORITHM", "TS", "TS AH OS");
+    options.add_str("MCSCF_ALGORITHM", "TS", "TS AH");
 
     /*- Start second-order (AH or OS) orbital-orbital MCSCF based on RMS of orbital gradient -*/
     options.add_double("MCSCF_SO_START_GRAD", 1e-4);

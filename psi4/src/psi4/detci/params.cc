@@ -454,7 +454,6 @@ void CIWavefunction::get_parameters(Options &options)
    * function as the master switch for all other OPDM parameters.
    */
   Parameters_->opdm_diag = options["NAT_ORBS"].to_integer();
-  Parameters_->opdm_ave = options["OPDM_AVG"].to_integer();
 
   if (Parameters_->opdm_diag || Parameters_->opdm_ave)
     Parameters_->opdm = 1;
@@ -1452,7 +1451,7 @@ void CIWavefunction::print_ras_parameters(void) {
   }
 
   CharacterTable ct = molecule_->point_group()->char_table();
-  size_t sdist = 18;
+  size_t sdist = 20;
   size_t tdist = 9;
   size_t hdist = 6;
 
@@ -1469,7 +1468,7 @@ void CIWavefunction::print_ras_parameters(void) {
   // Figure out seperator size
   std::string sep_template =
     "-------------------------------------------------------------------------------------";
-  std::string seperator = "  " + sep_template.substr(0, header.size()) + "\n";
+  std::string seperator = "   " + sep_template.substr(0, header.size()) + "\n";
 
   // Start building orbital info
   std::stringstream orbital_info;
@@ -1486,12 +1485,12 @@ void CIWavefunction::print_ras_parameters(void) {
 
   // Occupied spaces
   if (Parameters_->mcscf) {
-    orbital_info << std::setw(header.size()/ 2 + 8) << "MCSCF Spaces\n";
+    orbital_info << std::setw(header.size()/ 2 + 10) << "MCSCF Spaces\n";
     orbital_info << seperator;
     orbital_info << _concat_dim("Frozen DOCC", sdist, get_dimension("FZC"), tdist, hdist);
     orbital_info << _concat_dim("Restricted DOCC", sdist, get_dimension("DOCC"), tdist, hdist);
   } else {
-    orbital_info << std::setw(header.size()/ 2 + 5) << "CI Spaces\n";
+    orbital_info << std::setw(header.size()/ 2 + 6) << "CI Spaces\n";
     orbital_info << seperator;
     orbital_info << _concat_dim("Dropped DOCC", sdist, get_dimension("DRC"), tdist, hdist);
   }

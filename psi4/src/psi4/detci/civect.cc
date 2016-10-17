@@ -135,11 +135,6 @@ void CIvect::common_init(void) {
     num_blocks_ = 0;
     icore_ = 1;
     Ms0_ = 0;
-    Ia_code_ = NULL;
-    Ib_code_ = NULL;
-    Ia_size_ = NULL;
-    Ib_size_ = NULL;
-    offset_ = NULL;
     num_alpcodes_ = 0;
     num_betcodes_ = 0;
     nirreps_ = 0;
@@ -153,8 +148,6 @@ void CIvect::common_init(void) {
     cur_vect_ = -1;
     cur_buf_ = -1;
     buffer_size_ = 0;
-    units_ = NULL;
-    file_number_ = NULL;
     buf_size_ = NULL;
     buf2blk_ = NULL;
     buf_offdiag_ = NULL;
@@ -162,7 +155,6 @@ void CIvect::common_init(void) {
     last_ablk_ = NULL;
     decode_ = NULL;
     blocks_ = NULL;
-    zero_blocks_ = NULL;
     buf_locked_ = 0;
     buffer_ = NULL;
     in_file_ = 0;
@@ -203,15 +195,16 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     maxvect_ = mxv;
     nvect_ = 1;
     nunits_ = nu;
-    if (nunits_) units_ = init_int_array(nunits_);
+    if (nunits_) units_.resize(nunits_);
     first_unit_ = fu;
     for (i = 0; i < nunits_; i++) units_[i] = fu + i;
 
-    Ia_code_ = init_int_array(nb);
-    Ib_code_ = init_int_array(nb);
-    Ia_size_ = init_int_array(nb);
-    Ib_size_ = init_int_array(nb);
-    offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
+    Ia_code_.resize(nb);
+    Ib_code_.resize(nb);
+    Ia_size_.resize(nb);
+    Ib_size_.resize(nb);
+    offset_.resize(nb);
+    // offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
 
     for (i = 0; i < nb; i++) {
         Ia_code_[i] = iac[i];
@@ -337,7 +330,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
 
     } /* end icore==0 */
 
-    file_number_ = init_int_array(buf_total_);
+    file_number_.resize(buf_total_);
 
     if (nunits_) {
         in_file_ = 0;
@@ -385,7 +378,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     // and dangerous to throw out any nonzero data, so we will only set
     // the blocks to all zero when we know we want them to be treated as
     // all 0's for certain.
-    zero_blocks_ = init_int_array(num_blocks_);
+    zero_blocks_.resize(num_blocks_);
 
     // Figure out the buffer size and allocate some pointers (but not storage)
     blocks_ = (double ***)malloc(num_blocks_ * sizeof(double **));
@@ -451,20 +444,20 @@ CIvect::~CIvect() {
         }
 
         free(blocks_);
-        free(zero_blocks_);
-        free(Ia_code_);
-        free(Ib_code_);
-        free(Ia_size_);
-        free(Ib_size_);
-        free(units_);
-        free(file_number_);
+        // free(zero_blocks_);
+        // free(Ia_code_);
+        // free(Ib_code_);
+        // free(Ia_size_);
+        // free(Ib_size_);
+        // free(units_);
+        // free(file_number_);
         free(buf_size_);
         free(buf2blk_);
         free(buf_offdiag_);
         free(first_ablk_);
         free(last_ablk_);
         free_int_matrix(decode_);
-        free(offset_);
+        // free(offset_);
     }
 }
 
@@ -571,7 +564,7 @@ void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
         read(tvec, buf);
         C_DCOPY(buf_size_[buf], src->buffer_, 1, buffer_, 1);
         int blk = buf2blk_[buf];
-        if ((zero_blocks_[blk] == 0) || (src->zero_blocks_[blk] == 0))
+        if ((blk >= 0) && ((zero_blocks_[blk] == 0) || (src->zero_blocks_[blk] == 0)))
             zero_blocks_[blk] = 0;
         write(tvec, buf);
     }
@@ -2874,21 +2867,18 @@ unsigned long CIvect::get_max_blk_size(void)
 **
 ** Check the norm of a CI vector
 */
-double CIvect::checknorm(void)
-{
-   double tval, dotprod = 0.0;
-   int buf;
+double CIvect::checknorm(void) {
+    double tval, dotprod = 0.0;
 
-   for (buf=0; buf<buf_per_vect_; buf++) {
-      read(cur_vect_, buf);
-      dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
-      if (buf_offdiag_[buf]) tval *= 2.0;
-      dotprod += tval;
-      }
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        read(cur_vect_, buf);
+        dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+        if (buf_offdiag_[buf]) tval *= 2.0;
+        dotprod += tval;
+    }
 
-   return(dotprod);
+    return (dotprod);
 }
-
 
 /*
 ** CIvect::copy()
@@ -2896,20 +2886,17 @@ double CIvect::checknorm(void)
 ** This copies one CI vector to another
 **
 */
-void CIvect::copy(CIvect &Src, int targetvec, int srcvec)
-{
-   int buf, blk;
+void CIvect::copy(CIvect &Src, int targetvec, int srcvec) {
 
-   for (buf=0; buf<buf_per_vect_; buf++) {
-      Src.read(srcvec, buf);
-      xey(buffer_, Src.buffer_, buf_size_[buf]);
-      blk = buf2blk_[buf];
-      if ( (zero_blocks_[blk]==0) || (Src.zero_blocks_[blk]==0) )
-         zero_blocks_[blk] = 0;
-      write(targetvec, buf);
-      }
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        Src.read(srcvec, buf);
+        xey(buffer_, Src.buffer_, buf_size_[buf]);
+        int blk = buf2blk_[buf];
+        if ((blk >= 0) && ((zero_blocks_[blk] == 0) || (Src.zero_blocks_[blk] == 0)))
+            zero_blocks_[blk] = 0;
+        write(targetvec, buf);
+    }
 }
-
 
 /*
 ** CIvect::restart_gather()
