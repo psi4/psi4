@@ -35,7 +35,7 @@ from psi4 import core
 ## Python basis helps
 
 @staticmethod
-def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, puream=-1):
+def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, puream=-1, return_atomlist=False):
     horde = qcdb.libmintsbasisset.basishorde
 
     if key == 'ORBITAL':
@@ -51,7 +51,16 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
         target = core.get_global_option(key)
 
     basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
-                                      key, target, fitrole, other)
+                                      key, target, fitrole, other, return_atomlist=return_atomlist)
+
+    if return_atomlist:
+        atom_basis_list = []
+        for atbs in basisdict:
+            atommol = core.Molecule.create_molecule_from_string(atbs['molecule'])
+            lmbs = core.BasisSet.construct_from_pydict(atommol, atbs, puream)
+            atom_basis_list.append(lmbs)
+            #lmbs.print_detail_out()
+        return atom_basis_list
 
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     return psibasis
