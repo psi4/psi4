@@ -4,6 +4,7 @@ configure*
 do-configure*
 build.sh
 setup
+setup_*
 
 # configure scratch location
 autom4te.cache
@@ -67,6 +68,8 @@ tests/*/*.grad
 tests/*/*.hess
 tests/*/grid_esp.dat
 tests/*/grid_field.dat
+tests/*/fsapt/*
+tests/*/plot/*
 
 # Automatically generated files
 share/python/pcm_placeholder.py

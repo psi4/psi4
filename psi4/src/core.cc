@@ -1170,8 +1170,8 @@ bool psi4_python_module_initialize()
 
     // Setup the environment
     Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
-    Process::environment.set("PSI_SCRATCH", "/tmp/");
-    Process::environment.set("PSIDATADIR", "");
+    // Process::environment.set("PSI_SCRATCH", "/tmp/");
+    // Process::environment.set("PSIDATADIR", "");
     Process::environment.set_memory(512000000);
 
 

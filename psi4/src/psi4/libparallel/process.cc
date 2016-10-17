@@ -58,6 +58,11 @@ const std::string empty_;
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::initialize()
 {
+    // Setup defaults
+    environment_["PSI_SCRATCH"] = "/tmp/";
+    environment_["PSI_DATADIR"] = "";
+
+
     // Go through user provided environment overwriting defaults if necessary
     int i = 0;
     if (environ) {

@@ -88,33 +88,6 @@ std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
-std::shared_ptr<MatrixFactory> get_matrix_factory()
-{
-    // We need a valid molecule with a valid point group to create a matrix factory.
-    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n");
-    std::shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (!molecule) {
-        outfile->Printf( "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-    if (!molecule->point_group()) {
-        outfile->Printf( "  Active molecule does not have point group set!");
-        throw PSIEXCEPTION("Active molecule does not have point group set!");
-    }
-
-    // Read in the basis set
-    std::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
-        "BASIS", Process::environment.options.get_str("BASIS"));
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    std::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
-    const Dimension& dim = sobasis->dimension();
-
-    std::shared_ptr<MatrixFactory> matfac(new MatrixFactory);
-    matfac->init_with(dim, dim);
-
-    return matfac;
-}
-
 // Just a little patch until we can figure out options python-side.
 std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
     return JK::build_JK(basis, aux, Process::environment.options);
@@ -317,8 +290,6 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory> >(m, "MatrixFactory", "docstring").
-            //def("shared_object", &get_matrix_factory, "docstring").
-            def_static("shared_object", &get_matrix_factory, "docstring").
             def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix), "docstring").
             def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix), "docstring");
 
@@ -771,9 +742,7 @@ void export_mints(py::module& m)
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
             def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
             def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
-            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring").
-            def_static("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("key"), py::arg("target"), py::arg("puream") = -1);
-//            def_static("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("keys"), py::arg("targets"), py::arg("fitroles"), py::arg("others"), py::arg("forced_puream") = -1);
+            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring").
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -990,7 +959,6 @@ void export_mints(py::module& m)
 
     py::class_<DFTensor, std::shared_ptr<DFTensor> >(m, "DFTensor", "docstring")
             .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
-            .def(py::init<std::shared_ptr<Wavefunction>, const std::string&>())
             .def("Qso", &DFTensor::Qso, "doctsring")
             .def("Qmo", &DFTensor::Qmo, "doctsring")
             .def("Qoo", &DFTensor::Qoo, "doctsring")
