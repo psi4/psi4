@@ -1073,7 +1073,7 @@ class LibmintsMolecule(object):
         text += """  zmat?         %s\n""" % (self.has_zmatrix())
         print(text)
 
-    def create_psi4_string_from_molecule(self):
+    def create_psi4_string_from_molecule(self, force_c1=False):
         """Regenerates a input file molecule specification string from the
         current state of the Molecule. Contains geometry info,
         fragmentation, charges and multiplicities, and any frame
@@ -1088,6 +1088,8 @@ class LibmintsMolecule(object):
                 text += "    no_com\n"
             if self.PYfix_orientation:
                 text += "    no_reorient\n"
+            if force_c1:
+                text += "    symmetry c1\n"
 
             # append atoms and coordentries and fragment separators with charge and multiplicity
             Pfr = 0

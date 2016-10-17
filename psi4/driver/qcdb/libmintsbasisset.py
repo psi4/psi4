@@ -648,7 +648,7 @@ class BasisSet(object):
                     bsdict['name'] = atbs.name
                     bsdict['puream'] = int(atbs.has_puream())
                     bsdict['shell_map'] = atbs.export_for_libmints(fitrole)
-                    bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule()
+                    bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
 
@@ -797,7 +797,7 @@ class BasisSet(object):
 
             else:
                 # Ne'er found :-(
-                text2 = """  Shell Entries: %s\n""" % (seek['entry'])
+                text2  = """  Shell Entries: %s\n""" % (seek['entry'])
                 text2 += """  Basis Sets: %s\n""" % (seek['basis'])
                 text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(':'))))
                 text2 += """  Input Blocks: %s\n""" % (', '.join(seek['strings']))

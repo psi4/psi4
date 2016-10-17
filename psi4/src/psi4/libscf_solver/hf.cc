@@ -1323,33 +1323,23 @@ void HF::guess()
     std::string guess_type = options_.get_str("GUESS");
 
     // DGAS broke SAD
-    if (guess_type == "SAD"){
-        outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
-        guess_type = "CORE";
-    }
+    // if (guess_type == "SAD"){
+    //     outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
+    //     guess_type = "CORE";
+    // }
+    // Take care of options that should be overridden
     if (guess_type == "AUTO"){
         outfile->Printf("\nWarning! Guess was AUTO, switching to CORE!\n\n");
+        outfile->Printf("           This option should have been configured at the driver level.\n\n");
         guess_type = "CORE";
     }
 
-    // if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
-    //     outfile->Printf( "  SCF Guess was Projection but file not found.\n");
-    //     outfile->Printf( "  Switching over to SAD guess.\n\n");
-    //     guess_type = "SAD";
-    // }
+    if ((guess_type == "READ") && !guess_Ca_){
+        outfile->Printf("\nWarning! Guess was READ without Ca set, switching to CORE!\n");
+        outfile->Printf("           This option should have been configured at the driver level.\n\n");
+        guess_type = "CORE";
+    }
 
-    // if (guess_type == "READ") {
-    //     if (do_use_fock_guess()) {
-    //         outfile->Printf( "  SCF Guess: Guess MOs from previously saved Fock matrix.\n\n");
-    //         load_fock(); // won't save the energy from here
-    //         form_C();
-    //         form_D();
-    //     }
-    //     else {
-    //         outfile->Printf( "  SCF Guess: Reading in previously saved MOs, projecting if necessary.\n\n");
-    //         load_orbitals(); // won't save the energy from here
-    //         form_D();
-    //     }
     if (guess_Ca_){
         if (print_)
             outfile->Printf( "  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");

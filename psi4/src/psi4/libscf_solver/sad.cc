@@ -62,14 +62,14 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-SADGuess::SADGuess(std::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options) :
-    basis_(basis), nalpha_(nalpha), nbeta_(nbeta), options_(options)
-{
+SADGuess::SADGuess(std::shared_ptr<BasisSet> basis,
+                   std::vector<std::shared_ptr<BasisSet>> atomic_bases,
+                   int nalpha, int nbeta, Options& options) :
+    basis_(basis), atomic_bases_(atomic_bases), nalpha_(nalpha), nbeta_(nbeta),
+    options_(options) {
     common_init();
 }
-SADGuess::~SADGuess()
-{
-}
+SADGuess::~SADGuess() {}
 void SADGuess::common_init()
 {
     molecule_ = basis_->molecule();
@@ -155,30 +155,13 @@ void SADGuess::form_C()
 }
 SharedMatrix SADGuess::form_D_AO()
 {
-    std::vector<std::shared_ptr<BasisSet> > atomic_bases;
 
     if (print_ > 6) {
-        outfile->Printf("\n  Constructing atomic basis sets\n  Molecule:\n");
-        molecule_->print();
-    }
-
-    //Build the atomic basis sets for libmints use in UHF
-    for (int A = 0; A<molecule_->natom(); A++) {
-        std::stringstream mol_string;
-        mol_string << std::endl << basis_->molecule()->label(A) << std::endl;
-        std::shared_ptr<Molecule> atom_mol = Molecule::create_molecule_from_string(mol_string.str());
-        atom_mol->reset_point_group("C1"); // Booo symmetry
-
-        throw PSIEXCEPTION("DGAS broke SAD for now.\n");
-        // std::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
-        //                                         basis_->molecule()->atom_entry(A)->basisset());
-        // atomic_bases.push_back(atom_bas);
-
-        if (print_ > 6) {
+        for (int A = 0; A<molecule_->natom(); A++) {
             outfile->Printf("  SAD: Atomic Basis Set %d\n", A);
-            atomic_bases[A]->molecule()->print();
+            atomic_bases_[A]->molecule()->print();
             outfile->Printf("\n");
-            atomic_bases[A]->print("outfile");
+            atomic_bases_[A]->print("outfile");
             outfile->Printf("\n");
         }
     }
@@ -239,17 +222,17 @@ SharedMatrix SADGuess::form_D_AO()
                 continue;
             if (nelec[l] != nelec[m])
                 continue;
-            if (atomic_bases[l]->nbf() != atomic_bases[m]->nbf())
+            if (atomic_bases_[l]->nbf() != atomic_bases_[m]->nbf())
                 continue;
-            if (atomic_bases[l]->nshell() != atomic_bases[m]->nshell())
+            if (atomic_bases_[l]->nshell() != atomic_bases_[m]->nshell())
                 continue;
-            if (atomic_bases[l]->nprimitive() != atomic_bases[m]->nprimitive())
+            if (atomic_bases_[l]->nprimitive() != atomic_bases_[m]->nprimitive())
                 continue;
-            if (atomic_bases[l]->max_am() != atomic_bases[m]->max_am())
+            if (atomic_bases_[l]->max_am() != atomic_bases_[m]->max_am())
                 continue;
-            if (atomic_bases[l]->max_nprimitive() != atomic_bases[m]->max_nprimitive())
+            if (atomic_bases_[l]->max_nprimitive() != atomic_bases_[m]->max_nprimitive())
                 continue;
-            if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
+            if (atomic_bases_[l]->has_puream() !=  atomic_bases_[m]->has_puream())
                 continue;
 
             // Semi-Rigorous match obtained
@@ -267,7 +250,7 @@ SharedMatrix SADGuess::form_D_AO()
     //Atomic D matrices within the atom specific AO basis
     std::vector<SharedMatrix> atomic_D;
     for (int A = 0; A<nunique; A++) {
-        int nbf = atomic_bases[atomic_indices[A]]->nbf();
+        int nbf = atomic_bases_[atomic_indices[A]]->nbf();
         SharedMatrix dtmp(new Matrix("Atomic D", nbf, nbf));
         atomic_D.push_back(dtmp);
     }
@@ -278,7 +261,12 @@ SharedMatrix SADGuess::form_D_AO()
         int index = atomic_indices[A];
         if (print_ > 1)
             outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
-        get_uhf_atomic_density(atomic_bases[index], nelec[index], nhigh[index], atomic_D[A]);
+        if (options_.get_str("SAD_SCF_TYPE") == "DF"){
+            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], nelec[index], nhigh[index], atomic_D[A]);
+        } else {
+            std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
+            get_uhf_atomic_density(atomic_bases_[index], zbas, nelec[index], nhigh[index], atomic_D[A]);
+        }
         if (print_ > 1)
             outfile->Printf("Finished UHF Computation!\n");
     }
@@ -290,7 +278,7 @@ SharedMatrix SADGuess::form_D_AO()
     //Add atomic_D into D (scale by 1/2, we like effective pairs)
     SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", basis_->nbf(), basis_->nbf()));
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
-        int norbs = atomic_bases[A]->nbf();
+        int norbs = atomic_bases_[A]->nbf();
         int back_index = unique_indices[A];
         for (int m = 0; m<norbs; m++)
             for (int n = 0; n<norbs; n++)
@@ -305,7 +293,7 @@ SharedMatrix SADGuess::form_D_AO()
 
     return DAO;
 }
-void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, int nhigh, SharedMatrix D)
+void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, int nelec, int nhigh, SharedMatrix D)
 {
     std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
@@ -446,7 +434,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, 
     }
 
     SharedMatrix Ca_occ(new Matrix("Ca occupied", norbs, nalpha));
-    SharedMatrix Cb_occ(new Matrix("Ca occupied", norbs, nbeta));
+    SharedMatrix Cb_occ(new Matrix("Cb occupied", norbs, nbeta));
 
     //Compute initial Cx, Dx, and D from core guess
     form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, occ_a, Da);
@@ -487,10 +475,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, 
 
     // Need a very special auxiliary basis here
     if (options_.get_str("SAD_SCF_TYPE") == "DF"){
-        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(bas->molecule(), "BASIS",
-                                                options_.get_str("DF_BASIS_SAD"));
 
-        DFJK* dfjk = new DFJK(bas, auxiliary);
+        DFJK* dfjk = new DFJK(bas, fit);
         dfjk->set_unit(PSIF_SAD);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
@@ -669,7 +655,18 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
 void HF::compute_SAD_guess()
 {
 
-    std::shared_ptr<SADGuess> guess(new SADGuess(basisset_, nalpha_, nbeta_, options_));
+    if (sad_basissets_.empty()){
+        throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
+    }
+    if ((options_.get_str("SAD_SCF_TYPE") == "DF") && sad_fitting_basissets_.empty()){
+        throw PSIEXCEPTION("  SCF guess was set to SAD with DFJK, but sad_fitting_basissets_ was empty!\n\n");
+    }
+
+    std::shared_ptr<SADGuess> guess(new SADGuess(basisset_, sad_basissets_, nalpha_, nbeta_, options_));
+    if (options_.get_str("SAD_SCF_TYPE") == "DF"){
+        guess->set_atomic_fit_bases(sad_fitting_basissets_);
+    }
+
     guess->compute_guess();
 
     SharedMatrix Ca_sad = guess->Ca();

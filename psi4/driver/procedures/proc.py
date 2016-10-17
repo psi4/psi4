@@ -1017,6 +1017,7 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                                                               tuple_params = modified_disp_params)
         wfn.cdict["_disp_functor"].print_out()
 
+    # Set the multitude of SAD basis sets
     if (core.get_option("SCF", "SCF_TYPE") == "DF") or \
        (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_option("SCF", "SCF_TYPE") == "DIRECT")):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
@@ -1033,10 +1034,18 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         wfn.set_basisset("BASIS_RELATIVISTIC", decon_basis)
 
     if (core.get_option("SCF", "GUESS") == "SAD"):
-        sad_basis_list = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SAD",
-                                        core.get_option("SCF", "DF_BASIS_SAD"),
-                                        puream=wfn.basisset().has_puream(),
-                                        return_atomlist=True)
+        sad_basis_list = core.BasisSet.build(wfn.molecule(), "ORBITAL",
+                                             core.get_global_option("BASIS"),
+                                             puream=wfn.basisset().has_puream(),
+                                             return_atomlist=True)
+        wfn.set_sad_basissets(sad_basis_list)
+
+        if (core.get_option("SCF", "SAD_SCF_TYPE") == "DF"):
+            sad_fitting_list = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SAD",
+                                                   core.get_option("SCF", "DF_BASIS_SAD"),
+                                                   puream=wfn.basisset().has_puream(),
+                                                   return_atomlist=True)
+            wfn.set_sad_fitting_basissets(sad_fitting_list)
 
     return wfn
 

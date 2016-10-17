@@ -868,6 +868,8 @@ void export_mints(py::module& m)
             def("guess_Ca", &scf::HF::guess_Ca, "docstring").
             def("guess_Cb", &scf::HF::guess_Cb, "docstring").
             def("reset_occ", &scf::HF::reset_occ, "docstring").
+            def("set_sad_basissets", &scf::HF::set_sad_basissets, "docstring").
+            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "docstring").
             def("Va", &scf::HF::Va, "docstring").
             def("Vb", &scf::HF::Vb, "docstring").
             def("jk", &scf::HF::jk, "docstring").
