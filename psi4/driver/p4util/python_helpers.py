@@ -42,7 +42,13 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
         key = 'BASIS'
 
     if horde and key:
-        target = horde.get(core.get_global_option(key), None)
+        tmp = horde.get(core.get_global_option(key), None)
+        if tmp:
+            target = tmp
+        elif target:
+            pass
+        elif tmp is None:
+            target = None
     elif target:
         pass
     elif key is None:
