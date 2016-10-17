@@ -57,7 +57,7 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
         target = core.get_global_option(key)
 
     basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
-                                      key, target, fitrole, other, return_atomlist=return_atomlist)
+                                          key, target, fitrole, other, return_atomlist=return_atomlist)
 
     if return_atomlist:
         atom_basis_list = []

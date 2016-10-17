@@ -92,6 +92,10 @@ protected:
     /// Table of energy components
     std::map<std::string, double> energies_;
 
+    /// Basis list for SAD
+    std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
+    std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
+
     /// The RMS error in the density
     double Drms_;
 
@@ -457,6 +461,9 @@ public:
 
     // Expert option to reset the occuption or not at iteration zero
     void reset_occ(bool reset) { reset_occ_ = reset; }
+
+    void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
+    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
 };
 
 }} // Namespaces
