@@ -20,6 +20,7 @@ target_include_directories(versioned_code PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 set(sources_list export_psio.cc
         export_mints.cc
+        export_fock.cc
         export_functional.cc
         export_oeprop.cc
         export_plugins.cc

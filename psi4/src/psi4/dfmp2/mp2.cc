@@ -60,7 +60,7 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     // The density matrix
     SharedMatrix c1MO_c1NO(new Matrix("NOs", nmo_, nmo_));
     SharedVector occ_c1(new Vector("NO Occupations", nmo_));
-    Dnosym->diagonalize(c1MO_c1NO, occ_c1);
+    Dnosym->diagonalize(c1MO_c1NO, occ_c1, descending);
     // Rotate the canonical MOs to NOs
     SharedMatrix AO_c1MO = reference_wavefunction_->Ca_subset("AO");
     SharedMatrix AO_c1NO = AO_c1MO->clone();

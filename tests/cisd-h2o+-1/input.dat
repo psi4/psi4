@@ -15,9 +15,10 @@ molecule h2o {
 }
 
 set {
-  reference rohf
-  basis 6-31G**
+  reference   rohf
+  basis       6-31G**
   freeze_core true
+  dipmom      true
 }
 
 thisenergy = energy('cisd')
@@ -26,3 +27,8 @@ compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion ene
 compare_values(refscf, get_variable("SCF total energy"),     7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
+compare_values(2.68224970371, get_variable("CISD DIPOLE Z"), 3, "CISD Z Dipole")
+compare_values(2.79760370969, get_variable("SCF DIPOLE Z"), 3, "SCF Z Dipole")
+
+

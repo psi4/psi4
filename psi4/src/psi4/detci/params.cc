@@ -40,13 +40,16 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <iomanip>
+#include "psi4/libmints/pointgrp.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/molecule.h"
-#include "ciwave.h"
-#include "structs.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/structs.h"
 #include "psi4/psi4-dec.h"
 
 namespace psi { namespace detci {
@@ -68,8 +71,7 @@ void CIWavefunction::get_parameters(Options &options)
 
 
   // CDS-TODO: Check these
-  Parameters_->print_lvl = 1;
-  Parameters_->have_special_conv = 0;
+  print_ = 1;
 
   Parameters_->ex_lvl = options.get_int("EX_LEVEL");
   Parameters_->cc_ex_lvl = options.get_int("CC_EX_LEVEL");
@@ -85,7 +87,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
   if (options["PRINT"].has_changed()) {
-    Parameters_->print_lvl = options.get_int("PRINT");
+    print_ = options.get_int("PRINT");
   }
 
   Parameters_->opentype = PARM_OPENTYPE_UNKNOWN;
@@ -452,7 +454,6 @@ void CIWavefunction::get_parameters(Options &options)
    * function as the master switch for all other OPDM parameters.
    */
   Parameters_->opdm_diag = options["NAT_ORBS"].to_integer();
-  Parameters_->opdm_ave = options["OPDM_AVG"].to_integer();
 
   if (Parameters_->opdm_diag || Parameters_->opdm_ave)
     Parameters_->opdm = 1;
@@ -521,7 +522,7 @@ void CIWavefunction::get_parameters(Options &options)
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters_->ex_lvl) {
       std::string str = "Dim. of EX_ALLOW must be";
-      str += std::to_string(Parameters_->ex_lvl) ;
+      str += std::to_string(Parameters_->ex_lvl);
       throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters_->ex_allow.data());
@@ -711,13 +712,14 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->cc_update_eps = options["CC_UPDATE_EPS"].to_integer();
 
   /* DIIS only kicks in for CC anyway, no need to prefix with CC_ */
-  Parameters_->diis = options["DIIS"].to_integer();
+  Parameters_->diis  = options["DIIS"].to_integer();
   /* Iteration to turn on DIIS */
-  Parameters_->diis_start = options.get_int("DIIS_START_ITER");
+  Parameters_->diis_start  = options.get_int("DIIS_START_ITER");
   /* Do DIIS every n iterations */
-  Parameters_->diis_freq = options.get_int("DIIS_FREQ");
-  Parameters_->diis_min_vecs = options.get_int("DIIS_MIN_VECS");
-  Parameters_->diis_max_vecs = options.get_int("DIIS_MAX_VECS");
+  Parameters_->diis_freq  = options.get_int("DIIS_FREQ");
+  Parameters_->diis_min_vecs  = options.get_int("DIIS_MIN_VECS");
+  Parameters_->diis_max_vecs  = options.get_int("DIIS_MAX_VECS");
+  Parameters_->mcscf_type  = options_.get_str("MCSCF_TYPE");
 }
 
 
@@ -725,742 +727,797 @@ void CIWavefunction::get_parameters(Options &options)
 ** print_parameters(): Function prints the program's running parameters
 **   found in the Parameters structure.
 */
-void CIWavefunction::print_parameters(void)
-{
-   int i;
+void CIWavefunction::print_parameters(void) {
+    int i;
 
-   outfile->Printf( "\n");
-   outfile->Printf( "DETCI PARAMETERS: \n");
-   outfile->Printf( "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
-      Parameters_->ex_lvl, Parameters_->h0blocksize);
-   outfile->Printf( "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
-      Parameters_->val_ex_lvl, Parameters_->h0guess_size);
-   outfile->Printf( "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
-      Parameters_->h0block_coupling_size, Parameters_->h0block_coupling ? "yes" : "no");
-   outfile->Printf( "   MAXITER       =   %6d      NUM PRINT    =   %6d\n",
-      Parameters_->maxiter, Parameters_->nprint);
-   outfile->Printf( "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
-      Parameters_->num_roots, Parameters_->icore);
-   outfile->Printf( "   PRINT         =   %6d      FCI          =   %6s\n",
-      Parameters_->print_lvl, Parameters_->fci ? "yes" : "no");
-   if (Parameters_->have_special_conv)
-      outfile->Printf(
-         "   R CONV         = %8.2g    MIXED        =   %6s\n",
-         Parameters_->special_conv, Parameters_->mixed ? "yes" : "no");
-   else
-      outfile->Printf( "   R CONV        = %6.2e      MIXED        =   %6s\n",
-         Parameters_->convergence, Parameters_->mixed ? "yes" : "no");
+    outfile->Printf("\n");
+    outfile->Printf("   ==> Parameters <==\n\n");
+    outfile->Printf("    EX LEVEL       =   %6d      H0 BLOCKSIZE  =   %6d\n",
+                    Parameters_->ex_lvl, Parameters_->h0blocksize);
+    outfile->Printf("    VAL EX LEVEL   =   %6d      H0 GUESS SIZE =   %6d\n",
+                    Parameters_->val_ex_lvl, Parameters_->h0guess_size);
+    outfile->Printf("    H0COUPLINGSIZE =   %6d      H0 COUPLING   =   %6s\n",
+                    Parameters_->h0block_coupling_size,
+                    Parameters_->h0block_coupling ? "YES" : "NO");
+    outfile->Printf("    MAXITER        =   %6d      NUM PRINT     =   %6d\n",
+                    Parameters_->maxiter, Parameters_->nprint);
+    outfile->Printf("    NUM ROOTS      =   %6d      ICORE         =   %6d\n",
+                    Parameters_->num_roots, Parameters_->icore);
+    outfile->Printf("    PRINT LVL      =   %6d      FCI           =   %6s\n",
+                    print_, Parameters_->fci ? "YES" : "NO");
+    outfile->Printf("    R CONV         = %6.2e      MIXED         =   %6s\n",
+                    Parameters_->convergence,
+                    Parameters_->mixed ? "YES" : "NO");
+    outfile->Printf("    E CONV         = %6.2e      MIXED4        =   %6s\n",
+                    Parameters_->energy_convergence,
+                    Parameters_->mixed4 ? "YES" : "NO");
+    outfile->Printf("    R4S            =   %6s      REPL OTF      =   %6s\n",
+                    Parameters_->r4s ? "YES" : "NO",
+                    Parameters_->repl_otf ? "YES" : "NO");
+    outfile->Printf("    DIAG METHOD    =   ");
 
-   outfile->Printf( "   E CONV        = %6.2e      MIXED4       =   %6s\n",
-      Parameters_->energy_convergence, Parameters_->mixed4 ? "yes" : "no");
-   outfile->Printf( "   R4S           =   %6s      REPL OTF     =   %6s\n",
-      Parameters_->r4s ? "yes" : "no", Parameters_->repl_otf ? "yes" : "no");
-   outfile->Printf( "   DIAG METHOD   =   ");
+    switch (Parameters_->diag_method) {
+        case 0:
+            outfile->Printf("%6s", "RSP");
+            break;
+        case 1:
+            outfile->Printf("%6s", "OLSEN");
+            break;
+        case 2:
+            outfile->Printf("%6s", "MITRUS");
+            break;
+        case 3:
+            outfile->Printf("%6s", "SEM");
+            break;
+        case 4:
+            outfile->Printf("%6s", "SEMTEST");
+            break;
+        default:
+            outfile->Printf("%6s", "???");
+            break;
+    }
+    outfile->Printf("      FOLLOW ROOT   =   %6d\n", Parameters_->root);
 
-   switch (Parameters_->diag_method) {
-      case 0:
-         outfile->Printf( "%6s\n", "RSP");
-         break;
-      case 1:
-         outfile->Printf( "%6s\n", "OLSEN");
-         break;
-      case 2:
-         outfile->Printf( "%6s\n", "MITRUS");
-         break;
-      case 3:
-         outfile->Printf( "%6s\n", "SEM");
-         break;
-      case 4:
-         outfile->Printf( "%6s\n", "SEMTEST");
-         break;
-      default:
-         outfile->Printf( "%6s\n", "???");
-         break;
-      }
+    outfile->Printf("    PRECONDITIONER = ");
+    switch (Parameters_->precon) {
+        case PRECON_LANCZOS:
+            outfile->Printf("%6s", " LANCZOS    ");
+            break;
+        case PRECON_DAVIDSON:
+            outfile->Printf("%6s", "DAVIDSON    ");
+            break;
+        case PRECON_GEN_DAVIDSON:
+            outfile->Printf("%6s", "GEN_DAVIDSON");
+            break;
+        case PRECON_H0BLOCK_INVERT:
+            outfile->Printf("%6s", "H0BLOCK_INV ");
+            break;
+        case PRECON_H0BLOCK_ITER_INVERT:
+            outfile->Printf("%6s", "ITER_INV    ");
+            break;
+        case PRECON_H0BLOCK_COUPLING:
+            outfile->Printf("%6s", "H0_COUPLING ");
+            break;
+        case PRECON_EVANGELISTI:
+            outfile->Printf("%6s", "EVANGELISTI ");
+            break;
+        default:
+            outfile->Printf("%6s", "???         ");
+            break;
+    }
 
-   outfile->Printf( "   PRECONDITIONER= ");
-   switch (Parameters_->precon) {
-      case PRECON_LANCZOS:
-         outfile->Printf( "%6s", " LANCZOS    ");
-         break;
-      case PRECON_DAVIDSON:
-         outfile->Printf( "%6s", "DAVIDSON    ");
-         break;
-      case PRECON_GEN_DAVIDSON:
-         outfile->Printf( "%6s", "GEN_DAVIDSON");
-         break;
-      case PRECON_H0BLOCK_INVERT:
-         outfile->Printf( "%6s", "H0BLOCK_INV ");
-         break;
-      case PRECON_H0BLOCK_ITER_INVERT:
-         outfile->Printf( "%6s", "ITER_INV    ");
-         break;
-      case PRECON_H0BLOCK_COUPLING:
-         outfile->Printf( "%6s", "H0_COUPLING ");
-         break;
-      case PRECON_EVANGELISTI:
-         outfile->Printf( "%6s", "EVANGELISTI ");
-         break;
-      default:
-         outfile->Printf( "%6s", "???         ");
-         break;
-      }
+    outfile->Printf("  UPDATE        = ");
+    switch (Parameters_->update) {
+        case 1:
+            outfile->Printf("DAVIDSON\n");
+            break;
+        case 2:
+            outfile->Printf("OLSEN\n");
+            break;
+        default:
+            outfile->Printf("???\n");
+            break;
+    }
 
-   outfile->Printf( "  UPDATE       = ");
-   switch (Parameters_->update) {
-     case 1:
-       outfile->Printf("DAVIDSON\n");
-       break;
-     case 2:
-       outfile->Printf("OLSEN\n");
-       break;
-     default:
-       outfile->Printf("???\n");
-       break;
-      }
+    outfile->Printf("    S              =   %.4lf      Ms0           =   %6s\n",
+                    Parameters_->S, Parameters_->Ms0 ? "YES" : "NO");
+    outfile->Printf("    GUESS VECTOR   =  ");
+    switch (Parameters_->guess_vector) {
+        case PARM_GUESS_VEC_UNIT:
+            outfile->Printf("%7s", "UNIT");
+            break;
+        case PARM_GUESS_VEC_H0_BLOCK:
+            outfile->Printf("%7s", "H0BLOCK");
+            break;
+        case PARM_GUESS_VEC_DFILE:
+            outfile->Printf("%7s", "D FILE");
+            break;
+        default:
+            outfile->Printf("%7s", "???");
+            break;
+    }
+    outfile->Printf("      OPENTYPE      = ");
+    switch (Parameters_->opentype) {
+        case PARM_OPENTYPE_NONE:
+            outfile->Printf("%8s\n", "NONE");
+            break;
+        case PARM_OPENTYPE_HIGHSPIN:
+            outfile->Printf("%8s\n", "HIGHSPIN");
+            break;
+        case PARM_OPENTYPE_SINGLET:
+            outfile->Printf("%8s\n", "SINGLET");
+            break;
+        default:
+            outfile->Printf("%8s\n", "???");
+            break;
+    }
 
-   outfile->Printf( "   S             =   %.4lf      Ms0          =   %6s\n",
-      Parameters_->S, Parameters_->Ms0 ? "yes" : "no");
-   outfile->Printf( "   MAX NUM VECS  =   %6d\n", Parameters_->maxnvect);
-   outfile->Printf( "   RESTART       =   %6s\n",
-      Parameters_->restart ? "yes" : "no");
-   outfile->Printf( "   GUESS VECTOR  =  ");
-   switch (Parameters_->guess_vector) {
-      case PARM_GUESS_VEC_UNIT:
-         outfile->Printf( "%7s", "UNIT");
-         break;
-      case PARM_GUESS_VEC_H0_BLOCK:
-         outfile->Printf( "%7s", "H0BLOCK");
-         break;
-      case PARM_GUESS_VEC_DFILE:
-         outfile->Printf( "%7s", "D FILE");
-         break;
-      default:
-         outfile->Printf( "%7s", "???");
-         break;
-      }
-   outfile->Printf( "      OPENTYPE     = ");
-   switch (Parameters_->opentype) {
-      case PARM_OPENTYPE_NONE:
-         outfile->Printf( "%8s\n", "NONE");
-         break;
-      case PARM_OPENTYPE_HIGHSPIN:
-         outfile->Printf( "%8s\n", "HIGHSPIN");
-         break;
-      case PARM_OPENTYPE_SINGLET:
-         outfile->Printf( "%8s\n", "SINGLET");
-         break;
-      default:
-         outfile->Printf( "%8s\n", "???");
-         break;
-      }
-   if (Parameters_->ref_sym == -1)
-      outfile->Printf( "   REF SYM       =   %6s\n", "auto");
-   else
-      outfile->Printf( "   REF SYM       =   %6d\n", Parameters_->ref_sym);
+    outfile->Printf("    COLLAPSE SIZE  =   %6d", Parameters_->collapse_size);
+    outfile->Printf("      HD AVG        = ");
+    switch (Parameters_->hd_ave) {
+        case HD_EXACT:
+            outfile->Printf("HD_EXACT\n");
+            break;
+        case HD_KAVE:
+            outfile->Printf("HD_KAVE\n");
+            break;
+        case ORB_ENER:
+            outfile->Printf("ORB_ENER\n");
+            break;
+        case EVANGELISTI:
+            outfile->Printf("EVANGELISTI\n");
+            break;
+        case LEININGER:
+            outfile->Printf("LEININGER\n");
+            break;
+        default:
+            outfile->Printf("???\n");
+            break;
+    }
 
-   outfile->Printf( "   COLLAPSE SIZE =   %6d", Parameters_->collapse_size);
-   outfile->Printf( "      HD AVG       = ");
-   switch (Parameters_->hd_ave) {
-     case HD_EXACT:
-       outfile->Printf("HD_EXACT\n");
-       break;
-     case HD_KAVE:
-       outfile->Printf("HD_KAVE\n");
-       break;
-     case ORB_ENER:
-       outfile->Printf("ORB_ENER\n");
-       break;
-     case EVANGELISTI:
-       outfile->Printf("EVANGELISTI\n");
-       break;
-     case LEININGER:
-       outfile->Printf("LEININGER\n");
-       break;
-     default:
-       outfile->Printf("???\n");
-       break;
-     }
+    // HD OTF
+    // if (Parameters_->hd_otf){
+    //   outfile->Printf( "   HD OTF         =   %6s      NO DFILE      = %6s\n",
+    //           Parameters_->hd_otf ? "YES" : "NO", Parameters_->nodfile ?
+    //           "YES":"NO");
+    // }
 
-   outfile->Printf( "   LSE           =   %6s      LSE ITER     =   %6d\n",
-           Parameters_->lse ? "yes" : "no", Parameters_->lse_iter);
-   outfile->Printf( "   HD OTF        =   %6s      NO DFILE     =   %6s\n",
-           Parameters_->hd_otf ? "yes" : "no", Parameters_->nodfile ? "yes":"no");
-   outfile->Printf( "   MPN           =   %6s      MPN SCHMIDT  =   %6s\n",
-           Parameters_->mpn ? "yes":"no", Parameters_->mpn_schmidt ? "yes":"no");
-   outfile->Printf( "   ZAPTN         =   %6s      MPN WIGNER   =   %6s\n",
-           Parameters_->zaptn ? "yes":"no", Parameters_->wigner ? "yes":"no");
-   outfile->Printf( "   PERT Z        =   %1.4f      FOLLOW ROOT  =   %6d\n",
-           Parameters_->perturbation_parameter, Parameters_->root);
-   outfile->Printf( "   NUM THREADS   =   %6d\n",
-           Parameters_->nthreads);
-   outfile->Printf( "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
-           Parameters_->filter_guess ?  "yes":"no",
-           Parameters_->sf_restrict ? "yes":"no");
-   if (Parameters_->cc && Parameters_->diis) {
-     outfile->Printf( "   DIIS START    =   %6d      DIIS FREQ    =   %6d\n",
-             Parameters_->diis_start, Parameters_->diis_freq);
-     outfile->Printf( "   DIIS MIN VECS =   %6d      DIIS MAX VECS=   %6d\n",
-             Parameters_->diis_min_vecs, Parameters_->diis_max_vecs);
-   }
-   outfile->Printf( "   OPDM          =   %6s      TRANS DENSITY=   %6s\n",
-           Parameters_->opdm ?  "yes":"no",
-           Parameters_->transdens ? "yes":"no");
-   outfile->Printf( "\n   FILES         = %3d %2d %2d %2d\n",
-      Parameters_->hd_filenum, Parameters_->c_filenum,
-      Parameters_->s_filenum, Parameters_->d_filenum);
+    if (Parameters_->mpn) {
+        outfile->Printf("MPN options:\n");
+        outfile->Printf("    MPN            =   %6s      MPN SCHMIDT   =   %6s\n",
+                        Parameters_->mpn ? "YES" : "NO",
+                        Parameters_->mpn_schmidt ? "YES" : "NO");
+        outfile->Printf("    ZAPTN          =   %6s      MPN WIGNER    =   %6s\n",
+                        Parameters_->zaptn ? "YES" : "NO",
+                        Parameters_->wigner ? "YES" : "NO");
+        outfile->Printf("    PERT Z         =   %1.4f\n",
+                        Parameters_->perturbation_parameter);
+    }
 
-   outfile->Printf( "\n   EX ALLOW      = ");
-   for (i=0;i<Parameters_->ex_lvl;i++) {
-     outfile->Printf( "%2d ", Parameters_->ex_allow[i]);
-   }
+    if (Parameters_->filter_guess || Parameters_->sf_restrict) {
+        outfile->Printf("    FILTER GUESS   =   %6s      SF RESTRICT   =   %6s\n",
+                        Parameters_->filter_guess ? "YES" : "NO",
+                        Parameters_->sf_restrict ? "YES" : "NO");
+    }
+    if (Parameters_->cc && Parameters_->diis) {
+        outfile->Printf("CC options:\n");
+        outfile->Printf("    DIIS START     =   %6d      DIIS FREQ     =   %6d\n",
+                        Parameters_->diis_start, Parameters_->diis_freq);
+        outfile->Printf("    DIIS MIN VECS  =   %6d      DIIS MAX VECS=   %6d\n",
+                        Parameters_->diis_min_vecs, Parameters_->diis_max_vecs);
+    }
+    if (Parameters_->restart){
+      outfile->Printf("    RESTART        =   %6s\n",
+                      Parameters_->restart ? "YES" : "NO");
+    }
+    outfile->Printf("    MAX NUM VECS   =   %6d   ", Parameters_->maxnvect);
+    if (Parameters_->ref_sym == -1){
+        outfile->Printf("   REF SYM       =   %6s\n", "AUTO");
+    } else {
+        outfile->Printf("   REF SYM       =   %6d\n", Parameters_->ref_sym);
+    }
+    outfile->Printf("    IOPEN        =   %6s\n", CalcInfo_->iopen ? "YES" : "NO");
 
-   outfile->Printf( "\n   STATE AVERAGE = ");
-   for (i=0; i<Parameters_->average_num; i++) {
-     if (i%5==0 && i!=0) outfile->Printf( "\n");
-     outfile->Printf( "%2d(%4.2lf) ",Parameters_->average_states[i]+1,
-       Parameters_->average_weights[i]);
-   }
+    // LSE
+    if (Parameters_->lse) {
+        outfile->Printf("    LSE            =   %6s      LSE ITER      =   %6d\n",
+                        Parameters_->lse ? "YES" : "NO", Parameters_->lse_iter);
+    }
+    // outfile->Printf( "   OPDM           =   %6s      TRANS DENSITY=   %6s\n",
+    //         Parameters_->opdm ?  "YES":"NO",
+    //         Parameters_->transdens ? "YES":"NO");
+    // outfile->Printf( "\n   FILES          = %3d %2d %2d %2d\n",
+    //    Parameters_->hd_filenum, Parameters_->c_filenum,
+    //    Parameters_->s_filenum, Parameters_->d_filenum);
 
-   if (Parameters_->follow_vec_num > 0) {
-     outfile->Printf("\nDensity matrices will follow vector like:\n");
-     for (i=0; i<Parameters_->follow_vec_num; i++)
-       outfile->Printf( "(%d %d) %12.6lf\n", Parameters_->follow_vec_Ia[i],
-         Parameters_->follow_vec_Ib[i], Parameters_->follow_vec_coef[i]);
-   }
+    outfile->Printf("\n    EX ALLOW       = ");
+    for (i  = 0; i < Parameters_->ex_lvl; i++) {
+        outfile->Printf("%2d ", Parameters_->ex_allow[i]);
+    }
 
-   outfile->Printf( "\n\n");
+    outfile->Printf("\n    STATE AVERAGE  = ");
+    for (i  = 0; i < Parameters_->average_num; i++) {
+        if (i % 5 == 0 && i != 0) outfile->Printf("\n");
+        outfile->Printf("%2d(%4.2lf) ", Parameters_->average_states[i] + 1,
+                        Parameters_->average_weights[i]);
+    }
 
+    if (Parameters_->follow_vec_num > 0) {
+        outfile->Printf("\nDensity matrices will follow vector like:\n");
+        for (i  = 0; i < Parameters_->follow_vec_num; i++)
+            outfile->Printf("(%d %d) %12.6lf\n", Parameters_->follow_vec_Ia[i],
+                            Parameters_->follow_vec_Ib[i],
+                            Parameters_->follow_vec_coef[i]);
+    }
+
+    outfile->Printf("\n\n");
 }
-
 
 /*
 ** set_ras_parms(): Set the RAS parameters or their conventional equivalents
 **   (i.e. fermi level, etc).
 **
 */
-void CIWavefunction::set_ras_parameters(void)
-{
-   int i,j,cnt;
-   int errcod;
-   int tot_expl_el,nras2alp,nras2bet,betsocc;
-   int *ras1, *ras2, *ras3;
-   int *orbsym;
+void CIWavefunction::set_ras_parameters(void) {
+    int i, j, cnt;
+    int errcod;
+    int tot_expl_el, nras2alp, nras2bet, betsocc;
+    int *ras1, *ras2, *ras3;
+    int *orbsym;
 
-   /* If the user asked for FCI=true, then override the other keywords
-      if necessary to ensure that it's really a FCI
-    */
-   if (Parameters_->fci == 1 &&
-       (CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl) > Parameters_->ex_lvl)
-   {
-     Parameters_->val_ex_lvl = 0;
-     Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-     Parameters_->ex_allow.clear();
-     Parameters_->ex_allow.resize(Parameters_->ex_lvl);
-     for (i=0; i<Parameters_->ex_lvl; i++) Parameters_->ex_allow[i] = 1;
+    /* If the user asked for FCI=true, then override the other keywords
+       if necessary to ensure that it's really a FCI
+     */
+    if (Parameters_->fci == 1 &&
+        (CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl) >
+            Parameters_->ex_lvl) {
+        Parameters_->val_ex_lvl = 0;
+        Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
+        Parameters_->ex_allow.clear();
+        Parameters_->ex_allow.resize(Parameters_->ex_lvl);
+        for (i = 0; i < Parameters_->ex_lvl; i++) Parameters_->ex_allow[i] = 1;
 
-     if (Parameters_->print_lvl>2) {
-       outfile->Printf( "Note: Calculation requested is a full CI.\n");
-       outfile->Printf(
-               "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
-               Parameters_->ex_lvl);
-     }
+        if (print_ > 2) {
+            outfile->Printf("Note: Calculation requested is a full CI.\n");
+            outfile->Printf(
+                "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
+                Parameters_->ex_lvl);
+        }
 
-   } /* end FCI override */
+    } /* end FCI override */
 
-   /* reset ex_lvl if incompatible with number of electrons */
-   if (Parameters_->cc && (Parameters_->cc_ex_lvl >
-     CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl)) {
-     Parameters_->cc_ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-   }
-   if (Parameters_->ex_lvl > CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl) {
-     Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-   }
+    /* reset ex_lvl if incompatible with number of electrons */
+    if (Parameters_->cc &&
+        (Parameters_->cc_ex_lvl >
+         CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl)) {
+        Parameters_->cc_ex_lvl =
+            CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
+    }
+    if (Parameters_->ex_lvl >
+        CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl) {
+        Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
+    }
 
-   for (i=0,j=0; i<CalcInfo_->nirreps; i++) j += CalcInfo_->ras_opi[0][i];
-   Parameters_->a_ras1_lvl = Parameters_->b_ras1_lvl = Parameters_->ras1_lvl = j-1;
+    for (i = 0, j = 0; i < CalcInfo_->nirreps; i++)
+        j += CalcInfo_->ras_opi[0][i];
+    Parameters_->a_ras1_lvl = Parameters_->b_ras1_lvl = Parameters_->ras1_lvl =
+        j - 1;
 
-   /* figure out how many electrons are in RAS II */
-   /* alpha electrons */
-   for (i=0,nras2alp=0,betsocc=0; i<CalcInfo_->nirreps; i++) {
-      j = CalcInfo_->docc[i] - CalcInfo_->dropped_docc[i] - CalcInfo_->ras_opi[0][i];
-      if (Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN) {
-         j += CalcInfo_->socc[i];
-         }
-      else if (Parameters_->opentype == PARM_OPENTYPE_SINGLET) {
-         if (betsocc + CalcInfo_->socc[i] <= CalcInfo_->spab)
-            betsocc += CalcInfo_->socc[i];
-         else {
-            j += CalcInfo_->socc[i] - (CalcInfo_->spab - betsocc);
-            betsocc = CalcInfo_->spab;
-            }
-         }
-      if (j > 0) nras2alp += j;
-      if (j > CalcInfo_->ras_opi[1][i]) {
-         outfile->Printf( "(set_ras_parms): detecting %d electrons ",
-            j - CalcInfo_->ras_opi[1][i]);
-         outfile->Printf( "in RAS III for irrep %d.\n", i);
-         outfile->Printf( "Some parts of DETCI assume all elec in I and II\n");
-         }
-      }
-   /* beta electrons */
-   for (i=0,nras2bet=0,betsocc=0; i<CalcInfo_->nirreps; i++) {
-      j = CalcInfo_->docc[i] - CalcInfo_->dropped_docc[i] - CalcInfo_->ras_opi[0][i];
-      if (Parameters_->opentype == PARM_OPENTYPE_SINGLET && CalcInfo_->socc[i]) {
-         if (betsocc + CalcInfo_->socc[i] <= CalcInfo_->spab)
+    /* figure out how many electrons are in RAS II */
+    /* alpha electrons */
+    for (i = 0, nras2alp = 0, betsocc = 0; i < CalcInfo_->nirreps; i++) {
+        j = CalcInfo_->docc[i] - CalcInfo_->dropped_docc[i] -
+            CalcInfo_->ras_opi[0][i];
+        if (Parameters_->opentype == PARM_OPENTYPE_HIGHSPIN) {
             j += CalcInfo_->socc[i];
-         else {
-            j += CalcInfo_->spab - betsocc;
-            betsocc = CalcInfo_->spab;
+        } else if (Parameters_->opentype == PARM_OPENTYPE_SINGLET) {
+            if (betsocc + CalcInfo_->socc[i] <= CalcInfo_->spab)
+                betsocc += CalcInfo_->socc[i];
+            else {
+                j += CalcInfo_->socc[i] - (CalcInfo_->spab - betsocc);
+                betsocc = CalcInfo_->spab;
             }
-         }
-      if (j > 0) nras2bet += j;
-      if (j > CalcInfo_->ras_opi[1][i]) {
-         outfile->Printf( "(set_ras_parms): detecting %d electrons ",
-            j - CalcInfo_->ras_opi[1][i]);
-         outfile->Printf( "in RAS III for irrep %d.\n", i);
-         outfile->Printf( "Some parts of DETCI assume all elec in I and II\n");
-         }
-      }
-
-   Parameters_->a_ras1_max = (CalcInfo_->num_alp_expl >
-         Parameters_->a_ras1_lvl + 1) ? Parameters_->a_ras1_lvl + 1 :
-         (CalcInfo_->num_alp_expl) ;
-   // CDS 4/15
-   // if (Parameters_->fzc) Parameters_->a_ras1_max += CalcInfo_->num_fzc_orbs;
-
-   Parameters_->b_ras1_max = (CalcInfo_->num_bet_expl >
-         Parameters_->b_ras1_lvl + 1) ? Parameters_->b_ras1_lvl + 1:
-         (CalcInfo_->num_bet_expl) ;
-   // CDS 4/15
-   // if (Parameters_->fzc) Parameters_->b_ras1_max += CalcInfo_->num_fzc_orbs;
-
-   for (i=0,j=0; i<CalcInfo_->nirreps; i++) j += CalcInfo_->ras_opi[1][i];
-   Parameters_->ras3_lvl = Parameters_->ras1_lvl + j + 1;
-
-   for (i=0,j=0; i<CalcInfo_->nirreps; i++) j += CalcInfo_->ras_opi[2][i];
-   Parameters_->ras4_lvl = Parameters_->ras3_lvl + j;
-
-
-   /* check Parameters to make sure everything consistent */
-
-   if (Parameters_->cc) {
-     if (Parameters_->cc_a_val_ex_lvl == -1)
-       Parameters_->cc_a_val_ex_lvl = Parameters_->cc_val_ex_lvl;
-     if (Parameters_->cc_b_val_ex_lvl == -1)
-       Parameters_->cc_b_val_ex_lvl = Parameters_->cc_val_ex_lvl;
-     if (Parameters_->cc_a_val_ex_lvl > Parameters_->ras3_lvl -
-         Parameters_->ras1_lvl - 1)
-       Parameters_->cc_a_val_ex_lvl = Parameters_->ras3_lvl-Parameters_->ras1_lvl-1;
-     if (Parameters_->cc_b_val_ex_lvl > Parameters_->ras3_lvl -
-         Parameters_->ras1_lvl - 1)
-       Parameters_->cc_b_val_ex_lvl = Parameters_->ras3_lvl-Parameters_->ras1_lvl-1;
-     if (Parameters_->cc_val_ex_lvl > Parameters_->cc_a_val_ex_lvl +
-         Parameters_->cc_b_val_ex_lvl)
-       Parameters_->cc_val_ex_lvl = Parameters_->cc_a_val_ex_lvl +
-         Parameters_->cc_b_val_ex_lvl;
-   }
-
-   /* deduce Parameters_->cc_a_ras3_max and Parameters_->cc_b_ras3_max if needed */
-   if (Parameters_->cc & (Parameters_->cc_a_ras3_max == -1 ||
-       Parameters_->cc_b_ras3_max == -1)) {
-      if (Parameters_->cc_ras3_max != -1) { /* have parsed cc_ras3_max */
-         Parameters_->cc_a_ras3_max =
-            (Parameters_->cc_ras3_max <= CalcInfo_->num_alp_expl)
-            ? Parameters_->cc_ras3_max : CalcInfo_->num_alp_expl;
-         Parameters_->cc_b_ras3_max =
-            (Parameters_->cc_ras3_max <= CalcInfo_->num_bet_expl)
-            ? Parameters_->cc_ras3_max : CalcInfo_->num_bet_expl;
-         }
-      else {
-         Parameters_->cc_a_ras3_max =
-            (Parameters_->cc_ex_lvl <= CalcInfo_->num_alp_expl)
-            ? Parameters_->cc_ex_lvl : CalcInfo_->num_alp_expl;
-         Parameters_->cc_b_ras3_max =
-            (Parameters_->cc_ex_lvl <= CalcInfo_->num_bet_expl)
-            ? Parameters_->cc_ex_lvl : CalcInfo_->num_bet_expl;
-         }
-      }
-
-   if (Parameters_->cc) {
-      Parameters_->a_ras3_max =
-         (Parameters_->cc_a_ras3_max+2<=CalcInfo_->num_alp_expl)
-         ? Parameters_->cc_a_ras3_max+2 : CalcInfo_->num_alp_expl;
-      Parameters_->b_ras3_max =
-         (Parameters_->cc_b_ras3_max+2<=CalcInfo_->num_bet_expl)
-         ? Parameters_->cc_b_ras3_max+2 : CalcInfo_->num_bet_expl;
-      }
-
-   if (Parameters_->a_ras3_max == -1 || Parameters_->b_ras3_max == -1) {
-      if (Parameters_->ras3_max != -1) { /* have parsed ras3_max */
-         Parameters_->a_ras3_max = (Parameters_->ras3_max <= CalcInfo_->num_alp_expl)
-            ? Parameters_->ras3_max : CalcInfo_->num_alp_expl;
-         Parameters_->b_ras3_max = (Parameters_->ras3_max <= CalcInfo_->num_bet_expl)
-            ? Parameters_->ras3_max : CalcInfo_->num_bet_expl;
-         }
-      else {
-         Parameters_->a_ras3_max = (Parameters_->ex_lvl <= CalcInfo_->num_alp_expl)
-            ? Parameters_->ex_lvl : CalcInfo_->num_alp_expl;
-         Parameters_->b_ras3_max = (Parameters_->ex_lvl <= CalcInfo_->num_bet_expl)
-            ? Parameters_->ex_lvl : CalcInfo_->num_bet_expl;
-         }
-      }
-
-   if (Parameters_->cc) {
-     if (Parameters_->cc_ras4_max != -1) { /* have parsed */
-        Parameters_->cc_a_ras4_max =
-          (Parameters_->cc_ras4_max <= CalcInfo_->num_alp_expl)
-          ? Parameters_->cc_ras4_max : CalcInfo_->num_alp_expl;
-        Parameters_->cc_b_ras4_max =
-          (Parameters_->cc_ras4_max <= CalcInfo_->num_bet_expl)
-          ? Parameters_->cc_ras4_max : CalcInfo_->num_bet_expl;
         }
-     else {
-        Parameters_->cc_a_ras4_max = Parameters_->cc_a_ras3_max;
-        Parameters_->cc_b_ras4_max = Parameters_->cc_b_ras3_max;
-     }
-     Parameters_->a_ras4_max =
-       (Parameters_->cc_a_ras4_max+2 <= CalcInfo_->num_alp_expl)
-       ? Parameters_->cc_a_ras4_max+2 : CalcInfo_->num_alp_expl;
-     Parameters_->b_ras4_max =
-       (Parameters_->cc_b_ras4_max+2 <= CalcInfo_->num_bet_expl)
-       ? Parameters_->cc_b_ras4_max+2 : CalcInfo_->num_bet_expl;
-   }
-   else {
-     if (Parameters_->ras4_max != -1) { /* have parsed */
-        Parameters_->a_ras4_max = (Parameters_->ras4_max <= CalcInfo_->num_alp_expl)
-          ? Parameters_->ras4_max : CalcInfo_->num_alp_expl;
-        Parameters_->b_ras4_max = (Parameters_->ras4_max <= CalcInfo_->num_bet_expl)
-          ? Parameters_->ras4_max : CalcInfo_->num_bet_expl;
+        if (j > 0) nras2alp += j;
+        if (j > CalcInfo_->ras_opi[1][i]) {
+            outfile->Printf("(set_ras_parms): detecting %d electrons ",
+                            j - CalcInfo_->ras_opi[1][i]);
+            outfile->Printf("in RAS III for irrep %d.\n", i);
+            outfile->Printf(
+                "Some parts of DETCI assume all elec in I and II\n");
         }
-     else {
-        Parameters_->a_ras4_max = Parameters_->a_ras3_max;
-        Parameters_->b_ras4_max = Parameters_->b_ras3_max;
-     }
-   }
-
-
-   if (Parameters_->cc) {
-     if (Parameters_->cc_ras34_max != -1) { /* have parsed */
-       Parameters_->cc_a_ras34_max = Parameters_->cc_ras34_max;
-       Parameters_->cc_b_ras34_max = Parameters_->cc_ras34_max;
-     }
-     else {
-       Parameters_->cc_a_ras34_max = Parameters_->cc_a_ras3_max
-                                 + Parameters_->cc_a_ras4_max;
-       Parameters_->cc_b_ras34_max = Parameters_->cc_b_ras3_max
-                                 + Parameters_->cc_b_ras4_max;
-     }
-     if (Parameters_->ras34_max != -1) { /* have parsed */
-        Parameters_->a_ras34_max = Parameters_->ras34_max;
-        Parameters_->b_ras34_max = Parameters_->ras34_max;
+    }
+    /* beta electrons */
+    for (i = 0, nras2bet = 0, betsocc = 0; i < CalcInfo_->nirreps; i++) {
+        j = CalcInfo_->docc[i] - CalcInfo_->dropped_docc[i] -
+            CalcInfo_->ras_opi[0][i];
+        if (Parameters_->opentype == PARM_OPENTYPE_SINGLET &&
+            CalcInfo_->socc[i]) {
+            if (betsocc + CalcInfo_->socc[i] <= CalcInfo_->spab)
+                j += CalcInfo_->socc[i];
+            else {
+                j += CalcInfo_->spab - betsocc;
+                betsocc = CalcInfo_->spab;
+            }
         }
-     else {
-        Parameters_->a_ras34_max = Parameters_->cc_a_ras34_max+2;
-        if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
-          Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
-        Parameters_->b_ras34_max = Parameters_->cc_b_ras34_max+2;
-        if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
-          Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
-        Parameters_->ras34_max = Parameters_->cc_ras34_max+2;
-        if (Parameters_->ras34_max > Parameters_->a_ras34_max +
-            Parameters_->b_ras34_max)
-          Parameters_->ras34_max = Parameters_->a_ras34_max +
-            Parameters_->b_ras34_max;
+        if (j > 0) nras2bet += j;
+        if (j > CalcInfo_->ras_opi[1][i]) {
+            outfile->Printf("(set_ras_parms): detecting %d electrons ",
+                            j - CalcInfo_->ras_opi[1][i]);
+            outfile->Printf("in RAS III for irrep %d.\n", i);
+            outfile->Printf(
+                "Some parts of DETCI assume all elec in I and II\n");
         }
-   }
-   else { /* non-CC */
-     if (Parameters_->ras34_max != -1) { /* have parsed */
-       Parameters_->a_ras34_max = Parameters_->ras34_max;
-       Parameters_->b_ras34_max = Parameters_->ras34_max;
-     }
-     else {
-       Parameters_->a_ras34_max = Parameters_->a_ras3_max;
-       Parameters_->b_ras34_max = Parameters_->b_ras3_max;
-     }
-   }
+    }
 
-   i = Parameters_->ras4_lvl - Parameters_->ras3_lvl;
-   if (Parameters_->a_ras3_max > i) Parameters_->a_ras3_max = i;
-   if (Parameters_->b_ras3_max > i) Parameters_->b_ras3_max = i;
-   if (Parameters_->cc) {
-     if (Parameters_->cc_a_ras3_max > i) Parameters_->cc_a_ras3_max = i;
-     if (Parameters_->cc_b_ras3_max > i) Parameters_->cc_b_ras3_max = i;
-   }
+    Parameters_->a_ras1_max =
+        (CalcInfo_->num_alp_expl > Parameters_->a_ras1_lvl + 1)
+            ? Parameters_->a_ras1_lvl + 1
+            : (CalcInfo_->num_alp_expl);
+    // CDS 4/15
+    // if (Parameters_->fzc) Parameters_->a_ras1_max += CalcInfo_->num_fzc_orbs;
 
-   i = CalcInfo_->num_ci_orbs - Parameters_->ras4_lvl;
-   if (Parameters_->a_ras4_max > i) Parameters_->a_ras4_max = i;
-   if (Parameters_->b_ras4_max > i) Parameters_->b_ras4_max = i;
-   if (Parameters_->cc) {
-     if (Parameters_->cc_a_ras4_max > i) Parameters_->cc_a_ras4_max = i;
-     if (Parameters_->cc_b_ras4_max > i) Parameters_->cc_b_ras4_max = i;
-   }
+    Parameters_->b_ras1_max =
+        (CalcInfo_->num_bet_expl > Parameters_->b_ras1_lvl + 1)
+            ? Parameters_->b_ras1_lvl + 1
+            : (CalcInfo_->num_bet_expl);
+    // CDS 4/15
+    // if (Parameters_->fzc) Parameters_->b_ras1_max += CalcInfo_->num_fzc_orbs;
 
-   i = CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl;
-   if (Parameters_->a_ras34_max > i) Parameters_->a_ras34_max = i;
-   if (Parameters_->b_ras34_max > i) Parameters_->b_ras34_max = i;
-   if (Parameters_->cc) {
-     if (Parameters_->cc_a_ras34_max > i) Parameters_->cc_a_ras34_max = i;
-     if (Parameters_->cc_b_ras34_max > i) Parameters_->cc_b_ras34_max = i;
-   }
+    for (i = 0, j = 0; i < CalcInfo_->nirreps; i++)
+        j += CalcInfo_->ras_opi[1][i];
+    Parameters_->ras3_lvl = Parameters_->ras1_lvl + j + 1;
 
-   i = (CalcInfo_->num_alp_expl <= Parameters_->a_ras1_lvl + 1) ?
-      CalcInfo_->num_alp_expl : Parameters_->a_ras1_lvl + 1;
-   Parameters_->a_ras1_min = i - Parameters_->ex_lvl -
-      Parameters_->val_ex_lvl;
-   if (Parameters_->a_ras1_min < 0) Parameters_->a_ras1_min = 0;
-   // CDS 4/15 no longer include dropped core in ras1_min
-   // Parameters_->a_ras1_min += CalcInfo_->num_fzc_orbs;
-   Parameters_->a_ras1_min += CalcInfo_->num_expl_cor_orbs;
+    for (i = 0, j = 0; i < CalcInfo_->nirreps; i++)
+        j += CalcInfo_->ras_opi[2][i];
+    Parameters_->ras4_lvl = Parameters_->ras3_lvl + j;
 
-   i = (CalcInfo_->num_bet_expl <= Parameters_->b_ras1_lvl + 1) ?
-      CalcInfo_->num_bet_expl : Parameters_->b_ras1_lvl + 1;
-   Parameters_->b_ras1_min = i - Parameters_->ex_lvl -
-      Parameters_->val_ex_lvl;
-   if (Parameters_->b_ras1_min < 0) Parameters_->b_ras1_min = 0;
-   // CDS 4/15 no longer include dropped core in ras1_min
-   // Parameters_->b_ras1_min += CalcInfo_->num_fzc_orbs;
-   Parameters_->b_ras1_min += CalcInfo_->num_expl_cor_orbs;
+    /* check Parameters to make sure everything consistent */
 
-   tot_expl_el = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-   if (Parameters_->cc) {
-     if (Parameters_->cc_val_ex_lvl != 0) i = Parameters_->cc_val_ex_lvl;
-     else i = Parameters_->cc_ex_lvl;
-     if (Parameters_->cc_ras3_max == -1) {
-       Parameters_->cc_ras3_max = (i <= tot_expl_el) ?  i : tot_expl_el ;
-     }
-     else {
-       if (Parameters_->cc_ras3_max > tot_expl_el)
-         Parameters_->cc_ras3_max = tot_expl_el;
-     }
-     if (Parameters_->ras3_max == -1)
-       Parameters_->ras3_max = Parameters_->cc_ras3_max + 2;
-   }
-   if (Parameters_->ras3_max == -1) {
-      Parameters_->ras3_max = (Parameters_->ex_lvl <= tot_expl_el) ?
-         Parameters_->ex_lvl : tot_expl_el ;
-      }
-   else {
-      if (Parameters_->ras3_max > tot_expl_el)
-         Parameters_->ras3_max = tot_expl_el;
-      }
+    if (Parameters_->cc) {
+        if (Parameters_->cc_a_val_ex_lvl == -1)
+            Parameters_->cc_a_val_ex_lvl = Parameters_->cc_val_ex_lvl;
+        if (Parameters_->cc_b_val_ex_lvl == -1)
+            Parameters_->cc_b_val_ex_lvl = Parameters_->cc_val_ex_lvl;
+        if (Parameters_->cc_a_val_ex_lvl >
+            Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1)
+            Parameters_->cc_a_val_ex_lvl =
+                Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1;
+        if (Parameters_->cc_b_val_ex_lvl >
+            Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1)
+            Parameters_->cc_b_val_ex_lvl =
+                Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1;
+        if (Parameters_->cc_val_ex_lvl >
+            Parameters_->cc_a_val_ex_lvl + Parameters_->cc_b_val_ex_lvl)
+            Parameters_->cc_val_ex_lvl =
+                Parameters_->cc_a_val_ex_lvl + Parameters_->cc_b_val_ex_lvl;
+    }
 
-   i = 2 * (Parameters_->ras4_lvl - Parameters_->ras3_lvl);
-   if (i < Parameters_->ras3_max) Parameters_->ras3_max = i;
-   if (Parameters_->cc) {
-     if (i < Parameters_->cc_ras3_max) Parameters_->cc_ras3_max = i;
-   }
+    /* deduce Parameters_->cc_a_ras3_max and Parameters_->cc_b_ras3_max if
+     * needed */
+    if (Parameters_->cc & (Parameters_->cc_a_ras3_max == -1 ||
+                           Parameters_->cc_b_ras3_max == -1)) {
+        if (Parameters_->cc_ras3_max != -1) { /* have parsed cc_ras3_max */
+            Parameters_->cc_a_ras3_max =
+                (Parameters_->cc_ras3_max <= CalcInfo_->num_alp_expl)
+                    ? Parameters_->cc_ras3_max
+                    : CalcInfo_->num_alp_expl;
+            Parameters_->cc_b_ras3_max =
+                (Parameters_->cc_ras3_max <= CalcInfo_->num_bet_expl)
+                    ? Parameters_->cc_ras3_max
+                    : CalcInfo_->num_bet_expl;
+        } else {
+            Parameters_->cc_a_ras3_max =
+                (Parameters_->cc_ex_lvl <= CalcInfo_->num_alp_expl)
+                    ? Parameters_->cc_ex_lvl
+                    : CalcInfo_->num_alp_expl;
+            Parameters_->cc_b_ras3_max =
+                (Parameters_->cc_ex_lvl <= CalcInfo_->num_bet_expl)
+                    ? Parameters_->cc_ex_lvl
+                    : CalcInfo_->num_bet_expl;
+        }
+    }
 
+    if (Parameters_->cc) {
+        Parameters_->a_ras3_max =
+            (Parameters_->cc_a_ras3_max + 2 <= CalcInfo_->num_alp_expl)
+                ? Parameters_->cc_a_ras3_max + 2
+                : CalcInfo_->num_alp_expl;
+        Parameters_->b_ras3_max =
+            (Parameters_->cc_b_ras3_max + 2 <= CalcInfo_->num_bet_expl)
+                ? Parameters_->cc_b_ras3_max + 2
+                : CalcInfo_->num_bet_expl;
+    }
 
-   i = (tot_expl_el < 2*(Parameters_->ras1_lvl + 1)) ? tot_expl_el :
-      2*(Parameters_->ras1_lvl + 1) ;
+    if (Parameters_->a_ras3_max == -1 || Parameters_->b_ras3_max == -1) {
+        if (Parameters_->ras3_max != -1) { /* have parsed ras3_max */
+            Parameters_->a_ras3_max =
+                (Parameters_->ras3_max <= CalcInfo_->num_alp_expl)
+                    ? Parameters_->ras3_max
+                    : CalcInfo_->num_alp_expl;
+            Parameters_->b_ras3_max =
+                (Parameters_->ras3_max <= CalcInfo_->num_bet_expl)
+                    ? Parameters_->ras3_max
+                    : CalcInfo_->num_bet_expl;
+        } else {
+            Parameters_->a_ras3_max =
+                (Parameters_->ex_lvl <= CalcInfo_->num_alp_expl)
+                    ? Parameters_->ex_lvl
+                    : CalcInfo_->num_alp_expl;
+            Parameters_->b_ras3_max =
+                (Parameters_->ex_lvl <= CalcInfo_->num_bet_expl)
+                    ? Parameters_->ex_lvl
+                    : CalcInfo_->num_bet_expl;
+        }
+    }
 
-   // CDS 4/15 no longer include dropped core in ras1_min
-   //Parameters_->ras1_min = i - Parameters_->ex_lvl -
-   //   Parameters_->val_ex_lvl + 2 * CalcInfo_->num_fzc_orbs;
-   Parameters_->ras1_min = i - Parameters_->ex_lvl - Parameters_->val_ex_lvl;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_ras4_max != -1) { /* have parsed */
+            Parameters_->cc_a_ras4_max =
+                (Parameters_->cc_ras4_max <= CalcInfo_->num_alp_expl)
+                    ? Parameters_->cc_ras4_max
+                    : CalcInfo_->num_alp_expl;
+            Parameters_->cc_b_ras4_max =
+                (Parameters_->cc_ras4_max <= CalcInfo_->num_bet_expl)
+                    ? Parameters_->cc_ras4_max
+                    : CalcInfo_->num_bet_expl;
+        } else {
+            Parameters_->cc_a_ras4_max = Parameters_->cc_a_ras3_max;
+            Parameters_->cc_b_ras4_max = Parameters_->cc_b_ras3_max;
+        }
+        Parameters_->a_ras4_max =
+            (Parameters_->cc_a_ras4_max + 2 <= CalcInfo_->num_alp_expl)
+                ? Parameters_->cc_a_ras4_max + 2
+                : CalcInfo_->num_alp_expl;
+        Parameters_->b_ras4_max =
+            (Parameters_->cc_b_ras4_max + 2 <= CalcInfo_->num_bet_expl)
+                ? Parameters_->cc_b_ras4_max + 2
+                : CalcInfo_->num_bet_expl;
+    } else {
+        if (Parameters_->ras4_max != -1) { /* have parsed */
+            Parameters_->a_ras4_max =
+                (Parameters_->ras4_max <= CalcInfo_->num_alp_expl)
+                    ? Parameters_->ras4_max
+                    : CalcInfo_->num_alp_expl;
+            Parameters_->b_ras4_max =
+                (Parameters_->ras4_max <= CalcInfo_->num_bet_expl)
+                    ? Parameters_->ras4_max
+                    : CalcInfo_->num_bet_expl;
+        } else {
+            Parameters_->a_ras4_max = Parameters_->a_ras3_max;
+            Parameters_->b_ras4_max = Parameters_->b_ras3_max;
+        }
+    }
 
-   if (Parameters_->a_ras1_min + Parameters_->b_ras1_min > Parameters_->ras1_min)
-      Parameters_->ras1_min = Parameters_->a_ras1_min + Parameters_->b_ras1_min;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_ras34_max != -1) { /* have parsed */
+            Parameters_->cc_a_ras34_max = Parameters_->cc_ras34_max;
+            Parameters_->cc_b_ras34_max = Parameters_->cc_ras34_max;
+        } else {
+            Parameters_->cc_a_ras34_max =
+                Parameters_->cc_a_ras3_max + Parameters_->cc_a_ras4_max;
+            Parameters_->cc_b_ras34_max =
+                Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max;
+        }
+        if (Parameters_->ras34_max != -1) { /* have parsed */
+            Parameters_->a_ras34_max = Parameters_->ras34_max;
+            Parameters_->b_ras34_max = Parameters_->ras34_max;
+        } else {
+            Parameters_->a_ras34_max = Parameters_->cc_a_ras34_max + 2;
+            if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
+                Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
+            Parameters_->b_ras34_max = Parameters_->cc_b_ras34_max + 2;
+            if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
+                Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
+            Parameters_->ras34_max = Parameters_->cc_ras34_max + 2;
+            if (Parameters_->ras34_max >
+                Parameters_->a_ras34_max + Parameters_->b_ras34_max)
+                Parameters_->ras34_max =
+                    Parameters_->a_ras34_max + Parameters_->b_ras34_max;
+        }
+    } else {                                /* non-CC */
+        if (Parameters_->ras34_max != -1) { /* have parsed */
+            Parameters_->a_ras34_max = Parameters_->ras34_max;
+            Parameters_->b_ras34_max = Parameters_->ras34_max;
+        } else {
+            Parameters_->a_ras34_max = Parameters_->a_ras3_max;
+            Parameters_->b_ras34_max = Parameters_->b_ras3_max;
+        }
+    }
 
-   if (Parameters_->cc && Parameters_->cc_ras4_max == -1) {
-     Parameters_->cc_ras4_max = (Parameters_->cc_ex_lvl <= tot_expl_el) ?
-       Parameters_->cc_ex_lvl : tot_expl_el;
-   }
+    i = Parameters_->ras4_lvl - Parameters_->ras3_lvl;
+    if (Parameters_->a_ras3_max > i) Parameters_->a_ras3_max = i;
+    if (Parameters_->b_ras3_max > i) Parameters_->b_ras3_max = i;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_a_ras3_max > i) Parameters_->cc_a_ras3_max = i;
+        if (Parameters_->cc_b_ras3_max > i) Parameters_->cc_b_ras3_max = i;
+    }
 
-   if (Parameters_->ras4_max == -1) {
-     if (Parameters_->cc) {
-       Parameters_->ras4_max = (Parameters_->cc_ras4_max+2 <= tot_expl_el) ?
-         Parameters_->cc_ras4_max+2 : tot_expl_el;
-     }
-     else Parameters_->ras4_max = (Parameters_->ex_lvl <= tot_expl_el) ?
-       Parameters_->ex_lvl : tot_expl_el;
-   }
+    i = CalcInfo_->num_ci_orbs - Parameters_->ras4_lvl;
+    if (Parameters_->a_ras4_max > i) Parameters_->a_ras4_max = i;
+    if (Parameters_->b_ras4_max > i) Parameters_->b_ras4_max = i;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_a_ras4_max > i) Parameters_->cc_a_ras4_max = i;
+        if (Parameters_->cc_b_ras4_max > i) Parameters_->cc_b_ras4_max = i;
+    }
 
-   i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras4_lvl);
-   if (i < Parameters_->ras4_max) Parameters_->ras4_max = i;
-   if (Parameters_->cc) {
-     if (i < Parameters_->cc_ras4_max) Parameters_->cc_ras4_max = i;
-   }
+    i = CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl;
+    if (Parameters_->a_ras34_max > i) Parameters_->a_ras34_max = i;
+    if (Parameters_->b_ras34_max > i) Parameters_->b_ras34_max = i;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_a_ras34_max > i) Parameters_->cc_a_ras34_max = i;
+        if (Parameters_->cc_b_ras34_max > i) Parameters_->cc_b_ras34_max = i;
+    }
 
-   if (Parameters_->cc && Parameters_->cc_ras34_max == -1)
-     Parameters_->cc_ras34_max = Parameters_->cc_ras3_max + Parameters_->cc_ras4_max;
-   i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl);
-   if (Parameters_->cc) {
-     if (i < Parameters_->cc_ras34_max) Parameters_->cc_ras34_max = i;
-   }
+    i = (CalcInfo_->num_alp_expl <= Parameters_->a_ras1_lvl + 1)
+            ? CalcInfo_->num_alp_expl
+            : Parameters_->a_ras1_lvl + 1;
+    Parameters_->a_ras1_min = i - Parameters_->ex_lvl - Parameters_->val_ex_lvl;
+    if (Parameters_->a_ras1_min < 0) Parameters_->a_ras1_min = 0;
+    // CDS 4/15 no longer include dropped core in ras1_min
+    // Parameters_->a_ras1_min += CalcInfo_->num_fzc_orbs;
+    Parameters_->a_ras1_min += CalcInfo_->num_expl_cor_orbs;
 
-   if (Parameters_->ras34_max == -1 && !Parameters_->cc)
-     Parameters_->ras34_max = Parameters_->ras3_max;
-   else
-     Parameters_->ras34_max = Parameters_->cc_ras34_max + 2;
+    i = (CalcInfo_->num_bet_expl <= Parameters_->b_ras1_lvl + 1)
+            ? CalcInfo_->num_bet_expl
+            : Parameters_->b_ras1_lvl + 1;
+    Parameters_->b_ras1_min = i - Parameters_->ex_lvl - Parameters_->val_ex_lvl;
+    if (Parameters_->b_ras1_min < 0) Parameters_->b_ras1_min = 0;
+    // CDS 4/15 no longer include dropped core in ras1_min
+    // Parameters_->b_ras1_min += CalcInfo_->num_fzc_orbs;
+    Parameters_->b_ras1_min += CalcInfo_->num_expl_cor_orbs;
 
-   i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl);
-   if (i < Parameters_->ras34_max) Parameters_->ras34_max = i;
-   if (Parameters_->ras34_max > tot_expl_el) Parameters_->ras34_max = tot_expl_el;
+    tot_expl_el = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_val_ex_lvl != 0)
+            i = Parameters_->cc_val_ex_lvl;
+        else
+            i = Parameters_->cc_ex_lvl;
+        if (Parameters_->cc_ras3_max == -1) {
+            Parameters_->cc_ras3_max = (i <= tot_expl_el) ? i : tot_expl_el;
+        } else {
+            if (Parameters_->cc_ras3_max > tot_expl_el)
+                Parameters_->cc_ras3_max = tot_expl_el;
+        }
+        if (Parameters_->ras3_max == -1)
+            Parameters_->ras3_max = Parameters_->cc_ras3_max + 2;
+    }
+    if (Parameters_->ras3_max == -1) {
+        Parameters_->ras3_max = (Parameters_->ex_lvl <= tot_expl_el)
+                                    ? Parameters_->ex_lvl
+                                    : tot_expl_el;
+    } else {
+        if (Parameters_->ras3_max > tot_expl_el)
+            Parameters_->ras3_max = tot_expl_el;
+    }
 
-   if (Parameters_->a_ras34_max > Parameters_->a_ras3_max + Parameters_->a_ras4_max)
-     Parameters_->a_ras34_max = Parameters_->a_ras3_max + Parameters_->a_ras4_max;
-   if (Parameters_->cc && (Parameters_->cc_a_ras34_max >
-     Parameters_->cc_a_ras3_max + Parameters_->cc_b_ras4_max))
-     Parameters_->cc_a_ras34_max = Parameters_->cc_a_ras3_max +
-     Parameters_->cc_a_ras4_max;
+    i = 2 * (Parameters_->ras4_lvl - Parameters_->ras3_lvl);
+    if (i < Parameters_->ras3_max) Parameters_->ras3_max = i;
+    if (Parameters_->cc) {
+        if (i < Parameters_->cc_ras3_max) Parameters_->cc_ras3_max = i;
+    }
 
-   if (Parameters_->b_ras34_max > Parameters_->b_ras3_max + Parameters_->b_ras4_max)
-     Parameters_->b_ras34_max = Parameters_->b_ras3_max + Parameters_->b_ras4_max;
-   if (Parameters_->cc && (Parameters_->cc_b_ras34_max >
-     Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max))
-     Parameters_->cc_b_ras34_max = Parameters_->cc_b_ras3_max +
-     Parameters_->cc_b_ras4_max;
+    i = (tot_expl_el < 2 * (Parameters_->ras1_lvl + 1))
+            ? tot_expl_el
+            : 2 * (Parameters_->ras1_lvl + 1);
 
-   /* now just re-check some basic things */
-   if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
-     Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
-   if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
-     Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
-   if (Parameters_->cc) {
-     if (Parameters_->cc_a_ras34_max > CalcInfo_->num_alp_expl)
-       Parameters_->cc_a_ras34_max = CalcInfo_->num_alp_expl;
-     if (Parameters_->cc_b_ras34_max > CalcInfo_->num_bet_expl)
-       Parameters_->cc_b_ras34_max = CalcInfo_->num_bet_expl;
-   }
+    // CDS 4/15 no longer include dropped core in ras1_min
+    // Parameters_->ras1_min = i - Parameters_->ex_lvl -
+    //   Parameters_->val_ex_lvl + 2 * CalcInfo_->num_fzc_orbs;
+    Parameters_->ras1_min = i - Parameters_->ex_lvl - Parameters_->val_ex_lvl;
 
-   if (Parameters_->ras34_max > Parameters_->a_ras34_max + Parameters_->b_ras34_max)
-     Parameters_->ras34_max = Parameters_->a_ras34_max + Parameters_->b_ras34_max;
+    if (Parameters_->a_ras1_min + Parameters_->b_ras1_min >
+        Parameters_->ras1_min)
+        Parameters_->ras1_min =
+            Parameters_->a_ras1_min + Parameters_->b_ras1_min;
 
+    if (Parameters_->cc && Parameters_->cc_ras4_max == -1) {
+        Parameters_->cc_ras4_max = (Parameters_->cc_ex_lvl <= tot_expl_el)
+                                       ? Parameters_->cc_ex_lvl
+                                       : tot_expl_el;
+    }
+
+    if (Parameters_->ras4_max == -1) {
+        if (Parameters_->cc) {
+            Parameters_->ras4_max =
+                (Parameters_->cc_ras4_max + 2 <= tot_expl_el)
+                    ? Parameters_->cc_ras4_max + 2
+                    : tot_expl_el;
+        } else
+            Parameters_->ras4_max = (Parameters_->ex_lvl <= tot_expl_el)
+                                        ? Parameters_->ex_lvl
+                                        : tot_expl_el;
+    }
+
+    i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras4_lvl);
+    if (i < Parameters_->ras4_max) Parameters_->ras4_max = i;
+    if (Parameters_->cc) {
+        if (i < Parameters_->cc_ras4_max) Parameters_->cc_ras4_max = i;
+    }
+
+    if (Parameters_->cc && Parameters_->cc_ras34_max == -1)
+        Parameters_->cc_ras34_max =
+            Parameters_->cc_ras3_max + Parameters_->cc_ras4_max;
+    i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl);
+    if (Parameters_->cc) {
+        if (i < Parameters_->cc_ras34_max) Parameters_->cc_ras34_max = i;
+    }
+
+    if (Parameters_->ras34_max == -1 && !Parameters_->cc)
+        Parameters_->ras34_max = Parameters_->ras3_max;
+    else
+        Parameters_->ras34_max = Parameters_->cc_ras34_max + 2;
+
+    i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl);
+    if (i < Parameters_->ras34_max) Parameters_->ras34_max = i;
+    if (Parameters_->ras34_max > tot_expl_el)
+        Parameters_->ras34_max = tot_expl_el;
+
+    if (Parameters_->a_ras34_max >
+        Parameters_->a_ras3_max + Parameters_->a_ras4_max)
+        Parameters_->a_ras34_max =
+            Parameters_->a_ras3_max + Parameters_->a_ras4_max;
+    if (Parameters_->cc &&
+        (Parameters_->cc_a_ras34_max >
+         Parameters_->cc_a_ras3_max + Parameters_->cc_b_ras4_max))
+        Parameters_->cc_a_ras34_max =
+            Parameters_->cc_a_ras3_max + Parameters_->cc_a_ras4_max;
+
+    if (Parameters_->b_ras34_max >
+        Parameters_->b_ras3_max + Parameters_->b_ras4_max)
+        Parameters_->b_ras34_max =
+            Parameters_->b_ras3_max + Parameters_->b_ras4_max;
+    if (Parameters_->cc &&
+        (Parameters_->cc_b_ras34_max >
+         Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max))
+        Parameters_->cc_b_ras34_max =
+            Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max;
+
+    /* now just re-check some basic things */
+    if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
+        Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
+    if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
+        Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
+    if (Parameters_->cc) {
+        if (Parameters_->cc_a_ras34_max > CalcInfo_->num_alp_expl)
+            Parameters_->cc_a_ras34_max = CalcInfo_->num_alp_expl;
+        if (Parameters_->cc_b_ras34_max > CalcInfo_->num_bet_expl)
+            Parameters_->cc_b_ras34_max = CalcInfo_->num_bet_expl;
+    }
+
+    if (Parameters_->ras34_max >
+        Parameters_->a_ras34_max + Parameters_->b_ras34_max)
+        Parameters_->ras34_max =
+            Parameters_->a_ras34_max + Parameters_->b_ras34_max;
 }
 
-
+std::string _concat_dim(std::string label, size_t spacer1, Dimension dim, size_t spacer2, size_t spacer3){
+  std::stringstream ret;
+  ret << std::setw(spacer1) << label;
+  ret << std::setw(spacer2) << dim.sum();
+  for (size_t h=0; h < dim.n(); h++ ) {
+    ret << std::setw(spacer3) << dim[h];
+  };
+  ret << std::endl;
+  return ret.str();
+}
 /*
 ** print_ras_parms(): Set the RAS parameters or their conventional equivalents
 **   (i.e. fermi level, etc).
 **
 */
-void CIWavefunction::print_ras_parameters(void)
-{
-  int i, j;
+void CIWavefunction::print_ras_parameters(void) {
 
-  outfile->Printf( "ORBITALS:\n") ;
-  outfile->Printf( "   NMO          =   %6d\n", CalcInfo_->nmo);
-  outfile->Printf( "   FROZEN CORE  =   %6d      RESTR CORE   =   %6d\n",
-    CalcInfo_->num_fzc_orbs, CalcInfo_->num_rsc_orbs);
-  outfile->Printf( "   FROZEN VIRT  =   %6d      RESTR VIRT   =   %6d\n",
-    CalcInfo_->num_fzv_orbs, CalcInfo_->num_rsv_orbs);
-  outfile->Printf( "   DROPPED CORE =   %6d      DROPPED VIRT =   %6d\n",
-    CalcInfo_->num_drc_orbs, CalcInfo_->num_drv_orbs);
-  outfile->Printf( "   EXPLICIT CORE=   %6d      ORBS IN CI   =   %6d\n",
-    CalcInfo_->num_expl_cor_orbs, CalcInfo_->num_ci_orbs);
-  outfile->Printf( "   NUM ALP      =   %6d      NUM BET      =   %6d\n",
-    CalcInfo_->num_alp, CalcInfo_->num_bet);
-  outfile->Printf( "   NUM ALP EXPL =   %6d      NUM BET EXPL =   %6d\n",
-    CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl);
-  outfile->Printf( "   IOPEN        =   %6s\n", CalcInfo_->iopen ? "yes" :
-    "no");
-  if (!Parameters_->fci & !Parameters_->cc){
-    outfile->Printf( "   RAS1 LVL     =   %6d      A RAS3 MAX   =   %6d\n",
-      Parameters_->ras1_lvl, Parameters_->a_ras3_max);
-    outfile->Printf( "   RAS1 MIN     =   %6d      B RAS3 MAX   =   %6d\n",
-      Parameters_->ras1_min, Parameters_->b_ras3_max);
-    outfile->Printf( "   A RAS1 LVL   =   %6d      RAS4 LVL     =   %6d\n",
-      Parameters_->a_ras1_lvl, Parameters_->ras4_lvl);
-    outfile->Printf( "   A RAS1 MIN   =   %6d      A RAS4 MAX   =   %6d\n",
-      Parameters_->a_ras1_min, Parameters_->a_ras4_max);
-    outfile->Printf( "   A RAS1 MAX   =   %6d      B RAS4 MAX   =   %6d\n",
-      Parameters_->a_ras1_max, Parameters_->b_ras4_max);
-    outfile->Printf( "   B RAS1 LVL   =   %6d      RAS4 MAX     =   %6d\n",
-      Parameters_->b_ras1_lvl, Parameters_->ras4_max);
-    outfile->Printf( "   B RAS1 MIN   =   %6d      A RAS34 MAX  =   %6d\n",
-      Parameters_->b_ras1_min, Parameters_->a_ras34_max);
-    outfile->Printf( "   B RAS1 MAX   =   %6d      B RAS34 MAX  =   %6d\n",
-      Parameters_->b_ras1_max, Parameters_->b_ras34_max);
-    outfile->Printf( "   RAS3 LVL     =   %6d      RAS34 MAX    =   %6d\n",
-      Parameters_->ras3_lvl, Parameters_->ras34_max);
-    outfile->Printf( "   RAS3 MAX     =   %6d\n", Parameters_->ras3_max);
+  outfile->Printf("   ==> CI Orbital and Space information <==\n\n");
+
+  // Print out any specific space info
+  if (!Parameters_->fci & !Parameters_->cc) {
+      outfile->Printf("    RAS1 LVL      =   %6d      A RAS3 MAX    =   %6d\n",
+                      Parameters_->ras1_lvl, Parameters_->a_ras3_max);
+      outfile->Printf("    RAS1 MIN      =   %6d      B RAS3 MAX    =   %6d\n",
+                      Parameters_->ras1_min, Parameters_->b_ras3_max);
+      outfile->Printf("    A RAS1 LVL    =   %6d      RAS4 LVL      =   %6d\n",
+                      Parameters_->a_ras1_lvl, Parameters_->ras4_lvl);
+      outfile->Printf("    A RAS1 MIN    =   %6d      A RAS4 MAX    =   %6d\n",
+                      Parameters_->a_ras1_min, Parameters_->a_ras4_max);
+      outfile->Printf("    A RAS1 MAX    =   %6d      B RAS4 MAX    =   %6d\n",
+                      Parameters_->a_ras1_max, Parameters_->b_ras4_max);
+      outfile->Printf("    B RAS1 LVL    =   %6d      RAS4 MAX      =   %6d\n",
+                      Parameters_->b_ras1_lvl, Parameters_->ras4_max);
+      outfile->Printf("    B RAS1 MIN    =   %6d      A RAS34 MAX   =   %6d\n",
+                      Parameters_->b_ras1_min, Parameters_->a_ras34_max);
+      outfile->Printf("    B RAS1 MAX    =   %6d      B RAS34 MAX   =   %6d\n",
+                      Parameters_->b_ras1_max, Parameters_->b_ras34_max);
+      outfile->Printf("    RAS3 LVL      =   %6d      RAS34 MAX     =   %6d\n",
+                      Parameters_->ras3_lvl, Parameters_->ras34_max);
+      outfile->Printf("    RAS3 MAX      =   %6d\n", Parameters_->ras3_max);
   }
   if (Parameters_->cc) {
-    outfile->Printf( "   CC RAS3 MAX  =   %6d      CC RAS4 MAX  =   %6d\n",
-      Parameters_->cc_ras3_max, Parameters_->cc_ras4_max);
-    outfile->Printf( "   CC A RAS3 MAX=   %6d      CC B RAS3 MAX=   %6d\n",
-      Parameters_->cc_a_ras3_max, Parameters_->cc_b_ras3_max);
-    outfile->Printf( "   CC A RAS4 MAX=   %6d      CC B RAS4 MAX=   %6d\n",
-      Parameters_->cc_a_ras4_max, Parameters_->cc_b_ras4_max);
-    outfile->Printf( "   CC RAS34 MAX =   %6d\n",
-      Parameters_->cc_ras34_max);
-    outfile->Printf( "   CC A RAS34 MAX=  %6d      CC B RAS34 MAX=  %6d\n",
-      Parameters_->cc_a_ras34_max, Parameters_->cc_b_ras34_max);
-    outfile->Printf( "   CC MIXED     =   %6s      CC FIX EXTERN =  %6s\n",
-      Parameters_->cc_mixed ? "yes" : "no",
-      Parameters_->cc_fix_external ? "yes" : "no");
-    outfile->Printf( "   CC VARIATIONAL=  %6s\n",
-      Parameters_->cc_variational ? "yes" : "no");
+      outfile->Printf("    CC RAS3 MAX   =   %6d      CC RAS4 MAX   =   %6d\n",
+                      Parameters_->cc_ras3_max, Parameters_->cc_ras4_max);
+      outfile->Printf("    CC A RAS3 MAX =   %6d      CC B RAS3 MAX =   %6d\n",
+                      Parameters_->cc_a_ras3_max, Parameters_->cc_b_ras3_max);
+      outfile->Printf("    CC A RAS4 MAX =   %6d      CC B RAS4 MAX =   %6d\n",
+                      Parameters_->cc_a_ras4_max, Parameters_->cc_b_ras4_max);
+      outfile->Printf("    CC RAS34 MAX  =   %6d\n", Parameters_->cc_ras34_max);
+      outfile->Printf("    CC A RAS34 MAX=  %6d      CC B RAS34 MAX =  %6d\n",
+                      Parameters_->cc_a_ras34_max,
+                      Parameters_->cc_b_ras34_max);
+      outfile->Printf("    CC MIXED      =   %6s      CC FIX EXTERN  =  %6s\n",
+                      Parameters_->cc_mixed ? "YES"  : "NO",
+                      Parameters_->cc_fix_external ? "YES"  : "NO");
+      outfile->Printf("   CC VARIATIONAL =  %6s\n",
+                      Parameters_->cc_variational ? "YES"  : "NO");
   }
 
-  outfile->Printf( "\n   DOCC            = ") ;
-  for (i=0; i<CalcInfo_->nirreps; i++) {
-    outfile->Printf( "%3d ", CalcInfo_->docc[i]) ;
+  CharacterTable ct = molecule_->point_group()->char_table();
+  size_t sdist = 20;
+  size_t tdist = 9;
+  size_t hdist = 6;
+
+  // Build header
+  std::stringstream headers;
+  headers << std::setw(sdist) << "Space";
+  headers << std::setw(tdist) << "Total";
+  for (size_t h=0; h<nirrep_; h++){
+    headers << std::setw(hdist) << ct.gamma(h).symbol();
   }
-  outfile->Printf( "\n   SOCC            = ") ;
-  for (i=0; i<CalcInfo_->nirreps; i++) {
-    outfile->Printf( "%3d ", CalcInfo_->socc[i]) ;
-  }
-  outfile->Printf("\n");
-  outfile->Printf( "\n   FROZEN DOCC     = ") ;
-  for (i=0; i<CalcInfo_->nirreps; i++) {
-    outfile->Printf( "%3d ", CalcInfo_->frozen_docc[i]) ;
-  }
-  outfile->Printf( "\n   RESTRICTED DOCC = ");
-  for (i=0; i<CalcInfo_->nirreps; i++) {
-    outfile->Printf( "%3d ", CalcInfo_->rstr_docc[i]) ;
+  headers << std::endl;
+  std::string header = headers.str();
+
+  // Figure out seperator size
+  std::string sep_template =
+    "-------------------------------------------------------------------------------------";
+  std::string seperator = "   " + sep_template.substr(0, header.size()) + "\n";
+
+  // Start building orbital info
+  std::stringstream orbital_info;
+  orbital_info << seperator;
+  orbital_info << header;
+
+  // General info
+  orbital_info << seperator;
+  orbital_info << _concat_dim("Nso", sdist, nsopi_, tdist, hdist);
+  orbital_info << _concat_dim("Nmo", sdist, nmopi_, tdist, hdist);
+  orbital_info << _concat_dim("Ndocc", sdist, doccpi_, tdist, hdist);
+  orbital_info << _concat_dim("Nsocc", sdist, soccpi_, tdist, hdist);
+  orbital_info << seperator;
+
+  // Occupied spaces
+  if (Parameters_->mcscf) {
+    orbital_info << std::setw(header.size()/ 2 + 10) << "MCSCF Spaces\n";
+    orbital_info << seperator;
+    orbital_info << _concat_dim("Frozen DOCC", sdist, get_dimension("FZC"), tdist, hdist);
+    orbital_info << _concat_dim("Restricted DOCC", sdist, get_dimension("DOCC"), tdist, hdist);
+  } else {
+    orbital_info << std::setw(header.size()/ 2 + 6) << "CI Spaces\n";
+    orbital_info << seperator;
+    orbital_info << _concat_dim("Dropped DOCC", sdist, get_dimension("DRC"), tdist, hdist);
   }
 
-  if (Parameters_->fci){
-    outfile->Printf( "\n   ACTIVE          = ");
-    for (i=0; i<CalcInfo_->nirreps; i++) {
-      outfile->Printf("%3d ",CalcInfo_->ci_orbs[i]);
-    }
+  // Active spaces
+  if (Parameters_->fci) {
+    orbital_info << _concat_dim("Active", sdist, get_dimension("ACT"), tdist, hdist);
+  } else {
+    orbital_info << _concat_dim("RAS1", sdist, get_dimension("RAS1"), tdist, hdist);
+    orbital_info << _concat_dim("RAS2", sdist, get_dimension("RAS2"), tdist, hdist);
+    orbital_info << _concat_dim("RAS3", sdist, get_dimension("RAS3"), tdist, hdist);
+    orbital_info << _concat_dim("RAS4", sdist, get_dimension("RAS4"), tdist, hdist);
+    orbital_info << _concat_dim("Active (total)", sdist, get_dimension("ACT"), tdist, hdist);
   }
-  else{
-    for (i=0; i<4; i++) {
-      outfile->Printf( "\n   RAS %d           = ",i+1);
-      for (j=0; j<CalcInfo_->nirreps; j++) {
-        outfile->Printf("%3d ",CalcInfo_->ras_opi[i][j]);
-      }
-    }
-  }
-  outfile->Printf( "\n   RESTRICTED UOCC = ") ;
-  for (i=0; i<CalcInfo_->nirreps; i++) {
-    outfile->Printf( "%3d ", CalcInfo_->rstr_uocc[i]) ;
-  }
-  outfile->Printf( "\n   FROZEN UOCC     = ") ;
-  for (i=0; i<CalcInfo_->nirreps; i++) {
-    outfile->Printf( "%3d ", CalcInfo_->frozen_uocc[i]) ;
-  }
-  outfile->Printf("\n");
 
-  outfile->Printf(
-     "         ---------------------------------------------------------\n\n");
+  // Virtual spaces
+  if (Parameters_->mcscf) {
+    orbital_info << _concat_dim("Restricted DOCC", sdist, get_dimension("VIR"), tdist, hdist);
+    orbital_info << _concat_dim("Frozen UOCC", sdist, get_dimension("FZV"), tdist, hdist);
+  } else {
+    orbital_info << _concat_dim("Dropped UOCC", sdist, get_dimension("DRV"), tdist, hdist);
+  }
+
+  orbital_info << seperator;
+
+  // Print out original info
+  outfile->Printf("%s", orbital_info.str().c_str());
+
 }
-
-void CIWavefunction::get_mcscf_parameters()
-{
-
-  // Convergence
-  MCSCF_Parameters_->rms_grad_convergence = options_.get_double("MCSCF_R_CONVERGENCE");
-  MCSCF_Parameters_->energy_convergence = options_.get_double("MCSCF_E_CONVERGENCE");
-  MCSCF_Parameters_->max_iter = options_.get_int("MCSCF_MAXITER");
-  MCSCF_Parameters_->mcscf_type = options_.get_str("MCSCF_TYPE");
-  MCSCF_Parameters_->algorithm = options_.get_str("MCSCF_ALGORITHM");
-  MCSCF_Parameters_->max_rot = options_.get_double("MCSCF_MAX_ROT");
-
-  // orbital-orbital SO options
-  MCSCF_Parameters_->orbital_so = options_.get_bool("MCSCF_SO");
-  MCSCF_Parameters_->so_start_grad = options_.get_double("MCSCF_SO_START_GRAD");
-  MCSCF_Parameters_->so_start_e = options_.get_double("MCSCF_SO_START_E");
-
-  // DIIS options for two step
-  MCSCF_Parameters_->diis_start = options_.get_int("MCSCF_DIIS_START");
-  MCSCF_Parameters_->diis_freq = options_.get_int("MCSCF_DIIS_FREQ");
-  MCSCF_Parameters_->diis_max_vecs = options_.get_int("MCSCF_DIIS_MAX_VECS");
-}
-
 }} // namespace psi::detci

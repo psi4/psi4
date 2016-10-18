@@ -27,7 +27,13 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here
+    \brief Code to compute the sigma1 contribution to sigma
+
+    \sigma_1(Ia, Ib) = 
+      \sum_{Jb} \sum_{kl} <Jb|E^b_{kl}|Ib>
+                          \times [ h_{kl} - 0.5*\sum_j (kj|jl) ] C(Ia,Jb)
+      + 0.5 * \sum_{Jb} \sum_{ijkl} <Jb|E^b_{ij} E^b_{kl}|Ib>
+                                    \times (ij|kl) C(Ia,Jb)
 */
 
 /*
@@ -47,7 +53,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
-#include "structs.h"
+#include "psi4/detci/structs.h"
 
 namespace psi {
 namespace detci {

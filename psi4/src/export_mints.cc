@@ -27,6 +27,7 @@
 #include "psi4/lib3index/3index.h"
 
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/soscf.h"
 
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/civect.h"
@@ -88,10 +89,6 @@ std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
-// Just a little patch until we can figure out options python-side.
-std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
-    return JK::build_JK(basis, aux, Process::environment.options);
-}
 
 void export_mints(py::module& m)
 {
@@ -193,8 +190,9 @@ void export_mints(py::module& m)
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void   (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
     typedef void   (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
-    typedef void   (Matrix::*matrix_set4)(int, int, int, double);
+    typedef void   (Matrix::*matrix_set1)(double);
     typedef void   (Matrix::*matrix_set3)(int, int, double);
+    typedef void   (Matrix::*matrix_set4)(int, int, int, double);
     typedef double (Matrix::*matrix_get3)(const int&, const int&, const int&) const;
     typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void   (Matrix::*matrix_load)(const std::string&);
@@ -236,6 +234,7 @@ void export_mints(py::module& m)
             def("sum_of_squares", &Matrix::sum_of_squares, "docstring").
             def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "docstring").
             def("rms", &Matrix::rms, "docstring").
+            def("absmax", &Matrix::absmax, "docstring").
             def("scale_row", &Matrix::scale_row, "docstring").
             def("scale_column", &Matrix::scale_column, "docstring").
             def("transform", matrix_one(&Matrix::transform), "docstring").
@@ -251,14 +250,17 @@ void export_mints(py::module& m)
             // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, py::arg("delta") = 0.0, py::arg("eigvec") = SharedMatrix()).
             def("schmidt", &Matrix::schmidt).
             def("invert", &Matrix::invert, "docstring").
+            def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring").
+            def("copy", matrix_one(&Matrix::copy), "docstring").
             def("power", &Matrix::power, "docstring").
-            def("doublet", &Matrix::doublet).
-            def("triplet", &Matrix::triplet).
             // def("doublet", &Matrix::doublet, py::arg("transA") = false, py::arg("transB") = false).
             // def("triplet", &Matrix::triplet, py::arg("transA") = false, py::arg("transB") = false,
             //                                  py::arg("transC") = false, "docstring").
+            def("doublet", &Matrix::doublet, "docstring").
+            def("triplet", &Matrix::triplet, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
+            def("set", matrix_set1(&Matrix::set), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").
             def("set", matrix_set4(&Matrix::set), "docstring").
             def("set", &Matrix::set_by_python_list, "docstring").
@@ -794,6 +796,8 @@ void export_mints(py::module& m)
             def("Db", &Wavefunction::Db, "docstring").
             def("X", &Wavefunction::X, "docstring").
             def("basis_projection", &Wavefunction::basis_projection, "docstring").
+            def("H", &Wavefunction::H, "docstring").
+            def("S", &Wavefunction::S, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
@@ -826,6 +830,7 @@ void export_mints(py::module& m)
             def("nbeta", &Wavefunction::nbeta, "docstring").
             def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
             def("oeprop", &Wavefunction::get_oeprop, "Get the OEProp object associated with this wavefunction").
+            def("set_print", &Wavefunction::set_print, "docstring").
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
             def_readwrite("cdict", &Wavefunction::cdict);
@@ -922,51 +927,6 @@ void export_mints(py::module& m)
             def("ngamma", &CorrelationTable::ngamma, "docstring").
             def("group", &CorrelationTable::gamma, "docstring");
 
-    // LIBFOCK wrappers
-    py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
-           .def_static("build_JK", py_build_JK, "docstring")
-           .def("initialize", &JK::initialize)
-           .def("set_cutoff", &JK::set_cutoff)
-           .def("set_memory", &JK::set_memory)
-           .def("set_omp_nthread", &JK::set_omp_nthread)
-           .def("set_do_J", &JK::set_do_J)
-           .def("set_do_K", &JK::set_do_K)
-           .def("set_do_wK", &JK::set_do_wK)
-           .def("set_omega", &JK::set_omega)
-           .def("compute", &JK::compute)
-           .def("finalize", &JK::finalize)
-           .def("C_clear", [](JK &jk){
-                jk.C_left().clear();
-                jk.C_right().clear();
-           })
-           .def("C_left_add", [](JK &jk, SharedMatrix Cl){
-                jk.C_left().push_back(Cl);
-           })
-           .def("C_right_add", [](JK &jk, SharedMatrix Cr){
-                jk.C_right().push_back(Cr);
-           })
-           .def("J", &JK::J, py::return_value_policy::reference_internal)
-           .def("K", &JK::K, py::return_value_policy::reference_internal)
-           .def("wK", &JK::wK, py::return_value_policy::reference_internal)
-           .def("D", &JK::D, py::return_value_policy::reference_internal)
-           .def("print_header", &JK::print_header, "docstring");
-
-    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator> >(m, "LaplaceDenominator", "docstring")
-            .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
-            .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
-            .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
-
-
-    py::class_<DFTensor, std::shared_ptr<DFTensor> >(m, "DFTensor", "docstring")
-            .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
-            .def("Qso", &DFTensor::Qso, "doctsring")
-            .def("Qmo", &DFTensor::Qmo, "doctsring")
-            .def("Qoo", &DFTensor::Qoo, "doctsring")
-            .def("Qov", &DFTensor::Qov, "doctsring")
-            .def("Qvv", &DFTensor::Qvv, "doctsring")
-            .def("Imo", &DFTensor::Imo, "doctsring")
-            .def("Idfmo", &DFTensor::Idfmo, "doctsring");
-
     /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,
                                     std::shared_ptr<psi::detci::CIvect>, int, int) =
@@ -986,7 +946,6 @@ void export_mints(py::module& m)
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
         .def("ndet", &detci::CIWavefunction::ndet, "docstring")
-        .def("compute_mcscf", &detci::CIWavefunction::compute_mcscf, "docstring")
         .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
         .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
         .def("rotate_mcscf_integrals", &detci::CIWavefunction::rotate_mcscf_integrals, "docstring")
@@ -1002,9 +961,15 @@ void export_mints(py::module& m)
         .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
+        .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
+        .def("D_vector", &detci::CIWavefunction::D_vector, "docstring")
+        .def("mcscf_object", &detci::CIWavefunction::mcscf_object, "docstring")
+        .def("compute_state_transfer", &detci::CIWavefunction::compute_state_transfer, "docstring")
         .def("sigma", py_ci_sigma, "docstring")
-        .def("sigma", py_ci_int_sigma, "docstring");
+        .def("sigma", py_ci_int_sigma, "docstring")
+        .def("cleanup_ci", &detci::CIWavefunction::cleanup_ci, "docstring")
+        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;
@@ -1013,10 +978,13 @@ void export_mints(py::module& m)
     py::class_<detci::CIvect, std::shared_ptr<detci::CIvect> >(m, "CIVector", "docstring")
         .def("vdot", &detci::CIvect::vdot, "docstring")
         .def("axpy", &detci::CIvect::axpy, "docstring")
+        .def("vector_multiply", &detci::CIvect::vector_multiply, "docstring")
         .def("copy", py_civ_copy, "docstring")
         .def("zero", &detci::CIvect::zero, "docstring")
+        .def("divide", &detci::CIvect::divide, "docstring")
         .def("scale", py_civ_scale, "docstring")
         .def("norm", &detci::CIvect::norm, "docstring")
+        .def("shift", &detci::CIvect::shift, "docstring")
         .def("dcalc", &detci::CIvect::dcalc3, "docstring")
         .def("symnormalize", &detci::CIvect::symnormalize, "docstring")
         .def("read", &detci::CIvect::read, "docstring")

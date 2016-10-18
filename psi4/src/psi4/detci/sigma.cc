@@ -48,9 +48,9 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
-#include "structs.h"
-#include "civect.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -144,14 +144,14 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
    SigmaData_->sprime = NULL;
 
    if (CalcInfo_->sigma_initialized) {
-      printf("(sigma_init): sigma_initialized already set to 1\n");
-      return;
-      }
+       // printf("(sigma_init): sigma_initialized already set to 1\n");
+       return;
+   }
 
-   for (i=0; i<C.num_blocks_; i++) {
-      if (C.Ib_size_[i] > max_dim) max_dim = C.Ib_size_[i];
-      if (C.Ia_size_[i] > max_dim) max_dim = C.Ia_size_[i];
-      }
+   for (i = 0; i < C.num_blocks_; i++) {
+       if (C.Ib_size_[i] > max_dim) max_dim = C.Ib_size_[i];
+       if (C.Ia_size_[i] > max_dim) max_dim = C.Ia_size_[i];
+   }
    SigmaData_->max_dim = max_dim;
    SigmaData_->F = init_array(max_dim);
 
@@ -161,92 +161,101 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
    SigmaData_->R = init_int_array(max_dim);
 
    if (Parameters_->repl_otf) {
-      max_dim += AlphaG_->num_el_expl;
-      nsingles = AlphaG_->num_el_expl * AlphaG_->num_orb;
-      for (i=0; i<2; i++) {
-         SigmaData_->Jcnt[i] = init_int_array(max_dim);
-         SigmaData_->Jij[i] = init_int_matrix(max_dim, nsingles);
-         SigmaData_->Joij[i] = init_int_matrix(max_dim, nsingles);
-         SigmaData_->Jridx[i] = init_int_matrix(max_dim, nsingles);
-         SigmaData_->Jsgn[i] = (signed char **) malloc (max_dim * sizeof(signed char *));
-         for (j=0; j<max_dim; j++) {
-            SigmaData_->Jsgn[i][j] = (signed char *) malloc (nsingles *
-               sizeof(signed char));
-            }
-         }
+       max_dim += AlphaG_->num_el_expl;
+       nsingles = AlphaG_->num_el_expl * AlphaG_->num_orb;
+       for (i = 0; i < 2; i++) {
+           SigmaData_->Jcnt[i] = init_int_array(max_dim);
+           SigmaData_->Jij[i] = init_int_matrix(max_dim, nsingles);
+           SigmaData_->Joij[i] = init_int_matrix(max_dim, nsingles);
+           SigmaData_->Jridx[i] = init_int_matrix(max_dim, nsingles);
+           SigmaData_->Jsgn[i] =
+               (signed char **)malloc(max_dim * sizeof(signed char *));
+           for (j = 0; j < max_dim; j++) {
+               SigmaData_->Jsgn[i][j] =
+                   (signed char *)malloc(nsingles * sizeof(signed char));
+           }
+       }
 
-      SigmaData_->Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
+       SigmaData_->Toccs =
+           (unsigned char **)malloc(sizeof(unsigned char *) * nsingles);
 
-      /* test out the on-the-fly replacement routines */
-      /*
-      b2brepl_test(Occs_,SigmaData_->Jcnt[0],SigmaData_->Jij[0],
-                   SigmaData_->Joij[0],SigmaData_->Jridx[0],SigmaData_->Jsgn[0],AlphaG);
-      */
-      }
+       /* test out the on-the-fly replacement routines */
+       /*
+       b2brepl_test(Occs_,SigmaData_->Jcnt[0],SigmaData_->Jij[0],
+                    SigmaData_->Joij[0],SigmaData_->Jridx[0],SigmaData_->Jsgn[0],AlphaG);
+       */
+   }
 
    /* figure out which C blocks contribute to s */
    s1_contrib_ = init_int_matrix(S.num_blocks_, C.num_blocks_);
    s2_contrib_ = init_int_matrix(S.num_blocks_, C.num_blocks_);
    s3_contrib_ = init_int_matrix(S.num_blocks_, C.num_blocks_);
    if (Parameters_->repl_otf)
-      sigma_get_contrib_rotf(C, S, s1_contrib_, s2_contrib_, s3_contrib_,
-         SigmaData_->Jcnt, SigmaData_->Jij, SigmaData_->Joij,
-         SigmaData_->Jridx, SigmaData_->Jsgn, SigmaData_->Toccs);
+       sigma_get_contrib_rotf(C, S, s1_contrib_, s2_contrib_, s3_contrib_,
+                              SigmaData_->Jcnt, SigmaData_->Jij,
+                              SigmaData_->Joij, SigmaData_->Jridx,
+                              SigmaData_->Jsgn, SigmaData_->Toccs);
    else
-      sigma_get_contrib(alplist_, betlist_, C, S, s1_contrib_, s2_contrib_,
-         s3_contrib_);
+       sigma_get_contrib(alplist_, betlist_, C, S, s1_contrib_, s2_contrib_,
+                         s3_contrib_);
 
-   if ((C.icore_==2 && C.Ms0_ && CalcInfo_->ref_sym != 0) || (C.icore_==0 &&
-         C.Ms0_)) {
-     for (i=0, maxrows=0, maxcols=0; i<C.num_blocks_; i++) {
-       if (C.Ia_size_[i] > maxrows) maxrows = C.Ia_size_[i];
-       if (C.Ib_size_[i] > maxcols) maxcols = C.Ib_size_[i];
-     }
-     if (maxcols > maxrows) maxrows = maxcols;
-     SigmaData_->transp_tmp = (double **) malloc (maxrows * sizeof(double *));
-     if (SigmaData_->transp_tmp == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing SigmaData_->transp_tmp\n");
-     }
-     bufsz = C.get_max_blk_size();
-     SigmaData_->transp_tmp[0] = init_array(bufsz);
-     if (SigmaData_->transp_tmp[0] == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing SigmaData_->transp_tmp[0]\n");
-     }
+   if ((C.icore_ == 2 && C.Ms0_ && CalcInfo_->ref_sym != 0) ||
+       (C.icore_ == 0 && C.Ms0_)) {
+       for (i = 0, maxrows = 0, maxcols = 0; i < C.num_blocks_; i++) {
+           if (C.Ia_size_[i] > maxrows) maxrows = C.Ia_size_[i];
+           if (C.Ib_size_[i] > maxcols) maxcols = C.Ib_size_[i];
+       }
+       if (maxcols > maxrows) maxrows = maxcols;
+       SigmaData_->transp_tmp = (double **)malloc(maxrows * sizeof(double *));
+       if (SigmaData_->transp_tmp == NULL) {
+           printf(
+               "(sigma_init): Trouble with malloc'ing "
+               "SigmaData_->transp_tmp\n");
+       }
+       bufsz = C.get_max_blk_size();
+       SigmaData_->transp_tmp[0] = init_array(bufsz);
+       if (SigmaData_->transp_tmp[0] == NULL) {
+           printf(
+               "(sigma_init): Trouble with malloc'ing "
+               "SigmaData_->transp_tmp[0]\n");
+       }
    }
 
    /* make room for SigmaData_->cprime and SigmaData_->sprime if necessary */
-   for (i=0, maxrows=0; i<C.num_blocks_; i++) {
-     if (C.Ia_size_[i] > maxrows) maxrows = C.Ia_size_[i];
-     if (C.Ib_size_[i] > maxcols) maxcols = C.Ib_size_[i];
+   for (i = 0, maxrows = 0; i < C.num_blocks_; i++) {
+       if (C.Ia_size_[i] > maxrows) maxrows = C.Ia_size_[i];
+       if (C.Ib_size_[i] > maxcols) maxcols = C.Ib_size_[i];
    }
-   if ((C.icore_==2 && C.Ms0_ && CalcInfo_->ref_sym != 0) || (C.icore_==0 &&
-         C.Ms0_)) {
-     if (maxcols > maxrows) maxrows = maxcols;
+   if ((C.icore_ == 2 && C.Ms0_ && CalcInfo_->ref_sym != 0) ||
+       (C.icore_ == 0 && C.Ms0_)) {
+       if (maxcols > maxrows) maxrows = maxcols;
    }
    bufsz = C.get_max_blk_size();
 
-   SigmaData_->cprime = (double **) malloc (maxrows * sizeof(double *));
+   SigmaData_->cprime = (double **)malloc(maxrows * sizeof(double *));
    if (SigmaData_->cprime == NULL) {
-      printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime\n");
+       printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime\n");
    }
-   if (C.icore_==0 && C.Ms0_ && SigmaData_->transp_tmp != NULL && SigmaData_->transp_tmp[0] != NULL)
-     SigmaData_->cprime[0] = SigmaData_->transp_tmp[0];
+   if (C.icore_ == 0 && C.Ms0_ && SigmaData_->transp_tmp != NULL &&
+       SigmaData_->transp_tmp[0] != NULL)
+       SigmaData_->cprime[0] = SigmaData_->transp_tmp[0];
    else
-     SigmaData_->cprime[0] = init_array(bufsz);
+       SigmaData_->cprime[0] = init_array(bufsz);
 
    if (SigmaData_->cprime[0] == NULL) {
-     printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime[0]\n");
+       printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime[0]\n");
    }
 
    if (Parameters_->bendazzoli) {
-     SigmaData_->sprime = (double **) malloc (maxrows * sizeof(double *));
-     if (SigmaData_->sprime == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime\n");
-     }
-     SigmaData_->sprime[0] = init_array(bufsz);
-     if (SigmaData_->sprime[0] == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime[0]\n");
-     }
+       SigmaData_->sprime = (double **)malloc(maxrows * sizeof(double *));
+       if (SigmaData_->sprime == NULL) {
+           printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime\n");
+       }
+       SigmaData_->sprime[0] = init_array(bufsz);
+       if (SigmaData_->sprime[0] == NULL) {
+           printf(
+               "(sigma_init): Trouble with malloc'ing SigmaData_->sprime[0]\n");
+       }
    }
 
    CalcInfo_->sigma_initialized = 1;
@@ -271,6 +280,7 @@ void CIWavefunction::sigma_free()
          free(SigmaData_->Jsgn[i]);
       }
    }
+   CalcInfo_->sigma_initialized = false;
 // DGAS: Not sure how to free these yet
 //      SigmaData_->Toccs = (unsigned char **) malloc (sizeof(unsigned char *) * nsingles);
 //unsigned char **SigmaData_->Toccs;
@@ -346,7 +356,6 @@ void CIWavefunction::sigma_a(struct stringwr **alplist, struct stringwr **betlis
 
    int buf, cbuf;
    int sblock, cblock, cblock2;  /* id of sigma and C blocks */
-   int i,j,k;
    int sac, sbc, nas, nbs;
    int cac, cbc, cnas, cnbs;
    int do_cblock, do_cblock2;
@@ -553,7 +562,6 @@ void CIWavefunction::sigma_c(struct stringwr **alplist, struct stringwr **betlis
    int sairr;                    /* irrep of alpha string for sigma block */
    int cairr;                    /* irrep of alpha string for C block */
    int sbirr, cbirr;
-   int i,j,k;
    int sac, sbc, nas, nbs;
    int cac, cbc, cnas, cnbs;
    int did_sblock = 0;
@@ -688,7 +696,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
     } /* end sigma2 */
 
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      outfile->Printf( "s2: Contribution to sblock=%d from cblock=%d\n",
         sblock, cblock);
      print_mat(smat, nas, nbs, "outfile");
@@ -720,7 +728,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
       timer_off("CIWave: s1");
    } /* end sigma1 */
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      outfile->Printf( "s1: Contribution to sblock=%d from cblock=%d\n",
         sblock, cblock);
      print_mat(smat, nas, nbs, "outfile");
@@ -785,7 +793,7 @@ void CIWavefunction::sigma_block(struct stringwr **alplist, struct stringwr **be
             }
          }
 
-      if (Parameters_->print_lvl > 3) {
+      if (print_ > 3) {
         outfile->Printf( "s3: Contribution to sblock=%d from cblock=%d\n",
            sblock, cblock);
         print_mat(smat, nas, nbs, "outfile");
@@ -872,7 +880,7 @@ void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringw
          } /* end loop over c blocks */
       } /* end loop over sigma blocks */
 
-   if (Parameters_->print_lvl > 4) {
+   if (print_ > 4) {
      printf("\nSigma 1:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
@@ -993,7 +1001,7 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
          } /* end loop over c blocks */
       } /* end loop over sigma blocks */
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      printf("\nSigma 1:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);

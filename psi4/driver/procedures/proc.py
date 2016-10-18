@@ -36,6 +36,7 @@ import shutil
 import os
 import subprocess
 import re
+import numpy as np
 
 import psi4
 from psi4.driver import p4util
@@ -47,6 +48,7 @@ from .roa import *
 from . import proc_util
 from . import empirical_dispersion
 from . import dft_functional
+from . import mcscf
 
 # never import driver, wrappers, or aliases into this file
 
@@ -2919,10 +2921,21 @@ def run_detci(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    ci_wfn = core.detci(ref_wfn)
+    ciwfn = core.detci(ref_wfn)
+
+    if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
+        # We always would like to print a little dipole information
+        oeprop = core.OEProp(ciwfn)
+        oeprop.set_title(name.upper())
+        oeprop.add("DIPOLE")
+        oeprop.compute()
+        ciwfn.set_oeprop(oeprop)
+        core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
+        core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
+        core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
 
     optstash.restore()
-    return ci_wfn
+    return ciwfn
 
 
 def run_dfmp2(name, **kwargs):
@@ -3961,17 +3974,44 @@ def run_detcas(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name == 'rasscf':
-        core.set_local_option('DETCI', 'WFN', 'RASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif name == 'casscf':
-        core.set_local_option('DETCI', 'WFN', 'CASSCF')
+        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
     else:
         raise ValidationError("Run DETCAS: Name %s not understood" % name)
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    molecule = ref_wfn.molecule()
+        ref_optstash = p4util.OptionsState(
+            ['SCF_TYPE'],
+            ['DF_BASIS_SCF'],
+            ['DF_BASIS_MP2'],
+            ['ONEPDM'],
+            ['OPDM_RELAX']
+            )
+
+        # No real reason to do a conventional guess
+        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
+            psi4.set_global_option('SCF_TYPE', 'DF')
+
+        # If RHF get MP2 NO's
+        # Why doesnt this work for conv?
+        # if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and\
+        #             (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF'):
+        #     psi4.set_global_option('ONEPDM', True)
+        #     psi4.set_global_option('OPDM_RELAX', False)
+        #     ref_wfn = run_dfmp2_gradient(name, **kwargs)
+        # else:
+        ref_wfn = scf_helper(name, **kwargs)
+
+        # Ensure IWL files have been written
+        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
+            mints = psi4.MintsHelper(ref_wfn.basisset())
+            mints.set_print(1)
+            mints.integrals()
+
+        ref_optstash.restore()
 
     # The DF case
     if core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
@@ -3995,10 +4035,10 @@ def run_detcas(name, **kwargs):
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Second-order SCF requires non-symmetric density matrix support
-    if core.get_option('DETCI', 'MCSCF_SO'):
+    if core.get_option('DETCI', 'MCSCF_ALGORITHM') in ['AH', 'OS']:
         proc_util.check_non_symmetric_jk_density("Second-order MCSCF")
 
-    ciwfn = core.detci(ref_wfn)
+    ciwfn = mcscf.mcscf_solver(ref_wfn)
 
     # We always would like to print a little dipole information
     oeprop = core.OEProp(ciwfn)
@@ -4012,7 +4052,6 @@ def run_detcas(name, **kwargs):
 
     optstash.restore()
     return ciwfn
-
 
 def run_efp(name, **kwargs):
     """Function encoding sequence of module calls for a pure EFP

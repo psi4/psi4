@@ -48,9 +48,9 @@
 #include "psi4/libqt/qt.h"
 
 #include <iostream>
-#include "odometer.h"
-#include "ciwave.h"
-#include "structs.h"
+#include "psi4/detci/odometer.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/structs.h"
 
 namespace psi { namespace detci {
 
@@ -99,7 +99,7 @@ void CIWavefunction::form_strings(void)
       Parameters_->ras4_lvl, Parameters_->a_ras4_max, Parameters_->a_ras34_max,
       Parameters_);
 
-   if (Parameters_->print_lvl > 3)
+   if (print_ > 3)
       og_print(AlphaG_);
 
    ncodes = AlphaG_->subgr_per_irrep;
@@ -111,7 +111,7 @@ void CIWavefunction::form_strings(void)
 
    stringlist(AlphaG_, alplist_, Parameters_->repl_otf, Occs_);
 
-   if (Parameters_->print_lvl>=4) {
+   if (print_>=4) {
       for (irrep=0,listnum=0; irrep < nirreps; irrep++) {
          for (code=0; code < ncodes; code++, listnum++) {
             outfile->Printf( "Strings for irrep %d code %2d (list %2d)\n",
@@ -136,7 +136,7 @@ void CIWavefunction::form_strings(void)
           Parameters_->ras4_lvl, Parameters_->b_ras4_max, Parameters_->b_ras3_max,
           Parameters_);
 
-      if (Parameters_->print_lvl > 3)
+      if (print_ > 3)
          og_print(BetaG_);
 
       ncodes = BetaG_->subgr_per_irrep;
@@ -148,7 +148,7 @@ void CIWavefunction::form_strings(void)
 
       stringlist(BetaG_, betlist_, Parameters_->repl_otf, Occs_);
 
-      if (Parameters_->print_lvl>=4) {
+      if (print_>=4) {
          for (irrep=0; irrep < nirreps; irrep++) {
             for (code=0; code < ncodes; code++) {
                outfile->Printf( "Strings for irrep %d code %2d\n", irrep,
@@ -260,7 +260,8 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
    struct stringgraph *sgptr;
 
 
-   if (CIparams->print_lvl > 3) {
+   int print_lvl = 0;
+   if (print_lvl > 3) {
      outfile->Printf( "ras1_lvl = %d   ras1_min = %d  ras1_max = %d\n",
         ras1_lvl, ras1_min, ras1_max) ;
      outfile->Printf( "ras3_lvl = %d   ras3_max = %d\n", ras3_lvl, ras3_max) ;
@@ -422,7 +423,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
             if (CIparams->r4s && n4 >= 2 && n1max - n1 > CIparams->ex_lvl)
                continue;
 
-            if (CIparams->print_lvl > 4) {
+            if (print_lvl > 4) {
               outfile->Printf( "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n",
                  n1, n2, n3, n4) ;
               if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
@@ -455,7 +456,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
                            occs[j++] = array4[i] ;
 
                         // print out occupations for debugging
-                        if (CIparams->print_lvl > 4) {
+                        if (print_lvl > 4) {
                           for (i=0; i<num_el_expl; i++)
                              outfile->Printf( "%2d ", occs[i]) ;
                           outfile->Printf( "\n") ;

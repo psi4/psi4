@@ -55,9 +55,9 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
-#include "structs.h"
-#include "ci_tol.h"
-#include "civect.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ci_tol.h"
+#include "psi4/detci/civect.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/libmints/vector.h"
 
@@ -77,9 +77,6 @@ extern double calc_mpn_vec(double *target, double energy, double *Hd,
 extern void xeaxmy(double *x, double *y, double a, int size);
 extern void xeaxpby(double *x, double *y, double a, double b, int size);
 extern void xexy(double *x, double *y, int size);
-extern double ssq(struct stringwr *alplist, struct stringwr *betlist,
-  double **CL, double **CR, int nas, int nbs, int Ja_list, int Jb_list,
-  int num_ci_orbs, int print_lvl);
 extern int calc_orb_diff(int cnt, unsigned char *I, unsigned char *J,
    int *I_alpha_diff, int *J_alpha_diff, int *sign, int *same, int extended);
 
@@ -138,11 +135,6 @@ void CIvect::common_init(void) {
     num_blocks_ = 0;
     icore_ = 1;
     Ms0_ = 0;
-    Ia_code_ = NULL;
-    Ib_code_ = NULL;
-    Ia_size_ = NULL;
-    Ib_size_ = NULL;
-    offset_ = NULL;
     num_alpcodes_ = 0;
     num_betcodes_ = 0;
     nirreps_ = 0;
@@ -156,8 +148,6 @@ void CIvect::common_init(void) {
     cur_vect_ = -1;
     cur_buf_ = -1;
     buffer_size_ = 0;
-    units_ = NULL;
-    file_number_ = NULL;
     buf_size_ = NULL;
     buf2blk_ = NULL;
     buf_offdiag_ = NULL;
@@ -165,7 +155,6 @@ void CIvect::common_init(void) {
     last_ablk_ = NULL;
     decode_ = NULL;
     blocks_ = NULL;
-    zero_blocks_ = NULL;
     buf_locked_ = 0;
     buffer_ = NULL;
     in_file_ = 0;
@@ -174,6 +163,7 @@ void CIvect::common_init(void) {
     cur_unit_ = 0;
     cur_size_ = 0;
     first_unit_ = 0;
+    print_lvl_ = 0;
 }
 
 void CIvect::set(int incor, int maxvect, int nunits, int funit,
@@ -189,10 +179,10 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
                  int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
                  int cdpirr, int mxv, int nu, int fu, int *fablk, int *lablk,
                  int **dc) {
-    int i, j, ij, k, l;
+    int i, j, k;
     int maxrows = 0, maxcols = 0;
     unsigned long bufsize, maxbufsize;
-    unsigned long size, cur_offset_;
+    unsigned long size;
     // static int first=1;
     /* int in_file, extras, units_used, cur_unit; */
 
@@ -205,15 +195,16 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     maxvect_ = mxv;
     nvect_ = 1;
     nunits_ = nu;
-    if (nunits_) units_ = init_int_array(nunits_);
+    if (nunits_) units_.resize(nunits_);
     first_unit_ = fu;
     for (i = 0; i < nunits_; i++) units_[i] = fu + i;
 
-    Ia_code_ = init_int_array(nb);
-    Ib_code_ = init_int_array(nb);
-    Ia_size_ = init_int_array(nb);
-    Ib_size_ = init_int_array(nb);
-    offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
+    Ia_code_.resize(nb);
+    Ib_code_.resize(nb);
+    Ia_size_.resize(nb);
+    Ib_size_.resize(nb);
+    offset_.resize(nb);
+    // offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
 
     for (i = 0; i < nb; i++) {
         Ia_code_[i] = iac[i];
@@ -339,7 +330,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
 
     } /* end icore==0 */
 
-    file_number_ = init_int_array(buf_total_);
+    file_number_.resize(buf_total_);
 
     if (nunits_) {
         in_file_ = 0;
@@ -387,7 +378,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     // and dangerous to throw out any nonzero data, so we will only set
     // the blocks to all zero when we know we want them to be treated as
     // all 0's for certain.
-    zero_blocks_ = init_int_array(num_blocks_);
+    zero_blocks_.resize(num_blocks_);
 
     // Figure out the buffer size and allocate some pointers (but not storage)
     blocks_ = (double ***)malloc(num_blocks_ * sizeof(double **));
@@ -439,7 +430,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     }
 
     // MLL 5/7/98: Want to know the subblock length of a vector //
-    //  if (CI_Params_->print_lvl) {
+    //  if (print_lvl_) {
     //     outfile->Printf("\n CI vector/subblock length = %ld\n", buffer_size);
     //
     //     }
@@ -453,20 +444,20 @@ CIvect::~CIvect() {
         }
 
         free(blocks_);
-        free(zero_blocks_);
-        free(Ia_code_);
-        free(Ib_code_);
-        free(Ia_size_);
-        free(Ib_size_);
-        free(units_);
-        free(file_number_);
+        // free(zero_blocks_);
+        // free(Ia_code_);
+        // free(Ib_code_);
+        // free(Ia_size_);
+        // free(Ib_size_);
+        // free(units_);
+        // free(file_number_);
         free(buf_size_);
         free(buf2blk_);
         free(buf_offdiag_);
         free(first_ablk_);
         free(last_ablk_);
         free_int_matrix(decode_);
-        free(offset_);
+        // free(offset_);
     }
 }
 
@@ -556,6 +547,16 @@ void CIvect::scale(double a, int vec) {
         write(vec, buf);
     }
 }
+void CIvect::shift(double a, int vec) {
+    // this *= a
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        read(vec, buf);
+        for (size_t i = 0; i < buf_size_[buf]; ++i) {
+            buffer_[i] += a;
+        }
+        write(vec, buf);
+    }
+}
 
 void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
     for (int buf = 0; buf < buf_per_vect_; buf++) {
@@ -563,17 +564,22 @@ void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
         read(tvec, buf);
         C_DCOPY(buf_size_[buf], src->buffer_, 1, buffer_, 1);
         int blk = buf2blk_[buf];
-        if ((zero_blocks_[blk] == 0) || (src->zero_blocks_[blk] == 0))
+        if ((blk >= 0) && ((zero_blocks_[blk] == 0) || (src->zero_blocks_[blk] == 0)))
             zero_blocks_[blk] = 0;
         write(tvec, buf);
     }
 }
-void CIvect::divide(SharedCIVector denom, int tvec, int ovec) {
+void CIvect::divide(SharedCIVector denom, double min_val, int tvec, int ovec) {
    for (int buf=0; buf<buf_per_vect_; buf++) {
       denom->read(ovec, buf);
       read(tvec, buf);
       for (size_t i = 0; i < buf_size_[buf]; ++i) {
-          buffer_[i] /= denom->buffer_[i];
+          if (std::fabs(denom->buffer_[i]) > min_val) {
+              buffer_[i] /= denom->buffer_[i];
+          }
+          else{
+            buffer_[i] = 0;
+          }
       }
       write(tvec, buf);
   }
@@ -620,8 +626,8 @@ double CIvect::dcalc3(double lambda, SharedCIVector Hd, int rootnum) {
 
 void CIvect::symnormalize(double a, int tvec) {
     int i, j;
-    int blk, buf, irrep, ac, bc, len, upper;
-    double **mat, *arr, phase, tval;
+    int blk, ac, bc, upper;
+    double **mat, *arr, phase;
 
     if (!Ms0_) {
         scale(a, tvec);
@@ -698,6 +704,19 @@ double CIvect::norm(int tvec) {
     return std::sqrt(dotprod);
 }
 
+void CIvect::vector_multiply(double scale, SharedCIVector X, SharedCIVector Y, int tvec, int xvec, int yvec) {
+    // T += a * X * Y
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        X->read(xvec, buf);
+        Y->read(yvec, buf);
+        read(tvec, buf);
+        for (size_t i=0; i<buf_size_[buf]; i++){
+            buffer_[i] += scale * X->buffer_[i] * Y->buffer_[i];
+        }
+        write(tvec, buf);
+    }
+}
+
 /*
 ** CIvect::operator *
 **
@@ -708,7 +727,7 @@ double CIvect::norm(int tvec) {
 double CIvect::operator*(CIvect &b)
 {
    double dotprod=0.0, tval;
-   int i, len, buf;
+   int i, buf;
 
    if (Ms0_) {
       for (buf=0; buf<buf_per_vect_; buf++) {
@@ -2520,7 +2539,7 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
    C.buf_unlock();
 
 
-   if (CI_Params_->print_lvl > 3) {
+   if (print_lvl_ > 3) {
      outfile->Printf("\nwfn_overlap = \n");
      print_mat(wfn_overlap, k+1, k+1, "outfile");
      outfile->Printf("\t\t\t\t");
@@ -2848,21 +2867,18 @@ unsigned long CIvect::get_max_blk_size(void)
 **
 ** Check the norm of a CI vector
 */
-double CIvect::checknorm(void)
-{
-   double tval, dotprod = 0.0;
-   int buf;
+double CIvect::checknorm(void) {
+    double tval, dotprod = 0.0;
 
-   for (buf=0; buf<buf_per_vect_; buf++) {
-      read(cur_vect_, buf);
-      dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
-      if (buf_offdiag_[buf]) tval *= 2.0;
-      dotprod += tval;
-      }
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        read(cur_vect_, buf);
+        dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+        if (buf_offdiag_[buf]) tval *= 2.0;
+        dotprod += tval;
+    }
 
-   return(dotprod);
+    return (dotprod);
 }
-
 
 /*
 ** CIvect::copy()
@@ -2870,20 +2886,17 @@ double CIvect::checknorm(void)
 ** This copies one CI vector to another
 **
 */
-void CIvect::copy(CIvect &Src, int targetvec, int srcvec)
-{
-   int buf, blk;
+void CIvect::copy(CIvect &Src, int targetvec, int srcvec) {
 
-   for (buf=0; buf<buf_per_vect_; buf++) {
-      Src.read(srcvec, buf);
-      xey(buffer_, Src.buffer_, buf_size_[buf]);
-      blk = buf2blk_[buf];
-      if ( (zero_blocks_[blk]==0) || (Src.zero_blocks_[blk]==0) )
-         zero_blocks_[blk] = 0;
-      write(targetvec, buf);
-      }
+    for (int buf = 0; buf < buf_per_vect_; buf++) {
+        Src.read(srcvec, buf);
+        xey(buffer_, Src.buffer_, buf_size_[buf]);
+        int blk = buf2blk_[buf];
+        if ((blk >= 0) && ((zero_blocks_[blk] == 0) || (Src.zero_blocks_[blk] == 0)))
+            zero_blocks_[blk] = 0;
+        write(targetvec, buf);
+    }
 }
-
 
 /*
 ** CIvect::restart_gather()
@@ -3256,7 +3269,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
    buf_lock(buffer1);
    read(vec_num, 0);
 
-   if (CI_Params_->print_lvl > 4) {
+   if (print_lvl_ > 4) {
      for (i=0; i<num_blocks_; i++) {
         ket_nas = Ia_size_[i];
         ket_nbs = Ib_size_[i];
@@ -3291,7 +3304,7 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
          tval2 = ssq(alplist[ket_ac], betlist[ket_bc], blocks_[bra_block],
                    blocks_[ket_block], ket_nas, ket_nbs, bra_ac, bra_bc);
          tval += tval2;
-         if (CI_Params_->print_lvl > 4) {
+         if (print_lvl_ > 4) {
            outfile->Printf("\nbra_block = %d\n",bra_block);
            outfile->Printf("ket_block = %d\n",ket_block);
            outfile->Printf("Contribution to <S_S+> = %lf\n",tval2);
@@ -3301,14 +3314,14 @@ double CIvect::calc_ssq(double *buffer1, double *buffer2,
     } /* end loop over ket_block */
 
     Ms = 0.5 * (CI_CalcInfo_->num_alp_expl - CI_CalcInfo_->num_bet_expl);
-    if (CI_Params_->print_lvl > 1) {
+    if (print_lvl_ > 1) {
       outfile->Printf("\n\n<S_z> = %lf\n", Ms);
       outfile->Printf("<S_z>^2 = %lf\n", Ms*Ms);
       outfile->Printf("<S_S+> = %lf\n", tval);
     }
     S2 = CI_CalcInfo_->num_bet_expl + tval + Ms + Ms*Ms;
 
-    if (CI_Params_->print_lvl) outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
+    if (print_lvl_) outfile->Printf("Computed <S^2> vector %d = %20.15f\n\n", vec_num, S2);
 
   buf_unlock();
   return(S2);
@@ -3770,7 +3783,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
    int acnt, bcnt;
    int a1, a2, a3, b1, b2, b3;
    int i,j, ii, iii, jj, ij, iijj, ijij;
-   double value, tval, tval2, Kave;
+   double value, tval = 0.0, tval2, Kave;
    struct stringwr *betlist0;
    double k_total; /* total number of K ints in energy expression */
    int k_combo; /* total combination of unique K ints over spin-coupling set */
@@ -3886,7 +3899,7 @@ void CIvect::calc_hd_block_ave(struct stringwr *alplist_local, struct stringwr *
          value -= 0.5 * Kave * k_total;
          /* outfile->Printf("Kave = %lf\n",Kave); */
 
-         if (CI_Params_->print_lvl > 5) {
+         if (print_lvl_ > 5) {
            outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt);
            outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
@@ -4207,7 +4220,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
    int acnt, bcnt;
    int a1, a2, a3, b1, b2, b3;
    int i,j, ii, iii, jj, ij, iijj, ijij;
-   double value, tval, tval2, Kave;
+   double value, tval = 0.0, tval2, Kave;
    struct stringwr *betlist0;
    double k_total; /* total number of K ints in energy expression */
    int k_combo; /* total combination of unique K ints over spin-coupling set */
@@ -4319,7 +4332,7 @@ void CIvect::calc_hd_block_z_ave(struct stringwr *alplist_local,
          value += 0.5 * Kave * k_total * pert_param;
          /* outfile->Printf("Kave = %lf\n",Kave); */
 
-         if (CI_Params_->print_lvl > 5) {
+         if (print_lvl_ > 5) {
            outfile->Printf("acnt = %d\t bcnt = %d\n",acnt,bcnt);
            outfile->Printf("tval = %lf\n",tval);
            for(a1=0; a1<na; a1++)
@@ -4360,7 +4373,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
    /* First determine the expection value of <S_S+> */
 
    /* loop over Ia */
-   if (CI_Params_->print_lvl > 2) {
+   if (print_lvl_ > 2) {
      outfile->Printf("number of alpha strings = %d\n",nas);
    }
    for (Ia=alplist,Ia_idx=0; Ia_idx < nas; Ia_idx++,Ia++) {
@@ -4378,7 +4391,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
          j1 = ji%CI_CalcInfo_->num_ci_orbs;
 
          /* loop over Ib */
-         if (CI_Params_->print_lvl > 2) {
+         if (print_lvl_ > 2) {
            outfile->Printf("number of beta strings = %d\n",nbs);
          }
          for (Ib=betlist, Ib_idx=0; Ib_idx < nbs; Ib_idx++, Ib++) {
@@ -4399,7 +4412,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
                if (i1!=j2 || i2!=j1) continue;
                tval += CR[Ia_idx][Ib_idx] * CL[Ja_idx][Jb_idx] *
                    (double) Ja_sgn * (double) Jb_sgn;
-               if (CI_Params_->print_lvl > 3) {
+               if (print_lvl_ > 3) {
                  outfile->Printf("\n\nIa_idx = %d\n",Ia_idx);
                  outfile->Printf("Ib_idx = %d\n",Ib_idx);
                  outfile->Printf("Ja_idx = %d\n",Ja_idx);

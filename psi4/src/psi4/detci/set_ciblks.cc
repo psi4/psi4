@@ -33,9 +33,8 @@
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-
-#include "structs.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -61,8 +60,8 @@ void CIWavefunction::set_ciblks()
    CalcInfo_->num_bet_str = BetaG_->num_str;
    xlvl = Parameters_->ex_lvl;
 
-   if (Parameters_->print_lvl) {
-      outfile->Printf( "   There are %d alpha and %d beta strings\n", CalcInfo_->num_alp_str, CalcInfo_->num_bet_str);
+   if (print_) {
+      outfile->Printf( "    There are %d alpha and %d beta strings\n", CalcInfo_->num_alp_str, CalcInfo_->num_bet_str);
       }
 
    /* Get the occupations for the reference alpha and beta strings.
@@ -338,9 +337,9 @@ void CIWavefunction::set_ciblks()
                     (BIGINT) CIblks_->Ia_size[nblocks-1] *
                     (BIGINT) CIblks_->Ib_size[nblocks-1];
 
-   if (Parameters_->print_lvl) {
+   if (print_) {
      outfile->Printf(
-       "   The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
+       "    The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
        (double) CIblks_->vectlen, (double) CIblks_->vectlen, nblocks);
      }
 
@@ -349,7 +348,7 @@ void CIWavefunction::set_ciblks()
      throw PSIEXCEPTION("DETCI requires at least two determinants! Quitting...");
    }
 
-   //if (Parameters_->print_lvl)
+   //if (print_)
    //   outfile->Printf( "\n   CI space contains %4d blocks\n", nblocks);
 
    /* set up the decode array */

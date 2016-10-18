@@ -42,8 +42,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/psi4-dec.h"
-#include "structs.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 

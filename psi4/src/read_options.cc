@@ -470,31 +470,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         Warning: This will hold 4 dense active TPDM's in memory !expert -*/
     options.add_bool("TPDM", false);
 
-    /*- Do print the one-particle density matrix for each root? -*/
-    options.add_bool("OPDM_PRINT", false);
-
-    /*- Build natural orbitals? The orbtials will be reordered by occuption number.-*/
-    options.add_bool("NAT_ORBS", false);
-
-    /*- Do average the OPDM over several roots in
-    order to obtain a state-average one-particle density matrix?  This
-    density matrix can be diagonalized to obtain the CI natural orbitals. -*/
-    options.add_bool("OPDM_AVG", false);
-
-    /*- Do print the two-particle density matrix? (Warning: large tensor) -*/
-    options.add_bool("TPDM_PRINT", false);
-
     /*- Do compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
     does not compute states of different irreps within the same
     computation; to do this, lower the symmetry of the computation.-*/
     options.add_bool("TDM", false);
-
-    /*- Do write the transition density? -*/
-    options.add_bool("TDM_WRITE", false);
-
-    /*- Do print the transition density? -*/
-    options.add_bool("TDM_PRINT", false);
 
     /*- Do compute the dipole moment? -*/
     options.add_bool("DIPMOM", false);
@@ -744,7 +724,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- SUBSECTION MCSCF -*/
 
     /*- Convergence criterion for the RMS of the orbital gradient -*/
-    options.add_double("MCSCF_R_CONVERGENCE", 1e-4);
+    options.add_double("MCSCF_R_CONVERGENCE", 1e-5);
 
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
@@ -754,39 +734,50 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number MCSCF of iterations -*/
     options.add_int("MCSCF_MAXITER", 30);
 
-    /* - Do we run conventional or density fitted? -*/
-    options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
-
-    /*- Convergence algorithm to utilize. This is a flag for the future. !expert-*/
-    options.add_str("MCSCF_ALGORITHM", "TWO_STEP", "ONE_STEP TWO_STEP");
-
-    /*- Do second-order orbital-orbital MCSCF. Without one-step this typically slows
-    the overall computation considerably !expert -*/
-    options.add_bool("MCSCF_SO", false);
-
-    /*- Start second-order orbital-orbital MCSCF based on RMS of orbital gradient !expert -*/
-    options.add_double("MCSCF_SO_START_GRAD", 1e-3);
-
-    /*- Start second-order orbital-orbital MCSCF based on energy convergence !expert-*/
-    options.add_double("MCSCF_SO_START_E", 1e-3);
-
-    /*- Iteration to turn on DIIS -*/
-    options.add_int("MCSCF_DIIS_START", 3);
-
-    /*- How often to do a DIIS extrapolation -*/
-    options.add_int("MCSCF_DIIS_FREQ", 1);
-
-    /*- Maximum number of DIIS vectors -*/
-    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
-
     /*- Maximum value in the rotation matrix. If a value is greater than this number
     all values are scaled. -*/
     options.add_double("MCSCF_MAX_ROT", 0.5);
+
+    /* - Do we run conventional or density fitted? -*/
+    options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
+
+    /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of
+    [irrep, orbital1, orbital2, theta] where an angle of 0 would do nothing and an angle
+    of 90 would switch the two orbitals. -*/
+    options.add("MCSCF_ROTATE", new ArrayType());
+
+    /*- Convergence algorithm to utilize. Two-Step, Augmented Hessian, or One-Step. Defaults
+    to TS for RASSCF. -*/
+    options.add_str("MCSCF_ALGORITHM", "TS", "TS AH");
+
+    /*- Start second-order (AH or OS) orbital-orbital MCSCF based on RMS of orbital gradient -*/
+    options.add_double("MCSCF_SO_START_GRAD", 1e-4);
+
+    /*- Start second-order (AH or OS) orbital-orbital MCSCF based on energy convergence -*/
+    options.add_double("MCSCF_SO_START_E", 1e-4);
+
+    /*- Iteration to turn on DIIS for TS convergence -*/
+    options.add_int("MCSCF_DIIS_START", 3);
+
+    /*- How often to do a DIIS extrapolation for TS convergence -*/
+    options.add_int("MCSCF_DIIS_FREQ", 1);
+
+    /*- Maximum number of DIIS vectors for TS convergence -*/
+    options.add_int("MCSCF_DIIS_MAX_VECS", 8);
+
+    /*- DIIS error vector type either, the AO orbital gradient or the orbital rotation update matrix -*/
+    options.add_str("MCSCF_DIIS_ERROR_TYPE", "GRAD", "GRAD UPDATE");
 
     /*- Auxiliary basis set for MCSCF density fitted ERI computations.
     This only effects the "Q" matrix in Helgaker's language.
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_MCSCF", "");
+
+    /* Cleanup the CI info at the end of a run? */
+    options.add_bool("MCSCF_CI_CLEANUP", true);
+
+    /* Cleanup the DPD MCSCF object at the end of a run? */
+    options.add_bool("MCSCF_DPD_CLEANUP", true);
 
 
   }

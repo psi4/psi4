@@ -78,11 +78,11 @@ class CIvect {
                                                    2 = symm block in-core,
                                                    0 = one subblock in-core */
     int Ms0_;                   /* is this a vector for M_s=0? 1=yes, 0=no */
-    int *Ia_code_;              /* each block's alpha string id code */
-    int *Ib_code_;              /* each block's beta string id code */
-    int *Ia_size_;              /* num alp strings in each block */
-    int *Ib_size_;              /* num bet strings in each block */
-    BIGINT *offset_;            /* offsets for absolute numbering.  This
+    std::vector<int> Ia_code_;   /* each block's alpha string id code */
+    std::vector<int> Ib_code_;   /* each block's beta string id code */
+    std::vector<int> Ia_size_;   /* num alp strings in each block */
+    std::vector<int> Ib_size_;   /* num bet strings in each block */
+    std::vector<BIGINT> offset_; /* offsets for absolute numbering.  This
                                    is a word offset, not a byte offset,
                                    so unsigned long should be ok          */
     int num_alpcodes_;          /* number of possible (total) alpha codes */
@@ -98,8 +98,8 @@ class CIvect {
     int cur_vect_;              /* current vector number in core */
     int cur_buf_;               /* current buffer in core */
     int buf_locked_;            /* is a memory buffer locked in/available?  */
-    int *units_;                /* file numbers */
-    int *file_number_;          /* unit number for given vector/block */
+    std::vector<int> units_;                /* file numbers */
+    std::vector<int> file_number_;          /* unit number for given vector/block */
     unsigned long *buf_size_;   /* size of each buffer on disk
                                    (0...buf_per_vect) */
     int *buf2blk_;              /* buffer number -> block number for
@@ -112,7 +112,7 @@ class CIvect {
                                 /* dimensions num_alpcodes * num_betcodes */
     double ***blocks_;          /* a matrix for each block                */
     double *buffer_;            /* pointer to buffer, same as blocks[0][0] */
-    int *zero_blocks_;          /* array for which blocks happen to be 0   */
+    std::vector<int> zero_blocks_;          /* array for which blocks happen to be 0   */
     int in_file_;               /* increment for how many buffers in a file */
     int extras_;                /* accounts for extra buffers */
     int units_used_;            /* accounts for number of unit files used */
@@ -120,6 +120,7 @@ class CIvect {
     int cur_size_;              /* current size of buffer */
     int first_unit_;            /* first file unit number (if > 1) */
     int subgr_per_irrep_;       /* possible number of Olsen subgraphs per irrep */
+    int print_lvl_;             /* print level*/
 
     double ssq(struct stringwr *alplist, struct stringwr *betlist, double **CL,
                double **CR, int nas, int nbs, int Ja_list, int Jb_list);
@@ -143,11 +144,15 @@ class CIvect {
     /// BLAS equivalents for CIVectors
     void axpy(double a, SharedCIVector x, int tvec, int ovec);
     void scale(double a, int tvec);
+    void shift(double a, int tvec);
     void copy(SharedCIVector src, int tvec, int ovec);
-    void divide(SharedCIVector denom, int tvec, int ovec);
+    void divide(SharedCIVector denom, double min_val, int tvec, int ovec);
     void zero(void);
     double vdot(SharedCIVector b, int tvec, int ovec);
     double norm(int tvec);
+
+    // self += scale * a * b
+    void vector_multiply(double scale, SharedCIVector X, SharedCIVector Y, int tvec, int xvec, int yvec);
 
     /// Specific CIVector operations
     double dcalc3(double lambda, SharedCIVector Hd, int rootnum);

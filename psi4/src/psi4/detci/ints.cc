@@ -62,16 +62,17 @@
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/libfock/soscf.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libpsio/psio.hpp"
-#include "structs.h"
-#include "ciwave.h"
-#include "globaldefs.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/globaldefs.h"
 
 namespace psi { namespace detci {
 
 void CIWavefunction::transform_ci_integrals() {
-    outfile->Printf("\n   ==> Transforming CI integrals <==\n");
+    outfile->Printf("\n   ==> Transforming CI integrals <==\n\n");
     // Grab orbitals
     SharedMatrix Cdrc = get_orbitals("DRC");
     SharedMatrix Cact = get_orbitals("ACT");
@@ -143,7 +144,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
     df_ints_init_ = true;
 }
 void CIWavefunction::transform_mcscf_integrals(bool approx_only) {
-    if (MCSCF_Parameters_->mcscf_type == "DF") {
+    if (Parameters_->mcscf_type == "DF") {
         transform_dfmcscf_ints(approx_only);
     } else {
         transform_mcscf_ints(approx_only);
@@ -178,7 +179,7 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k,
         }
 
     }
-    Uact->print();
+    // Uact->print();
 
 
     // => Setup <= //
@@ -195,7 +196,7 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k,
 
     pitzer_to_ci_order_onel(rot_onel, tmponel);
 
-    if (MCSCF_Parameters_->mcscf_type == "DF") {
+    if (Parameters_->mcscf_type == "DF") {
         rotate_dfmcscf_twoel_ints(Uact, twoel_out);
     } else {
         rotate_mcscf_twoel_ints(Uact, twoel_out);
@@ -426,7 +427,7 @@ void CIWavefunction::read_dpd_ci_ints() {
 
     // Read one electron integrals
     iwl_rdone(PSIF_OEI, PSIF_MO_FZC, tmp_onel_ints, nmotri_full, 0,
-              (Parameters_->print_lvl > 4), "outfile");
+              (print_ > 4), "outfile");
 
     // IntegralTransform does not properly order one electron integrals for
     // whatever reason
@@ -623,7 +624,6 @@ void CIWavefunction::rotate_mcscf_twoel_ints(SharedMatrix Uact,
     global_dpd_->buf4_close(&I);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    // aaar->print();
     // Rotate the integrals
     SharedMatrix dense_Uact = Uact->to_block_sharedmatrix();
     SharedMatrix half_rot_aaaa = Matrix::doublet(aaar, dense_Uact, false, true);
@@ -777,13 +777,39 @@ void CIWavefunction::form_gmat(SharedVector onel, SharedVector twoel, SharedVect
 }
 
 void CIWavefunction::onel_ints_from_jk() {
+
+    // Compute the frozen fock if needed
+    // This is the *only* place where the frozen fock enters
+    if ((!fzc_fock_computed_) && (CalcInfo_->frozen_docc.sum() > 0)){
+        std::vector<SharedMatrix>& Cl = jk_->C_left();
+        std::vector<SharedMatrix>& Cr = jk_->C_right();
+        Cl.clear();
+        Cr.clear();
+
+        Cl.push_back(get_orbitals("FZC"));
+        jk_->compute();
+        Cl.clear();
+
+        const std::vector<SharedMatrix>& J = jk_->J();
+        const std::vector<SharedMatrix>& K = jk_->K();
+
+        J[0]->scale(2.0);
+        J[0]->subtract(K[0]);
+
+        CalcInfo_->fzc_so_onel_ints = J[0]->clone();
+        fzc_fock_computed_ = true;
+
+    }
+
     SharedMatrix Cact = get_orbitals("ACT");
-    SharedMatrix Cdrc = get_orbitals("DRC");
+    SharedMatrix Cdocc = get_orbitals("DOCC");
+
     std::vector<SharedMatrix>& Cl = jk_->C_left();
     std::vector<SharedMatrix>& Cr = jk_->C_right();
     Cl.clear();
     Cr.clear();
-    Cl.push_back(Cdrc);
+
+    Cl.push_back(Cdocc);
     jk_->compute();
     Cl.clear();
 
@@ -792,9 +818,17 @@ void CIWavefunction::onel_ints_from_jk() {
 
     J[0]->scale(2.0);
     J[0]->subtract(K[0]);
+    if (CalcInfo_->frozen_docc.sum() > 0){
+        J[0]->add(CalcInfo_->fzc_so_onel_ints);
+    }
 
     J[0]->add(H_);
+
+
     CalcInfo_->so_onel_ints = J[0]->clone();
+    if (mcscf_object_init_){
+        somcscf_->set_AO_IFock(J[0]);
+    }
     SharedMatrix onel_ints = Matrix::triplet(Cact, J[0], Cact, true, false, false);
 
     // Set 1D onel ints
@@ -803,10 +837,9 @@ void CIWavefunction::onel_ints_from_jk() {
     // => Compute dropped core energy <= //
     J[0]->add(H_);
 
+    SharedMatrix Cdrc = get_orbitals("DRC");
     SharedMatrix D = Matrix::doublet(Cdrc, Cdrc, false, true);
     CalcInfo_->edrc = J[0]->vector_dot(D);
-    Cdrc.reset();
-    D.reset();
 }
 
 void CIWavefunction::pitzer_to_ci_order_onel(SharedMatrix src, SharedVector dest){
@@ -814,7 +847,6 @@ void CIWavefunction::pitzer_to_ci_order_onel(SharedMatrix src, SharedVector dest
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel irreps are not of the correct size.");
     }
 
-    // size_t ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
     if (dest->dim(0) != CalcInfo_->num_ci_tri){
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel: Destination vector must be of size ncitri.");
     }
@@ -841,8 +873,6 @@ void CIWavefunction::pitzer_to_ci_order_twoel(SharedMatrix src, SharedVector des
     if ((src->nirrep() != 1) || dest->nirrep() != 1){
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_twoel irreped matrices are not supported.");
     }
-    // size_t ncitri = (CalcInfo_->num_ci_orbs * (CalcInfo_->num_ci_orbs + 1)) / 2;
-    // size_t ncitri2 = (ncitri * (ncitri + 1)) / 2;
     if (dest->dim(0) != CalcInfo_->num_ci_tri2){
         throw PSIEXCEPTION("CIWavefunciton::pitzer_to_ci_order_onel: Destination vector must be of size ncitri2.");
     }
