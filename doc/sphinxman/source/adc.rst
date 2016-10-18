@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -15,7 +41,7 @@ ADC: Ab Initio Polarization Propagator
 .. codeauthor:: Masaaki Saitow
 .. sectionauthor:: Masaaki Saitow
 
-*Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <src/bin/adc>`
+*Module:* :ref:`Keywords <apdx:adc>`, :ref:`PSI Variables <apdx:adc_psivar>`, :source:`ADC <psi4/src/psi4/adc>`
 
 The ADC code seeks the pole structure of the polarization
 propagator, which is equivalent to the correlated excitation energy,
@@ -25,7 +51,7 @@ the diagrammatic language by Schirmer [Schirmer:1982]_ and later,
 a sophisticated algebraic scheme was developed [Trofimov:2006]_
 by Trofimov et al. In general by n-th order ADC theory, the
 excited state is treated at completely equivalent level to the 
-M\ |o_slash|\ ller--Plesset perturbation expansion of the same order. 
+|MollerPlesset| perturbation expansion of the same order.
 Hence the ADC(2)
 can be described as MP2 theory for the excited state and the relation
 to such other response theories as CC2-LR, CIS(D) and CIS(D\ :math:`_n`) has
@@ -42,10 +68,8 @@ the pre-factor in the polynomial scaling becomes far larger than that
 of the CIS(D) even though the quasi-degeneracy of the excited state is
 properly accounted for in the ADC(2) model.
 
-In |PSIfour| the quite efficient and flexible integral-transformation
-library named libtrans is newly equipped and utilized in the
-production level DCFT code. The ADC code is also based on
-libtrans, and it is also based on libdpd, a library to
+The ADC code makes use of the libtrans library for efficient and flexible
+integral-transformation and also the libdpd library to
 utilize molecular symmetry in the tensorial manipulations in framework
 of the direct-product decomposition algorithm. By this feature, the Ritz
 space and intermediate tensors are blocked according to the irreducible
@@ -113,8 +137,8 @@ important keyword is |adc__roots_per_irrep|, which is an array
 giving the number of excited states desired for each irreducible
 representation.
 
-Implementation
-~~~~~~~~~~~~~~
+Theory
+~~~~~~
 Some very essential points are emphasized for understanding of the
 nature and the limitations of the theory. The ADC(2) response matrix,
 denoted as :math:`\mathbf{A}`, is expanded in the single (S) and double (D)
@@ -143,7 +167,7 @@ the large D manifold is treated effectively as
    \mathbf{A_{DD}^{(0)}})^{-1}\mathbf{A_{DS}^{(1)}}]\mathbf{X_{S}}=
    \omega\mathbf{X_{S}}.
 
-This form of the ADC(2) equation requires 7 -- 10 iterations for
+This form of the ADC(2) equation requires 7--10 iterations for
 convergence on only one root. But thanks to Newton-Raphson
 acceleration,
 
@@ -158,7 +182,7 @@ acceleration,
 
 the computational time reduces to shorter than half of the simple iterative
 procedure. Construction of the denominator of the second term in the above
-equation is less computationally expensive than contruction of one $\sigma$-vector with respect to the effective response matrix. The non-iterative excitation energy stated above is calculated as a diagonal element of the Davidson mini-Hamiltonian matrix in the SEM as,
+equation is less computationally expensive than contruction of one :math:`\sigma`\ -vector with respect to the effective response matrix. The non-iterative excitation energy stated above is calculated as a diagonal element of the Davidson mini-Hamiltonian matrix in the SEM as,
 
 .. math:: \omega^{Non-Iterative}=
    \mathbf{X_{CIS}}^{\dagger}[\mathbf{A_{SS}^{(2)}}+
@@ -168,5 +192,5 @@ equation is less computationally expensive than contruction of one $\sigma$-vect
 where :math:`\omega^{CIS}` and :math:`\mathbf{X_{CIS}}` denote the CIS 
 excitation energy and wave function, respectively. The explicit form of the 
 |sigma|-vector is provided in a note accompanying the source code,
-in the file :source:`src/bin/adc/sigma.pdf`. 
+in the file :source:`psi4/src/psi4/adc/sigma.pdf`.
 

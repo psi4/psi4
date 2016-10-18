@@ -32,6 +32,8 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdisp/dispersion.h"
+#include "psi4/libfock/v.h"
+#include "psi4/libmints/basisset.h"
 
 using namespace psi;
 
@@ -60,7 +62,6 @@ void export_functional(py::module &m)
         def("c_alpha", &SuperFunctional::c_alpha, "docstring").
         def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "docstring").
         def("c_os_alpha", &SuperFunctional::c_os_alpha, "docstring").
-        def("dispersion", &SuperFunctional::dispersion, "docstring").
         def("is_gga", &SuperFunctional::is_gga, "docstring").
         def("is_meta", &SuperFunctional::is_meta, "docstring").
         def("is_x_lrc", &SuperFunctional::is_x_lrc, "docstring").
@@ -79,7 +80,6 @@ void export_functional(py::module &m)
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
         def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "docstring").
         def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "docstring").
-        def("set_dispersion", &SuperFunctional::set_dispersion, "docstring").
         def("print_out",&SuperFunctional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
@@ -109,6 +109,31 @@ void export_functional(py::module &m)
         def("set_parameter", &Functional::set_parameter, "docstring").
         def("print_out", &Functional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");
+
+    py::class_<VBase, std::shared_ptr<VBase> >(m, "VBase", "docstring").
+        def_static("build", [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func, std::string type){
+            return VBase::build_V(basis, func, Process::environment.options, type);
+        }).
+        def("initialize", &VBase::initialize, "doctsring").
+        def("finalize", &VBase::finalize, "doctsring").
+        def("compute", &VBase::compute, "doctsring").
+        def("compute_gradient", &VBase::compute_gradient, "doctsring").
+
+        def("basis", &VBase::basis, "doctsring").
+        def("functional", &VBase::functional, "doctsring").
+        // def("properties", &VBase::properties, "doctsring").
+        // def("grid", &VBase::grid, "doctsring").
+        def("quadrature_values", &VBase::quadrature_values, "doctsring").
+
+        def("C", &VBase::C, "doctsring").
+        def("V", &VBase::V, "doctsring").
+        def("D", &VBase::D, "doctsring").
+        def("C_clear", [](VBase &v){
+                v.C().clear();
+            }).
+        def("C_add", [](VBase &v, SharedMatrix C){
+                v.C().push_back(C);
+            });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion> >(m, "Dispersion", "docstring").
         // TODO need init

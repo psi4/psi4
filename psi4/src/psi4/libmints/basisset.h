@@ -318,51 +318,15 @@ public:
      */
     static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet> > test_basis_set(int max_am);
 
-    /** Returns a new BasisSet object.
+
+    /** Returns a new basis set object
+     * Constructs a basis set from the parsed information
      *
-     * Returns a new BasisSet object configured with the provided Molecule object.
-     * @param parser The basis set parser object that will be used to interpret the basis set file.
-     * @param mol Molecule to construct basis set for.
-     * @return A new basis set object constructed from the information passed in.
-     */
-    static std::shared_ptr<BasisSet> construct(const std::shared_ptr<BasisSetParser>& parser,
-                                                 const std::shared_ptr<Molecule>& mol,
-                                                 const std::string& type);
-
-    /** Returns a new BasisSet object with qcdb Python machinery.
-     *
-     * @param mol    Molecule to construct the basis set for.
-     * @param key    keyword to build basis set for, usually BASIS
-     * @param target keyword value to build basis set for, e.g., CC-PVDZ or MYCOBALTBASIS
-     * @param puream puream value to force basis set for; -1 for unforced
-     * @return A new basis set object constructed from the information passed in.
-     */
-    static std::shared_ptr<BasisSet> pyconstruct_orbital(const std::shared_ptr<Molecule>& mol,
-        const std::string& key, const std::string& target, int puream = -1);
-
-    static std::shared_ptr<BasisSet> pyconstruct_combined(const std::shared_ptr<Molecule>& mol,
-                                                            const std::vector<std::string>& keys,
-                                                            const std::vector<std::string>& targets,
-                                                            const std::vector<std::string>& fitroles,
-                                                            const std::vector<std::string>& others,
-                                                            const int forced_puream = -1);
-
-    /** Returns a new BasisSet object with qcdb Python machinery.
-     *
-     * @param mol    Molecule to construct the basis set for.
-     * @param key    keyword to build basis set for, e.g., DF_BASIS_SCF
-     * @param target keyword value to build basis set for, e.g., CC-PVDZ-JKFIT or MYCOBALTBASISJK
-     * @param role   e.g., RIFIT, JKFIT
-     * @param other  orbital keyword value for "hints" basis set when target is auxiliary
-     * @param puream puream value to force basis set for; -1 for unforced
-     * @return A new basis set object constructed from the information passed in.
-     */
-    static std::shared_ptr<BasisSet> pyconstruct_auxiliary(const std::shared_ptr<Molecule>& mol,
-        const std::string& key, const std::string& target,
-        const std::string& role, const std::string& other, int puream = -1);
-
-    /// Return a decontracted basis set
-    std::shared_ptr<BasisSet> decontract();
+     * @param mol           Psi4 molecule
+     * @param py::dict      Python dictionary containing the basis information
+     * @param forced_puream Force puream or not
+    **/
+    static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

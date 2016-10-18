@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -39,9 +65,9 @@ procedures and have the following general structure.
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-   - Local options (e.g., ``set scf e_convergence 9``) will not get transmitted to the child jobs.
+   - Local options (*e.g.*, ``set scf e_convergence 9``) will not get transmitted to the child jobs.
 
-   - Array options (e.g., ``set states_per_irrep [2, 1]``) will not get transmitted to the child jobs.
+   - Array options (*e.g.*, ``set states_per_irrep [2, 1]``) will not get transmitted to the child jobs.
 
-   - Function intercalls (e.g., db(opt())) are not tested with sow/reap procedures.
+   - Function intercalls (*e.g.*, db(opt())) are not tested with sow/reap procedures.
 

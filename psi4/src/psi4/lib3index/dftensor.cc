@@ -73,28 +73,6 @@ DFTensor::DFTensor(std::shared_ptr<BasisSet> primary,
 {
     common_init();
 }
-DFTensor::DFTensor(std::shared_ptr<Wavefunction> wfn, const std::string& type)
- : options_(Process::environment.options)
-{
-    if (!wfn){
-        throw PSIEXCEPTION("DFTensor: Must have constructed a wavefunction!");
-    }
-    if (wfn->nirrep() > 1){
-        throw PSIEXCEPTION("DFTensor: Only C1 symmetry is supported.");
-    }
-
-    primary_ = wfn->basisset();
-
-    std::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), type);
-
-    C_ = wfn->Ca();
-    nocc_ = wfn->doccpi()[0];
-    nvir_ = wfn->nsopi()[0] - wfn->doccpi()[0];
-    naocc_ = nocc_;
-    navir_ = nvir_;
-    common_init();
-}
 DFTensor::~DFTensor()
 {
 }

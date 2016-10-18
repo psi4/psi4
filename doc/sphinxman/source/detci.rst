@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -11,10 +37,10 @@
 CI: Configuration Interaction
 =============================
 
-.. codeauthor:: C. David Sherrill and Matthew L. Leininger
+.. codeauthor:: Daniel G. A. Smith, C. David Sherrill, and Matthew L. Leininger
 .. sectionauthor:: C. David Sherrill
 
-*Module:* :ref:`Keywords <apdx:detci>`, :ref:`PSI Variables <apdx:detci_psivar>`, :source:`DETCI <src/bin/detci>`
+*Module:* :ref:`Keywords <apdx:detci>`, :ref:`PSI Variables <apdx:detci_psivar>`, :source:`DETCI <psi4/src/psi4/detci>`
 
 Configuration interaction (CI) is one of the most general ways to
 improve upon Hartree--Fock theory by adding a description of the
@@ -90,11 +116,11 @@ only to detci, but also at least to the transformation program
 subspace keywords such as |globals__ras1|,
 |globals__ras2|, |globals__ras3|, |globals__frozen_docc|, 
 |globals__frozen_uocc|,
-|globals__active|, etc., should be set
+|globals__active|, etc., are set
 in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
-computation with DETCI is simply to call ``energy()``, ``optimize()``, etc., 
+computation with DETCI is simply to call :py:func:`~driver.energy`, :py:func:`~driver.optimize`, *etc.*,
 with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
 recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  Higher order
@@ -143,9 +169,9 @@ Arbitrary Order Perturbation Theory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The DETCI module is capable of computing energies for arbitrary
-order M\ |o_slash|\ ller--Plesset perturbation theory (MPn, for closed-shell
+order |MollerPlesset| perturbation theory (MPn, for closed-shell
 systems with an RHF reference) and for Z-averaged perturbation theory
-(ZAPTn, open-shell systems with an ROHF reference).  However, please
+(ZAPTn, open-shell systems with a ROHF reference). However, please
 note that these computations are essentially doing high-order CI (up to
 full CI) computations to obtain these results, and hence they will only
 be possible for very small systems (generally a dozen electrons or less).
@@ -202,9 +228,4 @@ to the desired coupled-cluster excitation level, and invoke
 ``energy('detci')``.  Various other DETCI options have a similar
 option for coupled-cluster, usually named beginning with CC.  The full
 list of options is given in Appendix :ref:`apdx:detci`.
-
-
-
-
-
 

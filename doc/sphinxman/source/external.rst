@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -9,10 +35,11 @@ Obtaining |PSIfour|
 ===================
 
 The latest version of the |PSIfour| program package may be
-obtained at `www.psicode.org <http://www.psicode.org>`_. The
-package is available as a binary for Linux (:ref:`Installing
+obtained at `psicode.org <http://psicode.org>`_. The
+package is available as a binary for Linux, macOS, or Windows
+Subsystem for Linux (:ref:`Installing
 from Binary <sec:conda>`) or as source code (zipped
-archive or git repository from `www.github.com/psi4/psi4
+archive or git repository from `https://github.com/psi4/psi4
 <http://www.github.com/psi4/psi4>`_).
 
 
@@ -64,13 +91,17 @@ directory. Scratch file location can be specified through the
 (see section :ref:`sec:psirc`). Most of the time, :envvar:`PSI_SCRATCH`
 is preferred, and it overrides any existing |psirc| setting. You can set up 
 :envvar:`PSI_SCRATCH` by issuing the following commands in a terminal,
-or including them in the appropriate ``rc`` file. For C shell (``~/.tcshrc`` file): ::
+or including them in the appropriate ``rc`` file.
 
-    setenv PSI_SCRATCH /scratch/user
+.. code-block:: tcsh
 
-For Bash (``~/.bashrc`` file): ::
+    # csh, tcsh: add to shell or ~/.tcshrc file
+    setenv PSI_SCRATCH /path/to/existing/writable/local-not-network/disk/for/scratch/files
 
-    export PSI_SCRATCH=/scratch/user
+.. code-block:: bash
+
+    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
 
 |PSIfour| has a number of utilities that manage
 input and output (I/O) of quantities to and from the hard disk.  Most
@@ -78,7 +109,7 @@ quantities, such as molecular integrals, are intermediates that are not of
 interest to the user and can be deleted after the computation finishes, but
 pertinent details of computations are also written to a checkpoint file and
 might be useful in subsequent computations.  All files are written to the
-designated scratch numbered by :ref:`content <apdx:psiFiles>` and labeled
+designated scratch :ref:`numbered by content <apdx:psiFiles>` and labeled
 with the process id, then are deleted at the end of the computation,
 unless otherwise instructed by the user.
 
@@ -106,8 +137,7 @@ accomplished by the commands below::
     psi4_io.set_specific_path(32, './')
     psi4_io.set_specific_retention(32, True)
 
-which is equivalent to ::
-
+    # equivalent to above
     psi4_io.set_specific_path(PSIF_CHKPT, './')
     psi4_io.set_specific_retention(PSIF_CHKPT, True)
 
@@ -147,29 +177,27 @@ If using the environment variable :envvar:`PSI_SCRATCH` is inconvenient,
 or if some ``psi4_io`` commands must be present in all input files,
 the |psirc| resource file can be used (example :source:`samples/example_psi4rc_file`). 
 
-All the commands mentioned in section :ref:`sec:Scratch` can be used in this file,
-namely: ::
+All the commands mentioned in section :ref:`sec:Scratch` can be used in this file.
+
+To set up the scratch path::
 
     psi4_io.set_default_path('/scratch/user')
 
-to set up the scratch path, ::
+To set up the scratch path from a variable ``$MYSCRATCH``::
 
     import os
     scratch_dir = os.environ.get('MYSCRATCH')
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-to set up the scratch path from a variable ``$MYSCRATCH``, ::
+To set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it::
 
     psi4_io.set_specific_path(32, './')
     psi4_io.set_specific_retention(32, True)
 
-which is equivalent to ::
-
+    # equivalent to above
     psi4_io.set_specific_path(PSIF_CHKPT, './')
     psi4_io.set_specific_retention(PSIF_CHKPT, True)
-
-to set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it.
 
 The Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any
@@ -191,8 +219,8 @@ Threading
 Most new modules in |PSIfour| are designed to run efficiently on SMP architectures
 via application of several thread models. The de facto standard for |PSIfour|
 involves using threaded BLAS/LAPACK (particularly Intel's excellent MKL package)
-for most tensor-like operations, OpenMP for more general operations, and Boost
-Threads for some special-case operations. Note: Using OpenMP alone is a really
+for most tensor-like operations, OpenMP for more general operations, and C++
+``std::thread`` for some special-case operations. Note: Using OpenMP alone is a really
 bad idea. The developers make little to no effort to explicitly parallelize
 operations which are already easily threaded by MKL or other threaded BLAS. Less
 than 20% of the threaded code in |PSIfour| uses OpenMP, the rest is handled by
@@ -208,20 +236,29 @@ explained below. Note that each deeper level trumps all previous levels.
 .. rubric:: (1) OpenMP/MKL Environment Variables
 
 The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
-environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. 
-For instance, in tcsh::
+environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`.
 
+.. code-block:: tcsh
+
+    # csh, tcsh: add to shell or ~/.tcshrc file
     setenv OMP_NUM_THREADS 4
     setenv MKL_NUM_THREADS 4
 
+.. code-block:: bash
+
+    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    export OMP_NUM_THREADS=4
+    export MKL_NUM_THREADS=4
+
 |PSIfour| then detects these value via the API routines in ``<omp.h>`` and
-``<mkl.h>``, and runs all applicable code with 4 threads. These environment
-variables are typically defined in a ``.tcshrc`` or ``.bashrc``.
+``<mkl.h>``, and runs all applicable code with 4 threads.
 
 .. rubric:: (2) The -n Command Line Flag
 
 To change the number of threads at runtime, the :option:`psi4 -n` flag may be used. An
-example is::
+example is:
+
+.. code-block:: bash
 
     psi4 -i input.dat -o output.dat -n 4
 
@@ -295,7 +332,6 @@ a PBS job file for a threaded job, and a short explanation for each section. ::
         ssh $i mkdir -p $myscratch
     end
     
-    unsetenv PSI4DATADIR
     unsetenv PSIDATADIR
     setenv PSI_SCRATCH $myscratch
     if ! ( $?PSIPATH ) setenv PSIPATH ""
@@ -411,7 +447,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Mainly for use by developers, this overrides the value of
    :envvar:`PSIDATADIR` and specifies the path to the Psi data
-   library (psi4/share) 
+   library (ends in ``share/psi4``)
 
 .. option:: -m, --messy
 
@@ -426,8 +462,8 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    Output file name. Use ``stdout`` as <filename> to redirect 
    to the screen. Default: when the input filename is "input.dat",
    then the output filename defaults to "output.dat".  Otherwise, the
-   output filename defaults to the the input filename (subtracting
-   any ".in" or ".dat" suffix) plus ".out"
+   output filename defaults to the the input filename with any
+   any ".in" or ".dat" extension replaced by ".out"
 
 .. option:: -p <prefix>, --prefix <prefix>
 
@@ -443,7 +479,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    Creates a new directory <name> with files for writing a
    new plugin. An additional argument specifies a template
    to use, for example: ``--new-plugin name +mointegrals``.
-   See Sec. :ref:`sec:plugins` for available templates.
+   See :ref:`plugins <sec:plugins>` for available templates.
 
 .. option:: -v, --verbose
 
@@ -502,16 +538,17 @@ These environment variables will influence |PSIfours| behavior.
    to a disk drive physically attached to the computer running the computation. 
    If it is not, it will significantly slow down the program and the network. 
 
-   Modify :envvar:`PSI_SCRATCH` through normal Linux shell commands before invoking ``psi4`` ::
+   Modify :envvar:`PSI_SCRATCH` through normal Linux shell commands before invoking :command:`psi4`
 
-      # csh, tcsh
-      >>> setenv PSI_SCRATCH /scratch/user
+   .. code-block:: tcsh
 
-      # bash
-      >>> export PSI_SCRATCH=/scratch/user
+       # csh, tcsh: add to shell or ~/.tcshrc file
+       setenv PSI_SCRATCH /scratch/user
 
-   You can also include the above commands in the respective ``rc`` file, i.e.
-   ``~/.tcshrc`` for csh and tcsh or ``~/.bashrc`` for Bash.
+   .. code-block:: bash
+
+       # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+       export PSI_SCRATCH=/scratch/user
 
 .. envvar:: PSIPATH
 
@@ -535,32 +572,41 @@ These environment variables will influence |PSIfours| behavior.
    directory (I won't swear everything tacks on the execution directory).
 
    Path in which the Python interpreter looks for modules to import. For 
-   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+   |PSIfour|, these are generally :ref:`plugins <sec:plugins>` or databases.
 
-   Modify :envvar:`PSIPATH` through normal Linux shell commands before invoking ``psi4`` ::
+   Modify :envvar:`PSIPATH` through normal Linux shell commands before invoking :command:`psi4`
 
-      # csh, tcsh
-      >>> setenv PSIPATH /home/user/psiadditions:/home/user/gbs
+   .. code-block:: tcsh
 
-      # bash
-      >>> export PSIPATH=/home/user/psiadditions:/home/user/gbs
+       # csh, tcsh: add to shell or ~/.tcshrc file
+       setenv PSIPATH /home/user/psiadditions:/home/user/gbs
+
+   .. code-block:: bash
+
+       # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+       export PSIPATH=/home/user/psiadditions:/home/user/gbs
 
 .. envvar:: PYTHONPATH
 
    Path in which the Python interpreter looks for modules to import. For 
-   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+   |PSIfour|, these are generally :ref:`plugins <sec:plugins>` or databases.
 
    .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
       to modifying this environment variable.
 
    Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
 
-   * Normal Linux shell commands. ::
+   * Normal Linux shell commands.
 
-        # csh/tcsh
-        setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
-        # sh/bash
-        PYTHONPATH=/home/user/psiadditions:$PYTHONPATH; export PYTHONPATH
+     .. code-block:: tcsh
+
+         # csh, tcsh: add to shell or ~/.tcshrc file
+         setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
+
+     .. code-block:: bash
+
+         # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+         export PYTHONPATH=/home/user/psiadditions:$PYTHONPATH
 
    * Place the path in the |psirc| file so that it is available for 
      every |PSIfour| instance. ::
@@ -581,5 +627,5 @@ These environment variables will influence |PSIfours| behavior.
    so this variable is relevant primarily to developers running the
    executable directly from the compilation directory. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
-   ``psi4/share``.
+   ending in ``share/psi4``.
 

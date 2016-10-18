@@ -1,5 +1,32 @@
 #!/usr/bin/perl
 
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
 use strict;
 use warnings;
 use File::Path qw(remove_tree);
@@ -85,7 +112,7 @@ sub get_description
 # Scan the source for Process::Environment variables
 #
 
-my $SrcFolder = $DriverPath . "../../src";
+my $SrcFolder = $DriverPath . "../../psi4/src/psi4/";
 my $TexSummary = "variables_list.tex";
 my $RstSummary = "source/autodoc_psivariables_bymodule.rst";
 open(TEXOUT,">$TexSummary") or die "I can't write to $TexSummary\n";
@@ -100,9 +127,9 @@ print VOUT ".. toctree::\n   :maxdepth: 1\n\n";
 foreach my $Module (@PSIMODULES) {
     # Set path for each module of bin/module and lib/libmodule_solver
     #     Assign stray variables as for OEPROP below
-    my @RelevantDirs = ($SrcFolder . "/bin/" . lc($Module), $SrcFolder . "/lib/lib" . lc($Module) . "_solver");
-    if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "/lib/libmints"); }
-    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "/lib/libgdma"); }
+    my @RelevantDirs = ($SrcFolder . lc($Module), $SrcFolder . "lib" . lc($Module) . "_solver");
+    if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "libmints"); }
+    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "libgdma"); }
     my @EnvVariables = ();
     my @EnvArrays = ();
     printf TEXOUT "\n\\subsection{%s}\n",$Module;

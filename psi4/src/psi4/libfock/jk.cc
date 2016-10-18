@@ -65,8 +65,8 @@ JK::JK( std::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& options,
-                                   std::string jk_type)
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                                 Options& options, std::string jk_type)
 {
     if (jk_type == "CD") {
 
@@ -91,10 +91,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& opt
 
     } else if (jk_type == "DF") {
 
-        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
-            options.get_str("BASIS"), primary->has_puream());
-
         DFJK* jk = new DFJK(primary,auxiliary);
 
         if (options["INTS_TOLERANCE"].has_changed())
@@ -115,10 +111,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& opt
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "FAST_DF") {
-
-        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
-            options.get_str("BASIS"), primary->has_puream());
 
         FastDFJK* jk = new FastDFJK(primary,auxiliary);
 
@@ -228,9 +220,9 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& opt
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
 }
-std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, Options& options)
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
 {
-    return build_JK(primary, options, options.get_str("SCF_TYPE"));
+    return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
 }
 SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/)
 {

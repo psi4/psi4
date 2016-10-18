@@ -51,7 +51,7 @@ compare_values(Eref[3], Edisp, 7, "SAPT0 Edisp")   #TEST
 compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
 
 set {
-guess gwh
+guess sad
 basis 6-31g
 df_basis_sapt cc-pVDZ-ri
 scf_type direct

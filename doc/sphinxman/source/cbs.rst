@@ -1,9 +1,36 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
 .. index::
    triple: setting; keywords; cbs()
    see: complete_basis_set(); cbs()
+   single: basis set; delta correction
 
 .. _`sec:cbs()`:
 
@@ -15,8 +42,33 @@ Complete Basis Set
 
    cbs_eqn
 
-.. codeauthor:: Lori A. Burns
+.. codeauthor:: Lori A. Burns and Daniel G. A. Smith
 .. sectionauthor:: Lori A. Burns
+
+The :py:func:`driver_cbs.complete_basis_set` function described below is
+powerful but complicated, requiring many options. For most common
+calculations, a shorthand can be accessed directly though
+:py:func:`driver.energy`, :py:func:`driver.gradient`, *etc.* For example,
+a MP2 single-point DT extrapolation can be accessed through the first item
+below more conveniently than the equivalent second item.
+
+* ``energy('mp2/cc-pv[dt]z')``
+
+* ``energy(cbs, corl_wfn='mp2', corl_basis='cc-pv[dt]z')``
+
+A CCSD(T) DT coupled-cluster correction atop a TQ MP2 extrapolation
+geometry optimization can be accessed through the first item below more
+conveniently than the equivalent second item.
+
+* ``optimize('mp2/cc-pv[tq]z + D:ccsd(t)/cc-pvdz')``
+
+* ``optimize(cbs, corl_wfn='mp2', corl_basis='cc-pv[tq]z', delta_wfn='ccsd(t)', delta_basis='cc-pvdz')``
+
+Many examples can be found at :srcsample:`cbs-xtpl-energy`,
+:srcsample:`cbs-xtpl-gradient`, :srcsample:`cbs-xtpl-opt`,
+:srcsample:`cbs-xtpl-freq`, :srcsample:`cbs-xtpl-func`,
+:srcsample:`cbs-xtpl-wrapper`.
+
 
 .. autofunction:: driver_cbs.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, delta3_wfn, delta3_wfn_lesser, delta3_basis, delta3_scheme, delta4_wfn, delta4_wfn_lesser, delta4_basis, delta4_scheme, delta5_wfn, delta5_wfn_lesser, delta5_basis, delta5_scheme])
 

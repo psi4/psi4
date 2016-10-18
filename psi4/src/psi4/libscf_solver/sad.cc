@@ -62,14 +62,14 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-SADGuess::SADGuess(std::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options) :
-    basis_(basis), nalpha_(nalpha), nbeta_(nbeta), options_(options)
-{
+SADGuess::SADGuess(std::shared_ptr<BasisSet> basis,
+                   std::vector<std::shared_ptr<BasisSet>> atomic_bases,
+                   int nalpha, int nbeta, Options& options) :
+    basis_(basis), atomic_bases_(atomic_bases), nalpha_(nalpha), nbeta_(nbeta),
+    options_(options) {
     common_init();
 }
-SADGuess::~SADGuess()
-{
-}
+SADGuess::~SADGuess() {}
 void SADGuess::common_init()
 {
     molecule_ = basis_->molecule();
@@ -155,29 +155,13 @@ void SADGuess::form_C()
 }
 SharedMatrix SADGuess::form_D_AO()
 {
-    std::vector<std::shared_ptr<BasisSet> > atomic_bases;
 
     if (print_ > 6) {
-        outfile->Printf("\n  Constructing atomic basis sets\n  Molecule:\n");
-        molecule_->print();
-    }
-
-    //Build the atomic basis sets for libmints use in UHF
-    for (int A = 0; A<molecule_->natom(); A++) {
-        std::stringstream mol_string;
-        mol_string << std::endl << basis_->molecule()->label(A) << std::endl;
-        std::shared_ptr<Molecule> atom_mol = Molecule::create_molecule_from_string(mol_string.str());
-        atom_mol->reset_point_group("C1"); // Booo symmetry
-
-        std::shared_ptr<BasisSet> atom_bas = BasisSet::pyconstruct_orbital(atom_mol, "BASIS",
-                                                basis_->molecule()->atom_entry(A)->basisset());
-        atomic_bases.push_back(atom_bas);
-
-        if (print_ > 6) {
+        for (int A = 0; A<molecule_->natom(); A++) {
             outfile->Printf("  SAD: Atomic Basis Set %d\n", A);
-            atomic_bases[A]->molecule()->print();
+            atomic_bases_[A]->molecule()->print();
             outfile->Printf("\n");
-            atomic_bases[A]->print("outfile");
+            atomic_bases_[A]->print("outfile");
             outfile->Printf("\n");
         }
     }
@@ -238,17 +222,17 @@ SharedMatrix SADGuess::form_D_AO()
                 continue;
             if (nelec[l] != nelec[m])
                 continue;
-            if (atomic_bases[l]->nbf() != atomic_bases[m]->nbf())
+            if (atomic_bases_[l]->nbf() != atomic_bases_[m]->nbf())
                 continue;
-            if (atomic_bases[l]->nshell() != atomic_bases[m]->nshell())
+            if (atomic_bases_[l]->nshell() != atomic_bases_[m]->nshell())
                 continue;
-            if (atomic_bases[l]->nprimitive() != atomic_bases[m]->nprimitive())
+            if (atomic_bases_[l]->nprimitive() != atomic_bases_[m]->nprimitive())
                 continue;
-            if (atomic_bases[l]->max_am() != atomic_bases[m]->max_am())
+            if (atomic_bases_[l]->max_am() != atomic_bases_[m]->max_am())
                 continue;
-            if (atomic_bases[l]->max_nprimitive() != atomic_bases[m]->max_nprimitive())
+            if (atomic_bases_[l]->max_nprimitive() != atomic_bases_[m]->max_nprimitive())
                 continue;
-            if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
+            if (atomic_bases_[l]->has_puream() !=  atomic_bases_[m]->has_puream())
                 continue;
 
             // Semi-Rigorous match obtained
@@ -266,7 +250,7 @@ SharedMatrix SADGuess::form_D_AO()
     //Atomic D matrices within the atom specific AO basis
     std::vector<SharedMatrix> atomic_D;
     for (int A = 0; A<nunique; A++) {
-        int nbf = atomic_bases[atomic_indices[A]]->nbf();
+        int nbf = atomic_bases_[atomic_indices[A]]->nbf();
         SharedMatrix dtmp(new Matrix("Atomic D", nbf, nbf));
         atomic_D.push_back(dtmp);
     }
@@ -277,7 +261,12 @@ SharedMatrix SADGuess::form_D_AO()
         int index = atomic_indices[A];
         if (print_ > 1)
             outfile->Printf("\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
-        get_uhf_atomic_density(atomic_bases[index], nelec[index], nhigh[index], atomic_D[A]);
+        if (options_.get_str("SAD_SCF_TYPE") == "DF"){
+            get_uhf_atomic_density(atomic_bases_[index], atomic_fit_bases_[index], nelec[index], nhigh[index], atomic_D[A]);
+        } else {
+            std::shared_ptr<BasisSet> zbas = BasisSet::zero_ao_basis_set();
+            get_uhf_atomic_density(atomic_bases_[index], zbas, nelec[index], nhigh[index], atomic_D[A]);
+        }
         if (print_ > 1)
             outfile->Printf("Finished UHF Computation!\n");
     }
@@ -289,7 +278,7 @@ SharedMatrix SADGuess::form_D_AO()
     //Add atomic_D into D (scale by 1/2, we like effective pairs)
     SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", basis_->nbf(), basis_->nbf()));
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
-        int norbs = atomic_bases[A]->nbf();
+        int norbs = atomic_bases_[A]->nbf();
         int back_index = unique_indices[A];
         for (int m = 0; m<norbs; m++)
             for (int n = 0; n<norbs; n++)
@@ -304,7 +293,7 @@ SharedMatrix SADGuess::form_D_AO()
 
     return DAO;
 }
-void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, int nhigh, SharedMatrix D)
+void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared_ptr<BasisSet> fit, int nelec, int nhigh, SharedMatrix D)
 {
     std::shared_ptr<Molecule> mol = bas->molecule();
     mol->update_geometry();
@@ -422,7 +411,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, 
             nact = 16;
         }
         else{
-            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radeon");
+            throw PSIEXCEPTION("SAD: Fractional occupations are not supported beyond Radon");
         }
 
         nalpha = nfzc + nact;
@@ -445,7 +434,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, 
     }
 
     SharedMatrix Ca_occ(new Matrix("Ca occupied", norbs, nalpha));
-    SharedMatrix Cb_occ(new Matrix("Ca occupied", norbs, nbeta));
+    SharedMatrix Cb_occ(new Matrix("Cb occupied", norbs, nbeta));
 
     //Compute initial Cx, Dx, and D from core guess
     form_C_and_D(nalpha, norbs, X, H, Ca, Ca_occ, occ_a, Da);
@@ -486,10 +475,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, int nelec, 
 
     // Need a very special auxiliary basis here
     if (options_.get_str("SAD_SCF_TYPE") == "DF"){
-        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_orbital(bas->molecule(), "BASIS",
-                                                options_.get_str("DF_BASIS_SAD"));
 
-        DFJK* dfjk = new DFJK(bas, auxiliary);
+        DFJK* dfjk = new DFJK(bas, fit);
         dfjk->set_unit(PSIF_SAD);
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             dfjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
@@ -668,13 +655,25 @@ void SADGuess::form_C_and_D(int nocc, int norbs, SharedMatrix X, SharedMatrix F,
 void HF::compute_SAD_guess()
 {
 
-    std::shared_ptr<SADGuess> guess(new SADGuess(basisset_, nalpha_, nbeta_, options_));
+    if (sad_basissets_.empty()){
+        throw PSIEXCEPTION("  SCF guess was set to SAD, but sad_basissets_ was empty!\n\n");
+    }
+    if ((options_.get_str("SAD_SCF_TYPE") == "DF") && sad_fitting_basissets_.empty()){
+        throw PSIEXCEPTION("  SCF guess was set to SAD with DFJK, but sad_fitting_basissets_ was empty!\n\n");
+    }
+
+    std::shared_ptr<SADGuess> guess(new SADGuess(basisset_, sad_basissets_, nalpha_, nbeta_, options_));
+    if (options_.get_str("SAD_SCF_TYPE") == "DF"){
+        guess->set_atomic_fit_bases(sad_fitting_basissets_);
+    }
+
     guess->compute_guess();
 
     SharedMatrix Ca_sad = guess->Ca();
     SharedMatrix Cb_sad = guess->Cb();
     Da_->copy(guess->Da());
     Db_->copy(guess->Db());
+    Dimension sad_dim(Da_->nirrep(), "SAD Dimensions");
 
     for (int h = 0; h < Da_->nirrep(); h++) {
 
@@ -683,7 +682,7 @@ void HF::compute_SAD_guess()
         if (nmo > X_->colspi()[h])
             nmo = X_->colspi()[h];
 
-        sad_nocc_[h] = nmo;
+        sad_dim[h] = nmo;
 
         if (!nso || !nmo) continue;
 
@@ -698,150 +697,14 @@ void HF::compute_SAD_guess()
         }
     }
 
-    int temp_nocc;
-    for (int h = 0 ; h < Da_->nirrep(); h++) {
-        temp_nocc = sad_nocc_[h];
-        sad_nocc_[h] = doccpi_[h];
-        nalphapi_[h] = temp_nocc;
-        nbetapi_[h]  = temp_nocc;
-        doccpi_[h]   = temp_nocc;
-        soccpi_[h]   = 0;
-    }
+    nalphapi_ = sad_dim;
+    nbetapi_ = sad_dim;
+    nalpha_ = sad_dim.sum();
+    nbeta_ = sad_dim.sum();
+    doccpi_ = sad_dim;
+    soccpi_ = Dimension(Da_->nirrep(), "SAD SOCC dim (0's)");
 
     E_ = 0.0; // This is the -1th iteration
-}
-SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, std::shared_ptr<BasisSet> old_basis, std::shared_ptr<BasisSet> new_basis)
-{
-
-    //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
-    std::shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));
-    std::shared_ptr<IntegralFactory> hybfactory(new IntegralFactory(old_basis,new_basis,old_basis,new_basis));
-    std::shared_ptr<OneBodySOInt> intBB(newfactory->so_overlap());
-    std::shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());
-
-    std::shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
-    SharedMatrix AO2USO(pet->aotoso());
-
-    SharedMatrix SAB(new Matrix("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi()));
-    SharedMatrix SBB(new Matrix("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi()));
-
-    intAB->compute(SAB);
-    intBB->compute(SBB);
-
-    //SAB->print();
-    //SBB->print();
-
-    newfactory.reset();
-    hybfactory.reset();
-    intAB.reset();
-    intBB.reset();
-    pet.reset();
-
-    // Constrained to the same symmetry at the moment, we can relax this soon
-    SharedMatrix C_B(new Matrix("C_B", C_A->nirrep(), AO2USO->colspi(), noccpi));
-
-    // Block over irreps (soon united irreps)
-    for (int h = 0; h < C_A->nirrep(); h++) {
-
-        int nocc = noccpi[h];
-        int na = C_A->rowspi()[h];
-        int nb = AO2USO->colspi()[h];
-
-        if (nocc == 0 || na == 0 || nb == 0) continue;
-
-        double** Ca = C_A->pointer(h);
-        double** Cb = C_B->pointer(h);
-        double** Sab = SAB->pointer(h);
-        double** Sbb = SBB->pointer(h);
-
-        int CholError = C_DPOTRF('L',nb,Sbb[0],nb);
-        if (CholError !=0 )
-            throw std::domain_error("S_BB Matrix Cholesky failed!");
-
-        //Inversion (in place)
-        int IError = C_DPOTRI('L',nb,Sbb[0],nb);
-        if (IError !=0 )
-            throw std::domain_error("S_BB Inversion Failed!");
-
-        //LAPACK is smart and all, only uses half of the thing
-        for (int m = 0; m<nb; m++)
-            for (int n = 0; n<m; n++)
-                Sbb[m][n] = Sbb[n][m];
-
-        //Form T
-        double** Temp1 = block_matrix(nb,nocc);
-        C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],nocc,0.0,Temp1[0],nocc);
-
-        //outfile->Printf(" Temp1:\n");
-        //print_mat(Temp1,nb,nocc,outfile);
-
-        double** Temp2 = block_matrix(nb,nocc);
-        C_DGEMM('N','N',nb,nocc,nb,1.0,Sbb[0],nb,Temp1[0],nocc,0.0,Temp2[0],nocc);
-
-        //outfile->Printf(" Temp2:\n");
-        //print_mat(Temp2,nb,nocc,outfile);
-
-        double** Temp3 = block_matrix(na,nocc);
-        C_DGEMM('N','N',na,nocc,nb,1.0,Sab[0],nb,Temp2[0],nocc,0.0,Temp3[0],nocc);
-
-        //outfile->Printf(" Temp3:\n");
-        //print_mat(Temp3,na,nocc,outfile);
-
-        double** T = block_matrix(nocc,nocc);
-        C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],nocc,Temp3[0],nocc,0.0,T[0],nocc);
-
-        //outfile->Printf(" T:\n");
-        //print_mat(T,nocc,nocc,outfile);
-
-        //Find T^-1/2
-        // First, diagonalize T
-        // the C_DSYEV call replaces the original matrix T with its eigenvectors
-        double* eigval = init_array(nocc);
-        int lwork = nocc * 3;
-        double* work = init_array(lwork);
-        int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
-        if (stat != 0) {
-            outfile->Printf( "C_DSYEV failed\n");
-            exit(PSI_RETURN_FAILURE);
-        }
-        free(work);
-
-        // Now T contains the eigenvectors of the original T
-        // Copy T to T_copy
-        double **T_mhalf = block_matrix(nocc, nocc);
-        double **T_copy = block_matrix(nocc, nocc);
-        C_DCOPY(nocc*nocc,T[0],1,T_copy[0],1);
-
-        // Now form T^{-1/2} = U(T)*t^{-1/2}*U,
-        // where t^{-1/2} is the diagonal matrix of the inverse square roots
-        // of the eigenvalues, and U is the matrix of eigenvectors of T
-        for (int i=0; i<nocc; i++) {
-            if (eigval[i] < 1.0E-10)
-                eigval[i] = 0.0;
-            else
-                eigval[i] = 1.0 / sqrt(eigval[i]);
-
-            // scale one set of eigenvectors by the diagonal elements t^{-1/2}
-            C_DSCAL(nocc, eigval[i], T[i], 1);
-        }
-        free(eigval);
-
-        // T_mhalf = T_copy(T) * T
-        C_DGEMM('t','n',nocc,nocc,nocc,1.0,
-                T_copy[0],nocc,T[0],nocc,0.0,T_mhalf[0],nocc);
-
-        //Form CB
-        C_DGEMM('N','N',nb,nocc,nocc,1.0,Temp2[0],nocc,T_mhalf[0],nocc,0.0,Cb[0],nocc);
-
-        free_block(Temp1);
-        free_block(Temp2);
-        free_block(Temp3);
-        free_block(T);
-        free_block(T_copy);
-        free_block(T_mhalf);
-
-    }
-    return C_B;
 }
 
 }}

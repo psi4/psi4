@@ -26,10 +26,10 @@
  */
 
 #include "psi4/libmints/vector.h"
-#include "psi4/libdisp/dispersion.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/ParallelPrinter.h"
 #include "superfunctional.h"
 #include "functional.h"
-#include "psi4/libparallel/ParallelPrinter.h"
 using namespace psi;
 
 namespace psi {
@@ -142,9 +142,6 @@ void SuperFunctional::print(std::string out, int level) const
         }
     }
 
-    if (dispersion_) {
-        dispersion_->print();
-    }
 }
 void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun)
 {

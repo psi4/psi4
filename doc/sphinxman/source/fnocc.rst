@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -23,12 +49,12 @@ FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), CEPA, and MP4
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince
 
-*Module:* :ref:`Keywords <apdx:fnocc>`, :ref:`PSI Variables <apdx:fnocc_psivar>`, :source:`FNOCC <src/bin/fnocc>`
+*Module:* :ref:`Keywords <apdx:fnocc>`, :ref:`PSI Variables <apdx:fnocc_psivar>`, :source:`FNOCC <psi4/src/psi4/fnocc>`
 
 .. warning:: There is a known bug concerning the i7-5930 series combined
    with the Intel 15 compilers and MKL 11.2.3. When |PsiFour| is compiled
    under these conditions, parallel runs of the FNOCC code have experienced
-   non-sensical CCSD correlation energies (often several hartrees lower
+   nonsensical CCSD correlation energies (often several Hartrees lower
    than the starting guess). At the moment, the only confirmed solutions
    are running serially, using a different BLAS implementation, or upgrading
    to Intel 16.0.2 and MKL 11.3.2.
@@ -60,7 +86,7 @@ The general outline for the FNO procedure in |Psifour| is:
 A second-order correction based upon the MP2 energies in the full and
 truncated spaces captures much of the missing correlation effects.  More
 details on the implementation and numerical accuracy of FNO methods in
-|Psifour| can be found in Ref. [DePrince:2013:293]_\.  FNO computations
+|Psifour| can be found in [DePrince:2013:293]_\.  FNO computations
 are controlled through the keywords |fnocc__nat_orbs| and
 |fnocc__occ_tolerance|, or by prepending a valid method name with "fno" in
 the energy call as ::
@@ -185,7 +211,7 @@ CCSD, and the coupled-pair methods discussed below all scale formally with
 the sixth power of system size, and, as with the QCISD method, CEPA
 methods retain :math:`{\cal{O}}(o^2v^4)` complexity of the CCSD equations.
 For a detailed discussion of the properties of various coupled-pair
-methods, see Ref. [Wennmohs:2008:217]_\.
+methods, see [Wennmohs:2008:217]_\.
 
 What follows is a very basic description of the practical differences in
 the equations that define each of the coupled-pair methods implemented in
@@ -278,14 +304,14 @@ the computation and storage of the 4-index electron repulsion integral
 (ERI) tensor and even to reduce the computational scaling of some terms.
 DF/CD-CCSD(T) computations are available in |Psifour|, with or without the
 use of FNOs, through the FNOCC module.  The implementation and accuracy of
-the DF/CD-CCSD(T) method are described in Ref. [DePrince:2013:2687]_\.
+the DF/CD-CCSD(T) method are described in [DePrince:2013:2687]_\.
 
 The DF-CCSD(T) procedure uses two auxiliary basis sets.  The first set is
 that used in the SCF procedure, defined by the |scf__df_basis_scf|
 keyword.  If this keyword is not specified, an appropriate -JKFIT set is
-automatically selected.  This auxiliary set defines the ERI's used to
+automatically selected.  This auxiliary set defines the ERIs used to
 build the Fock matrix used in the DF-CCSD(T) procedure.  The second
-auxiliary set is used to approximate all other ERI's in the DF-CCSD(T)
+auxiliary set is used to approximate all other ERIs in the DF-CCSD(T)
 procedure. The choice of auxiliary basis is controlled by the keyword
 |fnocc__df_basis_cc|.  By default, |fnocc__df_basis_cc| is the RI set
 (optimized for DFMP2) most appropriate for use with the primary basis.
@@ -322,7 +348,7 @@ computation using CD integrals ::
 
 The resulting CCSD(T) correlation energy will be equivalent to that
 obtained from a conventional computation if |fnocc__cholesky_tolerance| is
-sufficiently small (e.g.  :math:`10^{-9}`).  
+sufficiently small (*e.g.* ``1e-9``).
 
 .. _`sec:fnogn`:
 
@@ -343,7 +369,7 @@ The various methods supported by the FNOCC module in |Psifour| are detailed
 in Table :ref:`FNOCC Methods <table:fnocc_methods>`.  Note that these methods
 are implemented for closed-shell references only.  For open-shell references,
 the calls ``energy('mp2.5')``, ``energy('mp3')``, and ``energy('mp4')`` will
-default to implementations of these methods in other modules :ref:`Cross-module Redundancies <table:managedmethods>`.
+default to implementations of these methods in :ref:`other modules <table:managedmethods>`.
 
     .. _`table:fnocc_methods`:
 

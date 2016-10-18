@@ -80,6 +80,10 @@ inline bool iequals(
         const Range1T &Input,
         const Range2T &Test)
 {
+    if (std::distance(std::begin(Input), std::end(Input)) !=
+        std::distance(std::begin(Test), std::end(Test)))
+        return false;
+
     return std::equal(std::begin(Input),
                       std::end(Input),
                       std::begin(Test),

@@ -91,7 +91,8 @@ public:
     * @param options Options reference, with preset parameters
     * @return abstract Corr object, tuned in with preset options
     */
-    static std::shared_ptr<CorrGrad> build_CorrGrad(std::shared_ptr<BasisSet> primary);
+    static std::shared_ptr<CorrGrad> build_CorrGrad(std::shared_ptr<BasisSet> primary,
+                                                    std::shared_ptr<BasisSet> auxiliary);
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }

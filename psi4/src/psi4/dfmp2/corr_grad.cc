@@ -55,14 +55,11 @@ CorrGrad::CorrGrad(std::shared_ptr<BasisSet> primary) :
 CorrGrad::~CorrGrad()
 {
 }
-std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<BasisSet> primary)
+std::shared_ptr<CorrGrad> CorrGrad::build_CorrGrad(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
 {
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE") == "DF") {
-
-        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-            "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT", options.get_str("BASIS"));
 
         DFCorrGrad* jk = new DFCorrGrad(primary,auxiliary);
 

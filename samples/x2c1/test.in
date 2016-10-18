@@ -19,7 +19,7 @@ set {
   scf_type pk
 }
 
-basis {
+basis adecon {
 spherical
 ****
 H     0
@@ -68,6 +68,7 @@ D   1   1.00
 
 testnr = energy('scf')
 set relativistic x2c
+set basis_relativistic adecon  # shouldn't need to specify
 testrel = energy('scf')
 
 compare_values(ref_nuc_energy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST

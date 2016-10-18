@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -8,8 +34,8 @@
 
 .. _`sec:db()`:
 
-Database, :py:func:`~wrapper_database.database`
-===============================================
+Database |w---w| :py:func:`~wrapper_database.database`
+======================================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
@@ -41,7 +67,7 @@ indicating the the interaction energy is computed from dimer less first monomer
 less second (identical) monomer. Error statistics are computed with respect to the reference
 energies stored in the database. One of these, the mean absolute deviation, is 
 returned by the wrapper as an ordinary Python variable. (For databases
-without a stored reference energy, e.g., BASIC, large and meaningless numbers are
+without a stored reference energy, *e.g.*, BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
 through keyword ``tabulate``, in this case the total SCF energy and the number
 of atoms in each reagent. ::

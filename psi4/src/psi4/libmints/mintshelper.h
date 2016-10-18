@@ -39,6 +39,7 @@ class CdSalcList;
 class CorrelationFactor;
 class TwoBodyAOInt;
 class PetiteList;
+class ThreeCenterOverlapInt;
 
 /**
 * The MintsHelper object, places molecular integrals
@@ -56,6 +57,7 @@ private:
     std::shared_ptr<BasisSet> basisset_;
     std::shared_ptr<SOBasisSet> sobasis_;
     std::shared_ptr<TwoBodyAOInt> eriInts_;
+    std::shared_ptr<BasisSet> rel_basisset_;
     int print_;
 
     /// Value which any two-electron integral is below is discarded
@@ -72,6 +74,8 @@ private:
 
     SharedMatrix ao_helper(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
+
+    SharedMatrix ao_3coverlap_helper(const std::string &label, std::shared_ptr<ThreeCenterOverlapInt> ints);
 
     void common_init();
 
@@ -120,6 +124,8 @@ public:
     /// Integral factory being used
     std::shared_ptr<IntegralFactory> integral() const;
 
+    void set_rel_basisset(std::shared_ptr<BasisSet> rel_basis) { rel_basisset_ = rel_basis; }
+
     /// Molecular integrals (just like cints used to do)
     void integrals();
     void integrals_erf(double w = -1.0);
@@ -154,21 +160,27 @@ public:
     /// MO F12 Integrals
     SharedMatrix ao_f12_scaled(std::shared_ptr<CorrelationFactor> corr);
     SharedMatrix ao_f12_scaled(std::shared_ptr<CorrelationFactor> corr,
-                        std::shared_ptr<BasisSet> bs1,
-                        std::shared_ptr<BasisSet> bs2,
-                        std::shared_ptr<BasisSet> bs3,
-                        std::shared_ptr<BasisSet> bs4);
+                               std::shared_ptr<BasisSet> bs1,
+                               std::shared_ptr<BasisSet> bs2,
+                               std::shared_ptr<BasisSet> bs3,
+                               std::shared_ptr<BasisSet> bs4);
     /// MO F12 squared Integrals
     SharedMatrix ao_f12_squared(std::shared_ptr<CorrelationFactor> corr);
     SharedMatrix ao_f12_squared(std::shared_ptr<CorrelationFactor> corr,
-                        std::shared_ptr<BasisSet> bs1,
-                        std::shared_ptr<BasisSet> bs2,
-                        std::shared_ptr<BasisSet> bs3,
-                        std::shared_ptr<BasisSet> bs4);
+                                std::shared_ptr<BasisSet> bs1,
+                                std::shared_ptr<BasisSet> bs2,
+                                std::shared_ptr<BasisSet> bs3,
+                                std::shared_ptr<BasisSet> bs4);
     /// MO F12G12 Integrals
     SharedMatrix ao_f12g12(std::shared_ptr<CorrelationFactor> corr);
     /// MO F12 double commutator Integrals
     SharedMatrix ao_f12_double_commutator(std::shared_ptr<CorrelationFactor> corr);
+    /// 3Center overlap integrals
+    SharedMatrix ao_3coverlap();
+    SharedMatrix ao_3coverlap(std::shared_ptr<BasisSet> bs1,
+                              std::shared_ptr<BasisSet> bs2,
+                              std::shared_ptr<BasisSet> bs3);
+
     /// Symmetric MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     SharedMatrix mo_eri(SharedMatrix Cocc, SharedMatrix Cvir);

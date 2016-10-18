@@ -21,7 +21,7 @@ E_conv = 1.0E-6
 D_conv = 1.0E-5
 
 # Integral generation from Psi4's MintsHelper
-wfn = psi4.new_wavefunction(mol, psi4.get_global_option('BASIS'))
+wfn = psi4.Wavefunction.build(mol, psi4.get_global_option("BASIS"))
 mints = MintsHelper(wfn.basisset())
 S = mints.ao_overlap()
 
@@ -73,7 +73,7 @@ Fock_list = []
 DIIS_error = []
 
 # Initialize the JK object
-jk = psi4.JK.build_JK(wfn.basisset())
+jk = psi4.JK.build(wfn.basisset())
 jk.set_memory(int(1.25e8))  # 1GB
 jk.initialize()
 jk.print_header()

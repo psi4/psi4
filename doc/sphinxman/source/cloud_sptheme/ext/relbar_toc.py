@@ -1,6 +1,5 @@
 """cloud_sptheme.ext.relbar_toc - addes TOC entry to relbar"""
 import os.path
-import re
 import logging; log = logging.getLogger(__name__)
 
 def insert_toc(app, pagename, templatename, ctx, event_arg):

@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -18,7 +44,7 @@ An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
 automate very complex tasks with ease. 
 
-|PSIfour| is, in many ways, a whole new package compared to Psi3.  
+|PSIfour| is, in many ways, a whole new package compared to Psi3.
 While some libraries and modules remain the same, the majority of the code has
 been rewritten from scratch based on a powerful set of new libraries written
 in C++.  A totally new Python front-end makes |PSIfour| incredibly user-friendly
@@ -47,7 +73,7 @@ and discusses some of the higher-level functions such as counterpoise
 correction, complete-basis-set extrapolation, and running computations
 on an entire database of molecules at a time.  Later sections deal with
 the different types of computations which can be done using |PSIfour|
-(e.g., Hartree |--| Fock, MP2, coupled-cluster) and general procedures
+(*e.g.*, Hartree |--| Fock, MP2, coupled-cluster) and general procedures
 such as geometry optimization and vibrational frequency analysis.
 The :ref:`Appendices <sec:appendices>` include a complete description of all possible input
 keywords for each module, as well as tables of available basis sets and
@@ -306,6 +332,19 @@ SAPT2+(CCD), SAPT2+(3)(CCD), and SAPT2+3(CCD)
   014101 (2010).
   (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
 
+F/I-SAPT
+
+* "Chemical Assignment of Symmetry-Adapted Perturbation Theory Interaction
+  Energy Components: The Functional-Group SAPT Partition,"
+  R. M. Parrish, T. M. Parker, and C. D. Sherrill,
+  *J. Chem. Theory Comput.* **10**, 4417 (2014).
+  (doi: `10.1021/ct500724p <http://dx.doi.org/10.1021/ct500724p>`_).
+
+* "Communication: Practical Intramolecular Symmetry Adapted Perturbation Theory
+  via Hartree-Fock Embedding,"
+  R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C. D. Sherrill,
+  *J. Chem. Phys.* **143**, 051103 (2015).
+  (doi: `10.1063/1.4927575 <http://dx.doi.org/10.1063/1.4927575>`_)
 
 Orbital-Optimized Post-Hartree |--| Fock Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -313,13 +352,13 @@ Orbital-optimized second-order perturbation theory (OMP2)
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order M\ |o_slash|\ ller--Plesset perturbation theory," 
+  second-order |MollerPlesset| perturbation theory,"
   U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
   (doi: `10.1063/1.3631129 <http://dx.doi.org/10.1063/1.3631129>`_).
 
 * "Analytic energy gradients for the orbital-optimized second-order 
-  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and 
+  |MollerPlesset| perturbation theory," U. Bozkaya and
   C. D. Sherrill, *J. Chem. Phys.* **138**, 184103 (2013).
   (doi: `10.1063/1.4803662 <http://dx.doi.org/10.1063/1.4803662>`_).
 
@@ -330,19 +369,19 @@ Orbital-optimized second-order perturbation theory (OMP2)
 
 Orbital-optimized third-order perturbation theory (OMP3)
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation 
+* "Orbital-Optimized Third-Order |MollerPlesset| Perturbation
   Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
   to Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
   (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
 
-* "Assessment of Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset 
+* "Assessment of Orbital-Optimized Third-Order |MollerPlesset|
   Perturbation Theory and Its Spin-Component and Spin-Opposite Scaled Variants 
   for Thermochemistry and Kinetics," E. Soydas and U. Bozkaya,  
   *J. Chem. Theory Comput.* **9**, 1452 (2013).
   (doi: `10.1021/ct301078q <http://dx.doi.org/10.1021/ct301078q>`_).
 
-* "Analytic energy gradients for the orbital-optimized third-order M\ |o_slash|\ ller--Plesset 
+* "Analytic energy gradients for the orbital-optimized third-order |MollerPlesset|
   Perturbation Theory," U. Bozkaya,  
   *J. Chem. Phys.* **139**, 104116 (2013).
   (doi: `10.1063/1.4820877 <http://dx.doi.org/10.1063/1.4820877>`_).
@@ -503,21 +542,21 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | DCFT                    | RHF/UHF        | CONV/DF           | RHF/UHF      | CONV           | partially threaded          |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP2                     | RHF/UHF/ROHF   | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
+    | MP2 [#f10]_             | RHF/UHF/ROHF   | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP3                     | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
+    | MP3 [#f10]_             | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP2.5                   | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
+    | MP2.5 [#f10]_           | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | MP4                     | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
+    | MP4 [#f10]_             | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | MP(n)                   | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | ZAPT(n)                 | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | LCCD                    | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
+    | LCCD [#f10]_            | RHF/UHF        | CONV/DF/CD        | RHF/UHF      | CONV/DF        | threaded [#f3]_             | E/G       | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | LCCSD, CEPA(0)          | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
+    | LCCSD, CEPA(0) [#f10]_  | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CEPA(n), n=0,1,3        | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
@@ -525,17 +564,17 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC2                     | RHF/UHF/ROHF   | CONV              | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD                    | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
+    | CCSD [#f10]_            | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(T)                 | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | UHF          | CONV           | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
+    | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | UHF          | CONV           | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(AT)                | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
+    | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC3                     | RHF/UHF/ROHF   | CONV              | ---          | ---            | threaded (pthreads)         |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | ACPF/AQCC               | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CISD                    | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           | E          |
+    | CISD [#f10]_            | RHF/ROHF       | CONV              | ---          | ---            | partially threaded          |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | QCISD                   | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
@@ -626,6 +665,7 @@ Where-to-post summary:[#f6]_
 .. [#f7] DH-DFT only available with DF-MP2.
 .. [#f8] Not all combinations of reference and algorithm available. In particular, non-RHF references only available as CONV.
 .. [#f9] Orbital-optimized variant available. In particular, all references available as CONV/DF.
+.. [#f10] Capabilities breakdown in great detail can be found :ref:`here <table:managedmethods>`.
 
 .. toctree::
    :hidden:

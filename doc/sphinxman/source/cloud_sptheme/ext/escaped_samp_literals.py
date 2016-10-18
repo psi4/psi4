@@ -1,6 +1,19 @@
 """cloud_sptheme.ext.escaped_samp_literals - allow escaping { and } in samp."""
+#=============================================================================
+# imports
+#=============================================================================
+# core
+# site
 from docutils import nodes, utils
-
+# pkg
+from cloud_sptheme.utils import u, ru
+# local
+__all__ = [
+    "setup",
+]
+#=============================================================================
+# replacement samp role parser
+#=============================================================================
 def emph_literal_role(typ, rawtext, text, lineno, inliner,
                       options={}, content=[]):
     """replacement for sphinx's ``:samp:`` role handler.
@@ -14,7 +27,7 @@ def emph_literal_role(typ, rawtext, text, lineno, inliner,
         return [prb], [msg]
     text = utils.unescape(text)
     retnode = nodes.literal(role=typ.lower(), classes=[typ])
-    buffer = u"" # contains text being accumulated for next node
+    buffer = u("") # contains text being accumulated for next node
     in_escape = False # True if next char is part of escape sequence
     in_var = False # True if parsing variable section instead of plain text
     var_start = None # marks start of var section if in_var is True
@@ -23,38 +36,38 @@ def emph_literal_role(typ, rawtext, text, lineno, inliner,
         i += 1
         if in_escape:
             # parse escape sequence
-            if c in u"{}\\":
+            if c in ru("{}\\"):
                 buffer += c
                 in_escape = False
             else:
                 return make_error(i-2, "unknown samp-escape '\\\\%s'" % (c,))
-        elif c == u"\\":
+        elif c == ru("\\"):
             # begin escape sequence
             in_escape = True
             i += 1 # account for extra escape char in rawtext
         elif in_var:
             # parsing variable section
-            if c == u"{":
+            if c == u("{"):
                 return make_error(i, "unescaped '{'")
-            elif c == u"}":
+            elif c == u("}"):
                 # finalize variable section, return to plaintext
                 if not buffer:
                     return make_error(i-1, "empty variable section")
                 retnode += nodes.emphasis(buffer, buffer)
-                buffer = u""
+                buffer = u("")
                 in_var = False
             else:
                 buffer += c
         else:
             # parsing plaintext section
-            if c == u"{":
+            if c == u("{"):
                 # finalize plaintext section, start variable section
                 if buffer:
                     retnode += nodes.Text(buffer, buffer)
-                buffer = u""
+                buffer = u("")
                 in_var = True
                 var_start = i
-            elif c == u"}":
+            elif c == u("}"):
                 return make_error(i, "unescaped '}'")
             else:
                 buffer += c
@@ -66,6 +79,9 @@ def emph_literal_role(typ, rawtext, text, lineno, inliner,
         retnode += nodes.Text(buffer, buffer)
     return [retnode], []
 
+#=============================================================================
+# sphinx entry point
+#=============================================================================
 def setup(app):
     # register our handler to overrride sphinx.roles.emph_literal_role
     from docutils.parsers.rst import roles
@@ -76,3 +92,7 @@ def setup(app):
     ]
     for name in names:
         roles.register_local_role(name, emph_literal_role)
+
+#=============================================================================
+# eof
+#=============================================================================

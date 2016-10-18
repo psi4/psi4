@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -15,21 +41,21 @@
 
 .. _`sec:occ_oo`:
 
-OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
-============================================================================================
+OCC: Orbital-Optimized Coupled-Cluster and |MollerPlesset| Perturbation Theories
+================================================================================
 
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
 
-*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <src/bin/occ>`
+*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <psi4/src/psi4/occ>`
 
-*Module:* :ref:`Keywords <apdx:dfocc>`, :ref:`PSI Variables <apdx:dfocc_psivar>`, :source:`DFOCC <src/bin/dfocc>`
+*Module:* :ref:`Keywords <apdx:dfocc>`, :ref:`PSI Variables <apdx:dfocc_psivar>`, :source:`DFOCC <psi4/src/psi4//dfocc>`
 
 Introduction
 ~~~~~~~~~~~~
 
 Orbital-optimized methods have several advantages over their non-optimized counterparts. 
-Once the orbitals are optimized, the wave function will obey the Hellmann-Feynman theorem 
+Once the orbitals are optimized, the wave function will obey the Hellmann--Feynman theorem
 for orbital rotation parameters. Therefore, there is no need for orbital response terms 
 in the evaluation of analytic gradients. In other words, it is unnecessary to solve the 
 first order coupled-perturbed CC and many-body perturbation theory (MBPT) equations. 
@@ -47,7 +73,7 @@ numbers greater than 2 or less than 0, hence may violate the N-representability 
 discussed that the orbital response equations generally have a singularity problem at the unrestriction point 
 where spin-restricted orbitals become unstable to unrestriction. This singularity yields to extremely large or 
 small eigenvalues of the one-particle density matrix (OPDM). These abnormal eigenvalues may lead to unphysical 
-molecular properties such as vibrational frequencies. However, orbital optimized MP2 (hence Orbital optimized MP3) 
+molecular properties such as vibrational frequencies. However, orbital-optimized MP2 (also MP3)
 will solve this N-representability problem by disregarding orbital response contribution of one-partical 
 density matrix. 
 
@@ -66,6 +92,10 @@ optimized counterparts. Consequently, there arise two possible ways to call dens
 cases, users should prefer the DF-MP2 code described in the :ref:`DF-MP2 <sec:dfmp2>` section because it is
 faster. If gradients are needed (like in a geometry optimization), then the procedures outlined hereafter
 should be followed.
+In general, choose the desired method, reference, and ERI type (*e.g.*,
+``set reference uhf``, ``set mp2_type df``, ``opt('mp2')``) and the most
+efficient module will be selected automatically, according to
+:ref:`Cross-module Redundancies <table:managedmethods>`.
 
 Thus, there arise a few categories of method, each with corresponding input keywords:
 
@@ -74,11 +104,11 @@ Thus, there arise a few categories of method, each with corresponding input keyw
 * Non-orbital-optimized MP and CC methods with conventional integrals (:ref:`MP/CC Methods <sec:occ_nonoo>` OCC keywords)
 * Non-orbital-optimized MP and CC methods with DF and CD integrals (:ref:`MP/CC Methods <sec:occ_nonoo>` DFOCC keywords)
 
-Theory 
+Theory
 ~~~~~~
 
-What follows is a very basic description of orbital-optimized M\ |o_slash|\ ller--Plesset perturbation 
-theory as implemented in |Psifour|.  We will follow our previous presentations ([Bozkaya:2011:omp2]_, 
+What follows is a very basic description of orbital-optimized |MollerPlesset| perturbation
+theory as implemented in |Psifour|.  We will follow our previous presentations ([Bozkaya:2011:omp2]_,
 [Bozkaya:2011:omp3]_, and [Bozkaya:2012:odtl]_)
 
 The orbital variations may be expressed by means of an exponential unitary operator
@@ -102,8 +132,8 @@ The effect of the orbital rotations on the MO coefficients can be written as
 .. math::
    {\bf C({\bf \kappa})} = {\bf C^{(0)}} \ e^{{\bf K}}
 
-where :math:`{\bf C^{(0)}}` is the initial MO coefficient matrix and :math:`{\bf C({\bf \kappa})}` is the new 
-MO coefficient matrix as a function of :math:`{\bf \kappa}`. 
+where :math:`{\bf C^{(0)}}` is the initial MO coefficient matrix and :math:`{\bf C({\bf \kappa})}` is the new
+MO coefficient matrix as a function of :math:`{\bf \kappa}`.
 Now, let us define a variational energy functional (Lagrangian) as a function of :math:`{\bf \kappa}`
 
 * OMP2
@@ -156,9 +186,9 @@ Then the energy can be expanded up to second-order as follows
 .. math::
    \widetilde{E}^{(2)}({\bf \kappa}) = \widetilde{E}^{(0)} + {\bf \kappa^{\dagger} w}  + \frac{1}{2}~{\bf \kappa^{\dagger} A \kappa}
 
-where :math:`{\bf w}` is the MO gradient vector, :math:`{\bf \kappa}` is the MO rotation vector, 
-and :math:`{\bf A}` is the MO Hessian matrix. Therefore, minimizing the energy with respect to :math:`{\bf \kappa}` 
-yields 
+where :math:`{\bf w}` is the MO gradient vector, :math:`{\bf \kappa}` is the MO rotation vector,
+and :math:`{\bf A}` is the MO Hessian matrix. Therefore, minimizing the energy with respect to :math:`{\bf \kappa}`
+yields
 
 .. math::
    {\bf \kappa} = -{\bf A^{-1}w}
@@ -183,8 +213,8 @@ Convergence Problems
 
 For problematic open-shell systems, we recommend to use the ROHF or DFT orbitals as an initial guess for orbital-optimized methods. Both ROHF and 
 DFT orbitals may provide better initial guesses than UHF orbitals, hence convergence may be significantly speeded up with ROHF or DFT orbitals. 
-In order to use ROHF orbitals we can simply use "reference rohf" option. For DFT orbitals one should use "reference uks" and "dft_functional b3lyp" options. Of 
-course users can use any DFT functional available in Psi4. 
+In order to use ROHF orbitals, simply ``set reference rohf``. For DFT orbitals, ``set reference uks`` and ``set dft_functional b3lyp``. Of
+course users can use any DFT functional available in |PSIfour|.
 
 .. _`sec:occ_oo_mtds`:
 
@@ -197,7 +227,7 @@ Methods <table:occ_oo_calls>`. The following methods are available
 and can be controlled through OCC (conventional integrals ``CONV``)
 and DFOCC (density-fitted ``DF`` and Cholesky-decomposed ``CD``)
 keywords. Switching between the integrals treatments is controlled
-through 'type select' values; see rightmost Table column.
+through "type select" values in the rightmost Table column.
 
 .. _`table:occ_oo_calls`:
 
@@ -222,7 +252,7 @@ through 'type select' values; see rightmost Table column.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Density-Fitted Orbital-Optimized MP2.5                       | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__mp_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Orbital-Optimized MP2.5                  | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__mp_type| CD     | 
+    |                         | Cholesky-Decomposed Orbital-Optimized MP2.5                  | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__mp_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | olccd                   | Orbital-Optimized Linear CCD                                 | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
@@ -321,8 +351,8 @@ Advanced DFOCC Keywords
 
 .. _`sec:occ_nonoo`:
 
-Conventional (Non-OO) Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Conventional (Non-OO) Coupled-Cluster and |MollerPlesset| Perturbation Theories
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Non-orbital-optimized counterparts to higher order MPn methods are also
 available. The following methods are available and can be controlled

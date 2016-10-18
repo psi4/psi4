@@ -1,7 +1,5 @@
 #! Test that Python Molecule class processes geometry like psi4 Molecule class.
 
-import qcdb
-
 ref_nre = 268.617178206572646  #TEST
 ref_geom = psi4.Matrix(16,3)
 ref_geom.set(

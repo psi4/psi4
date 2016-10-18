@@ -58,6 +58,9 @@ protected:
     SharedMatrix T_;
     /// The 1e potential energy matrix
     SharedMatrix V_;
+    /// The DFT potential matrices (nice naming scheme)
+    SharedMatrix Va_;
+    SharedMatrix Vb_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
     /// Temporary matrix for diagonalize_F
@@ -72,6 +75,10 @@ protected:
     /// Old C Beta matrix (if needed for MOM)
     SharedMatrix Cb_old_;
 
+    /// User defined orbitals
+    SharedMatrix guess_Ca_;
+    SharedMatrix guess_Cb_;
+
     /// Energy convergence threshold
     double energy_threshold_;
 
@@ -85,11 +92,18 @@ protected:
     /// Table of energy components
     std::map<std::string, double> energies_;
 
+    /// Basis list for SAD
+    std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
+    std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
+
     /// The RMS error in the density
     double Drms_;
 
     /// Max number of iterations for HF
     int maxiter_;
+
+    /// Fail if we don't converge by maxiter?
+    bool ref_C_;
 
     /// Fail if we don't converge by maxiter?
     bool fail_on_maxiter_;
@@ -117,7 +131,12 @@ protected:
     bool broken_symmetry_;
 
     //Initial SAD doubly occupied may be more than ndocc
-    int sad_nocc_[8];
+    // int sad_nocc_[8];
+    Dimension original_doccpi_;
+    Dimension original_soccpi_;
+    int original_nalpha_;
+    int original_nbeta_;
+    bool reset_occ_;
 
     /// Mapping arrays
     int *so2symblk_;
@@ -229,6 +248,9 @@ public:
     std::shared_ptr<Vector> occupation_a() const;
     std::shared_ptr<Vector> occupation_b() const;
 
+    // Set -D correction
+    void set_dashd_correction(double dashd) { energies_["-D"] = dashd; }
+
     // PCM interface
     bool pcm_enabled_;
     std::shared_ptr<PCM> hf_pcm_;
@@ -248,10 +270,6 @@ protected:
 
     /// Prints the orbital occupation
     void print_occupation();
-
-
-    /// Perform casting of C from old basis to new basis if desired.
-    SharedMatrix BasisProjection(SharedMatrix Cold, int* napi, std::shared_ptr<BasisSet> old_basis, std::shared_ptr<BasisSet> new_basis);
 
     /// Common initializer
     void common_init();
@@ -328,13 +346,10 @@ protected:
     void compute_SAD_guess();
 
     /// Reset to regular occupation from the fractional occupation
-    void reset_SAD_occupation();
+    void reset_occupation();
 
     /// Form the guess (gaurantees C, D, and E)
     virtual void guess();
-
-    /** Computes the density matrix (D_) */
-    virtual void form_D() =0;
 
     /** Applies damping to the density update */
     virtual void damp_update();
@@ -342,14 +357,8 @@ protected:
     /** Applies second-order convergence acceleration */
     virtual int soscf_update();
 
-    /** Builds the DFT XC potential */
-    virtual void form_V();
-
     /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
-
-    /** Compute the MO coefficients (C_) */
-    virtual void form_C() =0;
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
@@ -388,16 +397,16 @@ protected:
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
     /** Save orbitals to use later as a guess **/
-    virtual void save_orbitals();
+    // virtual void save_orbitals();
 
     /** Tells whether or not to read Fock matrix as a guess **/
-    bool do_use_fock_guess();
+    // bool do_use_fock_guess();
 
     /** Load fock matrix from previous computation to form guess MO coefficients **/
-    virtual void load_fock();
+    // virtual void load_fock();
 
     /** Load orbitals from previous computation, projecting if needed **/
-    virtual void load_orbitals();
+    // virtual void load_orbitals();
 
 public:
     HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> funct,
@@ -432,6 +441,29 @@ public:
     /// basis, and there are distinct alpha and beta C and epsilons, also in the
     /// semicanonical basis.
     virtual void semicanonicalize();
+
+    /// Compute the MO coefficients (C_)
+    virtual void form_C();
+
+    /// Computes the density matrix (D_)
+    virtual void form_D();
+
+    /// Computes the density matrix (V_)
+    virtual void form_V();
+
+    // Return the DFT potenitals
+    SharedMatrix Va() { return Va_; }
+    SharedMatrix Vb() { return Vb_; }
+
+    // Set guess occupied orbitals, nalpha and nbeta will be taken from the number of passed in eigenvectors
+    void guess_Ca(SharedMatrix Ca) { guess_Ca_ = Ca; }
+    void guess_Cb(SharedMatrix Cb) { guess_Cb_ = Cb; }
+
+    // Expert option to reset the occuption or not at iteration zero
+    void reset_occ(bool reset) { reset_occ_ = reset; }
+
+    void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
+    void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
 };
 
 }} // Namespaces
