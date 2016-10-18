@@ -41,7 +41,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
-#include "structs.h"
+#include "psi4/detci/structs.h"
 
 namespace psi { namespace detci {
 
@@ -420,7 +420,7 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
 
 void init_stringwr_temps(int nel, int num_ci_orbs, int nsym)
 {
-   int maxcnt, i, j;
+   int maxcnt, i;
 
    O = init_int_array(nel+1) ;
  /*   U = init_int_array(num_ci_orbs - nel) ; */
@@ -445,7 +445,7 @@ void init_stringwr_temps(int nel, int num_ci_orbs, int nsym)
 
 void free_stringwr_temps(int nsym)
 {
-   int i,j;
+   int i;
 
    free(O);
    free(U);

@@ -39,7 +39,7 @@
 */
 
 #include <cstdio>
-#include "odometer.h"
+#include "psi4/detci/odometer.h"
 
 namespace psi { namespace detci {
 

@@ -44,6 +44,8 @@ class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef std::shared_ptr<Matrix> SharedMatrix;
+typedef std::shared_ptr<Matrix> SharedMatrix;
+class SOMCSCF;
 
 // Well this is not ideal
 struct _SlaterDetSet;
@@ -96,7 +98,6 @@ public:
      * subspaces in the SO basis. We stick to the MCSCF definitions for now.
      * @param  orbital_name FZC, DRC, DOCC, ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL
      * @param  orbitals     SharedMatrix to set
-     * @return C            Returns the appropriate orbitals in the SO basis.
      */
     void set_orbitals(const std::string& orbital_name, SharedMatrix orbitals);
 
@@ -168,6 +169,8 @@ public:
 
     /**!
      * Obtains the "special" TPDM, other TPDM roots are not held here.
+     * The AA (BB) order: \Gamma_{pqrs} & = \langle 0 | a_{p \alpha}^\dagger a_{r \alpha}^{\dagger} a_{s \alpha} a_{q \alpha} | 0 \rangle
+     * The AB order: \Gamma_{pqrs} & = \langle 0 | a_{p \alpha}^\dagger a_{r \beta}^{\dagger} a_{s \beta} a_{q \alpha} | 0 \rangle
      * @param spin       Selects which spin to return AA, AB, BB, or SUM
      * @param symmetrize Symmetrize the TPDM, only works for SUM currently
      * @return           The request 4D active TPDM
@@ -195,6 +198,11 @@ public:
      **/
     SharedCIVector new_civector(int maxnvect, int filenum, bool use_disk=true,
                                 bool buf_init=true);
+    /**
+     * Returns the "D" vector that contains the current reference CI Wavefunction
+     * @return The "D" vector
+     */
+    SharedCIVector D_vector();
 
     /**
      * Builds a CIVector that is the diagonal of the Hamiltonian
@@ -215,17 +223,34 @@ public:
      * @param S    Output vector
      * @param cvec Which vector number to use for the C vec
      * @param svec Which vector number to use for the S vec
+     */
+    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
+
+    /**
+     * Compute a sigma vector
+     * @param C    Input vector
+     * @param S    Output vector
+     * @param cvec Which vector number to use for the C vec
+     * @param svec Which vector number to use for the S vec
      * @param oei  One-electron integrals to use
      * @param tei  Two-electron integrals to use
      */
-    void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec);
     void sigma(SharedCIVector C, SharedCIVector S, int cvec, int svec,
                SharedVector oei, SharedVector tei);
 
+    /**
+     * Prints the large values in a CIVector
+     * @param vec  CIVector to print
+     * @param root Which root?
+     */
+    void print_vector(SharedCIVector vec, int root);
+
+    void compute_state_transfer(SharedCIVector ref, int ref_vec,
+                                SharedMatrix prop, SharedCIVector ret);
+
     // Compute functions
-    void compute_mcscf();
     void compute_cc();
-    void diag_h();
+    int diag_h(double econv = -1.0, double rconv = -1.0);
     void compute_mpn();
 
     // Build CI quantities
@@ -233,10 +258,13 @@ public:
     void form_tpdm();
 
     // Extraneous
-    void cleanup();
+    void cleanup_ci();
+    void cleanup_dpd();
 
+    // Returns a new SOMCSCF object
+    std::shared_ptr<SOMCSCF> mcscf_object();
 
-    // Functions below this line should be used for debug use only
+    /// Functions below this line should be used for debug use only
 
     /**!
      Builds the full CI hamiltonian for debugging purposes. Currently limits itself to a matrix
@@ -245,7 +273,6 @@ public:
      **/
     SharedMatrix hamiltonian(size_t hsize = 0);
 
-
 private:
 
     /// => General Helper Functions <= ///
@@ -253,19 +280,19 @@ private:
     /// Paramater and CalcInfo setters
     void get_mo_info();
     void get_parameters(Options &options);
-    void get_mcscf_parameters();
     void print_parameters();
     void set_ras_parameters();
     void print_ras_parameters();
 
     // General setup
-    void title();
+    void title(bool is_mcscf);
     void form_strings();
     void set_ciblks();
     void convergence_death();
 
     /// Sets the ciwavefunction object
     void common_init();
+    bool cleaned_up_ci_;
 
     /// Find out which orbitals belong hwere
     void orbital_locations(const std::string& orbital_name, int* start, int* end);
@@ -276,15 +303,17 @@ private:
     /// => Integrals <= ///
     bool ints_init_;
     bool df_ints_init_;
+    bool mcscf_object_init_;
+    bool fzc_fock_computed_;
     std::shared_ptr<IntegralTransform> ints_; // Non-DF
     std::shared_ptr<MOSpace> rot_space_;
     std::shared_ptr<MOSpace> act_space_;
     std::shared_ptr<DFERI> dferi_; // DF
     std::shared_ptr<JK> jk_;
+    std::shared_ptr<SOMCSCF> somcscf_;
 
     /// General transforms
-    // void tf_onel_ints();
-    // void form_gmat();
+    void init_mcscf_object();
     void tf_onel_ints(SharedVector onel, SharedVector twoel, SharedVector output);
     void form_gmat(SharedVector onel, SharedVector twoel, SharedVector output);
     void onel_ints_from_jk();
@@ -301,10 +330,10 @@ private:
     void setup_dfmcscf_ints();
     void transform_dfmcscf_ints(bool approx_only = false);
     void rotate_dfmcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
+
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
-    struct mcscf_params *MCSCF_Parameters_;
     struct calcinfo *CalcInfo_;
     struct params *Parameters_;
     struct ci_blks *CIblks_;
@@ -343,8 +372,7 @@ private:
     /// => CI Iterators <= //
     void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           **betlist, int nroots, double *evals, double conv_rms, double conv_e,
-          double enuc, double edrc, int maxiter, int maxnvect, std::string out,
-          int print_lvl);
+          double enuc, double edrc, int maxiter, int maxnvect);
     void olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, double E_est,
           double *norm, double *c1norm, double *ovrlap, double *buffer1,
           double *buffer2,
@@ -359,7 +387,7 @@ private:
     void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, double *evals, double conv_e,
       double conv_rms, double enuc, double edrc,
-      int nroots, int maxiter, int maxnvect, std::string out, int print_lvl);
+      int nroots, int maxiter, int maxnvect);
     void parse_import_vector(SlaterDetSet *sdset, int *ialplist, int *ialpidx,
       int *ibetlist, int *ibetidx, int *blknums);
     void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,

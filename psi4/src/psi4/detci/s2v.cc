@@ -27,7 +27,13 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here
+    \brief Code to compute the sigma2 contribution of sigma
+
+    \sigma_2(Ia, Ib) = 
+      \sum_{Ja} \sum_{kl} <Ja|E^a_{kl}|Ia>
+                          \times [ h_{kl} - 0.5*\sum_j (kj|jl) ] C(Ja,Ib)
+      + 0.5 * \sum_{Ja} \sum_{ijkl} <Ja|E^a_{ij} E^a_{kl}|Ia>
+                                    \times (ij|kl) C(Ja,Ib)
 */
 
 #include <cstdio>
@@ -35,7 +41,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
-#include "structs.h"
+#include "psi4/detci/structs.h"
 
 namespace psi {
 namespace detci {
@@ -74,17 +80,23 @@ void s2_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
   double tval;
   double *Sptr, *Cptr;
 
-  /* loop over I_a */
+  /* loop over all alpha strings Ia that belong to list Ia_list (irrep, block
+   * of alpha strings) */
   for (Ia = alplist[Ia_list], Ia_idx = 0; Ia_idx < nas; Ia_idx++, Ia++) {
     Sptr = S[Ia_idx];
     zero_arr(F, Ja_list_nas);
 
     /* loop over excitations E^a_{kl} from |A(I_a)> */
+
+    /* first loop over the K_a lists to block the excited strings by
+     * irrep or RAS code */
     for (Ka_list = 0; Ka_list < nlists; Ka_list++) {
       Iacnt = Ia->cnt[Ka_list];
       Iaridx = Ia->ridx[Ka_list];
       Iasgn = Ia->sgn[Ka_list];
       Iaij = Ia->ij[Ka_list];
+
+      /* Now loop over excited strings that belong to the given block Ka_list */
       for (Ia_ex = 0; Ia_ex < Iacnt; Ia_ex++) {
         kl = *Iaij++;
         Ka_idx = *Iaridx++;

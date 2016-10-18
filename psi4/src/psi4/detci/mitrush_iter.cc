@@ -47,10 +47,10 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
-#include "structs.h"
-#include "civect.h"
-#include "ci_tol.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ci_tol.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -79,11 +79,7 @@ extern double buf_xy1(double *c, double *hd, double E, int len);
 */
 void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       **betlist, int nroots, double *evals, double conv_rms, double conv_e,
-      double enuc, double edrc, int maxiter, int maxnvect, std::string out,
-      int print_lvl)
-//void mitrush_iter(CIvect &Hd, int nroots, double *evals, double conv_rms, double conv_e,
-//      double enuc, double edrc, int maxiter, int maxnvect, std::string out,
-//      int print_lvl)
+      double enuc, double edrc, int maxiter, int maxnvect)
 {
 
    int i, j, ij, k, l, curr, last, iter=0, L, tmpi;
@@ -220,7 +216,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       Sigma.set_zero_blocks_all();
       }
 
-   if (print_lvl > 4) {
+   if (print_ > 4) {
       outfile->Printf( "\nC(0) vector = \n");
       Cvec.print();
       }
@@ -232,7 +228,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    Cvec.copy_zero_blocks(Sigma);
 
-   if (print_lvl > 4) {
+   if (print_ > 4) {
       outfile->Printf( "\nSigma vector\n");
       Sigma.print();
 
@@ -256,7 +252,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
    olsen_iter_xy(Cvec,Sigma,Hd,&x,&y,buffer1,buffer2,E,curr,1,alpha,alplist,
                  betlist);
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
      outfile->Printf( "Straight x = %12.6lf\n", x);
      outfile->Printf( "Straight y = %12.6lf\n", y);
      }
@@ -277,7 +273,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
          /*
          H0block_xy(&x,&y,E);
          */
-         if (Parameters_->print_lvl > 3) {
+         if (print_ > 3) {
             outfile->Printf( "x = %12.6lf\n", x);
             outfile->Printf( "y = %12.6lf\n", y);
             }
@@ -285,7 +281,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
      }
 
    E_est = y / x;  /* should I add fzc here? */
-   if (Parameters_->print_lvl > 2) {
+   if (print_ > 2) {
       outfile->Printf( "E_est = %12.6lf E-edrc = %12.6lf E = %12.6lf\n",
            E_est,E-edrc,E);
        outfile->Printf( "x = %lf  y = %lf\n",x,y);
@@ -318,6 +314,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
    outfile->Printf("Iter  0  ROOT 1 ECI = %14.9lf", enuc + E);
    outfile->Printf("    Delta_E %10.3E   Delta_C %10.3E\n", E - E_last, c1norm);
+   Process::environment.globals["DETCI AVG DVEC NORM"] = c1norm;
 
 
    iter = 1;
@@ -333,7 +330,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       /* chknorm = Cvec.checknorm();
       outfile->Printf("Norm of curr CI vect = %lf\n",chknorm);
      */
-      if (print_lvl > 4) {
+      if (print_ > 4) {
          outfile->Printf( "\nC(%2d) vector (symm'd norm'd)\n", iter) ;
          Cvec.print();
 
@@ -345,13 +342,13 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       sigma(Cvec, Sigma, oei, tei, curr);
       Cvec.copy_zero_blocks(Sigma);
       Cvec.read(curr,0);
-      if (print_lvl > 4) {
+      if (print_ > 4) {
          outfile->Printf("\nC(%2d) vector (symm'd norm'd) second time\n",iter);
          Cvec.print();
 
          }
 
-      if (print_lvl > 4) {
+      if (print_ > 4) {
          Sigma.read(curr,0);
          outfile->Printf( "\n curr = %d\n", curr);
          outfile->Printf( "\nSigma(%2d) vector\n", iter);
@@ -437,7 +434,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
       olsen_iter_xy(Cvec,Sigma,Hd,&x,&y,buffer1,buffer2,E,curr,1,alpha,
                     alplist, betlist);
 
-      if (Parameters_->print_lvl > 3) {
+      if (print_ > 3) {
         outfile->Printf( "Straight x = %12.6lf\n", x);
         outfile->Printf( "Straight y = %12.6lf\n", y);
         }
@@ -453,7 +450,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
           }
         if (Parameters_->precon >= PRECON_GEN_DAVIDSON) {
           H0block_xy(&x,&y,E);
-          if (Parameters_->print_lvl > 3) {
+          if (print_ > 3) {
             outfile->Printf( "x = %12.6lf\n", x);
             outfile->Printf( "y = %12.6lf\n", y);
             }
@@ -461,7 +458,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
         }
 
       E_est = y / x;
-      if (Parameters_->print_lvl > 2) {
+      if (print_ > 2) {
         outfile->Printf( "E_est = %12.6lf E = %12.6lf\n",
                 E_est+edrc+enuc, E+enuc);
         /* outfile->Printf( "x = %lf  y = %lf\n",x,y); */

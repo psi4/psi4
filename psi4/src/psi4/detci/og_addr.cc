@@ -40,7 +40,7 @@
 
 #include <cstdio>
 #include "psi4/psi4-dec.h"
-#include "structs.h"
+#include "psi4/detci/structs.h"
 
 namespace psi { namespace detci {
 

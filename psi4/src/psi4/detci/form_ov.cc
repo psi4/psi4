@@ -39,8 +39,8 @@
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
-#include "structs.h"
-#include "ciwave.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -105,7 +105,7 @@ void CIWavefunction::form_ov()
 
    /* print out the OV data */
 
-   if (Parameters_->print_lvl > 3) {
+   if (print_ > 3) {
       for (irrep=0; irrep < nirreps; irrep++) {
          for (fullij=0; fullij<norbs*norbs; fullij++) {
             outfile->Printf( "OV[irrep=%d][oij=%d]:  ", irrep, fullij);

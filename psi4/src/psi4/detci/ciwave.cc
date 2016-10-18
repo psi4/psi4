@@ -36,11 +36,12 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libmints/matrix.h"
-#include "globaldefs.h"
-#include "ciwave.h"
-#include "civect.h"
-#include "structs.h"
-#include "slaterd.h"
+#include "psi4/libfock/soscf.h"
+#include "psi4/detci/globaldefs.h"
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/structs.h"
+#include "psi4/detci/slaterd.h"
 
 namespace psi { namespace detci {
 
@@ -61,14 +62,16 @@ CIWavefunction::CIWavefunction(std::shared_ptr<Wavefunction> ref_wfn,
     common_init();
 }
 
-CIWavefunction::~CIWavefunction() {}
+CIWavefunction::~CIWavefunction() {
+    cleanup_ci();
+    cleanup_dpd();
+}
 
 void CIWavefunction::common_init() {
-    title();
+    title((options_.get_str("WFN") == "CASSCF") || (options_.get_str("WFN") == "RASSCF"));
 
     // Build and set structs
     sme_first_call_ = 1;
-    MCSCF_Parameters_ = new mcscf_params();
     CIblks_ = new ci_blks();
     SigmaData_ = new sigma_data();
     CalcInfo_ = new calcinfo();
@@ -80,11 +83,9 @@ void CIWavefunction::common_init() {
     get_mo_info();            /* read DOCC, SOCC, frozen, nmo, etc        */
     set_ras_parameters();     /* set fermi levels and the like            */
 
+    // Print out information
     print_parameters();
     print_ras_parameters();
-
-    // MCSCF_Params
-    get_mcscf_parameters();
 
     // Wavefunction frozen nomenclature is equivalent to dropped in detci.
     // In detci frozen means doubly occupied, but no orbital rotations.
@@ -110,6 +111,9 @@ void CIWavefunction::common_init() {
     // Set information
     ints_init_ = false;
     df_ints_init_ = false;
+    mcscf_object_init_ = false;
+    cleaned_up_ci_ = false;
+    fzc_fock_computed_ = false;
 
     // Form strings
     outfile->Printf("\n   ==> Setting up CI strings <==\n\n");
@@ -119,12 +123,20 @@ void CIWavefunction::common_init() {
     if (Parameters_->bendazzoli) form_ov();
 
     name_ = "CIWavefunction";
+
+    // Init H0 block
+    H0block_init(CIblks_->vectlen);
+
+    if (CIblks_->vectlen < 2){
+        throw PSIEXCEPTION("CIWavefunction: Must have more than one determinant!");
+    }
 }
 size_t CIWavefunction::ndet() { return (size_t)CIblks_->vectlen; }
 
 double CIWavefunction::compute_energy() {
     if (Parameters_->istop) { /* Print size of space, other stuff, only   */
-        cleanup();
+        cleanup_ci();
+        cleanup_dpd();
         Process::environment.globals["CURRENT ENERGY"] = 0.0;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
         Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -133,38 +145,33 @@ double CIWavefunction::compute_energy() {
         return 0.0;
     }
 
-    // MCSCF is special, we let it handle a lot of its own issues
-    if (Parameters_->mcscf) {
-        compute_mcscf();
-    } else {
-        // Transform and set ci integrals
-        transform_ci_integrals();
+    // Transform and set ci integrals
+    transform_ci_integrals();
 
-        if (Parameters_->mpn) {
-            compute_mpn();
-        } else if (Parameters_->cc) {
-            compute_cc();
-        } else {
-            diag_h();
-        }
+    if (Parameters_->mpn) {
+        compute_mpn();
+    } else if (Parameters_->cc) {
+        compute_cc();
+    } else {
+        diag_h();
     }
 
     // Finished CI, setting wavefunction parameters
-    if (!Parameters_->zaptn & Parameters_->opdm) {
+    if (!Parameters_->zaptn && (Parameters_->opdm || Parameters_->transdens)) {
         form_opdm();
     }
 
-//    if (Parameters_->dipmom) opdm_properties();
     if (Parameters_->opdm_diag) ci_nat_orbs();
     if (Parameters_->tpdm) form_tpdm();
-    if (Parameters_->print_lvl > 0) {
+    if (print_ > 0) {
         outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
         outfile->Printf("\t\t\t - Starship Troopers\n\n");
         outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
         outfile->Printf("\t\t\t - Edward Valeev\n\n");
     }
 
-    cleanup();
+    cleanup_ci();
+    cleanup_dpd();
 
     return Process::environment.globals["CURRENT ENERGY"];
 }
@@ -236,6 +243,16 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
             start[h] = CalcInfo_->frozen_docc[h];
             end[h] = nmopi_[h] - CalcInfo_->frozen_uocc[h];
         }
+    } else if (orbitals == "OA") {
+        for (int h = 0; h < nirrep_; h++) {
+            start[h] = CalcInfo_->frozen_docc[h];
+            end[h] = nmopi_[h] - CalcInfo_->dropped_uocc[h];
+        }
+    } else if (orbitals == "AV") {
+        for (int h = 0; h < nirrep_; h++) {
+            start[h] = CalcInfo_->dropped_docc[h];
+            end[h] = nmopi_[h] - CalcInfo_->frozen_uocc[h];
+        }
     } else if (orbitals == "ALL") {
         for (int h = 0; h < nirrep_; h++) {
             start[h] = 0;
@@ -244,7 +261,7 @@ void CIWavefunction::orbital_locations(const std::string& orbitals, int* start,
     } else {
         throw PSIEXCEPTION(
             "CIWave: Orbital subset is not defined, should be FZC, DRC, DOCC, "
-            "ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, or ALL");
+            "ACT, RAS1, RAS2, RAS3, RAS4, POP, VIR, FZV, DRV, OA, AV, ROT, or ALL");
     }
 }
 
@@ -388,7 +405,7 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
       double** retp = ret->pointer();
 
       // Symmetrize
-      for (int p=0, target=0; p<nact; p++) {
+      for (int p=0; p<nact; p++) {
       for (int q=0; q<=p; q++) {
       for (int r=0; r<=p; r++) {
 
@@ -434,54 +451,75 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin,
 /*
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */
-void CIWavefunction::cleanup(void) {
+void CIWavefunction::cleanup_ci(void) {
 
-    // Free Bendazzoli OV arrays
-    // if (Parameters_->bendazzoli) free(OV);
+    // Make sure we dont double clean
+    if (!cleaned_up_ci_){
 
-    // DGAS main areas to track size of
-    // Free strings and graphs
+        // Free Bendazzoli OV arrays
+        // if (Parameters_->bendazzoli) free(OV);
 
-    // Free objects built in common_init
-    if (CalcInfo_->sigma_initialized) sigma_free();
-    delete SigmaData_;
+        // DGAS main areas to track size of
+        // Free strings and graphs
 
-    free_int_matrix(CIblks_->decode);
-    free(CIblks_->first_iablk);
-    free(CIblks_->last_iablk);
-    delete CIblks_;
+        // Free objects built in common_init
+        if (CalcInfo_->sigma_initialized) sigma_free();
+        delete SigmaData_;
 
-    //delete Parameters_;
-    delete H0block_;
+        free_int_matrix(CIblks_->decode);
+        free(CIblks_->first_iablk);
+        free(CIblks_->last_iablk);
+        delete CIblks_;
 
-    // CalcInfo free
-    free_int_matrix(CalcInfo_->ras_opi);
-    for (int i = 0, cnt = 0; i < 4; i++) {
-        free_int_matrix(CalcInfo_->ras_orbs[i]);
-    };
+        //delete Parameters_;
 
+        // Free H0block
+        H0block_free();
+        delete H0block_;
 
-    if (Parameters_->mcscf) {
-        ints_.reset();
+        // CalcInfo free
+        free_int_matrix(CalcInfo_->ras_opi);
+        for (int i = 0; i < 4; i++) {
+            free_int_matrix(CalcInfo_->ras_orbs[i]);
+        };
+
+        cleaned_up_ci_ = true;
     }
-    // delete CalcInfo_;
-    // delete MCSCF_Parameters_;
 
 }
+void CIWavefunction::cleanup_dpd(void) {
 
-/*
-** title(): Function prints a program identification
-*/
-void CIWavefunction::title(void) {
-    outfile->Printf("\n");
-    outfile->Printf("         ---------------------------------------------------------\n");
-    outfile->Printf("                                 D E T C I  \n");
-    outfile->Printf("\n");
-    outfile->Printf("                             C. David Sherrill\n");
-    outfile->Printf("                             Matt L. Leininger\n");
-    outfile->Printf("                               18 June 1999\n");
-    outfile->Printf("         ---------------------------------------------------------\n");
-    outfile->Printf("\n");
+    if (ints_init_) {
+        ints_.reset();
+        ints_init_ = false;
+    }
+    if (mcscf_object_init_){
+        somcscf_.reset();
+        mcscf_object_init_ = false;
+    }
+}
+void CIWavefunction::title(bool is_mcscf) {
+    if (is_mcscf){
+        outfile->Printf("\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("                Multi-Configurational Self-Consistent Field\n");
+        outfile->Printf("                            (a 'D E T C I' module)\n");
+        outfile->Printf("\n");
+        outfile->Printf("                 Daniel G. A. Smith, C. David Sherrill, and\n");
+        outfile->Printf("                              Matt L. Leininger\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("\n");
+    } else {
+        outfile->Printf("\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("                          Configuration Interaction\n");
+        outfile->Printf("                            (a 'D E T C I' module)\n");
+        outfile->Printf("\n");
+        outfile->Printf("                 C. David Sherrill, Daniel G. A. Smith, and\n");
+        outfile->Printf("                              Matt L. Leininger\n");
+        outfile->Printf("         ---------------------------------------------------------\n");
+        outfile->Printf("\n");
+    }
 }
 
 SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
@@ -489,6 +527,13 @@ SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
     SharedCIVector civect(new CIvect(Parameters_->icore, maxnvect,
                                      (int)use_disk, filenum, CIblks_, CalcInfo_,
                                      Parameters_, H0block_, buf_init));
+    return civect;
+}
+SharedCIVector CIWavefunction::D_vector(){
+    SharedCIVector civect(new CIvect(Parameters_->icore, Parameters_->maxnvect,
+                                     1, Parameters_->d_filenum, CIblks_, CalcInfo_,
+                                     Parameters_, H0block_, true));
+    civect->init_io_files(true);
     return civect;
 }
 SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
@@ -557,7 +602,7 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
             }
           }
         }
-        if (Parameters_->print_lvl > 4 && size < 200) {
+        if (print_ > 4 && size < 200) {
           outfile->Printf( "\nBlock %d %d of ", blk, blk2);
           outfile->Printf( "Hamiltonian matrix:\n");
           print_mat(Hpart, CIblks_->Ia_size[blk]*CIblks_->Ib_size[blk],
@@ -572,4 +617,126 @@ SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
 
 }
 
+void CIWavefunction::init_mcscf_object(){
+
+    if (Parameters_->mcscf_type == "DF") {
+        if (!df_ints_init_) setup_dfmcscf_ints();
+        somcscf_ = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
+    } else {
+        if (!ints_init_) setup_mcscf_ints();
+        somcscf_ = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
+    }
+
+    // We assume some kind of ras here.
+    if (Parameters_->wfn != "CASSCF") {
+        std::vector<Dimension> ras_spaces;
+
+        // We only have four spaces currently
+        for (int nras = 0; nras < 4; nras++) {
+            Dimension rasdim = Dimension(nirrep_, "RAS" + std::to_string(nras));
+            for (int h = 0; h < nirrep_; h++) {
+                rasdim[h] = CalcInfo_->ras_opi[nras][h];
+            }
+            ras_spaces.push_back(rasdim);
+        }
+        somcscf_->set_ras(ras_spaces);
+    }
+
+    // Set fzc energy
+    SharedMatrix Cfzc = get_orbitals("FZC");
+    somcscf_->set_frozen_orbitals(Cfzc);
+    mcscf_object_init_ = true;
+}
+
+std::shared_ptr<SOMCSCF> CIWavefunction::mcscf_object(){
+    if (!mcscf_object_init_){
+        init_mcscf_object();
+    }
+    return somcscf_;
+}
+
+
+void CIWavefunction::print_vector(SharedCIVector vec, int root){
+  int* mi_iac = init_int_array(Parameters_->nprint);
+  int* mi_ibc = init_int_array(Parameters_->nprint);
+  int* mi_iaidx = init_int_array(Parameters_->nprint);
+  int* mi_ibidx = init_int_array(Parameters_->nprint);
+  double* mi_coeff = init_array(Parameters_->nprint);
+
+  // Print largest CI coefs
+  vec->read(root, 0);
+  vec->max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
+                    mi_coeff, Parameters_->neg_only);
+  print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff);
+
+  free(mi_iac);
+  free(mi_ibc);
+  free(mi_iaidx);
+  free(mi_ibidx);
+  free(mi_coeff);
+}
+
+void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
+                                                SharedMatrix prop, SharedCIVector ret){
+
+    if (!CalcInfo_->sigma_initialized){
+        sigma_init(*(ref.get()), *(ret.get()));
+    }
+
+    // Figure out phase
+    if (!Parameters_->Ms0) {
+        int phase = 1;
+    } else {
+        int phase = ((int)Parameters_->S % 2) ? -1 : 1;
+    }
+
+    ref->read(ref_vec, 0);
+    ret->zero();
+
+    double** propp = prop->pointer();
+
+    /* loop over unique I subblocks */
+    // for (int Iblock = 0; Iblock < ref->num_blocks_; Iblock++) {
+    //     // if (Parameters_->cc && !cc_reqd_Iblocks[Iblock]) continue;
+    //     int Iacode = ref->Ia_code_[Iblock];
+    //     int Ibcode = ref->Ib_code_[Iblock];
+    //     int Inas = ref->Ia_size_[Iblock];
+    //     int Inbs = ref->Ib_size_[Iblock];
+    //     if (Inas == 0 || Inbs == 0) continue;
+    //     double** coefs = ref->blocks_[Iblock];
+
+    //     // Alpha components
+    //     for (int Ia_idx = 0; Ia_idx < Inas; Ia_idx++){
+    //         for (struct stringwr* Ib = betlist_[Ibcode], int Ib_idx = 0; Ib_idx < Inbs; Ib_idx++, Ib++){
+
+    //         /* loop over excitations E^b_{ij} from |B(J_b)> */
+    //         int Ibcnt = Ib->cnt[Iacode];
+    //         unsigned int* Ibridx = Ib->ridx[Iacode];
+    //         signed char* Ibsgn = Ib->sgn[Iacode];
+    //         int* Iboij = Ib->oij[Iacode];
+    //         for (Ib_ex = 0; Ib_ex < Ibcnt; Ib_ex++) {
+    //           int oij = *Iboij++;
+    //           int Ib_idx = *Ibridx++;
+    //           int Ib_sgn = (double)*Ibsgn++;
+    //           double c = ceoffs[Ia_idx][Ib_idx];
+    //           int i = oij / CalcInfo_->num_ci_orbs;
+    //           int j = oij % CalcInfo_->num_ci_orbs;
+    //           propp[i][j] += c * c * Ib_sgn;
+    //         }
+    //     }
+
+
+    //     } /* end loop over J blocks */
+    // } /* end loop over J blocks */
+
+
+    // if (ref->Ms0_) {
+    //     if ((int)Parameters_->ref->% 2)
+    //         ref->symmetrize(-1.0, 0);
+    //     else
+    //         ret->symmetrize(1.0, 0);
+    // }
+
+    // ret->write(ivec, 0);
+}
 }} // End Psi and CIWavefunction spaces
