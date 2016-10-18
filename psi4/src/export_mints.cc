@@ -59,6 +59,7 @@
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/writer.h"
+#include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/electricfield.h"
 #include "psi4/libmints/tracelessquadrupole.h"
 #include "psi4/libmints/angularmomentum.h"
@@ -72,8 +73,8 @@
 #include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rohf.h"
 #include "psi4/libscf_solver/cuhf.h"
-// #include "psi4/libscf_solver/ks.h"
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libfock/v.h"
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -87,36 +88,9 @@ std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
     return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
-std::shared_ptr<MatrixFactory> get_matrix_factory()
-{
-    // We need a valid molecule with a valid point group to create a matrix factory.
-    outfile->Printf("\nWarning: I am grabbing molecule from environment, export_mints.cc/get_matrix_factory\n");
-    std::shared_ptr<Molecule> molecule = Process::environment.molecule();
-    if (!molecule) {
-        outfile->Printf( "  Active molecule not set!");
-        throw PSIEXCEPTION("Active molecule not set!");
-    }
-    if (!molecule->point_group()) {
-        outfile->Printf( "  Active molecule does not have point group set!");
-        throw PSIEXCEPTION("Active molecule does not have point group set!");
-    }
-
-    // Read in the basis set
-    std::shared_ptr<BasisSet> basis = BasisSet::pyconstruct_orbital(molecule,
-        "BASIS", Process::environment.options.get_str("BASIS"));
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    std::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
-    const Dimension& dim = sobasis->dimension();
-
-    std::shared_ptr<MatrixFactory> matfac(new MatrixFactory);
-    matfac->init_with(dim, dim);
-
-    return matfac;
-}
-
 // Just a little patch until we can figure out options python-side.
-std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis){
-    return JK::build_JK(basis, Process::environment.options);
+std::shared_ptr<JK> py_build_JK(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
+    return JK::build_JK(basis, aux, Process::environment.options);
 }
 
 void export_mints(py::module& m)
@@ -175,6 +149,10 @@ void export_mints(py::module& m)
             def(py::init<const Dimension&>()).
             def(py::init<const std::string&, int>()).
             def(py::init<const std::string&, const Dimension&>()).
+            def_property("name",
+                         &Vector::name,
+                         &Vector::set_name,
+                         "The name of the Vector. Used in printing.").
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
             def("set", vector_setitem_1(&Vector::set), "docstring").
@@ -312,8 +290,6 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory> >(m, "MatrixFactory", "docstring").
-            //def("shared_object", &get_matrix_factory, "docstring").
-            def_static("shared_object", &get_matrix_factory, "docstring").
             def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix), "docstring").
             def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix), "docstring");
 
@@ -466,6 +442,7 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
     typedef SharedMatrix (MintsHelper::*normal_eri)();
     typedef SharedMatrix (MintsHelper::*normal_eri2)(std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*normal_3c)(std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
 
     typedef SharedMatrix (MintsHelper::*normal_f12)(std::shared_ptr<CorrelationFactor>);
     typedef SharedMatrix (MintsHelper::*normal_f122)(std::shared_ptr<CorrelationFactor>, std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>,std::shared_ptr<BasisSet>);
@@ -531,6 +508,8 @@ void export_mints(py::module& m)
             def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
             def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
+            def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "docstring").
+            def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "docstring").
 
             // Two-electron MO and transformers
             def("mo_eri", eri(&MintsHelper::mo_eri), "docstring").
@@ -699,6 +678,16 @@ void export_mints(py::module& m)
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
             //def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").  // dangerous for user use
+            def("irrep_labels", [](Molecule &mol){
+                std::vector<std::string> ret;
+                char **labels = mol.irrep_labels();
+                int nirrep = mol.point_group()->char_table().nirrep();
+                for (size_t h = 0; h<nirrep; h++){
+                    std::string lh(labels[h]);
+                    ret.push_back(lh);
+                }
+                return ret;
+            }).
             def_property("units", &Molecule::units, &Molecule::set_units, "Units (Angstrom or Bohr) used to define the geometry").
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
@@ -709,7 +698,7 @@ void export_mints(py::module& m)
             def("print", &PetiteList::print, "docstring");
 
     py::class_<BasisSetParser, std::shared_ptr<BasisSetParser>>(m, "BasisSetParser", "docstring");
-    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>>(m, "Gaussian94BasisSetParser", py::base<BasisSetParser>(), "docstring");
+    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, BasisSetParser>(m, "Gaussian94BasisSetParser", "docstring");
 
     //py::bind_map<std::string, std::vector>(m, "ShellInfo");
 
@@ -727,11 +716,13 @@ void export_mints(py::module& m)
     typedef std::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const std::shared_ptr<BasisSet>&) const;
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring").
             def(py::init<const std::string&, std::shared_ptr<Molecule>, std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>()).
+            def("name", &BasisSet::name, "docstring").
+            def("molecule", &BasisSet::molecule, "docstring").
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
             def("genbas", &BasisSet::print_detail_cfour, "Returns basis set per atom in CFOUR format").
             def_static("make_filename", &BasisSet::make_filename, "Returns filename for basis name: pluses, stars, parentheses replaced and gbs extension added").
-            def_static("construct", &BasisSet::construct, "docstring").
+//            def_static("construct", &BasisSet::construct, "docstring").
             def_static("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
             def("nbf", &BasisSet::nbf, "Returns number of basis functions (Cartesian or spherical depending on has_puream)").
             def("nao", &BasisSet::nao, "Returns number of atomic orbitals (Cartesian)").
@@ -747,12 +738,11 @@ void export_mints(py::module& m)
             def("function_to_shell", &BasisSet::function_to_shell, "docstring").
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
-            def("decontract", &BasisSet::decontract, "docstring").
+//            def("decontract", &BasisSet::decontract, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
             def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
             def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
-            def_static("pyconstruct_orbital", &BasisSet::pyconstruct_orbital, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("key"), py::arg("target"), py::arg("puream") = -1).
-            def_static("pyconstruct_auxiliary", &BasisSet::pyconstruct_auxiliary, "Returns new BasisSet for Molecule arg1 for target keyword name arg2 and target keyword value arg3. This suffices for orbital basis sets. For auxiliary basis sets, a default fitting role (e.g., RIFIT, JKFIT) arg4 and orbital keyword value arg5 are required. An optional argument to force the puream setting is arg4 for orbital basis sets and arg6 for auxiliary basis sets.", py::arg("mol"), py::arg("keys"), py::arg("targets"), py::arg("fitroles"), py::arg("others"), py::arg("forced_puream") = -1);
+            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring").
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -778,8 +768,8 @@ void export_mints(py::module& m)
 
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring").
-            def(py::init<SharedMol, const std::string&, Options&>()).
-            def(py::init<SharedMol,SharedBS,Options&>()).
+            def(py::init<SharedMol, SharedBS, Options&>()).
+            def(py::init<SharedMol, SharedBS>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
             def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
@@ -792,8 +782,8 @@ void export_mints(py::module& m)
             def("nso", &Wavefunction::nso, "docstring").
             def("nmo", &Wavefunction::nmo, "docstring").
             def("nirrep", &Wavefunction::nirrep, "docstring").
-            def("Ca_subset", &Wavefunction::Ca_subset, "docstring").
-            def("Cb_subset", &Wavefunction::Cb_subset, "docstring").
+            def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, "docstring").
+            def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, "docstring").
             def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
             def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
             def("Ca", &Wavefunction::Ca, "docstring").
@@ -803,10 +793,13 @@ void export_mints(py::module& m)
             def("Da", &Wavefunction::Da, "docstring").
             def("Db", &Wavefunction::Db, "docstring").
             def("X", &Wavefunction::X, "docstring").
+            def("basis_projection", &Wavefunction::basis_projection, "docstring").
             def("aotoso", &Wavefunction::aotoso, "docstring").
             def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
             def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
             def("basisset", &Wavefunction::basisset, "docstring").
+            def("get_basisset", &Wavefunction::get_basisset, "docstring").
+            def("set_basisset", &Wavefunction::set_basisset, "docstring").
             def("sobasisset", &Wavefunction::sobasisset, "docstring").
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
@@ -837,31 +830,42 @@ void export_mints(py::module& m)
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
             def_readwrite("cdict", &Wavefunction::cdict);
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>>(m, "HF", py::base<Wavefunction>(), "docstring").
+    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
+            def("form_C", &scf::HF::form_C, "docstring").
+            def("form_D", &scf::HF::form_D, "docstring").
+            def("form_V", &scf::HF::form_V, "docstring").
+            def("guess_Ca", &scf::HF::guess_Ca, "docstring").
+            def("guess_Cb", &scf::HF::guess_Cb, "docstring").
+            def("reset_occ", &scf::HF::reset_occ, "docstring").
+            def("set_sad_basissets", &scf::HF::set_sad_basissets, "docstring").
+            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "docstring").
+            def("Va", &scf::HF::Va, "docstring").
+            def("Vb", &scf::HF::Vb, "docstring").
+            def("jk", &scf::HF::jk, "docstring").
+            def("functional", &scf::HF::functional, "docstring").
+            def("V_potential", &scf::HF::V_potential, "docstring").
+            def("initialize", &scf::HF::initialize, "docstring").
+            def("iterations", &scf::HF::iterations, "docstring").
+            def("finalize_E", &scf::HF::finalize_E, "docstring").
+            def("set_dashd_correction", &scf::HF::set_dashd_correction, "docstring").
             def("occupation_a", &scf::HF::occupation_a, "docstring").
             def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
 
-    py::class_<scf::RHF, std::shared_ptr<scf::RHF>>(m, "RHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
-    py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>>(m, "ROHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>()).
             def("moFeff", &scf::ROHF::moFeff, "docstring").
             def("moFa", &scf::ROHF::moFa, "docstring").
             def("moFb", &scf::ROHF::moFb, "docstring");
 
-    py::class_<scf::UHF, std::shared_ptr<scf::UHF>>(m, "UHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
-    py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>>(m, "CUHF", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
+    py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
-
-    // py::class_<scf::RKS, std::shared_ptr<scf::RKS>>(m, "RKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-    //         def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
-
-    // py::class_<scf::UKS, std::shared_ptr<scf::UKS>>(m, "UKS", py::base<scf::HF/*, Wavefunction*/>(), "docstring").
-    //         def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 
@@ -872,8 +876,8 @@ void export_mints(py::module& m)
             def_property_readonly("U", &Localizer::U, "Orbital rotation matrix").
             def_property_readonly("converged", &Localizer::converged, "Did the localization procedure converge?");
 
-    py::class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>>(m, "BoysLocalizer", py::base<Localizer>(), "docstring");
-    py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>>(m, "PMLocalizer", py::base<Localizer>(), "docstring");
+    py::class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>, Localizer>(m, "BoysLocalizer", "docstring");
+    py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer", "docstring");
 
     py::class_<FCHKWriter, std::shared_ptr<FCHKWriter> >(m, "FCHKWriter", "docstring").
             def(py::init<std::shared_ptr<Wavefunction> >()).
@@ -903,9 +907,20 @@ void export_mints(py::module& m)
             def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector> >()).
             def("set_params", &CorrelationFactor::set_params, "docstring");
 
-    py::class_<FittedSlaterCorrelationFactor>(m, "FittedSlaterCorrelationFactor", py::base<CorrelationFactor>(), "docstring").
+    py::class_<FittedSlaterCorrelationFactor, CorrelationFactor>(m, "FittedSlaterCorrelationFactor", "docstring").
             def(py::init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
+    py::class_<CorrelationTable, std::shared_ptr<CorrelationTable>>(m, "CorrelationTable", "docstring").
+            def(py::init<std::shared_ptr<PointGroup>, std::shared_ptr<PointGroup>>()).
+            def("group", &CorrelationTable::group, "docstring").
+            def("subgroup", &CorrelationTable::subgroup, "docstring").
+            def("n", &CorrelationTable::n, "docstring").
+            def("subn", &CorrelationTable::subn, "docstring").
+            def("degen", &CorrelationTable::degen, "docstring").
+            def("subdegen", &CorrelationTable::subdegen, "docstring").
+            def("ngamma", &CorrelationTable::ngamma, "docstring").
+            def("group", &CorrelationTable::gamma, "docstring");
 
     // LIBFOCK wrappers
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
@@ -944,7 +959,6 @@ void export_mints(py::module& m)
 
     py::class_<DFTensor, std::shared_ptr<DFTensor> >(m, "DFTensor", "docstring")
             .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
-            .def(py::init<std::shared_ptr<Wavefunction>, const std::string&>())
             .def("Qso", &DFTensor::Qso, "doctsring")
             .def("Qmo", &DFTensor::Qmo, "doctsring")
             .def("Qoo", &DFTensor::Qoo, "doctsring")
@@ -967,8 +981,8 @@ void export_mints(py::module& m)
                                           std::shared_ptr<psi::detci::CIvect>,
                                           int, int);
 
-    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction> >(m, "CIWavefunction", py::base<Wavefunction>(), "docstring")
-        .def(py::init<std::shared_ptr<Wavefunction> >())
+    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, Wavefunction>(m, "CIWavefunction", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
         .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
         .def("ndet", &detci::CIWavefunction::ndet, "docstring")

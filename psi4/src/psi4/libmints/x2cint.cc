@@ -32,7 +32,6 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libparallel/parallel.h"
-#include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/rel_potential.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/x2cint.h"
@@ -40,7 +39,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 
 namespace psi {
@@ -53,11 +51,11 @@ X2CInt::~X2CInt()
 {
 }
 
-void X2CInt::compute(std::shared_ptr<Molecule> molecule, SharedMatrix S,
-                     SharedMatrix T, SharedMatrix V, Options& options)
-{
-    tstart();
-    setup(molecule, options);
+void X2CInt::compute(std::shared_ptr<BasisSet> basis,
+                     std::shared_ptr<BasisSet> x2c_basis, SharedMatrix S,
+                     SharedMatrix T, SharedMatrix V) {
+    // tstart();
+    setup(basis, x2c_basis);
     compute_integrals();
     form_dirac_h();
     diagonalize_dirac_h();
@@ -74,59 +72,35 @@ void X2CInt::compute(std::shared_ptr<Molecule> molecule, SharedMatrix S,
     S->copy(S_x2c_);
     T->copy(T_x2c_);
     V->copy(V_x2c_);
-    tstop();
+    // tstop();
 }
 
-void X2CInt::setup(std::shared_ptr<Molecule> molecule, Options& options)
-{
-    outfile->Printf("         ------------------------------------------------------------");
+void X2CInt::setup(std::shared_ptr<BasisSet> basis,
+                   std::shared_ptr<BasisSet> x2c_basis) {
+    outfile->Printf(
+        "         "
+        "------------------------------------------------------------");
     outfile->Printf("\n         Spin-Free X2C Integrals at the One-Electron Level (SFX2C-1e)");
     outfile->Printf("\n                 by Prakash Verma and Francesco A. Evangelista");
     outfile->Printf("\n         ------------------------------------------------------------\n");
 
-    basis_ = options.get_str("BASIS");
-    x2c_basis_ = options.get_str("REL_BASIS");
+    // basis set constructed from BASIS.
+    basis_ = basis->name();
+    aoBasis_contracted_ = basis;
+
+    // basis set constructed from BASIS_RELATIVISTIC.
+    x2c_basis_ = x2c_basis->name();
+    aoBasis_ = x2c_basis;
+    do_project_ = true;
 
     // Print X2C options
     outfile->Printf("\n  ==> X2C Options <==\n");
     outfile->Printf("\n    Computational Basis: %s",basis_.c_str());
     outfile->Printf("\n    X2C Basis: %s",x2c_basis_.c_str());
-
-    // If the X2C_BASIS is equal to BASIS, then use the standard computational basis
-    if (x2c_basis_ == basis_){
-        x2c_basis_ = basis_;
-        do_project_ = false;
-        aoBasis_ = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_);
-        outfile->Printf("\n    The X2C Hamiltonian will be computed in the computational basis");
-    }
-    // If X2C_BASIS equals "" or "DECONTRACT" then decontract the computational basis
-    else if ((x2c_basis_ == "") or (x2c_basis_ == "DECONTRACT")){
-        do_project_ = true;
-        // Construct a new basis set that uses BASIS.
-        aoBasis_contracted_ = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_);
-        // Construct a new basis set that used a decontracted version of BASIS.
-        aoBasis_ = aoBasis_contracted_->decontract();
-        outfile->Printf("\n    The X2C Hamiltonian will be computed in the decontracted computational basis");
-    }
-    // X2C_BASIS = [user specified] then use the user's basis
-    else{
-        do_project_ = true;
-        // Construct a new basis set that uses X2C_BASIS.
-        aoBasis_ = BasisSet::pyconstruct_orbital(molecule, "REL_BASIS",x2c_basis_);
-        // Construct a new basis set that uses BASIS.
-        aoBasis_contracted_ = BasisSet::pyconstruct_orbital(molecule, "BASIS",basis_);
-        outfile->Printf("\n    The X2C Hamiltonian will be computed in the X2C Basis");
-    }
-
-    outfile->Printf("\n");
+    outfile->Printf("\n    The X2C Hamiltonian will be computed in the X2C Basis\n");
 
     // The integral factory oversees the creation of integral objects
     integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(aoBasis_, aoBasis_, aoBasis_, aoBasis_));
-
-    // Check the point group of the molecule. If it is not set, set it.
-    if (!molecule->point_group()) {
-        molecule->set_point_group(molecule->find_point_group());
-    }
 
     // Create an SO basis...we need the point group for this part.
     // SOBasisSet object for the computational basis
@@ -515,9 +489,9 @@ void X2CInt::test_h_FW_plus()
     if (sum > 1.0e-6){
         outfile->Printf("\n    WARNING: The X2C and Dirac Hamiltonians have substatially different eigenvalues!\n");
         if (do_project_){
-            outfile->Printf("             This is probably caused by the recontraction of the basis set.\n");
+            outfile->Printf("             This is probably caused by the recontraction of the basis set.\n\n");
         }else{
-            outfile->Printf("             There is something wrong with the X2C module.\n");
+            outfile->Printf("             There is something wrong with the X2C module.\n\n");
         }
         outfile->Flush();
     }

@@ -163,7 +163,9 @@ void FISAPT::localize()
     ranges.push_back(vectors_["eps_focc"]->dimpi()[0]);
     ranges.push_back(vectors_["eps_occ"]->dimpi()[0]);
 
-    std::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc"], options_);
+    std::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_,
+                                                                                reference_->get_basisset("MINAO"),
+                                                                                matrices_["Cocc"], options_);
     local->print_header();
     std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc"], Focc, ranges);
 
@@ -675,7 +677,7 @@ void FISAPT::coulomb()
 
     // => Global JK Object <= //
 
-    jk_ = JK::build_JK(primary_, options_);
+    jk_ = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_);
     jk_->set_memory(doubles_);
 
     // => Build J and K for embedding <= //
@@ -1899,10 +1901,7 @@ void FISAPT::disp()
     outfile->Printf("  ==> Dispersion <==\n\n");
 
     // => Auxiliary Basis Set <= //
-
-    std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
-        "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
-        options_.get_str("BASIS"), primary_->has_puream());
+    std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
 
     // => Pointers <= //
 
@@ -2519,6 +2518,7 @@ void FISAPT::plot()
     std::shared_ptr<CubicScalarGrid> csg(new CubicScalarGrid(primary_, options_));
     csg->set_filepath(filepath);
     csg->print_header();
+    csg->set_auxiliary_basis(reference_->get_basisset("DF_BASIS_SCF"));
 
     std::stringstream ss;
     ss << filepath << "geom.xyz";
@@ -2600,7 +2600,9 @@ void FISAPT::flocalize()
         std::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ0A"]->dimpi()[0], vectors_["eps_occ0A"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0A"]);
 
-        std::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0A"], options_);
+        std::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_,
+                                                                                    reference_->get_basisset("MINAO"),
+                                                                                    matrices_["Cocc0A"], options_);
         local->print_header();
         std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0A"], Focc, ranges);
 
@@ -2666,7 +2668,9 @@ void FISAPT::flocalize()
         std::shared_ptr<Matrix> Focc(new Matrix("Focc", vectors_["eps_occ0B"]->dimpi()[0], vectors_["eps_occ0B"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0B"]);
 
-        std::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_, matrices_["Cocc0B"], options_);
+        std::shared_ptr<fisapt::IBOLocalizer2> local = fisapt::IBOLocalizer2::build(primary_,
+                                                                                    reference_->get_basisset("MINAO"),
+                                                                                    matrices_["Cocc0B"], options_);
         local->print_header();
         std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0B"], Focc, ranges);
 
@@ -2753,9 +2757,7 @@ void FISAPT::felst()
 
     // => a <-> b <= //
 
-    std::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
-        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
-        options_.get_str("BASIS"), primary_->has_puream());
+    std::shared_ptr<BasisSet> jkfit = reference_->get_basisset("DF_BASIS_SCF");
     size_t nQ = jkfit->nbf();
 
     std::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
@@ -2918,9 +2920,7 @@ void FISAPT::fexch()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    std::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
-        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
-        options_.get_str("BASIS"), primary_->has_puream());
+    std::shared_ptr<BasisSet> jkfit = reference_->get_basisset("DF_BASIS_SCF");
     int nQ = jkfit->nbf();
 
     std::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
@@ -3174,9 +3174,7 @@ void FISAPT::find()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    std::shared_ptr<BasisSet> jkfit = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
-        "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
-        options_.get_str("BASIS"), primary_->has_puream());
+    std::shared_ptr<BasisSet> jkfit = reference_->get_basisset("DF_BASIS_SCF");
     size_t nQ = jkfit->nbf();
 
     std::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
@@ -3524,7 +3522,7 @@ void FISAPT::find()
 
         // => JK Object <= //
 
-        std::shared_ptr<JK> jk = JK::build_JK(primary_, options_);
+        std::shared_ptr<JK> jk = JK::build_JK(primary_, reference_->get_basisset("DF_BASIS_SCF"), options_);
 
         // TODO: Account for 2-index overhead in memory
         int nso = primary_->nbf();
@@ -3739,9 +3737,7 @@ void FISAPT::fdisp()
 
     // => Auxiliary Basis Set <= //
 
-    std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary_->molecule(),
-        "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), "RIFIT",
-        options_.get_str("BASIS"), primary_->has_puream());
+    std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
 
     // => Sizing <= //
 

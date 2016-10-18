@@ -58,16 +58,10 @@ const std::string empty_;
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::initialize()
 {
-    // If envp is NULL, try to obtain envp from enviorn in unistd.h
+    // Setup defaults
+    environment_["PSI_SCRATCH"] = "/tmp/";
+    environment_["PSI_DATADIR"] = "";
 
-    // First set some defaults:
-    // The std::string --> c-string --> std::string construction
-    //   removes the padding nul characters introduced by the binary
-    //   substitution of the conda relocated PSIDATADIR so that
-    //   PSIDATADIR + /python forms properly w/o nul in the middle
-    std::string temp = TOSTRING(INSTALLEDPSIDATADIR);
-    environment_["PSIDATADIR"] = std::string(temp.c_str());
-    environment_["MAD_NUM_THREADS"] = "1";
 
     // Go through user provided environment overwriting defaults if necessary
     int i = 0;
@@ -126,7 +120,7 @@ std::string Process::Environment::operator()(const std::string &key)
         return it->second; // Found, return the value
 }
 
-const std::string &Process::Environment::set(const std::string &key, const std::string &value)
+const std::string Process::Environment::set(const std::string &key, const std::string &value)
 {
     const std::string &old = operator()(key);
     environment_[key] = value;
@@ -144,7 +138,7 @@ const std::string &Process::Environment::set(const std::string &key, const std::
 #pragma error setenv and putenv not available.
 #endif
 
-    return old;
+    return std::string();
 }
 
 void Process::Environment::set_molecule(const std::shared_ptr <Molecule> &molecule)

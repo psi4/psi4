@@ -1,5 +1,32 @@
 #!/usr/bin/python
 
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
 import sys
 import os
 import glob
@@ -17,7 +44,7 @@ def pts(category, pyfile):
     print 'Auto-documenting %s file %s' % (category, pyfile)
 
 
-# Main driver modules in psi4/share/psi4/python
+# Main driver modules in psi4/driver
 fdriver = open('source/autodoc_driver.rst', 'w')
 fdriver.write('\n.. include:: /autodoc_abbr_options_c.rst\n\n')
 fdriver.write('.. _`sec:driver`:\n\n')
@@ -25,7 +52,7 @@ fdriver.write('=============\n')
 fdriver.write('Python Driver\n')
 fdriver.write('=============\n\n')
 
-for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
+for pyfile in glob.glob(DriverPath + '../../psi4/driver/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -45,12 +72,12 @@ for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
         elif basename == 'wrapper_database':
             fdriver.write('   :exclude-members: db, database\n')
         elif basename == 'driver_nbody':
-            fdriver.write('   :exclude-members: _nbody_gufunc\n')
+            fdriver.write('   :exclude-members: nbody_gufunc\n')
         elif basename == 'driver_cbs':
             fdriver.write('   :exclude-members: cbs, complete_basis_set, xtpl_highest_1,\n')
             fdriver.write('       scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
 #        elif basename == 'physconst':
-#            fdriver.write('\n.. literalinclude:: %sshare/psi4/python/%s\n' % (IncludePath, filename))
+#            fdriver.write('\n.. literalinclude:: %sdriver/%s\n' % (IncludePath, filename))
         elif basename == 'diatomic':
             fdriver.write('   :exclude-members: anharmonicity\n')
 #        elif basename == 'interface_dftd3':
@@ -67,8 +94,8 @@ for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/*.py'):
     fdriver.write('\n')
 
 
-# Python-only plugin modules in psi4/share/psi4/python
-for basename in os.walk(DriverPath + '../../psi4/share/psi4/python').next()[1]:
+# Python-only plugin modules in psi4/driver
+for basename in os.walk(DriverPath + '../../psi4/driver').next()[1]:
     div = '=' * len(basename)
 
     if basename not in ['grendel']:
@@ -81,7 +108,7 @@ for basename in os.walk(DriverPath + '../../psi4/share/psi4/python').next()[1]:
         fdriver.write('   :members:\n')
         fdriver.write('   :undoc-members:\n')
 
-        for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/python/' + basename + '/*py'):
+        for pyfile in glob.glob(DriverPath + '../../psi4/driver/' + basename + '/*py'):
             filename = os.path.split(pyfile)[1]
             basename2 = os.path.splitext(filename)[0]
             div = '=' * len(basename2)

@@ -183,9 +183,7 @@ void DFMP2::common_init()
     sss_ = options_.get_double("MP2_SS_SCALE");
     oss_ = options_.get_double("MP2_OS_SCALE");
 
-    ribasis_ = BasisSet::pyconstruct_auxiliary(molecule_,
-        "DF_BASIS_MP2", options_.get_str("DF_BASIS_MP2"),
-        "RIFIT", options_.get_str("BASIS"));
+    ribasis_ = get_basisset("DF_BASIS_MP2");
 }
 double DFMP2::compute_energy()
 {
@@ -2849,7 +2847,7 @@ void RDFMP2::form_gradient()
 
     timer_on("Grad: JK");
 
-    std::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad(basisset_);
+    std::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad(basisset_, basissets_["DF_BASIS_SCF"]);
     jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Cocc);

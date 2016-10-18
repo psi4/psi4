@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -8,16 +34,57 @@
 
 .. _`sec:gdma`:
 
-Interface to GDMA Distributed Multipole Analysis by A. J. Stone, :py:func:`~driver.gdma`
-========================================================================================
+Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func:`~driver.gdma`
+===============================================================================================
 
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
 
-*Module:* :ref:`Keywords <apdx:gdma>`, :ref:`PSI Variables <apdx:gdma_psivar>`, :source:`PCMSolver <src/lib/libgdma>`
+*Module:* :ref:`Keywords <apdx:gdma>`, :ref:`PSI Variables <apdx:gdma_psivar>`, :source:`GDMA_INTERFACE<psi4/src/psi4/gdma_interface>`
+
+.. image:: https://img.shields.io/badge/home-gdma-5077AB.svg
+   :target: https://github.com/psi4/gdma
+
+.. raw:: html
+
+   <br>
+
+.. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
+   :target: http://www-stone.ch.cam.ac.uk/documentation/gdma/manual.pdf
+
+Installation
+~~~~~~~~~~~~
+
+**Binary**
+
+* .. image:: https://anaconda.org/psi4/gdma/badges/version.svg
+     :target: https://anaconda.org/psi4/gdma
+
+* GDMA is available as a conda package for Linux and macOS.
+
+* If using the |PSIfour| binary, gdma has already been installed alongside.
+
+* If using |PSIfour| built from source, and anaconda or miniconda has
+  already been installed (instructions at :ref:`sec:quickconda`),
+  gdma can be obtained through ``conda install gdma``.
+  Then enable it as a feature with :makevar:`ENABLE_gdma`,
+  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  and rebuild |PSIfour| to detect gdma and activate dependent code.
+
+* To remove a conda installation, ``conda remove gdma``.
+
+**Source**
+
+* .. image:: https://img.shields.io/github/tag/psi4/gdma.svg?maxAge=2592000
+     :target: https://github.com/psi4/gdma
+
+* If using |PSIfour| built from source and you want gdma built from
+  from source also,
+  enable it as a feature with :makevar:`ENABLE_gdma`,
+  and let the build system fetch and build it and activate dependent code.
 
 Input
-~~~
+~~~~~
 
 The distributed multipole analysis (DMA) technique, developed by Anthony J.
 Stone and implemented by him into the `GDMA package

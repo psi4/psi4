@@ -82,9 +82,9 @@ void UHF::common_init()
     Da_     = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_     = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Dt_     = SharedMatrix(factory_->create_matrix("D total"));
-    Da_old_  = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
-    Db_old_  = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
-    Dt_old_  = SharedMatrix(factory_->create_matrix("D total old"));
+    Da_old_ = SharedMatrix(factory_->create_matrix("Old alpha SCF density"));
+    Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
+    Dt_old_ = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
     Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
@@ -332,13 +332,8 @@ double UHF::compute_E()
     coulomb_E += Db_->vector_dot(J_);
 
     double XC_E = 0.0;
-    double dashD_E = 0.0;
     if (functional_->needs_xc()) {
         XC_E = potential_->quadrature_values()["FUNCTIONAL"];
-        std::shared_ptr<Dispersion> disp = functional_->dispersion();
-        if (disp) {
-            dashD_E = disp->compute_energy(molecule_);
-        }
     }
 
     double exchange_E = 0.0;
@@ -357,7 +352,7 @@ double UHF::compute_E()
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
     energies_["XC"] = XC_E;
-    energies_["-D"] = dashD_E;
+    double dashD_E = energies_["-D"];
 
     double Etotal = 0.0;
     Etotal += nuclearrep_;
@@ -375,7 +370,7 @@ void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
              SharedMatrix Cvir_b, SharedMatrix ret_b)
 {
     if (functional_->needs_xc()){
-        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector prodcuts.\n");
+        throw PSIEXCEPTION("SCF: Cannot yet compute DFT Hessian-vector products.\n");
     }
 
     // => Effective one electron part <= //

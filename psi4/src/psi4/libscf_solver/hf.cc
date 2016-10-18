@@ -94,6 +94,8 @@ void HF::common_init()
 {
 
     attempt_number_ = 1;
+    ref_C_ = false;
+    reset_occ_ = false;
 
     max_attempts_ = options_.get_int("MAX_ATTEMPTS");
 
@@ -112,9 +114,9 @@ void HF::common_init()
     int* dimpi = factory_->colspi();
     for (int h = 0; h< factory_->nirrep(); h++){
         nsopi_[h] = dimpi[h];
-        nmopi_[h] = nsopi_[h]; //For now
+        nmopi_[h] = nsopi_[h]; //For now, may change in S^-1/2
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h]; //For now
+        nmo_ += nmopi_[h]; //For now, may change in S^-1/2
     }
 
     // Read in energy convergence threshold
@@ -135,9 +137,14 @@ void HF::common_init()
     // Should we continue if we fail to converge?
     fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
 
+    // Set name
+    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
+        name_ = "DFT";
+    else
+        name_ = "SCF";
+
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
-    int ndocc = 0, nsocc = 0;
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
@@ -161,17 +168,7 @@ void HF::common_init()
             for(int h = 0; h < nirreps; ++h)
                 doccpi_[h] = options_["DOCC"][h].to_integer();
         }
-        for (int i=0; i<nirreps; ++i)
-            ndocc += 2*doccpi_[i];
-    } else {
-        for (int i=0; i<nirreps; ++i)
-            doccpi_[i] = 0;
-    }
-
-    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
-        name_ = "DFT";
-    else
-        name_ = "SCF";
+    } // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
@@ -196,18 +193,7 @@ void HF::common_init()
             for(int h = 0; h < nirreps; ++h)
                 soccpi_[h] = options_["SOCC"][h].to_integer();
         }
-        for (int i=0; i<nirreps; ++i)
-            nsocc += soccpi_[i];
-    } else {
-        for (int i=0; i<nirreps; ++i)
-            soccpi_[i] = 0;
-    }
-
-    // Read information from checkpoint
-    nuclearrep_ = molecule_->nuclear_repulsion_energy();
-    charge_ = molecule_->molecular_charge();
-    multiplicity_ = molecule_->multiplicity();
-    nelectron_ = nbeta_ + nalpha_;
+    } // else take the reference wavefunctions soccpi
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
@@ -216,37 +202,50 @@ void HF::common_init()
         }
     }
 
+
+    // Set additional information
+    nuclearrep_ = molecule_->nuclear_repulsion_energy();
+    charge_ = molecule_->molecular_charge();
+    multiplicity_ = molecule_->multiplicity();
+    nelectron_ = nbeta_ + nalpha_;
+
+    // Copy data for storage
+    original_doccpi_ = doccpi_;
+    original_soccpi_ = soccpi_;
+    original_nalpha_ = nalpha_;
+    original_nbeta_ = nbeta_;
+
     // Check if it is a broken symmetry solution
-    broken_symmetry_ = false;
-    int socc = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        socc += soccpi_[h];
-    }
+    // broken_symmetry_ = false;
+    // int socc = 0;
+    // for (int h = 0; h < nirrep_; h++) {
+    //     socc += soccpi_[h];
+    // }
 
-    if (multiplicity_ == 1 && socc == 2) {
-        // Set up occupation for the broken symmetry solution
-        outfile->Printf( "  Broken symmetry solution detected... \n"); //TEST
-        broken_symmetry_ = true;
-        int socc_count = 0;
-        nalphapi_ = doccpi_;
-        nbetapi_  = doccpi_;
+    // if (multiplicity_ == 1 && socc == 2) {
+    //     // Set up occupation for the broken symmetry solution
+    //     outfile->Printf( "  Broken symmetry solution detected... \n"); //TEST
+    //     broken_symmetry_ = true;
+    //     int socc_count = 0;
+    //     nalphapi_ = doccpi_;
+    //     nbetapi_  = doccpi_;
 
-        for (int h = 0; h < nirrep_; h++) {
-            for (int i = 0; i<soccpi_[h]; i++) {
-                socc_count++;
-                if (socc_count == 1) {
-                    nalphapi_[h]++;
-                }
-                if (socc_count == 2) {
-                    nbetapi_[h]++;
-                }
-            }
-        }
-        if (print_ > 2) {
-            nalphapi_.print();
-            nbetapi_.print();
-        }
-    }
+    //     for (int h = 0; h < nirrep_; h++) {
+    //         for (int i = 0; i<soccpi_[h]; i++) {
+    //             socc_count++;
+    //             if (socc_count == 1) {
+    //                 nalphapi_[h]++;
+    //             }
+    //             if (socc_count == 2) {
+    //                 nbetapi_[h]++;
+    //             }
+    //         }
+    //     }
+    //     if (print_ > 2) {
+    //         nalphapi_.print();
+    //         nbetapi_.print();
+    //     }
+    // }
 
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
@@ -352,6 +351,8 @@ void HF::common_init()
     } else {
         potential_ = nullptr;
     }
+    // -D is zero by default
+    energies_["-D"] = 0.0;
 
 
     // Initialize PCM object, if requested
@@ -375,6 +376,14 @@ int HF::soscf_update()
 void HF::form_V()
 {
     throw PSIEXCEPTION("Sorry, DFT functionals are not suppored for this type of SCF wavefunction.");
+}
+void HF::form_C()
+{
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals.");
+}
+void HF::form_D()
+{
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities.");
 }
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
 {
@@ -426,43 +435,27 @@ void HF::integrals()
         outfile->Printf( "  ==> Integral Setup <==\n\n");
 
     // Build the JK from options, symmetric type
-    try {
-        if(options_.get_str("SCF_TYPE") == "GTFOCK") {
-          #ifdef HAVE_JK_FACTORY
-            //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
-            std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
-            Process::environment.set_legacy_molecule(molecule_);
-            if(options_.get_bool("SOSCF"))
-                jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
-            else
-                jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
-            Process::environment.set_legacy_molecule(other_legacy);
-          #else
-            throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
-          #endif
-        } else {
-            jk_ = JK::build_JK(basisset_, options_);
-        }
-    }
-    catch(const BasisSetNotFound& e) {
-        if (options_.get_str("SCF_TYPE") == "DF") {
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            outfile->Printf( "%s\n", e.what());
-            outfile->Printf( "   Turning off DF and switching to PK method.\n");
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            options_.set_str("SCF", "SCF_TYPE", "PK");
-            options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(basisset_, options_);
-        } else if ( (options_.get_int("DF_SCF_GUESS") == 1) && (options_.get_str("SCF_TYPE") == "DIRECT") ) {
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            outfile->Printf( "%s\n", e.what());
-            outfile->Printf( "   Turning off DF guess, performing only DIRECT SCF\n");
-            outfile->Printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-            options_.set_bool("SCF", "DF_SCF_GUESS", false);
-            jk_ = JK::build_JK(basisset_, options_);
-        }
+    // try {
+    if(options_.get_str("SCF_TYPE") == "GTFOCK") {
+      #ifdef HAVE_JK_FACTORY
+        //DGAS is adding to the ghetto, this Python -> C++ -> C -> C++ -> back to C is FUBAR
+        std::shared_ptr<Molecule> other_legacy = Process::environment.legacy_molecule();
+        Process::environment.set_legacy_molecule(molecule_);
+        if(options_.get_bool("SOSCF"))
+            jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,false));
         else
-            throw; // rethrow the error
+            jk_ = std::shared_ptr<JK>(new GTFockJK(basisset_,2,true));
+        Process::environment.set_legacy_molecule(other_legacy);
+      #else
+        throw PSIEXCEPTION("GTFock was not compiled in this version.\n");
+      #endif
+    } else {
+        if (options_.get_str("SCF_TYPE") == "DF"){
+            jk_ = JK::build_JK(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
+        } else {
+            jk_ = JK::build_JK(get_basisset("ORBITAL"), BasisSet::zero_ao_basis_set(), options_);
+
+        }
     }
 
     // Tell the JK to print
@@ -629,7 +622,7 @@ double HF::finalize_E()
     }
 
     // Orbitals are always saved, in case an MO guess is requested later
-    save_orbitals();
+    // save_orbitals();
 
     finalize();
 
@@ -662,7 +655,6 @@ void HF::finalize()
     //Sphalf_.reset();
     X_.reset();
     T_.reset();
-    V_.reset();
     diag_temp_.reset();
     diag_F_temp_.reset();
     diag_C_temp_.reset();
@@ -749,46 +741,46 @@ void HF::print_header()
     #endif
 
 
-        outfile->Printf( "\n");
-        outfile->Printf( "         ---------------------------------------------------------\n");
-        outfile->Printf( "                                   SCF\n");
-        outfile->Printf( "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
-        outfile->Printf( "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
-        outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
-        outfile->Printf( "         ---------------------------------------------------------\n");
-        outfile->Printf( "\n");
-        outfile->Printf( "  ==> Geometry <==\n\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "         ---------------------------------------------------------\n");
+    outfile->Printf( "                                   SCF\n");
+    outfile->Printf( "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
+    outfile->Printf( "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
+    outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
+    outfile->Printf( "         ---------------------------------------------------------\n");
+    outfile->Printf( "\n");
+    outfile->Printf( "  ==> Geometry <==\n\n");
 
 
     molecule_->print();
 
 
-        outfile->Printf( "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
+    outfile->Printf( "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
-        molecule_->print_rotational_constants();
+    molecule_->print_rotational_constants();
 
-        outfile->Printf( "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
-        outfile->Printf( "  Charge       = %d\n", charge_);
-        outfile->Printf( "  Multiplicity = %d\n", multiplicity_);
-        outfile->Printf( "  Electrons    = %d\n", nelectron_);
-        outfile->Printf( "  Nalpha       = %d\n", nalpha_);
-        outfile->Printf( "  Nbeta        = %d\n\n", nbeta_);
+    outfile->Printf( "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
+    outfile->Printf( "  Charge       = %d\n", charge_);
+    outfile->Printf( "  Multiplicity = %d\n", multiplicity_);
+    outfile->Printf( "  Electrons    = %d\n", nelectron_);
+    outfile->Printf( "  Nalpha       = %d\n", nalpha_);
+    outfile->Printf( "  Nbeta        = %d\n\n", nbeta_);
 
-        outfile->Printf( "  ==> Algorithm <==\n\n");
-        outfile->Printf( "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
-        outfile->Printf( "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-        if (MOM_excited_)
-            outfile->Printf( "  Excited-state MOM enabled.\n");
-        else
-            outfile->Printf( "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
-        outfile->Printf( "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
-        outfile->Printf( "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
-        outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
-        outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
-        outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
+    outfile->Printf( "  ==> Algorithm <==\n\n");
+    outfile->Printf( "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
+    outfile->Printf( "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    if (MOM_excited_)
+        outfile->Printf( "  Excited-state MOM enabled.\n");
+    else
+        outfile->Printf( "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
+    outfile->Printf( "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
+    outfile->Printf( "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
+    outfile->Printf( "  Energy threshold   = %3.2e\n", energy_threshold_);
+    outfile->Printf( "  Density threshold  = %3.2e\n", density_threshold_);
+    outfile->Printf( "  Integral threshold = %3.2e\n\n", integral_threshold_);
 
 
-        outfile->Printf( "  ==> Primary Basis <==\n\n");
+    outfile->Printf( "  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
 
@@ -798,16 +790,18 @@ void HF::print_preiterations()
     CharacterTable ct = molecule_->point_group()->char_table();
 
 
-        outfile->Printf( "   -------------------------------------------------------\n");
-        outfile->Printf( "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
-        outfile->Printf( "   -------------------------------------------------------\n");
-        for (int h= 0; h < nirrep_; h++) {
-            outfile->Printf( "     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
-        }
-        outfile->Printf( "   -------------------------------------------------------\n");
-        outfile->Printf( "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);
-        outfile->Printf( "   -------------------------------------------------------\n\n");
-
+    outfile->Printf( "   -------------------------------------------------------\n");
+    outfile->Printf( "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
+    outfile->Printf( "   -------------------------------------------------------\n");
+    for (int h= 0; h < nirrep_; h++) {
+        outfile->Printf("     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n",
+                        ct.gamma(h).symbol(), nsopi_[h], nmopi_[h],
+                        nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
+    }
+    outfile->Printf( "   -------------------------------------------------------\n");
+    outfile->Printf("    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_,
+                    nalpha_, nbeta_, nbeta_, nalpha_ - nbeta_);
+    outfile->Printf("   -------------------------------------------------------\n\n");
 }
 
 void HF::form_H()
@@ -1034,7 +1028,7 @@ void HF::form_Shalf()
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
         if (print_)
-            outfile->Printf("  Using Symmetric Orthogonalization.\n");
+            outfile->Printf("  Using Symmetric Orthogonalization.\n\n");
 
     } else {
 
@@ -1308,7 +1302,7 @@ void HF::print_orbitals()
     free(labels);
 
 
-        outfile->Printf( "    Final Occupation by Irrep:\n");
+    outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
 }
 
@@ -1322,36 +1316,95 @@ void HF::guess()
 
     //What does the user want?
     //Options will be:
-    // "READ"-try to read MOs from guess file, projecting if needed
+    // ref_C_-C matrices were detected in the incoming wavefunction
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
     std::string guess_type = options_.get_str("GUESS");
-    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
-        outfile->Printf( "  SCF Guess was Projection but file not found.\n");
-        outfile->Printf( "  Switching over to SAD guess.\n\n");
-        guess_type = "SAD";
+
+    // DGAS broke SAD
+    // if (guess_type == "SAD"){
+    //     outfile->Printf("\nWarning! SAD is temporarily broken, switching to CORE!\n\n");
+    //     guess_type = "CORE";
+    // }
+    // Take care of options that should be overridden
+    if (guess_type == "AUTO"){
+        outfile->Printf("\nWarning! Guess was AUTO, switching to CORE!\n\n");
+        outfile->Printf("           This option should have been configured at the driver level.\n\n");
+        guess_type = "CORE";
     }
 
-    if (guess_type == "READ") {
-        if (do_use_fock_guess()) {
-            outfile->Printf( "  SCF Guess: Guess MOs from previously saved Fock matrix.\n\n");
-            load_fock(); // won't save the energy from here
-            form_C();
-            form_D();
+    if ((guess_type == "READ") && !guess_Ca_){
+        outfile->Printf("\nWarning! Guess was READ without Ca set, switching to CORE!\n");
+        outfile->Printf("           This option should have been configured at the driver level.\n\n");
+        guess_type = "CORE";
+    }
+
+    if (guess_Ca_){
+        if (print_)
+            outfile->Printf( "  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");
+
+        std::string reference = options_.get_str("REFERENCE");
+        bool single_orb = ((reference == "RHF") || (reference == "ROHF"));
+
+        if (single_orb){
+            guess_Cb_ = guess_Ca_;
+        } else {
+            if (!guess_Cb_){
+                throw PSIEXCEPTION("Guess Ca was set, but did not find a matching Cb\n");
+            }
         }
-        else {
-            outfile->Printf( "  SCF Guess: Reading in previously saved MOs, projecting if necessary.\n\n");
-            load_orbitals(); // won't save the energy from here
-            form_D();
+
+
+        if ((guess_Ca_->nirrep() != nirrep_) or (guess_Cb_->nirrep() != nirrep_)) {
+            throw PSIEXCEPTION("Number of guess of the input orbitals do not match number of irreps of the wavefunction.");
         }
+        if ((guess_Ca_->rowspi() != nsopi_) or (guess_Cb_->rowspi() != nsopi_)) {
+            throw PSIEXCEPTION("Nso of the guess orbitals do not match Nso of the wavefunction.");
+        }
+
+       for (int h = 0; h < nirrep_; h++) {
+            for (int i = 0; i < guess_Ca_->colspi()[h]; i++) {
+                C_DCOPY(nsopi_[h], &guess_Ca_->pointer(h)[0][i], guess_Ca_->colspi()[h],
+                        &Ca_->pointer(h)[0][i], nmopi_[h]);
+            }
+        }
+
+        if (!single_orb){
+           for (int h = 0; h < nirrep_; h++) {
+                for (int i = 0; i < guess_Cb_->colspi()[h]; i++) {
+                    C_DCOPY(nsopi_[h], &guess_Cb_->pointer(h)[0][i], guess_Cb_->colspi()[h],
+                            &Cb_->pointer(h)[0][i], nmopi_[h]);
+                }
+            }
+        } else {
+            Cb_ = Ca_;
+        }
+
+        // Figure out occupations from given input
+        if (!(input_socc_ || input_docc_)) {
+            nalphapi_ = guess_Ca_->colspi();
+            nbetapi_ = guess_Cb_->colspi();
+            nalpha_ = nalphapi_.sum();
+            nbeta_ = nbetapi_.sum();
+            doccpi_ = nalphapi_;
+            soccpi_ = nalphapi_ - nbetapi_;
+        }
+
+        form_D();
+
+        // This is a guess iteration similar to SAD
+        iteration_ = -1;
+        guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
 
         if (print_)
             outfile->Printf( "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
-        //Superposition of Atomic Density (RHF only at present)
+        //Superposition of Atomic Density
+        iteration_ = -1;
+        reset_occ_ = true;
         compute_SAD_guess();
         guess_E = compute_initial_E();
 
@@ -1391,7 +1444,11 @@ void HF::guess()
         find_occupation();
         form_D();
         guess_E = compute_initial_E();
+    } else {
+        throw PSIEXCEPTION("  SCF Guess: No guess was found!");
+
     }
+
     if (print_ > 3) {
         Ca_->print();
         Cb_->print();
@@ -1405,273 +1462,273 @@ void HF::guess()
     E_ = 0.0; // don't use this guess in our convergence checks
 }
 
-void HF::save_orbitals()
-{
-    psio_->open(PSIF_SCF_MOS,PSIO_OPEN_NEW);
+// void HF::save_orbitals()
+// {
+//     psio_->open(PSIF_SCF_MOS,PSIO_OPEN_NEW);
 
-    if (print_)
-        outfile->Printf("\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_MOS);
+//     if (print_)
+//         outfile->Printf("\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_MOS);
 
-    psio_->write_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
-    psio_->write_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(nirrep_),sizeof(int));
-    psio_->write_entry(PSIF_SCF_MOS,"NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
-    psio_->write_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
-    psio_->write_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
+//     psio_->write_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
+//     psio_->write_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(nirrep_),sizeof(int));
+//     psio_->write_entry(PSIF_SCF_MOS,"NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
+//     psio_->write_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+//     psio_->write_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
-    char *basisname = strdup(options_.get_str("BASIS").c_str());
-    int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
-    int nbf = basisset_->nbf();
+//     char *basisname = strdup(options_.get_str("BASIS").c_str());
+//     int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
+//     int nbf = basisset_->nbf();
 
-    psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
-    psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME",basisname,basislength*sizeof(char));
-    psio_->write_entry(PSIF_SCF_MOS,"NUMBER OF BASIS FUNCTIONS",(char *)(&nbf),sizeof(int));
+//     psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+//     psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME",basisname,basislength*sizeof(char));
+//     psio_->write_entry(PSIF_SCF_MOS,"NUMBER OF BASIS FUNCTIONS",(char *)(&nbf),sizeof(int));
 
-    // upon loading, need to know what value of puream was used
-    int old_puream = (basisset_->has_puream() ? 1 : 0);
-    psio_->write_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),sizeof(int));
+//     // upon loading, need to know what value of puream was used
+//     int old_puream = (basisset_->has_puream() ? 1 : 0);
+//     psio_->write_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),sizeof(int));
 
-    SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, nsopi_, nalphapi_));
-    for (int h = 0; h < nirrep_; h++)
-        for (int m = 0; m<nsopi_[h]; m++)
-            for (int i = 0; i<nalphapi_[h]; i++)
-                Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
-    Ctemp_a->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//     SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, nsopi_, nalphapi_));
+//     for (int h = 0; h < nirrep_; h++)
+//         for (int m = 0; m<nsopi_[h]; m++)
+//             for (int i = 0; i<nalphapi_[h]; i++)
+//                 Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
+//     Ctemp_a->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
-    SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, nsopi_, nbetapi_));
-    for (int h = 0; h < nirrep_; h++)
-        for (int m = 0; m<nsopi_[h]; m++)
-            for (int i = 0; i<nbetapi_[h]; i++)
-                Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
-    Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-    // Write Fock matrix to file 280 after removing symmetry
-    MintsHelper helper(basisset_, options_, 0);
-    SharedMatrix sotoao = helper.petite_list()->sotoao();
-    SharedMatrix Fa(new Matrix(nbf,nbf));
-    SharedMatrix Fb(new Matrix(nbf,nbf));
-    Fa->remove_symmetry(Fa_,sotoao);
-    Fb->remove_symmetry(Fb_,sotoao);
-    Fa->set_name("ALPHA FOCK C1");
-    Fb->set_name("BETA FOCK C1");
-    Fa->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-    Fb->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//     SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, nsopi_, nbetapi_));
+//     for (int h = 0; h < nirrep_; h++)
+//         for (int m = 0; m<nsopi_[h]; m++)
+//             for (int i = 0; i<nbetapi_[h]; i++)
+//                 Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
+//     Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//     // Write Fock matrix to file 280 after removing symmetry
+//     MintsHelper helper(basisset_, options_, 0);
+//     SharedMatrix sotoao = helper.petite_list()->sotoao();
+//     SharedMatrix Fa(new Matrix(nbf,nbf));
+//     SharedMatrix Fb(new Matrix(nbf,nbf));
+//     Fa->remove_symmetry(Fa_,sotoao);
+//     Fb->remove_symmetry(Fb_,sotoao);
+//     Fa->set_name("ALPHA FOCK C1");
+//     Fb->set_name("BETA FOCK C1");
+//     Fa->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//     Fb->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
-    psio_->close(PSIF_SCF_MOS,1);
-    free(basisname);
-}
+//     psio_->close(PSIF_SCF_MOS,1);
+//     free(basisname);
+// }
 
-bool HF::do_use_fock_guess() // only use this approach when symmetry changes are causing issues
-{
-  psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
-  // Compare current basis with old basis to see if fock guess will work
-  bool is_same_basis = false;
-  int nbf = basisset_->nbf(), basislength, old_nbf;
-  psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
-  char *basisnamec = new char[basislength];
-  psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,basislength*sizeof(char));
-  psio_->read_entry(PSIF_SCF_MOS,"NUMBER OF BASIS FUNCTIONS",(char *)(&old_nbf),sizeof(int));
-  std::string old_basisname(basisnamec); delete[] basisnamec;
-  is_same_basis = (options_.get_str("BASIS") == old_basisname && nbf == old_nbf);
-  // Compare number of irreps with old number to see if fock guess is necessary
-  bool is_different_symmetry = false;
-  int old_nirrep;
-  psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
-  is_different_symmetry = (nirrep_ != old_nirrep);
-  psio_->close(PSIF_SCF_MOS,1);
+// bool HF::do_use_fock_guess() // only use this approach when symmetry changes are causing issues
+// {
+//   psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
+//   // Compare current basis with old basis to see if fock guess will work
+//   bool is_same_basis = false;
+//   int nbf = basisset_->nbf(), basislength, old_nbf;
+//   psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+//   char *basisnamec = new char[basislength];
+//   psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,basislength*sizeof(char));
+//   psio_->read_entry(PSIF_SCF_MOS,"NUMBER OF BASIS FUNCTIONS",(char *)(&old_nbf),sizeof(int));
+//   std::string old_basisname(basisnamec); delete[] basisnamec;
+//   is_same_basis = (options_.get_str("BASIS") == old_basisname && nbf == old_nbf);
+//   // Compare number of irreps with old number to see if fock guess is necessary
+//   bool is_different_symmetry = false;
+//   int old_nirrep;
+//   psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
+//   is_different_symmetry = (nirrep_ != old_nirrep);
+//   psio_->close(PSIF_SCF_MOS,1);
 
-  // Final comparison: Use a Fock guess if you are using the same basis as before and
-  //                   the symmetry has changed
-  return (is_same_basis && is_different_symmetry);
-}
+//   // Final comparison: Use a Fock guess if you are using the same basis as before and
+//   //                   the symmetry has changed
+//   return (is_same_basis && is_different_symmetry);
+// }
 
-void HF::load_fock()
-{
-  int nbf = basisset_->nbf();
-  psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
-  // Read Fock matrix from file 280, applying current symmetry
-  MintsHelper helper(basisset_, options_, 0);
-  SharedMatrix aotoso = helper.petite_list()->aotoso();
-  SharedMatrix Fa(new Matrix("ALPHA FOCK C1",nbf,nbf));
-  SharedMatrix Fb(new Matrix("BETA FOCK C1",nbf,nbf));
-  Fa->load(psio_,PSIF_SCF_MOS,Matrix::SubBlocks);
-  Fb->load(psio_,PSIF_SCF_MOS,Matrix::SubBlocks);
-  Fa_->apply_symmetry(Fa,aotoso);
-  Fb_->apply_symmetry(Fb,aotoso);
-  psio_->close(PSIF_SCF_MOS,1);
-}
+// void HF::load_fock()
+// {
+//   int nbf = basisset_->nbf();
+//   psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
+//   // Read Fock matrix from file 280, applying current symmetry
+//   MintsHelper helper(basisset_, options_, 0);
+//   SharedMatrix aotoso = helper.petite_list()->aotoso();
+//   SharedMatrix Fa(new Matrix("ALPHA FOCK C1",nbf,nbf));
+//   SharedMatrix Fb(new Matrix("BETA FOCK C1",nbf,nbf));
+//   Fa->load(psio_,PSIF_SCF_MOS,Matrix::SubBlocks);
+//   Fb->load(psio_,PSIF_SCF_MOS,Matrix::SubBlocks);
+//   Fa_->apply_symmetry(Fa,aotoso);
+//   Fb_->apply_symmetry(Fb,aotoso);
+//   psio_->close(PSIF_SCF_MOS,1);
+// }
 
-void HF::load_orbitals()
-{
-    psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
+// void HF::load_orbitals()
+// {
+//     psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
 
-    int basislength, old_puream;
-    psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",
-        (char *)(&basislength),sizeof(int));
-    char *basisnamec = new char[basislength];
-    psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,
-        basislength*sizeof(char));
-    psio_->read_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),
-        sizeof(int));
-    bool old_forced_puream = (old_puream) ? true : false;
-    std::string basisname(basisnamec);
+//     int basislength, old_puream;
+//     psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",
+//         (char *)(&basislength),sizeof(int));
+//     char *basisnamec = new char[basislength];
+//     psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,
+//         basislength*sizeof(char));
+//     psio_->read_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),
+//         sizeof(int));
+//     bool old_forced_puream = (old_puream) ? true : false;
+//     std::string basisname(basisnamec);
 
-    if (basisname == "")
-        throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for projection from a previous SCF");
+//     if (basisname == "")
+//         throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for projection from a previous SCF");
 
-    if (print_) {
-        if (basisname != options_.get_str("BASIS")) {
-                outfile->Printf("  Computing basis set projection from %s to %s.\n", \
-                    basisname.c_str(),options_.get_str("BASIS").c_str());
-        } else {
-                outfile->Printf("  Using orbitals from previous SCF, no projection.\n");
-        }
-    }
+//     if (print_) {
+//         if (basisname != options_.get_str("BASIS")) {
+//                 outfile->Printf("  Computing basis set projection from %s to %s.\n", \
+//                     basisname.c_str(),options_.get_str("BASIS").c_str());
+//         } else {
+//                 outfile->Printf("  Using orbitals from previous SCF, no projection.\n");
+//         }
+//     }
 
-    std::shared_ptr<BasisSet> dual_basis;
-    if (basisname != options_.get_str("BASIS")) {
-        //std::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
-        //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
-        //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
-        dual_basis = BasisSet::pyconstruct_orbital(molecule_,
-        "DUAL_BASIS_SCF", basisname, old_forced_puream);
-    } else {
-        dual_basis = BasisSet::pyconstruct_orbital(molecule_,
-        "BASIS", options_.get_str("BASIS"));
-        // TODO: oh my, forced_puream!
-        // TODO: oh my, a basis for which a fn hasn't been set in the input translation
-        // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
-        //std::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
-        //            "DUAL_BASIS_SCF");
-        // TODO: I think Rob was planning to rework this projection bit anyways
-        // 2 Apr 2015: I (LAB) was hoping to avoid detangling this, but the need to
-        //  optimize w/custom basis sets has arrived before the new scf code, hence this hack
-    }
+//     std::shared_ptr<BasisSet> dual_basis;
+//     if (basisname != options_.get_str("BASIS")) {
+//         //std::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
+//         //molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
+//         //dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+//         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
+//         "DUAL_BASIS_SCF", basisname, old_forced_puream);
+//     } else {
+//         dual_basis = BasisSet::pyconstruct_orbital(molecule_,
+//         "BASIS", options_.get_str("BASIS"));
+//         // TODO: oh my, forced_puream!
+//         // TODO: oh my, a basis for which a fn hasn't been set in the input translation
+//         // TODO: oh my, a non-fitting basis to be looked up (in Mol) not under BASIS
+//         //std::shared_ptr<BasisSet> dual_basis = BasisSet::pyconstruct(molecule_, basisname,
+//         //            "DUAL_BASIS_SCF");
+//         // TODO: I think Rob was planning to rework this projection bit anyways
+//         // 2 Apr 2015: I (LAB) was hoping to avoid detangling this, but the need to
+//         //  optimize w/custom basis sets has arrived before the new scf code, hence this hack
+//     }
 
-    psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
+//     psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
 
-    int old_nirrep, old_nsopi[8];
-    psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
+//     int old_nirrep, old_nsopi[8];
+//     psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
 
-    if (old_nirrep != nirrep_)
-        throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
+//     if (old_nirrep != nirrep_)
+//         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
-    psio_->read_entry(PSIF_SCF_MOS,"NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
+//     psio_->read_entry(PSIF_SCF_MOS,"NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
 
-    // Save current alpha and beta occupation vectors
-    Dimension nalphapi_current (nirrep_, "Current number of alpha electrons per irrep");
-    Dimension nbetapi_current (nirrep_, "Current number of beta electrons per irrep");
-    nalphapi_current = nalphapi_;
-    nbetapi_current = nbetapi_;
+//     // Save current alpha and beta occupation vectors
+//     Dimension nalphapi_current (nirrep_, "Current number of alpha electrons per irrep");
+//     Dimension nbetapi_current (nirrep_, "Current number of beta electrons per irrep");
+//     nalphapi_current = nalphapi_;
+//     nbetapi_current = nbetapi_;
 
-    // Read in guess alpha and beta occupation vectors
-    psio_->read_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
-    psio_->read_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
+//     // Read in guess alpha and beta occupation vectors
+//     psio_->read_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+//     psio_->read_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
-    // Check if guess is the broken symmetry solution
-    int nalpha_guess = 0;
-    int nbeta_guess = 0;
-    for (int h = 0; h < nirrep_; h++) {
-        nalpha_guess += nalphapi_[h];
-        nbeta_guess += nbetapi_[h];
-    }
+//     // Check if guess is the broken symmetry solution
+//     int nalpha_guess = 0;
+//     int nbeta_guess = 0;
+//     for (int h = 0; h < nirrep_; h++) {
+//         nalpha_guess += nalphapi_[h];
+//         nbeta_guess += nbetapi_[h];
+//     }
 
-    bool guess_broken_symmetry = false;
-    if (nalpha_guess == nbeta_guess && multiplicity_ == 3) guess_broken_symmetry = true;
+//     bool guess_broken_symmetry = false;
+//     if (nalpha_guess == nbeta_guess && multiplicity_ == 3) guess_broken_symmetry = true;
 
-    if (!broken_symmetry_) {
-        if (!guess_broken_symmetry) {
-            outfile->Printf( "  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.\n");
-            for (int h = 0; h < nirrep_; h++) {
-                doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
-                soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
-            }
-            print_occupation();
+//     if (!broken_symmetry_) {
+//         if (!guess_broken_symmetry) {
+//             outfile->Printf( "  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.\n");
+//             for (int h = 0; h < nirrep_; h++) {
+//                 doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+//                 soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
+//             }
+//             print_occupation();
 
-            SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
-            Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-            SharedMatrix Ca;
-            if (basisname != options_.get_str("BASIS")) {
-                Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
-            } else {
-                Ca = Ctemp_a;
-            }
-            for (int h = 0; h < nirrep_; h++)
-                for (int m = 0; m<nsopi_[h]; m++)
-                    for (int i = 0; i<nalphapi_[h]; i++)
-                        Ca_->set(h,m,i,Ca->get(h,m,i));
+//             SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+//             Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//             SharedMatrix Ca;
+//             if (basisname != options_.get_str("BASIS")) {
+//                 Ca = basis_projection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+//             } else {
+//                 Ca = Ctemp_a;
+//             }
+//             for (int h = 0; h < nirrep_; h++)
+//                 for (int m = 0; m<nsopi_[h]; m++)
+//                     for (int i = 0; i<nalphapi_[h]; i++)
+//                         Ca_->set(h,m,i,Ca->get(h,m,i));
 
-            SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
-            Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-            SharedMatrix Cb;
-            if (basisname != options_.get_str("BASIS")) {
-                Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
-            } else {
-                Cb = Ctemp_b;
-            }
-            for (int h = 0; h < nirrep_; h++)
-                for (int m = 0; m<nsopi_[h]; m++)
-                    for (int i = 0; i<nbetapi_[h]; i++)
-                        Cb_->set(h,m,i,Cb->get(h,m,i));
-        }
-        // If it's a triplet and there is a broken symmetry singlet guess - ignore the guess
-        else{
-            // Restore nalphapi and nbetapi requested by the user
-            nalphapi_ = nalphapi_current;
-            nbetapi_ = nbetapi_current;
-        }
-    }
-    // if it's a broken symmetry solution
-    else {
+//             SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
+//             Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//             SharedMatrix Cb;
+//             if (basisname != options_.get_str("BASIS")) {
+//                 Cb = basis_projection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+//             } else {
+//                 Cb = Ctemp_b;
+//             }
+//             for (int h = 0; h < nirrep_; h++)
+//                 for (int m = 0; m<nsopi_[h]; m++)
+//                     for (int i = 0; i<nbetapi_[h]; i++)
+//                         Cb_->set(h,m,i,Cb->get(h,m,i));
+//         }
+//         // If it's a triplet and there is a broken symmetry singlet guess - ignore the guess
+//         else{
+//             // Restore nalphapi and nbetapi requested by the user
+//             nalphapi_ = nalphapi_current;
+//             nbetapi_ = nbetapi_current;
+//         }
+//     }
+//     // if it's a broken symmetry solution
+//     else {
 
-        SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
-        Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-        SharedMatrix Ca;
-        if (basisname != options_.get_str("BASIS")) {
-            Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
-        } else {
-            Ca = Ctemp_a;
-        }
+//         SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+//         Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//         SharedMatrix Ca;
+//         if (basisname != options_.get_str("BASIS")) {
+//             Ca = basis_projection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+//         } else {
+//             Ca = Ctemp_a;
+//         }
 
-        SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
-        Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
-        SharedMatrix Cb;
-        if (basisname != options_.get_str("BASIS")) {
-            Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
-        } else {
-            Cb = Ctemp_b;
-        }
+//         SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
+//         Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
+//         SharedMatrix Cb;
+//         if (basisname != options_.get_str("BASIS")) {
+//             Cb = basis_projection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+//         } else {
+//             Cb = Ctemp_b;
+//         }
 
-        // Restore nalphapi and nbetapi requested by the user
-        nalphapi_ = nalphapi_current;
-        nbetapi_ = nbetapi_current;
+//         // Restore nalphapi and nbetapi requested by the user
+//         nalphapi_ = nalphapi_current;
+//         nbetapi_ = nbetapi_current;
 
-        int socc_count = 0;
-        for (int h = 0; h < nirrep_; h++) {
-            // Copy doubly occupied orbitals into the orbital space for alpha and beta
-            for (int i = 0; i<doccpi_[h]; i++) {
-                for (int m = 0; m<nsopi_[h]; m++) {
-                    Ca_->set(h,m,i,Ca->get(h,m,i));
-                    Cb_->set(h,m,i,Cb->get(h,m,i));
-                }
-            }
-            // Copy singly occupied orbitals into the appropriate alpha and beta orbital spaces
-            for (int i = doccpi_[h]; i<(doccpi_[h]+soccpi_[h]); i++) {
-                socc_count++;
-                if (socc_count == 1) {
-                    for (int m = 0; m<nsopi_[h]; m++) {
-                        Ca_->set(h,m,doccpi_[h],Ca->get(h,m,i));
-                    }
-                }
-                if (socc_count == 2) {
-                    for (int m = 0; m<nsopi_[h]; m++) {
-                        Cb_->set(h,m,doccpi_[h],Ca->get(h,m,i));
-                    }
-                }
-            }
-        }
-    }
-    psio_->close(PSIF_SCF_MOS,1);
-    delete[] basisnamec;
-}
+//         int socc_count = 0;
+//         for (int h = 0; h < nirrep_; h++) {
+//             // Copy doubly occupied orbitals into the orbital space for alpha and beta
+//             for (int i = 0; i<doccpi_[h]; i++) {
+//                 for (int m = 0; m<nsopi_[h]; m++) {
+//                     Ca_->set(h,m,i,Ca->get(h,m,i));
+//                     Cb_->set(h,m,i,Cb->get(h,m,i));
+//                 }
+//             }
+//             // Copy singly occupied orbitals into the appropriate alpha and beta orbital spaces
+//             for (int i = doccpi_[h]; i<(doccpi_[h]+soccpi_[h]); i++) {
+//                 socc_count++;
+//                 if (socc_count == 1) {
+//                     for (int m = 0; m<nsopi_[h]; m++) {
+//                         Ca_->set(h,m,doccpi_[h],Ca->get(h,m,i));
+//                     }
+//                 }
+//                 if (socc_count == 2) {
+//                     for (int m = 0; m<nsopi_[h]; m++) {
+//                         Cb_->set(h,m,doccpi_[h],Ca->get(h,m,i));
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     psio_->close(PSIF_SCF_MOS,1);
+//     delete[] basisnamec;
+// }
 
 
 void HF::check_phases()
@@ -1710,11 +1767,7 @@ void HF::initialize()
 {
     converged_ = false;
 
-    // Neither of these are idempotent
-    if (options_.get_str("GUESS") == "SAD" || options_.get_str("GUESS") == "READ")
-        iteration_ = -1;
-    else
-        iteration_ = 0;
+    iteration_ = 0;
 
     if (print_)
         outfile->Printf( "  ==> Pre-Iterations <==\n\n");
@@ -1736,6 +1789,11 @@ void HF::initialize()
 
     if(attempt_number_ == 1){
         std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
+        if ((options_.get_str("RELATIVISTIC") == "X2C") ||
+            (options_.get_str("RELATIVISTIC") == "DKH")) {
+            mints->set_rel_basisset(get_basisset("BASIS_RELATIVISTIC"));
+        }
+
         mints->one_electron_integrals();
 
         integrals();
@@ -1782,8 +1840,8 @@ void HF::iterations()
 
     bool df = (options_.get_str("SCF_TYPE") == "DF");
 
-        outfile->Printf( "  ==> Iterations <==\n\n");
-        outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
+    outfile->Printf( "  ==> Iterations <==\n\n");
+    outfile->Printf( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df ? "   " : "");
 
 
     // SCF iterations
@@ -1810,8 +1868,9 @@ void HF::iterations()
         timer_off("HF: Form G");
 
         // Reset fractional SAD occupation
-        if (iteration_ == 0 && options_.get_str("GUESS") == "SAD")
-            reset_SAD_occupation();
+        if ((iteration_ == 0) && reset_occ_){
+            reset_occupation();
+        }
 
         timer_on("HF: Form F");
         form_F();
@@ -2105,15 +2164,18 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
     Cm->gemm(false, false, 1.0, X_, diag_C_temp_, 0.0);
 }
 
-void HF::reset_SAD_occupation()
+void HF::reset_occupation()
 {
     // RHF style for now
-    for (int h = 0; h < Da_->nirrep(); h++) {
-        nalphapi_[h] = sad_nocc_[h];
-        nbetapi_[h]  = sad_nocc_[h];
-        doccpi_[h]   = sad_nocc_[h];
-        soccpi_[h]   = 0;
-    }
+    doccpi_ = original_doccpi_;
+    soccpi_ = original_soccpi_;
+    nalphapi_ = doccpi_ + soccpi_;
+    nbetapi_ = doccpi_;
+
+    // These may not match the per irrep. Will remap correctly next find_occupation call
+    nalpha_ = original_nalpha_;
+    nbeta_ = original_nbeta_;
+
 }
 SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 {

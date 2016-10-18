@@ -16,9 +16,9 @@ include(GNUInstallDirs)
 test_restrict(restrict)
 
 ### >> Locate Python Interpreter and Library << ###
-#find_package(PythonLibsNew REQUIRED)
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
+find_package(PythonLibsNew REQUIRED)
+#find_package(PythonInterp REQUIRED)
+#find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 find_package(pybind11 CONFIG REQUIRED
                       HINTS ${CMAKE_PREFIX_PATH}/pybind11)
 find_package(Threads)
@@ -69,6 +69,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(src)
 
+### >> Install share, include, and other periphery << ###
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
@@ -83,6 +84,27 @@ install(DIRECTORY share/psi4/
 
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+
+
+### >> Copy relevant elements of psi4/psi4 to $INSTALL/lib << ###
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+
+install(DIRECTORY driver
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
+        FILES_MATCHING PATTERN "*.py")
+
+install(FILES __init__.py version.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+
+configure_file(import_core.py import_core.py @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/import_core.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+
+### >> Build actual bin/psi4 script << ###
+configure_file(run_psi4.py.in psi4 @ONLY)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+
 
     # bring libefp's fraglib to PSIDATADIR's attention
 set(_fraglib_in_psi4_dir ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag)

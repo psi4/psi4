@@ -1,0 +1,13 @@
+{#
+    cloud/localtoc.html
+    ~~~~~~~~~~~~~~~~~~~
+    Overrides <basic/localtoc.html> to add an identifiable div wrapper
+    (so the section highlight code has a reliable selector to lock onto),
+    and allows overriding the title via 'localtoc_title' theme option
+#}
+{%- if display_toc -%}
+  <div class="sphinxlocaltoc">
+    <h3><a href="{{ pathto(master_doc) }}">{{ _(theme_sidebar_localtoc_title or 'Table Of Contents') }}</a></h3>
+    {{ toc }}
+  </div>
+{%- endif -%}

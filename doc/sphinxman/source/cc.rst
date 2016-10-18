@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -7,27 +33,27 @@
 
 .. _`sec:cc`:
 
-CC: Coupled Cluster Methods
-===========================
+CC: Coupled Cluster Theory
+==========================
 
 .. codeauthor:: T. Daniel Crawford
 .. sectionauthor:: T. Daniel Crawford
 
-*Module:* :ref:`Keywords <apdx:ccenergy>`, :ref:`PSI Variables <apdx:ccenergy_psivar>`, :source:`CCENERGY <src/bin/ccenergy>`
+*Module:* :ref:`Keywords <apdx:ccenergy>`, :ref:`PSI Variables <apdx:ccenergy_psivar>`, :source:`CCENERGY <psi4/src/psi4/ccenergy>`
 
-*Module:* :ref:`Keywords <apdx:cceom>`, :ref:`PSI Variables <apdx:cceom_psivar>`, :source:`CCEOM <src/bin/cceom>`
+*Module:* :ref:`Keywords <apdx:cceom>`, :ref:`PSI Variables <apdx:cceom_psivar>`, :source:`CCEOM <psi4/src/psi4/cceom>`
 
-*Module:* :ref:`Keywords <apdx:ccresponse>`, :ref:`PSI Variables <apdx:ccresponse_psivar>`, :source:`CCRESPONSE <src/bin/ccresponse>`
+*Module:* :ref:`Keywords <apdx:ccresponse>`, :ref:`PSI Variables <apdx:ccresponse_psivar>`, :source:`CCRESPONSE <psi4/src/psi4/ccresponse>`
 
-*Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <src/bin/cctriples>`
+*Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <psi4/src/psi4/cctriples>`
 
-*Module:* :ref:`Keywords <apdx:ccdensity>`, :ref:`PSI Variables <apdx:ccdensity_psivar>`, :source:`CCDENSITY <src/bin/ccdensity>`
+*Module:* :ref:`Keywords <apdx:ccdensity>`, :ref:`PSI Variables <apdx:ccdensity_psivar>`, :source:`CCDENSITY <psi4/src/psi4/ccdensity>`
 
-*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <src/bin/cchbar>`
+*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <psi4/src/psi4/cchbar>`
 
-*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <src/bin/cclambda>`
+*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <psi4/src/psi4/cclambda>`
 
-*Module:* :ref:`Keywords <apdx:ccsort>`, :source:`CCSORT <src/bin/ccsort>`
+*Module:* :ref:`Keywords <apdx:ccsort>`, :source:`CCSORT <psi4/src/psi4//ccsort>`
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.

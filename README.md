@@ -12,7 +12,7 @@ strives to be friendly to both users and developers.
 
 * **Users' Website**  www.psicode.org
 
-* **Downloading and Installing Psi4** temporary: https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L102  (out-of-date https://github.com/psi4/psi4/wiki)
+* **Downloading and Installing Psi4** https://github.com/psi4/psi4/wiki (wiki is temporarily out of date, see [CMakeLists.txt](CMakeLists.txt))
 
 * **Manual**  [http://bit.ly/psi4manual](http://psicode.org/psi4manual/master/index.html) (built nightly from master branch)
 

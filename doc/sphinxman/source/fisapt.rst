@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -7,14 +33,14 @@
 
 .. _`sec:fisapt`:
 
-F/I-SAPT: Functional Group and/or Intramolecular Symmetry-Adapted Perturbation Theory
-=====================================================================================
+F/I-SAPT: Functional Group and/or Intramolecular SAPT
+=====================================================
 
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
 
 *Module:* :ref:`Keywords <apdx:fisapt>`, :ref:`PSI Variables
-<apdx:fisapt_psivar>`, :source:`FISAPT <src/bin/fisapt>`
+<apdx:fisapt_psivar>`, :source:`FISAPT <psi4/src/psi4/fisapt>`
 
 The FISAPT module provides two extensions to standard SAPT theory to allow for
 (1) an effective two-body partition of the various SAPT terms to localized
@@ -25,7 +51,7 @@ origins of a noncovalent interaction, while I-SAPT allows for one to perform
 a SAPT analysis for intramolecular interactions. F-SAPT and I-SAPT can be
 deployed together in this module, yielding "F/I-SAPT." All F/I-SAPT computations
 in |PSIfour| use density-fitted SAPT0 as the underlying SAPT methodology. Interested
-users should consult the manual page for Ed Hohenstein's `SAPT0 sec:sapt`_ code
+users should consult the manual page for Ed Hohenstein's :ref:`SAPT0 <sec:sapt>` code
 and the SAPT literature to understand the specifics of SAPT0 before beginning
 with F/I-SAPT0.
 
@@ -35,7 +61,7 @@ group" SAPT (F-SAPT). An additional paper describes how to use F-SAPT to analyze
 differences under functional group substitutions [Parrish:2014:17386]_.  I-SAPT
 is explained in [Parrish:2015:051103]_. There is also a reasonably-detailed
 review of the aims of A/F/I-SAPT and the existing state-of-the-art in the field
-in the introduction chapter on partitioned SAPT methods in Parrish's `thesis
+in the introduction chapter on partitioned SAPT methods in `Parrish's thesis
 <https://smartech.gatech.edu/handle/1853/53850>`_.
 
 A video tutorial series for the use of the FISAPT module is available `here
@@ -63,7 +89,7 @@ Specific videos in the series include:
   <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
   Details all of the more-advanced options in the F/I-SAPT code (rarely needed).
 
-The scripts discussed below are located in :source:`share/scripts/fisapt`.
+The scripts discussed below are located in :source:`psi4/share/psi4/fsapt`.
 
 F-SAPT: A Representative Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -71,7 +97,7 @@ F-SAPT: A Representative Example
 Below, we show an example of using F-SAPT0/jun-cc-pVDZ to analyze the
 distribution of the intermolecular interaction energy components between the
 various hydroxyl and phenyl moeities of the phenol dimer. This example is
-explicitly included in srcsample:`fsapt1`. A video
+explicitly included in :srcsample:`fsapt1`. A video
 lecture explaining this example is available `here
 <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
 while an additional video describing how to plot the order-1 F-SAPT analysis
@@ -129,21 +155,21 @@ This file runs a DF-HF computation on the full dimer using |PSIfours| existing
 SCF code. The monomer SCF computations are performed inside the FISAPT module,
 following which a complete DF-SAPT0 computation is performed. Additional bits of
 analysis are performed to generate the order-2 partition of the SAPT terms to
-the level of nuclei and localized occupied orbitals - this generally does not
+the level of nuclei and localized occupied orbitals |w--w| this generally does not
 incur much additional overhead beyond a standard SAPT0 computations. The
-nuclear/orbital partition data is written to the folder ``fsapt`` in the same
-directory as the input file (this can be changed by user option). 
+nuclear/orbital partition data is written to the folder :file:`fsapt/` in the same
+directory as the input file (this can be changed by |fisapt__fisapt_fsapt_filepath|).
 
 One obtains the desired F-SAPT partition by post-processing the data in
-``fsapt``. Within this dir, the user is expected to provide the ASCII files
-``fA.dat`` and ``fB.dat``, which describe the assignment of atoms to chemical
-functional groups using 1-based ordering. E.g., for the problem at hand,
-``fA.dat`` contains::
+:file:`fsapt/`. Within this dir, the user is expected to provide the ASCII files
+:file:`fA.dat` and :file:`fB.dat`, which describe the assignment of atoms to chemical
+functional groups using 1-based ordering. *E.g.*, for the problem at hand,
+:file:`fA.dat` contains::
 
     OH 1 2
     PH 3 4 5 6 7 8 9 10 11 12 13
 
-while ``fB.dat`` contains::
+while :file:`fB.dat` contains::
     
     OH 14 15
     PH 16 17 18 19 20 21 22 23 24 25 26
@@ -151,7 +177,7 @@ while ``fB.dat`` contains::
 At this point, the user should run the ``fsapt.py`` post-processing script in
 the ``fsapt`` directory as::
 
-    >> fsapt.py
+    >>> fsapt.py
 
 This will generate, among other files, the desired functional-group partition in
 ``fsapt.dat``. For our problem, the bottom of this file contains the finished
@@ -176,11 +202,11 @@ energetic partitions.
 
 Users should check the files ``fragA.dat`` and ``fragB.dat`` to ensure that
 there is not too much charge delocalization from one fragment to another. This
-is presented in the "Orbital Check" section in these files - a value larger than
+is presented in the "Orbital Check" section in these files |w--w| a value larger than
 0.1 docc is an indication that the picture of localizable functional groups may
 be breaking down. We also *strongly discourage* the cutting of double,
 triple, or aromatic bonding motifs when partitioning the molecule into fragments
-- cuts across only simple sigma bonds are encouraged.
+|w--w| cuts across only simple sigma bonds are encouraged.
 
 Order-1 Visualization with PyMol
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -192,13 +218,13 @@ with the atoms colored according to their order-1 F-SAPT contributions. We have
 a set of template ``.pymol`` scripts to help with this process. These can be
 obtained by running::
 
-    >> copy_pymol.py
+    >>> copy_pymol.py
 
 and then in PyMol::
 
-    >> @run.pymol
+    >>> @run.pymol
 
-This last command runs all of the individual ``.pymol`` files (e.g.,
+This last command runs all of the individual ``.pymol`` files (*e.g.*,
 ``Elst.pymol``), which in turn load in the molecule and order-1 analysis
 (contained in the ``.pdb`` file), set up the visualization, and render a
 ``.png`` image of the scene. Generally the view orientation and some specific
@@ -214,10 +240,10 @@ Difference F-SAPT Analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For those interested in taking the differences between two F-SAPT partitions
-(e.g., to see how a substituent modulates a noncovalent interaction), we have
+(*e.g.*, to see how a substituent modulates a noncovalent interaction), we have
 the ``fsapt-diff.py`` script to help with this. This is invoked as::
 
-    >> fsapt-diff.py source-fsapt-dir1 source-fsapt-dir2 target-diff-fsapt-dir
+    >>> fsapt-diff.py source-fsapt-dir1 source-fsapt-dir2 target-diff-fsapt-dir
 
 Where the use has already performed ``fsapt.py`` analysis using the same
 functional group names in ``source-fsapt-dir-1`` and ``source-fsapt-dir-2``. The
@@ -231,8 +257,8 @@ I-SAPT: A Representative Example
 Below, we show an example of using I-SAPT0/jun-cc-pVDZ to analyze the
 interaction between the two phenol groups in a 2,4-pentanediol molecule.
 This example is
-explicitly included in srcsample:`isapt1`. A video
-lecture explaining this example is available `here
+explicitly included in :srcsample:`isapt1`. A video
+lecture explaining this example is available
 `here <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
 while an additional video describing how to plot the density and ESP fields from
 the I-SAPT embedding procedure is available `here <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_::
@@ -272,28 +298,28 @@ the I-SAPT embedding procedure is available `here <https://www.youtube.com/watch
     # => Standard Options <= #
     
     set {
-    basis         jun-cc-pvdz
+    basis jun-cc-pvdz
     scf_type df
     guess sad
     freeze_core true
-    fisapt_do_plot true # For extra analysis
+    fisapt_do_plot true  # For extra analysis
     }
     
     energy('fisapt0')
 
 This is essentially the same input as for F-SAPT, except that the molecular
-system is now divided into *three* moeities - subsystems A and B whose
+system is now divided into *three* moeities |w--w| subsystems A and B whose
 intramolecular interaction we wish to compute, and a linking unit C.  This file
 runs a DF-HF computation on the full system using |PSIfours| existing SCF code.
 At the start of the FISAPT code, the occupied orbitals are localized and divided
 by charge considerations into A, B, C, and link sets. By default, linking sigma
 bonds are assigned to C (this can be changed by the |fisapt__fisapt_link_assignment|
-options). Then, non-interacting Hartree-Fock solutions for A and B are optimized
+options). Then, non-interacting Hartree--Fock solutions for A and B are optimized
 in the embedding field of the linking moeity C. At this point, A and B are not
 interacting with each other, but have any potential covalent links or other
 interactions with C built in by the embedding.  A standard F-SAPT0 computation
 is then performed between A and B, yielding the I-SAPT interaction energy. Any
-F-SAPT considerations are also possible when I-SAPT is performed - F and I are
+F-SAPT considerations are also possible when I-SAPT is performed |w--w| F and I are
 completely direct-product-separable considerations. 
 
 Cube File Visualization with PyMol
@@ -303,16 +329,16 @@ Setting |fisapt__fisapt_do_plot| ``true`` above generates a set of ``.cube`` fil
 containing the densities and ESPs of the various subsystems in the I-SAPT
 embedding procedure. These can be used to gain a detailed understanding of the
 intermolecular partition and the polarization between non-interacting and
-Hartree-Fock-interacting moeities. We have developed a set of template
+Hartree--Fock-interacting moeities. We have developed a set of template
 ``.pymol`` scripts to help with this process. These can be obtained by running::
 
-    >> copy_pymol2.py
+    >>> copy_pymol2.py
 
 and then in PyMol::
 
-    >> @run.pymol
+    >>> @run.pymol
 
-This last command runs all of the individual ``.pymol`` files (e.g.,
+This last command runs all of the individual ``.pymol`` files (*e.g.*,
 ``DA.pymol``), which in turn load in the molecule and cube file data
 (contained in the ``.cube`` file), set up the visualization, and render a
 ``.png`` image of the scene. Generally the view orientation and some specific
@@ -339,7 +365,7 @@ Additional Notes
 ^^^^^^^^^^^^^^^^
 
 .. caution:: In constrast to Ed Hohenstein's SAPT0 code, FISAPT uses the -JKFIT
-  auxiliary basis sets for all Fock-type terms (e.g., electrostatics, exchange,
+  auxiliary basis sets for all Fock-type terms (*e.g.*, electrostatics, exchange,
   induction, and core Fock matrix elements in exchange-dispersion), and the -RI
   auxiliary basis sets *only* for the dispersion term. Ed's code uses the -RI
   basis sets for all SAPT terms, which can be problematic for heavy elements.
@@ -347,5 +373,4 @@ Additional Notes
   differences should be very minor for up to and including second-row elements,
   after which point one needs to use the |sapt__df_basis_elst| option in Ed's code to
   provide an accurate result. 
-
 

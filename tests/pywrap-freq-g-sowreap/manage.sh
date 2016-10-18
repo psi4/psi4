@@ -1,5 +1,6 @@
 # modify objdir here. assumes running from test dir
 OBJDIR="objdir-pn"
+DVRDIR="" #"-l ../../share/"
 
 # clean
 rm -f psi*clean
@@ -19,16 +20,16 @@ rm -f BASIC-*out
 set -x
 
 # run calculation sequence
-../../${OBJDIR}/bin/psi4 -l ../../share/
+../../${OBJDIR}/bin/psi4 ${DVRDIR}
 
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-1.in                   -o FREQ-1.out  
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-2.in                   -o FREQ-2.out  
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-3.in                   -o FREQ-3.out  
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-4.in                   -o FREQ-4.out  
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-5.in                   -o FREQ-5.out  
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-6.in                   -o FREQ-6.out 
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-7.in                   -o FREQ-7.out 
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-1.in                   -o FREQ-1.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-2.in                   -o FREQ-2.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-3.in                   -o FREQ-3.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-4.in                   -o FREQ-4.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-5.in                   -o FREQ-5.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-6.in                   -o FREQ-6.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-7.in                   -o FREQ-7.out
 
 cat tests >> FREQ-master.in
-../../${OBJDIR}/bin/psi4 -l ../../share/ -i FREQ-master.in              -o FREQ-master.out
+../../${OBJDIR}/bin/psi4 ${DVRDIR} -i FREQ-master.in              -o FREQ-master.out
 

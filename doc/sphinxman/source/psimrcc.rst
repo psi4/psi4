@@ -1,3 +1,30 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
+
 .. include:: autodoc_abbr_options_c.rst
 
 .. index::
@@ -12,7 +39,7 @@ PSIMRCC Implementation of Mk-MRCC Theory
 .. codeauthor:: Francesco A. Evangelista and Andrew C. Simmonett 
 .. sectionauthor:: Alexander E. Vaughn
 
-*Module:* :ref:`Keywords <apdx:psimrcc>`, :ref:`PSI Variables <apdx:psimrcc_psivar>`, :source:`PSIMRCC <src/bin/psimrcc>`
+*Module:* :ref:`Keywords <apdx:psimrcc>`, :ref:`PSI Variables <apdx:psimrcc_psivar>`, :source:`PSIMRCC <psi4/src/psi4/psimrcc>`
 
 State-specific Multireference coupled cluster theories provide highly
 accurate energies and properties of electronic states that require
@@ -85,7 +112,7 @@ MCSCF input is given below.
 
 PSIMRCC is most commonly used for low-spin cases (singlets or open-shell
 singlets).  It is capable of performing computations on higher spin states
-(e.g., triplets), but in general, not all the required matrix elements have
+(*e.g.*, triplets), but in general, not all the required matrix elements have
 been coded for high-spin cases, meaning that results will correspond to an
 approximate Mk-MRCC computation for high-spin cases.
 

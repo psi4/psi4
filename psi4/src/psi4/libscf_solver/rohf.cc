@@ -78,7 +78,7 @@ void ROHF::common_init()
     moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
+    Ca_     = SharedMatrix(factory_->create_matrix("C"));
     Cb_      = Ca_;
     Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));

@@ -6,8 +6,8 @@ foreach (dir_name libpsi4util liboptions libparallel libciomr libpsio libqt
 endforeach ()
 
 foreach (dir_name adc ccdensity ccenergy cceom cchbar cclambda ccresponse
-        ccsort cctransort cctriples dcft deriv_wrapper detci dfmp2
-        dfocc efp_interface findif fisapt fnocc mcscf mints_wrapper mrcc
+        ccsort cctransort cctriples dcft detci dfmp2
+        dfocc efp_interface findif fisapt fnocc mcscf mrcc
         occ optking psimrcc sapt scfgrad thermo transqt2
         gdma_interface dmrg
         )

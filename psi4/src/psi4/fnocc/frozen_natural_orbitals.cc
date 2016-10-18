@@ -543,20 +543,11 @@ void DFFrozenNO::ThreeIndexIntegrals() {
   long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
   if ( options_.get_str("SCF_TYPE") == "DF" ) {
 
-      std::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(molecule(),
-          "BASIS", options_.get_str("BASIS"));
-
-      std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-          "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT",
-          options_.get_str("BASIS"), primary->has_puream());
+      std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
+      std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
 
       nQ_scf = auxiliary->nbf();
       Process::environment.globals["NAUX (SCF)"] = nQ_scf;
-
-      //std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-      //      "DF_BASIS_SCF", options_.get_str("DF_BASIS_SCF"), "JKFIT", options_.get_str("BASIS"));
-      //nQ_scf = auxiliary->nbf();
-      //Process::environment.globals["NAUX (SCF)"] = nQ_scf;
   }
 
   std::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_scf,ntri));
@@ -586,8 +577,7 @@ void DFFrozenNO::ThreeIndexIntegrals() {
   // for DFCC, assume that the DF basis differs between the SCF and CC (TODO generalize)
   if ( ( options_.get_str("DF_BASIS_CC") != "CHOLESKY" ) ){
 
-      std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(molecule(),
-            "DF_BASIS_CC", options_.get_str("DF_BASIS_CC"), "RIFIT", options_.get_str("BASIS"));
+      std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_CC");
       std::shared_ptr<DFTensor> DF (new DFTensor(basisset(),auxiliary,Ca(),ndocc,nvirt+nfzv,ndoccact,nvirt,options_));
       nQ = auxiliary->nbf();
       std::shared_ptr<Matrix> tmp = DF->Qso();

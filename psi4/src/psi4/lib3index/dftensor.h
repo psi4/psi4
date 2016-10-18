@@ -185,14 +185,6 @@ public:
              SharedMatrix C,
              int nocc,
              int nvir);
-    /**
-    * Pulls required quantites from passed wavefunction and options from environment
-    * DF basis is set by keyword i.e.
-    *
-    * set {dfbas aug-cc-pVDZ-jkfit}
-    * DFTensor("dfbas")
-    */
-    DFTensor(std::shared_ptr<Wavefunction> wfn, const std::string& type);
     ~DFTensor();
 
     SharedMatrix Qso();

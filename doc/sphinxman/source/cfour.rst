@@ -1,11 +1,37 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
 .. index:: Cfour
 .. _`sec:cfour`:
 
-Interface to CFOUR by J. Stanton and J. Gauss
-=============================================
+Interface to CFOUR by J. Stanton & J. Gauss
+===========================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
@@ -324,10 +350,10 @@ An advantage of |PSIfours| Python driver is that any number of common
 work-up procedures can be automated and wrapped around the the
 conventional single-point and optimization procedures at the heart of all
 quantum chemistry codes. Three core "wrappers" available in |PSIfour| are
-:py:func:`~driver_nbody._nbody_gufunc`,
+:py:func:`~driver_nbody.nbody_gufunc`,
 :py:func:`~wrapper_database.database`, and
 :py:func:`~driver_cbs.complete_basis_set`; read their respective sections
-for details, but an overview is provided here. :py:func:`~driver_nbody._nbody_gufunc`
+for details, but an overview is provided here. :py:func:`~driver_nbody.nbody_gufunc`
 computes the interaction energy of a bimolecular complex (counterpoise-corrected,
 not, or both). ::
 
@@ -632,7 +658,7 @@ into |PSIfour| data objects.
   :py:func:`~driver.optimize` for :ref:`methods <table:energy_cfour>`.
   Force with ``gradient('name', dertype=0)``, *etc.*.
 
-* :py:func:`~driver_nbody._nbody_gufunc` for computation of interaction energies with or
+* :py:func:`~driver_nbody.nbody_gufunc` for computation of interaction energies with or
   without counterpoise correction. Example: :srcsample:`cfour/dfmp2-1`.
 
 * :py:func:`~wrapper_database.database` for computation of a collection of molecules in a

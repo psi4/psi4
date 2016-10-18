@@ -52,6 +52,8 @@ protected:
     std::shared_ptr<Molecule> mol_;
     /// Basis set this grid is built around
     std::shared_ptr<BasisSet> primary_;
+    /// The auxiliary basisset for ESP contractions
+    std::shared_ptr<BasisSet> auxiliary_;
     /// File path for grid storage
     std::string filepath_;
 
@@ -108,6 +110,9 @@ public:
     void build_grid(std::shared_ptr<CubicScalarGrid> other);
     /// Header info
     void print_header();
+
+    /// Set the auxiliary for ESP if desired
+    void set_auxiliary_basis(std::shared_ptr<BasisSet> aux) { auxiliary_ = aux; }
 
     // => High-Level Set Routines <= //
 

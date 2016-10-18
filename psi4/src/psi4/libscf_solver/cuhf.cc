@@ -79,9 +79,9 @@ void CUHF::common_init()
     Db_         = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Dp_         = SharedMatrix(factory_->create_matrix("D charge"));
     Dt_         = SharedMatrix(factory_->create_matrix("D total"));
-    Da_old_      = SharedMatrix(factory_->create_matrix("D alpha old"));
-    Db_old_      = SharedMatrix(factory_->create_matrix("D beta  old"));
-    Dt_old_      = SharedMatrix(factory_->create_matrix("D total old"));
+    Da_old_     = SharedMatrix(factory_->create_matrix("D alpha old"));
+    Db_old_     = SharedMatrix(factory_->create_matrix("D beta  old"));
+    Dt_old_     = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_         = SharedMatrix(factory_->create_matrix("C alpha"));
     Cb_         = SharedMatrix(factory_->create_matrix("C beta"));

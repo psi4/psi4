@@ -195,9 +195,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Relativistic Hamiltonian type !expert -*/
     options.add_str("RELATIVISTIC", "NO","NO X2C");
 #endif
-  /*- Whether to uncontract the basis set in a dual basis calculation -*/
-  options.add_str("REL_BASIS","");
-
+  /*- Auxiliary basis set for solving Dirac equation in X2C and DKH
+      calculations. Defaults to decontracted orbital basis. -*/
+  options.add_str("BASIS_RELATIVISTIC", "");
   /*- Order of Douglas-Kroll-Hess !expert -*/
   options.add_int("DKH_ORDER", 2);
 
@@ -1296,16 +1296,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
         performed. CHECK will print out the analysis of the wavefunction stability at the end of
         the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
-        is found, will attemp to follow the eigenvector and re-run the computations to find a stable
+        is found, will attempt to follow the eigenvector and re-run the computations to find a stable
         solution. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
-    /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
-        by. A full step of pi/2 corresponds to a value of 1.0. !expert -*/
+    /*- When using |scf__stability_analysis| ``FOLLOW``, how much to scale the step along the eigenvector
+        by. A full step of $pi/2$ corresponds to a value of 1.0. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
     /*- When using STABILITY_ANALYSIS = FOLLOW, the increment to modify |scf__follow_step_scale| value
         if we end up in the same SCF solution. !expert -*/
     options.add_double("FOLLOW_STEP_INCREMENT", 0.2);
-    /*- When using STABILITY_ANALYSIS = FOLLOW, maximum number of orbital optimization attempts
+    /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
         to make the wavefunction stable. !expert -*/
     options.add_int("MAX_ATTEMPTS", 1);
 
@@ -1407,7 +1407,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a
         custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
-    options.add_str("DFT_FUNCTIONAL", "");
+    options.add_str("DFT_FUNCTIONAL", "HF");
     /*- A custom DFT functional object (built by Python or NULL/None) -*/
     options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/

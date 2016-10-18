@@ -125,22 +125,19 @@ void CIWavefunction::transform_ci_integrals() {
 void CIWavefunction::setup_dfmcscf_ints() {
     outfile->Printf("\n   ==> Setting up DF-MCSCF integrals <==\n\n");
 
-    /// Grab and build basis sets
-    std::shared_ptr<BasisSet> primary = BasisSet::pyconstruct_orbital(
-        molecule_, "BASIS", options_.get_str("BASIS"));
-    std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(
-        primary->molecule(), "DF_BASIS_SCF", options_.get_str("DF_BASIS_MCSCF"),
-        "JKFIT", options_.get_str("BASIS"), primary->has_puream());
-
     /// Build JK object
-    jk_ = JK::build_JK(basisset_, options_);
+    if (options_.get_str("SCF_TYPE") == "DF"){
+        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
+    } else {
+        jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
+    }
     jk_->set_do_J(true);
     jk_->set_do_K(true);
     jk_->initialize();
     jk_->set_memory(Process::environment.get_memory() * 0.8);
 
     /// Build DF object
-    dferi_ = DFERI::build(primary, auxiliary, options_);
+    dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
     dferi_->print_header();
 
     df_ints_init_ = true;
@@ -366,11 +363,15 @@ void CIWavefunction::setup_mcscf_ints() {
     ints_->set_print(0);
 
     // Conventional JK build
-    jk_ = JK::build_JK(basisset_, options_);
+    if (options_.get_str("SCF_TYPE") == "DF"){
+        jk_ = JK::build_JK(basisset_, get_basisset("DF_BASIS_SCF"), options_);
+    } else {
+        jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
+    }
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->initialize();
     jk_->set_memory(Process::environment.get_memory() * 0.8);
+    jk_->initialize();
 
     ints_init_ = true;
 }

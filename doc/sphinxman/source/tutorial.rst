@@ -1,3 +1,29 @@
+.. #
+.. # @BEGIN LICENSE
+.. #
+.. # Psi4: an open-source quantum chemistry software package
+.. #
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. #
+.. # The copyrights for code used from other parties are included in
+.. # the corresponding files.
+.. #
+.. # This program is free software; you can redistribute it and/or modify
+.. # it under the terms of the GNU General Public License as published by
+.. # the Free Software Foundation; either version 2 of the License, or
+.. # (at your option) any later version.
+.. #
+.. # This program is distributed in the hope that it will be useful,
+.. # but WITHOUT ANY WARRANTY; without even the implied warranty of
+.. # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.. # GNU General Public License for more details.
+.. #
+.. # You should have received a copy of the GNU General Public License along
+.. # with this program; if not, write to the Free Software Foundation, Inc.,
+.. # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.. #
+.. # @END LICENSE
+.. #
 
 .. include:: autodoc_abbr_options_c.rst
 
@@ -24,8 +50,7 @@ The syntax is:
    >>> psi4 input-name output-name
 
 If you give an input name but no output name, then the output name will
-be the same as the input name (subtracting any ".in" or ".dat" suffix),
-plus a ".out" suffix.
+be the same as the input name (replacing any ".in" or ".dat" extension by ".out").
 
 Sample Input Files
 ==================
@@ -217,7 +242,7 @@ distinct molecules.  This is very easy, we just give a Z-matrix or set of
 Cartesian coordinates for each molecule, and separate the two with two
 dashes, like this::
 
-   # Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene),
+   # Example SAPT computation for ethene*ethine (*i.e.*, ethylene*acetylene),
    # test case 16 from the S22 database
    
    molecule dimer {
@@ -257,13 +282,13 @@ block, bounded by ``{...}``.  This
 will set all of these options as "global" options (meaning that they are
 visible to all parts of the program).  Most common |PSIfour| options can be
 set in a globals section like this. If an option needs to be visible
-only to one part of the program (e.g., we only want to increase the
+only to one part of the program (*e.g.*, we only want to increase the
 energy convergence in the SCF code, but not the rest of the
 code), it can be placed in a section of input visible to that part of the
-program (e.g., ``set scf e_convergence 1.0E-8``).
+program (*e.g.*, ``set scf e_convergence 1.0E-8``).
 
 Back to our SAPT example, we have found that for basic-level SAPT
-computations (i.e., SAPT0), a good error cancellation is found
+computations (*i.e.*, SAPT0), a good error cancellation is found
 [Hohenstein:2012:WIREs]_ with the jun-cc-pVDZ basis (this is the
 usual aug-cc-pVDZ basis, but without diffuse functions on hydrogen and
 without diffuse :math:`d` functions on heavy atoms) [Papajak:2011:10]_. So,
@@ -391,7 +416,7 @@ to the ``R`` value extracted from the ``Rvals`` array.  The next line,
 CCSD(T) energy and places it in the ``ecp`` dictionary with ``R`` as
 the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
-Psithon function :py:func:`~driver_nbody._nbody_gufunc` does it all for us, automatically.
+Psithon function :py:func:`~driver_nbody.nbody_gufunc` does it all for us, automatically.
 
 Near the very end of the output file, the counterpoise correction Python
 function will print a nice summary of the results of the counterpoise
@@ -399,27 +424,27 @@ computation (the energies of the dimer, of monomer 1 with the ghost functions
 of monomer 2, of monomer 2 with the ghost functions of monomer 1, and the
 overall counterpoise-corrected interaction energy)::
 
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //      CP Computation: Results.     //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+       N-Body: Computing complex (1/2) with fragments (2,) in the basis of fragments (1, 2).
+       ...
+       N-Body: Complex Energy (fragments = (2,), basis = (1, 2):  -128.70932405488924)
+       ...
+       N-Body: Computing complex (2/2) with fragments (1,) in the basis of fragments (1, 2).
+       ...
+       N-Body: Complex Energy (fragments = (1,), basis = (1, 2):  -128.70932405488935)
+       ...
+       N-Body: Computing complex (1/1) with fragments (1, 2) in the basis of fragments (1, 2).
+       ...
+       N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):  -257.41867403127321)
+       ...
+       ==> N-Body: Counterpoise Corrected (CP)  energies <==
 
-  ============= Hartree =============
-  System:  Energy (full):
-  Complex       -257.4186740329
-  Monomer 1     -128.7093240575
-  Monomer 2     -128.7093240575
-  Interaction   -0.0000259178
-
-  =========== kcal*mol^-1 ===========
-  System:  Energy (full):
-  Complex     -161532.6634330375
-  Monomer 1    -80766.3235846726
-  Monomer 2    -80766.3235846725
-  Interaction      -0.0162636924
+       n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]
+            1     -257.418648109779        0.000000000000        0.000000000000
+            2     -257.418674031273       -0.016265984132       -0.016265984132
 
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from
-atomic units (hartree) to |kcalpermol| by multiplying by the
+atomic units (Hartree) to |kcalpermol| by multiplying by the
 automatically-defined conversion factor ``psi_hartree2kcalmol``.  |PSIfour|
 provides several built-in physical constants and conversion factors, as
 described in section :ref:`sec:physicalConstants`.

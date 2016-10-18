@@ -1,7 +1,5 @@
 #! Spectroscopic constants of H2, and the full ci cc-pVTZ level of theory
 
-import diatomic
-
 memory 250 mb
 
 molecule h2{

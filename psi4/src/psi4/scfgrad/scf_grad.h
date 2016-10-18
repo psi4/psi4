@@ -45,6 +45,7 @@ protected:
     void common_init();
     std::shared_ptr<SuperFunctional> functional_;
     std::shared_ptr<VBase> potential_;
+    std::map<std::string, SharedMatrix> gradients_;
 
 public:
     SCFGrad(SharedWavefunction ref_wfn, Options& options);

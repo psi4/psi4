@@ -54,15 +54,11 @@ JKGrad::JKGrad(int deriv, std::shared_ptr<BasisSet> primary) :
 JKGrad::~JKGrad()
 {
 }
-std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet> primary)
+std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
 {
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE") == "DF") {
-
-        std::shared_ptr<BasisSet> auxiliary = BasisSet::pyconstruct_auxiliary(primary->molecule(),
-                                                                                "DF_BASIS_SCF", options.get_str("DF_BASIS_SCF"), "JKFIT",
-                                                                                options.get_str("BASIS"), primary->has_puream());
 
         DFJKGrad* jk = new DFJKGrad(deriv,primary,auxiliary);
 

@@ -70,6 +70,9 @@ USAPT0::USAPT0(SharedWavefunction d,
     primary_A_ = mA->basisset();
     primary_B_ = mB->basisset();
 
+    mp2fit_ = d->get_basisset("DF_BASIS_SAPT");
+    jkfit_ = d->get_basisset("DF_BASIS_SCF");
+
     if(options_.get_str("EXCH_SCALE_ALPHA") == "FALSE") {
         exch_scale_alpha_ = 0.0;
     } else if (options_.get_str("EXCH_SCALE_ALPHA") == "TRUE") {
@@ -148,10 +151,6 @@ void USAPT0::initialize(SharedWavefunction mA, SharedWavefunction mB) {
     eps_avirb_B_ = mB->epsilon_b_subset("AO","ACTIVE_VIR");
     eps_fvira_B_ = mB->epsilon_a_subset("AO","FROZEN_VIR");
     eps_fvirb_B_ = mB->epsilon_b_subset("AO","FROZEN_VIR");
-
-    mp2fit_ = BasisSet::pyconstruct_auxiliary(dimer_,
-            "DF_BASIS_SAPT", options_.get_str("DF_BASIS_SAPT"), 
-            "RIFIT", options_.get_str("BASIS"));
 
 }
 USAPT0::~USAPT0()
@@ -449,7 +448,7 @@ void USAPT0::fock_terms()
 
     // => JK Object <= //
 
-    std::shared_ptr<JK> jk = JK::build_JK(primary_, options_);
+    std::shared_ptr<JK> jk = JK::build_JK(primary_, jkfit_, options_);
 
     // TODO: Recompute exactly how much memory is needed
     int naA = Cocca_A_->ncol();

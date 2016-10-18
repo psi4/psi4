@@ -88,7 +88,10 @@ protected:
     /// Name of the wavefunction
     std::string name_;
 
-    /// Primary basis set for AO integrals
+    /// DF/RI/F12/etc basis sets
+    std::map<std::string, std::shared_ptr<BasisSet>> basissets_;
+
+    /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
 
     /// Primary basis set for SO integrals
@@ -237,9 +240,9 @@ public:
                  std::shared_ptr<BasisSet> basis,
                  Options& options);
 
-    /// Constructor for an entirely new wavefunction
-    Wavefunction(std::shared_ptr<Molecule> molecule, const std::string& basis,
-                 Options & options);
+    /// Constructor for an entirely new wavefunction with an existing basis and global options
+    Wavefunction(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> basis);
 
     /// Blank constructor for derived classes
     Wavefunction(Options & options);
@@ -298,6 +301,12 @@ public:
     std::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
+
+    /// Getters and setters for other basis sets
+    std::shared_ptr<BasisSet> get_basisset(std::string label);
+    void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
+
+
     /// Returns the MatrixFactory object that pertains to this wavefunction
     std::shared_ptr<MatrixFactory> matrix_factory() const;
     /// Returns the reference wavefunction
@@ -326,8 +335,13 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
+
+    void set_doccpi(const Dimension& doccpi);
+    void set_soccpi(const Dimension& soccpi);
+
     /// Sets the frozen virtual orbitals per irrep array.
-    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[0]; }
+    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[h]; }
+
     /// Return the number of frozen core orbitals
     int nfrzc() const { return nfrzc_; }
     /// Return the number of alpha electrons
@@ -464,6 +478,18 @@ public:
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     */
     SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+     * Projects the given orbitals from the old to the new basis
+     * @param  Cold      Orbitals to project
+     * @param  noccpi    Number of eigenvectors of importance
+     * @param  old_basis The old basis set
+     * @param  new_basis The new basis set
+     * @return           The projected basis (nso x noccpi)
+     */
+    SharedMatrix basis_projection(SharedMatrix Cold, Dimension noccpi,
+                                  std::shared_ptr<BasisSet> old_basis,
+                                  std::shared_ptr<BasisSet> new_basis);
 
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;

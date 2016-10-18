@@ -33,13 +33,19 @@
 #include <stdexcept>
 #include <sstream>
 #include <string.h>
-#include <psi4/current_function.hpp>
+
+#if defined(__GNUC__) || (defined(__ICC) && (__ICC >= 600))
+# define PSI4_CURRENT_FUNCTION __PRETTY_FUNCTION__
+#elif defined(__cplusplus) && (__cplusplus >= 201103)
+#define PSI4_CURRENT_FUNCTION __func__
+#else
+#define PSI4_CURRENT_FUNCTION "(unknown)"
+#endif
 
 namespace psi {
 
-#define CHARARR_SIZE 100
 #define PSIEXCEPTION(message) PsiException(message, __FILE__, __LINE__)
-#define NOT_IMPLEMENTED_EXCEPTION() NotImplementedException_(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__)
+#define NOT_IMPLEMENTED_EXCEPTION() NotImplementedException_(PSI4_CURRENT_FUNCTION, __FILE__, __LINE__)
 
 /**
     Generic exception class for Psi4

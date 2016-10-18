@@ -1,74 +1,79 @@
 #! This test is used to construct the documentation;
 #! it is not suitable for emulation by users. !nosample
 
-from procedures.functional import superfunctional_list
+from psi4.driver.procedures.dft_functional import superfunctional_list
 
 funcdict = {}
 
-for super in superfunctional_list():
-    sfname = super.name()
+for sfunc in superfunctional_list:
+    
+    sfname = sfunc.name()
 
-    if super.dispersion():
-        funcdict[sfname] = {
-            'name'                   : super.name(),
-            'description'            : super.description().strip(),
-            'citation'               : super.citation().strip(),
-            'ansatz'                 : super.ansatz(),
-            'max_points'             : super.max_points(),
-            'deriv'                  : super.deriv(),
-            'x_omega'                : super.x_omega(),
-            'c_omega'                : super.c_omega(),
-            'x_alpha'                : super.x_alpha(),
-            'c_alpha'                : super.c_alpha(),
-            'c_ss_alpha'             : super.c_ss_alpha(),
-            'c_os_alpha'             : super.c_os_alpha(),
-            'dispersion'             : super.dispersion(),
-            'dispersion_name'        : super.dispersion().name(),
-            'dispersion_description' : super.dispersion().description().strip(),
-            'dispersion_citation'    : super.dispersion().citation().strip(),
-            's6'                     : super.dispersion().s6(),
-            's8'                     : super.dispersion().s8(),
-            'sr6'                    : super.dispersion().sr6(),
-            'a1'                     : super.dispersion().a1(),
-            'a2'                     : super.dispersion().a2(),
-            'alpha6'                 : super.dispersion().d(),
-            'is_gga'                 : super.is_gga(),
-            'is_meta'                : super.is_meta(),
-            'is_x_lrc'               : super.is_x_lrc(),
-            'is_c_lrc'               : super.is_c_lrc(),
-            'is_x_hybrid'            : super.is_x_hybrid(),
-            'is_c_hybrid'            : super.is_c_hybrid(),
-            'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
-                           }
+    #if sfunc.dispersion():
+    #    funcdict[sfname] = {
+    #        'name'                   : super.name(),
+    #        'description'            : super.description().strip(),
+    #        'citation'               : super.citation().strip(),
+    #        'ansatz'                 : super.ansatz(),
+    #        'max_points'             : super.max_points(),
+    #        'deriv'                  : super.deriv(),
+    #        'x_omega'                : super.x_omega(),
+    #        'c_omega'                : super.c_omega(),
+    #        'x_alpha'                : super.x_alpha(),
+    #        'c_alpha'                : super.c_alpha(),
+    #        'c_ss_alpha'             : super.c_ss_alpha(),
+    #        'c_os_alpha'             : super.c_os_alpha(),
+    #        'dispersion'             : super.dispersion(),
+    #        'dispersion_name'        : super.dispersion().name(),
+    #        'dispersion_description' : super.dispersion().description().strip(),
+    #        'dispersion_citation'    : super.dispersion().citation().strip(),
+    #        's6'                     : super.dispersion().s6(),
+    #        's8'                     : super.dispersion().s8(),
+    #        'sr6'                    : super.dispersion().sr6(),
+    #        'a1'                     : super.dispersion().a1(),
+    #        'a2'                     : super.dispersion().a2(),
+    #        'alpha6'                 : super.dispersion().d(),
+    #        'is_gga'                 : super.is_gga(),
+    #        'is_meta'                : super.is_meta(),
+    #        'is_x_lrc'               : super.is_x_lrc(),
+    #        'is_c_lrc'               : super.is_c_lrc(),
+    #        'is_x_hybrid'            : super.is_x_hybrid(),
+    #        'is_c_hybrid'            : super.is_c_hybrid(),
+    #        'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
+    #                       }
+    disp = False
+    #for end in ['-D3', '-D3M', '-D3ZERO', '-D3MZERO', '-D3BJ', '-D3MBJ']:
+    #    if sfname.endswith(end):
+    #        disp = end
 
-    else:
-        funcdict[sfname] = {
-            'name'                   : super.name(),
-            'description'            : super.description().strip(),
-            'citation'               : super.citation().strip(),
-            'ansatz'                 : super.ansatz(),
-            'max_points'             : super.max_points(),
-            'deriv'                  : super.deriv(),
-            'x_omega'                : super.x_omega(),
-            'c_omega'                : super.c_omega(),
-            'x_alpha'                : super.x_alpha(),
-            'c_alpha'                : super.c_alpha(),
-            'c_ss_alpha'             : super.c_ss_alpha(),
-            'c_os_alpha'             : super.c_os_alpha(),
-            'dispersion'             : super.dispersion(),
-            'is_gga'                 : super.is_gga(),
-            'is_meta'                : super.is_meta(),
-            'is_x_lrc'               : super.is_x_lrc(),
-            'is_c_lrc'               : super.is_c_lrc(),
-            'is_x_hybrid'            : super.is_x_hybrid(),
-            'is_c_hybrid'            : super.is_c_hybrid(),
-            'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
-                           }
+    #else:
+    funcdict[sfname] = {
+        'name'                   : sfunc.name(),
+        'description'            : sfunc.description().strip(),
+        'citation'               : sfunc.citation().strip(),
+        'ansatz'                 : sfunc.ansatz(),
+        'max_points'             : sfunc.max_points(),
+        'deriv'                  : sfunc.deriv(),
+        'x_omega'                : sfunc.x_omega(),
+        'c_omega'                : sfunc.c_omega(),
+        'x_alpha'                : sfunc.x_alpha(),
+        'c_alpha'                : sfunc.c_alpha(),
+        'c_ss_alpha'             : sfunc.c_ss_alpha(),
+        'c_os_alpha'             : sfunc.c_os_alpha(),
+        'is_gga'                 : sfunc.is_gga(),
+        'is_meta'                : sfunc.is_meta(),
+        'is_x_lrc'               : sfunc.is_x_lrc(),
+        'is_c_lrc'               : sfunc.is_c_lrc(),
+        'is_x_hybrid'            : sfunc.is_x_hybrid(),
+        'is_c_hybrid'            : sfunc.is_c_hybrid(),
+        'is_c_scs_hybrid'        : sfunc.is_c_scs_hybrid(),
+        'dispersion'             : True if '-d' in sfunc.name().lower() else False
+         }
 
     #print funcdict[sfname]
     #print '\n\n'
 
-    super.print_detail(3)
+    sfunc.print_detail(3)
 
 
 def tf(rungbool, rungparam=0.0):
@@ -150,7 +155,8 @@ def body(filep, funcdict, fctl):
 
     if funcdict[fctl]['dispersion']:
         filep.write(' %20s | %75s |\n' %
-            (funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
+            ('Y', ''))
+            #(funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
     else:
         filep.write(' %20s | %75s |\n' %
             ('   ---    ', '   ---    '))
@@ -188,7 +194,8 @@ header(fdhybrid, 'dhybrid', 'Double-Hybrid functionals available in |PSIfour|')
 fscsdhybrid= open('autodoc_dft_scsdhybrid.rst', 'w')
 header(fscsdhybrid, 'scsdhybrid', 'Spin-Component-Scaled Double-Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
-dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+#dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
 fenergy = open('autodoc_dft_energy.rst', 'w')
 fenergy.write('\n.. _`table:energy_dft`:\n\n')
@@ -232,11 +239,13 @@ for fctl in sorted(funcdict.keys()):
             body(fscsdhybrid, funcdict, fctl)
 
         if funcdict[fctl]['dispersion']:
-            dispbody(fdisp, funcdict, fctl)
+            body(fdisp, funcdict, fctl)
+            #dispbody(fdisp, funcdict, fctl)
 
         if funcdict[fctl]['dispersion']:
             fenergy.write('| %-27s | %-140s |\n' %
-                (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+                (funcdict[fctl]['name'].lower(), ''))
+                #(funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
         else:
             fenergy.write('| %-27s | %-140s |\n' %
                 (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
@@ -246,7 +255,8 @@ for fctl in sorted(funcdict.keys()):
         if ((not funcdict[fctl]['is_c_hybrid']) and (not funcdict[fctl]['is_c_lrc']) and (not funcdict[fctl]['is_x_lrc'])):
             if funcdict[fctl]['dispersion']:
                 fopt.write('| %-27s | %-140s |\n' %
-                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+                    (funcdict[fctl]['name'].lower(), ''))
+                    #(funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
             else:
                 fopt.write('| %-27s | %-140s |\n' %
                     (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
