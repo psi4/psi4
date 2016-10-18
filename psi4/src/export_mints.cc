@@ -134,8 +134,8 @@ void export_mints(py::module& m)
                 "The order of the dimension").
             def_property("name",
                          //make_function(&Dimension::name, return_value_policy<copy_const_reference>()),
-                         &Dimension::name,
-                         &Dimension::set_name,
+                         py::cpp_function(&Dimension::name),
+                         py::cpp_function(&Dimension::set_name),
                          "The name of the dimension. Used in printing.").
             //def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
             def("__getitem__", &Dimension::get, py::return_value_policy::copy, "docstring").
@@ -147,8 +147,8 @@ void export_mints(py::module& m)
             def(py::init<const std::string&, int>()).
             def(py::init<const std::string&, const Dimension&>()).
             def_property("name",
-                         &Vector::name,
-                         &Vector::set_name,
+                         py::cpp_function(&Vector::name),
+                         py::cpp_function(&Vector::set_name),
                          "The name of the Vector. Used in printing.").
             def("get", vector_getitem_1(&Vector::get), "docstring").
             def("get", vector_getitem_2(&Vector::get), "docstring").
@@ -205,8 +205,8 @@ void export_mints(py::module& m)
             def(py::init<const std::string&>()).
             def("clone", &Matrix::clone, "docstring").
             def_property("name",
-                         &Matrix::name,
-                         &Matrix::set_name,
+                         py::cpp_function(&Matrix::name),
+                         py::cpp_function(&Matrix::set_name),
                          "The name of the Matrix. Used in printing.").
             // def("set_name", &Matrix::set_name, "docstring").
             // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
@@ -300,14 +300,14 @@ void export_mints(py::module& m)
             def("matrix", &CdSalcList::matrix, "docstring");
 
     py::class_<GaussianShell, std::shared_ptr<GaussianShell> >(m, "GaussianShell", "docstring").
-            def_property_readonly("nprimitive", &GaussianShell::nprimitive, "docstring").
-            def_property_readonly("nfunction", &GaussianShell::nfunction, "docstring").
-            def_property_readonly("ncartesian", &GaussianShell::ncartesian, "docstring").
-            def_property_readonly("am", &GaussianShell::am, "docstring").
-            def_property_readonly("amchar", &GaussianShell::amchar, "docstring").
-            def_property_readonly("AMCHAR", &GaussianShell::AMCHAR, "docstring").
-            def_property_readonly("ncenter", &GaussianShell::ncenter, "docstring").
-            def_property("function_index", &GaussianShell::function_index, &GaussianShell::set_function_index, "Basis function index where this shell starts.").
+            def_property_readonly("nprimitive", py::cpp_function(&GaussianShell::nprimitive), "docstring").
+            def_property_readonly("nfunction", py::cpp_function(&GaussianShell::nfunction), "docstring").
+            def_property_readonly("ncartesian", py::cpp_function(&GaussianShell::ncartesian), "docstring").
+            def_property_readonly("am", py::cpp_function(&GaussianShell::am), "docstring").
+            def_property_readonly("amchar", py::cpp_function(&GaussianShell::amchar), "docstring").
+            def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR), "docstring").
+            def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter), "docstring").
+            def_property("function_index", py::cpp_function(&GaussianShell::function_index), py::cpp_function(&GaussianShell::set_function_index), "Basis function index where this shell starts.").
 //            add_property("center", &GaussianShell::center, "A double* representing the center of the GaussianShell.").
 //            add_property("exps", &GaussianShell::exps, "The exponents of all the primitives").
 //            add_property("coefs", &GaussianShell::coefs, "The coefficients of all the primitives").
@@ -346,10 +346,10 @@ void export_mints(py::module& m)
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(m, "OneBodyAOInt", "docstring");
             pyOneBodyAOInt.
             def("compute_shell", &OneBodyAOInt::compute_shell, "docstring").
-            def_property("origin", &OneBodyAOInt::origin, &OneBodyAOInt::set_origin, "The origin about which the one body ints are being computed.").
-            def_property_readonly("basis", &OneBodyAOInt::basis, "The basis set on center one").
-            def_property_readonly("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
-            def_property_readonly("basis2", &OneBodyAOInt::basis2, "The basis set on center two"); // <-- Added semicolon
+            def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin), "The origin about which the one body ints are being computed.").
+            def_property_readonly("basis", py::cpp_function(&OneBodyAOInt::basis), "The basis set on center one").
+            def_property_readonly("basis1", py::cpp_function(&OneBodyAOInt::basis1), "The basis set on center one").
+            def_property_readonly("basis2", py::cpp_function(&OneBodyAOInt::basis2), "The basis set on center two"); // <-- Added semicolon
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
     //typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
@@ -389,10 +389,10 @@ void export_mints(py::module& m)
     py::class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>>(m, "ErfComplementERI", pyTwoBodyAOInt, "docstring");
 
     py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m, "AOShellCombinationsIterator").
-            def_property_readonly("p", &AOShellCombinationsIterator::p, "docstring").
-            def_property_readonly("q", &AOShellCombinationsIterator::q, "docstring").
-            def_property_readonly("r", &AOShellCombinationsIterator::r, "docstring").
-            def_property_readonly("s", &AOShellCombinationsIterator::s, "docstring").
+            def_property_readonly("p", py::cpp_function(&AOShellCombinationsIterator::p), "docstring").
+            def_property_readonly("q", py::cpp_function(&AOShellCombinationsIterator::q), "docstring").
+            def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "docstring").
+            def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "docstring").
             def("first", &AOShellCombinationsIterator::first, "docstring").
             def("next", &AOShellCombinationsIterator::next, "docstring").
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
@@ -690,7 +690,7 @@ void export_mints(py::module& m)
                 }
                 return ret;
             }).
-            def_property("units", &Molecule::units, &Molecule::set_units, "Units (Angstrom or Bohr) used to define the geometry").
+            def_property("units", py::cpp_function(&Molecule::units), py::cpp_function(&Molecule::set_units), "Units (Angstrom or Bohr) used to define the geometry").
             def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
 
@@ -877,9 +877,9 @@ void export_mints(py::module& m)
     py::class_<Localizer, std::shared_ptr<Localizer>>(m, "Localizer", "docstring").
             def_static("build", localizer_with_type(&Localizer::build), "docstring").
             def("localize", &Localizer::localize, "Perform the localization procedure").
-            def_property_readonly("L", &Localizer::L, "Localized orbital coefficients").
-            def_property_readonly("U", &Localizer::U, "Orbital rotation matrix").
-            def_property_readonly("converged", &Localizer::converged, "Did the localization procedure converge?");
+            def_property_readonly("L", py::cpp_function(&Localizer::L), "Localized orbital coefficients").
+            def_property_readonly("U", py::cpp_function(&Localizer::U), "Orbital rotation matrix").
+            def_property_readonly("converged", py::cpp_function(&Localizer::converged), "Did the localization procedure converge?");
 
     py::class_<BoysLocalizer, std::shared_ptr<BoysLocalizer>, Localizer>(m, "BoysLocalizer", "docstring");
     py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer", "docstring");
