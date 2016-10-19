@@ -1,0 +1,4 @@
+changed dunning basis sets
+
+
+Files jun-cc-pvdz-jkfit.gbs and ../jun-cc-pvdz-jkfit.gbs differ
