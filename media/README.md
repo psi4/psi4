@@ -1,3 +1,7 @@
+[LAB 10-19-2016]
+
+* Majority of logos detached from main Psi4 repo into https://github.com/psi4/psi4media .
+
 [LAB 9-29-2016]
 
 * See doc/sphinxman/source/psi4doc/themes/psi4doc/theme.conf
