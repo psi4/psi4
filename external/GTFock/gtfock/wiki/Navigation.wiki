@@ -1,6 +1,0 @@
-  * [Downloads Downloads]
-  * [Installation Installation]
-  * [Documentation Documentation]
-  * [Publications]
-  * [Changelog Changelog]
-  * [Acknowledgements Acknowledgements]
