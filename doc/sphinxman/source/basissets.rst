@@ -60,6 +60,7 @@ summarized in Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
 :ref:`Dunning (Douglas-Kroll) <table:basisDunningDK>`, 
 :ref:`Karlsruhe <table:basisKarlsruhe>`,
+:ref:`Jensen <table:basisJensen>`,
 and :ref:`Other <table:basisOther>` in Appendix :ref:`apdx:basisTables`.
 These tables are arranged so that columns indicate degree of
 augmentation by diffuse functions (generally necessary for anions, excited
