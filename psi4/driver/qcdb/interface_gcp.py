@@ -1,7 +1,12 @@
 #
 #@BEGIN LICENSE
 #
-# PSI4: an ab initio quantum chemistry software package
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2016 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +44,7 @@ except ImportError:
 from .molecule import Molecule
 
 # DGAS This should be removed!
-import psi4
+from psi4 import core
 
 
 def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dashparam=None
@@ -61,8 +66,8 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     if isinstance(self, Molecule):
         # called on a qcdb.Molecule
         pass
-    elif isinstance(self, psi4.Molecule):
-        # called on a python export of a psi4.Molecule (py-side through Psi4's driver)
+    elif isinstance(self, core.Molecule):
+        # called on a python export of a psi4.core.Molecule (py-side through Psi4's driver)
         self.create_psi4_string_from_molecule()
     elif isinstance(self, basestring):
         # called on a string representation of a psi4.Molecule (c-side through psi4.Dispersion)
@@ -148,8 +153,8 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 
     # Find out if running from Psi4 for scratch details and such
     try:
-        psi4.version()
-    except NameError:
+        import psi4
+    except ImportError as err:
         isP4regime = False
     else:
         isP4regime = True
@@ -303,4 +308,3 @@ except (NameError, AttributeError):
     # But don't worry if that doesn't work b/c
     #   it'll get attached to qcdb.Molecule class
     pass
-
