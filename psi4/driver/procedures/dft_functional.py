@@ -1287,6 +1287,45 @@ def build_pbe0_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
+def build_pbeh3c_superfunctional(name, npoints, deriv):
+
+    # call this first
+    sup = psi4.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => user-customization <= #
+
+    # no spaces, keep it short and according to convention
+    sup.set_name('pbeh3c')
+    # tab in, trailing newlines
+    sup.set_description('    PBE-3C Hybrid GGA Exchange-Correlation Functional\n')
+    # tab in, trailing newlines
+    sup.set_citation('    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n')
+
+    # add member functionals
+    pbe_x3c = build_functional('pbe_x')
+    pbe_x3c.set_parameter('PBE_kp', 1.0245)
+    pbe_x3c.set_parameter('PBE_mu', 0.12345679)
+    sup.add_x_functional(pbe_x3c)
+    
+    pbe_c3c = build_functional('pbe_c')
+    pbe_c3c.set_parameter('bet', 0.03)
+    sup.add_c_functional(pbe_c3c)
+
+    # set gks up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.42)
+    sup.set_c_alpha(0.0)
+
+    # => end user-customization <= #
+
+    # call this last
+    sup.allocate()
+    return sup
+
+
 def build_sogga_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -2917,6 +2956,7 @@ superfunctionals = {
         'bp86'            : build_bp86_superfunctional,
         'pw91'            : build_pw91_superfunctional,
         'pbe'             : build_pbe_superfunctional,
+        'pbeh3c'          : build_pbeh3c_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
         'b3lyp5'          : build_b3lyp5_superfunctional,

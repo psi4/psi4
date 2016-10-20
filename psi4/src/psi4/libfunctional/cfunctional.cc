@@ -103,6 +103,8 @@ void CFunctional::set_parameter(const std::string& key, double val)
             _B97_os_a_.resize(index + 1);
             _B97_os_a_[index] = val;
         }
+    } else if (key == "bet"){ // For PBE, the PBE functional is not prefixed
+        _bet_ = val;
     } else {
         throw PSIEXCEPTION("Error, unknown generalized correlation functional parameter");
     }
