@@ -479,6 +479,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute the dipole moment? -*/
     options.add_bool("DIPMOM", false);
 
+    /*- Do compute natural orbitals? -*/
+    options.add_bool("NAT_ORBS", false);
+
 
     /*- SUBSECTION Root Following -*/
 

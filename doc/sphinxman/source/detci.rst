@@ -214,26 +214,31 @@ An illustrative CASSCF example is as follows::
 This input will compute the CASSCF energy of water where the 1s Oxygen orbital
 and several virtual orbitals are not included in the CI expansion, but are
 still optimizd. The following is a full list of spaces within the various MCSCF
-types:: 
+types.
 
-.. table:: Spaces available in the MCSCF program.
+.. _`table:mcscf_spaces`:
 
-    +---------------+--------------+--------------+
-    |       CI      |    RASSCF    |    CASSCF    |
-    +===============+==============+==============+
-    |               | frozen_uocc  | frozen_uocc  |
-    | dropped_uocc  | rstr_uocc    | rstr_uocc    |
-    +---------------+--------------+--------------+
-    |               | RAS IV       |              |
-    |               | RAS III      |              |
-    | active        |              | active       |
-    |               | RAS II       |              |
-    |               | RAS I        |              |
-    +---------------+--------------+--------------+
-    | dropped_docc  | rstr_docc    | rstr_docc    |
-    |               | frozen_docc  | frozen_docc  |
-    +---------------+--------------+--------------+
+.. table:: Spaces available in the MCSCF program
 
+    +----------------------------+----------------------------+----------------------------+
+    | CI                         | RASSCF                     | CASSCF                     |
+    +============================+============================+============================+
+    |                            | |globals__frozen_uocc|     | |globals__frozen_uocc|     |
+    +                            +----------------------------+----------------------------+
+    | |globals__restricted_uocc| | |globals__restricted_uocc| | |globals__restricted_uocc| |
+    +----------------------------+----------------------------+----------------------------+
+    | |globals__active|          | |globals__ras4|            | |globals__active|          |
+    +                            +----------------------------+                            +
+    |                            | |globals__ras3|            |                            |
+    +                            +----------------------------+                            +
+    |                            | |globals__ras2|            |                            |
+    +                            +----------------------------+                            +
+    |                            | |globals__ras1|            |                            |
+    +----------------------------+----------------------------+----------------------------+
+    | |globals__restricted_docc| | |globals__restricted_docc| | |globals__restricted_docc| |
+    +                            +----------------------------+----------------------------+
+    |                            | |globals__frozen_docc|     | |globals__frozen_docc|     |
+    +----------------------------+----------------------------+----------------------------+
 
 Basic MCSCF Keywords
 ~~~~~~~~~~~~~~~~~~~~
