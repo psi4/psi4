@@ -43,9 +43,9 @@ if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED
                      HINTS ${CMAKE_PREFIX_PATH}/dkh)
 endif()
-if(${ENABLE_liberd})
-    find_package(liberd CONFIG REQUIRED
-                        HINTS ${CMAKE_PREFIX_PATH}/liberd)
+if(${ENABLE_erd})
+    find_package(erd CONFIG REQUIRED
+                        HINTS ${CMAKE_PREFIX_PATH}/erd)
 endif()
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED
