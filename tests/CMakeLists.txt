@@ -142,6 +142,13 @@ endif()
 add_subdirectory(libefp)
 message(STATUS "Adding test cases: Psi4 + libefp")
 
+# <<<  ERD  >>>
+
+if(ENABLE_erd)
+    add_subdirectory(erd)
+    message(STATUS "Adding test cases: Psi4 + erd")
+endif()
+
 # <<<  GDMA  >>>
 
 if(ENABLE_gdma)

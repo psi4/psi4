@@ -70,8 +70,8 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFA
     message(STATUS "Enabling Fortran")
 endif()
 
-if(ENABLE_liberd)
-    message(FATAL_ERROR "LibERD will build, link, and run in Psi4 just fine, but it will give *wrong* answers for density-fitting (default) calculations. To continue with ERD, accept that you have been warned, and comment out this line in the main CMakeLists.txt")
+if(ENABLE_erd)
+    message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, so upon activating through ``set integral_package erd``, it will give *wrong* answers for density-fitting (default) calculations, indeed all except for ``set scf_type direct`` will be wrong. Consider this your warning.")
 endif()
 
 ############################  Options: Build How?  #############################

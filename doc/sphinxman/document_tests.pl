@@ -58,6 +58,7 @@ my %ExeFolder = (
    "dmrg/"      => "dmrg",
    "gdma/"      => "gdma",
    "dkh/"       => "dkh",
+   "erd/"       => "erd",
 );
 
 foreach my $exe (keys %ExeFolder) {
@@ -79,6 +80,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^dmrg$/;
     next if $File =~ /^gdma$/;
     next if $File =~ /^dkh$/;
+    next if $File =~ /^erd$/;
     next if (-d $File);  # Don't remove subdirectories
     remove_tree("$SamplesFolder/$File");
 }
