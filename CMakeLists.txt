@@ -61,7 +61,7 @@ option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
-option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
+option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 
 if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
@@ -160,7 +160,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_liberd=${ENABLE_liberd}
               -DENABLE_gdma=${ENABLE_gdma}
-              -DENABLE_GTFOCK=${ENABLE_GTFOCK}
+              -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DFortran_ENABLED=${Fortran_ENABLED}
@@ -182,6 +182,7 @@ add_dependencies(psi4_core ambit_external
                            libefp_external
                            liberd_external
                            gdma_external
+                           #gtfock_external
                            libint_external
                            pcmsolver_external
                            pybind11_external)
