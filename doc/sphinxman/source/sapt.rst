@@ -415,7 +415,7 @@ Advanced SAPT0 Keywords
 Specific open-shell SAPT0 keywords
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/sapt__mem_safety.rst
+.. include:: autodir_options_c/sapt__sapt_mem_safety.rst
 .. include:: autodir_options_c/sapt__coupled_induction.rst
 
 .. index:: SAPT; higher-order

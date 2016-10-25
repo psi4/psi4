@@ -34,8 +34,8 @@
 
 .. _`sec:molden`:
 
-Interface to Molden |w---w| :py:func:`~driver.molden`
-=====================================================
+Interface to Molden |w---w| :py:func:`~psi4.molden`
+===================================================
 
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: C. David Sherrill
@@ -58,7 +58,7 @@ file plus the name of the current molecule. If |scf__molden_with_virtual|
 is set to false, the unoccupied orbitals are not written to the Molden
 file.
 
-.. autofunction:: driver.molden(wfn, filename)
+.. autofunction:: psi4.molden(wfn, filename)
 
 Options
 ~~~~~~~

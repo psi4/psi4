@@ -596,7 +596,7 @@ is printed below and passed on to Optking. ::
         1.0000000000        0.0040992802        0.0102383666        0.0000000000
 
 The gradient can also be accessed from the input file as a
-:ref:`psi4.Matrix <sec:psimod_Matrix>` object through
+:py:class:`~psi4.core.Matrix` object through
 :py:func:`psi4.get_gradient`.
 
 .. rubric:: Cfour Files

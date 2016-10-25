@@ -46,7 +46,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf 
                   dft-freq dft-grad dft-pbe0-2 dft-psivar dft-b3lyp dft1 
-                  dft1-alt dft2 dft3 docs-bases docs-dft docs-psimod extern1 
+                  dft1-alt dft2 dft3 docs-bases docs-dft extern1
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 

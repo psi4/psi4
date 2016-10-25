@@ -35,8 +35,8 @@
 
 .. _`sec:opt()`:
 
-Geometry Optimization |w---w| :py:func:`~driver.optimize` and :py:func:`~driver.gradient`
-=========================================================================================
+Geometry Optimization |w---w| :py:func:`~psi4.optimize` and :py:func:`~psi4.gradient`
+=====================================================================================
 
 * :ref:`Psi4 Native Gradient Methods <table:grad_gen>`
 * :ref:`Psi4 Native DFT Gradient Methods (excepting double-hybrids) <table:grad_gen>`
@@ -45,13 +45,13 @@ Geometry Optimization |w---w| :py:func:`~driver.optimize` and :py:func:`~driver.
 For further discussion of geometry optimization, see
 Sec. :ref:`sec:optking`.
 
-:py:func:`~driver.optimize` is the only command most users will ever 
+:py:func:`~psi4.optimize` is the only command most users will ever
 need to access directly to perform geometry optimizations. Behind
-the scenes, :py:func:`~driver.optimize` is a wrapper that repeatedly
-calls :py:func:`~driver.gradient` that computes the gradient then adds a
+the scenes, :py:func:`~psi4.optimize` is a wrapper that repeatedly
+calls :py:func:`~psi4.gradient` that computes the gradient then adds a
 call to the :ref:`geometry projection module <sec:optking>`.
 
-.. autofunction:: driver.optimize(name [, molecule, return_wfn, func, mode, dertype, hessian_with])
+.. autofunction:: psi4.optimize(name [, molecule, return_wfn, func, mode, dertype, hessian_with])
 
-.. autofunction:: driver.gradient(name [, molecule, return_wfn, func, dertype])
+.. autofunction:: psi4.gradient(name [, molecule, return_wfn, func, dertype])
 

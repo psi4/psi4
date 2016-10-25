@@ -117,7 +117,7 @@ def _contract_bracketed_basis(basisarray):
 
 def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
     r"""Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`~driver_cbs.complete_basis_set`.
+    zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
 
     .. math:: E_{total}^X = E_{total}^X
 
@@ -145,7 +145,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
 
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
     r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`~driver_cbs.complete_basis_set`.
+    Used by :py:func:`~psi4.cbs`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
 
@@ -213,7 +213,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`~driver_cbs.complete_basis_set`.
+    Used by :py:func:`~psi4.cbs`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
     """
@@ -278,7 +278,7 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
 def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`~driver_cbs.complete_basis_set`.
+    Used by :py:func:`~psi4.cbs`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}
 
@@ -534,12 +534,12 @@ VARH = return_energy_components()
 ##  Start of Complete Basis Set  ##
 ###################################
 
-def complete_basis_set(func, label, **kwargs):
+def cbs(func, label, **kwargs):
     r"""Function to define a multistage energy method from combinations of
     basis set extrapolations and delta corrections and condense the
     components into a minimum number of calculations.
 
-    :aliases: cbs()
+    :aliases: complete_basis_set()
 
     :returns: (*float*) -- Total electronic energy in Hartrees
 
@@ -569,7 +569,7 @@ def complete_basis_set(func, label, **kwargs):
     correlation energy, and a second delta correction, etc.. Each is activated by its
     stage_wfn keyword and is only allowed if all preceding stages are active.
 
-    .. include:: cbs_eqn.rst
+    .. include:: ../cbs_eqn.rst
 
     * Energy Methods
         The presence of a stage_wfn keyword is the indicator to incorporate
@@ -757,7 +757,7 @@ def complete_basis_set(func, label, **kwargs):
         stage of the CBS definition. A complaint is generated if number of basis
         sets in stage_basis does not exactly satisfy requirements of stage_scheme.
         An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
-        set available. See `Extrapolation Schemes`_ for all available schemes.
+        set available. See :ref:`sec:cbs_xtpl` for all available schemes.
 
     :type scf_scheme: function
     :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
@@ -1489,7 +1489,7 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
     return largs
 
 ##  Aliases  ##
-cbs = complete_basis_set
+complete_basis_set = cbs
 
 
 def _cbs_wrapper_methods(**kwargs):

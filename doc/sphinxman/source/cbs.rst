@@ -45,10 +45,10 @@ Complete Basis Set
 .. codeauthor:: Lori A. Burns and Daniel G. A. Smith
 .. sectionauthor:: Lori A. Burns
 
-The :py:func:`driver_cbs.complete_basis_set` function described below is
+The :py:func:`psi4.cbs` function described below is
 powerful but complicated, requiring many options. For most common
 calculations, a shorthand can be accessed directly though
-:py:func:`driver.energy`, :py:func:`driver.gradient`, *etc.* For example,
+:py:func:`psi4.energy`, :py:func:`psi4.gradient`, *etc.* For example,
 a MP2 single-point DT extrapolation can be accessed through the first item
 below more conveniently than the equivalent second item.
 
@@ -70,7 +70,7 @@ Many examples can be found at :srcsample:`cbs-xtpl-energy`,
 :srcsample:`cbs-xtpl-wrapper`.
 
 
-.. autofunction:: driver_cbs.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, delta3_wfn, delta3_wfn_lesser, delta3_basis, delta3_scheme, delta4_wfn, delta4_wfn_lesser, delta4_basis, delta4_scheme, delta5_wfn, delta5_wfn_lesser, delta5_basis, delta5_scheme])
+.. autofunction:: psi4.cbs(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, delta3_wfn, delta3_wfn_lesser, delta3_basis, delta3_scheme, delta4_wfn, delta4_wfn_lesser, delta4_basis, delta4_scheme, delta5_wfn, delta5_wfn_lesser, delta5_basis, delta5_scheme])
 
 .. note:: Presently (May 2016), only two of the five delta possibilities are active. Also, temporarily extrapolations are performed on differences of target and scf total energies, rather than on correlation energies directly. This doesn't affect the extrapolated values of the particular formulas defined here (though it does affect the betas, which are commented out), but it is sloppy and temporary and could affect any user-defined corl extrapolations.
 
@@ -148,6 +148,8 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
      total            CBS                         -1.16281105
     ----------------------------------------------------------------------------------
 
+.. _`sec:cbs_xtpl`:
+
 .. index::
    single: cbs(); extrapolation schemes
    single: extrapolation schemes
@@ -156,25 +158,25 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 Extrapolation Schemes
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: driver_cbs.xtpl_highest_1
+.. autofunction:: psi4.driver.driver_cbs.xtpl_highest_1
 
-.. autofunction:: driver_cbs.scf_xtpl_helgaker_2
+.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_2
 
-.. autofunction:: driver_cbs.scf_xtpl_helgaker_3
+.. autofunction:: psi4.driver.driver_cbs.scf_xtpl_helgaker_3
 
-.. autofunction:: driver_cbs.corl_xtpl_helgaker_2
+.. autofunction:: psi4.driver.driver_cbs.corl_xtpl_helgaker_2
 
 Aliases
 ^^^^^^^
 
 When a particular composite method or its functional form is going to be
 reused often, it is convenient to define an alias to it. A convenient
-place for such Python code to reside is in :source:`share/python/aliases.py`
-(source location) or ``psi4/share/psi/python/aliases.py`` (installed
+place for such Python code to reside is in :source:`psi4/driver/aliases.py`
+(source location) or ``psi4/lib/psi4/driver/aliases.py`` (installed
 location). No recompilation is necessary after defining an alias. Some
 existing examples are below.
 
-.. autofunction:: aliases.sherrill_gold_standard
+.. autofunction:: psi4.driver.aliases.sherrill_gold_standard
 
-.. autofunction:: aliases.allen_focal_point
+.. autofunction:: psi4.driver.aliases.allen_focal_point
 

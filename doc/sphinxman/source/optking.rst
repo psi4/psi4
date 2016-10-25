@@ -457,5 +457,5 @@ is active and fulfilled (``*``), active and unfulfilled ( ),  or inactive (``o``
 The full list of keywords for optking is provided in Appendix :ref:`apdx:optking`.
 
 Information on the Psithon function that drives geometry optimizations is provided
-at :py:func:`~driver.optimize`.
+at :py:func:`~psi4.optimize`.
 

@@ -308,7 +308,7 @@ form for the computation functions. ::
 
 For more elaborate post-processing of computations, adding
 ``return_wfn=True`` keyword argument additionally returns
-:ref:`Wavefunction<sec:psimod_Wavefunction>`. ::
+:py:class:`~psi4.core.Wavefunction`. ::
 
     # power user returns
     E, wfn = energy(..., return_wfn=True)
@@ -432,7 +432,7 @@ The Python foundations of the |PSIfour| driver and Psithon syntax permit
 many commonly performed post-processing procedures to be integrated into
 the |PSIfour| suite.  
 
-As seen in the neon dimer example from the :ref:`sec:tutorial` section,
+As seen in the neon dimer example from the :ref:`tutorial <sec:tutorial>` section,
 the :py:func:`~driver_nbody.nbody_gufunc` wrapper provides automatic computation of 
 counterpoise-corrected interaction energies between two molecules.  For
 example, ::

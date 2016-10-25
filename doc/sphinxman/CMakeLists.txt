@@ -41,8 +41,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
     endforeach()
     # * duplicate index.rst as contents.rst for toc link
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCBD}/source/index.rst ${CCBD}/source/contents.rst)
-    # * copy fake psi4.py over to objdir
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/psi4.py ${CCBD}/source)
 
     # Static resource png and pdf files
     set(STATICRES psi4square.png favicon-psi4.ico AlphaMOs.png gdma-2.2.06.pdf Total.png VA.png)

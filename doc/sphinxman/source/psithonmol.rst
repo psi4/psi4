@@ -566,13 +566,13 @@ Advanced Python
 ===============
 
 A named molecule in an input file is a full-fledged instance of the
-powerful :ref:`C++ Molecule class <sec:psimod_Molecule>`. Thus, all member
+powerful C++ :py:class:`~psi4.core.Molecule` class. Thus, all member
 functions (that have been exported via pybind11) documented thereat
 are accessible through the handle :samp:`{option_molecule_name}` in
 :samp:`molecule {optional_molecule_name} \\{...\\}`.
 
 *  The molecular geometry can be got and set and manipulated as a
-   :ref:`psi4.Matrix <sec:psimod_Matrix>` object. Below shows how to access
+   :py:class:`~psi4.core.Matrix` object. Below shows how to access
    coordinates in an input file in Python. ::
 
        molecule formaldehyde {

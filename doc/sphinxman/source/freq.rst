@@ -36,21 +36,21 @@
 
 .. _`sec:freq()`:
 
-Harmonic Vibrational Analysis |w---w| :py:func:`~driver.frequency` and :py:func:`~driver.hessian`
-=================================================================================================
+Harmonic Vibrational Analysis |w---w| :py:func:`~psi4.frequency` and :py:func:`~psi4.hessian`
+=============================================================================================
 
 * :ref:`Psi4 Native Hessian Methods <table:freq_gen>`
 
 For further discussion of vibrational and thermochemical analysis,
 see Sec. :ref:`sec:thermo`.
 
-:py:func:`~driver.frequency` is the only command most users will ever
+:py:func:`~psi4.frequency` is the only command most users will ever
 need to access directly to perform frequency calculations. Behind
-the scenes, :py:func:`~driver.frequency` is a light wrapper over
-:py:func:`~driver.hessian` that computes the Hessian then adds a
+the scenes, :py:func:`~psi4.frequency` is a light wrapper over
+:py:func:`~psi4.hessian` that computes the Hessian then adds a
 thermochemical analysis.
 
-.. autofunction:: driver.frequency(name [, molecule, return_wfn, func, mode, dertype, irrep])
+.. autofunction:: psi4.frequency(name [, molecule, return_wfn, func, mode, dertype, irrep])
 
-.. autofunction:: driver.hessian(name [, molecule, return_wfn, func, dertype, irrep])
+.. autofunction:: psi4.hessian(name [, molecule, return_wfn, func, dertype, irrep])
 

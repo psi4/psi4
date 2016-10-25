@@ -34,13 +34,13 @@
 
 .. _`sec:db()`:
 
-Database |w---w| :py:func:`~wrapper_database.database`
-======================================================
+Database |w---w| :py:func:`~psi4.driver.wrapper_database.database`
+==================================================================
 
 .. codeauthor:: Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-.. autofunction:: wrapper_database.database(name, db_name [, func, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
+.. autofunction:: psi4.driver.wrapper_database.database(name, db_name [, func, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
 
 .. index:: 
    pair: database(); output

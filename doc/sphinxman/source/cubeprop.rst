@@ -34,13 +34,13 @@
 
 .. _`sec:cubeprop`:
 
-Generation of Cube Files |w---w| :py:func:`~p4util.cubeprop`
-============================================================
+Generation of Cube Files |w---w| :py:func:`~psi4.cubeprop`
+==========================================================
 
 .. codeauthor:: Robert M. Parrish and Francesco A. Evangelista
 .. sectionauthor:: Francesco A. Evangelista
 
-.. autofunction:: p4util.cubeprop(wfn)
+.. autofunction:: psi4.cubeprop(wfn)
 
 Introduction
 ------------

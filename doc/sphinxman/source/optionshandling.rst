@@ -197,25 +197,25 @@ Options from the c-side Options object are accessible in the Python driver throu
 
 - get 
 
-  - :py:func:`~psi4.get_global_option()`
-  - :py:func:`~psi4.get_local_option()`
-  - :py:func:`~psi4.get_option()`
+  - :py:func:`~psi4.core.get_global_option()`
+  - :py:func:`~psi4.core.get_local_option()`
+  - :py:func:`~psi4.core.get_option()`
 
 - set 
 
-  - :py:func:`~psi4.set_global_option()` 
-  - :py:func:`~psi4.set_local_option()`
+  - :py:func:`~psi4.core.set_global_option()`
+  - :py:func:`~psi4.core.set_local_option()`
 
 - has_changed 
 
-  - :py:func:`~psi4.has_global_option_changed()`
-  - :py:func:`~psi4.has_local_option_changed()`
-  - :py:func:`~psi4.has_option_changed()`
+  - :py:func:`~psi4.core.has_global_option_changed()`
+  - :py:func:`~psi4.core.has_local_option_changed()`
+  - :py:func:`~psi4.core.has_option_changed()`
 
 - revoke_changed 
 
-  - :py:func:`~psi4.revoke_global_option_changed()`
-  - :py:func:`~psi4.revoke_local_option_changed()`
+  - :py:func:`~psi4.core.revoke_global_option_changed()`
+  - :py:func:`~psi4.core.revoke_local_option_changed()`
 
 There's a pattern here. Setting something, either a value (set) or a
 negative changed status (revoke_changed), can only be done for a specific

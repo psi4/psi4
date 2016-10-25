@@ -34,8 +34,8 @@
 
 .. _`sec:gdma`:
 
-Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func:`~driver.gdma`
-===============================================================================================
+Interface to GDMA Distributed Multipole Analysis by A. J. Stone |w---w| :py:func:`~psi4.gdma`
+=============================================================================================
 
 .. codeauthor:: Anthony J. Stone, Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -128,7 +128,7 @@ Q^2_{2s}, \ldots`  The second matrix returned has a single row, whose columns
 are the total multipoles, translated to |gdma__gdma_origin|, and summed.
 
 
-.. autofunction:: driver.gdma(wfn)
+.. autofunction:: psi4.gdma(wfn)
 
 Options
 ~~~~~~~

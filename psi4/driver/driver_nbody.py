@@ -119,7 +119,7 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     :returns: *return type of func* |w--w| The interaction data.
 
-    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
     :type func: function
     :param func: ``energy`` || etc.
@@ -141,7 +141,7 @@ def nbody_gufunc(func, method_string, **kwargs):
     :type return_wfn: :ref:`boolean <op_py_boolean>`
     :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
 
-        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element of a tuple.
 
     :type bsse_type: string or list

@@ -76,7 +76,7 @@ def auto_fragments(**kwargs):
     r"""Detects fragments if the user does not supply them.
     Currently only used for the WebMO implementation of SAPT.
 
-    :returns: :ref:`Molecule<sec:psimod_Molecule>`) |w--w| fragmented molecule.
+    :returns: :py:class:`~psi4.core.Molecule`) |w--w| fragmented molecule.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.

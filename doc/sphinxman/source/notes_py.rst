@@ -68,5 +68,5 @@ Notes on Options
    ``molecule mymol {...}`` block or in an ``activate(mymol)`` statement. Note
    that the value of this keyword (``mymol`` in the example) is a Python object
    and so is not wrapped in quotes like a string. Technically, this is a
-   :ref:`Molecule<sec:psimod_Molecule>` object.
+   :py:class:`~psi4.core.Molecule` object.
 

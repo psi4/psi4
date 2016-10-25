@@ -94,8 +94,8 @@ Using the polarizable continuum model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The inclusion of a PCM description of the solvent into your calculation
-is achieved by setting ``pcm true`` in your input file.
-|Psifour| understands the additional option ``pcm_scf_type`` with possible values ``total``
+is achieved by setting |globals__pcm| ``true`` in your input file.
+|Psifour| understands the additional option |globals__pcm_scf_type| with possible values ``total``
 (the default) or ``separate``.
 The latter forces the separate handling of nuclear and electronic electrostatic potentials and
 polarization charges. It is mainly useful for debugging.
@@ -145,7 +145,13 @@ A typical input for a Hartree--Fock calculation with PCM would look like the fol
     }
 
 More examples can be found in the directories with PCM tests
-:srcsample:`pcmsolver/pcm_scf`, 
-:srcsample:`pcmsolver/pcm_dft`, and
-:srcsample:`pcmsolver/pcm_dipole`. 
+:srcsample:`pcmsolver/pcm-scf`,
+:srcsample:`pcmsolver/pcm-dft`, and
+:srcsample:`pcmsolver/pcm-dipole`.
+
+Keywords for PCMSolver
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: autodir_options_c/globals__pcm.rst
+.. include:: autodir_options_c/globals__pcm_scf_type.rst
 
