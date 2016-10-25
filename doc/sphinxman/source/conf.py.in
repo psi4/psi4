@@ -75,9 +75,22 @@ extensions = [
     'sphinx.ext.napoleon',
     # from Cloud
     'cloud_sptheme.ext.index_styling',
+    'cloud_sptheme.ext.escaped_samp_literals',
+    # from Astropy
+    'astropy_helpers.sphinx.ext.automodapi',
+    'astropy_helpers.sphinx.ext.automodsumm',
+    # from Psi4
     'psi4doc.ext.psidomain',
     'psi4doc.ext.relbar_toc',
 ]
+
+autosummary_generate = True
+autodoc_default_flags = ['members',
+                         'undoc-members',
+                         'inherited-members',  # disabled because there's a bug in sphinx
+                         'show-inheritance',
+                        ]
+automodapi_toctreedirnm = 'source/api'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -741,7 +741,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     all values are scaled. -*/
     options.add_double("MCSCF_MAX_ROT", 0.5);
 
-    /* - Do we run conventional or density fitted? -*/
+    /*- Do we run conventional or density fitted? -*/
     options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
 
     /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of

@@ -35,8 +35,8 @@
 Defining a Method Alias
 =======================
 
-.. note:: No recompile of the PSI program is necessary for changes made to
-    files in ``$PSIDATADIR`` aka :source:`share`, including those described below.
+.. note:: No recompile of the |PSIfour| program is necessary for changes made to
+    files in ``$PSIDATADIR`` aka :source:`psi4/share/psi4`, including those described below.
 
 .. caution:: As of 1.0, the below, while essentially still correct, is so aged
    as to be difficult to follow.

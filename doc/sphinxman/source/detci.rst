@@ -144,7 +144,6 @@ Basic DETCI Keywords
 .. include:: autodir_options_c/detci__r_convergence.rst
 .. include:: autodir_options_c/detci__ex_level.rst
 .. include:: autodir_options_c/detci__fci.rst
-.. include:: autodir_options_c/globals__dropped_docc.rst
 .. include:: autodir_options_c/globals__frozen_docc.rst
 .. include:: autodir_options_c/globals__restricted_docc.rst
 .. include:: autodir_options_c/globals__restricted_uocc.rst

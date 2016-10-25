@@ -47,6 +47,8 @@ Interface to DKH by A. Wolf, M. Reiher, and B. A. Hess
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
 
+`devel <http://www.reiher.ethz.ch/software/dkh-x2c.html>`_
+
 .. :target: http://sebwouters.github.io/CheMPS2/index.html
 
 .. _`sec:dkhinstall`:
