@@ -28,7 +28,7 @@
 import os
 import atexit
 
-from psi4 import core
+from . import core
 
 # Numpy place holder for files and cleanup
 numpy_files = []
