@@ -54,13 +54,15 @@ parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the s
                                                            "!Warning! expert option.")
 
 # For plugins
-#parser.add_argument("--new-plugin", help="Creates a new directory with files for writing a "
-#                                         "new plugin. You can specify an additional argument "
-#                                         "that specifies a template to use, for example "
-#                                         "--new-plugin name +mointegrals")
-#parser.add_argument("--new-plugin-makefile", help="Creates Makefile that can be used to compile"
-#                                                  "plugins. The Makefile is placed in the current"
-#                                                  "directory.")
+parser.add_argument("--new-plugin", action='store_true',
+                    help="Creates a new directory with files for writing a "
+                    "new plugin. You can specify an additional argument "
+                    "that specifies a template to use, for example "
+                    "--new-plugin name +mointegrals")
+parser.add_argument("--new-plugin-makefile", action='store_true',
+                    help="Creates Makefile that can be used to compile"
+                    "plugins. The Makefile is placed in the current"
+                    "directory.")
 
 # print("Environment Variables\n");
 # print("     PSI_SCRATCH           Directory where scratch files are written.")
@@ -71,20 +73,31 @@ parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the s
 args, unknown = parser.parse_known_args()
 args = args.__dict__ # Namespace object seems silly
 
+# Deal with kwargs not implemented
+if args["new_plugin"] or args["new_plugin_makefile"]:
+    raise Exception("Plugins are not currently implemented")
+
+
 # Figure out pythonpath
 cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
 lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@"])
-if "CMAKE_INSTALL_LIBDIR" in lib_dir:
-    raise ImportError("Psi4 was not installed correctly!")
 
-# If we are running in place, run it from the source directory
 if args["inplace"]:
-    lib_dir = "@PROJECT_SOURCE_DIR@" + os.path.sep + '..'
-    obj_dir = "@DESTDIR@".split(os.path.sep)[-2]
-    os.environ["CORE_PSI4_YO"] = obj_dir
+    if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
+        raise ImportError("Cannot run inplace from a installed directory.")
+
+    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
+    if not os.path.isfile(core_location):
+        raise ImportError("A compiled Psi4 core.so needs to be symlinked to the psi4/psi4 folder")
+
+    lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
-        data_dir = os.path.sep.join(["@PROJECT_SOURCE_DIR@", 'share', 'psi4'])
+        data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
         os.environ["PSIDATADIR"] = data_dir
+    
+    
+elif "CMAKE_INSTALL_LIBDIR" in lib_dir:
+    raise ImportError("Psi4 was not installed correctly!")
 
 # Replace input/output if unknown kwargs
 if len(unknown) > 0:
@@ -132,7 +145,7 @@ if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
 psi4.core.set_nthread(int(args["nthread"]))
 psi4.core.set_memory(524288000, True)
-psi4._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
+psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 
 # Read input
@@ -164,4 +177,4 @@ exec(content)
 
 # Only register exit if exec was successful
 import atexit
-atexit.register(psi4.exit_printing)
+atexit.register(psi4.extras.exit_printing)

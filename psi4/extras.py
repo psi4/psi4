@@ -25,31 +25,35 @@
 # @END LICENSE
 #
 
-"""Attempts to catch Python based import errors and provides possible solutions."""
+import os
+import atexit
 
-from .p4util.exceptions import *
+from psi4 import core
 
-# NumPy import
-try:
-    import numpy as np
-except:
-    msg = """
-    NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
+# Numpy place holder for files and cleanup
+numpy_files = []
+def register_numpy_file(filename):
+    if filename not in numpy_files:
+        numpy_files.append(filename)
 
-    NumPy installation with a package manager can be accomplished by the following lines:
-        - conda install numpy
-        - sudo yum install numpy
-        - sudo apt-get install python-numpy
-        - brew install numpy
-    """ 
-    raise PsiImportError(msg)
+def clean_numpy_files():
+    for nfile in numpy_files:
+        os.unlink(nfile)
 
-# Import plugin add-ons here for now
-try:
-    import csx4psi
-except ImportError:
-    pass
-try:
-    import v2rdm_casscf
-except ImportError:
-    pass
+atexit.register(clean_numpy_files)
+
+# Exit printing
+def exit_printing():
+    if _success_flag_:
+        core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
+    else:
+        core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
+
+_success_flag_ = True
+
+
+# Working directory
+_input_dir_ = os.getcwd()
+
+def get_input_directory():
+    return _input_dir_

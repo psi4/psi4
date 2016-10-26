@@ -25,29 +25,41 @@
 # @END LICENSE
 #
 
-from .import_core import core
-from .import_core import register_numpy_file
+
+# Figure out psidatadir: envvar trumps staged/installed
+import os
+psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.sep.join([psi4_module_loc, '..', '..', '@CMAKE_INSTALL_DATADIR@', 'psi4'])
+
+if "PSIDATADIR" in os.environ.keys():
+    data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
+elif "CMAKE_INSTALL_DATADIR" in data_dir:
+    data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
+
+data_dir = os.path.abspath(data_dir)
+if not os.path.isdir(data_dir):
+    raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
+                    "      Current value of PSIDATADIR is %s" % data_dir)
+os.environ["PSIDATADIR"] = data_dir
+
+# Init core
+from . import core
+core.initialize()
+core.efp_init()
+
+# Cleanup core at exit
+import atexit
+atexit.register(core.set_legacy_molecule, None)
+atexit.register(core.clean)
+atexit.register(core.finalize)
+
+
 from .driver import *
-from version import print_header
+from .version import print_header
 
 # A few python level niceties
 from psi4.driver.inputparser import parse_options_block
 
-# Move anything from core up if desired
-from core import *
+# A few extraneous functions
+from .extras import get_input_directory
 
-# Exit printing
-def exit_printing():
-    if _success_flag_:
-        core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
-    else:
-        core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
-
-_success_flag_ = True
-
-
-# Working directory
-_input_dir_ = os.getcwd()
-
-def get_input_directory():
-    return _input_dir_

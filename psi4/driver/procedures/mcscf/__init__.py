@@ -1,1 +1,1 @@
-from mcscf_solver import mcscf_solver
+from .mcscf_solver import mcscf_solver

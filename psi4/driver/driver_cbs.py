@@ -35,13 +35,13 @@ import numpy as np
 
 from psi4 import core
 
-from . import qcdb
-from . import p4util
-from . import driver_util
-from . import p4const
+from psi4.driver import qcdb
+from psi4.driver import p4util
+from psi4.driver import driver_util
+from psi4.driver import p4const
 
-from .p4util.exceptions import *
-from .procedures.interface_cfour import cfour_psivar_list
+from psi4.driver.p4util.exceptions import *
+from psi4.driver.procedures.interface_cfour import cfour_psivar_list
 
 zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
 zeta_val2sym = {k + 2: v for k, v in zip(range(7), zeta_values)}

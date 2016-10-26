@@ -26,15 +26,12 @@
 #
 
 import numpy as np
-import psi4
 import os
 
-# Relative hack for now
-import sys, inspect
-path_dir = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"../../")))
-sys.path.append(path_dir)
-import p4util
-from p4util.exceptions import *
+from psi4 import core
+from psi4.driver import p4util
+from psi4.driver.p4util.exceptions import *
+
 np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=True):
@@ -79,7 +76,7 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
     sigma_list.append(mcscf_obj.compute_Hk(approx_step))
 
     if print_micro:
-        psi4.print_out("\n                             Eigenvalue          Rel dE          dX \n")
+        core.print_out("\n                             Eigenvalue          Rel dE          dX \n")
 
     # Run Davidson look for lambda ~ 1
     old_val = 0
@@ -115,7 +112,7 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
                                "Try starting AH when the MCSCF wavefunction is more converged.")
 
         if np.sum(np.abs(vectors[0]) > min_lambda) > 1 and not warning_mult:
-            psi4.print_out("   Warning! Multiple eigenvectors found to follow. Following closest to \lambda = 1.\n")
+            core.print_out("   Warning! Multiple eigenvectors found to follow. Following closest to \lambda = 1.\n")
             warning_mult = True
 
         idx = (np.abs(1 - np.abs(vectors[0]))).argmin()
@@ -124,7 +121,7 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
 
         # Negative roots should go away?
         if idx > 0 and evals[idx] < -5.0e-6 and not warning_neg:
-            psi4.print_out('   Warning! AH might follow negative eigenvalues!\n')
+            core.print_out('   Warning! AH might follow negative eigenvalues!\n')
             warning_neg = True
 
         diff_val = evals[idx] - old_val
@@ -148,7 +145,7 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         norm_dx = (new_dx.sum_of_squares() / orb_grad_ssq) ** 0.5
 
         if print_micro:
-            psi4.print_out("      AH microiter %2d   % 18.12e   % 6.4e   % 6.4e\n" % (microi, evals[idx],
+            core.print_out("      AH microiter %2d   % 18.12e   % 6.4e   % 6.4e\n" % (microi, evals[idx],
                                     diff_val / evals[idx], norm_dx))
 
         if abs(old_val - wlast) < tol and norm_dx < (tol ** 0.5):
@@ -166,11 +163,11 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         sigma_list.append(mcscf_obj.compute_Hk(new_dx))
 
     if print_micro and converged:
-        psi4.print_out("\n")
-        #    psi4.print_out("      AH converged!       \n\n")
+        core.print_out("\n")
+        #    core.print_out("      AH converged!       \n\n")
 
     #if not converged:
-    #    psi4.print_out("      !Warning. Augmented Hessian did not converge.\n")
+    #    core.print_out("      !Warning. Augmented Hessian did not converge.\n")
 
     new_guess.scale(-1.0)
 

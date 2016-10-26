@@ -40,14 +40,14 @@ import os
 import shutil
 
 # Import driver helpers
-from . import driver_util
-from . import driver_cbs
-from . import driver_nbody
-from . import p4util
+from psi4.driver import driver_util
+from psi4.driver import driver_cbs
+from psi4.driver import driver_nbody
+from psi4.driver import p4util
 from psi4.driver.inputparser import parse_options_block
 
-from .procedures import *
-from .p4util.exceptions import *
+from psi4.driver.procedures import *
+from psi4.driver.p4util.exceptions import *
 # never import wrappers or aliases into this file
 
 def _find_derivative_type(ptype, method_name, user_dertype):

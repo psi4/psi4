@@ -38,7 +38,7 @@ import subprocess
 import re
 import numpy as np
 
-import psi4
+from psi4 import extras
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.p4util.exceptions import *
@@ -1359,7 +1359,7 @@ def scf_helper(name, **kwargs):
     data["BasisSet"] = scf_wfn.basisset().name()
     data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
     np.savez(filename, **data)
-    psi4.register_numpy_file(filename)
+    extras.register_numpy_file(filename)
 
 
     optstash.restore()
@@ -3974,9 +3974,9 @@ def run_detcas(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name == 'rasscf':
-        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+        core.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif name == 'casscf':
-        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+        core.set_local_option('DETCI', 'WFN', 'CASSCF')
     else:
         raise ValidationError("Run DETCAS: Name %s not understood" % name)
 
@@ -3992,8 +3992,8 @@ def run_detcas(name, **kwargs):
             )
 
         # No real reason to do a conventional guess
-        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-            psi4.set_global_option('SCF_TYPE', 'DF')
+        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DF')
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
@@ -4006,8 +4006,8 @@ def run_detcas(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
         # Ensure IWL files have been written
-        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
-            mints = psi4.MintsHelper(ref_wfn.basisset())
+        if (core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
+            mints = core.MintsHelper(ref_wfn.basisset())
             mints.set_print(1)
             mints.integrals()
 

@@ -28,13 +28,13 @@
 
 import os
 import numpy as np
-import diis_helper
 
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import qcdb
 
 from .augmented_hessian import ah_iteration
+from . import diis_helper
 
 #np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 

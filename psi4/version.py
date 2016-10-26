@@ -28,7 +28,7 @@
 import datetime
 import os
 
-from import_core import core
+import core
 
 time_string = datetime.datetime.now().strftime('%A, %d %B %Y %I:%M%p')
 pid = os.getpid()

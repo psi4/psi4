@@ -26,8 +26,8 @@
 #
 
 
-import psi4
 import numpy as np
+from psi4 import core
 
 class DIIS_helper(object):
     """
@@ -108,7 +108,7 @@ class DIIS_helper(object):
         ci = np.dot(invB, resid) * S
 
         # combination of previous fock matrices
-        V = psi4.Matrix("DIIS result", self.vector[0].rowdim(), self.vector[1].coldim())
+        V = core.Matrix("DIIS result", self.vector[0].rowdim(), self.vector[1].coldim())
         for num, c in enumerate(ci[:-1]):
             V.axpy(c, self.vector[num])
 
