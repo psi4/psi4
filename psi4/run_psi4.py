@@ -152,6 +152,11 @@ psi4.print_header()
 with open(args["input"]) as f:
     content = f.read()
 
+if args["scratch"] is not None:
+    if not os.path.isdir(args["scratch"]):
+        raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
+    psi4.core.set_environment("PSI_SCRATCH", args["scratch"])
+
 # Preprocess
 if not args["skip_preprocessor"]:
     content = psi4.process_input(content, psi4_imported=(not args["inplace"]))
@@ -166,8 +171,9 @@ if args["verbose"]:
 if args["messy"]:
     import atexit
     for handler in atexit._exithandlers:
-        if handler == psi4.core.clean:
+        if handler[0] == psi4.core.clean:
             atexit._exithandlers.remove(handler)
+
 
 # Run the program!
 exec(content)
