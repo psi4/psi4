@@ -45,7 +45,8 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     original_bs2_(integral_->basis2()),
     original_bs3_(integral_->basis3()),
     original_bs4_(integral_->basis4()),
-    target_(0),
+    target_full_(nullptr), target_(nullptr),
+    source_full_(nullptr), source_(nullptr),
     deriv_(deriv)
 {
     //outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
@@ -55,9 +56,10 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     //        original_bs4_->name().c_str());
     // The derived classes allocate this memory.
     force_cartesian_ = false;
-    tformbuf_ = 0;
-    source_ = 0;
+    tformbuf_ = nullptr;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+
+    // derived class should call create_blocks
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()
@@ -97,6 +99,107 @@ bool TwoBodyAOInt::cloneable()
 TwoBodyAOInt* TwoBodyAOInt::clone()
 {
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
+}
+
+std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12(void) const
+{
+    return blocks12_;
+}
+
+std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks34(void) const
+{
+    return blocks34_;
+}
+
+
+// Expected to be overridden by derived classes
+void TwoBodyAOInt::create_blocks(void)
+{
+    // Default implementation : do no blocking.
+    // Each ShellPairBlock will only contain one shell pair
+    blocks12_.clear();
+    blocks34_.clear();
+
+    const auto nshell1 = basis1()->nshell();
+    const auto nshell2 = basis2()->nshell();
+    const auto nshell3 = basis3()->nshell();
+    const auto nshell4 = basis4()->nshell();
+
+    blocks12_.reserve(nshell1*nshell2);
+    blocks34_.reserve(nshell3*nshell4);
+
+    for(int ishell = 0; ishell < basis1()->nshell(); ishell++)
+    for(int jshell = 0; jshell < basis2()->nshell(); jshell++)
+        blocks12_.push_back({{ishell, jshell}});
+
+    for(int kshell = 0; kshell < basis3()->nshell(); kshell++)
+    for(int lshell = 0; lshell < basis4()->nshell(); lshell++)
+        blocks34_.push_back({{kshell, lshell}});
+}
+
+
+void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34,
+                                        int npair12, int npair34)
+{
+    // Default implementation - go through the blocks and do each quartet
+    // one at a time
+
+    // reset the target & source pointers
+    target_ = target_full_;
+    source_ = source_full_;
+
+    auto vsh12 = blocks12_[shellpair12];
+    auto vsh34 = blocks34_[shellpair34];
+
+    for(const auto sh12 : vsh12)
+    {
+        const auto & shell1 = original_bs1_->shell(sh12.first);
+        const auto & shell2 = original_bs2_->shell(sh12.second);
+   
+        int n1, n2;
+        if (force_cartesian_)
+        {
+            n1 = shell1.ncartesian();
+            n2 = shell2.ncartesian();
+        }
+        else
+        {
+            n1 = shell1.nfunction();
+            n2 = shell2.nfunction();
+        }
+
+
+        for(const auto sh34 : vsh34)
+        {
+            const auto & shell3 = original_bs3_->shell(sh34.first);
+            const auto & shell4 = original_bs4_->shell(sh34.second);
+
+            int n3, n4;
+            if (force_cartesian_)
+            {
+                n3 = shell3.ncartesian();
+                n4 = shell4.ncartesian();
+            }
+            else
+            {
+                n3 = shell3.nfunction();
+                n4 = shell4.nfunction();
+            }
+
+            const int n1234 = n1 * n2 * n3 * n4;
+
+            // actually compute the eri
+            // this will put the results in target_
+            auto ret = compute_shell(sh12.first, sh12.second,
+                                     sh34.first, sh34.second);
+
+            // advance the target pointer
+            target_ += n1234; 
+            
+            // Since we are only doing one at a time we don't need to
+            // move the source_ pointer
+        }
+    }
 }
 
 void TwoBodyAOInt::normalize_am(std::shared_ptr<GaussianShell> s1, std::shared_ptr<GaussianShell> s2, std::shared_ptr<GaussianShell> s3, std::shared_ptr<GaussianShell> s4, int nchunk)
@@ -343,7 +446,8 @@ void TwoBodyAOInt::permute_1234_to_4321(double *s, double *t, int nbf1, int nbf2
     }
 }
 
-void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk)
+void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk,
+                                  bool copy_to_source)
 {
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");
@@ -527,7 +631,7 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
         }
 
         // The permute indices routines depend on the integrals being in source_
-        if (is_pure1 || is_pure2 || is_pure3 || is_pure4)
+        if (copy_to_source && (is_pure1 || is_pure2 || is_pure3 || is_pure4))
             memcpy(source, target, size * sizeof(double));
     }
 #ifdef MINTS_TIMER
