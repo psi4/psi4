@@ -60,6 +60,7 @@ option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_erd "Enables use of ERD instead of LibInt (requires Fortran)" OFF)
+set(ENABLE_SIMINT "None" CACHE STRING "Enables use of SIMINT instead of LibInt")
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
@@ -179,6 +180,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_erd=${ENABLE_erd}
+              -DENABLE_SIMINT=${ENABLE_SIMINT}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
@@ -209,6 +211,7 @@ add_dependencies(psi4-core lapack_external
                            dkh_external
                            libefp_external
                            erd_external
+                           simint_external
                            gdma_external
                            #gtfock_external
                            libint_external

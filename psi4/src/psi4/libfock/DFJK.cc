@@ -486,7 +486,6 @@ void DFJK::initialize_JK_core()
     #ifdef _OPENMP
         nthread = df_ints_num_threads_;
     #endif
-    int rank = 0;
 
     Qmn_ = SharedMatrix(new Matrix("Qmn (Fitted Integrals)",
         auxiliary_->nbf(), ntri));
@@ -500,6 +499,15 @@ void DFJK::initialize_JK_core()
         return;
     }
 
+    const int primary_maxam = primary_->max_am();
+    const int aux_maxam = auxiliary_->max_am();
+    const int primary_nshell = primary_->nshell();
+    const int aux_nshell = auxiliary_->nshell();
+
+    const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
+    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
+
+
     //Get a TEI for each thread
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
@@ -510,38 +518,102 @@ void DFJK::initialize_JK_core()
         buffer[Q] = eri[Q]->buffer();
     }
 
-    const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
-    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
+    // shell pair blocks 
+    std::vector<ShellPairBlock> p_blocks = eri[0]->get_blocks12();
+    std::vector<ShellPairBlock> mn_blocks = eri[0]->get_blocks34();
 
-    int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
 
     timer_on("JK: (A|mn)");
 
-    //The integrals (A|mn)
-    #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
-    for (MU=0; MU < primary_->nshell(); ++MU) {
+
+    // We are calculting integrals of (p|mn). Note that mn is on the ket side.
+    // Integrals may be vectorized over the ket shells, so we want more of the
+    // work to be on that side.
+    //
+    // Variable description:
+    // mn = mu nu (in old terminology)
+    // p_block_idx = index of what block of p we are doing
+    // mn_block_idx = index of what block of mn we are doing
+    // p_block = The block of p we are doing (a vector of std::pair<int, int>)
+    // mn_block = The block of mn we are doing
+    // mn_pair = a single pair of indicies, corresponding to the indicies of the
+    //           m and n shells in the primary basis set
+    // p_pair = a single pair of indicies, corresponding to the indicies of the
+    //          p shell in the auxiliary basis set
+    // num_m, num_n, num_p = number of basis functions in shell m, n, and p
+    // m_start, n_start, p_start = starting index of the basis functions of this shell
+    //                             relative to the beginning of their corresponding basis
+    //                             sets.
+    // im, in, ip = indices for looping over all the basis functions of the shells
+    // im_idx, in_idx, ip_idx = indices of a particular basis function in a shell
+    //                          relative to the start of the basis set
+    //                          (ie, m_start + im)
+    // sfp = screen function pair. The actual output index, taking into account
+    //                             whether or not functions have been screened.
+
+    #pragma omp parallel for schedule (dynamic) num_threads(nthread)
+    for(size_t mn_block_idx = 0; mn_block_idx < mn_blocks.size(); mn_block_idx++)
+    {
         #ifdef _OPENMP
-            rank = omp_get_thread_num();
+            const int rank = omp_get_thread_num();
+        #else
+            const int rank = 0;
         #endif
-        nummu = primary_->shell(MU).nfunction();
-        for (NU=0; NU <= MU; ++NU) {
-            numnu = primary_->shell(NU).nfunction();
-            if (schwarz_shell_pairs[MU*(MU+1)/2+NU] > -1) {
-                for (Pshell=0; Pshell < auxiliary_->nshell(); ++Pshell) {
-                    numP = auxiliary_->shell(Pshell).nfunction();
-                    eri[rank]->compute_shell(Pshell, 0, MU, NU);
-                    for (mu=0 ; mu < nummu; ++mu) {
-                        omu = primary_->shell(MU).function_index() + mu;
-                        for (nu=0; nu < numnu; ++nu) {
-                            onu = primary_->shell(NU).function_index() + nu;
-                            if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] > -1) {
-                                for (P=0; P < numP; ++P) {
-                                    PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmnp[PHI][schwarz_fun_pairs[omu*(omu+1)/2+onu]] = buffer[rank][P*nummu*numnu + mu*numnu + nu];
+    
+        const auto & mn_block = mn_blocks[mn_block_idx];
+
+        // loop over all the blocks of P
+        for(int p_block_idx = 0; p_block_idx < p_blocks.size(); ++p_block_idx)
+        {
+
+            // compute the
+            eri[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
+            double const * my_buffer = buffer[rank];
+ 
+            const auto & p_block = p_blocks[p_block_idx];
+
+            for(const auto & mn_pair : mn_block)
+            {
+                const int m = mn_pair.first;
+                const int n = mn_pair.second;
+                const int num_m = primary_->shell(m).nfunction();
+                const int num_n = primary_->shell(n).nfunction();
+                const int m_start = primary_->shell(m).function_index();
+                const int n_start = primary_->shell(n).function_index();
+                const int num_mn = num_m * num_n;
+
+                for(const auto & p_pair : p_block)
+                {
+                    // remember that this vector will only contain one shell pair
+                    const int p = p_pair.first;
+                    const int num_p = auxiliary_->shell(p).nfunction();
+                    const int p_start = auxiliary_->shell(p).function_index();
+
+                    for(int im = 0; im < num_m; ++im)
+                    {
+                        const int im_idx = m_start + im;
+                        
+                        for(int in = 0; in < num_n; ++in)
+                        {
+                            const int in_idx = n_start + in;
+                            const int imn_idx = im*num_n + in;
+                            const int sfp_idx = (im_idx*(im_idx+1))/2+in_idx; 
+
+                            int sfp;
+
+                            // note the assignment in the following conditional
+                            if(im_idx >= in_idx && (sfp = schwarz_fun_pairs[sfp_idx]) > -1)
+                            {
+                                for(int ip = 0; ip < num_p; ++ip)
+                                {
+                                    const int ip_idx = p_start + ip;
+                                    Qmnp[ip_idx][sfp] = my_buffer[ip*num_mn + imn_idx];
                                 }
                             }
                         }
                     }
+
+                    my_buffer += num_mn * num_p;
                 }
             }
         }
