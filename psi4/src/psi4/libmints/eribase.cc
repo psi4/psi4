@@ -1858,7 +1858,8 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
     size *= ntypes[deriv_];
 
     try {
-        target_ = new double[size];
+        target_full_ = new double[size];
+        target_ = target_full_;
     }
     catch (std::bad_alloc &e) {
         outfile->Printf("Error allocating target_.\n%s\n", e.what());
@@ -1867,7 +1868,8 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
     memset(target_, 0, sizeof(double) * size);
 
     try {
-        source_ = new double[size];
+        source_full_ = new double[size];
+        source_ = source_full_;
     }
     catch (std::bad_alloc &e) {
         outfile->Printf("Error allocating source_.\n%s\n", e.what());
@@ -1886,13 +1888,16 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
         // except assign pairs34_ to pairs12_
         init_shell_pairs34();
     }
+
+    // form the blocking. We use the default
+    TwoBodyAOInt::create_blocks();
 }
 
 TwoElectronInt::~TwoElectronInt()
 {
     delete[] tformbuf_;
-    delete[] target_;
-    delete[] source_;
+    delete[] target_full_;
+    delete[] source_full_;
     free_libint(&libint_);
     if (deriv_)
         free_libderiv(&libderiv_);
