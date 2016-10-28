@@ -42,6 +42,7 @@ import sys
 import random
 from psi4.driver import pubchem
 from psi4.driver.p4util.exceptions import *
+from psi4 import core
 
 
 # inputfile contents to be preserved from the processor
@@ -783,6 +784,10 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
     blank_mol += '""","blank_molecule_psi4_yo")\n'
 
     temp = imports + psirc + scratch + blank_mol + temp
+
+    # Move up the psi4.core namespace
+    for func in dir(core):
+        temp = temp.replace("psi4." + func, "psi4.core." + func)
 
     return temp
 
