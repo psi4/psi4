@@ -906,9 +906,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
-    /*- Whether or not to compute coupled induction, applies only to 
-        the open-shell SAPT0 code. Coupled induction is not available for 
-        ROHF, and the option is automatically false in this case. 
+    /*- Whether or not to compute coupled induction, applies only to
+        the open-shell SAPT0 code. Coupled induction is not available for
+        ROHF, and the option is automatically false in this case.
         Note that when coupled induction is turned off, the Psi variables
         SAPT IND20,R ENERGY and SAPT EXCH-IND20,R ENERGY actually contain
         the **uncoupled** induction! A corresponding warning is issued in the
@@ -1259,7 +1259,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- When |scf__basis_guess| is active, run the preliminary scf in
     density-fitted mode with this as fitting basis for the small basis
     set. A value of ``TRUE`` turns on density fitting with the
-    cc-pVDZ-RI basis set (when available for all elements). -*/
+    default basis, otherwise the specified basis is used. -*/
     options.add_str("DF_BASIS_GUESS", "FALSE", "");
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("DIIS_START", 1);

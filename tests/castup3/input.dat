@@ -43,7 +43,7 @@ compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 6, '[3]  df-scf
 clean()
 
 set scf scf_type df
-set basis_guess true
+set basis_guess 3-21G
 set df_basis_guess true
 banner('ITEM 4')
 energy('scf')

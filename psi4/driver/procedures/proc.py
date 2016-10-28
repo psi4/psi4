@@ -1097,10 +1097,16 @@ def scf_helper(name, **kwargs):
         elif p4util.no.match(str(cast)):
             cast = False
 
-        if core.get_option('SCF', 'SCF_TYPE') == 'DF':
-            castdf = True
+    if cast:
+
+        # A use can set "BASIS_GUESS" to True and we default to 3-21G
+        if cast is True:
+            guessbasis = '3-21G'
         else:
-            castdf = False
+            guessbasis = cast
+        core.set_global_option('BASIS', guessbasis)
+
+        castdf = core.get_option('SCF', 'SCF_TYPE') == 'DF'
 
         if core.has_option_changed('SCF', 'DF_BASIS_GUESS'):
             castdf = core.get_option('SCF', 'DF_BASIS_GUESS')
@@ -1108,6 +1114,31 @@ def scf_helper(name, **kwargs):
                 castdf = True
             elif p4util.no.match(str(castdf)):
                 castdf = False
+
+        if castdf:
+            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            core.set_local_option('SCF', 'DF_INTS_IO', 'none')
+
+            # Figure out the fitting basis set
+            if castdf is True:
+                core.set_global_option('DF_BASIS_SCF', '')
+            elif isinstance(castdf, (unicode, str)):
+                core.set_global_option('DF_BASIS_SCF', castdf)
+            else:
+                raise ValidationError("Unexpected castdf option (%s)." % castdf)
+
+
+        # Switch to the guess namespace
+        namespace = core.IO.get_default_namespace()
+        guesspace = namespace + '.guess'
+        if namespace == '':
+            guesspace = 'guess'
+        core.IO.set_default_namespace(guesspace)
+
+        # Print some info about the guess
+        core.print_out('\n')
+        p4util.banner('Guess SCF, %s Basis' % (guessbasis))
+        core.print_out('\n')
 
     # sort out broken_symmetry settings.
     if 'brokensymmetry' in kwargs:
@@ -1132,41 +1163,6 @@ def scf_helper(name, **kwargs):
         scf_molecule.set_multiplicity(3)
         core.print_out('\n')
         p4util.banner('  Computing high-spin triplet guess  ')
-        core.print_out('\n')
-
-    # cast set-up
-    if cast:
-
-        if cast is True:
-            guessbasis = '3-21G'
-        else:
-            guessbasis = cast
-
-        #if (castdf):
-        #    if p4util.yes.match(str(castdf)):
-        #        guessbasisdf = p4util.corresponding_jkfit(guessbasis)
-        #    else:
-        #        guessbasisdf = castdf
-
-        # Switch to the guess namespace
-        namespace = core.IO.get_default_namespace()
-        guesspace = namespace + '.guess'
-        if namespace == '':
-            guesspace = 'guess'
-        core.IO.set_default_namespace(guesspace)
-
-        # Setup initial SCF
-        core.set_global_option('BASIS', guessbasis)
-        if (castdf):
-            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-            core.set_local_option('SCF', 'DF_INTS_IO', 'none')
-            #core.set_global_option('DF_BASIS_SCF', guessbasisdf)
-            if not isinstance(cast, bool):
-                core.set_global_option('DF_BASIS_SCF', castdf)
-
-        # Print some info about the guess
-        core.print_out('\n')
-        p4util.banner('Guess SCF, %s Basis' % (guessbasis))
         core.print_out('\n')
 
 
