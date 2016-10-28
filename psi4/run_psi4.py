@@ -118,9 +118,6 @@ if args["output"] is None:
     else:
         args["output"] = args["input"] + ".dat"
 
-if not os.path.isfile(args["input"]):
-    raise KeyError("The file %s does not exist." % args["input"])
-
 # Transmit any argument psidatadir through environ
 if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
@@ -133,6 +130,12 @@ if args["psidatadir"] is not None:
 sys.path.insert(1, lib_dir)
 import psi4
 
+if args["version"] is not None:
+    print psi4.__version__
+    sys.exit()
+
+if not os.path.isfile(args["input"]):
+    raise KeyError("The file %s does not exist." % args["input"])
 
 # Setup outfile
 if args["append"] is None:

@@ -55,7 +55,8 @@ atexit.register(core.finalize)
 
 
 from .driver import *
-from .version import print_header
+from .header import print_header
+from .metadata import __version__, version_formatter
 
 # A few python level niceties
 from psi4.driver.inputparser import parse_options_block

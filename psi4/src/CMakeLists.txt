@@ -6,15 +6,7 @@ add_subdirectory(psi4)
 ### >> We also add in versioning, settings for plugins, and
 ### >> exports for Python here.
 
-# Run the git version script, and update gitversion.h, if it's changed
-add_custom_target(update_version
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py ${PROJECT_SOURCE_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
-        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp
-        COMMENT "Generating Git info")
-
 add_library(versioned_code OBJECT core.cc)
-add_dependencies(versioned_code update_version)
 set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
 target_include_directories(versioned_code PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -35,7 +27,7 @@ set(sources_list export_psio.cc
 
 set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
 add_library(core SHARED ${psi4_all_sources})
-#add_library(core STATIC ${psi4_all_sources})
+
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
 endif()

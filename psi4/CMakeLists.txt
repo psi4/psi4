@@ -69,6 +69,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(src)
 
+# <<<  Version  >>>
+add_custom_target(update_version ALL
+                  COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/versioner.py
+                                               ${CMAKE_CURRENT_SOURCE_DIR}
+                                               ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
+                  COMMENT "Generating version info")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+    # TODO absorb some version info into CM variables, write to package, adj psi4ConfigVersion to sort dev
+
 ### >> Install share, include, and other periphery << ###
 configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
@@ -93,7 +103,7 @@ install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
 
-install(FILES version.py extras.py
+install(FILES header.py extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
 
 configure_file(__init__.py __init__.py @ONLY)
