@@ -80,9 +80,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
     # TODO absorb some version info into CM variables, write to package, adj psi4ConfigVersion to sort dev
 
 ### >> Install share, include, and other periphery << ###
-configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
-install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
+# configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
+# install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
 configure_file("psi4Config.cmake.in" "psi4Config.cmake" @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4Config.cmake

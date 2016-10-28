@@ -96,7 +96,7 @@ void PSIO::open(unsigned int unit, int status) {
     char* fullpath;
     get_volpath(unit, i, &path);
 
-    #pragma warn A bit of a hack in psio open at the moment, breaks volumes and some error checking
+    // A bit of a hack in psio open at the moment, breaks volumes and some error checking
     std::string spath2 = PSIOManager::shared_object()->get_file_path(unit);
     const char* path2 = spath2.c_str();
 
@@ -193,7 +193,7 @@ bool PSIO::exists(unsigned int unit) {
     int stream;
     get_volpath(unit, i, &path);
 
-    #pragma warn A bit of a hack in psio open at the moment, breaks volumes and some error checking
+    // A bit of a hack in psio open at the moment, breaks volumes and some error checking
     std::string spath2 = PSIOManager::shared_object()->get_file_path(unit);
     const char* path2 = spath2.c_str();
 
