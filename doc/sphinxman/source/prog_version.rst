@@ -1,5 +1,12 @@
 
 
+* Making a release or prerelease
+
+  * update all three fields of metadata.py (see below ex)
+  * commit
+  * on master, make annotated tag starting with v. note the hash.
+  * run enough of build to make sure tag formatted properly and "Defining {} version" sane
+
 # MUST update metadata.py on same commit at which make tag
 
 git tag -a v1.0 d2243ef

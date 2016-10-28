@@ -187,8 +187,8 @@ def reconcile_and_compute_version_output(cwd='./'):
             if int(res['commits_since_tag']) == 0:
 
                 if trial_version_long_release == res['long']:
-                    print("""Defining release version: {} (recorded and computed)""".format(
-                        res['long']))
+                    print("""Defining {} version: {} (recorded and computed)""".format(
+                        'prerelease' if mobj.group('prere') else 'release', res['long']))
                     project_release = res['is_clean'] and not mobj.group('prere')
                     project_prerelease = res['is_clean'] and mobj.group('prere')
                     project_version = meta_latest_annotated_v_tag
