@@ -358,10 +358,10 @@ def load_basfam_other():
     # Here lie practical (non-validated) fitting bases for
     # Pople orbital basis sets
 
-    basis_sto3g.add_jkfit('cc-pvdz-ri')
-    basis_sto3g.add_rifit('cc-pvdz-ri')
-    basis_321g.add_jkfit('cc-pvdz-ri')
-    basis_321g.add_rifit('cc-pvdz-ri')
+    basis_sto3g.add_jkfit('def2-SVP-JKFIT')
+    basis_sto3g.add_rifit('def2-SVP-JKFIT')
+    basis_321g.add_jkfit('def2-SVP-JKFIT')
+    basis_321g.add_rifit('def2-SVP-JKFIT')
 
     basis_631g.add_jkfit('cc-pvdz-jkfit')
     basis_631g_d_.add_jkfit('cc-pvdz-jkfit')
