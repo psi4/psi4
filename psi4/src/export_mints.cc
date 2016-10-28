@@ -162,8 +162,7 @@ void export_mints(py::module& m)
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
             def("nirrep", &Vector::nirrep, "docstring").
-            def("array_interface", &Vector::array_interface).
-            def_readwrite("cdict", &Vector::cdict);
+            def("array_interface", &Vector::array_interface);
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector> >(m, "IntVector", "docstring").
@@ -272,8 +271,7 @@ void export_mints(py::module& m)
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
             def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring").
-            def("array_interface", &Matrix::array_interface, "docstring").
-            def_readwrite("cdict", &Matrix::cdict);
+            def("array_interface", &Matrix::array_interface, "docstring");
 
     py::class_<View>(m, "View").
             def(py::init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -769,7 +767,7 @@ void export_mints(py::module& m)
     using SharedBS = std::shared_ptr<BasisSet>;
 
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring").
+    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr()).
             def(py::init<SharedMol, SharedBS, Options&>()).
             def(py::init<SharedMol, SharedBS>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
@@ -833,7 +831,12 @@ void export_mints(py::module& m)
             def("set_print", &Wavefunction::set_print, "docstring").
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
-            def_readwrite("cdict", &Wavefunction::cdict);
+            def("get_variable", &Wavefunction::get_variable, "docstring").
+            def("set_variable", &Wavefunction::set_variable, "docstring").
+            def("variables", &Wavefunction::variables, "docstring").
+            def("get_array", &Wavefunction::get_array, "docstring").
+            def("set_array", &Wavefunction::set_array, "docstring").
+            def("arrays", &Wavefunction::arrays, "docstring");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
             def("form_C", &scf::HF::form_C, "docstring").
@@ -852,7 +855,6 @@ void export_mints(py::module& m)
             def("initialize", &scf::HF::initialize, "docstring").
             def("iterations", &scf::HF::iterations, "docstring").
             def("finalize_E", &scf::HF::finalize_E, "docstring").
-            def("set_dashd_correction", &scf::HF::set_dashd_correction, "docstring").
             def("occupation_a", &scf::HF::occupation_a, "docstring").
             def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");

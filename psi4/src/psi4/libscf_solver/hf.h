@@ -248,9 +248,6 @@ public:
     std::shared_ptr<Vector> occupation_a() const;
     std::shared_ptr<Vector> occupation_b() const;
 
-    // Set -D correction
-    void set_dashd_correction(double dashd) { energies_["-D"] = dashd; }
-
     // PCM interface
     bool pcm_enabled_;
     std::shared_ptr<PCM> hf_pcm_;

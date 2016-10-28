@@ -85,13 +85,7 @@ def pybuild_wavefunction(mol, basis=None):
 
     return core.Wavefunction(mol, basis)
 
-def delete(self):
-    print('Clearing cdict')
-    self.cdict.clear()
-
 core.Wavefunction.build = pybuild_wavefunction
-core.Wavefunction.__del__ = delete
-core.Wavefunction.__exit__ = delete
 
 ## Python JK helps
 

@@ -85,7 +85,6 @@ Wavefunction::Wavefunction(Options &options) :
 
 Wavefunction::~Wavefunction()
 {
-    cdict.clear();
 }
 
 void Wavefunction::shallow_copy(SharedWavefunction other)
@@ -189,7 +188,7 @@ void Wavefunction::deep_copy(const Wavefunction *other)
 
     energy_ = other->energy_;
     efzc_ = other->efzc_;
-    cdict = other->cdict;
+    variables_ = other->variables_;
 
     // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
 
@@ -1044,4 +1043,20 @@ std::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const
     for (int i = 0; i < n; ++i)
         q_vector->set(i, (*q)[i]);
     return q_vector;
+}
+double Wavefunction::get_variable(std::string label)
+{
+    if (variables_.count(label) == 0){
+        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable was not set!\n");
+    } else {
+        return variables_[label];
+    }
+}
+SharedMatrix Wavefunction::get_array(std::string label)
+{
+    if (arrays_.count(label) == 0){
+        throw PSIEXCEPTION("Wavefunction::get_array: Requested array was not set!\n");
+    } else {
+        return arrays_[label];
+    }
 }

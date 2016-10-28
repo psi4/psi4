@@ -65,11 +65,8 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
     scf::HF* scfwfn = (scf::HF*)ref_wfn.get();
     functional_ = scfwfn->functional();
     potential_ = scfwfn->V_potential();
-    for (auto item : scfwfn->cdict){
-        if (item.first.cast<std::string>() == "_disp_gradient"){
-            gradients_["-D"] = item.second.cast<SharedMatrix>();
-            break;
-        }
+    if (ref_wfn->arrays().count("-D Gradient")){
+        gradients_["-D"] = ref_wfn->get_array("-D Gradient");
     }
 
 }

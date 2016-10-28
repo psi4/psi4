@@ -450,8 +450,6 @@ def energy(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
-    if isinstance(wfn, core.Wavefunction):
-        wfn.cdict.clear()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
@@ -598,8 +596,6 @@ def gradient(name, **kwargs):
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
-            if isinstance(wfn, core.Wavefunction):
-                wfn.cdict.clear()
             return wfn.gradient()
 
     else:

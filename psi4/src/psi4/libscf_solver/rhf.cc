@@ -351,6 +351,7 @@ double RHF::compute_E()
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] =  coulomb_E + exchange_E;
     energies_["XC"] = XC_E;
+    energies_["-D"] = variables_["-D Energy"];
     double dashD_E = energies_["-D"];
 
     double Etotal = 0.0;

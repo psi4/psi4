@@ -1015,9 +1015,9 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+        wfn._disp_functor = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
                                                                               tuple_params = modified_disp_params)
-        wfn.cdict["_disp_functor"].print_out()
+        wfn._disp_functor.print_out()
 
     # Set the multitude of SAD basis sets
     if (core.get_option("SCF", "SCF_TYPE") == "DF") or \
@@ -1200,8 +1200,9 @@ def scf_helper(name, **kwargs):
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
-        if "_disp_functor" in ref_wfn.cdict.keys():
-            ref_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
+        if "_disp_functor" in dir(ref_wfn):
+            disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
+            ref_wfn.set_variables("-D Energy", disp_energy)
         ref_wfn.compute_energy()
 
     # broken clean-up
@@ -1302,8 +1303,9 @@ def scf_helper(name, **kwargs):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
-    if "_disp_functor" in scf_wfn.cdict.keys():
-        scf_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
+    if "_disp_functor" in dir(scf_wfn):
+        disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
+        scf_wfn.set_variable("-D Energy", disp_energy)
 
     e_scf = scf_wfn.compute_energy()
     core.set_variable("SCF TOTAL ENERGY", e_scf)
@@ -1938,8 +1940,9 @@ def run_scf_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
-    if "_disp_functor" in ref_wfn.cdict.keys():
-        ref_wfn.cdict["_disp_gradient"] = ref_wfn.cdict["_disp_functor"].compute_gradient(ref_wfn.molecule())
+    if "_disp_functor" in dir(ref_wfn):
+        disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
+        ref_wfn.set_array("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
     ref_wfn.set_gradient(grad)

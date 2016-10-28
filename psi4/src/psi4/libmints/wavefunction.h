@@ -229,6 +229,10 @@ protected:
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
 
+    // Collection of variables
+    std::map<std::string, double> variables_;
+    std::map<std::string, SharedMatrix> arrays_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -541,8 +545,15 @@ public:
     /// Save the wavefunction to checkpoint
     virtual void save() const;
 
-    /// Python dictionary that can be accessed python side
-    py::dict cdict;
+    /// Get and set variables dictionary
+    double get_variable(const std::string key);
+    void set_variable(const std::string key, double value) { variables_[key] = value; }
+    std::map<std::string, double> variables(void) { return variables_; }
+
+    /// Get and set arrays dictionary
+    SharedMatrix get_array(const std::string key);
+    void set_array(const std::string key, SharedMatrix value) { arrays_[key] = value; }
+    std::map<std::string, SharedMatrix> arrays(void) { return arrays_; }
 };
 
 }
