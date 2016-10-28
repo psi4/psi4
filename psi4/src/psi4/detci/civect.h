@@ -139,7 +139,7 @@ class CIvect {
     ~CIvect();
 
     /// Numpy interface to the current buffer
-    py::dict array_interface();
+    py::buffer_info array_interface();
 
     /// BLAS equivalents for CIVectors
     void axpy(double a, SharedCIVector x, int tvec, int ovec);

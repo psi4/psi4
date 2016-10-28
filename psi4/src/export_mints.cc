@@ -162,7 +162,31 @@ void export_mints(py::module& m)
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
             def("nirrep", &Vector::nirrep, "docstring").
-            def("array_interface", &Vector::array_interface);
+            def("array_interface", [](Vector &v){
+                // Dont ask, hopefully pybind11 will work on this
+                py::list ret;
+                std::vector<py::buffer_info> buff_vec(v.array_interface());
+                std::string typestr = "<";
+                {
+                   std::stringstream sstr;
+                   sstr << (int)sizeof(double);
+                   typestr += "f" + sstr.str();
+                }
+
+                for (auto const& buff: v.array_interface()){
+                    py::dict interface;
+                    interface["typestr"] = py::str(typestr);
+                    interface["data"] = py::make_tuple((long)buff.ptr, false);
+                    py::list shape;
+                    for (auto const& s: buff.shape){
+                        shape.append(py::int_(s));
+                    }
+                    interface["shape"] = shape;
+                    ret.append(interface);
+
+                }
+                return ret;
+            });
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector> >(m, "IntVector", "docstring").
@@ -271,7 +295,31 @@ void export_mints(py::module& m)
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
             def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring").
-            def("array_interface", &Matrix::array_interface, "docstring");
+            def("array_interface", [](Matrix &m){
+                // Dont ask, hopefully pybind11 will work on this
+                py::list ret;
+                std::vector<py::buffer_info> buff_vec(m.array_interface());
+                std::string typestr = "<";
+                {
+                   std::stringstream sstr;
+                   sstr << (int)sizeof(double);
+                   typestr += "f" + sstr.str();
+                }
+
+                for (auto const& buff: m.array_interface()){
+                    py::dict interface;
+                    interface["typestr"] = py::str(typestr);
+                    interface["data"] = py::make_tuple((long)buff.ptr, false);
+                    py::list shape;
+                    for (auto const& s: buff.shape){
+                        shape.append(py::int_(s));
+                    }
+                    interface["shape"] = shape;
+                    ret.append(interface);
+
+                }
+                return ret;
+            });
 
     py::class_<View>(m, "View").
             def(py::init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -994,7 +1042,9 @@ void export_mints(py::module& m)
         .def("init_io_files", &detci::CIvect::init_io_files, "docstring")
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
-        .def("array_interface", &detci::CIvect::array_interface, "docstring");
+        .def("array_interface", [](detci::CIvect &vec){
+            return vec.array_interface();
+            });
 
 
 }

@@ -58,16 +58,16 @@ def _get_raw_views(self, copy=False):
     Gets simple raw view of the passed in object.
     """
     ret = []
-    for x in [numpy_holder(self.array_interface(h)) for h in xrange(self.nirrep())]:
+    for data in self.array_interface():
 
         # Yet another hack
-        if isinstance(x.__array_interface__["shape"], list):
-            x.__array_interface__["shape"] = tuple(x.__array_interface__["shape"])
+        if isinstance(data["shape"], list):
+            data["shape"] = tuple(data["shape"])
 
-        if 0 in x.__array_interface__["shape"]:
-            ret.append(np.empty(shape=x.__array_interface__["shape"]))
+        if 0 in data["shape"]:
+            ret.append(np.empty(shape=data["shape"]))
         else:
-            ret.append(np.array(x, copy=copy))
+            ret.append(np.array(numpy_holder(data), copy=copy))
     return ret
 
 def _find_dim(arr, ndim):
@@ -236,8 +236,8 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             # Simple case without irreps
             else:
                 ret = self(name, arr.shape[0], arr.shape[1])
-                ret_view = np.asarray(numpy_holder(ret.array_interface(0)))
-                ret_view[:] = arr
+                view = _get_raw_views(ret)[0]
+                view[:] = arr
                 return ret
 
         elif arr_type == core.Vector:
@@ -473,12 +473,7 @@ core.Dimension.to_tuple = _dimension_to_tuple
 @property
 def _civec_view(self):
     "Returns a view of the CIVector's buffer"
-    return np.asarray(numpy_holder(self.array_interface()))
-
-@property
-def _civec_buffer(self):
-    "Returns a view of the CIVector's buffer"
-    return translate_interface(self.array_interface())
+    return np.asarray(self)
 
 core.CIVector.np = _civec_view
-core.CIVector.__array_interface__ = _civec_buffer
+# core.CIVector.__array_interface__ = _civec_buffer
