@@ -44,6 +44,7 @@ os.environ["PSIDATADIR"] = data_dir
 
 # Init core
 from . import core
+from psi4.core import set_output_file, set_global_option, set_variable
 core.initialize()
 core.efp_init()
 

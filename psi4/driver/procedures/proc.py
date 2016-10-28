@@ -2771,8 +2771,8 @@ def run_dft(name, **kwargs):
         if ssuper.name().lower() == name:
             dfun = ssuper
 
-    core.tstop()
     if dfun.is_c_hybrid():
+        core.tstart()
         aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
                                         core.get_option("DFMP2", "DF_BASIS_MP2"),
                                         "RIFIT", core.get_global_option('BASIS'),
@@ -2806,7 +2806,7 @@ def run_dft(name, **kwargs):
         core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
         core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
-    core.tstop()
+        core.tstop()
 
     optstash.restore()
     return scf_wfn
