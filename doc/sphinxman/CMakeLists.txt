@@ -266,10 +266,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_available_databases.rst
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
-#                ${CCBD}/source/autodoc_driver.rst
-#                ${CCBD}/source/autodoc_psimod.rst
-                ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4/core.so
-#                ${CCBD}/source/autodoc_man_psi4.txt
                 ${CCBD}/source/autodoc_dft_energy.rst
                 ${CCBD}/source/autodoc_dft_opt.rst
                 ${CCBD}/source/autodoc_dft_all.rst
@@ -283,6 +279,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_basissets_byfamily.rst
                 ${CCBD}/source/autodoc_available_efpfrag.rst
         COMMENT "Preparing Sphinx HTML documentation build")
+    add_dependencies(sphinxman psi4_core)
 
     install(
         DIRECTORY ${CCBD}/html

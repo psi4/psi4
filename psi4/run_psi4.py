@@ -130,7 +130,7 @@ if args["psidatadir"] is not None:
 sys.path.insert(1, lib_dir)
 import psi4
 
-if args["version"] is not None:
+if args["version"]:
     print psi4.__version__
     sys.exit()
 
