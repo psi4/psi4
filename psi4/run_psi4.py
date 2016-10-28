@@ -94,8 +94,8 @@ if args["inplace"]:
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
         data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
         os.environ["PSIDATADIR"] = data_dir
-    
-    
+
+
 elif "CMAKE_INSTALL_LIBDIR" in lib_dir:
     raise ImportError("Psi4 was not installed correctly!")
 
@@ -162,6 +162,7 @@ if args["scratch"] is not None:
 
 # Preprocess
 if not args["skip_preprocessor"]:
+    # PSI_SCRATCH must be set before this call!
     content = psi4.process_input(content, psi4_imported=(not args["inplace"]))
 
 # Handle Verbose
@@ -177,6 +178,9 @@ if args["messy"]:
         if handler[0] == psi4.core.clean:
             atexit._exithandlers.remove(handler)
 
+# Only register exit if exec was successful
+import atexit
+atexit.register(psi4.extras.exit_printing)
 
 # Run the program!
 exec(content)
@@ -184,6 +188,6 @@ exec(content)
 #    elif '***HDF5 library version mismatched error***' in str(err):
 #        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
 
-# Only register exit if exec was successful
-import atexit
-atexit.register(psi4.extras.exit_printing)
+# Celebrate with beer
+psi4.extras._success_flag_ = True
+

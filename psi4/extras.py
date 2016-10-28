@@ -48,8 +48,9 @@ def exit_printing():
         core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
     else:
         core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
+        core.print_out( "*** Resources and help at github.com/psi4/psi4.\n")
 
-_success_flag_ = True
+_success_flag_ = False
 
 
 # Working directory
