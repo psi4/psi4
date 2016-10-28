@@ -34,13 +34,13 @@
 
 .. _`sec:oeprop`:
 
-Evaluation of One-Electron Properties |w---w| :py:func:`~p4util.oeprop`
-=======================================================================
+Evaluation of One-Electron Properties |w---w| :py:func:`~psi4.oeprop`
+=====================================================================
 
 .. codeauthor:: Robert M. Parrish and Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
 
-.. autofunction:: p4util.oeprop(wfn, \*args[, title])
+.. autofunction:: psi4.oeprop(wfn, \*args[, title])
 
 |PSIfour| is capable of computing a number of one-electron properties
 summarized in the table below. 
