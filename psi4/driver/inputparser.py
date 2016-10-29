@@ -48,6 +48,9 @@ from psi4 import core
 # inputfile contents to be preserved from the processor
 literals = {}
 
+# experimental - whether to run py statements as they're parsed from psithon
+runalso = False
+
 
 def bad_option_syntax(line):
     """Function to report bad syntax to screen and output file."""
@@ -93,6 +96,12 @@ def quotify(string, isbasis=False):
     string = wordre.sub(process_word_quotes, string)
     return string
 
+def dequotify(string):
+    if string[0] == '"' and string[-1] == '"':
+        return string[1:-1]
+    else:
+        return string
+
 
 def process_option(spaces, module, key, value, line):
     """Function to process a line with set or in a set block
@@ -106,9 +115,13 @@ def process_option(spaces, module, key, value, line):
 
     if module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace():
         # If it's really a global, we need slightly different syntax
+        if runalso:
+            core.set_global_option(key, dequotify(value))
         return "%score.set_global_option(\"%s\", %s)\n" % (spaces, key, value)
     else:
         # It's a local option, so we need the module name in there too
+        if runalso:
+            core.set_local_option(module, key, dequotify(value))
         return "%score.set_local_option(\"%s\", \"%s\", %s)\n" % (spaces, module, key, value)
 
 
@@ -788,31 +801,34 @@ def process_input(raw_input, print_level=1):
 
     return temp
 
-def parse_options_block(temp):
+
+def parse_options_block(raw):
+    """Relation of process_input but suited for inside a "set {}" block."""
+
+    # choice #2
+    #runalso = True
+    #global runalso
 
     # Nuke all comments
     comment = re.compile(r'(^|[^\\])#.*')
-    temp = re.sub(comment, '', temp)
-    print(temp)
-
+    temp = re.sub(comment, '', raw)
     # Now, nuke any escapes from comment lines
     comment = re.compile(r'\\#')
     temp = re.sub(comment, '#', temp)
-    print(temp)
 
     # First, remove everything from lines containing only spaces
     blankline = re.compile(r'^\s*$')
     temp = re.sub(blankline, '', temp, re.MULTILINE)
 
+    # Look for things like matrices and put them on a single line
     temp = process_multiline_arrays(temp)
-    print(temp)
 
     # Process all "set name? { ... }"
-    set_commands = re.compile(r'^(\s*?)set\s*([-,\w]*?)[\s=]*\{(.*?)\}',
+    set_commands = re.compile(r'^()()(.*)',
                               re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
-    print(temp)
-    return True
+    return temp
+
 
 if __name__ == "__main__":
     result = process_input("""

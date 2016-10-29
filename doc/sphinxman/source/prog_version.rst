@@ -10,6 +10,8 @@
 # MUST update metadata.py on same commit at which make tag
 
 git tag -a v1.0 d2243ef
+git push origin v1.0
+git push [remote] [tagname]
 
 do NOT use the GitHub tagging interface - it creates lightweight tags
 
