@@ -420,6 +420,7 @@ def _np_read(self, filename, prefix=""):
     elif (sys.version_info[0] == 2) and isinstance(filename, (str, unicode)):
         if not filename.endswith('.npz'):
             filename = filename + '.npz'
+        data = np.load(filename)
     elif (sys.version_info[0] > 2) and isinstance(filename, str):
         if not filename.endswith('.npz'):
             filename = filename + '.npz'
