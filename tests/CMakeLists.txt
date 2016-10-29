@@ -83,6 +83,12 @@ endforeach()
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 
+if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
+    list(REMOVE_ITEM test_name pubchem1 pubchem2 pywrap-freq-e-sowreap
+                               pywrap-freq-g-sowreap pywrap-opt-sowreap
+                               pywrap-db2) 
+endif()
+
 
 message(STATUS "Adding test cases: Psi4")
 if(NOT PERL_FOUND)

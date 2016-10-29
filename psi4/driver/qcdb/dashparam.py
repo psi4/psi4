@@ -191,7 +191,7 @@ dashcoeff = {
 }
 
 # Full list of all possible endings
-full_dash_keys = dashcoeff.keys() + [x.replace('-', '') for x in dash_alias.keys()]
+full_dash_keys = list(dashcoeff) + [x.replace('-', '') for x in list(dash_alias)]
 
 def dash_server(func, dashlvl):
     """ Returns the dictionary of keys for default empirical parameters"""

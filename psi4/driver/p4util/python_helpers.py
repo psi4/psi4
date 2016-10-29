@@ -28,6 +28,7 @@
 import os
 import subprocess
 import re
+import sys
 
 from psi4.driver import qcdb
 from psi4 import core
@@ -79,7 +80,9 @@ core.BasisSet.build = pybuild_basis
 def pybuild_wavefunction(mol, basis=None):
     if basis is None:
         basis = core.BasisSet.build(mol)
-    elif isinstance(basis, (str, unicode)):
+    elif (sys.version_info[0] == 2) and isinstance(basis, (str, unicode)):
+        basis = core.BasisSet.build(mol, "ORBITAL", basis)
+    elif (sys.version_info[0] > 2) and isinstance(basis, str):
         basis = core.BasisSet.build(mol, "ORBITAL", basis)
 
 

@@ -5,7 +5,7 @@ __version__ = '0.1'
 __author__  = 'Psi4 Developer'
 
 # Load Python modules
-from pymodule import *
+from .pymodule import *
 
 # Load C++ plugin
 import os

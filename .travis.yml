@@ -109,14 +109,28 @@ matrix:
       - BUILD_TYPE='release'
       - NAME='gcc'
       - VERSION=6
-  - os: linux
+  
+- os: linux
     compiler: gcc
-    addons: *4
+    addons: &4
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        - george-edison55-precise-backports
+        packages:
+        - python3-numpy
+        - cmake
+        - cmake-data
+        - libhdf5-serial-dev
+        - liblapack-dev
+        - g++-6
+        - gcc-6
+        - gfortran-6
     env:
       - CXX_COMPILER='g++-6'
       - C_COMPILER='gcc-6'
       - Fortran_COMPILER='gfortran-6'
-      - BUILD_TYPE='debug'
+      - BUILD_TYPE='release'
       - NAME='gcc'
       - VERSION=6
 

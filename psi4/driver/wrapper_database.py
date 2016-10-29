@@ -556,7 +556,8 @@ def database(name, db_name, **kwargs):
 
                 freagent.write(commands)
                 freagent.write('''\npickle_kw = ("""''')
-                pickle.dump(kwargs, freagent)
+                freagent.write(str(kwargs))
+                # pickle.dump(kwargs, freagent)
                 freagent.write('''""")\n''')
                 freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
                 freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))

@@ -131,7 +131,7 @@ sys.path.insert(1, lib_dir)
 import psi4
 
 if args["version"]:
-    print psi4.__version__
+    print(psi4.__version__)
     sys.exit()
 
 if not os.path.isfile(args["input"]):
@@ -163,7 +163,7 @@ if args["scratch"] is not None:
 # Preprocess
 if not args["skip_preprocessor"]:
     # PSI_SCRATCH must be set before this call!
-    content = psi4.process_input(content, psi4_imported=(not args["inplace"]))
+    content = psi4.process_input(content)
 
 # Handle Verbose
 if args["verbose"]:

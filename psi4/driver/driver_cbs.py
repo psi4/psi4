@@ -106,7 +106,7 @@ def _contract_bracketed_basis(basisarray):
         return basisarray[0]
 
     else:
-        zetaindx = [i for i in xrange(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
+        zetaindx = [i for i in range(len(basisarray[0])) if basisarray[0][i] != basisarray[1][i]][0]
         ZSET = [bas[zetaindx] for bas in basisarray]
 
         pre = basisarray[0][:zetaindx]

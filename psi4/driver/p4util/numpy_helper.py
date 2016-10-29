@@ -29,14 +29,17 @@ import numpy as np
 from psi4 import core
 
 import sys
-if sys.version_info < (3,0):
-    from .exceptions import *
+from .exceptions import *
 
 # The next three functions make me angry
 def translate_interface(interface):
     """
     This is extra stupid with unicode
     """
+
+    if sys.version_info[0] > 2:
+        return interface
+
     nouni_interface = {}
     for k, v in interface.items():
         if k == 'typestr':
@@ -414,7 +417,10 @@ def _np_read(self, filename, prefix=""):
 
     if isinstance(filename, np.lib.npyio.NpzFile):
         data = filename
-    elif isinstance(filename, (str, unicode)):
+    elif (sys.version_info[0] == 2) and isinstance(filename, (str, unicode)):
+        if not filename.endswith('.npz'):
+            filename = filename + '.npz'
+    elif (sys.version_info[0] > 2) and isinstance(filename, str):
         if not filename.endswith('.npz'):
             filename = filename + '.npz'
 

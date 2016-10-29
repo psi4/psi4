@@ -594,7 +594,7 @@ def process_multiline_arrays(inputfile):
     return newinput
 
 
-def process_input(raw_input, print_level=1, psi4_imported=True):
+def process_input(raw_input, print_level=1):
     """Function to preprocess *raw input*, the text of the input file, then
     parse it, validate it for format, and convert it into legitimate Python.
     *raw_input* is printed to the output file unless *print_level* =0. Does
@@ -750,10 +750,7 @@ def process_input(raw_input, print_level=1, psi4_imported=True):
     imports = '\n'.join(future_imports) + '\n'
     imports += 'import psi4\n'
     imports += 'from psi4 import *\n'
-    if psi4_imported:
-        imports += 'from psi4.core import *\n'
-    else:
-        imports += 'from core import *\n'
+    imports += 'from psi4.core import *\n'
     imports += 'from psi4.driver.diatomic import anharmonicity\n'
     imports += 'from psi4.driver.gaussian_n import *\n'
     imports += 'from psi4.driver.aliases import *\n'

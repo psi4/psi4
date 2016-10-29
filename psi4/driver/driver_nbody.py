@@ -101,7 +101,7 @@ def _print_nbody_energy(energy_body_dict, header):
         core.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
         core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
-        nbody_range = energy_body_dict.keys()
+        nbody_range = list(energy_body_dict)
         nbody_range.sort()
         for n in nbody_range:
             delta_e = (energy_body_dict[n] - previous_e)

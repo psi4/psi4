@@ -207,6 +207,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
     success = False
     for line in out.splitlines():
+        line = line.decode('utf-8')
         if re.match(' Edisp /kcal,au', line):
             sline = line.split()
             dashd = float(sline[3])
