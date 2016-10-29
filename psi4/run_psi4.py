@@ -88,7 +88,7 @@ if args["inplace"]:
 
     core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
     if not os.path.isfile(core_location):
-        raise ImportError("A compiled Psi4 core.so needs to be symlinked to the psi4/psi4 folder")
+        raise ImportError("A compiled Psi4 core.so needs to be symlinked to the repository/psi4 folder")
 
     lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
