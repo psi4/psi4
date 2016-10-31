@@ -126,7 +126,7 @@ include(ConfigMath)
 foreach(pkg in pcmsolver)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
-      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external/${pkg})
+      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external)
    endif()
 endforeach()
 

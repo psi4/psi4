@@ -15,44 +15,34 @@ include(TestRestrict)
 include(GNUInstallDirs)
 test_restrict(restrict)
 
-### >> Locate Python Interpreter and Library << ###
+# <<<  Marshal Dependencies & Add-ons  >>>
+
 find_package(PythonLibsNew REQUIRED)
 #find_package(PythonInterp REQUIRED)
 #find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
-find_package(pybind11 CONFIG REQUIRED
-                      HINTS ${CMAKE_PREFIX_PATH}/pybind11)
+find_package(pybind11 CONFIG REQUIRED)
 find_package(Threads)
 find_package(DL)
 
-find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI}
-                    HINTS ${CMAKE_PREFIX_PATH}/libint)
-
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
-#optional_plugin(Ambit)
-
-if(${ENABLE_PCMSolver})
-    find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
-                           #HINTS ${CMAKE_PREFIX_PATH}/pcmsolver)
-endif ()
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 CONFIG REQUIRED
-                         HINTS ${CMAKE_PREFIX_PATH}/chemps2)
+    find_package(CheMPS2 CONFIG REQUIRED)
 endif ()
 if(${ENABLE_dkh})
-    find_package(dkh CONFIG REQUIRED
-                     HINTS ${CMAKE_PREFIX_PATH}/dkh)
+    find_package(dkh CONFIG REQUIRED)
 endif()
+find_package(libefp CONFIG REQUIRED COMPONENTS shallow)
 if(${ENABLE_erd})
-    find_package(erd CONFIG REQUIRED
-                        HINTS ${CMAKE_PREFIX_PATH}/erd)
+    find_package(erd CONFIG REQUIRED)
 endif()
 if(${ENABLE_gdma})
-    find_package(gdma CONFIG REQUIRED
-                      HINTS ${CMAKE_PREFIX_PATH}/gdma)
+    find_package(gdma CONFIG REQUIRED)
 endif()
-find_package(libefp CONFIG REQUIRED COMPONENTS shallow
-                    HINTS ${CMAKE_PREFIX_PATH}/libefp)
+find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
+if(${ENABLE_PCMSolver})
+    find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
+endif ()
 
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
