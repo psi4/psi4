@@ -127,7 +127,6 @@ def _dimension_to_tuple(dim):
     return tuple(ret)
 
 
-@classmethod
 def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     """
     Converts a numpy array or list of numpy arrays into a Psi4 Matrix (irreped if list).
@@ -148,7 +147,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 
     Returns
     -------
-    ret : core.Vector or core.Matrix
+    matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
        Returns the given Psi4 object
 
     Notes
@@ -164,7 +163,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     >>> irrep_data = [np.random.rand(2, 2), np.empty(shape=(0,3)), np.random.rand(4, 4)]
     >>> matrix = array_to_matrix(irrep_data)
     >>> print matrix.rowspi().to_tuple()
-    >>> (2, 0, 4)
+    (2, 0, 4)
     """
 
     # What type is it? MRO can help.
@@ -278,6 +277,33 @@ def to_array(matrix, copy=True, dense=False):
     """
     Converts a Psi4 Matrix or Vector to a numpy array. Either copies the data or simply
     consturcts a view.
+
+    Parameters
+    ----------
+    matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
+        Pointers to which Psi4 core class should be used in the construction.
+    copy : bool
+        Copy the data if True, return a view otherwise
+    dense : bool
+        Converts irreped Psi4 objects to diagonally blocked dense arrays. Returns a list of arrays otherwise.
+
+    Returns
+    -------
+    array : np.array or list of of np.array
+       Returns either a list of np.array's or the base array depending on options.
+
+    Notes
+    -----
+    This is a generalized function to convert a Psi4 object to a NumPy array
+
+    Examples
+    --------
+
+    >>> data = psi4.Matrix(3, 3)
+    >>> data.to_array()
+    [[ 0.  0.  0.]
+     [ 0.  0.  0.]
+     [ 0.  0.  0.]]
     """
     if matrix.nirrep() > 1:
 
@@ -450,7 +476,7 @@ def _np_read(self, filename, prefix=""):
     return ret
 
 # Matirx attributes
-core.Matrix.from_array = array_to_matrix
+core.Matrix.from_array = classmethod(array_to_matrix)
 core.Matrix.to_array = to_array
 core.Matrix.shape = _np_shape
 core.Matrix.np = _np_view
@@ -460,7 +486,7 @@ core.Matrix.np_write = _np_write
 core.Matrix.np_read = _np_read
 
 # Vector attributes
-core.Vector.from_array = array_to_matrix
+core.Vector.from_array = classmethod(array_to_matrix)
 core.Vector.to_array = to_array
 core.Vector.shape = _np_shape
 core.Vector.np = _np_view
