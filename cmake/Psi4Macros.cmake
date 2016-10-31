@@ -56,11 +56,12 @@ macro(psi4_add_module binlib libname sources)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4
                 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.i")
+        set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
     endif()
 
     # binary modules explicitly compiled into psi4.so
     if(${binlib} MATCHES bin)
-        set_property(GLOBAL APPEND PROPERTY LIBLIST ${libname})
+        set_property(GLOBAL APPEND PROPERTY BINLIST ${libname})
     endif()
 
     set(depend_name "${ARGN}")
@@ -68,6 +69,8 @@ macro(psi4_add_module binlib libname sources)
         target_link_libraries(${libname} PRIVATE ${name_i})
     endforeach()
     target_link_libraries(${libname} PRIVATE pybind11::pybind11)
+    target_link_libraries(${libname} PRIVATE ${LAPACK_LIBRARIES})
+    target_link_libraries(${libname} PRIVATE ${BLAS_LIBRARIES})
 endmacro()
 
 include(CheckCCompilerFlag)

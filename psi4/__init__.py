@@ -43,7 +43,14 @@ if not os.path.isdir(data_dir):
 os.environ["PSIDATADIR"] = data_dir
 
 # Init core
-from . import core
+try:
+    from . import core
+except ImportError as err:
+    if 'CXXABI' in str(err):
+        raise ImportError("{0}\nLikely cause: GCC >= 4.9 not in [DY]LD_LIBRARY_PATH".format(err))
+    else:
+        raise ImportError("{0}".format(err))
+
 from psi4.core import set_output_file, set_global_option, set_variable
 core.initialize()
 core.efp_init()

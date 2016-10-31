@@ -42,14 +42,15 @@ target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pyb
 target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_INCLUDE_DIRECTORIES>)
 
 
-get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
+get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
+get_property(psi4_libmodules GLOBAL PROPERTY LIBLIST)
 
-target_link_libraries(core PRIVATE ${psi4_libraries})
-target_link_libraries(core PUBLIC pybind11::pybind11)  # public is just to catch psi4.cc
+target_link_libraries(core PRIVATE ${psi4_binmodules})
+target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
+target_link_libraries(core PRIVATE pybind11::pybind11)
 target_link_libraries(core PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(core PRIVATE ${LAPACK_LIBRARIES})
-target_link_libraries(core PRIVATE ${BLAS_LIBRARIES})
+# LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 
