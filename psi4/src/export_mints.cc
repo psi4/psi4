@@ -141,7 +141,7 @@ void export_mints(py::module& m)
             def("__getitem__", &Dimension::get, py::return_value_policy::copy, "docstring").
             def("__setitem__", &Dimension::set, "docstring");
 
-    py::class_<Vector, std::shared_ptr<Vector> >(m, "Vector", "docstring").
+    py::class_<Vector, std::shared_ptr<Vector> >(m, "Vector", "docstring", py::dynamic_attr()).
             def(py::init<int>()).
             def(py::init<const Dimension&>()).
             def(py::init<const std::string&, int>()).
@@ -221,7 +221,7 @@ void export_mints(py::module& m)
     typedef void   (Matrix::*matrix_load)(const std::string&);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
 
-    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring").
+    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr()).
             def(py::init<int, int>()).
             def(py::init<const std::string&, int, int>()).
             def(py::init<const std::string&, const Dimension&, const Dimension&>()).

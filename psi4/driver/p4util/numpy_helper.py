@@ -346,13 +346,19 @@ def _build_view(matrix):
     else:
         return views
 
+def get_view(self):
+    if hasattr(self, '_np_view_data'):
+        return self._np_view_data
+    else:
+        self._np_view_data = _build_view(self)
+        return self._np_view_data
+
 @property
 def _np_shape(self):
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
-
-    # view_data = self.cdict['_np_view_data']
-    view_data = _build_view(self)
+    """
+    Shape of the Psi4 data object
+    """
+    view_data = get_view(self)
     if self.nirrep() > 1:
         return tuple(view_data[x].shape for x in range(self.nirrep()))
     else:
@@ -363,32 +369,24 @@ def _np_view(self):
     """
     View without only one irrep
     """
-
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
-
-    # return self.cdict['_np_view_data']
-    return _build_view(self)
+    if self.nirrep() > 1:
+        raise ValidationError("Attempted to call .np on a Psi4 data object with multiple irreps. Please use .nph for objects with irreps.")
+    return get_view(self)
 
 @property
 def _nph_view(self):
     """
     View with irreps.
     """
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
-
     if self.nirrep() > 1:
-        return _build_view(self)
-        # return self.cdict['_np_view_data']
+        return get_view(self)
     else:
-        return _build_view(self),
-        # return self.cdict['_np_view_data'],
+        return get_view(self),
 
 @property
 def _array_conversion(self):
     if self.nirrep() > 1:
-        raise ValidationError("__array__interface__ can only be called on Psi4 data holders with only one irrep!")
+        raise ValidationError("__array__interface__ can only be called on Psi4 data object with only one irrep!")
     else:
         return self.np.__array_interface__
 
@@ -476,11 +474,9 @@ core.Dimension.from_list = _dimension_from_list
 core.Dimension.to_tuple = _dimension_to_tuple
 
 # CIVector attributes
-
 @property
 def _civec_view(self):
     "Returns a view of the CIVector's buffer"
     return np.asarray(self)
 
 core.CIVector.np = _civec_view
-# core.CIVector.__array_interface__ = _civec_buffer
