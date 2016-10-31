@@ -97,7 +97,7 @@ option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
-option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)  # NYI
+option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 
@@ -114,7 +114,7 @@ add_subdirectory(external)
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 include(autocmake_omp)
 include(custom_cxxstandard)
-#include(autocmake_static_library)
+include(autocmake_static_library)
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ################################  Dependencies  ################################
@@ -164,6 +164,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DFortran_ENABLED=${Fortran_ENABLED}
+              -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
