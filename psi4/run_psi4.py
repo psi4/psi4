@@ -80,7 +80,7 @@ if args["new_plugin"] or args["new_plugin_makefile"]:
 
 # Figure out pythonpath
 cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
-lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@"])
+lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PYMOD_INSTALL_LIBDIR@"])
 
 if args["inplace"]:
     if "CMAKE_INSTALL_LIBDIR" not in lib_dir:

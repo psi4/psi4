@@ -64,7 +64,7 @@ add_custom_target(update_version ALL
                                                ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
                   COMMENT "Generating version info")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
     # TODO absorb some version info into CM variables, write to package, adj psi4ConfigVersion to sort dev
 
 # <<<  Install  >>>
@@ -79,18 +79,18 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
 #         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
     # <<<  install lib/  >>>
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
 install(DIRECTORY driver
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
 
 install(FILES header.py extras.py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
 configure_file(__init__.py __init__.py @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/__init__.py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4)
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
     # <<<  install psi4 share/ & include/  >>>
 

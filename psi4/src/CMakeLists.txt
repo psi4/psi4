@@ -50,7 +50,6 @@ target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
-message("site ${PYMOD_INSTALL_LIBDIR}")
 
 install(TARGETS core
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
