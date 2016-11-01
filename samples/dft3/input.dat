@@ -17,6 +17,7 @@ set {
   basis sto-3g
   dft_spherical_points 302
   dft_radial_points 99
+  df_basis_scf cc-pvdz-ri
 }
 
 for n,algorithm in enumerate(algorithms):
