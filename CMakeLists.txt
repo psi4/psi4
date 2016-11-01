@@ -54,7 +54,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 #    - CMAKE_INSTALL_LIBDIR "Location within CMAKE_INSTALL_PREFIX to which libraries are installed (default: lib)"
 #    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"
 #    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
-#    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /)"
+#    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /) must start with /"
 
 ############################  Options: Build What?  ############################
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)

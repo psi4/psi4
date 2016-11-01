@@ -29,7 +29,9 @@
 # Figure out psidatadir: envvar trumps staged/installed
 import os
 psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.sep.join([psi4_module_loc, '..', '..', '@CMAKE_INSTALL_DATADIR@', 'psi4'])
+pymod_dir_down = os.path.normpath('@PYMOD_INSTALL_LIBDIR@').count(os.path.sep) + 2
+pymod_dir_step = os.path.sep.join(['..'] * pymod_dir_down)
+data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
 
 if "PSIDATADIR" in os.environ.keys():
     data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
