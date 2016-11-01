@@ -57,6 +57,7 @@ except qcdb.Dftd3Error as e:
 # <<<  Part 2  >>>
 
 set basis sto-3g
+set df_basis_scf cc-pvdz-ri
 set scf_type df
 set dft_radial_points 50  # use really bad grid for speed since all we want is the -D value
 set dft_spherical_points 110
