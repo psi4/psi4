@@ -192,8 +192,17 @@ add_dependencies(psi4_core ambit_external
 add_subdirectory(doc)
 enable_testing()
 add_subdirectory(tests)
+
+# <<<  Install  >>>
+
 install(DIRECTORY ${STAGED_INSTALL_PREFIX}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         USE_SOURCE_PERMISSIONS)
+
+install(DIRECTORY samples
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
+        USE_SOURCE_PERMISSIONS
+        PATTERN "example_psi4rc_file" EXCLUDE)
+
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
 #        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
