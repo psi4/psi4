@@ -88,6 +88,7 @@ void export_functional(py::module &m)
         // TODO need init
         def_static("build_base", &Functional::build_base,
             py::arg("alias"), "docstring").
+        def("compute_functional", &Functional::compute_functional, "docstring").
         def("name", &Functional::name, "docstring").
         def("description", &Functional::description, "docstring").
         def("citation", &Functional::citation, "docstring").
@@ -109,7 +110,7 @@ void export_functional(py::module &m)
         def("set_meta_cutoff", &Functional::set_meta_cutoff, "docstring").
         def("set_parameter", &Functional::set_parameter, "docstring").
         def("print_out", &Functional::py_print, "docstring").
-        def("print_detail",&SuperFunctional::py_print_detail, "docstring");
+        def("print_detail",&Functional::py_print_detail, "docstring");
 
     py::class_<VBase, std::shared_ptr<VBase> >(m, "VBase", "docstring").
         def_static("build", [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func, std::string type){

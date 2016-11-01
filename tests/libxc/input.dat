@@ -1,0 +1,42 @@
+import numpy as np
+
+npoints = 5
+keys = ["V", "V_RHO_A", "V_RHO_B", "V_GAMMA_AA", "V_GAMMA_AB", "V_GAMMA_BB"]
+
+psi_fun = core.Functional.build_base('PW92_C')
+psi_fun.print_out()
+
+xc_fun = core.Functional.build_base('XC_LDA_C_PW')
+xc_fun.print_out()
+
+
+rho = psi4.core.Vector.from_array(np.ones(npoints))
+sigma = psi4.core.Vector.from_array(np.zeros((npoints)))
+zeros = psi4.core.Vector.from_array(np.zeros((npoints)))
+
+inp = {
+    'RHO_A' : rho,
+    'RHO_B' : zeros,
+#    'GAMMA_AA' : zeros,
+#    'GAMMA_AB' : zeros,
+#    'GAMMA_BB' : zeros,
+}
+
+def build_out():
+    ret = {}
+    for k in keys:
+        ret[k] = psi4.core.Vector(npoints)
+    return ret
+
+psi_out = build_out()
+psi_fun.compute_functional(inp, psi_out, npoints, 1, 1.0)
+
+xc_out = build_out()
+#inp["RHO_A"].np[:] /= 2
+xc_fun.compute_functional(inp, xc_out, npoints, 1, 1.0)
+
+for k in keys[:2]:
+    print k
+    print psi_out[k].np
+    print xc_out[k].np
+    print ' '

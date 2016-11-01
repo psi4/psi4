@@ -495,6 +495,7 @@ void RV::compute_V()
         double * zk = vals["V"]->pointer();
         double * v_rho_a = vals["V_RHO_A"]->pointer();
 
+
         // => Quadrature values <= //
         functionalq += C_DDOT(npoints,w,1,zk,1);
         for (int P = 0; P < npoints; P++) {
@@ -525,6 +526,9 @@ void RV::compute_V()
             double * v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
             double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
+            // if (rho_a[0] > 1.e-13){
+                // outfile->Printf("%3d : % 9.7f | % 9.7f % 9.7f | % 9.7f % 9.7f\n", Q, rho_a[0], zk[0], v_rho_a[0], v_sigma_aa[0], v_sigma_ab[0]);
+            // }
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);

@@ -11,6 +11,7 @@ set(sources_list PBE_Cfunctional.cc
                  VWN5_Cfunctional.cc
                  PW92_Cfunctional.cc
                  P86_Cfunctional.cc
+                 LibXCfunctional.cc
                  cfunctional.cc
                  factory.cc
                  utility.cc
