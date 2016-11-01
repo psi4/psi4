@@ -54,9 +54,6 @@ target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 
-#add_executable(psi4-bin psi4.cc)
-#target_link_libraries(psi4-bin PRIVATE core)
-
 install(TARGETS core
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
@@ -67,12 +64,13 @@ install(TARGETS core
 
 # TODO: Investiage relative RPaths.
 # Add both the build and install RPaths so we can test from build dir
-set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
-set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage${PSI4_EXTERNAL})
-foreach(ex_proj libderiv libint libefp)
-    set(PSI4_RPATH
-            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
-endforeach()
+#set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
+#set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage${PSI4_EXTERNAL})
+#foreach(ex_proj libderiv libint libefp)
+#    set(PSI4_RPATH
+#            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
+#endforeach()
+set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external/${CMAKE_INSTALL_LIBDIR}")
 
 # The other big source of RPaths are the math libraries
 foreach(math_comp ${LAPACK_LIBRARIES};${BLAS_LIBRARIES})
@@ -87,11 +85,6 @@ set(PSI4_RPATH ${psi4_install_lib}
         ${DESTDIR}/${psi4_install_lib}
         ${PYTHON_LIB_DIR}
         )
-
-#set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
-#                                          INSTALL_RPATH "${PSI4_RPATH}"
-#                                          INSTALL_RPATH_USE_LINK_PATH TRUE
-#                                          BUILD_WITH_INSTALL_RPATH TRUE)
 
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
