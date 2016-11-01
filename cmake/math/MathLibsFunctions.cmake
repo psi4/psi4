@@ -206,6 +206,7 @@ macro(config_math_service _SERVICE)
 
     if(${_SERVICE}_FOUND)
 
+        # this codeblock is dead
         # take care of omp flags
         if(ENABLE_THREADED_MKL)
             set(_omp_flag)

@@ -90,7 +90,7 @@ else()
 endif()
 
 set(_thread_lib)
-if(ENABLE_THREADED_MKL)
+if(ENABLE_OPENMP)
     if(MKL_COMPILER_BINDINGS MATCHES Intel)
         set(_thread_lib mkl_intel_thread)
     endif()

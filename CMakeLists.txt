@@ -122,6 +122,7 @@ set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
 include(ConfigMath)
+
 #These packages don't believe in configuration files...
 foreach(pkg in pcmsolver)
    string(TOUPPER "${pkg}" PKG)
@@ -169,10 +170,8 @@ ExternalProject_Add(psi4_core
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
-                    -DLAPACK_LIBRARIES:LIST=${LAPACK_LIBRARIES}
-                    -DLAPACK_INCLUDE_DIRS:LIST=${LAPACK_INCLUDE_DIRS}
-                    -DBLAS_LIBRARIES:LIST=${BLAS_LIBRARIES}
-                    -DBLAS_INCLUDE_DIRS:LIST=${BLAS_INCLUDE_DIRS}
+                    -DLAPACKBLAS_LIBRARIES:LIST=${LAPACKBLAS_LIBRARIES}
+                    -DLAPACKBLAS_INCLUDE_DIRS:LIST=${LAPACKBLAS_INCLUDE_DIRS}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage

@@ -3,7 +3,6 @@
 # * moved option up
 # * toggled option default to ON
 # * reorganized logic for Fortran + C/CXX, see https://github.com/coderefinery/autocmake/issues/177
-# * add ENABLE_THREADED_MKL toggle logic
 
 #.rst:
 #
@@ -70,7 +69,4 @@ if(ENABLE_OPENMP)
         endif()
         set(OPENMP_FOUND TRUE)
     endif()
-    set(ENABLE_THREADED_MKL TRUE)
-else()
-    set(ENABLE_THREADED_MKL FALSE)
 endif()
