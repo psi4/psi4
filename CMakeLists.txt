@@ -190,8 +190,7 @@ add_dependencies(psi4_core ambit_external
                            pcmsolver_external
                            pybind11_external)
 add_subdirectory(doc)
-enable_testing()
-add_subdirectory(tests)
+include(ConfigTesting)
 
 # <<<  Install  >>>
 
