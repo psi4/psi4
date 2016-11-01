@@ -170,6 +170,7 @@ ExternalProject_Add(psi4-core
            pcmsolver_external
            pybind11_external
            simint_external
+           libxc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
