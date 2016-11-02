@@ -81,7 +81,11 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
-        if (${test_name} IN_LIST py3_fail_list)
+        list(FIND py3_fail_list "${test_name}" _index)
+        if (${_index} GREATER -1)
+        # Note to future cmake 3.3: replace above 2 with below 1 and set policy
+        # cmake_policy(SET CMP0057 NEW)
+        #if (${test_name} IN_LIST py3_fail_list)
             message("Python3 incompatible test: ${test_name}... skipping")
         else()
             add_subdirectory(${test_name})

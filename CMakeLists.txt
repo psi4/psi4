@@ -9,7 +9,6 @@ set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
                               ${CMAKE_SOURCE_DIR}/cmake/math)
-cmake_policy(SET CMP0057 NEW)
 
 ################  Options: Overview and Not Otherwise Mentioned  ###############
 
