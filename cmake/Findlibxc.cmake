@@ -32,7 +32,6 @@
 include (GNUInstallDirs)
 
 #find_package (HDF5 QUIET)
-set(LIBXC_ROOT "/Users/daniel/Gits/psixc/objdir/stage/usr/local/external")
 
 set(_LIBXC_SEARCHES)
 
