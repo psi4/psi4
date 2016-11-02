@@ -136,6 +136,7 @@ if args["version"]:
 
 if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
+args["input"] = os.path.normpath(args["input"])
 
 # Setup outfile
 if args["append"] is None:
