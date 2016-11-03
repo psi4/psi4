@@ -25,20 +25,27 @@
 # @END LICENSE
 #
 
-import pickle
-from . import dependency_check
-from psi4.driver.molutil import *
-from psi4.driver.inputparser import process_input
-from psi4.driver.p4util.util import *
-from psi4.driver.p4util.text import *
-from psi4.driver.qmmm import QMMM
-from psi4.driver.plugin import *
+import os
 
-from psi4.driver import gaussian_n
-from psi4.driver import aliases
-from psi4.driver import diatomic
-from psi4.driver import wrapper_database
-from psi4.driver import wrapper_autofrag
+def _join_path(prefix, *args):
+    path = str(prefix)
+    for elt in args:
+        path = os.path.join(path, str(elt))
+    return path
 
-from psi4.driver.driver import *
-from psi4.driver.driver_cbs import cbs
+
+def _ancestor(dir, n=1):
+    """Get the nth ancestor of a directory."""
+    parent = os.path.abspath(dir)
+    for i in range(n):
+        parent = os.path.dirname(parent)
+    return parent
+
+
+psi4_root = _ancestor(__file__, 2)
+
+psidatadir = share_dir = _join_path(psi4_root, "psi4", "share", "psi4")
+
+cxx_compiler = "(unknown C++ compiler)"
+c_compiler = "(unknown C compiler)"
+fortran_compiler = "(unknown Fortran compiler)"

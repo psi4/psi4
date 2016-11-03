@@ -25,15 +25,14 @@
 # @END LICENSE
 #
 
-from __future__ import print_function
-from __future__ import absolute_import
 import os
-import re
 import sys
-import glob
 
+from psi4.driver.util.filesystem import *
+from psi4.driver.util import tty
+import psi4.config as config
 
-def sanitize_plugin_name(name):
+def sanitize_name(name):
     """Function to return *name* in coded form, stripped of
     characters that confuse filenames, characters into lowercase,
     ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, ``-``,
@@ -50,115 +49,82 @@ def sanitize_plugin_name(name):
         temp = temp.replace('-', '_')
         return temp
     else:
-        print("""Error: Plugin name must begin with a letter.""")
-        sys.exit(1)
+        tty.die("Plugin name must begin with a letter.")
+
+# Determine the available plugins
+available_plugins = []
+plugin_path = join_path(config.share_dir, "plugin")
+for dir in os.listdir(plugin_path):
+    if os.path.isdir(join_path(plugin_path, dir)):
+        available_plugins.append(dir)
 
 
-def get_template_path():
-    """Return the PSIDATADIR/plugin directory where the plugin template files
-    reside. Actually used is one directory up from location of this file.
-
-    """
-    thisdir = os.path.dirname(os.path.realpath(__file__))
-    template_path = os.path.abspath(os.path.join(thisdir, '..', 'plugin'))
-    return template_path
+# def create_new_plugin_makefile():
+#     """Generate here (.) a plugin Makefile with current build settings."""
+#
+#     print("""Creating new plugin Makefile in the current directory.""")
+#     file_manager(name='.', files={'Makefile': 'Makefile.template'})
 
 
-def create_new_plugin_makefile():
-    """Generate here (.) a plugin Makefile with current build settings."""
+def create_plugin(args):
+    """Generate plugin in sanitized directory of same name based upon *type*"""
 
-    print("""Creating new plugin Makefile in the current directory.""")
-    file_manager(name='.', files={'Makefile': 'Makefile.template'})
+    name = sanitize_name(args['new_plugin'])
+    type = args['new_plugin_template']
+    template_path = join_path(plugin_path, type)
 
-
-def create_new_plugin(name, template='plugin'):
-    """Generate plugin *name* in sanitized directory of same name based
-    upon *template*.
-
-    """
-    name = sanitize_plugin_name(name)
-    ltemplate = template.lower()
-    template_path = get_template_path()
-
-    # select files for template
-    template_files = {}
-    ext = '.template'
-
-    #   primary C++ file
-    custom_fl = ltemplate + '.cc' + ext
-    if os.path.isfile(os.path.join(template_path, custom_fl)):
-        template_files[name + '.cc'] = custom_fl
-    else:
-        print("""Error: Template, {}, not found""".format(template))
-        sys.exit(1)
-
-    #   helper files
-    for fl in ['__init__.py', 'doc.rst', 'input.dat', 'Makefile', 'pymodule.py']:
-        custom_fl = ltemplate + '.' + fl + ext
-        if os.path.isfile(os.path.join(template_path, custom_fl)):
-            template_files[fl] = custom_fl
-        else:
-            template_files[fl] = fl + ext
-
-    #   any extra files
-    starting = os.path.join(template_path, ltemplate)
-    for fl in glob.glob(starting + '.*.*' + ext):
-        written_fl = fl[len(starting)+1:-len(ext)]
-        template_files[written_fl] = fl
-
-    # create, but not overwrite, plugin directory
+    # Create, but do not overwrite, plugin directory
     if os.path.exists(name):
-        print("""Error: Plugin directory {} already exists.""".format(name))
-        sys.exit(1)
+        tty.error("""Plugin directory "{}" already exists.""".format(name))
+
+    # Do a first pass to determine the template files
+    template_files = os.listdir(template_path)
+    source_files = []
+    for file in template_files:
+        target_file = file
+
+        if file.endswith('.template'):
+            target_file = file[0:-9]
+
+        if file.endswith('.cc.template'):
+            source_files.append(target_file)
+
+    tty.hline("""Creating "{}" with "{}" template.""".format(name, type))
+
     os.mkdir(name)
-    print("""Created new plugin directory, {}, using '{}' template.""".format(
-          name, ltemplate))
-    file_manager(name=name, files=template_files)
+    created_files = []
+    for source_file in template_files:
+        target_file = file
 
-
-def file_manager(name, files):
-    """Process pairs of target files (to be written to path *name*) and
-    source files (to be read from template library) in dictionary *files*
-    through various string replacement macros.
-
-    """
-    template_path = get_template_path()
-
-    for tgtfl, srcfl in files.items():
-        source_name = os.path.join(template_path, srcfl)
-        target_name = os.path.join(name, tgtfl)
+        if source_file.endswith('.template'):
+            target_file = source_file[0:-9]
 
         try:
-            with open(source_name, 'r') as srchandle:
-                srcflstr = srchandle.read()
-        except IOError as err: 
-            print("""Error: create_new_plugin: Unable to open {} template:""".format(source_name), err)
-            sys.exit(1)
-
-        # search and replace placeholders in the string
-        srcflstr = srcflstr.replace('@plugin@', name)
-        srcflstr = srcflstr.replace('@Plugin@', name.capitalize())
-        srcflstr = srcflstr.replace('@PLUGIN@', name.upper())
-        #srcflstr = srcflstr.replace('@PLUGIN_CXX@', format_cxx)
-        #srcflstr = srcflstr.replace('@PLUGIN_DEFINES@', format_defines)
-        #srcflstr = srcflstr.replace('@PLUGIN_FLAGS@', format_flags)
-        #srcflstr = srcflstr.replace('@PLUGIN_INCLUDES@', format_includes)
-        #srcflstr = srcflstr.replace('@PLUGIN_OBJDIR@', format_objdir)
-        #srcflstr = srcflstr.replace('@PLUGIN_LDFLAGS@', format_ldflags)
-
-        try:
-            with open(target_name, 'w') as tgthandle:
-                tgthandle.write(srcflstr)
-                print("""    Created: {}""".format(tgtfl))
+            with open(join_path(template_path, source_file), 'r') as file:
+                contents = file.read()
         except IOError as err:
-            print("""Error: Unable to create {}:""".format(target_name), err)
+            tty.error("""Unable to open {} template.""".format(source_file))
+            tty.error(err)
             sys.exit(1)
 
+        contents = contents.replace('@plugin@', name)
+        contents = contents.replace('@Plugin@', name.capitalize())
+        contents = contents.replace('@PLUGIN@', name.upper())
+        contents = contents.replace('@sources@', ' '.join(source_files))
+        contents = contents.replace('@C@', config.c_compiler)
+        contents = contents.replace('@CXX@', config.cxx_compiler)
+        contents = contents.replace('@Fortran@', config.fortran_compiler)
 
-if __name__ == "__main__":
+        try:
+            with open(join_path(name, target_file), 'w') as file:
+                file.write(contents)
+                created_files.append(target_file)
+        except IOError as err:
+            tty.error("""Unable to create {}""".format(target_file))
+            tty.error(err)
+            sys.exit(1)
 
-    create_new_plugin_makefile()
-    create_new_plugin('asdf')
-    create_new_plugin('asdfscf', template='scf')
-    create_new_plugin('asdf-fake', template='faKE')
+    tty.info("Created plugin files: ", ", ".join(created_files))
+
+    sys.exit(0)
 

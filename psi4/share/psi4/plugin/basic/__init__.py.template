@@ -27,9 +27,19 @@
 # @END LICENSE
 #
 
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(@plugin@ CXX)
+"""Plugin docstring.
 
-find_package(Psi4Plugins 1.0 REQUIRED)
+"""
+__version__ = '0.1'
+__author__  = 'Psi4 Developer'
 
-add_psi4_plugin(@plugin@ @sources@)
+# Load Python modules
+from .pymodule import *
+
+# Load C++ plugin
+import os
+import psi4
+plugdir = os.path.split(os.path.abspath(__file__))[0]
+sofile = plugdir + '/' + os.path.split(plugdir)[1] + '.so'
+psi4.core.plugin_load(sofile)
+

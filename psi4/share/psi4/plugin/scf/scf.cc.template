@@ -77,7 +77,7 @@ void SCF::init_integrals()
         throw PSIEXCEPTION("This is only an RHF code, but you gave it an odd number of electrons.  Try again!");
     ndocc_ = nelec / 2;
 
-    outfile->Printf("\tThere are %d doubly occupied orbitals\n", ndocc_);
+    outfile->Printf("    There are %d doubly occupied orbitals\n", ndocc_);
     molecule_->print();
     if(print_ > 1){
          basisset_->print_detail();
@@ -116,9 +116,9 @@ void SCF::init_integrals()
         H_->print();
     }
 
-    outfile->Printf("\tForming JK object\n\n");
+    outfile->Printf("    Forming JK object\n\n");
     // Construct a JK object that compute J and K SCF matrices very efficiently
-    jk_ = JK::build_JK(basisset_, options_);
+    jk_ = JK::build_JK(basisset_, std::shared_ptr<BasisSet>(), options_);
 
     // This is a very heavy compute object, lets give it 80% of our total memory
     jk_->set_memory(Process::environment.get_memory() * 0.8);
@@ -184,11 +184,11 @@ double SCF::compute_energy()
    double e_old;
    double e_new = e_nuc_ + compute_electronic_energy();
 
-   outfile->Printf("\tEnergy from core Hamiltonian guess: %20.16f\n\n", e_new);
+   outfile->Printf("    Energy from core Hamiltonian guess: %20.16f\n\n", e_new);
 
-   outfile->Printf("\t*=======================================================*\n");
-   outfile->Printf("\t* Iter       Energy            delta E    ||gradient||  *\n");
-   outfile->Printf("\t*-------------------------------------------------------*\n");
+   outfile->Printf("    *=======================================================*\n");
+   outfile->Printf("    * Iter       Energy            delta E    ||gradient||  *\n");
+   outfile->Printf("    *-------------------------------------------------------*\n");
 
    while(!converged && iter < maxiter_){
        e_old = e_new;
@@ -245,7 +245,7 @@ double SCF::compute_energy()
 
        converged = (fabs(dE) < e_convergence_) && (dRMS < d_convergence_);
 
-       outfile->Printf("\t* %3d %20.14f    %9.2e    %9.2e    *\n", iter, e_new, dE, dRMS);
+       outfile->Printf("    * %3d %20.14f    %9.2e    %9.2e    *\n", iter, e_new, dE, dRMS);
 
        // Transform the Fock operator and diagonalize it
        Ft_->transform(F_, X_);
@@ -260,7 +260,7 @@ double SCF::compute_energy()
        iter++;
 
    }
-   outfile->Printf("\t*=======================================================*\n");
+   outfile->Printf("    *=======================================================*\n");
 
    if(!converged)
        throw PSIEXCEPTION("The SCF iterations did not converge.");
