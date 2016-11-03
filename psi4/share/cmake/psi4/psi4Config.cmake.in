@@ -1,29 +1,45 @@
 @PACKAGE_INIT@
 
 # Found one of Psi4's header files.
-find_path(Psi4Plugins_INCLUDE_DIR NAMES psi4/psi4-dec.h
+find_path(psi4_INCLUDE_DIR NAMES psi4/psi4-dec.h
     PATHS ${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@
     NO_DEFAULT_PATH
 )
-if (${Psi4Plugins_INCLUDE_DIR} MATCHES "Psi4Plugins_INCLUDE_DIR-NOTFOUND")
+if (${psi4_INCLUDE_DIR} MATCHES "psi4_INCLUDE_DIR-NOTFOUND")
     set(Psi4Plugins_FOUND FALSE)
     message(STATUS "No Psi4 include directory found.")
     return()
 else()
-    message(STATUS "Psi4 include directory: ${Psi4Plugins_INCLUDE_DIR}")
+    message(STATUS "Psi4 include directory: ${psi4_INCLUDE_DIR}")
 endif()
 
-find_program(Psi4_EXECUTABLE NAMES psi4
+find_program(psi4_EXECUTABLE NAMES psi4
     PATHS ${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_BINDIR@
     NO_DEFAULT_PATH
 )
-if (${Psi4_EXECUTABLE} MATCHES "Psi4_EXECUTABLE-NOTFOUND")
-    set(Psi4Plugins_FOUND FALSE)
+if (${psi4_EXECUTABLE} MATCHES "psi4_EXECUTABLE-NOTFOUND")
+    set(psi4_FOUND FALSE)
+    set(PSI4_FOUND FALSE)
     message(STATUS "No Psi4 executable found.")
     return()
 else()
-    message(STATUS "Psi4 executable: ${Psi4_EXECUTABLE}")
+    message(STATUS "Psi4 executable: ${psi4_EXECUTABLE}")
 endif()
+
+find_program(core_LIBRARY NAMES core.so
+    PATHS ${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@@PYMOD_INSTALL_LIBDIR@/psi4
+    NO_DEFAULT_PATH
+    )
+if (${core_LIBRARY} MATCHES "core_LIBRARY-NOTFOUND")
+    set(psi4_FOUND FALSE)
+    set(PSI4_FOUND FALSE)
+    message(STATUS "Unable to find Psi4's core library.")
+    return()
+else()
+    message(STATUS "Psi4 core library: ${core_LIBRARY}")
+endif()
+
+message(STATUS "Python executable: @PYTHON_EXECUTABLE@")
 
 macro(psi4_component name on)
    if(${on})
@@ -49,12 +65,13 @@ foreach(_comp ${PSI4_FIND_COMPONENTS})
 endforeach()
 
 set(PSI4_INCLUDE_DIRS
-    ${Psi4Plugins_INCLUDE_DIR}
+    ${psi4_INCLUDE_DIR}
     @PYTHON_INCLUDE_DIR@
-    ${Psi4Plugins_INCLUDE_DIR}/@RELATIVE_PYBIND11_INCLUDE_DIR@
+    ${psi4_INCLUDE_DIR}/@RELATIVE_PYBIND11_INCLUDE_DIR@
 )
 
-set(Psi4Plugins_FOUND TRUE)
+set(psi4_FOUND TRUE)
+set(PSI4_FOUND TRUE)
 
 function(add_psi4_plugin TARGET SOURCES)
     # remove ${TARGET} from ${ARGV} to use ${ARGV} as ${SOURCES}
@@ -62,6 +79,7 @@ function(add_psi4_plugin TARGET SOURCES)
 
     add_library(${TARGET} MODULE ${ARGV})
     target_include_directories(${TARGET} SYSTEM PRIVATE ${PSI4_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${core_LIBRARY})
     set_target_properties(${TARGET} PROPERTIES
                           PREFIX ""
                           COMPILE_FLAGS "-std=c++11")

@@ -80,6 +80,13 @@ install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
     # <<<  install lib/  >>>
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
+install(DIRECTORY share/psi4/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
+        PATTERN "*.pyc" EXCLUDE)
+
+install(DIRECTORY include/psi4/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
+
 install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
@@ -101,9 +108,14 @@ install(DIRECTORY share/psi4/
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
 
+configure_file(config.py.in config.py @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/config.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
+
     # <<<  install external's share/ to psi4 share/  >>>
 
         # bring libefp's fraglib to PSIDATADIR's attention
+# bring libefp's fraglib to PSIDATADIR's attention
 set(_fraglib_in_psi4_dir ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag)
 
 add_custom_target(consolidate_psidatadir ALL
@@ -139,17 +151,17 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
     # <<<  Export Config for Plugins  >>>
 # Determine relative path from Psi4's include directory to PyBind11's
 file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
-    ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR} 
+    ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
     ${pybind11_INCLUDE_DIR})
-#set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/Psi4Plugins")
+set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/psi4")
 configure_package_config_file(
-        share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake
+        share/cmake/psi4/psi4Config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
         INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfigVersion.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
         VERSION ${PSI4_VERSION}
         COMPATIBILITY SameMajorVersion)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfig.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/Psi4Plugins/Psi4PluginsConfigVersion.cmake
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})

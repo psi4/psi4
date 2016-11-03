@@ -28,17 +28,8 @@
 #
 
 import psi4
-import re
-import os
-import inputparser
-import math
-import warnings
-import driver
-from molutil import *
-import p4util
-from p4util.exceptions import *
-from procedures import proc_util
-
+import psi4.driver.p4util as p4util
+from psi4.driver.procedures import proc_util
 
 def run_@plugin@(name, **kwargs):
     r"""Function encoding sequence of PSI module and plugin calls so that
@@ -51,28 +42,27 @@ def run_@plugin@(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    #psi4.set_global_option('BASIS', 'sto-3g')
-    psi4.set_local_option('MYPLUGIN', 'PRINT', 1)
+    psi4.core.set_local_option('MYPLUGIN', 'PRINT', 1)
 
     # Compute a SCF reference, a wavefunction is return which holds the molecule used, orbitals
     # Fock matrices, and more
     print('Attention! This SCF may be density-fitted.')
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
-        ref_wfn = driver.scf_helper(name, **kwargs)
+        ref_wfn = psi4.driver.scf_helper(name, **kwargs)
 
     # Ensure IWL files have been written when not using DF/CD
-    proc_util.check_iwl_file_from_scf_type(psi4.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    proc_util.check_iwl_file_from_scf_type(psi4.core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
     # Call the Psi4 plugin
     # Please note that setting the reference wavefunction in this way is ONLY for plugins
-    @plugin@_wfn = psi4.plugin('@plugin@.so', ref_wfn)
+    @plugin@_wfn = psi4.core.plugin('@plugin@.so', ref_wfn)
 
     return @plugin@_wfn
 
 
 # Integration with driver routines
-driver.procedures['energy']['@plugin@'] = run_@plugin@
+psi4.driver.procedures['energy']['@plugin@'] = run_@plugin@
 
 
 def exampleFN():

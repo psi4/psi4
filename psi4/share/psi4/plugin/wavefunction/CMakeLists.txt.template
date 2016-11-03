@@ -1,6 +1,8 @@
 #
 # @BEGIN LICENSE
 #
+# @plugin@ by Psi4 Developer, a plugin to:
+#
 # Psi4: an open-source quantum chemistry software package
 #
 # Copyright (c) 2007-2016 The Psi4 Developers.
@@ -25,20 +27,16 @@
 # @END LICENSE
 #
 
-import pickle
-from . import dependency_check
-from psi4.driver.molutil import *
-from psi4.driver.inputparser import process_input
-from psi4.driver.p4util.util import *
-from psi4.driver.p4util.text import *
-from psi4.driver.qmmm import QMMM
-from psi4.driver.plugin import *
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-from psi4.driver import gaussian_n
-from psi4.driver import aliases
-from psi4.driver import diatomic
-from psi4.driver import wrapper_database
-from psi4.driver import wrapper_autofrag
+# These were the compilers used to compile Psi4. They may or may not be
+# required to successfully run your plugin.
+set(CMAKE_C_COMPILER @C@)
+set(CMAKE_CXX_COMPILER @CXX@)
+set(CMAKE_Fortran_COMPILER @Fortran@)
 
-from psi4.driver.driver import *
-from psi4.driver.driver_cbs import cbs
+project(@plugin@ CXX)
+
+find_package(psi4 1.0 REQUIRED)
+
+add_psi4_plugin(@plugin@ @sources@)

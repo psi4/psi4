@@ -35,6 +35,9 @@ if pymod.startswith(os.path.sep + os.path.sep):
 pymod_dir_step = os.path.sep.join(['..'] * pymod.count(os.path.sep))
 data_dir = os.path.sep.join([psi4_module_loc, pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
 
+# from . import config
+# data_dir = config.psidatadir
+
 if "PSIDATADIR" in os.environ.keys():
     data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
 elif "CMAKE_INSTALL_DATADIR" in data_dir:

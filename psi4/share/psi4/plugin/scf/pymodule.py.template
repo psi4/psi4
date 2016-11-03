@@ -28,16 +28,8 @@
 #
 
 import psi4
-import re
-import os
-import inputparser
-import math
-import warnings
-import driver
-from molutil import *
-import p4util
-from p4util.exceptions import * 
-
+import psi4.driver.p4util as p4util
+from psi4.driver.procedures import proc_util
 
 def run_@plugin@(name, **kwargs):
     r"""Function encoding sequence of PSI module and plugin calls so that
@@ -50,20 +42,20 @@ def run_@plugin@(name, **kwargs):
     kwargs = p4util.kwargs_lower(kwargs)
 
     # Your plugin's psi4 run sequence goes here
-    psi4.set_local_option('@PLUGIN@', 'PRINT', 1)
+    psi4.core.set_local_option('@PLUGIN@', 'PRINT', 1)
 
     # Build a new blank wavefunction to pass into scf
-    @plugin@_molecule = kwargs.get('molecule', psi4.get_active_molecule())
+    @plugin@_molecule = kwargs.get('molecule', psi4.core.get_active_molecule())
 
     if @plugin@_molecule.schoenflies_symbol() != 'c1':
-        psi4.print_out("This SCF code must be run in c1 symmetry, switching")
+        psi4.core.print_out("This SCF code must be run in c1 symmetry, switching\n")
         @plugin@_molecule = @plugin@_molecule.clone()
         @plugin@_molecule.reset_point_group('c1')
-        @plugin@_molecule.update_geometry()        
+        @plugin@_molecule.update_geometry()
 
-    new_wfn = psi4.new_wavefunction(@plugin@_molecule, psi4.get_global_option('BASIS'))
+    new_wfn = psi4.core.Wavefunction.build(@plugin@_molecule, psi4.core.get_global_option('BASIS'))
 
-    @plugin@_wfn = psi4.plugin('@plugin@.so', new_wfn)
+    @plugin@_wfn = psi4.core.plugin('@plugin@.so', new_wfn)
     psi4.set_variable('CURRENT ENERGY', @plugin@_wfn.energy())
 
     if kwargs.get('ref_wfn', False):
@@ -72,7 +64,7 @@ def run_@plugin@(name, **kwargs):
         return @plugin@_wfn.energy()
 
 # Integration with driver routines
-driver.procedures['energy']['@plugin@'] = run_@plugin@
+psi4.driver.procedures['energy']['@plugin@'] = run_@plugin@
 
 
 def exampleFN():
