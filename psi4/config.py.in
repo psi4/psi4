@@ -26,24 +26,18 @@
 #
 
 import os
+_psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
+_pymod = os.path.normpath(os.path.sep.join(['@PYMOD_INSTALL_LIBDIR@', '@CMAKE_INSTALL_LIBDIR@', 'psi4']))
+if _pymod.startswith(os.path.sep + os.path.sep):
+    _pymod = _pymod[1:]
+_pymod_dir_step = os.path.sep.join(['..'] * _pymod.count(os.path.sep))
+_data_dir = os.path.sep.join([_psi4_module_loc, _pymod_dir_step, '@CMAKE_INSTALL_DATADIR@', 'psi4'])
 
-def _join_path(prefix, *args):
-    path = str(prefix)
-    for elt in args:
-        path = os.path.join(path, str(elt))
-    return path
+# Set it and forget it
+if "PSIDATADIR" in os.environ.keys():
+    _data_dir = os.path.expanduser(os.environ["PSIDATADIR"])
 
-
-def _ancestor(dir, n=1):
-    """Get the nth ancestor of a directory."""
-    parent = os.path.abspath(dir)
-    for i in range(n):
-        parent = os.path.dirname(parent)
-    return parent
-
-psi4_root = _ancestor(__file__, 3)
-
-psidatadir = share_dir = _join_path(psi4_root, "share", "psi4")
+psidatadir = share_dir = _data_dir
 
 cxx_compiler = "@CMAKE_CXX_COMPILER@"
 c_compiler = "@CMAKE_C_COMPILER@"
