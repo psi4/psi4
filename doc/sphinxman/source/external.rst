@@ -431,10 +431,6 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Append results to output file. Default: Truncate first
 
-.. option:: -d, --debug
-
-   Flush the outfile at every fprintf. Default: true iff ``--with-debug``
-
 .. option:: -h, --help
 
    Display the command-line options and usage information.
@@ -442,6 +438,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 .. option:: -i <filename>, --input <filename>
 
    Input file name. Default: input.dat
+
+.. option:: -k, --skip-preprocessor
+
+   Skips input preprocessing. Expert mode.
 
 .. option:: -l <name>, --psidatadir <name>
 
@@ -474,12 +474,12 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
    This overrides the value of :envvar:`PSI_SCRATCH` and provides
    a path to the location of scratch files
 
-.. option:: --new-plugin <name>
-
-   Creates a new directory <name> with files for writing a
-   new plugin. An additional argument specifies a template
-   to use, for example: ``--new-plugin name +mointegrals``.
-   See :ref:`plugins <sec:plugins>` for available templates.
+.. .. option:: --new-plugin <name>
+.. 
+..    Creates a new directory <name> with files for writing a
+..    new plugin. An additional argument specifies a template
+..    to use, for example: ``--new-plugin name +mointegrals``.
+..    See :ref:`plugins <sec:plugins>` for available templates.
 
 .. option:: -v, --verbose
 
@@ -492,9 +492,9 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
      >>> psi4 --version
      0.4.262
 
-.. option:: -w, --wipe
-
-   Clean out scratch area.
+.. .. option:: -w, --wipe
+.. 
+..    Clean out scratch area.
 
 
 .. _`sec:environmentVariables`:

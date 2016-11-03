@@ -308,8 +308,7 @@ public:
     */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
-    py::dict array_interface(int irrep);
-    py::dict cdict;
+    std::vector<py::buffer_info> array_interface();
 
     friend class Matrix;
 };

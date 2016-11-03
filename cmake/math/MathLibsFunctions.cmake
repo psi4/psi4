@@ -55,10 +55,19 @@ macro(find_math_libs _service)
     endif()
     set(_lib)
     set(_libs)
-    foreach(l ${ARGN})
+    set(NARGN ${ARGN})
+    if(${ENABLE_OPENMP} AND ${ENABLE_GENERIC})
+        # forcibly inserting -liomp5 dynamically before -pthread for special case
+        #   of OMP on and static intel/mkl linking
+        list(GET NARGN -2 _thread_candidate)
+            if(${_thread_candidate} MATCHES "pthread")
+                list(INSERT NARGN -2 "iomp5")
+            endif()
+    endif()
+    foreach(l ${NARGN})
         set(_stat "")
-        if(ENABLE_STATIC_LINKING)
-            IF(NOT ${l} MATCHES "pthread")
+        if(ENABLE_GENERIC)
+            IF((NOT ${l} MATCHES "pthread") AND (NOT ${l} MATCHES "iomp5"))
                 set(_stat "lib${l}.a")
             endif()
         endif()
@@ -197,6 +206,7 @@ macro(config_math_service _SERVICE)
 
     if(${_SERVICE}_FOUND)
 
+        # this codeblock is dead
         # take care of omp flags
         if(ENABLE_THREADED_MKL)
             set(_omp_flag)

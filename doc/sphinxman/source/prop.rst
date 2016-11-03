@@ -36,5 +36,5 @@
 Property
 ========
 
-.. autofunction:: driver.property(name [, properties, molecule])
+.. autofunction:: psi4.property(name [, properties, molecule])
 

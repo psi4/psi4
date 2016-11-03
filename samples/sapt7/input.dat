@@ -24,11 +24,10 @@ molecule {
 set {
 reference uhf
 scf_type     df
-guess        gwh
+guess        sad
 basis         cc-pVDZ
 df_basis_scf  cc-pVDZ-jkfit
 df_basis_sapt cc-pVDZ-ri
-stability_analysis follow
 }
 
 energy('sapt0')
@@ -42,7 +41,7 @@ ET    = psi4.get_variable("SAPT ENERGY")
 
 
 set {
-guess gwh
+guess sad
 basis 6-31g
 df_basis_sapt cc-pVDZ-ri
 scf_type direct

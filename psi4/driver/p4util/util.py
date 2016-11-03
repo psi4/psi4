@@ -38,7 +38,7 @@ def oeprop(wfn, *args, **kwargs):
 
     :returns: None
 
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to compute properties
 
     How to specify args, which are actually the most important
@@ -69,7 +69,7 @@ def cubeprop(wfn, **kwargs):
 
     :returns: None
 
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
 
     :examples:

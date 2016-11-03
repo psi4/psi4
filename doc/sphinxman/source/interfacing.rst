@@ -41,6 +41,7 @@ platform capabilities, *etc*.
 .. toctree::
    :maxdepth: 2
 
+   numpy
    cfour
    chemps2
    dftd3

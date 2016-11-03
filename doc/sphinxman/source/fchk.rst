@@ -33,8 +33,8 @@
 
 .. _`sec:fchk`:
 
-Interface to programs through FCHK files |w---w| :py:func:`~driver.fchk()`
-==========================================================================
+Interface to programs through FCHK files |w---w| :py:func:`~psi4.fchk()`
+========================================================================
 
 .. codeauthor:: Andrew C. Simmonett
 .. sectionauthor:: Andrew C. Simmonett
@@ -63,5 +63,5 @@ gradient computation, to ensure that the density is updated appropriately::
     fchk_writer = psi4.FCHKWriter(wfn)
     fchk_writer.write('output.fchk')
 
-.. autofunction:: driver.fchk(wfn, filename)
+.. autofunction:: psi4.fchk(wfn, filename)
 

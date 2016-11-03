@@ -27,7 +27,6 @@
 
 from __future__ import absolute_import
 
-import psi4
 import sys, os
 import math
 from math import *

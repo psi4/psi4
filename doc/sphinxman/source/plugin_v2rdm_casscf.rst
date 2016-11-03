@@ -78,5 +78,5 @@ Installation
 
 * If using |PSIfour| built from source and you want v2rdm_casscf built from
   from source also,
-  built it, then hint its location with :envvar:`PYTHONPATH`.
+  build it, then hint its location with :envvar:`PYTHONPATH`.
 

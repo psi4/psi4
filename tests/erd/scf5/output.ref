@@ -1,0 +1,1894 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                              Psi4 1.0 Driver
+
+                              Git: Rev dirty
+
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Sunday, 23 October 2016 06:53PM
+
+    Process ID:  33524
+    PSIDATADIR: /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+
+memory 250 mb
+
+set INTEGRAL_PACKAGE ERD
+
+print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2') #TEST
+
+#Ensure that the checkpoint file is always nuked
+psi4_io.set_specific_retention(32,False)
+
+Eref_nuc      =   30.78849213614545 #TEST
+Eref_sing_can = -149.58723684929720 #TEST
+Eref_sing_df  = -149.58715054487624 #TEST
+Eref_uhf_can  = -149.67135517240553 #TEST
+Eref_uhf_df   = -149.67125624291961 #TEST
+Eref_rohf_can = -149.65170765757173 #TEST
+Eref_rohf_df  = -149.65160796208073 #TEST
+
+molecule singlet_o2 {
+    0 1
+    O
+    O 1 1.1
+    units    angstrom
+}
+
+molecule triplet_o2 {
+    0 3
+    O
+    O 1 1.1
+    units    angstrom
+}
+singlet_o2.update_geometry()
+triplet_o2.update_geometry()
+
+print_stdout('   -Nuclear Repulsion:') #TEST
+compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")  #TEST
+compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")  #TEST
+
+activate(singlet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    print 2
+}
+
+print_stdout('    -Singlet RHF:') #TEST
+set scf reference rhf
+
+#set scf scf_type pk
+#E = energy('scf')
+#compare_values(Eref_sing_can, E, 6, 'Singlet PK RHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Direct RHF energy') #TEST
+
+#set scf scf_type out_of_core 
+#E = energy('scf')
+#compare_values(Eref_sing_can, E, 6, 'Singlet Disk RHF energy') #TEST
+
+#set scf scf_type df 
+#E = energy('scf')
+#compare_values(Eref_sing_df, E, 6, 'Singlet DF RHF energy') #TEST
+
+print_stdout('    -Singlet UHF:') #TEST
+set scf reference uhf
+
+#set scf scf_type pk
+#E = energy('scf')
+#compare_values(Eref_sing_can, E, 6, 'Singlet PK UHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Direct UHF energy') #TEST
+
+#set scf scf_type out_of_core 
+#E = energy('scf')
+#compare_values(Eref_sing_can, E, 6, 'Singlet Disk UHF energy') #TEST
+
+#set scf scf_type df 
+#E = energy('scf')
+#compare_values(Eref_sing_df, E, 6, 'Singlet DF UHF energy') #TEST
+
+print_stdout('    -Singlet CUHF:') #TEST
+set scf reference cuhf
+
+#set scf scf_type pk
+#E = energy('scf')
+#compare_values(Eref_sing_can, E, 6, 'Singlet PK CUHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_sing_can, E, 6, 'Singlet Direct CUHF energy') #TEST
+
+#set scf scf_type out_of_core
+#E = energy('scf')
+#compare_values(Eref_sing_can, E, 6, 'Singlet Disk CUHF energy') #TEST
+#
+#set scf scf_type df
+#E = energy('scf')
+#compare_values(Eref_sing_df, E, 6, 'Singlet DF CUHF energy') #TEST
+
+activate(triplet_o2)
+set {
+    basis cc-pvtz
+    df_basis_scf cc-pvtz-jkfit
+    guess core
+    print 2
+}
+
+print_stdout('    -Triplet UHF:') #TEST
+set scf reference uhf
+
+#set scf scf_type pk
+#E = energy('scf')
+#compare_values(Eref_uhf_can, E, 6, 'Triplet PK UHF energy') #TEST
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_uhf_can, E, 6, 'Triplet Direct UHF energy') #TEST
+
+#set scf scf_type out_of_core 
+#E = energy('scf')
+#compare_values(Eref_uhf_can, E, 6, 'Triplet Disk UHF energy') #TEST
+
+#set scf scf_type df 
+#E = energy('scf')
+#compare_values(Eref_uhf_df, E, 6, 'Triplet DF UHF energy') #TEST
+#
+#clean()
+
+print_stdout('    -Triplet ROHF:') #TEST
+set scf reference rohf
+
+#set scf scf_type pk
+#E = energy('scf')
+#compare_values(Eref_rohf_can, E, 6, 'Triplet PK ROHF energy') #TEST
+#clean()
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet Direct ROHF energy') #TEST
+clean()
+
+#set scf scf_type out_of_core 
+#E = energy('scf')
+#compare_values(Eref_rohf_can, E, 6, 'Triplet Disk ROHF energy') #TEST
+#clean()
+
+#set scf scf_type df 
+#E = energy('scf')
+#compare_values(Eref_rohf_df, E, 6, 'Triplet DF ROHF energy') #TEST
+#
+#clean()
+
+print_stdout('    -Triplet CUHF:') #TEST
+set scf reference cuhf
+
+#set scf scf_type pk
+#E = energy('scf')
+#compare_values(Eref_rohf_can, E, 6, 'Triplet PK CUHF energy') #TEST
+#clean()
+
+set scf scf_type direct
+E = energy('scf')
+compare_values(Eref_rohf_can, E, 6, 'Triplet Direct CUHF energy') #TEST
+clean()
+
+#set scf scf_type out_of_core
+#E = energy('scf')
+#compare_values(Eref_rohf_can, E, 6, 'Triplet Disk CUHF energy') #TEST
+#clean()
+
+#set scf scf_type df
+#E = energy('scf')
+#compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy') #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+	Triplet nuclear repulsion energy..................................PASSED
+	Singlet nuclear repulsion energy..................................PASSED
+
+*** tstart() called on ariadne
+*** at Sun Oct 23 18:53:29 2016
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.550000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.550000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.74204  C =      1.74204 [cm^-1]
+  Rotational constants: A = ************  B =  52225.17395  C =  52225.17395 [MHz]
+  Nuclear repulsion =   30.788492136145454
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs
+    Total number of shells = 20
+    Number of primitives   = 52
+    Number of AO           = 70
+    Number of SO           = 60
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: CC-PVTZ-JKFIT
+    atoms 1-2 entry O          line   228 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: DF_BASIS_SAD
+    Name: SAD-FIT
+    atoms 1-2 entry O          line   240 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/sad-fit.gbs 
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: DF_BASIS_SAD
+    Name: SAD-FIT
+    atoms 1-2 entry O          line   240 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/sad-fit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       8       8       8       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs
+    Total number of shells = 50
+    Number of primitives   = 50
+    Number of AO           = 192
+    Number of SO           = 158
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+       2     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+
+  Minimum eigenvalue in the overlap matrix is 2.7007379178E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:  -254.04243926726025   -2.54042e+02   8.98997e-02 
+   @DF-RHF iter   1:  -257.19257811713425   -3.15014e+00   1.06326e-14 
+   @DF-RHF iter   2:  -257.19257811713425    0.00000e+00   1.06326e-14 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+
+   @RHF iter   3:  -129.99407460698805    1.27199e+02   3.58550e-01 DIIS
+   @RHF iter   4:  -138.91122982834935   -8.91716e+00   1.91751e-01 DIIS
+   @RHF iter   5:  -149.13467923115144   -1.02234e+01   5.30906e-02 DIIS
+   @RHF iter   6:  -149.57251389792145   -4.37835e-01   8.25153e-03 DIIS
+   @RHF iter   7:  -149.58708122447902   -1.45673e-02   7.45658e-04 DIIS
+   @RHF iter   8:  -149.58722634154825   -1.45117e-04   1.87887e-04 DIIS
+   @RHF iter   9:  -149.58723665061439   -1.03091e-05   2.49027e-05 DIIS
+   @RHF iter  10:  -149.58723684457522   -1.93961e-07   4.45839e-06 DIIS
+   @RHF iter  11:  -149.58723684929714   -4.72193e-09   4.02710e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -20.718066     1B1u  -20.716525     2Ag    -1.762421  
+       2B1u   -1.064379     1B3u   -0.813263     3Ag    -0.769319  
+       1B2u   -0.708484     1B2g   -0.419982  
+
+    Virtual:                                                              
+
+       1B3g    0.078686     3B1u    0.460203     2B2u    0.693361  
+       2B3u    0.696039     4Ag     0.713441     2B2g    0.825485  
+       2B3g    0.852363     5Ag     0.879239     4B1u    0.888853  
+       5B1u    1.412882     1B1g    1.443185     6Ag     1.444096  
+       3B2u    1.639046     3B3u    1.640898     1Au     1.953275  
+       6B1u    1.953758     7Ag     2.483688     3B3g    2.531436  
+       7B1u    2.536370     3B2g    2.548758     4B2u    3.926933  
+       4B3u    3.928210     8Ag     4.120756     4B3g    4.258204  
+       4B2g    4.271808     2B1g    4.948341     9Ag     4.948846  
+       5B2u    5.102980     8B1u    5.124403     5B3u    5.144954  
+       6B2u    5.265700     6B3u    5.266029    10Ag     5.555961  
+       5B3g    5.658926     5B2g    5.658932     9B1u    6.125749  
+       2Au     6.407200    10B1u    6.408469     3B1g    6.547735  
+      11Ag     6.547960     3Au     6.781721    11B1u    6.782597  
+       6B3g    6.822796     6B2g    6.853235     7B2u    7.043562  
+       7B3u    7.081949    12B1u    7.574642    12Ag     7.687791  
+       7B3g    8.066015     7B2g    8.112246    13Ag     8.185164  
+      13B1u   15.901524  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:  -149.58723684929714
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             30.7884921361454538
+    One-Electron Energy =                -266.8065625228703652
+    Two-Electron Energy =                  86.4308335374277590
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -149.5872368492971418
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on ariadne at Sun Oct 23 18:53:32 2016
+Module time:
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+	Singlet Direct RHF energy.........................................PASSED
+
+*** tstart() called on ariadne
+*** at Sun Oct 23 18:53:32 2016
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.550000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.550000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.74204  C =      1.74204 [cm^-1]
+  Rotational constants: A = ************  B =  52225.17395  C =  52225.17395 [MHz]
+  Nuclear repulsion =   30.788492136145454
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs
+    Total number of shells = 20
+    Number of primitives   = 52
+    Number of AO           = 70
+    Number of SO           = 60
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: CC-PVTZ-JKFIT
+    atoms 1-2 entry O          line   228 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       8       8       8       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs
+    Total number of shells = 50
+    Number of primitives   = 50
+    Number of AO           = 192
+    Number of SO           = 158
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+       2     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+
+  Minimum eigenvalue in the overlap matrix is 2.7007379178E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     2,    0,    1,    1,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+   @DF-UHF iter   1:  -236.71400742417029   -2.36714e+02   4.48701e-01 
+   @DF-UHF iter   2:  -257.19257811713425   -2.04786e+01   1.06326e-14 DIIS
+   @DF-UHF iter   3:  -257.19257811713413    1.13687e-13   1.04450e-14 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+   @UHF iter   4:  -129.99407460698819    1.27199e+02   3.58550e-01 DIIS
+   @UHF iter   5:  -138.91122982834932   -8.91716e+00   1.91751e-01 DIIS
+   @UHF iter   6:  -149.13467923115141   -1.02234e+01   5.30906e-02 DIIS
+   @UHF iter   7:  -149.57251389792145   -4.37835e-01   8.25153e-03 DIIS
+   @UHF iter   8:  -149.58708122447916   -1.45673e-02   7.45658e-04 DIIS
+   @UHF iter   9:  -149.58722634154822   -1.45117e-04   1.87887e-04 DIIS
+   @UHF iter  10:  -149.58723665061422   -1.03091e-05   2.49027e-05 DIIS
+   @UHF iter  11:  -149.58723684457513   -1.93961e-07   4.45839e-06 DIIS
+   @UHF iter  12:  -149.58723684929720   -4.72207e-09   4.02710e-07 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   7.993605777E-15
+   @S^2 Expected:                0.000000000E+00
+   @S^2 Observed:                7.993605777E-15
+   @S   Expected:                0.000000000E+00
+   @S   Observed:                0.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1Ag   -20.718066     1B1u  -20.716525     2Ag    -1.762421  
+       2B1u   -1.064379     1B3u   -0.813263     3Ag    -0.769319  
+       1B2u   -0.708484     1B2g   -0.419982  
+
+    Alpha Virtual:                                                        
+
+       1B3g    0.078686     3B1u    0.460203     2B2u    0.693361  
+       2B3u    0.696039     4Ag     0.713441     2B2g    0.825485  
+       2B3g    0.852363     5Ag     0.879239     4B1u    0.888853  
+       5B1u    1.412882     1B1g    1.443185     6Ag     1.444096  
+       3B2u    1.639046     3B3u    1.640898     1Au     1.953275  
+       6B1u    1.953758     7Ag     2.483688     3B3g    2.531436  
+       7B1u    2.536370     3B2g    2.548758     4B2u    3.926933  
+       4B3u    3.928210     8Ag     4.120756     4B3g    4.258204  
+       4B2g    4.271808     2B1g    4.948341     9Ag     4.948846  
+       5B2u    5.102980     8B1u    5.124403     5B3u    5.144954  
+       6B2u    5.265700     6B3u    5.266029    10Ag     5.555961  
+       5B3g    5.658926     5B2g    5.658932     9B1u    6.125749  
+       2Au     6.407200    10B1u    6.408469     3B1g    6.547735  
+      11Ag     6.547960     3Au     6.781721    11B1u    6.782597  
+       6B3g    6.822796     6B2g    6.853235     7B2u    7.043562  
+       7B3u    7.081949    12B1u    7.574642    12Ag     7.687791  
+       7B3g    8.066015     7B2g    8.112246    13Ag     8.185164  
+      13B1u   15.901524  
+
+    Beta Occupied:                                                        
+
+       1Ag   -20.718066     1B1u  -20.716525     2Ag    -1.762421  
+       2B1u   -1.064379     1B3u   -0.813263     3Ag    -0.769319  
+       1B2u   -0.708484     1B2g   -0.419982  
+
+    Beta Virtual:                                                         
+
+       1B3g    0.078686     3B1u    0.460203     2B2u    0.693361  
+       2B3u    0.696039     4Ag     0.713441     2B2g    0.825485  
+       2B3g    0.852363     5Ag     0.879239     4B1u    0.888853  
+       5B1u    1.412882     1B1g    1.443185     6Ag     1.444096  
+       3B2u    1.639046     3B3u    1.640898     1Au     1.953275  
+       6B1u    1.953758     7Ag     2.483688     3B3g    2.531436  
+       7B1u    2.536370     3B2g    2.548758     4B2u    3.926933  
+       4B3u    3.928210     8Ag     4.120756     4B3g    4.258204  
+       4B2g    4.271808     2B1g    4.948341     9Ag     4.948846  
+       5B2u    5.102980     8B1u    5.124403     5B3u    5.144954  
+       6B2u    5.265700     6B3u    5.266029    10Ag     5.555961  
+       5B3g    5.658926     5B2g    5.658932     9B1u    6.125749  
+       2Au     6.407200    10B1u    6.408469     3B1g    6.547735  
+      11Ag     6.547960     3Au     6.781721    11B1u    6.782597  
+       6B3g    6.822796     6B2g    6.853235     7B2u    7.043562  
+       7B3u    7.081949    12B1u    7.574642    12Ag     7.687791  
+       7B3g    8.066015     7B2g    8.112246    13Ag     8.185164  
+      13B1u   15.901524  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:  -149.58723684929720
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             30.7884921361454538
+    One-Electron Energy =                -266.8065625228704789
+    Two-Electron Energy =                  86.4308335374278016
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -149.5872368492971987
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  UHF NO Occupations:
+  HONO-2 :    1B2g 2.0000000
+  HONO-1 :    2B1u 2.0000000
+  HONO-0 :    3 Ag 2.0000000
+  LUNO+0 :    4 Ag 0.0000000
+  LUNO+1 :    2B2g 0.0000000
+  LUNO+2 :    5 Ag 0.0000000
+  LUNO+3 :    2B3u 0.0000000
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on ariadne at Sun Oct 23 18:53:35 2016
+Module time:
+	user time   =       2.52 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       4.95 seconds =       0.08 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+	Singlet Direct UHF energy.........................................PASSED
+
+*** tstart() called on ariadne
+*** at Sun Oct 23 18:53:35 2016
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             CUHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.550000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.550000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.74204  C =      1.74204 [cm^-1]
+  Rotational constants: A = ************  B =  52225.17395  C =  52225.17395 [MHz]
+  Nuclear repulsion =   30.788492136145454
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs
+    Total number of shells = 20
+    Number of primitives   = 52
+    Number of AO           = 70
+    Number of SO           = 60
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: CC-PVTZ-JKFIT
+    atoms 1-2 entry O          line   228 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       8       8       8       0
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs
+    Total number of shells = 50
+    Number of primitives   = 50
+    Number of AO           = 192
+    Number of SO           = 158
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+       2     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+
+  Minimum eigenvalue in the overlap matrix is 2.7007379178E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-CUHF iter   1:  -257.19257811713425   -2.57193e+02   1.06326e-14 
+   @DF-CUHF iter   2:  -257.19257811713425    0.00000e+00   1.06326e-14 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+   @CUHF iter   3:  -129.99407460698805    1.27199e+02   3.58550e-01 DIIS
+   @CUHF iter   4:  -138.91122982834932   -8.91716e+00   1.91751e-01 DIIS
+   @CUHF iter   5:  -149.13467923115149   -1.02234e+01   5.30906e-02 DIIS
+   @CUHF iter   6:  -149.57251389792140   -4.37835e-01   8.25153e-03 DIIS
+   @CUHF iter   7:  -149.58708122447911   -1.45673e-02   7.45658e-04 DIIS
+   @CUHF iter   8:  -149.58722634154827   -1.45117e-04   1.87887e-04 DIIS
+   @CUHF iter   9:  -149.58723665061416   -1.03091e-05   2.49027e-05 DIIS
+   @CUHF iter  10:  -149.58723684457505   -1.93961e-07   4.45839e-06 DIIS
+   @CUHF iter  11:  -149.58723684929720   -4.72215e-09   4.02710e-07 DIIS
+
+  ==> Post-Iterations <==
+
+
+  @Spin Contamination Metric:  0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:               0.00000
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1Ag   -20.718066     1B1u  -20.716525     2Ag    -1.762421  
+       2B1u   -1.064379     1B3u   -0.813263     3Ag    -0.769319  
+       1B2u   -0.708484     1B2g   -0.419982  
+
+    Alpha Virtual:                                                        
+
+       1B3g    0.078686     3B1u    0.460203     2B2u    0.693361  
+       2B3u    0.696039     4Ag     0.713441     2B2g    0.825485  
+       2B3g    0.852363     5Ag     0.879239     4B1u    0.888853  
+       5B1u    1.412882     1B1g    1.443185     6Ag     1.444096  
+       3B2u    1.639046     3B3u    1.640898     1Au     1.953275  
+       6B1u    1.953758     7Ag     2.483688     3B3g    2.531436  
+       7B1u    2.536370     3B2g    2.548758     4B2u    3.926933  
+       4B3u    3.928210     8Ag     4.120756     4B3g    4.258204  
+       4B2g    4.271808     2B1g    4.948341     9Ag     4.948846  
+       5B2u    5.102980     8B1u    5.124403     5B3u    5.144954  
+       6B2u    5.265700     6B3u    5.266029    10Ag     5.555961  
+       5B3g    5.658926     5B2g    5.658932     9B1u    6.125749  
+       2Au     6.407200    10B1u    6.408469     3B1g    6.547735  
+      11Ag     6.547960     3Au     6.781721    11B1u    6.782597  
+       6B3g    6.822796     6B2g    6.853235     7B2u    7.043562  
+       7B3u    7.081949    12B1u    7.574642    12Ag     7.687791  
+       7B3g    8.066015     7B2g    8.112246    13Ag     8.185164  
+      13B1u   15.901524  
+
+    Beta Occupied:                                                        
+
+       1Ag   -20.718066     1B1u  -20.716525     2Ag    -1.762421  
+       2B1u   -1.064379     1B3u   -0.813263     3Ag    -0.769319  
+       1B2u   -0.708484     1B2g   -0.419982  
+
+    Beta Virtual:                                                         
+
+       1B3g    0.078686     3B1u    0.460203     2B2u    0.693361  
+       2B3u    0.696039     4Ag     0.713441     2B2g    0.825485  
+       2B3g    0.852363     5Ag     0.879239     4B1u    0.888853  
+       5B1u    1.412882     1B1g    1.443185     6Ag     1.444096  
+       3B2u    1.639046     3B3u    1.640898     1Au     1.953275  
+       6B1u    1.953758     7Ag     2.483688     3B3g    2.531436  
+       7B1u    2.536370     3B2g    2.548758     4B2u    3.926933  
+       4B3u    3.928210     8Ag     4.120756     4B3g    4.258204  
+       4B2g    4.271808     2B1g    4.948341     9Ag     4.948846  
+       5B2u    5.102980     8B1u    5.124403     5B3u    5.144954  
+       6B2u    5.265700     6B3u    5.266029    10Ag     5.555961  
+       5B3g    5.658926     5B2g    5.658932     9B1u    6.125749  
+       2Au     6.407200    10B1u    6.408469     3B1g    6.547735  
+      11Ag     6.547960     3Au     6.781721    11B1u    6.782597  
+       6B3g    6.822796     6B2g    6.853235     7B2u    7.043562  
+       7B3u    7.081949    12B1u    7.574642    12Ag     7.687791  
+       7B3g    8.066015     7B2g    8.112246    13Ag     8.185164  
+      13B1u   15.901524  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @CUHF Final Energy:  -149.58723684929720
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             30.7884921361454538
+    One-Electron Energy =                -266.8065625228704221
+    Two-Electron Energy =                  86.4308335374277874
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -149.5872368492971702
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on ariadne at Sun Oct 23 18:53:37 2016
+Module time:
+	user time   =       2.54 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       7.50 seconds =       0.12 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+	Singlet Direct CUHF energy........................................PASSED
+
+*** tstart() called on ariadne
+*** at Sun Oct 23 18:53:37 2016
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.550000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.550000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.74204  C =      1.74204 [cm^-1]
+  Rotational constants: A = ************  B =  52225.17395  C =  52225.17395 [MHz]
+  Nuclear repulsion =   30.788492136145454
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 16
+  Nalpha       = 9
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs
+    Total number of shells = 20
+    Number of primitives   = 52
+    Number of AO           = 70
+    Number of SO           = 60
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: CC-PVTZ-JKFIT
+    atoms 1-2 entry O          line   228 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       9       7       7       2
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs
+    Total number of shells = 50
+    Number of primitives   = 50
+    Number of AO           = 192
+    Number of SO           = 158
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+       2     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+
+  Minimum eigenvalue in the overlap matrix is 2.7007379178E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter   1:  -256.72790828999189   -2.56728e+02   1.05270e-14 
+   @DF-UHF iter   2:  -256.72790828999189    0.00000e+00   1.05270e-14 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+   @UHF iter   3:  -131.02769690362538    1.25700e+02   3.53068e-01 DIIS
+   @UHF iter   4:  -140.13786814791996   -9.11017e+00   1.84782e-01 DIIS
+   @UHF iter   5:  -149.26306174143710   -9.12519e+00   5.05749e-02 DIIS
+   @UHF iter   6:  -149.65701792468559   -3.93956e-01   8.05490e-03 DIIS
+   @UHF iter   7:  -149.67101505766664   -1.39971e-02   9.14034e-04 DIIS
+   @UHF iter   8:  -149.67132932058541   -3.14263e-04   2.45665e-04 DIIS
+   @UHF iter   9:  -149.67135402427445   -2.47037e-05   5.39940e-05 DIIS
+   @UHF iter  10:  -149.67135512820713   -1.10393e-06   1.11821e-05 DIIS
+   @UHF iter  11:  -149.67135517195155   -4.37444e-08   1.32318e-06 DIIS
+   @UHF iter  12:  -149.67135517240558   -4.54037e-10   1.01049e-07 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   3.326638693E-02
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.033266387E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1Ag   -20.730397     1B1u  -20.729247     2Ag    -1.812944  
+       2B1u   -1.163040     1B2u   -0.882848     1B3u   -0.882848  
+       3Ag    -0.797842     1B3g   -0.503772     1B2g   -0.503772  
+
+    Alpha Virtual:                                                        
+
+       3B1u    0.444074     2B2u    0.670169     2B3u    0.670169  
+       4Ag     0.710743     2B3g    0.796950     2B2g    0.796951  
+       4B1u    0.864060     5Ag     0.873833     5B1u    1.396037  
+       6Ag     1.421898     1B1g    1.421898     3B3u    1.611980  
+       3B2u    1.611980     6B1u    1.908137     1Au     1.908137  
+       7Ag     2.465892     3B3g    2.517815     3B2g    2.517815  
+       7B1u    2.527679     4B2u    3.877498     4B3u    3.877498  
+       8Ag     4.116531     4B3g    4.219543     4B2g    4.219543  
+       9Ag     4.936094     2B1g    4.936094     8B1u    5.112053  
+       5B2u    5.114145     5B3u    5.114145     6B3u    5.240079  
+       6B2u    5.240079    10Ag     5.545104     5B2g    5.629471  
+       5B3g    5.629471     9B1u    6.112243    10B1u    6.380362  
+       2Au     6.380362    11Ag     6.491862     3B1g    6.491862  
+      11B1u    6.734804     3Au     6.734804     6B3g    6.811153  
+       6B2g    6.811153     7B2u    7.039321     7B3u    7.039321  
+      12B1u    7.563721    12Ag     7.661398     7B3g    8.077183  
+       7B2g    8.077183    13Ag     8.180540    13B1u   15.889141  
+
+    Beta Occupied:                                                        
+
+       1Ag   -20.677273     1B1u  -20.675406     2Ag    -1.697987  
+       2B1u   -0.956412     3Ag    -0.726305     1B3u   -0.632037  
+       1B2u   -0.632036  
+
+    Beta Virtual:                                                         
+
+       1B2g    0.158291     1B3g    0.158291     3B1u    0.479671  
+       4Ag     0.719067     2B3u    0.727589     2B2u    0.727589  
+       5Ag     0.894526     2B2g    0.895011     2B3g    0.895011  
+       4B1u    0.930237     5B1u    1.437286     6Ag     1.472619  
+       1B1g    1.472619     3B3u    1.678790     3B2u    1.678790  
+       6B1u    2.006486     1Au     2.006486     7Ag     2.509575  
+       7B1u    2.554593     3B2g    2.569016     3B3g    2.569016  
+       4B3u    3.993529     4B2u    3.993529     8Ag     4.141603  
+       4B2g    4.325773     4B3g    4.325773     2B1g    4.972187  
+       9Ag     4.972187     5B3u    5.148956     5B2u    5.148956  
+       8B1u    5.150970     6B2u    5.300884     6B3u    5.300884  
+      10Ag     5.581928     5B3g    5.699443     5B2g    5.699443  
+       9B1u    6.154195    10B1u    6.445601     2Au     6.445601  
+      11Ag     6.620146     3B1g    6.620146    11B1u    6.844544  
+       3Au     6.844544     6B2g    6.879046     6B3g    6.879046  
+       7B3u    7.100563     7B2u    7.100563    12B1u    7.601591  
+      12Ag     7.730311     7B2g    8.113474     7B3g    8.113474  
+      13Ag     8.204477    13B1u   15.932678  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:  -149.67135517240558
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             30.7884921361454538
+    One-Electron Energy =                -266.9155258831183346
+    Two-Electron Energy =                  86.4556785745672727
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -149.6713551724055833
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+  UHF NO Occupations:
+  HONO-2 :    1B2u 1.9937501
+  HONO-1 :    1B3g 1.0000000
+  HONO-0 :    1B2g 1.0000000
+  LUNO+0 :    2B2u 0.0062499
+  LUNO+1 :    2B3u 0.0062498
+  LUNO+2 :    3B1u 0.0031243
+  LUNO+3 :    4 Ag 0.0009741
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on ariadne at Sun Oct 23 18:53:40 2016
+Module time:
+	user time   =       2.79 seconds =       0.05 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =      10.29 seconds =       0.17 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+	Triplet Direct UHF energy.........................................PASSED
+
+*** tstart() called on ariadne
+*** at Sun Oct 23 18:53:40 2016
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.550000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.550000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.74204  C =      1.74204 [cm^-1]
+  Rotational constants: A = ************  B =  52225.17395  C =  52225.17395 [MHz]
+  Nuclear repulsion =   30.788492136145454
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 16
+  Nalpha       = 9
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs
+    Total number of shells = 20
+    Number of primitives   = 52
+    Number of AO           = 70
+    Number of SO           = 60
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: CC-PVTZ-JKFIT
+    atoms 1-2 entry O          line   228 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       9       7       7       2
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs
+    Total number of shells = 50
+    Number of primitives   = 50
+    Number of AO           = 192
+    Number of SO           = 158
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+       2     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+
+  Minimum eigenvalue in the overlap matrix is 2.7007379178E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-ROHF iter   1:  -256.72790828999189   -2.56728e+02   2.50667e-15 
+   @DF-ROHF iter   2:  -256.72790828999177    1.13687e-13   4.23036e-15 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+   @ROHF iter   3:  -131.02769690362544    1.25700e+02   2.71717e-01 DIIS
+   @ROHF iter   4:  -139.63756203688047   -8.60987e+00   1.37369e-01 DIIS
+   @ROHF iter   5:  -148.99587881868280   -9.35832e+00   5.06973e-02 DIIS
+   @ROHF iter   6:  -149.63934883047082   -6.43470e-01   6.07016e-03 DIIS
+   @ROHF iter   7:  -149.65159034033218   -1.22415e-02   4.80913e-04 DIIS
+   @ROHF iter   8:  -149.65170031143242   -1.09971e-04   1.10255e-04 DIIS
+   @ROHF iter   9:  -149.65170750630929   -7.19488e-06   1.71076e-05 DIIS
+   @ROHF iter  10:  -149.65170765416391   -1.47855e-07   2.92758e-06 DIIS
+   @ROHF iter  11:  -149.65170765757190   -3.40799e-09   3.52982e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -20.707859     1B1u  -20.706327     2Ag    -1.755521  
+       2B1u   -1.059143     3Ag    -0.763678     1B2u   -0.754308  
+       1B3u   -0.754308  
+
+    Singly Occupied:                                                      
+
+       1B2g   -0.157800     1B3g   -0.157800  
+
+    Virtual:                                                              
+
+       3B1u    0.461626     2B2u    0.696594     2B3u    0.696594  
+       4Ag     0.715168     2B3g    0.832187     2B2g    0.832187  
+       5Ag     0.883370     4B1u    0.894737     5B1u    1.415770  
+       1B1g    1.447074     6Ag     1.447074     3B2u    1.643324  
+       3B3u    1.643324     6B1u    1.957069     1Au     1.957069  
+       7Ag     2.486943     7B1u    2.540415     3B3g    2.542980  
+       3B2g    2.542980     4B2u    3.933560     4B3u    3.933560  
+       8Ag     4.127713     4B3g    4.270800     4B2g    4.270800  
+       2B1g    4.953638     9Ag     4.953638     8B1u    5.130106  
+       5B2u    5.130734     5B3u    5.130734     6B3u    5.269979  
+       6B2u    5.269979    10Ag     5.562295     5B2g    5.663988  
+       5B3g    5.663988     9B1u    6.132429    10B1u    6.413114  
+       2Au     6.413114    11Ag     6.554650     3B1g    6.554650  
+      11B1u    6.787811     3Au     6.787811     6B3g    6.844055  
+       6B2g    6.844055     7B2u    7.068873     7B3u    7.068873  
+      12B1u    7.581212    12Ag     7.694005     7B3g    8.094631  
+       7B2g    8.094631    13Ag     8.191302    13B1u   15.908946  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:  -149.65170765757190
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             30.7884921361454538
+    One-Electron Energy =                -266.9132198610869295
+    Two-Electron Energy =                  86.4730200673695606
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -149.6517076575719045
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on ariadne at Sun Oct 23 18:53:43 2016
+Module time:
+	user time   =       2.54 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =      12.83 seconds =       0.21 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =         14 seconds =       0.23 minutes
+	Triplet Direct ROHF energy........................................PASSED
+
+*** tstart() called on ariadne
+*** at Sun Oct 23 18:53:43 2016
+
+   => Loading Basis Set <=
+
+    Role: BASIS
+    Keyword: BASIS
+    Name: CC-PVTZ
+    atoms 1-2 entry O          line   247 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             CUHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.550000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.550000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.74204  C =      1.74204 [cm^-1]
+  Rotational constants: A = ************  B =  52225.17395  C =  52225.17395 [MHz]
+  Nuclear repulsion =   30.788492136145454
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 16
+  Nalpha       = 9
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz.gbs
+    Total number of shells = 20
+    Number of primitives   = 52
+    Number of AO           = 70
+    Number of SO           = 60
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+       2     O     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    Name: CC-PVTZ-JKFIT
+    atoms 1-2 entry O          line   228 file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       9       7       7       2
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = file /Users/loriab/linux/psihub/hrw-labfork/objdir2/stage/Users/loriab/linux/psihub/install-hrw-labfork/share/psi4/basis/cc-pvtz-jkfit.gbs
+    Total number of shells = 50
+    Number of primitives   = 50
+    Number of AO           = 192
+    Number of SO           = 158
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+       2     O     10s 7p 5d 2f 1g // 10s 7p 5d 2f 1g 
+
+  Minimum eigenvalue in the overlap matrix is 2.7007379178E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-CUHF iter   1:  -256.72790828999189   -2.56728e+02   1.05270e-14 
+   @DF-CUHF iter   2:  -256.72790828999189    0.00000e+00   1.05270e-14 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+   @CUHF iter   3:  -131.02769690362538    1.25700e+02   3.52940e-01 DIIS
+   @CUHF iter   4:  -140.10353918415015   -9.07584e+00   1.84876e-01 DIIS
+   @CUHF iter   5:  -149.25243616104672   -9.14890e+00   5.00764e-02 DIIS
+   @CUHF iter   6:  -149.63817985443004   -3.85744e-01   8.24004e-03 DIIS
+   @CUHF iter   7:  -149.65162024791445   -1.34404e-02   5.96010e-04 DIIS
+   @CUHF iter   8:  -149.65170615921514   -8.59113e-05   1.68325e-04 DIIS
+   @CUHF iter   9:  -149.65170608248960    7.67255e-08   1.75800e-05 DIIS
+   @CUHF iter  10:  -149.65170750687176   -1.42438e-06   1.96161e-06 DIIS
+   @CUHF iter  11:  -149.65170767801652   -1.71145e-07   3.18125e-07 DIIS
+
+  ==> Post-Iterations <==
+
+
+  @Spin Contamination Metric:  0.00000
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.00000
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1Ag   -20.728398     1B1u  -20.727317     2Ag    -1.805358  
+       2B1u   -1.148926     1B3u   -0.865420     1B2u   -0.865420  
+       3Ag    -0.800964     1B2g   -0.482421     1B3g   -0.482420  
+
+    Alpha Virtual:                                                        
+
+       3B1u    0.445206     2B3u    0.672317     2B2u    0.672317  
+       4Ag     0.708739     2B2g    0.800671     2B3g    0.800671  
+       4B1u    0.864363     5Ag     0.868581     5B1u    1.397473  
+       6Ag     1.417440     1B1g    1.417440     3B2u    1.606467  
+       3B3u    1.606467     6B1u    1.908620     1Au     1.908620  
+       7Ag     2.465527     3B2g    2.517400     3B3g    2.517400  
+       7B1u    2.526368     4B3u    3.885569     4B2u    3.885569  
+       8Ag     4.114424     4B2g    4.226227     4B3g    4.226227  
+       9Ag     4.935165     2B1g    4.935165     8B1u    5.113334  
+       5B2u    5.113951     5B3u    5.113951     6B3u    5.242036  
+       6B2u    5.242036    10Ag     5.545666     5B2g    5.632396  
+       5B3g    5.632396     9B1u    6.112627    10B1u    6.383378  
+       2Au     6.383378    11Ag     6.502619     3B1g    6.502619  
+      11B1u    6.743007     3Au     6.743007     6B2g    6.815077  
+       6B3g    6.815077     7B2u    7.042409     7B3u    7.042409  
+      12B1u    7.564791    12Ag     7.667198     7B3g    8.077952  
+       7B2g    8.077952    13Ag     8.179857    13B1u   15.891842  
+
+    Beta Occupied:                                                        
+
+       1Ag   -20.687355     1B1u  -20.685384     2Ag    -1.707004  
+       2B1u   -0.969314     3Ag    -0.725037     1B3u   -0.643196  
+       1B2u   -0.643196  
+
+    Beta Virtual:                                                         
+
+       1B2g    0.142303     1B3g    0.142303     3B1u    0.476687  
+       2B3u    0.720163     2B2u    0.720164     4Ag     0.721317  
+       2B2g    0.886306     2B3g    0.886306     5Ag     0.898292  
+       4B1u    0.926155     5B1u    1.434129     1B1g    1.476431  
+       6Ag     1.476431     3B3u    1.680294     3B2u    1.680294  
+       1Au     2.005182     6B1u    2.005182     7Ag     2.508285  
+       7B1u    2.554508     3B2g    2.569162     3B3g    2.569162  
+       4B2u    3.981990     4B3u    3.981990     8Ag     4.141020  
+       4B3g    4.316497     4B2g    4.316497     2B1g    4.972124  
+       9Ag     4.972124     8B1u    5.146924     5B2u    5.147607  
+       5B3u    5.147607     6B3u    5.297922     6B2u    5.297922  
+      10Ag     5.578973     5B3g    5.695578     5B2g    5.695578  
+       9B1u    6.152246     2Au     6.441970    10B1u    6.441970  
+       3B1g    6.606944    11Ag     6.606944     3Au     6.833830  
+      11B1u    6.833830     6B3g    6.873085     6B2g    6.873085  
+       7B2u    7.095403     7B3u    7.095403    12B1u    7.597746  
+      12Ag     7.720940     7B3g    8.111447     7B2g    8.111447  
+      13Ag     8.202771    13B1u   15.926079  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @CUHF Final Energy:  -149.65170767801652
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             30.7884921361454538
+    One-Electron Energy =                -266.9132748873977903
+    Two-Electron Energy =                  86.4730750732357905
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -149.6517076780165212
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on ariadne at Sun Oct 23 18:53:45 2016
+Module time:
+	user time   =       2.56 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =      15.39 seconds =       0.26 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =         16 seconds =       0.27 minutes
+	Triplet Direct CUHF energy........................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

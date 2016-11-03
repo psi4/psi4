@@ -12,6 +12,7 @@ set {
     reference       rhf
     restricted_docc [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
+    mcscf_algorithm ah
 }
 
 

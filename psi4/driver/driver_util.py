@@ -29,10 +29,10 @@ from __future__ import print_function
 import math
 import re
 from psi4 import core
-import qcdb
-import p4util
-from p4util.exceptions import *
-from procedures import *
+from psi4.driver import qcdb
+from psi4.driver import p4util
+from psi4.driver.p4util.exceptions import *
+from psi4.driver.procedures import *
 
 
 def _method_exists(ptype, method_name):

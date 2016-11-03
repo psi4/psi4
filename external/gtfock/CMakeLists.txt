@@ -1,18 +1,21 @@
-if(${ENABLE_liberd})
-    find_package(liberd CONFIG QUIET)
+if(${ENABLE_GTFock})
+    find_package(GTFock CONFIG QUIET)
 
-    if(${liberd_FOUND})
-        get_property(_loc TARGET liberd::erd PROPERTY LOCATION)
-        message(STATUS "Found liberd: ${_loc} (found version ${liberd_VERSION})")
-        add_library(liberd_external INTERFACE)  # dummy
+    if(${GTFock_FOUND})
+        get_property(_loc TARGET GTFock::gtfock PROPERTY LOCATION)
+        message(STATUS "Found GTFock: ${_loc} (found version ${GTFock_VERSION})")
+        message(FATAL_ERROR "GTFock has not been hooked back in after the inversion.")
+        add_library(gtfock_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
-        message(STATUS "Suitable liberd could not be located, building one instead.")
-        ExternalProject_Add(liberd_external
-            GIT_REPOSITORY https://github.com/psi4/liberd
+        message(STATUS "Suitable GTFock could not be located, building one instead.")
+        message(FATAL_ERROR "GTFock has not been hooked back in after the inversion.")
+
+        ExternalProject_Add(gtfock_external
+            GIT_REPOSITORY https://github.com/psi4/GTFock
             #GIT_TAG v1.7.1  # TODO tag when stable
             UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/liberd
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -29,6 +32,6 @@ if(${ENABLE_liberd})
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
     endif()
 else()
-    add_library(liberd_external INTERFACE)  # dummy
+    add_library(gtfock_external INTERFACE)  # dummy
 endif()
 

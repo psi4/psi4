@@ -27,7 +27,7 @@
 
 """Attempts to catch Python based import errors and provides possible solutions."""
 
-from p4util.exceptions import *
+from .p4util.exceptions import *
 
 # NumPy import
 try:

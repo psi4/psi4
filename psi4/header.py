@@ -28,7 +28,8 @@
 import datetime
 import os
 
-from import_core import core
+from . import core
+from .metadata import __version__, version_formatter
 
 time_string = datetime.datetime.now().strftime('%A, %d %B %Y %I:%M%p')
 pid = os.getpid()
@@ -41,8 +42,8 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f %s%s" % (num, 'Yi', suffix)
 
 def print_header():
-    version_number = "1.0"
-    git_hash = "dirty"
+    driver_info = version_formatter("""{version} {release}""")
+    git_info = version_formatter("""{{{branch}}} {githash} {clean}""")
     datadir = core.get_environment("PSIDATADIR")
     memory = sizeof_fmt(core.get_memory())
     threads = str(core.nthread())
@@ -50,9 +51,9 @@ def print_header():
     header = """
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 %s Driver
+                               Psi4 %s
 
-                              Git: Rev %s
+                         Git: Rev %s
 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
@@ -76,5 +77,5 @@ def print_header():
     PSIDATADIR: %s
     Memory:     %s
     Threads:    %s
-    """ % (version_number, git_hash, time_string, pid, datadir, memory, threads)
+    """ % (driver_info, git_info, time_string, pid, datadir, memory, threads)
     core.print_out(header)

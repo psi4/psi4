@@ -9,11 +9,11 @@ else()
     message(STATUS "Suitable libefp could not be located, building one instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
-        GIT_TAG 4df1211c  #config
+        GIT_TAG config3
         #GIT_REPOSITORY https://github.com/ilyak/libefp
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external/libefp
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}

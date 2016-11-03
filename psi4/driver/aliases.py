@@ -39,7 +39,7 @@ import re
 import os
 import math
 import warnings
-from . import driver_cbs
+from psi4.driver import driver_cbs
 #from wrappers import *
 #from gaussian_n import *  # CU
 #from wrappers_cfour import *  # CU
@@ -62,7 +62,7 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
     :type filename: string
     :param filename: destination file name for file11 file
 
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, gradient from which to generate file11
 
     :examples:

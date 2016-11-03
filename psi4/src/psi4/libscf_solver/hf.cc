@@ -351,9 +351,10 @@ void HF::common_init()
     } else {
         potential_ = nullptr;
     }
-    // -D is zero by default
-    energies_["-D"] = 0.0;
 
+    // -D is zero by default
+    variables_["-D Energy"] = 0.0;
+    energies_["-D"] = 0.0;
 
     // Initialize PCM object, if requested
 #ifdef USING_PCMSolver

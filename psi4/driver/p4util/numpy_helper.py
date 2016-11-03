@@ -29,14 +29,17 @@ import numpy as np
 from psi4 import core
 
 import sys
-if sys.version_info < (3,0):
-    from .exceptions import *
+from .exceptions import *
 
 # The next three functions make me angry
 def translate_interface(interface):
     """
     This is extra stupid with unicode
     """
+
+    if sys.version_info[0] > 2:
+        return interface
+
     nouni_interface = {}
     for k, v in interface.items():
         if k == 'typestr':
@@ -58,16 +61,16 @@ def _get_raw_views(self, copy=False):
     Gets simple raw view of the passed in object.
     """
     ret = []
-    for x in [numpy_holder(self.array_interface(h)) for h in xrange(self.nirrep())]:
+    for data in self.array_interface():
 
         # Yet another hack
-        if isinstance(x.__array_interface__["shape"], list):
-            x.__array_interface__["shape"] = tuple(x.__array_interface__["shape"])
+        if isinstance(data["shape"], list):
+            data["shape"] = tuple(data["shape"])
 
-        if 0 in x.__array_interface__["shape"]:
-            ret.append(np.empty(shape=x.__array_interface__["shape"]))
+        if 0 in data["shape"]:
+            ret.append(np.empty(shape=data["shape"]))
         else:
-            ret.append(np.array(x, copy=copy))
+            ret.append(np.array(numpy_holder(data), copy=copy))
     return ret
 
 def _find_dim(arr, ndim):
@@ -124,7 +127,6 @@ def _dimension_to_tuple(dim):
     return tuple(ret)
 
 
-@classmethod
 def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     """
     Converts a numpy array or list of numpy arrays into a Psi4 Matrix (irreped if list).
@@ -145,7 +147,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
 
     Returns
     -------
-    ret : core.Vector or core.Matrix
+    matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
        Returns the given Psi4 object
 
     Notes
@@ -161,7 +163,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     >>> irrep_data = [np.random.rand(2, 2), np.empty(shape=(0,3)), np.random.rand(4, 4)]
     >>> matrix = array_to_matrix(irrep_data)
     >>> print matrix.rowspi().to_tuple()
-    >>> (2, 0, 4)
+    (2, 0, 4)
     """
 
     # What type is it? MRO can help.
@@ -236,8 +238,8 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             # Simple case without irreps
             else:
                 ret = self(name, arr.shape[0], arr.shape[1])
-                ret_view = np.asarray(numpy_holder(ret.array_interface(0)))
-                ret_view[:] = arr
+                view = _get_raw_views(ret)[0]
+                view[:] = arr
                 return ret
 
         elif arr_type == core.Vector:
@@ -275,6 +277,33 @@ def to_array(matrix, copy=True, dense=False):
     """
     Converts a Psi4 Matrix or Vector to a numpy array. Either copies the data or simply
     consturcts a view.
+
+    Parameters
+    ----------
+    matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
+        Pointers to which Psi4 core class should be used in the construction.
+    copy : bool
+        Copy the data if True, return a view otherwise
+    dense : bool
+        Converts irreped Psi4 objects to diagonally blocked dense arrays. Returns a list of arrays otherwise.
+
+    Returns
+    -------
+    array : np.array or list of of np.array
+       Returns either a list of np.array's or the base array depending on options.
+
+    Notes
+    -----
+    This is a generalized function to convert a Psi4 object to a NumPy array
+
+    Examples
+    --------
+
+    >>> data = psi4.Matrix(3, 3)
+    >>> data.to_array()
+    [[ 0.  0.  0.]
+     [ 0.  0.  0.]
+     [ 0.  0.  0.]]
     """
     if matrix.nirrep() > 1:
 
@@ -343,13 +372,19 @@ def _build_view(matrix):
     else:
         return views
 
+def get_view(self):
+    if hasattr(self, '_np_view_data'):
+        return self._np_view_data
+    else:
+        self._np_view_data = _build_view(self)
+        return self._np_view_data
+
 @property
 def _np_shape(self):
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
-
-    # view_data = self.cdict['_np_view_data']
-    view_data = _build_view(self)
+    """
+    Shape of the Psi4 data object
+    """
+    view_data = get_view(self)
     if self.nirrep() > 1:
         return tuple(view_data[x].shape for x in range(self.nirrep()))
     else:
@@ -360,32 +395,24 @@ def _np_view(self):
     """
     View without only one irrep
     """
-
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
-
-    # return self.cdict['_np_view_data']
-    return _build_view(self)
+    if self.nirrep() > 1:
+        raise ValidationError("Attempted to call .np on a Psi4 data object with multiple irreps. Please use .nph for objects with irreps.")
+    return get_view(self)
 
 @property
 def _nph_view(self):
     """
     View with irreps.
     """
-    # if '_np_view_data' not in self.cdict.keys():
-    #     self.cdict['_np_view_data'] = _build_view(self)
-
     if self.nirrep() > 1:
-        return _build_view(self)
-        # return self.cdict['_np_view_data']
+        return get_view(self)
     else:
-        return _build_view(self),
-        # return self.cdict['_np_view_data'],
+        return get_view(self),
 
 @property
 def _array_conversion(self):
     if self.nirrep() > 1:
-        raise ValidationError("__array__interface__ can only be called on Psi4 data holders with only one irrep!")
+        raise ValidationError("__array__interface__ can only be called on Psi4 data object with only one irrep!")
     else:
         return self.np.__array_interface__
 
@@ -414,7 +441,11 @@ def _np_read(self, filename, prefix=""):
 
     if isinstance(filename, np.lib.npyio.NpzFile):
         data = filename
-    elif isinstance(filename, (str, unicode)):
+    elif (sys.version_info[0] == 2) and isinstance(filename, (str, unicode)):
+        if not filename.endswith('.npz'):
+            filename = filename + '.npz'
+        data = np.load(filename)
+    elif (sys.version_info[0] > 2) and isinstance(filename, str):
         if not filename.endswith('.npz'):
             filename = filename + '.npz'
 
@@ -445,7 +476,7 @@ def _np_read(self, filename, prefix=""):
     return ret
 
 # Matirx attributes
-core.Matrix.from_array = array_to_matrix
+core.Matrix.from_array = classmethod(array_to_matrix)
 core.Matrix.to_array = to_array
 core.Matrix.shape = _np_shape
 core.Matrix.np = _np_view
@@ -455,7 +486,7 @@ core.Matrix.np_write = _np_write
 core.Matrix.np_read = _np_read
 
 # Vector attributes
-core.Vector.from_array = array_to_matrix
+core.Vector.from_array = classmethod(array_to_matrix)
 core.Vector.to_array = to_array
 core.Vector.shape = _np_shape
 core.Vector.np = _np_view
@@ -469,16 +500,9 @@ core.Dimension.from_list = _dimension_from_list
 core.Dimension.to_tuple = _dimension_to_tuple
 
 # CIVector attributes
-
 @property
 def _civec_view(self):
     "Returns a view of the CIVector's buffer"
-    return np.asarray(numpy_holder(self.array_interface()))
-
-@property
-def _civec_buffer(self):
-    "Returns a view of the CIVector's buffer"
-    return translate_interface(self.array_interface())
+    return np.asarray(self)
 
 core.CIVector.np = _civec_view
-core.CIVector.__array_interface__ = _civec_buffer

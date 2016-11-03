@@ -54,7 +54,7 @@ ZERO = 1.0E-14
 NOISY_ZERO = 1.0E-8
 
 
-class LibmintsMolecule(object):
+class LibmintsMolecule(dict):
     """Class to store the elements, coordinates, fragmentation pattern,
     charge, multiplicity of a molecule. Largely replicates psi4's libmints
     Molecule class, developed by Justin M. Turney and Andy M. Simmonett
@@ -113,9 +113,9 @@ class LibmintsMolecule(object):
         # Atom info vector (includes dummy atoms)
         self.full_atoms = []
         # A list of all variables known, whether they have been set or not.
-        self.all_variables = []
+        self["all_variables"] = []
         # A listing of the variables used to define the geometries
-        self.geometry_variables = {}
+        self["geometry_variables"] = {}
 
         # <<< Fragmentation >>>
 
@@ -1209,7 +1209,7 @@ class LibmintsMolecule(object):
         """
         vstr = vstr.upper()
         try:
-            return self.geometry_variables[vstr]
+            return self["geometry_variables"][vstr]
         except KeyError:
             raise ValidationError('Molecule::get_variable: Geometry variable %s not known.\n' % (vstr))
 
@@ -1218,8 +1218,8 @@ class LibmintsMolecule(object):
         list of geometry variables. Also calls update_geometry()
 
         """
-        self.__dict__['lock_frame'] = False
-        self.__dict__['geometry_variables'][vstr.upper()] = val
+        self.lock_frame = False
+        self["geometry_variables"][vstr.upper()] = val
         print("""Setting geometry variable %s to %f""" % (vstr.upper(), val))
         try:
             self.update_geometry()
@@ -1228,76 +1228,33 @@ class LibmintsMolecule(object):
             self.atoms = []
         # TODO outfile
 
-#    def __setattr__(self, name, value):
-#        """Function to overload setting attributes to allow geometry
-#        variable assigment as if member data.
-#
-#        """
-#        try:
-#            if name.upper() in self.__dict__['all_variables']:
-#                self.set_variable(name, value)
-#            else:
-#                self.__dict__[name] = value
-#        except KeyError:
-#            self.__dict__[name] = value
-#
-#    def __getattr__(self, name):
-#        """Function to overload accessing attribute contents to allow
-#        retrivial geometry variable values as if member data.
-#
-#        """
-##        #if not name in self.__dict__:
-##        if not name in self.__dict__['__dict__']:
-##            if object.__getattribute__(self, 'is_variable')(name):
-##                return object.__getattribute__(self, 'get_variable')(name)
-##            else:
-##                raise AttributeError
-##        else:
-##            #return self.__dict__[name]
-##            return self.__dict__['__dict__'][name]
-#
-##        if name in self.__dict__:
-##            return self.__dict__[name]
-##        elif '__dict__' in self.__dict__ and name in self.__dict__['__dict__']:
-##            return self.__dict__['__dict__'][name]
-##        elif object.__getattribute__(self, 'is_variable')(name):
-##            return object.__getattribute__(self, 'get_variable')(name)
-##        else:
-##            raise AttributeError
-#
-#        if not name in self.__dict__:
-#            if object.__getattribute__(self, 'is_variable')(name):
-#                return object.__getattribute__(self, 'get_variable')(name)
-#            else:
-#                raise AttributeError
-#        else:
-#            return self.__dict__[name]
-
     def __setattr__(self, name, value):
         """Function to overload setting attributes to allow geometry
         variable assigment as if member data.
 
         """
-        try:
-            if name.upper() in self.__dict__['all_variables']:
-                self.set_variable(name, value)
-            else:
-                self.__dict__[name] = value
-        except KeyError:
-            self.__dict__[name] = value
+    
+        if "all_variables" not in self.keys():
+            self["all_variables"] = []
+
+        if name.upper() in list(self["all_variables"]):
+            self.set_variable(name, value)
+        else:
+            self[name] = value
 
     def __getattr__(self, name):
         """Function to overload accessing attribute contents to allow
         retrivial geometry variable values as if member data.
 
         """
-        if not name in self.__dict__:
-            if object.__getattribute__(self, 'is_variable')(name):
-                return object.__getattribute__(self, 'get_variable')(name)
-            else:
-                raise AttributeError
+
+        if name.upper() in list(self["all_variables"]):
+            return self.get_variable(name)
+        elif name in list(self):
+            return self[name]
         else:
-            return self.__dict__[name]
+            raise AttributeError
+
 
     def get_anchor_atom(self, vstr, line):
         """Attempts to interpret a string *vstr* as an atom specifier in

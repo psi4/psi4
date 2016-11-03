@@ -40,14 +40,14 @@ import os
 import shutil
 
 # Import driver helpers
-from . import driver_util
-from . import driver_cbs
-from . import driver_nbody
-from . import p4util
+from psi4.driver import driver_util
+from psi4.driver import driver_cbs
+from psi4.driver import driver_nbody
+from psi4.driver import p4util
 from psi4.driver.inputparser import parse_options_block
 
-from .procedures import *
-from .p4util.exceptions import *
+from psi4.driver.procedures import *
+from psi4.driver.p4util.exceptions import *
 # never import wrappers or aliases into this file
 
 def _find_derivative_type(ptype, method_name, user_dertype):
@@ -105,7 +105,7 @@ def energy(name, **kwargs):
 
     :returns: *float* |w--w| Total electronic energy in Hartrees. SAPT & EFP return interaction energy.
 
-    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -130,7 +130,7 @@ def energy(name, **kwargs):
     :type return_wfn: :ref:`boolean <op_py_boolean>`
     :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
 
-        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
     :type restart_file: string
@@ -277,11 +277,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | psimrcc                 | Mukherjee multireference coupled cluster (Mk-MRCC) :ref:`[manual] <sec:psimrcc>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrg-scf                | density matrix renormalization group SCF :ref:`[manual] <sec:dmrg>`                                           |
+    | dmrg-scf                | density matrix renormalization group SCF :ref:`[manual] <sec:chemps2>`                                        |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrg-caspt2             | density matrix renormalization group CASPT2 :ref:`[manual] <sec:dmrg>`                                        |
+    | dmrg-caspt2             | density matrix renormalization group CASPT2 :ref:`[manual] <sec:chemps2>`                                     |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dmrg-ci                 | density matrix renormalization group CI :ref:`[manual] <sec:dmrg>`                                            |
+    | dmrg-ci                 | density matrix renormalization group CI :ref:`[manual] <sec:chemps2>`                                         |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT) :ref:`[manual] <sec:sapt>`                              |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -345,11 +345,11 @@ def energy(name, **kwargs):
     .. comment mrcc --- this is handled in its own table
     .. comment psimrcc_scf --- convenience fn
 
-    .. include:: autodoc_dft_energy.rst
+    .. include:: ../autodoc_dft_energy.rst
 
-    .. include:: mrcc_table_energy.rst
+    .. include:: ../mrcc_table_energy.rst
 
-    .. include:: cfour_table_energy.rst
+    .. include:: ../cfour_table_energy.rst
 
     :examples:
 
@@ -450,8 +450,6 @@ def energy(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
-    if isinstance(wfn, core.Wavefunction):
-        wfn.cdict.clear()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
@@ -471,9 +469,9 @@ def gradient(name, **kwargs):
     r"""Function complementary to :py:func:~driver.optimize(). Carries out one gradient pass,
     deciding analytic or finite difference.
 
-    :returns: :ref:`Matrix<sec:psimod_Matrix>` |w--w| Total electronic gradient in Hartrees/Bohr.
+    :returns: :py:class:`~psi4.core.Matrix` |w--w| Total electronic gradient in Hartrees/Bohr.
 
-    :returns: (:ref:`Matrix<sec:psimod_Matrix>`, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| gradient and wavefunction when **return_wfn** specified.
+    :returns: (:py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.Wavefunction`) |w--w| gradient and wavefunction when **return_wfn** specified.
 
     :examples:
 
@@ -598,8 +596,6 @@ def gradient(name, **kwargs):
         if return_wfn:
             return (wfn.gradient(), wfn)
         else:
-            if isinstance(wfn, core.Wavefunction):
-                wfn.cdict.clear()
             return wfn.gradient()
 
     else:
@@ -828,7 +824,7 @@ def optimize(name, **kwargs):
 
     :returns: *float* |w--w| Total electronic energy of optimized structure in Hartrees.
 
-    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -852,7 +848,7 @@ def optimize(name, **kwargs):
     :type return_wfn: :ref:`boolean <op_py_boolean>`
     :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
 
-        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
     :type func: :ref:`function <op_py_function>`
@@ -935,9 +931,9 @@ def optimize(name, **kwargs):
     .. _`table:grad_scf`:
 
 
-    .. include:: autodoc_dft_opt.rst
+    .. include:: ../autodoc_dft_opt.rst
 
-    .. include:: cfour_table_grad.rst
+    .. include:: ../cfour_table_grad.rst
 
 
     :examples:
@@ -1149,9 +1145,9 @@ def hessian(name, **kwargs):
     constants, deciding analytic, finite difference of gradients, or
     finite difference of energies.
 
-    :returns: :ref:`Matrix<sec:psimod_Matrix>` |w--w| Total non-mass-weighted electronic Hessian in Hartrees/Bohr/Bohr.
+    :returns: :py:class:`~psi4.core.Matrix` |w--w| Total non-mass-weighted electronic Hessian in Hartrees/Bohr/Bohr.
 
-    :returns: (:ref:`Matrix<sec:psimod_Matrix>`, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| Hessian and wavefunction when **return_wfn** specified.
+    :returns: (:py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.Wavefunction`) |w--w| Hessian and wavefunction when **return_wfn** specified.
 
     :examples:
 
@@ -1543,7 +1539,7 @@ def frequency(name, **kwargs):
 
     :returns: *float* |w--w| Total electronic energy in Hartrees.
 
-    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| energy and wavefunction when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
@@ -1559,7 +1555,7 @@ def frequency(name, **kwargs):
     :type return_wfn: :ref:`boolean <op_py_boolean>`
     :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
 
-        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
         Arrays of frequencies and the Hessian can be accessed through the wavefunction.
 
@@ -1601,6 +1597,12 @@ def frequency(name, **kwargs):
         proceed through finite differences according to availability of gradients or energies.
 
     .. _`table:freq_gen`:
+
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                                                  |
+    +=========================+===============================================================================================================+
+    | scf                     | Hartree--Fock (HF) :ref:`[manual] <sec:scf>`                                                                  |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
 
     :examples:
 
@@ -1678,11 +1680,13 @@ def gdma(wfn, datafile=""):
     """Function to use wavefunction information in *wfn* and, if specified,
     additional commands in *filename* to run GDMA analysis.
 
+    .. include:: ../autodoc_abbr_options_c.rst
+
     .. versionadded:: 0.6
 
     :returns: None
 
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
 
     :type datafile: string
@@ -1748,7 +1752,7 @@ def fchk(wfn, filename):
     :type filename: string
     :param filename: destination file name for FCHK file
 
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate fchk file
 
     :examples:
@@ -1771,16 +1775,16 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
     :returns: None
 
-    :type wfn: :ref:`Wavefunction<sec:psimod_Wavefunction>`
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
 
     :type filename: string
     :param filename: destination file name for MOLDEN file (optional)
 
-    :type density_a: core.Matrix
+    :type density_a: :py:class:`~psi4.core.Matrix`
     :param density_a: density in the MO basis to build alpha NO's from (optional)
 
-    :type density_b: core.Matrix
+    :type density_b: :py:class:`~psi4.core.Matrix`
     :param density_b: density in the MO basis to build beta NO's from, assumes restricted if not supplied (optional)
 
     :type dovirtual: bool

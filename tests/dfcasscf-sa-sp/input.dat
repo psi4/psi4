@@ -27,5 +27,5 @@ set {
 
 casscf_energy = energy('casscf')
 
-compare_values(-153.104345665210474, casscf_energy, 6, 'CASSCF Energy')  #TEST
+compare_values(-153.103747672024809, casscf_energy, 6, 'CASSCF Energy')  #TEST
 

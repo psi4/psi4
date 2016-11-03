@@ -585,18 +585,16 @@ void CIvect::divide(SharedCIVector denom, double min_val, int tvec, int ovec) {
   }
 }
 
-py::dict CIvect::array_interface() {
+py::buffer_info CIvect::array_interface() {
 
     // Why is this so complex other places?
     if (!buf_locked_)
         throw PSIEXCEPTION("CIVector::matrix_array_interface: No buffer is locked.");
 
-    py::dict rv;
-    rv["shape"] = py::make_tuple(buffer_size_);
-    rv["data"] = py::make_tuple((long)buffer_, false);
-    std::string typestr = "<f" + std::to_string((int)sizeof(double));
-    rv["typestr"] = py::str(typestr);
-    return rv;
+    return py::buffer_info(buffer_, sizeof(double),
+                           py::format_descriptor<double>::format(), 1,
+                           {static_cast<size_t>(buffer_size_)},
+                           {sizeof(double)});
 }
 
 double CIvect::dcalc3(double lambda, SharedCIVector Hd, int rootnum) {

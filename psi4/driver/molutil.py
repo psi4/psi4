@@ -285,26 +285,6 @@ def dynamic_variable_bind(cls):
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
 
-def cdict_set_attr(self, name, value):
-    """Function to redefine __setattr__ method of a class with a cdict."""
-    self.cdict[name] = value
-
-
-def cdict_get_attr(self, name):
-    """Function to redefine __getattr__ method of a class with a cdict."""
-    return self.cdict[name]
-
-def cdict_dynamic_variable_bind(cls):
-    """Function to dynamically add extra members to
-    the class with a cdict attribute.
-
-    """
-    cls.__setattr__ = cdict_set_attr
-    cls.__getattr__ = cdict_get_attr
-
-#cdict_dynamic_variable_bind(core.Wavefunction)
-
-
 #
 # Define geometry to be used by PSI4.
 # The molecule created by this will be set in options.

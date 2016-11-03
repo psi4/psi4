@@ -38,7 +38,7 @@ import subprocess
 import re
 import numpy as np
 
-import psi4
+from psi4 import extras
 from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.p4util.exceptions import *
@@ -1015,9 +1015,9 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        wfn.cdict["_disp_functor"] = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
+        wfn._disp_functor = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
                                                                               tuple_params = modified_disp_params)
-        wfn.cdict["_disp_functor"].print_out()
+        wfn._disp_functor.print_out()
 
     # Set the multitude of SAD basis sets
     if (core.get_option("SCF", "SCF_TYPE") == "DF") or \
@@ -1097,10 +1097,16 @@ def scf_helper(name, **kwargs):
         elif p4util.no.match(str(cast)):
             cast = False
 
-        if core.get_option('SCF', 'SCF_TYPE') == 'DF':
-            castdf = True
+    if cast:
+
+        # A use can set "BASIS_GUESS" to True and we default to 3-21G
+        if cast is True:
+            guessbasis = '3-21G'
         else:
-            castdf = False
+            guessbasis = cast
+        core.set_global_option('BASIS', guessbasis)
+
+        castdf = core.get_option('SCF', 'SCF_TYPE') == 'DF'
 
         if core.has_option_changed('SCF', 'DF_BASIS_GUESS'):
             castdf = core.get_option('SCF', 'DF_BASIS_GUESS')
@@ -1108,6 +1114,31 @@ def scf_helper(name, **kwargs):
                 castdf = True
             elif p4util.no.match(str(castdf)):
                 castdf = False
+
+        if castdf:
+            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            core.set_local_option('SCF', 'DF_INTS_IO', 'none')
+
+            # Figure out the fitting basis set
+            if castdf is True:
+                core.set_global_option('DF_BASIS_SCF', '')
+            elif isinstance(castdf, (unicode, str)):
+                core.set_global_option('DF_BASIS_SCF', castdf)
+            else:
+                raise ValidationError("Unexpected castdf option (%s)." % castdf)
+
+
+        # Switch to the guess namespace
+        namespace = core.IO.get_default_namespace()
+        guesspace = namespace + '.guess'
+        if namespace == '':
+            guesspace = 'guess'
+        core.IO.set_default_namespace(guesspace)
+
+        # Print some info about the guess
+        core.print_out('\n')
+        p4util.banner('Guess SCF, %s Basis' % (guessbasis))
+        core.print_out('\n')
 
     # sort out broken_symmetry settings.
     if 'brokensymmetry' in kwargs:
@@ -1132,41 +1163,6 @@ def scf_helper(name, **kwargs):
         scf_molecule.set_multiplicity(3)
         core.print_out('\n')
         p4util.banner('  Computing high-spin triplet guess  ')
-        core.print_out('\n')
-
-    # cast set-up
-    if cast:
-
-        if cast is True:
-            guessbasis = '3-21G'
-        else:
-            guessbasis = cast
-
-        #if (castdf):
-        #    if p4util.yes.match(str(castdf)):
-        #        guessbasisdf = p4util.corresponding_jkfit(guessbasis)
-        #    else:
-        #        guessbasisdf = castdf
-
-        # Switch to the guess namespace
-        namespace = core.IO.get_default_namespace()
-        guesspace = namespace + '.guess'
-        if namespace == '':
-            guesspace = 'guess'
-        core.IO.set_default_namespace(guesspace)
-
-        # Setup initial SCF
-        core.set_global_option('BASIS', guessbasis)
-        if (castdf):
-            core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-            core.set_local_option('SCF', 'DF_INTS_IO', 'none')
-            #core.set_global_option('DF_BASIS_SCF', guessbasisdf)
-            if not isinstance(cast, bool):
-                core.set_global_option('DF_BASIS_SCF', castdf)
-
-        # Print some info about the guess
-        core.print_out('\n')
-        p4util.banner('Guess SCF, %s Basis' % (guessbasis))
         core.print_out('\n')
 
 
@@ -1200,8 +1196,9 @@ def scf_helper(name, **kwargs):
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
-        if "_disp_functor" in ref_wfn.cdict.keys():
-            ref_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
+        if "_disp_functor" in dir(ref_wfn):
+            disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
+            ref_wfn.set_variables("-D Energy", disp_energy)
         ref_wfn.compute_energy()
 
     # broken clean-up
@@ -1302,8 +1299,9 @@ def scf_helper(name, **kwargs):
         scf_wfn.basisset().print_detail_out()
 
     # Compute dftd3
-    if "_disp_functor" in scf_wfn.cdict.keys():
-        scf_wfn.set_dashd_correction(scf_wfn.cdict["_disp_functor"].compute_energy(scf_wfn.molecule()))
+    if "_disp_functor" in dir(scf_wfn):
+        disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule())
+        scf_wfn.set_variable("-D Energy", disp_energy)
 
     e_scf = scf_wfn.compute_energy()
     core.set_variable("SCF TOTAL ENERGY", e_scf)
@@ -1359,7 +1357,7 @@ def scf_helper(name, **kwargs):
     data["BasisSet"] = scf_wfn.basisset().name()
     data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
     np.savez(filename, **data)
-    psi4.register_numpy_file(filename)
+    extras.register_numpy_file(filename)
 
 
     optstash.restore()
@@ -1938,8 +1936,9 @@ def run_scf_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
-    if "_disp_functor" in ref_wfn.cdict.keys():
-        ref_wfn.cdict["_disp_gradient"] = ref_wfn.cdict["_disp_functor"].compute_gradient(ref_wfn.molecule())
+    if "_disp_functor" in dir(ref_wfn):
+        disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule())
+        ref_wfn.set_array("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
     ref_wfn.set_gradient(grad)
@@ -2772,8 +2771,8 @@ def run_dft(name, **kwargs):
         if ssuper.name().lower() == name:
             dfun = ssuper
 
-    core.tstop()
     if dfun.is_c_hybrid():
+        core.tstart()
         aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
                                         core.get_option("DFMP2", "DF_BASIS_MP2"),
                                         "RIFIT", core.get_global_option('BASIS'),
@@ -2807,7 +2806,7 @@ def run_dft(name, **kwargs):
         core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
         core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
         core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
-    core.tstop()
+        core.tstop()
 
     optstash.restore()
     return scf_wfn
@@ -3974,9 +3973,9 @@ def run_detcas(name, **kwargs):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if name == 'rasscf':
-        psi4.set_local_option('DETCI', 'WFN', 'RASSCF')
+        core.set_local_option('DETCI', 'WFN', 'RASSCF')
     elif name == 'casscf':
-        psi4.set_local_option('DETCI', 'WFN', 'CASSCF')
+        core.set_local_option('DETCI', 'WFN', 'CASSCF')
     else:
         raise ValidationError("Run DETCAS: Name %s not understood" % name)
 
@@ -3992,8 +3991,8 @@ def run_detcas(name, **kwargs):
             )
 
         # No real reason to do a conventional guess
-        if not psi4.has_option_changed('SCF', 'SCF_TYPE'):
-            psi4.set_global_option('SCF_TYPE', 'DF')
+        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DF')
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
@@ -4006,8 +4005,8 @@ def run_detcas(name, **kwargs):
         ref_wfn = scf_helper(name, **kwargs)
 
         # Ensure IWL files have been written
-        if (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
-            mints = psi4.MintsHelper(ref_wfn.basisset())
+        if (core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
+            mints = core.MintsHelper(ref_wfn.basisset())
             mints.set_print(1)
             mints.integrals()
 

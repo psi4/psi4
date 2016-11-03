@@ -98,11 +98,11 @@ Below, we show an example of using F-SAPT0/jun-cc-pVDZ to analyze the
 distribution of the intermolecular interaction energy components between the
 various hydroxyl and phenyl moeities of the phenol dimer. This example is
 explicitly included in :srcsample:`fsapt1`. A video
-lecture explaining this example is available `here
+lecture explaining this example is available `F-SAPT#1
 <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
 while an additional video describing how to plot the order-1 F-SAPT analysis
 with PyMol and perform a "difference F-SAPT"
-analysis is available `here
+analysis is available `F-SAPT#2
 <https://www.youtube.com/watch?v=fqlzXsayec0&index=2&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_::
 
     memory 1 GB
@@ -259,9 +259,9 @@ interaction between the two phenol groups in a 2,4-pentanediol molecule.
 This example is
 explicitly included in :srcsample:`isapt1`. A video
 lecture explaining this example is available
-`here <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
+`I-SAPT#1 <https://www.youtube.com/watch?v=fD6mu_tTG_c&index=3&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
 while an additional video describing how to plot the density and ESP fields from
-the I-SAPT embedding procedure is available `here <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_::
+the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_::
 
     memory 1 GB
     
@@ -357,7 +357,7 @@ The input files described above cover roughly 90% of all F/I-SAPT analyses. For
 more delicate or involved problems, there are a large number of user options
 that permit the customization of the I-SAPT subsystem partition, the convergence
 of the IBO localization procedure, numerical thresholds, etc. We have an entire
-video tutorial devoted to these options `here <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
+video tutorial devoted to these options `F/I-SAPT Options <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
 Direct source-code documentation on these options is available :ref:`here
 <apdx:fisapt_psivar>`
 

@@ -6,15 +6,7 @@ add_subdirectory(psi4)
 ### >> We also add in versioning, settings for plugins, and
 ### >> exports for Python here.
 
-# Run the git version script, and update gitversion.h, if it's changed
-add_custom_target(update_version
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.py ${PROJECT_SOURCE_DIR}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h
-        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/gitversion.h.tmp
-        COMMENT "Generating Git info")
-
 add_library(versioned_code OBJECT core.cc)
-add_dependencies(versioned_code update_version)
 set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
 target_include_directories(versioned_code PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -35,7 +27,7 @@ set(sources_list export_psio.cc
 
 set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
 add_library(core SHARED ${psi4_all_sources})
-#add_library(core STATIC ${psi4_all_sources})
+
 if(TARGET gdma::gdma)
     target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
@@ -49,24 +41,19 @@ endif()
 target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_COMPILE_DEFINITIONS>)
 target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_INCLUDE_DIRECTORIES>)
 
-
-get_property(psi4_libraries GLOBAL PROPERTY LIBLIST)
-
-target_link_libraries(core PRIVATE ${psi4_libraries})
-target_link_libraries(core PUBLIC pybind11::pybind11)  # public is just to catch psi4.cc
+get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
+target_link_libraries(core PRIVATE ${psi4_binmodules})
+target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
+target_link_libraries(core PRIVATE pybind11::pybind11)
 target_link_libraries(core PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(core PRIVATE ${LAPACK_LIBRARIES})
-target_link_libraries(core PRIVATE ${BLAS_LIBRARIES})
+# LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 
-#add_executable(psi4-bin psi4.cc)
-#target_link_libraries(psi4-bin PRIVATE core)
-
 install(TARGETS core
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/psi4
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
 
@@ -74,15 +61,16 @@ install(TARGETS core
 
 # TODO: Investiage relative RPaths.
 # Add both the build and install RPaths so we can test from build dir
-set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
-set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage${PSI4_EXTERNAL})
-foreach(ex_proj libderiv libint libefp)
-    set(PSI4_RPATH
-            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
-endforeach()
+#set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
+#set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage${PSI4_EXTERNAL})
+#foreach(ex_proj libderiv libint libefp)
+#    set(PSI4_RPATH
+#            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
+#endforeach()
+set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external/${CMAKE_INSTALL_LIBDIR}")
 
 # The other big source of RPaths are the math libraries
-foreach(math_comp ${LAPACK_LIBRARIES};${BLAS_LIBRARIES})
+foreach(math_comp ${LAPACKBLAS_LIBRARIES})
     get_filename_component(math_lib ${math_comp} DIRECTORY)
     set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
 endforeach()
@@ -95,14 +83,10 @@ set(PSI4_RPATH ${psi4_install_lib}
         ${PYTHON_LIB_DIR}
         )
 
-#set_target_properties(psi4-bin PROPERTIES OUTPUT_NAME psi4
-#                                          INSTALL_RPATH "${PSI4_RPATH}"
-#                                          INSTALL_RPATH_USE_LINK_PATH TRUE
-#                                          BUILD_WITH_INSTALL_RPATH TRUE)
-
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
-                           SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
+                           SUFFIX ".so"  # for python module
+                           #SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
                            INSTALL_RPATH "${PSI4_RPATH}"
                            INSTALL_RPATH_USE_LINK_PATH TRUE
                            BUILD_WITH_INSTALL_RPATH TRUE)

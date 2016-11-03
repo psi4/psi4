@@ -60,8 +60,8 @@ Programmers' Manual
 
    contributing
    programming
-   autodoc_driver
-   autodoc_psimod
+   addon
+   psi4api
 
 * Indices
 

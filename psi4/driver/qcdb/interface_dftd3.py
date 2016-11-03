@@ -26,8 +26,7 @@
 #
 
 """Module with functions that interface with Grimme's DFTD3 code."""
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import absolute_import, print_function
 import os
 import re
 import sys
@@ -36,15 +35,16 @@ import shutil
 import socket
 import random
 import subprocess
+
 try:
-    from p4xcpt import *
+    from psi4.driver.p4util.exceptions import *
+    from psi4 import core
+    isP4regime = True
 except ImportError:
     from .exceptions import *
+    isP4regime = False
 from .dashparam import *
 from .molecule import Molecule
-
-# DGAS This should be removed!
-from psi4 import core
 
 
 def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=False):
@@ -126,18 +126,18 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Find out if running from Psi4 for scratch details and such
-    try:
-        import psi4
-    except ImportError as err:
-        isP4regime = False
-    else:
-        isP4regime = True
+    # try:
+    #     import psi4
+    # except ImportError as err:
+    #     isP4regime = False
+    # else:
+    #     isP4regime = True
 
     # Setup unique scratch directory and move in
     current_directory = os.getcwd()
     if isP4regime:
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
+        psioh = core.IOManager.shared_object()
+        psio = core.IO.shared_object()
         os.chdir(psioh.get_default_path())
         dftd3_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
             '.dftd3.' + str(random.randint(0, 99999))
@@ -162,7 +162,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     # We seem to have a problem with one atom, force the correct result
     if numAtoms == 1:
         dashd = 0.0
-        dashdderiv = psi4.Matrix(1, 3)
+        dashdderiv = core.Matrix(1, 3)
 
         if dertype == -1:
             return dashd, dashdderiv
@@ -207,6 +207,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     # Parse output (could go further and break into E6, E8, E10 and Cn coeff)
     success = False
     for line in out.splitlines():
+        line = line.decode('utf-8')
         if re.match(' Edisp /kcal,au', line):
             sline = line.split()
             dashd = float(sline[3])
@@ -238,13 +239,13 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
     # Prepare results for Psi4
     if isP4regime and dertype != 0:
-        psi4.set_variable('DISPERSION CORRECTION ENERGY', dashd)
-        psi_dashdderiv = psi4.Matrix(self.natom(), 3)
+        core.set_variable('DISPERSION CORRECTION ENERGY', dashd)
+        psi_dashdderiv = core.Matrix(self.natom(), 3)
         psi_dashdderiv.set(dashdderiv)
 
     # Print program output to file if verbose
     if isP4regime:
-        verbose = True if psi4.get_option('SCF', 'PRINT') >= 3 else False
+        verbose = True if core.get_option('SCF', 'PRINT') >= 3 else False
     if verbose:
 
         text = '\n  ==> DFTD3 Output <==\n'
@@ -254,7 +255,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
                 text += handle.read().replace('D', 'E')
             text += '\n'
         if isP4regime:
-            psi4.print_out(text)
+            core.print_out(text)
         else:
             print(text)
 
@@ -284,7 +285,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
 try:
     # Attach method to libmints psi4.Molecule class
-    psi4.Molecule.run_dftd3 = run_dftd3
+    core.Molecule.run_dftd3 = run_dftd3
 except (NameError, AttributeError):
     # But don't worry if that doesn't work b/c
     #   it'll get attached to qcdb.Molecule class

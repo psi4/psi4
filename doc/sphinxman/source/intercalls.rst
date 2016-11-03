@@ -70,7 +70,7 @@ table is not yet validated for calls with cp().
   ``cbs_func=energy`` is not necessary since energy() is always the function
   called by default. Also, the outermost internal function call (``db_func``
   above can be called as just ``func``. Several examples of intercalls
-  between Python functions can be found in sample input :srcsample:`pywrap_all`.
+  between Python functions can be found in sample input :srcsample:`pywrap-all`.
 
 - All keyword arguments are passed along to each function traversed in the
   Python driver, so there should be no concern for separating them, grouping

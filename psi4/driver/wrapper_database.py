@@ -39,7 +39,7 @@ import pickle
 import copy
 import collections
 from psi4.driver import p4const
-from .driver import *
+from psi4.driver.driver import *
 # never import aliases into this file
 
 

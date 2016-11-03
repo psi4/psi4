@@ -35,8 +35,8 @@
 Defining a Method Alias
 =======================
 
-.. note:: No recompile of the PSI program is necessary for changes made to
-    files in ``$PSIDATADIR`` aka :source:`share`, including those described below.
+.. note:: No recompile of the |PSIfour| program is necessary for changes made to
+    files in ``$PSIDATADIR`` aka :source:`psi4/share/psi4`, including those described below.
 
 .. caution:: As of 1.0, the below, while essentially still correct, is so aged
    as to be difficult to follow.
@@ -44,7 +44,7 @@ Defining a Method Alias
 Since quantum chemical methods in |PSIfour| are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
-:source:`share/python/aliases.py` file is intended for editing by the user for
+:source:`psi4/driver/aliases.py` file is intended for editing by the user for
 this purpose.
 
 As an example, the MP2.5 method
@@ -69,7 +69,7 @@ and return the MP2.5 energy. ::
     
         return e_mp25
 
-Compare the above to the method that resides in :source:`share/python/aliases.py`.
+Compare the above to the method that resides in :source:`psi4/driver/aliases.py`.
 The rationale for the changes is indicated in the comments below. ::
 
     def run_mp2_5(name, **kwargs):

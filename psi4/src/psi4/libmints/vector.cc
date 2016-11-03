@@ -373,33 +373,37 @@ void Vector::sum()
     ///RMR-See note in Matrix::sum()
 }
 
-py::dict Vector::array_interface(int irrep){
-    py::dict interface;
+std::vector<py::buffer_info> Vector::array_interface(){
+    std::vector<py::buffer_info> ret;
 
-    // This is dumb
-    if (numpy_shape_.size()){
-        py::list ls;
-        for (size_t i = 0; i < numpy_shape_.size(); i++){
-            ls.append(py::int_(numpy_shape_[i]));
+    if (numpy_shape_.size()) {
+        if (nirrep_ > 1){
+            throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
         }
-        interface["shape"] = ls;
-    }
-    else {
-        interface["shape"] = py::make_tuple(dimpi_[irrep]);
-    }
 
-    interface["data"] = py::make_tuple((long)pointer(irrep), false);
+        std::vector<size_t> shape(numpy_shape_.size());
+        std::vector<size_t> strides(numpy_shape_.size());
+        size_t current_stride = sizeof(double);
 
-    // Data and type
-    std::string typestr = "<";
-    {
-       std::stringstream sstr;
-       sstr << (int)sizeof(double);
-       typestr += "f" + sstr.str();
+        for (size_t i = numpy_shape_.size(); i-- > 0;) {
+            shape[i] = numpy_shape_[i];
+            strides[i] = current_stride;
+            current_stride *= numpy_shape_[i];
+        }
+        ret.push_back(py::buffer_info(pointer(0), sizeof(double),
+                                      py::format_descriptor<double>::format(),
+                                      numpy_shape_.size(),
+                                      shape, strides));
+
+    } else {
+        for (size_t h = 0; h < nirrep_; h++) {
+            ret.push_back(py::buffer_info(
+                pointer(h), sizeof(double),
+                py::format_descriptor<double>::format(), 1,
+                {static_cast<size_t>(dim(h))}, {sizeof(double)}));
+        }
     }
-    interface["typestr"] = py::str(typestr);
-    return interface;
-
+    return ret;
 }
 
 } // namespace psi

@@ -33,8 +33,8 @@ import re
 import os
 import math
 import warnings
-from . import driver
 from psi4 import core
+from psi4.driver import driver
 from psi4.driver import p4util
 from psi4.driver import p4const
 #from driver import *

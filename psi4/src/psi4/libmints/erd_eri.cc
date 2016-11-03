@@ -26,7 +26,7 @@
  */
 
 
-#ifdef USING_liberd
+#ifdef USING_erd
 
 #include "psi4/psi4-dec.h"
 #include "erd_eri.h"
@@ -670,4 +670,4 @@ ERDERI::~ERDERI()
 
 } // Namespace
 
-#endif // USING_liberd
+#endif // USING_erd

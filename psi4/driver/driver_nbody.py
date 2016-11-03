@@ -101,7 +101,7 @@ def _print_nbody_energy(energy_body_dict, header):
         core.print_out("""\n   ==> N-Body: %s  energies <==\n\n""" % header)
         core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
         previous_e = energy_body_dict[1]
-        nbody_range = energy_body_dict.keys()
+        nbody_range = list(energy_body_dict)
         nbody_range.sort()
         for n in nbody_range:
             delta_e = (energy_body_dict[n] - previous_e)
@@ -119,7 +119,7 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     :returns: *return type of func* |w--w| The interaction data.
 
-    :returns: (*float*, :ref:`Wavefunction<sec:psimod_Wavefunction>`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| interaction data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
     :type func: function
     :param func: ``energy`` || etc.
@@ -141,7 +141,7 @@ def nbody_gufunc(func, method_string, **kwargs):
     :type return_wfn: :ref:`boolean <op_py_boolean>`
     :param return_wfn: ``'on'`` || |dl| ``'off'`` |dr|
 
-        Indicate to additionally return the :ref:`Wavefunction<sec:psimod_Wavefunction>`
+        Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element of a tuple.
 
     :type bsse_type: string or list
@@ -469,10 +469,10 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     # Build and set a wavefunction
     wfn = core.Wavefunction.build(molecule, 'sto-3g')
-    wfn.cdict["nbody_energy"] = energies_dict
-    wfn.cdict["nbody_ptype"] = ptype_dict
-    wfn.cdict["nbody_body_energy"] = energy_body_dict
-    wfn.cdict["nbody_body_ptype"] = ptype_body_dict
+    wfn.nbody_energy = energies_dict
+    wfn.nbody_ptype = ptype_dict
+    wfn.nbody_body_energy = energy_body_dict
+    wfn.nbody_body_ptype = ptype_body_dict
 
     if ptype == 'gradient':
         wfn.set_gradient(ret_ptype)

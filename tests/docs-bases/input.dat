@@ -20,7 +20,7 @@ fenergy.write('   +={}=+={}=+={}=+={}=+={}=+\n'.format(
     27 * '=', 40 * '=', 40 * '=', 40 * '=', 40 * '='))
 
 for basis in qcdb.load_basis_families():
-    print basis.orbital, basis.jkfit, basis.rifit
+    print(basis.orbital, basis.jkfit, basis.rifit)
 
     fenergy.write('   | %-27s | %-40s | %-40s | %-40s | %-40s |\n' % 
         (basis.ornate, tf(basis.orbital), tf(basis.jkfit), tf(basis.rifit), tf(basis.dualfit)))

@@ -45,7 +45,6 @@
 #include "psi4/libfilesystem/path.h"
 
 #include "psi4/psi4-dec.h"
-#include "gitversion.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/ccenergy/ccwave.h"
 #include "psi4/cclambda/cclambda.h"
@@ -1217,6 +1216,21 @@ void psi4_python_module_finalize()
 
 PYBIND11_PLUGIN(core) {
     py::module core("core", "Psi4: An Open-Source Ab Initio Electronic Structure Package");
+//    py::module core("core", R"pbdoc(
+//
+//        Psi4: An Open-Source Ab Initio Electronic Structure Package
+//        -----------------------------------------------------------
+//
+//        .. currentmodule:: core
+//
+//        .. autosummary::
+//           :toctree: _generate
+//
+//           version
+//           clean
+//           set_local_option
+//)pbdoc");
+
 
     core.def("initialize", &psi4_python_module_initialize);
     core.def("finalize", &psi4_python_module_finalize);
@@ -1259,11 +1273,11 @@ PYBIND11_PLUGIN(core) {
         "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     core.def("set_active_molecule",
         py_psi_set_active_molecule,
-        "Activates a previously core.defined (in the input) molecule, by name.");
+        "Activates a previously defined (in the input) molecule, by name.");
     core.def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
     core.def("set_legacy_molecule",
         py_psi_set_legacy_molecule,
-        "Activates a previously core.defined (in the input) molecule, by name.");
+        "Activates a previously defined (in the input) molecule, by name.");
     core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
     core.def("legacy_wavefunction",
         py_psi_legacy_wavefunction,
@@ -1271,7 +1285,7 @@ PYBIND11_PLUGIN(core) {
     core.def("set_legacy_wavefunction",
         py_psi_set_legacy_wavefunction,
         "Returns the current legacy_wavefunction object from the most recent computation.");
-    core.def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
+    core.def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 :py:class:`~psi4.core.Matrix` object.");
     core.def("set_gradient",
         py_psi_set_gradient,
         "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");

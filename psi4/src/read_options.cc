@@ -139,8 +139,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- Psi4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
-  /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
-  options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
+  /*- Integral package to use. If compiled with ERD support, toggle this to use it; LibInt is used otherwise. -*/
+  options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT");
 
   // Note that case-insensitive options are only functional as
   //   globals, not as module-level, and should be defined sparingly
@@ -479,6 +479,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute the dipole moment? -*/
     options.add_bool("DIPMOM", false);
 
+    /*- Do compute natural orbitals? -*/
+    options.add_bool("NAT_ORBS", false);
+
 
     /*- SUBSECTION Root Following -*/
 
@@ -738,7 +741,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     all values are scaled. -*/
     options.add_double("MCSCF_MAX_ROT", 0.5);
 
-    /* - Do we run conventional or density fitted? -*/
+    /*- Do we run conventional or density fitted? -*/
     options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
 
     /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of
@@ -903,9 +906,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
-    /*- Whether or not to compute coupled induction, applies only to 
-        the open-shell SAPT0 code. Coupled induction is not available for 
-        ROHF, and the option is automatically false in this case. 
+    /*- Whether or not to compute coupled induction, applies only to
+        the open-shell SAPT0 code. Coupled induction is not available for
+        ROHF, and the option is automatically false in this case.
         Note that when coupled induction is turned off, the Psi variables
         SAPT IND20,R ENERGY and SAPT EXCH-IND20,R ENERGY actually contain
         the **uncoupled** induction! A corresponding warning is issued in the
@@ -1256,7 +1259,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- When |scf__basis_guess| is active, run the preliminary scf in
     density-fitted mode with this as fitting basis for the small basis
     set. A value of ``TRUE`` turns on density fitting with the
-    cc-pVDZ-RI basis set (when available for all elements). -*/
+    default basis, otherwise the specified basis is used. -*/
     options.add_str("DF_BASIS_GUESS", "FALSE", "");
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("DIIS_START", 1);

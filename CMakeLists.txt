@@ -41,7 +41,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: CheMPS2, dkh, libefp, liberd, gdma, libint, pybind11
+#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, pybind11
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -52,26 +52,27 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 #    - CMAKE_INSTALL_PREFIX "Location to which Psi4 and internally built add-ons are installed (e.g., /path/to/install-psi4)"
 #    - CMAKE_INSTALL_BINDIR "Location within CMAKE_INSTALL_PREFIX to which executables are installed (default: bin)"
 #    - CMAKE_INSTALL_LIBDIR "Location within CMAKE_INSTALL_PREFIX to which libraries are installed (default: lib)"
-#    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"  # NYI
+#    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"
 #    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
+#    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /) must start with /"
 
 ############################  Options: Build What?  ############################
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
-option(ENABLE_liberd "Enables use of LibERD instead of LibInt (requires Fortran)" OFF)
+option(ENABLE_erd "Enables use of ERD instead of LibInt (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
-option(ENABLE_GTFOCK "Enables GTFock (requires MPI)" OFF)
+option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_liberd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
 endif()
 
-if(ENABLE_liberd)
-    message(FATAL_ERROR "LibERD will build, link, and run in Psi4 just fine, but it will give *wrong* answers for density-fitting (default) calculations. To continue with ERD, accept that you have been warned, and comment out this line in the main CMakeLists.txt")
+if(ENABLE_erd)
+    message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, so upon activating through ``set integral_package erd``, it will give *wrong* answers for density-fitting (default) calculations, indeed all except for ``set scf_type direct`` will be wrong. Consider this your warning.")
 endif()
 
 ############################  Options: Build How?  #############################
@@ -97,7 +98,8 @@ option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
-option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)  # NYI
+option_with_Default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
+option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 
@@ -114,7 +116,7 @@ add_subdirectory(external)
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 include(autocmake_omp)
 include(custom_cxxstandard)
-#include(autocmake_static_library)
+include(autocmake_static_library)
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ################################  Dependencies  ################################
@@ -122,11 +124,12 @@ set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
 include(ConfigMath)
+
 #These packages don't believe in configuration files...
 foreach(pkg in pcmsolver)
    string(TOUPPER "${pkg}" PKG)
    if(NOT ${PKG}_ROOT)
-      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external/${pkg})
+      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external)
    endif()
 endforeach()
 
@@ -149,6 +152,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
               -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
+              -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
               -DBUILD_FPIC=${BUILD_FPIC}
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
@@ -158,20 +162,19 @@ ExternalProject_Add(psi4_core
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
-              -DENABLE_liberd=${ENABLE_liberd}
+              -DENABLE_erd=${ENABLE_erd}
               -DENABLE_gdma=${ENABLE_gdma}
-              -DENABLE_GTFOCK=${ENABLE_GTFOCK}
+              -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DFortran_ENABLED=${Fortran_ENABLED}
+              -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
-                    -DLAPACK_LIBRARIES:LIST=${LAPACK_LIBRARIES}
-                    -DLAPACK_INCLUDE_DIRS:LIST=${LAPACK_INCLUDE_DIRS}
-                    -DBLAS_LIBRARIES:LIST=${BLAS_LIBRARIES}
-                    -DBLAS_INCLUDE_DIRS:LIST=${BLAS_INCLUDE_DIRS}
+                    -DLAPACKBLAS_LIBRARIES:LIST=${LAPACKBLAS_LIBRARIES}
+                    -DLAPACKBLAS_INCLUDE_DIRS:LIST=${LAPACKBLAS_INCLUDE_DIRS}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
@@ -180,8 +183,9 @@ add_dependencies(psi4_core ambit_external
                            chemps2_external
                            dkh_external
                            libefp_external
-                           liberd_external
+                           erd_external
                            gdma_external
+                           #gtfock_external
                            libint_external
                            pcmsolver_external
                            pybind11_external)

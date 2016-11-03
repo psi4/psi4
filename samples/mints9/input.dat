@@ -20,17 +20,17 @@ H_l -0.5  0.7 0.0
 set print 3
 set basis cc-pvdz
 
-print('    <<<  uniform cc-pVDZ  >>>')
+print('[1]    <<<  uniform cc-pVDZ  >>>')
 wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
-print('        <<<  RIFIT (default)  >>>')
+print('[2]        <<<  RIFIT (default)  >>>')
 wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
 mymol.print_out()
 
 
-print('    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>')
+print('[3]    <<<  cc-pVDZ w/ aug-cc-pVDZ on C  >>>')
 basis dz_PLUS {  # basis block resets BASIS to DZ_PLUS
     assign cc-pvdz
     assign c aug-cc-pvdz
@@ -39,12 +39,12 @@ wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASI
 mymol.print_out()
 
 
-print('        <<<  RIFIT (default)  >>>')
+print('[4]        <<<  RIFIT (default)  >>>')
 wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', '', 'RIFIT', get_global_option('BASIS'))
 mymol.print_out()
 
 
-print('    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>')
+print('[5]    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H_R  >>>')
 basis dz_PLUSplus {
     assign cc-pvdz
     assign c aug-cc-pvdz
@@ -54,7 +54,7 @@ wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASI
 mymol.print_out()
 
 
-print('    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>')
+print('[6]    <<<  RIFIT (custom: force cc-pVDZ on H, default on C, O)  >>>')
 df_basis_mp2 dz_PLUSplusRI {
     #assign aug-cc-pvdz-ri
     assign h cc-pvdz-ri
@@ -64,7 +64,7 @@ wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_MP2', get_global_opt
 mymol.print_out()
 
 
-print('    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
+print('[7]    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
 basis dz_PLUSplusplus {
     assign cc-pvdz
     assign c aug-cc-pvdz
@@ -75,19 +75,19 @@ wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASI
 mymol.print_out()
 
 
-print('        <<<  JKFIT (default)  >>>')
+print('[8]        <<<  JKFIT (default)  >>>')
 #wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', 'dz_plusplusplus')
 wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
 mymol.print_out()
 
 set basis aug-cc-pvdz
 
-print('    <<<  aug-cc-pVDZ  >>>')
+print('[9]    <<<  aug-cc-pVDZ  >>>')
 wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
-print('        <<<  JKFIT (default)  >>>')
+print('[10]       <<<  JKFIT (default)  >>>')
 wert = psi4.BasisSet.pyconstruct_auxiliary(mymol, 'DF_BASIS_SCF', '', 'JKFIT', get_global_option('BASIS'))
 mymol.print_out()
 
@@ -102,7 +102,7 @@ H_c -0.5  0.0 0.7
 
 set basis dz_plusplusplus
 
-print('    <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
+print('[11]   <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
 wert = psi4.BasisSet.pyconstruct_orbital(mymol2, 'BASIS', get_global_option('BASIS'))
 mymol2.print_out()
 

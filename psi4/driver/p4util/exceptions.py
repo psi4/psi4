@@ -27,13 +27,13 @@
 
 """Module with non-generic exceptions classes."""
 from __future__ import absolute_import
-import psi4
 from psi4 import core
+from psi4 import extras
 
 
 class PsiException(Exception):
     """Error class for Psi."""
-    psi4._success_flag_ = False
+    extras._success_flag_ = False
     pass
 
 
@@ -46,7 +46,7 @@ class ValidationError(PsiException):
         PsiException.__init__(self, msg)
         self.message = msg
         core.print_out('\nPsiException: %s\n\n' % (msg))
-        psi4._success_flag_ = False
+        extras._success_flag_ = False
 
 class ParsingError(PsiException):
     """Error called for problems parsing a text file. Prints error message

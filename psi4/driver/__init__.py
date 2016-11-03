@@ -26,16 +26,18 @@
 #
 
 import pickle
-import dependency_check
-from .driver import *
-from .driver_cbs import cbs
-from .molutil import *
-from .inputparser import process_input
-from .p4util.util import *
-from .p4util.text import *
-from .qmmm import QMMM
-from . import gaussian_n
-from . import aliases
-from . import diatomic
-from . import wrapper_database
-from . import wrapper_autofrag
+from . import dependency_check
+from psi4.driver.molutil import *
+from psi4.driver.inputparser import process_input
+from psi4.driver.p4util.util import *
+from psi4.driver.p4util.text import *
+from psi4.driver.qmmm import QMMM
+
+from psi4.driver import gaussian_n
+from psi4.driver import aliases
+from psi4.driver import diatomic
+from psi4.driver import wrapper_database
+from psi4.driver import wrapper_autofrag
+
+from psi4.driver.driver import *
+from psi4.driver.driver_cbs import cbs

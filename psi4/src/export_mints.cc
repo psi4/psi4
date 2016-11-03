@@ -141,7 +141,7 @@ void export_mints(py::module& m)
             def("__getitem__", &Dimension::get, py::return_value_policy::copy, "docstring").
             def("__setitem__", &Dimension::set, "docstring");
 
-    py::class_<Vector, std::shared_ptr<Vector> >(m, "Vector", "docstring").
+    py::class_<Vector, std::shared_ptr<Vector> >(m, "Vector", "docstring", py::dynamic_attr()).
             def(py::init<int>()).
             def(py::init<const Dimension&>()).
             def(py::init<const std::string&, int>()).
@@ -162,8 +162,31 @@ void export_mints(py::module& m)
             def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring").
             def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring").
             def("nirrep", &Vector::nirrep, "docstring").
-            def("array_interface", &Vector::array_interface).
-            def_readwrite("cdict", &Vector::cdict);
+            def("array_interface", [](Vector &v){
+                // Dont ask, hopefully pybind11 will work on this
+                py::list ret;
+                std::vector<py::buffer_info> buff_vec(v.array_interface());
+                std::string typestr = "<";
+                {
+                   std::stringstream sstr;
+                   sstr << (int)sizeof(double);
+                   typestr += "f" + sstr.str();
+                }
+
+                for (auto const& buff: v.array_interface()){
+                    py::dict interface;
+                    interface["typestr"] = py::str(typestr);
+                    interface["data"] = py::make_tuple((long)buff.ptr, false);
+                    py::list shape;
+                    for (auto const& s: buff.shape){
+                        shape.append(py::int_(s));
+                    }
+                    interface["shape"] = shape;
+                    ret.append(interface);
+
+                }
+                return ret;
+            });
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector> >(m, "IntVector", "docstring").
@@ -198,7 +221,7 @@ void export_mints(py::module& m)
     typedef void   (Matrix::*matrix_load)(const std::string&);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
 
-    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring").
+    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr()).
             def(py::init<int, int>()).
             def(py::init<const std::string&, int, int>()).
             def(py::init<const std::string&, const Dimension&, const Dimension&>()).
@@ -272,8 +295,31 @@ void export_mints(py::module& m)
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
             def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring").
-            def("array_interface", &Matrix::array_interface, "docstring").
-            def_readwrite("cdict", &Matrix::cdict);
+            def("array_interface", [](Matrix &m){
+                // Dont ask, hopefully pybind11 will work on this
+                py::list ret;
+                std::vector<py::buffer_info> buff_vec(m.array_interface());
+                std::string typestr = "<";
+                {
+                   std::stringstream sstr;
+                   sstr << (int)sizeof(double);
+                   typestr += "f" + sstr.str();
+                }
+
+                for (auto const& buff: m.array_interface()){
+                    py::dict interface;
+                    interface["typestr"] = py::str(typestr);
+                    interface["data"] = py::make_tuple((long)buff.ptr, false);
+                    py::list shape;
+                    for (auto const& s: buff.shape){
+                        shape.append(py::int_(s));
+                    }
+                    interface["shape"] = shape;
+                    ret.append(interface);
+
+                }
+                return ret;
+            });
 
     py::class_<View>(m, "View").
             def(py::init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -769,7 +815,7 @@ void export_mints(py::module& m)
     using SharedBS = std::shared_ptr<BasisSet>;
 
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
-    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring").
+    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr()).
             def(py::init<SharedMol, SharedBS, Options&>()).
             def(py::init<SharedMol, SharedBS>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
@@ -833,7 +879,12 @@ void export_mints(py::module& m)
             def("set_print", &Wavefunction::set_print, "docstring").
             def("compute_energy", &Wavefunction::compute_energy, "docstring").
             def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
-            def_readwrite("cdict", &Wavefunction::cdict);
+            def("get_variable", &Wavefunction::get_variable, "docstring").
+            def("set_variable", &Wavefunction::set_variable, "docstring").
+            def("variables", &Wavefunction::variables, "docstring").
+            def("get_array", &Wavefunction::get_array, "docstring").
+            def("set_array", &Wavefunction::set_array, "docstring").
+            def("arrays", &Wavefunction::arrays, "docstring");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
             def("form_C", &scf::HF::form_C, "docstring").
@@ -852,7 +903,6 @@ void export_mints(py::module& m)
             def("initialize", &scf::HF::initialize, "docstring").
             def("iterations", &scf::HF::iterations, "docstring").
             def("finalize_E", &scf::HF::finalize_E, "docstring").
-            def("set_dashd_correction", &scf::HF::set_dashd_correction, "docstring").
             def("occupation_a", &scf::HF::occupation_a, "docstring").
             def("occupation_b", &scf::HF::occupation_b, "docstring").
             def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
@@ -992,7 +1042,9 @@ void export_mints(py::module& m)
         .def("init_io_files", &detci::CIvect::init_io_files, "docstring")
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
-        .def("array_interface", &detci::CIvect::array_interface, "docstring");
+        .def("array_interface", [](detci::CIvect &vec){
+            return vec.array_interface();
+            });
 
 
 }

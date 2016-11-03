@@ -28,7 +28,7 @@
 #ifndef psi4_libmints_erd_eri_h_
 #define psi4_libmints_erd_eri_h_
 
-#ifdef USING_liberd
+#ifdef USING_erd
 
 #include "psi4/libmints/twobody.h"
 
@@ -139,5 +139,5 @@ public:
 };
 
 }//Namespace
-#endif // USING_liberd
+#endif // USING_erd
 #endif // header guard
