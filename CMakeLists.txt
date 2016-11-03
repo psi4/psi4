@@ -147,6 +147,8 @@ ExternalProject_Add(psi4_core
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
               -DCMAKE_CXX_STANDARD=${PSI4_CXX_STANDARD}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
+              -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+              -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
               -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
               -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
@@ -190,10 +192,18 @@ add_dependencies(psi4_core ambit_external
                            pcmsolver_external
                            pybind11_external)
 add_subdirectory(doc)
-enable_testing()
-add_subdirectory(tests)
+include(ConfigTesting)
+
+# <<<  Install  >>>
+
 install(DIRECTORY ${STAGED_INSTALL_PREFIX}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         USE_SOURCE_PERMISSIONS)
+
+install(DIRECTORY samples
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
+        USE_SOURCE_PERMISSIONS
+        PATTERN "example_psi4rc_file" EXCLUDE)
+
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
 #        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)

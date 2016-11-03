@@ -12,11 +12,13 @@ set {
    basis     sto-3g
    reference rhf
    max_energy_g_convergence 8
+   df_basis_scf cc-pvdz-ri
 }
 
 optimize('scf')
 
 set basis cc-pvdz
+set df_basis_scf cc-pvdz-jkfit
 e_sing_rhf = energy('scf')
 
 benz.set_multiplicity(3)

@@ -1,3 +1,4 @@
+#! force occupations in scf
 
 molecule sodium {
 1 1

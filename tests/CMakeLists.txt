@@ -25,6 +25,9 @@ find_package(Perl QUIET)
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
+set(py3_fail_list pubchem1 pubchem2 pywrap-freq-e-sowreap
+                  pywrap-freq-g-sowreap pywrap-opt-sowreap
+                  pywrap-db2) 
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
@@ -76,18 +79,26 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
                   options1 fsapt1 fsapt2 isapt1 isapt2
 )
-   add_subdirectory(${test_name})
+    # Some tests fail in python 3
+    if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
+        list(FIND py3_fail_list "${test_name}" _index)
+        if (${_index} GREATER -1)
+        # Note to future cmake 3.3: replace above 2 with below 1 and set policy
+        # cmake_policy(SET CMP0057 NEW)
+        #if (${test_name} IN_LIST py3_fail_list)
+            message("Python3 incompatible test: ${test_name}... skipping")
+        else()
+            add_subdirectory(${test_name})
+        endif()
+    else()
+       add_subdirectory(${test_name})
+    endif()
 endforeach()
 
 # Add internal projects
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 
-if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
-    list(REMOVE_ITEM test_name pubchem1 pubchem2 pywrap-freq-e-sowreap
-                               pywrap-freq-g-sowreap pywrap-opt-sowreap
-                               pywrap-db2) 
-endif()
 
 
 message(STATUS "Adding test cases: Psi4")

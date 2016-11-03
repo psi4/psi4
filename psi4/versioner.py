@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 #
 # @BEGIN LICENSE
 #
@@ -29,6 +31,7 @@ from __future__ import print_function
 import os
 import re
 import sys
+import argparse
 import subprocess
 
 
@@ -42,11 +45,12 @@ import subprocess
 #    os.chmod('../psi4-config', 0o755)
 
 
-def collect_version_input_from_fallback(cwd='./', meta_file='metadata.py'):
+def collect_version_input_from_fallback(meta_file='metadata.py'):
     """From *meta_file*, collect lines matching ``_version_{key} = {value}``
     and return as dictionary.
 
     """
+    cwd = os.path.dirname(os.path.abspath(__file__))
     res = dict(re.findall("__version_([a-z_]+)\s*=\s*'([^']+)'", open(cwd + '/' + meta_file).read()))
     res.pop('_')
     return res
@@ -84,13 +88,14 @@ def is_git_repo(cwd='./', dot_git_qualifies=False, no_git_cmd_result=False):
         return dot_git_qualifies
 
 
-def collect_version_input_from_git(cwd='./'):
+def collect_version_input_from_git():
     """Returns a dictionary filled with ``git describe`` results, clean/dirty
     flag, and branch status. *cwd* should already be confirmed as a git
     repository; this doesn't catch returncodes or EnvironmentErrors because the
     raised errors are preferred to incomplete return dictionary.
 
     """
+    cwd = os.path.dirname(os.path.abspath(__file__))
     res = {}
 
     # * only want annotated tags, so not --all
@@ -139,8 +144,8 @@ def collect_version_input_from_git(cwd='./'):
     return res
 
 
-def reconcile_and_compute_version_output(cwd='./'):
-    res = collect_version_input_from_fallback(cwd=cwd, meta_file='metadata.py')
+def reconcile_and_compute_version_output(quiet=False):
+    res = collect_version_input_from_fallback(meta_file='metadata.py')
     meta_latest_annotated_v_tag, _, meta_seven_char_hash = res['long'].partition('+')
 
     # this is the tag format (PEP440 compliant) that our machinery is expecting.
@@ -165,12 +170,12 @@ def reconcile_and_compute_version_output(cwd='./'):
                 backwardseries = '.'.join(tmp)
     else:
         print("""Tag in {} is malformed: {}""".format(
-            cwd + 'metadata.py', meta_latest_annotated_v_tag))
+            'metadata.py', meta_latest_annotated_v_tag))
         sys.exit()
 
-
+    cwd = os.path.dirname(os.path.abspath(__file__))
     if is_git_repo(cwd=cwd):
-        res.update(collect_version_input_from_git(cwd=cwd))
+        res.update(collect_version_input_from_git())
 
         # establish the default response
         project_release = False
@@ -187,16 +192,21 @@ def reconcile_and_compute_version_output(cwd='./'):
             if int(res['commits_since_tag']) == 0:
 
                 if trial_version_long_release == res['long']:
-                    print("""Defining {} version: {} (recorded and computed)""".format(
-                        'prerelease' if mobj.group('prere') else 'release', res['long']))
-                    project_release = res['is_clean'] and not mobj.group('prere')
-                    project_prerelease = res['is_clean'] and mobj.group('prere')
-                    project_version = meta_latest_annotated_v_tag
-                    project_version_long = res['long']
-
+                    print("""Amazing, this can't actually happen that git hash stored at git commit.""")
+                    sys.exit()
                 else:
-                    print("""Undefining version for irreconcilable hashes: {} (computed) vs {} (recorded)""".format(
-                        trial_version_long_release, res['long']))
+                    if meta_seven_char_hash == 'zzzzzzz':
+                        if not quiet:
+                            print("""Defining {} version: {} (recorded and computed)""".format(
+                                'prerelease' if mobj.group('prere') else 'release', trial_version_long_release))
+                        project_release = res['is_clean'] and not mobj.group('prere')
+                        project_prerelease = res['is_clean'] and mobj.group('prere')
+                        project_version = meta_latest_annotated_v_tag
+                        project_version_long = trial_version_long_release
+
+                    else:
+                        print("""Undefining version for irreconcilable hashes: {} (computed) vs {} (recorded)""".format(
+                            trial_version_long_release, res['long']))
 
             else:
                 if res['branch_name'].endswith('.x'):
@@ -205,8 +215,9 @@ def reconcile_and_compute_version_output(cwd='./'):
 
                 # TODO prob should be undef unless on master
                 else:
-                    print("""Defining development snapshot version: {} (computed)""".format(
-                        trial_version_long_devel))
+                    if not quiet:
+                        print("""Defining development snapshot version: {} (computed)""".format(
+                            trial_version_long_devel))
                     project_version = trial_version_devel
                     project_version_long = trial_version_long_devel
 
@@ -306,13 +317,14 @@ def version_formatter(versdata, formatstring="""{version}"""):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 3:
-        ans = reconcile_and_compute_version_output(sys.argv[1])
-        write_new_metafile(ans, sys.argv[2])
-    elif len(sys.argv) == 1:
-        ans = reconcile_and_compute_version_output()
-        write_new_metafile(ans)
-        ans2 = version_formatter(ans, formatstring='all')
-        print(ans2)
-    else:
-        print('Usage: versioner.py [cwd metafileout]')
+
+    parser = argparse.ArgumentParser(description='Script to extract Psi4 version from source. Use psi4.version_formatter(fmt_string) after build.')
+    parser.add_argument('--metaout', default='metadata.out.py', help='file to which the computed version info written')
+    parser.add_argument('--format', default='all', help='string like "{version} {githash}" to be filled in and returned')
+    parser.add_argument('--formatonly', action='store_true', help='print only the format string, not the detection info')
+    args = parser.parse_args()
+
+    ans = reconcile_and_compute_version_output(quiet=args.formatonly)
+    write_new_metafile(ans, args.metaout)
+    ans2 = version_formatter(ans, formatstring=args.format)
+    print(ans2)

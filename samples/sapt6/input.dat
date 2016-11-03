@@ -341,7 +341,7 @@ alpha = 'qa1'
 for codelist in [codes[0], codes[2], codes[6], codes[14]]:
     code = codelist[0]
     energy(code)
-    print '        <<< ', code, ' >>>'
+    print('        <<< ', code, ' >>>')
     for subcode in codelist:
         for term in ['ELST ENERGY', 'EXCH ENERGY', 'IND ENERGY', 'DISP ENERGY', 'TOTAL ENERGY']:
             pv = ' '.join([subcode, term])
@@ -358,7 +358,7 @@ alpha = 'a0'
 for codelist in [codes[1], codes[3], codes[9]]:
     code = codelist[0]
     energy(code)
-    print '        <<< ', code, ' >>>'
+    print('        <<< ', code, ' >>>')
     for subcode in codelist:
         if subcode == 'SCS-SAPT0':
             continue

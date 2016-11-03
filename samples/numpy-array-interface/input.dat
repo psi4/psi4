@@ -108,3 +108,12 @@ read_irreped_mat = psi4.Matrix.np_read("compound", prefix='mat ')
 read_irreped_vec = psi4.Vector.np_read("compound", prefix='vec ')
 
 
+# Make sure our pointers are being tracked correctly
+tmp = []
+for n in range(1000):
+    tmp.append(np.asarray(Matrix(3, 3)))
+residual = sum(np.sum(x) for x in tmp)
+
+
+
+

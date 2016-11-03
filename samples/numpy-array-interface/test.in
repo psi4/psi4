@@ -177,3 +177,13 @@ read_irreped_vec = psi4.Vector.np_read("compound", prefix='vec ')
 compare_vectors(irreped_vec, read_irreped_vec, 9, "Irreped psi4.Vector np compound read and write.")     #TEST
 
 
+# Make sure our pointers are being tracked correctly
+tmp = []
+for n in range(1000):
+    tmp.append(np.asarray(Matrix(3, 3)))
+residual = sum(np.sum(x) for x in tmp)
+
+compare_values(0, residual, 9, "View pointers are correctly assigned.")     #TEST
+
+
+
