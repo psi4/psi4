@@ -61,7 +61,7 @@ parser.add_argument("--new-plugin",
                          "that specifies a template to use, for example "
                          "--new-plugin name +mointegrals")
 parser.add_argument('--new-plugin-template', default='basic',
-                    choices=['aointegrals', 'basic', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
+                    choices=['aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
                     help='New plugin template to use.')
 # parser.add_argument("--new-plugin-makefile", action='store_true',
 #                     help="Creates Makefile that can be used to compile"
