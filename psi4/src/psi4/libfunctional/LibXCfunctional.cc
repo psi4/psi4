@@ -39,7 +39,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name)
 {
 
     func_id_ = xc_functional_get_number(xc_name.c_str());
-    if(xc_func_init(&xc_functional_, func_id_, XC_UNPOLARIZED) != 0){
+    if(xc_func_init(&xc_functional_, func_id_, XC_POLARIZED) != 0){
         outfile->Printf("Functional '%d' not found\n", func_id_);
         throw PSIEXCEPTION("Could not find required LIBXC functional");
     }
@@ -52,6 +52,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name)
     // int kind = xc_functional_->kind;
     // int number = xc_functional_->number;
     int family = xc_functional_.info->family;
+    outfile->Printf("The family of %s is %d\n", name_.c_str(), family);
 
     gga_ = (family >= 2);
     meta_ = (family >= 4);
@@ -133,10 +134,12 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
 
         } else if (gga_) {
             // outfile->Printf("Executing GGA");
+            throw PSIEXCEPTION("NYI");
             xc_gga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
 
         } else{
             // outfile->Printf("Executing LDA");
+            throw PSIEXCEPTION("NYI");
             xc_lda_exc(&xc_functional_, npoints, rho_ap, v);
         }
     } else if (deriv == 1) {
@@ -146,23 +149,61 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
             throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
 
         } else if (gga_) {
-            // outfile->Printf("Executing GGA\n");
+            // xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, v, v_rho_a, v_gamma_aa);
+            outfile->Printf("Executing GGA\n");
 
-            // std::shared_ptr<Vector> gamma_tmp = std::shared_ptr<Vector>(in.find("GAMMA_AA")->second->clone());
+            // spin polarized
+            std::vector<double> fv(npoints);
+            std::vector<double> frho(npoints*2);
+            std::vector<double> fsigma(npoints*3);
 
-            // // rho_tmp->scale(2.0);
-            // // gamma_tmp->scale(2.0);
+            for (size_t i=0; i < npoints; i++){
+                frho[2 * i] = rho_ap[i];
+                frho[2 * i + 1] = rho_bp[i];
 
-            // xc_gga_exc_vxc(&xc_functional_, npoints, rho_tmp->pointer(), gamma_tmp->pointer(), v, v_rho_a, v_gamma_aa);
-            // if (rho_tmp->pointer()[0] > 1.e-13){
-            //     outfile->Printf("%s : % 9.7f % 9.7f | % 9.7f % 9.7f | % 9.7f % 9.7f\n", name_.c_str(), rho_tmp->pointer()[0], gamma_tmp->pointer()[0], Vv[0], v_rho_a[0], v_gamma_aa[0], v_gamma_ab[0]);
+                fsigma[3 * i] = gamma_aap[i];
+                fsigma[3 * i + 1] = gamma_abp[i];
+                fsigma[3 * i + 2] = gamma_bbp[i];
+            }
 
 
-            xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, v, v_rho_a, v_gamma_aa);
+            std::vector<double> fv_rho(npoints*2);
+            std::vector<double> fv_sigma(npoints*3);
+
+            xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
+
+            for (size_t i=0; i < npoints; i++){
+                v[i] += fv[i] * (rho_ap[i] + rho_bp[i]);
+                v_rho_a[i] += fv_rho[2 * i];
+                v_rho_b[i] += fv_rho[2 * i + 1];
+                v_gamma_aa[i] += fv_sigma[3 * i];
+                v_gamma_ab[i] += fv_sigma[3 * i + 1];
+                v_gamma_bb[i] += fv_sigma[3 * i + 2];
+
+            }
 
         } else{
-            // outfile->Printf("Executing LDA");
-            xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, v, v_rho_a);
+            // xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, v, v_rho_a);
+            outfile->Printf("Executing LDA\n");
+
+            // spin polarized
+            std::vector<double> fv(npoints);
+            std::vector<double> frho(npoints*2);
+            std::vector<double> fv_rho(npoints*2);
+
+            for (size_t i=0; i < npoints; i++){
+                frho[2 * i] = rho_ap[i];
+                frho[2 * i + 1] = rho_bp[i];
+            }
+
+            xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
+
+
+            for (size_t i=0; i < npoints; i++){
+                v[i] += fv[i] * (rho_ap[i] + rho_bp[i]);
+                v_rho_a[i] += fv_rho[2 * i];
+                v_rho_b[i] += fv_rho[2 * i + 1];
+            }
         }
     } else {
         throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 1 ");

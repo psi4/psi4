@@ -1277,6 +1277,38 @@ def build_pbe_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, False)
 
+def build_XCpbe_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('XCPBE')
+    # Tab in, trailing newlines
+    sup.set_description('    PBE GGA Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_PBE'))
+    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_PBE'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 
 def build_pbe0_superfunctional(name, npoints, deriv):
 
@@ -2987,6 +3019,7 @@ superfunctionals = {
         'pbe'             : build_pbe_superfunctional,
         'hf3c'            : build_hf3c_superfunctional,
         'pbeh3c'          : build_pbeh3c_superfunctional,
+        'xcpbe'           : build_XCpbe_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
         'b3lyp5'          : build_b3lyp5_superfunctional,
