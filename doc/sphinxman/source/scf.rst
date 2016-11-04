@@ -803,7 +803,7 @@ Convergence and Algorithm Defaults
    that use an alternate starting point, like MCSCF. SAPT computations, too,
    set tighter values.
 
-.. [#f2] This applies to properties computed through the :py:func:`~driver.property` function.
+.. [#f2] This applies to properties computed through the :py:func:`~psi4.property` function.
 
 .. [#f3] Post-HF methods that do not rely upon the usual 4-index AO integrals use a
    density-fitted SCF reference. That is, for DF-MP2 and SAPT, the default |scf__scf_type| is DF.

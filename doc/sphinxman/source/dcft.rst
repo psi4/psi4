@@ -316,7 +316,7 @@ Minimal input for the DCFT single-point computation looks like this::
     
     energy('dcft')
 
-The ``energy('dcft')`` call to :py:func:`~driver.energy` executes the DCFT
+The ``energy('dcft')`` call to :py:func:`~psi4.energy` executes the DCFT
 module, which will first call the SCF module and perform the SCF computation
 with RHF reference to obtain a guess for the DCFT orbitals. After SCF is
 converged, the program will perform the energy computation using the ODC-12

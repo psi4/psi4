@@ -147,11 +147,11 @@ can interface to K\ |a_acute|\ llay's MRCC code (see :ref:`MRCC <sec:mrcc>`).
    +---------------+------------+-----------+-----------+---------------+-----------+
 
 The following wavefunctions are currently recognized by |PSIfour| as arguments
-to functions like :py:func:`~driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'ccsd(at)'``, ``'cc2'``,
+to functions like :py:func:`~psi4.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'ccsd(at)'``, ``'cc2'``,
 ``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
 Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
 ``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained
-by calling the function :py:func:`~driver.property` (instead of, for example, :py:func:`~driver.energy`,
+by calling the function :py:func:`~psi4.property` (instead of, for example, :py:func:`~psi4.energy`,
 *e.g.*, ``property('ccsd')``.  There are many sample
 coupled cluster inputs provided in :source:`samples`.
 

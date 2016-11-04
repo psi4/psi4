@@ -100,8 +100,8 @@ computed using the built-in property() function, e.g.::
 
   property('ccsd', properties=['dipole'])
 
-The :py:func:`~driver.property` function provides limited functionality, but is a lot easier to
-use for correlated methods. For capabilities of :py:func:`~driver.property` see the
+The :py:func:`~psi4.property` function provides limited functionality, but is a lot easier to
+use for correlated methods. For capabilities of :py:func:`~psi4.property` see the
 corresponding section of the manual.
 
 

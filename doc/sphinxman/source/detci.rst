@@ -120,7 +120,7 @@ subspace keywords such as |globals__ras1|,
 in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
-computation with DETCI is simply to call :py:func:`~driver.energy`, :py:func:`~driver.optimize`, *etc.*,
+computation with DETCI is simply to call :py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, *etc.*,
 with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
 recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  Higher order

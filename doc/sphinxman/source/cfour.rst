@@ -81,8 +81,8 @@ Cfour for |PSIfour| Users
   prepending "c4-" to the method argument. So ``energy('scf')`` becomes
   ``energy('c4-scf')`` and ``optimize('ccsd(t)')`` becomes
   ``optimize('c4-ccsd(t)')``. Find available methods for
-  :py:func:`~driver.energy` at :ref:`Energy (CFOUR) <table:energy_cfour>`
-  and for :py:func:`~driver.optimize` at :ref:`Gradient (CFOUR)
+  :py:func:`~psi4.energy` at :ref:`Energy (CFOUR) <table:energy_cfour>`
+  and for :py:func:`~psi4.optimize` at :ref:`Gradient (CFOUR)
   <table:grad_cfour>`.
 
 * Generally, the p4c4 interface will handle best practices for path of
@@ -144,7 +144,7 @@ Here, the contents of the ``cfour {...}`` block are written directly to a
 ``ZMAT`` file. This is joined by a default ``GENBAS`` file
 (:source:`share/basis/GENBAS`).  To preferentially use your own ``GENBAS``,
 place it in :envvar:`PATH` or :envvar:`PSIPATH`. The line calling
-:py:func:`~driver.energy` with argument ``'cfour'`` invokes
+:py:func:`~psi4.energy` with argument ``'cfour'`` invokes
 :program:`xcfour`.
 
 After execution of the ``energy('cfour')`` line completes, Cfour results
@@ -246,8 +246,8 @@ Below is an example of a geometry optimization::
 
     optimize('cfour')
 
-Note that the primary change is the exchange of :py:func:`~driver.energy`
-for :py:func:`~driver.optimize` to trigger an optimization.  Setting
+Note that the primary change is the exchange of :py:func:`~psi4.energy`
+for :py:func:`~psi4.optimize` to trigger an optimization.  Setting
 |optking__g_convergence|\ =CFOUR provides a good imitation of Cfour
 default convergence criteria. Although Cfour produces gradients only in
 its standard orientation and atom ordering, these are transformed back to
@@ -256,7 +256,7 @@ input orientation by the P4C4 interface. Several sample inputs in
 optimizations. :srcsample:`cfour/mints5-grad` shows optimizations from a
 variety of molecule input formats, and :srcsample:`cfour/psi-ghost-grad`
 shows an optimization with ghosted atoms. To obtain a single gradient
-*sans* optimization, call instead :py:func:`~driver.gradient`.
+*sans* optimization, call instead :py:func:`~psi4.gradient`.
 
 Note that it can be convenient to monitor the progress of a geometry
 optimization by grepping the tilde ``~`` character. ::
@@ -308,14 +308,14 @@ rather precludes that helpful label.)
 The input below employs a |PSIfour| library basis set and also introduces
 the final stage of conversion toward |PSIfour| format. Instead of the
 generic ``'cfour'``, the computational method is specified as the first
-argument to the :py:func:`~driver.optimize` call. In the computational
+argument to the :py:func:`~psi4.optimize` call. In the computational
 command below, the string argument ``'c4-ccsd(t)'`` directs that a CCSD(T)
 computation be run using Cfour (as opposed to ``'ccsd(t)'`` which would
 call |PSIfour| CC code). Specifying computational method in this manner
 sets |cfour__cfour_calc_level| from the argument and
 |cfour__cfour_deriv_level| as appropriate from the function call:
-:py:func:`~driver.energy`, :py:func:`~driver.gradient`, or
-:py:func:`~driver.optimize`. If those keywords are also set explicitly to
+:py:func:`~psi4.energy`, :py:func:`~psi4.gradient`, or
+:py:func:`~psi4.optimize`. If those keywords are also set explicitly to
 contradictory values, the interface will complain. ::
 
    memory 2 gb
@@ -637,12 +637,12 @@ into |PSIfour| data objects.
 
 .. rubric:: Implemented
 
-* Single-point :py:func:`~driver.energy` commands for :ref:`ground state
+* Single-point :py:func:`~psi4.energy` commands for :ref:`ground state
   methods <table:energy_cfour>`. Examples:
   :srcsample:`cfour/sp-rhf-ccsd_t_-ao-ecc`, :srcsample:`cfour/scf4`,
   :srcsample:`cfour/mints5`.
 
-* Analytic :py:func:`~driver.gradient` and :py:func:`~driver.optimize`
+* Analytic :py:func:`~psi4.gradient` and :py:func:`~psi4.optimize`
   commands for :ref:`ground state methods <table:grad_cfour>`. Real and
   Ghost atoms permitted (though the latter will naturally collapse after
   several cycles). Examples: :srcsample:`cfour/opt-rhf-ccsd_t_`,
@@ -654,8 +654,8 @@ into |PSIfour| data objects.
    handle these cases and will fail with "Axis unreconcilable between
    QC programs". I will get to this soon.
 
-* Finite difference of energy :py:func:`~driver.gradient` and
-  :py:func:`~driver.optimize` for :ref:`methods <table:energy_cfour>`.
+* Finite difference of energy :py:func:`~psi4.gradient` and
+  :py:func:`~psi4.optimize` for :ref:`methods <table:energy_cfour>`.
   Force with ``gradient('name', dertype=0)``, *etc.*.
 
 * :py:func:`~driver_nbody.nbody_gufunc` for computation of interaction energies with or
@@ -680,7 +680,7 @@ into |PSIfour| data objects.
   stowed in PSI Variables.
 
 * Property calls that required extra computation not yet translated into
-  :py:func:`~driver.property` computation command
+  :py:func:`~psi4.property` computation command
 
 * Frequencies
 
@@ -705,10 +705,10 @@ Gradient methods available through P4C4 interface
 .. comment     |                                         |                                 |                       +--------+--------+---------+
 .. comment     | Driver Call, |cfour__cfour_deriv_level| | name, |cfour__cfour_calc_level| | |cfour__cfour_excite| | |cfour__cfour_cc_program| |
 .. comment     +=========================================+=================================+=======================+========+========+=========+
-.. comment     | :py:func:`~driver.energy`, zero         | cc2                             | none                  | vcc    | vcc    | vcc     |
+.. comment     | :py:func:`~psi4.energy`, zero           | cc2                             | none                  | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
-.. comment     |                                         |vcc for everything                                 +-----------------------+--------+--------+---------+
+.. comment     |                                         |vcc for everything               +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
 .. comment     |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
@@ -737,7 +737,7 @@ Gradient methods available through P4C4 interface
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomeano/eomipyes      | ecc    |     |      |
 .. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-.. comment     | :py:func:`~driver.optimize`, first      | cc2                             | none                  | vcc    | vcc    | vcc     |
+.. comment     | :py:func:`~psi4.optimize`, first        | cc2                             | none                  | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
@@ -970,7 +970,7 @@ directory.
 .. comment     |                                         |                                 |                       +--------+--------+---------+
 .. comment     | Driver Call, |cfour__cfour_deriv_level| | name, |cfour__cfour_calc_level| | |cfour__cfour_excite| | |cfour__cfour_cc_program| |
 .. comment     +=========================================+=================================+=======================+========+========+=========+
-.. comment     | :py:func:`~driver.energy`, zero         | cc2                             | none                  | vcc    | vcc    | vcc     |
+.. comment     | :py:func:`~psi4.energy`, zero           | cc2                             | none                  | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomee                 | _cc    | _cc    | _cc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
@@ -1000,7 +1000,7 @@ directory.
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomea/eomip           | _cc    | _cc    | _cc     |
 .. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
-.. comment     | :py:func:`~driver.optimize`, first      | cc2                             | none                  | _cc    | _cc    | vcc     |
+.. comment     | :py:func:`~psi4.optimize`, first        | cc2                             | none                  | _cc    | _cc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomee                 | _cc    | _cc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
