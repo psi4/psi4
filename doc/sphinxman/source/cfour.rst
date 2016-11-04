@@ -202,7 +202,7 @@ format. The previous example translates to::
     energy('cfour')
 
 Here, note that none of capitalization, equals sign, or whitespace matter
-for the keyword commands. Specifcation of strings and integers requires no
+for the keyword commands. Specification of strings and integers requires no
 translation; :ref:`booleans <op_c_boolean>` have extended freedom of
 format; arrays must be translated into Python-style (square-bracket
 bounded and comma delimited) of appropriate dimension. There are many
@@ -347,7 +347,7 @@ For example, the input above will run with |cfour__cfour_cc_program|\ =ECC
 unless explicitly set to VCC.
 
 An advantage of |PSIfours| Python driver is that any number of common
-work-up procedures can be automated and wrapped around the the
+work-up procedures can be automated and wrapped around the
 conventional single-point and optimization procedures at the heart of all
 quantum chemistry codes. Three core "wrappers" available in |PSIfour| are
 :py:func:`~driver_nbody.nbody_gufunc`,
@@ -474,7 +474,7 @@ optimize a molecule with an extrapolated basis set (findif only for the
 moment- analytics coming).
 
 Finally, any number and combination of jobs can be run from a single
-|PSIfour| input file.  Depending on the nature of preceeding or following
+|PSIfour| input file.  Depending on the nature of preceding or following
 jobs, it is prudent to separate them with the following::
 
     clean()            # removes Psi4 scratch files
@@ -614,7 +614,7 @@ is reached, the following could be placed in the |PSIfour| input file. ::
 .. rubric:: Scratch Files
 
 By default, a separate subdirectory for each Cfour call is created within
-the job's scratch directory. To explicitly specify the location of the the
+the job's scratch directory. To explicitly specify the location of the
 Cfour scratch, execute with, for example, ``energy('cfour',
 path='/full/path/to/cfour/scratch')``. Regardless of whether the location
 is specified or default, whether to preserve the scratch directory after
@@ -719,29 +719,29 @@ Gradient methods available through P4C4 interface
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
 .. comment     |                                         | ccsd(t)                         | none                  | ecc    | ecc    | ecc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomee                 |     |     |      |
+.. comment     |                                         |                                 | eomee                 |        |        |         |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomea/eomip           |     |     |      |
+.. comment     |                                         |                                 | eomea/eomip           |        |        |         |
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
 .. comment     |                                         | cc3                             | none                  | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomee                 | vcc    | vcc    | |
+.. comment     |                                         |                                 | eomee                 | vcc    | vcc    |         |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomea/eomip           |  |     |      |
+.. comment     |                                         |                                 | eomea/eomip           |        |        |         |
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
 .. comment     |                                         | ccsdt (no aobasis sp or opt, also prob for cc3, or for eomea grad) 
 .. comment ecc / vcc / vcc
 .. comment | none                  | ecc    | ecc    | ecc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomee                 | ecc    | mrcc    | mr_cc     |
+.. comment     |                                         |                                 | eomee                 | ecc    | mrcc   | mr_cc   |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomeano/eomipyes      | ecc    |     |      |
+.. comment     |                                         |                                 | eomeano/eomipyes      | ecc    |        |         |
 .. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
 .. comment     | :py:func:`~psi4.optimize`, first        | cc2                             | none                  | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
 .. comment     |                                         |                                 | eomee                 | vcc    | vcc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomea/eomip    not sure ask       | vcc    | vcc    | vcc     |
+.. comment     |                                         |                                 | eomea/eomip not sure ask  | vcc  | vcc  | vcc     |
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
 .. comment     |                                         | ccsd                            | none                  | ecc    | ecc    | ecc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
@@ -751,21 +751,21 @@ Gradient methods available through P4C4 interface
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
 .. comment     |                                         | ccsd(t)                         | none                  | ecc    | ecc    | vcc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomee                 |     |     |      |
+.. comment     |                                         |                                 | eomee                 |        |        |         |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomea/eomip           |     |     |      |
+.. comment     |                                         |                                 | eomea/eomip           |        |        |         |
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
-.. comment     |                                         | cc3                             | none                  | vcc    |     |     |
+.. comment     |                                         | cc3                             | none                  | vcc    |        |         |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomee                 | vcc    |     |     |
+.. comment     |                                         |                                 | eomee                 | vcc    |        |         |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomea/eomip           | vcc    |    |      |
+.. comment     |                                         |                                 | eomea/eomip           | vcc    |        |         |
 .. comment     |                                         +---------------------------------+-----------------------+--------+--------+---------+
-.. comment     |                                         | ccsdt                           | none                  | ecc    | mrcc    | mrc     |
+.. comment     |                                         | ccsdt                           | none                  | ecc    | mrcc   | mrc     |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomee                 | mrcc   | mrcc    | mrcc     |
+.. comment     |                                         |                                 | eomee                 | mrcc   | mrcc   | mrcc    |
 .. comment     |                                         |                                 +-----------------------+--------+--------+---------+
-.. comment     |                                         |                                 | eomea/eomip           | mrcc    | mrcc    | mrcc     |
+.. comment     |                                         |                                 | eomea/eomip           | mrcc   | mrcc   | mrcc    |
 .. comment     +-----------------------------------------+---------------------------------+-----------------------+--------+--------+---------+
 .. comment properties same as grad
 .. comment 2nd deriv ecc only for ccsd(t)
@@ -931,7 +931,7 @@ output file and is available from input as :py:func:`~psi4.get_gradient`.
 
 sandwich mode := molecule and cfour list within
 Naturally, additional jobs can follow in the input file.
-Depending on the nature of preceeding or following jobs, it is prudent to
+Depending on the nature of preceding or following jobs, it is prudent to
 separate them with the following::
 
     clean()            # removes Psi4 scratch files
@@ -941,7 +941,7 @@ separate them with the following::
 In this scheme, the contents of the ``cfour {...}`` block are tacked onto
 the end of the ``ZMAT`` file that is otherwise written from psi style
 format. It is by this route that, for example ``%excite*`` sections can at
-present be spcified.
+present be specified.
 
 The execution of :program:`xcfour` can be modified by a few parameters.  Setting
 the option |cfour__cfour_omp_num_threads| sets the environment variable
@@ -956,7 +956,7 @@ directory.
 .. comment 
 .. comment Test checked-in GENBAS on installed copy
 .. comment 
-.. comment Reference still not factoroed into cc_program!
+.. comment Reference still not factored into cc_program!
 .. comment 
 .. comment optimize on a sandwich calc? errors out
 .. comment 

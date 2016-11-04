@@ -111,7 +111,7 @@ Creating new efp fragments requires the `GAMESS
 <http://www.msg.ameslab.gov/gamess/>`_ quantum chemistry package.
 Instructions on building new fragments are `here
 <https://github.com/libefp/libefp#how-to-create-custom-efp-fragment-types>`_.
-Once your new fragment is ready, make it assessible to |PSIfour| by
+Once your new fragment is ready, make it accessible to |PSIfour| by
 including the directory in which the ``.efp`` file is located to the colon
 separated environment variable :envvar:`PSIPATH`. Fragments are searched
 for first in the current directory, next in the paths of :envvar:`PSIPATH`, and

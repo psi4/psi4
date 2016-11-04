@@ -38,7 +38,7 @@ Scalar relativistic Hamiltonians
 .. codeauthor:: Prakash Verma and Francesco A. Evangelista
 .. sectionauthor:: Prakash Verma, Wallace D. Derricotte, and Francesco A. Evangelista
 
-The exact-two-component (X2C) approch is a convenient way to introduce scalar
+The exact-two-component (X2C) approach is a convenient way to introduce scalar
 relativistic effects in DFT and wave function-based methods.
 |PSIfour| implements the spin-free one-electron version of X2C, which produces
 a modified one-electron Hamiltonian :math:`H_{\rm X2C}`:
@@ -146,7 +146,7 @@ The transformation ( :math:`U` ) is  obtained from the solutions of the Dirac eq
 In the X2C treatment, the positive-energy block of the Hamiltonian ( :math:`h^{FW}_{\rm ++}` )
 is given by the sum
 of a transformed kinetic (:math:`T_{\rm X2C}`) and potential energy ( :math:`V_{\rm X2C}` ) contribution.
-Relativistic kinetic energy ( :math:`T_{\rm X2C}` ) and nuclear-electron interaction potential ( :math:`V_{\rm X2C}` ) is given interms of non-relativisitc kinetic (:math:`T=\hat{p}^2/2`) energy and nuclear-electron interaction potential (:math:`V`), coupling matrix ( :math:`X`) and renormalization matrix ( :math:`R`).  
+Relativistic kinetic energy ( :math:`T_{\rm X2C}` ) and nuclear-electron interaction potential ( :math:`V_{\rm X2C}` ) is given in terms of non-relativisitc kinetic (:math:`T=\hat{p}^2/2`) energy and nuclear-electron interaction potential (:math:`V`), coupling matrix ( :math:`X`) and renormalization matrix ( :math:`R`).  
 
 .. math::
   T_{\rm X2C} = R^{\dagger} (TX +  {X}^{\dagger}T - {X}^{\dagger}TX ) R 

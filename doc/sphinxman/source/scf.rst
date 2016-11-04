@@ -699,7 +699,7 @@ In addition to the options available for Direct Inversion, the Davidson algorith
 adapt |scf__follow_step_scale| to find a new SCF minimum. If |scf__max_attempts| > 1, additional attempts 
 will automatically increment |scf__follow_step_scale| by 0.2 every time the SCF falls back to the previously 
 found unstable minimum. The increment can be adjusted by setting |scf__follow_step_increment|.
-The default value is 0.2; adjust if needed to try different values of |scf__follow_step_scale| in a single compution.
+The default value is 0.2; adjust if needed to try different values of |scf__follow_step_scale| in a single computation.
 
 The Davidson solver for the eigenvalues is controlled through several keywords. In the following
 we only report the most pertinent for stability analysis, see documentation for the :ref:`CPHF <apdx:cphf>` 

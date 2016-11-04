@@ -231,7 +231,7 @@ where we have chosen the intermediate normalization, :math:`\langle \Psi_0
     E_c = \langle \Psi_0 | \hat{H} - E_0 | \Psi \rangle,
 
 and the amplitudes can be determined by the solution to the coupled set of
-eqations:
+equations:
 
 .. math::
     :label: CIeqns

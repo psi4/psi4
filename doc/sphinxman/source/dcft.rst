@@ -358,7 +358,7 @@ Here is a list of recommendations for the DCFT module:
   DIIS extrapolation starts. This can be done by setting the
   |dcft__diis_start_convergence| option to the value greater than
   :math:`10^{-3}` by one or two orders of magnitude (*e.g.* :math:`10^{-2}` or
-  :math:`10^{-1}`). This can be particularly useful for computions using the
+  :math:`10^{-1}`). This can be particularly useful for computations using the
   ODC methods, because it can greatly reduce the number of iterations.
 
 * If oscillatory convergence is observed for atoms or molecules with high

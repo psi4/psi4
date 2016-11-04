@@ -160,7 +160,7 @@ In order to preserve effective definition [a], the strategy for each
 python driver function is to query for the value of any option the
 function may want to change and for the current has_changed status
 (presumably reflecting whether the user has changed the value, as long as
-no preceeding code has corrupted that definition). The python function
+no preceding code has corrupted that definition). The python function
 then makes its changes to the option and runs any c-side modules with
 those changes. Finally, just before the function returns, the options are
 reset to the user's value and has_changed status (which should now again

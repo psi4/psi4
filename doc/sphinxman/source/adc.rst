@@ -120,7 +120,7 @@ are accounted for as in the case of CIS(D). In the language of
 CIS(D), the former is regarded to introduce the orbital relaxation (OR)
 effect while the latter is argued to give rise to the differential
 correlation (DC) correction to the excited state. In the PR-ADC(2)
-scheme, the the DC term is corrected according to the ground state
+scheme, the DC term is corrected according to the ground state
 PR-MP2 correlation, in which the correlation between the electron pairs
 is accounted for in size-consistent and unitary-invariant fashion by
 modulating the MP1 amplitude. By utilizing the |adc__pr| scheme, substantial
@@ -182,7 +182,7 @@ acceleration,
 
 the computational time reduces to shorter than half of the simple iterative
 procedure. Construction of the denominator of the second term in the above
-equation is less computationally expensive than contruction of one :math:`\sigma`\ -vector with respect to the effective response matrix. The non-iterative excitation energy stated above is calculated as a diagonal element of the Davidson mini-Hamiltonian matrix in the SEM as,
+equation is less computationally expensive than construction of one :math:`\sigma`\ -vector with respect to the effective response matrix. The non-iterative excitation energy stated above is calculated as a diagonal element of the Davidson mini-Hamiltonian matrix in the SEM as,
 
 .. math:: \omega^{Non-Iterative}=
    \mathbf{X_{CIS}}^{\dagger}[\mathbf{A_{SS}^{(2)}}+

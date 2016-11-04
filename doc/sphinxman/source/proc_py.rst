@@ -99,7 +99,7 @@ locally to a module, except for those without a module in
 
 If the regular scf module is to be run, run it through
 :py:func:`~proc.scf_helper` so that cast-up can be used. Also, add
-the option to pass the reference wavefunciton by pre-running scf,
+the option to pass the reference wavefunction by pre-running scf,
 then running the module with the ``ref_wfn`` kwarg.  Also, if the full
 two-electron integrals are necessary for the post-scf, compute them if
 only the df integrals were run previously. ::

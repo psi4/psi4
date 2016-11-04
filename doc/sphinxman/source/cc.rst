@@ -57,7 +57,7 @@ CC: Coupled Cluster Theory
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.
-Instead of the linear expansion of the wavefunction used by configuation
+Instead of the linear expansion of the wavefunction used by configuration
 interaction, coupled cluster uses an exponential expansion,
 
 .. math::

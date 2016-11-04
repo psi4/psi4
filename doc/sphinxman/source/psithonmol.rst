@@ -311,7 +311,7 @@ molecule's point group symmetry. ::
 
 The masses used by |PSIfour| can be found at
 :source:`psi4/include/psi4/masses.h`. See :srcsample:`freq-isotope` for about
-the only use to which isotopologs can presently be put in |PSIfour|.
+the only use to which isotopologues can presently be put in |PSIfour|.
 
 .. index:: 
    single: PubChem
@@ -397,7 +397,7 @@ symmetries, and will adjust the structure accordingly so that the maximum
 symmetry is utilized.
 
 The standard keywords, described in :ref:`sec:moleculeKeywords`, can be
-used in conjuction to specify charge, multiplicity, symmetry to use, *etc.* .
+used in conjunction to specify charge, multiplicity, symmetry to use, *etc.* .
 
 .. index:: symmetry, Cotton-ordering
 .. _`sec:symmetry`:
@@ -453,7 +453,7 @@ For certain computations, the user might want to specify which particular
 subgroup is to be used by appending a unique axis specifier.  For example when
 running a computation on a molecule with :math:`D_{2h}` symmetry in :math:`C_{2v}`, the
 :math:`C_2` axis can be chosen as either the :math:`x`, the :math:`y`, or the :math:`z`; these can
-be specified by requesing the symmetry as ``c2vx``, ``c2vy``, or ``c2vz``, respectively.
+be specified by requesting the symmetry as ``c2vx``, ``c2vy``, or ``c2vz``, respectively.
 Likewise the ``c2x``, ``c2y``, ``c2z``, ``c2hx``, ``c2hy``, and ``c2hz``
 labels are valid.  For :math:`C_s` symmetry the labels ``csx``, ``csy``, and
 ``csz`` request the :math:`yz`, :math:`xz`, and :math:`xy` planes be used as the mirror plane,
@@ -513,7 +513,7 @@ perturbation theory methods. These require the definition of which fragments
 are interacting within the complex. |PSIfour| provides a very simple mechanism
 for doing so: simply define the complex's geometry using the standard
 Cartesian, Z-matrix, or mixture thereof, specifications and then place two
-dashes between nonbonded fragements. For example, to study the interaction
+dashes between nonbonded fragments. For example, to study the interaction
 energy of ethane and ethyne molecules, we can use the following molecule
 block::
 
@@ -605,7 +605,7 @@ are accessible through the handle :samp:`{option_molecule_name}` in
        formaldehyde.print_out()                # print new molecule to output file
        compare_values(28.9950517332, formaldehyde.nuclear_repulsion_energy(), 4, "geom2 took")
 
-* Molecules can be initited from XYZ files and fragmented for SAPT computations. ::
+* Molecules can be initiated from XYZ files and fragmented for SAPT computations. ::
 
        # >>> cat mol1.xyz
        #7
