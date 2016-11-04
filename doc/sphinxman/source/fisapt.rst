@@ -45,7 +45,7 @@ F/I-SAPT: Functional Group and/or Intramolecular SAPT
 The FISAPT module provides two extensions to standard SAPT theory to allow for
 (1) an effective two-body partition of the various SAPT terms to localized
 chemical functional groups (F-SAPT) and (2) a means to compute the SAPT
-interaction between two moeities within the embedding field of a third body
+interaction between two moieties within the embedding field of a third body
 (I-SAPT). F-SAPT is designed to provide additional insight into the chemical
 origins of a noncovalent interaction, while I-SAPT allows for one to perform
 a SAPT analysis for intramolecular interactions. F-SAPT and I-SAPT can be
@@ -359,7 +359,7 @@ that permit the customization of the I-SAPT subsystem partition, the convergence
 of the IBO localization procedure, numerical thresholds, etc. We have an entire
 video tutorial devoted to these options `F/I-SAPT Options <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
 Direct source-code documentation on these options is available :ref:`here
-<apdx:fisapt_psivar>`
+<apdx:fisapt_psivar>`_.
 
 Additional Notes
 ^^^^^^^^^^^^^^^^
