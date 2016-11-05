@@ -58,7 +58,7 @@ Installing from Binary
 Compiling and Installing from Source
 ====================================
 
-Please see  `Options: Overview and Not Otherwise Mentioned <https://github.com/psi4/psi4/blob/master/CMakeLists.txt>`_. The below wiki references are temporarily out of date.
+Please see  `Options: Overview and Not Otherwise Mentioned <https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L105>`_. The below wiki references are temporarily out of date.
 
 Detailed directions on 
 `obtaining <https://github.com/psi4/psi4/wiki/1_Obtaining>`_, 
