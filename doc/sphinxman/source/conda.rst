@@ -79,7 +79,7 @@ the |PSIfour| executable into the main conda environment at
 .. code-block:: bash
 
     # Linux
-    >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-Linux.sh" --keepalive-time 2
+    >>> curl -O "http://www.psicode.org/downloads/Psi4conda2-latest-Linux.sh" --keepalive-time 2
     >>> bash
     >>> bash Psi4conda-latest-Linux.sh -b -p $HOME/psi4conda  # agrees to license terms
     >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bashrc
@@ -89,7 +89,7 @@ the |PSIfour| executable into the main conda environment at
 .. code-block:: bash
 
     # Mac
-    >>> curl -o "http://www.psicode.org/downloads/Psi4conda2-latest-MacOSX.sh" --keepalive-time 2
+    >>> curl -O "http://www.psicode.org/downloads/Psi4conda2-latest-MacOSX.sh" --keepalive-time 2
     >>> bash
     >>> bash Psi4conda-latest-MacOSX.sh -b -p $HOME/psi4conda  # agrees to license terms
     >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bash_profile
@@ -137,14 +137,14 @@ will be available for download.
 .. code-block:: bash
 
     # Linux
-    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
+    >>> curl -O explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
     >>> conda create --name p4env --file explicitenv2-latest-Linux-x86_64.txt
     >>> source activate p4env
 
 .. code-block:: bash
 
     # Mac
-    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
+    >>> curl -O explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
     >>> conda create --name p4env --file explicitenv2-latest-MacOSX-x86_64.txt
     >>> source activate p4env
 
@@ -160,8 +160,8 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
 .. code-block:: bash
 
     # Linux or Mac: select between next two lines
-    >>> curl -o Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh"
-    >>> curl -o Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh"
+    >>> curl -O Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh"
+    >>> curl -O Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh"
 
 .. code-block:: bash
 

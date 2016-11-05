@@ -36,7 +36,7 @@
 SAPT: Symmetry-Adapted Perturbation Theory
 ==========================================
 
-.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish and J\ |e_acute|\ r\ |o_circumflex| \me F. Gonthier
+.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish and J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier
 .. sectionauthor:: Edward G. Hohenstein and J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <psi4/src/psi4/libsapt_solver>`
