@@ -203,7 +203,7 @@ the basis set is set to cc-pVDZ throughout, the SCF code will have a print
 level of 1 and the ccenergy code, which performs coupled cluster computations,
 will use a print level of 3. In this example a full CCSD computation is
 performed by running the SCF code first, then the coupled cluster modules;
-the :py:func:`~driver.energy` Python helper function ensures that this is performed correctly.
+the :py:func:`~psi4.energy` Python helper function ensures that this is performed correctly.
 Note that the Python interpreter executes commands in the order they appear in
 the input file, so if the last four commands in the above example were to read ::
 
