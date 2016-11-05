@@ -58,6 +58,8 @@ Installing from Binary
 Compiling and Installing from Source
 ====================================
 
+Please see the `CMake Options Section <https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L105>`_. The below wiki references are temporarily out of date.
+
 Detailed directions on 
 `obtaining <https://github.com/psi4/psi4/wiki/1_Obtaining>`_, 
 `prerequisites <https://github.com/psi4/psi4/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
