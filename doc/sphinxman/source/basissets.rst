@@ -104,9 +104,9 @@ line then assigns 3-21G to all carbon atoms, leaving the hydrogens with the DZ
 basis set.  On the third line, the hydrogen atoms which have been specifically
 labelled as ``H1`` are given the STO-3G basis set, leaving the unlabelled hydrogen
 atoms with the DZ basis set.  Likewise, the fourth line assigns the STO-3G
-basis set to just the carbon atoms labelled ``C1``.  This bizzare example was
+basis set to just the carbon atoms labelled ``C1``.  This bizarre example was
 constructed to demonstrate the syntax, but the flexibility of the basis set
-specification is advantageous, for example, when selectivily omitting diffuse
+specification is advantageous, for example, when selectively omitting diffuse
 functions to make computations more tractable.
 
 .. index:: basis set; auxiliary
@@ -155,7 +155,7 @@ decontract a given basis set, simply add "-decontract" to the name of the primar
 
 Obviously this will add significantly to the computational cost of any given calculation, however it can
 be useful when checking the basis set dependence of a particular calculated property or in certain situations
-where a large basis set is critical. Currently it is recommended that a decontracted basis is always used when performing realtivistic calculations using the :ref:`X2C Hamiltonian <sec:relativistic>`.
+where a large basis set is critical. Currently it is recommended that a decontracted basis is always used when performing relativistic calculations using the :ref:`X2C Hamiltonian <sec:relativistic>`.
 
 .. _`sec:basisUserDefined`: 
 

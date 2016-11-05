@@ -324,7 +324,7 @@ The output for either of the installation commands above looks like the followin
     
     [      COMPLETE      ]|#######################################################################################################| 100%
 
-7. Configure environment. Preceeding steps have placed ``conda`` and ``psi4`` in your :envvar:`PATH`, either permanently through rc-files or temporarily in this terminal session. You can keep or undo these changes. For general psi4 use, you must enable the ``psi4`` executable to be found through any of:
+7. Configure environment. Preceding steps have placed ``conda`` and ``psi4`` in your :envvar:`PATH`, either permanently through rc-files or temporarily in this terminal session. You can keep or undo these changes. For general psi4 use, you must enable the ``psi4`` executable to be found through any of:
 
   #. prepending to :envvar:`PATH` in shell, ``~/.bashrc``, ``~/.tcshrc``, or PBS ``cmd`` file
   #. activating the conda environment (p4env above) in shell, ``~/.bashrc``, or PBS ``cmd`` file

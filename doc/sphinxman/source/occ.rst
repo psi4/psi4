@@ -74,7 +74,7 @@ discussed that the orbital response equations generally have a singularity probl
 where spin-restricted orbitals become unstable to unrestriction. This singularity yields to extremely large or 
 small eigenvalues of the one-particle density matrix (OPDM). These abnormal eigenvalues may lead to unphysical 
 molecular properties such as vibrational frequencies. However, orbital-optimized MP2 (also MP3)
-will solve this N-representability problem by disregarding orbital response contribution of one-partical 
+will solve this N-representability problem by disregarding orbital response contribution of one-particle
 density matrix. 
 
 Although the performance of coupled-cluster singles and doubles (CCSD) and orbital-optimized 

@@ -61,9 +61,9 @@ to compute only once the monomer whose energy will be subtracted from each of th
 
 At the end of the job, the Requested Energy table is printed that gives the total
 energies for the requested model chemistry for each reagent and each reaction, as
-well as the stoichoimetric weights by which the reagent energies are transfromed
+well as the stoichiometric weights by which the reagent energies are transformed
 into the reaction energy. In this case, the dimer is +1 and the monomer is -2,
-indicating the the interaction energy is computed from dimer less first monomer
+indicating the interaction energy is computed from dimer less first monomer
 less second (identical) monomer. Error statistics are computed with respect to the reference
 energies stored in the database. One of these, the mean absolute deviation, is 
 returned by the wrapper as an ordinary Python variable. (For databases
@@ -162,7 +162,7 @@ The output to the screen is as follows. ::
 Available Databases
 ^^^^^^^^^^^^^^^^^^^
 
-Below are documented for particular databases the availibility of the generic
+Below are documented for particular databases the availability of the generic
 database function options **cp**, **rlxd**, **benchmark**, and the string
 options for **subset**. The full reagent member list, which can also be used
 in conjunction with **subset**, is not included here for consideration of space

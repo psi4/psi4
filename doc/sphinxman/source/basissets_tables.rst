@@ -329,7 +329,7 @@ Appendix :ref:`apdx:basisElement`.
 .. [#f2] The heavy-aug-cc-\ *stub* and jul-cc-\ *stub* basis sets are identical.
 .. [#f3] The JKFIT basis sets are designed in the cc-\ *stub*\ (X+d)Z 
          framework that includes an additional set of
-         *d*-fuctions for second-row *p*-block elements. Identical basis sets
+         *d*-functions for second-row *p*-block elements. Identical basis sets
          with the cc-\ *stub*\ XZ-JKFIT label are provided for convenience.
 .. [#f4] D\ :math:`\zeta` has :math:`\ell_{max}=2` or d.
          T\ :math:`\zeta` has :math:`\ell_{max}=3` or f.

@@ -253,7 +253,7 @@ H\ :sub:`2` and H atom::
     D_e = psi_hartree2kcalmol * (2*h_energy - h2_energy)
     print "De=%f" % D_e
 
-The :py:func:`~driver.energy` function returns the final result of the
+The :py:func:`~psi4.energy` function returns the final result of the
 computation, the requested total energy in Hartrees, which we assign to a
 Python variable. The two energies are then converted to a dissociation
 energy and printed to the output file using standard Python notation.
@@ -272,7 +272,7 @@ scaled energy and the unscaled MP2 energy are made available::
 Each module and the Python driver set PSI variables over the course of a
 calculation.  The values for all can be printed in the output file with
 the input file command :py:func:`~psi4.print_variables`. Note that PSI variables
-are cleared at the start of each :py:func:`~driver.energy`, etc. in an input
+are cleared at the start of each :py:func:`~psi4.energy`, etc. in an input
 file by :py:func:`~psi4.clean_variables()`.
 So if you run in a single input file a STO-3G FCI followed by a
 aug-cc-pVQZ SCF followed by a :py:func:`~psi4.print_variables` command, the
@@ -287,8 +287,8 @@ Return Values
 =============
 
 Most of the usual user computation functions (*i.e.*,
-:py:func:`~driver.energy`, :py:func:`~driver.optimize`, and
-:py:func:`~driver.frequency`) return simply the current total energy.
+:py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, and
+:py:func:`~psi4.frequency`) return simply the current total energy.
 Consult the descriptions of other functions in :ref:`sec:psithonFunc` for
 what quantities they return and for what data structures they make
 available for post-processing. Many users need only deal with the simple return

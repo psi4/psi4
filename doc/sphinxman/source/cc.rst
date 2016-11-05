@@ -57,7 +57,7 @@ CC: Coupled Cluster Theory
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.
-Instead of the linear expansion of the wavefunction used by configuation
+Instead of the linear expansion of the wavefunction used by configuration
 interaction, coupled cluster uses an exponential expansion,
 
 .. math::
@@ -147,11 +147,11 @@ can interface to K\ |a_acute|\ llay's MRCC code (see :ref:`MRCC <sec:mrcc>`).
    +---------------+------------+-----------+-----------+---------------+-----------+
 
 The following wavefunctions are currently recognized by |PSIfour| as arguments
-to functions like :py:func:`~driver.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'ccsd(at)'``, ``'cc2'``,
+to functions like :py:func:`~psi4.energy`: ``'ccsd'``, ``'ccsd(t)'``, ``'ccsd(at)'``, ``'cc2'``,
 ``'cc3'``, ``'bccd'`` (CCD with Brueckner orbitals), ``'bccd(t)'`` (CCD(T) with
 Brueckner orbitals), ``'eom-ccsd'``, ``'eom-cc2'`` (CC2 for excited states),
 ``'eom-cc3'`` (CC3 for excited states).  Response properties can be obtained
-by calling the function :py:func:`~driver.property` (instead of, for example, :py:func:`~driver.energy`,
+by calling the function :py:func:`~psi4.property` (instead of, for example, :py:func:`~psi4.energy`,
 *e.g.*, ``property('ccsd')``.  There are many sample
 coupled cluster inputs provided in :source:`samples`.
 
