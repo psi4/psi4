@@ -84,7 +84,7 @@ views.  Views can be created in two ways::
     # Access the NumPy object and set all values to 1 through broadcasting
     >>> numpy_mat_view[:] = 1
     
-    >>> print(np.array(mat)
+    >>> print(np.array(mat))
     [[ 1.  1.  1.]
      [ 1.  1.  1.]
      [ 1.  1.  1.]]

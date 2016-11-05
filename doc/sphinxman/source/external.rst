@@ -205,7 +205,7 @@ The Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any
 tasks in the input file. As a consequence, the commands in the input files supersede
 any instructions in the |psirc| file. During
-excecution, the |psirc| defaults will be loaded in first, but then the commands
+execution, the |psirc| defaults will be loaded in first, but then the commands
 in the input file will be executed.  
 
 The |psirc| file can also be used to define constants that are accessible

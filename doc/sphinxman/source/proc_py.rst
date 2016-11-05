@@ -53,7 +53,7 @@ The function must always take as arguments ``(name, **kwargs)``. ::
 If the function needs to test the identity of ``name`` several times, it
 can be convenient to predefine the lowercase version of the variable. The
 case of all other py-side options (in kwargs) has already been handled by
-:py:func:`~driver.energy()`, etc. in driver.py and need not be repeated here. ::
+:py:func:`~psi4.energy()`, etc. in driver.py and need not be repeated here. ::
 
     # include if convenient
     lowername = name.lower()
@@ -99,7 +99,7 @@ locally to a module, except for those without a module in
 
 If the regular scf module is to be run, run it through
 :py:func:`~proc.scf_helper` so that cast-up can be used. Also, add
-the option to pass the reference wavefunciton by pre-running scf,
+the option to pass the reference wavefunction by pre-running scf,
 then running the module with the ``ref_wfn`` kwarg.  Also, if the full
 two-electron integrals are necessary for the post-scf, compute them if
 only the df integrals were run previously. ::
@@ -128,7 +128,7 @@ need to be returned to the original user state with the following. ::
     optstash.restore()
 
 No function should return anything. ``CURRENT ENERGY`` will be set by
-:py:func:`~driver.energy`, etc. ::
+:py:func:`~psi4.energy`, etc. ::
 
     # never include
     return returnvalue

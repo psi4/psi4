@@ -120,13 +120,13 @@ subspace keywords such as |globals__ras1|,
 in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
-computation with DETCI is simply to call :py:func:`~driver.energy`, :py:func:`~driver.optimize`, *etc.*,
+computation with DETCI is simply to call :py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, *etc.*,
 with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
 recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  Higher order
-single-refernce CI wavefunctions, like those including singles through
+single-reference CI wavefunctions, like those including singles through
 6-fold excitations, can be invoked using numbers, like ``ci6``.  A full
-CI can be specifed by ``fci``.  More complicated CI computations, like
+CI can be specified by ``fci``.  More complicated CI computations, like
 RASCI, can be performed by setting the appropriate keywords and calling the
 module generically like ``energy('detci')``.  The latter approach
 will also work for any of the previously-mentioned CI wavefunctions for
@@ -212,7 +212,7 @@ An illustrative CASSCF example is as follows::
 
 This input will compute the CASSCF energy of water where the 1s Oxygen orbital
 and several virtual orbitals are not included in the CI expansion, but are
-still optimizd. The following is a full list of spaces within the various MCSCF
+still optimized. The following is a full list of spaces within the various MCSCF
 types.
 
 .. _`table:mcscf_spaces`:

@@ -101,7 +101,7 @@ If more advanced usage is desired, which is not is permitted by the options
 listed below, the user may provide their own data file containing keywords to
 control the GDMA code.  Simply place the data file in the directory |PSIfour|
 is called from, and provide the file name as the datafile argument to the
-:py:func:`~driver.gdma` routine.  For example, if GDMA data file is called
+:py:func:`~psi4.gdma` routine.  For example, if GDMA data file is called
 *control.dma*, the GDMA code is called as follows::
 
     grad, wfn = gradient('mp2', return_wfn=True)

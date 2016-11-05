@@ -248,7 +248,7 @@ generic form,
     \delta_{\sigma_{i} \sigma_{j}} (1-\alpha)\iint_{\mathrm{R}^6} \phi_{i}^1 \phi_{j}^1
     \frac{\mathrm{erf}(\omega r_{12})}{r_{12}} \phi_{i}^2 \phi_{j}^2 \ \mathrm{d}^3 r_1 \ \mathrm{d}^3 r_2
 
-For LRC functionals, the choice of range-separtion parameter :math:`\omega` has
+For LRC functionals, the choice of range-separation parameter :math:`\omega` has
 been the subject of considerable activity since the inception of LRC
 functionals. Some authors advocate a static range-separation parameter
 determined by optimization over a test set of chemical systems. However, a more

@@ -136,7 +136,7 @@ Orbital Visualization with VMD
 
 Included in |PSIfour| is functionality to automatically render specified surfaces, including molecular orbitals,
 densities, and basis functions, using VMD. The vmd_cube.py script takes the .cube files generated
-in a calculation and generates images alinged with user-input specifications. The script is located
+in a calculation and generates images aligned with user-input specifications. The script is located
 in :source:`/share/scripts/vmd_cube.py`.
 
 Script Prerequisites

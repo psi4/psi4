@@ -45,7 +45,7 @@ F/I-SAPT: Functional Group and/or Intramolecular SAPT
 The FISAPT module provides two extensions to standard SAPT theory to allow for
 (1) an effective two-body partition of the various SAPT terms to localized
 chemical functional groups (F-SAPT) and (2) a means to compute the SAPT
-interaction between two moeities within the embedding field of a third body
+interaction between two moieties within the embedding field of a third body
 (I-SAPT). F-SAPT is designed to provide additional insight into the chemical
 origins of a noncovalent interaction, while I-SAPT allows for one to perform
 a SAPT analysis for intramolecular interactions. F-SAPT and I-SAPT can be
@@ -72,7 +72,7 @@ Specific videos in the series include:
   <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
   Describes the use of F-SAPT to analyze the
   distribution of the intermolecular interaction energy components between the
-  various hydroxyl and phenyl moeities of the phenol dimer.
+  various hydroxyl and phenyl moieties of the phenol dimer.
 - `F-SAPT#2
   <https://www.youtube.com/watch?v=fqlzXsayec0&index=2&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
   Discusses how to plot the order-1 F-SAPT analysis with PyMol and perform a
@@ -83,7 +83,7 @@ Specific videos in the series include:
   groups in a 2,4-pentanediol molecule.
 - `I-SAPT#2
   <https://www.youtube.com/watch?v=hDbonAOD5dY&index=4&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-  Discusses how to plot the density fields and ESPs of the various moeities of
+  Discusses how to plot the density fields and ESPs of the various moieties of
   the I-SAPT embedding scheme with PyMol
 - `F/I-SAPT Options
   <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
@@ -96,7 +96,7 @@ F-SAPT: A Representative Example
 
 Below, we show an example of using F-SAPT0/jun-cc-pVDZ to analyze the
 distribution of the intermolecular interaction energy components between the
-various hydroxyl and phenyl moeities of the phenol dimer. This example is
+various hydroxyl and phenyl moieties of the phenol dimer. This example is
 explicitly included in :srcsample:`fsapt1`. A video
 lecture explaining this example is available `F-SAPT#1
 <https://www.youtube.com/watch?v=J22J0wh4mVo&index=1&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_,
@@ -308,14 +308,14 @@ the I-SAPT embedding procedure is available `I-SAPT#2 <https://www.youtube.com/w
     energy('fisapt0')
 
 This is essentially the same input as for F-SAPT, except that the molecular
-system is now divided into *three* moeities |w--w| subsystems A and B whose
+system is now divided into *three* moieties |w--w| subsystems A and B whose
 intramolecular interaction we wish to compute, and a linking unit C.  This file
 runs a DF-HF computation on the full system using |PSIfours| existing SCF code.
 At the start of the FISAPT code, the occupied orbitals are localized and divided
 by charge considerations into A, B, C, and link sets. By default, linking sigma
 bonds are assigned to C (this can be changed by the |fisapt__fisapt_link_assignment|
 options). Then, non-interacting Hartree--Fock solutions for A and B are optimized
-in the embedding field of the linking moeity C. At this point, A and B are not
+in the embedding field of the linking moiety C. At this point, A and B are not
 interacting with each other, but have any potential covalent links or other
 interactions with C built in by the embedding.  A standard F-SAPT0 computation
 is then performed between A and B, yielding the I-SAPT interaction energy. Any
@@ -329,7 +329,7 @@ Setting |fisapt__fisapt_do_plot| ``true`` above generates a set of ``.cube`` fil
 containing the densities and ESPs of the various subsystems in the I-SAPT
 embedding procedure. These can be used to gain a detailed understanding of the
 intermolecular partition and the polarization between non-interacting and
-Hartree--Fock-interacting moeities. We have developed a set of template
+Hartree--Fock-interacting moieties. We have developed a set of template
 ``.pymol`` scripts to help with this process. These can be obtained by running::
 
     >>> copy_pymol2.py

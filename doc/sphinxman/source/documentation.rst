@@ -98,7 +98,7 @@ this covers:
 Some documentation is even extracted from |PSIfour| objects at runtime.
 
 * psi4: docstrings for the psi4 built-in module constructed in :source:`psi4/src/psi4`
-* DFT: functional availibility and characteristics as encoded in :source:`psi4/driver/procedures/dft_functional.py`
+* DFT: functional availability and characteristics as encoded in :source:`psi4/driver/procedures/dft_functional.py`
 * BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`psi4/driver/qcdb/basislistdunning.py` and :source:`psi4/driver/qcdb/basislistother.py`
 
 Building all the documentation takes ~15 minutes. There is now good
@@ -121,7 +121,7 @@ reStructuredText
 ^^^^^^^^^^^^^^^^
 
 Sphinx files are written in reStructuredText (\*.rst). In the html
-documentation, source code is available from the sidebar. Here're a
+documentation, source code is available from the sidebar. Here are a
 few resources on Sphinx formatting.
 
 * `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_

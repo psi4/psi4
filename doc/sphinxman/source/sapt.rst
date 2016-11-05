@@ -36,7 +36,7 @@
 SAPT: Symmetry-Adapted Perturbation Theory
 ==========================================
 
-.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish and J\ |e_acute|\ r\ |o_circumflex| \me F. Gonthier
+.. codeauthor:: Edward G. Hohenstein, Rob M. Parrish and J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier
 .. sectionauthor:: Edward G. Hohenstein and J\ |e_acute|\ r\ |o_circumflex|\ me F. Gonthier
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <psi4/src/psi4/libsapt_solver>`
@@ -56,7 +56,7 @@ SAPT: Symmetry-Adapted Perturbation Theory
    was changed to true. Hence the code now by default uses natural
    orbital truncation to speed up the evaluation of energy terms
    wherever possible, according to literature recommendations.
-   In early July 2016, some total sapt energy psivars were renamed.
+   In early July 2016, some total SAPT energy psivars were renamed.
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
