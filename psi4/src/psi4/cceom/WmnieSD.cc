@@ -27,7 +27,7 @@
 
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Computes the H-bar SD block contribution of Wmnie to a Sigma vector[i]. 
 */
 #include <cstdio>
 #include <cmath>
