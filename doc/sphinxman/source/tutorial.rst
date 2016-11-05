@@ -140,10 +140,10 @@ Geometry Optimization and Vibrational Frequency Analysis
 ========================================================
 
 The above examples were simple single-point energy computations
-(as specified by the :py:func:`~driver.energy` function).  Of course there are other
+(as specified by the :py:func:`~psi4.energy` function).  Of course there are other
 kinds of computations to perform, such as geometry optimizations and
 vibrational frequency computations.  These can be specified by replacing
-:py:func:`~driver.energy` with :py:func:`~driver.optimize` or :py:func:`~driver.frequency`, respectively.
+:py:func:`~psi4.energy` with :py:func:`~psi4.optimize` or :py:func:`~psi4.frequency`, respectively.
 
 Here's an example of optimizing the H\ :sub:`2`\ O molecule using Hartree--Fock with
 a cc-pVDZ basis set (located in
