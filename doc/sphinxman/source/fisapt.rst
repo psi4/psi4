@@ -359,7 +359,7 @@ that permit the customization of the I-SAPT subsystem partition, the convergence
 of the IBO localization procedure, numerical thresholds, etc. We have an entire
 video tutorial devoted to these options `F/I-SAPT Options <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
 Direct source-code documentation on these options is available :ref:`here
-<apdx:fisapt_psivar>`
+<apdx:fisapt_psivar>`_.
 
 Additional Notes
 ^^^^^^^^^^^^^^^^
