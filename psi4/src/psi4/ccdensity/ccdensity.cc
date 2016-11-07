@@ -320,7 +320,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
           for (int j=0; j<nmor; j++) {
             int I = moinfo.pitzer2qt[i+mo_offset];
             int J = moinfo.pitzer2qt[j+mo_offset];
-            if(wfn->same_a_b_dens())
+            if(ref_wfn->same_a_b_dens())
               Pap[i][j] = moinfo.opdm[I][J];
             else {
               Pap[i][j] = moinfo.opdm_a[I][J];
@@ -330,7 +330,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
         }
         mo_offset += nmo;
       }
-      if(wfn->same_a_b_dens()){
+      if(ref_wfn->same_a_b_dens()){
         Pa->scale(0.5);
         ref_wfn->set_array("CC_OPDM_A", Pa);
         ref_wfn->set_array("CC_OPDM_B", Pa);
