@@ -44,22 +44,22 @@ from __future__ import print_function,absolute_import
 
 try:
     # Python 2 syntax
-    from urllib2 import urlopen
+    from urllib2 import urlopen, Request
     from urllib2 import quote
     from urllib2 import URLError
 except ImportError:
     # Python 3 syntax
-    from urllib.request import urlopen
+    from urllib.request import urlopen, Request
     from urllib.parse import quote
     from urllib.error import URLError
 import xml.etree.ElementTree as ET
+import json
 import time
 import gzip
 import re
 import sys
 import os
 from psi4.driver.p4util.exceptions import *
-
 
 class PubChemObj(object):
 
@@ -93,90 +93,15 @@ class PubChemObj(object):
                     print(matches)
                     raise ValidationError("""PubChem: too many matches found %d""" % (len(matches)))
 
-            url = "http://pubchem.ncbi.nlm.nih.gov/pug/pug.cgi"
-            initial_request = """
-            <PCT-Data>
-              <PCT-Data_input>
-                <PCT-InputData>
-                  <PCT-InputData_download>
-                    <PCT-Download>
-                      <PCT-Download_uids>
-                        <PCT-QueryUids>
-                          <PCT-QueryUids_ids>
-                            <PCT-ID-List>
-                              <PCT-ID-List_db>pccompound</PCT-ID-List_db>
-                              <PCT-ID-List_uids>
-                                <PCT-ID-List_uids_E>%d</PCT-ID-List_uids_E>
-                              </PCT-ID-List_uids>
-                            </PCT-ID-List>
-                          </PCT-QueryUids_ids>
-                        </PCT-QueryUids>
-                      </PCT-Download_uids>
-                      <PCT-Download_format value="sdf"/>
-                      <PCT-Download_use-3d value="true"/>
-                      <PCT-Download_n-3d-conformers>%d</PCT-Download_n-3d-conformers>
-                    </PCT-Download>
-                  </PCT-InputData_download>
-                </PCT-InputData>
-              </PCT-Data_input>
-            </PCT-Data>
-            """ % (self.cid, 1)
-
-            print("\tPosting PubChem request for CID %d" % self.cid)
-            server_response = urlopen(url, initial_request).read()
-            xml = ET.fromstring(server_response)
-            for attempt in range(4):
-                if attempt == 3:
-                    raise ValidationError("""PubChem: timed out""")
-                # Look for a download location in the XML response
-                download_url = extract_xml_keyval(xml, 'PCT-Download-URL_url')
-                if download_url:
-                    print("\tDownloading from PubChem...")
-                    # We have a download location; gogetit
-                    file_name = '_psi4_pubchem_temp_download_.tgz'
-                    response = urlopen(download_url)
-                    data = response.read()
-                    fh = open(file_name, 'wb')
-                    fh.write(data)
-                    fh.close()
-                    unzipped = gzip.open(file_name)
-                    self.dataSDF = unzipped.read()
-                    unzipped.close()
-                    try:
-                        os.remove(file_name)
-                    except:
-                        pass
-                    print("\tDone!")
-                    break
-                # We didn't find a download location yet.
-                if attempt == 0:
-                    # If this is the first try, take a ticket
-                    ticket = extract_xml_keyval(xml, 'PCT-Waiting_reqid')
-                    #print("ticket = " + ticket)
-                    statusrequest = """<PCT-Data>
-                      <PCT-Data_input>
-                        <PCT-InputData>
-                          <PCT-InputData_request>
-                            <PCT-Request>
-                              <PCT-Request_reqid>%d</PCT-Request_reqid>
-                              <PCT-Request_type value="status"/>
-                            </PCT-Request>
-                          </PCT-InputData_request>
-                        </PCT-InputData>
-                      </PCT-Data_input>
-                    </PCT-Data>
-                    """ % int(ticket)
-                if ticket:
-                    # Wait 10 seconds...
-                    print("\tPubChem result not available yet, will try again in 10 seconds...")
-                    time.sleep(10)
-                    # ...and ask for an update on the progress
-                    server_response = urlopen(url, statusrequest).read()
-                    xml = ET.fromstring(server_response)
-                    #print(server_response)
-                else:
-                    # We can't find a ticket number, or a download location. Bail.
-                    raise ValidationError("""PubChem: download error""")
+            url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/%d/SDF?record_type=3d' % self.cid
+            req = Request(url, headers={'Accept' : 'chemical/x-mdl-sdfile'})
+            try:
+                self.dataSDF = urlopen(req).read().decode('utf-8')
+            except URLError as e:
+                msg = "Unable to open\n\n%s\n\ndue to the error\n\n%s\n\n" %(url, e)
+                msg += "It is possible that 3D information does not exist for this molecule in the PubChem database\n"
+                print(msg)
+                raise ValidationError(msg)
         return self.dataSDF
 
     def name(self):
@@ -261,43 +186,23 @@ def getPubChemResults(name):
     input string. Builds a PubChem object if found.
 
     """
-    url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % quote(name)
     print("\tSearching PubChem database for %s" % (name))
+    url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/%s/property/IUPACName,MolecularFormula/JSON' % quote(name)
     try:
-        loc = urlopen(url)
+        response = urlopen(url)
     except URLError as e:
         msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
         msg += "\tCheck your internet connection, and the above URL, and try again.\n"
         raise ValidationError(msg)
-    data = loc.read()
+    data = json.loads(response.read().decode('utf-8'))
+    results = []
+    for d in data['PropertyTable']['Properties']:
+        pubobj = PubChemObj(d['CID'], d['IUPACName'], d['IUPACName'])
+        results.append(pubobj)
 
-    ans = []
-    l = data.find(b"<pre>")
-    l = data.find(b"\n", l)
-    i = 1
-    while(True):
-        l = data.find(str("%d. " % i).encode(sys.getdefaultencoding()), l)
-        if l == -1:
-            break
-        tag = b"MF: "
-        l = data.find(tag, l) + len(tag)
-        mf = data[l:data.find(b'\n', l)].decode(sys.getdefaultencoding())
-        tag = b"IUPAC name: "
-        l = data.find(tag, l) + len(tag)
-        iupac = data[l:data.find(b'\n', l)].decode(sys.getdefaultencoding())
-        tag = b"CID:"
-        l = data.find(tag, l) + len(tag)
-        #if l == 4:
-        #    break
-        cid = int(data[l:data.find(b"\n", l)])
-        l = data.find(b'\t', l) + 1
+    print("\tFound %d result%s" % (len(results), "" if len(results)==1 else "s"))
+    return results
 
-        pubobj = PubChemObj(cid, mf, iupac)
-        ans.append(pubobj)
-        i += 1
-
-    print("\tFound %d results" % (len(ans)))
-    return ans
 
 if __name__ == "__main__":
     try:
