@@ -1042,7 +1042,7 @@ void export_mints(py::module& m)
         .def("init_io_files", &detci::CIvect::init_io_files, "docstring")
         .def("close_io_files", &detci::CIvect::close_io_files, "docstring")
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
-        .def("array_interface", [](detci::CIvect &vec){
+        .def_buffer([](detci::CIvect &vec){
             return vec.array_interface();
             });
 
