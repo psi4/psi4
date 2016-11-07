@@ -63,10 +63,6 @@ parser.add_argument("--new-plugin",
 parser.add_argument('--new-plugin-template', default='basic',
                     choices=['aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
                     help='New plugin template to use.')
-# parser.add_argument("--new-plugin-makefile", action='store_true',
-#                     help="Creates Makefile that can be used to compile"
-#                          "plugins. The Makefile is placed in the current"
-#                          "directory.")
 
 # print("Environment Variables\n");
 # print("     PSI_SCRATCH           Directory where scratch files are written.")
@@ -82,24 +78,17 @@ cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep 
 lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PYMOD_INSTALL_LIBDIR@"])
 
 if args["inplace"]:
-    lib_dir = "@PROJECT_SOURCE_DIR@" + os.path.sep + '..'
-    obj_dir = "@DESTDIR@"
-    os.environ["CORE_PSI4_YO"] = obj_dir
-    if ("PSIDATADIR" not in os.environ) and (not args['psidatadir']):
-        data_dir = os.path.sep.join(["@PROJECT_SOURCE_DIR@", 'share', 'psi4'])
-        os.environ["PSIDATADIR"] = data_dir
+    if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
+        raise ImportError("Cannot run inplace from a installed directory.")
 
-        # if "CMAKE_INSTALL_LIBDIR" not in lib_dir:
-        #     raise ImportError("Cannot run inplace from a installed directory.")
-        #
-        # core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
-        # if not os.path.isfile(core_location):
-        #     raise ImportError("A compiled Psi4 core.so needs to be symlinked to the repository/psi4 folder")
-        #
-        # lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        # if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
-        #     data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
-        #     os.environ["PSIDATADIR"] = data_dir
+    core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
+    if not os.path.isfile(core_location):
+        raise ImportError("A compiled Psi4 core.so needs to be symlinked to the %s folder" % os.path.dirname(__file__))
+    
+    lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
+        data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
+        os.environ["PSIDATADIR"] = data_dir
 
 elif "CMAKE_INSTALL_LIBDIR" in lib_dir:
     raise ImportError("Psi4 was not installed correctly!")

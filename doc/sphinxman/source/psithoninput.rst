@@ -261,8 +261,7 @@ energy and printed to the output file using standard Python notation.
 Generally, there are multiple quantities of interest. Appendix
 :ref:`apdx:psivariables_module` lists PSI variables variables set by each
 module, and :ref:`apdx:psivariables_alpha` defines them.  These can be
-
-accessed through the :py:func:`~psi4.get_variable` function. For example, after
+accessed through the :py:func:`~psi4.core.get_variable` function. For example, after
 performing a density fitted MP2 computation, both the spin component
 scaled energy and the unscaled MP2 energy are made available::
 
@@ -271,15 +270,15 @@ scaled energy and the unscaled MP2 energy are made available::
 
 Each module and the Python driver set PSI variables over the course of a
 calculation.  The values for all can be printed in the output file with
-the input file command :py:func:`~psi4.print_variables`. Note that PSI variables
+the input file command :py:func:`~psi4.core.print_variables`. Note that PSI variables
 are cleared at the start of each :py:func:`~psi4.energy`, etc. in an input
-file by :py:func:`~psi4.clean_variables()`.
+file by :py:func:`~psi4.core.clean_variables()`.
 So if you run in a single input file a STO-3G FCI followed by a
-aug-cc-pVQZ SCF followed by a :py:func:`~psi4.print_variables` command, the
+aug-cc-pVQZ SCF followed by a :py:func:`~psi4.core.print_variables` command, the
 last will include :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` but not 
 :psivar:`FCI TOTAL ENERGY <FCITOTALENERGY>`.
 The entire dictionary of PSI variables can be obtained through
-:py:func:`~psi4.get_variables`.
+:py:func:`~psi4.core.get_variables`.
 
 .. _`sec:returnvals`:
 
@@ -383,7 +382,7 @@ and Cartiesian scans.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`~p4util.text.Table` Psithon
+The results of computations can be compactly tabulated with the :py:func:`~psi4.driver.Table` Psithon
 function. For example, in the following potential energy surface scan for water ::
 
     molecule h2o {
@@ -433,7 +432,7 @@ many commonly performed post-processing procedures to be integrated into
 the |PSIfour| suite.  
 
 As seen in the neon dimer example from the :ref:`tutorial <sec:tutorial>` section,
-the :py:func:`~driver_nbody.nbody_gufunc` wrapper provides automatic computation of 
+the :py:func:`~psi4.driver.driver_nbody.nbody_gufunc` wrapper provides automatic computation of 
 counterpoise-corrected interaction energies between two molecules.  For
 example, ::
 
@@ -442,7 +441,7 @@ example, ::
 will compute the counterpoise-corrected density-fitted MP2 interaction energy
 between two molecules.
 
-|PSIfour| also provides the :py:func:`~driver_cbs.complete_basis_set` wrapper,
+|PSIfour| also provides the :py:func:`~psi4.cbs` wrapper,
 which automatically computes a complete-basis-set extrapolation (and
 automatically sets up the computations with different basis sets required to
 do the extrapolation).  For example,::
@@ -456,13 +455,13 @@ do the extrapolation).  For example,::
 will compute a 2-point Helgaker extrapolation of the correlation energy
 using the cc-pVDZ and cc-pVTZ basis sets (with method MP2) and add this
 extrapolated correlation energy to the Hartree--Fock energy in the
-largest basis (cc-pVTZ). :py:func:`~driver_cbs.complete_basis_set` can
+largest basis (cc-pVTZ). :py:func:`~psi4.cbs` can
 either be called directly, as in the first example, or the convenience
 syntax of the equivalent second example can be used.
 
 Another very useful and powerful feature of |PSIfour| is the ability
 to compute results on entire databases of molecules at a time,
-as provided by the :py:func:`~wrapper_database.database` wrapper.  For example,::
+as provided by the :py:func:`~psi4.driver.wrapper_database.database` wrapper.  For example,::
 
   database('mp2', 'S22', cp=1, benchmark='S22B')
 

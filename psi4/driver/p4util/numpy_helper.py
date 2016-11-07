@@ -506,3 +506,5 @@ def _civec_view(self):
     return np.asarray(self)
 
 core.CIVector.np = _civec_view
+# core.CIVector.__array_interface__ = _civec_interface
+

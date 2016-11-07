@@ -1769,6 +1769,9 @@ def fchk(wfn, filename):
 def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     """Function to write wavefunction information in *wfn* to *filename* in
     molden format. Will write natural orbitals from *density* (MO basis) if supplied.
+    Warning! Most post-SCF Wavefunctions do not build the density as this is often
+    much more costly than the energy. In addition, the Wavefunction density attributes
+    (Da and Db) return the AO density and are not valid for this function.
 
     .. versionadded:: 0.5
        *wfn* parameter passed explicitly
@@ -1788,7 +1791,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     :param density_b: density in the MO basis to build beta NO's from, assumes restricted if not supplied (optional)
 
     :type dovirtual: bool
-    :param dovirtual: do write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false) (optional)
+    :param dovirtual: do write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs, not valid for NO's (false) (optional)
 
     :examples:
 
@@ -1799,6 +1802,10 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     >>> # [2] Molden file for CI/MCSCF computation using NO roots
     >>> E, wfn = energy('ci', return_wfn=True)
     >>> molden(wfn, 'no_root1.molden', density_a=wfn.opdm(0, 0, "A", True))
+
+    >>> # [3] The following does NOT work, please see above
+    >>> E, wfn = energy('ccsd', return_wfn=True)
+    >>> molden(wfn, 'ccsd_no.molden', density_a=wfn.Da())
 
     """
 
