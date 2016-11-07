@@ -101,7 +101,7 @@ def run_json(json_data):
     >>> json_data = {}
 
     >>> json_data["molecule"] = "He 0 0 0\n--\nHe 0 0 1"
-    >>> json_data["driver"] = "enery"
+    >>> json_data["driver"] = "energy"
     >>> json_data["args"] = 'SCF'
     >>> json_data["kwargs"] = {"bsse_type": "cp"}
     >>> json_data["options"] = {"BASIS": "STO-3G"}
@@ -140,7 +140,7 @@ def run_json(json_data):
     if "scratch_location" in list(json_data):
         psi4_io = core.IOManager.shared_object()
         psi4_io.set_default_path(json_data["scratch_location"])
-    
+
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
     if return_output:
@@ -153,29 +153,37 @@ def run_json(json_data):
         if "options" in json_data.keys() and (json_data["options"] is not None):
             for k, v in json_data["options"].items():
                 core.set_global_option(k, v)
-    
+
         # Rework args
         args = json_data["args"]
         if not isinstance(args, (list, tuple)):
             args = [args]
-    
+
         # Deep copy kwargs
         if "kwargs" in list(json_data):
             kwargs = copy.deepcopy(json_data["kwargs"])
             kwargs["molecule"] = molutil.geometry(json_data["molecule"])
         else:
             kwargs = {}
-    
+
         # Full driver call
         kwargs["return_wfn"] = True
-    
+
         val, wfn = methods_dict[json_data["driver"]](*args, **kwargs)
-        json_data["return_value"] = val
+
+        if isinstance(val, (float)):
+            json_data["return_value"] = val
+        elif isinstance(val, (core.Matrix, core.Vector)):
+            json_data["return_value"] = val.to_serial()
+        else:
+            json_data["error"] += "Unrecognized return value of type %s\n" % type(val)
+            json_data["return_value"] = val
+
         json_data["variables"] = core.get_variables()
         json_data["success"] = True
-    
+
     except Exception as error:
-        json_data["error"] = repr(error)
+        json_data["error"] += repr(error)
         json_data["success"] = False
 
     if return_output:

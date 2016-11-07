@@ -1,7 +1,5 @@
 import numpy as np
 import psi4
-import json
-import copy
 from psi4.driver import p4util
 
 psi4.set_output_file("output.dat", False)
