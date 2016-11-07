@@ -104,13 +104,15 @@ def backtick(exelist):
     #   the proper exit code, 2nd while loop very necessary.
 
 # run psi4 and collect testing status from any compare_* in input file
-if "tests/python" in infile:
+if os.path.isfile(infile):
+    pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
+elif os.path.isfile(infile.replace(".dat", ".py")):
     infile = infile.replace(".dat", ".py")
     os.environ["PYTHONPATH"] = psilibdir
     outfile = os.path.dirname(infile) + os.path.sep + outfile
     pyexitcode = backtick(["python", infile, " > ", outfile])
 else:
-    pyexitcode = backtick([psi, infile, outfile, '-l', psidatadir])
+    raise Exception("\n\nError: Input file %s not found\n" % infile)
 
 if sowreap == 'true':
     try:
