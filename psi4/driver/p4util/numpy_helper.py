@@ -25,11 +25,13 @@
 # @END LICENSE
 #
 
-import numpy as np
-from psi4 import core
-
 import sys
+import numpy as np
+
+from psi4 import core
 from .exceptions import *
+
+### Matrix and Vector properties
 
 # The next three functions make me angry
 def translate_interface(interface):
@@ -92,40 +94,6 @@ def _find_dim(arr, ndim):
         return [arr.shape[x] for x in range(ndim)]
     else:
         raise ValidationError("Input array does not have a valid shape.")
-
-@classmethod
-def _dimension_from_list(self, dims, name="New Dimension"):
-    """
-    Builds a core.Dimension object from a python list or tuple. If a dimension
-    object is passed a copy will be returned.
-    """
-
-    if isinstance(dims, (tuple, list, np.ndarray)):
-        irreps = len(dims)
-    elif isinstance(dims, core.Dimension):
-        irreps = dims.n()
-    else:
-        raise ValidationError("Dimension from list: Type '%s' not understood" % type(dims))
-
-    ret = core.Dimension(irreps, name)
-    for i in range(irreps):
-        ret[i] = dims[i]
-    return ret
-
-def _dimension_to_tuple(dim):
-    """
-    Converts a core.Dimension object to a tuple.
-    """
-
-    if isinstance(dim, (tuple, list)):
-        return tuple(dim)
-
-    irreps = dim.n()
-    ret = []
-    for i in range(irreps):
-        ret.append(dim[i])
-    return tuple(ret)
-
 
 def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     """
@@ -495,16 +463,63 @@ core.Vector.__array_interface__ = _array_conversion
 core.Vector.np_write = _np_write
 core.Vector.np_read = _np_read
 
-# Dimension attributes
-core.Dimension.from_list = _dimension_from_list
-core.Dimension.to_tuple = _dimension_to_tuple
+### CIVector properties
 
-# CIVector attributes
 @property
 def _civec_view(self):
     "Returns a view of the CIVector's buffer"
     return np.asarray(self)
 
 core.CIVector.np = _civec_view
-# core.CIVector.__array_interface__ = _civec_interface
 
+### Dimension properties
+
+@classmethod
+def _dimension_from_list(self, dims, name="New Dimension"):
+    """
+    Builds a core.Dimension object from a python list or tuple. If a dimension
+    object is passed a copy will be returned.
+    """
+
+    if isinstance(dims, (tuple, list, np.ndarray)):
+        irreps = len(dims)
+    elif isinstance(dims, core.Dimension):
+        irreps = dims.n()
+    else:
+        raise ValidationError("Dimension from list: Type '%s' not understood" % type(dims))
+
+    ret = core.Dimension(irreps, name)
+    for i in range(irreps):
+        ret[i] = dims[i]
+    return ret
+
+def _dimension_to_tuple(dim):
+    """
+    Converts a core.Dimension object to a tuple.
+    """
+
+    if isinstance(dim, (tuple, list)):
+        return tuple(dim)
+
+    irreps = dim.n()
+    ret = []
+    for i in range(irreps):
+        ret.append(dim[i])
+    return tuple(ret)
+
+def _dimension_iter(dim):
+    """
+    Provides an iterator class for the Dimension object.
+
+    Allows:
+        dim = psi4.core.Dimension(...)
+        list(dim)
+    """
+
+    for i in range(dim.n()):
+        yield dim[i]
+
+# Dimension attributes
+core.Dimension.from_list = _dimension_from_list
+core.Dimension.to_tuple = _dimension_to_tuple
+core.Dimension.__iter__ = _dimension_iter
