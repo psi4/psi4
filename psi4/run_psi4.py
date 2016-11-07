@@ -29,6 +29,7 @@
 
 import sys
 import os
+import json
 import argparse
 
 parser = argparse.ArgumentParser(description="A hybrid C++/Python quantum chemistry module.")
@@ -53,6 +54,7 @@ parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
 parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory. "
                                                            "!Warning! expert option.")
+parser.add_argument("--json", action='store_true', help="Runs a JSON input file. !Warning! experimental option.")
 
 # For plugins
 parser.add_argument("--new-plugin",
@@ -84,7 +86,7 @@ if args["inplace"]:
     core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
     if not os.path.isfile(core_location):
         raise ImportError("A compiled Psi4 core.so needs to be symlinked to the %s folder" % os.path.dirname(__file__))
-    
+
     lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
         data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
@@ -145,19 +147,40 @@ if args["output"] != "stdout":
 # Set a few options
 if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
+
 psi4.core.set_nthread(int(args["nthread"]))
 psi4.core.set_memory(524288000, True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 
-# Read input
-with open(args["input"]) as f:
-    content = f.read()
 
 if args["scratch"] is not None:
     if not os.path.isdir(args["scratch"]):
         raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
     psi4.core.set_environment("PSI_SCRATCH", args["scratch"])
+
+# If this is a json call, compute and stop
+if args["json"]:
+
+    with open(args["input"], 'r') as f:
+        json_data = json.load(f)
+
+    psi4.extras._success_flag_ = True
+    psi4.extras.exit_printing()
+    psi4.json_wrapper.run_json(json_data)
+
+    with open(args["input"], 'w') as f:
+        json.dump(json_data, f)
+
+    if args["output"] != "stdout":
+        os.unlink(args["output"])
+
+    sys.exit()
+
+
+# Read input
+with open(args["input"]) as f:
+    content = f.read()
 
 # Preprocess
 if not args["skip_preprocessor"]:

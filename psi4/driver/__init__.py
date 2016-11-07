@@ -39,6 +39,7 @@ from psi4.driver import aliases
 from psi4.driver import diatomic
 from psi4.driver import wrapper_database
 from psi4.driver import wrapper_autofrag
+from psi4.driver import json_wrapper
 
 from psi4.driver.driver import *
 from psi4.driver.driver_cbs import cbs

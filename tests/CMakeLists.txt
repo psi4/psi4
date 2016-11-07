@@ -98,6 +98,7 @@ endforeach()
 # Add internal projects
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
+add_subdirectory(json)
 
 
 
