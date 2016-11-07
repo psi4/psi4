@@ -51,6 +51,7 @@
 #include "globals.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/matrix.h"
 namespace psi { namespace ccdensity {
 
 void init_io(void);
@@ -293,6 +294,50 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
     }
 
     /*  dpd_close(0); dpd_close(1); */
+
+    if(i == 0){
+      // Grab the GS OPDM and set it in the ref_wfn object
+      std::shared_ptr<Matrix> Ca = ref_wfn->Ca();
+      std::shared_ptr<Matrix> Cb = ref_wfn->Cb();
+
+      Dimension nmopi = ref_wfn->nmopi();
+      Dimension frzvpi = ref_wfn->frzvpi();
+
+      SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
+      SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
+      int mo_offset = 0;
+
+      for (int h = 0; h < Ca->nirrep(); h++) {
+        int nmo = nmopi[h];
+        int nfv = frzvpi[h];
+        int nmor = nmo - nfv;
+        if (!nmo || !nmor) continue;
+
+        // Loop over QT, convert to Pitzer
+        double **Pap = Pa->pointer(h);
+        double **Pbp = Pb->pointer(h);
+        for (int i=0; i<nmor; i++) {
+          for (int j=0; j<nmor; j++) {
+            int I = moinfo.pitzer2qt[i+mo_offset];
+            int J = moinfo.pitzer2qt[j+mo_offset];
+            if(wfn->same_a_b_dens())
+              Pap[i][j] = moinfo.opdm[I][J];
+            else {
+              Pap[i][j] = moinfo.opdm_a[I][J];
+              Pbp[i][j] = moinfo.opdm_b[I][J];
+            }
+          }
+        }
+        mo_offset += nmo;
+      }
+      if(wfn->same_a_b_dens()){
+        Pa->scale(0.5);
+        ref_wfn->set_array("CC_OPDM_A", Pa);
+        ref_wfn->set_array("CC_OPDM_B", Pa);
+      }
+      ref_wfn->set_array("CC_OPDM_A",Pa);
+      ref_wfn->set_array("CC_OPDM_B",Pb);
+    }
 
     if(params.ref == 0) { /** RHF **/
 
