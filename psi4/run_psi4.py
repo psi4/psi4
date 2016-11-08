@@ -207,10 +207,16 @@ import atexit
 atexit.register(psi4.extras.exit_printing)
 
 # Run the program!
-exec(content)
+try:
+    exec(content)
+    psi4.extras._success_flag_ = True
+except Exception as error_msg:
+    psi4.core.print_out("\n\nPython traceback:\n")
+    psi4.core.print_out(repr(error_msg))
+    psi4.core.print_out("\n")
+
 
 #    elif '***HDF5 library version mismatched error***' in str(err):
 #        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
 
 # Celebrate with beer
-psi4.extras._success_flag_ = True

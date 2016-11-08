@@ -2,8 +2,6 @@ import numpy as np
 import psi4
 from psi4.driver import p4util
 
-psi4.set_output_file("output.dat", False)
-
 # Generate JSON data
 json_data = {}
 json_data["molecule"] = """He 0 0 0\n--\nHe 0 0 1"""

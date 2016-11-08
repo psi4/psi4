@@ -423,7 +423,7 @@ def _np_read(self, filename, prefix=""):
     ret_data = []
 
     if ((prefix + "Irreps") not in data.keys()) or ((prefix + "Name") not in data.keys()):
-        raise KeyError("File %s does not appear to be a numpyz save" % filename)
+        raise ValidationError("File %s does not appear to be a numpyz save" % filename)
 
     for h in range(data[prefix + "Irreps"]):
         ret_data.append(data[prefix + "IrrepData" + str(h)])
@@ -460,7 +460,7 @@ def _to_serial(data):
     elif len(json_data["shape"][0]) == 2:
         json_data["type"] = "matrix"
     else:
-        raise KeyError("_to_json is only used for vector and matrix objects.")
+        raise ValidationError("_to_json is only used for vector and matrix objects.")
 
     return json_data
 
@@ -477,7 +477,7 @@ def _from_serial(self, json_data):
         dim2 = core.Dimension.from_list([x[1] for x in json_data["shape"]])
         ret = self("Matrix from JSON", dim1, dim2)
     else:
-        raise KeyError("_from_json did not recognize type option of %s." % str(json_data["type"]))
+        raise ValidationError("_from_json did not recognize type option of %s." % str(json_data["type"]))
 
     for n in range(len(ret.nph)):
         ret.nph[n].flat[:] = np.frombuffer(json_data["data"][n], dtype=np.double)
