@@ -25,7 +25,7 @@ find_package(Perl QUIET)
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
-set(py3_fail_list pubchem1 pubchem2 pywrap-freq-e-sowreap
+set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1 
