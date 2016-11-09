@@ -1466,6 +1466,7 @@ PYBIND11_PLUGIN(core) {
                  outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
                  outfile_name = ofname;
                  });
+    core.def("get_output_file", [](){ return outfile_name; });
 //    core.def("print_version", [](){ print_version("stdout"); });
     core.def("set_psi_file_prefix", [](std::string fprefix){psi_file_prefix = strdup(fprefix.c_str()); });
 

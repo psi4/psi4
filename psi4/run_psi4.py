@@ -201,22 +201,28 @@ if args["messy"]:
         if handler[0] == psi4.core.clean:
             atexit._exithandlers.remove(handler)
 
-# Only register exit if exec was successful
+# Register exit printing, failure GOTO coffee ELSE beer
 import atexit
-
 atexit.register(psi4.extras.exit_printing)
 
 # Run the program!
 try:
     exec(content)
     psi4.extras._success_flag_ = True
+
+# Capture _any_ python error message
 except Exception as error_msg:
-    psi4.core.print_out("\n\nPython traceback:\n")
-    psi4.core.print_out(repr(error_msg))
-    psi4.core.print_out("\n")
+    import traceback
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    tb_str = "\n\n"
+    tb_str += ''.join(traceback.format_tb(exc_traceback))
+    tb_str += error_msg.message
+    psi4.core.print_out(tb_str)
+    if psi4.core.get_output_file() != "stdout":
+        print(tb_str)
+    sys.exit(1)
 
 
 #    elif '***HDF5 library version mismatched error***' in str(err):
 #        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
 
-# Celebrate with beer

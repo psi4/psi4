@@ -28,3 +28,6 @@ p4util.compare_values(bench_cp_energy, cenergy, 6, "SCF RETURN_VALUE")          
 
 return_wfn = "return_wfn" not in json_data["kwargs"]                        # TEST
 p4util.compare_integers(True, return_wfn, "Immutable input")                       # TEST
+
+with open("output.dat", "w") as f:
+    f.write(json_data["output"]) 

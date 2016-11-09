@@ -11,6 +11,7 @@ json_data["driver"] = "gradient"
 json_data["args"] = 'SCF'
 json_data["kwargs"] = {}
 json_data["options"] = {"BASIS": "STO-3G"}
+json_data["return_output"] = True
 
 psi4.json_wrapper.run_json(json_data)
 
@@ -29,3 +30,6 @@ p4util.compare_arrays(bench_gradient, cgradient.np, 4, "SCF RETURN_VALUE")      
 
 return_wfn = "return_wfn" not in json_data["kwargs"]                            # TEST
 p4util.compare_integers(True, return_wfn, "Immutable input")                    # TEST
+
+with open("output.dat", "w") as f:
+    f.write(json_data["output"]) 
