@@ -9,7 +9,8 @@ He 1 **R**
 """
 
 mols = [(d, mol_string.replace("**R**", "%5.3f" % d)) for d in np.linspace(2, 5, 4)] 
-psi4.set_global_option("BASIS", "6-31G")
+psi4.set_options({"SCF_TYPE": "DF",
+                  "BASIS": "6-31G"})
 
 
 out = {}

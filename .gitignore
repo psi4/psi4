@@ -42,6 +42,7 @@ _coverage_html
 # Files resulting from running PSI4
 ijk.dat
 output.dat
+input.py.dat
 *.out
 *.32
 *.clean
