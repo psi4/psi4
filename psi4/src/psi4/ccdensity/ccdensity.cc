@@ -53,6 +53,8 @@
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/writer.h"
+#include "psi4/libmints/molecule.h"
 namespace psi { namespace ccdensity {
 
 void init_io(void);
@@ -85,7 +87,6 @@ void dump_RHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_ROHF(struct iwlbuf *, struct RHO_Params rho_params);
 void dump_UHF(struct iwlbuf *, struct iwlbuf *, struct iwlbuf *, struct RHO_Params rho_params);
 void kinetic(std::shared_ptr<Wavefunction> wfn);
-void dipole(std::shared_ptr<Wavefunction> wfn);
 void probable(void);
 int **cacheprep_rhf(int level, int *cachefiles);
 int **cacheprep_uhf(int level, int *cachefiles);
@@ -304,10 +305,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       add_core_ROHF(&OutBuf);
       add_ref_RHF(&OutBuf);
 
-      // ==> One-Electron Properties <== //
-      outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
-      dipole(ref_wfn);
-
       if(params.onepdm_grid_dump) dx_write(ref_wfn, options, moinfo.opdm);
 
       dump_RHF(&OutBuf, rho_params[i]);
@@ -322,9 +319,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       add_core_ROHF(&OutBuf);
       add_ref_ROHF(&OutBuf);
 
-      // ==> One-Electron Properties <== //
-      outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
-      dipole(ref_wfn);
 
       dump_ROHF(&OutBuf, rho_params[i]);
 
@@ -340,8 +334,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       /*    add_core_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB); */
       add_ref_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB);
 
-      outfile->Printf( "  ==> Properties: Root %d <==\n\n", i);
-      dipole(ref_wfn);
 
       dump_UHF(&OutBuf_AA, &OutBuf_BB, &OutBuf_AB, rho_params[i]);
 
@@ -408,10 +400,23 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       SharedMatrix cc_Da = oe->Da_so();
       SharedMatrix ref_Da = ref_wfn->Da();
       ref_Da->copy(cc_Da);
+
+      //Get the NOs/occupation numbers
+      std::pair<SharedMatrix,SharedVector> NOa_pair = oe->Na_mo();
+      std::pair<SharedMatrix,SharedVector> NOb_pair = NOa_pair;
       if(!ref_wfn->same_a_b_dens()){
         SharedMatrix cc_Db = oe->Db_so();
         SharedMatrix ref_Db = ref_wfn->Db();
         ref_Db->copy(cc_Db);
+        // if alpha/beta are distinct get the beta NO info
+        NOb_pair  = oe->Nb_mo();
+      }
+      // write molden files for NOs?
+      if(params.write_nos){
+        MoldenWriter nowriter(ref_wfn);
+        std::string mol_name = ref_wfn->molecule()->name();
+        nowriter.writeNO(mol_name+"NO.molden",NOa_pair.first,NOb_pair.first,
+            NOa_pair.second,NOb_pair.second);
       }
     }else{
       // this should set psivars correctly for root Properties
