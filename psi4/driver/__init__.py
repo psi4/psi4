@@ -42,4 +42,7 @@ from psi4.driver import wrapper_autofrag
 from psi4.driver import json_wrapper
 
 from psi4.driver.driver import *
+
+# Single functions
 from psi4.driver.driver_cbs import cbs
+from psi4.driver.p4util.python_helpers import set_options

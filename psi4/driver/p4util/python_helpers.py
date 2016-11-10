@@ -108,3 +108,15 @@ core.JK.build = pybuild_JK
 
 core.Molecule.run_dftd3 = qcdb.interface_dftd3.run_dftd3
 
+
+def set_options(options_dict):
+    """
+    Sets Psi4 global options from an input dictionary.
+    """
+
+    for k, v, in options_dict.items():
+        core.set_global_option(k, v)
+
+
+
+
