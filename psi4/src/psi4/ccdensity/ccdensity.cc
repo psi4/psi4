@@ -295,69 +295,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
 
     /*  dpd_close(0); dpd_close(1); */
 
-    if(i == 0){
-      std::shared_ptr<Matrix> Ca = ref_wfn->Ca();
-      std::shared_ptr<Matrix> Cb = ref_wfn->Cb();
-
-      Dimension nmopi = ref_wfn->nmopi();
-      Dimension frzvpi = ref_wfn->frzvpi();
-
-      // Grab the GS OPDM and set it in the ref_wfn object
-      SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
-      SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
-      int mo_offset = 0;
-
-      for (int h = 0; h < Ca->nirrep(); h++) {
-        int nmo = nmopi[h];
-        int nfv = frzvpi[h];
-        int nmor = nmo - nfv;
-        if (!nmo || !nmor) continue;
-
-        // Loop over QT, convert to Pitzer
-        double **Pap = Pa->pointer(h);
-        double **Pbp = Pb->pointer(h);
-        for (int i=0; i<nmor; i++) {
-          for (int j=0; j<nmor; j++) {
-            int I = moinfo.pitzer2qt[i+mo_offset];
-            int J = moinfo.pitzer2qt[j+mo_offset];
-            if(ref_wfn->same_a_b_dens())
-              Pap[i][j] = moinfo.opdm[I][J];
-            else {
-              Pap[i][j] = moinfo.opdm_a[I][J];
-              Pbp[i][j] = moinfo.opdm_b[I][J];
-            }
-          }
-        }
-        mo_offset += nmo;
-      }
-      if(ref_wfn->same_a_b_dens()){
-        Pa->scale(0.5);
-        Pb = Pa;
-      }
-
-      double* temp = new double[Ca->max_ncol()*Ca->max_nrow()];
-      for(int h = 0; h < Ca->nirrep(); h++){
-        int nmo = Ca->colspi()[h];
-        int nso = Ca->rowspi()[h];
-
-        if(!nmo || !nso ) continue;
-
-        double** Cap = Ca->pointer(h);
-        double** Cbp = Cb->pointer(h);
-        double** Pap = Pa->pointer(h);
-        double** Pbp = Pb->pointer(h);
-
-        double** Dap = ref_wfn->Da()->pointer(h);
-        double** Dbp = ref_wfn->Db()->pointer(h);
-
-        C_DGEMM('N','T',nmo,nso,nmo,1.0,Pap[0],nmo,Cap[0],nmo,0.0,temp,nso);
-        C_DGEMM('N','N',nso,nso,nmo,1.0,Cap[0],nmo,temp,nso,0.0,Dap[0],nso);
-
-        C_DGEMM('N','T',nmo,nso,nmo,1.0,Pbp[0],nmo,Cbp[0],nmo,0.0,temp,nso);
-        C_DGEMM('N','N',nso,nso,nmo,1.0,Cbp[0],nmo,temp,nso,0.0,Dbp[0],nso);
-      }
-      delete[] temp;
-    }
 
     if(params.ref == 0) { /** RHF **/
 
@@ -426,6 +363,70 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
     if (!params.calc_xi) {
       psio_close(PSIF_EOM_TMP,0);
       psio_open(PSIF_EOM_TMP,PSIO_OPEN_NEW);
+    }
+
+    if(i == 0){
+      std::shared_ptr<Matrix> Ca = ref_wfn->Ca();
+      std::shared_ptr<Matrix> Cb = ref_wfn->Cb();
+
+      Dimension nmopi = ref_wfn->nmopi();
+      Dimension frzvpi = ref_wfn->frzvpi();
+
+      // Grab the GS OPDM and set it in the ref_wfn object
+      SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
+      SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
+      int mo_offset = 0;
+
+      for (int h = 0; h < Ca->nirrep(); h++) {
+        int nmo = nmopi[h];
+        int nfv = frzvpi[h];
+        int nmor = nmo - nfv;
+        if (!nmo || !nmor) continue;
+
+        // Loop over QT, convert to Pitzer
+        double **Pap = Pa->pointer(h);
+        double **Pbp = Pb->pointer(h);
+        for (int i=0; i<nmor; i++) {
+          for (int j=0; j<nmor; j++) {
+            int I = moinfo.pitzer2qt[i+mo_offset];
+            int J = moinfo.pitzer2qt[j+mo_offset];
+            if(ref_wfn->same_a_b_dens())
+              Pap[i][j] = moinfo.opdm[I][J];
+            else {
+              Pap[i][j] = moinfo.opdm_a[I][J];
+              Pbp[i][j] = moinfo.opdm_b[I][J];
+            }
+          }
+        }
+        mo_offset += nmo;
+      }
+      if(ref_wfn->same_a_b_dens()){
+        Pa->scale(0.5);
+        Pb = Pa;
+      }
+
+      double* temp = new double[Ca->max_ncol()*Ca->max_nrow()];
+      for(int h = 0; h < Ca->nirrep(); h++){
+        int nmo = Ca->colspi()[h];
+        int nso = Ca->rowspi()[h];
+
+        if(!nmo || !nso ) continue;
+
+        double** Cap = Ca->pointer(h);
+        double** Cbp = Cb->pointer(h);
+        double** Pap = Pa->pointer(h);
+        double** Pbp = Pb->pointer(h);
+
+        double** Dap = ref_wfn->Da()->pointer(h);
+        double** Dbp = ref_wfn->Db()->pointer(h);
+
+        C_DGEMM('N','T',nmo,nso,nmo,1.0,Pap[0],nmo,Cap[0],nmo,0.0,temp,nso);
+        C_DGEMM('N','N',nso,nso,nmo,1.0,Cap[0],nmo,temp,nso,0.0,Dap[0],nso);
+
+        C_DGEMM('N','T',nmo,nso,nmo,1.0,Pbp[0],nmo,Cbp[0],nmo,0.0,temp,nso);
+        C_DGEMM('N','N',nso,nso,nmo,1.0,Cbp[0],nmo,temp,nso,0.0,Dbp[0],nso);
+      }
+      delete[] temp;
     }
   }
 
