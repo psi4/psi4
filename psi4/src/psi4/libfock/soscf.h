@@ -337,7 +337,7 @@ protected:
     SharedMatrix mo_aaaa_;
     SharedMatrix mo_aaar_;
 
-}; // DFSOMCSCF class
+};  ///Incore SOMCSCF
 
 
 } // Namespace psi
