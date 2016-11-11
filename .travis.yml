@@ -5,7 +5,7 @@ matrix:
     - compiler: clang
       env:
         - CXX_COMPILER='clang++-3.9'
-        - PYTHON_VER='2.7'
+        - PYTHON_VER='3.5'
         - C_COMPILER='clang-3.9'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
@@ -29,7 +29,7 @@ matrix:
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.6'
-      - PYTHON_VER='2.7'
+      - PYTHON_VER='3.5'
       - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
@@ -73,7 +73,7 @@ matrix:
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.9'
-      - PYTHON_VER='2.7'
+      - PYTHON_VER='3.5'
       - C_COMPILER='clang-3.9'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
@@ -123,7 +123,7 @@ matrix:
         - gfortran-6
     env:
       - CXX_COMPILER='g++-6'
-      - PYTHON_VER='2.7'
+      - PYTHON_VER='3.5'
       - C_COMPILER='gcc-6'
       - Fortran_COMPILER='gfortran-6'
       - BUILD_TYPE='release'
@@ -148,7 +148,7 @@ matrix:
 #        - gfortran-6
 #    env:
 #      - CXX_COMPILER='g++-6'
-#      - PYTHON_VER='2.7'
+#      - PYTHON_VER='3.5'
 #      - C_COMPILER='gcc-6'
 #      - Fortran_COMPILER='gfortran-6'
 #      - BUILD_TYPE='release'
