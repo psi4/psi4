@@ -30,6 +30,7 @@ import subprocess
 import re
 import sys
 
+from . import optproc
 from psi4.driver import qcdb
 from psi4 import core
 
@@ -93,14 +94,63 @@ core.Wavefunction.build = pybuild_wavefunction
 ## Python JK helps
 
 @staticmethod
-def pybuild_JK(basis, aux=None):
+def pybuild_JK(orbital_basis, aux=None, jk_type=None):
+    """
+    Constructs a Psi4 JK object from an input basis.
+
+    Parameters
+    ----------
+    orbital_basis : :py:class:`~psi4.core.BasisSet`
+        Orbital basis to use in the JK object.
+    aux : :py:class:`~psi4.core.BasisSet`
+        Optional auxiliary basis set for density-fitted tensors. Defaults
+        to the DF_BASIS_SCF if set, otherwise the correspond JKFIT basis
+        to the passed in orbital_basis.
+    type : str
+        Type of JK object to build (DF, Direct, PK, etc). Defaults to the
+        current global SCF_TYPE option.
+
+    Returns
+    -------
+    :py:class:`~psi4.core.JK`
+        Uninitialized JK object.
+
+    Example
+    -------
+
+    jk = psi4.core.JK.build(bas)
+    jk.set_memory(int(5e8)) # 4GB of memory
+    jk.initialize()
+
+    ...
+
+    jk.C_left_add(matirx)
+    jk.compute()
+    jk.C_clear()
+
+    ...
+
+    """
+
+    optstash = optproc.OptionsState(["SCF_TYPE"])
+
+    if jk_type is not None:
+        core.set_global_option("SCF_TYPE", jk_type)
+
     if aux is None:
-        aux = core.BasisSet.build(basis.molecule(), "DF_BASIS_SCF",
+        if core.get_option("SCF", "SCF_TYPE") == "DF":
+            aux = core.BasisSet.build(orbital_basis.molecule(), "DF_BASIS_SCF",
                                       core.get_option("SCF", "DF_BASIS_SCF"),
                                       "JKFIT", core.get_global_option('BASIS'),
-                                      basis.has_puream())
+                                      orbital_basis.has_puream())
+        else:
+            aux = core.BasisSet.zero_ao_basis_set()
 
-    return core.JK.build_JK(basis, aux)
+
+    jk = core.JK.build_JK(orbital_basis, aux)
+
+    optstash.restore()
+    return jk
 
 core.JK.build = pybuild_JK
 
@@ -115,7 +165,15 @@ def set_options(options_dict):
     """
 
     for k, v, in options_dict.items():
-        core.set_global_option(k, v)
+        core.set_global_option(k.upper(), v)
+
+def set_module_options(module, options_dict):
+    """
+    Sets Psi4 module options from a module specification and input dictionary.
+    """
+
+    for k, v, in options_dict.items():
+        core.set_local_option(module.upper(), k.upper(), v)
 
 
 
