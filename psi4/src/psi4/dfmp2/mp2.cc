@@ -187,7 +187,16 @@ void DFMP2::common_init()
 }
 double DFMP2::compute_energy()
 {
+
     print_header();
+    if (Ca_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
+        energies_["Opposite-Spin Energy"] = 0.;
+        energies_["Same-Spin Energy"] = 0.;
+        energies_["Singles Energy"] = 0.;
+        outfile->Printf("No virtual orbitals.\n\n");
+        print_energies();
+        return energies_["Total Energy"];
+    }
     timer_on("DFMP2 Singles");
     form_singles();
     timer_off("DFMP2 Singles");
@@ -838,10 +847,6 @@ void RDFMP2::print_header()
     outfile->Printf( "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "PAIRS", focc, occ, aocc, avir, vir, fvir);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
-    
-    if (avir == 0) {
-      throw PSIEXCEPTION("Number of active virtual orbitals is zero. Correlation energy = 0. a.u.");
-    }
 }
 void RDFMP2::form_Aia()
 {
@@ -2971,8 +2976,11 @@ void UDFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
     
-    if (avir_a == 0 || avir_b == 0) {
-      throw PSIEXCEPTION("Number of active virtual orbitals is zero. Correlation energy = 0. a.u.");
+    if (avir_a == 0) { 
+      throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
+    }
+    if (avir_b == 0) {
+      throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
     }
 }
 void UDFMP2::form_Aia()
@@ -3649,8 +3657,11 @@ void RODFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
     
-    if (avir_a == 0 || avir_b == 0) {
-      throw PSIEXCEPTION("Number of active virtual orbitals is zero. Correlation energy = 0. a.u.");
+    if (avir_a == 0) { 
+      throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
+    }
+    if (avir_b == 0) {
+      throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
     }
 }
 
