@@ -362,7 +362,7 @@ different.  Psithon lets you specify all this in a single input file,
 looping over the different distances with an array like this:
 ``Rvals=[2.5, 3.0, 4.0]``.
 
-Let's also suppose you want to do counterpoise (CP) corrected energies.
+Let's also suppose you want to do counterpoise (CP) correction to compute interaction energies.
 Counterpoise correction involves computing the dimer energy and then
 subtracting out the energies of the two monomers, each evaluated in the
 dimer basis.  Again, each of these computations could be run in a separate
