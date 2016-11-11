@@ -838,6 +838,10 @@ void RDFMP2::print_header()
     outfile->Printf( "\t %7s %7s %7s %7s %7s %7s %7s\n", "CLASS", "FOCC", "OCC", "AOCC", "AVIR", "VIR", "FVIR");
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "PAIRS", focc, occ, aocc, avir, vir, fvir);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
+    
+    if (avir == 0) {
+      throw PSIEXCEPTION("Number of active virtual orbitals is zero. Correlation energy = 0. a.u.");
+    }
 }
 void RDFMP2::form_Aia()
 {
@@ -2957,6 +2961,7 @@ void UDFMP2::print_header()
     int avir_b = Cavir_b_->colspi()[0];
     int occ_b = focc_b + aocc_b;
     int vir_b = fvir_b + avir_b;
+    
 
     outfile->Printf( "\t --------------------------------------------------------\n");
     outfile->Printf( "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
@@ -2965,6 +2970,10 @@ void UDFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
+    
+    if (avir_a == 0 || avir_b == 0) {
+      throw PSIEXCEPTION("Number of active virtual orbitals is zero. Correlation energy = 0. a.u.");
+    }
 }
 void UDFMP2::form_Aia()
 {
@@ -3639,6 +3648,10 @@ void RODFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
+    
+    if (avir_a == 0 || avir_b == 0) {
+      throw PSIEXCEPTION("Number of active virtual orbitals is zero. Correlation energy = 0. a.u.");
+    }
 }
 
 }}
