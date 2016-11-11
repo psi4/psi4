@@ -27,8 +27,6 @@
 
 """Attempts to catch Python based import errors and provides possible solutions."""
 
-from .p4util.exceptions import *
-
 # NumPy import
 try:
     import numpy as np
@@ -42,7 +40,7 @@ except:
         - sudo apt-get install python-numpy
         - brew install numpy
     """ 
-    raise PsiImportError(msg)
+    raise ImportError(msg)
 
 # Import plugin add-ons here for now
 try:

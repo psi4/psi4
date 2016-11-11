@@ -58,7 +58,7 @@ except ImportError as err:
     else:
         raise ImportError("{0}".format(err))
 
-from psi4.core import set_output_file, set_global_option, set_variable
+from psi4.core import set_output_file, set_variable
 core.initialize()
 core.efp_init()
 
@@ -72,9 +72,6 @@ atexit.register(core.finalize)
 from .driver import *
 from .header import print_header
 from .metadata import __version__, version_formatter
-
-# A few python level niceties
-from psi4.driver.inputparser import parse_options_block
 
 # A few extraneous functions
 from .extras import get_input_directory
