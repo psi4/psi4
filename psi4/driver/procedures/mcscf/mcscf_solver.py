@@ -135,9 +135,13 @@ def mcscf_solver(ref_wfn):
         mtype = "   @MCSCF"
         core.print_out("\n   ==> Starting MCSCF iterations <==\n\n")
         core.print_out("        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
-    else:
+    elif mcscf_type == "DF":
         mtype = "   @DF-MCSCF"
         core.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n")
+        core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
+    else:
+        mtype = "   @AO-MCSCF"
+        core.print_out("\n   ==> Starting AO-MCSCF iterations <==\n\n")
         core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
 
     # Iterate !

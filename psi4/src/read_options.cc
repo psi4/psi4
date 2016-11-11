@@ -742,7 +742,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("MCSCF_MAX_ROT", 0.5);
 
     /*- Do we run conventional or density fitted? -*/
-    options.add_str("MCSCF_TYPE", "CONV", "DF CONV");
+    options.add_str("MCSCF_TYPE", "CONV", "DF CONV AO");
 
     /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of
     [irrep, orbital1, orbital2, theta] where an angle of 0 would do nothing and an angle
@@ -781,8 +781,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /* Cleanup the DPD MCSCF object at the end of a run? */
     options.add_bool("MCSCF_DPD_CLEANUP", true);
-
-
   }
 
 
@@ -1167,7 +1165,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD INDEPENDENT GTFOCK");
     /*- Maximum numbers of batches to read PK supermatrix. !expert -*/
     options.add_int("PK_MAX_BUCKETS", 500);
     /*- Select the PK algorithm to use. For debug purposes, selection will be automated later. !expert -*/

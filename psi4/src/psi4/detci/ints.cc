@@ -146,7 +146,10 @@ void CIWavefunction::setup_dfmcscf_ints() {
 void CIWavefunction::transform_mcscf_integrals(bool approx_only) {
     if (Parameters_->mcscf_type == "DF") {
         transform_dfmcscf_ints(approx_only);
-    } else {
+    } 
+    else if (Parameters_->mcscf_type == "AO")
+        transform_mcscf_ints_ao(approx_only);
+    else {
         transform_mcscf_ints(approx_only);
     }
 }
@@ -375,6 +378,210 @@ void CIWavefunction::setup_mcscf_ints() {
     jk_->initialize();
 
     ints_init_ = true;
+}
+void CIWavefunction::setup_mcscf_ints_ao()
+{
+    outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
+
+    timer_on("CIWAVE: Setup MCSCF INTS AO");
+    if(options_.get_str("SCF_TYPE") == "GTFOCK")
+    {
+ #ifdef HAVE_JK_FACTORY
+        Process::environment.set_legacy_molecule(molecule_);
+        jk_ = boost::shared_ptr<JK>(new GTFockJK(basisset_));
+#else
+        throw PSIEXCEPTION("GTFock was not compiled in this version");
+#endif
+    } else if (options_.get_str("SCF_TYPE") == "DF") {
+        jk_ = JK::build_JK(this->basisset(), get_basisset("DF_BASIS_SCF"), options_);
+    }
+    else if (options_.get_str("SCF_TYPE") == "CD" or options_.get_str("SCF_TYPE") == "PK" or options_.get_str("SCF_TYPE") == "DIRECT")
+    {
+        jk_ = JK::build_JK(this->basisset(), BasisSet::zero_ao_basis_set(), options_);
+    }
+    else {
+        outfile->Printf("\n Please select GTFock, DF, CD or PK for use with MCSCF_TYPE AO");
+        throw PSIEXCEPTION("AO_CASSCF does not work with your SCF_TYPE");
+    }
+    jk_->set_do_J(true);
+    jk_->set_allow_desymmetrization(true);
+    jk_->set_do_K(true);
+    jk_->initialize();
+    jk_->set_memory(Process::environment.get_memory() * 0.8);
+    ints_init_ = true;
+    timer_off("CIWAVE: Setup MCSCF INTS AO");
+}
+void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
+{
+    //if(approx_only)
+    //    throw PSIEXCEPTION("Have not implemented rotated integrals for mcscf_ao");
+
+    ///Perform a integral transformation using jk object
+    ///KPH got this idea from Hohenstein's AO-CASSCF paper.
+    ///The goal is to use direct scf algorithm for computing the transformed integrals
+    ///This takes advantage of sparsity and allows for larger scale casscf calculations.  
+
+    /// J(D)_{mu nu} = (mu nu | rho sigma ) D_{rho sigma}
+    ///Step 1:  Form a density for every active orbital ie
+    /// for every u and v form a density using C_DGER
+    ///     D_{mu nu}^{uv} = C_{mu u}C_{nu}^{v}
+    ///Step 2:  Fill the JK object with these densities
+    ///Step 3:  Build the J matrix
+    ///Step 4:  (p u | x y) = C_{mu p}^{T} J(D_{mu nu}^{xy}A)_{mu nu} C_{nu u}
+    ///Step 5:  Transfer these integrals to CI and SOMCSCF for CASSCF optimization
+    //outfile->Printf("\n   ==> Transforming CI integrals aodirect <==\n");
+    timer_on("CIWave: Parallel MCSCF integral transform");
+    if(!ints_init_)
+    {
+        setup_mcscf_ints_ao();
+    }
+    int nact = CalcInfo_->num_ci_orbs;
+
+    SharedMatrix Ca_sym = this->Ca();
+    int nmo = this->nmo();
+    int nso = this->nso();
+    //TODO:  Figure out why frozen core does not work
+    int nmo_no_froze = nmo_ - CalcInfo_->frozen_docc.sum() - CalcInfo_->frozen_uocc.sum();
+    SharedMatrix Call(new Matrix(nso_, nmo_));
+    SharedMatrix Call_no_froze(new Matrix(nso_, nmo_no_froze));
+    SharedMatrix CAct(new Matrix(nso_, nact));
+
+    // Transform from the SO to the AO basis for the C matrix.
+    // just transfroms the C_{mu_ao i} -> C_{mu_so i}
+
+    if(nirrep_ > 1)
+    {
+        timer_on("CIWave: Transform C matrix from SO to AO");
+
+        std::vector<int> nmo_offset(nirrep_, 0);
+        nmo_offset[0] = 0;
+        /// Have an orbital offset array (nmo_offset[2] = nmopi_[0] + nmopi[1];
+        for(int h = 1; h < nirrep_; h++)
+            for(int low_h = 0; low_h < h; low_h++)
+                nmo_offset[h] += nmopi_[low_h];
+        for (size_t h = 0, index = 0; h < nirrep_; ++h){
+            #pragma omp parallel for schedule(static)
+            for (int i = 0; i < nmopi_[h]; ++i){
+                size_t nao = nso_;
+                size_t nso = nsopi_[h];
+
+                if (!nso) continue;
+                int index = nmo_offset[h] + i;
+
+                C_DGEMV('N',nao,nso,1.0,AO2SO_->pointer(h)[0],nso,&Ca_sym->pointer(h)[0][i],nmopi_[h],0.0,&Call->pointer()[0][index],nmo_);
+                //index = index + 1;
+
+
+            }
+        }
+        timer_off("CIWave: Transform C matrix from SO to AO");
+    }
+    else {
+        Call = Ca_sym;
+    }
+    std::vector<int> active_abs(nact, 0);
+    for (int h = 0, cinum = 0, orbnum = 0, orbital_offset = 0; h < CalcInfo_->nirreps; h++) {
+        orbnum += CalcInfo_->dropped_docc[h];
+        for (int u = 0; u < CalcInfo_->ci_orbs[h]; u++) {
+            active_abs[cinum++] = orbnum++;
+        }
+        orbnum += CalcInfo_->dropped_uocc[h];
+    }
+
+    for(size_t v = 0; v < nact; v++){
+            SharedVector Call_vec = Call->get_column(0, active_abs[v]);
+            CAct->set_column(0, v, Call_vec);
+    }
+
+    timer_on("Forming Active Psuedo Density");
+    ///Step 1:  D_{mu nu} ^{tu} = C_{mu t} C_{nu u} forall t, u in active
+    std::vector<std::pair<SharedMatrix, std::vector<int> > > D_vec;
+    for(size_t i = 0; i < nact; i++){
+        SharedVector C_i = CAct->get_column(0, i);
+        for(size_t j = i; j < nact; j++){
+            SharedMatrix D(new Matrix("D", nso, nso));
+            std::vector<int> ij(2);
+            ij[0] = i;
+            ij[1] = j;
+            SharedVector C_j = CAct->get_column(0, j);
+            /// D_{uv}^{ij} = C_i C_j^T
+            C_DGER(nso, nso, 1.0, &(C_i->pointer()[0]), 1, &(C_j->pointer()[0]), 1, D->pointer()[0], nso);
+            D_vec.push_back(std::make_pair(D, ij));
+        }
+    }
+    timer_off("Forming Active Psuedo Density");
+
+    std::vector<SharedMatrix>  &Cl = jk_->C_left();
+    std::vector<SharedMatrix>  &Cr = jk_->C_right();
+    Cl.clear();
+    Cr.clear();
+    SharedMatrix Identity(new Matrix("I", nso, nso));
+    Identity->identity();
+    for(size_t d  = 0; d < D_vec.size(); d++)
+    {
+        Cl.push_back(D_vec[d].first);
+        Cr.push_back(Identity);
+    }
+
+    jk_->set_allow_desymmetrization(false);
+    jk_->set_do_K(false);
+    ///Step 2:  Compute the Coulomb build using these density
+    timer_on("CIWave: Parallel MCSCF Integral Transformation Fock build");
+    jk_->compute();
+    timer_off("CIWave: Parallel MCSCF Integral Transformation Fock build");
+    SharedMatrix casscf_ints(new Matrix("ALL Active", nmo_ * nact, nact * nact));
+
+    ///Step 3:  Fill the integrals for SOSCF in_core
+    ///TODO: Figure out WTF is going on with ordering.  
+    /// For LARGE (>40) active spaces, it is possible that N*A^3 might become too big
+    timer_on("CIWave: Filling the (pu|xy) integrals");
+    for(int D_tasks = 0; D_tasks < D_vec.size(); D_tasks++)
+    {
+        int i = D_vec[D_tasks].second[0];
+        int j = D_vec[D_tasks].second[1];
+        SharedMatrix J = jk_->J()[D_tasks];
+        SharedMatrix half_trans = Matrix::triplet(Call, J, CAct, true, false, false);
+        #pragma omp parallel for schedule(static) 
+        for(size_t p = 0; p < nmo_; p++){
+            for(size_t q = 0; q < nact; q++){
+                casscf_ints->set(p * nact + q, i * nact + j, half_trans->get(p, q));
+                casscf_ints->set(p * nact + q, j * nact + i, half_trans->get(p, q));
+            }
+        }
+
+    }
+    timer_off("CIWave: Filling the (pu|xy) integrals");
+    Cl.clear();
+    Cr.clear();
+    jk_->set_do_K(true);
+    jk_->set_allow_desymmetrization(true);
+    SharedMatrix actMO(new Matrix("ALL Active", nact * nact, nact * nact));
+    Timer Fill_zuxy;
+    timer_on("CIWave: Filling the (zu|xy) integrals");
+    for(int u = 0; u < nact; u++){
+        int u_offset = CalcInfo_->dropped_docc.sum();
+        for(int v = 0; v < nact; v++){
+            for(int x = 0; x < nact; x++){
+                for(int y = 0; y < nact; y++){
+                    actMO->set(u * nact + v, x * nact + y, casscf_ints->get(active_abs[u]* nact + v, x * nact + y));
+                }
+            }
+        }
+    }
+    timer_off("CIWave: Filling the (zu|xy) integrals");
+
+    timer_on("CIWave: Computing ^{I}F_{pq}");
+    onel_ints_from_jk();
+    timer_off("CIWave: Computing ^{I}F_{pq}");
+
+    pitzer_to_ci_order_twoel(actMO, CalcInfo_->twoel_ints);
+    tei_raaa_ = casscf_ints;
+    tei_aaaa_ = actMO;
+    somcscf_->set_eri_tensors(tei_aaaa_, tei_raaa_);
+
+    tf_onel_ints(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->tf_onel_ints);
+    form_gmat(CalcInfo_->onel_ints, CalcInfo_->twoel_ints, CalcInfo_->gmat);
+    timer_off("CIWave: Parallel MCSCF integral transform");
 }
 void CIWavefunction::transform_mcscf_ints(bool approx_only) {
     if (!ints_init_) setup_mcscf_ints();
