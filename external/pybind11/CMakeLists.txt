@@ -1,7 +1,7 @@
-find_package(pybind11 CONFIG QUIET)
+find_package(pybind11 QUIET)#RMR pybind11 doesn't make a config file
 
-if(${pybind11_FOUND})
-    message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
+if(${PYBIND11_FOUND})
+    message(STATUS "Found pybind11: ${PYBIND11_INCLUDE_DIR} (found version ${PYBIND11_VERSION})")
     add_library(pybind11_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
