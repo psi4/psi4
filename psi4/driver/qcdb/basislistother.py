@@ -359,9 +359,9 @@ def load_basfam_other():
     # Pople orbital basis sets
 
     basis_sto3g.add_jkfit('def2-SVP-JKFIT')
-    basis_sto3g.add_rifit('def2-SVP-JKFIT')
+    basis_sto3g.add_rifit('def2-SVP-RIFIT')
     basis_321g.add_jkfit('def2-SVP-JKFIT')
-    basis_321g.add_rifit('def2-SVP-JKFIT')
+    basis_321g.add_rifit('def2-SVP-RIFIT')
 
     basis_631g.add_jkfit('cc-pvdz-jkfit')
     basis_631g_d_.add_jkfit('cc-pvdz-jkfit')
