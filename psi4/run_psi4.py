@@ -211,13 +211,18 @@ try:
     psi4.extras._success_flag_ = True
 
 # Capture _any_ python error message
-except Exception as error_msg:
+except Exception as exception:
     import traceback
     exc_type, exc_value, exc_traceback = sys.exc_info()
-    tb_str = "\n\n"
+    tb_str = "Traceback (most recent call last):\n"
     tb_str += ''.join(traceback.format_tb(exc_traceback))
-    tb_str += error_msg.message
+    tb_str += '\n'
+    tb_str += type(exception).__name__
+    tb_str += ': '
+    tb_str += exception.message
+    psi4.core.print_out("\n")
     psi4.core.print_out(tb_str)
+    psi4.core.print_out("\n")
     if psi4.core.get_output_file() != "stdout":
         print(tb_str)
     sys.exit(1)
