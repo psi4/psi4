@@ -44,9 +44,8 @@ class ValidationError(PsiException):
     """
     def __init__(self, msg):
         PsiException.__init__(self, msg)
-        self.message = msg
-        core.print_out('\nPsiException: %s\n\n' % (msg))
-        extras._success_flag_ = False
+        # print("%s" % repr(msg))
+        self.message = '\nPsiException: %s\n\n' % repr(msg)
 
 class ParsingError(PsiException):
     """Error called for problems parsing a text file. Prints error message
@@ -55,8 +54,7 @@ class ParsingError(PsiException):
     """
     def __init__(self, msg):
         PsiException.__init__(self,msg)
-        self.message = msg
-        core.print_out('\nPsiException: %s\n\n' % (msg))
+        self.message = '\nPsiException: %s\n\n' % msg
 
 class PsiImportError(PsiException):
     """Error called for problems import python dependencies. Prints error message
@@ -64,8 +62,7 @@ class PsiImportError(PsiException):
     """
     def __init__(self, msg):
         PsiException.__init__(self,msg)
-        self.message = msg
-        core.print_out('\nPsiException: %s\n\n' % (msg))
+        self.message = '\nPsiException: %s\n\n' % msg
 
 class TestComparisonError(PsiException):
     """Error called when a test case fails due to a failed
@@ -75,8 +72,7 @@ class TestComparisonError(PsiException):
     """
     def __init__(self, msg):
         PsiException.__init__(self, msg)
-        self.message = msg
-        core.print_out('\nPsiException: %s\n\n' % (msg))
+        self.message = '\nPsiException: %s\n\n' % msg
 
 
 class CSXError(PsiException):
@@ -85,8 +81,7 @@ class CSXError(PsiException):
     """
     def __init__(self, msg):
         PsiException.__init__(self, msg)
-        self.message = msg
-        core.print_out('\nCSXException: %s\n\n' % (msg))
+        self.message = '\nCSXException: %s\n\n' % msg
 
 
 class ManagedMethodError(PsiException):
@@ -96,8 +91,7 @@ class ManagedMethodError(PsiException):
         else:
             msg = """{0}: Method '{1}' with {2} '{3}' and REFERENCE '{4}' not directable to QC_MODULE '{5}'""".format(*circs)
         PsiException.__init__(self, msg)
-        self.message = msg
-        core.print_out('\nPsiException: %s\n\n' % (msg))
+        self.message = '\nPsiException: %s\n\n' % msg
 
 
 class Dftd3Error(PsiException):
@@ -106,5 +100,4 @@ class Dftd3Error(PsiException):
     """
     def __init__(self, msg):
         PsiException.__init__(self, msg)
-        self.message = msg
-        core.print_out('\nDftd3Error: %s\n\n' % (msg))
+        self.message = '\nDftd3Error: %s\n\n' % msg

@@ -25,11 +25,13 @@
 # @END LICENSE
 #
 
-import numpy as np
-from psi4 import core
-
 import sys
+import numpy as np
+
+from psi4 import core
 from .exceptions import *
+
+### Matrix and Vector properties
 
 # The next three functions make me angry
 def translate_interface(interface):
@@ -92,40 +94,6 @@ def _find_dim(arr, ndim):
         return [arr.shape[x] for x in range(ndim)]
     else:
         raise ValidationError("Input array does not have a valid shape.")
-
-@classmethod
-def _dimension_from_list(self, dims, name="New Dimension"):
-    """
-    Builds a core.Dimension object from a python list or tuple. If a dimension
-    object is passed a copy will be returned.
-    """
-
-    if isinstance(dims, (tuple, list, np.ndarray)):
-        irreps = len(dims)
-    elif isinstance(dims, core.Dimension):
-        irreps = dims.n()
-    else:
-        raise ValidationError("Dimension from list: Type '%s' not understood" % type(dims))
-
-    ret = core.Dimension(irreps, name)
-    for i in range(irreps):
-        ret[i] = dims[i]
-    return ret
-
-def _dimension_to_tuple(dim):
-    """
-    Converts a core.Dimension object to a tuple.
-    """
-
-    if isinstance(dim, (tuple, list)):
-        return tuple(dim)
-
-    irreps = dim.n()
-    ret = []
-    for i in range(irreps):
-        ret.append(dim[i])
-    return tuple(ret)
-
 
 def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     """
@@ -273,7 +241,7 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
 
-def to_array(matrix, copy=True, dense=False):
+def _to_array(matrix, copy=True, dense=False):
     """
     Converts a Psi4 Matrix or Vector to a numpy array. Either copies the data or simply
     consturcts a view.
@@ -300,7 +268,7 @@ def to_array(matrix, copy=True, dense=False):
     --------
 
     >>> data = psi4.Matrix(3, 3)
-    >>> data.to_array()
+    >>> data._to_array()
     [[ 0.  0.  0.]
      [ 0.  0.  0.]
      [ 0.  0.  0.]]
@@ -366,7 +334,7 @@ def _build_view(matrix):
     """
     Builds a view of the vector or matrix
     """
-    views = to_array(matrix, copy=False, dense=False)
+    views = _to_array(matrix, copy=False, dense=False)
     if matrix.nirrep() > 1:
         return tuple(views)
     else:
@@ -436,7 +404,6 @@ def _np_write(self, filename=None, prefix=""):
 
     np.savez(filename, **ret)
 
-@classmethod
 def _np_read(self, filename, prefix=""):
 
     if isinstance(filename, np.lib.npyio.NpzFile):
@@ -456,7 +423,7 @@ def _np_read(self, filename, prefix=""):
     ret_data = []
 
     if ((prefix + "Irreps") not in data.keys()) or ((prefix + "Name") not in data.keys()):
-        raise KeyError("File %s does not appear to be a numpyz save" % filename)
+        raise ValidationError("File %s does not appear to be a numpyz save" % filename)
 
     for h in range(data[prefix + "Irreps"]):
         ret_data.append(data[prefix + "IrrepData" + str(h)])
@@ -465,46 +432,140 @@ def _np_read(self, filename, prefix=""):
     if arr_type == core.Matrix:
         dim1 = core.Dimension.from_list(data[prefix + "Dim1"])
         dim2 = core.Dimension.from_list(data[prefix + "Dim2"])
-        ret = core.Matrix(str(data[prefix + "Name"]), dim1, dim2)
+        ret = self(str(data[prefix + "Name"]), dim1, dim2)
     elif arr_type == core.Vector:
         dim1 = core.Dimension.from_list(data[prefix + "Dim"])
-        ret = core.Vector(str(data[prefix + "Name"]), dim1)
+        ret = self(str(data[prefix + "Name"]), dim1)
 
     for h in range(data[prefix + "Irreps"]):
         ret.nph[h][:] = ret_data[h]
 
     return ret
 
+def _to_serial(data):
+    """
+    Converts an object with a .nph accessor to a serialized dictionary
+    """
+
+    json_data = {}
+    json_data["shape"] = []
+    json_data["data"] = []
+
+    for view in data.nph:
+        json_data["shape"].append(view.shape)
+        json_data["data"].append(view.tostring())
+
+    if len(json_data["shape"][0]) == 1:
+        json_data["type"] = "vector"
+    elif len(json_data["shape"][0]) == 2:
+        json_data["type"] = "matrix"
+    else:
+        raise ValidationError("_to_json is only used for vector and matrix objects.")
+
+    return json_data
+
+def _from_serial(self, json_data):
+    """
+    Converts serialized data to the correct Psi4 data type
+    """
+
+    if json_data["type"] == "vector":
+        dim1 = core.Dimension.from_list([x[0] for x in json_data["shape"]])
+        ret = self("Vector from JSON", dim1)
+    elif json_data["type"] == "matrix":
+        dim1 = core.Dimension.from_list([x[0] for x in json_data["shape"]])
+        dim2 = core.Dimension.from_list([x[1] for x in json_data["shape"]])
+        ret = self("Matrix from JSON", dim1, dim2)
+    else:
+        raise ValidationError("_from_json did not recognize type option of %s." % str(json_data["type"]))
+
+    for n in range(len(ret.nph)):
+        ret.nph[n].flat[:] = np.fromstring(json_data["data"][n], dtype=np.double)
+
+    return ret
+
+
 # Matirx attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
-core.Matrix.to_array = to_array
+core.Matrix.to_array = _to_array
 core.Matrix.shape = _np_shape
 core.Matrix.np = _np_view
 core.Matrix.nph = _nph_view
 core.Matrix.__array_interface__ = _array_conversion
 core.Matrix.np_write = _np_write
-core.Matrix.np_read = _np_read
+core.Matrix.np_read = classmethod(_np_read)
+core.Matrix.to_serial = _to_serial
+core.Matrix.from_serial = classmethod(_from_serial)
 
 # Vector attributes
 core.Vector.from_array = classmethod(array_to_matrix)
-core.Vector.to_array = to_array
+core.Vector.to_array = _to_array
 core.Vector.shape = _np_shape
 core.Vector.np = _np_view
 core.Vector.nph = _nph_view
 core.Vector.__array_interface__ = _array_conversion
 core.Vector.np_write = _np_write
-core.Vector.np_read = _np_read
+core.Vector.np_read = classmethod(_np_read)
+core.Vector.to_serial = _to_serial
+core.Vector.from_serial = classmethod(_from_serial)
 
-# Dimension attributes
-core.Dimension.from_list = _dimension_from_list
-core.Dimension.to_tuple = _dimension_to_tuple
+### CIVector properties
 
-# CIVector attributes
 @property
 def _civec_view(self):
     "Returns a view of the CIVector's buffer"
     return np.asarray(self)
 
 core.CIVector.np = _civec_view
-# core.CIVector.__array_interface__ = _civec_interface
 
+### Dimension properties
+
+@classmethod
+def _dimension_from_list(self, dims, name="New Dimension"):
+    """
+    Builds a core.Dimension object from a python list or tuple. If a dimension
+    object is passed a copy will be returned.
+    """
+
+    if isinstance(dims, (tuple, list, np.ndarray)):
+        irreps = len(dims)
+    elif isinstance(dims, core.Dimension):
+        irreps = dims.n()
+    else:
+        raise ValidationError("Dimension from list: Type '%s' not understood" % type(dims))
+
+    ret = core.Dimension(irreps, name)
+    for i in range(irreps):
+        ret[i] = dims[i]
+    return ret
+
+def _dimension_to_tuple(dim):
+    """
+    Converts a core.Dimension object to a tuple.
+    """
+
+    if isinstance(dim, (tuple, list)):
+        return tuple(dim)
+
+    irreps = dim.n()
+    ret = []
+    for i in range(irreps):
+        ret.append(dim[i])
+    return tuple(ret)
+
+def _dimension_iter(dim):
+    """
+    Provides an iterator class for the Dimension object.
+
+    Allows:
+        dim = psi4.core.Dimension(...)
+        list(dim)
+    """
+
+    for i in range(dim.n()):
+        yield dim[i]
+
+# Dimension attributes
+core.Dimension.from_list = _dimension_from_list
+core.Dimension.to_tuple = _dimension_to_tuple
+core.Dimension.__iter__ = _dimension_iter
