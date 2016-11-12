@@ -75,6 +75,18 @@ class TestComparisonError(PsiException):
         self.message = '\nPsiException: %s\n\n' % msg
 
 
+class ConvergenceError(PsiException):
+    """Error called for problems with converging and iterative method. Prints
+    error message *msg* to standard output stream and output file.
+
+    """
+    def __init__(self, eqn_description, maxit):
+        msg = "Could not converge %s in %d iterations." % (eqn_description, maxit)
+        PsiException.__init__(self, msg)
+        self.message = msg
+        core.print_out('\nPsiException: %s\n\n' % (msg))
+
+
 class CSXError(PsiException):
     """Error called when CSX generation fails.
 

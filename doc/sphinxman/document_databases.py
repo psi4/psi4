@@ -40,7 +40,7 @@ if (len(sys.argv) == 2):
 
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s file %s' % (category, pyfile)
+    print('Auto-documenting %s file %s' % (category, pyfile))
 
 
 # Available databases in psi4/share/psi4/databases

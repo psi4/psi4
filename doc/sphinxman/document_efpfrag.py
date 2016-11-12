@@ -41,7 +41,7 @@ if (len(sys.argv) == 2):
 
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s file %s' % (category, pyfile)
+    print('Auto-documenting %s file %s' % (category, pyfile))
 
 
 def extract_xyz(pyfile):
