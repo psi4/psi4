@@ -32,7 +32,7 @@ import os
 import json
 import argparse
 
-parser = argparse.ArgumentParser(description="A hybrid C++/Python quantum chemistry module.")
+parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry")
 parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default input.dat.")
 parser.add_argument("-o", "--output", help="Redirect output elsewhere.\n"
                                            "Default: when input filename is 'input.dat', then defaults to 'output.dat'. "

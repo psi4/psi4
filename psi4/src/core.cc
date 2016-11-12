@@ -1215,7 +1215,7 @@ void psi4_python_module_finalize()
 
 
 PYBIND11_PLUGIN(core) {
-    py::module core("core", "Psi4: An Open-Source Ab Initio Electronic Structure Package");
+    py::module core("core", "C++ Innards of Psi4: Open-Source Quantum Chemistry");
 //    py::module core("core", R"pbdoc(
 //
 //        Psi4: An Open-Source Ab Initio Electronic Structure Package

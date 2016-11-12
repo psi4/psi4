@@ -41,7 +41,7 @@ if (len(sys.argv) == 2):
 
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s module %s' % (category, pyfile)
+    print('Auto-documenting %s module %s' % (category, pyfile))
 
 
 # Available psi variables in psi4/driver/qcdb/cfour.py

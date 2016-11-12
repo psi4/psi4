@@ -5,6 +5,7 @@ matrix:
     - compiler: clang
       env:
         - CXX_COMPILER='clang++-3.9'
+        - PYTHON_VER='3.5'
         - C_COMPILER='clang-3.9'
         - Fortran_COMPILER='gfortran'
         - BUILD_TYPE='release'
@@ -22,15 +23,13 @@ matrix:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
         packages:
-        - python-numpy
-        - cmake
-        - cmake-data
         - liblapack-dev
         - clang-3.6
         - libhdf5-serial-dev
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.6'
+      - PYTHON_VER='3.5'
       - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
@@ -46,21 +45,18 @@ matrix:
         - ubuntu-toolchain-r-test
         - george-edison55-precise-backports
         packages:
-        - python-numpy
-        - cmake
-        - cmake-data
         - liblapack-dev
         - clang-3.9
         - libhdf5-serial-dev
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.9'
+      - PYTHON_VER='3.5'
       - C_COMPILER='clang-3.9'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
       - NAME='clang'
       - VERSION='3.9'
-
 
   - os: linux
     compiler: gcc
@@ -80,6 +76,7 @@ matrix:
         - gfortran-4.9
     env:
       - CXX_COMPILER='g++-4.9'
+      - PYTHON_VER='2.7'
       - C_COMPILER='gcc-4.9'
       - Fortran_COMPILER='gfortran-4.9'
       - BUILD_TYPE='release'
@@ -104,6 +101,7 @@ matrix:
         - gfortran-6
     env:
       - CXX_COMPILER='g++-6'
+      - PYTHON_VER='3.5'
       - C_COMPILER='gcc-6'
       - Fortran_COMPILER='gfortran-6'
       - BUILD_TYPE='release'
@@ -128,6 +126,7 @@ matrix:
 #        - gfortran-6
 #    env:
 #      - CXX_COMPILER='g++-6'
+#      - PYTHON_VER='3.5'
 #      - C_COMPILER='gcc-6'
 #      - Fortran_COMPILER='gfortran-6'
 #      - BUILD_TYPE='release'
@@ -139,21 +138,24 @@ before_install:
   - free -m
   - df -h
   - ulimit -a
-  - python -V
 install:
-- DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-- |
-  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-    brew install cmake python
+- if [[ "$PYTHON_VER" == "2.7" ]]; then
+    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+  else
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   fi
-- |
-  val=`python -c "import sys; print(sys.version[0])"`
-  if [[ $val == "3" ]]; then
-      pip install numpy
-  fi
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
+- hash -r
+- conda config --set always_yes yes --set changeps1 no
+- conda update -q conda
+- conda info -a
+- conda create -q -n p4env python=$PYTHON_VER numpy cmake dftd3 libint libxc gdma libefp -c psi4/label/test -c psi4
+- source activate p4env
+- conda list
 before_script:
-- python -c 'import numpy; print numpy.version.version'
+- python -V
+- python -c 'import numpy; print(numpy.version.version)'
 - cd ${TRAVIS_BUILD_DIR}
 - export CXX=${CXX_COMPILER}
 - export CC=${C_COMPILER}
@@ -162,16 +164,14 @@ before_script:
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
-- mkdir ${TRAVIS_BUILD_DIR}/libint
-- wget http://vergil.chemistry.gatech.edu/test_sphinxman/libint_x86_64.tgz
-- tar -xzvf libint_x86_64.tgz -C ${TRAVIS_BUILD_DIR}/libint
 - > 
     cmake -Bbuild -H. 
     -DCMAKE_CXX_COMPILER=${CXX_COMPILER} 
     -DCMAKE_C_COMPILER=${C_COMPILER} 
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE} 
-    -DCMAKE_PREFIX_PATH=${TRAVIS_BUILD_DIR}/libint
-    -DENABLE_CHEMPS2=off 
+    -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
+    -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
+    -DENABLE_gdma=ON
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
 - cd build
 - ../.scripts/travis_build.sh
