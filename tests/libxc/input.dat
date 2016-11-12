@@ -1,26 +1,42 @@
 import numpy as np
+np.set_printoptions(precision=14)
 
 npoints = 5
 keys = ["V", "V_RHO_A", "V_RHO_B", "V_GAMMA_AA", "V_GAMMA_AB", "V_GAMMA_BB"]
+#keys = ["V", "V_RHO_A", "V_GAMMA_AA", "V_GAMMA_AB", "V_GAMMA_BB", "V_RHO_B"]
 
-psi_fun = core.Functional.build_base('PW92_C')
+#psi_func, xc_func = "S_X", "XC_LDA_X"
+#psi_func, xc_func = "B88_X", "XC_GGA_X_B88"
+#psi_func, xc_func = "SOGGA_X", "XC_GGA_X_SOGGA"
+#psi_func, xc_func = "PBE_X", "XC_GGA_X_PBE"
+#psi_func, xc_func = "P86_C", "XC_GGA_C_P86"
+psi_func, xc_func = "PBE_C", "XC_GGA_C_PBE"
+#psi_func, xc_func = "LYP_C", "XC_GGA_C_LYP"
+#psi_func, xc_func = "VWN5_C", "XC_LDA_C_VWN"
+
+psi_fun = core.Functional.build_base(psi_func)
+psi_fun.set_gga(True)
+print_out("Psi4 functional\n")
 psi_fun.print_out()
 
-xc_fun = core.Functional.build_base('XC_LDA_C_PW')
+xc_fun = core.Functional.build_base(xc_func)
+print_out("XC functional\n")
 xc_fun.print_out()
 
-
-rho = psi4.core.Vector.from_array(np.ones(npoints))
-sigma = psi4.core.Vector.from_array(np.zeros((npoints)))
+rho_a = psi4.core.Vector.from_array(np.linspace(0.01, 0.99, npoints))
+rho_b = psi4.core.Vector.from_array(np.linspace(0.01, 0.99, npoints))
+sigma = psi4.core.Vector.from_array(np.ones((npoints)) * 0.5)
 zeros = psi4.core.Vector.from_array(np.zeros((npoints)))
 
-inp = {
-    'RHO_A' : rho,
-    'RHO_B' : zeros,
-#    'GAMMA_AA' : zeros,
-#    'GAMMA_AB' : zeros,
-#    'GAMMA_BB' : zeros,
-}
+def build_in():
+    inp = {
+        'RHO_A' : rho_a,
+        'RHO_B' : rho_b,
+        'GAMMA_AA' : sigma,
+        'GAMMA_AB' : zeros,
+        'GAMMA_BB' : sigma,
+    }
+    return inp
 
 def build_out():
     ret = {}
@@ -29,14 +45,30 @@ def build_out():
     return ret
 
 psi_out = build_out()
-psi_fun.compute_functional(inp, psi_out, npoints, 1, 1.0)
+psi_inp = build_in()
+psi_fun.compute_functional(psi_inp, psi_out, npoints, 1, 1.0)
+#psi_out["V_RHO_A"].np[:] *= 2
+print("Called psi fun\n")
 
 xc_out = build_out()
-#inp["RHO_A"].np[:] /= 2
-xc_fun.compute_functional(inp, xc_out, npoints, 1, 1.0)
+xc_inp = build_in()
+#xc_inp["GAMMA_AA"].np[:] *= 3
+print("Called XC fun\n")
+xc_fun.compute_functional(xc_inp, xc_out, npoints, 1, 1.0)
+#xc_out["V"].np[:] *= (rho_b.np[:] + rho_a.np[:])
+print('Here')
 
-for k in keys[:2]:
+for k in keys:
     print k
-    print psi_out[k].np
-    print xc_out[k].np
+    print 'psi', psi_out[k].np
+    print 'xc ', xc_out[k].np
+    print 'r  ', psi_out[k].np / xc_out[k].np
     print ' '
+
+molecule mol {
+He
+symmetry c1
+}
+set basis cc-pvdz
+print energy('pbe')
+print energy('xcpbe')

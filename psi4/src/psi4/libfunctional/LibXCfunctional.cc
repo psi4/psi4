@@ -45,17 +45,25 @@ LibXCFunctional::LibXCFunctional(std::string xc_name)
     }
 
     name_ = std::string(xc_functional_.info->name);
-    // outfile->Printf("I found the LIBXC functional, the name is %s", name_.c_str());
-    // description_ = str(xc_functional_->name);
-    // citation_ = std::string(xc_functional_.info->refs[0]);
+    for (size_t i=0; i < 5; i++){
+        if (xc_functional_.info->refs[i]){
+            if (i != 0){
+                citation_ += "\n";
+            }
+            citation_ += "    ";
+            citation_ += xc_functional_.info->refs[i]->ref;
+        }
+    }
 
     // int kind = xc_functional_->kind;
     // int number = xc_functional_->number;
     int family = xc_functional_.info->family;
-    outfile->Printf("The family of %s is %d\n", name_.c_str(), family);
-
+    // outfile->Printf("The family of %s is %d\n", name_.c_str(), family);
     gga_ = (family >= 2);
     meta_ = (family >= 4);
+
+      // double alpha, beta, omega;
+      // XC(hyb_cam_coef(&func,&omega,&alpha,&beta));
 
 }
 LibXCFunctional::~LibXCFunctional()
