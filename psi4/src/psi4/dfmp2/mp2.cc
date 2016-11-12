@@ -189,13 +189,23 @@ double DFMP2::compute_energy()
 {
 
     print_header();
+    if (Ca_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
+        if (Cb_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
+            throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
+        }
+        throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
+    }
+    if (Cb_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
+        throw PSIEXCEPTION("There are no occupied orbitals with beta spin.");
+    }
     if (Ca_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
-        energies_["Opposite-Spin Energy"] = 0.;
-        energies_["Same-Spin Energy"] = 0.;
-        energies_["Singles Energy"] = 0.;
-        outfile->Printf("No virtual orbitals.\n\n");
-        print_energies();
-        return energies_["Total Energy"];
+        if (Cb_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
+            throw PSIEXCEPTION("There are no virtual orbitals with alpha or beta spin.");
+        }
+        throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
+    }
+    if (Cb_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
+        throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
     }
     timer_on("DFMP2 Singles");
     form_singles();
@@ -216,6 +226,26 @@ double DFMP2::compute_energy()
 SharedMatrix DFMP2::compute_gradient()
 {
     print_header();
+    
+    if (Ca_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
+        if (Cb_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
+            throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
+        }
+        throw PSIEXCEPTION("There are no occupied orbitals with alpha spin.");
+    }
+    if (Cb_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
+        throw PSIEXCEPTION("There are no occupied orbitals with beta spin.");
+    }
+
+    if (Ca_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
+        if (Cb_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
+            throw PSIEXCEPTION("There are no virtual orbitals with alpha or beta spin.");
+        }
+        throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
+    }
+    if (Cb_subset("AO","ACTIVE_VIR")->colspi()[0] == 0) {
+        throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
+    }
 
     timer_on("DFMP2 Singles");
     form_singles();
@@ -2976,12 +3006,6 @@ void UDFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
     
-    if (avir_a == 0) { 
-      throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
-    }
-    if (avir_b == 0) {
-      throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
-    }
 }
 void UDFMP2::form_Aia()
 {
@@ -3657,12 +3681,6 @@ void RODFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
     
-    if (avir_a == 0) { 
-      throw PSIEXCEPTION("There are no virtual orbitals with alpha spin.");
-    }
-    if (avir_b == 0) {
-      throw PSIEXCEPTION("There are no virtual orbitals with beta spin.");
-    }
 }
 
 }}
