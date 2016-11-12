@@ -37,5 +37,5 @@ Spectroscopic Constants for Diatomics
 
 .. codeauthor:: Andrew C. Simmonett
 
-.. autofunction:: psi4.driver.diatomic.anharmonicity(rvals, energies)
+.. autofunction:: psi4.driver.diatomic.anharmonicity(rvals, energies, plot_fit)
 
