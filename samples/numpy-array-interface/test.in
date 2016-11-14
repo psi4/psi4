@@ -77,8 +77,13 @@ dim2[2] = 2     #TEST
 
 dim1_match = dim1.to_tuple() == (3, 0, 0)     #TEST
 dim2_match = dim2.to_tuple() == (3, 0, 2)     #TEST
-compare_values(dim1_match, True, 9, "Dimension to list test 1")     #TEST
-compare_values(dim2_match, True, 9, "Dimension to list test 1")     #TEST
+compare_values(True, dim1_match, 9, "Dimension to tuple test 1")     #TEST
+compare_values(True, dim2_match, 9, "Dimension to tuple test 2")     #TEST
+
+dim1_match = list(dim1) == list(dim1.to_tuple())
+dim2_match = list(dim2) == list(dim2.to_tuple())
+compare_values(True, dim1_match, 9, "Dimension to list test 1")     #TEST
+compare_values(True, dim2_match, 9, "Dimension to list test 2")     #TEST
 
 dim1_test = Dimension.from_list((3, 0, 0))     #TEST
 dim2_test = Dimension.from_list((3, 0, 2))     #TEST
@@ -184,6 +189,16 @@ for n in range(1000):
 residual = sum(np.sum(x) for x in tmp)
 
 compare_values(0, residual, 9, "View pointers are correctly assigned.")     #TEST
+
+
+# Try out JSON serialization
+json_data = irreped_vec.to_serial()
+json_vec = psi4.Vector.from_serial(json_data)
+compare_vectors(json_vec, irreped_vec, 9, "Irreped psi4.Vector serialized read/write.")     #TEST
+
+json_data = irreped_mat.to_serial()
+json_vec = psi4.Matrix.from_serial(json_data)
+compare_matrices(json_vec, irreped_mat, 9, "Irreped psi4.Vector serialized read/write.")     #TEST
 
 
 

@@ -1215,7 +1215,7 @@ void psi4_python_module_finalize()
 
 
 PYBIND11_PLUGIN(core) {
-    py::module core("core", "Psi4: An Open-Source Ab Initio Electronic Structure Package");
+    py::module core("core", "C++ Innards of Psi4: Open-Source Quantum Chemistry");
 //    py::module core("core", R"pbdoc(
 //
 //        Psi4: An Open-Source Ab Initio Electronic Structure Package
@@ -1466,6 +1466,7 @@ PYBIND11_PLUGIN(core) {
                  outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
                  outfile_name = ofname;
                  });
+    core.def("get_output_file", [](){ return outfile_name; });
 //    core.def("print_version", [](){ print_version("stdout"); });
     core.def("set_psi_file_prefix", [](std::string fprefix){psi_file_prefix = strdup(fprefix.c_str()); });
 

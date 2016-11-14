@@ -802,34 +802,6 @@ def process_input(raw_input, print_level=1):
     return temp
 
 
-def parse_options_block(raw):
-    """Relation of process_input but suited for inside a "set {}" block."""
-
-    # choice #2
-    #runalso = True
-    #global runalso
-
-    # Nuke all comments
-    comment = re.compile(r'(^|[^\\])#.*')
-    temp = re.sub(comment, '', raw)
-    # Now, nuke any escapes from comment lines
-    comment = re.compile(r'\\#')
-    temp = re.sub(comment, '#', temp)
-
-    # First, remove everything from lines containing only spaces
-    blankline = re.compile(r'^\s*$')
-    temp = re.sub(blankline, '', temp, re.MULTILINE)
-
-    # Look for things like matrices and put them on a single line
-    temp = process_multiline_arrays(temp)
-
-    # Process all "set name? { ... }"
-    set_commands = re.compile(r'^()()(.*)',
-                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(set_commands, process_set_commands, temp)
-    return temp
-
-
 if __name__ == "__main__":
     result = process_input("""
 molecule h2 {

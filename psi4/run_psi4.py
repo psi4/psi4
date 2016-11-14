@@ -29,9 +29,10 @@
 
 import sys
 import os
+import json
 import argparse
 
-parser = argparse.ArgumentParser(description="A hybrid C++/Python quantum chemistry module.")
+parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry")
 parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default input.dat.")
 parser.add_argument("-o", "--output", help="Redirect output elsewhere.\n"
                                            "Default: when input filename is 'input.dat', then defaults to 'output.dat'. "
@@ -53,6 +54,7 @@ parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
 parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory. "
                                                            "!Warning! expert option.")
+parser.add_argument("--json", action='store_true', help="Runs a JSON input file. !Warning! experimental option.")
 
 # For plugins
 parser.add_argument("--new-plugin",
@@ -84,7 +86,7 @@ if args["inplace"]:
     core_location = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + "core.so"
     if not os.path.isfile(core_location):
         raise ImportError("A compiled Psi4 core.so needs to be symlinked to the %s folder" % os.path.dirname(__file__))
-    
+
     lib_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if ("PSIDATADIR" not in os.environ.keys()) and (not args["psidatadir"]):
         data_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "share", "psi4"])
@@ -145,19 +147,40 @@ if args["output"] != "stdout":
 # Set a few options
 if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
+
 psi4.core.set_nthread(int(args["nthread"]))
 psi4.core.set_memory(524288000, True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 
-# Read input
-with open(args["input"]) as f:
-    content = f.read()
 
 if args["scratch"] is not None:
     if not os.path.isdir(args["scratch"]):
         raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
     psi4.core.set_environment("PSI_SCRATCH", args["scratch"])
+
+# If this is a json call, compute and stop
+if args["json"]:
+
+    with open(args["input"], 'r') as f:
+        json_data = json.load(f)
+
+    psi4.extras._success_flag_ = True
+    psi4.extras.exit_printing()
+    psi4.json_wrapper.run_json(json_data)
+
+    with open(args["input"], 'w') as f:
+        json.dump(json_data, f)
+
+    if args["output"] != "stdout":
+        os.unlink(args["output"])
+
+    sys.exit()
+
+
+# Read input
+with open(args["input"]) as f:
+    content = f.read()
 
 # Preprocess
 if not args["skip_preprocessor"]:
@@ -178,16 +201,33 @@ if args["messy"]:
         if handler[0] == psi4.core.clean:
             atexit._exithandlers.remove(handler)
 
-# Only register exit if exec was successful
+# Register exit printing, failure GOTO coffee ELSE beer
 import atexit
-
 atexit.register(psi4.extras.exit_printing)
 
 # Run the program!
-exec(content)
+try:
+    exec(content)
+    psi4.extras._success_flag_ = True
+
+# Capture _any_ python error message
+except Exception as exception:
+    import traceback
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    tb_str = "Traceback (most recent call last):\n"
+    tb_str += ''.join(traceback.format_tb(exc_traceback))
+    tb_str += '\n'
+    tb_str += type(exception).__name__
+    tb_str += ': '
+    tb_str += exception.message
+    psi4.core.print_out("\n")
+    psi4.core.print_out(tb_str)
+    psi4.core.print_out("\n")
+    if psi4.core.get_output_file() != "stdout":
+        print(tb_str)
+    sys.exit(1)
+
 
 #    elif '***HDF5 library version mismatched error***' in str(err):
 #        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
 
-# Celebrate with beer
-psi4.extras._success_flag_ = True

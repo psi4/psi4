@@ -43,7 +43,7 @@ if (len(sys.argv) == 2):
 
 
 def pts(category, pyfile):
-    print 'Auto-documenting %s file %s' % (category, pyfile)
+    print('Auto-documenting %s file %s' % (category, pyfile))
 
 
 # helper fn
@@ -222,7 +222,7 @@ def determine_options(cfilename):
                 elif kw_type == 'PythonDataType':
                     kw_type = 'python'
                 else:
-                    print 'ERROR: unrecognized type %s for %s' % (kw_type, kw_name)
+                    print('ERROR: unrecognized type %s for %s' % (kw_type, kw_name))
                     sys.exit()
 
             if   kw_type == 'str':    kw_type = 'string'
@@ -233,7 +233,7 @@ def determine_options(cfilename):
             elif kw_type == 'map':    pass
             elif kw_type == 'python': pass
             else:
-                print 'ERROR: unrecognized type2 %s for %s' % (kw_type, kw_name)
+                print('ERROR: unrecognized type2 %s for %s' % (kw_type, kw_name))
                 sys.exit()
 
             #print 'kw_name = \t', kw_name

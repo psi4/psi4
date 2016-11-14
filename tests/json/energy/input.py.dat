@@ -1,0 +1,70 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Sunday, 06 November 2016 09:00PM
+
+    Process ID:  26536
+    PSIDATADIR: /Users/daniel/Gits/dgaspsi/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+import numpy as np
+import psi4
+import json
+import copy
+from psi4.driver import p4util
+
+psi4.set_output_file("output.dat", False)
+
+# Generate JSON data
+json_data = {}
+json_data["molecule"] = """He 0 0 0\n--\nHe 0 0 1"""
+json_data["driver"] = "energy"
+json_data["args"] = 'SCF'
+json_data["kwargs"] = {"bsse_type": "cp"}
+json_data["options"] = {"BASIS": "STO-3G"}
+json_data["return_output"] = True
+with open("block.json", 'w') as f:
+    json.dump(json_data, f)
+
+psi4.json_wrapper.run_json(json_data)
+
+
+p4util.compare_strings("STO-3G", json_data["options"]["BASIS"], "Options test")    # TEST
+p4util.compare_integers(True, len(json_data["output"]) > 5000, "Output returned")  # TEST
+p4util.compare_integers(True, json_data["success"], "Success")                     # TEST
+
+
+bench_cp_energy = 0.183936053861                                            # TEST
+cenergy = json_data["variables"]["CURRENT ENERGY"]                          # TEST
+p4util.compare_values(bench_cp_energy, cenergy, 6, "SCF CURRENT ENERGY")           # TEST
+
+cenergy = json_data["return_value"]                                         # TEST
+p4util.compare_values(bench_cp_energy, cenergy, 6, "SCF RETURN_VALUE")             # TEST
+
+return_wfn = "return_wfn" not in json_data["kwargs"]                        # TEST
+p4util.compare_integers(True, return_wfn, "Immutable input")                       # TEST
+--------------------------------------------------------------------------

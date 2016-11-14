@@ -53,6 +53,9 @@ vec2.set(0, 0, 13)
 
 
 
+dim1_match = list(dim1) == list(dim1.to_tuple())
+dim2_match = list(dim2) == list(dim2.to_tuple())
+
 
 
 
@@ -114,6 +117,14 @@ for n in range(1000):
     tmp.append(np.asarray(Matrix(3, 3)))
 residual = sum(np.sum(x) for x in tmp)
 
+
+
+# Try out JSON serialization
+json_data = irreped_vec.to_serial()
+json_vec = psi4.Vector.from_serial(json_data)
+
+json_data = irreped_mat.to_serial()
+json_vec = psi4.Matrix.from_serial(json_data)
 
 
 
