@@ -1771,7 +1771,8 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     molden format. Will write natural orbitals from *density* (MO basis) if supplied.
     Warning! Most post-SCF Wavefunctions do not build the density as this is often
     much more costly than the energy. In addition, the Wavefunction density attributes
-    (Da and Db) return the AO density and are not valid for this function.
+    (Da and Db) return the SO density and must be transformed to the MO basis
+    to use with this function.
 
     .. versionadded:: 0.5
        *wfn* parameter passed explicitly
@@ -1803,9 +1804,15 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     >>> E, wfn = energy('ci', return_wfn=True)
     >>> molden(wfn, 'no_root1.molden', density_a=wfn.opdm(0, 0, "A", True))
 
-    >>> # [3] The following does NOT work, please see above
+    >>> # [3] The following does NOT work, please see below
     >>> E, wfn = energy('ccsd', return_wfn=True)
     >>> molden(wfn, 'ccsd_no.molden', density_a=wfn.Da())
+
+    >>> # [4] This WILL work, note the transformation of Da (SO->MO)
+    >>> E, wfn = property('ccsd', properties=['dipole'], return_wfn=True)
+    >>> Da_so = wfn.Da()
+    >>> Da_mo = Matrix.triplet(wfn.Ca(), Da_so, wfn.Ca(), True, False, False)
+    >>> molden(wfn, 'ccsd_no.molden', density_a=Da_mo)
 
     """
 
