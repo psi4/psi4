@@ -67,7 +67,7 @@ macro(psi4_add_module binlib libname sources)
     foreach(name_i IN LISTS depend_name)
         target_link_libraries(${libname} PRIVATE ${name_i})
     endforeach()
-    target_link_libraries(${libname} PRIVATE pybind11::pybind11)
+    target_link_libraries(${libname} PRIVATE PYBIND11::PYBIND11)
     target_link_libraries(${libname} PRIVATE ${LAPACKBLAS_LIBRARIES})
 endmacro()
 

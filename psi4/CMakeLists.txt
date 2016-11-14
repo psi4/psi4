@@ -20,7 +20,7 @@ test_restrict(restrict)
 find_package(PythonLibsNew REQUIRED)
 #find_package(PythonInterp REQUIRED)
 #find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
-find_package(pybind11 CONFIG REQUIRED)
+find_package(pybind11 REQUIRED)
 find_package(Threads)
 find_package(DL)
 
@@ -152,7 +152,7 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 # Determine relative path from Psi4's include directory to PyBind11's
 file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
     ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
-    ${pybind11_INCLUDE_DIR})
+    ${PYBIND11_INCLUDE_DIR})
 set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/psi4")
 configure_package_config_file(
         share/cmake/psi4/psi4Config.cmake.in

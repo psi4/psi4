@@ -38,13 +38,13 @@ if(TARGET dkh::dkh)
     target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:dkh::dkh,INTERFACE_COMPILE_DEFINITIONS>)
 endif()
     # prefer to link against interface pybind11 library but can't "link" object library to target
-target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_COMPILE_DEFINITIONS>)
-target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_INCLUDE_DIRECTORIES>)
+target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:PYBIND11::PYBIND11,INTERFACE_COMPILE_DEFINITIONS>)
+target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:PYBIND11::PYBIND11,INTERFACE_INCLUDE_DIRECTORIES>)
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
-target_link_libraries(core PRIVATE pybind11::pybind11)
+target_link_libraries(core PRIVATE PYBIND11::PYBIND11)
 target_link_libraries(core PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
