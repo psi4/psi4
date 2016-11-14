@@ -400,6 +400,17 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       SharedMatrix cc_Da = oe->Da_so();
       SharedMatrix ref_Da = ref_wfn->Da();
       ref_Da->copy(cc_Da);
+      if(params.nstates > 1){
+        Process::environment.globals["CC ROOT 0 DIPOLE X"] = Process::environment.globals["CC DIPOLE X"];
+        Process::environment.globals["CC ROOT 0 DIPOLE Y"] = Process::environment.globals["CC DIPOLE Y"];
+        Process::environment.globals["CC ROOT 0 DIPOLE Z"] = Process::environment.globals["CC DIPOLE Z"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE XX"] = Process::environment.globals["CC DIPOLE XX"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE XY"] = Process::environment.globals["CC DIPOLE XY"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE XZ"] = Process::environment.globals["CC DIPOLE XZ"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE YY"] = Process::environment.globals["CC DIPOLE YY"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE YZ"] = Process::environment.globals["CC DIPOLE YZ"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE ZZ"] = Process::environment.globals["CC DIPOLE ZZ"];
+      }
 
       //Get the NOs/occupation numbers
       std::pair<SharedMatrix,SharedVector> NOa_pair = oe->Na_mo();
