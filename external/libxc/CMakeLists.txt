@@ -17,7 +17,8 @@ else()
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
-                   -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}/libxc
+                   -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                   -DNAMESPACE_INSTALL_INCLUDEDIR=/libxc
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    # OpenMP irrelevant
                    -DENABLE_XHOST=${ENABLE_XHOST}
