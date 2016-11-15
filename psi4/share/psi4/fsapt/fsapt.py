@@ -27,6 +27,7 @@
 # @END LICENSE
 #
 
+from __future__ import print_function
 import sys, os, re, math, copy
 
 # => Global Data <= #
@@ -549,35 +550,35 @@ def printOrder2(order2, fragkeys):
             val += order1A[saptkey][keyA]
         order0[saptkey] = val
 
-    print '%-9s %-9s ' % ('Frag1', 'Frag2'),
+    print('%-9s %-9s ' % ('Frag1', 'Frag2'), end='')
     for saptkey in saptkeys_:
-        print '%8s ' % (saptkey),
-    print ''
+        print('%8s ' % (saptkey), end='')
+    print('')
     for keyA in fragkeys['A']:
         for keyB in fragkeys['B']:
-            print '%-9s %-9s ' % (keyA, keyB),
+            print('%-9s %-9s ' % (keyA, keyB), end='')
             for saptkey in saptkeys_:
-                print '%8.3f ' % (order2[saptkey][keyA][keyB]),
-            print ''
+                print('%8.3f ' % (order2[saptkey][keyA][keyB]), end='')
+            print('')
 
     for keyA in fragkeys['A']:
-        print '%-9s %-9s ' % (keyA, 'All'),
+        print('%-9s %-9s ' % (keyA, 'All'), end='')
         for saptkey in saptkeys_:
-            print '%8.3f ' % (order1A[saptkey][keyA]),
-        print ''
+            print('%8.3f ' % (order1A[saptkey][keyA]), end='')
+        print('')
 
     for keyB in fragkeys['B']:
-        print '%-9s %-9s ' % ('All', keyB),
+        print('%-9s %-9s ' % ('All', keyB), end='')
         for saptkey in saptkeys_:
-            print '%8.3f ' % (order1B[saptkey][keyB]),
-        print ''
+            print('%8.3f ' % (order1B[saptkey][keyB]), end='')
+        print('')
 
-    print '%-9s %-9s ' % ('All', 'All'),
+    print('%-9s %-9s ' % ('All', 'All'), end='')
     for saptkey in saptkeys_:
-        print '%8.3f ' % (order0[saptkey]),
-    print ''
+        print('%8.3f ' % (order0[saptkey]), end='')
+    print('')
 
-    print ''
+    print('')
 
 def diffOrder2(order2P, order2M):
 
@@ -807,18 +808,18 @@ if __name__ == '__main__':
     fh = open('%s/fsapt.dat' % dirname, 'w')
     fh, sys.stdout = sys.stdout, fh
 
-    print '  ==> F-ISAPT: Links by Charge <==\n'
+    print('  ==> F-ISAPT: Links by Charge <==\n')
     stuff = computeFsapt(dirname, False)
-    print '   => Full Analysis <=\n'
+    print('   => Full Analysis <=\n')
     printOrder2(stuff['order2'], stuff['fragkeys'])
-    print '   => Reduced Analysis <=\n'
+    print('   => Reduced Analysis <=\n')
     printOrder2(stuff['order2r'], stuff['fragkeysr'])
 
-    print '  ==> F-ISAPT: Links 50-50 <==\n'
+    print('  ==> F-ISAPT: Links 50-50 <==\n')
     stuff = computeFsapt(dirname, True)
-    print '   => Full Analysis <=\n'
+    print('   => Full Analysis <=\n')
     printOrder2(stuff['order2'], stuff['fragkeys'])
-    print '   => Reduced Analysis <=\n'
+    print('   => Reduced Analysis <=\n')
     printOrder2(stuff['order2r'], stuff['fragkeysr'])
 
     fh, sys.stdout = sys.stdout, fh
