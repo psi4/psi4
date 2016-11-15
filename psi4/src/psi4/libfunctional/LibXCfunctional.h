@@ -40,14 +40,26 @@ namespace psi {
 class LibXCFunctional : public Functional {
 
 private:
+    std::string xc_func_name_;
     xc_func_type xc_functional_;
     int func_id_;
+    bool unpolarized_;
+    double global_exch_;
+    double lr_exch_;
 
 public:
 
-    LibXCFunctional(std::string xc_name);
+    LibXCFunctional(std::string xc_name, bool unpolarized);
     virtual ~LibXCFunctional();
     virtual void compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha);
+
+    void set_omega(double omega);
+    std::vector<std::tuple<std::string, int, double>> get_mix_data();
+
+    double global_exchange() { return global_exch_; }
+    double lr_exchange() { return lr_exch_; }
+
+
 
 };
 

@@ -31,6 +31,7 @@
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "superfunctional.h"
 #include "functional.h"
+#include "LibXCfunctional.h"
 using namespace psi;
 
 namespace psi {
@@ -55,28 +56,58 @@ void SuperFunctional::common_init()
     c_alpha_ = 0.0;
     c_ss_alpha_ = 0.0;
     c_os_alpha_ = 0.0;
+    libxc_xc_func_ = false;
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::blank()
 {
     return std::shared_ptr<SuperFunctional>(new SuperFunctional());
+}
+std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name)
+{
+
+    // Only allow build from full XC kernals
+    if (name.find("_XC_") == std::string::npos) {
+        throw PSIEXCEPTION("XC_build requires full _XC_ functional names");
+    }
+
+    // Build the superfuncitonal
+
+    std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
+
+    // Build LibXC functional
+    LibXCFunctional* xc_func = new LibXCFunctional(name, false);
+
+    // Copy params
+    sup->set_name(xc_func->name());
+    sup->set_description(xc_func->description());
+    sup->set_citation(xc_func->citation());
+    sup->set_x_omega(xc_func->omega());
+    sup->set_x_alpha(xc_func->global_exchange());
+    sup->libxc_xc_func_ = true;
+
+    sup->add_c_functional(std::shared_ptr<Functional>(static_cast<Functional*>(xc_func)));
+
+    return sup;
 }
 void SuperFunctional::print(std::string out, int level) const
 {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
              std::shared_ptr<OutFile>(new OutFile(out)));
-    printer->Printf( "   => %s Composite Functional <= \n\n", name_.c_str());
+    printer->Printf( "   => Composite Functional: %s <= \n\n", name_.c_str());
 
-    printer->Printf( "%s", description_.c_str());
-    printer->Printf( "\n");
+    if (description_ != ""){
+        printer->Printf( "%s", description_.c_str());
+        printer->Printf( "\n");
+    }
 
     printer->Printf( "%s", citation_.c_str());
-    printer->Printf( "\n");
+    printer->Printf( "\n\n");
 
-    printer->Printf( "    Points   = %14d\n", max_points_);
-    printer->Printf( "    Deriv    = %14d\n", deriv_);
-    printer->Printf( "    GGA      = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
-    printer->Printf( "    Meta     = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
+    printer->Printf( "    Points       = %14d\n", max_points_);
+    printer->Printf( "    Deriv        = %14d\n", deriv_);
+    printer->Printf( "    GGA          = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
+    printer->Printf( "    Meta         = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
     printer->Printf( "\n");
 
     printer->Printf( "    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
@@ -92,31 +123,106 @@ void SuperFunctional::print(std::string out, int level) const
     //printer->Printf( "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
     printer->Printf( "\n");
 
-    printer->Printf( "   => Exchange Functionals <=\n\n");
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        printer->Printf( "    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
-            x_functionals_[i]->name().c_str());
-        if (x_functionals_[i]->omega()) {
-            printer->Printf( " [omega = %6.4f]", x_functionals_[i]->omega());
-        }
-        printer->Printf("\n");
-    }
-    if (x_omega_) {
-        printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
-    }
-    if (x_alpha_) {
-        printer->Printf( "    %6.4f %7s \n", x_alpha_, "HF");
-    }
-    printer->Printf( "\n");
+    if (libxc_xc_func_){
+        // Well thats nasty
+        std::vector<std::tuple<std::string, int, double>> mix_data =
+            dynamic_cast<LibXCFunctional*>(c_functionals_[0].get())
+                ->get_mix_data();
 
-    printer->Printf( "   => Correlation Functionals <=\n\n");
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        printer->Printf( "    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
-            c_functionals_[i]->name().c_str());
-        if (c_functionals_[i]->omega()) {
-            printer->Printf( " [omega = %6.4f]", c_functionals_[i]->omega());
+        int nxc = 0;
+        int nexch = 0;
+        int ncorr = 0;
+        for (int i = 0; i < mix_data.size(); i++) {
+            int val = std::get<1>(mix_data[i]);
+            if (val == 0){
+                nexch++;
+            } else if (val == 1){
+                ncorr++;
+            } else if (val == 2){
+                nxc++;
+            } else {
+                throw PSIEXCEPTION("Functional type not understood");
+            }
         }
-        printer->Printf("\n");
+
+        if (nxc){
+            printer->Printf( "   => Exchange-Correlation Functionals <=\n\n");
+            for (int i = 0; i < mix_data.size(); i++) {
+                if (std::get<1>(mix_data[i]) != 2) continue;
+
+                printer->Printf( "    %6.4f %7s", std::get<2>(mix_data[i]),
+                    std::get<0>(mix_data[i]).c_str());
+                printer->Printf("\n");
+            }
+            printer->Printf( "\n");
+        }
+
+        if (nexch){
+            printer->Printf( "   => Exchange Functionals <=\n\n");
+            for (int i = 0; i < mix_data.size(); i++) {
+                if (std::get<1>(mix_data[i]) != 0) continue;
+
+                printer->Printf( "    %6.4f %7s", std::get<2>(mix_data[i]),
+                    std::get<0>(mix_data[i]).c_str());
+                if (c_functionals_[0]->omega()) {
+                    printer->Printf( " [omega = %6.4f]", c_functionals_[0]->omega());
+                }
+                printer->Printf("\n");
+            }
+            printer->Printf( "\n");
+        }
+
+        if ((x_omega_ + x_alpha_) > 0.0){
+            printer->Printf( "   => Exact (HF) Exchange <=\n\n");
+            if (x_omega_) {
+                printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+            }
+            if (x_alpha_) {
+                printer->Printf( "    %6.4f %7s \n", x_alpha_, "HF");
+            }
+            printer->Printf( "\n");
+        }
+
+        if (ncorr){
+            printer->Printf( "   => Correlation Functionals <=\n\n");
+            for (int i = 0; i < mix_data.size(); i++) {
+                if (std::get<1>(mix_data[i]) != 1) continue;
+
+                printer->Printf( "    %6.4f %7s", std::get<2>(mix_data[i]),
+                    std::get<0>(mix_data[i]).c_str());
+                printer->Printf("\n");
+            }
+            printer->Printf( "\n");
+        }
+
+    } else {
+
+        printer->Printf( "   => Exchange Functionals <=\n\n");
+        for (int i = 0; i < x_functionals_.size(); i++) {
+            printer->Printf( "    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
+                x_functionals_[i]->name().c_str());
+            if (x_functionals_[i]->omega()) {
+                printer->Printf( " [omega = %6.4f]", x_functionals_[i]->omega());
+            }
+            printer->Printf("\n");
+        }
+        if (x_omega_) {
+            printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+        }
+        if (x_alpha_) {
+            printer->Printf( "    %6.4f %7s \n", x_alpha_, "HF");
+        }
+        printer->Printf( "\n");
+
+        printer->Printf( "   => Correlation Functionals <=\n\n");
+        for (int i = 0; i < c_functionals_.size(); i++) {
+            printer->Printf( "    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
+                c_functionals_[i]->name().c_str());
+            if (c_functionals_[i]->omega()) {
+                printer->Printf( " [omega = %6.4f]", c_functionals_[i]->omega());
+            }
+            printer->Printf("\n");
+        }
     }
 
      // Not currently defined
@@ -144,8 +250,49 @@ void SuperFunctional::print(std::string out, int level) const
     }
 
 }
-void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun)
-{
+void SuperFunctional::set_x_omega(double omega) {
+    if (libxc_xc_func_){
+        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
+    }
+    x_omega_ = omega;
+    partition_gks();
+}
+void SuperFunctional::set_c_omega(double omega) {
+    if (libxc_xc_func_){
+        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
+    }
+    c_omega_ = omega;
+    partition_gks();
+}
+void SuperFunctional::set_x_alpha(double alpha) {
+    if (libxc_xc_func_){
+        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
+    }
+    x_alpha_ = alpha;
+    partition_gks();
+}
+void SuperFunctional::set_c_alpha(double alpha) {
+    if (libxc_xc_func_){
+        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
+    }
+    c_alpha_ = alpha;
+    partition_gks();
+}
+void SuperFunctional::set_c_ss_alpha(double alpha) {
+    if (libxc_xc_func_){
+        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
+    }
+    c_ss_alpha_ = alpha;
+    partition_gks();
+}
+void SuperFunctional::set_c_os_alpha(double alpha) {
+    if (libxc_xc_func_){
+        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
+    }
+    c_os_alpha_ = alpha;
+    partition_gks();
+}
+void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun) {
     x_functionals_.push_back(fun);
 }
 void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun)

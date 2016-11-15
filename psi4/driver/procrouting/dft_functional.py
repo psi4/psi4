@@ -3019,7 +3019,7 @@ superfunctionals = {
         'pbe'             : build_pbe_superfunctional,
         'hf3c'            : build_hf3c_superfunctional,
         'pbeh3c'          : build_pbeh3c_superfunctional,
-        'xcpbe'           : build_XCpbe_superfunctional,
+        # 'xcpbe'           : build_XCpbe_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
         'b3lyp5'          : build_b3lyp5_superfunctional,

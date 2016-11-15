@@ -92,6 +92,7 @@ protected:
 
     // => Functional values and partials <= //
 
+    bool libxc_xc_func_;
     int max_points_;
     int deriv_;
     std::map<std::string, SharedVector> values_;
@@ -109,7 +110,9 @@ public:
     SuperFunctional();
     virtual ~SuperFunctional();
 
+    // Build a blank superfunctional
     static std::shared_ptr<SuperFunctional> blank();
+    static std::shared_ptr<SuperFunctional> XC_build(std::string name);
 
     // Allocate values (MUST be called after adding new functionals to the superfunctional)
     void allocate();
@@ -147,12 +150,12 @@ public:
     void set_max_points(int max_points) { max_points_ = max_points; allocate(); }
     void set_deriv(int deriv) { deriv_ = deriv;  allocate(); }
 
-    void set_x_omega(double omega) { x_omega_ = omega; partition_gks(); }
-    void set_c_omega(double omega) { c_omega_ = omega; partition_gks(); }
-    void set_x_alpha(double alpha) { x_alpha_ = alpha; partition_gks(); }
-    void set_c_alpha(double alpha) { c_alpha_ = alpha; partition_gks(); }
-    void set_c_ss_alpha(double alpha) { c_ss_alpha_ = alpha; partition_gks(); }
-    void set_c_os_alpha(double alpha) { c_os_alpha_ = alpha; partition_gks(); }
+    void set_x_omega(double omega);
+    void set_c_omega(double omega);
+    void set_x_alpha(double alpha);
+    void set_c_alpha(double alpha);
+    void set_c_ss_alpha(double alpha);
+    void set_c_os_alpha(double alpha);
 
     // => Accessors <= //
 

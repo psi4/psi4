@@ -200,7 +200,7 @@ std::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->sr_type_   = XFunctional::SR_None;
         fun = static_cast<Functional*>(x);
     } else if (xc_functional_get_number(alias.c_str()) >= 0){
-        fun = static_cast<Functional*>(new LibXCFunctional(alias));
+        fun = static_cast<Functional*>(new LibXCFunctional(alias, false));
     } else {
         throw PSIEXCEPTION("Functional::build_base: Unrecognized base Functional.");
     }

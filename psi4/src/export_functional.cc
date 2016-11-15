@@ -30,6 +30,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
+#include "psi4/libfunctional/LibXCfunctional.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdisp/dispersion.h"
@@ -44,6 +45,7 @@ void export_functional(py::module &m)
         // TODO add init
         def(py::init<>()).
         def_static("blank", &SuperFunctional::blank, "docstring").
+        def_static("XC_build", &SuperFunctional::XC_build, "docstring").
         def("allocate", &SuperFunctional::allocate, "docstring").
         def("x_functional", &SuperFunctional::x_functional, "docstring").
         def("c_functional", &SuperFunctional::c_functional, "docstring").
@@ -111,6 +113,11 @@ void export_functional(py::module &m)
         def("set_parameter", &Functional::set_parameter, "docstring").
         def("print_out", &Functional::py_print, "docstring").
         def("print_detail",&Functional::py_print_detail, "docstring");
+
+    py::class_<LibXCFunctional, std::shared_ptr<LibXCFunctional>, Functional>(m, "LibXCFunctional", "docstring").
+        def(py::init<std::string, bool>()).
+        def("get_mix_data", &LibXCFunctional::get_mix_data, "docstring").
+        def("set_omega", &LibXCFunctional::set_omega, "docstring");
 
     py::class_<VBase, std::shared_ptr<VBase> >(m, "VBase", "docstring").
         def_static("build", [](std::shared_ptr<BasisSet> &basis, std::shared_ptr<SuperFunctional> &func, std::string type){
