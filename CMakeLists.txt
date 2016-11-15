@@ -170,6 +170,13 @@ ExternalProject_Add(psi4_core
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -DCheMPS2_DIR=${CheMPS2_DIR}
+              -Ddkh_DIR=${dkh_DIR}
+              -Dlibefp_DIR=${libefp_DIR}
+              -Derd_DIR=${erd_DIR}
+              -Dgdma_DIR=${gdma_DIR}
+              -Dlibint_DIR=${libint_DIR}
+              -Dpybind11_DIR=${pybind11_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
