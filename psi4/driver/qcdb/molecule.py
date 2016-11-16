@@ -321,7 +321,7 @@ class Molecule(LibmintsMolecule):
                     x * factor, y * factor, z * factor)
         return text
 
-    def save_xyz(self, filename, save_ghosts=True, save_natom=False):
+    def save_xyz(self, filename, save_ghosts=True, save_natom=True):
         """Save an XYZ file.
 
         >>> H2OH2O.save_xyz('h2o.xyz')
