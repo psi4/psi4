@@ -195,6 +195,35 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
     double* v_tau_a = NULL;
     double* v_tau_b = NULL;
 
+    double* v_rho_a_rho_a = NULL;
+    double* v_rho_a_rho_b = NULL;
+    double* v_rho_b_rho_b = NULL;
+    double* v_gamma_aa_gamma_aa = NULL;
+    double* v_gamma_aa_gamma_ab = NULL;
+    double* v_gamma_aa_gamma_bb = NULL;
+    double* v_gamma_ab_gamma_ab = NULL;
+    double* v_gamma_ab_gamma_bb = NULL;
+    double* v_gamma_bb_gamma_bb = NULL;
+    double* v_tau_a_tau_a = NULL;
+    double* v_tau_a_tau_b = NULL;
+    double* v_tau_b_tau_b = NULL;
+    double* v_rho_a_gamma_aa = NULL;
+    double* v_rho_a_gamma_ab = NULL;
+    double* v_rho_a_gamma_bb = NULL;
+    double* v_rho_b_gamma_aa = NULL;
+    double* v_rho_b_gamma_ab = NULL;
+    double* v_rho_b_gamma_bb = NULL;
+    double* v_rho_a_tau_a = NULL;
+    double* v_rho_a_tau_b = NULL;
+    double* v_rho_b_tau_a = NULL;
+    double* v_rho_b_tau_b = NULL;
+    double* v_gamma_aa_tau_a = NULL;
+    double* v_gamma_aa_tau_b = NULL;
+    double* v_gamma_ab_tau_a = NULL;
+    double* v_gamma_ab_tau_b = NULL;
+    double* v_gamma_bb_tau_a = NULL;
+    double* v_gamma_bb_tau_b = NULL;
+
     if (deriv >= 0) {
         v = out.find("V")->second->pointer();
     }
@@ -211,6 +240,48 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         if (meta_) {
             v_tau_a = out.find("V_TAU_A")->second->pointer();
             v_tau_b = out.find("V_TAU_B")->second->pointer();
+        }
+    }
+    if (deriv >= 2) {
+        if (true) {
+            v_rho_a_rho_a = out.find("V_RHO_A_RHO_A")->second->pointer();
+            v_rho_a_rho_b = out.find("V_RHO_A_RHO_B")->second->pointer();
+            v_rho_b_rho_b = out.find("V_RHO_B_RHO_B")->second->pointer();
+        }
+        if (gga_) {
+            v_gamma_aa_gamma_aa = out.find("V_GAMMA_AA_GAMMA_AA")->second->pointer();
+            v_gamma_aa_gamma_ab = out.find("V_GAMMA_AA_GAMMA_AB")->second->pointer();
+            v_gamma_aa_gamma_bb = out.find("V_GAMMA_AA_GAMMA_BB")->second->pointer();
+            v_gamma_ab_gamma_ab = out.find("V_GAMMA_AB_GAMMA_AB")->second->pointer();
+            v_gamma_ab_gamma_bb = out.find("V_GAMMA_AB_GAMMA_BB")->second->pointer();
+            v_gamma_bb_gamma_bb = out.find("V_GAMMA_BB_GAMMA_BB")->second->pointer();
+        }
+        if (meta_) {
+            v_tau_a_tau_a = out.find("V_TAU_A_TAU_A")->second->pointer();
+            v_tau_a_tau_b = out.find("V_TAU_A_TAU_B")->second->pointer();
+            v_tau_b_tau_b = out.find("V_TAU_B_TAU_B")->second->pointer();
+        }
+        if (gga_) {
+            v_rho_a_gamma_aa = out.find("V_RHO_A_GAMMA_AA")->second->pointer();
+            v_rho_a_gamma_ab = out.find("V_RHO_A_GAMMA_AB")->second->pointer();
+            v_rho_a_gamma_bb = out.find("V_RHO_A_GAMMA_BB")->second->pointer();
+            v_rho_b_gamma_aa = out.find("V_RHO_B_GAMMA_AA")->second->pointer();
+            v_rho_b_gamma_ab = out.find("V_RHO_B_GAMMA_AB")->second->pointer();
+            v_rho_b_gamma_bb = out.find("V_RHO_B_GAMMA_BB")->second->pointer();
+        }
+        if (meta_) {
+            v_rho_a_tau_a = out.find("V_RHO_A_TAU_A")->second->pointer();
+            v_rho_a_tau_b = out.find("V_RHO_A_TAU_B")->second->pointer();
+            v_rho_b_tau_a = out.find("V_RHO_B_TAU_A")->second->pointer();
+            v_rho_b_tau_b = out.find("V_RHO_B_TAU_B")->second->pointer();
+        }
+        if (gga_ && meta_) {
+            v_gamma_aa_tau_a = out.find("V_GAMMA_AA_TAU_A")->second->pointer();
+            v_gamma_aa_tau_b = out.find("V_GAMMA_AA_TAU_B")->second->pointer();
+            v_gamma_ab_tau_a = out.find("V_GAMMA_AB_TAU_A")->second->pointer();
+            v_gamma_ab_tau_b = out.find("V_GAMMA_AB_TAU_B")->second->pointer();
+            v_gamma_bb_tau_a = out.find("V_GAMMA_BB_TAU_A")->second->pointer();
+            v_gamma_bb_tau_b = out.find("V_GAMMA_BB_TAU_B")->second->pointer();
         }
     }
 
@@ -230,7 +301,8 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
             throw PSIEXCEPTION("NYI");
             xc_lda_exc(&xc_functional_, npoints, rho_ap, v);
         }
-    } else if (deriv == 1) {
+    }
+    if (deriv >= 1) {
         if (meta_){
             // outfile->Printf("Executing MGGA");
             // xc_mgga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
@@ -310,8 +382,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
             }
 
         } else{
-            // xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, v, v_rho_a);
-            // outfile->Printf("Executing LDA\n");
 
             // spin polarized
             std::vector<double> fv(npoints);
@@ -332,8 +402,80 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
                 v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
             }
         }
-    } else {
-        throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 1 ");
+    }
+    if (deriv >= 2){
+        if (meta_){
+            throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
+
+        } else if (gga_) {
+            // spin polarized
+            std::vector<double> fv(npoints);
+            std::vector<double> frho(npoints*2);
+            std::vector<double> fsigma(npoints*3);
+
+            for (size_t i=0; i < npoints; i++){
+                frho[2 * i] = rho_ap[i];
+                frho[2 * i + 1] = rho_bp[i];
+
+                fsigma[3 * i] = gamma_aap[i];
+                fsigma[3 * i + 1] = gamma_abp[i];
+                fsigma[3 * i + 2] = gamma_bbp[i];
+            }
+
+            std::vector<double> fv2_rho2(npoints*3);
+            std::vector<double> fv2_rhosigma(npoints*6);
+            std::vector<double> fv2_sigma2(npoints*6);
+
+            xc_gga_fxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv2_rho2.data(), fv2_rhosigma.data(), fv2_sigma2.data());
+
+            for (size_t i=0; i < npoints; i++){
+                // v2rho2(3)       = (u_u, u_d, d_d)
+                v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
+                v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
+                v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i  + 2];
+
+                // v2sigma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd, dd_dd)
+                v_gamma_aa_gamma_aa[i] += alpha_ * fv2_sigma2[6 * i];
+                v_gamma_aa_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 1];
+                v_gamma_aa_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 2];
+                v_gamma_ab_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 3];
+                v_gamma_ab_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 4];
+                v_gamma_bb_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 5];
+
+                // v2rhosigma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
+                v_rho_a_gamma_aa[i] += alpha_ * fv2_rhosigma[6 * i];
+                v_rho_a_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 1];
+                v_rho_a_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 2];
+                v_rho_b_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 3];
+                v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 4];
+                v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 5];
+            }
+
+
+        } else{
+            // spin polarized
+            std::vector<double> fv(npoints);
+            std::vector<double> frho(npoints*2);
+
+            for (size_t i=0; i < npoints; i++){
+                frho[2 * i] = rho_ap[i];
+                frho[2 * i + 1] = rho_bp[i];
+            }
+
+            std::vector<double> fv2_rho2(npoints*3);
+
+            xc_lda_fxc(&xc_functional_, npoints, rho_ap, fv2_rho2.data());
+
+            for (size_t i=0; i < npoints; i++){
+                // v2rho2(3)       = (u_u, u_d, d_d)
+                v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
+                v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
+                v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i  + 2];
+            }
+        }
+    }
+    if (deriv > 2) {
+        throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 3 ");
     }
 
 

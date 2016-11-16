@@ -1395,9 +1395,6 @@ def build_dldfd10_superfunctional(name, npoints, deriv):
     return (sup, ('dlDF', '-DAS2010'))
 
 
-
-
-
 def build_primitive_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -1557,35 +1554,35 @@ for key in superfunctionals.keys():
     superfunctional_list.append(sup)
 
 # # Figure out what Grimme functionals we have
-# p4_funcs = set(superfunctionals.keys())
-# p4_funcs -= set(['b97-d'])
-# for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
-#     func_list = (set(superfunctional_listues.keys()) & p4_funcs)
-#     for func in func_list:
-#         sup = superfunctionals[func](func, 1, 1)[0]
-#         sup.set_name(sup.name() + '-' + dashlvl.upper())
-#         superfunctional_list.append(sup)
+p4_funcs = set(superfunctionals.keys())
+p4_funcs -= set(['b97-d'])
+for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
+    func_list = (set(superfunctional_listues.keys()) & p4_funcs)
+    for func in func_list:
+        sup = superfunctionals[func](func, 1, 1)[0]
+        sup.set_name(sup.name() + '-' + dashlvl.upper())
+        superfunctional_list.append(sup)
 
-#         if dashlvl == 'd2p4':
-#             # -D2 overide
-#             sup = superfunctionals[func](func, 1, 1)[0]
-#             sup.set_name(sup.name() + '-D2')
-#             superfunctional_list.append(sup)
+        if dashlvl == 'd2p4':
+            # -D2 overide
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D2')
+            superfunctional_list.append(sup)
 
-#             # -D overide
-#             sup = superfunctionals[func](func, 1, 1)[0]
-#             sup.set_name(sup.name() + '-D')
-#             superfunctional_list.append(sup)
+            # -D overide
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D')
+            superfunctional_list.append(sup)
 
-#         if dashlvl == 'd3zero':
-#             sup = superfunctionals[func](func, 1, 1)[0]
-#             sup.set_name(sup.name() + '-D3')
-#             superfunctional_list.append(sup)
+        if dashlvl == 'd3zero':
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D3')
+            superfunctional_list.append(sup)
 
-#         if dashlvl == 'd3mzero':
-#             sup = superfunctionals[func](func, 1, 1)[0]
-#             sup.set_name(sup.name() + '-D3M')
-#             superfunctional_list.append(sup)
+        if dashlvl == 'd3mzero':
+            sup = superfunctionals[func](func, 1, 1)[0]
+            sup.set_name(sup.name() + '-D3M')
+            superfunctional_list.append(sup)
 
 # # B97D is an odd one
 # for dashlvl in dftd3.full_dash_keys:
@@ -1595,11 +1592,11 @@ for key in superfunctionals.keys():
 #     sup.set_name('B97-' + dashlvl.upper())
 #     superfunctional_list.append(sup)
 
-# # wPBE, grr need a new scheme
-# for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
-#     sup = superfunctionals['wpbe']('wpbe', 1, 1)[0]
-#     sup.set_name(sup.name() + '-' + dashlvl.upper())
-#     superfunctional_list.append(sup)
+# wPBE, grr need a new scheme
+for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
+    sup = superfunctionals['wpbe']('wpbe', 1, 1)[0]
+    sup.set_name(sup.name() + '-' + dashlvl.upper())
+    superfunctional_list.append(sup)
 
 
 
