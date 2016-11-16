@@ -136,6 +136,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
     jk_->set_do_K(true);
     jk_->initialize();
     jk_->set_memory(Process::environment.get_memory() * 0.8);
+    jk_->print_header();
 
     /// Build DF object
     dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
@@ -376,6 +377,7 @@ void CIWavefunction::setup_mcscf_ints() {
     jk_->set_do_K(true);
     jk_->set_memory(Process::environment.get_memory() * 0.8);
     jk_->initialize();
+    jk_->print_header();
 
     ints_init_ = true;
 }
@@ -383,7 +385,7 @@ void CIWavefunction::setup_mcscf_ints_ao()
 {
     outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
 
-    timer_on("CIWAVE: Setup MCSCF INTS AO");
+    timer_on("CIWave: Setup MCSCF INTS AO");
     if(options_.get_str("SCF_TYPE") == "GTFOCK")
     {
  #ifdef HAVE_JK_FACTORY
@@ -408,13 +410,14 @@ void CIWavefunction::setup_mcscf_ints_ao()
     jk_->set_do_K(true);
     jk_->initialize();
     jk_->set_memory(Process::environment.get_memory() * 0.8);
+    jk_->print_header();
     ints_init_ = true;
-    timer_off("CIWAVE: Setup MCSCF INTS AO");
+    timer_off("CIWave: Setup MCSCF INTS AO");
 }
 void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
 {
-    //if(approx_only)
-    //    throw PSIEXCEPTION("Have not implemented rotated integrals for mcscf_ao");
+    if(!approx_only)
+        throw PSIEXCEPTION("Have not implemented rotated integrals for mcscf_ao");
 
     ///Perform a integral transformation using jk object
     ///KPH got this idea from Hohenstein's AO-CASSCF paper.
@@ -453,7 +456,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
 
     // Transform from the SO to the AO basis for the C matrix.
     // just transfroms the C_{mu_ao i} -> C_{mu_so i}
-
+    /// If C1, do not do.  C_{mu_ao i} = C_{mu_so i} if C1
     if(nirrep_ > 1)
     {
         timer_on("CIWave: Transform C matrix from SO to AO");
@@ -474,8 +477,6 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
                 int index = nmo_offset[h] + i;
 
                 C_DGEMV('N',nao,nso,1.0,AO2SO_->pointer(h)[0],nso,&Ca_sym->pointer(h)[0][i],nmopi_[h],0.0,&Call->pointer()[0][index],nmo_);
-                //index = index + 1;
-
 
             }
         }
@@ -561,7 +562,6 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     jk_->set_do_K(true);
     jk_->set_allow_desymmetrization(true);
     SharedMatrix actMO(new Matrix("ALL Active", nact * nact, nact * nact));
-    Timer Fill_zuxy;
     timer_on("CIWave: Filling the (zu|xy) integrals");
     for(int u = 0; u < nact; u++){
         int u_offset = CalcInfo_->dropped_docc.sum();
