@@ -42,6 +42,8 @@ if(${ENABLE_CheMPS2})
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+        set(CheMPS2_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/CheMPS2 CACHE PATH "path to internally built CheMPS2Config.cmake" FORCE)
     endif()
 else()
     add_library(chemps2_external INTERFACE)  # dummy

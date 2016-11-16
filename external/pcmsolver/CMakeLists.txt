@@ -58,6 +58,8 @@ if(${ENABLE_PCMSolver})
 #       ${CMAKE_SOURCE_DIR}/share/python/pcm_placeholder.py
 #    )
 #    add_dependencies(pcmsolver_external boost_external)
+
+        set(PCMSolver_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/PCMSolver CACHE PATH "path to internally built PCMSolverConfig.cmake" FORCE)
     endif()
 else()
     add_library(pcmsolver_external INTERFACE)  # dummy

@@ -112,13 +112,13 @@ include(autocmake_safeguards)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
+set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 add_subdirectory(external)
 
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(autocmake_static_library)
-set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ################################  Dependencies  ################################
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
@@ -175,6 +175,7 @@ ExternalProject_Add(psi4_core
               -Dlibefp_DIR=${libefp_DIR}
               -Derd_DIR=${erd_DIR}
               -Dgdma_DIR=${gdma_DIR}
+              -DGTFock_DIR=${GTFock_DIR}
               -Dlibint_DIR=${libint_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}

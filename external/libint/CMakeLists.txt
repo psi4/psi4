@@ -28,5 +28,7 @@ else()
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+    set(libint_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/libint CACHE PATH "path to internally built libintConfig.cmake" FORCE)
 endif()
 
