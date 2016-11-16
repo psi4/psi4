@@ -404,12 +404,12 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
         Process::environment.globals["CC ROOT 0 DIPOLE X"] = Process::environment.globals["CC DIPOLE X"];
         Process::environment.globals["CC ROOT 0 DIPOLE Y"] = Process::environment.globals["CC DIPOLE Y"];
         Process::environment.globals["CC ROOT 0 DIPOLE Z"] = Process::environment.globals["CC DIPOLE Z"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE XX"] = Process::environment.globals["CC DIPOLE XX"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE XY"] = Process::environment.globals["CC DIPOLE XY"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE XZ"] = Process::environment.globals["CC DIPOLE XZ"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE YY"] = Process::environment.globals["CC DIPOLE YY"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE YZ"] = Process::environment.globals["CC DIPOLE YZ"];
-        Process::environment.globals["CC ROOT 0 QUADRUPOLE ZZ"] = Process::environment.globals["CC DIPOLE ZZ"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE XX"] = Process::environment.globals["CC QUADRUPOLE XX"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE XY"] = Process::environment.globals["CC QUADRUPOLE XY"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE XZ"] = Process::environment.globals["CC QUADRUPOLE XZ"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE YY"] = Process::environment.globals["CC QUADRUPOLE YY"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE YZ"] = Process::environment.globals["CC QUADRUPOLE YZ"];
+        Process::environment.globals["CC ROOT 0 QUADRUPOLE ZZ"] = Process::environment.globals["CC QUADRUPOLE ZZ"];
       }
 
       //Get the NOs/occupation numbers
@@ -433,9 +433,16 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       // this should set psivars correctly for root Properties
       oe->set_title(cc_prop_label+" ROOT "+std::to_string(i));
       oe->compute();
+      /*- Process::environment.globals["CC ROOT n DIPOLE X"] -*/
+      /*- Process::environment.globals["CC ROOT n DIPOLE Y"] -*/
+      /*- Process::environment.globals["CC ROOT n DIPOLE Z"] -*/
+      /*- Process::environment.globals["CC ROOT n QUADRUPOLE XX"] -*/
+      /*- Process::environment.globals["CC ROOT n QUADRUPOLE XY"] -*/
+      /*- Process::environment.globals["CC ROOT n QUADRUPOLE XZ"] -*/
+      /*- Process::environment.globals["CC ROOT n QUADRUPOLE YY"] -*/
+      /*- Process::environment.globals["CC ROOT n QUADRUPOLE YZ"] -*/
+      /*- Process::environment.globals["CC ROOT n QUADRUPOLE ZZ"] -*/
     }
-
-
 
     free_block(moinfo.opdm);
 
