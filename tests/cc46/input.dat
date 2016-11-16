@@ -78,7 +78,7 @@ for tag,refval in root_refs.items():
 
 
 # Checking that the wfn.Da/Db have been set by ccdensity
-oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST ")
+oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST CC")
 for tag,refval in gs_refs.items():
     oeprop_val = psi4.get_variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
     compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST

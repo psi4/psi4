@@ -27,7 +27,7 @@ find_package(DL)
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 CONFIG REQUIRED)
+    find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
 endif ()
 if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED)
