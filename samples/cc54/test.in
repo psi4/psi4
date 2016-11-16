@@ -100,5 +100,15 @@ D 2 1.00
 ****
 }
 
-property('ccsd',properties=['dipole'])
+ccsd_e, wfn = property('ccsd',properties=['dipole'],return_wfn=True)
+oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="(OEPROP)CC")
+compare_values(psi4.get_variable("(OEPROP)CC DIPOLE X"), 0.000000000000,6,"CC DIPOLE X")             #TEST
+compare_values(psi4.get_variable("(OEPROP)CC DIPOLE Y"), 0.000000000000,6,"CC DIPOLE Y")             #TEST
+compare_values(psi4.get_variable("(OEPROP)CC DIPOLE Z"),-1.840334899884,6,"CC DIPOLE Z")             #TEST
+compare_values(psi4.get_variable("(OEPROP)CC QUADRUPOLE XX"),-7.864006962064,6,"CC QUADRUPOLE XX")   #TEST
+compare_values(psi4.get_variable("(OEPROP)CC QUADRUPOLE XY"), 0.000000000000,6,"CC QUADRUPOLE XY")   #TEST
+compare_values(psi4.get_variable("(OEPROP)CC QUADRUPOLE XZ"), 0.000000000000,6,"CC QUADRUPOLE XZ")   #TEST
+compare_values(psi4.get_variable("(OEPROP)CC QUADRUPOLE YY"),-4.537386915305,6,"CC QUADRUPOLE YY")   #TEST
+compare_values(psi4.get_variable("(OEPROP)CC QUADRUPOLE YZ"), 0.000000000000,6,"CC QUADRUPOLE YZ")   #TEST
+compare_values(psi4.get_variable("(OEPROP)CC QUADRUPOLE ZZ"),-6.325836255265,6,"CC QUADRUPOLE ZZ")   #TEST
 print_variables()
