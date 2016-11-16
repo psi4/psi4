@@ -441,6 +441,11 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     int nmo = this->nmo();
     int nso = this->nso();
     //TODO:  Figure out why frozen core does not work
+    if(CalcInfo_->frozen_docc.sum() > 0)
+    {
+        outfile->Printf("\n AO-CASSCF does not work with frozen core.  ");
+        throw PSIEXCEPTION("Do not have a working AO-CASSCF code with frozen core");
+    }
     int nmo_no_froze = nmo_ - CalcInfo_->frozen_docc.sum() - CalcInfo_->frozen_uocc.sum();
     SharedMatrix Call(new Matrix(nso_, nmo_));
     SharedMatrix Call_no_froze(new Matrix(nso_, nmo_no_froze));
