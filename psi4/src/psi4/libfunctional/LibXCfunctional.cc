@@ -54,12 +54,13 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized)
         polar_value = 2;
     }
     if(xc_func_init(&xc_functional_, func_id_, polar_value) != 0){
-        outfile->Printf("Functional '%d' not found\n", func_id_);
+        outfile->Printf("Functional '%d' not found\n", xc_name.c_str());
         throw PSIEXCEPTION("Could not find required LIBXC functional");
     }
 
     // Extract citation information
-    name_ = std::string(xc_functional_.info->name);
+    name_ = xc_name;
+    description_ = std::string(xc_functional_.info->name);
     for (size_t i=0; i < 5; i++){
         if (xc_functional_.info->refs[i]){
             if (i != 0){

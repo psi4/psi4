@@ -48,7 +48,7 @@ from psi4.driver.molutil import *
 from .roa import *
 from . import proc_util
 from . import empirical_dispersion
-from . import dft_functional
+from . import dft_funcs
 from . import mcscf
 
 # never import driver, wrappers, or aliases into this file
@@ -993,12 +993,12 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
 
     # Figure out functional
     if functional is None:
-        superfunc, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
+        superfunc, disp_type = dft_funcs.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
     elif isinstance(functional, core.SuperFunctional):
         superfunc = functional
         disp_type = False
     elif isinstance(functional, (str, unicode)):
-        superfunc, disp_type = dft_functional.build_superfunctional(functional)
+        superfunc, disp_type = dft_funcsbuild_superfunctional(functional)
     else:
         raise ValidationError("Functional %s is not understood" % str(functional))
 
@@ -2857,7 +2857,7 @@ def run_dft(name, **kwargs):
     scf_wfn = run_scf(name, **kwargs)
     returnvalue = core.get_variable('CURRENT ENERGY')
 
-    for ssuper in dft_functional.superfunctional_list:
+    for ssuper in dft_funcs.superfunctional_list:
         if ssuper.name().lower() == name:
             dfun = ssuper
 
