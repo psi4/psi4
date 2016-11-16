@@ -36,6 +36,7 @@ from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 from psi4.driver.p4util.exceptions import *
 from . import libxc_xc_funcs
+from . import gga_superfuncs
 
 ## ==> Functionals <== ##
 
@@ -1050,69 +1051,69 @@ def build_svwn_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
-def build_blyp_superfunctional(name, npoints, deriv):
+# def build_blyp_superfunctional(name, npoints, deriv):
 
-    # Call this first
-    sup = core.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
+#     # Call this first
+#     sup = core.SuperFunctional.blank()
+#     sup.set_max_points(npoints)
+#     sup.set_deriv(deriv)
 
-    # => User-Customization <= #
+#     # => User-Customization <= #
 
-    # No spaces, keep it short and according to convention
-    sup.set_name('BLYP')
-    # Tab in, trailing newlines
-    sup.set_description('    BLYP GGA Exchange-Correlation Functional\n')
-    # Tab in, trailing newlines
-    sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
+#     # No spaces, keep it short and according to convention
+#     sup.set_name('BLYP')
+#     # Tab in, trailing newlines
+#     sup.set_description('    BLYP GGA Exchange-Correlation Functional\n')
+#     # Tab in, trailing newlines
+#     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
 
-    # Add member functionals
-    sup.add_x_functional(build_functional('B88_X'))
-    sup.add_c_functional(build_functional('LYP_C'))
+#     # Add member functionals
+#     sup.add_x_functional(build_functional('B88_X'))
+#     sup.add_c_functional(build_functional('LYP_C'))
 
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.0)
-    sup.set_c_alpha(0.0)
+#     # Set GKS up after adding functionals
+#     sup.set_x_omega(0.0)
+#     sup.set_c_omega(0.0)
+#     sup.set_x_alpha(0.0)
+#     sup.set_c_alpha(0.0)
 
-    # => End User-Customization <= #
+#     # => End User-Customization <= #
 
-    # Call this last
-    sup.allocate()
-    return (sup, False)
+#     # Call this last
+#     sup.allocate()
+#     return (sup, False)
 
-def build_b86bpbe_superfunctional(name, npoints, deriv):
+# def build_b86bpbe_superfunctional(name, npoints, deriv):
 
-    # Call this first
-    sup = core.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
+#     # Call this first
+#     sup = core.SuperFunctional.blank()
+#     sup.set_max_points(npoints)
+#     sup.set_deriv(deriv)
 
-    # => User-Customization <= #
+#     # => User-Customization <= #
 
-    # No spaces, keep it short and according to convention
-    sup.set_name('B86BPBE')
-    # Tab in, trailing newlines
-    sup.set_description('    B86BPBE GGA Exchange-Correlation Functional\n')
-    # Tab in, trailing newlines
-    sup.set_citation('    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n')
+#     # No spaces, keep it short and according to convention
+#     sup.set_name('B86BPBE')
+#     # Tab in, trailing newlines
+#     sup.set_description('    B86BPBE GGA Exchange-Correlation Functional\n')
+#     # Tab in, trailing newlines
+#     sup.set_citation('    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n')
 
-    # Add member functionals
-    sup.add_x_functional(build_functional('B86B_X'))
-    sup.add_c_functional(build_functional('PBE_C'))
+#     # Add member functionals
+#     sup.add_x_functional(build_functional('B86B_X'))
+#     sup.add_c_functional(build_functional('PBE_C'))
 
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.0)
-    sup.set_c_alpha(0.0)
+#     # Set GKS up after adding functionals
+#     sup.set_x_omega(0.0)
+#     sup.set_c_omega(0.0)
+#     sup.set_x_alpha(0.0)
+#     sup.set_c_alpha(0.0)
 
-    # => End User-Customization <= #
+#     # => End User-Customization <= #
 
-    # Call this last
-    sup.allocate()
-    return (sup, False)
+#     # Call this last
+#     sup.allocate()
+#     return (sup, False)
 
 def build_pw86pbe_superfunctional(name, npoints, deriv):
 
@@ -2952,8 +2953,8 @@ superfunctionals = {
         'pw91'            : build_pw91_superfunctional,
         'pbe'             : build_pbe_superfunctional,
         'ft97'            : build_ft97_superfunctional,
-        # 'b3lyp'           : build_b3lyp_superfunctional,
-        # 'b3lyp5'          : build_b3lyp5_superfunctional,
+        'b3lyp'           : build_b3lyp_superfunctional,
+        'b3lyp5'          : build_b3lyp5_superfunctional,
         'hf_x'            : build_hf_x_superfunctional,
         'pbe0'            : build_pbe0_superfunctional,
         'b97-0'           : build_b970_superfunctional,
@@ -2993,7 +2994,9 @@ superfunctionals = {
         'wpbe2'           : build_wpbe2_superfunctional,
     }
 
+superfunctionals = {}
 superfunctionals.update(libxc_xc_funcs.libxc_xc_functional_list)
+superfunctionals.update(gga_superfuncs.gga_superfunc_list)
 ## Build up the lost of functionals we can compute
 # Add in plain values
 superfunctional_list = []
@@ -3001,50 +3004,50 @@ for key in superfunctionals.keys():
     sup = superfunctionals[key](key, 1, 1)[0]
     superfunctional_list.append(sup)
 
-# Figure out what Grimme functionals we have
-p4_funcs = set(superfunctionals.keys())
-p4_funcs -= set(['b97-d'])
-for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
-    func_list = (set(superfunctional_listues.keys()) & p4_funcs)
-    for func in func_list:
-        sup = superfunctionals[func](func, 1, 1)[0]
-        sup.set_name(sup.name() + '-' + dashlvl.upper())
-        superfunctional_list.append(sup)
+# # Figure out what Grimme functionals we have
+# p4_funcs = set(superfunctionals.keys())
+# p4_funcs -= set(['b97-d'])
+# for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
+#     func_list = (set(superfunctional_listues.keys()) & p4_funcs)
+#     for func in func_list:
+#         sup = superfunctionals[func](func, 1, 1)[0]
+#         sup.set_name(sup.name() + '-' + dashlvl.upper())
+#         superfunctional_list.append(sup)
 
-        if dashlvl == 'd2p4':
-            # -D2 overide
-            sup = superfunctionals[func](func, 1, 1)[0]
-            sup.set_name(sup.name() + '-D2')
-            superfunctional_list.append(sup)
+#         if dashlvl == 'd2p4':
+#             # -D2 overide
+#             sup = superfunctionals[func](func, 1, 1)[0]
+#             sup.set_name(sup.name() + '-D2')
+#             superfunctional_list.append(sup)
 
-            # -D overide
-            sup = superfunctionals[func](func, 1, 1)[0]
-            sup.set_name(sup.name() + '-D')
-            superfunctional_list.append(sup)
+#             # -D overide
+#             sup = superfunctionals[func](func, 1, 1)[0]
+#             sup.set_name(sup.name() + '-D')
+#             superfunctional_list.append(sup)
 
-        if dashlvl == 'd3zero':
-            sup = superfunctionals[func](func, 1, 1)[0]
-            sup.set_name(sup.name() + '-D3')
-            superfunctional_list.append(sup)
+#         if dashlvl == 'd3zero':
+#             sup = superfunctionals[func](func, 1, 1)[0]
+#             sup.set_name(sup.name() + '-D3')
+#             superfunctional_list.append(sup)
 
-        if dashlvl == 'd3mzero':
-            sup = superfunctionals[func](func, 1, 1)[0]
-            sup.set_name(sup.name() + '-D3M')
-            superfunctional_list.append(sup)
+#         if dashlvl == 'd3mzero':
+#             sup = superfunctionals[func](func, 1, 1)[0]
+#             sup.set_name(sup.name() + '-D3M')
+#             superfunctional_list.append(sup)
 
-# B97D is an odd one
-for dashlvl in dftd3.full_dash_keys:
-    if dashlvl == 'd2p4': continue
+# # B97D is an odd one
+# for dashlvl in dftd3.full_dash_keys:
+#     if dashlvl == 'd2p4': continue
 
-    sup = superfunctionals['b97-d']('b97-d', 1, 1)[0]
-    sup.set_name('B97-' + dashlvl.upper())
-    superfunctional_list.append(sup)
+#     sup = superfunctionals['b97-d']('b97-d', 1, 1)[0]
+#     sup.set_name('B97-' + dashlvl.upper())
+#     superfunctional_list.append(sup)
 
-# wPBE, grr need a new scheme
-for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
-    sup = superfunctionals['wpbe']('wpbe', 1, 1)[0]
-    sup.set_name(sup.name() + '-' + dashlvl.upper())
-    superfunctional_list.append(sup)
+# # wPBE, grr need a new scheme
+# for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
+#     sup = superfunctionals['wpbe']('wpbe', 1, 1)[0]
+#     sup.set_name(sup.name() + '-' + dashlvl.upper())
+#     superfunctional_list.append(sup)
 
 
 

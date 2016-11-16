@@ -60,7 +60,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized)
 
     // Extract citation information
     name_ = xc_name;
-    description_ = std::string(xc_functional_.info->name);
+    description_ = "    " + std::string(xc_functional_.info->name);
     for (size_t i=0; i < 5; i++){
         if (xc_functional_.info->refs[i]){
             if (i != 0){
