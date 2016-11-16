@@ -149,10 +149,23 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     return (sup, ('wB97', '-CHG'))
 
 
-hyb_gga_superfunc_list = {
+def build_hfd_superfunctional(name, npoints, deriv):
+
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+    sup.set_name('HF+D')
+    sup.set_x_alpha(1.0)
+
+    sup.allocate()
+    return (sup, ('HF', '-DAS2010'))
+
+
+hyb_superfunc_list = {
           "pbe0"    : build_pbe0_superfunctional,
           "wpbe"    : build_wpbe_superfunctional,
           "wpbe0"   : build_wpbe0_superfunctional,
           "wb97x-d" : build_wb97xd_superfunctional,
+          "hf-d" : build_hfd_superfunctional,
 
 }

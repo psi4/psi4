@@ -47,11 +47,13 @@ void export_functional(py::module &m)
         def_static("blank", &SuperFunctional::blank, "docstring").
         def_static("XC_build", &SuperFunctional::XC_build, "docstring").
         def("allocate", &SuperFunctional::allocate, "docstring").
+        def("compute_functional", &SuperFunctional::compute_functional, "docstring").
         def("x_functional", &SuperFunctional::x_functional, "docstring").
         def("c_functional", &SuperFunctional::c_functional, "docstring").
         def("add_x_functional", &SuperFunctional::add_x_functional, "docstring").
         def("add_c_functional", &SuperFunctional::add_c_functional, "docstring").
         def("test_functional", &SuperFunctional::test_functional, "docstring").
+        def("values", &SuperFunctional::values, "docstring").
         def("value", &SuperFunctional::value, "docstring").
         def("name", &SuperFunctional::name, "docstring").
         def("description", &SuperFunctional::description, "docstring").

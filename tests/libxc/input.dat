@@ -133,7 +133,7 @@ psi4.core.set_global_option("BASIS", "6-31G")
 psi4.core.set_output_file("output.dat", False)
 
 keys = list(set(list(psi_data)) | set(list(qchem_data))) 
-#keys = [x for x in keys if "B97" in x]
+keys = [x for x in keys if "PBE0-2" in x]
 keys.sort()
 
 print("           Functional:           libxc :      rob    qchem")

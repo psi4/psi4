@@ -243,7 +243,7 @@ def build_ft97_superfunctional(name, npoints, deriv):
 gga_superfunc_list = {
           "b86bpbe" : build_b86bpbe_superfunctional,
           "blyp"    : build_blyp_superfunctional,
-          "svwm"    : build_svwn_superfunctional,
+          "svwn"    : build_svwn_superfunctional,
           "pw86pbe" : build_pw86pbe_superfunctional,
           "pbe"     : build_pbe_superfunctional,
           "bp86"    : build_bp86_superfunctional,
