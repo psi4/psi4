@@ -157,7 +157,17 @@ xc_func_list = [x for x in xc_func_list if "MGGA" not in x]
 # Deal with xc mix upper/lower case
 upper_to_xc_dict = {x.upper() : x for x in xc_func_list}
 # Translate to something a user would want to input
-psi_to_xc_translate = {x.split('_XC_')[-1].replace('_', '-').upper() : x for x in xc_func_list}
+psi_to_xc_translate = {}
+for x in xc_func_list:
+    key = x.split('_XC_')[-1].replace('_', '-').upper()
+    key = key.replace("HCTH-", "HCTH")
+
+    psi_to_xc_translate[key] = x
+
+# Add extra translations
+psi_to_xc_translate["B97-0"] = "XC_HYB_GGA_XC_B97"
+psi_to_xc_translate["HCTH"] = "XC_GGA_XC_HCTH_93"
+
 
 def find_xc_func_name(name):
     """
@@ -178,18 +188,35 @@ def find_xc_func_name(name):
     raise KeyError("LibXC keyname %s was not found!")
 
 
-# Add extra translations
-psi_to_xc_translate["B97-0"] = "XC_HYB_GGA_XC_B97"
 
 def build_libxc_xc_func(name, npoints, deriv):
 
+
+
     xc_name = find_xc_func_name(name)
     sup = core.SuperFunctional.XC_build(xc_name)
+
+    descr = "    " + name.upper() + " "
+    if sup.is_gga():
+        if sup.x_alpha() > 0:
+            descr += "Hyb-GGA "
+        else:
+            descr += "GGA "
+    descr += "Exchange-Correlation Functional\n"
+
+    sup.set_description(descr)
 
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
     sup.set_name(name.upper())
     sup.allocate()
+
+    disp = False
+    if xc_name == "XC_HYB_GGA_XC_WB97X_D":
+        disp = ('wB97', '-CHG')
+    # elif xc_name == "XC_GGA_XC_B97_D":
+    #     disp =
+
     return (sup, False)
 
 
