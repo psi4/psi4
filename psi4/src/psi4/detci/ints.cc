@@ -500,7 +500,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
             CAct->set_column(0, v, Call_vec);
     }
 
-    timer_on("Forming Active Psuedo Density");
+    timer_on("CIWave: Forming Active Psuedo Density");
     ///Step 1:  D_{mu nu} ^{tu} = C_{mu t} C_{nu u} forall t, u in active
     std::vector<std::pair<SharedMatrix, std::vector<int> > > D_vec;
     for(size_t i = 0; i < nact; i++){
@@ -516,7 +516,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
             D_vec.push_back(std::make_pair(D, ij));
         }
     }
-    timer_off("Forming Active Psuedo Density");
+    timer_off("CIWave: Forming Active Psuedo Density");
 
     std::vector<SharedMatrix>  &Cl = jk_->C_left();
     std::vector<SharedMatrix>  &Cr = jk_->C_right();
