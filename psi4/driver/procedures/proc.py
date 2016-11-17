@@ -4030,12 +4030,15 @@ def run_detcas(name, **kwargs):
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
     # The non-DF case
-    else:
+    elif core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV':
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'PK')
 
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    else:
+        core.print_out("JK object is figuring out the integrals are written to test.")
+
 
     # Second-order SCF requires non-symmetric density matrix support
     if core.get_option('DETCI', 'MCSCF_ALGORITHM') in ['AH', 'OS']:

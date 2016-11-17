@@ -149,7 +149,8 @@ void CIWavefunction::transform_mcscf_integrals(bool approx_only) {
         transform_dfmcscf_ints(approx_only);
     } 
     else if (Parameters_->mcscf_type == "AO")
-        transform_mcscf_ints_ao(approx_only);
+        ///Have not implemented a compute TS algorithm
+        transform_mcscf_ints_ao(true);
     else {
         transform_mcscf_ints(approx_only);
     }
