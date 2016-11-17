@@ -402,6 +402,8 @@ void VBase::print_header() const
     functional_->print("outfile", print_);
     grid_->print("outfile",print_);
 }
+std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
+size_t VBase::nblocks() { return grid_->blocks().size(); }
 
 RV::RV(std::shared_ptr<SuperFunctional> functional,
     std::shared_ptr<BasisSet> primary,
@@ -478,6 +480,7 @@ void RV::compute_V()
         int nlocal = function_map.size();
 
         timer_on("Properties");
+        // RKS functions
         properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");

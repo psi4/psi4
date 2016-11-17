@@ -35,7 +35,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libfock/v.h"
+#include "psi4/libfock/points.h"
+#include "psi4/libfock/cubature.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libqt/qt.h"
 
 using namespace psi;
 
@@ -132,11 +135,14 @@ void export_functional(py::module &m)
 
         def("basis", &VBase::basis, "doctsring").
         def("functional", &VBase::functional, "doctsring").
-        // def("properties", &VBase::properties, "doctsring").
+        def("properties", &VBase::properties, "doctsring").
         // def("grid", &VBase::grid, "doctsring").
+        def("get_block", &VBase::get_block, "doctsring").
+        def("nblocks", &VBase::nblocks, "doctsring").
         def("quadrature_values", &VBase::quadrature_values, "doctsring").
 
         def("C", &VBase::C, "doctsring").
+        def("P", &VBase::P, "doctsring").
         def("V", &VBase::V, "doctsring").
         def("D", &VBase::D, "doctsring").
         def("C_clear", [](VBase &v){
@@ -145,6 +151,48 @@ void export_functional(py::module &m)
         def("C_add", [](VBase &v, SharedMatrix C){
                 v.C().push_back(C);
             });
+
+    py::class_<BasisFunctions, std::shared_ptr<BasisFunctions> >(m, "BasisFunctions", "docstring").
+        def("max_functions", &BasisFunctions::max_functions, "docstring").
+        def("max_points", &BasisFunctions::max_points, "docstring").
+        def("deriv", &BasisFunctions::deriv, "docstring").
+        def("set_deriv", &BasisFunctions::set_deriv, "docstring").
+        def("compute_functions", &BasisFunctions::compute_functions, "docstring").
+        def("basis_values", &BasisFunctions::basis_values, "docstring");
+
+    py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions", "docstring").
+        def("print_out", &PointFunctions::print, py::arg("OutFileRMR")="outfile", py::arg("print") = 2, "docstring").
+        def("compute_points", &PointFunctions::compute_points, "docstring").
+        def("point_values", &PointFunctions::point_values, "docstring").
+        def("orbital_values", &PointFunctions::orbital_values, "docstring");
+
+    py::class_<BlockOPoints, std::shared_ptr<BlockOPoints> >(m, "BlockOPoints", "docstring").
+        def("x", [](BlockOPoints &grid){
+            SharedVector ret = std::shared_ptr<Vector>(new Vector("X Grid points", grid.npoints()));
+            C_DCOPY(grid.npoints(), grid.x(), 1, ret->pointer(), 1);
+            return ret;
+        }).
+        def("y", [](BlockOPoints &grid){
+            SharedVector ret = std::shared_ptr<Vector>(new Vector("Y Grid points", grid.npoints()));
+            C_DCOPY(grid.npoints(), grid.y(), 1, ret->pointer(), 1);
+            return ret;
+        }).
+        def("z", [](BlockOPoints &grid){
+            SharedVector ret = std::shared_ptr<Vector>(new Vector("Z Grid points", grid.npoints()));
+            C_DCOPY(grid.npoints(), grid.z(), 1, ret->pointer(), 1);
+            return ret;
+        }).
+        def("w", [](BlockOPoints &grid){
+            SharedVector ret = std::shared_ptr<Vector>(new Vector("Grid Weights", grid.npoints()));
+            C_DCOPY(grid.npoints(), grid.w(), 1, ret->pointer(), 1);
+            return ret;
+        }).
+        def("refresh", &BlockOPoints::refresh, "docstring").
+        def("npoints", &BlockOPoints::npoints, "docstring").
+        def("print_out", &BlockOPoints::print, py::arg("OutFileRMR")="outfile", py::arg("print") = 2, "docstring").
+        def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring").
+        def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
+
 
     py::class_<Dispersion, std::shared_ptr<Dispersion> >(m, "Dispersion", "docstring").
         // TODO need init

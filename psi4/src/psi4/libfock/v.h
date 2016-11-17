@@ -38,6 +38,7 @@ class Options;
 class DFTGrid;
 class PointFunctions;
 class SuperFunctional;
+class BlockOPoints;
 
 // => BASE CLASS <= //
 
@@ -118,6 +119,8 @@ public:
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
     std::shared_ptr<PointFunctions> properties() const { return properties_; }
     std::shared_ptr<DFTGrid> grid() const { return grid_; }
+    std::shared_ptr<BlockOPoints> get_block(int block);
+    size_t nblocks();
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
     /// Grab this, clear, and push Cocc matrices (with symmetry) to change GS density
