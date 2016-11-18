@@ -89,8 +89,13 @@ void RKSFunctions::allocate()
     }
 
     if (ansatz_ >= 2) {
+        point_values_["RHO_XX"] = std::shared_ptr<Vector>(new Vector("RHO_XX", max_points_));
+        point_values_["RHO_YY"] = std::shared_ptr<Vector>(new Vector("RHO_YY", max_points_));
+        point_values_["RHO_ZZ"] = std::shared_ptr<Vector>(new Vector("RHO_ZZ", max_points_));
         point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
         point_values_["TAU_B"] = point_values_["TAU_A"];
+        point_values_["LAPL_RHO_A"] = std::shared_ptr<Vector>(new Vector("LAPL_RHO_A", max_points_));
+        point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
     }
 }
 void RKSFunctions::set_pointers(SharedMatrix D_AO)
@@ -140,12 +145,14 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
     double** phip = basis_values_["PHI"]->pointer();
     double* rhoap = point_values_["RHO_A"]->pointer();
 
+    // Rho_a = D_xy phi_xa phi_ya
     C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phip[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
     for (int P = 0; P < npoints; P++) {
         rhoap[P] = C_DDOT(nlocal,phip[P],1,Tp[P],1);
     }
 
     // => Build GGA quantities <= //
+    // Rho^l_a = D_xy phi_xa phi^l_ya
     if (ansatz_ >= 1) {
 
         double** phixp = basis_values_["PHI_X"]->pointer();
@@ -188,6 +195,51 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
                 taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
             }
         }
+
+        // Kinetic terms
+        // double** phixxp = basis_values_["PHI_XX"]->pointer();
+        // double** phixyp = basis_values_["PHI_XY"]->pointer();
+        // double** phixzp = basis_values_["PHI_XZ"]->pointer();
+        // double** phiyyp = basis_values_["PHI_YY"]->pointer();
+        // double** phiyzp = basis_values_["PHI_YZ"]->pointer();
+        // double** phizzp = basis_values_["PHI_ZZ"]->pointer();
+
+        // double* rhoxxp = point_values_["RHO_XX"]->pointer();
+        // double* rhoyyp = point_values_["RHO_YY"]->pointer();
+        // double* rhozzp = point_values_["RHO_ZZ"]->pointer();
+
+        // double* laplp = point_values_["LAPL_RHO_A"]->pointer();
+
+        // // Diagonal terms phi^xx_a D_ab phi_b
+        // for (int P = 0; P < npoints; P++) {
+        //      rhoxxp[P] = 2.0 * C_DDOT(nlocal,phixxp[P],1,Tp[P],1);
+        //      rhoyyp[P] = 2.0 * C_DDOT(nlocal,phiyyp[P],1,Tp[P],1);
+        //      rhozzp[P] = 2.0 * C_DDOT(nlocal,phizzp[P],1,Tp[P],1);
+        // }
+
+
+        // // Cross terms phi^x_a D_ab phi^x_b
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phixp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // for (int P = 0; P < npoints; P++) {
+        //      rhoxxp[P] += 2.0 * C_DDOT(nlocal,phixp[P],1,Tp[P],1);
+        // }
+
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phiyp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // for (int P = 0; P < npoints; P++) {
+        //      rhoyyp[P] += 2.0 * C_DDOT(nlocal,phiyp[P],1,Tp[P],1);
+        // }
+
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phizp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // for (int P = 0; P < npoints; P++) {
+        //      rhozzp[P] += 2.0 * C_DDOT(nlocal,phizp[P],1,Tp[P],1);
+        // }
+
+        // // Put it together
+        // for (int P = 0; P < npoints; P++) {
+        //     laplp[P]  = rhoxxp[P];
+        //     laplp[P] += rhoyyp[P];
+        //     laplp[P] += rhozzp[P];
+        // }
     }
 }
 

@@ -467,6 +467,7 @@ void RV::compute_V()
     std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double * QTp = QT->pointer();
     const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+    properties_->set_deriv(2);
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 
@@ -529,9 +530,6 @@ void RV::compute_V()
             double * v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
             double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
-            // if (rho_a[0] > 1.e-13){
-                // outfile->Printf("%3d : % 9.7f | % 9.7f % 9.7f | % 9.7f % 9.7f\n", Q, rho_a[0], zk[0], v_rho_a[0], v_sigma_aa[0], v_sigma_ab[0]);
-            // }
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
@@ -558,20 +556,56 @@ void RV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double * v_tau_a = vals["V_TAU_A"]->pointer();
 
-            double** phi[3];
-            phi[0] = phix;
-            phi[1] = phiy;
-            phi[2] = phiz;
+            // double** phixx = properties_->basis_value("PHI_XX")->pointer();
+            // double** phiyy = properties_->basis_value("PHI_YY")->pointer();
+            // double** phizz = properties_->basis_value("PHI_ZZ")->pointer();
+
+            // double * rho_xx = properties_->point_value("RHO_XX")->pointer();
+            // double * rho_yy = properties_->point_value("RHO_YY")->pointer();
+            // double * rho_zz = properties_->point_value("RHO_ZZ")->pointer();
+
+            double * v_tau_a = vals["V_TAU_A"]->pointer();
+            // double * v_lapl_a = vals["V_LAPL_A"]->pointer();
+
+            double** phi_w[3];
+            phi_w[0] = phix;
+            phi_w[1] = phiy;
+            phi_w[2] = phiz;
+
+            // double** phi_ww[3];
+            // phi_ww[0] = phixx;
+            // phi_ww[1] = phiyy;
+            // phi_ww[2] = phizz;
+
+            // double* rho_ww[3];
+            // rho_ww[0] = rho_xx;
+            // rho_ww[1] = rho_yy;
+            // rho_ww[2] = rho_zz;
 
             for (int i = 0; i < 3; i++) {
-                double** phiw = phi[i];
+                double** phiw = phi_w[i];
                 for (int P = 0; P < npoints; P++) {
                     ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
                     C_DAXPY(nlocal,v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
                 }
                 C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+
+                // Laplace term, kinetic functionals
+                // double* rhoww = rho_ww[i];
+                // for (int P = 0; P < npoints; P++) {
+                //     ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
+                //     C_DAXPY(nlocal,rhoww[P] * v_lapl_a[P] * w[P], phiw[P], 1, Tp[P], 1);
+                // }
+                // C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,2.0,V2p[0],max_functions);
+
+                // double** phiww = phi_ww[i];
+                // for (int P = 0; P < npoints; P++) {
+                //     ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
+                //     C_DAXPY(nlocal,rhoww[P] * v_lapl_a[P] * w[P], phiww[P], 1, Tp[P], 1);
+                // }
+                // C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tp[0],max_functions,2.0,V2p[0],max_functions);
+
             }
             timer_off("Meta");
         }

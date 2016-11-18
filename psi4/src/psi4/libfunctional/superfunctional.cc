@@ -114,10 +114,12 @@ void SuperFunctional::print(std::string out, int level) const
     printer->Printf( "    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
     printer->Printf( "    X_Alpha      = %14.6E\n", x_alpha_);
     printer->Printf( "    X_Omega      = %14.6E\n", x_omega_);
-    printer->Printf( "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
-    printer->Printf( "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
-    printer->Printf( "    C_Alpha      = %14.6E\n", c_alpha_);
-    printer->Printf( "    C_Omega      = %14.6E\n", c_omega_);
+    if (is_c_lrc() || is_c_hybrid()){
+        printer->Printf( "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
+        printer->Printf( "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
+        printer->Printf( "    C_Alpha      = %14.6E\n", c_alpha_);
+        printer->Printf( "    C_Omega      = %14.6E\n", c_omega_);
+    }
     //printer->Printf( "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
     //printer->Printf( "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
     //printer->Printf( "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
@@ -392,6 +394,8 @@ void SuperFunctional::allocate()
         if (deriv_ >= 1) {
             list.push_back("V_TAU_A");
             list.push_back("V_TAU_B");
+            // list.push_back("V_LAPL_A");
+            // list.push_back("V_LAPL_B");
         }
         if (deriv_ >= 2) {
             list.push_back("V_TAU_A_TAU_A");

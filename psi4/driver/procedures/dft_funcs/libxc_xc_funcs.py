@@ -151,7 +151,7 @@ xc_func_list = [
 xc_func_list = [x for x in xc_func_list if "_D" not in x]
 
 # filter out META
-xc_func_list = [x for x in xc_func_list if "MGGA" not in x]
+# xc_func_list = [x for x in xc_func_list if "MGGA" not in x]
 # xc_func_list = [x for x in xc_func_list if "B97" not in x]
 
 # Deal with xc mix upper/lower case
