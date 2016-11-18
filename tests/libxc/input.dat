@@ -132,11 +132,15 @@ H 1 1.0 2 104.5
 psi4.core.set_global_option("BASIS", "6-31G")
 psi4.core.set_output_file("output.dat", False)
 
+#psi4.set_options({"dft_radial_scheme": "treutler",   # Rarely needed
+#                  "dft_nuclear_scheme": "treutler"})  # Rarely needed
+
 keys = list(set(list(psi_data)) | set(list(qchem_data))) 
-keys = [x for x in keys if "PBE0-2" in x]
+#keys = [x for x in keys if "VV10" in x]
+#keys = ["M05"]
 keys.sort()
 
-print("           Functional:           libxc :      rob    qchem")
+print("           Functional:            libxc :      rob    qchem")
 
 
 for key in keys:
@@ -151,6 +155,7 @@ for key in keys:
 
     qchem_energy = float('NaN')
     psi_energy = float('NaN')
+
     if key in list(qchem_data):
         qchem_energy = qchem_data[key]
     if key in list(psi_data):
@@ -164,6 +169,6 @@ for key in keys:
         spot = "*"
 
     qchem_energy = float('NaN')
-    print("Comparison %10s: %15.8f : %8.2e %8.2e %s" % (key, energy, psi_diff, qchem_diff, spot))
+    print("Comparison %10s: %16.10f : %8.2e %8.2e %s" % (key, energy, psi_diff, qchem_diff, spot))
 
 

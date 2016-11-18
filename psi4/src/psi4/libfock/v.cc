@@ -587,7 +587,7 @@ void RV::compute_V()
                 double** phiw = phi_w[i];
                 for (int P = 0; P < npoints; P++) {
                     ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                    C_DAXPY(nlocal,v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
+                    C_DAXPY(nlocal, v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
                 }
                 C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
 

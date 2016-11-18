@@ -139,7 +139,7 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
         std::string name = std::string(xc_functional_.info->name);
         int kind = xc_functional_.info->kind;
         double coef = 1.0;
-        ret.push_back({name, kind, coef});
+        ret.push_back(std::make_tuple(name, kind, coef));
 
     } else {
         for (size_t i = 0; i < xc_functional_.n_func_aux; i++) {
@@ -148,7 +148,7 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
             int kind = xc_functional_.func_aux[i]->info->kind;
             double coef = xc_functional_.mix_coef[i];
 
-            ret.push_back({name, kind, coef});
+            ret.push_back(std::make_tuple(name, kind, coef));
         }
     }
     return ret;
@@ -352,8 +352,8 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
                 v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
                 v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
                 v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
-                v_tau_a[i] += alpha_ * fv_tau[2 * i];
-                v_tau_b[i] += alpha_ * fv_tau[2 * i + 1];
+                v_tau_a[i] += alpha_ * 0.5 * fv_tau[2 * i];
+                v_tau_b[i] += alpha_ * 0.5 * fv_tau[2 * i + 1];
                 // v_lapl_a[i] += alpha_ * fv_lapl[2 * i];
                 // v_lapl_b[i] += alpha_ * fv_lapl[2 * i + 1];
 
