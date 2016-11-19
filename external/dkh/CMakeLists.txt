@@ -27,6 +27,8 @@ if(${ENABLE_dkh})
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+        set(dkh_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/dkh CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
     endif()
 else()
     add_library(dkh_external INTERFACE)  # dummy

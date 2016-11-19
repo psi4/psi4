@@ -100,5 +100,6 @@ D 2 1.00
 ****
 }
 
-property('ccsd',properties=['dipole'])
+ccsd_e, wfn = property('ccsd',properties=['dipole'],return_wfn=True)
+oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="(OEPROP)CC")
 print_variables()

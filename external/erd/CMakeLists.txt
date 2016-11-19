@@ -27,6 +27,8 @@ if(${ENABLE_erd})
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+        set(erd_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/erd CACHE PATH "path to internally built erdConfig.cmake" FORCE)
     endif()
 else()
     add_library(erd_external INTERFACE)  # dummy

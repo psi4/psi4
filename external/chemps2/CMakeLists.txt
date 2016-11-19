@@ -1,5 +1,5 @@
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 CONFIG QUIET)
+    find_package(CheMPS2 1.8.3 CONFIG QUIET)
 
     if(${CheMPS2_FOUND})
         get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
@@ -18,10 +18,8 @@ if(${ENABLE_CheMPS2})
         endif()
 
         ExternalProject_Add(chemps2_external
-            GIT_REPOSITORY https://github.com/loriab/CheMPS2
-            GIT_TAG configpy2
-            #GIT_REPOSITORY https://github.com/SebWouters/CheMPS2  #TODO
-            #GIT_TAG v1.7.1  # TODO tag when stable
+            GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
+            GIT_TAG v1.8.3
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -44,6 +42,8 @@ if(${ENABLE_CheMPS2})
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+        set(CheMPS2_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/CheMPS2 CACHE PATH "path to internally built CheMPS2Config.cmake" FORCE)
     endif()
 else()
     add_library(chemps2_external INTERFACE)  # dummy

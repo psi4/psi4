@@ -31,5 +31,7 @@ else()
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+    set(libefp_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
 endif()
 
