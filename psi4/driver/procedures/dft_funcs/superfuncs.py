@@ -39,6 +39,7 @@ from . import libxc_xc_funcs
 from . import gga_superfuncs
 from . import hyb_superfuncs
 from . import double_hyb_superfuncs
+from . import mgga_superfuncs
 
 ## ==> Functionals <== ##
 
@@ -1139,260 +1140,260 @@ def build_wpbesol0_superfunctional(name, npoints, deriv):
 
 
 
-def build_m05_superfunctional(name, npoints, deriv):
+# def build_m05_superfunctional(name, npoints, deriv):
 
-    # Call this first
-    sup = core.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
+#     # Call this first
+#     sup = core.SuperFunctional.blank()
+#     sup.set_max_points(npoints)
+#     sup.set_deriv(deriv)
 
-    # => User-Customization <= #
+#     # => User-Customization <= #
 
-    # No spaces, keep it short and according to convention
-    sup.set_name('M05')
-    # Tab in, trailing newlines
-    sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n')
-    # Tab in, trailing newlines
-    sup.set_citation('    Zhao et. al., J. Chem. Phys., 123, 161103, 2005\n')
+#     # No spaces, keep it short and according to convention
+#     sup.set_name('M05')
+#     # Tab in, trailing newlines
+#     sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n')
+#     # Tab in, trailing newlines
+#     sup.set_citation('    Zhao et. al., J. Chem. Phys., 123, 161103, 2005\n')
 
-    # Add member functionals
-    X = build_functional('M_X')
-    X.set_name('M05_X')
-    X.set_alpha(1.0)
+#     # Add member functionals
+#     X = build_functional('M_X')
+#     X.set_name('M05_X')
+#     X.set_alpha(1.0)
 
-    # LSDA Exchange type is Slater, no parameters
+#     # LSDA Exchange type is Slater, no parameters
 
-    # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3
-    C2 = 4.49267E-3
-    K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
-    k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
-    kp = C1 / (C2 * K0)
-    mu = 4.0 * k0 * k0 * kp * C2
-    X.set_parameter('PBE_kp', kp)  # Different effective kp
-    X.set_parameter('PBE_mu', mu)  # Different effective mu
+#     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
+#     C1 = 3.36116E-3
+#     C2 = 4.49267E-3
+#     K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
+#     k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
+#     kp = C1 / (C2 * K0)
+#     mu = 4.0 * k0 * k0 * kp * C2
+#     X.set_parameter('PBE_kp', kp)  # Different effective kp
+#     X.set_parameter('PBE_mu', mu)  # Different effective mu
 
-    # Meta Exchange type is insane mess of w power series expansion
-    X.set_parameter('Meta_a0', 1.0)
-    X.set_parameter('Meta_a1', 0.08151)
-    X.set_parameter('Meta_a2', -0.43956)
-    X.set_parameter('Meta_a3', -3.22422)
-    X.set_parameter('Meta_a4', 2.01819)
-    X.set_parameter('Meta_a5', 8.79431)
-    X.set_parameter('Meta_a6', -0.00295)
-    X.set_parameter('Meta_a7', 9.82029)
-    X.set_parameter('Meta_a8', -4.82351)
-    X.set_parameter('Meta_a9', -48.17574)
-    X.set_parameter('Meta_a10', 3.64802)
-    X.set_parameter('Meta_a11', 34.02248)
+#     # Meta Exchange type is insane mess of w power series expansion
+#     X.set_parameter('Meta_a0', 1.0)
+#     X.set_parameter('Meta_a1', 0.08151)
+#     X.set_parameter('Meta_a2', -0.43956)
+#     X.set_parameter('Meta_a3', -3.22422)
+#     X.set_parameter('Meta_a4', 2.01819)
+#     X.set_parameter('Meta_a5', 8.79431)
+#     X.set_parameter('Meta_a6', -0.00295)
+#     X.set_parameter('Meta_a7', 9.82029)
+#     X.set_parameter('Meta_a8', -4.82351)
+#     X.set_parameter('Meta_a9', -48.17574)
+#     X.set_parameter('Meta_a10', 3.64802)
+#     X.set_parameter('Meta_a11', 34.02248)
 
-    C = build_functional('M_C')
-    C.set_name('M05_C')
+#     C = build_functional('M_C')
+#     C.set_name('M05_C')
 
-    # LSDA Correlation type is PW92, no parameters
+#     # LSDA Correlation type is PW92, no parameters
 
-    # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
-    C.set_parameter('B97_os_a0', 1.0)
-    C.set_parameter('B97_os_a1', 3.78569)
-    C.set_parameter('B97_os_a2', -14.15261)
-    C.set_parameter('B97_os_a3', -7.46589)
-    C.set_parameter('B97_os_a4', 17.94491)
+#     # GGA Correlation type is B97
+#     C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
+#     C.set_parameter('B97_os_a0', 1.0)
+#     C.set_parameter('B97_os_a1', 3.78569)
+#     C.set_parameter('B97_os_a2', -14.15261)
+#     C.set_parameter('B97_os_a3', -7.46589)
+#     C.set_parameter('B97_os_a4', 17.94491)
 
-    C.set_parameter('B97_ss_gamma', 0.06)
-    C.set_parameter('B97_ss_a0', 1.0)
-    C.set_parameter('B97_ss_a1', 3.77344)
-    C.set_parameter('B97_ss_a2', -26.04463)
-    C.set_parameter('B97_ss_a3', 30.69913)
-    C.set_parameter('B97_ss_a4', -9.22695)
+#     C.set_parameter('B97_ss_gamma', 0.06)
+#     C.set_parameter('B97_ss_a0', 1.0)
+#     C.set_parameter('B97_ss_a1', 3.77344)
+#     C.set_parameter('B97_ss_a2', -26.04463)
+#     C.set_parameter('B97_ss_a3', 30.69913)
+#     C.set_parameter('B97_ss_a4', -9.22695)
 
-    # Meta Correlation type is Becke metric, no parameters
+#     # Meta Correlation type is Becke metric, no parameters
 
-    # Add the functionals in
-    sup.add_x_functional(X)
-    sup.add_c_functional(C)
+#     # Add the functionals in
+#     sup.add_x_functional(X)
+#     sup.add_c_functional(C)
 
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.28)  # Hartree-Fock exact exchange
-    sup.set_c_alpha(0.0)
+#     # Set GKS up after adding functionals
+#     sup.set_x_omega(0.0)
+#     sup.set_c_omega(0.0)
+#     sup.set_x_alpha(0.28)  # Hartree-Fock exact exchange
+#     sup.set_c_alpha(0.0)
 
-    # => End User-Customization <= #
+#     # => End User-Customization <= #
 
-    # Call this last
-    sup.allocate()
-    return (sup, False)
-
-
-def build_m05_2x_superfunctional(name, npoints, deriv):
-
-    # Call this first
-    sup = core.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    sup.set_name('M05-2X')
-    # Tab in, trailing newlines
-    sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n')
-    # Tab in, trailing newlines
-    sup.set_citation('    Zhao et. al., J. Chem. Theory Comput., 2, 364, 2006\n')
-
-    # Add member functionals
-    X = build_functional('M_X')
-    X.set_name('M05_2X_X')
-    X.set_alpha(1.0)
-
-    # LSDA Exchange type is Slater, no parameters
-
-    # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3
-    C2 = 4.49267E-3
-    K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
-    k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
-    kp = C1 / (C2 * K0)
-    mu = 4.0 * k0 * k0 * kp * C2
-    X.set_parameter('PBE_kp', kp)
-    X.set_parameter('PBE_mu', mu)
-
-# Meta Exchange type is insane mess of w power series expansion
-    X.set_parameter('Meta_a0', 1.0)
-    X.set_parameter('Meta_a1', -0.56833)
-    X.set_parameter('Meta_a2', -1.30057)
-    X.set_parameter('Meta_a3', 5.50070)
-    X.set_parameter('Meta_a4', 9.06402)
-    X.set_parameter('Meta_a5', -32.21075)
-    X.set_parameter('Meta_a6', -23.73298)
-    X.set_parameter('Meta_a7', 70.22996)
-    X.set_parameter('Meta_a8', 29.88614)
-    X.set_parameter('Meta_a9', -60.25778)
-    X.set_parameter('Meta_a10', -13.22205)
-    X.set_parameter('Meta_a11', 15.23694)
-
-    C = build_functional('M_C')
-    C.set_name('M05_2X_C')
-
-    # LSDA Correlation type is PW92, no parameters
-
-    # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
-    C.set_parameter('B97_os_a0', 1.00000)
-    C.set_parameter('B97_os_a1', 1.09297)
-    C.set_parameter('B97_os_a2', -3.79171)
-    C.set_parameter('B97_os_a3', 2.82810)
-    C.set_parameter('B97_os_a4', -10.58909)
-
-    C.set_parameter('B97_ss_gamma', 0.06)
-    C.set_parameter('B97_ss_a0', 1.00000)
-    C.set_parameter('B97_ss_a1', -3.05430)
-    C.set_parameter('B97_ss_a2', 7.61854)
-    C.set_parameter('B97_ss_a3', 1.47665)
-    C.set_parameter('B97_ss_a4', -11.92365)
-
-    # Meta Correlation type is Becke metric, no parameters
-
-    # Add the functionals in
-    sup.add_x_functional(X)
-    sup.add_c_functional(C)
-
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.56)  # Hartree-Fock exact exchange
-    sup.set_c_alpha(0.0)
-
-    # => End User-Customization <= #
-
-    # Call this last
-    sup.allocate()
-    return (sup, False)
+#     # Call this last
+#     sup.allocate()
+#     return (sup, False)
 
 
-def build_dldf_superfunctional(name, npoints, deriv):
+# def build_m05_2x_superfunctional(name, npoints, deriv):
 
-    # Call this first
-    sup = core.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
+#     # Call this first
+#     sup = core.SuperFunctional.blank()
+#     sup.set_max_points(npoints)
+#     sup.set_deriv(deriv)
 
-    # => User-Customization <= #
+#     # => User-Customization <= #
 
-    # No spaces, keep it short and according to convention
-    sup.set_name('dlDF')
-    # Tab in, trailing newlines
-    sup.set_description('    Dispersionless Hybrid Meta-GGA XC Functional\n')
-    # Tab in, trailing newlines
-    sup.set_citation('    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n')
+#     # No spaces, keep it short and according to convention
+#     sup.set_name('M05-2X')
+#     # Tab in, trailing newlines
+#     sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n')
+#     # Tab in, trailing newlines
+#     sup.set_citation('    Zhao et. al., J. Chem. Theory Comput., 2, 364, 2006\n')
 
-    # Add member functionals
-    X = build_functional('M_X')
-    X.set_name('dlDF_X')
-    X.set_alpha(1.0)
+#     # Add member functionals
+#     X = build_functional('M_X')
+#     X.set_name('M05_2X_X')
+#     X.set_alpha(1.0)
 
-    # LSDA Exchange type is Slater, no parameters
+#     # LSDA Exchange type is Slater, no parameters
 
-    # GGA Exchange type is PBE
-    kp = 4.8827323
-    mu = 0.3511128
-    X.set_parameter('PBE_kp', kp)
-    X.set_parameter('PBE_mu', mu)
+#     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
+#     C1 = 3.36116E-3
+#     C2 = 4.49267E-3
+#     K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
+#     k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
+#     kp = C1 / (C2 * K0)
+#     mu = 4.0 * k0 * k0 * kp * C2
+#     X.set_parameter('PBE_kp', kp)
+#     X.set_parameter('PBE_mu', mu)
 
-# Meta Exchange is a reparametrized truncation of Truhlar's functional
-    X.set_parameter('Meta_a0', 1.0)
-    X.set_parameter('Meta_a1', -0.1637571)
-    X.set_parameter('Meta_a2', -0.1880028)
-    X.set_parameter('Meta_a3', -0.4490609)
-    X.set_parameter('Meta_a4', -0.0082359)
+# # Meta Exchange type is insane mess of w power series expansion
+#     X.set_parameter('Meta_a0', 1.0)
+#     X.set_parameter('Meta_a1', -0.56833)
+#     X.set_parameter('Meta_a2', -1.30057)
+#     X.set_parameter('Meta_a3', 5.50070)
+#     X.set_parameter('Meta_a4', 9.06402)
+#     X.set_parameter('Meta_a5', -32.21075)
+#     X.set_parameter('Meta_a6', -23.73298)
+#     X.set_parameter('Meta_a7', 70.22996)
+#     X.set_parameter('Meta_a8', 29.88614)
+#     X.set_parameter('Meta_a9', -60.25778)
+#     X.set_parameter('Meta_a10', -13.22205)
+#     X.set_parameter('Meta_a11', 15.23694)
 
-    C = build_functional('M_C')
-    C.set_name('dlDF_C')
+#     C = build_functional('M_C')
+#     C.set_name('M05_2X_C')
 
-    # LSDA Correlation type is PW92, no parameters
+#     # LSDA Correlation type is PW92, no parameters
 
-    # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
-    C.set_parameter('B97_os_a0', 1.00000)
-    C.set_parameter('B97_os_a1', 5.9515308)
-    C.set_parameter('B97_os_a2', -11.1602877)
+#     # GGA Correlation type is B97
+#     C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
+#     C.set_parameter('B97_os_a0', 1.00000)
+#     C.set_parameter('B97_os_a1', 1.09297)
+#     C.set_parameter('B97_os_a2', -3.79171)
+#     C.set_parameter('B97_os_a3', 2.82810)
+#     C.set_parameter('B97_os_a4', -10.58909)
 
-    C.set_parameter('B97_ss_gamma', 0.06)
-    C.set_parameter('B97_ss_a0', 1.00000)
-    C.set_parameter('B97_ss_a1', -2.5960897)
-    C.set_parameter('B97_ss_a2', 2.2233793)
+#     C.set_parameter('B97_ss_gamma', 0.06)
+#     C.set_parameter('B97_ss_a0', 1.00000)
+#     C.set_parameter('B97_ss_a1', -3.05430)
+#     C.set_parameter('B97_ss_a2', 7.61854)
+#     C.set_parameter('B97_ss_a3', 1.47665)
+#     C.set_parameter('B97_ss_a4', -11.92365)
 
-    # Meta Correlation type is Becke metric, no parameters
+#     # Meta Correlation type is Becke metric, no parameters
 
-    # Add the functionals in
-    sup.add_x_functional(X)
-    sup.add_c_functional(C)
+#     # Add the functionals in
+#     sup.add_x_functional(X)
+#     sup.add_c_functional(C)
 
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.6144129)  # Hartree-Fock exact exchange
-    sup.set_c_alpha(0.0)
+#     # Set GKS up after adding functionals
+#     sup.set_x_omega(0.0)
+#     sup.set_c_omega(0.0)
+#     sup.set_x_alpha(0.56)  # Hartree-Fock exact exchange
+#     sup.set_c_alpha(0.0)
 
-    # => End User-Customization <= #
+#     # => End User-Customization <= #
 
-    # Call this last
-    sup.allocate()
-    return (sup, False)
+#     # Call this last
+#     sup.allocate()
+#     return (sup, False)
 
 
-def build_dldfd09_superfunctional(name, npoints, deriv):
-    sup, disp = build_dldf_superfunctional(name, npoints, deriv)
-    sup.set_name('dlDF+D09')
+# def build_dldf_superfunctional(name, npoints, deriv):
 
-    return (sup, ('dlDF', '-DAS2009'))
+#     # Call this first
+#     sup = core.SuperFunctional.blank()
+#     sup.set_max_points(npoints)
+#     sup.set_deriv(deriv)
 
-def build_dldfd10_superfunctional(name, npoints, deriv):
-    sup, disp = build_dldf_superfunctional(name, npoints, deriv)
-    sup.set_name('dlDF+D')
+#     # => User-Customization <= #
 
-    return (sup, ('dlDF', '-DAS2010'))
+#     # No spaces, keep it short and according to convention
+#     sup.set_name('dlDF')
+#     # Tab in, trailing newlines
+#     sup.set_description('    Dispersionless Hybrid Meta-GGA XC Functional\n')
+#     # Tab in, trailing newlines
+#     sup.set_citation('    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n')
+
+#     # Add member functionals
+#     X = build_functional('M_X')
+#     X.set_name('dlDF_X')
+#     X.set_alpha(1.0)
+
+#     # LSDA Exchange type is Slater, no parameters
+
+#     # GGA Exchange type is PBE
+#     kp = 4.8827323
+#     mu = 0.3511128
+#     X.set_parameter('PBE_kp', kp)
+#     X.set_parameter('PBE_mu', mu)
+
+# # Meta Exchange is a reparametrized truncation of Truhlar's functional
+#     X.set_parameter('Meta_a0', 1.0)
+#     X.set_parameter('Meta_a1', -0.1637571)
+#     X.set_parameter('Meta_a2', -0.1880028)
+#     X.set_parameter('Meta_a3', -0.4490609)
+#     X.set_parameter('Meta_a4', -0.0082359)
+
+#     C = build_functional('M_C')
+#     C.set_name('dlDF_C')
+
+#     # LSDA Correlation type is PW92, no parameters
+
+#     # GGA Correlation type is B97
+#     C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
+#     C.set_parameter('B97_os_a0', 1.00000)
+#     C.set_parameter('B97_os_a1', 5.9515308)
+#     C.set_parameter('B97_os_a2', -11.1602877)
+
+#     C.set_parameter('B97_ss_gamma', 0.06)
+#     C.set_parameter('B97_ss_a0', 1.00000)
+#     C.set_parameter('B97_ss_a1', -2.5960897)
+#     C.set_parameter('B97_ss_a2', 2.2233793)
+
+#     # Meta Correlation type is Becke metric, no parameters
+
+#     # Add the functionals in
+#     sup.add_x_functional(X)
+#     sup.add_c_functional(C)
+
+#     # Set GKS up after adding functionals
+#     sup.set_x_omega(0.0)
+#     sup.set_c_omega(0.0)
+#     sup.set_x_alpha(0.6144129)  # Hartree-Fock exact exchange
+#     sup.set_c_alpha(0.0)
+
+#     # => End User-Customization <= #
+
+#     # Call this last
+#     sup.allocate()
+#     return (sup, False)
+
+
+# def build_dldfd09_superfunctional(name, npoints, deriv):
+#     sup, disp = build_dldf_superfunctional(name, npoints, deriv)
+#     sup.set_name('dlDF+D09')
+
+#     return (sup, ('dlDF', '-DAS2009'))
+
+# def build_dldfd10_superfunctional(name, npoints, deriv):
+#     sup, disp = build_dldf_superfunctional(name, npoints, deriv)
+#     sup.set_name('dlDF+D')
+
+#     return (sup, ('dlDF', '-DAS2010'))
 
 
 def build_primitive_superfunctional(name, npoints, deriv):
@@ -1545,6 +1546,7 @@ superfunctionals = {}
 superfunctionals.update(libxc_xc_funcs.libxc_xc_functional_list)
 superfunctionals.update(gga_superfuncs.gga_superfunc_list)
 superfunctionals.update(hyb_superfuncs.hyb_superfunc_list)
+superfunctionals.update(mgga_superfuncs.mgga_superfunc_list)
 superfunctionals.update(double_hyb_superfuncs.double_hyb_superfunc_list)
 ## Build up the lost of functionals we can compute
 # Add in plain values
@@ -1554,10 +1556,10 @@ for key in superfunctionals.keys():
     superfunctional_list.append(sup)
 
 # # Figure out what Grimme functionals we have
-p4_funcs = set(superfunctionals.keys())
+p4_funcs = set([x for x in list(superfunctionals)])
 p4_funcs -= set(['b97-d'])
-for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
-    func_list = (set(superfunctional_listues.keys()) & p4_funcs)
+for dashlvl, dashparam_dict in dftd3.dashcoeff.items():
+    func_list = (set(dashparam_dict) & p4_funcs)
     for func in func_list:
         sup = superfunctionals[func](func, 1, 1)[0]
         sup.set_name(sup.name() + '-' + dashlvl.upper())
@@ -1585,12 +1587,12 @@ for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
             superfunctional_list.append(sup)
 
 # # B97D is an odd one
-# for dashlvl in dftd3.full_dash_keys:
-#     if dashlvl == 'd2p4': continue
+for dashlvl in dftd3.full_dash_keys:
+    if dashlvl == 'd2p4': continue
 
-#     sup = superfunctionals['b97-d']('b97-d', 1, 1)[0]
-#     sup.set_name('B97-' + dashlvl.upper())
-#     superfunctional_list.append(sup)
+    sup = superfunctionals['b97-d']('b97-d', 1, 1)[0]
+    sup.set_name('B97-' + dashlvl.upper())
+    superfunctional_list.append(sup)
 
 # wPBE, grr need a new scheme
 for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:

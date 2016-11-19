@@ -147,25 +147,26 @@ xc_func_list = [
 ]
 
 
-# filter out -D for now
-xc_func_list = [x for x in xc_func_list if "_D" not in x]
+# filter out a few -D for now as we are missing them
+xc_func_list.remove("XC_GGA_XC_OPWLYP_D")
+xc_func_list.remove("XC_GGA_XC_OBLYP_D")
 
 # filter out -V for now
 xc_func_list = [x for x in xc_func_list if "_V" not in x]
 
 # Deal with xc mix upper/lower case
-upper_to_xc_dict = {x.upper() : x for x in xc_func_list}
+lower_to_xc_dict = {x.lower() : x for x in xc_func_list}
 # Translate to something a user would want to input
 psi_to_xc_translate = {}
 for x in xc_func_list:
-    key = x.split('_XC_')[-1].replace('_', '-').upper()
-    key = key.replace("HCTH-", "HCTH")
+    key = x.split('_XC_')[-1].replace('_', '-').lower()
+    key = key.replace("hcth-", "hcth")
 
     psi_to_xc_translate[key] = x
 
 # Add extra translations
-psi_to_xc_translate["B97-0"] = "XC_HYB_GGA_XC_B97"
-psi_to_xc_translate["HCTH"] = "XC_GGA_XC_HCTH_93"
+psi_to_xc_translate["b97-0"] = "XC_HYB_GGA_XC_B97"
+psi_to_xc_translate["hcth"] = "XC_GGA_XC_HCTH_93"
 
 
 def find_xc_func_name(name):
@@ -177,12 +178,12 @@ def find_xc_func_name(name):
     if name in xc_func_list:
         return name
 
-    name = name.upper()
+    name = name.lower()
     if name in list(psi_to_xc_translate):
         return psi_to_xc_translate[name]
 
-    if name in list(upper_to_xc_dict):
-        return upper_to_xc_dict[name]
+    if name in list(lower_to_xc_dict):
+        return lower_to_xc_dict[name]
 
     raise KeyError("LibXC keyname %s was not found!")
 
@@ -210,11 +211,20 @@ def build_libxc_xc_func(name, npoints, deriv):
     sup.set_name(name.upper())
     sup.allocate()
 
-    disp = False
-    if xc_name == "XC_HYB_GGA_XC_WB97X_D":
-        disp = ('wB97', '-CHG')
-    # elif xc_name == "XC_GGA_XC_B97_D":
-    #     disp =
+    # Figure out dispersion
+    if "_D" in xc_name:
+        if xc_name == "XC_HYB_GGA_XC_WB97X_D":
+            disp = ('wB97', '-CHG')
+        elif xc_name == "XC_GGA_XC_B97_D":
+            disp = ('B97-D', '-d3zero')
+        elif xc_name == "XC_GGA_XC_OPBE_D":
+            disp = ('OPBE', '-d3zero')
+        elif xc_name == "XC_MGGA_XC_OTPSS_D":
+            disp = ('OTPSS', '-d3zero')
+        else:
+            raise KeyError("Dispersion for functional %s not found" % name)
+    else:
+        disp = False
 
     return (sup, False)
 
