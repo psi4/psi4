@@ -76,7 +76,7 @@ def build_wpbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
-    pbe_x = core.Functional.build_base('wPBE_X')
+    pbe_x = core.Functional.build_base('XC_GGA_X_HJS_PBE')
     pbe_x.set_omega(0.4)
     sup.add_x_functional(pbe_x)
     sup.add_c_functional(core.Functional.build_base('XC_GGA_C_PBE'))
@@ -110,7 +110,7 @@ def build_wpbe0_superfunctional(name, npoints, deriv):
     sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
-    pbe_x = core.Functional.build_base('wPBE_X')
+    pbe_x = core.Functional.build_base('XC_GGA_X_HJS_PBE')
     pbe_x.set_omega(0.3)
     pbe_x.set_alpha(0.75)
     sup.add_x_functional(pbe_x)
@@ -181,3 +181,49 @@ hyb_superfunc_list = {
           "hf"      : build_hf_superfunctional,
 
 }
+
+
+
+
+
+# def build_wpbesol_superfunctional(name, npoints, deriv):
+
+#     # Call this first
+#     sup = core.SuperFunctional.blank()
+#     sup.set_max_points(npoints)
+#     sup.set_deriv(deriv)
+
+#     # => User-Customization <= #
+
+#     # No spaces, keep it short and according to convention
+#     sup.set_name('wPBEsol')
+#     # Tab in, trailing newlines
+#     sup.set_description('    PBEsol SR-XC Functional (HJS Model)\n')
+#     # Tab in, trailing newlines
+#     sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+
+#     # Add member functionals
+#     sup.add_x_functional(build_functional('wPBEsol_X'))
+#     sup.add_c_functional(build_functional('PBE_C'))
+
+#     # Set GKS up after adding functionals
+#     sup.set_x_omega(0.4)
+#     sup.set_c_omega(0.0)
+#     sup.set_x_alpha(0.0)
+#     sup.set_c_alpha(0.0)
+
+#     # => End User-Customization <= #
+
+#     # Call this last
+#     sup.allocate()
+#     return (sup, False)
+
+
+# def build_wpbesol0_superfunctional(name, npoints, deriv):
+
+#     sup = build_wpbesol_superfunctional(name, npoints, deriv)[0]
+#     sup.set_name('wPBEsol0')
+#     sup.set_description('    PBEsol0 SR-XC Functional (HJS Model)\n')
+#     sup.set_x_omega(0.3)
+#     sup.set_x_alpha(0.25)
+#     return (sup, False)

@@ -73,8 +73,6 @@ H 1 1.0 2 104.5
 
 set basis sto-3g
 # Must be reset in each new molecule
-V31 = energy('B88_X')
-compare_values(E31,V31, 3, "UKS  1 2    B88 Energy") #TEST
 
 V35 = energy('B97-D')
 compare_values(E35,V35, 3, "UKS  1 2 B97-D2 Energy") #TEST
