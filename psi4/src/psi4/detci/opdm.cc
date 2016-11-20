@@ -701,5 +701,28 @@ void CIWavefunction::ci_nat_orbs() {
   Cb_ = Ca_;
 }
 
+  // for the edification of the autodoc-er. these set py-side or through oeprop calls
+  /*- Process::environment.globals["CIn TOTAL ENERGY"] -*/
+  /*- Process::environment.globals["CIn CORRELATION ENERGY"] -*/
+  /*- Process::environment.globals["CI ROOT n TOTAL ENERGY"] -*/
+  /*- Process::environment.globals["CI ROOT n CORRELATION ENERGY"] -*/
+  /*- Process::environment.globals["CI ROOT n DIPOLE X"] -*/
+  /*- Process::environment.globals["CI ROOT n DIPOLE Y"] -*/
+  /*- Process::environment.globals["CI ROOT n DIPOLE Z"] -*/
+  /*- Process::environment.globals["CI ROOT n QUADRUPOLE XX"] -*/
+  /*- Process::environment.globals["CI ROOT n QUADRUPOLE XY"] -*/
+  /*- Process::environment.globals["CI ROOT n QUADRUPOLE XZ"] -*/
+  /*- Process::environment.globals["CI ROOT n QUADRUPOLE YY"] -*/
+  /*- Process::environment.globals["CI ROOT n QUADRUPOLE YZ"] -*/
+  /*- Process::environment.globals["CI ROOT n QUADRUPOLE ZZ"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE X"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Y"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Z"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XX"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XY"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XZ"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YY"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YZ"] -*/
+  /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE ZZ"] -*/
 
 }} // namespace psi::detci
