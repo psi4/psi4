@@ -3,7 +3,7 @@ if(${ENABLE_GTFock})
 
     if(${GTFock_FOUND})
         get_property(_loc TARGET GTFock::gtfock PROPERTY LOCATION)
-        message(STATUS "Found GTFock: ${_loc} (found version ${GTFock_VERSION})")
+        message(STATUS "${Cyan}Found GTFock${ColourReset}: ${_loc} (found version ${GTFock_VERSION})")
         message(FATAL_ERROR "GTFock has not been hooked back in after the inversion.")
         add_library(gtfock_external INTERFACE)  # dummy
     else()

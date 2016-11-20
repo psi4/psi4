@@ -4,7 +4,7 @@ if(${ENABLE_PCMSolver})
     if(${PCMSolver_FOUND})
         #get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)  # todo
         get_property(_loc TARGET PCMSolver::PCMSolver PROPERTY LOCATION)
-        message(STATUS "Found PCMSolver: ${_loc} (found version ${PCMSolver_VERSION})")
+        message(STATUS "${Cyan}Found PCMSolver${ColourReset}: ${_loc} (found version ${PCMSolver_VERSION})")
         add_library(pcmsolver_external INTERFACE)  # dummy
     else()
         include(ExternalProject)

@@ -125,7 +125,7 @@ find_program(CFOUR_EXECUTABLE
 
 if(CFOUR_EXECUTABLE)
     add_subdirectory(cfour)
-    message(STATUS "Found CFOUR: ${CFOUR_EXECUTABLE}")
+    message(STATUS "${Cyan}Found CFOUR${ColourReset}: ${CFOUR_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + CFOUR")
 endif()
 
@@ -144,7 +144,7 @@ find_program(DFTD3_EXECUTABLE
 
 if(DFTD3_EXECUTABLE)
     add_subdirectory(dftd3)
-    message(STATUS "Found DFTD3: ${DFTD3_EXECUTABLE}")
+    message(STATUS "${Cyan}Found DFTD3${ColourReset}: ${DFTD3_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + DFTD3")
 endif()
 
@@ -182,7 +182,7 @@ find_program(MRCC_EXECUTABLE
 
 if(MRCC_EXECUTABLE)
     add_subdirectory(mrcc)
-    message(STATUS "Found MRCC: ${MRCC_EXECUTABLE}")
+    message(STATUS "${Cyan}Found MRCC${ColourReset}: ${MRCC_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + MRCC")
 endif()
 
