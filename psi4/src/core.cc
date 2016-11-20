@@ -783,13 +783,13 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
     }
     size_t size = len(values);
     for (int n = 0; n < size; ++n) {
-        try {
+        if (py::isinstance<py::list>(values[n])) {
             py::list l = values[n].cast<py::list>();
             DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_local_option_array(module, key, l, newentry);
         }
-        catch (py::cast_error e) {
+        else {
             // This is not a list; try to cast to a string
             try {
                 std::string s = values[n].cast<std::string>();
@@ -831,13 +831,13 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
     }
     size_t size = len(values);
     for (int n = 0; n < size; ++n) {
-        try {
+        if (py::isinstance<py::list>(values[n])) {
             py::list l = values[n].cast<py::list>();
             DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_global_option_array(key, l, newentry);
         }
-        catch (py::cast_error e) {
+        else {
             // This is not a list; try to cast to a string
             try {
                 std::string s = values[n].cast<std::string>();
@@ -936,7 +936,7 @@ py::object py_psi_get_local_option(std::string const& module, std::string const&
     else if (data.type() == "double")
         return py::cast(data.to_double());
     else if (data.type() == "array")
-        return py::cast(data.to_list());
+        return py::object(data.to_list());
 
     return py::object();
 }
@@ -953,7 +953,7 @@ py::object py_psi_get_global_option(std::string const& key)
     else if (data.type() == "double")
         return py::cast(data.to_double());
     else if (data.type() == "array")
-        return py::cast(data.to_list());
+        return py::object(data.to_list());
 
     return py::object();
 }
@@ -972,7 +972,7 @@ py::object py_psi_get_option(std::string const& module, std::string const& key)
     else if (data.type() == "double")
         return py::cast(data.to_double());
     else if (data.type() == "array")
-        return py::cast(data.to_list());
+        return py::object(data.to_list());
 
     return py::object();
 }
