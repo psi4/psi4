@@ -107,6 +107,7 @@ option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
 include(autocmake_safeguards)
+include(custom_color_messages)
 
 #find_package(PythonLibsNew REQUIRED)
 find_package(PythonInterp REQUIRED)

@@ -3,7 +3,7 @@ if(${ENABLE_erd})
 
     if(${erd_FOUND})
         get_property(_loc TARGET erd::erd PROPERTY LOCATION)
-        message(STATUS "Found erd: ${_loc} (found version ${erd_VERSION})")
+        message(STATUS "${Cyan}Found erd${ColourReset}: ${_loc} (found version ${erd_VERSION})")
         add_library(erd_external INTERFACE)  # dummy
     else()
         include(ExternalProject)

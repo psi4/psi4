@@ -2,7 +2,7 @@ find_package(libefp CONFIG QUIET COMPONENTS shallow)
 
 if(${libefp_FOUND})
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-    message(STATUS "Found libefp: ${_loc} (found version ${libefp_VERSION})")
+    message(STATUS "${Cyan}Found libefp${ColourReset}: ${_loc} (found version ${libefp_VERSION})")
     add_library(libefp_external INTERFACE)  # dummy
 else()
     include(ExternalProject)

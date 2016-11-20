@@ -3,7 +3,7 @@ if(${ENABLE_CheMPS2})
 
     if(${CheMPS2_FOUND})
         get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
-        message(STATUS "Found CheMPS2: ${_loc} (found version ${CheMPS2_VERSION})")
+        message(STATUS "${Cyan}Found CheMPS2${ColourReset}: ${_loc} (found version ${CheMPS2_VERSION})")
         add_library(chemps2_external INTERFACE)  # dummy
     else()
         include(ExternalProject)

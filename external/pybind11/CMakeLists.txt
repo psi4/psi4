@@ -1,7 +1,7 @@
 find_package(pybind11 CONFIG QUIET)
 
 if(${pybind11_FOUND})
-    message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
+    message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
     add_library(pybind11_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
