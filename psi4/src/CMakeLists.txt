@@ -6,10 +6,6 @@ add_subdirectory(psi4)
 ### >> We also add in versioning, settings for plugins, and
 ### >> exports for Python here.
 
-add_library(versioned_code OBJECT core.cc)
-set_target_properties(versioned_code PROPERTIES POSITION_INDEPENDENT_CODE 1)
-target_include_directories(versioned_code PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-
 set(sources_list export_psio.cc
         export_mints.cc
         export_fock.cc
@@ -23,29 +19,15 @@ set(sources_list export_psio.cc
         export_misc.cc
         create_new_plugin.cc
         read_options.cc
+        core.cc
         )
 
-set(psi4_all_sources ${sources_list} $<TARGET_OBJECTS:versioned_code>)
-add_library(core SHARED ${psi4_all_sources})
-
-if(TARGET gdma::gdma)
-    target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:gdma::gdma,INTERFACE_COMPILE_DEFINITIONS>)
-endif()
-if(TARGET CheMPS2::chemps2)
-    target_compile_definitions(versioned_code PRIVATE $<TARGET_PROPERTY:CheMPS2::chemps2,INTERFACE_COMPILE_DEFINITIONS>)
-endif()
-if(TARGET dkh::dkh)
-    target_compile_definitions(core PRIVATE $<TARGET_PROPERTY:dkh::dkh,INTERFACE_COMPILE_DEFINITIONS>)
-endif()
-    # prefer to link against interface pybind11 library but can't "link" object library to target
-target_compile_definitions(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_COMPILE_DEFINITIONS>)
-target_include_directories(versioned_code PUBLIC $<TARGET_PROPERTY:pybind11::pybind11,INTERFACE_INCLUDE_DIRECTORIES>)
+add_library(core SHARED ${sources_list})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PRIVATE pybind11::pybind11)
-target_link_libraries(core PRIVATE ${PYTHON_LIBRARIES})
 target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
