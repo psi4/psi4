@@ -132,7 +132,7 @@ endif()
 # <<<  CHEMPS2  >>>
 
 if(ENABLE_CheMPS2)
-    add_subdirectory(dmrg)
+    add_subdirectory(chemps2)
     message(STATUS "Adding test cases: Psi4 + CheMPS2")
 endif()
 
