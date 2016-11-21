@@ -30,6 +30,9 @@ strives to be friendly to both users and developers.
 
 * **Anaconda**  https://anaconda.org/psi4 (binary available for Linux [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#quick-installation)
 
+* **CdoeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
+
+
 * **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 or store private branches at psi4/psi4private)
 
 * **Sample Inputs**  http://www.psicode.org/psi4manual/master/testsuite.html (also in share/psi4/samples)
