@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(cepa3 "psi;shorttests;cepa;properties")
+add_regression_test(cepa3 "psi;cepa;properties")

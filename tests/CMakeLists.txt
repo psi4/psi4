@@ -5,16 +5,21 @@ find_package(Perl QUIET)
 #
 # The following labels are defined:
 #
-#  longtests   = The (as of right now) 4 really long tests
-#  shorttests  = Every test in the test folder less longtests
-#  quicktests  = Proper subset of tests deemed to run quickly (ideally
-#                in 60 seconds or less).  This subset is chosen to provide
-#                one or more tests for each major module, but it does not
-#                necessarily cover all features of every module.
+#  minitests   = Does Psi4 work? A few basic operational tests plus
+#                one from each addon and addin
+#  quicktests  = Best coverage possible in a 20 min envelope (for Travis-CI).
+#                This subset is chosen to provide one or more tests for each
+#                major module, but it does not necessarily cover all features
+#                of every module.
+#  longtests   = The really long (> ~15 min) tests
+#
+# Common test runs:
+#
+#  ctest -L quicktests      run all quicktests
+#  ctest -LE longtests      run all but longtests
 #
 # It is possible to specify more than one label per test. CMake
 # expects a ;-separated list, e.g. "psi;quicktests;scf"
-# It is mandatory that any test carries a length label!
 # It is suggested to add at least a second label to specify the method tested.
 #
 #  We use ctest -I [start,end] where start is the test number we start with
