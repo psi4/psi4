@@ -17,11 +17,15 @@ test_restrict(restrict)
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
+# using Python in psi4-core
+# * interpreter: run the versioner (and elsewhere to run tests, docs)
+# * headers: Python.h for pybind11 to build against
+# * library: not at all
 find_package(PythonLibsNew REQUIRED)
-#find_package(PythonInterp REQUIRED)
-#find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
-message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
+message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING})")
+set_property(TARGET pybind11::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
+
 find_package(Threads)
 find_package(DL)
 

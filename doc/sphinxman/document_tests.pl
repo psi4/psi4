@@ -77,7 +77,7 @@ foreach my $File(readdir SAMPLES){
     next if $File =~ /^cfour$/;
     next if $File =~ /^libefp$/;
     next if $File =~ /^pcmsolver$/;
-    next if $File =~ /^dmrg$/;
+    next if $File =~ /^chemps2$/;
     next if $File =~ /^gdma$/;
     next if $File =~ /^dkh$/;
     next if $File =~ /^erd$/;
