@@ -182,8 +182,8 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
     if (meta_)  {
         tau_ap = in.find("TAU_A")->second->pointer();
         tau_bp = in.find("TAU_B")->second->pointer();
-        lapl_ap = in.find("LAPL_RHO_A")->second->pointer();
-        lapl_bp = in.find("LAPL_RHO_B")->second->pointer();
+        // lapl_ap = in.find("LAPL_RHO_A")->second->pointer();
+        // lapl_bp = in.find("LAPL_RHO_B")->second->pointer();
     }
 
     // => Outut variables <= //
@@ -292,201 +292,297 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         }
     }
 
-    if (deriv == 0){
-        if (meta_){
-            // outfile->Printf("Executing MGGA");
-            // xc_mgga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
-            throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
+    if (unpolarized_){
+        if (deriv == 0){
+            if (meta_){
+                throw PSIEXCEPTION("NYI");
+                // xc_mgga_exc(&xc_functional_, npoints, rho_ap, v);
 
-        } else if (gga_) {
-            // outfile->Printf("Executing GGA");
+            } else if (gga_) {
+                throw PSIEXCEPTION("NYI");
+                // xc_gga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
+
+            } else{
+                // outfile->Printf("Executing LDA");
+                throw PSIEXCEPTION("NYI");
+                // xc_lda_exc(&xc_functional_, npoints, rho_ap, v);
+            }
+        }
+        if (deriv >= 1) {
+            if (meta_){
+                std::vector<double> frho(npoints);
+                std::vector<double> fsigma(npoints);
+                std::vector<double> ftau(npoints);
+                std::vector<double> flapl(npoints);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[i] = 2.0 * rho_ap[i];      // (rho_a + rho_b) -> 2.0
+                    fsigma[i] = 4.0 * gamma_aap[i]; // (rho_a + rho_b) ** 2 -> 4.0
+                    ftau[i] = tau_ap[i];            // (tau_a + tau_b) -> 2.0
+                }
+
+
+                std::vector<double> fv(npoints);
+                std::vector<double> fv_rho(npoints);
+                std::vector<double> fv_sigma(npoints);
+                std::vector<double> fv_lapl(npoints);
+                std::vector<double> fv_tau(npoints);
+
+                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
+                                fsigma.data(), flapl.data(), ftau.data(),
+                                fv.data(), fv_rho.data(), fv_sigma.data(),
+                                fv_lapl.data(), fv_tau.data());
+
+
+                for (size_t i=0; i < npoints; i++){
+                    v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
+                    v_rho_a[i] += alpha_ * fv_rho[i];
+                    v_gamma_aa[i] += 2.0 * alpha_ * fv_sigma[i];
+                    v_tau_a[i] += 0.5 * alpha_ * fv_tau[i];
+                }
+
+            } else if (gga_) {
+
+                // spin polarized
+                std::vector<double> fv(npoints);
+                std::vector<double> frho(npoints);
+                std::vector<double> fsigma(npoints);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[i] = 2.0 * rho_ap[i];
+                    fsigma[i] = 4.0 * gamma_aap[i];
+                }
+
+                std::vector<double> fv_rho(npoints);
+                std::vector<double> fv_sigma(npoints);
+
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
+
+                for (size_t i=0; i < npoints; i++){
+                    v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
+                    v_rho_a[i] += alpha_ * fv_rho[i];
+                    v_gamma_aa[i] += 2.0 * alpha_ * fv_sigma[i];
+
+                }
+
+            } else{
+                // spin unpolarized
+                std::vector<double> frho(npoints);
+                std::vector<double> fv(npoints);
+                std::vector<double> fv_rho(npoints);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[i] = 2.0 * rho_ap[i];
+                }
+
+                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
+
+                for (size_t i=0; i < npoints; i++){
+                    v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
+                    v_rho_a[i] += alpha_ * fv_rho[i];
+                }
+            }
+
+        }
+
+        if (deriv >= 2) {
             throw PSIEXCEPTION("NYI");
-            xc_gga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
 
-        } else{
-            // outfile->Printf("Executing LDA");
-            throw PSIEXCEPTION("NYI");
-            xc_lda_exc(&xc_functional_, npoints, rho_ap, v);
         }
-    }
-    if (deriv >= 1) {
-        if (meta_){
 
-            std::vector<double> fv(npoints);
-            std::vector<double> frho(npoints*2);
-            std::vector<double> fsigma(npoints*3);
-            std::vector<double> ftau(npoints*2);
-            std::vector<double> flapl(npoints*2);
+    }else{ // End unpolarized
 
-            for (size_t i=0; i < npoints; i++){
-                frho[2 * i] = rho_ap[i];
-                frho[2 * i + 1] = rho_bp[i];
+        if (deriv == 0){
+            if (meta_){
+                // outfile->Printf("Executing MGGA");
+                // xc_mgga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
+                throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
 
-                fsigma[3 * i] = gamma_aap[i];
-                fsigma[3 * i + 1] = gamma_abp[i];
-                fsigma[3 * i + 2] = gamma_bbp[i];
+            } else if (gga_) {
+                // outfile->Printf("Executing GGA");
+                throw PSIEXCEPTION("NYI");
+                // xc_gga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
 
-                ftau[2 * i] = 0.5 * tau_ap[i];
-                ftau[2 * i + 1] = 0.5 * tau_bp[i];
-
-                // flapl[2 * i] = lapl_ap[i];
-                // flapl[2 * i + 1] = lapl_bp[i];
-            }
-
-
-            std::vector<double> fv_rho(npoints*2);
-            std::vector<double> fv_sigma(npoints*3);
-            std::vector<double> fv_lapl(npoints*2);
-            std::vector<double> fv_tau(npoints*2);
-
-            xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
-                            fsigma.data(), flapl.data(), ftau.data(),
-                            fv.data(), fv_rho.data(), fv_sigma.data(),
-                            fv_lapl.data(), fv_tau.data());
-
-
-            for (size_t i=0; i < npoints; i++){
-                v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
-                v_rho_a[i] += alpha_ * fv_rho[2 * i];
-                v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
-                v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
-                v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
-                v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
-                v_tau_a[i] += alpha_ * 0.5 * fv_tau[2 * i];
-                v_tau_b[i] += alpha_ * 0.5 * fv_tau[2 * i + 1];
-                // v_lapl_a[i] += alpha_ * fv_lapl[2 * i];
-                // v_lapl_b[i] += alpha_ * fv_lapl[2 * i + 1];
-
-            }
-
-        } else if (gga_) {
-
-            // spin polarized
-            std::vector<double> fv(npoints);
-            std::vector<double> frho(npoints*2);
-            std::vector<double> fsigma(npoints*3);
-
-            for (size_t i=0; i < npoints; i++){
-                frho[2 * i] = rho_ap[i];
-                frho[2 * i + 1] = rho_bp[i];
-
-                fsigma[3 * i] = gamma_aap[i];
-                fsigma[3 * i + 1] = gamma_abp[i];
-                fsigma[3 * i + 2] = gamma_bbp[i];
-            }
-
-
-            std::vector<double> fv_rho(npoints*2);
-            std::vector<double> fv_sigma(npoints*3);
-
-            xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
-
-            for (size_t i=0; i < npoints; i++){
-                v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
-                v_rho_a[i] += alpha_ * fv_rho[2 * i];
-                v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
-                v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
-                v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
-                v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
-
-            }
-
-        } else{
-
-            // spin polarized
-            std::vector<double> fv(npoints);
-            std::vector<double> frho(npoints*2);
-            std::vector<double> fv_rho(npoints*2);
-
-            for (size_t i=0; i < npoints; i++){
-                frho[2 * i] = rho_ap[i];
-                frho[2 * i + 1] = rho_bp[i];
-            }
-
-            xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
-
-            for (size_t i=0; i < npoints; i++){
-                v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
-                v_rho_a[i] += alpha_ * fv_rho[2 * i];
-                v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
+            } else{
+                throw PSIEXCEPTION("NYI");
+                // xc_lda_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
             }
         }
-    }
-    if (deriv >= 2){
-        if (meta_){
-            throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
+        if (deriv >= 1) {
+            if (meta_){
 
-        } else if (gga_) {
-            // spin polarized
-            std::vector<double> fv(npoints);
-            std::vector<double> frho(npoints*2);
-            std::vector<double> fsigma(npoints*3);
+                std::vector<double> fv(npoints);
+                std::vector<double> frho(npoints*2);
+                std::vector<double> fsigma(npoints*3);
+                std::vector<double> ftau(npoints*2);
+                std::vector<double> flapl(npoints*2);
 
-            for (size_t i=0; i < npoints; i++){
-                frho[2 * i] = rho_ap[i];
-                frho[2 * i + 1] = rho_bp[i];
+                for (size_t i=0; i < npoints; i++){
+                    frho[2 * i] = rho_ap[i];
+                    frho[2 * i + 1] = rho_bp[i];
 
-                fsigma[3 * i] = gamma_aap[i];
-                fsigma[3 * i + 1] = gamma_abp[i];
-                fsigma[3 * i + 2] = gamma_bbp[i];
-            }
+                    fsigma[3 * i] = gamma_aap[i];
+                    fsigma[3 * i + 1] = gamma_abp[i];
+                    fsigma[3 * i + 2] = gamma_bbp[i];
 
-            std::vector<double> fv2_rho2(npoints*3);
-            std::vector<double> fv2_rhosigma(npoints*6);
-            std::vector<double> fv2_sigma2(npoints*6);
+                    ftau[2 * i] = 0.5 * tau_ap[i];
+                    ftau[2 * i + 1] = 0.5 * tau_bp[i];
 
-            xc_gga_fxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv2_rho2.data(), fv2_rhosigma.data(), fv2_sigma2.data());
-
-            for (size_t i=0; i < npoints; i++){
-                // v2rho2(3)       = (u_u, u_d, d_d)
-                v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
-                v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
-                v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i  + 2];
-
-                // v2sigma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd, dd_dd)
-                v_gamma_aa_gamma_aa[i] += alpha_ * fv2_sigma2[6 * i];
-                v_gamma_aa_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 1];
-                v_gamma_aa_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 2];
-                v_gamma_ab_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 3];
-                v_gamma_ab_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 4];
-                v_gamma_bb_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 5];
-
-                // v2rhosigma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
-                v_rho_a_gamma_aa[i] += alpha_ * fv2_rhosigma[6 * i];
-                v_rho_a_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 1];
-                v_rho_a_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 2];
-                v_rho_b_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 3];
-                v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 4];
-                v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 5];
-            }
+                    // flapl[2 * i] = lapl_ap[i];
+                    // flapl[2 * i + 1] = lapl_bp[i];
+                }
 
 
-        } else{
-            // spin polarized
-            std::vector<double> fv(npoints);
-            std::vector<double> frho(npoints*2);
+                std::vector<double> fv_rho(npoints*2);
+                std::vector<double> fv_sigma(npoints*3);
+                std::vector<double> fv_lapl(npoints*2);
+                std::vector<double> fv_tau(npoints*2);
 
-            for (size_t i=0; i < npoints; i++){
-                frho[2 * i] = rho_ap[i];
-                frho[2 * i + 1] = rho_bp[i];
-            }
+                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
+                                fsigma.data(), flapl.data(), ftau.data(),
+                                fv.data(), fv_rho.data(), fv_sigma.data(),
+                                fv_lapl.data(), fv_tau.data());
 
-            std::vector<double> fv2_rho2(npoints*3);
 
-            xc_lda_fxc(&xc_functional_, npoints, rho_ap, fv2_rho2.data());
+                for (size_t i=0; i < npoints; i++){
+                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
+                    v_rho_a[i] += alpha_ * fv_rho[2 * i];
+                    v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
+                    v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
+                    v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
+                    v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
+                    v_tau_a[i] += alpha_ * 0.5 * fv_tau[2 * i];
+                    v_tau_b[i] += alpha_ * 0.5 * fv_tau[2 * i + 1];
 
-            for (size_t i=0; i < npoints; i++){
-                // v2rho2(3)       = (u_u, u_d, d_d)
-                v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
-                v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
-                v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i  + 2];
+                }
+
+            } else if (gga_) {
+
+                // spin polarized
+                std::vector<double> fv(npoints);
+                std::vector<double> frho(npoints*2);
+                std::vector<double> fsigma(npoints*3);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[2 * i] = rho_ap[i];
+                    frho[2 * i + 1] = rho_bp[i];
+
+                    fsigma[3 * i] = gamma_aap[i];
+                    fsigma[3 * i + 1] = gamma_abp[i];
+                    fsigma[3 * i + 2] = gamma_bbp[i];
+                }
+
+
+                std::vector<double> fv_rho(npoints*2);
+                std::vector<double> fv_sigma(npoints*3);
+
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
+
+                for (size_t i=0; i < npoints; i++){
+                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
+                    v_rho_a[i] += alpha_ * fv_rho[2 * i];
+                    v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
+                    v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
+                    v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
+                    v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
+
+                }
+
+            } else{
+
+                // spin polarized
+                std::vector<double> fv(npoints);
+                std::vector<double> frho(npoints*2);
+                std::vector<double> fv_rho(npoints*2);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[2 * i] = rho_ap[i];
+                    frho[2 * i + 1] = rho_bp[i];
+                }
+
+                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
+
+                for (size_t i=0; i < npoints; i++){
+                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
+                    v_rho_a[i] += alpha_ * fv_rho[2 * i];
+                    v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
+                }
             }
         }
-    }
-    if (deriv > 2) {
-        throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 3 ");
-    }
+        if (deriv >= 2){
+            if (meta_){
+                throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
 
+            } else if (gga_) {
+                // spin polarized
+                std::vector<double> fv(npoints);
+                std::vector<double> frho(npoints*2);
+                std::vector<double> fsigma(npoints*3);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[2 * i] = rho_ap[i];
+                    frho[2 * i + 1] = rho_bp[i];
+
+                    fsigma[3 * i] = gamma_aap[i];
+                    fsigma[3 * i + 1] = gamma_abp[i];
+                    fsigma[3 * i + 2] = gamma_bbp[i];
+                }
+
+                std::vector<double> fv2_rho2(npoints*3);
+                std::vector<double> fv2_rhosigma(npoints*6);
+                std::vector<double> fv2_sigma2(npoints*6);
+
+                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(), fv2_rhosigma.data(), fv2_sigma2.data());
+
+                for (size_t i=0; i < npoints; i++){
+                    // v2rho2(3)       = (u_u, u_d, d_d)
+                    v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
+                    v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
+                    v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i  + 2];
+
+                    // v2sigma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd, dd_dd)
+                    v_gamma_aa_gamma_aa[i] += alpha_ * fv2_sigma2[6 * i];
+                    v_gamma_aa_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 1];
+                    v_gamma_aa_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 2];
+                    v_gamma_ab_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 3];
+                    v_gamma_ab_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 4];
+                    v_gamma_bb_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 5];
+
+                    // v2rhosigma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
+                    v_rho_a_gamma_aa[i] += alpha_ * fv2_rhosigma[6 * i];
+                    v_rho_a_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 1];
+                    v_rho_a_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 2];
+                    v_rho_b_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 3];
+                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 4];
+                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 5];
+                }
+
+
+            } else{
+                // spin polarized
+                std::vector<double> frho(npoints*2);
+
+                for (size_t i=0; i < npoints; i++){
+                    frho[2 * i] = rho_ap[i];
+                    frho[2 * i + 1] = rho_bp[i];
+                }
+
+                std::vector<double> fv2_rho2(npoints*3);
+
+                xc_lda_fxc(&xc_functional_, npoints, frho.data(), fv2_rho2.data());
+
+                for (size_t i=0; i < npoints; i++){
+                    // v2rho2(3)       = (u_u, u_d, d_d)
+                    v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
+                    v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
+                    v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i + 2];
+                }
+            }
+        }
+        if (deriv > 2) {
+            throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 3 ");
+        }
+    } // End polarized
 
 
 }

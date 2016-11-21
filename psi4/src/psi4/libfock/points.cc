@@ -94,8 +94,8 @@ void RKSFunctions::allocate()
         point_values_["RHO_ZZ"] = std::shared_ptr<Vector>(new Vector("RHO_ZZ", max_points_));
         point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
         point_values_["TAU_B"] = point_values_["TAU_A"];
-        point_values_["LAPL_RHO_A"] = std::shared_ptr<Vector>(new Vector("LAPL_RHO_A", max_points_));
-        point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
+        // point_values_["LAPL_RHO_A"] = std::shared_ptr<Vector>(new Vector("LAPL_RHO_A", max_points_));
+        // point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
     }
 }
 void RKSFunctions::set_pointers(SharedMatrix D_AO)

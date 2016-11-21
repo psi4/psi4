@@ -47,10 +47,10 @@ def build_dldf_superfunctional(name, npoints, deriv):
 
     # Add member functionals
     x_coef = 0.6144129
-    dldf_x = core.Functional.build_base('XC_HYB_MGGA_X_DLDF')
+    dldf_x = core.LibXCFunctional('XC_HYB_MGGA_X_DLDF', False)
     # dldf_x.set_alpha(1.0 - x_coef)
     sup.add_x_functional(dldf_x)
-    sup.add_c_functional(core.Functional.build_base('XC_MGGA_C_DLDF'))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_DLDF', False))
 
     sup.set_x_alpha(x_coef)
 

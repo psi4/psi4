@@ -46,8 +46,10 @@ def build_svwn_superfunctional(name, npoints, deriv):
     sup.set_citation('    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_LDA_X'))
-    sup.add_c_functional(core.Functional.build_base('XC_LDA_C_VWN_RPA'))
+    # sup.add_x_functional(core.LibXCFunctional('XC_LDA_X'))
+    # sup.add_c_functional(core.LibXCFunctional('XC_LDA_C_VWN_RPA'))
+    sup.add_x_functional(core.LibXCFunctional('XC_LDA_X', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_LDA_C_VWN_RPA', False))
 
     # Call this last
     sup.allocate()
@@ -68,8 +70,8 @@ def build_blyp_superfunctional(name, npoints, deriv):
     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_B88'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_LYP'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_LYP', False))
 
     # Call this last
     sup.allocate()
@@ -90,8 +92,8 @@ def build_b86bpbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_B86_MGC'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_PBE'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B86_MGC', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
 
     # Call this last
     sup.allocate()
@@ -112,8 +114,8 @@ def build_pw86pbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    J. P. Perdew and W. Yue, Phys. Rev. B 33:8800(R), 1986.\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_PW86'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_PBE'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PW86', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
 
     # Call this last
     sup.allocate()
@@ -134,8 +136,8 @@ def build_pbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_PBE'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_PBE'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PBE', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
 
     # Call this last
     sup.allocate()
@@ -156,9 +158,9 @@ def build_pbe_superfunctional(name, npoints, deriv):
 #     sup.set_citation('    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n')
 
 #     # Add member functionals
-#     wS_X = core.Functional.build_base('wS_X')
+#     wS_X = core.LibXCFunctional('wS_X')
 #     sup.add_x_functional(wS_X)
-#     sup.add_c_functional(core.Functional.build_base('VWN3RPA_C'))
+#     sup.add_c_functional(core.LibXCFunctional('VWN3RPA_C'))
 
 #     # Set GKS up after adding functionals
 #     sup.set_x_omega(0.3)
@@ -187,8 +189,8 @@ def build_pw91_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_PW91'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_PW91'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PW91', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PW91', False))
 
     # Call this last
     sup.allocate()
@@ -209,8 +211,8 @@ def build_bp86_superfunctional(name, npoints, deriv):
     sup.set_citation('    Null\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_B88'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_P86'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_P86', False))
 
     # Call this last
     sup.allocate()
@@ -231,8 +233,8 @@ def build_ft97_superfunctional(name, npoints, deriv):
     sup.set_citation('    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997\n')
 
     # Add member functionals
-    sup.add_x_functional(core.Functional.build_base('XC_GGA_X_FT97_B'))
-    sup.add_c_functional(core.Functional.build_base('XC_GGA_C_FT97'))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_FT97_B', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_FT97', False))
 
 
     # Call this last

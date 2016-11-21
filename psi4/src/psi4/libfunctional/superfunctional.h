@@ -112,7 +112,7 @@ public:
 
     // Build a blank superfunctional
     static std::shared_ptr<SuperFunctional> blank();
-    static std::shared_ptr<SuperFunctional> XC_build(std::string name);
+    static std::shared_ptr<SuperFunctional> XC_build(std::string name, bool unpolarized);
 
     // Allocate values (MUST be called after adding new functionals to the superfunctional)
     void allocate();

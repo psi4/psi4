@@ -194,7 +194,7 @@ def build_libxc_xc_func(name, npoints, deriv):
 
 
     xc_name = find_xc_func_name(name)
-    sup = core.SuperFunctional.XC_build(xc_name)
+    sup = core.SuperFunctional.XC_build(xc_name, True)
 
     descr = "    " + name.upper() + " "
     if sup.is_gga():

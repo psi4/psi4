@@ -62,7 +62,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::blank()
 {
     return std::shared_ptr<SuperFunctional>(new SuperFunctional());
 }
-std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name)
+std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized)
 {
 
     // Only allow build from full XC kernals
@@ -75,7 +75,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name)
     std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
 
     // Build LibXC functional
-    LibXCFunctional* xc_func = new LibXCFunctional(name, false);
+    LibXCFunctional* xc_func = new LibXCFunctional(name, unpolarized);
 
     // Copy params
     sup->set_name(xc_func->name());
