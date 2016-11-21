@@ -31,7 +31,7 @@ List of MGGA SuperFunctionals built from LibXC primitives.
 
 from psi4 import core
 
-def build_dldf_superfunctional(name, npoints, deriv):
+def build_dldf_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -47,10 +47,10 @@ def build_dldf_superfunctional(name, npoints, deriv):
 
     # Add member functionals
     x_coef = 0.6144129
-    dldf_x = core.LibXCFunctional('XC_HYB_MGGA_X_DLDF', False)
+    dldf_x = core.LibXCFunctional('XC_HYB_MGGA_X_DLDF', restricted)
     # dldf_x.set_alpha(1.0 - x_coef)
     sup.add_x_functional(dldf_x)
-    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_DLDF', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_DLDF', restricted))
 
     sup.set_x_alpha(x_coef)
 
@@ -58,14 +58,14 @@ def build_dldf_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, False)
 
-def build_dldfd09_superfunctional(name, npoints, deriv):
-    sup, disp = build_dldf_superfunctional(name, npoints, deriv)
+def build_dldfd09_superfunctional(name, npoints, deriv, restricted):
+    sup, disp = build_dldf_superfunctional(name, npoints, deriv, restricted)
     sup.set_name('dlDF+D09')
 
     return (sup, ('dlDF', '-DAS2009'))
 
-def build_dldfd10_superfunctional(name, npoints, deriv):
-    sup, disp = build_dldf_superfunctional(name, npoints, deriv)
+def build_dldfd10_superfunctional(name, npoints, deriv, restricted):
+    sup, disp = build_dldf_superfunctional(name, npoints, deriv, restricted)
     sup.set_name('dlDF+D')
 
     return (sup, ('dlDF', '-DAS2010'))

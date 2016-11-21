@@ -993,12 +993,13 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
 
     # Figure out functional
     if functional is None:
-        superfunc, disp_type = dft_funcs.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
+        superfunc, disp_type = dft_funcs.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"),
+                                                               (reference == "RKS"))
     elif isinstance(functional, core.SuperFunctional):
         superfunc = functional
         disp_type = False
     elif isinstance(functional, (str, unicode)):
-        superfunc, disp_type = dft_funcsbuild_superfunctional(functional)
+        superfunc, disp_type = dft_funcs.build_superfunctional(functional, (reference == "RKS"))
     else:
         raise ValidationError("Functional %s is not understood" % str(functional))
 

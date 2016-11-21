@@ -730,25 +730,24 @@ void HF::find_occupation()
             old_docc[h] = doccpi_[h];
         }
 
-        if(!input_docc_ && !input_socc_){
+        if (!input_docc_ && !input_socc_) {
             for (int h = 0; h < nirrep_; ++h) {
                 soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
-                doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+                doccpi_[h] = std::min(nalphapi_[h], nbetapi_[h]);
             }
         }
 
         bool occ_changed = false;
-        for(int h = 0; h < nirrep_; ++h){
-            if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
+        for (int h = 0; h < nirrep_; ++h) {
+            if (old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]) {
                 occ_changed = true;
                 break;
             }
         }
 
         // If print > 2 (diagnostics), print always
-        if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
-
-                outfile->Printf( "    Occupation by irrep:\n");
+        if ((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0) {
+            outfile->Printf("    Occupation by irrep:\n");
             print_occupation();
         }
         // Start MOM if needed (called here because we need the nocc

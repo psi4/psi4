@@ -189,12 +189,12 @@ def find_xc_func_name(name):
 
 
 
-def build_libxc_xc_func(name, npoints, deriv):
+def build_libxc_xc_func(name, npoints, deriv, unpolarized):
 
 
 
     xc_name = find_xc_func_name(name)
-    sup = core.SuperFunctional.XC_build(xc_name, True)
+    sup = core.SuperFunctional.XC_build(xc_name, unpolarized)
 
     descr = "    " + name.upper() + " "
     if sup.is_gga():

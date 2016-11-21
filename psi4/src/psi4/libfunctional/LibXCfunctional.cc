@@ -318,7 +318,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
                 for (size_t i=0; i < npoints; i++){
                     frho[i] = 2.0 * rho_ap[i];      // (rho_a + rho_b) -> 2.0
                     fsigma[i] = 4.0 * gamma_aap[i]; // (rho_a + rho_b) ** 2 -> 4.0
-                    ftau[i] = tau_ap[i];            // (tau_a + tau_b) -> 2.0
+                    ftau[i] = tau_ap[i];            // 0.5 * (tau_a + tau_b) -> 2.0
                 }
 
 
@@ -362,7 +362,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
                     v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
                     v_rho_a[i] += alpha_ * fv_rho[i];
                     v_gamma_aa[i] += 2.0 * alpha_ * fv_sigma[i];
-
                 }
 
             } else{

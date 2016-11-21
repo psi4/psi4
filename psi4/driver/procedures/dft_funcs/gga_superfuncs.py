@@ -31,7 +31,7 @@ List of GGA SuperFunctionals built from LibXC primitives.
 
 from psi4 import core
 
-def build_svwn_superfunctional(name, npoints, deriv):
+def build_svwn_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -46,16 +46,14 @@ def build_svwn_superfunctional(name, npoints, deriv):
     sup.set_citation('    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n')
 
     # Add member functionals
-    # sup.add_x_functional(core.LibXCFunctional('XC_LDA_X'))
-    # sup.add_c_functional(core.LibXCFunctional('XC_LDA_C_VWN_RPA'))
-    sup.add_x_functional(core.LibXCFunctional('XC_LDA_X', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_LDA_C_VWN_RPA', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_LDA_X', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_LDA_C_VWN_RPA', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-def build_blyp_superfunctional(name, npoints, deriv):
+def build_blyp_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -70,14 +68,14 @@ def build_blyp_superfunctional(name, npoints, deriv):
     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_LYP', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_LYP', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-def build_b86bpbe_superfunctional(name, npoints, deriv):
+def build_b86bpbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -92,14 +90,14 @@ def build_b86bpbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    A. D. Becke, J. Chem. Phys. 85:7184, 1986.\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B86_MGC', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B86_MGC', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-def build_pw86pbe_superfunctional(name, npoints, deriv):
+def build_pw86pbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -114,14 +112,14 @@ def build_pw86pbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    J. P. Perdew and W. Yue, Phys. Rev. B 33:8800(R), 1986.\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PW86', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PW86', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-def build_pbe_superfunctional(name, npoints, deriv):
+def build_pbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -136,14 +134,14 @@ def build_pbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PBE', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PBE', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-# def build_wsvwn_superfunctional(name, npoints, deriv):
+# def build_wsvwn_superfunctional(name, npoints, deriv, restricted):
 
 #     # Call this first
 #     sup = core.SuperFunctional.blank()
@@ -174,7 +172,7 @@ def build_pbe_superfunctional(name, npoints, deriv):
 #     sup.allocate()
 #     return (sup, False)
 
-def build_pw91_superfunctional(name, npoints, deriv):
+def build_pw91_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -189,14 +187,14 @@ def build_pw91_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PW91', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PW91', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_PW91', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PW91', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-def build_bp86_superfunctional(name, npoints, deriv):
+def build_bp86_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -211,14 +209,14 @@ def build_bp86_superfunctional(name, npoints, deriv):
     sup.set_citation('    Null\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_P86', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_P86', restricted))
 
     # Call this last
     sup.allocate()
     return (sup, False)
 
-def build_ft97_superfunctional(name, npoints, deriv):
+def build_ft97_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -233,8 +231,8 @@ def build_ft97_superfunctional(name, npoints, deriv):
     sup.set_citation('    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_FT97_B', False))
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_FT97', False))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_FT97_B', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_FT97', restricted))
 
 
     # Call this last

@@ -54,7 +54,7 @@ superfunctionals.update(double_hyb_superfuncs.double_hyb_superfunc_list)
 
 superfunctional_list = []
 for key in superfunctionals.keys():
-    sup = superfunctionals[key](key, 1, 1)[0]
+    sup = superfunctionals[key](key, 1, 1, True)[0]
     superfunctional_list.append(sup)
 
 ## ==> Dispersion SuperFunctional List <== ##
@@ -64,28 +64,28 @@ p4_funcs -= set(['b97-d'])
 for dashlvl, dashparam_dict in dftd3.dashcoeff.items():
     func_list = (set(dashparam_dict) & p4_funcs)
     for func in func_list:
-        sup = superfunctionals[func](func, 1, 1)[0]
+        sup = superfunctionals[func](func, 1, 1, True)[0]
         sup.set_name(sup.name() + '-' + dashlvl.upper())
         superfunctional_list.append(sup)
 
         if dashlvl == 'd2p4':
             # -D2 overide
-            sup = superfunctionals[func](func, 1, 1)[0]
+            sup = superfunctionals[func](func, 1, 1, True)[0]
             sup.set_name(sup.name() + '-D2')
             superfunctional_list.append(sup)
 
             # -D overide
-            sup = superfunctionals[func](func, 1, 1)[0]
+            sup = superfunctionals[func](func, 1, 1, True)[0]
             sup.set_name(sup.name() + '-D')
             superfunctional_list.append(sup)
 
         if dashlvl == 'd3zero':
-            sup = superfunctionals[func](func, 1, 1)[0]
+            sup = superfunctionals[func](func, 1, 1, True)[0]
             sup.set_name(sup.name() + '-D3')
             superfunctional_list.append(sup)
 
         if dashlvl == 'd3mzero':
-            sup = superfunctionals[func](func, 1, 1)[0]
+            sup = superfunctionals[func](func, 1, 1, True)[0]
             sup.set_name(sup.name() + '-D3M')
             superfunctional_list.append(sup)
 
@@ -93,20 +93,20 @@ for dashlvl, dashparam_dict in dftd3.dashcoeff.items():
 for dashlvl in dftd3.full_dash_keys:
     if dashlvl == 'd2p4': continue
 
-    sup = superfunctionals['b97-d']('b97-d', 1, 1)[0]
+    sup = superfunctionals['b97-d']('b97-d', 1, 1, True)[0]
     sup.set_name('B97-' + dashlvl.upper())
     superfunctional_list.append(sup)
 
 # wPBE, grr need a new scheme
 for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
-    sup = superfunctionals['wpbe']('wpbe', 1, 1)[0]
+    sup = superfunctionals['wpbe']('wpbe', 1, 1, True)[0]
     sup.set_name(sup.name() + '-' + dashlvl.upper())
     superfunctional_list.append(sup)
 
 
 ## ==> SuperFunctional Builder <== ##
 
-def build_superfunctional(alias):
+def build_superfunctional(alias, restricted):
     name = alias.lower()
 
     npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS");
@@ -119,10 +119,10 @@ def build_superfunctional(alias):
             raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
 
     elif name in superfunctionals.keys():
-        sup = superfunctionals[name](name, npoints, deriv)
+        sup = superfunctionals[name](name, npoints, deriv, restricted)
 
     elif name.upper() in superfunctionals.keys():
-        sup = superfunctionals[name.upper()](name, npoints, deriv)
+        sup = superfunctionals[name.upper()](name, npoints, deriv, restricted)
 
 
 

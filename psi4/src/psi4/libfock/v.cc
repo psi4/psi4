@@ -531,9 +531,9 @@ void RV::compute_V()
             double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
             }
             timer_off("GGA");
         }
@@ -742,9 +742,9 @@ SharedMatrix RV::compute_gradient()
             double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_ax[P]), phi_x[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P] + v_gamma_ab[P] * rho_ay[P]), phi_y[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P] + v_gamma_ab[P] * rho_az[P]), phi_z[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), phi_x[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P]), phi_y[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P]), phi_z[P], 1, Tp[P], 1);
             }
 
         }

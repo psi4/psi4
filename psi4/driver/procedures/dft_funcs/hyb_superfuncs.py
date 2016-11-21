@@ -31,7 +31,7 @@ List of GGA SuperFunctionals built from LibXC primitives.
 
 from psi4 import core
 
-def build_pbe0_superfunctional(name, npoints, deriv):
+def build_pbe0_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -48,10 +48,10 @@ def build_pbe0_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
 
     # Add member functionals
-    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', False)
+    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
     pbe_x.set_alpha(0.75)
     sup.add_x_functional(pbe_x)
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
 
     sup.set_x_alpha(0.25)
 
@@ -59,7 +59,7 @@ def build_pbe0_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, False)
 
-def build_wpbe_superfunctional(name, npoints, deriv):
+def build_wpbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -76,10 +76,10 @@ def build_wpbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
-    pbe_x = core.LibXCFunctional('XC_GGA_X_HJS_PBE', False)
+    pbe_x = core.LibXCFunctional('XC_GGA_X_HJS_PBE', restricted)
     pbe_x.set_omega(0.4)
     sup.add_x_functional(pbe_x)
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.4)
@@ -93,7 +93,7 @@ def build_wpbe_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, False)
 
-def build_wpbe0_superfunctional(name, npoints, deriv):
+def build_wpbe0_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -110,11 +110,11 @@ def build_wpbe0_superfunctional(name, npoints, deriv):
     sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
-    pbe_x = core.LibXCFunctional('XC_GGA_X_HJS_PBE', False)
+    pbe_x = core.LibXCFunctional('XC_GGA_X_HJS_PBE', restricted)
     pbe_x.set_omega(0.3)
     pbe_x.set_alpha(0.75)
     sup.add_x_functional(pbe_x)
-    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', False))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.3)
@@ -128,10 +128,10 @@ def build_wpbe0_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, False)
 
-def build_wb97xd_superfunctional(name, npoints, deriv):
+def build_wb97xd_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
-    sup = core.SuperFunctional.XC_build("XC_HYB_GGA_XC_WB97X_D", False)
+    sup = core.SuperFunctional.XC_build("XC_HYB_GGA_XC_WB97X_D", restricted)
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
 
@@ -149,7 +149,7 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     return (sup, ('wB97', '-CHG'))
 
 
-def build_hfd_superfunctional(name, npoints, deriv):
+def build_hfd_superfunctional(name, npoints, deriv, restricted):
 
     sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
@@ -160,7 +160,7 @@ def build_hfd_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, ('HF', '-DAS2010'))
 
-def build_hf_superfunctional(name, npoints, deriv):
+def build_hf_superfunctional(name, npoints, deriv, restricted):
 
     sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
@@ -186,7 +186,7 @@ hyb_superfunc_list = {
 
 
 
-# def build_wpbesol_superfunctional(name, npoints, deriv):
+# def build_wpbesol_superfunctional(name, npoints, deriv, restricted):
 
 #     # Call this first
 #     sup = core.SuperFunctional.blank()
@@ -219,7 +219,7 @@ hyb_superfunc_list = {
 #     return (sup, False)
 
 
-# def build_wpbesol0_superfunctional(name, npoints, deriv):
+# def build_wpbesol0_superfunctional(name, npoints, deriv, restricted):
 
 #     sup = build_wpbesol_superfunctional(name, npoints, deriv)[0]
 #     sup.set_name('wPBEsol0')

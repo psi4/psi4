@@ -32,7 +32,7 @@ List of GGA SuperFunctionals built from LibXC primitives.
 from psi4 import core
 
 
-def build_b2plyp_superfunctional(name, npoints, deriv):
+def build_b2plyp_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -49,10 +49,10 @@ def build_b2plyp_superfunctional(name, npoints, deriv):
     sup.set_citation('    S. Grimme, J. Chem. Phys., 124, 034108, 2006\n')
 
     # Add member functionals
-    becke = core.LibXCFunctional('XC_GGA_X_B88', False)
+    becke = core.LibXCFunctional('XC_GGA_X_B88', restricted)
     becke.set_alpha(0.47)
     sup.add_x_functional(becke)
-    lyp = core.LibXCFunctional('XC_GGA_C_LYP', False)
+    lyp = core.LibXCFunctional('XC_GGA_C_LYP', restricted)
     lyp.set_alpha(0.73)
     sup.add_c_functional(lyp)
 
@@ -70,7 +70,7 @@ def build_b2plyp_superfunctional(name, npoints, deriv):
 
 
 
-def build_dsd_blyp_superfunctional(name, npoints, deriv):
+def build_dsd_blyp_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -87,10 +87,10 @@ def build_dsd_blyp_superfunctional(name, npoints, deriv):
     sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
     # Add member functionals
-    X = core.LibXCFunctional('XC_GGA_X_B88', False)
+    X = core.LibXCFunctional('XC_GGA_X_B88', restricted)
     X.set_alpha(0.29)
     sup.add_x_functional(X)
-    C = core.LibXCFunctional('XC_GGA_C_LYP', False)
+    C = core.LibXCFunctional('XC_GGA_C_LYP', restricted)
     C.set_alpha(0.55) #  Fix this!
     sup.add_c_functional(C)
 
@@ -109,7 +109,7 @@ def build_dsd_blyp_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
-def build_pbe0_2_superfunctional(name, npoints, deriv):
+def build_pbe0_2_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -126,10 +126,10 @@ def build_pbe0_2_superfunctional(name, npoints, deriv):
     sup.set_citation('    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n')
 
     # Add member functionals
-    X = core.LibXCFunctional('XC_GGA_X_PBE', False)
+    X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
     X.set_alpha(0.206299)
     sup.add_x_functional(X)
-    C = core.LibXCFunctional('XC_GGA_C_PBE', False)
+    C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
     C.set_alpha(0.5)
     sup.add_c_functional(C)
 
@@ -145,7 +145,7 @@ def build_pbe0_2_superfunctional(name, npoints, deriv):
     sup.allocate()
     return (sup, False)
 
-def build_dsd_pbep86_superfunctional(name, npoints, deriv):
+def build_dsd_pbep86_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -162,10 +162,10 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
     sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
     # Add member functionals
-    X = core.LibXCFunctional('XC_GGA_X_PBE', False)
+    X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
     X.set_alpha(0.32)
     sup.add_x_functional(X)
-    C = core.LibXCFunctional('XC_GGA_C_P86', False)
+    C = core.LibXCFunctional('XC_GGA_C_P86', restricted)
     C.set_alpha(0.45)
     sup.add_c_functional(C)
 
@@ -184,7 +184,7 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
-def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
+def build_dsd_pbepbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
     sup = core.SuperFunctional.blank()
@@ -201,10 +201,10 @@ def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
     sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
     # Add member functionals
-    X = core.LibXCFunctional('XC_GGA_X_PBE', False)
+    X = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
     X.set_alpha(0.34)
     sup.add_x_functional(X)
-    C = core.LibXCFunctional('XC_GGA_C_PBE', False)
+    C = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
     C.set_alpha(0.51)
     sup.add_c_functional(C)
 
@@ -232,7 +232,7 @@ double_hyb_superfunc_list = {
 }
 
 
-# def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
+# def build_wb97x_2tqz_superfunctional(name, npoints, deriv, restricted):
 
 #     # Call this first
 #     sup = core.SuperFunctional.blank()
@@ -292,7 +292,7 @@ double_hyb_superfunc_list = {
 #     return (sup, False)
 
 
-# def build_wb97x_2lp_superfunctional(name, npoints, deriv):
+# def build_wb97x_2lp_superfunctional(name, npoints, deriv, restricted):
 
 #     # Call this first
 #     sup = core.SuperFunctional.blank()
