@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(dfmp2-3 "psi;shorttests;df;dfmp2")
+add_regression_test(dfmp2-3 "psi;df;dfmp2")

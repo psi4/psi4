@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(omp2-3 "psi;shorttests;omp")
+add_regression_test(omp2-3 "psi;omp")

@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(adc1 "psi;shorttests;adc")
+add_regression_test(adc1 "psi;adc")

@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(docs-dft "psi;shorttests;docs")
+add_regression_test(docs-dft "psi;docs")

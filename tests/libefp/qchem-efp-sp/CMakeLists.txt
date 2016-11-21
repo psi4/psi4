@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(libefp-qchem-efp-sp "psi;shorttests;libefp;addon")
+add_regression_test(libefp-qchem-efp-sp "psi;libefp;addon")

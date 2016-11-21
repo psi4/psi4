@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(opt-irc-2 "psi;shorttests;opt")
+add_regression_test(opt-irc-2 "psi;opt")
