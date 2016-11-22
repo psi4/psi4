@@ -43,7 +43,6 @@ private:
     std::string xc_func_name_;
     xc_func_type xc_functional_;
     int func_id_;
-    bool unpolarized_;
     double global_exch_;
     double lr_exch_;
 
@@ -57,7 +56,6 @@ public:
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
     double global_exchange() { return global_exch_; }
-    double lr_exchange() { return lr_exch_; }
     double lr_exchange() { return lr_exch_; }
 
 

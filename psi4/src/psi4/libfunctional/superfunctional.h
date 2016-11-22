@@ -175,6 +175,7 @@ public:
     double c_os_alpha() const { return c_os_alpha_; }
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
+    bool is_unpolarized() const;
     bool is_meta() const;
     bool is_gga() const;
     bool is_x_lrc() const { return x_omega_ != 0.0; }

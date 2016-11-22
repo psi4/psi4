@@ -74,8 +74,14 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary,
 
     std::shared_ptr<VBase> v;
     if (type == "RV") {
+        if (!functional->is_unpolarized()){
+            throw PSIEXCEPTION("Passed in functional was polarized for RV reference.");
+        }
         v = std::shared_ptr<VBase>(new RV(functional,primary,options));
     } else if (type == "UV") {
+        if (functional->is_unpolarized()){
+            throw PSIEXCEPTION("Passed in functional was unpolarized for UV reference.");
+        }
         v = std::shared_ptr<VBase>(new UV(functional,primary,options));
     } else if (type == "RK") {
         v = std::shared_ptr<VBase>(new RK(functional,primary,options));
@@ -430,8 +436,7 @@ void RV::print_header() const
 {
     VBase::print_header();
 }
-void RV::compute_V()
-{
+void RV::compute_V() {
     if ((D_AO_.size() != 1) || (V_AO_.size() != 1))
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
 

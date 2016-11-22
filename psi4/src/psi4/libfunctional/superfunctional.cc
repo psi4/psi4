@@ -341,6 +341,30 @@ bool SuperFunctional::is_meta() const
     }
     return false;
 }
+bool SuperFunctional::is_unpolarized() const
+{
+    // Need to make sure they are all the same
+    std::vector<bool> bool_arr;
+
+    for (int i = 0; i < x_functionals_.size(); i++) {
+        bool_arr.push_back(x_functionals_[i]->is_unpolarized());
+    }
+    for (int i = 0; i < c_functionals_.size(); i++) {
+        bool_arr.push_back(c_functionals_[i]->is_unpolarized());
+    }
+
+    size_t num_true = 0;
+    for (int i = 0; i < bool_arr.size(); i++) { num_true += bool_arr[i]; }
+
+    if (num_true == 0){
+        return false;
+    }else if (num_true == bool_arr.size()){
+        return true;
+    }else{
+        outfile->Printf("Mix of polarized and unpolarized functionals detected");
+        throw PSIEXCEPTION("All functionals must either be polarized or unpolarized.");
+    }
+}
 void SuperFunctional::partition_gks()
 {
     // DFAs need to know about omega
@@ -354,6 +378,8 @@ void SuperFunctional::partition_gks()
 }
 void SuperFunctional::allocate()
 {
+    // Make sure were either polarized or not
+    bool is_polar = !is_unpolarized();
     values_.clear();
 
     std::vector<std::string> list;
