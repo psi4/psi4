@@ -29,7 +29,6 @@
 #define dfocc_h
 
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/psifiles.h"
 #include "arrays.h"
 #include "tensors.h"
@@ -37,6 +36,8 @@
 using namespace std;
 
 namespace psi{
+
+class DIISManager;
 
 namespace dfoccwave {
 

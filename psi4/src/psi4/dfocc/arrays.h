@@ -28,12 +28,6 @@
 #ifndef _dfocc_arrays_h_
 #define _dfocc_arrays_h_
 
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libiwl/iwl.h"
-
-#include "psi4/libpsio/psio.hpp"
-
-
 using namespace psi;
 using namespace std;
 
