@@ -58,6 +58,7 @@ public:
 
     double global_exchange() { return global_exch_; }
     double lr_exchange() { return lr_exch_; }
+    double lr_exchange() { return lr_exch_; }
 
 
 

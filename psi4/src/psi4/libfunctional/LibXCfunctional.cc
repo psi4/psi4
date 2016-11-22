@@ -384,124 +384,78 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         }
 
     }else{ // End unpolarized
-
         if (deriv == 0){
-            if (meta_){
-                // outfile->Printf("Executing MGGA");
-                // xc_mgga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
-                throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
-
-            } else if (gga_) {
-                // outfile->Printf("Executing GGA");
-                throw PSIEXCEPTION("NYI");
-                // xc_gga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
-
-            } else{
-                throw PSIEXCEPTION("NYI");
-                // xc_lda_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
-            }
+            throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
         }
+
+        // Allocate input data
+        std::vector<double> frho(npoints * 2);
+        std::vector<double> fv(npoints);
+        std::vector<double> fv_rho(npoints * 2);
+
+        C_DAXPY(npoints, 1.0, rho_ap, 1,  frho.data(),      2);
+        C_DAXPY(npoints, 1.0, rho_bp, 1, (frho.data() + 1), 2);
+
+        std::vector<double> fsigma, fv_sigma;
+        if (gga_) {
+            fsigma.resize(npoints * 3);
+            fv_sigma.resize(npoints * 3);
+
+            C_DAXPY(npoints, 1.0, gamma_aap, 1,  fsigma.data()     , 3);
+            C_DAXPY(npoints, 1.0, gamma_abp, 1, (fsigma.data() + 1), 3);
+            C_DAXPY(npoints, 1.0, gamma_bbp, 1, (fsigma.data() + 2), 3);
+        }
+
+        std::vector<double> ftau, flapl, fv_lapl, fv_tau;
+        if (meta_) {
+            ftau.resize(npoints * 2);
+            flapl.resize(npoints * 2);
+            fv_lapl.resize(npoints * 2);
+            fv_tau.resize(npoints * 2);
+
+            C_DAXPY(npoints, 0.5, tau_ap, 1,  ftau.data()     , 2);
+            C_DAXPY(npoints, 0.5, tau_bp, 1, (ftau.data() + 1), 2);
+        }
+
+        // Compute first deriv
         if (deriv >= 1) {
             if (meta_){
-
-                std::vector<double> fv(npoints);
-                std::vector<double> frho(npoints*2);
-                std::vector<double> fsigma(npoints*3);
-                std::vector<double> ftau(npoints*2);
-                std::vector<double> flapl(npoints*2);
-
-                for (size_t i=0; i < npoints; i++){
-                    frho[2 * i] = rho_ap[i];
-                    frho[2 * i + 1] = rho_bp[i];
-
-                    fsigma[3 * i] = gamma_aap[i];
-                    fsigma[3 * i + 1] = gamma_abp[i];
-                    fsigma[3 * i + 2] = gamma_bbp[i];
-
-                    ftau[2 * i] = 0.5 * tau_ap[i];
-                    ftau[2 * i + 1] = 0.5 * tau_bp[i];
-
-                    // flapl[2 * i] = lapl_ap[i];
-                    // flapl[2 * i + 1] = lapl_bp[i];
-                }
-
-
-                std::vector<double> fv_rho(npoints*2);
-                std::vector<double> fv_sigma(npoints*3);
-                std::vector<double> fv_lapl(npoints*2);
-                std::vector<double> fv_tau(npoints*2);
-
                 xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
                                 fsigma.data(), flapl.data(), ftau.data(),
                                 fv.data(), fv_rho.data(), fv_sigma.data(),
                                 fv_lapl.data(), fv_tau.data());
 
-
-                for (size_t i=0; i < npoints; i++){
-                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
-                    v_rho_a[i] += alpha_ * fv_rho[2 * i];
-                    v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
-                    v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
-                    v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
-                    v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
-                    v_tau_a[i] += alpha_ * 0.5 * fv_tau[2 * i];
-                    v_tau_b[i] += alpha_ * 0.5 * fv_tau[2 * i + 1];
-
-                }
-
             } else if (gga_) {
-
-                // spin polarized
-                std::vector<double> fv(npoints);
-                std::vector<double> frho(npoints*2);
-                std::vector<double> fsigma(npoints*3);
-
-                for (size_t i=0; i < npoints; i++){
-                    frho[2 * i] = rho_ap[i];
-                    frho[2 * i + 1] = rho_bp[i];
-
-                    fsigma[3 * i] = gamma_aap[i];
-                    fsigma[3 * i + 1] = gamma_abp[i];
-                    fsigma[3 * i + 2] = gamma_bbp[i];
-                }
-
-
-                std::vector<double> fv_rho(npoints*2);
-                std::vector<double> fv_sigma(npoints*3);
-
                 xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
 
-                for (size_t i=0; i < npoints; i++){
-                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
-                    v_rho_a[i] += alpha_ * fv_rho[2 * i];
-                    v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
-                    v_gamma_aa[i] += alpha_ * fv_sigma[3 * i];
-                    v_gamma_ab[i] += alpha_ * fv_sigma[3 * i + 1];
-                    v_gamma_bb[i] += alpha_ * fv_sigma[3 * i + 2];
-
-                }
 
             } else{
-
-                // spin polarized
-                std::vector<double> fv(npoints);
-                std::vector<double> frho(npoints*2);
-                std::vector<double> fv_rho(npoints*2);
-
-                for (size_t i=0; i < npoints; i++){
-                    frho[2 * i] = rho_ap[i];
-                    frho[2 * i + 1] = rho_bp[i];
-                }
-
                 xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
 
-                for (size_t i=0; i < npoints; i++){
-                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
-                    v_rho_a[i] += alpha_ * fv_rho[2 * i];
-                    v_rho_b[i] += alpha_ * fv_rho[2 * i + 1];
-                }
             }
+
+            // Re-apply
+            for (size_t i = 0; i < npoints; i++){
+                v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
+            }
+
+            C_DAXPY(npoints, alpha_,  fv_rho.data(),      2, v_rho_a, 1);
+            C_DAXPY(npoints, alpha_, (fv_rho.data() + 1), 2, v_rho_b, 1);
+
+            if (gga_){
+                C_DAXPY(npoints, alpha_,  fv_sigma.data()     , 3, v_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, (fv_sigma.data() + 1), 3, v_gamma_ab, 1);
+                C_DAXPY(npoints, alpha_, (fv_sigma.data() + 2), 3, v_gamma_bb, 1);
+            }
+
+            if (meta_){
+                C_DAXPY(npoints, 0.5 * alpha_,  fv_tau.data(),      2, v_tau_a, 1);
+                C_DAXPY(npoints, 0.5 * alpha_, (fv_tau.data() + 1), 2, v_tau_b, 1);
+            }
+
         }
+
+        // Compute first deriv
         if (deriv >= 2){
             if (meta_){
                 throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
