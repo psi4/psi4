@@ -30,6 +30,7 @@
 #include "LibXCfunctional.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libqt/qt.h"
 
 using namespace psi;
 
@@ -293,99 +294,92 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
     }
 
     if (unpolarized_){
+
         if (deriv == 0){
-            if (meta_){
-                throw PSIEXCEPTION("NYI");
-                // xc_mgga_exc(&xc_functional_, npoints, rho_ap, v);
-
-            } else if (gga_) {
-                throw PSIEXCEPTION("NYI");
-                // xc_gga_exc(&xc_functional_, npoints, rho_ap, gamma_aap, v);
-
-            } else{
-                // outfile->Printf("Executing LDA");
-                throw PSIEXCEPTION("NYI");
-                // xc_lda_exc(&xc_functional_, npoints, rho_ap, v);
-            }
+            throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
         }
+
+        // Allocate
+        std::vector<double> frho(npoints);
+        std::vector<double> fv(npoints);
+        std::vector<double> fv_rho(npoints);
+
+        C_DAXPY(npoints, 2.0, rho_ap, 1, frho.data(), 1);
+
+        // GGA
+        std::vector<double> fsigma, fv_sigma;
+        if (gga_){
+            fsigma.resize(npoints);
+            fv_sigma.resize(npoints);
+            C_DAXPY(npoints, 4.0, gamma_aap, 1, fsigma.data(), 1);
+        }
+
+        // Meta
+        std::vector<double> flapl, fv_lapl, fv_tau;
+        if (meta_){
+            flapl.resize(npoints);
+            fv_lapl.resize(npoints);
+            fv_tau.resize(npoints);
+        }
+
+        // Compute deriv
         if (deriv >= 1) {
-            if (meta_){
-                std::vector<double> frho(npoints);
-                std::vector<double> fsigma(npoints);
-                std::vector<double> ftau(npoints);
-                std::vector<double> flapl(npoints);
 
-                for (size_t i=0; i < npoints; i++){
-                    frho[i] = 2.0 * rho_ap[i];      // (rho_a + rho_b) -> 2.0
-                    fsigma[i] = 4.0 * gamma_aap[i]; // (rho_a + rho_b) ** 2 -> 4.0
-                    ftau[i] = tau_ap[i];            // 0.5 * (tau_a + tau_b) -> 2.0
-                }
-
-
-                std::vector<double> fv(npoints);
-                std::vector<double> fv_rho(npoints);
-                std::vector<double> fv_sigma(npoints);
-                std::vector<double> fv_lapl(npoints);
-                std::vector<double> fv_tau(npoints);
-
+            if (meta_) {
                 xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
-                                fsigma.data(), flapl.data(), ftau.data(),
-                                fv.data(), fv_rho.data(), fv_sigma.data(),
-                                fv_lapl.data(), fv_tau.data());
-
-
-                for (size_t i=0; i < npoints; i++){
-                    v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
-                    v_rho_a[i] += alpha_ * fv_rho[i];
-                    v_gamma_aa[i] += 2.0 * alpha_ * fv_sigma[i];
-                    v_tau_a[i] += 0.5 * alpha_ * fv_tau[i];
-                }
-
+                                fsigma.data(), flapl.data(), tau_ap, fv.data(),
+                                fv_rho.data(), fv_sigma.data(), fv_lapl.data(),
+                                fv_tau.data());
             } else if (gga_) {
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(),
+                               fsigma.data(), fv.data(), fv_rho.data(),
+                               fv_sigma.data());
 
-                // spin polarized
-                std::vector<double> fv(npoints);
-                std::vector<double> frho(npoints);
-                std::vector<double> fsigma(npoints);
+            } else {
+                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(),
+                               fv_rho.data());
+            }
 
-                for (size_t i=0; i < npoints; i++){
-                    frho[i] = 2.0 * rho_ap[i];
-                    fsigma[i] = 4.0 * gamma_aap[i];
-                }
+            // Re-apply
+            for (size_t i = 0; i < npoints; i++){
+                v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
+            }
+            C_DAXPY(npoints, alpha_, fv_rho.data(), 1, v_rho_a, 1);
 
-                std::vector<double> fv_rho(npoints);
-                std::vector<double> fv_sigma(npoints);
+            if (gga_){
+                C_DAXPY(npoints, 2.0 * alpha_, fv_sigma.data(), 1, v_gamma_aa, 1);
+            }
 
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
-
-                for (size_t i=0; i < npoints; i++){
-                    v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
-                    v_rho_a[i] += alpha_ * fv_rho[i];
-                    v_gamma_aa[i] += 2.0 * alpha_ * fv_sigma[i];
-                }
-
-            } else{
-                // spin unpolarized
-                std::vector<double> frho(npoints);
-                std::vector<double> fv(npoints);
-                std::vector<double> fv_rho(npoints);
-
-                for (size_t i=0; i < npoints; i++){
-                    frho[i] = 2.0 * rho_ap[i];
-                }
-
-                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
-
-                for (size_t i=0; i < npoints; i++){
-                    v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
-                    v_rho_a[i] += alpha_ * fv_rho[i];
-                }
+            if (meta_){
+                C_DAXPY(npoints, 0.5 * alpha_, fv_tau.data(), 1, v_tau_a, 1);
             }
 
         }
 
+        // Compute second derivative
         if (deriv >= 2) {
-            throw PSIEXCEPTION("NYI");
+            if (meta_){
+                throw PSIEXCEPTION("Second derivative for meta functionals is not yet available");
+
+            } else if (gga_) {
+                std::vector<double> fv2_rho2(npoints);
+                std::vector<double> fv2_rhosigma(npoints);
+                std::vector<double> fv2_sigma2(npoints);
+
+                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(), fv2_rhosigma.data(), fv2_sigma2.data());
+
+                C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
+                C_DAXPY(npoints, alpha_, fv2_sigma2.data(), 1, v_gamma_aa_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, fv2_rhosigma.data(), 1, v_rho_a_gamma_aa, 1);
+
+
+            } else{
+                std::vector<double> fv2_rho2(npoints);
+
+                xc_lda_fxc(&xc_functional_, npoints, frho.data(), fv2_rho2.data());
+
+                C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
+            }
 
         }
 
