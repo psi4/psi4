@@ -152,7 +152,7 @@ def build_superfunctional(alias, restricted):
         if base_name not in superfunctionals.keys():
             raise KeyError("SCF: Functional (%s) with base (%s) not found!" % (alias, base_name))
 
-        func = superfunctionals[base_name](base_name, npoints, deriv)[0]
+        func = superfunctionals[base_name](base_name, npoints, deriv, restricted)[0]
 
         base_name = base_name.replace('wpbe', 'lcwpbe')
         sup = (func, (base_name, dashparam))
