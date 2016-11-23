@@ -26,6 +26,7 @@
  */
 
 #include "dfocc.h"
+#include "psi4/libciomr/libciomr.h"
 
 
 
