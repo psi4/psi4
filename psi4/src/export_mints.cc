@@ -568,6 +568,7 @@ void export_mints(py::module& m)
             def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
             def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring").
             def("mo_transform", &MintsHelper::mo_transform, "docstring").
+            def("set_rel_basisset", &MintsHelper::set_rel_basisset, "docstring").
 
             def("play", &MintsHelper::play, "docstring");
 
