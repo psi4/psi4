@@ -3081,6 +3081,8 @@ def run_sapt(name, **kwargs):
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
     sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
+    sapt_dimer.fix_orientation(True)
+    sapt_dimer.fix_com(True)
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
@@ -3259,6 +3261,8 @@ def run_sapt_ct(name, **kwargs):
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
     sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
+    sapt_dimer.fix_orientation(True)
+    sapt_dimer.fix_com(True)
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
