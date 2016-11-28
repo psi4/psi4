@@ -873,6 +873,7 @@ SharedMatrix RV::compute_gradient()
                 }
             }
         }
+        U_local.reset();
     }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
@@ -981,45 +982,7 @@ void UV::compute_V()
     std::vector<double> rhobyq(num_threads_);
     std::vector<double> rhobzq(num_threads_);
 
-
-
-    // Setup the pointers
-    // SharedMatrix Da_AO = D_AO_[0];
-    // SharedMatrix Va_AO = V_AO_[0];
-    // SharedMatrix Db_AO = D_AO_[1];
-    // SharedMatrix Vb_AO = V_AO_[1];
-    // point_workers_->set_pointers(Da_AO,Db_AO);
-
-    // // What local XC ansatz are we in?
-    // int ansatz = functional_->ansatz();
-
-    // // How many functions are there (for lda in Vtemp, T)
-    // int max_functions = grid_->max_functions();
-    // int max_points = grid_->max_points();
-
-    // Local/global V matrices
-    // SharedMatrix Va_local(new Matrix("Va Temp", max_functions, max_functions));
-    // double** Va2p = Va_local->pointer();
-    // SharedMatrix Vb_local(new Matrix("Vb Temp", max_functions, max_functions));
-    // double** Vb2p = Vb_local->pointer();
-
-
-    // Traverse the blocks of points
-    // double functionalq = 0.0;
-    // double rhoaq       = 0.0;
-    // double rhoaxq      = 0.0;
-    // double rhoayq      = 0.0;
-    // double rhoazq      = 0.0;
-    // double rhobq       = 0.0;
-    // double rhobxq      = 0.0;
-    // double rhobyq      = 0.0;
-    // double rhobzq      = 0.0;
-    // std::shared_ptr<Vector> QTa(new Vector("Quadrature Temp", max_points));
-    // double* QTap = QTa->pointer();
-    // std::shared_ptr<Vector> QTb(new Vector("Quadrature Temp", max_points));
-    // double* QTbp = QTb->pointer();
-    // const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
-
+    // Loop over grid
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
 
         // Get thread info
@@ -1187,16 +1150,15 @@ void UV::compute_V()
         timer_off("V_XC");
     }
 
-    rank = 0;
-    quad_values_["FUNCTIONAL"] = functionalq[rank];
-    quad_values_["RHO_A"]      = rhoaq[rank];
-    quad_values_["RHO_AX"]     = rhoaxq[rank];
-    quad_values_["RHO_AY"]     = rhoayq[rank];
-    quad_values_["RHO_AZ"]     = rhoazq[rank];
-    quad_values_["RHO_B"]      = rhobq[rank];
-    quad_values_["RHO_BX"]     = rhobxq[rank];
-    quad_values_["RHO_BY"]     = rhobyq[rank];
-    quad_values_["RHO_BZ"]     = rhobzq[rank];
+    quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
+    quad_values_["RHO_A"]      = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
+    quad_values_["RHO_AX"]     = std::accumulate(rhoaxq.begin(), rhoaxq.end(), 0.0);
+    quad_values_["RHO_AY"]     = std::accumulate(rhoayq.begin(), rhoayq.end(), 0.0);
+    quad_values_["RHO_AZ"]     = std::accumulate(rhoazq.begin(), rhoazq.end(), 0.0);
+    quad_values_["RHO_B"]      = std::accumulate(rhobq.begin(), rhobq.end(), 0.0);
+    quad_values_["RHO_BX"]     = std::accumulate(rhobxq.begin(), rhobxq.end(), 0.0);
+    quad_values_["RHO_BY"]     = std::accumulate(rhobyq.begin(), rhobyq.end(), 0.0);
+    quad_values_["RHO_BZ"]     = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
 
     if (debug_) {
         outfile->Printf( "   => Numerical Integrals <=\n\n");
@@ -1222,46 +1184,37 @@ SharedMatrix UV::compute_gradient()
     SharedMatrix G(new Matrix("XC Gradient", natom,3));
     double** Gp = G->pointer();
 
-    // Set Hessian derivative level in properties
-    int old_deriv = point_workers_[0]->deriv();
-    point_workers_[0]->set_deriv((functional_->is_gga() || functional_->is_meta() ? 2 : 1));
-
-    // Setup the pointers
-    SharedMatrix Da_AO = D_AO_[0];
-    SharedMatrix Db_AO = D_AO_[1];
-    point_workers_[0]->set_pointers(Da_AO, Db_AO);
-
     // What local XC ansatz are we in?
-//    int ansatz = functional_->ansatz();
+   int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions();
     int max_points = grid_->max_points();
 
-    // Scratch
-    std::vector<SharedMatrix> scratch = point_workers_[0]->scratch();
-    SharedMatrix Ta_local = scratch[0];
-    SharedMatrix Ua_local(Ta_local->clone());
-    SharedMatrix Tb_local = scratch[1];
-    SharedMatrix Ub_local(Tb_local->clone());
-    double** Tap = Ta_local->pointer();
-    double** Uap = Ua_local->pointer();
-    double** Tbp = Tb_local->pointer();
-    double** Ubp = Ub_local->pointer();
-    std::vector<SharedMatrix> Dscratch = point_workers_[0]->D_scratch();
-    SharedMatrix Da_local = Dscratch[0];
-    SharedMatrix Db_local = Dscratch[1];
-    double** Dap = Da_local->pointer();
-    double** Dbp = Db_local->pointer();
+    // Set Hessian derivative level in properties
+    int old_deriv = point_workers_[0]->deriv();
 
-    // Traverse the blocks of points
-    std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
-    double* QTp = QT->pointer();
-    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
-
-    for (std::map<std::string, double>::const_iterator it = quad_values_.begin(); it != quad_values_.end(); ++it) {
-        quad_values_[(*it).first] = 0.0;
+    // Setup the pointers
+    for (size_t i = 0; i < num_threads_; i++){
+        point_workers_[i]->set_pointers(D_AO_[0], D_AO_[1]);
+        point_workers_[i]->set_deriv((functional_->is_gga() || functional_->is_meta() ? 2 : 1));
     }
+
+    // Thread scratch
+    std::vector<std::shared_ptr<Vector>> Q_temp;
+    for (size_t i = 0; i < num_threads_; i++){
+        Q_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature Temp", max_points)));
+    }
+
+    std::vector<double> functionalq(num_threads_);
+    std::vector<double> rhoaq(num_threads_);
+    std::vector<double> rhoaxq(num_threads_);
+    std::vector<double> rhoayq(num_threads_);
+    std::vector<double> rhoazq(num_threads_);
+    std::vector<double> rhobq(num_threads_);
+    std::vector<double> rhobxq(num_threads_);
+    std::vector<double> rhobyq(num_threads_);
+    std::vector<double> rhobzq(num_threads_);
 
 
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
@@ -1273,12 +1226,20 @@ SharedMatrix UV::compute_gradient()
 
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
-        // double** Va2p = Va_local[rank]->pointer();
-        // double** Vb2p = Vb_local[rank]->pointer();
-        // double* QTap = Qa_temp[rank]->pointer();
-        // double* QTbp = Qb_temp[rank]->pointer();
+        double* QTp = Q_temp[rank]->pointer();
 
-        std::shared_ptr<BlockOPoints> block = blocks[Q];
+        double** Tap = pworker->scratch()[0]->pointer();
+        double** Tbp = pworker->scratch()[1]->pointer();
+        double** Dap = pworker->D_scratch()[0]->pointer();
+        double** Dbp = pworker->D_scratch()[1]->pointer();
+
+        SharedMatrix Ua_local(pworker->scratch()[0]->clone());
+        double** Uap = Ua_local->pointer();
+        SharedMatrix Ub_local(pworker->scratch()[1]->clone());
+        double** Ubp = Ub_local->pointer();
+
+        // Grid info
+        std::shared_ptr<BlockOPoints> block = grid_->blocks()[Q];
         int npoints = block->npoints();
         double* x = block->x();
         double* y = block->y();
@@ -1287,13 +1248,16 @@ SharedMatrix UV::compute_gradient()
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
+        // Compute grid and functional
         timer_on("Properties");
         pworker->compute_points(block);
         timer_off("Properties");
+
         timer_on("Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
         timer_off("Functional");
 
+        // More pointers
         double** phi = pworker->basis_value("PHI")->pointer();
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
         double** phi_y = pworker->basis_value("PHI_Y")->pointer();
@@ -1305,21 +1269,21 @@ SharedMatrix UV::compute_gradient()
         double* v_rho_b = vals["V_RHO_B"]->pointer();
 
         // => Quadrature values <= //
-        quad_values_["FUNCTIONAL"] += C_DDOT(npoints,w,1,zk,1);
+        functionalq[rank] += C_DDOT(npoints,w,1,zk,1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_a[P];
         }
-        quad_values_["RHO_A"] += C_DDOT(npoints,w,1,rho_a,1);
-        quad_values_["RHO_AX"] += C_DDOT(npoints,QTp,1,x,1);
-        quad_values_["RHO_AY"] += C_DDOT(npoints,QTp,1,y,1);
-        quad_values_["RHO_AZ"] += C_DDOT(npoints,QTp,1,z,1);
+        rhoaq[rank]  += C_DDOT(npoints,w,1,rho_a,1);
+        rhoaxq[rank] += C_DDOT(npoints,QTp,1,x,1);
+        rhoayq[rank] += C_DDOT(npoints,QTp,1,y,1);
+        rhoazq[rank] += C_DDOT(npoints,QTp,1,z,1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_b[P];
         }
-        quad_values_["RHO_B"] += C_DDOT(npoints,w,1,rho_b,1);
-        quad_values_["RHO_BX"] += C_DDOT(npoints,QTp,1,x,1);
-        quad_values_["RHO_BY"] += C_DDOT(npoints,QTp,1,y,1);
-        quad_values_["RHO_BZ"] += C_DDOT(npoints,QTp,1,z,1);
+        rhobq[rank]  += C_DDOT(npoints,w,1,rho_b,1);
+        rhobxq[rank] += C_DDOT(npoints,QTp,1,x,1);
+        rhobyq[rank] += C_DDOT(npoints,QTp,1,y,1);
+        rhobzq[rank] += C_DDOT(npoints,QTp,1,z,1);
 
         // => LSDA Contribution <= //
         for (int P = 0; P < npoints; P++) {
@@ -1494,8 +1458,20 @@ SharedMatrix UV::compute_gradient()
                 }
             }
         }
+        Ua_local.reset();
+        Ub_local.reset();
 
     }
+
+    quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
+    quad_values_["RHO_A"]      = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
+    quad_values_["RHO_AX"]     = std::accumulate(rhoaxq.begin(), rhoaxq.end(), 0.0);
+    quad_values_["RHO_AY"]     = std::accumulate(rhoayq.begin(), rhoayq.end(), 0.0);
+    quad_values_["RHO_AZ"]     = std::accumulate(rhoazq.begin(), rhoazq.end(), 0.0);
+    quad_values_["RHO_B"]      = std::accumulate(rhobq.begin(), rhobq.end(), 0.0);
+    quad_values_["RHO_BX"]     = std::accumulate(rhobxq.begin(), rhobxq.end(), 0.0);
+    quad_values_["RHO_BY"]     = std::accumulate(rhobyq.begin(), rhobyq.end(), 0.0);
+    quad_values_["RHO_BZ"]     = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
 
     if (debug_) {
         outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
