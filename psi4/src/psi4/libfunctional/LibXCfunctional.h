@@ -50,8 +50,13 @@ public:
 
     LibXCFunctional(std::string xc_name, bool unpolarized);
     virtual ~LibXCFunctional();
+
     virtual void compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha);
 
+    // Clones a *worker* for the functional. This is not a complete functional
+    virtual std::shared_ptr<Functional> build_worker();
+
+    // Setters and getters
     void set_omega(double omega);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 

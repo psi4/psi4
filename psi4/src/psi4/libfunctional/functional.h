@@ -94,6 +94,9 @@ public:
     // Build a base version of a DFA functional (say B97_X)
     static std::shared_ptr<Functional> build_base(const std::string& alias);
 
+    // Clones a *worker* for the functional. This is not a complete functional
+    virtual std::shared_ptr<Functional> build_worker();
+
     // => Computers <= //
 
     virtual void compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha) = 0;

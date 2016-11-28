@@ -188,7 +188,6 @@ def find_xc_func_name(name):
     raise KeyError("LibXC keyname %s was not found!")
 
 
-
 def build_libxc_xc_func(name, npoints, deriv, unpolarized):
 
 

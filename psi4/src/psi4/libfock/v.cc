@@ -472,7 +472,6 @@ void RV::compute_V() {
     std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double * QTp = QT->pointer();
     const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
-    properties_->set_deriv(2);
 
     for (size_t Q = 0; Q < blocks.size(); Q++) {
 

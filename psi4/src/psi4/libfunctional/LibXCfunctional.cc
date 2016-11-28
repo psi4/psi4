@@ -36,25 +36,21 @@ using namespace psi;
 
 namespace psi {
 
-LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized)
-{
-
+LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     xc_func_name_ = xc_name;
     func_id_ = xc_functional_get_number(xc_name.c_str());
     unpolarized_ = unpolarized;
     lr_exch_ = 0.0;
     global_exch_ = 0.0;
 
-
     // Build the functional
     int polar_value;
-    if (unpolarized_){
+    if (unpolarized_) {
         polar_value = 1;
-    }
-    else{
+    } else {
         polar_value = 2;
     }
-    if(xc_func_init(&xc_functional_, func_id_, polar_value) != 0){
+    if (xc_func_init(&xc_functional_, func_id_, polar_value) != 0) {
         outfile->Printf("Functional '%d' not found\n", xc_name.c_str());
         throw PSIEXCEPTION("Could not find required LIBXC functional");
     }
@@ -62,9 +58,9 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized)
     // Extract citation information
     name_ = xc_name;
     description_ = "    " + std::string(xc_functional_.info->name);
-    for (size_t i=0; i < 5; i++){
-        if (xc_functional_.info->refs[i]){
-            if (i != 0){
+    for (size_t i = 0; i < 5; i++) {
+        if (xc_functional_.info->refs[i]) {
+            if (i != 0) {
                 citation_ += "\n";
             }
             citation_ += "    ";
@@ -89,8 +85,10 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized)
 
             lr_exch_ = alpha;
             global_exch_ = alpha + beta;
-            if (std::abs(1.0 - lr_exch_) > 1.e14){
-                throw PSIEXCEPTION("PSI Currently cannot computation functionals with less than 100%% long range exact exchange.\n");
+            if (std::abs(1.0 - lr_exch_) > 1.e14) {
+                throw PSIEXCEPTION(
+                    "PSI Currently cannot computation functionals with less than 100%% long range "
+                    "exact exchange.\n");
             }
 
         } else {
@@ -102,38 +100,53 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized)
     int family = xc_functional_.info->family;
 
     std::vector<int> gga_vec = {XC_FAMILY_GGA, XC_FAMILY_HYB_GGA};
-    if ( std::find(gga_vec.begin(), gga_vec.end(), family) != gga_vec.end() ){
+    if (std::find(gga_vec.begin(), gga_vec.end(), family) != gga_vec.end()) {
         gga_ = true;
     }
 
     std::vector<int> meta_vec = {XC_FAMILY_MGGA, XC_FAMILY_HYB_MGGA};
-    if ( std::find(meta_vec.begin(), meta_vec.end(), family) != meta_vec.end() ){
+    if (std::find(meta_vec.begin(), meta_vec.end(), family) != meta_vec.end()) {
         gga_ = true;
         meta_ = true;
     }
+}
+LibXCFunctional::~LibXCFunctional() { xc_func_end(&xc_functional_); }
+std::shared_ptr<Functional> LibXCFunctional::build_worker() {
 
+    // Build functional
+    std::shared_ptr<Functional> func =
+        static_cast<std::shared_ptr<Functional>>(new LibXCFunctional(xc_func_name_, unpolarized_));
+
+    // Tweak
+    if (omega_ != 0.0) {
+        func->set_omega(omega_);
+    }
+
+    func->set_alpha(alpha_);
+    func->set_gga(gga_);
+    func->set_meta(meta_);
+    func->set_lsda_cutoff(lsda_cutoff_);
+    func->set_meta_cutoff(meta_cutoff_);
+
+    return func;
 }
-LibXCFunctional::~LibXCFunctional()
-{
-    xc_func_end(&xc_functional_);
-}
-void LibXCFunctional::set_omega(double omega){
+void LibXCFunctional::set_omega(double omega) {
+
     omega_ = omega;
-    if(xc_func_name_ == "XC_GGA_X_WPBEH"){
+    if (xc_func_name_ == "XC_GGA_X_WPBEH") {
         xc_gga_x_wpbeh_set_params(&xc_functional_, omega);
-    }else if (xc_func_name_ == "XC_GGA_X_HJS_PBE"){
+    } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {
         xc_gga_x_hjs_set_params(&xc_functional_, omega);
-    }else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X"){
+    } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
         xc_functional_.cam_omega = omega;
-    }else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97"){
+    } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
         xc_functional_.cam_omega = omega;
     } else {
         outfile->Printf("set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
         throw PSIEXCEPTION("set_omega not defined for input functional");
     }
 }
-std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(){
-
+std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data() {
     std::vector<std::tuple<std::string, int, double>> ret;
 
     if (xc_functional_.mix_coef == nullptr) {
@@ -144,8 +157,7 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
 
     } else {
         for (size_t i = 0; i < xc_functional_.n_func_aux; i++) {
-            std::string name =
-                std::string(xc_functional_.func_aux[i]->info->name);
+            std::string name = std::string(xc_functional_.func_aux[i]->info->name);
             int kind = xc_functional_.func_aux[i]->info->kind;
             double coef = xc_functional_.mix_coef[i];
 
@@ -154,9 +166,9 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
     }
     return ret;
 }
-void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double x_alpha)
-{
-
+void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector>& in,
+                                         const std::map<std::string, SharedVector>& out,
+                                         int npoints, int deriv, double x_alpha) {
     // => Input variables <= //
 
     double* rho_ap = NULL;
@@ -180,7 +192,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         gamma_abp = in.find("GAMMA_AB")->second->pointer();
         gamma_bbp = in.find("GAMMA_BB")->second->pointer();
     }
-    if (meta_)  {
+    if (meta_) {
         tau_ap = in.find("TAU_A")->second->pointer();
         tau_bp = in.find("TAU_B")->second->pointer();
         // lapl_ap = in.find("LAPL_RHO_A")->second->pointer();
@@ -293,9 +305,8 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         }
     }
 
-    if (unpolarized_){
-
-        if (deriv == 0){
+    if (unpolarized_) {
+        if (deriv == 0) {
             throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
         }
 
@@ -308,7 +319,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
 
         // GGA
         std::vector<double> fsigma, fv_sigma;
-        if (gga_){
+        if (gga_) {
             fsigma.resize(npoints);
             fv_sigma.resize(npoints);
             C_DAXPY(npoints, 4.0, gamma_aap, 1, fsigma.data(), 1);
@@ -316,7 +327,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
 
         // Meta
         std::vector<double> flapl, fv_lapl, fv_tau;
-        if (meta_){
+        if (meta_) {
             flapl.resize(npoints);
             fv_lapl.resize(npoints);
             fv_tau.resize(npoints);
@@ -324,67 +335,63 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
 
         // Compute deriv
         if (deriv >= 1) {
-
             if (meta_) {
-                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
-                                fsigma.data(), flapl.data(), tau_ap, fv.data(),
-                                fv_rho.data(), fv_sigma.data(), fv_lapl.data(),
+                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), flapl.data(),
+                                tau_ap, fv.data(), fv_rho.data(), fv_sigma.data(), fv_lapl.data(),
                                 fv_tau.data());
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(),
-                               fsigma.data(), fv.data(), fv_rho.data(),
-                               fv_sigma.data());
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(),
+                               fv_rho.data(), fv_sigma.data());
 
             } else {
-                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(),
-                               fv_rho.data());
+                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
             }
 
             // Re-apply
-            for (size_t i = 0; i < npoints; i++){
+            for (size_t i = 0; i < npoints; i++) {
                 v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
             }
             C_DAXPY(npoints, alpha_, fv_rho.data(), 1, v_rho_a, 1);
 
-            if (gga_){
+            if (gga_) {
                 C_DAXPY(npoints, 2.0 * alpha_, fv_sigma.data(), 1, v_gamma_aa, 1);
             }
 
-            if (meta_){
+            if (meta_) {
                 C_DAXPY(npoints, 0.5 * alpha_, fv_tau.data(), 1, v_tau_a, 1);
             }
-
         }
 
         // Compute second derivative
         if (deriv >= 2) {
-            if (meta_){
-                throw PSIEXCEPTION("Second derivative for meta functionals is not yet available");
+            if (meta_) {
+                throw PSIEXCEPTION(
+                    "Second derivative for meta functionals is not yet "
+                    "available");
 
             } else if (gga_) {
                 std::vector<double> fv2_rho2(npoints);
                 std::vector<double> fv2_rhosigma(npoints);
                 std::vector<double> fv2_sigma2(npoints);
 
-                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(), fv2_rhosigma.data(), fv2_sigma2.data());
+                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(),
+                           fv2_rhosigma.data(), fv2_sigma2.data());
 
                 C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
                 C_DAXPY(npoints, alpha_, fv2_sigma2.data(), 1, v_gamma_aa_gamma_aa, 1);
                 C_DAXPY(npoints, alpha_, fv2_rhosigma.data(), 1, v_rho_a_gamma_aa, 1);
 
-
-            } else{
+            } else {
                 std::vector<double> fv2_rho2(npoints);
 
                 xc_lda_fxc(&xc_functional_, npoints, frho.data(), fv2_rho2.data());
 
                 C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
             }
-
         }
 
-    }else{ // End unpolarized
-        if (deriv == 0){
+    } else {  // End unpolarized
+        if (deriv == 0) {
             throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
         }
 
@@ -393,7 +400,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         std::vector<double> fv(npoints);
         std::vector<double> fv_rho(npoints * 2);
 
-        C_DAXPY(npoints, 1.0, rho_ap, 1,  frho.data(),      2);
+        C_DAXPY(npoints, 1.0, rho_ap, 1, frho.data(), 2);
         C_DAXPY(npoints, 1.0, rho_bp, 1, (frho.data() + 1), 2);
 
         std::vector<double> fsigma, fv_sigma;
@@ -401,7 +408,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
             fsigma.resize(npoints * 3);
             fv_sigma.resize(npoints * 3);
 
-            C_DAXPY(npoints, 1.0, gamma_aap, 1,  fsigma.data()     , 3);
+            C_DAXPY(npoints, 1.0, gamma_aap, 1, fsigma.data(), 3);
             C_DAXPY(npoints, 1.0, gamma_abp, 1, (fsigma.data() + 1), 3);
             C_DAXPY(npoints, 1.0, gamma_bbp, 1, (fsigma.data() + 2), 3);
         }
@@ -413,60 +420,57 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
             fv_lapl.resize(npoints * 2);
             fv_tau.resize(npoints * 2);
 
-            C_DAXPY(npoints, 0.5, tau_ap, 1,  ftau.data()     , 2);
+            C_DAXPY(npoints, 0.5, tau_ap, 1, ftau.data(), 2);
             C_DAXPY(npoints, 0.5, tau_bp, 1, (ftau.data() + 1), 2);
         }
 
         // Compute first deriv
         if (deriv >= 1) {
-            if (meta_){
-                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(),
-                                fsigma.data(), flapl.data(), ftau.data(),
-                                fv.data(), fv_rho.data(), fv_sigma.data(),
+            if (meta_) {
+                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), flapl.data(),
+                                ftau.data(), fv.data(), fv_rho.data(), fv_sigma.data(),
                                 fv_lapl.data(), fv_tau.data());
 
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(), fv_rho.data(), fv_sigma.data());
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(),
+                               fv_rho.data(), fv_sigma.data());
 
-
-            } else{
+            } else {
                 xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
-
             }
 
             // Re-apply
-            for (size_t i = 0; i < npoints; i++){
+            for (size_t i = 0; i < npoints; i++) {
                 v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
             }
 
-            C_DAXPY(npoints, alpha_,  fv_rho.data(),      2, v_rho_a, 1);
+            C_DAXPY(npoints, alpha_, fv_rho.data(), 2, v_rho_a, 1);
             C_DAXPY(npoints, alpha_, (fv_rho.data() + 1), 2, v_rho_b, 1);
 
-            if (gga_){
-                C_DAXPY(npoints, alpha_,  fv_sigma.data()     , 3, v_gamma_aa, 1);
+            if (gga_) {
+                C_DAXPY(npoints, alpha_, fv_sigma.data(), 3, v_gamma_aa, 1);
                 C_DAXPY(npoints, alpha_, (fv_sigma.data() + 1), 3, v_gamma_ab, 1);
                 C_DAXPY(npoints, alpha_, (fv_sigma.data() + 2), 3, v_gamma_bb, 1);
             }
 
-            if (meta_){
-                C_DAXPY(npoints, 0.5 * alpha_,  fv_tau.data(),      2, v_tau_a, 1);
+            if (meta_) {
+                C_DAXPY(npoints, 0.5 * alpha_, fv_tau.data(), 2, v_tau_a, 1);
                 C_DAXPY(npoints, 0.5 * alpha_, (fv_tau.data() + 1), 2, v_tau_b, 1);
             }
-
         }
 
         // Compute first deriv
-        if (deriv >= 2){
-            if (meta_){
+        if (deriv >= 2) {
+            if (meta_) {
                 throw PSIEXCEPTION("TRYING TO COMPUTE MGGA FUNCTIONAL");
 
             } else if (gga_) {
                 // spin polarized
                 std::vector<double> fv(npoints);
-                std::vector<double> frho(npoints*2);
-                std::vector<double> fsigma(npoints*3);
+                std::vector<double> frho(npoints * 2);
+                std::vector<double> fsigma(npoints * 3);
 
-                for (size_t i=0; i < npoints; i++){
+                for (size_t i = 0; i < npoints; i++) {
                     frho[2 * i] = rho_ap[i];
                     frho[2 * i + 1] = rho_bp[i];
 
@@ -475,19 +479,21 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
                     fsigma[3 * i + 2] = gamma_bbp[i];
                 }
 
-                std::vector<double> fv2_rho2(npoints*3);
-                std::vector<double> fv2_rhosigma(npoints*6);
-                std::vector<double> fv2_sigma2(npoints*6);
+                std::vector<double> fv2_rho2(npoints * 3);
+                std::vector<double> fv2_rhosigma(npoints * 6);
+                std::vector<double> fv2_sigma2(npoints * 6);
 
-                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(), fv2_rhosigma.data(), fv2_sigma2.data());
+                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(),
+                           fv2_rhosigma.data(), fv2_sigma2.data());
 
-                for (size_t i=0; i < npoints; i++){
+                for (size_t i = 0; i < npoints; i++) {
                     // v2rho2(3)       = (u_u, u_d, d_d)
                     v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
                     v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
-                    v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i  + 2];
+                    v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i + 2];
 
-                    // v2sigma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd, dd_dd)
+                    // v2sigma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd,
+                    // dd_dd)
                     v_gamma_aa_gamma_aa[i] += alpha_ * fv2_sigma2[6 * i];
                     v_gamma_aa_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 1];
                     v_gamma_aa_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 2];
@@ -504,21 +510,20 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
                     v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 5];
                 }
 
-
-            } else{
+            } else {
                 // spin polarized
-                std::vector<double> frho(npoints*2);
+                std::vector<double> frho(npoints * 2);
 
-                for (size_t i=0; i < npoints; i++){
+                for (size_t i = 0; i < npoints; i++) {
                     frho[2 * i] = rho_ap[i];
                     frho[2 * i + 1] = rho_bp[i];
                 }
 
-                std::vector<double> fv2_rho2(npoints*3);
+                std::vector<double> fv2_rho2(npoints * 3);
 
                 xc_lda_fxc(&xc_functional_, npoints, frho.data(), fv2_rho2.data());
 
-                for (size_t i=0; i < npoints; i++){
+                for (size_t i = 0; i < npoints; i++) {
                     // v2rho2(3)       = (u_u, u_d, d_d)
                     v_rho_a_rho_a[i] += alpha_ * fv2_rho2[3 * i];
                     v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
@@ -529,9 +534,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string,SharedVector
         if (deriv > 2) {
             throw PSIEXCEPTION("TRYING TO COPMUTE DERIV > 3 ");
         }
-    } // End polarized
-
-
+    }  // End polarized
 }
 
-} // End namespace
+}  // End namespace

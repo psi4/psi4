@@ -36,15 +36,9 @@ using namespace psi;
 
 namespace psi {
 
-SuperFunctional::SuperFunctional()
-{
-    common_init();
-}
-SuperFunctional::~SuperFunctional()
-{
-}
-void SuperFunctional::common_init()
-{
+SuperFunctional::SuperFunctional() { common_init(); }
+SuperFunctional::~SuperFunctional() {}
+void SuperFunctional::common_init() {
     max_points_ = 0;
     deriv_ = 0;
     name_ = "";
@@ -57,14 +51,13 @@ void SuperFunctional::common_init()
     c_ss_alpha_ = 0.0;
     c_os_alpha_ = 0.0;
     libxc_xc_func_ = false;
+    locked_ = false;
 }
-std::shared_ptr<SuperFunctional> SuperFunctional::blank()
-{
+std::shared_ptr<SuperFunctional> SuperFunctional::blank() {
     return std::shared_ptr<SuperFunctional>(new SuperFunctional());
 }
-std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized)
-{
-
+std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name,
+                                                           bool unpolarized) {
     // Only allow build from full XC kernals
     if (name.find("_XC_") == std::string::npos) {
         throw PSIEXCEPTION("XC_build requires full _XC_ functional names");
@@ -72,7 +65,8 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
 
     // Build the superfuncitonal
 
-    std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
+    std::shared_ptr<SuperFunctional> sup =
+        std::shared_ptr<SuperFunctional>(new SuperFunctional());
 
     // Build LibXC functional
     LibXCFunctional* xc_func = new LibXCFunctional(name, unpolarized);
@@ -83,9 +77,28 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_citation(xc_func->citation());
     sup->set_x_omega(xc_func->omega());
     sup->set_x_alpha(xc_func->global_exchange());
+    sup->add_c_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
     sup->libxc_xc_func_ = true;
+    sup->set_lock(true);
 
-    sup->add_c_functional(std::shared_ptr<Functional>(static_cast<Functional*>(xc_func)));
+    return sup;
+}
+std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
+
+    // Build the superfuncitonal
+    std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
+
+    // Clone over parts
+    for (int i = 0; i < x_functionals_.size(); i++) {
+        sup->add_x_functional(x_functionals_[i]->build_worker());
+    }
+    for (int i = 0; i < c_functionals_.size(); i++) {
+        sup->add_c_functional(c_functionals_[i]->build_worker());
+    }
+
+    sup->libxc_xc_func_ = libxc_xc_func_;
+    sup->set_lock(true);
+    sup->allocate();
 
     return sup;
 }
@@ -252,57 +265,48 @@ void SuperFunctional::print(std::string out, int level) const
     }
 
 }
-void SuperFunctional::set_x_omega(double omega) {
-    if (libxc_xc_func_){
+void SuperFunctional::can_edit() {
+    if (libxc_xc_func_) {
         throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
     }
+    if (locked_) {
+        throw PSIEXCEPTION("SuperFunctional is locked and cannot be edited.\n");
+    }
+}
+void SuperFunctional::set_x_omega(double omega) {
+    can_edit();
     x_omega_ = omega;
-    partition_gks();
 }
 void SuperFunctional::set_c_omega(double omega) {
-    if (libxc_xc_func_){
-        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
-    }
+    can_edit();
     c_omega_ = omega;
-    partition_gks();
 }
 void SuperFunctional::set_x_alpha(double alpha) {
-    if (libxc_xc_func_){
-        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
-    }
+    can_edit();
     x_alpha_ = alpha;
-    partition_gks();
 }
 void SuperFunctional::set_c_alpha(double alpha) {
-    if (libxc_xc_func_){
-        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
-    }
+    can_edit();
     c_alpha_ = alpha;
-    partition_gks();
 }
 void SuperFunctional::set_c_ss_alpha(double alpha) {
-    if (libxc_xc_func_){
-        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
-    }
+    can_edit();
     c_ss_alpha_ = alpha;
-    partition_gks();
 }
 void SuperFunctional::set_c_os_alpha(double alpha) {
-    if (libxc_xc_func_){
-        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
-    }
+    can_edit();
     c_os_alpha_ = alpha;
-    partition_gks();
 }
 void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun) {
+    can_edit();
     x_functionals_.push_back(fun);
 }
-void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun)
-{
+void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun) {
+    can_edit();
     c_functionals_.push_back(fun);
 }
-std::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name)
-{
+std::shared_ptr<Functional> SuperFunctional::c_functional(
+    const std::string& name) {
     for (int Q = 0; Q < c_functionals_.size(); Q++) {
         if (name == c_functionals_[Q]->name())
             return c_functionals_[Q];
@@ -364,17 +368,6 @@ bool SuperFunctional::is_unpolarized() const
         outfile->Printf("Mix of polarized and unpolarized functionals detected");
         throw PSIEXCEPTION("All functionals must either be polarized or unpolarized.");
     }
-}
-void SuperFunctional::partition_gks()
-{
-    // DFAs need to know about omega
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->set_omega(x_omega_);
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->set_omega(c_omega_);
-    }
-    // Do nothing for alpha
 }
 void SuperFunctional::allocate()
 {
