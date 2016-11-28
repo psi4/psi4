@@ -26,6 +26,7 @@
 #
 
 from __future__ import print_function
+# flake8: noqa
 import math
 import re
 from psi4 import core

@@ -28,6 +28,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+# flake8: noqa
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
 from psi4 import core

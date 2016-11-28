@@ -45,6 +45,7 @@ Upper option necessary when psi4metapackage is conda build
 dependency. At least I think that's what's going on.
 
 """
+# flake8: noqa
 
 if '' == 'ON':
     PCMSolver_PARSE_DIR = '/opt/anaconda1anaconda2anaconda3/bin'

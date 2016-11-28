@@ -28,6 +28,7 @@
 """Module with utility functions that act on molecule objects."""
 from __future__ import absolute_import
 import math
+# flake8: noqa
 
 from psi4 import core
 from psi4.driver.p4util import p4const

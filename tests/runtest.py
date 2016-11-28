@@ -32,7 +32,8 @@ import time
 import subprocess
 
 if len(sys.argv) not in [5, 6, 7, 8, 9, 10]:
-    print("""Usage: %s input_file logfile doperltest top_srcdir doreaptest alt_output_file alt_psi4_exe alt_psi4datadir""" % (sys.argv[0]))
+    print("""Usage: %s input_file logfile doperltest top_srcdir doreaptest """
+          """alt_output_file alt_psi4_exe alt_psi4datadir""" % (sys.argv[0]))
     sys.exit(1)
 
 # extract run condition from arguments
@@ -116,8 +117,8 @@ else:
 
 if sowreap == 'true':
     try:
-        retcode = subprocess.Popen([sys.executable, '%s/tests/reap.py' %
-                  (top_srcdir), infile, outfile, logfile, psi, psidatadir])
+        retcode = subprocess.Popen([sys.executable, '%s/tests/reap.py' % (top_srcdir),
+                                   infile, outfile, logfile, psi, psidatadir])
     except OSError as e:
         print("""Can't find reap script: %s """ % (e))
     while True:
@@ -148,6 +149,14 @@ else:
     plexitcode = None
 
 # combine, print, and return (0/1) testing status
-exitcode = 0 if (pyexitcode == 0 and (plexitcode is None or plexitcode == 0) and (reapexitcode is None or reapexitcode == 0)) else 1
-print('Exit Status: infile (', pyexitcode, '); autotest (', plexitcode, '); sowreap (', reapexitcode, '); overall (', exitcode, ')')
+if pyexitcode == 0 and \
+   (plexitcode is None or plexitcode == 0) and \
+   (reapexitcode is None or reapexitcode == 0):
+    exitcode = 0
+else:
+    exitcode = 1
+print('Exit Status: infile (', pyexitcode,
+      '); autotest (', plexitcode,
+      '); sowreap (', reapexitcode,
+      '); overall (', exitcode, ')')
 sys.exit(exitcode)

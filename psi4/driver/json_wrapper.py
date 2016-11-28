@@ -29,7 +29,7 @@
 Runs a JSON input psi file.
 """
 
-
+# flake8: noqa
 from psi4.driver import driver
 from psi4.driver import molutil
 from psi4 import core

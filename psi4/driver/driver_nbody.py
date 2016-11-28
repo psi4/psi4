@@ -28,6 +28,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+# flake8: noqa
 import math
 import numpy as np
 import itertools as it
