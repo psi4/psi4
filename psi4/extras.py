@@ -32,9 +32,12 @@ from . import core
 
 # Numpy place holder for files and cleanup
 numpy_files = []
+
+
 def register_numpy_file(filename):
     if filename not in numpy_files:
         numpy_files.append(filename)
+
 
 def clean_numpy_files():
     for nfile in numpy_files:
@@ -42,19 +45,21 @@ def clean_numpy_files():
 
 atexit.register(clean_numpy_files)
 
+
 # Exit printing
 def exit_printing():
     if _success_flag_:
-        core.print_out( "\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
+        core.print_out("\n*** Psi4 exiting successfully. Buy a developer a beer!\n")
     else:
-        core.print_out( "\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
-        core.print_out( "*** Resources and help at github.com/psi4/psi4.\n")
+        core.print_out("\n*** Psi4 encountered an error. Buy a developer more coffee!\n")
+        core.print_out("*** Resources and help at github.com/psi4/psi4.\n")
 
 _success_flag_ = False
 
 
 # Working directory
 _input_dir_ = os.getcwd()
+
 
 def get_input_directory():
     return _input_dir_

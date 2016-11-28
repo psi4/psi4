@@ -27,6 +27,7 @@
 
 import os
 
+
 def _join_path(prefix, *args):
     path = str(prefix)
     for elt in args:

@@ -30,13 +30,16 @@
 import sys
 import os
 import json
+import atexit
 import argparse
 
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry")
 parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default input.dat.")
-parser.add_argument("-o", "--output", help="Redirect output elsewhere.\n"
-                                           "Default: when input filename is 'input.dat', then defaults to 'output.dat'. "
-                                           "Otherwise, output filename defaults to input filename with any '.in' or 'dat' extension replaced by '.out'\n")
+parser.add_argument("-o", "--output",
+                    help="Redirect output elsewhere.\nDefault: when input "
+                         "filename is 'input.dat', then defaults to 'output.dat'. "
+                         "Otherwise, output filename defaults to input filename "
+                         "with any '.in' or 'dat' extension replaced by '.out'\n")
 
 parser.add_argument("-v", "--verbose", action='store_true', help="Print a lot of information.")
 parser.add_argument("-V", "--version", action='store_true', help="Print version information.")
@@ -119,11 +122,11 @@ if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
     os.environ["PSIDATADIR"] = data_dir
 
-### Actually import psi4 and apply setup ###
+# <<<  Actually import psi4 and apply setup  >>>
 
 # Import installed psi4
 sys.path.insert(1, lib_dir)
-import psi4
+import psi4  # noqa: E402
 
 if args["version"]:
     print(psi4.__version__)
@@ -195,14 +198,11 @@ if args["verbose"]:
 
 # Handle Messy
 if args["messy"]:
-    import atexit
-
     for handler in atexit._exithandlers:
         if handler[0] == psi4.core.clean:
             atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
-import atexit
 atexit.register(psi4.extras.exit_printing)
 
 # Run the program!
@@ -229,5 +229,5 @@ except Exception as exception:
 
 
 #    elif '***HDF5 library version mismatched error***' in str(err):
-#        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))
-
+#        raise ImportError("{0}\nLikely cause: HDF5 used in compilation not "
+#                          "prominent enough in RPATH/[DY]LD_LIBRARY_PATH".format(err))

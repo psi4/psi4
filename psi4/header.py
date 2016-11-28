@@ -29,17 +29,19 @@ import datetime
 import os
 
 from . import core
-from .metadata import __version__, version_formatter
+from .metadata import __version__, version_formatter  # noqa: E401
 
 time_string = datetime.datetime.now().strftime('%A, %d %B %Y %I:%M%p')
 pid = os.getpid()
 
+
 def sizeof_fmt(num, suffix='B'):
-    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+    for unit in ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
         if abs(num) < 1024.0:
             return "%3.1f %s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f %s%s" % (num, 'Yi', suffix)
+
 
 def print_header():
     driver_info = version_formatter("""{version} {release}""")

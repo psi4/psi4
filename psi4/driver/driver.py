@@ -35,7 +35,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import re
-import math
 import os
 import shutil
 
@@ -46,9 +45,10 @@ from psi4.driver import driver_nbody
 from psi4.driver import p4util
 # from psi4.driver.inputparser import parse_options_block
 
-from psi4.driver.procedures import *
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.procedures import *  # noqa: F403
+from psi4.driver.p4util.exceptions import *  # noqa: F403
 # never import wrappers or aliases into this file
+
 
 def _find_derivative_type(ptype, method_name, user_dertype):
     r"""
@@ -96,16 +96,18 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             alternatives = """ Did you mean? %s""" % (' '.join(alt_method_name))
 
         raise ValidationError("""Derivative method 'name' %s and derivative level 'dertype' %s are not available.%s"""
-            % (method_name, str(dertype), alternatives))
+                              % (method_name, str(dertype), alternatives))
 
     return dertype
+
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
 
     :returns: *float* |w--w| Total electronic energy in Hartrees. SAPT & EFP return interaction energy.
 
-    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and
+        wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -413,7 +415,7 @@ def energy(name, **kwargs):
     molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
 
-    #for precallback in hooks['energy']['pre']:
+    # for precallback in hooks['energy']['pre']:
     #    precallback(lowername, **kwargs)
 
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
@@ -471,7 +473,8 @@ def gradient(name, **kwargs):
 
     :returns: :py:class:`~psi4.core.Matrix` |w--w| Total electronic gradient in Hartrees/Bohr.
 
-    :returns: (:py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.Wavefunction`) |w--w| gradient and wavefunction when **return_wfn** specified.
+    :returns: (:py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.Wavefunction`)
+        |w--w| gradient and wavefunction when **return_wfn** specified.
 
     :examples:
 
@@ -509,7 +512,7 @@ def gradient(name, **kwargs):
     if gradient_type == 'custom_function':
         if user_dertype is None:
             dertype = 0
-            core.print_out("\nGradient: Custom function passed in without a defined dertype, assuming fd-energy based gradient.\n")
+            core.print_out("\nGradient: Custom function passed in without a defined dertype, assuming fd-energy based gradient.\n")  # noqa: E501
         else:
             core.print_out("\nGradient: Custom function passed in with a dertype of %d\n" % user_dertype)
             dertype = user_dertype
@@ -624,36 +627,37 @@ def gradient(name, **kwargs):
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
         if opt_mode == 'sow':
-            instructionsO = """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO = """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""  # noqa: E501
             instructionsO += """    to this output file (which contains no quantum chemical calculations), this job\n"""
-            instructionsO += """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
+            instructionsO += """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))  # noqa: E501
             instructionsO += """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
-            instructionsO += """    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO += """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
+            instructionsO += """    These files may look very peculiar since they contain processed and pickled python\n"""  # noqa: E501
+            instructionsO += """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""  # noqa: E501
             instructionsO += """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
             instructionsO += """    the optimization wrapper option mode='continuous'.\n\n"""
             core.print_out(instructionsO)
 
             instructionsM = """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
-            instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))
+            instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))  # noqa: E501
             instructionsM += """#       The output file names must be as given below.\n#\n"""
             for rgt in range(ndisp):
                 pre = 'OPT-' + str(opt_iter) + '-' + str(rgt + 1)
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
             instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
             instructionsM += """#         OPT-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM += """#         length and give summary results for the gradient step in its output file.\n#\n"""
+            instructionsM += """#         length and give summary results for the gradient step in its output file.\n#\n"""  # noqa: E501
             if opt_iter == 1:
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
             else:
-                instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
-            instructionsM += """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
+                instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % \
+                                 ('OPT-master.in', 'OPT-master.out')
+            instructionsM += """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""  # noqa: E501
             instructionsM += """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
-            instructionsM += """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
-            instructionsM += """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
+            instructionsM += """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""  # noqa: E501
+            instructionsM += """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""  # noqa: E501
 
             with open('OPT-master.in', 'wb') as fmaster:
-                fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))  # noqa: E501
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input().encode('utf-8'))
                 p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, dertype=dertype, **kwargs)
@@ -690,15 +694,17 @@ def gradient(name, **kwargs):
 
                 # S/R: Prepare molecule, options, and kwargs
                 with open('%s.in' % (rfile), 'wb') as freagent:
-                    freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                    freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))  # noqa: E501
                     freagent.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                     freagent.write(p4util.format_options_for_input().encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
 
                     # S/R: Prepare function call and energy save
-                    freagent.write(("""electronic_energy = energy('%s', **kwargs)\n\n""" % (lowername)).encode('utf-8'))
-                    freagent.write(("""core.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1)).encode('utf-8'))
-                    freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))
+                    freagent.write(("""electronic_energy = energy('%s', **kwargs)\n\n""" %
+                                   (lowername)).encode('utf-8'))
+                    freagent.write(("""core.print_out('\\nGRADIENT RESULT: computation %d for item %d """ %
+                                   (os.getpid(), n + 1)).encode('utf-8'))
+                    freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""".encode('utf-8'))  # noqa: E501
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif opt_mode == 'reap':
@@ -824,7 +830,8 @@ def optimize(name, **kwargs):
 
     :returns: *float* |w--w| Total electronic energy of optimized structure in Hartrees.
 
-    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and
+        wavefunction when **return_wfn** specified.
 
     :PSI variables:
 
@@ -1047,7 +1054,6 @@ def optimize(name, **kwargs):
             core.IOManager.shared_object().set_specific_path(1, './')
             if 'opt_datafile' in kwargs:
                 restartfile = kwargs.pop('opt_datafile')
-                #if core.me() == 0:  TODO ask Ryan
                 shutil.copy(restartfile, p4util.get_psifile(1))
 
         # opt_func = kwargs.get('opt_func', kwargs.get('func', energy))
@@ -1087,8 +1093,8 @@ def optimize(name, **kwargs):
             core.print_out('\n    Final optimized geometry and variables:\n')
             moleculeclone.print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
-                if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
+            if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:  # noqa: E712
+                if core.get_option('OPTKING', 'KEEP_INTCOS') == False:  # noqa: E712
                     core.opt_clean()
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(moleculeclone.geometry())
@@ -1099,7 +1105,7 @@ def optimize(name, **kwargs):
             # S/R: Clean up opt input file
             if opt_mode == 'reap':
                 with open('OPT-master.in', 'wb') as fmaster:
-                    fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))
+                    fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n'.encode('utf-8'))  # noqa: #501
                     fmaster.write('# Optimization complete!\n\n'.encode('utf-8'))
 
             # Cleanup binary file 1
@@ -1115,7 +1121,7 @@ def optimize(name, **kwargs):
 
         elif optking_rval == core.PsiReturnType.Failure:
             print('Optimizer: Optimization failed!')
-            if (core.get_option('OPTKING', 'KEEP_INTCOS') == False):
+            if core.get_option('OPTKING', 'KEEP_INTCOS') == False:  # noqa: E712
                 core.opt_clean()
             molecule.set_geometry(moleculeclone.geometry())
             core.clean()
@@ -1133,8 +1139,8 @@ def optimize(name, **kwargs):
         n += 1
 
     core.print_out('\tOptimizer: Did not converge!')
-    if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
-        if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
+    if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:  # noqa: E712
+        if core.get_option('OPTKING', 'KEEP_INTCOS') == False:  # noqa: E712
             core.opt_clean()
 
     optstash.restore()
@@ -1145,9 +1151,11 @@ def hessian(name, **kwargs):
     constants, deciding analytic, finite difference of gradients, or
     finite difference of energies.
 
-    :returns: :py:class:`~psi4.core.Matrix` |w--w| Total non-mass-weighted electronic Hessian in Hartrees/Bohr/Bohr.
+    :returns: :py:class:`~psi4.core.Matrix` |w--w| Total non-mass-weighted
+        electronic Hessian in Hartrees/Bohr/Bohr.
 
-    :returns: (:py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.Wavefunction`) |w--w| Hessian and wavefunction when **return_wfn** specified.
+    :returns: (:py:class:`~psi4.core.Matrix`, :py:class:`~psi4.core.Wavefunction`)
+        |w--w| Hessian and wavefunction when **return_wfn** specified.
 
     :examples:
 
@@ -1199,7 +1207,7 @@ def hessian(name, **kwargs):
 
     optstash = p4util.OptionsState(
         ['FINDIF', 'HESSIAN_WRITE'],
-        )
+    )
 
     # Allow specification of methods to arbitrary order
     lowername, level = driver_util.parse_arbitrary_order(lowername)
@@ -1237,7 +1245,7 @@ def hessian(name, **kwargs):
         irrep = driver_util.parse_cotton_irreps(irrep, molecule.schoenflies_symbol())
         irrep -= 1  # A1 irrep is externally 1, internally 0
         if dertype == 2:
-            core.print_out("""hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")
+            core.print_out("""hessian() switching to finite difference by gradients for partial Hessian calculation.\n""")  # noqa: E501
             dertype = 1
 
     # Does an analytic procedure exist for the requested method?
@@ -1278,35 +1286,36 @@ def hessian(name, **kwargs):
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
         if freq_mode == 'sow':
-            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
-            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""  # noqa: E501
+            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""  # noqa: E501
             instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
-            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
-            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
+            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""  # noqa: E501
+            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""  # noqa: E501
+            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""  # noqa: E501
             instructionsO += """#    to continue.\n#\n"""
             instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
             instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
             core.print_out(instructionsO)
 
             instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
-            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
-            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
+            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""  # noqa: E501
+            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""  # noqa: E501
             instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
             for rgt in range(ndisp):
                 pre = 'FREQ-' + str(rgt + 1)
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
             instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
             instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
+            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""  # noqa: E501
             instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
 
             with open('FREQ-master.in', 'wb') as fmaster:
-                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))  # noqa: E501
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
                 p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=1, **kwargs)
-                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
+                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" %
+                              (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             core.print_out(instructionsM)
 
@@ -1351,16 +1360,19 @@ def hessian(name, **kwargs):
                     kwargs['return_wfn'] = True
                     p4util.format_kwargs_for_input(freagent, **kwargs)
                     freagent.write("""G, wfn = %s('%s', **kwargs)\n\n""" % (gradient.__name__, lowername))
-                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ %
+                                   (os.getpid(), n + 1))
                     freagent.write("""yields electronic gradient %r\\n' % (p4util.mat2arr(wfn.gradient())))\n\n""")
-                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ %
+                                   (os.getpid(), n + 1))
                     freagent.write("""yields electronic energy %20.12f\\n' % (get_variable('CURRENT ENERGY')))\n\n""")
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif freq_mode == 'reap':
                 exec(banners)
                 core.set_variable('NUCLEAR REPULSION ENERGY', moleculeclone.nuclear_repulsion_energy())
-                pygrad = p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True, label='electronic gradient')
+                pygrad = p4util.extract_sowreap_from_output(rfile, 'HESSIAN', n, freq_linkage, True,
+                                                            label='electronic gradient')
                 p4mat = core.Matrix(moleculeclone.natom(), 3)
                 p4mat.set(pygrad)
                 p4mat.print_out()
@@ -1423,35 +1435,36 @@ def hessian(name, **kwargs):
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
         if freq_mode == 'sow':
-            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""
-            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO = """\n#    The frequency sow/reap procedure has been selected through mode='sow'. In addition\n"""  # noqa: E501
+            instructionsO += """#    to this output file (which contains no quantum chemical calculations), this job\n"""  # noqa: E501
             instructionsO += """#    has produced a number of input files (FREQ-*.in) for individual components\n"""
-            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""
-            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""
+            instructionsO += """#    and a single input file (FREQ-master.in) with a frequency(mode='reap') command.\n"""  # noqa: E501
+            instructionsO += """#    These files may look very peculiar since they contain processed and pickled python\n"""  # noqa: E501
+            instructionsO += """#    rather than normal input. Follow the instructions below (repeated in FREQ-master.in)\n"""  # noqa: E501
             instructionsO += """#    to continue.\n#\n"""
             instructionsO += """#    Alternatively, a single-job execution of the hessian may be accessed through\n"""
             instructionsO += """#    the frequency wrapper option mode='continuous'.\n#\n"""
             core.print_out(instructionsO)
 
             instructionsM = """\n#    Follow the instructions below to carry out this frequency computation.\n#\n"""
-            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""
-            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""
+            instructionsM += """#    (1)  Run all of the FREQ-*.in input files on any variety of computer architecture.\n"""  # noqa: E501
+            instructionsM += """#       The output file names must be as given below (these are the defaults when executed\n"""  # noqa: E501
             instructionsM += """#       as `psi4 FREQ-1.in`, etc.).\n#\n"""
             for rgt in range(ndisp):
                 pre = 'FREQ-' + str(rgt + 1)
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
             instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
             instructionsM += """#         FREQ-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""
+            instructionsM += """#         length and give summary results for the frequency computation in its output file.\n#\n"""  # noqa: E501
             instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n\n""" % ('FREQ-master.in', 'FREQ-master.out')
 
             with open('FREQ-master.in', 'wb') as fmaster:
-                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))
+                fmaster.write('# This is a psi4 input file auto-generated from the hessian() wrapper.\n\n'.encode('utf-8'))  # noqa: E501
                 fmaster.write(p4util.format_molecule_for_input(moleculeclone).encode('utf-8'))
                 fmaster.write(p4util.format_options_for_input(moleculeclone, **kwargs))
                 p4util.format_kwargs_for_input(fmaster, lmode=2, return_wfn=True, freq_dertype=0, **kwargs)
-                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" % (frequency.__name__, lowername)).encode('utf-8'))
+                fmaster.write(("""retE, retwfn = %s('%s', **kwargs)\n\n""" %
+                              (frequency.__name__, lowername)).encode('utf-8'))
                 fmaster.write(instructionsM.encode('utf-8'))
             core.print_out(instructionsM)
 
@@ -1493,7 +1506,8 @@ def hessian(name, **kwargs):
                     freagent.write(p4util.format_options_for_input(moleculeclone, **kwargs).encode('utf-8'))
                     p4util.format_kwargs_for_input(freagent, **kwargs)
                     freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (energy.__name__, lowername))
-                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
+                    freagent.write("""core.print_out('\\nHESSIAN RESULT: computation %d for item %d """ %
+                                   (os.getpid(), n + 1))
                     freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
@@ -1511,7 +1525,7 @@ def hessian(name, **kwargs):
             else:
                 return None
         elif freq_mode == 'reap':
-        #    core.set_variable('CURRENT ENERGY', energies[-1])
+            # core.set_variable('CURRENT ENERGY', energies[-1])
             wfn = core.Wavefunction.build(molecule, core.get_global_option('BASIS'))
 
         # Assemble Hessian from energies
@@ -1539,7 +1553,8 @@ def frequency(name, **kwargs):
 
     :returns: *float* |w--w| Total electronic energy in Hartrees.
 
-    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
+    :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and
+        wavefunction when **return_wfn** specified.
 
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
@@ -1667,7 +1682,7 @@ def frequency(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     # Reset old global basis if needed
-    if not old_global_basis is None:
+    if old_global_basis is not None:
         core.set_global_option("BASIS", old_global_basis)
 
     if return_wfn:
@@ -1792,7 +1807,8 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     :param density_b: density in the MO basis to build beta NO's from, assumes restricted if not supplied (optional)
 
     :type dovirtual: bool
-    :param dovirtual: do write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs, not valid for NO's (false) (optional)
+    :param dovirtual: do write all the MOs to the MOLDEN file (true) or discard
+        the unoccupied MOs, not valid for NO's (false) (optional)
 
     :examples:
 
