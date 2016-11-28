@@ -1,4 +1,5 @@
 [flake8]
+show_source = True
 max-line-length=120
 exclude = psi4/driver/qcdb/,  
           psi4/driver/p4const/,
