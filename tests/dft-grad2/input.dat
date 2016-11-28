@@ -1,0 +1,32 @@
+#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+ref_bp86d2 = [[-0.001252927775861786,  0.01892144081349344, 0.0], #TEST
+              [ 0.003471124136391868, -0.05193646214203093, 0.0],  #TEST
+              [-0.002218500181449994,  0.03301994181238485, 0.0]]  #TEST
+
+ref = psi4.Matrix(3, 3)                                            #TEST
+ref.set(ref_bp86d2)                                                #TEST
+
+memory 250 mb
+molecule {
+  1 2
+  N    -0.0034118    3.5353926    0.0000000
+  C     0.0751963    2.3707040    0.0000000
+  H     0.1476295    1.3052847    0.0000000
+}
+
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    freeze_core           true
+    dft_radial_points     99
+    dft_spherical_points  302
+    e_convergence         8
+    d_convergence         8
+    reference             uks
+}
+
+grad = gradient('bp86-d')
+compare_matrices(ref, grad, 7, "Analytic uks dft gradients")    #TEST
+
