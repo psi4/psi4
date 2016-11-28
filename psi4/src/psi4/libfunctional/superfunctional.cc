@@ -79,7 +79,6 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name,
     sup->set_x_alpha(xc_func->global_exchange());
     sup->add_c_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
     sup->libxc_xc_func_ = true;
-    sup->set_lock(true);
 
     return sup;
 }
@@ -96,8 +95,9 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
         sup->add_c_functional(c_functionals_[i]->build_worker());
     }
 
+    sup->deriv_ = deriv_;
+    sup->max_points_ = max_points_;
     sup->libxc_xc_func_ = libxc_xc_func_;
-    sup->set_lock(true);
     sup->allocate();
 
     return sup;
@@ -270,7 +270,7 @@ void SuperFunctional::can_edit() {
         throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
     }
     if (locked_) {
-        throw PSIEXCEPTION("SuperFunctional is locked and cannot be edited.\n");
+        throw PSIEXCEPTION("The SuperFunctional is locked and cannot be edited.\n");
     }
 }
 void SuperFunctional::set_x_omega(double omega) {
@@ -375,6 +375,9 @@ void SuperFunctional::allocate()
     bool is_polar = !is_unpolarized();
     values_.clear();
 
+    // Set the lock, after allocation no more changes are allowed
+    set_lock(true);
+
     std::vector<std::string> list;
 
     // LSDA
@@ -458,7 +461,7 @@ void SuperFunctional::allocate()
     }
 
     for (int i = 0; i < list.size(); i++) {
-        values_[list[i]] = SharedVector(new Vector(list[i],max_points_));
+        values_[list[i]] = SharedVector(new Vector(list[i], max_points_));
     }
 }
 std::map<std::string, SharedVector>& SuperFunctional::compute_functional(const std::map<std::string, SharedVector>& vals, int npoints)

@@ -82,6 +82,7 @@ void export_functional(py::module &m)
         def("set_citation", &SuperFunctional::set_citation, "docstring").
         def("set_max_points", &SuperFunctional::set_max_points, "docstring").
         def("set_deriv", &SuperFunctional::set_deriv, "docstring").
+        def("set_lock", &SuperFunctional::set_lock, "docstring").
         def("set_x_omega", &SuperFunctional::set_x_omega, "docstring").
         def("set_c_omega", &SuperFunctional::set_c_omega, "docstring").
         def("set_x_alpha", &SuperFunctional::set_x_alpha, "docstring").

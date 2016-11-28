@@ -152,8 +152,8 @@ public:
     void set_description(const std::string & description) { description_ = description; }
     void set_citation(const std::string & citation) { citation_ = citation; }
 
-    void set_max_points(int max_points) { max_points_ = max_points; allocate(); }
-    void set_deriv(int deriv) { deriv_ = deriv;  allocate(); }
+    void set_max_points(int max_points) { max_points_ = max_points; }
+    void set_deriv(int deriv) { deriv_ = deriv; }
 
     void set_x_omega(double omega);
     void set_c_omega(double omega);

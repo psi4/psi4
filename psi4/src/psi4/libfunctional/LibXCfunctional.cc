@@ -114,8 +114,7 @@ LibXCFunctional::~LibXCFunctional() { xc_func_end(&xc_functional_); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
 
     // Build functional
-    std::shared_ptr<Functional> func =
-        static_cast<std::shared_ptr<Functional>>(new LibXCFunctional(xc_func_name_, unpolarized_));
+    std::shared_ptr<LibXCFunctional> func(new LibXCFunctional(xc_func_name_, unpolarized_));
 
     // Tweak
     if (omega_ != 0.0) {
@@ -128,7 +127,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     func->set_lsda_cutoff(lsda_cutoff_);
     func->set_meta_cutoff(meta_cutoff_);
 
-    return func;
+    return static_cast<std::shared_ptr<Functional>>(func);
 }
 void LibXCFunctional::set_omega(double omega) {
 

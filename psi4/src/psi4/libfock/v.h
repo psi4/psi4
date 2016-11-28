@@ -56,14 +56,18 @@ protected:
     int debug_;
     /// Print flag
     int print_;
+    /// Number of threads
+    int num_threads_;
     /// Options object, used to build grid
     Options& options_;
     /// Basis set used in the integration
     std::shared_ptr<BasisSet> primary_;
     /// Desired superfunctional kernal
     std::shared_ptr<SuperFunctional> functional_;
+    /// Desired superfunctional kernal
+    std::vector<std::shared_ptr<SuperFunctional>> functional_workers_;
     /// Point function computer (densities, gammas, basis values)
-    std::shared_ptr<PointFunctions> properties_;
+    std::vector<std::shared_ptr<PointFunctions>> point_workers_;
     /// Integration grid, built by KSPotential
     std::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration
@@ -117,7 +121,7 @@ public:
 
     std::shared_ptr<BasisSet> basis() const { return primary_; }
     std::shared_ptr<SuperFunctional> functional() const { return functional_; }
-    std::shared_ptr<PointFunctions> properties() const { return properties_; }
+    std::vector<std::shared_ptr<PointFunctions>> properties() const { return point_workers_; }
     std::shared_ptr<DFTGrid> grid() const { return grid_; }
     std::shared_ptr<BlockOPoints> get_block(int block);
     size_t nblocks();
