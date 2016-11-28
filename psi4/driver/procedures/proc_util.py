@@ -129,8 +129,16 @@ def check_iwl_file_from_scf_type(scf_type, wfn):
     Ensures that a IWL file has been written based on input SCF type.
     """
 
+
     if scf_type in ['DF', 'CD', 'PK', 'DIRECT']:
         mints = core.MintsHelper(wfn.basisset())
+        if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+            rel_bas = core.BasisSet.build(wfn.molecule(), "BASIS_RELATIVISTIC",
+                                          core.get_option("SCF", "BASIS_RELATIVISTIC"),
+                                          "DECON", core.get_global_option('BASIS'),
+                                          puream=wfn.basisset().has_puream())
+            mints.set_rel_basisset(rel_bas)
+
         mints.set_print(1)
         mints.integrals()
 
