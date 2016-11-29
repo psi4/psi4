@@ -32,12 +32,14 @@ from psi4.driver.util.filesystem import *
 from psi4.driver.util import tty
 import psi4.config as config
 
+
 def sanitize_name(name):
     """Function to return *name* in coded form, stripped of
     characters that confuse filenames, characters into lowercase,
     ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, ``-``,
     & ``,`` into ``_``.
 
+    Also checks the sanitized name against a list of restricted C++ keywords.
     """
     if name[0].isalpha():
         temp = name.lower()
@@ -47,9 +49,41 @@ def sanitize_name(name):
         temp = temp.replace(')', '_')
         temp = temp.replace(',', '_')
         temp = temp.replace('-', '_')
+
+        # Taken from http://en.cppreference.com/w/cpp/keyword
+        cpp_keywords = [
+            "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel",
+            "atomic_commit", "atomic_noexcept", "auto", "bitand", "bitor",
+            "bool", "break", "case", "catch", "char", "char16_t", "char32_t",
+            "class", "compl", "concept", "const", "constexpr", "const_cast",
+            "continue", "decltype", "default", "delete", "do", "double",
+            "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+            "false", "float", "for", "friend", "goto", "if", "import", "inline",
+            "int", "long", "module", "mutable", "namespace", "new", "noexcept",
+            "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private",
+            "protected", "public", "register", "reinterpret_cast", "requires",
+            "return", "short", "signed", "sizeof", "static", "static_assert",
+            "static_cast", "struct", "switch", "synchronized", "template",
+            "this", "thread_local", "throw", "true", "try", "typedef", "typeid",
+            "typename", "union", "unsigned", "using", "virtual", "void",
+            "volatile", "wchar_t", "while", "xor", "xor_eq",
+
+            # Identifiers with special meanings"
+            "override", "final", "transaction_safe", "transaction_safe_dynamic",
+
+            # Preprocessor tokens
+            "if", "elif", "else", "endif", "defined", "ifdef", "ifndef",
+            "define", "undef", "include", "line", "error", "pragma",
+            "_pragma"
+        ]
+
+        if temp in cpp_keywords:
+            tty.die("The plugin name you provided is a C++ reserved keyword.  Please provide a different name.")
+
         return temp
     else:
         tty.die("Plugin name must begin with a letter.")
+
 
 # Determine the available plugins
 available_plugins = []
@@ -127,4 +161,3 @@ def create_plugin(args):
     tty.info("Created plugin files: ", ", ".join(created_files))
 
     sys.exit(0)
-
