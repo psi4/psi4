@@ -2172,8 +2172,14 @@ def run_ccenergy(name, **kwargs):
     if core.get_global_option('RUN_CCTRANSORT'):
         core.cctransort(ref_wfn)
     else:
-        core.transqt2(ref_wfn)
-        core.ccsort()
+        # try:
+        from psi4.driver.pasture import addins
+        addins.ccsort_transqt2(ref_wfn)
+        # except:
+        #     raise ValidationError("Pasture addins import failed "
+        #                           "ccsort/transqt2 legacy code "
+        #                           "has not been installed correctly ")
+
 
     ccwfn = core.ccenergy(ref_wfn)
 
@@ -2274,8 +2280,13 @@ def run_bccd(name, **kwargs):
         if (core.get_global_option("RUN_CCTRANSORT")):
             core.cctransort(ref_wfn)
         else:
-            core.transqt2(ref_wfn)
-            core.ccsort()
+            # try:
+            from psi4.driver.pasture import addins
+            addins.ccsort_transqt2(ref_wfn)
+            # except:
+                # raise ValidationError("Pasture addins import failed "
+                #                   "ccsort/transqt2 legacy code "
+                #                   "has not been installed correctly ")
 
         ref_wfn = core.ccenergy(ref_wfn)
         core.print_out('Brueckner convergence check: %s\n' % bool(core.get_variable('BRUECKNER CONVERGED')))

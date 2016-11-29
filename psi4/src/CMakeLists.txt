@@ -25,7 +25,11 @@ set(sources_list export_psio.cc
 add_library(core SHARED ${sources_list})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
-target_link_libraries(core PRIVATE ${psi4_binmodules})
+if(ENABLE_psi4pasture)
+  target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} ${psi4_binmodules} ${POST_LIBRARY_OPTION})
+else()
+  target_link_libraries(core PRIVATE ${psi4_binmodules})
+endif()
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PRIVATE pybind11::pybind11)
 target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})

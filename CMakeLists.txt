@@ -65,6 +65,15 @@ option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_g2dma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
+# These options are relevant to pasture
+option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
+option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
+
+# Append modules added to pasture as needed
+if(ENABLE_ccsort OR ENABLE_transqt2)
+  set(ENABLE_psi4pasture)
+  message(STATUS "Enabling pasture plugins")
+endif()
 
 if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
     enable_language(Fortran)
@@ -170,6 +179,7 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
+              -DENABLE_psi4pasture=${ENABLE_psi4pasture}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
