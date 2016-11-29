@@ -56,8 +56,7 @@ void SuperFunctional::common_init() {
 std::shared_ptr<SuperFunctional> SuperFunctional::blank() {
     return std::shared_ptr<SuperFunctional>(new SuperFunctional());
 }
-std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name,
-                                                           bool unpolarized) {
+std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
     // Only allow build from full XC kernals
     if (name.find("_XC_") == std::string::npos) {
         throw PSIEXCEPTION("XC_build requires full _XC_ functional names");
@@ -65,8 +64,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name,
 
     // Build the superfuncitonal
 
-    std::shared_ptr<SuperFunctional> sup =
-        std::shared_ptr<SuperFunctional>(new SuperFunctional());
+    std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
 
     // Build LibXC functional
     LibXCFunctional* xc_func = new LibXCFunctional(name, unpolarized);
@@ -83,7 +81,6 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name,
     return sup;
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
-
     // Build the superfuncitonal
     std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
 
@@ -102,41 +99,40 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 
     return sup;
 }
-void SuperFunctional::print(std::string out, int level) const
-{
+void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
-    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-             std::shared_ptr<OutFile>(new OutFile(out)));
-    printer->Printf( "   => Composite Functional: %s <= \n\n", name_.c_str());
+    std::shared_ptr<psi::PsiOutStream> printer =
+        (out == "outfile" ? outfile : std::shared_ptr<OutFile>(new OutFile(out)));
+    printer->Printf("   => Composite Functional: %s <= \n\n", name_.c_str());
 
-    if (description_ != ""){
-        printer->Printf( "%s", description_.c_str());
-        printer->Printf( "\n");
+    if (description_ != "") {
+        printer->Printf("%s", description_.c_str());
+        printer->Printf("\n");
     }
 
-    printer->Printf( "%s", citation_.c_str());
-    printer->Printf( "\n\n");
+    printer->Printf("%s", citation_.c_str());
+    printer->Printf("\n\n");
 
-    printer->Printf( "    Points       = %14d\n", max_points_);
-    printer->Printf( "    Deriv        = %14d\n", deriv_);
-    printer->Printf( "    GGA          = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
-    printer->Printf( "    Meta         = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
-    printer->Printf( "\n");
+    printer->Printf("    Points       = %14d\n", max_points_);
+    printer->Printf("    Deriv        = %14d\n", deriv_);
+    printer->Printf("    GGA          = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
+    printer->Printf("    Meta         = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
+    printer->Printf("\n");
 
-    printer->Printf( "    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
-    printer->Printf( "    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
-    printer->Printf( "    X_Alpha      = %14.6E\n", x_alpha_);
-    printer->Printf( "    X_Omega      = %14.6E\n", x_omega_);
-    if (is_c_lrc() || is_c_hybrid()){
-        printer->Printf( "    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
-        printer->Printf( "    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
-        printer->Printf( "    C_Alpha      = %14.6E\n", c_alpha_);
-        printer->Printf( "    C_Omega      = %14.6E\n", c_omega_);
+    printer->Printf("    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
+    printer->Printf("    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
+    printer->Printf("    X_Alpha      = %14.6E\n", x_alpha_);
+    printer->Printf("    X_Omega      = %14.6E\n", x_omega_);
+    if (is_c_lrc() || is_c_hybrid()) {
+        printer->Printf("    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
+        printer->Printf("    C_Hybrid     = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
+        printer->Printf("    C_Alpha      = %14.6E\n", c_alpha_);
+        printer->Printf("    C_Omega      = %14.6E\n", c_omega_);
     }
-    //printer->Printf( "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
-    //printer->Printf( "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
-    //printer->Printf( "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
-    printer->Printf( "\n");
+    // printer->Printf( "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
+    // printer->Printf( "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
+    // printer->Printf( "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
+    printer->Printf("\n");
 
     if (libxc_xc_func_){
         // Well thats nasty
@@ -149,121 +145,120 @@ void SuperFunctional::print(std::string out, int level) const
         int ncorr = 0;
         for (int i = 0; i < mix_data.size(); i++) {
             int val = std::get<1>(mix_data[i]);
-            if (val == 0){
+            if (val == 0) {
                 nexch++;
-            } else if (val == 1){
+            } else if (val == 1) {
                 ncorr++;
-            } else if (val == 2){
+            } else if (val == 2) {
                 nxc++;
             } else {
                 throw PSIEXCEPTION("Functional type not understood");
             }
         }
 
-        if (nxc){
-            printer->Printf( "   => Exchange-Correlation Functionals <=\n\n");
+        if (nxc) {
+            printer->Printf("   => Exchange-Correlation Functionals <=\n\n");
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 2) continue;
 
-                printer->Printf( "    %6.4f %7s", std::get<2>(mix_data[i]),
-                    std::get<0>(mix_data[i]).c_str());
+                printer->Printf("    %6.4f %7s", std::get<2>(mix_data[i]),
+                                std::get<0>(mix_data[i]).c_str());
                 printer->Printf("\n");
             }
-            printer->Printf( "\n");
+            printer->Printf("\n");
         }
 
-        if (nexch){
-            printer->Printf( "   => Exchange Functionals <=\n\n");
+        if (nexch) {
+            printer->Printf("   => Exchange Functionals <=\n\n");
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 0) continue;
 
-                printer->Printf( "    %6.4f %7s", std::get<2>(mix_data[i]),
-                    std::get<0>(mix_data[i]).c_str());
+                printer->Printf("    %6.4f %7s", std::get<2>(mix_data[i]),
+                                std::get<0>(mix_data[i]).c_str());
                 if (c_functionals_[0]->omega()) {
-                    printer->Printf( " [omega = %6.4f]", c_functionals_[0]->omega());
+                    printer->Printf(" [omega = %6.4f]", c_functionals_[0]->omega());
                 }
                 printer->Printf("\n");
             }
-            printer->Printf( "\n");
+            printer->Printf("\n");
         }
 
-        if ((x_omega_ + x_alpha_) > 0.0){
-            printer->Printf( "   => Exact (HF) Exchange <=\n\n");
+        if ((x_omega_ + x_alpha_) > 0.0) {
+            printer->Printf("   => Exact (HF) Exchange <=\n\n");
             if (x_omega_) {
-                printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+                printer->Printf("    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR",
+                                x_omega_);
             }
             if (x_alpha_) {
-                printer->Printf( "    %6.4f %7s \n", x_alpha_, "HF");
+                printer->Printf("    %6.4f %7s \n", x_alpha_, "HF");
             }
-            printer->Printf( "\n");
+            printer->Printf("\n");
         }
 
-        if (ncorr){
-            printer->Printf( "   => Correlation Functionals <=\n\n");
+        if (ncorr) {
+            printer->Printf("   => Correlation Functionals <=\n\n");
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 1) continue;
 
-                printer->Printf( "    %6.4f %7s", std::get<2>(mix_data[i]),
-                    std::get<0>(mix_data[i]).c_str());
+                printer->Printf("    %6.4f %7s", std::get<2>(mix_data[i]),
+                                std::get<0>(mix_data[i]).c_str());
                 printer->Printf("\n");
             }
-            printer->Printf( "\n");
+            printer->Printf("\n");
         }
 
     } else {
-
-        printer->Printf( "   => Exchange Functionals <=\n\n");
+        printer->Printf("   => Exchange Functionals <=\n\n");
         for (int i = 0; i < x_functionals_.size(); i++) {
-            printer->Printf( "    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
-                x_functionals_[i]->name().c_str());
+            printer->Printf("    %6.4f %7s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
+                            x_functionals_[i]->name().c_str());
             if (x_functionals_[i]->omega()) {
-                printer->Printf( " [omega = %6.4f]", x_functionals_[i]->omega());
+                printer->Printf(" [omega = %6.4f]", x_functionals_[i]->omega());
             }
             printer->Printf("\n");
         }
         if (x_omega_) {
-            printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+            printer->Printf("    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
         }
         if (x_alpha_) {
-            printer->Printf( "    %6.4f %7s \n", x_alpha_, "HF");
+            printer->Printf("    %6.4f %7s \n", x_alpha_, "HF");
         }
-        printer->Printf( "\n");
+        printer->Printf("\n");
 
-        printer->Printf( "   => Correlation Functionals <=\n\n");
+        printer->Printf("   => Correlation Functionals <=\n\n");
         for (int i = 0; i < c_functionals_.size(); i++) {
-            printer->Printf( "    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
-                c_functionals_[i]->name().c_str());
+            printer->Printf("    %6.4f %7s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
+                            c_functionals_[i]->name().c_str());
             if (c_functionals_[i]->omega()) {
-                printer->Printf( " [omega = %6.4f]", c_functionals_[i]->omega());
+                printer->Printf(" [omega = %6.4f]", c_functionals_[i]->omega());
             }
             printer->Printf("\n");
         }
     }
 
-     // Not currently defined
+    // Not currently defined
     if (c_omega_) {
-        printer->Printf( "    %6.4f %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+        printer->Printf("    %6.4f %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
     }
     if (c_alpha_) {
-        printer->Printf( "    %6.4f %7s \n", c_alpha_, "MP2");
+        printer->Printf("    %6.4f %7s \n", c_alpha_, "MP2");
     }
     if (c_ss_alpha_) {
-        printer->Printf( "    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
+        printer->Printf("    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
     }
     if (c_os_alpha_) {
-        printer->Printf( "    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
+        printer->Printf("    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
     }
-    printer->Printf( "\n");
+    printer->Printf("\n");
 
     if (level > 1) {
         for (int i = 0; i < x_functionals_.size(); i++) {
-            x_functionals_[i]->print(out,level);
+            x_functionals_[i]->print(out, level);
         }
         for (int i = 0; i < c_functionals_.size(); i++) {
-            c_functionals_[i]->print(out,level);
+            c_functionals_[i]->print(out, level);
         }
     }
-
 }
 void SuperFunctional::can_edit() {
     if (libxc_xc_func_) {
@@ -305,24 +300,19 @@ void SuperFunctional::add_c_functional(std::shared_ptr<Functional> fun) {
     can_edit();
     c_functionals_.push_back(fun);
 }
-std::shared_ptr<Functional> SuperFunctional::c_functional(
-    const std::string& name) {
+std::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name) {
     for (int Q = 0; Q < c_functionals_.size(); Q++) {
-        if (name == c_functionals_[Q]->name())
-            return c_functionals_[Q];
+        if (name == c_functionals_[Q]->name()) return c_functionals_[Q];
     }
     throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
-std::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name)
-{
+std::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name) {
     for (int Q = 0; Q < x_functionals_.size(); Q++) {
-        if (name == x_functionals_[Q]->name())
-            return x_functionals_[Q];
+        if (name == x_functionals_[Q]->name()) return x_functionals_[Q];
     }
     throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
-bool SuperFunctional::is_gga() const
-{
+bool SuperFunctional::is_gga() const {
     for (int i = 0; i < x_functionals_.size(); i++) {
         if (x_functionals_[i]->is_gga())
             return true;
@@ -333,20 +323,16 @@ bool SuperFunctional::is_gga() const
     }
     return false;
 }
-bool SuperFunctional::is_meta() const
-{
+bool SuperFunctional::is_meta() const {
     for (int i = 0; i < x_functionals_.size(); i++) {
-        if (x_functionals_[i]->is_meta())
-            return true;
+        if (x_functionals_[i]->is_meta()) return true;
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-        if (c_functionals_[i]->is_meta())
-            return true;
+        if (c_functionals_[i]->is_meta()) return true;
     }
     return false;
 }
-bool SuperFunctional::is_unpolarized() const
-{
+bool SuperFunctional::is_unpolarized() const {
     // Need to make sure they are all the same
     std::vector<bool> bool_arr;
 
@@ -358,19 +344,20 @@ bool SuperFunctional::is_unpolarized() const
     }
 
     size_t num_true = 0;
-    for (int i = 0; i < bool_arr.size(); i++) { num_true += bool_arr[i]; }
+    for (int i = 0; i < bool_arr.size(); i++) {
+        num_true += bool_arr[i];
+    }
 
-    if (num_true == 0){
+    if (num_true == 0) {
         return false;
-    }else if (num_true == bool_arr.size()){
+    } else if (num_true == bool_arr.size()) {
         return true;
-    }else{
+    } else {
         outfile->Printf("Mix of polarized and unpolarized functionals detected");
         throw PSIEXCEPTION("All functionals must either be polarized or unpolarized.");
     }
 }
-void SuperFunctional::allocate()
-{
+void SuperFunctional::allocate() {
     // Make sure were either polarized or not
     bool is_polar = !is_unpolarized();
     values_.clear();
@@ -464,32 +451,27 @@ void SuperFunctional::allocate()
         values_[list[i]] = SharedVector(new Vector(list[i], max_points_));
     }
 }
-std::map<std::string, SharedVector>& SuperFunctional::compute_functional(const std::map<std::string, SharedVector>& vals, int npoints)
-{
+std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
+    const std::map<std::string, SharedVector>& vals, int npoints) {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
 
     for (std::map<std::string, SharedVector>::const_iterator it = values_.begin();
-        it != values_.end(); ++it) {
-        ::memset((void*)((*it).second->pointer()),'\0',sizeof(double) * npoints);
+         it != values_.end(); ++it) {
+        ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
+        x_functionals_[i]->compute_functional(vals, values_, npoints, deriv_);
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
+        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_);
     }
 
     return values_;
 }
-void SuperFunctional::test_functional(SharedVector rho_a,
-                                      SharedVector rho_b,
-                                      SharedVector gamma_aa,
-                                      SharedVector gamma_ab,
-                                      SharedVector gamma_bb,
-                                      SharedVector tau_a,
-                                      SharedVector tau_b)
-{
+void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa,
+                                      SharedVector gamma_ab, SharedVector gamma_bb,
+                                      SharedVector tau_a, SharedVector tau_b) {
     std::map<std::string, SharedVector> props;
     props["RHO_A"] = rho_a;
     props["RHO_B"] = rho_b;

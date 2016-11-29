@@ -52,51 +52,46 @@ using ULI = unsigned long int;
 
 namespace psi {
 
-VBase::VBase(std::shared_ptr<SuperFunctional> functional,
-    std::shared_ptr<BasisSet> primary,
-    Options& options):
-    options_(options), primary_(primary), functional_(functional)
-{
+VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary,
+             Options& options)
+    : options_(options), primary_(primary), functional_(functional) {
     common_init();
 }
-VBase::~VBase()
-{
-}
-void VBase::common_init()
-{
+VBase::~VBase() {}
+void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
     num_threads_ = 1;
-    #ifdef _OPENMP
-        num_threads_ = omp_get_max_threads();
-    #endif
+#ifdef _OPENMP
+    num_threads_ = omp_get_max_threads();
+#endif
 }
 std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary,
-                                      std::shared_ptr<SuperFunctional> functional,
-                                      Options& options,
+                                      std::shared_ptr<SuperFunctional> functional, Options& options,
                                       const std::string& type) {
     // int depth = 1; // By default, do first partials of the kernel
     // if (type == "RK" || type == "UK")
     //     depth = 2;
 
     // int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
-    // std::shared_ptr<SuperFunctional> functional = SuperFunctional::current(options,block_size,depth);
+    // std::shared_ptr<SuperFunctional> functional =
+    // SuperFunctional::current(options,block_size,depth);
 
     std::shared_ptr<VBase> v;
     if (type == "RV") {
-        if (!functional->is_unpolarized()){
+        if (!functional->is_unpolarized()) {
             throw PSIEXCEPTION("Passed in functional was polarized for RV reference.");
         }
-        v = std::shared_ptr<VBase>(new RV(functional,primary,options));
+        v = std::shared_ptr<VBase>(new RV(functional, primary, options));
     } else if (type == "UV") {
-        if (functional->is_unpolarized()){
+        if (functional->is_unpolarized()) {
             throw PSIEXCEPTION("Passed in functional was unpolarized for UV reference.");
         }
-        v = std::shared_ptr<VBase>(new UV(functional,primary,options));
+        v = std::shared_ptr<VBase>(new UV(functional, primary, options));
     } else if (type == "RK") {
-        v = std::shared_ptr<VBase>(new RK(functional,primary,options));
+        v = std::shared_ptr<VBase>(new RK(functional, primary, options));
     } else if (type == "UK") {
-        v = std::shared_ptr<VBase>(new UK(functional,primary,options));
+        v = std::shared_ptr<VBase>(new UK(functional, primary, options));
     } else {
         throw PSIEXCEPTION("V: V type is not recognized");
     }
@@ -125,7 +120,7 @@ void VBase::compute_D()
             if (!nso || !nmo) continue;
             double** Cp = C->pointer(h);
             double** Dp = D->pointer(h);
-            C_DGEMM('N','T',nso,nso,nmo,1.0,Cp[0],nmo,Cp[0],nmo,0.0,Dp[0],nso);
+            C_DGEMM('N', 'T', nso, nso, nmo, 1.0, Cp[0], nmo, Cp[0], nmo, 0.0, Dp[0], nso);
         }
     }
 
@@ -136,8 +131,7 @@ void VBase::compute_D()
             same = false;
         } else {
             for (size_t A = 0; A < P_.size(); A++) {
-                if (P_[A]->symmetry() != P_SO_[A]->symmetry())
-                    same = false;
+                if (P_[A]->symmetry() != P_SO_[A]->symmetry()) same = false;
             }
         }
 
@@ -146,14 +140,14 @@ void VBase::compute_D()
             for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss;
                 ss << "P (SO) " << A;
-                P_SO_.push_back(SharedMatrix(new Matrix(ss.str(),C_[0]->rowspi(),C_[0]->rowspi(),P_[A]->symmetry())));
+                P_SO_.push_back(SharedMatrix(
+                    new Matrix(ss.str(), C_[0]->rowspi(), C_[0]->rowspi(), P_[A]->symmetry())));
             }
         }
 
         int maxi = Caocc_[0]->max_ncol();
-        if (Caocc_.size() > 1)
-            maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
-        double* temp = new double[maxi * (ULI) Caocc_[0]->max_nrow()];
+        if (Caocc_.size() > 1) maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
+        double* temp = new double[maxi * (ULI)Caocc_[0]->max_nrow()];
         for (size_t A = 0; A < P_.size(); A++) {
             SharedMatrix Cl = Caocc_[A % Caocc_.size()];
             SharedMatrix Cr = Cavir_[A % Cavir_.size()];
@@ -162,27 +156,27 @@ void VBase::compute_D()
             int symm = P->symmetry();
             for (int h = 0; h < P->nirrep(); h++) {
                 int nl = Cl->rowspi()[h];
-                int nr = Cr->rowspi()[h^symm];
+                int nr = Cr->rowspi()[h ^ symm];
                 int ni = Cl->colspi()[h];
-                int na = Cr->colspi()[h^symm];
+                int na = Cr->colspi()[h ^ symm];
                 if (!nl || !nr || !ni || !na) continue;
-                double** Clp   = Cl->pointer(h);
-                double** Crp   = Cr->pointer(h^symm);
-                double** Pp    = P->pointer(h);
+                double** Clp = Cl->pointer(h);
+                double** Crp = Cr->pointer(h ^ symm);
+                double** Pp = P->pointer(h);
                 double** P_SOp = P_SO->pointer(h);
 
-                C_DGEMM('N','T',ni,nr,na,1.0,Pp[0],na,Crp[0],na,0.0,temp,nr);
-                C_DGEMM('N','N',nl,nr,ni,1.0,Clp[0],ni,temp,nr,0.0,P_SOp[0],nr);
+                C_DGEMM('N', 'T', ni, nr, na, 1.0, Pp[0], na, Crp[0], na, 0.0, temp, nr);
+                C_DGEMM('N', 'N', nl, nr, ni, 1.0, Clp[0], ni, temp, nr, 0.0, P_SOp[0], nr);
             }
         }
         delete[] temp;
     }
 }
-void VBase::USO2AO()
-{
+void VBase::USO2AO() {
     // Build AO2USO matrix, if needed
     if (!AO2USO_ && (C_[0]->nirrep() != 1)) {
-        std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
+        std::shared_ptr<IntegralFactory> integral(
+            new IntegralFactory(primary_, primary_, primary_, primary_));
         std::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
         AO2USO_ = SharedMatrix(pet->aotoso());
     }
@@ -194,8 +188,7 @@ void VBase::USO2AO()
             same = false;
         } else {
             for (size_t A = 0; A < P_.size(); A++) {
-                if (P_[A]->symmetry() != V_[A]->symmetry())
-                    same = false;
+                if (P_[A]->symmetry() != V_[A]->symmetry()) same = false;
             }
         }
         if (!same) {
@@ -203,7 +196,8 @@ void VBase::USO2AO()
             for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
-                V_.push_back(std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(),P_[A]->symmetry())));
+                V_.push_back(std::shared_ptr<Matrix>(
+                    new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(), P_[A]->symmetry())));
             }
         }
     } else {
@@ -212,9 +206,9 @@ void VBase::USO2AO()
             for (size_t A = 0; A < C_.size(); A++) {
                 std::stringstream ss1;
                 ss1 << "V (SO) " << A;
-                V_.push_back(std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
+                V_.push_back(std::shared_ptr<Matrix>(
+                    new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
             }
-
         }
     }
 
@@ -241,10 +235,12 @@ void VBase::USO2AO()
             for (size_t A = 0; A < P_.size(); A++) {
                 std::stringstream ss2;
                 ss2 << "V (AO) " << A;
-                V_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+                V_AO_.push_back(
+                    std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
                 std::stringstream ss3;
                 ss3 << "P (AO) " << A;
-                P_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
+                P_AO_.push_back(
+                    std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
             }
         }
     } else {
@@ -254,12 +250,13 @@ void VBase::USO2AO()
             for (size_t A = 0; A < C_.size(); A++) {
                 std::stringstream ss2;
                 ss2 << "V (AO) " << A;
-                V_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+                V_AO_.push_back(
+                    std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
                 std::stringstream ss3;
                 ss3 << "P (AO) " << A;
-                P_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
+                P_AO_.push_back(
+                    std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
             }
-
         }
     }
 
@@ -272,7 +269,7 @@ void VBase::USO2AO()
     bool allocate_C_AO_D_AO = false;
     if (C_AO_.size() != C_.size()) {
         allocate_C_AO_D_AO = true;
-    }else{
+    } else {
         for (size_t A = 0; A < C_.size(); A++) {
             if (C_AO_[A]->nrow() != C_[0]->nrow()) allocate_C_AO_D_AO = true;
             if (C_AO_[A]->ncol() != C_[0]->ncol()) allocate_C_AO_D_AO = true;
@@ -284,10 +281,12 @@ void VBase::USO2AO()
         for (size_t A = 0; A < C_.size(); A++) {
             std::stringstream ss1;
             ss1 << "C (AO) " << A;
-            C_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
+            C_AO_.push_back(
+                std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
             std::stringstream ss2;
             ss2 << "D (AO) " << A;
-            D_AO_.push_back(std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+            D_AO_.push_back(
+                std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
         }
     }
 
@@ -305,13 +304,14 @@ void VBase::USO2AO()
             double** Cp = C->pointer(h);
             double** C_AOp = C_AO->pointer(0);
             double** Up = AO2USO_->pointer(h);
-            C_DGEMM('N','N',nao,nocc,nso,1.0,Up[0],nso,Cp[0],nocc,0.0,&C_AOp[0][offset],nmo);
+            C_DGEMM('N', 'N', nao, nocc, nso, 1.0, Up[0], nso, Cp[0], nocc, 0.0, &C_AOp[0][offset],
+                    nmo);
             offset += nocc;
         }
     }
 
     // D_AO
-    double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
+    double* temp = new double[AO2USO_->max_nrow() * (ULI)AO2USO_->max_ncol()];
     for (size_t A = 0; A < D_AO_.size(); A++) {
         SharedMatrix D = D_[A];
         SharedMatrix D_AO = D_AO_[A];
@@ -320,14 +320,14 @@ void VBase::USO2AO()
             int symm = D->symmetry();
             int nao = AO2USO_->rowspi()[h];
             int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h^symm];
+            int nsor = AO2USO_->colspi()[h ^ symm];
             if (!nao || !nsol || !nsor) continue;
             double** Dp = D->pointer(h);
             double** D_AOp = D_AO->pointer();
             double** Ulp = AO2USO_->pointer(h);
-            double** Urp = AO2USO_->pointer(h^symm);
-            C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor);
-            C_DGEMM('N','T',nao,nao,nsor,1.0,temp,nsor,Urp[0],nsor,1.0,D_AOp[0],nao);
+            double** Urp = AO2USO_->pointer(h ^ symm);
+            C_DGEMM('N', 'N', nao, nsor, nsol, 1.0, Ulp[0], nsol, Dp[0], nsor, 0.0, temp, nsor);
+            C_DGEMM('N', 'T', nao, nao, nsor, 1.0, temp, nsor, Urp[0], nsor, 1.0, D_AOp[0], nao);
         }
     }
 
@@ -340,27 +340,26 @@ void VBase::USO2AO()
             int symm = D->symmetry();
             int nao = AO2USO_->rowspi()[h];
             int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h^symm];
+            int nsor = AO2USO_->colspi()[h ^ symm];
             if (!nao || !nsol || !nsor) continue;
             double** Dp = D->pointer(h);
             double** D_AOp = D_AO->pointer();
             double** Ulp = AO2USO_->pointer(h);
-            double** Urp = AO2USO_->pointer(h^symm);
-            C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor);
-            C_DGEMM('N','T',nao,nao,nsor,1.0,temp,nsor,Urp[0],nsor,1.0,D_AOp[0],nao);
+            double** Urp = AO2USO_->pointer(h ^ symm);
+            C_DGEMM('N', 'N', nao, nsor, nsol, 1.0, Ulp[0], nsol, Dp[0], nsor, 0.0, temp, nsor);
+            C_DGEMM('N', 'T', nao, nao, nsor, 1.0, temp, nsor, Urp[0], nsor, 1.0, D_AOp[0], nao);
         }
         D_AO->hermitivitize();
     }
     delete[] temp;
 }
-void VBase::AO2USO()
-{
+void VBase::AO2USO() {
     if (C_[0]->nirrep() == 1) {
         // V_ is already assigned
         return;
     }
 
-    double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
+    double* temp = new double[AO2USO_->max_nrow() * (ULI)AO2USO_->max_ncol()];
     for (size_t A = 0; A < V_AO_.size(); A++) {
         SharedMatrix V = V_[A];
         SharedMatrix V_AO = V_AO_[A];
@@ -368,26 +367,24 @@ void VBase::AO2USO()
             int symm = V->symmetry();
             int nao = AO2USO_->rowspi()[h];
             int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h^symm];
+            int nsor = AO2USO_->colspi()[h ^ symm];
             if (!nao || !nsol || !nsor) continue;
             double** Vp = V->pointer(h);
             double** V_AOp = V_AO->pointer();
             double** Ulp = AO2USO_->pointer(h);
-            double** Urp = AO2USO_->pointer(h^symm);
-            C_DGEMM('N','N',nao,nsor,nao,1.0,V_AOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-            C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,Vp[0],nsor);
+            double** Urp = AO2USO_->pointer(h ^ symm);
+            C_DGEMM('N', 'N', nao, nsor, nao, 1.0, V_AOp[0], nao, Urp[0], nsor, 0.0, temp, nsor);
+            C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp, nsor, 0.0, Vp[0], nsor);
         }
     }
     delete[] temp;
 }
-void VBase::initialize()
-{
+void VBase::initialize() {
     timer_on("V: Grid");
-    grid_ = std::shared_ptr<DFTGrid>(new DFTGrid(primary_->molecule(),primary_,options_));
+    grid_ = std::shared_ptr<DFTGrid>(new DFTGrid(primary_->molecule(), primary_, options_));
     timer_off("V: Grid");
 }
-void VBase::compute()
-{
+void VBase::compute() {
     timer_on("V: D");
     compute_D();
     timer_off("V: D");
@@ -404,19 +401,16 @@ void VBase::compute()
     AO2USO();
     timer_off("V: AO2USO");
 }
-SharedMatrix VBase::compute_gradient()
-{
+SharedMatrix VBase::compute_gradient() {
     throw PSIEXCEPTION("VBase: gradient not implemented for this V instance.");
 }
-void VBase::finalize()
-{
+void VBase::finalize() {
     grid_.reset();
 }
-void VBase::print_header() const
-{
-    outfile->Printf( "  ==> DFT Potential <==\n\n");
+void VBase::print_header() const {
+    outfile->Printf("  ==> DFT Potential <==\n\n");
     functional_->print("outfile", print_);
-    grid_->print("outfile",print_);
+    grid_->print("outfile", print_);
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
@@ -475,9 +469,9 @@ void RV::compute_V() {
     // Per thread temporaries
     std::vector<SharedMatrix> V_local;
     std::vector<std::shared_ptr<Vector>> Q_temp;
-    for (size_t i = 0; i < num_threads_; i++){
+    for (size_t i = 0; i < num_threads_; i++) {
         V_local.push_back(SharedMatrix(new Matrix("V Temp", max_functions, max_functions)));
-        Q_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature Tempt", max_points)));
+        Q_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature Temp", max_points)));
     }
 
     SharedMatrix V_AO = V_AO_[0];
@@ -490,7 +484,7 @@ void RV::compute_V() {
     std::vector<double> rhoazq(num_threads_);
 
     // Traverse the blocks of points
-    // #pragma omp parallel for private (rank) schedule(dynamic) num_threads(num_threads_)
+    // #pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
 
         // Get thread info
@@ -516,21 +510,21 @@ void RV::compute_V() {
         int nlocal = function_map.size();
 
         // Compute Rho, Phi, etc
-        timer_on("Properties");
+        // timer_on("V: Properties");
         pworker->compute_points(block);
-        timer_off("Properties");
+        // timer_off("V: Properties");
 
         // Compute functional values
-        timer_on("Functional");
+        // timer_on("V: Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        timer_off("Functional");
+        // timer_off("V: Functional");
 
         if (debug_ > 4) {
             block->print("outfile", debug_);
             pworker->print("outfile", debug_);
         }
 
-        timer_on("V_XC");
+        // timer_on("V: V_XC");
         double** phi = pworker->basis_value("PHI")->pointer();
         double * rho_a = pworker->point_value("RHO_A")->pointer();
         double * zk = vals["V"]->pointer();
@@ -538,26 +532,26 @@ void RV::compute_V() {
 
 
         // => Quadrature values <= //
-        functionalq[rank] += C_DDOT(npoints,w,1,zk,1);
+        functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_a[P];
         }
-        rhoaq[rank]  += C_DDOT(npoints,w,1,rho_a,1);
-        rhoaxq[rank] += C_DDOT(npoints,QTp,1,x,1);
-        rhoayq[rank] += C_DDOT(npoints,QTp,1,y,1);
-        rhoazq[rank] += C_DDOT(npoints,QTp,1,z,1);
+        rhoaq[rank] += C_DDOT(npoints, w, 1, rho_a, 1);
+        rhoaxq[rank] += C_DDOT(npoints, QTp, 1, x, 1);
+        rhoayq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
+        rhoazq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
 
         // => LSDA contribution (symmetrized) <= //
-        timer_on("LSDA");
+        // timer_on("V: LSDA");
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-            C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
+            ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+            C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
         }
-        timer_off("LSDA");
+        // timer_off("V: LSDA");
 
         // => GGA contribution (symmetrized) <= //
         if (ansatz >= 1) {
-            timer_on("GGA");
+            // timer_on("V: GGA");
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
@@ -568,16 +562,17 @@ void RV::compute_V() {
             double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
             }
-            timer_off("GGA");
+            // timer_off("V: GGA");
         }
 
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        timer_on("LSDA");
-        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tp[0],max_functions,0.0,V2p[0],max_functions);
+        // timer_on("V: LSDA");
+        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions,
+                0.0, V2p[0], max_functions);
 
         // Symmetrization (V is Hermitian)
         for (int m = 0; m < nlocal; m++) {
@@ -585,11 +580,11 @@ void RV::compute_V() {
                 V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
             }
         }
-        timer_off("LSDA");
+        // timer_off("V: LSDA");
 
         // => Meta contribution <= //
         if (ansatz >= 2) {
-            timer_on("Meta");
+            // timer_on("V: Meta");
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
@@ -603,13 +598,13 @@ void RV::compute_V() {
             for (int i = 0; i < 3; i++) {
                 double** phiw = phi_w[i];
                 for (int P = 0; P < npoints; P++) {
-                    ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
+                    ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
                     C_DAXPY(nlocal, v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1);
                 }
-                C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
-
+                C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tp[0],
+                        max_functions, 1.0, V2p[0], max_functions);
             }
-            timer_off("Meta");
+            // timer_off("V: Meta");
         }
 
         // => Unpacking <= //
@@ -623,7 +618,7 @@ void RV::compute_V() {
             }
             Vp[mg][mg] += V2p[ml][ml];
         }
-        timer_off("V_XC");
+        // timer_off("V: V_XC");
     }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
@@ -637,12 +632,14 @@ void RV::compute_V() {
     quad_values_["RHO_BZ"]     = quad_values_["RHO_AZ"];
 
     if (debug_) {
-        outfile->Printf( "   => Numerical Integrals <=\n\n");
-        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf("   => Numerical Integrals <=\n\n");
+        outfile->Printf("    Functional Value:  %24.16E\n", quad_values_["FUNCTIONAL"]);
+        outfile->Printf("    <\\rho_a>        :  %24.16E\n", quad_values_["RHO_A"]);
+        outfile->Printf("    <\\rho_b>        :  %24.16E\n", quad_values_["RHO_B"]);
+        outfile->Printf("    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",
+                        quad_values_["RHO_AX"], quad_values_["RHO_AY"], quad_values_["RHO_AZ"]);
+        outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",
+                        quad_values_["RHO_BX"], quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
 }
 SharedMatrix RV::compute_gradient()
@@ -655,7 +652,7 @@ SharedMatrix RV::compute_gradient()
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
-    SharedMatrix G(new Matrix("XC Gradient", natom,3));
+    SharedMatrix G(new Matrix("XC Gradient", natom, 3));
     double** Gp = G->pointer();
 
     // Set Hessian derivative level in properties
@@ -720,13 +717,13 @@ SharedMatrix RV::compute_gradient()
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
-        timer_on("Properties");
+        // timer_on("V: Properties");
         pworker->compute_points(block);
-        timer_off("Properties");
+        // timer_off("V: Properties");
 
-        timer_on("Functional");
+        // timer_on("V: Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        timer_off("Functional");
+        // timer_off("V: Functional");
 
         double** phi = pworker->basis_value("PHI")->pointer();
         double** phi_x = pworker->basis_value("PHI_X")->pointer();
@@ -887,12 +884,14 @@ SharedMatrix RV::compute_gradient()
     quad_values_["RHO_BZ"]     = quad_values_["RHO_AZ"];
 
     if (debug_) {
-        outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
-        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf("   => XC Gradient: Numerical Integrals <=\n\n");
+        outfile->Printf("    Functional Value:  %24.16E\n", quad_values_["FUNCTIONAL"]);
+        outfile->Printf("    <\\rho_a>        :  %24.16E\n", quad_values_["RHO_A"]);
+        outfile->Printf("    <\\rho_b>        :  %24.16E\n", quad_values_["RHO_B"]);
+        outfile->Printf("    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",
+                        quad_values_["RHO_AX"], quad_values_["RHO_AY"], quad_values_["RHO_AZ"]);
+        outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",
+                        quad_values_["RHO_BX"], quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
 
     for (size_t i = 0; i < num_threads_; i++){
@@ -913,12 +912,11 @@ UV::UV(std::shared_ptr<SuperFunctional> functional,
 UV::~UV()
 {
 }
-void UV::initialize()
-{
+void UV::initialize() {
     VBase::initialize();
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
-    for (size_t i = 0; i < num_threads_; i++){
+    for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
         std::shared_ptr<PointFunctions> point_tmp =
             std::shared_ptr<PointFunctions>(new UKSFunctions(primary_, max_points, max_functions));
@@ -1010,54 +1008,55 @@ void UV::compute_V()
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
-        timer_on("Properties");
+        // timer_on("V: Properties");
         pworker->compute_points(block);
-        timer_off("Properties");
-        timer_on("Functional");
+        // timer_off("V: Properties");
+
+        // timer_on("V: Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        timer_off("Functional");
+        // timer_off("V: Functional");
 
         if (debug_ > 3) {
             block->print("outfile", debug_);
             pworker->print("outfile", debug_);
         }
 
-        timer_on("V_XC");
+        // timer_on("V: V_XC");
         double** phi = pworker->basis_value("PHI")->pointer();
-        double * rho_a = pworker->point_value("RHO_A")->pointer();
-        double * rho_b = pworker->point_value("RHO_B")->pointer();
-        double * zk = vals["V"]->pointer();
-        double * v_rho_a = vals["V_RHO_A"]->pointer();
-        double * v_rho_b = vals["V_RHO_B"]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->pointer();
+        double* rho_b = pworker->point_value("RHO_B")->pointer();
+        double* zk = vals["V"]->pointer();
+        double* v_rho_a = vals["V_RHO_A"]->pointer();
+        double* v_rho_b = vals["V_RHO_B"]->pointer();
 
         // => Quadrature values <= //
-        functionalq[rank] += C_DDOT(npoints,w,1,zk,1);
+        functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
         for (int P = 0; P < npoints; P++) {
             QTap[P] = w[P] * rho_a[P];
             QTbp[P] = w[P] * rho_b[P];
         }
-        rhoaq[rank]  += C_DDOT(npoints,w,1,rho_a,1);
-        rhoaxq[rank] += C_DDOT(npoints,QTap,1,x,1);
-        rhoayq[rank] += C_DDOT(npoints,QTap,1,y,1);
-        rhoazq[rank] += C_DDOT(npoints,QTap,1,z,1);
-        rhobq[rank]  += C_DDOT(npoints,w,1,rho_b,1);
-        rhobxq[rank] += C_DDOT(npoints,QTbp,1,x,1);
-        rhobyq[rank] += C_DDOT(npoints,QTbp,1,y,1);
-        rhobzq[rank] += C_DDOT(npoints,QTbp,1,z,1);
+        rhoaq[rank] += C_DDOT(npoints, w, 1, rho_a, 1);
+        rhoaxq[rank] += C_DDOT(npoints, QTap, 1, x, 1);
+        rhoayq[rank] += C_DDOT(npoints, QTap, 1, y, 1);
+        rhoazq[rank] += C_DDOT(npoints, QTap, 1, z, 1);
+        rhobq[rank] += C_DDOT(npoints, w, 1, rho_b, 1);
+        rhobxq[rank] += C_DDOT(npoints, QTbp, 1, x, 1);
+        rhobyq[rank] += C_DDOT(npoints, QTbp, 1, y, 1);
+        rhobzq[rank] += C_DDOT(npoints, QTbp, 1, z, 1);
 
         // => LSDA contribution (symmetrized) <= //
-        timer_on("LSDA");
+        // timer_on("V: LSDA");
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-            ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-            C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tap[P], 1);
-            C_DAXPY(nlocal,0.5 * v_rho_b[P] * w[P], phi[P], 1, Tbp[P], 1);
+            ::memset(static_cast<void*>(Tap[P]), '\0', nlocal * sizeof(double));
+            ::memset(static_cast<void*>(Tbp[P]), '\0', nlocal * sizeof(double));
+            C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tap[P], 1);
+            C_DAXPY(nlocal, 0.5 * v_rho_b[P] * w[P], phi[P], 1, Tbp[P], 1);
         }
-        timer_off("LSDA");
+        // timer_off("V: LSDA");
 
         // => GGA contribution (symmetrized) <= //
         if (ansatz >= 1) {
-            timer_on("GGA");
+            // timer_on("V: GGA");
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
@@ -1079,13 +1078,15 @@ void UV::compute_V()
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_by[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tbp[P], 1);
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bz[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tbp[P], 1);
             }
-            timer_off("GGA");
+            // timer_off("V: GGA");
         }
 
-        timer_on("LSDA");
+        // timer_on("V: LSDA");
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tap[0],max_functions,0.0,Va2p[0],max_functions);
-        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tbp[0],max_functions,0.0,Vb2p[0],max_functions);
+        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tap[0],
+                max_functions, 0.0, Va2p[0], max_functions);
+        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tbp[0],
+                max_functions, 0.0, Vb2p[0], max_functions);
 
         // Symmetrization (V is Hermitian)
         for (int m = 0; m < nlocal; m++) {
@@ -1094,11 +1095,11 @@ void UV::compute_V()
                 Vb2p[m][n] = Vb2p[n][m] = Vb2p[m][n] + Vb2p[n][m];
             }
         }
-        timer_off("LSDA");
+        // timer_off("V: LSDA");
 
         // => Meta contribution <= //
         if (ansatz >= 2) {
-            timer_on("Meta");
+            // timer_on("V: Meta");
             double** phix = pworker->basis_value("PHI_X")->pointer();
             double** phiy = pworker->basis_value("PHI_Y")->pointer();
             double** phiz = pworker->basis_value("PHI_Z")->pointer();
@@ -1120,18 +1121,19 @@ void UV::compute_V()
 
             for (int s = 0; s < 2; s++) {
                 double** V2p = V_val[s];
-                double*  v_taup = v_tau[s];
+                double* v_taup = v_tau[s];
                 for (int i = 0; i < 3; i++) {
                     double** phiw = phi[i];
                     for (int P = 0; P < npoints; P++) {
-                        ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                        C_DAXPY(nlocal,v_taup[P] * w[P], phiw[P], 1, Tap[P], 1);
+                        ::memset(static_cast<void*>(Tap[P]), '\0', nlocal * sizeof(double));
+                        C_DAXPY(nlocal, v_taup[P] * w[P], phiw[P], 1, Tap[P], 1);
                     }
-                    C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tap[0],max_functions,1.0,V2p[0],max_functions);
+                    C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phiw[0], max_functions, Tap[0],
+                            max_functions, 1.0, V2p[0], max_functions);
                 }
             }
 
-            timer_off("Meta");
+            // timer_off("V: Meta");
         }
 
         // => Unpacking <= //
@@ -1147,7 +1149,7 @@ void UV::compute_V()
             Vap[mg][mg] += Va2p[ml][ml];
             Vbp[mg][mg] += Vb2p[ml][ml];
         }
-        timer_off("V_XC");
+        // timer_off("V: V_XC");
     }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
@@ -1161,12 +1163,14 @@ void UV::compute_V()
     quad_values_["RHO_BZ"]     = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
 
     if (debug_) {
-        outfile->Printf( "   => Numerical Integrals <=\n\n");
-        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf("   => Numerical Integrals <=\n\n");
+        outfile->Printf("    Functional Value:  %24.16E\n", quad_values_["FUNCTIONAL"]);
+        outfile->Printf("    <\\rho_a>        :  %24.16E\n", quad_values_["RHO_A"]);
+        outfile->Printf("    <\\rho_b>        :  %24.16E\n", quad_values_["RHO_B"]);
+        outfile->Printf("    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",
+                        quad_values_["RHO_AX"], quad_values_["RHO_AY"], quad_values_["RHO_AZ"]);
+        outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",
+                        quad_values_["RHO_BX"], quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
 }
 SharedMatrix UV::compute_gradient()
@@ -1217,6 +1221,7 @@ SharedMatrix UV::compute_gradient()
     std::vector<double> rhobzq(num_threads_);
 
 
+    // timer_off("V: V_XC");
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
 
         // Get thread info
@@ -1249,13 +1254,13 @@ SharedMatrix UV::compute_gradient()
         int nlocal = function_map.size();
 
         // Compute grid and functional
-        timer_on("Properties");
+        // timer_on("V: Properties");
         pworker->compute_points(block);
-        timer_off("Properties");
+        // timer_off("V: Properties");
 
-        timer_on("Functional");
+        // timer_on("V: Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        timer_off("Functional");
+        // timer_off("V: Functional");
 
         // More pointers
         double** phi = pworker->basis_value("PHI")->pointer();
@@ -1269,26 +1274,26 @@ SharedMatrix UV::compute_gradient()
         double* v_rho_b = vals["V_RHO_B"]->pointer();
 
         // => Quadrature values <= //
-        functionalq[rank] += C_DDOT(npoints,w,1,zk,1);
+        functionalq[rank] += C_DDOT(npoints, w, 1, zk, 1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_a[P];
         }
-        rhoaq[rank]  += C_DDOT(npoints,w,1,rho_a,1);
-        rhoaxq[rank] += C_DDOT(npoints,QTp,1,x,1);
-        rhoayq[rank] += C_DDOT(npoints,QTp,1,y,1);
-        rhoazq[rank] += C_DDOT(npoints,QTp,1,z,1);
+        rhoaq[rank] += C_DDOT(npoints, w, 1, rho_a, 1);
+        rhoaxq[rank] += C_DDOT(npoints, QTp, 1, x, 1);
+        rhoayq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
+        rhoazq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
         for (int P = 0; P < npoints; P++) {
             QTp[P] = w[P] * rho_b[P];
         }
-        rhobq[rank]  += C_DDOT(npoints,w,1,rho_b,1);
-        rhobxq[rank] += C_DDOT(npoints,QTp,1,x,1);
-        rhobyq[rank] += C_DDOT(npoints,QTp,1,y,1);
-        rhobzq[rank] += C_DDOT(npoints,QTp,1,z,1);
+        rhobq[rank] += C_DDOT(npoints, w, 1, rho_b, 1);
+        rhobxq[rank] += C_DDOT(npoints, QTp, 1, x, 1);
+        rhobyq[rank] += C_DDOT(npoints, QTp, 1, y, 1);
+        rhobzq[rank] += C_DDOT(npoints, QTp, 1, z, 1);
 
         // => LSDA Contribution <= //
         for (int P = 0; P < npoints; P++) {
-            ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
-            ::memset((void*) Tbp[P], '\0', sizeof(double) * nlocal);
+            ::memset((void*)Tap[P], '\0', sizeof(double) * nlocal);
+            ::memset((void*)Tbp[P], '\0', sizeof(double) * nlocal);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_a[P], phi[P], 1, Tap[P], 1);
             C_DAXPY(nlocal, -2.0 * w[P] * v_rho_b[P], phi[P], 1, Tbp[P], 1);
         }
@@ -1306,28 +1311,41 @@ SharedMatrix UV::compute_gradient()
             double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]), phi_x[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P] + v_gamma_ab[P] * rho_by[P]), phi_y[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P] + v_gamma_ab[P] * rho_bz[P]), phi_z[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bx[P] + v_gamma_ab[P] * rho_ax[P]), phi_x[P], 1, Tbp[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_by[P] + v_gamma_ab[P] * rho_ay[P]), phi_y[P], 1, Tbp[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bz[P] + v_gamma_ab[P] * rho_az[P]), phi_z[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]),
+                        phi_x[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P] + v_gamma_ab[P] * rho_by[P]),
+                        phi_y[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P] + v_gamma_ab[P] * rho_bz[P]),
+                        phi_z[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bx[P] + v_gamma_ab[P] * rho_ax[P]),
+                        phi_x[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_by[P] + v_gamma_ab[P] * rho_ay[P]),
+                        phi_y[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bz[P] + v_gamma_ab[P] * rho_az[P]),
+                        phi_z[P], 1, Tbp[P], 1);
             }
-
         }
 
         // => Synthesis <= //
-        C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,Tap[0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
-        C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,Tbp[0],max_functions,Dbp[0],max_functions,0.0,Ubp[0],max_functions);
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tap[0], max_functions, Dap[0],
+                max_functions, 0.0, Uap[0], max_functions);
+        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, Tbp[0], max_functions, Dbp[0],
+                max_functions, 0.0, Ubp[0], max_functions);
 
         for (int ml = 0; ml < nlocal; ml++) {
             int A = primary_->function_to_center(function_map[ml]);
-            Gp[A][0] += C_DDOT(npoints,&Uap[0][ml],max_functions,&phi_x[0][ml],max_functions);
-            Gp[A][1] += C_DDOT(npoints,&Uap[0][ml],max_functions,&phi_y[0][ml],max_functions);
-            Gp[A][2] += C_DDOT(npoints,&Uap[0][ml],max_functions,&phi_z[0][ml],max_functions);
-            Gp[A][0] += C_DDOT(npoints,&Ubp[0][ml],max_functions,&phi_x[0][ml],max_functions);
-            Gp[A][1] += C_DDOT(npoints,&Ubp[0][ml],max_functions,&phi_y[0][ml],max_functions);
-            Gp[A][2] += C_DDOT(npoints,&Ubp[0][ml],max_functions,&phi_z[0][ml],max_functions);
+            Gp[A][0] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_x[0][ml], max_functions);
+            Gp[A][1] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_y[0][ml], max_functions);
+            Gp[A][2] += C_DDOT(npoints, &Uap[0][ml], max_functions, &phi_z[0][ml], max_functions);
+            Gp[A][0] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_x[0][ml], max_functions);
+            Gp[A][1] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_y[0][ml], max_functions);
+            Gp[A][2] += C_DDOT(npoints, &Ubp[0][ml], max_functions, &phi_z[0][ml], max_functions);
         }
 
         // => GGA Contribution (Term 2) <= //
@@ -1348,24 +1366,36 @@ SharedMatrix UV::compute_gradient()
             double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
             double* v_gamma_bb = vals["V_GAMMA_BB"]->pointer();
 
-            C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
-            C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dbp[0],max_functions,0.0,Ubp[0],max_functions);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dap[0],
+                    max_functions, 0.0, Uap[0], max_functions);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dbp[0],
+                    max_functions, 0.0, Ubp[0], max_functions);
 
             // x
             for (int P = 0; P < npoints; P++) {
-                ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
-                ::memset((void*) Tbp[P], '\0', sizeof(double) * nlocal);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]), Uap[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bx[P] + v_gamma_ab[P] * rho_ax[P]), Ubp[P], 1, Tbp[P], 1);
+                ::memset((void*)Tap[P], '\0', sizeof(double) * nlocal);
+                ::memset((void*)Tbp[P], '\0', sizeof(double) * nlocal);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_bx[P]),
+                        Uap[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal,
+                        -2.0 * w[P] * (2.0 * v_gamma_bb[P] * rho_bx[P] + v_gamma_ab[P] * rho_ax[P]),
+                        Ubp[P], 1, Tbp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
-                Gp[A][0] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_xx[0][ml],max_functions);
-                Gp[A][1] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_xy[0][ml],max_functions);
-                Gp[A][2] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_xz[0][ml],max_functions);
-                Gp[A][0] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xx[0][ml],max_functions);
-                Gp[A][1] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xy[0][ml],max_functions);
-                Gp[A][2] += C_DDOT(npoints,&Tbp[0][ml],max_functions,&phi_xz[0][ml],max_functions);
+                Gp[A][0] +=
+                    C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xx[0][ml], max_functions);
+                Gp[A][1] +=
+                    C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xy[0][ml], max_functions);
+                Gp[A][2] +=
+                    C_DDOT(npoints, &Tap[0][ml], max_functions, &phi_xz[0][ml], max_functions);
+                Gp[A][0] +=
+                    C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xx[0][ml], max_functions);
+                Gp[A][1] +=
+                    C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xy[0][ml], max_functions);
+                Gp[A][2] +=
+                    C_DDOT(npoints, &Tbp[0][ml], max_functions, &phi_xz[0][ml], max_functions);
             }
 
             // y
@@ -1462,6 +1492,7 @@ SharedMatrix UV::compute_gradient()
         Ub_local.reset();
 
     }
+    // timer_off("V: V_XC");
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"]      = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
@@ -1474,15 +1505,17 @@ SharedMatrix UV::compute_gradient()
     quad_values_["RHO_BZ"]     = std::accumulate(rhobzq.begin(), rhobzq.end(), 0.0);
 
     if (debug_) {
-        outfile->Printf( "   => XC Gradient: Numerical Integrals <=\n\n");
-        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+        outfile->Printf("   => XC Gradient: Numerical Integrals <=\n\n");
+        outfile->Printf("    Functional Value:  %24.16E\n", quad_values_["FUNCTIONAL"]);
+        outfile->Printf("    <\\rho_a>        :  %24.16E\n", quad_values_["RHO_A"]);
+        outfile->Printf("    <\\rho_b>        :  %24.16E\n", quad_values_["RHO_B"]);
+        outfile->Printf("    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",
+                        quad_values_["RHO_AX"], quad_values_["RHO_AY"], quad_values_["RHO_AZ"]);
+        outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",
+                        quad_values_["RHO_BX"], quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
 
-    for (size_t i = 0; i < num_threads_; i++){
+    for (size_t i = 0; i < num_threads_; i++) {
         point_workers_[i]->set_deriv(old_deriv);
     }
 

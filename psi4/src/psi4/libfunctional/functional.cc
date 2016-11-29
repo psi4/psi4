@@ -87,7 +87,7 @@ void Functional::print(std::string out, int level) const {
 }
 void Functional::compute_functional(const std::map<std::string, SharedVector>& in,
                                     const std::map<std::string, SharedVector>& out, int npoints,
-                                    int deriv, double alpha) {
+                                    int deriv) {
     throw PSIEXCEPTION("Functional: pseudo-abstract class.");
 }
 }

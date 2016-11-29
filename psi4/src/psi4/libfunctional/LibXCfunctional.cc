@@ -112,7 +112,6 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 }
 LibXCFunctional::~LibXCFunctional() { xc_func_end(&xc_functional_); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
-
     // Build functional
     std::shared_ptr<LibXCFunctional> func(new LibXCFunctional(xc_func_name_, unpolarized_));
 
@@ -130,7 +129,6 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     return static_cast<std::shared_ptr<Functional>>(func);
 }
 void LibXCFunctional::set_omega(double omega) {
-
     omega_ = omega;
     if (xc_func_name_ == "XC_GGA_X_WPBEH") {
         xc_gga_x_wpbeh_set_params(&xc_functional_, omega);
@@ -167,7 +165,7 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
 }
 void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector>& in,
                                          const std::map<std::string, SharedVector>& out,
-                                         int npoints, int deriv, double x_alpha) {
+                                         int npoints, int deriv) {
     // => Input variables <= //
 
     double* rho_ap = NULL;
