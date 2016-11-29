@@ -109,6 +109,9 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         gga_ = true;
         meta_ = true;
     }
+
+    // Set any other parameters
+    user_omega_ = false;
 }
 LibXCFunctional::~LibXCFunctional() { xc_func_end(&xc_functional_); }
 std::shared_ptr<Functional> LibXCFunctional::build_worker() {
@@ -116,7 +119,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
     std::shared_ptr<LibXCFunctional> func(new LibXCFunctional(xc_func_name_, unpolarized_));
 
     // Tweak
-    if (omega_ != 0.0) {
+    if (user_omega_) {
         func->set_omega(omega_);
     }
 
@@ -130,6 +133,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
 }
 void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
+    user_omega_ = true;
     if (xc_func_name_ == "XC_GGA_X_WPBEH") {
         xc_gga_x_wpbeh_set_params(&xc_functional_, omega);
     } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {

@@ -45,6 +45,7 @@ private:
     int func_id_;
     double global_exch_;
     double lr_exch_;
+    bool user_omega_;
 
 public:
 
