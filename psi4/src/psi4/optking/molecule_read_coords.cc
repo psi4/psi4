@@ -567,12 +567,15 @@ bool stoi(string s, int *a) {
 
 // convert string to float
 bool stof(string s, double *val) {
-  double i = atof(s.c_str());
-  if (i!=0) {
-    *val = i;
+  const char *word = s.c_str();
+  char *check;
+  double f = strtod(word, &check);
+  if (f == 0.0F && word == check)
+    return false;
+  else {
+    *val = f;
     return true;
   }
-  return false;
 }
 
 // convert string to boolean
