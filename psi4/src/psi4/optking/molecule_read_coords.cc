@@ -567,7 +567,16 @@ bool stoi(string s, int *a) {
 
 // convert string to float
 bool stof(string s, double *val) {
-  const char *word = s.c_str();
+   double d;
+   std::istringstream iss(s);
+   iss >> d;
+   if (iss.bad() || iss.fail())
+     return false;
+   else {
+     *val = d;
+     return true;
+   }
+/* const char *word = s.c_str();
   char *check;
   double f = strtod(word, &check);
   if (f == 0.0F && word == check)
@@ -575,7 +584,7 @@ bool stof(string s, double *val) {
   else {
     *val = f;
     return true;
-  }
+  } */
 }
 
 // convert string to boolean
