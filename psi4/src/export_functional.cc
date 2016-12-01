@@ -133,6 +133,7 @@ void export_functional(py::module &m)
         def("finalize", &VBase::finalize, "doctsring").
         def("compute", &VBase::compute, "doctsring").
         def("compute_gradient", &VBase::compute_gradient, "doctsring").
+        def("compute_hessain", &VBase::compute_hessian, "docstring").
 
         def("basis", &VBase::basis, "doctsring").
         def("functional", &VBase::functional, "doctsring").

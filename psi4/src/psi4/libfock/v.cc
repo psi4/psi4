@@ -404,6 +404,10 @@ void VBase::compute() {
 SharedMatrix VBase::compute_gradient() {
     throw PSIEXCEPTION("VBase: gradient not implemented for this V instance.");
 }
+SharedMatrix VBase::compute_hessian()
+{
+    throw PSIEXCEPTION("VBase: hessian not implemented for this V instance.");
+}
 void VBase::finalize() {
     grid_.reset();
 }
@@ -903,6 +907,268 @@ SharedMatrix RV::compute_gradient()
 
     return G;
 }
+
+
+SharedMatrix RV::compute_hessian()
+{
+    if(functional_->is_gga() || functional_->is_meta())
+        throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
+
+    compute_D();
+    USO2AO();
+
+    if ((D_AO_.size() != 1))
+        throw PSIEXCEPTION("V: RKS should have only one D Matrix");
+
+    // Build the target Hessian Matrix
+    int natom = primary_->molecule()->natom();
+    SharedMatrix H(new Matrix("XC Hessian", 3*natom,3*natom));
+    double** Hp = H->pointer();
+
+    // Thread info
+    int rank = 0;
+
+    // Set Hessian derivative level in properties
+    int old_deriv = point_workers_[0]->deriv();
+    int old_func_deriv = functional_->deriv();
+
+    // How many functions are there (for lda in Vtemp, T)
+    int max_functions = grid_->max_functions();
+    int max_points = grid_->max_points();
+
+    int derivlev = (functional_->is_gga() || functional_->is_meta()) ? 3 : 2;
+    functional_->set_deriv(derivlev);
+
+    // Setup the pointers
+    for (size_t i = 0; i < num_threads_; i++){
+        point_workers_[i]->set_pointers(D_AO_[0]);
+        point_workers_[i]->set_deriv(derivlev);
+        functional_workers_[i]->set_deriv(derivlev);
+        functional_workers_[i]->allocate();
+    }
+
+    // Per thread temporaries
+    std::vector<SharedMatrix> V_local;
+    std::vector<std::shared_ptr<Vector>> Q_temp;
+    for (size_t i = 0; i < num_threads_; i++){
+        V_local.push_back(SharedMatrix(new Matrix("V Temp", max_functions, max_functions)));
+        Q_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature Tempt", max_points)));
+    }
+
+    std::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
+    double* QTp = QT->pointer();
+    const std::vector<std::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+
+    for (size_t Q = 0; Q < blocks.size(); Q++) {
+
+        // Get thread info
+        #ifdef _OPENMP
+            rank = omp_get_thread_num();
+        #endif
+
+        std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
+        std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+        double** V2p = V_local[rank]->pointer();
+        double* QTp = Q_temp[rank]->pointer();
+        double** Dp = pworker->D_scratch()[0]->pointer();
+
+        // Scratch
+        double** Tp = pworker->scratch()[0]->pointer();
+        SharedMatrix U_local(pworker->scratch()[0]->clone());
+        double** Up = U_local->pointer();
+
+        // ACS TODO: these need to be threaded eventually, to fit in with the new infrastructure
+        SharedVector Tmpx(new Vector("Tx", max_functions));
+        SharedVector Tmpy(new Vector("Ty", max_functions));
+        SharedVector Tmpz(new Vector("Tz", max_functions));
+        double *pTx = Tmpx->pointer();
+        double *pTy = Tmpy->pointer();
+        double *pTz = Tmpz->pointer();
+        SharedMatrix Tx(U_local->clone());
+        SharedMatrix Ty(U_local->clone());
+        SharedMatrix Tz(U_local->clone());
+        double **pTx2 = Tx->pointer();
+        double **pTy2 = Ty->pointer();
+        double **pTz2 = Tz->pointer();
+
+        std::shared_ptr<BlockOPoints> block = blocks[Q];
+        int npoints = block->npoints();
+        double* x = block->x();
+        double* y = block->y();
+        double* z = block->z();
+        double* w = block->w();
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
+
+        pworker->compute_points(block);
+        std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+
+        double** phi    = pworker->basis_value("PHI")->pointer();
+        double** phi_x  = pworker->basis_value("PHI_X")->pointer();
+        double** phi_y  = pworker->basis_value("PHI_Y")->pointer();
+        double** phi_z  = pworker->basis_value("PHI_Z")->pointer();
+        double** phi_xx = pworker->basis_value("PHI_XX")->pointer();
+        double** phi_xy = pworker->basis_value("PHI_XY")->pointer();
+        double** phi_xz = pworker->basis_value("PHI_XZ")->pointer();
+        double** phi_yy = pworker->basis_value("PHI_YY")->pointer();
+        double** phi_yz = pworker->basis_value("PHI_YZ")->pointer();
+        double** phi_zz = pworker->basis_value("PHI_ZZ")->pointer();
+        double* v_rho_a  = vals["V_RHO_A"]->pointer();
+        double* v_rho_aa = vals["V_RHO_A_RHO_A"]->pointer();
+
+        for (int P = 0; P < npoints; P++) {
+            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            C_DAXPY(nlocal, 4.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
+        }
+
+
+        // => LSDA Contribution <= //
+
+
+        /*
+         *                        m             n  ∂^2 F
+         *  H_mn <- 4 D_ab ɸ_a ɸ_b  D_cd ɸ_c ɸ_d   ------
+         *                                         ∂ ρ^2
+         */
+
+        // T = ɸ D
+        C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dp[0],max_functions,0.0,Tp[0],max_functions);
+
+
+        // Compute rho, to filter out small values
+        for (int P = 0; P < npoints; P++) {
+            double rho = C_DDOT(nlocal,phi[P],1,Tp[P],1);
+            if(fabs(rho) < 1E-8){
+                v_rho_a[P] = 0.0;
+                v_rho_aa[P] = 0.0;
+            }
+//            outfile->Printf("%f %f %f\n", w[P], v_rho_a[P], v_rho_aa[P]);
+        }
+
+        for (int P = 0; P < npoints; P++) {
+            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            C_DAXPY(nlocal, 4.0 * w[P] * v_rho_aa[P], Tp[P], 1, Up[P], 1);
+        }
+
+        for (int ml = 0; ml < nlocal; ml++) {
+            pTx[ml] = C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_x[0][ml],max_functions);
+            pTy[ml] = C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_y[0][ml],max_functions);
+            pTz[ml] = C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_z[0][ml],max_functions);
+        }
+
+        for (int ml = 0; ml < nlocal; ml++) {
+            int A = primary_->function_to_center(function_map[ml]);
+            double mx = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_x[0][ml],max_functions);
+            double my = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_y[0][ml],max_functions);
+            double mz = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_z[0][ml],max_functions);
+            for (int nl = 0; nl < nlocal; nl++) {
+                int B = primary_->function_to_center(function_map[nl]);
+                Hp[3*A+0][3*B+0] += mx*pTx[nl];
+                Hp[3*A+0][3*B+1] += mx*pTy[nl];
+                Hp[3*A+0][3*B+2] += mx*pTz[nl];
+                Hp[3*A+1][3*B+0] += my*pTx[nl];
+                Hp[3*A+1][3*B+1] += my*pTy[nl];
+                Hp[3*A+1][3*B+2] += my*pTz[nl];
+                Hp[3*A+2][3*B+0] += mz*pTx[nl];
+                Hp[3*A+2][3*B+1] += mz*pTy[nl];
+                Hp[3*A+2][3*B+2] += mz*pTz[nl];
+            }
+        }
+
+        /*
+         *                        mn  ∂ F
+         *  H_mn <- 2 D_ab ɸ_a ɸ_b    ---
+         *                            ∂ ρ
+         */
+        for (int P = 0; P < npoints; P++) {
+            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], Tp[P], 1, Up[P], 1);
+        }
+        for (int ml = 0; ml < nlocal; ml++) {
+            int A = primary_->function_to_center(function_map[ml]);
+            double Txx = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_xx[0][ml],max_functions);
+            double Txy = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_xy[0][ml],max_functions);
+            double Txz = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_xz[0][ml],max_functions);
+            double Tyy = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_yy[0][ml],max_functions);
+            double Tyz = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_yz[0][ml],max_functions);
+            double Tzz = C_DDOT(npoints,&Up[0][ml],max_functions,&phi_zz[0][ml],max_functions);
+            Hp[3*A+0][3*A+0] += Txx;
+            Hp[3*A+0][3*A+1] += Txy;
+            Hp[3*A+0][3*A+2] += Txz;
+            Hp[3*A+1][3*A+0] += Txy;
+            Hp[3*A+1][3*A+1] += Tyy;
+            Hp[3*A+1][3*A+2] += Tyz;
+            Hp[3*A+2][3*A+0] += Txz;
+            Hp[3*A+2][3*A+1] += Tyz;
+            Hp[3*A+2][3*A+2] += Tzz;
+        }
+
+        /*
+         *                    m    n  ∂ F
+         *  H_mn <- 2 D_ab ɸ_a  ɸ_b   ---
+         *                            ∂ ρ
+         */
+        // T = ɸ_x D
+        C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_x[0],max_functions,Dp[0],max_functions,0.0,pTx2[0],max_functions);
+        C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_y[0],max_functions,Dp[0],max_functions,0.0,pTy2[0],max_functions);
+        C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_z[0],max_functions,Dp[0],max_functions,0.0,pTz2[0],max_functions);
+        // x derivatives
+        for (int P = 0; P < npoints; P++) {
+            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], pTx2[P], 1, Up[P], 1);
+        }
+        for (int ml = 0; ml < nlocal; ml++) {
+            int A = primary_->function_to_center(function_map[ml]);
+            Hp[3*A+0][3*A+0] += C_DDOT(npoints,&pTx2[0][ml],max_functions,&Up[0][ml],max_functions);;
+            Hp[3*A+0][3*A+1] += C_DDOT(npoints,&pTy2[0][ml],max_functions,&Up[0][ml],max_functions);;
+            Hp[3*A+0][3*A+2] += C_DDOT(npoints,&pTz2[0][ml],max_functions,&Up[0][ml],max_functions);;
+        }
+        // y derivatives
+        for (int P = 0; P < npoints; P++) {
+            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], pTy2[P], 1, Up[P], 1);
+        }
+        for (int ml = 0; ml < nlocal; ml++) {
+            int A = primary_->function_to_center(function_map[ml]);
+            Hp[3*A+1][3*A+0] += C_DDOT(npoints,&pTx2[0][ml],max_functions,&Up[0][ml],max_functions);;
+            Hp[3*A+1][3*A+1] += C_DDOT(npoints,&pTy2[0][ml],max_functions,&Up[0][ml],max_functions);;
+            Hp[3*A+1][3*A+2] += C_DDOT(npoints,&pTz2[0][ml],max_functions,&Up[0][ml],max_functions);;
+        }
+        // x derivatives
+        for (int P = 0; P < npoints; P++) {
+            ::memset((void*) Up[P], '\0', sizeof(double) * nlocal);
+            C_DAXPY(nlocal, 2.0 * w[P] * v_rho_a[P], pTz2[P], 1, Up[P], 1);
+        }
+        for (int ml = 0; ml < nlocal; ml++) {
+            int A = primary_->function_to_center(function_map[ml]);
+            Hp[3*A+2][3*A+0] += C_DDOT(npoints,&pTx2[0][ml],max_functions,&Up[0][ml],max_functions);;
+            Hp[3*A+2][3*A+1] += C_DDOT(npoints,&pTy2[0][ml],max_functions,&Up[0][ml],max_functions);;
+            Hp[3*A+2][3*A+2] += C_DDOT(npoints,&pTz2[0][ml],max_functions,&Up[0][ml],max_functions);;
+        }
+
+    }
+
+    if (debug_) {
+        outfile->Printf( "   => XC Hessian: Numerical Integrals <=\n\n");
+        outfile->Printf( "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        outfile->Printf( "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        outfile->Printf( "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        outfile->Printf( "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        outfile->Printf( "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+    }
+
+    for (size_t i = 0; i < num_threads_; i++){
+        point_workers_[i]->set_deriv(old_deriv);
+    }
+    functional_->set_deriv(old_func_deriv);
+
+    // RKS
+    H->scale(2.0);
+    H->hermitivitize();
+
+    return H;
+}
+
 
 UV::UV(std::shared_ptr<SuperFunctional> functional,
     std::shared_ptr<BasisSet> primary,
