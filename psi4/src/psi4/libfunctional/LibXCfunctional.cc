@@ -316,14 +316,11 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         std::vector<double> fv(npoints);
         std::vector<double> fv_rho(npoints);
 
-        C_DAXPY(npoints, 2.0, rho_ap, 1, frho.data(), 1);
-
         // GGA
-        std::vector<double> fsigma, fv_sigma;
+        std::vector<double> fgamma, fv_gamma;
         if (gga_) {
-            fsigma.resize(npoints);
-            fv_sigma.resize(npoints);
-            C_DAXPY(npoints, 4.0, gamma_aap, 1, fsigma.data(), 1);
+            fgamma.resize(npoints);
+            fv_gamma.resize(npoints);
         }
 
         // Meta
@@ -337,25 +334,25 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         // Compute deriv
         if (deriv >= 1) {
             if (meta_) {
-                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), flapl.data(),
-                                tau_ap, fv.data(), fv_rho.data(), fv_sigma.data(), fv_lapl.data(),
+                xc_mgga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, flapl.data(),
+                                tau_ap, fv.data(), fv_rho.data(), fv_gamma.data(), fv_lapl.data(),
                                 fv_tau.data());
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(),
-                               fv_rho.data(), fv_sigma.data());
+                xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv.data(),
+                               fv_rho.data(), fv_gamma.data());
 
             } else {
-                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
+                xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, fv.data(), fv_rho.data());
             }
 
             // Re-apply
             for (size_t i = 0; i < npoints; i++) {
-                v[i] += alpha_ * fv[i] * (2.0 * rho_ap[i]);
+                v[i] += alpha_ * fv[i] * rho_ap[i];
             }
             C_DAXPY(npoints, alpha_, fv_rho.data(), 1, v_rho_a, 1);
 
             if (gga_) {
-                C_DAXPY(npoints, 2.0 * alpha_, fv_sigma.data(), 1, v_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, fv_gamma.data(), 1, v_gamma_aa, 1);
             }
 
             if (meta_) {
@@ -372,20 +369,20 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
             } else if (gga_) {
                 std::vector<double> fv2_rho2(npoints);
-                std::vector<double> fv2_rhosigma(npoints);
-                std::vector<double> fv2_sigma2(npoints);
+                std::vector<double> fv2_rho_gamma(npoints);
+                std::vector<double> fv2_gamma2(npoints);
 
-                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(),
-                           fv2_rhosigma.data(), fv2_sigma2.data());
+                xc_gga_fxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv2_rho2.data(),
+                           fv2_rho_gamma.data(), fv2_gamma2.data());
 
                 C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
-                C_DAXPY(npoints, alpha_, fv2_sigma2.data(), 1, v_gamma_aa_gamma_aa, 1);
-                C_DAXPY(npoints, alpha_, fv2_rhosigma.data(), 1, v_rho_a_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, fv2_gamma2.data(), 1, v_gamma_aa_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, fv2_rho_gamma.data(), 1, v_rho_a_gamma_aa, 1);
 
             } else {
                 std::vector<double> fv2_rho2(npoints);
 
-                xc_lda_fxc(&xc_functional_, npoints, frho.data(), fv2_rho2.data());
+                xc_lda_fxc(&xc_functional_, npoints, rho_ap, fv2_rho2.data());
 
                 C_DAXPY(npoints, alpha_, fv2_rho2.data(), 1, v_rho_a_rho_a, 1);
             }
@@ -401,17 +398,17 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         std::vector<double> fv(npoints);
         std::vector<double> fv_rho(npoints * 2);
 
-        C_DAXPY(npoints, 1.0, rho_ap, 1, frho.data(), 2);
-        C_DAXPY(npoints, 1.0, rho_bp, 1, (frho.data() + 1), 2);
+        C_DCOPY(npoints, rho_ap, 1, frho.data(), 2);
+        C_DCOPY(npoints, rho_bp, 1, (frho.data() + 1), 2);
 
-        std::vector<double> fsigma, fv_sigma;
+        std::vector<double> fgamma, fv_gamma;
         if (gga_) {
-            fsigma.resize(npoints * 3);
-            fv_sigma.resize(npoints * 3);
+            fgamma.resize(npoints * 3);
+            fv_gamma.resize(npoints * 3);
 
-            C_DAXPY(npoints, 1.0, gamma_aap, 1, fsigma.data(), 3);
-            C_DAXPY(npoints, 1.0, gamma_abp, 1, (fsigma.data() + 1), 3);
-            C_DAXPY(npoints, 1.0, gamma_bbp, 1, (fsigma.data() + 2), 3);
+            C_DCOPY(npoints, gamma_aap, 1, fgamma.data(), 3);
+            C_DCOPY(npoints, gamma_abp, 1, (fgamma.data() + 1), 3);
+            C_DCOPY(npoints, gamma_bbp, 1, (fgamma.data() + 2), 3);
         }
 
         std::vector<double> ftau, flapl, fv_lapl, fv_tau;
@@ -421,20 +418,20 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             fv_lapl.resize(npoints * 2);
             fv_tau.resize(npoints * 2);
 
-            C_DAXPY(npoints, 0.5, tau_ap, 1, ftau.data(), 2);
-            C_DAXPY(npoints, 0.5, tau_bp, 1, (ftau.data() + 1), 2);
+            C_DCOPY(npoints, tau_ap, 1, ftau.data(), 2);
+            C_DCOPY(npoints, tau_bp, 1, (ftau.data() + 1), 2);
         }
 
         // Compute first deriv
         if (deriv >= 1) {
             if (meta_) {
-                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), flapl.data(),
-                                ftau.data(), fv.data(), fv_rho.data(), fv_sigma.data(),
+                xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), flapl.data(),
+                                ftau.data(), fv.data(), fv_rho.data(), fv_gamma.data(),
                                 fv_lapl.data(), fv_tau.data());
 
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv.data(),
-                               fv_rho.data(), fv_sigma.data());
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), fv.data(),
+                               fv_rho.data(), fv_gamma.data());
 
             } else {
                 xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
@@ -449,9 +446,9 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             C_DAXPY(npoints, alpha_, (fv_rho.data() + 1), 2, v_rho_b, 1);
 
             if (gga_) {
-                C_DAXPY(npoints, alpha_, fv_sigma.data(), 3, v_gamma_aa, 1);
-                C_DAXPY(npoints, alpha_, (fv_sigma.data() + 1), 3, v_gamma_ab, 1);
-                C_DAXPY(npoints, alpha_, (fv_sigma.data() + 2), 3, v_gamma_bb, 1);
+                C_DAXPY(npoints, alpha_, fv_gamma.data(), 3, v_gamma_aa, 1);
+                C_DAXPY(npoints, alpha_, (fv_gamma.data() + 1), 3, v_gamma_ab, 1);
+                C_DAXPY(npoints, alpha_, (fv_gamma.data() + 2), 3, v_gamma_bb, 1);
             }
 
             if (meta_) {
@@ -469,23 +466,23 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 // spin polarized
                 std::vector<double> fv(npoints);
                 std::vector<double> frho(npoints * 2);
-                std::vector<double> fsigma(npoints * 3);
+                std::vector<double> fgamma(npoints * 3);
 
                 for (size_t i = 0; i < npoints; i++) {
                     frho[2 * i] = rho_ap[i];
                     frho[2 * i + 1] = rho_bp[i];
 
-                    fsigma[3 * i] = gamma_aap[i];
-                    fsigma[3 * i + 1] = gamma_abp[i];
-                    fsigma[3 * i + 2] = gamma_bbp[i];
+                    fgamma[3 * i] = gamma_aap[i];
+                    fgamma[3 * i + 1] = gamma_abp[i];
+                    fgamma[3 * i + 2] = gamma_bbp[i];
                 }
 
                 std::vector<double> fv2_rho2(npoints * 3);
-                std::vector<double> fv2_rhosigma(npoints * 6);
-                std::vector<double> fv2_sigma2(npoints * 6);
+                std::vector<double> fv2_rhogamma(npoints * 6);
+                std::vector<double> fv2_gamma2(npoints * 6);
 
-                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fsigma.data(), fv2_rho2.data(),
-                           fv2_rhosigma.data(), fv2_sigma2.data());
+                xc_gga_fxc(&xc_functional_, npoints, frho.data(), fgamma.data(), fv2_rho2.data(),
+                           fv2_rhogamma.data(), fv2_gamma2.data());
 
                 for (size_t i = 0; i < npoints; i++) {
                     // v2rho2(3)       = (u_u, u_d, d_d)
@@ -493,22 +490,22 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                     v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
                     v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i + 2];
 
-                    // v2sigma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd,
+                    // v2gamma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd,
                     // dd_dd)
-                    v_gamma_aa_gamma_aa[i] += alpha_ * fv2_sigma2[6 * i];
-                    v_gamma_aa_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 1];
-                    v_gamma_aa_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 2];
-                    v_gamma_ab_gamma_ab[i] += alpha_ * fv2_sigma2[6 * i + 3];
-                    v_gamma_ab_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 4];
-                    v_gamma_bb_gamma_bb[i] += alpha_ * fv2_sigma2[6 * i + 5];
+                    v_gamma_aa_gamma_aa[i] += alpha_ * fv2_gamma2[6 * i];
+                    v_gamma_aa_gamma_ab[i] += alpha_ * fv2_gamma2[6 * i + 1];
+                    v_gamma_aa_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 2];
+                    v_gamma_ab_gamma_ab[i] += alpha_ * fv2_gamma2[6 * i + 3];
+                    v_gamma_ab_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 4];
+                    v_gamma_bb_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 5];
 
-                    // v2rhosigma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
-                    v_rho_a_gamma_aa[i] += alpha_ * fv2_rhosigma[6 * i];
-                    v_rho_a_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 1];
-                    v_rho_a_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 2];
-                    v_rho_b_gamma_ab[i] += alpha_ * fv2_rhosigma[6 * i + 3];
-                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 4];
-                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhosigma[6 * i + 5];
+                    // v2rhogamma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
+                    v_rho_a_gamma_aa[i] += alpha_ * fv2_rhogamma[6 * i];
+                    v_rho_a_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 1];
+                    v_rho_a_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 2];
+                    v_rho_b_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 3];
+                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 4];
+                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 5];
                 }
 
             } else {

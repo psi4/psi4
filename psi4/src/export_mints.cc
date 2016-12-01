@@ -796,6 +796,126 @@ void export_mints(py::module& m)
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix, "docstring").
             def("print_out", &ExternalPotential::py_print, "docstring");
 
+    py::class_<DFChargeFitter, std::shared_ptr<DFChargeFitter>>(m, "DFChargeFitter", "docstring").
+            def("setPrimary", &DFChargeFitter::setPrimary, "docstring").
+            def("setAuxiliary", &DFChargeFitter::setAuxiliary, "docstring").
+            def("setD", &DFChargeFitter::setD, "docstring").
+            def("d", &DFChargeFitter::d, "docstring").
+            def("fit", &DFChargeFitter::fit, "docstring");
+
+    using SharedMol = std::shared_ptr<Molecule>;
+    using SharedBS = std::shared_ptr<BasisSet>;
+
+    typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
+    py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr()).
+            def(py::init<SharedMol, SharedBS, Options&>()).
+            def(py::init<SharedMol, SharedBS>()).
+            def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
+            def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
+            def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
+            def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "docstring").
+            def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "docstring").
+            def("same_a_b_dens", &Wavefunction::same_a_b_dens, "docstring").
+            def("nfrzc", &Wavefunction::nfrzc, "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring").
+            def("nso", &Wavefunction::nso, "docstring").
+            def("nmo", &Wavefunction::nmo, "docstring").
+            def("nirrep", &Wavefunction::nirrep, "docstring").
+            def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, "docstring").
+            def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, "docstring").
+            def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
+            def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
+            def("Ca", &Wavefunction::Ca, "docstring").
+            def("Cb", &Wavefunction::Cb, "docstring").
+            def("Fa", &Wavefunction::Fa, "docstring").
+            def("Fb", &Wavefunction::Fb, "docstring").
+            def("Da", &Wavefunction::Da, "docstring").
+            def("Db", &Wavefunction::Db, "docstring").
+            def("X", &Wavefunction::X, "docstring").
+            def("basis_projection", &Wavefunction::basis_projection, "docstring").
+            def("H", &Wavefunction::H, "docstring").
+            def("S", &Wavefunction::S, "docstring").
+            def("aotoso", &Wavefunction::aotoso, "docstring").
+            def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
+            def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
+            def("basisset", &Wavefunction::basisset, "docstring").
+            def("get_basisset", &Wavefunction::get_basisset, "docstring").
+            def("set_basisset", &Wavefunction::set_basisset, "docstring").
+            def("sobasisset", &Wavefunction::sobasisset, "docstring").
+            def("energy", &Wavefunction::reference_energy, "docstring").
+            def("gradient", &Wavefunction::gradient, "docstring").
+            def("set_gradient", &Wavefunction::set_gradient, "docstring").
+            def("hessian", &Wavefunction::hessian, "docstring").
+            def("set_hessian", &Wavefunction::set_hessian, "docstring").
+            def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("set_frequencies", &Wavefunction::set_frequencies, "docstring").
+            def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
+            def("normalmodes", &Wavefunction::normalmodes, "docstring").
+            def("name", &Wavefunction::name, py::return_value_policy::copy, "The level of theory this wavefunction corresponds to.").
+            def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
+            def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
+            def("molecule", &Wavefunction::molecule, "docstring").
+            def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "docstring").
+            def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "docstring").
+            def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy, "docstring").
+            def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy, "docstring").
+            def("nalphapi", &Wavefunction::nalphapi, py::return_value_policy::copy, "docstring").
+            def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy, "docstring").
+            def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy, "docstring").
+            def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy, "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring").
+            def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
+            def("oeprop", &Wavefunction::get_oeprop, "Get the OEProp object associated with this wavefunction").
+            def("set_print", &Wavefunction::set_print, "docstring").
+            def("compute_energy", &Wavefunction::compute_energy, "docstring").
+            def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
+            def("get_variable", &Wavefunction::get_variable, "docstring").
+            def("set_variable", &Wavefunction::set_variable, "docstring").
+            def("variables", &Wavefunction::variables, "docstring").
+            def("get_array", &Wavefunction::get_array, "docstring").
+            def("set_array", &Wavefunction::set_array, "docstring").
+            def("arrays", &Wavefunction::arrays, "docstring");
+
+    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
+            def("form_C", &scf::HF::form_C, "docstring").
+            def("form_D", &scf::HF::form_D, "docstring").
+            def("form_V", &scf::HF::form_V, "docstring").
+            def("onel_Hx", &scf::HF::onel_Hx, "docstring").
+            def("twoel_Hx", &scf::HF::twoel_Hx, "docstring").
+            def("cphf_Hx", &scf::HF::cphf_Hx, "docstring").
+            def("guess_Ca", &scf::HF::guess_Ca, "docstring").
+            def("guess_Cb", &scf::HF::guess_Cb, "docstring").
+            def("reset_occ", &scf::HF::reset_occ, "docstring").
+            def("set_sad_basissets", &scf::HF::set_sad_basissets, "docstring").
+            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "docstring").
+            def("Va", &scf::HF::Va, "docstring").
+            def("Vb", &scf::HF::Vb, "docstring").
+            def("jk", &scf::HF::jk, "docstring").
+            def("functional", &scf::HF::functional, "docstring").
+            def("V_potential", &scf::HF::V_potential, "docstring").
+            def("initialize", &scf::HF::initialize, "docstring").
+            def("iterations", &scf::HF::iterations, "docstring").
+            def("finalize_E", &scf::HF::finalize_E, "docstring").
+            def("occupation_a", &scf::HF::occupation_a, "docstring").
+            def("occupation_b", &scf::HF::occupation_b, "docstring").
+            def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
+
+    py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring").
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+
+    py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring").
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>()).
+            def("moFeff", &scf::ROHF::moFeff, "docstring").
+            def("moFa", &scf::ROHF::moFa, "docstring").
+            def("moFb", &scf::ROHF::moFb, "docstring");
+
+    py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring").
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+
+    py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring").
+            def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 

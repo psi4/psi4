@@ -388,31 +388,38 @@ void HF::common_init()
 #endif
 }
 
-void HF::damp_update()
-{
-    throw PSIEXCEPTION("Sorry, damping has not been implemented for this "
-                       "type of SCF wavefunction yet.");
+void HF::damp_update() {
+    throw PSIEXCEPTION(
+        "Sorry, damping has not been implemented for this "
+        "type of SCF wavefunction yet.");
 }
 
-int HF::soscf_update()
-{
-    throw PSIEXCEPTION("Sorry, second-order convergence has not been implemented for this "
-                       "type of SCF wavefunction yet.");
+int HF::soscf_update() {
+    throw PSIEXCEPTION(
+        "Sorry, second-order convergence has not been implemented for this "
+        "type of SCF wavefunction yet.");
 }
-void HF::form_V()
-{
-    throw PSIEXCEPTION("Sorry, DFT functionals are not suppored for this type of SCF wavefunction.");
+void HF::form_V() {
+    throw PSIEXCEPTION(
+        "Sorry, DFT functionals are not suppored for this type of SCF wavefunction.");
 }
-void HF::form_C()
-{
+void HF::form_C() {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals.");
 }
-void HF::form_D()
-{
+void HF::form_D() {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities.");
 }
-void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x)
-{
+std::vector<SharedMatrix> HF::onel_Hx(std::vector<SharedMatrix> x) {
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct Hx products.");
+}
+std::vector<SharedMatrix> HF::twoel_Hx(std::vector<SharedMatrix> x, bool combine,
+                                       std::string return_basis) {
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct Hx products.");
+}
+std::vector<SharedMatrix> HF::cphf_Hx(std::vector<SharedMatrix> x) {
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct cphf_Hx products.");
+}
+void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     // => Rotate orbitals <= //
     SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
     std::string reference = options_.get_str("REFERENCE");

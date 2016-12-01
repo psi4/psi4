@@ -264,9 +264,7 @@ bool RHF::test_convergency()
         return false;
 }
 
-
-void RHF::form_F()
-{
+void RHF::form_F() {
     Fa_->copy(H_);
     Fa_->add(G_);
 
@@ -274,22 +272,19 @@ void RHF::form_F()
         Fa_->print();
         J_->print();
         K_->print();
-        if (functional_->needs_xc()){
+        if (functional_->needs_xc()) {
             Va_->print();
         }
         G_->print();
-
     }
 }
 
-void RHF::form_C()
-{
+void RHF::form_C() {
     diagonalize_F(Fa_, Ca_, epsilon_a_);
     find_occupation();
 }
 
-void RHF::form_D()
-{
+void RHF::form_D() {
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
@@ -300,15 +295,13 @@ void RHF::form_D()
         double** Ca = Ca_->pointer(h);
         double** D = D_->pointer(h);
 
-        if (na == 0)
-            memset(static_cast<void*>(D[0]), '\0', sizeof(double)*nso*nso);
+        if (na == 0) memset(static_cast<void*>(D[0]), '\0', sizeof(double) * nso * nso);
 
-        C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,D[0],nso);
-
+        C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, D[0], nso);
     }
 
     if (debug_) {
-        outfile->Printf( "in RHF::form_D:\n");
+        outfile->Printf("in RHF::form_D:\n");
         D_->print();
     }
 }
@@ -364,6 +357,113 @@ double RHF::compute_E()
     Etotal += dashD_E;
 
     return Etotal;
+}
+std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x) {
+    // Compute Fij x_ia - Fab x_ia
+
+    SharedMatrix Cocc = Ca_subset("SO", "OCC");
+    SharedMatrix Cvir = Ca_subset("SO", "VIR");
+
+    std::vector<SharedMatrix> ret;
+    for (size_t i = 0; i < x.size(); i++) {
+        if ((x[i]->rowspi() != Cocc->colspi()) || (x[i]->colspi() != Cvir->colspi())){
+            throw PSIEXCEPTION(
+                "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        }
+
+        SharedMatrix tmp1 = Matrix::triplet(Cocc, Fa_, Cocc, true, false, false);
+        SharedMatrix result = Matrix::doublet(tmp1, x[i], false, false);
+
+        SharedMatrix tmp2 = Matrix::triplet(x[i], Cvir, Fa_, false, true, false);
+        result->gemm(false, false, -1.0, tmp2, Cvir, 1.0);
+
+        ret.push_back(result);
+    }
+
+    return ret;
+}
+std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x, bool combine, std::string return_basis) {
+
+
+    if (!jk_){
+        throw PSIEXCEPTION("RHF::twoel_Hx: JK object is not initialized, please set option SAVE_JK to True.");
+    }
+    // Compute Ipqrs,K_rs -> J and IprqsK_rs -> K
+    // K = Co x Cv.T
+    SharedMatrix Cocc = Ca_subset("SO", "OCC");
+    SharedMatrix Cvir = Ca_subset("SO", "VIR");
+
+
+    // Setup jk
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    Cl.clear();
+    Cr.clear();
+
+    for (size_t i = 0; i < x.size(); i++) {
+        if ((x[i]->rowspi() != Cocc->colspi()) || (x[i]->colspi() != Cvir->colspi())){
+            throw PSIEXCEPTION(
+                "SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
+        }
+
+        Cl.push_back(Cocc);
+
+        SharedMatrix R = Matrix::doublet(Cvir, x[i], false, true);
+        R->scale(-1.0);
+        Cr.push_back(R);
+    }
+
+    // Compute JK
+    jk_->compute();
+
+    Cl.clear();
+    Cr.clear();
+
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+
+    // Build return vector
+    std::vector<SharedMatrix> ret;
+    if (combine){
+        // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
+        for (size_t i = 0; i < x.size(); i++){
+            J[i]->scale(4.0);
+            J[i]->subtract(K[i]);
+            J[i]->subtract(K[i]->transpose());
+            ret.push_back(J[i]);
+        }
+    } else{
+        for (size_t i = 0; i < x.size(); i++){
+            ret.push_back(J[i]);
+            ret.push_back(K[i]);
+       }
+    }
+
+    // Transform if needed
+    if (return_basis == "SO"){
+        /* pass */
+    } else if (return_basis == "MO"){
+        for (size_t i = 0; i < ret.size(); i++){
+            ret[i] = Matrix::triplet(Cocc, ret[i], Cvir, true, false, false);
+       }
+    } else{
+        throw PSIEXCEPTION("SCF::twoel_Hx: return_basis option not understood.");
+    }
+
+    return ret;
+}
+std::vector<SharedMatrix> RHF::cphf_Hx(std::vector<SharedMatrix> x) {
+
+    // Compute quantities
+    std::vector<SharedMatrix> onel = onel_Hx(x);
+    std::vector<SharedMatrix> twoel = twoel_Hx(x, true, "MO");
+
+    for (size_t i = 0; i < onel.size(); i++){
+        onel[i]->add(twoel[i]);
+    }
+
+    return onel;
 }
 
 void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret)

@@ -87,11 +87,16 @@ public:
         Options& options, std::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
-
     virtual SharedMatrix Da() const;
 
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
+
+    /// Hessian-vector computers and solvers
+    virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
+    virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
+                                               std::string return_basis = "MO");
+    virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
 };
 
 }}

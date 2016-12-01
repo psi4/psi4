@@ -452,6 +452,12 @@ public:
     /// Computes the density matrix (V_)
     virtual void form_V();
 
+    /// Hessian-vector computers and solvers
+    virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
+    virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
+                                               std::string return_basis = "MO");
+    virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
+
     // Return the DFT potenitals
     SharedMatrix Va() { return Va_; }
     SharedMatrix Vb() { return Vb_; }
@@ -463,6 +469,7 @@ public:
     // Expert option to reset the occuption or not at iteration zero
     void reset_occ(bool reset) { reset_occ_ = reset; }
 
+    // SAD information
     void set_sad_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_basissets_ = basis_vec; }
     void set_sad_fitting_basissets(std::vector<std::shared_ptr<BasisSet>> basis_vec) { sad_fitting_basissets_ = basis_vec; }
 };
