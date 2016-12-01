@@ -47,50 +47,50 @@ void export_functional(py::module &m)
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring").
         // TODO add init
         def(py::init<>()).
-        def_static("blank", &SuperFunctional::blank, "docstring").
-        def_static("XC_build", &SuperFunctional::XC_build, "docstring").
-        def("allocate", &SuperFunctional::allocate, "docstring").
-        def("compute_functional", &SuperFunctional::compute_functional, "docstring").
-        def("x_functional", &SuperFunctional::x_functional, "docstring").
-        def("c_functional", &SuperFunctional::c_functional, "docstring").
-        def("add_x_functional", &SuperFunctional::add_x_functional, "docstring").
-        def("add_c_functional", &SuperFunctional::add_c_functional, "docstring").
-        def("test_functional", &SuperFunctional::test_functional, "docstring").
-        def("values", &SuperFunctional::values, "docstring").
-        def("value", &SuperFunctional::value, "docstring").
-        def("name", &SuperFunctional::name, "docstring").
-        def("description", &SuperFunctional::description, "docstring").
-        def("citation", &SuperFunctional::citation, "docstring").
-        def("ansatz", &SuperFunctional::ansatz, "docstring").
-        def("max_points", &SuperFunctional::max_points, "docstring").
-        def("deriv", &SuperFunctional::deriv, "docstring").
-        def("x_omega", &SuperFunctional::x_omega, "docstring").
-        def("c_omega", &SuperFunctional::c_omega, "docstring").
-        def("x_alpha", &SuperFunctional::x_alpha, "docstring").
-        def("c_alpha", &SuperFunctional::c_alpha, "docstring").
-        def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "docstring").
-        def("c_os_alpha", &SuperFunctional::c_os_alpha, "docstring").
-        def("is_gga", &SuperFunctional::is_gga, "docstring").
-        def("is_meta", &SuperFunctional::is_meta, "docstring").
-        def("is_x_lrc", &SuperFunctional::is_x_lrc, "docstring").
-        def("is_c_lrc", &SuperFunctional::is_c_lrc, "docstring").
-        def("is_x_hybrid", &SuperFunctional::is_x_hybrid, "docstring").
-        def("is_c_hybrid", &SuperFunctional::is_c_hybrid, "docstring").
-        def("is_c_scs_hybrid", &SuperFunctional::is_c_scs_hybrid, "docstring").
-        def("set_name", &SuperFunctional::set_name, "docstring").
-        def("set_description", &SuperFunctional::set_description, "docstring").
-        def("set_citation", &SuperFunctional::set_citation, "docstring").
-        def("set_max_points", &SuperFunctional::set_max_points, "docstring").
-        def("set_deriv", &SuperFunctional::set_deriv, "docstring").
-        def("set_lock", &SuperFunctional::set_lock, "docstring").
-        def("set_x_omega", &SuperFunctional::set_x_omega, "docstring").
-        def("set_c_omega", &SuperFunctional::set_c_omega, "docstring").
-        def("set_x_alpha", &SuperFunctional::set_x_alpha, "docstring").
-        def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
-        def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "docstring").
-        def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "docstring").
-        def("print_out",&SuperFunctional::py_print, "docstring").
-        def("print_detail",&SuperFunctional::py_print_detail, "docstring");
+        def_static("blank", &SuperFunctional::blank, "Initialize a blank SuperFunctional.").
+        def_static("XC_build", &SuperFunctional::XC_build, "Builds a SuperFunctional from a XC string.").
+        def("allocate", &SuperFunctional::allocate, "Allocates the vectors, should be called after ansatz or npoint changes.").
+        def("compute_functional", &SuperFunctional::compute_functional, "Computes the SuperFunctional.").
+        def("x_functional", &SuperFunctional::x_functional, "Returns the desired X Functional.").
+        def("c_functional", &SuperFunctional::c_functional, "Returns the desired C Functional").
+        def("add_x_functional", &SuperFunctional::add_x_functional, "Add a exchange Functional.").
+        def("add_c_functional", &SuperFunctional::add_c_functional, "Add a correlation Functional.").
+        def("test_functional", &SuperFunctional::test_functional, "Quick testing capabilities.").
+        def("values", &SuperFunctional::values, "Return all internal values.").
+        def("value", &SuperFunctional::value, "Returns a given internal value.").
+        def("name", &SuperFunctional::name, "The name of the SuperFunctional.").
+        def("description", &SuperFunctional::description, "The description of the SuperFunctional").
+        def("citation", &SuperFunctional::citation, "SuperFunctional citation.").
+        def("ansatz", &SuperFunctional::ansatz, "SuperFunctional rung.").
+        def("max_points", &SuperFunctional::max_points, "Maximum number of grid points per block.").
+        def("deriv", &SuperFunctional::deriv, "Maximum derivative to compute.").
+        def("x_omega", &SuperFunctional::x_omega, "Range-seperated exchange parameter.").
+        def("c_omega", &SuperFunctional::c_omega, "Range-seperated correlation parameter.").
+        def("x_alpha", &SuperFunctional::x_alpha, "Amount of exact HF exchange.").
+        def("c_alpha", &SuperFunctional::c_alpha, "Amount of MP2 correlation.").
+        def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "Same-spin correlation scaling.").
+        def("c_os_alpha", &SuperFunctional::c_os_alpha, "Opposite-spin correlation scaling.").
+        def("is_gga", &SuperFunctional::is_gga, "Is this a GGA?").
+        def("is_meta", &SuperFunctional::is_meta, "Is this a MGGA?").
+        def("is_x_lrc", &SuperFunctional::is_x_lrc, "Contains range-seperated exchange?").
+        def("is_c_lrc", &SuperFunctional::is_c_lrc, "Contains range-seperated correlation?").
+        def("is_x_hybrid", &SuperFunctional::is_x_hybrid, "Requires exact exchange?").
+        def("is_c_hybrid", &SuperFunctional::is_c_hybrid, "Requires MP2 correlation?").
+        def("is_c_scs_hybrid", &SuperFunctional::is_c_scs_hybrid, "Is a spin-component scaled hyrbid?").
+        def("set_name", &SuperFunctional::set_name, "Sets the SuperFunctional name.").
+        def("set_description", &SuperFunctional::set_description, "Sets the SuperFunctional description.").
+        def("set_citation", &SuperFunctional::set_citation, "Sets the SuperFunctional citation.").
+        def("set_max_points", &SuperFunctional::set_max_points, "Sets the maximum number of points.").
+        def("set_deriv", &SuperFunctional::set_deriv, "Sets the derivative level.").
+        def("set_lock", &SuperFunctional::set_lock, "Locks the functional to prevent changes.").
+        def("set_x_omega", &SuperFunctional::set_x_omega, "Sets the range-seperation exchange parameter.").
+        def("set_c_omega", &SuperFunctional::set_c_omega, "Sets the range-seperation correlation parameter.").
+        def("set_x_alpha", &SuperFunctional::set_x_alpha, "Sets the amount of exact HF exchange.").
+        def("set_c_alpha", &SuperFunctional::set_c_alpha, "Sets the amount of MP2 correlation.").
+        def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "Sets the same-spin scaling parameter.").
+        def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "Sets the opposite-spin scaling parameter.").
+        def("print_out",&SuperFunctional::py_print, "Prints out functional details.").
+        def("print_detail",&SuperFunctional::py_print_detail, "Prints all SuperFunctional information.");
 
     py::class_<Functional, std::shared_ptr<Functional> >(m, "Functional", "docstring").
         // TODO need init
@@ -134,25 +134,30 @@ void export_functional(py::module &m)
         def("compute", &VBase::compute, "doctsring").
         def("compute_gradient", &VBase::compute_gradient, "doctsring").
         def("compute_hessain", &VBase::compute_hessian, "docstring").
+        def("initialize", &VBase::initialize, "Initializes the V object.").
+        def("finalize", &VBase::finalize, "Finalizes the V object.").
+        def("compute", &VBase::compute, "Computes the V potential matrix.").
+        def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.").
+        def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.").
 
-        def("basis", &VBase::basis, "doctsring").
-        def("functional", &VBase::functional, "doctsring").
-        def("properties", &VBase::properties, "doctsring").
+        def("basis", &VBase::basis, "Returns the internal basis set.").
+        def("functional", &VBase::functional, "Returns the interal superfunctional.").
+        def("properties", &VBase::properties, "Returns the properties computer.").
         // def("grid", &VBase::grid, "doctsring").
-        def("get_block", &VBase::get_block, "doctsring").
-        def("nblocks", &VBase::nblocks, "doctsring").
-        def("quadrature_values", &VBase::quadrature_values, "doctsring").
+        def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.").
+        def("nblocks", &VBase::nblocks, "Total number of blocks.").
+        def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.").
 
-        def("C", &VBase::C, "doctsring").
-        def("P", &VBase::P, "doctsring").
-        def("V", &VBase::V, "doctsring").
-        def("D", &VBase::D, "doctsring").
+        def("C", &VBase::C, "The orbital matrix used.").
+        def("P", &VBase::P, "The AO density matrix.").
+        def("V", &VBase::V, "The current V potential matrix.").
+        def("D", &VBase::D, "The current density").
         def("C_clear", [](VBase &v){
                 v.C().clear();
-            }).
+            }, "Clears out the supplied orbitals.").
         def("C_add", [](VBase &v, SharedMatrix C){
                 v.C().push_back(C);
-            });
+            }, "Adds new orbitals.");
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions> >(m, "BasisFunctions", "docstring").
         def("max_functions", &BasisFunctions::max_functions, "docstring").

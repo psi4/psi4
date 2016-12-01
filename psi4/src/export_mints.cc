@@ -878,38 +878,39 @@ void export_mints(py::module& m)
             def("set_array", &Wavefunction::set_array, "docstring").
             def("arrays", &Wavefunction::arrays, "docstring");
 
-    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
-            def("form_C", &scf::HF::form_C, "docstring").
-            def("form_D", &scf::HF::form_D, "docstring").
-            def("form_V", &scf::HF::form_V, "docstring").
-            def("onel_Hx", &scf::HF::onel_Hx, "docstring").
-            def("twoel_Hx", &scf::HF::twoel_Hx, "docstring").
-            def("cphf_Hx", &scf::HF::cphf_Hx, "docstring").
-            def("guess_Ca", &scf::HF::guess_Ca, "docstring").
-            def("guess_Cb", &scf::HF::guess_Cb, "docstring").
-            def("reset_occ", &scf::HF::reset_occ, "docstring").
-            def("set_sad_basissets", &scf::HF::set_sad_basissets, "docstring").
-            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "docstring").
-            def("Va", &scf::HF::Va, "docstring").
-            def("Vb", &scf::HF::Vb, "docstring").
-            def("jk", &scf::HF::jk, "docstring").
-            def("functional", &scf::HF::functional, "docstring").
-            def("V_potential", &scf::HF::V_potential, "docstring").
-            def("initialize", &scf::HF::initialize, "docstring").
-            def("iterations", &scf::HF::iterations, "docstring").
-            def("finalize_E", &scf::HF::finalize_E, "docstring").
-            def("occupation_a", &scf::HF::occupation_a, "docstring").
-            def("occupation_b", &scf::HF::occupation_b, "docstring").
-            def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
+    py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "A HF and DFT Wavefunction object").
+            def("form_C", &scf::HF::form_C, "Diagonalized the Fock matrix to form orbitals.").
+            def("form_D", &scf::HF::form_D, "Forms the density from the occupied orbitals.").
+            def("form_V", &scf::HF::form_V, "Forms the DFT V potential.").
+            def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.").
+            def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products").
+            def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).").
+            def("cphf_solve", &scf::HF::cphf_solve, "Solves the CPHF equations for a given x vector.").
+            def("guess_Ca", &scf::HF::guess_Ca, "Adds occupied guess alpha orbitals.").
+            def("guess_Cb", &scf::HF::guess_Cb, "Adds occupied guess beta orbitals.").
+            def("reset_occ", &scf::HF::reset_occ, "Reset the occupation after initial guess?").
+            def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the SAD basis set.").
+            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "Sets the SAD fitting basis set.").
+            def("Va", &scf::HF::Va, "Alpha V potential.").
+            def("Vb", &scf::HF::Vb, "Beta V potential.").
+            def("jk", &scf::HF::jk, "The Wavefunctions JK object.").
+            def("functional", &scf::HF::functional, "The underlying DFT Superfunctional.").
+            def("V_potential", &scf::HF::V_potential, "The underlying DFT V computer object.").
+            def("initialize", &scf::HF::initialize, "Initialize the Wavefunction after tweaking.").
+            def("iterations", &scf::HF::iterations, "Orbital optimization iterations.").
+            def("finalize_E", &scf::HF::finalize_E, "Compute finalization data.").
+            def("occupation_a", &scf::HF::occupation_a, "Alpha occupation vector.").
+            def("occupation_b", &scf::HF::occupation_b, "Beta occupation vector.").
+            def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalize the orbitals, valid for ROHF only.");
 
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
 
     py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>()).
-            def("moFeff", &scf::ROHF::moFeff, "docstring").
-            def("moFa", &scf::ROHF::moFa, "docstring").
-            def("moFb", &scf::ROHF::moFb, "docstring");
+            def("moFeff", &scf::ROHF::moFeff, "The effective MO Fock matrix.").
+            def("moFa", &scf::ROHF::moFa, "The alpha MO Fock matrix.").
+            def("moFb", &scf::ROHF::moFb, "The beta MO Fock matrix.");
 
     py::class_<scf::UHF, std::shared_ptr<scf::UHF>, scf::HF>(m, "UHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
