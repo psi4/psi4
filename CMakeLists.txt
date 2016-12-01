@@ -211,14 +211,7 @@ add_dependencies(psi4_core ambit_external
                            libint_external
                            pcmsolver_external
                            pybind11_external)
-if(ENABLE_psi4pasture)
-  ExternalProject_Add(psi4pasture
-    GIT_REPOSITORY https://github.com/amjames2/psi4pasture
-    CMAKE_ARGS -DENABLE_ccsort=${ENABLE_ccsort}
-               -DENABLE_transqt2=${ENABLE_transqt2}
-               -Dpsi4_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/psi4
-    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
-endif()
+add_subdirectory(internals/pasture)
 add_subdirectory(doc)
 include(ConfigTesting)
 
