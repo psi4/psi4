@@ -316,7 +316,7 @@ void CubicScalarGrid::add_density(double* v, std::shared_ptr<Matrix> D)
     for (int ind = 0; ind < blocks_.size(); ind++) {
         points_->compute_points(blocks_[ind]);
         size_t npoints = blocks_[ind]->npoints();
-        C_DAXPY(npoints,1.0,rhop,1,&v[offset],1);
+        C_DAXPY(npoints,0.5,rhop,1,&v[offset],1);
         offset += npoints;
     }
 }
@@ -572,7 +572,7 @@ void CubicScalarGrid::add_LOL(double* v, std::shared_ptr<Matrix> D)
         points_->compute_points(blocks_[ind]);
         size_t npoints = blocks_[ind]->npoints();
         for (int P = 0; P < npoints; P++) {
-            double tau_LSDA = C * pow(rhop[P], 5.0 / 3.0);
+            double tau_LSDA = C * pow(0.5 * rhop[P], 5.0 / 3.0);
             double tau_EX   = taup[P];
             double t = tau_LSDA / tau_EX;
             double v2 = (fabs(tau_EX / tau_LSDA) < 1.0E-15 ? 1.0 : t / (1.0 + t));
@@ -602,7 +602,7 @@ void CubicScalarGrid::add_ELF(double* v, std::shared_ptr<Matrix> D)
         points_->compute_points(blocks_[ind]);
         size_t npoints = blocks_[ind]->npoints();
         for (int P = 0; P < npoints; P++) {
-            double tau_LSDA = C * pow(rhop[P], 5.0 / 3.0);
+            double tau_LSDA = C * pow(0.5 * rhop[P], 5.0 / 3.0);
             double tau_EX   = taup[P];
             double D_EX   = tau_EX - 0.25 * gamp[P] / rhop[P];
             double D_LSDA = tau_LSDA;

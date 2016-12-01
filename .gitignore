@@ -48,6 +48,7 @@ input.py.dat
 *.clean
 *timer.dat
 *.molden
+*.cube
 
 # Special test cases
 tests/*/iter.dat
