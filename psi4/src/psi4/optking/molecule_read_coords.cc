@@ -567,12 +567,15 @@ bool stoi(string s, int *a) {
 
 // convert string to float
 bool stof(string s, double *val) {
-  double i = atof(s.c_str());
-  if (i!=0) {
-    *val = i;
-    return true;
+  double d;
+  try {
+    d = std::stod(s, NULL);
   }
-  return false;
+  catch(...) {
+    return false;
+  }
+  *val = d;
+  return true;
 }
 
 // convert string to boolean
