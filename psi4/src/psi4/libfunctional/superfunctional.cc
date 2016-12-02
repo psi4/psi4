@@ -373,28 +373,39 @@ void SuperFunctional::allocate() {
     }
     if (deriv_ >= 1) {
         list.push_back("V_RHO_A");
-        list.push_back("V_RHO_B");
+        if (is_polar){
+            list.push_back("V_RHO_B");
+        }
     }
     if (deriv_ >= 2) {
         list.push_back("V_RHO_A_RHO_A");
-        list.push_back("V_RHO_A_RHO_B");
-        list.push_back("V_RHO_B_RHO_B");
+
+        if (is_polar){
+            list.push_back("V_RHO_A_RHO_B");
+            list.push_back("V_RHO_B_RHO_B");
+        }
     }
 
     // GGA
     if (is_gga()) {
         if (deriv_ >= 1) {
             list.push_back("V_GAMMA_AA");
-            list.push_back("V_GAMMA_AB");
-            list.push_back("V_GAMMA_BB");
+
+            if (is_polar){
+                list.push_back("V_GAMMA_AB");
+                list.push_back("V_GAMMA_BB");
+            }
         }
         if (deriv_ >= 2) {
             list.push_back("V_GAMMA_AA_GAMMA_AA");
-            list.push_back("V_GAMMA_AA_GAMMA_AB");
-            list.push_back("V_GAMMA_AA_GAMMA_BB");
-            list.push_back("V_GAMMA_AB_GAMMA_AB");
-            list.push_back("V_GAMMA_AB_GAMMA_BB");
-            list.push_back("V_GAMMA_BB_GAMMA_BB");
+
+            if (is_polar){
+                list.push_back("V_GAMMA_AA_GAMMA_AB");
+                list.push_back("V_GAMMA_AA_GAMMA_BB");
+                list.push_back("V_GAMMA_AB_GAMMA_AB");
+                list.push_back("V_GAMMA_AB_GAMMA_BB");
+                list.push_back("V_GAMMA_BB_GAMMA_BB");
+            }
         }
     }
 
@@ -402,14 +413,20 @@ void SuperFunctional::allocate() {
     if (is_meta()) {
         if (deriv_ >= 1) {
             list.push_back("V_TAU_A");
-            list.push_back("V_TAU_B");
             // list.push_back("V_LAPL_A");
-            // list.push_back("V_LAPL_B");
+
+            if (is_polar){
+                list.push_back("V_TAU_B");
+                // list.push_back("V_LAPL_B");
+            }
         }
         if (deriv_ >= 2) {
             list.push_back("V_TAU_A_TAU_A");
-            list.push_back("V_TAU_A_TAU_B");
-            list.push_back("V_TAU_B_TAU_B");
+
+            if (is_polar){
+                list.push_back("V_TAU_A_TAU_B");
+                list.push_back("V_TAU_B_TAU_B");
+            }
         }
     }
 
@@ -417,11 +434,14 @@ void SuperFunctional::allocate() {
     if (is_gga()) {
         if (deriv_ >= 2) {
             list.push_back("V_RHO_A_GAMMA_AA");
-            list.push_back("V_RHO_A_GAMMA_AB");
-            list.push_back("V_RHO_A_GAMMA_BB");
-            list.push_back("V_RHO_B_GAMMA_AA");
-            list.push_back("V_RHO_B_GAMMA_AB");
-            list.push_back("V_RHO_B_GAMMA_BB");
+
+            if (is_polar){
+                list.push_back("V_RHO_A_GAMMA_AB");
+                list.push_back("V_RHO_A_GAMMA_BB");
+                list.push_back("V_RHO_B_GAMMA_AA");
+                list.push_back("V_RHO_B_GAMMA_AB");
+                list.push_back("V_RHO_B_GAMMA_BB");
+            }
         }
     }
 
@@ -429,9 +449,12 @@ void SuperFunctional::allocate() {
     if (is_meta()) {
         if (deriv_ >= 2) {
             list.push_back("V_RHO_A_TAU_A");
-            list.push_back("V_RHO_A_TAU_B");
-            list.push_back("V_RHO_B_TAU_A");
-            list.push_back("V_RHO_B_TAU_B");
+
+            if (is_polar){
+                list.push_back("V_RHO_A_TAU_B");
+                list.push_back("V_RHO_B_TAU_A");
+                list.push_back("V_RHO_B_TAU_B");
+            }
         }
     }
 
@@ -439,11 +462,13 @@ void SuperFunctional::allocate() {
     if (is_gga() && is_meta()) {
         if (deriv_ >= 2) {
             list.push_back("V_GAMMA_AA_TAU_A");
-            list.push_back("V_GAMMA_AA_TAU_B");
-            list.push_back("V_GAMMA_AB_TAU_A");
-            list.push_back("V_GAMMA_AB_TAU_B");
-            list.push_back("V_GAMMA_BB_TAU_A");
-            list.push_back("V_GAMMA_BB_TAU_B");
+            if (is_polar){
+                list.push_back("V_GAMMA_AA_TAU_B");
+                list.push_back("V_GAMMA_AB_TAU_A");
+                list.push_back("V_GAMMA_AB_TAU_B");
+                list.push_back("V_GAMMA_BB_TAU_A");
+                list.push_back("V_GAMMA_BB_TAU_B");
+            }
         }
     }
 

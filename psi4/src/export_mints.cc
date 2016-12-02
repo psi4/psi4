@@ -934,8 +934,6 @@ void export_mints(py::module& m)
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix, "docstring")
         .def("print_out", &ExternalPotential::py_print, "docstring");
 
-
-
     typedef std::shared_ptr<Localizer>(*localizer_with_type)(
         const std::string&, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>);
 

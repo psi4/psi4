@@ -408,6 +408,10 @@ SharedMatrix VBase::compute_hessian()
 {
     throw PSIEXCEPTION("VBase: hessian not implemented for this V instance.");
 }
+SharedMatrix VBase::compute_deriv()
+{
+    throw PSIEXCEPTION("VBase: deriv not implemented for this V instance.");
+}
 void VBase::finalize() {
     grid_.reset();
 }
@@ -563,7 +567,6 @@ void RV::compute_V() {
             double * rho_ay = pworker->point_value("RHO_AY")->pointer();
             double * rho_az = pworker->point_value("RHO_AZ")->pointer();
             double * v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
-            double * v_sigma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
@@ -759,7 +762,6 @@ SharedMatrix RV::compute_gradient()
             double* rho_ay = pworker->point_value("RHO_AY")->pointer();
             double* rho_az = pworker->point_value("RHO_AZ")->pointer();
             double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), phi_x[P], 1, Tp[P], 1);
@@ -791,14 +793,13 @@ SharedMatrix RV::compute_gradient()
             double* rho_ay = pworker->point_value("RHO_AY")->pointer();
             double* rho_az = pworker->point_value("RHO_AZ")->pointer();
             double* v_gamma_aa = vals["V_GAMMA_AA"]->pointer();
-            double* v_gamma_ab = vals["V_GAMMA_AB"]->pointer();
 
             C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi[0],max_functions,Dp[0],max_functions,0.0,Up[0],max_functions);
 
             // x
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P] + v_gamma_ab[P] * rho_ax[P]), Up[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ax[P]), Up[P], 1, Tp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
@@ -810,7 +811,7 @@ SharedMatrix RV::compute_gradient()
             // y
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P] + v_gamma_ab[P] * rho_ay[P]), Up[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_ay[P]), Up[P], 1, Tp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
@@ -822,7 +823,7 @@ SharedMatrix RV::compute_gradient()
             // z
             for (int P = 0; P < npoints; P++) {
                 ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
-                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P] + v_gamma_ab[P] * rho_az[P]), Up[P], 1, Tp[P], 1);
+                C_DAXPY(nlocal, -2.0 * w[P] * (2.0 * v_gamma_aa[P] * rho_az[P]), Up[P], 1, Tp[P], 1);
             }
             for (int ml = 0; ml < nlocal; ml++) {
                 int A = primary_->function_to_center(function_map[ml]);
@@ -1455,7 +1456,7 @@ SharedMatrix UV::compute_gradient()
     double** Gp = G->pointer();
 
     // What local XC ansatz are we in?
-   int ansatz = functional_->ansatz();
+    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions();

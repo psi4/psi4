@@ -73,19 +73,19 @@ void RKSFunctions::allocate()
 
     if (ansatz_ >= 0) {
         point_values_["RHO_A"] = std::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
-        point_values_["RHO_B"] = point_values_["RHO_A"];
+        // point_values_["RHO_B"] = point_values_["RHO_A"];
     }
 
     if (ansatz_ >= 1) {
         point_values_["RHO_AX"] = std::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
         point_values_["RHO_AY"] = std::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
         point_values_["RHO_AZ"] = std::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
-        point_values_["RHO_BX"] = point_values_["RHO_AX"];
-        point_values_["RHO_BY"] = point_values_["RHO_AY"];
-        point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
+        // point_values_["RHO_BX"] = point_values_["RHO_AX"];
+        // point_values_["RHO_BY"] = point_values_["RHO_AY"];
+        // point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
         point_values_["GAMMA_AA"] = std::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
-        point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
-        point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
+        // point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
+        // point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
     }
 
     if (ansatz_ >= 2) {
@@ -93,7 +93,7 @@ void RKSFunctions::allocate()
         point_values_["RHO_YY"] = std::shared_ptr<Vector>(new Vector("RHO_YY", max_points_));
         point_values_["RHO_ZZ"] = std::shared_ptr<Vector>(new Vector("RHO_ZZ", max_points_));
         point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
-        point_values_["TAU_B"] = point_values_["TAU_A"];
+        // point_values_["TAU_B"] = point_values_["TAU_A"];
         // point_values_["LAPL_RHO_A"] = std::shared_ptr<Vector>(new Vector("LAPL_RHO_A", max_points_));
         // point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
     }

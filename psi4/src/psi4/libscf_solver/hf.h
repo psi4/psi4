@@ -360,20 +360,11 @@ protected:
     /** Applies second-order convergence acceleration */
     virtual int soscf_update();
 
-    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
-    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
-
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
 
-    /** Computes the Fock matrix */
-    virtual void form_F() =0;
-
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
-
-    /** Forms the G matrix */
-    virtual void form_G() =0;
 
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
@@ -457,6 +448,15 @@ public:
     /// Computes the density matrix (V_)
     virtual void form_V();
 
+    /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
+    void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
+
+    /** Computes the Fock matrix */
+    virtual void form_F() =0;
+
+    /** Forms the G matrix */
+    virtual void form_G() =0;
+
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
     virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
@@ -465,6 +465,8 @@ public:
     virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
                                                  double conv_tol = 1.e-4, int max_iter = 10,
                                                  int print_lvl = 1);
+    bool cphf_converged() { return cphf_converged_; }
+    int cphf_nfock_builds() { return cphf_nfock_builds_; }
 
     // Return the DFT potenitals
     SharedMatrix Va() { return Va_; }
