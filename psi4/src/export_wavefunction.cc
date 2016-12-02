@@ -139,6 +139,12 @@ void export_wavefunction(py::module& m)
             def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.").
             def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices").
             def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices").
+            .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
+            .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
+            .def("cphf_Hx", &scf::HF::cphf_Hx, "CPHF Hessian-vector prodcuts (4 * J - K - K.T).")
+            .def("cphf_solve", &scf::HF::cphf_solve, py::arg("x_vec"), py::arg("conv_tol"),
+             py::arg("max_iter"), py::arg("print_lvl") = 2,
+             "Solves the CPHF equations for a given set of x vectors.")
             def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix").
             def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix").
             def("reset_occ", &scf::HF::reset_occ, "If True, the occupation will be reset after the guess to the inital occupation.").

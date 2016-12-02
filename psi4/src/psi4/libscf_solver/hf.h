@@ -225,6 +225,11 @@ protected:
     std::shared_ptr<SuperFunctional> functional_;
     std::shared_ptr<VBase> potential_;
 
+
+    // CPHF info
+    int cphf_nfock_builds_;
+    bool cphf_converged_;
+
 public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;

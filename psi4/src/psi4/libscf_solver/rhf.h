@@ -68,7 +68,6 @@ protected:
     bool diis();
 
     bool test_convergency();
-    void save_information();
 
     void common_init();
 
@@ -78,7 +77,6 @@ protected:
     void save_density_and_energy();
 
     // Second-order convergence code
-    void Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret);
     virtual int soscf_update(void);
 
 public:

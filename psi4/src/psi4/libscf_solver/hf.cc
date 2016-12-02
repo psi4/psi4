@@ -381,6 +381,10 @@ void HF::common_init()
     variables_["-D Energy"] = 0.0;
     energies_["-D"] = 0.0;
 
+    // CPHF info
+    cphf_nfock_builds_ = 0;
+    cphf_converged_ = false;
+
     // Initialize PCM object, if requested
 #ifdef USING_PCMSolver
     if((pcm_enabled_ = (options_.get_bool("PCM"))))

@@ -221,10 +221,6 @@ void RHF::form_G()
     }
 }
 
-void RHF::save_information()
-{
-}
-
 void RHF::compute_orbital_gradient(bool save_fock)
 {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
@@ -470,6 +466,8 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
                                           int max_iter, int print_lvl) {
     time_t start, stop;
     start = time(NULL);
+    cphf_converged_ = false;
+    cphf_nfock_builds_ = 0;
 
     // => Build preconditioner <= //
 
@@ -482,39 +480,45 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     SharedMatrix IFock = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, virpi));
 
-    for (size_t h=0; h<nirrep_; h++){
-
+    # pragma omp parallel for
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!doccpi_[h] || !virpi[h]) continue;
         double* denomp = Precon->pointer(h)[0];
         double** fp = IFock->pointer(h);
 
-        for (size_t i=0, target=0; i<doccpi_[h]; i++){
-            for (size_t a=doccpi_[h]; a < nmopi_[h]; a++){
+        # pragma omp simd
+        for (size_t i = 0, target = 0; i < doccpi_[h]; i++) {
+            for (size_t a = doccpi_[h]; a < nmopi_[h]; a++) {
                 denomp[target++] = -fp[i][i] + fp[a][a];
             }
         }
     }
 
-
-    if (print_lvl){
+    // => Header <= //
+    if (print_lvl) {
         outfile->Printf("\n");
-        outfile->Printf("    ==> RHF: CPHF Iterations <==\n");
+        outfile->Printf("   ==> Coupled-Perturbed %s Solver <==\n\n",
+                        options_.get_str("REFERENCE").c_str());
         outfile->Printf("    Maxiter             = %11d\n", max_iter);
         outfile->Printf("    Convergence         = %11.3E\n", conv_tol);
         outfile->Printf("    Number of equations = %11ld\n", x_vec.size());
-        outfile->Printf("    ---------------------------------------\n");
-        outfile->Printf("    %-4s %15s %15s %8s %15s\n", "Iter", "Residual RMS", "Max RMS", "Remaining", "Time [s]");
-        outfile->Printf("    ---------------------------------------\n");
+        outfile->Printf("   -----------------------------------------------------\n");
+        outfile->Printf("     %4s %14s %12s  %6s  %6s\n", "Iter", "Residual RMS", "Max RMS",
+                        "Remain", "Time [s]");
+        outfile->Printf("   -----------------------------------------------------\n");
     }
+
+    // => Initial state <= //
 
     // What vectors do we need?
     int nvecs = x_vec.size();
     std::vector<SharedMatrix> ret_vec, r_vec, z_vec, p_vec;
     std::vector<double> resid(nvecs), resid_denom(nvecs), rms(nvecs), rzpre(nvecs);
     std::vector<bool> active(nvecs);
+    std::vector<int> active_map(nvecs);
 
     // => Initial CG guess <= //
-    for (size_t i = 0; i < nvecs; i++){
+    for (size_t i = 0; i < nvecs; i++) {
         ret_vec.push_back(x_vec[i]->clone());
         ret_vec[i]->apply_denominator(Precon);
         r_vec.push_back(x_vec[i]->clone());
@@ -526,89 +530,101 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     double max_rms = 0.0;
     double mean_rms = 0.0;
     int nremain = 0;
-    for (size_t i = 0; i < nvecs; i++){
+    for (size_t i = 0; i < nvecs; i++) {
         r_vec[i]->subtract(Ax_vec[i]);
         resid[i] = r_vec[i]->sum_of_squares();
         resid_denom[i] = x_vec[i]->sum_of_squares();
 
         // Compute residuals
-        if (resid_denom[i] < 1.e-14){
-            resid_denom[i] = 1.e-14; // Prevent rel denom from being too small
+        if (resid_denom[i] < 1.e-14) {
+            resid_denom[i] = 1.e-14;  // Prevent rel denom from being too small
         }
         rms[i] = sqrt(resid[i] / resid_denom[i]);
         mean_rms += rms[i];
-        if (rms[i] > max_rms){
+        if (rms[i] > max_rms) {
             max_rms = rms[i];
         }
         active[i] = true;
-        // if (rms[i] > conv_tol){
-        //     active[i] = true;
-        // }
+        active_map[i] = nremain;
 
         // p and z vectors
         z_vec.push_back(r_vec[i]->clone());
         z_vec[i]->apply_denominator(Precon);
         p_vec.push_back(z_vec[i]->clone());
         nremain++;
-
     }
     mean_rms /= (double)nvecs;
+    cphf_nfock_builds_ += nremain;
 
     stop = time(NULL);
-    if (print_lvl > 1){
-        outfile->Printf("    %5s %14.4e %14.4e %5d %5ld\n", "Guess", mean_rms, max_rms,
-                        nremain, stop - start);
+    if (print_lvl > 1) {
+        outfile->Printf("    %5s %14.3e %12.3e %7d %9ld\n", "Guess", mean_rms, max_rms, nremain,
+                        stop - start);
     }
 
     // => CG iterations <= //
-    for (int cg_iter=1; cg_iter<max_iter; cg_iter++) {
+    for (int cg_iter = 1; cg_iter < max_iter; cg_iter++) {
+        // Build an active vector
+        std::vector<SharedMatrix> active_p_vec;
+        for (size_t i = 0; i < nremain; i++) {
+            // outfile->Printf("Giving vec %d", active_map[i]);
+            active_p_vec.push_back(p_vec[active_map[i]]);
+        }
 
         // Calc hessian vector product
-        std::vector<SharedMatrix> Ap_vec = cphf_Hx(p_vec);
+        std::vector<SharedMatrix> Ap_vec = cphf_Hx(active_p_vec);
 
         max_rms = 0.0;
         mean_rms = 0.0;
         nremain = 0;
+        int new_remain = 0;
         // Find factors and scale
-        for (size_t i = 0; i < nvecs; i++){
-            if (!active[i]){
+        for (size_t i = 0; i < nvecs; i++) {
+            if (!active[i]) {
                 mean_rms += rms[i];
                 continue;
             }
 
-            // Compute
+            // Compute update
             rzpre[i] = r_vec[i]->vector_dot(z_vec[i]);
-            double alpha = rzpre[i] / p_vec[i]->vector_dot(Ap_vec[i]);
+            double alpha = rzpre[i] / p_vec[i]->vector_dot(Ap_vec[nremain]);
 
-            if (std::isnan(alpha)){
-                outfile->Printf("RHF::CPHF Warning CG alpha is zero/nan for vec %d. Stopping vec.\n", i);
-                // active[i] = false;
-                continue;
+            if (std::isnan(alpha)) {
+                outfile->Printf(
+                    "RHF::CPHF Warning CG alpha is zero/nan for vec %d. Stopping vec.\n", i);
+                active[i] = false;
+                alpha = 0.0;
             }
 
             // Update vectors
             ret_vec[i]->axpy(alpha, p_vec[i]);
-            r_vec[i]->axpy(-alpha, Ap_vec[i]);
+            r_vec[i]->axpy(-alpha, Ap_vec[nremain]);
 
             // Get residual
             resid[i] = r_vec[i]->sum_of_squares();
             rms[i] = sqrt(resid[i] / resid_denom[i]);
-            if (rms[i] > max_rms){
+            if (rms[i] > max_rms) {
                 max_rms = rms[i];
             }
             mean_rms += rms[i];
-            // if (rms[i] > conv_tol){
-            //     active[i] = true;
-            // }
+
+            // Figure out what we need to do.
+            if (rms[i] < conv_tol) {
+                active[i] = false;
+            } else {
+                active_map[new_remain] = i;
+                new_remain++;
+            }
             nremain++;
         }
-        mean_rms /= (double) nremain;
-
+        cphf_nfock_builds_ += nremain;
+        nremain = new_remain;
+        mean_rms /= (double)nvecs;
 
         stop = time(NULL);
         if (print_lvl){
-            outfile->Printf("    %5d %10.4e %10.4e %10d %10ld\n", cg_iter, mean_rms, max_rms,
-                            nremain, stop - start);
+            outfile->Printf("    %5d %14.3e %12.3e %7d %9ld\n", cg_iter, mean_rms, max_rms, nremain,
+                            stop - start);
         }
 
         // Check convergence
@@ -617,7 +633,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         }
 
         // Update p and z
-        for (size_t i = 0; i < nvecs; i++){
+        for (size_t i = 0; i < nvecs; i++) {
             if (!active[i]) continue;
             z_vec[i]->copy(r_vec[i]);
             z_vec[i]->apply_denominator(Precon);
@@ -626,12 +642,23 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
             p_vec[i]->scale(beta);
             p_vec[i]->add(z_vec[i]);
-
         }
     }
-    if (print_lvl > 1){
-        outfile->Printf("    ---------------------------------------\n");
+
+    // Convergence
+    if (!nremain){
+       cphf_converged_ = true;
+    }
+
+    // Print out tail
+    if (print_lvl > 1) {
+        outfile->Printf("   -----------------------------------------------------\n");
         outfile->Printf("\n");
+        if (nremain) {
+            outfile->Printf("    Warning! %d equations did not converge!\n\n", nremain);
+        } else {
+            outfile->Printf("    Solver has converged.\n\n");
+        }
     }
 
     // => Cleanup <= //
@@ -644,154 +671,38 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
 
 }
 
-
-void RHF::Hx(SharedMatrix x, SharedMatrix IFock, SharedMatrix Cocc, SharedMatrix Cvir, SharedMatrix ret){
-
-    throw PSIEXCEPTION("Deprecated.");
-}
-
 int RHF::soscf_update()
 {
     int fock_builds;
-    // time_t start, stop;
-    // start = time(NULL);
+    time_t start, stop;
+    start = time(NULL);
 
-    // // => Build gradient and preconditioner <= //
+    // => Build gradient and preconditioner <= //
 
-    // // Grab occ and vir orbitals
-    // SharedMatrix Cocc = Ca_subset("SO", "OCC");
-    // SharedMatrix Cvir = Ca_subset("SO", "VIR");
-    // Dimension virpi = Cvir->colspi();
+    // Grab occ and vir orbitals
+    SharedMatrix Cocc = Ca_subset("SO", "OCC");
+    SharedMatrix Cvir = Ca_subset("SO", "VIR");
 
-    // // MO Fock Matrix (Inactive Fock in Helgaker's language)
-    // SharedMatrix IFock = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
+    // Gradient RHS
+    SharedMatrix Gradient = Matrix::triplet(Cocc, Fa_, Cvir, true, false, false);
+    Gradient->scale(-1.0);
 
-    // SharedMatrix Gradient = SharedMatrix(new Matrix("Gradient", nirrep_, doccpi_, virpi));
-    // SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, virpi));
+    // Make sure the MO gradient is reasonably small
+    if (Gradient->absmax() > 0.3){
+        if (print_ > 1){
+            outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
+        }
+        return 0;
+    }
 
-    // for (size_t h=0; h<nirrep_; h++){
+    std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv_, soscf_max_iter_,
+                                             soscf_print_ ? 2 : 0);
 
-    //     if (!doccpi_[h] || !virpi[h]) continue;
-    //     double* gp = Gradient->pointer(h)[0];
-    //     double* denomp = Precon->pointer(h)[0];
-    //     double** fp = IFock->pointer(h);
+    ret_x[0]->scale(-1.0);
+    // => Rotate orbitals <= //
+    rotate_orbitals(Ca_, ret_x[0]);
 
-    //     for (size_t i=0, target=0; i<doccpi_[h]; i++){
-    //         for (size_t a=doccpi_[h]; a < nmopi_[h]; a++){
-    //             gp[target] = -4.0 * fp[i][a];
-    //             denomp[target++] = -4.0 * (fp[i][i] - fp[a][a]);
-    //         }
-    //     }
-    // }
-
-    // // Make sure the MO gradient is reasonably small
-    // if (Gradient->absmax() > 0.3){
-    //     if (print_ > 1){
-    //         outfile->Printf("    Gradient element too large for SOSCF, using DIIS.\n");
-    //     }
-    //     return 0;
-    // }
-
-    // if (soscf_print_){
-    //     outfile->Printf("\n");
-    //     outfile->Printf("    ==> SORHF Iterations <==\n");
-    //     outfile->Printf("    Maxiter     = %11d\n", soscf_max_iter_);
-    //     outfile->Printf("    Miniter     = %11d\n", soscf_min_iter_);
-    //     outfile->Printf("    Convergence = %11.3E\n", soscf_conv_);
-    //     outfile->Printf("    ---------------------------------------\n");
-    //     outfile->Printf("    %-4s   %11s     %10s\n", "Iter", "Residual RMS", "Time [s]");
-    //     outfile->Printf("    ---------------------------------------\n");
-    // }
-
-    // // => Initial CG guess <= //
-    // SharedMatrix x = Gradient->clone();
-    // x->apply_denominator(Precon);
-
-    // // Calc hessian vector product, find residual and conditioned residual
-    // SharedMatrix r = Gradient->clone();
-    // SharedMatrix Ap = SharedMatrix(new Matrix("Ap", nirrep_, doccpi_, virpi));
-    // Hx(x, IFock, Cocc, Cvir, Ap);
-    // r->subtract(Ap);
-
-    // // Print iteration 0 timings and rms
-    // double rconv = r->sum_of_squares();
-    // double grad_rms = Gradient->sum_of_squares();
-    // if (grad_rms < 1.e-14){
-    //     grad_rms = 1.e-14; // Prevent rel denom from being too small
-    // }
-    // double rms = sqrt(rconv / grad_rms);
-    // stop = time(NULL);
-    // if (soscf_print_){
-    //     outfile->Printf("    %-5s %11.3E %10ld\n", "Guess", rms, stop-start);
-    // }
-
-    // // Build new p and z vectors
-    // SharedMatrix z = r->clone();
-    // z->apply_denominator(Precon);
-    // SharedMatrix p = z->clone();
-
-    // // => CG iterations <= //
-    // int fock_builds = 1;
-    // for (int cg_iter=1; cg_iter<soscf_max_iter_; cg_iter++) {
-
-    //     // Calc hessian vector product
-    //     Hx(p, IFock, Cocc, Cvir, Ap);
-    //     fock_builds += 1;
-
-    //     // Find factors and scale
-    //     double rzpre = r->vector_dot(z);
-    //     double alpha = rzpre / p->vector_dot(Ap);
-    //     if (std::isnan(alpha)){
-    //         outfile->Printf("RHF::SOSCF Warning CG alpha is zero/nan. Stopping CG.\n");
-    //         alpha = 0.0;
-    //     }
-
-    //     x->axpy(alpha, p);
-    //     r->axpy(-alpha, Ap);
-
-    //     // Get residual
-    //     double rconv = r->sum_of_squares();
-    //     double rms = sqrt(rconv / grad_rms);
-    //     stop = time(NULL);
-    //     if (soscf_print_){
-    //         outfile->Printf("    %-5d %11.3E %10ld\n", cg_iter, rms, stop-start);
-    //     }
-
-    //     // Check convergence
-    //     if (((rms < soscf_conv_) && (cg_iter >= soscf_min_iter_)) || (alpha==0.0)) {
-    //         break;
-    //     }
-
-    //     // Update p and z
-    //     z->copy(r);
-    //     z->apply_denominator(Precon);
-
-    //     double beta = r->vector_dot(z) / rzpre;
-
-    //     p->scale(beta);
-    //     p->add(z);
-
-    // }
-    // if (soscf_print_){
-    //     outfile->Printf("    ---------------------------------------\n");
-    //     outfile->Printf("\n");
-    // }
-
-    // // => Rotate orbitals <= //
-    // rotate_orbitals(Ca_, x);
-
-    // // => Cleanup <= //
-    // Cocc.reset();
-    // Cvir.reset();
-    // IFock.reset();
-    // Precon.reset();
-    // Gradient.reset();
-    // Ap.reset();
-    // z.reset();
-    // r.reset();
-    // p.reset();
-
-    return fock_builds;
+    return cphf_nfock_builds_;
 }
 
 bool RHF::stability_analysis()
