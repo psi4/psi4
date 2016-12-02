@@ -419,6 +419,10 @@ std::vector<SharedMatrix> HF::twoel_Hx(std::vector<SharedMatrix> x, bool combine
 std::vector<SharedMatrix> HF::cphf_Hx(std::vector<SharedMatrix> x) {
     throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct cphf_Hx products.");
 }
+std::vector<SharedMatrix> HF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
+                                     int print_lvl) {
+    throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot solve CPHF equations.");
+}
 void HF::rotate_orbitals(SharedMatrix C, const SharedMatrix x) {
     // => Rotate orbitals <= //
     SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
