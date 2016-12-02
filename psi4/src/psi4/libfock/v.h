@@ -134,6 +134,7 @@ public:
     std::vector<SharedMatrix>& Caocc() { return Caocc_; }
     std::vector<SharedMatrix>& Cavir() { return Cavir_; }
     std::vector<SharedMatrix>& P() { return P_; }
+    const std::vector<SharedMatrix>& V() const { return V_; }
     const std::vector<SharedMatrix>& Vderiv() const { return Vderiv_; }
     const std::vector<SharedMatrix>& D() const { return D_; }
 

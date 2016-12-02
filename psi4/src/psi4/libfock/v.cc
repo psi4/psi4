@@ -408,10 +408,10 @@ SharedMatrix VBase::compute_hessian()
 {
     throw PSIEXCEPTION("VBase: hessian not implemented for this V instance.");
 }
-SharedMatrix VBase::compute_deriv()
-{
-    throw PSIEXCEPTION("VBase: deriv not implemented for this V instance.");
-}
+// SharedMatrix VBase::compute_deriv()
+// {
+//     throw PSIEXCEPTION("VBase: deriv not implemented for this V instance.");
+// }
 void VBase::finalize() {
     grid_.reset();
 }
@@ -492,7 +492,7 @@ void RV::compute_V() {
     std::vector<double> rhoazq(num_threads_);
 
     // Traverse the blocks of points
-    // #pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
+    #pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
 
         // Get thread info
@@ -615,14 +615,16 @@ void RV::compute_V() {
         }
 
         // => Unpacking <= //
-        // #pragma omp critical
         for (int ml = 0; ml < nlocal; ml++) {
             int mg = function_map[ml];
             for (int nl = 0; nl < ml; nl++) {
                 int ng = function_map[nl];
+                #pragma omp atomic
                 Vp[mg][ng] += V2p[ml][nl];
+                #pragma omp atomic
                 Vp[ng][mg] += V2p[ml][nl];
             }
+            #pragma omp atomic
             Vp[mg][mg] += V2p[ml][ml];
         }
         // timer_off("V: V_XC");
@@ -657,10 +659,8 @@ SharedMatrix RV::compute_gradient()
     if ((D_AO_.size() != 1))
         throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
-    // Build the target gradient Matrix
+    // How many atoms?
     int natom = primary_->molecule()->natom();
-    SharedMatrix G(new Matrix("XC Gradient", natom, 3));
-    double** Gp = G->pointer();
 
     // Set Hessian derivative level in properties
     int old_deriv = point_workers_[0]->deriv();
@@ -682,9 +682,10 @@ SharedMatrix RV::compute_gradient()
     }
 
     // Per thread temporaries
-    std::vector<SharedMatrix> V_local;
+    std::vector<SharedMatrix> V_local, G_local;
     std::vector<std::shared_ptr<Vector>> Q_temp;
     for (size_t i = 0; i < num_threads_; i++){
+        G_local.push_back(SharedMatrix(new Matrix("G Temp", natom, 3)));
         V_local.push_back(SharedMatrix(new Matrix("V Temp", max_functions, max_functions)));
         Q_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature Tempt", max_points)));
     }
@@ -696,7 +697,7 @@ SharedMatrix RV::compute_gradient()
     std::vector<double> rhoazq(num_threads_);
 
     // Traverse the blocks of points
-    // #pragma omp parallel for private (rank) schedule(dynamic) num_threads(num_threads_)
+    #pragma omp parallel for private (rank) schedule(dynamic) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
 
         // Get thread info
@@ -707,6 +708,7 @@ SharedMatrix RV::compute_gradient()
         std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
         std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
         double** V2p = V_local[rank]->pointer();
+        double** Gp = G_local[rank]->pointer();
         double* QTp = Q_temp[rank]->pointer();
         double** Dp = pworker->D_scratch()[0]->pointer();
 
@@ -876,6 +878,12 @@ SharedMatrix RV::compute_gradient()
             }
         }
         U_local.reset();
+    }
+
+    // Sum up the matrix
+    SharedMatrix G(new Matrix("XC Gradient", natom, 3));
+    for (auto const &val: G_local){
+        G->add(val);
     }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
