@@ -491,8 +491,9 @@ void RV::compute_V() {
     std::vector<double> rhoayq(num_threads_);
     std::vector<double> rhoazq(num_threads_);
 
+
     // Traverse the blocks of points
-    #pragma omp parallel for private(rank) schedule(dynamic) num_threads(num_threads_)
+    #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
     for (size_t Q = 0; Q < grid_->blocks().size(); Q++) {
 
         // Get thread info
@@ -619,12 +620,12 @@ void RV::compute_V() {
             int mg = function_map[ml];
             for (int nl = 0; nl < ml; nl++) {
                 int ng = function_map[nl];
-                #pragma omp atomic
+                #pragma omp atomic update
                 Vp[mg][ng] += V2p[ml][nl];
-                #pragma omp atomic
+                #pragma omp atomic update
                 Vp[ng][mg] += V2p[ml][nl];
             }
-            #pragma omp atomic
+            #pragma omp atomic update
             Vp[mg][mg] += V2p[ml][ml];
         }
         // timer_off("V: V_XC");

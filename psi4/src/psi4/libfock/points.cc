@@ -163,6 +163,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double* rhoazp = point_values_["RHO_AZ"]->pointer();
         double* gammaaap = point_values_["GAMMA_AA"]->pointer();
 
+        # pragma simd
         for (int P = 0; P < npoints; P++) {
             double rho_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tp[P], 1);
             double rho_y = 2.0 * C_DDOT(nlocal, phiyp[P], 1, Tp[P], 1);
@@ -763,7 +764,9 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 
                 for (int i=0, index = 0; i<=L; ++i) {
                     int l = L-i;
-                    for (int j=0; j<=i; ++j, ++index) {
+
+                    // # pragma omp simd
+                    for (int j=0; j<=i; j++, index++) {
                         int m = i-j;
                         int n = j;
 
@@ -854,9 +857,11 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                 double SY = V2 * yc;
                 double SZ = V2 * zc;
 
+                // # pragma simd
                 for (int i = 0, index = 0; i <= L; ++i) {
                     int l = L - i + 1;
-                    for (int j = 0; j <= i; ++j, ++index) {
+
+                    for (int j = 0; j <= i; j++, index++) {
                         int m = i - j + 1;
                         int n = j + 1;
 
@@ -995,7 +1000,9 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 
                 for (int i = 0, index = 0; i <= L; ++i) {
                     int l = L - i + 2;
-                    for (int j = 0; j <= i; ++j, ++index) {
+
+                    // # pragma omp simd
+                    for (int j = 0; j <= i; j++, index++) {
                         int m = i - j + 2;
                         int n = j + 2;
 
