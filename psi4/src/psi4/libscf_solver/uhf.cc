@@ -91,6 +91,8 @@ void UHF::common_init()
     Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
     Ga_     = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_     = SharedMatrix(factory_->create_matrix("G beta"));
+    Va_     = SharedMatrix(factory_->create_matrix("V alpha"));
+    Vb_     = SharedMatrix(factory_->create_matrix("V beta"));
     J_      = SharedMatrix(factory_->create_matrix("J total"));
     Ka_     = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_     = SharedMatrix(factory_->create_matrix("K beta"));
@@ -144,19 +146,23 @@ void UHF::save_density_and_energy()
 }
 void UHF::form_V()
 {
-    // Push the C matrix on
-    std::vector<SharedMatrix> & C = potential_->C();
-    C.clear();
-    C.push_back(Ca_subset("SO", "OCC"));
-    C.push_back(Cb_subset("SO", "OCC"));
+    // // Push the C matrix on
+    // std::vector<SharedMatrix> & C = potential_->C();
+    // C.clear();
+    // C.push_back(Ca_subset("SO", "OCC"));
+    // C.push_back(Cb_subset("SO", "OCC"));
 
-    // Run the potential object
-    potential_->compute();
+    // // Run the potential object
+    // potential_->compute();
 
-    // Pull the V matrices off
-    const std::vector<SharedMatrix> & V = potential_->V();
-    Va_ = V[0];
-    Vb_ = V[1];
+    // // Pull the V matrices off
+    // const std::vector<SharedMatrix> & V = potential_->V();
+    // Va_ = V[0];
+    // Vb_ = V[1];
+    potential_->set_D({Da_, Db_});
+    potential_->compute_V({Va_, Vb_});
+    // Vb_ = Va_;
+
 }
 void UHF::form_G()
 {

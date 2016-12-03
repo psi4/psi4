@@ -131,14 +131,12 @@ void export_functional(py::module &m)
         }).
         def("initialize", &VBase::initialize, "doctsring").
         def("finalize", &VBase::finalize, "doctsring").
-        def("compute", &VBase::compute, "doctsring").
-        def("compute_gradient", &VBase::compute_gradient, "doctsring").
-        def("compute_hessain", &VBase::compute_hessian, "docstring").
-        def("initialize", &VBase::initialize, "Initializes the V object.").
-        def("finalize", &VBase::finalize, "Finalizes the V object.").
-        def("compute", &VBase::compute, "Computes the V potential matrix.").
+        def("compute_V", &VBase::compute_V, "doctsring").
+        def("compute_Vderiv", &VBase::compute_Vderiv, "doctsring").
         def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.").
         def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.").
+        def("initialize", &VBase::initialize, "Initializes the V object.").
+        def("finalize", &VBase::finalize, "Finalizes the V object.").
 
         def("basis", &VBase::basis, "Returns the internal basis set.").
         def("functional", &VBase::functional, "Returns the interal superfunctional.").
@@ -148,16 +146,8 @@ void export_functional(py::module &m)
         def("nblocks", &VBase::nblocks, "Total number of blocks.").
         def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.").
 
-        def("C", &VBase::C, "The orbital matrix used.").
-        def("P", &VBase::P, "The AO density matrix.").
-        def("V", &VBase::V, "The current V potential matrix.").
-        def("D", &VBase::D, "The current density").
-        def("C_clear", [](VBase &v){
-                v.C().clear();
-            }, "Clears out the supplied orbitals.").
-        def("C_add", [](VBase &v, SharedMatrix C){
-                v.C().push_back(C);
-            }, "Adds new orbitals.");
+        def("Dao", &VBase::Dao, "The current density").
+        def("set_D", &VBase::set_D, "The current density");
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions> >(m, "BasisFunctions", "docstring").
         def("max_functions", &BasisFunctions::max_functions, "docstring").

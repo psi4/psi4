@@ -58,6 +58,8 @@ protected:
     int print_;
     /// Number of threads
     int num_threads_;
+    /// Number of basis functions;
+    int nbf_;
     /// Options object, used to build grid
     Options& options_;
     /// Basis set used in the integration
@@ -75,40 +77,11 @@ protected:
 
     /// AO2USO matrix (if not C1)
     SharedMatrix AO2USO_;
+    SharedMatrix USO2AO_;
 
-    /// Vector of V matrices (built by form_D)
-    std::vector<SharedMatrix> V_;
-    /// Vector of C1 V matrices (built by USO2AO)
-    std::vector<SharedMatrix> V_AO_;
-    /// Vector of V matrices (built by compute_deriv)
-    std::vector<SharedMatrix> Vderiv_;
-
-    /// Vector of occupied C matrices (used for D and KE density)
-    std::vector<SharedMatrix> C_;
-    /// Vector of D matrices (built by form_D)
-    std::vector<SharedMatrix> D_;
-    /// Vector of C1 C matrices (built by USO2AO)
-    std::vector<SharedMatrix> C_AO_;
     /// Vector of C1 D matrices (built by USO2AO)
     std::vector<SharedMatrix> D_AO_;
 
-    /// Vector of Caocc matrices (TDDFT)
-    std::vector<SharedMatrix> Caocc_;
-    /// Vector of Cavir matrices (TDDFT)
-    std::vector<SharedMatrix> Cavir_;
-    /// Vector of Perturbation matrices (TDDFT, ia)
-    std::vector<SharedMatrix> P_;
-    /// Vector of Perturbation matrices (TDDFT, SO)
-    std::vector<SharedMatrix> P_SO_;
-    /// Vector of Perturbation matrices (TDDFT, AO)
-    std::vector<SharedMatrix> P_AO_;
-
-    virtual void compute_D();
-    virtual void USO2AO();
-    virtual void AO2USO();
-
-    /// Actually build V_AO
-    virtual void compute_V() = 0;
     /// Set things up
     void common_init();
 public:
@@ -129,16 +102,13 @@ public:
     size_t nblocks();
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
-    /// Grab this, clear, and push Cocc matrices (with symmetry) to change GS density
-    std::vector<SharedMatrix>& C() { return C_; }
-    std::vector<SharedMatrix>& Caocc() { return Caocc_; }
-    std::vector<SharedMatrix>& Cavir() { return Cavir_; }
-    std::vector<SharedMatrix>& P() { return P_; }
-    const std::vector<SharedMatrix>& V() const { return V_; }
-    const std::vector<SharedMatrix>& Vderiv() const { return Vderiv_; }
-    const std::vector<SharedMatrix>& D() const { return D_; }
+    // Set the D matrix, get it back if needed
+    void set_D(std::vector<SharedMatrix> Dvec);
+    const std::vector<SharedMatrix>& Dao() const { return D_AO_; }
 
     /// Throws by default
+    virtual void compute_V(std::vector<SharedMatrix> ret);
+    virtual void compute_Vderiv(std::vector<SharedMatrix> Dk, std::vector<SharedMatrix> ret);
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
 
@@ -146,7 +116,6 @@ public:
     void set_debug(int debug) { debug_ = debug; }
 
     virtual void initialize();
-    virtual void compute();
     virtual void finalize();
 
     virtual void print_header() const;
@@ -158,9 +127,6 @@ class RV : public VBase {
 
 protected:
 
-    // Actually build V_AO
-    virtual void compute_V();
-
 public:
     RV(std::shared_ptr<SuperFunctional> functional,
         std::shared_ptr<BasisSet> primary,
@@ -170,6 +136,7 @@ public:
     virtual void initialize();
     virtual void finalize();
 
+    virtual void compute_V(std::vector<SharedMatrix> ret);
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
 
@@ -180,9 +147,6 @@ class UV : public VBase {
 
 protected:
 
-    // Actually build V_AO
-    virtual void compute_V();
-
 public:
     UV(std::shared_ptr<SuperFunctional> functional,
         std::shared_ptr<BasisSet> primary,
@@ -192,42 +156,12 @@ public:
     virtual void initialize();
     virtual void finalize();
 
+    virtual void compute_V(std::vector<SharedMatrix> ret);
     virtual SharedMatrix compute_gradient();
 
     virtual void print_header() const;
 };
 
-class RK : public RV {
-
-protected:
-
-    // Actually build V_AO
-    virtual void compute_V();
-
-public:
-    RK(std::shared_ptr<SuperFunctional> functional,
-        std::shared_ptr<BasisSet> primary,
-        Options& options);
-    virtual ~RK();
-
-    virtual void print_header() const;
-};
-
-class UK : public UV {
-
-protected:
-
-    // Actually build V_AO
-    virtual void compute_V();
-
-public:
-    UK(std::shared_ptr<SuperFunctional> functional,
-        std::shared_ptr<BasisSet> primary,
-        Options& options);
-    virtual ~UK();
-
-    virtual void print_header() const;
-};
 
 }
 #endif

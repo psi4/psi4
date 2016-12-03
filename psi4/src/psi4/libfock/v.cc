@@ -69,13 +69,6 @@ void VBase::common_init() {
 std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary,
                                       std::shared_ptr<SuperFunctional> functional, Options& options,
                                       const std::string& type) {
-    // int depth = 1; // By default, do first partials of the kernel
-    // if (type == "RK" || type == "UK")
-    //     depth = 2;
-
-    // int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
-    // std::shared_ptr<SuperFunctional> functional =
-    // SuperFunctional::current(options,block_size,depth);
 
     std::shared_ptr<VBase> v;
     if (type == "RV") {
@@ -88,333 +81,67 @@ std::shared_ptr<VBase> VBase::build_V(std::shared_ptr<BasisSet> primary,
             throw PSIEXCEPTION("Passed in functional was unpolarized for UV reference.");
         }
         v = std::shared_ptr<VBase>(new UV(functional, primary, options));
-    } else if (type == "RK") {
-        v = std::shared_ptr<VBase>(new RK(functional, primary, options));
-    } else if (type == "UK") {
-        v = std::shared_ptr<VBase>(new UK(functional, primary, options));
     } else {
         throw PSIEXCEPTION("V: V type is not recognized");
     }
 
     return v;
 }
-void VBase::compute_D()
-{
-    // Allocate D if needed
-    if (D_.size() != C_.size()) {
-        D_.clear();
-        for (size_t A = 0; A < C_.size(); A++) {
-            std::stringstream ss;
-            ss << "D (SO) " << A;
-            D_.push_back(SharedMatrix(new Matrix(ss.str(), C_[A]->rowspi(), C_[A]->rowspi())));
-        }
+void VBase::set_D(std::vector<SharedMatrix> Dvec) {
+    if (Dvec.size() > 2) {
+        throw PSIEXCEPTION("VBase::set_D: Can only set up to two D vectors.");
     }
 
-    for (size_t A = 0; A < C_.size(); A++) {
-        SharedMatrix C = C_[A];
-        SharedMatrix D = D_[A];
-        D->zero();
-        for (int h = 0; h < C->nirrep(); h++) {
-            int nso = C->rowspi()[h];
-            int nmo = C->colspi()[h];
-            if (!nso || !nmo) continue;
-            double** Cp = C->pointer(h);
-            double** Dp = D->pointer(h);
-            C_DGEMM('N', 'T', nso, nso, nmo, 1.0, Cp[0], nmo, Cp[0], nmo, 0.0, Dp[0], nso);
-        }
-    }
-
-    // Allocate P_SO_ if needed
-    if (P_.size()) {
-        bool same = true;
-        if (P_SO_.size() != P_.size()) {
-            same = false;
-        } else {
-            for (size_t A = 0; A < P_.size(); A++) {
-                if (P_[A]->symmetry() != P_SO_[A]->symmetry()) same = false;
-            }
-        }
-
-        if (!same) {
-            P_SO_.clear();
-            for (size_t A = 0; A < P_.size(); A++) {
-                std::stringstream ss;
-                ss << "P (SO) " << A;
-                P_SO_.push_back(SharedMatrix(
-                    new Matrix(ss.str(), C_[0]->rowspi(), C_[0]->rowspi(), P_[A]->symmetry())));
-            }
-        }
-
-        int maxi = Caocc_[0]->max_ncol();
-        if (Caocc_.size() > 1) maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
-        double* temp = new double[maxi * (ULI)Caocc_[0]->max_nrow()];
-        for (size_t A = 0; A < P_.size(); A++) {
-            SharedMatrix Cl = Caocc_[A % Caocc_.size()];
-            SharedMatrix Cr = Cavir_[A % Cavir_.size()];
-            SharedMatrix P = P_[A];
-            SharedMatrix P_SO = P_SO_[A];
-            int symm = P->symmetry();
-            for (int h = 0; h < P->nirrep(); h++) {
-                int nl = Cl->rowspi()[h];
-                int nr = Cr->rowspi()[h ^ symm];
-                int ni = Cl->colspi()[h];
-                int na = Cr->colspi()[h ^ symm];
-                if (!nl || !nr || !ni || !na) continue;
-                double** Clp = Cl->pointer(h);
-                double** Crp = Cr->pointer(h ^ symm);
-                double** Pp = P->pointer(h);
-                double** P_SOp = P_SO->pointer(h);
-
-                C_DGEMM('N', 'T', ni, nr, na, 1.0, Pp[0], na, Crp[0], na, 0.0, temp, nr);
-                C_DGEMM('N', 'N', nl, nr, ni, 1.0, Clp[0], ni, temp, nr, 0.0, P_SOp[0], nr);
-            }
-        }
-        delete[] temp;
-    }
-}
-void VBase::USO2AO() {
     // Build AO2USO matrix, if needed
-    if (!AO2USO_ && (C_[0]->nirrep() != 1)) {
+    if (!AO2USO_ && (Dvec[0]->nirrep() != 1)) {
         std::shared_ptr<IntegralFactory> integral(
             new IntegralFactory(primary_, primary_, primary_, primary_));
         std::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
         AO2USO_ = SharedMatrix(pet->aotoso());
+        USO2AO_ = AO2USO_->transpose();
     }
 
-    // Allocate V if needed
-    if (P_.size()) {
-        bool same = true;
-        if (V_.size() != P_.size()) {
-            same = false;
-        } else {
-            for (size_t A = 0; A < P_.size(); A++) {
-                if (P_[A]->symmetry() != V_[A]->symmetry()) same = false;
-            }
-        }
-        if (!same) {
-            V_.clear();
-            for (size_t A = 0; A < P_.size(); A++) {
-                std::stringstream ss1;
-                ss1 << "V (SO) " << A;
-                V_.push_back(std::shared_ptr<Matrix>(
-                    new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(), P_[A]->symmetry())));
-            }
-        }
+    if (AO2USO_){
+        nbf_ = AO2USO_->rowspi()[0];
     } else {
-        if (V_.size() != C_.size()) {
-            V_.clear();
-            for (size_t A = 0; A < C_.size(); A++) {
-                std::stringstream ss1;
-                ss1 << "V (SO) " << A;
-                V_.push_back(std::shared_ptr<Matrix>(
-                    new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
-            }
-        }
+        nbf_ = Dvec[0]->rowspi()[0];
     }
 
-    // If C1, just assign pointers
-    if (C_[0]->nirrep() == 1) {
-        C_AO_ = C_;
-        D_AO_ = D_;
-        V_AO_ = V_;
-        // Clear V_AO_ out
-        for (size_t A = 0; A < V_AO_.size(); A++) {
-            V_AO_[A]->zero();
-        }
-        P_AO_ = P_SO_;
-        for (size_t A = 0; A < P_AO_.size(); A++) {
-            P_AO_[A]->hermitivitize();
-        }
-        return;
-    }
-
-    if (P_.size()) {
-        if (V_.size() != P_.size()) {
-            V_AO_.clear();
-            P_AO_.clear();
-            for (size_t A = 0; A < P_.size(); A++) {
-                std::stringstream ss2;
-                ss2 << "V (AO) " << A;
-                V_AO_.push_back(
-                    std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
-                std::stringstream ss3;
-                ss3 << "P (AO) " << A;
-                P_AO_.push_back(
-                    std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
-            }
-        }
-    } else {
-        if (V_AO_.size() != C_.size()) {
-            V_AO_.clear();
-            P_AO_.clear();
-            for (size_t A = 0; A < C_.size(); A++) {
-                std::stringstream ss2;
-                ss2 << "V (AO) " << A;
-                V_AO_.push_back(
-                    std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
-                std::stringstream ss3;
-                ss3 << "P (AO) " << A;
-                P_AO_.push_back(
-                    std::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
-            }
-        }
-    }
-
-    // Clear V_AO_ out
-    for (size_t A = 0; A < V_AO_.size(); A++) {
-        V_AO_[A]->zero();
-    }
-
-    // Allocate C_AO/D_AO if needed
-    bool allocate_C_AO_D_AO = false;
-    if (C_AO_.size() != C_.size()) {
-        allocate_C_AO_D_AO = true;
-    } else {
-        for (size_t A = 0; A < C_.size(); A++) {
-            if (C_AO_[A]->nrow() != C_[0]->nrow()) allocate_C_AO_D_AO = true;
-            if (C_AO_[A]->ncol() != C_[0]->ncol()) allocate_C_AO_D_AO = true;
-        }
-    }
-    if (allocate_C_AO_D_AO) {
-        C_AO_.clear();
+    // Allocate the densities
+    if (D_AO_.size() != Dvec.size()) {
         D_AO_.clear();
-        for (size_t A = 0; A < C_.size(); A++) {
-            std::stringstream ss1;
-            ss1 << "C (AO) " << A;
-            C_AO_.push_back(
-                std::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
-            std::stringstream ss2;
-            ss2 << "D (AO) " << A;
-            D_AO_.push_back(
-                std::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+        for (size_t i = 0; i < Dvec.size(); i++) {
+            D_AO_.push_back(SharedMatrix(new Matrix("D AO temp", nbf_, nbf_)));
         }
     }
 
-    // C_AO (Order is not important, just KE Density)
-    for (size_t A = 0; A < C_.size(); A++) {
-        SharedMatrix C = C_[A];
-        SharedMatrix C_AO = C_AO_[A];
-        int offset = 0;
-        for (int h = 0; h < C->nirrep(); h++) {
-            int nocc = C->colspi()[h];
-            int nso = C->rowspi()[h];
-            int nao = AO2USO_->rowspi()[h];
-            int nmo = C_AO->colspi()[0];
-            if (!nocc || !nso || !nao || !nmo) continue;
-            double** Cp = C->pointer(h);
-            double** C_AOp = C_AO->pointer(0);
-            double** Up = AO2USO_->pointer(h);
-            C_DGEMM('N', 'N', nao, nocc, nso, 1.0, Up[0], nso, Cp[0], nocc, 0.0, &C_AOp[0][offset],
-                    nmo);
-            offset += nocc;
+    // Copy over the AO
+    for (size_t i = 0; i < Dvec.size(); i++) {
+        if (Dvec[i]->nirrep() != 1) {
+            D_AO_[i]->remove_symmetry(Dvec[i], USO2AO_);
+        } else {
+            D_AO_[i]->copy(Dvec[i]);
         }
     }
-
-    // D_AO
-    double* temp = new double[AO2USO_->max_nrow() * (ULI)AO2USO_->max_ncol()];
-    for (size_t A = 0; A < D_AO_.size(); A++) {
-        SharedMatrix D = D_[A];
-        SharedMatrix D_AO = D_AO_[A];
-        D_AO->zero();
-        for (int h = 0; h < D->nirrep(); h++) {
-            int symm = D->symmetry();
-            int nao = AO2USO_->rowspi()[h];
-            int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h ^ symm];
-            if (!nao || !nsol || !nsor) continue;
-            double** Dp = D->pointer(h);
-            double** D_AOp = D_AO->pointer();
-            double** Ulp = AO2USO_->pointer(h);
-            double** Urp = AO2USO_->pointer(h ^ symm);
-            C_DGEMM('N', 'N', nao, nsor, nsol, 1.0, Ulp[0], nsol, Dp[0], nsor, 0.0, temp, nsor);
-            C_DGEMM('N', 'T', nao, nao, nsor, 1.0, temp, nsor, Urp[0], nsor, 1.0, D_AOp[0], nao);
-        }
-    }
-
-    // P_AO
-    for (size_t A = 0; A < P_SO_.size(); A++) {
-        SharedMatrix D = P_SO_[A];
-        SharedMatrix D_AO = P_AO_[A];
-        D_AO->zero();
-        for (int h = 0; h < D->nirrep(); h++) {
-            int symm = D->symmetry();
-            int nao = AO2USO_->rowspi()[h];
-            int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h ^ symm];
-            if (!nao || !nsol || !nsor) continue;
-            double** Dp = D->pointer(h);
-            double** D_AOp = D_AO->pointer();
-            double** Ulp = AO2USO_->pointer(h);
-            double** Urp = AO2USO_->pointer(h ^ symm);
-            C_DGEMM('N', 'N', nao, nsor, nsol, 1.0, Ulp[0], nsol, Dp[0], nsor, 0.0, temp, nsor);
-            C_DGEMM('N', 'T', nao, nao, nsor, 1.0, temp, nsor, Urp[0], nsor, 1.0, D_AOp[0], nao);
-        }
-        D_AO->hermitivitize();
-    }
-    delete[] temp;
-}
-void VBase::AO2USO() {
-    if (C_[0]->nirrep() == 1) {
-        // V_ is already assigned
-        return;
-    }
-
-    double* temp = new double[AO2USO_->max_nrow() * (ULI)AO2USO_->max_ncol()];
-    for (size_t A = 0; A < V_AO_.size(); A++) {
-        SharedMatrix V = V_[A];
-        SharedMatrix V_AO = V_AO_[A];
-        for (int h = 0; h < V->nirrep(); h++) {
-            int symm = V->symmetry();
-            int nao = AO2USO_->rowspi()[h];
-            int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h ^ symm];
-            if (!nao || !nsol || !nsor) continue;
-            double** Vp = V->pointer(h);
-            double** V_AOp = V_AO->pointer();
-            double** Ulp = AO2USO_->pointer(h);
-            double** Urp = AO2USO_->pointer(h ^ symm);
-            C_DGEMM('N', 'N', nao, nsor, nao, 1.0, V_AOp[0], nao, Urp[0], nsor, 0.0, temp, nsor);
-            C_DGEMM('T', 'N', nsol, nsor, nao, 1.0, Ulp[0], nsol, temp, nsor, 0.0, Vp[0], nsor);
-        }
-    }
-    delete[] temp;
 }
 void VBase::initialize() {
     timer_on("V: Grid");
     grid_ = std::shared_ptr<DFTGrid>(new DFTGrid(primary_->molecule(), primary_, options_));
     timer_off("V: Grid");
 }
-void VBase::compute() {
-    timer_on("V: D");
-    compute_D();
-    timer_off("V: D");
-
-    timer_on("V: USO2AO");
-    USO2AO();
-    timer_off("V: USO2AO");
-
-    timer_on("V: V");
-    compute_V();
-    timer_off("V: V");
-
-    timer_on("V: AO2USO");
-    AO2USO();
-    timer_off("V: AO2USO");
-}
 SharedMatrix VBase::compute_gradient() {
     throw PSIEXCEPTION("VBase: gradient not implemented for this V instance.");
 }
-SharedMatrix VBase::compute_hessian()
-{
+SharedMatrix VBase::compute_hessian() {
     throw PSIEXCEPTION("VBase: hessian not implemented for this V instance.");
 }
-// SharedMatrix VBase::compute_deriv()
-// {
-//     throw PSIEXCEPTION("VBase: deriv not implemented for this V instance.");
-// }
-void VBase::finalize() {
-    grid_.reset();
+void VBase::compute_V(std::vector<SharedMatrix> ret) {
+    throw PSIEXCEPTION("VBase: deriv not implemented for this V instance.");
 }
+void VBase::compute_Vderiv(std::vector<SharedMatrix> Dk, std::vector<SharedMatrix> ret) {
+    throw PSIEXCEPTION("VBase: deriv not implemented for this Vderiv instance.");
+}
+void VBase::finalize() { grid_.reset(); }
 void VBase::print_header() const {
     outfile->Printf("  ==> DFT Potential <==\n\n");
     functional_->print("outfile", print_);
@@ -423,20 +150,15 @@ void VBase::print_header() const {
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
 
-RV::RV(std::shared_ptr<SuperFunctional> functional,
-    std::shared_ptr<BasisSet> primary,
-    Options& options) : VBase(functional,primary,options)
-{
-}
-RV::~RV()
-{
-}
-void RV::initialize()
-{
+RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary,
+       Options& options)
+    : VBase(functional, primary, options) {}
+RV::~RV() {}
+void RV::initialize() {
     VBase::initialize();
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
-    for (size_t i = 0; i < num_threads_; i++){
+    for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
         std::shared_ptr<PointFunctions> point_tmp =
             std::shared_ptr<PointFunctions>(new RKSFunctions(primary_, max_points, max_functions));
@@ -447,17 +169,12 @@ void RV::initialize()
         functional_workers_.push_back(functional_->build_worker());
     }
 }
-void RV::finalize()
-{
-    VBase::finalize();
-}
-void RV::print_header() const
-{
-    VBase::print_header();
-}
-void RV::compute_V() {
-    if ((D_AO_.size() != 1) || (V_AO_.size() != 1))
+void RV::finalize() { VBase::finalize(); }
+void RV::print_header() const { VBase::print_header(); }
+void RV::compute_V(std::vector<SharedMatrix> ret) {
+    if ((D_AO_.size() != 1) || (ret.size() != 1)) {
         throw PSIEXCEPTION("V: RKS should have only one D/V Matrix");
+    }
 
     // Thread info
     int rank = 0;
@@ -482,7 +199,7 @@ void RV::compute_V() {
         Q_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature Temp", max_points)));
     }
 
-    SharedMatrix V_AO = V_AO_[0];
+    SharedMatrix V_AO(new Matrix("V AO Temp", nbf_, nbf_));
     double** Vp = V_AO->pointer();
 
     std::vector<double> functionalq(num_threads_);
@@ -631,6 +348,13 @@ void RV::compute_V() {
         // timer_off("V: V_XC");
     }
 
+    // Set the result
+    if (AO2USO_){
+        ret[0]->apply_symmetry(V_AO, AO2USO_);
+    } else {
+        ret[0]->copy(V_AO);
+    }
+
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"]      = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
     quad_values_["RHO_AX"]     = std::accumulate(rhoaxq.begin(), rhoaxq.end(), 0.0);
@@ -654,9 +378,6 @@ void RV::compute_V() {
 }
 SharedMatrix RV::compute_gradient()
 {
-    compute_D();
-    USO2AO();
-
     if ((D_AO_.size() != 1))
         throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
@@ -924,9 +645,6 @@ SharedMatrix RV::compute_hessian()
     if(functional_->is_gga() || functional_->is_meta())
         throw PSIEXCEPTION("Hessians for GGA and meta GGA functionals are not yet implemented.");
 
-    compute_D();
-    USO2AO();
-
     if ((D_AO_.size() != 1))
         throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
@@ -1179,15 +897,10 @@ SharedMatrix RV::compute_hessian()
     return H;
 }
 
-
-UV::UV(std::shared_ptr<SuperFunctional> functional,
-    std::shared_ptr<BasisSet> primary,
-    Options& options) : VBase(functional,primary,options)
-{
-}
-UV::~UV()
-{
-}
+UV::UV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary,
+       Options& options)
+    : VBase(functional, primary, options) {}
+UV::~UV() {}
 void UV::initialize() {
     VBase::initialize();
     int max_points = grid_->max_points();
@@ -1211,9 +924,9 @@ void UV::print_header() const
 {
     VBase::print_header();
 }
-void UV::compute_V()
+void UV::compute_V(std::vector<SharedMatrix> ret)
 {
-    if ((D_AO_.size() != 2) || (V_AO_.size() != 2))
+    if ((D_AO_.size() != 2) || (ret.size() != 2))
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
 
     // Thread info
@@ -1241,10 +954,10 @@ void UV::compute_V()
         Qb_temp.push_back(std::shared_ptr<Vector>(new Vector("Quadrature B Temp", max_points)));
     }
 
-    // SharedMatrix V_AO = V_AO_[0];
-    // double** Vp = V_AO->pointer();
-    double** Vap = V_AO_[0]->pointer();
-    double** Vbp = V_AO_[1]->pointer();
+    SharedMatrix Va_AO(new Matrix("Va Temp", nbf_, nbf_));
+    SharedMatrix Vb_AO(new Matrix("Vb Temp", nbf_, nbf_));
+    double** Vap = Va_AO->pointer();
+    double** Vbp = Vb_AO->pointer();
 
     std::vector<double> functionalq(num_threads_);
     std::vector<double> rhoaq(num_threads_);
@@ -1417,15 +1130,30 @@ void UV::compute_V()
             int mg = function_map[ml];
             for (int nl = 0; nl < ml; nl++) {
                 int ng = function_map[nl];
+                # pragma omp atomic update
                 Vap[mg][ng] += Va2p[ml][nl];
+                # pragma omp atomic update
                 Vap[ng][mg] += Va2p[ml][nl];
+                # pragma omp atomic update
                 Vbp[mg][ng] += Vb2p[ml][nl];
+                # pragma omp atomic update
                 Vbp[ng][mg] += Vb2p[ml][nl];
             }
+            # pragma omp atomic update
             Vap[mg][mg] += Va2p[ml][ml];
+            # pragma omp atomic update
             Vbp[mg][mg] += Vb2p[ml][ml];
         }
         // timer_off("V: V_XC");
+    }
+
+    // Set the result
+    if (AO2USO_){
+        ret[0]->apply_symmetry(Va_AO, AO2USO_);
+        ret[1]->apply_symmetry(Vb_AO, AO2USO_);
+    } else {
+        ret[0]->copy(Va_AO);
+        ret[1]->copy(Vb_AO);
     }
 
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
@@ -1451,9 +1179,6 @@ void UV::compute_V()
 }
 SharedMatrix UV::compute_gradient()
 {
-    compute_D();
-    USO2AO();
-
     if ((D_AO_.size() != 2))
         throw PSIEXCEPTION("V: UKS should have two D Matrices");
 
@@ -1796,40 +1521,6 @@ SharedMatrix UV::compute_gradient()
     }
 
     return G;
-}
-
-RK::RK(std::shared_ptr<SuperFunctional> functional,
-    std::shared_ptr<BasisSet> primary,
-    Options& options) : RV(functional,primary,options)
-{
-}
-RK::~RK()
-{
-}
-void RK::print_header() const
-{
-    VBase::print_header();
-}
-void RK::compute_V()
-{
-    // TODO
-}
-
-UK::UK(std::shared_ptr<SuperFunctional> functional,
-    std::shared_ptr<BasisSet> primary,
-    Options& options) : UV(functional,primary,options)
-{
-}
-UK::~UK()
-{
-}
-void UK::print_header() const
-{
-    VBase::print_header();
-}
-void UK::compute_V()
-{
-    // TODO
 }
 
 }
