@@ -132,7 +132,7 @@ void export_functional(py::module &m)
         def("initialize", &VBase::initialize, "doctsring").
         def("finalize", &VBase::finalize, "doctsring").
         def("compute_V", &VBase::compute_V, "doctsring").
-        def("compute_Vderiv", &VBase::compute_Vderiv, "doctsring").
+        def("compute_Vx", &VBase::compute_Vx, "doctsring").
         def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.").
         def("compute_hessain", &VBase::compute_hessian, "Compute the DFT nuclear Hessian contribution.").
         def("initialize", &VBase::initialize, "Initializes the V object.").
@@ -141,7 +141,6 @@ void export_functional(py::module &m)
         def("basis", &VBase::basis, "Returns the internal basis set.").
         def("functional", &VBase::functional, "Returns the interal superfunctional.").
         def("properties", &VBase::properties, "Returns the properties computer.").
-        // def("grid", &VBase::grid, "doctsring").
         def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.").
         def("nblocks", &VBase::nblocks, "Total number of blocks.").
         def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.").

@@ -108,7 +108,7 @@ public:
 
     /// Throws by default
     virtual void compute_V(std::vector<SharedMatrix> ret);
-    virtual void compute_Vderiv(std::vector<SharedMatrix> Dk, std::vector<SharedMatrix> ret);
+    virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
 
@@ -137,6 +137,7 @@ public:
     virtual void finalize();
 
     virtual void compute_V(std::vector<SharedMatrix> ret);
+    virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
     virtual SharedMatrix compute_gradient();
     virtual SharedMatrix compute_hessian();
 
