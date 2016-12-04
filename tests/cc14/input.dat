@@ -16,6 +16,8 @@ set {
   max_disp_g_convergence  1e-6
   max_force_g_convergence 1.0e-6
   max_energy_g_convergence    7
+  docc [2, 0, 0, 1]
+  socc [1, 0, 1, 0]
   e_convergence 10
   r_convergence 10
 }
