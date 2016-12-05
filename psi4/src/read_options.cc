@@ -744,6 +744,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Method to handle the two-electron integrals -*/
     options.add_str("MCSCF_TYPE", "CONV", "DF CONV AO");
 
+    /*- Initial MCSCF starting guess, MP2 natural orbitals only available for DF-RHF reference -*/
+    options.add_str("MCSCF_GUESS", "SCF", "MP2 SCF");
+
     /*- Apply a list of 2x2 rotation matrices to the orbitals in the form of
     [irrep, orbital1, orbital2, theta] where an angle of 0 would do nothing and an angle
     of 90 would switch the two orbitals. -*/
