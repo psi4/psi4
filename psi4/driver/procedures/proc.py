@@ -4000,13 +4000,14 @@ def run_detcas(name, **kwargs):
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
-        # if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and\
-        #             (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF'):
-        #     psi4.set_global_option('ONEPDM', True)
-        #     psi4.set_global_option('OPDM_RELAX', False)
-        #     ref_wfn = run_dfmp2_gradient(name, **kwargs)
-        # else:
-        ref_wfn = scf_helper(name, **kwargs)
+        if ((core.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and
+                    (core.get_option('DETCI', 'MCSCF_TYPE') in ['DF', 'AO']) and
+                    (core.get_option("DETCI", "MCSCF_GUESS") == "MP2")):
+            core.set_global_option('ONEPDM', True)
+            core.set_global_option('OPDM_RELAX', False)
+            ref_wfn = run_dfmp2_gradient(name, **kwargs)
+        else:
+            ref_wfn = scf_helper(name, **kwargs)
 
         # Ensure IWL files have been written
         if (core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
@@ -4018,8 +4019,6 @@ def run_detcas(name, **kwargs):
 
     # The DF case
     if core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
-
-        # Do NOT set global options in general, this is a bit of a hack
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DF')
 
@@ -4042,7 +4041,7 @@ def run_detcas(name, **kwargs):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
     else:
-        raise ValidationError("Run DETCAS: MCSCF_TYPE %s not understood." % str(core.get_option('DETCI', 'MCSCF_TYPE'))
+        raise ValidationError("Run DETCAS: MCSCF_TYPE %s not understood." % str(core.get_option('DETCI', 'MCSCF_TYPE')))
 
 
     # Second-order SCF requires non-symmetric density matrix support
