@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2017 The Psi4 Developers.
+.. # Copyright (c) 2007-2016 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -25,49 +25,23 @@
 .. # @END LICENSE
 .. #
 
-.. Psithon documentation master file, created by
-   sphinx-quickstart on Sun Feb 12 04:25:25 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. .. _`sec:building`:
 
-==========================================
-|PSIfour|\ : Open-Source Quantum Chemistry
-==========================================
+===============================
+Building
+===============================
 
-.. toctree::
-   :maxdepth: 2
-   
-   introduction
-   external
-   build_index
-   tutorial
-   psithoninput
-   methods
-   interfacing
-   psithonfunc
-   customizing
-
-.. toctree::
-   :maxdepth: 3
-
-   appendices
-
-===================
-Programmers' Manual
-===================
+Several electronic structure methods are available in the |PSIfour|
+package, from Hartree--Fock molecular orbital theory to coupled-cluster
+theory to full configuration interaction.  This section introduces
+the methods available and some of their most common input parameters.
+A complete list of standard keywords is provided in Appendix
+:ref:`apdx:options_c_module`.
 
 .. toctree::
    :maxdepth: 2
 
-   contributing
-   programming
-   addon
-   psi4api
+   build_faq
+   build_planning
+   build_building
 
-* Indices
-
- - :ref:`genindex`
- - :ref:`modindex`
- - :ref:`search`
-
-.. comment  autodoc_available_plugins
