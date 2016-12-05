@@ -442,59 +442,79 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     }
     int nact = CalcInfo_->num_ci_orbs;
 
-    SharedMatrix Ca_sym = this->Ca();
     //TODO:  Figure out why frozen core does not work
-    if(CalcInfo_->frozen_docc.sum() > 0) {
-        outfile->Printf("\n AO-CASSCF does not work with frozen core.  ");
-        throw PSIEXCEPTION("Do not have a working AO-CASSCF code with frozen core");
-    }
-    SharedMatrix Call(new Matrix(nso_, nmo_));
-    SharedMatrix Cact(new Matrix(nso_, nact));
+    // if(CalcInfo_->frozen_docc.sum() > 0) {
+    //     outfile->Printf("\n AO-CASSCF does not work with frozen core.  ");
+    //     throw PSIEXCEPTION("Do not have a working AO-CASSCF code with frozen core");
+    // }
+    int nrot = nmo_ - CalcInfo_->num_fzc_orbs - CalcInfo_->num_fzv_orbs;
 
     // Transform from the SO to the AO basis for the C matrix.
     // just transfroms the C_{mu_ao i} -> C_{mu_so i}
     /// If C1, do not do.  C_{mu_ao i} = C_{mu_so i} if C1
+    SharedMatrix Crot;
     if (nirrep_ > 1) {
+        Crot = SharedMatrix(new Matrix(nso_, nrot));
         timer_on("CIWave: Transform C matrix from SO to AO");
-    
-        std::vector<int> nmo_offset(nirrep_, 0);
-        nmo_offset[0] = 0;
+   
+        SharedMatrix Cso_rot = get_orbitals("ROT");
+        int nao = AO2SO_->rowspi()[0];
 
-        /// Have an orbital offset array (nmo_offset[2] = nmopi_[0] + nmopi[1];
-        for (int h = 1; h < nirrep_; h++) {
-            nmo_offset[h] = nmo_offset[h - 1] + nmopi_[h - 1];
+        int offset = 0;
+        double** Crotp = Crot->pointer();
+        for (int h = 0, offset = 0, offset_act = 0; h < nirrep_; h++) {
+            int hnso = AO2SO_->colspi()[h];
+            if (hnso == 0) continue;
+            double** Up = AO2SO_->pointer(h);
+            int nrotpih = Cso_rot->colspi()[h];
+
+            if (nrotpih) {
+                double** CSOp = Cso_rot->pointer(h);
+                C_DGEMM('N', 'N', nao, nrotpih, hnso, 1.0, Up[0], hnso, CSOp[0],
+                        nrotpih, 0.0, &Crotp[0][offset], nrot);
+                offset += nrotpih;
+            } 
         }
 
-        for (size_t h = 0, index = 0; h < nirrep_; ++h) {
-            #pragma omp parallel for schedule(static)
-            for (int i = 0; i < nmopi_[h]; ++i) {
-                size_t nao = nso_;
-                size_t nso = nsopi_[h];
+        //std::vector<int> nmo_offset(nirrep_, 0);
+        //nmo_offset[0] = 0;
+
+        ///// Have an orbital offset array (nmo_offset[2] = nmopi_[0] + nmopi[1];
+        //for (int h = 1; h < nirrep_; h++) {
+        //    nmo_offset[h] = nmo_offset[h - 1] + nmopi_[h - 1];
+        //}
+
+        //for (size_t h = 0, index = 0; h < nirrep_; ++h) {
+        //    #pragma omp parallel for schedule(static)
+        //    for (int i = CalcInfo_->frozen_docc[h]; i < nmopi_[h] - CalcInfo_->frozen_uocc[h]; ++i) {
+        //        size_t nao = nso_;
+        //        size_t nso = nsopi_[h];
     
-                if (!nso) continue;
-                int index = nmo_offset[h] + i;
+        //        if (!nso) continue;
+        //        int index = nmo_offset[h] + i;
     
-                C_DGEMV('N', nao, nso, 1.0, AO2SO_->pointer(h)[0], nso, &Ca_sym->pointer(h)[0][i],
-                        nmopi_[h], 0.0, &Call->pointer()[0][index], nmo_);
-            }
-        }
+        //        C_DGEMV('N', nao, nso, 1.0, AO2SO_->pointer(h)[0], nso, &Ca_->pointer(h)[0][i],
+        //                nmopi_[h], 0.0, &Crot->pointer()[0][index], nrot);
+        //    }
+        //}
         timer_off("CIWave: Transform C matrix from SO to AO");
     } else {
-        Call = Ca_sym;
+        Crot = get_orbitals("ROT");
     }
 
     std::vector<int> active_abs(nact, 0);
     for (int h = 0, cinum = 0, orbnum = 0; h < CalcInfo_->nirreps; h++) {
-        orbnum += CalcInfo_->dropped_docc[h];
+        orbnum += CalcInfo_->rstr_docc[h];
         for (int i = 0; i < CalcInfo_->ci_orbs[h]; i++) {
             active_abs[cinum++] = orbnum++;
         }
-        orbnum += CalcInfo_->dropped_uocc[h];
+        orbnum += CalcInfo_->rstr_uocc[h];
     }
     
+    SharedMatrix Cact(new Matrix(nso_, nact));
     for (size_t v = 0; v < nact; v++) {
-        SharedVector Call_vec = Call->get_column(0, active_abs[v]);
-        Cact->set_column(0, v, Call_vec);
+        SharedVector Crot_vec = Crot->get_column(0, active_abs[v]);
+        Cact->set_column(0, v, Crot_vec);
     }
     
     timer_on("CIWave: Forming Active Psuedo Density");
@@ -531,7 +551,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     timer_on("CIWave: AO MCSCF Integral Transformation Fock build");
     jk_->compute();
     timer_off("CIWave: AO MCSCF Integral Transformation Fock build");
-    SharedMatrix casscf_ints(new Matrix("ALL Active", nmo_ * nact, nact * nact));
+    SharedMatrix casscf_ints(new Matrix("ALL Active", nrot * nact, nact * nact));
 
     ///Step 3:  Fill the integrals for SOSCF in_core
     ///TODO: Figure out WTF is going on with ordering.  
@@ -542,9 +562,9 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
         int i = std::get<0>(D_vec[D_tasks]);
         int j = std::get<1>(D_vec[D_tasks]);
         SharedMatrix J = jk_->J()[D_tasks];
-        SharedMatrix half_trans = Matrix::triplet(Call, J, Cact, true, false, false);
+        SharedMatrix half_trans = Matrix::triplet(Crot, J, Cact, true, false, false);
         #pragma omp parallel for schedule(static) 
-        for(size_t p = 0; p < nmo_; p++){
+        for(size_t p = 0; p < nrot; p++){
             for(size_t q = 0; q < nact; q++){
                 casscf_ints->set(p * nact + q, i * nact + j, half_trans->get(p, q));
                 casscf_ints->set(p * nact + q, j * nact + i, half_trans->get(p, q));
@@ -561,7 +581,6 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     SharedMatrix actMO(new Matrix("ALL Active", nact * nact, nact * nact));
     timer_on("CIWave: Filling the (zu|xy) integrals");
     for(int u = 0; u < nact; u++){
-        int u_offset = CalcInfo_->dropped_docc.sum();
         for(int v = 0; v < nact; v++){
             for(int x = 0; x < nact; x++){
                 for(int y = 0; y < nact; y++){
