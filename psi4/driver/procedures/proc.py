@@ -4029,7 +4029,12 @@ def run_detcas(name, **kwargs):
                                             puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
-    # The non-DF case
+    # The AO case
+    elif core.get_option('DETCI', 'MCSCF_TYPE') == 'AO':
+        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DIRECT')
+
+    # The conventional case
     elif core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV':
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'PK')
@@ -4037,7 +4042,7 @@ def run_detcas(name, **kwargs):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
     else:
-        core.print_out("JK object is figuring out the integrals are written to test.")
+        raise ValidationError("Run DETCAS: MCSCF_TYPE %s not understood." % str(core.get_option('DETCI', 'MCSCF_TYPE'))
 
 
     # Second-order SCF requires non-symmetric density matrix support
