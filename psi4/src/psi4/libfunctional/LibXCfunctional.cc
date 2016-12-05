@@ -83,13 +83,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             double alpha, beta;
             xc_hyb_cam_coef(&xc_functional_, &omega_, &alpha, &beta);
 
-            lr_exch_ = alpha;
             global_exch_ = alpha + beta;
-            if (std::abs(1.0 - lr_exch_) > 1.e14) {
-                throw PSIEXCEPTION(
-                    "PSI Currently cannot computation functionals with less than 100%% long range "
-                    "exact exchange.\n");
-            }
+            lr_exch_ = std::abs(beta);
 
         } else {
             global_exch_ = xc_hyb_exx_coef(&xc_functional_);

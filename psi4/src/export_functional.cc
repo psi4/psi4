@@ -67,6 +67,7 @@ void export_functional(py::module &m)
         def("x_omega", &SuperFunctional::x_omega, "Range-seperated exchange parameter.").
         def("c_omega", &SuperFunctional::c_omega, "Range-seperated correlation parameter.").
         def("x_alpha", &SuperFunctional::x_alpha, "Amount of exact HF exchange.").
+        def("x_beta", &SuperFunctional::x_beta, "Amount of exact HF exchange.").
         def("c_alpha", &SuperFunctional::c_alpha, "Amount of MP2 correlation.").
         def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "Same-spin correlation scaling.").
         def("c_os_alpha", &SuperFunctional::c_os_alpha, "Opposite-spin correlation scaling.").

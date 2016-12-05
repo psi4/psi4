@@ -81,6 +81,7 @@ protected:
 
     std::vector<std::shared_ptr<Functional> > x_functionals_;
     double x_alpha_;
+    double x_beta_;
     double x_omega_;
 
     // => Correlation-side DFA functionals <= //
@@ -158,6 +159,7 @@ public:
     void set_x_omega(double omega);
     void set_c_omega(double omega);
     void set_x_alpha(double alpha);
+    void set_x_beta(double beta);
     void set_c_alpha(double alpha);
     void set_c_ss_alpha(double alpha);
     void set_c_os_alpha(double alpha);
@@ -175,6 +177,7 @@ public:
     double x_omega() const { return x_omega_; }
     double c_omega() const { return c_omega_; }
     double x_alpha() const { return x_alpha_; }
+    double x_beta() const { return x_beta_; }
     double c_alpha() const { return c_alpha_; }
     double c_ss_alpha() const { return c_ss_alpha_; }
     double c_os_alpha() const { return c_os_alpha_; }

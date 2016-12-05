@@ -47,6 +47,7 @@ void SuperFunctional::common_init() {
     x_omega_ = 0.0;
     c_omega_ = 0.0;
     x_alpha_ = 0.0;
+    x_beta_ = 0.0;
     c_alpha_ = 0.0;
     c_ss_alpha_ = 0.0;
     c_os_alpha_ = 0.0;
@@ -75,6 +76,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_citation(xc_func->citation());
     sup->set_x_omega(xc_func->omega());
     sup->set_x_alpha(xc_func->global_exchange());
+    sup->set_x_beta(xc_func->lr_exchange());
     sup->add_c_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
     sup->libxc_xc_func_ = true;
 
@@ -122,6 +124,7 @@ void SuperFunctional::print(std::string out, int level) const {
     printer->Printf("    X_LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
     printer->Printf("    X_Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
     printer->Printf("    X_Alpha      = %14.6E\n", x_alpha_);
+    printer->Printf("    X_Beta       = %14.6E\n", x_beta_);
     printer->Printf("    X_Omega      = %14.6E\n", x_omega_);
     if (is_c_lrc() || is_c_hybrid()) {
         printer->Printf("    C_LRC        = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
@@ -186,7 +189,7 @@ void SuperFunctional::print(std::string out, int level) const {
         if ((x_omega_ + x_alpha_) > 0.0) {
             printer->Printf("   => Exact (HF) Exchange <=\n\n");
             if (x_omega_) {
-                printer->Printf("    %6.4f %7s [omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR",
+                printer->Printf("    %6.4f %7s [omega = %6.4f]\n", (x_beta_), "HF,LR",
                                 x_omega_);
             }
             if (x_alpha_) {
@@ -279,6 +282,10 @@ void SuperFunctional::set_c_omega(double omega) {
 void SuperFunctional::set_x_alpha(double alpha) {
     can_edit();
     x_alpha_ = alpha;
+}
+void SuperFunctional::set_x_beta(double beta) {
+    can_edit();
+    x_beta_ = beta;
 }
 void SuperFunctional::set_c_alpha(double alpha) {
     can_edit();

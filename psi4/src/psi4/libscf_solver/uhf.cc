@@ -204,7 +204,7 @@ void UHF::form_G()
     Gb_->add(J_);
 
     double alpha = functional_->x_alpha();
-    double beta = 1.0 - alpha;
+    double beta = functional_->x_beta();
 
     if (alpha != 0.0) {
         Ga_->axpy(-alpha, Ka_);
@@ -345,7 +345,7 @@ double UHF::compute_E()
 
     double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
-    double beta = 1.0 - alpha;
+    double beta = functional_->x_beta();
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(Ka_);
         exchange_E -= alpha * Db_->vector_dot(Kb_);
