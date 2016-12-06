@@ -372,6 +372,162 @@ double UHF::compute_E()
 
     return Etotal;
 }
+std::vector<SharedMatrix> UHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
+    if ((x_vec.size() % 2) != 0){
+        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+    }
+
+    // Compute Fij x_ia - Fab x_ia
+
+    SharedMatrix Ca_occ = Ca_subset("SO", "OCC");
+    SharedMatrix Ca_vir = Ca_subset("SO", "VIR");
+    SharedMatrix Cb_occ = Cb_subset("SO", "OCC");
+    SharedMatrix Cb_vir = Cb_subset("SO", "VIR");
+
+    std::vector<SharedMatrix> ret;
+    for (size_t i = 0; i < x_vec.size() / 2; i++) {
+        if ((x_vec[2 * i]->rowspi() != Ca_occ->colspi()) || (x_vec[2 * i]->colspi() != Ca_vir->colspi())){
+            throw PSIEXCEPTION(
+                "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        }
+
+        if ((x_vec[2 * i + 1]->rowspi() != Cb_occ->colspi()) || (x_vec[2 * i + 1]->colspi() != Cb_vir->colspi())){
+            throw PSIEXCEPTION(
+                "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        }
+
+        // Alpha
+        SharedMatrix tmp1 = Matrix::triplet(Ca_occ, Fa_, Ca_occ, true, false, false);
+        SharedMatrix result = Matrix::doublet(tmp1, x_vec[2 * i], false, false);
+
+        SharedMatrix tmp2 = Matrix::triplet(x_vec[2 * i], Ca_vir, Fa_, false, true, false);
+        result->gemm(false, false, -1.0, tmp2, Ca_vir, 1.0);
+
+        ret.push_back(result);
+
+        // Beta
+        tmp1 = Matrix::triplet(Cb_occ, Fb_, Cb_occ, true, false, false);
+        result = Matrix::doublet(tmp1, x_vec[2 * i + 1], false, false);
+
+        tmp2 = Matrix::triplet(x_vec[2 * i + 1], Cb_vir, Fb_, false, true, false);
+        result->gemm(false, false, -1.0, tmp2, Cb_vir, 1.0);
+
+        ret.push_back(result);
+
+    }
+
+    return ret;
+}
+std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis) {
+    if ((x_vec.size() % 2) != 0){
+        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+    }
+
+    // Compute Fij x_ia - Fab x_ia
+
+    SharedMatrix Ca_occ = Ca_subset("SO", "OCC");
+    SharedMatrix Ca_vir = Ca_subset("SO", "VIR");
+    SharedMatrix Cb_occ = Cb_subset("SO", "OCC");
+    SharedMatrix Cb_vir = Cb_subset("SO", "VIR");
+
+    // Setup jk
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    Cl.clear();
+    Cr.clear();
+
+    int nvecs = x_vec.size() / 2;
+
+    // We actually want to compute all alpha then all beta, its smart enough to figure out the half transform
+    for (size_t i = 0; i < nvecs; i++) {
+        if ((x_vec[2 * i]->rowspi() != Ca_occ->colspi()) || (x_vec[2 * i]->colspi() != Ca_vir->colspi())){
+            throw PSIEXCEPTION(
+                "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        }
+
+        Cl.push_back(Ca_occ);
+
+        SharedMatrix R = Matrix::doublet(Ca_vir, x_vec[2 * i], false, true);
+        R->scale(-1.0);
+        Cr.push_back(R);
+
+    }
+    for (size_t i = 0; i < nvecs; i++) {
+
+        if ((x_vec[2 * i + 1]->rowspi() != Cb_occ->colspi()) || (x_vec[2 * i + 1]->colspi() != Cb_vir->colspi())){
+            throw PSIEXCEPTION(
+                "SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        }
+        Cl.push_back(Cb_occ);
+
+        SharedMatrix R = Matrix::doublet(Cb_vir, x_vec[2 * i + 1], false, true);
+        R->scale(-1.0);
+        Cr.push_back(R);
+    }
+
+    // Compute JK
+    jk_->compute();
+
+    Cl.clear();
+    Cr.clear();
+
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+
+    // Build return vector
+    std::vector<SharedMatrix> ret;
+    if (combine){
+        // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
+        for (size_t i = 0; i < nvecs; i++){
+            J[i]->scale(2.0);
+            J[i]->axpy(2.0, J[nvecs + i]);
+            J[nvecs + i]->copy(J[i]);
+
+            J[i]->subtract(K[i]);
+            J[i]->subtract(K[i]->transpose());
+            ret.push_back(J[i]);
+
+            J[nvecs + i]->subtract(K[nvecs + i]);
+            J[nvecs + i]->subtract(K[nvecs + i]->transpose());
+            ret.push_back(J[nvecs + i]);
+        }
+    } else{
+        for (size_t i = 0; i < nvecs; i++){
+            ret.push_back(J[i]);
+            ret.push_back(J[nvecs + i]);
+            ret.push_back(K[i]);
+            ret.push_back(K[nvecs + i]);
+       }
+    }
+
+    // Transform if needed
+    if (return_basis == "SO"){
+        /* pass */
+    } else if (return_basis == "MO"){
+        for (size_t i = 0; i < nvecs; i++){
+            ret[2 * i] = Matrix::triplet(Ca_occ, ret[2 * i], Ca_vir, true, false, false);
+            ret[2 * i + 1] = Matrix::triplet(Cb_occ, ret[2 * i + 1], Cb_vir, true, false, false);
+       }
+    } else{
+        throw PSIEXCEPTION("SCF::twoel_Hx: return_basis option not understood.");
+    }
+
+    return ret;
+}
+std::vector<SharedMatrix> UHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
+
+    // Compute quantities
+    std::vector<SharedMatrix> onel = onel_Hx(x_vec);
+    std::vector<SharedMatrix> twoel = twoel_Hx(x_vec, true, "MO");
+
+    for (size_t i = 0; i < onel.size(); i++){
+        onel[i]->add(twoel[i]);
+    }
+
+    return onel;
+}
+
 void UHF::Hx(SharedMatrix x_a, SharedMatrix IFock_a, SharedMatrix Cocc_a,
              SharedMatrix Cvir_a, SharedMatrix ret_a,
              SharedMatrix x_b, SharedMatrix IFock_b, SharedMatrix Cocc_b,
