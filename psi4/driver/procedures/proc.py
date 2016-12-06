@@ -2172,13 +2172,11 @@ def run_ccenergy(name, **kwargs):
     if core.get_global_option('RUN_CCTRANSORT'):
         core.cctransort(ref_wfn)
     else:
-        # try:
-        from psi4.driver.pasture import addins
-        addins.ccsort_transqt2(ref_wfn)
-        # except:
-        #     raise ValidationError("Pasture addins import failed "
-        #                           "ccsort/transqt2 legacy code "
-        #                           "has not been installed correctly ")
+        try:
+            from psi4.driver.pasture import addins
+            addins.ccsort_transqt2(ref_wfn)
+        except:
+            raise PastureRequiredError("RUN_CCTRANSORT")
 
 
     ccwfn = core.ccenergy(ref_wfn)
@@ -2239,7 +2237,6 @@ def run_bccd(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'DELETE_TEI'],
         ['TRANSQT2', 'WFN'],
         ['CCSORT', 'WFN'],
         ['CCENERGY', 'WFN'])
@@ -2272,21 +2269,21 @@ def run_bccd(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     core.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     bcc_iter_cnt = 0
-    while True:
-        if (core.get_global_option("RUN_CCTRANSORT")):
-            core.cctransort(ref_wfn)
-        else:
-            # try:
+    if (core.get_global_option("RUN_CCTRANSORT")):
+        sort_func = core.cctransort
+    else:
+        try:
             from psi4.driver.pasture import addins
-            addins.ccsort_transqt2(ref_wfn)
-            # except:
-                # raise ValidationError("Pasture addins import failed "
-                #                   "ccsort/transqt2 legacy code "
-                #                   "has not been installed correctly ")
+            core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
+            sort_func = addins.ccsort_transqt2
+        except:
+            raise PastureRequiredError("RUN_CCTRANSORT")
+
+    while True:
+        sort_func(ref_wfn)
 
         ref_wfn = core.ccenergy(ref_wfn)
         core.print_out('Brueckner convergence check: %s\n' % bool(core.get_variable('BRUECKNER CONVERGED')))

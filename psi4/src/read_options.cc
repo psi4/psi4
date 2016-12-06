@@ -1594,6 +1594,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEVEL", 2);
     /*- Force conversion of ROHF MOs to semicanonical MOs to run UHF-based energies -*/
     options.add_bool("SEMICANONICAL", false);
+    /*- Use cctransort module NOTE: Turning this option off requires separate
+     * installation of  ccsort and transqt2 modules, see http://github.com/psi4/psi4pasture -*/
+    options.add_bool("RUN_CCTRANSORT", true);
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Computes the triples component of CCSD(T) energies (and gradients, if necessary). -*/
