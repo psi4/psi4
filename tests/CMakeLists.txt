@@ -104,7 +104,7 @@ endforeach()
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 add_subdirectory(json)
-add_subdirectory(pasture)
+add_subdirectory(pasture-ccsorttransqt2)
 
 
 
