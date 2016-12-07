@@ -175,11 +175,6 @@ void WAbEi_UHF(void)
    * W1(bE,iA) sort axpy(qrsp) WAbEi (Ei,Ab)
    *
    */
-    //Move to some setup function***
-    global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 24, 28, 24, 28, 0 , "F <Ia|Bc>");
-    global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, qrps, 29,24, "F <Ia|Bc> (aB,Ic)");
-    //Move to some setup function***
-  global_dpd_->buf4_close(&F);
 
   /** Z1a = t_i^f t_M^A + T_Mi^Af **/
   build_Z1A_ABAB();

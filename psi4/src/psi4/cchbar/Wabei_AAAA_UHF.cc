@@ -202,11 +202,6 @@ void WABEI_UHF(void)
    *
    **/
   build_Z1_AAAA();//Z(IA,MF)
-  //Move to setup
-  global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 21, 5, 21, 5, 1 , "F <AI|BC>");
-  global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, prqs, 5, 20, "F <AI||BC> (AB,IC)");
-  global_dpd_->buf4_close(&F);
-  //move to setup
 
   global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 20, 20, 20, 20, 0, "Z1(IA,MF)");
   global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 5, 20, 5, 20, 0, "F <AI||BC> (AB,IC)");
