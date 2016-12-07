@@ -128,21 +128,33 @@ class PastureRequiredError(PsiException):
     To Build Psi4Pasture and install the required modules within your current
     Psi4 installation
 
-    >>> clone
-    >>> cmake + args
-    >>> install
+    >>> # clone the pasture repo
+    >>> git clone https://github.com/psi4/psi4pasture.git
 
-    See <some url where install docs will be> for more details
+    >>> cmake -H. -Bobjdir -Dpsi4_DIR=$PSI4_INSTALL_PREFIX/share/cmake/psi4 {module_args}
+    >>> # $PSI4_INSTALL_PREFIX is the $CMAKE_INSTALL_PREFIX for the psi4
+    >>> # install you want to install pasture to
 
-    Or to install using psi4's own build system see <build docs>
+    >>> # build + install install location is detected automatically
+    >>> cd objdir
+    >>> make && make install
+
+    See https://github.com/psi4/psi4pasture for more details
+
+    Or to install using psi4's own build system add
+         {module_args}
+    to cmake command line when building psi4.
     """
     pasture_required_modules = {
             "RUN_CCTRANSORT": ["ccsort", "transqt2"]
             }
+
     def __init__(self, option):
         mods_str = ", ".join([m for m in PastureRequiredError.pasture_required_modules[option]])
         msg = PastureRequiredError.msg_tmpl.format(opt = option, modlist = mods_str)
         PsiException.__init__(self, msg)
-        msg += PastureRequiredError.install_instructions
+        module_cmake_args = " ".join([ "-DENABLE_{}=ON".format(module)
+            for module in PastureRequiredError.pasture_required_modules[option]])
+        msg += PastureRequiredError.install_instructions.format(module_args = module_cmake_args)
         self.message = '\nPsiException: {}\n\n'.format(msg)
         core.print_out(self.message)
