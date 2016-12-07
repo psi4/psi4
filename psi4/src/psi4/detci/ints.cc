@@ -149,8 +149,7 @@ void CIWavefunction::transform_mcscf_integrals(bool approx_only) {
         transform_dfmcscf_ints(approx_only);
     } 
     else if (Parameters_->mcscf_type == "AO")
-        ///Have not implemented a compute TS algorithm
-        transform_mcscf_ints_ao(true);
+        transform_mcscf_ints_ao(approx_only);
     else {
         transform_mcscf_ints(approx_only);
     }
@@ -440,13 +439,8 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     {
         setup_mcscf_ints_ao();
     }
-    int nact = CalcInfo_->num_ci_orbs;
 
-    //TODO:  Figure out why frozen core does not work
-    // if(CalcInfo_->frozen_docc.sum() > 0) {
-    //     outfile->Printf("\n AO-CASSCF does not work with frozen core.  ");
-    //     throw PSIEXCEPTION("Do not have a working AO-CASSCF code with frozen core");
-    // }
+    int nact = CalcInfo_->num_ci_orbs;
     int nrot = nmo_ - CalcInfo_->num_fzc_orbs - CalcInfo_->num_fzv_orbs;
 
     // Transform from the SO to the AO basis for the C matrix.
