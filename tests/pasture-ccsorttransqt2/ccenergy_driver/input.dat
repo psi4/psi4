@@ -1,11 +1,4 @@
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
-pasture_availible = False
-try:
-    from psi4.driver import pasture
-    pasture_availible = True
-except ImportError:
-    pass
-
 memory 250 mb
 
 molecule h2o {
@@ -16,9 +9,8 @@ molecule h2o {
 
 set {
     basis 6-31G**
+    run_cctransort off
 }
-if pasture_availible:
-    set global run_cctransort off
 
 optimize('ccsd')
 

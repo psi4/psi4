@@ -1,10 +1,4 @@
 #! ROHF and UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
-pasture_availible = False
-try:
-    from psi4.driver import pasture
-    pasture_availible = True
-except ImportError:
-    pass
 memory 250 mb
 
 molecule ch2 {
@@ -20,9 +14,8 @@ set {
    reference    uhf
    basis        cc-pVDZ
    freeze_core  true
+   run_cctransort off
 }
-if pasture_availible:
-    set global run_cctransort off
 
 energy("bccd(t)")
 
