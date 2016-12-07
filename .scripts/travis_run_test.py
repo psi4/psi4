@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import re
 import sys
 import time
 import subprocess
@@ -7,7 +6,7 @@ import subprocess
 
 # <<<  run ctest  >>>
 retcode = subprocess.Popen(['ctest', '-j2', '-L', 'quick'], bufsize=0,
-                            stdout=subprocess.PIPE, universal_newlines=True)
+                           stdout=subprocess.PIPE, universal_newlines=True)
 print_all = False
 ctestout = ''
 while True:
@@ -24,7 +23,7 @@ while True:
     start_line = ('Start' in sdata)
     if test_line or start_line or print_all:
         sys.stdout.write(data)  # screen
-    #print sys.stdout.write(data)
+    # print sys.stdout.write(data)
     ctestout += data  # string
 
 while True:
@@ -43,4 +42,3 @@ ctestout = str(ctest_exit_status) + "\n" + ctestout
 
 with open('full_ctest_output.dat', 'w') as outfile:
     outfile.write(ctestout)
-

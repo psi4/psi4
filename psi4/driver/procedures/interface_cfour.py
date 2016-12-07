@@ -31,6 +31,7 @@ Also calls to qcdb module are here and not elsewhere in driver.
 Organizationally, this module isolates qcdb code from psi4 code.
 
 """
+# flake8: noqa
 from __future__ import print_function
 from __future__ import absolute_import
 import shutil

@@ -31,19 +31,23 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver import p4const
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.p4util.exceptions import *  # noqa: F403
 
 
-def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials=True, weighted=True, polynomial_order=4):
+def least_squares_fit_polynomial(xvals, fvals, localization_point,
+                                 no_factorials=True, weighted=True,
+                                 polynomial_order=4):
     """Performs and unweighted least squares fit of a polynomial, with specified order
        to an array of input function values (fvals) evaluated at given locations (xvals).
-       See http://dx.doi.org/10.1063/1.4862157, particularly eqn (7) for details. """
+       See http://dx.doi.org/10.1063/1.4862157, particularly eqn (7) for details.
+
+    """
     xpts = np.array(xvals) - localization_point
     if weighted:
         R = 1.0
         p_nu = 1
         epsilon = 1e-3
-        zvals = np.square(xpts/R)
+        zvals = np.square(xpts / R)
         weights = np.exp(-zvals) / (zvals**p_nu + epsilon**p_nu)
     else:
         weights = None
@@ -51,13 +55,13 @@ def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials
     # Remove the 1/n! coefficients
     if no_factorials:
         scalefac = 1.0
-        for n in range(2,polynomial_order+1):
+        for n in range(2, polynomial_order + 1):
             scalefac *= n
             fit[n] *= scalefac
     return fit
 
 
-def anharmonicity(rvals, energies, plot_fit='', mol = None):
+def anharmonicity(rvals, energies, plot_fit='', mol=None):
     """Generates spectroscopic constants for a diatomic molecules.
        Fits a diatomic potential energy curve using a weighted least squares approach
        (c.f. http://dx.doi.org/10.1063/1.4862157, particularly eqn. 7), locates the minimum
@@ -81,12 +85,13 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
            is available.  Set to 'screen' to generate an interactive plot on the screen instead. If a filename is
            provided, the image type is determined by the extension; see matplotlib for supported file types.
 
-       :returns: (*dict*) Keys: "re", "r0", "we", "wexe", "nu", "ZPVE(harmonic)", "ZPVE(anharmonic)", "Be", "B0", "ae", "De"
-                 corresponding to the spectroscopic constants in cm-1
+       :returns: (*dict*) Keys: "re", "r0", "we", "wexe", "nu", "ZPVE(harmonic)",
+           "ZPVE(anharmonic)", "Be", "B0", "ae", "De"
+           corresponding to the spectroscopic constants in cm-1
     """
 
-    angstrom_to_bohr = 1.0 / p4const.psi_bohr2angstroms
-    angstrom_to_meter = 10e-10;
+    # angstrom_to_bohr = 1.0 / p4const.psi_bohr2angstroms
+    angstrom_to_meter = 10e-10
 
     # Make sure the input is valid
     if len(rvals) != len(energies):
@@ -106,56 +111,56 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     m2 = molecule.mass(1)
 
     # Optimize the geometry, refitting the surface around each new geometry
-    core.print_out("\nOptimizing geometry based on current surface:\n\n");
+    core.print_out("\nOptimizing geometry based on current surface:\n\n")
     re = np.mean(rvals)
     maxit = 30
     thres = 1.0e-9
     for i in range(maxit):
-        derivs = least_squares_fit_polynomial(rvals,energies,localization_point=re)
-        e,g,H = derivs[0:3]
+        derivs = least_squares_fit_polynomial(rvals, energies, localization_point=re)
+        e, g, H = derivs[0:3]
         core.print_out("       E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
         if abs(g) < thres:
             break
-        re -= g/H;
-        if i == maxit-1:
+        re -= g / H
+        if i == maxit - 1:
             raise ConvergenceError("diatomic geometry optimization", maxit)
-    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g));
+    core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
     if re < min(rvals):
         raise Exception("Minimum energy point is outside range of points provided.  Use a lower range of r values.")
     if re > max(rvals):
         raise Exception("Minimum energy point is outside range of points provided.  Use a higher range of r values.")
 
     # Convert to convenient units, and compute spectroscopic constants
-    d0,d1,d2,d3,d4 = derivs*p4const.psi_hartree2aJ
+    d0, d1, d2, d3, d4 = derivs * p4const.psi_hartree2aJ
     core.print_out("\nEquilibrium Energy %20.14f Hartrees\n" % e)
     core.print_out("Gradient           %20.14f\n" % g)
     core.print_out("Quadratic Force Constant %14.7f MDYNE/A\n" % d2)
     core.print_out("Cubic Force Constant     %14.7f MDYNE/A**2\n" % d3)
     core.print_out("Quartic Force Constant   %14.7f MDYNE/A**3\n" % d4)
 
-    hbar = p4const.psi_h / (2.0 * pi)
-    mu = ((m1*m2)/(m1+m2))*p4const.psi_amu2kg
-    we = 5.3088375e-11*sqrt(d2/mu)
-    wexe = (1.2415491e-6)*(we/d2)**2 * ((5.0*d3*d3)/(3.0*d2)-d4)
+    # hbar = p4const.psi_h / (2.0 * pi)
+    mu = ((m1 * m2) / (m1 + m2)) * p4const.psi_amu2kg
+    we = 5.3088375e-11 * sqrt(d2 / mu)
+    wexe = (1.2415491e-6) * (we / d2)**2 * ((5.0 * d3 * d3) / (3.0 * d2) - d4)
 
     # Rotational constant: Be
-    I = ((m1*m2)/(m1+m2)) * p4const.psi_amu2kg * (re * angstrom_to_meter)**2
+    I = ((m1 * m2) / (m1 + m2)) * p4const.psi_amu2kg * (re * angstrom_to_meter)**2
     B = p4const.psi_h / (8.0 * pi**2 * p4const.psi_c * I)
 
     # alpha_e and quartic centrifugal distortion constant
-    ae = -(6.0 * B**2 / we) * ((1.05052209e-3*we*d3)/(sqrt(B * d2**3))+1.0)
-    de = 4.0*B**3 / we**2
+    ae = -(6.0 * B**2 / we) * ((1.05052209e-3 * we * d3) / (sqrt(B * d2**3)) + 1.0)
+    de = 4.0 * B**3 / we**2
 
     # B0 and r0 (plus re check using Be)
     B0 = B - ae / 2.0
     r0 = sqrt(p4const.psi_h / (8.0 * pi**2 * mu * p4const.psi_c * B0))
     recheck = sqrt(p4const.psi_h / (8.0 * pi**2 * mu * p4const.psi_c * B))
-    r0 /= angstrom_to_meter;
-    recheck /= angstrom_to_meter;
+    r0 /= angstrom_to_meter
+    recheck /= angstrom_to_meter
 
     # Fundamental frequency nu
-    nu = we - 2.0 * wexe;
-    zpve_nu = 0.5 * we - 0.25 * wexe;
+    nu = we - 2.0 * wexe
+    zpve_nu = 0.5 * we - 0.25 * wexe
 
     # Generate pretty pictures, if requested
     if(plot_fit):
@@ -178,11 +183,11 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
             # Plot vibrational energy levels
             we_au = we / p4const.psi_hartree2wavenumbers
             wexe_au = wexe / p4const.psi_hartree2wavenumbers
-            coefs2 = [ dvals[2], dvals[1], dvals[0] ]
-            coefs4 = [ dvals[4], dvals[3], dvals[2], dvals[1], dvals[0] ]
+            coefs2 = [dvals[2], dvals[1], dvals[0]]
+            coefs4 = [dvals[4], dvals[3], dvals[2], dvals[1], dvals[0]]
             for n in range(3):
-                Eharm = we_au*(n+0.5)
-                Evpt2 = Eharm - wexe_au*(n+0.5)**2
+                Eharm = we_au * (n + 0.5)
+                Evpt2 = Eharm - wexe_au * (n + 0.5)**2
                 coefs2[-1] = -Eharm
                 coefs4[-1] = -Evpt2
                 roots2 = np.roots(coefs2)
@@ -194,22 +199,22 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
                 plt.plot(xvals2, [Eharm, Eharm], 'b', linewidth=1)
                 plt.plot(xvals4, [Evpt2, Evpt2], 'g', linewidth=1)
                 maxE = Eharm
-                maxR = np.max([xvals2,xvals4])
-                minR = np.min([xvals2,xvals4])
+                maxR = np.max([xvals2, xvals4])
+                minR = np.min([xvals2, xvals4])
 
             # Find ranges for the plot
             dE = maxE - minE
-            minE -= 0.2*dE
-            maxE += 0.4*dE
+            minE -= 0.2 * dE
+            maxE += 0.4 * dE
             dR = maxR - minR
-            minR -= 0.2*dR
-            maxR += 0.2*dR
+            minR -= 0.2 * dR
+            maxR += 0.2 * dR
 
             # Generate the fitted PES
             xpts = np.linspace(minR, maxR, 1000)
-            xrel = xpts-re
-            xpows = xrel[:,np.newaxis] ** range(5)
-            fit2 = np.einsum('xd,d', xpows[:,0:3], dvals[0:3])
+            xrel = xpts - re
+            xpows = xrel[:, np.newaxis]**range(5)
+            fit2 = np.einsum('xd,d', xpows[:, 0:3], dvals[0:3])
             fit4 = np.einsum('xd,d', xpows, dvals)
 
             # Make / display the plot
@@ -244,17 +249,16 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
     core.print_out("B0       = %10.4f cm-1\n" % B0)
     core.print_out("ae       = %10.4f cm-1\n" % ae)
     core.print_out("De       = %10.7f cm-1\n" % de)
-    results = {
-               "re"               :  re,
-               "r0"               :  r0,
-               "we"               :  we,
-               "wexe"             :  wexe,
-               "nu"               :  nu,
-               "ZPVE(harmonic)"   :  zpve_nu,
-               "ZPVE(anharmonic)" :  zpve_nu,
-               "Be"               :  B,
-               "B0"               :  B0,
-               "ae"               :  ae,
-               "De"               :  de
-              }
+    results = {"re": re,
+               "r0": r0,
+               "we": we,
+               "wexe": wexe,
+               "nu": nu,
+               "ZPVE(harmonic)": zpve_nu,
+               "ZPVE(anharmonic)": zpve_nu,
+               "Be": B,
+               "B0": B0,
+               "ae": ae,
+               "De": de
+               }
     return results

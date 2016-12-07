@@ -25,9 +25,10 @@
 # @END LICENSE
 #
 
+import os
+import atexit
 
 # Figure out psidatadir: envvar trumps staged/installed
-import os
 psi4_module_loc = os.path.dirname(os.path.abspath(__file__))
 pymod = os.path.normpath(os.path.sep.join(['@PYMOD_INSTALL_LIBDIR@', '@CMAKE_INSTALL_LIBDIR@', 'psi4']))
 if pymod.startswith(os.path.sep + os.path.sep):
@@ -46,7 +47,7 @@ elif "CMAKE_INSTALL_DATADIR" in data_dir:
 data_dir = os.path.abspath(data_dir)
 if not os.path.isdir(data_dir):
     raise KeyError("Unable to read the Psi4 Python folder - check the PSIDATADIR environmental variable"
-                    "      Current value of PSIDATADIR is %s" % data_dir)
+                   "      Current value of PSIDATADIR is %s" % data_dir)
 os.environ["PSIDATADIR"] = data_dir
 
 # Init core
@@ -58,21 +59,19 @@ except ImportError as err:
     else:
         raise ImportError("{0}".format(err))
 
-from psi4.core import set_output_file, set_variable
+from psi4.core import set_output_file, set_variable  # noqa: F401
 core.initialize()
 core.efp_init()
 
 # Cleanup core at exit
-import atexit
 atexit.register(core.set_legacy_molecule, None)
 atexit.register(core.clean)
 atexit.register(core.finalize)
 
 
-from .driver import *
-from .header import print_header
-from .metadata import __version__, version_formatter
+from .driver import *  # noqa: F401
+from .header import print_header  # noqa: F401
+from .metadata import __version__, version_formatter  # noqa: F401
 
 # A few extraneous functions
-from .extras import get_input_directory
-
+from .extras import get_input_directory  # noqa: F401

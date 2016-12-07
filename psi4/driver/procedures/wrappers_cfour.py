@@ -33,6 +33,7 @@ Organizationally, this module isolates qcdb code from psi4 code.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+# flake8: noqa
 import shutil
 import os
 import subprocess

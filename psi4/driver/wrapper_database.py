@@ -31,6 +31,7 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 
 """
 from __future__ import absolute_import
+# flake8: noqa
 import re
 import os
 import math

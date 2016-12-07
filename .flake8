@@ -1,0 +1,22 @@
+[flake8]
+show_source = True
+max-line-length=120
+exclude = psi4/driver/qcdb/,  
+          psi4/driver/p4const/,
+          psi4/driver/p4util/,
+          psi4/driver/util/,
+          psi4/driver/procedures/mcscf/,
+          psi4/driver/procedures/findif_response_utils/,
+          psi4/share/psi4/scripts/,
+          psi4/share/psi4/databases/,
+          psi4/share/psi4/fsapt/,
+          psi4/src/psi4/libfunctional/,
+          tests/psithon2/,
+          tests/dftd3/psithon2/,
+          tests/python/,
+          tests/json/,
+          doc/,
+          plugins/,
+ignore =
+    # imports from core
+    F999,

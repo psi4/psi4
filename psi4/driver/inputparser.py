@@ -31,8 +31,8 @@ module calls that access the C++ side of Psi4.
 
 """
 
-## Force Python 3 print syntax, if this is python 2.X
-#if sys.hexversion < 0x03000000:
+# Force Python 3 print syntax, if this is python 2.X
+# if sys.hexversion < 0x03000000:
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -41,7 +41,7 @@ import os
 import sys
 import random
 from psi4.driver import pubchem
-from psi4.driver.p4util.exceptions import *
+from psi4.driver.p4util.exceptions import *  # noqa: F403
 from psi4 import core
 
 
@@ -95,6 +95,7 @@ def quotify(string, isbasis=False):
         wordre = re.compile(r'(([$]?)([-+()*.\w\"\'/\\]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
+
 
 def dequotify(string):
     if string[0] == '"' and string[-1] == '"':
@@ -176,13 +177,13 @@ def process_set_commands(matchobj):
 def process_from_file_command(matchobj):
     """Function that process a match of ``from_file`` in molecule block."""
     string = matchobj.group(2)
-    mol=core.mol_from_file(string,1)
-    tempmol=[line for line in mol.split('\n') if line.strip() != '']
-    mol2=set(tempmol)
-    mol=""
+    mol = core.mol_from_file(string, 1)
+    tempmol = [line for line in mol.split('\n') if line.strip() != '']
+    mol2 = set(tempmol)
+    mol = ""
     for i in mol2:
-           mol+=i
-           mol+="\n"
+        mol += i
+        mol += "\n"
     return mol
 
 
@@ -220,7 +221,7 @@ def process_pubchem_command(matchobj):
             for result in results:
                 msg += "%s" % (result)
                 if result.name().lower() == string.lower():
-                    #We've found an exact match!
+                    # We've found an exact match!
                     return result.getMoleculeString()
             return msg
 
@@ -233,7 +234,7 @@ def process_molecule_command(matchobj):
     pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = pubchemre.sub(process_pubchem_command, geometry)
     from_filere = re.compile(r'^(\s*from_file\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
-    geometry = from_filere.sub(process_from_file_command,geometry)
+    geometry = from_filere.sub(process_from_file_command, geometry)
     molecule = spaces
 
     molecule += 'core.efp_init()\n'  # clear EFP object before Molecule read in
@@ -260,7 +261,6 @@ def process_literal_blocks(matchobj):
 def process_cfour_command(matchobj):
     """Function to process match of ``cfour name? { ... }``."""
     spaces = matchobj.group(1)
-    name = matchobj.group(2)
     cfourblock = matchobj.group(3)
 
     literalkey = str(random.randint(0, 99999))
@@ -326,7 +326,7 @@ def process_basis_block(matchobj):
     command_lines = re.split('\n', matchobj.group(4))
 
     symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
-    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)  # noqa: E501
     all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
@@ -366,7 +366,8 @@ def process_basis_block(matchobj):
             result += """%s    basstrings['%s'] = \"\"\"\n%s\n\"\"\"\n""" % \
                 (spaces, basname(name), basblock[0])
         else:
-            message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+            message = ("Conflicting basis set specification: assign lines present "
+                       "but shells have no [basname] label.")
             raise TestComparisonError(message)
     else:
         # case with specs separated by [basname] markers
@@ -383,17 +384,14 @@ def process_basis_block(matchobj):
 
 def process_pcm_command(matchobj):
     """Function to process match of ``pcm name? { ... }``."""
-    spacing = str(matchobj.group(1)) # Ignore..
-    name = str(matchobj.group(2)) # Ignore..
     block = str(matchobj.group(3))
-    fp = open('pcmsolver.inp', 'w')
-    fp.write(block)
-    fp.close()
+    with open('pcmsolver.inp', 'w') as fp:
+        fp.write(block)
     import pcm_placeholder
     sys.path.append(pcm_placeholder.PCMSolver_PARSE_DIR)
     import pcmsolver
     pcmsolver.parse_pcm_input('pcmsolver.inp')
-    return "" # The file has been written to disk; nothing needed in Psi4 input
+    return ""  # The file has been written to disk; nothing needed in Psi4 input
 
 
 def process_external_command(matchobj):
@@ -463,9 +461,11 @@ def process_external_command(matchobj):
         mobj = charge_re.match(line)
         if mobj:
             if units == 'ang':
-                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
+                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2),
+                                                                       mobj.group(3), mobj.group(4))
             if units == 'bohr':
-                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
+                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spaces, mobj.group(1), mobj.group(2),
+                                                                   mobj.group(3), mobj.group(4))
         else:
             lines2.append(line)
     lines = lines2
@@ -653,7 +653,7 @@ def process_input(raw_input, print_level=1):
         core.print_out("--------------------------------------------------------------------------\n")
         core.flush_outfile()
 
-    #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
+    # NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
     #   which has the regex capture group:
     #
@@ -668,7 +668,7 @@ def process_input(raw_input, print_level=1):
 
     # Process "cfour name? { ... }"
     cfour = re.compile(r'^(\s*?)cfour[=\s]*(\w*?)\s*\{(.*?)\}',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+                       re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(cfour, process_cfour_command, raw_input)
 
     # Return from handling literal blocks to normal processing
@@ -681,7 +681,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(comment, '#', temp)
 
     # Check the brackets and parentheses match up, as long as this is not a pickle input file
-    #if not re.search(r'pickle_kw', temp):
+    # if not re.search(r'pickle_kw', temp):
     #    check_parentheses_and_brackets(temp, 1)
 
     # First, remove everything from lines containing only spaces
@@ -721,7 +721,7 @@ def process_input(raw_input, print_level=1):
 
     # Process "pcm name? { ... }"
     pcm = re.compile(r'^(\s*?)pcm[=\s]*(\w*?)\s*\{(.*?)^\}',
-                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+                     re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(pcm, process_pcm_command, temp)
 
     # Then remove repeated newlines
@@ -734,8 +734,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "core.print_out()"
-    #print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
-    #temp = re.sub(print_string, process_print_command, temp)
+    # deprecated as of 1.1
 
     # Process "memory ... "
     memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
@@ -743,7 +742,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(memory_string, process_memory_command, temp)
 
     # Process "basis name? { ... }"
-    basis_block = re.compile(r'^(\s*?)(basis|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt)[=\s]*(\w*?)\s*\{(.*?)\}',
+    basis_block = re.compile(r'^(\s*?)(basis|df_basis_scf|df_basis_mp2|df_basis_cc|df_basis_sapt)[=\s]*(\w*?)\s*\{(.*?)\}',  # noqa: E501
                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
 
@@ -752,6 +751,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(lit_block, process_literal_blocks, temp)
 
     future_imports = []
+
     def future_replace(m):
         future_imports.append(m.group(0))
         return ''
@@ -767,7 +767,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from psi4.driver.diatomic import anharmonicity\n'
     imports += 'from psi4.driver.gaussian_n import *\n'
     imports += 'from psi4.driver.aliases import *\n'
-    imports += 'from psi4.driver.driver_cbs import xtpl_highest_1, scf_xtpl_helgaker_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2\n'
+    imports += 'from psi4.driver.driver_cbs import xtpl_highest_1, scf_xtpl_helgaker_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2\n'  # noqa: E501
     imports += 'from psi4.driver.wrapper_database import database, db, DB_RGT, DB_RXN\n'
     imports += 'from psi4.driver.wrapper_autofrag import auto_fragments\n'
     imports += 'from psi4.driver.p4const.physconst import *\n'

@@ -41,6 +41,7 @@ from __future__ import print_function,absolute_import
                                                         with Psi4's Molecule creation
 
 """
+# flake8: noqa
 
 try:
     # Python 2 syntax

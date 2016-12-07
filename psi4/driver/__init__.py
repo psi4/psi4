@@ -25,6 +25,7 @@
 # @END LICENSE
 #
 
+# flake8: noqa
 import pickle
 from . import dependency_check
 from psi4.driver.molutil import *

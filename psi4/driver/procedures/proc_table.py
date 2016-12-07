@@ -31,6 +31,7 @@ chemical methods.
 from __future__ import print_function
 from __future__ import absolute_import
 
+# flake8: noqa
 from . import proc
 from . import interface_cfour
 # never import wrappers or aliases into this file

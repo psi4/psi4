@@ -45,7 +45,7 @@ def sowList(first_out):
     to run before the 'reap' step
 
     """
-    find_cmd = re.compile("^(#|\s)\s+ psi4 -i (?P<infile>(?P<tag>[a-zA-Z]+)-[a-z0-9]+(-[a-z0-9]+)?\.in)\s+-o (?P<outfile>[a-zA-Z]+-[a-z0-9]+(-[a-z0-9]+)?\.out)")
+    find_cmd = re.compile("^(#|\s)\s+ psi4 -i (?P<infile>(?P<tag>[a-zA-Z]+)-[a-z0-9]+(-[a-z0-9]+)?\.in)\s+-o (?P<outfile>[a-zA-Z]+-[a-z0-9]+(-[a-z0-9]+)?\.out)")  # noqa: E501
     the_list = []
     with open(first_out, 'r') as sow_out:
         for line in sow_out:
@@ -101,7 +101,7 @@ def runMaster(psi4, inMasterFile, outMasterFile, logfile, psi4datadir, append=Fa
     try:
         loghandle = open(logfile, 'a')
     except IOError as e:
-        print ("""%s can't write to %s: %s""" % (__name__, logfile, e))
+        print("""%s can't write to %s: %s""" % (__name__, logfile, e))
         sys.exit(1)
     try:
         retcode = subprocess.Popen(cmd, bufsize=0, stdout=subprocess.PIPE, universal_newlines=True)
@@ -157,7 +157,8 @@ def main(first_input, first_output, logfile, psi4, psi4datadir):
                     # run intermediates
                     runFiles(psi4, files_list, output_dir, psi4datadir)
                     # run the master
-                    runMaster(psi4, reap_master_in, reap_master_out, logfile, psi4datadir, append=False if oiter == 0 else True)
+                    runMaster(psi4, reap_master_in, reap_master_out, logfile,
+                              psi4datadir, append=False if oiter == 0 else True)
                 oiter += 1
             # success
             sys.exit(0)

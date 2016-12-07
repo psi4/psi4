@@ -150,7 +150,7 @@ def reconcile_and_compute_version_output(quiet=False):
 
     # this is the tag format (PEP440 compliant) that our machinery is expecting.
     #   let's catch any deviations with Travis before it can corrupt versioning.
-    sane_tag = re.compile("""^(?P<tag>(?P<forwardseries>\d+\.\d+(?P<patch>\.[1-9]+)?)(?(patch)|(?P<prere>((a)|(b)|(rc))\d+)?))$""")
+    sane_tag = re.compile("""^(?P<tag>(?P<forwardseries>\d+\.\d+(?P<patch>\.[1-9]+)?)(?(patch)|(?P<prere>((a)|(b)|(rc))\d+)?))$""")  # noqa: E501
 
     mobj = sane_tag.match(meta_latest_annotated_v_tag)
     if mobj:
@@ -210,8 +210,9 @@ def reconcile_and_compute_version_output(quiet=False):
 
             else:
                 if res['branch_name'].endswith('.x'):
-                    print("""Undefining version as development snapshots not allowed on maintenance branch: {} (rejected computed)""".format(
-                        trial_version_long_devel))
+                    print("""Undefining version as development snapshots not """
+                          """allowed on maintenance branch: {} (rejected computed)""".format(
+                              trial_version_long_devel))
 
                 # TODO prob should be undef unless on master
                 else:
@@ -318,10 +319,11 @@ def version_formatter(versdata, formatstring="""{version}"""):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Script to extract Psi4 version from source. Use psi4.version_formatter(fmt_string) after build.')
+    parser = argparse.ArgumentParser(description='Script to extract Psi4 version \
+                                     from source. Use psi4.version_formatter(fmt_string) after build.')
     parser.add_argument('--metaout', default='metadata.out.py', help='file to which the computed version info written')
-    parser.add_argument('--format', default='all', help='string like "{version} {githash}" to be filled in and returned')
-    parser.add_argument('--formatonly', action='store_true', help='print only the format string, not the detection info')
+    parser.add_argument('--format', default='all', help='string like "{version} {githash}" to be filled in & returned')
+    parser.add_argument('--formatonly', action='store_true', help='print only the format string, not detection info')
     args = parser.parse_args()
 
     ans = reconcile_and_compute_version_output(quiet=args.formatonly)

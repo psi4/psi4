@@ -4,6 +4,7 @@ computed version number into the conda recipe.
 """
 from distutils.core import setup
 
+
 def version_func():
     import subprocess
 

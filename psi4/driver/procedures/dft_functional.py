@@ -29,6 +29,7 @@
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
 """
+# flake8: noqa
 import re
 import os
 import math

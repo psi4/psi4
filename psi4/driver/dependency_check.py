@@ -29,7 +29,7 @@
 
 # NumPy import
 try:
-    import numpy as np
+    import numpy as np  # noqa: F401
 except:
     msg = """
     NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
@@ -39,15 +39,15 @@ except:
         - sudo yum install numpy
         - sudo apt-get install python-numpy
         - brew install numpy
-    """ 
+    """
     raise ImportError(msg)
 
 # Import plugin add-ons here for now
 try:
-    import csx4psi
+    import csx4psi  # noqa: F401
 except ImportError:
     pass
 try:
-    import v2rdm_casscf
+    import v2rdm_casscf  # noqa: F401
 except ImportError:
     pass

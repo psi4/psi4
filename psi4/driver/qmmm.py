@@ -30,6 +30,7 @@ a QM calculation.
 
 """
 from __future__ import absolute_import
+# flake8: noqa
 import re
 import os
 import math

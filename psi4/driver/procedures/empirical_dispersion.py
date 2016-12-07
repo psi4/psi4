@@ -28,6 +28,7 @@
 """
 Module to provide lightweight definitions of emperical dispersion terms.
 """
+# flake8: noqa
 from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 
