@@ -82,11 +82,6 @@ void WaBeI_UHF(void)
 
 
   /** Z(Ie,Ba) <--- t_I^F <Fe|Ba> **/
-  //move sort to some setup function
-  global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
-  global_dpd_->buf4_sort(&B,PSIF_CC_BINTS, qpsr,29,29,"B <aB|cD>");
-  global_dpd_->buf4_close(&B);
-  //move to setup
   global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 29,29,29,29, 0, "B <aB|cD>");
   global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 25, 29, 25, 29, 0, "WeIaB");
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -159,11 +154,6 @@ void WaBeI_UHF(void)
    * Z(Be,Ia) sort axpy(qrsp) WaBeI (eI,aB)
    *
    */
-  //move to setup
-  global_dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 27, 29, 27, 29, 0 , "F <iA|bC>");
-  global_dpd_->buf4_sort(&F, PSIF_CC_FINTS, qrps, 28,27, "F <iA|bC> (Ab,iC)");
-  global_dpd_->buf4_close(&F);
-  //move to setup
 
   build_Z1A_BABA();
 
