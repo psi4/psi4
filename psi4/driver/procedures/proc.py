@@ -1253,11 +1253,11 @@ def scf_helper(name, **kwargs):
             raise ValidationError("Cannot compute projection of different symmetries.")
 
         if basis_name == scf_wfn.basisset().name():
-            core.print_out("  Reading orbitals from file 180, no projection.\n")
+            core.print_out("  Reading orbitals from file 180, no projection.\n\n")
             scf_wfn.guess_Ca(Ca_occ)
             scf_wfn.guess_Cb(Cb_occ)
         else:
-            core.print_out("  Reading orbitals from file 180, projecting to new basis.\n")
+            core.print_out("  Reading orbitals from file 180, projecting to new basis.\n\n")
 
             puream = int(data["BasisSet PUREAM"])
 
@@ -1265,7 +1265,7 @@ def scf_helper(name, **kwargs):
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
             old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
-            core.print_out("\n  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
+            core.print_out("  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
 
             nalphapi = core.Dimension.from_list(data["nalphapi"])
             nbetapi = core.Dimension.from_list(data["nbetapi"])
