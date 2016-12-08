@@ -18,7 +18,7 @@ set {
     active              [3, 0, 2, 3] 
     mcscf_diis_start    7
     mcscf_diis_max_vecs 4
-    avg_states          [1, 2]
+    avg_states          [0, 1]
     num_roots           2
     mcscf_type          df
     mcscf_r_convergence 1.e-4
@@ -46,38 +46,39 @@ compare_values(psi4.get_variable('CI QUADRUPOLE XX'), -22.395945512510, 4, "FCI 
 compare_values(psi4.get_variable('CI QUADRUPOLE YY'), -27.774201286760, 4, "FCI QUADRUPOLE YY")    #TEST
 compare_values(psi4.get_variable('CI QUADRUPOLE ZZ'), -29.166055634625, 4, "FCI QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CI QUADRUPOLE YZ'), 0.000000000000, 4, "FCI QUADRUPOLE YZ")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 DIPOLE Y'), 0.000000000000, 4, "CI ROOT 0 DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 DIPOLE Z'), -0.483503167660, 4, "CI ROOT 0 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE XX'), -22.419106552690, 4, "CI ROOT 0 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE YY'), -26.694665553619, 4, "CI ROOT 0 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE ZZ'), -30.482314878839, 4, "CI ROOT 0 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 0 QUADRUPOLE YZ")    #TEST
 compare_values(psi4.get_variable('CI ROOT 1 DIPOLE Y'), 0.000000000000, 4, "CI ROOT 1 DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 DIPOLE Z'), -0.483503167660, 4, "CI ROOT 1 DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE XX'), -22.419106552690, 4, "CI ROOT 1 QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE YY'), -26.694665553619, 4, "CI ROOT 1 QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE ZZ'), -30.482314878839, 4, "CI ROOT 1 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 DIPOLE Z'), 4.301396697365, 4, "CI ROOT 1 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE XX'), -22.372784472330, 4, "CI ROOT 1 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE YY'), -28.853737019899, 4, "CI ROOT 1 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE ZZ'), -27.849796390412, 4, "CI ROOT 1 QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 1 QUADRUPOLE YZ")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 DIPOLE Y'), 0.000000000000, 4, "CI ROOT 2 DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 DIPOLE Z'), 4.301396697365, 4, "CI ROOT 2 DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE XX'), -22.372784472330, 4, "CI ROOT 2 QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE YY'), -28.853737019899, 4, "CI ROOT 2 QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE ZZ'), -27.849796390412, 4, "CI ROOT 2 QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 2 QUADRUPOLE YZ")    #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Y")  #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Z")  #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE XX")  #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YY")  #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ")  #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 0 -> ROOT 1 DIPOLE Y")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 0 -> ROOT 1 DIPOLE Z")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE XX")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE YY")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE ZZ")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE YZ")  #TEST
 
-fci_energy = prop('CASSCF', properties=props)    #TEST
+cas_energy = prop('CASSCF', properties=props)    #TEST
+compare_values(-278.778339189657800, cas_energy, 6, 'CASSCF Energy')    #TEST
 compare_values(psi4.get_variable('CASSCF DIPOLE Y'), 0.000000000000, 2, "CASSCF DIPOLE Y")    #TEST
 compare_values(psi4.get_variable('CASSCF DIPOLE Z'), 1.994979146421, 2, "CASSCF DIPOLE Z")    #TEST
 compare_values(psi4.get_variable('CASSCF QUADRUPOLE XX'), -22.404898239966, 2, "CASSCF QUADRUPOLE XX")    #TEST
 compare_values(psi4.get_variable('CASSCF QUADRUPOLE YY'), -27.936106983618, 2, "CASSCF QUADRUPOLE YY")    #TEST
 compare_values(psi4.get_variable('CASSCF QUADRUPOLE ZZ'), -28.338138881212, 2, "CASSCF QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CASSCF QUADRUPOLE YZ'), 0.000000000000, 2, "CASSCF QUADRUPOLE YZ")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 DIPOLE Y'), 0.000000000000, 2, "CASSCF ROOT 2 DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 DIPOLE Z'), 4.462471853372, 2, "CASSCF ROOT 2 DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE XX'), -22.295623175859, 2, "CASSCF ROOT 2 QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YY'), -29.286904330283, 2, "CASSCF ROOT 2 QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE ZZ'), -27.288580048926, 2, "CASSCF ROOT 2 QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF ROOT 2 QUADRUPOLE YZ")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 DIPOLE Y'), 0.000000000000, 2, "CASSCF ROOT 1 DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 DIPOLE Z'), 4.462471853372, 2, "CASSCF ROOT 1 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE XX'), -22.295623175859, 2, "CASSCF ROOT 1 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YY'), -29.286904330283, 2, "CASSCF ROOT 1 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE ZZ'), -27.288580048926, 2, "CASSCF ROOT 1 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF ROOT 1 QUADRUPOLE YZ")    #TEST
 
 #name = 'CASSCF'    #TEST
 #prop_list = []    #TEST

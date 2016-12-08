@@ -305,7 +305,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     less core memory. -*/
     options.add_int("ICORE", 1);
 
-    /*- Number of threads for DETCI. -*/
+    /*- Number of threads for DETCI. !expert -*/
     options.add_int("CI_NUM_THREADS", 1);
 
     /*- Do print the sigma overlap matrix?  Not generally useful.  !expert -*/
@@ -313,7 +313,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Array giving the root numbers of the states to average in a
     state-averaged procedure such as SA-CASSCF. Root numbering starts
-    from 1. -*/
+    from 0. -*/
     options.add("AVG_STATES", new ArrayType());
 
     /*- Array giving the weights for each state in a state-averaged
@@ -487,7 +487,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (the one-particle density matrices are written for all roots).
     Useful for a state-specific CASSCF or CI optimization on an
     excited state. -*/
-    options.add_int("FOLLOW_ROOT", 1);
+    options.add_int("FOLLOW_ROOT", 0);
 
     /*- In following a particular root (see |detci__follow_root|), sometimes the
     root number changes.  To follow a root of a particular character,

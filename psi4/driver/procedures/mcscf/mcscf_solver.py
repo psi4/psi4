@@ -164,7 +164,7 @@ def mcscf_solver(ref_wfn):
         tpdm = ciwfn.get_tpdm("SUM", True)
         mcscf_obj.update(Cocc, Cact, Cvir, opdm, tpdm)
 
-        current_energy = core.get_variable('CURRENT ENERGY')
+        current_energy = core.get_variable("MCSCF TOTAL ENERGY")
 
         orb_grad_rms = mcscf_obj.gradient_rms()
         ediff = current_energy - eold
@@ -343,11 +343,11 @@ def mcscf_solver(ref_wfn):
 
     irrep_labels = ciwfn.molecule().irrep_labels()
     for root in range(mcscf_nroots):
-        core.print_out("\n   ==> CI root %d information <==\n\n" % (root + 1))
+        core.print_out("\n   ==> CI root %d information <==\n\n" % (root))
 
         # Print total energy
-        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root + 1))
-        core.print_out("    CI Root %2d energy =  %20.15f\n" % (root + 1, root_e))
+        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root))
+        core.print_out("    CI Root %2d energy =  %20.15f\n" % (root, root_e))
 
         # Print natural occupations
         core.print_out("\n   Natural occupation numbers:\n\n")
@@ -371,10 +371,13 @@ def mcscf_solver(ref_wfn):
             cnt += 1
             if (cnt % 3) == 0:
                 core.print_out("\n")
+        core.print_out("\n")
 
         # Print CIVector information
         ciwfn.print_vector(dvec, root)
 
+    # Set final energy
+    core.set_variable("CURRENT ENERGY", core.get_variable("MCSCF TOTAL ENERGY"))
 
     # What do we need to cleanup?
     if core.get_option("DETCI", "MCSCF_CI_CLEANUP"):
