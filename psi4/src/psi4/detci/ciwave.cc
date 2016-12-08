@@ -622,7 +622,11 @@ void CIWavefunction::init_mcscf_object(){
     if (Parameters_->mcscf_type == "DF") {
         if (!df_ints_init_) setup_dfmcscf_ints();
         somcscf_ = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
-    } else {
+    } else if (Parameters_->mcscf_type == "AO" ){
+        if (!ints_init_) setup_mcscf_ints_ao();
+        somcscf_ = std::shared_ptr<SOMCSCF>(new IncoreSOMCSCF(jk_, AO2SO_, H_));
+    }
+    else {
         if (!ints_init_) setup_mcscf_ints();
         somcscf_ = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
     }

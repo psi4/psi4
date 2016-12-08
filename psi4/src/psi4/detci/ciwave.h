@@ -331,6 +331,13 @@ private:
     void transform_dfmcscf_ints(bool approx_only = false);
     void rotate_dfmcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
 
+    /// MO transformation through TeraCHEM-like
+    /// Added in by Kevin Patrick Hannon
+    void transform_mcscf_ints_ao(bool approx_only = false);
+    void setup_mcscf_ints_ao();
+    SharedMatrix tei_raaa_;
+    SharedMatrix tei_aaaa_;
+
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
