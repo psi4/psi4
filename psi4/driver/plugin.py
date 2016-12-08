@@ -128,7 +128,7 @@ def create_plugin(args):
     os.mkdir(name)
     created_files = []
     for source_file in template_files:
-        target_file = temp_file
+        target_file = source_file
 
         if source_file.endswith('.template'):
             target_file = source_file[0:-9]
@@ -158,6 +158,6 @@ def create_plugin(args):
             tty.error(err)
             sys.exit(1)
 
-    tty.info("Created plugin temp_files: ", ", ".join(created_files))
+    tty.info("Created plugin files: ", ", ".join(created_files))
 
     sys.exit(0)
