@@ -148,6 +148,9 @@ def create_plugin(args):
         contents = contents.replace('@C@', config.c_compiler)
         contents = contents.replace('@CXX@', config.cxx_compiler)
         contents = contents.replace('@Fortran@', config.fortran_compiler)
+        contents = contents.replace('@C_FLAGS@', config.c_flags)
+        contents = contents.replace('@CXX_FLAGS@', config.cxx_flags)
+        contents = contents.replace('@Fortran_FLAGS@', config.fortran_flags)
 
         try:
             with open(join_path(name, target_file), 'w') as temp_file:

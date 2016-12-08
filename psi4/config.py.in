@@ -42,3 +42,7 @@ psidatadir = share_dir = _data_dir
 cxx_compiler = "@CMAKE_CXX_COMPILER@"
 c_compiler = "@CMAKE_C_COMPILER@"
 fortran_compiler = "@CMAKE_Fortran_COMPILER@"
+
+cxx_flags = "@CMAKE_CXX_FLAGS@"
+c_flags = "@CMAKE_C_FLAGS@"
+fortran_flags = "@CMAKE_Fortran_FLAGS@"

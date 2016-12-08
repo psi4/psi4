@@ -49,3 +49,8 @@ psidatadir = share_dir = _join_path(psi4_root, "psi4", "share", "psi4")
 cxx_compiler = "(unknown C++ compiler)"
 c_compiler = "(unknown C compiler)"
 fortran_compiler = "(unknown Fortran compiler)"
+
+cxx_flags = ""
+c_flags = ""
+fortran_flags = ""
+
