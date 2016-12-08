@@ -474,9 +474,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     // => Build preconditioner <= //
 
     // Grab occ and vir orbitals
-    SharedMatrix Cocc = Ca_subset("SO", "OCC");
-    SharedMatrix Cvir = Ca_subset("SO", "VIR");
-    Dimension virpi = Cvir->colspi();
+    Dimension virpi = nmopi_ - nalphapi_;
 
     // MO Fock Matrix (Inactive Fock in Helgaker's language)
     SharedMatrix IFock = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
@@ -664,8 +662,6 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     }
 
     // => Cleanup <= //
-    Cocc.reset();
-    Cvir.reset();
     IFock.reset();
     Precon.reset();
 
@@ -687,7 +683,6 @@ int RHF::soscf_update()
 
     // Gradient RHS
     SharedMatrix Gradient = Matrix::triplet(Cocc, Fa_, Cvir, true, false, false);
-    Gradient->scale(-1.0);
 
     // Make sure the MO gradient is reasonably small
     if (Gradient->absmax() > 0.3){
@@ -700,7 +695,6 @@ int RHF::soscf_update()
     std::vector<SharedMatrix> ret_x = cphf_solve({Gradient}, soscf_conv_, soscf_max_iter_,
                                              soscf_print_ ? 2 : 0);
 
-    ret_x[0]->scale(-1.0);
     // => Rotate orbitals <= //
     rotate_orbitals(Ca_, ret_x[0]);
 
