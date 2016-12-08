@@ -32,12 +32,14 @@ from psi4.driver.util.filesystem import *
 from psi4.driver.util import tty
 import psi4.config as config
 
+
 def sanitize_name(name):
     """Function to return *name* in coded form, stripped of
     characters that confuse filenames, characters into lowercase,
     ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, ``-``,
     & ``,`` into ``_``.
 
+    Also checks the sanitized name against a list of restricted C++ keywords.
     """
     if name[0].isalpha():
         temp = name.lower()
@@ -47,9 +49,41 @@ def sanitize_name(name):
         temp = temp.replace(')', '_')
         temp = temp.replace(',', '_')
         temp = temp.replace('-', '_')
+
+        # Taken from http://en.cppreference.com/w/cpp/keyword
+        cpp_keywords = [
+            "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel",
+            "atomic_commit", "atomic_noexcept", "auto", "bitand", "bitor",
+            "bool", "break", "case", "catch", "char", "char16_t", "char32_t",
+            "class", "compl", "concept", "const", "constexpr", "const_cast",
+            "continue", "decltype", "default", "delete", "do", "double",
+            "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+            "false", "float", "for", "friend", "goto", "if", "import", "inline",
+            "int", "long", "module", "mutable", "namespace", "new", "noexcept",
+            "not", "not_eq", "nullptr", "operator", "or", "or_eq", "private",
+            "protected", "public", "register", "reinterpret_cast", "requires",
+            "return", "short", "signed", "sizeof", "static", "static_assert",
+            "static_cast", "struct", "switch", "synchronized", "template",
+            "this", "thread_local", "throw", "true", "try", "typedef", "typeid",
+            "typename", "union", "unsigned", "using", "virtual", "void",
+            "volatile", "wchar_t", "while", "xor", "xor_eq",
+
+            # Identifiers with special meanings"
+            "override", "final", "transaction_safe", "transaction_safe_dynamic",
+
+            # Preprocessor tokens
+            "if", "elif", "else", "endif", "defined", "ifdef", "ifndef",
+            "define", "undef", "include", "line", "error", "pragma",
+            "_pragma"
+        ]
+
+        if temp in cpp_keywords:
+            tty.die("The plugin name you provided is a C++ reserved keyword.  Please provide a different name.")
+
         return temp
     else:
         tty.die("Plugin name must begin with a letter.")
+
 
 # Determine the available plugins
 available_plugins = []
@@ -70,38 +104,38 @@ def create_plugin(args):
     """Generate plugin in sanitized directory of same name based upon *type*"""
 
     name = sanitize_name(args['new_plugin'])
-    type = args['new_plugin_template']
-    template_path = join_path(plugin_path, type)
+    ptype = args['new_plugin_template']
+    template_path = join_path(plugin_path, ptype)
 
     # Create, but do not overwrite, plugin directory
     if os.path.exists(name):
         tty.error("""Plugin directory "{}" already exists.""".format(name))
 
-    # Do a first pass to determine the template files
+    # Do a first pass to determine the template temp_files
     template_files = os.listdir(template_path)
     source_files = []
-    for file in template_files:
-        target_file = file
+    for temp_file in template_files:
+        target_file = temp_file
 
-        if file.endswith('.template'):
-            target_file = file[0:-9]
+        if temp_file.endswith('.template'):
+            target_file = temp_file[0:-9]
 
-        if file.endswith('.cc.template'):
+        if temp_file.endswith('.cc.template'):
             source_files.append(target_file)
 
-    tty.hline("""Creating "{}" with "{}" template.""".format(name, type))
+    tty.hline("""Creating "{}" with "{}" template.""".format(name, ptype))
 
     os.mkdir(name)
     created_files = []
     for source_file in template_files:
-        target_file = file
+        target_file = source_file
 
         if source_file.endswith('.template'):
             target_file = source_file[0:-9]
 
         try:
-            with open(join_path(template_path, source_file), 'r') as file:
-                contents = file.read()
+            with open(join_path(template_path, source_file), 'r') as temp_file:
+                contents = temp_file.read()
         except IOError as err:
             tty.error("""Unable to open {} template.""".format(source_file))
             tty.error(err)
@@ -116,8 +150,8 @@ def create_plugin(args):
         contents = contents.replace('@Fortran@', config.fortran_compiler)
 
         try:
-            with open(join_path(name, target_file), 'w') as file:
-                file.write(contents)
+            with open(join_path(name, target_file), 'w') as temp_file:
+                temp_file.write(contents)
                 created_files.append(target_file)
         except IOError as err:
             tty.error("""Unable to create {}""".format(target_file))
@@ -127,4 +161,3 @@ def create_plugin(args):
     tty.info("Created plugin files: ", ", ".join(created_files))
 
     sys.exit(0)
-
