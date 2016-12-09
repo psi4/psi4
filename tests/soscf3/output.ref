@@ -1,0 +1,831 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 08 December 2016 10:04PM
+
+    Process ID:  65590
+    PSIDATADIR: /Users/daniel/Gits/psixc/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
+
+#### UHF Triplet Oxygen energy, triplet
+molecule mol {
+    0 3
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    basis cc-pVDZ
+    guess sad
+    soscf true
+    scf_type df
+    reference uhf
+}
+
+# df_uhf_energy = energy('SCF')
+# df_triplet_energy = -149.6286212486618865  #TEST
+# compare_values(df_triplet_energy, df_uhf_energy, 6, 'DF-UHF Triplet Energy')  #TEST
+# 
+# # Non-DF case
+# set scf_type out_of_core
+# uhf_energy = energy('SCF')
+# triplet_energy = -149.6289923133230104  #TEST
+# compare_values(triplet_energy, uhf_energy, 6, 'OOC-UHF Triplet Energy')  #TEST
+# 
+# set scf_type pk
+# uhf_energy = energy('SCF')
+# compare_values(triplet_energy, uhf_energy, 6, 'PK-UHF Triplet Energy')  #TEST
+# 
+# 
+# # ROHF Triplet
+# set {
+#     reference rohf
+#     scf_type df
+# }
+# 
+# df_rohf_energy = energy('SCF')
+# df_triplet_energy = -149.60909083608837  #TEST
+# compare_values(df_triplet_energy, df_rohf_energy, 6, 'DF-ROHF Triplet Energy')  #TEST
+# 
+# # Non-DF case
+# set scf_type out_of_core
+# rohf_energy = energy('SCF')
+# triplet_energy = -149.60946112073862  #TEST
+# compare_values(triplet_energy, rohf_energy, 6, 'OOC-ROHF Triplet Energy')  #TEST
+# 
+# set scf_type pk
+# rohf_energy = energy('SCF')  #TEST
+# compare_values(triplet_energy, rohf_energy, 6, 'PK-ROHF Triplet Energy')  #TEST
+
+
+
+#### RHF Singlet Oxygen energy, singlet
+molecule mol {
+    0 1
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    scf_type df
+    reference rhf
+}
+
+b3lyp_rhf_energy = energy('B3LYP')
+b3lyp_singlet_energy = -150.27140713402315  #TEST
+compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'B3LYP N iter')  #TEST
+compare_values(b3lyp_singlet_energy, b3lyp_rhf_energy, 6, 'B3LYP Singlet Energy')  #TEST
+
+pbe_rhf_energy = energy('PBE')
+pbe_singlet_energy = -150.13120149480605  #TEST
+compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'PBE N iter')  #TEST
+compare_values(pbe_singlet_energy, pbe_rhf_energy, 6, 'PBE Singlet Energy')  #TEST
+
+pbe_rhf_energy = energy('wB97X-D')
+pbe_singlet_energy = -150.22359531811128  #TEST
+compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'wB97X-D N iter')  #TEST
+compare_values(pbe_singlet_energy, pbe_rhf_energy, 6, 'wB97X-D Singlet Energy')  #TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on verizon-ar.imtc.gatech.edu
+*** at Thu Dec  8 22:04:12 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    524 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.600000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.600000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.46380  C =      1.46380 [cm^-1]
+  Rotational constants: A = ************  B =  43883.65311  C =  43883.65311 [MHz]
+  Nuclear repulsion =   28.222784458133340
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/cc-pvdz.gbs
+    Number of shells: 12
+    Number of basis function: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: B3LYP <= 
+
+    B3LYP Hyb-GGA Exchange-Correlation Functional
+
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
+
+    Points       =            200
+    Deriv        =              1
+    GGA          =           TRUE
+    Meta         =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =           TRUE
+    X_Alpha      =   2.000000E-01
+    X_Beta       =   0.000000E+00
+    X_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.0800 Slater exchange
+    0.7200 Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000      HF 
+
+   => Correlation Functionals <=
+
+    0.1900 Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100 Lee, Yang & Parr
+
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =          40898
+    Total Blocks     =            412
+    Max Points       =            197
+    Max Functions    =             28
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         7       7       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        3       3       0       0       0       0
+     B3g        3       3       0       0       0       0
+     Au         1       1       0       0       0       0
+     B1u        7       7       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      28      28       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+    Number of shells: 48
+    Number of basis function: 140
+    Number of Cartesian functions: 162
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.8713476397E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:  -150.63824395596839   -1.50638e+02   1.77267e-01 
+   @DF-RKS iter   1:  -150.25993734889363    3.78307e-01   1.64119e-02 
+   @DF-RKS iter   2:  -150.26796437978754   -8.02703e-03   8.66545e-03 DIIS
+   @DF-RKS iter   3:  -150.27132335905623   -3.35898e-03   1.27032e-03 DIIS
+   @DF-RKS iter   4:  -150.27140658551144   -8.32265e-05   1.04784e-04 SOKS, 4
+   @DF-RKS iter   5:  -150.27140713402292   -5.48511e-07   1.04307e-07 SOKS, conv
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -19.285425     1B1u  -19.285265     2Ag    -1.288759  
+       2B1u   -0.790535     3Ag    -0.527505     1B3u   -0.517768  
+       1B2u   -0.509597     1B3g   -0.240997  
+
+    Virtual:                                                              
+
+       1B2g   -0.170092     3B1u    0.233779     4B1u    0.793124  
+       2B3u    0.822906     2B2u    0.840739     4Ag     0.896249  
+       2B2g    0.942310     2B3g    0.954405     5Ag     1.070285  
+       5B1u    1.696266     3B3u    2.062842     3B2u    2.096794  
+       1B1g    2.343523     6Ag     2.345760     1Au     2.652889  
+       6B1u    2.655452     7Ag     2.810133     3B2g    3.280878  
+       3B3g    3.314981     7B1u    3.776253  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:  -150.27140713402292
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             28.2227844581333400
+    One-Electron Energy =                -262.2011614840967582
+    Two-Electron Energy =                  97.4823675824752911
+    DFT Exchange-Correlation Energy =     -13.7753976905347741
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -150.2714071340229225
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on verizon-ar.imtc.gatech.edu at Thu Dec  8 22:04:14 2016
+Module time:
+	user time   =       2.03 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       2.03 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+	B3LYP N iter......................................................PASSED
+	B3LYP Singlet Energy..............................................PASSED
+
+*** tstart() called on verizon-ar.imtc.gatech.edu
+*** at Thu Dec  8 22:04:14 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    524 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.600000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.600000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.46380  C =      1.46380 [cm^-1]
+  Rotational constants: A = ************  B =  43883.65311  C =  43883.65311 [MHz]
+  Nuclear repulsion =   28.222784458133340
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/cc-pvdz.gbs
+    Number of shells: 12
+    Number of basis function: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Points       =            200
+    Deriv        =              1
+    GGA          =           TRUE
+    Meta         =          FALSE
+
+    X_LRC        =          FALSE
+    X_Hybrid     =          FALSE
+    X_Alpha      =   0.000000E+00
+    X_Beta       =   0.000000E+00
+    X_Omega      =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000 XC_GGA_C_PBE
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =          40898
+    Total Blocks     =            412
+    Max Points       =            197
+    Max Functions    =             28
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         7       7       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        3       3       0       0       0       0
+     B3g        3       3       0       0       0       0
+     Au         1       1       0       0       0       0
+     B1u        7       7       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      28      28       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                   No
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+    Number of shells: 48
+    Number of basis function: 140
+    Number of Cartesian functions: 162
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.8713476397E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:  -150.52429285487111   -1.50524e+02   1.74390e-01 
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+   @DF-RKS iter   1:  -150.12168398655808    4.02609e-01   1.53420e-02 
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+
+   @DF-RKS iter   2:  -150.12370667604330   -2.02269e-03   1.33044e-02 DIIS
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+   @DF-RKS iter   3:  -150.12988050734305   -6.17383e-03   5.73048e-03 DIIS
+   @DF-RKS iter   4:  -150.12931532649418    5.65181e-04   6.85251e-03 SOKS, 4
+   @DF-RKS iter   5:  -150.13120149277162   -1.88617e-03   6.70977e-06 SOKS, 4
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+
+   @DF-RKS iter   6:  -150.13120149480602   -2.03440e-09   2.43453e-08 SOKS, conv
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1B1u  -18.893325     1Ag   -18.893270     2Ag    -1.189049  
+       2B1u   -0.705453     1B3u   -0.473830     3Ag    -0.464517  
+       1B2u   -0.432739     1B2g   -0.210059  
+
+    Virtual:                                                              
+
+       1B3g   -0.170924     3B1u    0.187106     4B1u    0.747117  
+       2B3u    0.772082     2B2u    0.799777     4Ag     0.853288  
+       2B2g    0.892882     2B3g    0.913759     5Ag     1.021266  
+       5B1u    1.642103     3B3u    1.978560     3B2u    2.018962  
+       1B1g    2.262427     6Ag     2.264360     1Au     2.566327  
+       6B1u    2.568780     7Ag     2.717939     3B2g    3.181924  
+       3B3g    3.221204     7B1u    3.681018  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    1,    0,    0,    2,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:  -150.13120149480602
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             28.2227844581333400
+    One-Electron Energy =                -262.1953331930810691
+    Two-Electron Energy =                 100.7314696283990259
+    DFT Exchange-Correlation Energy =     -16.8901223882572964
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -150.1312014948060209
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on verizon-ar.imtc.gatech.edu at Thu Dec  8 22:04:17 2016
+Module time:
+	user time   =       2.98 seconds =       0.05 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       5.03 seconds =       0.08 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+	PBE N iter........................................................PASSED
+	PBE Singlet Energy................................................PASSED
+
+*** tstart() called on verizon-ar.imtc.gatech.edu
+*** at Thu Dec  8 22:04:17 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    524 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.600000000000    15.994914619560
+           O          0.000000000000     0.000000000000     0.600000000000    15.994914619560
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      1.46380  C =      1.46380 [cm^-1]
+  Rotational constants: A = ************  B =  43883.65311  C =  43883.65311 [MHz]
+  Nuclear repulsion =   28.222784458133340
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/cc-pvdz.gbs
+    Number of shells: 12
+    Number of basis function: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: wB97X-D <= 
+
+    Parameterized Hybrid LRC B97 GGA XC Functional with Dispersion
+
+    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008
+
+
+    Points       =            200
+    Deriv        =              1
+    GGA          =           TRUE
+    Meta         =          FALSE
+
+    X_LRC        =           TRUE
+    X_Hybrid     =           TRUE
+    X_Alpha      =   2.220360E-01
+    X_Beta       =   7.779640E-01
+    X_Omega      =   2.000000E-01
+
+   => Exchange-Correlation Functionals <=
+
+    1.0000 wB97D range-separated functional
+
+   => Exact (HF) Exchange <=
+
+    0.7780   HF,LR [omega = 0.2000]
+    0.2220      HF 
+
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =          40898
+    Total Blocks     =            412
+    Max Points       =            197
+    Max Functions    =             28
+
+   => -CHG: Empirical Dispersion <=
+
+    Chai and Head-Gordon Dispersion Correction
+    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620
+
+        S6 =   1.000000E+00
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         7       7       0       0       0       0
+     B1g        1       1       0       0       0       0
+     B2g        3       3       0       0       0       0
+     B3g        3       3       0       0       0       0
+     Au         1       1       0       0       0       0
+     B1u        7       7       0       0       0       0
+     B2u        3       3       0       0       0       0
+     B3u        3       3       0       0       0       0
+   -------------------------------------------------------
+    Total      28      28       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                 Yes
+    Omega:               2.000E-01
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+    Number of shells: 48
+    Number of basis function: 140
+    Number of Cartesian functions: 162
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.8713476397E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:  -150.51951022915898   -1.50520e+02   1.77251e-01 
+   @DF-RKS iter   1:  -150.20309691336394    3.16413e-01   2.09321e-02 
+   @DF-RKS iter   2:  -150.22024913031220   -1.71522e-02   8.75253e-03 DIIS
+   @DF-RKS iter   3:  -150.22355145587667   -3.30233e-03   9.26439e-04 DIIS
+   @DF-RKS iter   4:  -150.22359361824365   -4.21624e-05   1.63227e-04 SOKS, 5
+   @DF-RKS iter   5:  -150.22359531811099   -1.69987e-06   5.00698e-08 SOKS, 5
+   @DF-RKS iter   6:  -150.22359531811128   -2.84217e-13   4.89085e-11 SOKS, conv
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -19.410587     1B1u  -19.410402     2Ag    -1.394056  
+       2B1u   -0.890675     3Ag    -0.618150     1B3u   -0.605617  
+       1B2u   -0.602840     1B3g   -0.329255  
+
+    Virtual:                                                              
+
+       1B2g   -0.088355     3B1u    0.320817     4B1u    0.891758  
+       2B3u    0.916345     2B2u    0.933915     4Ag     0.989231  
+       2B2g    1.038838     2B3g    1.047822     5Ag     1.156079  
+       5B1u    1.786314     3B3u    2.146087     3B2u    2.179076  
+       1B1g    2.429399     6Ag     2.430778     1Au     2.740831  
+       6B1u    2.742496     7Ag     2.901430     3B2g    3.368381  
+       3B3g    3.403675     7B1u    3.869590  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:  -150.22359531811128
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             28.2227844581333400
+    One-Electron Energy =                -262.1634725647350024
+    Two-Electron Energy =                  95.7124714208328840
+    DFT Exchange-Correlation Energy =     -11.9953776829903713
+    Empirical Dispersion Energy =          -0.0000009493521207
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -150.2235953181112791
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on verizon-ar.imtc.gatech.edu at Thu Dec  8 22:04:23 2016
+Module time:
+	user time   =       5.23 seconds =       0.09 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+Total time:
+	user time   =      10.28 seconds =       0.17 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+	wB97X-D N iter....................................................PASSED
+	wB97X-D Singlet Energy............................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

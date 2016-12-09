@@ -1725,34 +1725,38 @@ void HF::iterations()
 
         // We either do SOSCF or DIIS
         bool did_soscf = false;
-        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)){
+        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)) {
             compute_orbital_gradient(false);
             diis_performed_ = false;
-
-            if (!test_convergency()){
-                int nmicro = soscf_update();
-                if (nmicro > 0){ // If zero the soscf call bounced for some reason
-                    find_occupation();
-                    status += "SOSCF, nmicro = ";
-                    status += psi::to_string(nmicro);
-                    did_soscf = true; // Stops DIIS
-                }
-                else{
-                    if (print_){
-                        outfile->Printf("Did not take a SOSCF step, using normal convergence methods\n");
-                    }
-                    did_soscf = false; // Back to DIIS
-                }
+            std::string base_name;
+            if (functional_->needs_xc()) {
+                base_name = "SOKS, ";
+            } else {
+                base_name = "SOSCF, ";
             }
-            else{
+
+            if (!test_convergency()) {
+                int nmicro = soscf_update();
+                if (nmicro > 0) {  // If zero the soscf call bounced for some reason
+                    find_occupation();
+                    status += base_name + psi::to_string(nmicro);
+                    did_soscf = true;  // Stops DIIS
+                } else {
+                    if (print_) {
+                        outfile->Printf(
+                            "Did not take a SOSCF step, using normal convergence methods\n");
+                    }
+                    did_soscf = false;  // Back to DIIS
+                }
+            } else {
                 // We need to ensure orthogonal orbitals and set epsilon
-                status += "SOSCF, conv";
+                status += base_name + "conv";
                 timer_on("HF: Form C");
                 form_C();
                 timer_off("HF: Form C");
-                did_soscf = true; // Stops DIIS
+                did_soscf = true;  // Stops DIIS
             }
-        } // End SOSCF block
+        }  // End SOSCF block
 
         if (!did_soscf){ // Normal convergence procedures if we do not do SOSCF
 
@@ -1889,7 +1893,7 @@ void HF::print_energies()
     if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
         outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
     }
-
+    Process::environment.globals["SCF N ITERS"] = iteration_;
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]

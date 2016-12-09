@@ -525,9 +525,12 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     max_functions, 0.0, Tp[0], max_functions);
             C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dx_localp[0],
                     max_functions, 1.0, Tp[0], max_functions);
+
             for (int P = 0; P < npoints; P++) {
                 rho_k[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
             }
+
+            // Rho^d_k and gamma_k
             if (ansatz >= 1) {
                 for (int P = 0; P < npoints; P++) {
                     rho_k_x[P] = C_DDOT(nlocal, phi_x[P], 1, Tp[P], 1);
@@ -539,8 +542,8 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     gamma_k[P] *= 2;
                 }
             }
+
             // => LSDA contribution (symmetrized) <= //
-            // timer_on("V: LSDA");
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
                 if (rho_a[P] < 1.e-6) continue;
@@ -579,7 +582,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
             C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0],
                     max_functions, 0.0, Vx_localp[0], max_functions);
 
-            // Symmetrization (V is Hermitian)
+            // Symmetrization (V is *always* Hermitian)
             for (int m = 0; m < nlocal; m++) {
                 for (int n = 0; n <= m; n++) {
                     Vx_localp[m][n] = Vx_localp[n][m] = Vx_localp[m][n] + Vx_localp[n][m];
@@ -600,7 +603,6 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                 #pragma omp atomic update
                 Vxp[mg][mg] += Vx_localp[ml][ml];
             }
-            // timer_off("V: V_XC");
         }
     }
 
