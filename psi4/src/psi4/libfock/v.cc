@@ -377,8 +377,11 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     }
 }
 void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
-    if ((Dx.size() != 1) || (D_AO_.size() != 1) || (ret.size() != 1)) {
-        throw PSIEXCEPTION("V: RKS should have only one Dx/D/Vx Matrix");
+    if (D_AO_.size() != 1) {
+        throw PSIEXCEPTION("Vx: RKS should have only one D Matrix");
+    }
+    if ((Dx.size() != ret.size()) || (Dx.size() == 0)) {
+        throw PSIEXCEPTION("Vx: RKS input and output sizes should be the same.");
     }
 
     // Thread info
@@ -387,7 +390,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
     if (ansatz >= 2){
-        throw PSIEXCEPTION("compute_Vx: Not available for MGGA functionals.");
+        throw PSIEXCEPTION("Vx: RKS does not support rotated V builds for MGGA's");
     }
 
     int old_point_deriv = point_workers_[0]->deriv();
@@ -402,14 +405,16 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         point_workers_[i]->set_pointers(D_AO_[0]);
     }
 
-    SharedMatrix Dx_mat;
-    if (Dx[0]->nirrep() != 1) {
-        Dx_mat = SharedMatrix(new Matrix("D AO temp", nbf_, nbf_));
-        Dx_mat->remove_symmetry(Dx[0], USO2AO_);
-    } else {
-        Dx_mat = Dx[0];
+    std::vector<SharedMatrix> Dx_vec;
+    for (size_t i = 0; i < Dx.size(); i++){
+        if (Dx[i]->nirrep() != 1) {
+            SharedMatrix Dx_mat = SharedMatrix(new Matrix("D AO temp", nbf_, nbf_));
+            Dx_mat->remove_symmetry(Dx[i], USO2AO_);
+            Dx_vec.push_back(Dx_mat);
+        } else {
+            Dx_vec.push_back(Dx[i]);
+        }
     }
-    double** Dxp = Dx_mat->pointer();
 
 
     // Per [R]ank quantities
@@ -417,7 +422,7 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     std::vector<std::shared_ptr<Vector>> R_rho_k, R_rho_k_x, R_rho_k_y, R_rho_k_z, R_gamma_k;
     for (size_t i = 0; i < num_threads_; i++) {
         R_Vx_local.push_back(SharedMatrix(new Matrix("Vx Temp", max_functions, max_functions)));
-        R_Dx_local.push_back(SharedMatrix(new Matrix("Dk Temp", max_points, max_points)));
+        R_Dx_local.push_back(SharedMatrix(new Matrix("Dk Temp", max_functions, max_functions)));
 
         R_rho_k.push_back(std::shared_ptr<Vector>(new Vector("Rho K Temp", max_points)));
 
@@ -432,8 +437,11 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         functional_workers_[i]->allocate();
     }
 
-    SharedMatrix Vx_AO(new Matrix("Vx AO Temp", nbf_, nbf_));
-    double** Vp = Vx_AO->pointer();
+    // Output quantities
+    std::vector<SharedMatrix> Vx_AO;
+    for (size_t i = 0; i < Dx.size(); i++){
+        Vx_AO.push_back(SharedMatrix(new Matrix("Vx AO Temp", nbf_, nbf_)));
+    }
 
     // Traverse the blocks of points
     #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
@@ -468,8 +476,8 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // => Grab quantities <= //
         // LDA
         double** phi = pworker->basis_value("PHI")->pointer();
-        double * rho_a = pworker->point_value("RHO_A")->pointer();
-        double * v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
+        double* rho_a = pworker->point_value("RHO_A")->pointer();
+        double* v2_rho2 = vals["V_RHO_A_RHO_A"]->pointer();
         double* rho_k = R_rho_k[rank]->pointer();
 
         // GGA
@@ -499,97 +507,110 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
         // Meta
         // Forget that!
 
-        // => Build Rotated Densities <= //
-        for (int ml = 0; ml < nlocal; ml++) {
-            int mg = function_map[ml];
-            for (int nl = 0; nl < nlocal; nl++) {
-                int ng = function_map[nl];
+        // Loop over perturbation tensors
+        for (size_t dindex = 0; dindex < Dx_vec.size(); dindex++) {
+            double** Dxp = Dx_vec[dindex]->pointer();
 
-                Dx_localp[ml][nl] = Dxp[mg][ng];
+            // => Build Rotated Densities <= //
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < nlocal; nl++) {
+                    int ng = function_map[nl];
+                    Dx_localp[ml][nl] = Dxp[mg][ng];
+                }
             }
-        }
 
-        // Rho_a = 2.0 * D^k_xy phi_xa phi_ya
-        C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phi[0], max_functions, Dx_localp[0], max_functions, 0.0, Tp[0],
-                max_functions);
-        for (int P = 0; P < npoints; P++) {
-            rho_k[P] = C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
-        }
-        if (ansatz >= 1){
+            // Rho_a = D^k_xy phi_xa phi_ya
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dx_localp[0],
+                    max_functions, 0.0, Tp[0], max_functions);
+            C_DGEMM('N', 'T', npoints, nlocal, nlocal, 1.0, phi[0], max_functions, Dx_localp[0],
+                    max_functions, 1.0, Tp[0], max_functions);
             for (int P = 0; P < npoints; P++) {
-                rho_k_x[P] = C_DDOT(nlocal, phi_x[P], 1, Tp[P], 1);
-                rho_k_y[P] = C_DDOT(nlocal, phi_y[P], 1, Tp[P], 1);
-                rho_k_z[P] = C_DDOT(nlocal, phi_z[P], 1, Tp[P], 1);
-                gamma_k[P] = rho_k_x[P] * rho_x[P];
-                gamma_k[P] += rho_k_y[P] * rho_y[P];
-                gamma_k[P] += rho_k_z[P] * rho_z[P];
+                rho_k[P] = 0.5 * C_DDOT(nlocal, phi[P], 1, Tp[P], 1);
             }
-        }
-        // => LSDA contribution (symmetrized) <= //
-        // timer_on("V: LSDA");
-        for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
-            C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P], phi[P], 1, Tp[P], 1);
-        }
-
-
-        // => GGA contribution <= //
-        if (ansatz >= 1) {
-            double * v_gamma = vals["V_GAMMA_AA"]->pointer();
-            double * v_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
-            double * v_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
-            double tmp_val = 0.0;
-
+            if (ansatz >= 1) {
+                for (int P = 0; P < npoints; P++) {
+                    rho_k_x[P] = C_DDOT(nlocal, phi_x[P], 1, Tp[P], 1);
+                    rho_k_y[P] = C_DDOT(nlocal, phi_y[P], 1, Tp[P], 1);
+                    rho_k_z[P] = C_DDOT(nlocal, phi_z[P], 1, Tp[P], 1);
+                    gamma_k[P] = rho_k_x[P] * rho_x[P];
+                    gamma_k[P] += rho_k_y[P] * rho_y[P];
+                    gamma_k[P] += rho_k_z[P] * rho_z[P];
+                    gamma_k[P] *= 2;
+                }
+            }
+            // => LSDA contribution (symmetrized) <= //
+            // timer_on("V: LSDA");
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal, (2.0 * w[P] * v_rho_gamma[P] * gamma_k[P]), phi[P], 1, Tp[P], 1);
-
-                // gamma rho^d
-                tmp_val = 2.0 * w[P] * v_gamma[P];
-                C_DAXPY(nlocal, (tmp_val * rho_k_x[P]), phi_x[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, (tmp_val * rho_k_y[P]), phi_y[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, (tmp_val * rho_k_z[P]), phi_z[P], 1, Tp[P], 1);
-
-                // rho_gamma rho^d rho_k^d
-                tmp_val = 2.0 * w[P] * v_rho_gamma[P];
-                C_DAXPY(nlocal, (tmp_val * rho_k_x[P] * rho_x[P]), phi_x[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, (tmp_val * rho_k_y[P] * rho_y[P]), phi_y[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, (tmp_val * rho_k_z[P] * rho_z[P]), phi_z[P], 1, Tp[P], 1);
-
-                // gamma_gamma rho^d rho_k^d
-                tmp_val = 2.0 * w[P] * v_gamma_gamma[P] * gamma_k[P];
-                C_DAXPY(nlocal, (tmp_val * rho_x[P]), phi_x[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, (tmp_val * rho_y[P]), phi_y[P], 1, Tp[P], 1);
-                C_DAXPY(nlocal, (tmp_val * rho_z[P]), phi_z[P], 1, Tp[P], 1);
+                ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+                if (rho_a[P] < 1.e-6) continue;
+                C_DAXPY(nlocal, 0.5 * v2_rho2[P] * w[P] * rho_k[P], phi[P], 1, Tp[P], 1);
             }
-            // timer_off("V: GGA");
-        }
 
+            // => GGA contribution <= //
+            if (ansatz >= 1) {
+                double* v_gamma = vals["V_GAMMA_AA"]->pointer();
+                double* v2_gamma_gamma = vals["V_GAMMA_AA_GAMMA_AA"]->pointer();
+                double* v2_rho_gamma = vals["V_RHO_A_GAMMA_AA"]->pointer();
+                double tmp_val = 0.0, v2_val = 0.0;
 
-        // Put it all together
-        C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions,
-                0.0, Vx_localp[0], max_functions);
+                for (int P = 0; P < npoints; P++) {
+                    if (rho_a[P] < 1.e-6) continue;
 
-        // => Unpacking <= //
-        for (int ml = 0; ml < nlocal; ml++) {
-            int mg = function_map[ml];
-            for (int nl = 0; nl < ml; nl++) {
-                int ng = function_map[nl];
-                #pragma omp atomic update
-                Vp[mg][ng] += Vx_localp[ml][nl];
-                #pragma omp atomic update
-                Vp[ng][mg] += Vx_localp[ml][nl];
+                    // V contributions
+                    C_DAXPY(nlocal, (0.5 * w[P] * v2_rho_gamma[P] * gamma_k[P]), phi[P], 1, Tp[P],
+                            1);
+
+                    // W contributions
+                    v2_val = (v2_rho_gamma[P] * rho_k[P] + v2_gamma_gamma[P] * gamma_k[P]);
+
+                    tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_x[P] + v2_val * rho_x[P]);
+                    C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tp[P], 1);
+
+                    tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_y[P] + v2_val * rho_y[P]);
+                    C_DAXPY(nlocal, tmp_val, phi_y[P], 1, Tp[P], 1);
+
+                    tmp_val = 2.0 * w[P] * (v_gamma[P] * rho_k_z[P] + v2_val * rho_z[P]);
+                    C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tp[P], 1);
+                }
             }
-            #pragma omp atomic update
-            Vp[mg][mg] += Vx_localp[ml][ml];
+
+            // Put it all together
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0],
+                    max_functions, 0.0, Vx_localp[0], max_functions);
+
+            // Symmetrization (V is Hermitian)
+            for (int m = 0; m < nlocal; m++) {
+                for (int n = 0; n <= m; n++) {
+                    Vx_localp[m][n] = Vx_localp[n][m] = Vx_localp[m][n] + Vx_localp[n][m];
+                }
+            }
+
+            // => Unpacking <= //
+            double** Vxp = Vx_AO[dindex]->pointer();
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < ml; nl++) {
+                    int ng = function_map[nl];
+                    #pragma omp atomic update
+                    Vxp[mg][ng] += Vx_localp[ml][nl];
+                    #pragma omp atomic update
+                    Vxp[ng][mg] += Vx_localp[ml][nl];
+                }
+                #pragma omp atomic update
+                Vxp[mg][mg] += Vx_localp[ml][ml];
+            }
+            // timer_off("V: V_XC");
         }
-        // timer_off("V: V_XC");
     }
 
     // Set the result
-    if (AO2USO_){
-        ret[0]->apply_symmetry(Vx_AO, AO2USO_);
-    } else {
-        ret[0]->copy(Vx_AO);
+    for (size_t i = 0; i < Dx.size(); i++){
+        if (Dx[i]->nirrep() != 1) {
+            ret[i]->apply_symmetry(Vx_AO[i], AO2USO_);
+        } else {
+            ret[i]->copy(Vx_AO[i]);
+        }
     }
 
     // Reset the workers

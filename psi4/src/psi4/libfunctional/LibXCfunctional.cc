@@ -363,8 +363,15 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                                 tau_ap, fv.data(), fv_rho.data(), fv_gamma.data(), fv_lapl.data(),
                                 fv_tau.data());
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv.data(),
+                if (name_ == "XC_GGA_X_LB"){
+                // if ((name_ == "XC_GGA_X_LB") || (name_ == "XC_GGA_X_LBM")){
+                xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, nullptr,
                                fv_rho.data(), fv_gamma.data());
+                printf("I am not computing fv\n");
+                } else {
+                    xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv.data(),
+                                   fv_rho.data(), fv_gamma.data());
+                }
 
             } else {
                 xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, fv.data(), fv_rho.data());
@@ -414,9 +421,6 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         }
 
     } else {  // End unpolarized
-        if (deriv == 0) {
-            throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
-        }
 
         // Allocate input data
         std::vector<double> frho(npoints * 2);
@@ -448,6 +452,9 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
         }
 
         // Compute first deriv
+        if (deriv == 0) {
+            throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
+        }
         if (deriv >= 1) {
             if (meta_) {
                 xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), flapl.data(),

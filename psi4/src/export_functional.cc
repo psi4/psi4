@@ -132,6 +132,8 @@ void export_functional(py::module &m)
         }).
         def("initialize", &VBase::initialize, "doctsring").
         def("finalize", &VBase::finalize, "doctsring").
+        def("set_D", &VBase::set_D, "Sets the internal density.").
+        def("Dao", &VBase::set_D, "Returns internal AO density.").
         def("compute_V", &VBase::compute_V, "doctsring").
         def("compute_Vx", &VBase::compute_Vx, "doctsring").
         def("compute_gradient", &VBase::compute_gradient, "Compute the DFT nuclear gradient contribution.").
@@ -144,10 +146,7 @@ void export_functional(py::module &m)
         def("properties", &VBase::properties, "Returns the properties computer.").
         def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.").
         def("nblocks", &VBase::nblocks, "Total number of blocks.").
-        def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.").
-
-        def("Dao", &VBase::Dao, "The current density").
-        def("set_D", &VBase::set_D, "The current density");
+        def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.");
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions> >(m, "BasisFunctions", "docstring").
         def("max_functions", &BasisFunctions::max_functions, "docstring").
