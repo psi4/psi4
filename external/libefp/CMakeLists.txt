@@ -2,7 +2,7 @@ find_package(libefp CONFIG QUIET COMPONENTS shallow)
 
 if(${libefp_FOUND})
     get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-    message(STATUS "Found libefp: ${_loc} (found version ${libefp_VERSION})")
+    message(STATUS "${Cyan}Found libefp${ColourReset}: ${_loc} (found version ${libefp_VERSION})")
     add_library(libefp_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
@@ -31,5 +31,7 @@ else()
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+    set(libefp_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
 endif()
 

@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(fd-gradient "psi;shorttests;findif;gradient")
+add_regression_test(fd-gradient "psi;findif;gradient")

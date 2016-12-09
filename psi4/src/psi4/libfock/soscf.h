@@ -196,6 +196,9 @@ public:
     double current_ci_energy() { return energy_ci_; }
     SharedMatrix current_AFock() { return matrices_["AFock"]; }
     SharedMatrix current_IFock() { return matrices_["IFock"]; }
+    virtual void set_eri_tensors(SharedMatrix, SharedMatrix)
+    {
+    }
 
 protected:
 
@@ -325,6 +328,7 @@ public:
     IncoreSOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
     virtual ~IncoreSOMCSCF();
+    virtual void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
 
 protected:
 
@@ -332,12 +336,11 @@ protected:
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);
     virtual SharedMatrix compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatrix Uact);
 
-    void set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar);
     bool eri_tensor_set_;
     SharedMatrix mo_aaaa_;
     SharedMatrix mo_aaar_;
 
-}; // DFSOMCSCF class
+};  ///Incore SOMCSCF
 
 
 } // Namespace psi

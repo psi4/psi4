@@ -19,7 +19,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
         endif()
     else ()
         if (${GCC_VERSION} VERSION_LESS 4.9)
-            message(WARNING "Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc")
+            message(WARNING "${BoldYellow}Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc\n${ColourReset}${Yellow}This message ${BoldYellow}will${ColourReset}${Yellow} remain after the likely correction of adding gcc/gxx-name.${ColourReset}")
         endif()
     endif()
 

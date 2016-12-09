@@ -1,14 +1,14 @@
 find_package(pybind11 QUIET)#RMR pybind11 doesn't make a config file
 
-if(${PYBIND11_FOUND})
-    message(STATUS "Found pybind11: ${PYBIND11_INCLUDE_DIR} (found version ${PYBIND11_VERSION})")
+if(${pybind11_FOUND})
+    message(STATUS "${Cyan}Found pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION})")
     add_library(pybind11_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
     message(STATUS "Suitable pybind11 could not be located, building one instead.")
     ExternalProject_Add(pybind11_external
         GIT_REPOSITORY https://github.com/psi4/pybind11
-        GIT_TAG oct18ud
+        GIT_TAG nov16ud
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -22,5 +22,7 @@ else()
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+    set(pybind11_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/pybind11 CACHE PATH "path to internally built pybind11Config.cmake" FORCE)
 endif()
 

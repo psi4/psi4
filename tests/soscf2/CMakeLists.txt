@@ -1,4 +1,4 @@
 include(TestingMacros)
 
-add_regression_test(soscf2 "psi;shorttests;scf")
+add_regression_test(soscf2 "psi;scf")
 

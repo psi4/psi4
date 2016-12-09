@@ -112,7 +112,20 @@ compare_integers(0, get_option('SCF', var), descrip + 'set as off')  #TEST
 
 
 var = 'MOM_OCC'
-descrip = 'global array kw '
+descrip = 'global single array kw '
+
+set mom_occ [1, 2.0, 'cat', dog, 5e-2]
+asdf = get_option('SCF', var)
+compare_integers(1, asdf[0], descrip + 'int element')  #TEST
+compare_values(2.0, asdf[1], 6, descrip + 'float element')  #TEST
+compare_strings('CAT', asdf[2], descrip + 'string element')  #TEST
+compare_strings('DOG', asdf[3], descrip + 'unquoted string element')  #TEST
+compare_values(0.05, asdf[4], 6, descrip + 'sci float element')  #TEST
+print(asdf, type(asdf), [type(v) for v in asdf])
+
+
+var = 'MOM_OCC'
+descrip = 'global nested array kw '
 
 set mom_occ [[1, 2.0, 'cat', dog, 5e-2], [1, 2, 7, 8]]
 asdf = get_option('SCF', var)

@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(ocepa-grad1 "psi;shorttests;ocepa")
+add_regression_test(ocepa-grad1 "psi;ocepa")

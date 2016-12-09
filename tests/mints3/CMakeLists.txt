@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(mints3 "psi;shorttests;mints")
+add_regression_test(mints3 "psi;mints")

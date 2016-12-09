@@ -37,7 +37,7 @@ sys.path.append(os.environ.get('PSIDATADIR')+'/python')
 try:
     import qcdb
 except ImportError:
-    print """Cannot load qcdb python module. Run this script in situ or append the psi4/share/psi4/python directory to $PYTHONPATH.""" 
+    print("""Cannot load qcdb python module. Run this script in situ or append the psi4/share/psi4/python directory to $PYTHONPATH.""")
     exit(1)
 
 """
@@ -55,20 +55,20 @@ Last Modified: Tuesday, September 10, 2013, LAB
 """
 
 # instructions
-print """
+print("""
  Welcome to ixyz2database.
     Just fill in the variables when prompted. 
     Hit ENTER to accept default.
     Strings should not be in quotes.
     Elements in arrays should be space-delimited.
-"""
+""")
 
 # query database name
-print """
+print("""
  Name your database.
     Recommend 3-8 characters, all capitalized letters.
     e.g., MINE or BZ6
-"""
+""")
 user_obedient = False
 while not user_obedient:
     dbse = raw_input('    dbse = ').strip()
@@ -76,22 +76,22 @@ while not user_obedient:
         user_obedient = True
 
 # query file extension
-print """
+print("""
  XYZ file extension.
     All files with this extension in the current directory will be processed
     Additionally, all files with extension p4m in the current dir will be processed as psi4 mol format
-"""
+""")
 fext = raw_input('    fext = [xyz] ').strip()
 if fext == "":
     fext = 'xyz'
 
 # query xyz file comment line
-print """
+print("""
  What should line two of the XYZ file be used for (needn't be specially formatted in all files)
     [cgmp]      Treat first item in line as system charge, second as multiplicity, rest as comment
     [comment]   Treat content as text for the comment line
     [trash]     Ignore content
-"""
+""")
 user_obedient = False
 while not user_obedient:
     line2 = raw_input('    line2 = [cgmp] ').strip().lower()
@@ -101,13 +101,13 @@ while not user_obedient:
         user_obedient = True
 
 # query closed shell
-print """
+print("""
  Are open-shell or non-singlets are present among your systems (or subsystems in the case of dimers)?
-"""
+""")
 isOS = qcdb.query_yes_no('    isOS =', False)
 
 # query database type
-print """
+print("""
  What is the nature of the systems in your incipient database?
     [1]         I have a bunch of plain molecules (no need to act on any subsystems)
                 that I want to be able to act upon in parallel.
@@ -117,7 +117,7 @@ print """
                 that I want to form into a database whose reference quantity is interaction energy.
     Your final database may of course resemble any combination of these choices.
     This is but a humble script to get you started.
-"""
+""")
 user_obedient = False
 while not user_obedient:
     route = raw_input('    route = ').strip().lower()
@@ -128,10 +128,10 @@ while not user_obedient:
 
 # query number of reactions
 if route == 2:
-    print """
+    print("""
  How many reactions (things that have a reference quantity, as opposed
     to reagents that have a geometry) are in the database?
-"""
+""")
     user_obedient = False
     while not user_obedient:
         Nrxn = raw_input('    Nrxn = ').strip().lower()
@@ -160,7 +160,7 @@ HRGT = []
 TAGLRGT = {}
 BINDRGT = {}
 
-print "\n%-25s %6s %6s %6s %6s %6s\t\t%s\n" % ("system", "CHGsyst", "MLPsyst", "Natom", "Nmol1", "Nmol2", "Fragmentation Pattern")
+print("\n%-25s %6s %6s %6s %6s %6s\t\t%s\n" % ("system", "CHGsyst", "MLPsyst", "Natom", "Nmol1", "Nmol2", "Fragmentation Pattern"))
 
 for xyzfile in (glob.glob('*.' + fext) + glob.glob('*.p4m')):
 
@@ -207,17 +207,17 @@ for xyzfile in (glob.glob('*.' + fext) + glob.glob('*.p4m')):
         Nmol1 = mol.fragments[0][1] - mol.fragments[0][0] + 1
         Nmol2 = mol.fragments[1][1] - mol.fragments[1][0] + 1
 
-        print "%-25s %6d %6d %6d %6d %6d\t\t%s" % (system, CHGsyst, MLPsyst, Nsyst, Nmol1, Nmol2, frag_pattern)
+        print("%-25s %6d %6d %6d %6d %6d\t\t%s" % (system, CHGsyst, MLPsyst, Nsyst, Nmol1, Nmol2, frag_pattern))
         gpy += "GEOS['%%s-%%s-%%s' %% (dbse, '%s', 'dimer')] = qcdb.Molecule(\"\"\"\n" % (str(system))
 
         if mol.nfragments() != 2:
-            print "ERROR: 2 fragments not detected for system %s." % (system)
-            print "       If you really have trimers or above, contact LAB to modify this script.\n"
+            print("ERROR: 2 fragments not detected for system %s." % (system))
+            print("       If you really have trimers or above, contact LAB to modify this script.\n")
             sys.exit()
 
     else:
 
-        print "%-25s %6d %6d %6d %6d %6d" % (system, CHGsyst, MLPsyst, Nsyst, Nsyst, 0)
+        print("%-25s %6d %6d %6d %6d %6d" % (system, CHGsyst, MLPsyst, Nsyst, Nsyst, 0))
         gpy += "GEOS['%%s-%%s-%%s' %% (dbse, '%s', 'reagent')] = qcdb.Molecule(\"\"\"\n" % (str(system))
 
     gpy += mol.create_psi4_string_from_molecule()
@@ -227,7 +227,7 @@ for xyzfile in (glob.glob('*.' + fext) + glob.glob('*.p4m')):
 
 Nrgt = len(HRGT)
 if Nrgt != count:
-    print "ERROR: discrepancy in counting systems $Nrgt vs $count!\n"
+    print("ERROR: discrepancy in counting systems $Nrgt vs $count!\n")
     sys.exit()
 
 
@@ -481,4 +481,4 @@ final += """
           option to to the docstring. See NBC10.py for a simple example or
           CFLOW.py for a complex example.
 """
-print final
+print(final)

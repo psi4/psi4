@@ -120,9 +120,27 @@ PSI Variables by Alpha
    energy [H] and correlation correction components [H] for the compound
    method requested through cbs().
 
-.. psivar:: CC ROOT n TOTAL ENERGY
+.. psivar:: CC ROOT n DIPOLE X
+   CC ROOT n DIPOLE Y 
+   CC ROOT n DIPOLE Z
 
-   The total electronic energy [H]
+   The three components of the dipole [Debye] for the requested
+   coupled cluster level of theory and root *n* (number starts at GS = 0).
+
+.. psivar:: CC ROOT n QUADRUPOLE XX
+   CC ROOT n QUADRUPOLE XY
+   CC ROOT n QUADRUPOLE XZ
+   CC ROOT n QUADRUPOLE YY
+   CC ROOT n QUADRUPOLE YZ
+   CC ROOT n QUADRUPOLE ZZ
+
+   The six components of the quadrupole [Debye Ang] for the requested
+   coupled cluster level of theory and root *n* (numbering starts at GS = 0).
+
+.. psivar:: CC ROOT n TOTAL ENERGY
+   CC ROOT n CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
    for the requested coupled cluster level of theory and root 
    *n* (numbering starts at GS = 0).
 

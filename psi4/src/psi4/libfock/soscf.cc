@@ -1460,7 +1460,10 @@ SharedMatrix IncoreSOMCSCF::compute_Q(SharedMatrix TPDM)
     int nact3 = nact_ * nact_ * nact_;
     double** TPDMp = TPDM->pointer();
     double** aaaRp = mo_aaar_->pointer();
-    C_DGEMM('N','N',nact_,nmo_,nact3,1.0,TPDMp[0],nact3,aaaRp[0],nact3,1.0,denQp[0],nmo_);
+    ///KPH found that this didn't work for my purpose.  Not sure if it works for anyone else.  No test cases for this.
+    //C_DGEMM('N','N',nact_,nmo_,nact3,1.0,TPDMp[0],nact3,aaaRp[0],nact3,1.0,denQp[0],nmo_);
+    ///TPDM_vwxy G_mwxy -> Q_vm
+    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp[0],nact3,aaaRp[0],nact3,1.0,denQp[0],nmo_);
 
     // Symmetry block Q
     SharedMatrix Q(new Matrix("Qvn", nirrep_, nactpi_, nmopi_));

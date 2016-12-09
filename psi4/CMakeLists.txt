@@ -17,31 +17,50 @@ test_restrict(restrict)
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
+# using Python in psi4-core
+# * interpreter: run the versioner (and elsewhere to run tests, docs)
+# * headers: Python.h for pybind11 to build against
+# * library: not at all
 find_package(PythonLibsNew REQUIRED)
-#find_package(PythonInterp REQUIRED)
-#find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
+message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING})")
+set_property(TARGET pybind11::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
+
 find_package(Threads)
 find_package(DL)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
 if(${ENABLE_CheMPS2})
-    find_package(CheMPS2 CONFIG REQUIRED)
+    find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
+    get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
+    message(STATUS "Found CheMPS2: ${_loc} (found version ${CheMPS2_VERSION})")
 endif ()
 if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED)
+    get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
+    message(STATUS "Found dkh: ${_loc} (found version ${dkh_VERSION})")
 endif()
 find_package(libefp CONFIG REQUIRED COMPONENTS shallow)
+get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
+message(STATUS "Found libefp: ${_loc} (found version ${libefp_VERSION})")
 if(${ENABLE_erd})
     find_package(erd CONFIG REQUIRED)
+    get_property(_loc TARGET erd::erd PROPERTY LOCATION)
+    message(STATUS "Found erd: ${_loc} (found version ${erd_VERSION})")
 endif()
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED)
+    get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
+    message(STATUS "Found gdma: ${_loc} (found version ${gdma_VERSION})")
 endif()
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
+get_property(_loc TARGET libint::int PROPERTY LOCATION)
+message(STATUS "Found libint: ${_loc} (found version ${libint_VERSION})")
 if(${ENABLE_PCMSolver})
     find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
+    #get_property(_loc TARGET PCMSolver::PCMSolver PROPERTY LOCATION)
+    #message(STATUS "Found PCMSolver: ${_loc} (found version ${PCMSolver_VERSION})")
 endif ()
 
 if(APPLE)

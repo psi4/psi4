@@ -89,6 +89,7 @@ def mcscf_solver(ref_wfn):
     converged = False
     ah_step = False
     qc_step = False
+    approx_integrals_only = True
 
     # Fake info to start with the inital diagonalization
     ediff = 1.e-4
@@ -135,16 +136,20 @@ def mcscf_solver(ref_wfn):
         mtype = "   @MCSCF"
         core.print_out("\n   ==> Starting MCSCF iterations <==\n\n")
         core.print_out("        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
-    else:
+    elif mcscf_type == "DF":
         mtype = "   @DF-MCSCF"
         core.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n")
+        core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
+    else:
+        mtype = "   @AO-MCSCF"
+        core.print_out("\n   ==> Starting AO-MCSCF iterations <==\n\n")
         core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
 
     # Iterate !
     for mcscf_iter in range(1, mcscf_max_macroiteration + 1):
 
         # Transform integrals, diagonalize H
-        ciwfn.transform_mcscf_integrals(mcscf_current_step_type == 'TS')
+        ciwfn.transform_mcscf_integrals(approx_integrals_only)
         nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
 
         ciwfn.form_opdm()
@@ -231,8 +236,10 @@ def mcscf_solver(ref_wfn):
                 (mcscf_iter >= 2):
 
             if mcscf_target_conv_type == 'AH':
+                approx_integrals_only = False
                 ah_step = True
             elif mcscf_target_conv_type == 'OS':
+                approx_integrals_only = False
                 mcscf_current_step_type = 'OS, Prep'
                 break
             else:

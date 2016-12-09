@@ -25,6 +25,7 @@
  * @END LICENSE
  */
 
+#include "psi4/psi4-dec.h"
 #include "defines.h"
 #include "dfocc.h"
 

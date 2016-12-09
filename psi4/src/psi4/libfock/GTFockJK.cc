@@ -44,15 +44,22 @@ struct MinimalInterface{
 #endif
 
 
+#ifdef ENABLE_GTFOCK
 namespace psi {
-GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary,
-      size_t NMats,bool AreSymm):
-      JK(Primary),Impl_(new MinimalInterface(NMats,AreSymm)){
+GTFockJK::GTFockJK(std::shared_ptr<psi::BasisSet> Primary) :
+      JK(Primary),Impl_(new MinimalInterface()){
 
 }
 void GTFockJK::compute_JK() {
+
+   NMats_ = C_left_.size();
+   Impl_->create_pfock(NMats_, lr_symmetric_);
    Impl_->SetP(D_ao_);
    Impl_->GetJ(J_ao_);
    Impl_->GetK(K_ao_);
+   Impl_->destroy_gtfock();
 }
+
+
 }
+#endif

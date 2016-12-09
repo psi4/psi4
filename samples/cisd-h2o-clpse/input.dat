@@ -11,6 +11,7 @@ molecule h2o {
 
 set {
   basis 6-31G**
+  qc_module detci
 }
 
 set detci {
@@ -18,7 +19,6 @@ set detci {
   r_convergence = 5
   max_num_vecs = 4
   collapse_size = 2
-  qc_module detci
 }
 
 thisenergy = energy('cisd')

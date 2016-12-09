@@ -69,7 +69,6 @@ set(sources_list sortI.cc
                  sort_rtd_rohf.cc 
                  build_Z_UHF.cc 
                  transp.cc 
-                 dipole.cc 
                  get_moinfo.cc 
                  twopdm.cc 
                  file_build.cc 
