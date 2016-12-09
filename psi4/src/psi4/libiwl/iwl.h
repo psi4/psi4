@@ -107,7 +107,7 @@ void iwl_buf_wrt_mp2r12a(struct iwlbuf *Buf, int p, int q, int pq,
       int printflag, std::string out);
 void iwl_buf_flush(struct iwlbuf *Buf, int lastbuf);
 void iwl_buf_close(struct iwlbuf *Buf, int keep);
-void iwl_buf_toend(struct iwlbuf *Buf);
+//void iwl_buf_toend(struct iwlbuf *Buf);
 void iwl_buf_wrt_arr(struct iwlbuf *Buf, double *arr, int *p, int *q,
       int *r, int *s, long int size);
 void iwl_buf_wrt_arr_SI(struct iwlbuf *Buf, double *arr,

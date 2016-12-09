@@ -231,8 +231,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /* How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc */
   options.add_str("PRINT_NOONS","3");
 
-  // Temporary: turn on/off cctransort module.  Remove after stability is proven. -TDC (1/19/2016)
-  options.add_bool("RUN_CCTRANSORT", true);
 
 
   if (name == "DETCI" || options.read_globals()) {
@@ -1582,36 +1580,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SOLVER_EXACT_DIAGONAL", false);
 
   }
-  // Options of this module not standardized since it's bound for deletion
-  if(name == "TRANSQT2"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This
-          module is currently used by the (non-density fitted) MP2 and coupled cluster codes, but it is being phased
-          out. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF");
-    /*- Do print two-electron integrals (TEIs)? -*/
-    options.add_bool("PRINT_TEI", false);
-    /*- Minimum absolute value below which integrals are neglected. -*/
-    options.add_double("INTS_TOLERANCE", 1e-14);
-    /*- Controls how to cache quantities within the DPD library !expert-*/
-    options.add_int("CACHELEVEL", 2);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
-    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Boolean to delete the SO-basis two-electron integral file after the transformation -*/
-    options.add_bool("DELETE_TEI", true);
-    /*- Whether to only form the one electron integrals !expert-*/
-    options.add_bool("NO_TEI", false);
-    /*- Convert ROHF MOs to semicanonical MOs -*/
-    options.add_bool("SEMICANONICAL", true);
-
-    // /*- An array giving the number of active orbitals (occupied plus
-    // unoccupied) per irrep (shorthand to make MCSCF easier to specify than
-    // using RAS keywords) -*/
-    // options.add("ACTIVE", new ArrayType());
-  }
-  // Options of this module not standardized since it's bound for deletion
   if(name == "CCTRANSORT"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Transforms and sorts integrals for CC codes. Called before (non-density-fitted) MP2 and coupled cluster computations. -*/
     /*- Wavefunction type !expert -*/
@@ -1626,66 +1594,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEVEL", 2);
     /*- Force conversion of ROHF MOs to semicanonical MOs to run UHF-based energies -*/
     options.add_bool("SEMICANONICAL", false);
-  }
-  if(name == "CCSORT"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Sorts integrals for efficiency. Called before (non density-fitted) MP2 and
-          coupled cluster computations. -*/
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "");
-    /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF");
-    /*- Reference wavefunction type for EOM computations -*/
-    options.add_str("EOM_REFERENCE","RHF");
-    /*- The response property desired.  The unique acceptable values is ``POLARIZABILITY``
-    for dipole-polarizabilitie. -*/
-    options.add_str("PROPERTY", "POLARIZABILITY");
-    /*- Do simulate the effects of local correlation techniques? -*/
-    options.add_bool("LOCAL", false);
-    /*- Value (always between one and zero) for the Broughton-Pulay completeness
-    check used to contruct orbital domains for local-CC calculations. See
-    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
-    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
-    options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
-    options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
-    /*- Local core cutoff value -*/
-    options.add_double("LOCAL_CORE_CUTOFF",0.05);
-    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique avaliable option) selects the method
-    developed by H.-J. Werner and co-workers. -*/
-    options.add_str("LOCAL_METHOD","WERNER");
-    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique avaliable option) treats weak pairs in
-    the same manner as strong pairs. -*/
-    options.add_str("LOCAL_WEAKP","NONE");
-    /*- Definition of local pair domains, unique avaliable option is BP, Boughton-Pulay. -*/
-    options.add_str("LOCAL_PAIRDEF","BP");
-    /*- Do use augment domains with polarized orbitals? -*/
-    options.add_bool("LOCAL_DOMAIN_POLAR", false);
-    /*- Do generate magnetic-field CPHF solutions for local-CC? -*/
-    options.add_bool("LOCAL_DOMAIN_MAG", false);
-    /*- -*/
-    options.add_bool("LOCAL_DOMAIN_SEP", false);
-    /*- Do apply local filtering to single excitation amplitudes? -*/
-    options.add_bool("LOCAL_FILTER_SINGLES", false);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
-    options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Do retain the input two-electron integrals? -*/
-    options.add_bool("KEEP_TEIFILE", false);
-    /*- Do retain the input one-electron integrals? -*/
-    options.add_bool("KEEP_OEIFILE", false);
-    /*- Minimum absolute value below which integrals are neglected. -*/
-    options.add_double("INTS_TOLERANCE", 1e-14);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
-    integrals, and intermediates in the CC procedure. A value of 0 retains
-    no quantities in cache, while a level of 6 attempts to store all
-    quantities in cache.  For particularly large calculations, a value of
-    0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
-    options.add_int("CACHELEVEL", 2);
-    /*- Energy of applied field [au] for dynamic properties -*/
-    options.add("OMEGA", new ArrayType());
-    /*- Convert ROHF MOs to semicanonical MOs -*/
-    options.add_bool("SEMICANONICAL", true);
+    /*- Use cctransort module NOTE: Turning this option off requires separate
+     * installation of  ccsort and transqt2 modules, see http://github.com/psi4/psi4pasture -*/
+    options.add_bool("RUN_CCTRANSORT", true);
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Computes the triples component of CCSD(T) energies (and gradients, if necessary). -*/

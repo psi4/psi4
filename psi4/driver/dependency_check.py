@@ -39,7 +39,7 @@ except:
         - sudo yum install numpy
         - sudo apt-get install python-numpy
         - brew install numpy
-    """ 
+    """
     raise ImportError(msg)
 
 # Import plugin add-ons here for now
@@ -49,5 +49,10 @@ except ImportError:
     pass
 try:
     import v2rdm_casscf
+except ImportError:
+    pass
+
+try:
+    from . import pasture
 except ImportError:
     pass

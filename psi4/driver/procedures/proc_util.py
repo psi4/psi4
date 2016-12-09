@@ -154,5 +154,3 @@ def check_non_symmetric_jk_density(name):
         raise ValidationError("Method %s: Requires support for non-symmetric density matrices.\n"
                               "     Please set SCF_TYPE to %s" % (name, supp_string))
 
-
-
