@@ -1420,6 +1420,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_OMEGA_C", 0.0);
     /*- The DFT Correlation hybrid parameter -*/
     options.add_double("DFT_ALPHA_C", 0.0);
+    /*- Minima rho cutoff for the second derivative -*/
+    options.add_double("DFT_V2_RHO_CUTOFF", 1.e-6);
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/

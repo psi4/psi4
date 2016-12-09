@@ -1730,9 +1730,9 @@ void HF::iterations()
             diis_performed_ = false;
             std::string base_name;
             if (functional_->needs_xc()) {
-                base_name = "SOKS, ";
+                base_name = "SOKS, nmicro = ";
             } else {
-                base_name = "SOSCF, ";
+                base_name = "SOSCF, nmicro = ";
             }
 
             if (!test_convergency()) {

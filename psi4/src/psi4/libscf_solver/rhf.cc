@@ -415,14 +415,10 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     // Compute JK
     jk_->compute();
 
-
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
     const std::vector<SharedMatrix> & wK = jk_->wK();
-    double alpha = functional_->x_alpha();
-    double beta = functional_->x_beta();
 
-    double alpha_x = 1.0;
     std::vector<SharedMatrix> Vx;
     if (functional_->needs_xc()){
         std::vector<SharedMatrix> Dx;
@@ -436,33 +432,38 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     Cl.clear();
     Cr.clear();
 
-
-    // Build return vector
+    // Build return vector, ohyea thats fun
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
     std::vector<SharedMatrix> ret;
     if (combine){
         // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
         for (size_t i = 0; i < x_vec.size(); i++){
             J[i]->scale(4.0);
+            if (functional_->is_x_hybrid()) {
+                J[i]->axpy(-alpha, K[i]);
+                J[i]->axpy(-alpha, K[i]->transpose());
+            }
+            if (functional_->is_x_lrc()) {
+                J[i]->axpy(-beta, wK[i]);
+                J[i]->axpy(-beta, wK[i]->transpose());
+            }
             if (functional_->needs_xc()){
                 J[i]->axpy(4.0, Vx[i]);
-                if (functional_->is_x_hybrid()) {
-                    J[i]->axpy(-alpha, K[i]);
-                    J[i]->axpy(-alpha, K[i]->transpose());
-                }
-                if (functional_->is_x_lrc()) {
-                    J[i]->axpy(-beta, wK[i]);
-                    J[i]->axpy(-beta, wK[i]->transpose());
-                }
-            } else {
-                J[i]->subtract(K[i]);
-                J[i]->subtract(K[i]->transpose());
             }
             ret.push_back(J[i]);
         }
     } else{
         for (size_t i = 0; i < x_vec.size(); i++){
             ret.push_back(J[i]);
-            ret.push_back(K[i]);
+            if (functional_->is_x_hybrid()) {
+                K[i]->scale(alpha);
+                ret.push_back(K[i]);
+                if (functional_->is_x_lrc()) {
+                    wK[i]->scale(beta);
+                    ret.push_back(wK[i]);
+                }
+            }
             if (functional_->needs_xc()){
                 ret.push_back(Vx[i]);
             }

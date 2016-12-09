@@ -477,36 +477,75 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     // Compute JK
     jk_->compute();
 
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+    const std::vector<SharedMatrix>& wK = jk_->wK();
+
+    std::vector<SharedMatrix> Vx;
+    if (functional_->needs_xc()){
+        std::vector<SharedMatrix> Dx;
+        // Gotta reorder the wizardry
+        for (size_t i = 0; i < nvecs; i++) {
+            Dx.push_back(Matrix::doublet(Cl[i], Cr[i], false, true));
+            Vx.push_back(SharedMatrix(new Matrix("Vax Temp", Dx[i]->rowspi(), Dx[i]->colspi())));
+
+            Dx.push_back(Matrix::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true));
+            Vx.push_back(SharedMatrix(new Matrix("Vbx Temp", Dx[nvecs + i]->rowspi(), Dx[nvecs +i]->colspi())));
+        }
+        potential_->compute_Vx(Dx, Vx);
+    }
+
     Cl.clear();
     Cr.clear();
 
-    const std::vector<SharedMatrix>& J = jk_->J();
-    const std::vector<SharedMatrix>& K = jk_->K();
-
-
     // Build return vector
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
     std::vector<SharedMatrix> ret;
     if (combine){
-        // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
         for (size_t i = 0; i < nvecs; i++){
             J[i]->scale(2.0);
             J[i]->axpy(2.0, J[nvecs + i]);
             J[nvecs + i]->copy(J[i]);
+            if (functional_->needs_xc()){
+                J[i]->axpy(2.0, Vx[2 * i]);
+                J[nvecs + i]->axpy(2.0, Vx[2 * i + 1]);
+            }
+            if (functional_->is_x_hybrid()) {
+                J[i]->axpy(-alpha, K[i]);
+                J[i]->axpy(-alpha, K[i]->transpose());
 
-            J[i]->subtract(K[i]);
-            J[i]->subtract(K[i]->transpose());
+                J[nvecs + i]->axpy(-alpha, K[nvecs + i]);
+                J[nvecs + i]->axpy(-alpha, K[nvecs + i]->transpose());
+            }
+            if (functional_->is_x_lrc()) {
+                J[i]->axpy(-beta, wK[i]);
+                J[i]->axpy(-beta, wK[i]->transpose());
+
+                J[nvecs + i]->axpy(-beta, wK[nvecs + i]);
+                J[nvecs + i]->axpy(-beta, wK[nvecs + i]->transpose());
+            }
             ret.push_back(J[i]);
-
-            J[nvecs + i]->subtract(K[nvecs + i]);
-            J[nvecs + i]->subtract(K[nvecs + i]->transpose());
             ret.push_back(J[nvecs + i]);
         }
     } else{
         for (size_t i = 0; i < nvecs; i++){
             ret.push_back(J[i]);
             ret.push_back(J[nvecs + i]);
-            ret.push_back(K[i]);
-            ret.push_back(K[nvecs + i]);
+            if (functional_->is_x_hybrid()) {
+                K[i]->scale(alpha);
+                ret.push_back(K[i]);
+
+                K[nvecs + i]->scale(alpha);
+                ret.push_back(K[nvecs + i]);
+                if (functional_->is_x_lrc()) {
+                    K[i]->axpy(beta, wK[i]);
+                    K[nvecs + i]->axpy(beta, wK[nvecs + i]);
+                }
+            }
+            if (functional_->needs_xc()){
+                ret.push_back(Vx[i]);
+            }
        }
     }
 

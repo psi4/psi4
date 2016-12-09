@@ -3,6 +3,7 @@
 #### UHF Triplet Oxygen energy, triplet
 molecule mol {
     0 3
+#    Ar
     O
     O 1 1.2
 }
@@ -16,21 +17,17 @@ set {
     reference uhf
 }
 
-# df_uhf_energy = energy('SCF')
-# df_triplet_energy = -149.6286212486618865  #TEST
-# compare_values(df_triplet_energy, df_uhf_energy, 6, 'DF-UHF Triplet Energy')  #TEST
-# 
-# # Non-DF case
-# set scf_type out_of_core
-# uhf_energy = energy('SCF')
-# triplet_energy = -149.6289923133230104  #TEST
-# compare_values(triplet_energy, uhf_energy, 6, 'OOC-UHF Triplet Energy')  #TEST
-# 
-# set scf_type pk
-# uhf_energy = energy('SCF')
-# compare_values(triplet_energy, uhf_energy, 6, 'PK-UHF Triplet Energy')  #TEST
-# 
-# 
+svwn_uhf_energy = energy('SVWN')
+svwn_triplet_energy = -149.58484859711837  #TEST
+compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'SVWN N iter')  #TEST
+compare_values(svwn_triplet_energy, svwn_uhf_energy, 6, 'SVWN Triplet Energy')  #TEST
+
+# pbe_uhf_energy = energy('PBE')
+# pbe_triplet_energy = -149.58484859711837  #TEST
+# compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'PBE N iter')  #TEST
+# compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'PBE Triplet Energy')  #TEST
+# raise Exception()
+
 #### RHF Singlet Oxygen energy, singlet
 molecule mol {
     0 1

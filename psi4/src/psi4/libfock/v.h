@@ -60,6 +60,8 @@ protected:
     int num_threads_;
     /// Number of basis functions;
     int nbf_;
+    /// Rho threshold for the second derivative;
+    double v2_rho_cutoff_;
     /// Options object, used to build grid
     Options& options_;
     /// Basis set used in the integration
@@ -158,6 +160,7 @@ public:
     virtual void finalize();
 
     virtual void compute_V(std::vector<SharedMatrix> ret);
+    virtual void compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret);
     virtual SharedMatrix compute_gradient();
 
     virtual void print_header() const;
