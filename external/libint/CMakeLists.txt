@@ -2,7 +2,7 @@ find_package(libint CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
 if(${libint_FOUND})
     get_property(_loc TARGET libint::int PROPERTY LOCATION)
-    message(STATUS "Found libint: ${_loc} (found version ${libint_VERSION})")
+    message(STATUS "${Cyan}Found libint${ColourReset}: ${_loc} (found version ${libint_VERSION})")
     add_library(libint_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
@@ -28,5 +28,7 @@ else()
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+    set(libint_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/libint CACHE PATH "path to internally built libintConfig.cmake" FORCE)
 endif()
 

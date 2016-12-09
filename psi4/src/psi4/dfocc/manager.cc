@@ -27,6 +27,7 @@
 
 #include "psi4/libqt/qt.h"
 #include "dfocc.h"
+#include "psi4/libciomr/libciomr.h"
 
 using namespace psi;
 using namespace std;

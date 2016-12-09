@@ -50,7 +50,7 @@ namespace psi {
   psio_address psio_get_global_address(psio_address entry_start,
                                        psio_address rel_address);
   int psio_volseek(psio_vol *vol, ULI page, ULI offset, ULI numvols);
-  ULI psio_get_length(psio_address sadd, psio_address eadd);
+  //ULI psio_get_length(psio_address sadd, psio_address eadd);
   psio_address psio_get_entry_end(unsigned int unit, const char *key);
 
   int psio_tocwrite(unsigned int unit);

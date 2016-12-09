@@ -37,7 +37,11 @@ if (${core_LIBRARY} MATCHES "core_LIBRARY-NOTFOUND")
     return()
 else()
     message(STATUS "Psi4 core library: ${core_LIBRARY}")
+    get_filename_component(psi4_driver_dir_prefix ${core_LIBRARY} DIRECTORY)
+    set(driver_DIR "${psi4_driver_dir_prefix}/driver")
+    message(STATUS "Psi4 driver directory: ${driver_DIR}")
 endif()
+
 
 message(STATUS "Python executable: @PYTHON_EXECUTABLE@")
 

@@ -1346,13 +1346,13 @@ void HF::guess()
             outfile->Printf( "  SCF Guess: Orbitals guess was supplied from a previous computation.\n\n");
 
         std::string reference = options_.get_str("REFERENCE");
-        bool single_orb = ((reference == "RHF") || (reference == "ROHF"));
+        bool single_orb = (reference == "RHF");
 
         if (single_orb){
             guess_Cb_ = guess_Ca_;
         } else {
             if (!guess_Cb_){
-                throw PSIEXCEPTION("Guess Ca was set, but did not find a matching Cb\n");
+                throw PSIEXCEPTION("Guess Ca was set, but did not find a matching Cb!\n");
             }
         }
 

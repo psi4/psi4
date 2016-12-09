@@ -992,10 +992,13 @@ timer_off("INIT GUESS");
           // the irreps together
           /*- strings so that variable-name psi variables get parsed in docs -*/
           /*- Process::environment.globals["CC ROOT n TOTAL ENERGY"] -*/
+          /*- Process::environment.globals["CC ROOT n CORRELATION ENERGY"] -*/
 
-          std::stringstream s;
+          std::stringstream s, ss;
           s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
           Process::environment.globals[s.str()] = totalE;
+          ss << "CC ROOT " << (num_converged_index+1) << " CORRELATION ENERGY";
+          Process::environment.globals[ss.str()] = lambda_old[i];
 
           outfile->Printf("EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
              lambda_old[i]* pc_hartree2ev, lambda_old[i]* pc_hartree2wavenumbers, lambda_old[i], totalE);

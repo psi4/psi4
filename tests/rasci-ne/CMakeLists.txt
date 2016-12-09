@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(rasci-ne "psi;shorttests;rasci")
+add_regression_test(rasci-ne "psi;rasci")

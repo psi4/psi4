@@ -3,7 +3,7 @@ if(${ENABLE_gdma})
 
     if(${gdma_FOUND})
         get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
-        message(STATUS "Found gdma: ${_loc} (found version ${gdma_VERSION})")
+        message(STATUS "${Cyan}Found gdma${ColourReset}: ${_loc} (found version ${gdma_VERSION})")
         add_library(gdma_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
@@ -27,6 +27,8 @@ if(${ENABLE_gdma})
             CMAKE_CACHE_ARGS -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
+        set(gdma_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/gdma CACHE PATH "path to internally built gdmaConfig.cmake" FORCE)
     endif()
 else()
     add_library(gdma_external INTERFACE)  # dummy

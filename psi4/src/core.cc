@@ -125,9 +125,6 @@ PsiReturnType mrcc_generate_input(SharedWavefunction, Options&, const py::dict&)
 PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const py::dict&);
 }
 
-// Should die soon
-namespace transqt2 { PsiReturnType transqt2(SharedWavefunction, Options&); }
-
 // Finite difference functions
 namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule>, Options&);
@@ -146,7 +143,6 @@ SharedMatrix displace_atom(SharedMatrix geom, const int atom,
 }
 
 // CC functions
-namespace ccsort { PsiReturnType ccsort(Options&); }
 namespace cctransort { PsiReturnType cctransort(SharedWavefunction, Options&); }
 namespace cctriples { PsiReturnType cctriples(SharedWavefunction, Options&); }
 namespace cchbar { PsiReturnType cchbar(SharedWavefunction, Options&); }
@@ -411,19 +407,6 @@ double py_psi_fisapt(SharedWavefunction ref_wfn)
         return 0.0;
 }
 
-double py_psi_transqt2(SharedWavefunction ref_wfn)
-{
-    py_psi_prepare_options_for_module("TRANSQT2");
-    transqt2::transqt2(ref_wfn, Process::environment.options);
-    return 0.0;
-}
-
-double py_psi_ccsort()
-{
-    py_psi_prepare_options_for_module("CCSORT");
-    ccsort::ccsort(Process::environment.options);
-    return 0.0;
-}
 
 void py_psi_cctransort(SharedWavefunction ref_wfn)
 {
@@ -1404,9 +1387,6 @@ PYBIND11_PLUGIN(core) {
     core.def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory code.");
     core.def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
     core.def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
-//    core.def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
-    core.def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
-    core.def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
     core.def("cctransort", py_psi_cctransort, "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
     core.def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     core.def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");

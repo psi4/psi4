@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(psimrcc-fd-freq1 "psi;shorttests;psimrcc")
+add_regression_test(psimrcc-fd-freq1 "psi;psimrcc")

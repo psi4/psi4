@@ -5,16 +5,21 @@ find_package(Perl QUIET)
 #
 # The following labels are defined:
 #
-#  longtests   = The (as of right now) 4 really long tests
-#  shorttests  = Every test in the test folder less longtests
-#  quicktests  = Proper subset of tests deemed to run quickly (ideally
-#                in 60 seconds or less).  This subset is chosen to provide
-#                one or more tests for each major module, but it does not
-#                necessarily cover all features of every module.
+#  minitests   = Does Psi4 work? A few basic operational tests plus
+#                one from each addon and addin
+#  quicktests  = Best coverage possible in a 20 min envelope (for Travis-CI).
+#                This subset is chosen to provide one or more tests for each
+#                major module, but it does not necessarily cover all features
+#                of every module.
+#  longtests   = The really long (> ~15 min) tests
+#
+# Common test runs:
+#
+#  ctest -L quicktests      run all quicktests
+#  ctest -LE longtests      run all but longtests
 #
 # It is possible to specify more than one label per test. CMake
 # expects a ;-separated list, e.g. "psi;quicktests;scf"
-# It is mandatory that any test carries a length label!
 # It is suggested to add at least a second label to specify the method tested.
 #
 #  We use ctest -I [start,end] where start is the test number we start with
@@ -28,7 +33,7 @@ find_package(Perl QUIET)
 set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
-foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1 
+foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
                   cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc14 cc15 cc16 
@@ -41,7 +46,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2 
                   ci-property cubeprop decontract dcft-grad1 dcft-grad2 
                   dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 
-                  dcft7 dcft8 dcft9 dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
+                  dcft7 dcft8 dcft9 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
                   dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
                   dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-grad1
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfomp2-1 dfomp2-2 dfomp2-3
@@ -99,6 +104,11 @@ endforeach()
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 add_subdirectory(json)
+if(ENABLE_psi4pasture)
+  add_subdirectory(pasture-ccsorttransqt2)
+  message(STATUS "${Cyan}Pasture Enabled:${ColourReset}:")
+  message(STATUS " Adding test cases: Psi4 + Pasture")
+endif()
 
 
 
@@ -125,14 +135,14 @@ find_program(CFOUR_EXECUTABLE
 
 if(CFOUR_EXECUTABLE)
     add_subdirectory(cfour)
-    message(STATUS "Found CFOUR: ${CFOUR_EXECUTABLE}")
+    message(STATUS "${Cyan}Found CFOUR${ColourReset}: ${CFOUR_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + CFOUR")
 endif()
 
 # <<<  CHEMPS2  >>>
 
 if(ENABLE_CheMPS2)
-    add_subdirectory(dmrg)
+    add_subdirectory(chemps2)
     message(STATUS "Adding test cases: Psi4 + CheMPS2")
 endif()
 
@@ -144,7 +154,7 @@ find_program(DFTD3_EXECUTABLE
 
 if(DFTD3_EXECUTABLE)
     add_subdirectory(dftd3)
-    message(STATUS "Found DFTD3: ${DFTD3_EXECUTABLE}")
+    message(STATUS "${Cyan}Found DFTD3${ColourReset}: ${DFTD3_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + DFTD3")
 endif()
 
@@ -182,7 +192,7 @@ find_program(MRCC_EXECUTABLE
 
 if(MRCC_EXECUTABLE)
     add_subdirectory(mrcc)
-    message(STATUS "Found MRCC: ${MRCC_EXECUTABLE}")
+    message(STATUS "${Cyan}Found MRCC${ColourReset}: ${MRCC_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + MRCC")
 endif()
 

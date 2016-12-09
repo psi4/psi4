@@ -27,6 +27,8 @@
 
 #include "defines.h"
 #include "dfocc.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libciomr/libciomr.h"
 
 using namespace psi;
 using namespace std;

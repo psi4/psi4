@@ -65,6 +65,15 @@ option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_g2dma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
+# These options are relevant to pasture
+option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
+option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
+
+# Append modules added to pasture as needed
+if(ENABLE_ccsort OR ENABLE_transqt2)
+  set(ENABLE_psi4pasture ON)
+  message(STATUS "Enabling pasture plugins")
+endif()
 
 if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
     enable_language(Fortran)
@@ -107,16 +116,19 @@ option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
 include(autocmake_safeguards)
+include(custom_color_messages)
 
 #find_package(PythonLibsNew REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
+set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
+add_subdirectory(external)
+
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(autocmake_static_library)
-set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 ################################  Dependencies  ################################
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
@@ -184,7 +196,16 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
+              -DENABLE_psi4pasture=${ENABLE_psi4pasture}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -DCheMPS2_DIR=${CheMPS2_DIR}
+              -Ddkh_DIR=${dkh_DIR}
+              -Dlibefp_DIR=${libefp_DIR}
+              -Derd_DIR=${erd_DIR}
+              -Dgdma_DIR=${gdma_DIR}
+              -DGTFock_DIR=${GTFock_DIR}
+              -Dlibint_DIR=${libint_DIR}
+              -Dpybind11_DIR=${pybind11_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
@@ -207,6 +228,7 @@ add_dependencies(psi4_core ambit_external
                            libint_external
                            pcmsolver_external
                            pybind11_external)
+add_subdirectory(internals/pasture)
 add_subdirectory(doc)
 include(ConfigTesting)
 

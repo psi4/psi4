@@ -729,8 +729,9 @@ public:
 class GTFockJK: public JK{
    private:
       ///The actual instance that does the implementing
-
       std::shared_ptr<MinimalInterface> Impl_;
+      int NMats_ = 0;
+      
    protected:
       /// Do we need to backtransform to C1 under the hood?
       virtual bool C1() const { return true; }
@@ -757,9 +758,13 @@ class GTFockJK: public JK{
        *         matrices you'll be passing in are symmetric.
        */
       GTFockJK(std::shared_ptr<psi::BasisSet> Primary,
-            size_t NMats=1,
-            bool AreSymm=true);
-
+            size_t NMats,
+            bool AreSymm);
+      /** \brief Your interface to GTFock that works well with libfock
+      *   GTFock needs number of densities and symmetric at initialization
+      *   This code calls GTFock once the number of densities was read from jk object
+      */
+      GTFockJK(std::shared_ptr<psi::BasisSet> Primary);
 };
 
 /**

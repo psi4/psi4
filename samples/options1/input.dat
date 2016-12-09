@@ -71,7 +71,15 @@ set soscf off
 
 
 var = 'MOM_OCC'
-descrip = 'global array kw '
+descrip = 'global single array kw '
+
+set mom_occ [1, 2.0, 'cat', dog, 5e-2]
+asdf = get_option('SCF', var)
+print(asdf, type(asdf), [type(v) for v in asdf])
+
+
+var = 'MOM_OCC'
+descrip = 'global nested array kw '
 
 set mom_occ [[1, 2.0, 'cat', dog, 5e-2], [1, 2, 7, 8]]
 asdf = get_option('SCF', var)

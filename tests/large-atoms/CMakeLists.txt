@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(large_atoms "psi;shorttests;misc")
+add_regression_test(large_atoms "psi;misc")
