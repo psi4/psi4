@@ -259,6 +259,8 @@ SharedMatrix py_psi_scfhess(SharedWavefunction ref_wfn)
     return scfgrad::scfhess(ref_wfn, Process::environment.options);
 }
 
+
+
 SharedWavefunction py_psi_occ(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("OCC");
@@ -705,7 +707,6 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
         Process::environment.options.set_int(module, nonconst_key, value);
     }
     return true;
-
 }
 
 bool py_psi_set_local_option_double(std::string const& module, std::string const& key, double value)
@@ -769,6 +770,16 @@ bool py_psi_set_global_option_python(std::string const& key, py::object& obj)
     return true;
 }
 
+template<typename T>
+bool can_cast(py::handle oi){
+    try{
+        oi.cast<T>();
+        return true;
+    }
+    catch(...){}
+    return false;
+}
+
 bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const py::list& values,
                                    DataType *entry = NULL)
 {
@@ -781,33 +792,19 @@ bool py_psi_set_local_option_array(std::string const& module, std::string const&
         if (data.type() == "array")
             Process::environment.options.set_array(module, nonconst_key);
     }
-    size_t size = len(values);
-    for (int n = 0; n < size; ++n) {
-        try {
-            py::list l = values[n].cast<py::list>();
-            DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
-            // Now we need to recurse, to fill in the data
-            py_psi_set_local_option_array(module, key, l, newentry);
+    Options& options=Process::environment.options;
+    for(py::handle oi: values){
+        if(can_cast<py::list>(oi)){
+            DataType* newentry = options.set_local_array_array(module,nonconst_key, entry);
+            py_psi_set_local_option_array(module,key,oi.cast<py::list>(),newentry);
         }
-        catch (py::cast_error e) {
-            // This is not a list; try to cast to a string
-            try {
-                std::string s = values[n].cast<std::string>();
-                Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
-            } catch(py::cast_error e) {
-                try {
-                    // This is not a list or string; try to cast to an integer
-                    int i = values[n].cast<int>();
-                    Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
-                } catch(py::cast_error e) {
-                    // This had better be castable to a float.  We don't catch the exception here
-                    // because if we encounter one, something bad has happened
-                    double f = values[n].cast<double>();
-                    Process::environment.options.set_local_array_double(module, nonconst_key, f, entry);
-                }
-            }
-
-        }
+        else if(can_cast<std::string>(oi))
+            options.set_local_array_string(module, nonconst_key, oi.cast<std::string>(), entry);
+        else if(can_cast<int>(oi))
+            options.set_local_array_int(module,nonconst_key, oi.cast<int>(), entry);
+        else if(can_cast<double>(oi))
+            options.set_local_array_double(module,nonconst_key, oi.cast<double>(), entry);
+        else throw PSIEXCEPTION("unrecognized type in py_psi_set_local_option_array");
     }
     return true;
 }
@@ -829,33 +826,19 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
         if (data.type() == "array")
             Process::environment.options.set_global_array(nonconst_key);
     }
-    size_t size = len(values);
-    for (int n = 0; n < size; ++n) {
-        try {
-            py::list l = values[n].cast<py::list>();
-            DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
-            // Now we need to recurse, to fill in the data
-            py_psi_set_global_option_array(key, l, newentry);
+    Options& options=Process::environment.options;
+    for(py::handle oi: values){
+        if(can_cast<py::list>(oi)){
+            DataType* newentry = options.set_global_array_array(nonconst_key, entry);
+            py_psi_set_global_option_array(key,oi.cast<py::list>(),newentry);
         }
-        catch (py::cast_error e) {
-            // This is not a list; try to cast to a string
-            try {
-                std::string s = values[n].cast<std::string>();
-                Process::environment.options.set_global_array_string(nonconst_key, s, entry);
-            } catch(py::cast_error e) {
-                try {
-                    // This is not a list or string; try to cast to an integer
-                    int i = values[n].cast<int>();
-                    Process::environment.options.set_global_array_int(nonconst_key, i, entry);
-                } catch(py::cast_error e) {
-                    // This had better be castable to a float.  We don't catch the exception here
-                    // because if we encounter one, something bad has happened
-                    double f = values[n].cast<double>();
-                    Process::environment.options.set_global_array_double(nonconst_key, f, entry);
-                }
-            }
-
-        }
+        else if(can_cast<std::string>(oi))
+            options.set_global_array_string(nonconst_key, oi.cast<std::string>(), entry);
+        else if(can_cast<int>(oi))
+            options.set_global_array_int(nonconst_key, oi.cast<int>(), entry);
+        else if(can_cast<double>(oi))
+            options.set_global_array_double(nonconst_key, oi.cast<double>(), entry);
+        else throw PSIEXCEPTION("unrecognized type in py_psi_set_global_option_array");
     }
     return true;
 }
@@ -922,40 +905,34 @@ void py_psi_revoke_local_option_changed(std::string const& module, std::string c
     data.dechanged();
 }
 
+inline py::object psi_cast(const Data& data){
+    if (data.type() == "string" || data.type() == "istring")
+        return py::cast(data.to_string());
+    else if (data.type() == "boolean" || data.type() == "int")
+        return py::cast(data.to_integer());
+    else if (data.type() == "double")
+        return py::cast(data.to_double());
+    else if (data.type() == "array")
+        return data.to_list();
+    return py::object();
+}
+
+
 py::object py_psi_get_local_option(std::string const& module, std::string const& key)
 {
     std::string nonconst_key = to_upper(key);
     Process::environment.options.set_current_module(module);
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.get_local(nonconst_key);
+    return psi_cast(data);
 
-    if (data.type() == "string" || data.type() == "istring")
-        return py::cast(data.to_string());
-    else if (data.type() == "boolean" || data.type() == "int")
-        return py::cast(data.to_integer());
-    else if (data.type() == "double")
-        return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::cast(data.to_list());
-
-    return py::object();
 }
 
 py::object py_psi_get_global_option(std::string const& key)
 {
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options.get_global(nonconst_key);
-
-    if (data.type() == "string" || data.type() == "istring")
-        return py::cast(data.to_string());
-    else if (data.type() == "boolean" || data.type() == "int")
-        return py::cast(data.to_integer());
-    else if (data.type() == "double")
-        return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::cast(data.to_list());
-
-    return py::object();
+    return psi_cast(data);
 }
 
 py::object py_psi_get_option(std::string const& module, std::string const& key)
@@ -964,17 +941,7 @@ py::object py_psi_get_option(std::string const& module, std::string const& key)
     Process::environment.options.set_current_module(module);
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.use_local(nonconst_key);
-
-    if (data.type() == "string" || data.type() == "istring")
-        return py::cast(data.to_string());
-    else if (data.type() == "boolean" || data.type() == "int")
-        return py::cast(data.to_integer());
-    else if (data.type() == "double")
-        return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::cast(data.to_list());
-
-    return py::object();
+    return psi_cast(data);
 }
 
 void py_psi_set_active_molecule(std::shared_ptr<Molecule> molecule)

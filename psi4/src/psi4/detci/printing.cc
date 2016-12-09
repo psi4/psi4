@@ -127,8 +127,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
    int j,k;
    int afound, bfound;
    char olabel[10];
-
-   sprintf(outstring, "");
+   sprintf(outstring,"%s","");
 
    /* loop over orbitals */
    for (j=0; j<nbf; j++) {

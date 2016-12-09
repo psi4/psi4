@@ -2253,8 +2253,8 @@ void USAPT0::mp2_terms()
     fseek(Ea_arf,0L,SEEK_SET);
     for (int astart = 0; astart < naa; astart += 2L * maxa_a) {
         int nablock = (astart + maxa_a >= naa ? naa - astart : maxa_a);
-        fread(Da_arp[0],sizeof(double),nablock*narQ,Da_arf);
-        fread(Aa_arp[0],sizeof(double),nablock*narQ,Ea_arf);
+        size_t val=fread(Da_arp[0],sizeof(double),nablock*narQ,Da_arf);
+        val=fread(Aa_arp[0],sizeof(double),nablock*narQ,Ea_arf);
         C_DAXPY(nablock*narQ,1.0,Aa_arp[0],1,Da_arp[0],1);
         fseek(Da_arf,sizeof(double)*astart*narQ,SEEK_SET);
         fwrite(Da_arp[0],sizeof(double),nablock*narQ,Da_arf);
@@ -2264,8 +2264,8 @@ void USAPT0::mp2_terms()
     fseek(Eb_arf,0L,SEEK_SET);
     for (int astart = 0; astart < nba; astart += 2L * maxb_a) {
         int nablock = (astart + maxb_a >= nba ? nba - astart : maxb_a);
-        fread(Db_arp[0],sizeof(double),nablock*nbrQ,Db_arf);
-        fread(Ab_arp[0],sizeof(double),nablock*nbrQ,Eb_arf);
+        size_t val=fread(Db_arp[0],sizeof(double),nablock*nbrQ,Db_arf);
+        val=fread(Ab_arp[0],sizeof(double),nablock*nbrQ,Eb_arf);
         C_DAXPY(nablock*nbrQ,1.0,Ab_arp[0],1,Db_arp[0],1);
         fseek(Db_arf,sizeof(double)*astart*nbrQ,SEEK_SET);
         fwrite(Db_arp[0],sizeof(double),nablock*nbrQ,Db_arf);
@@ -2275,8 +2275,8 @@ void USAPT0::mp2_terms()
     fseek(Ea_bsf,0L,SEEK_SET);
     for (int bstart = 0; bstart < nab; bstart += 2L * maxa_b) {
         int nbblock = (bstart + maxa_b >= nab ? nab - bstart : maxa_b);
-        fread(Da_bsp[0],sizeof(double),nbblock*nasQ,Da_bsf);
-        fread(Aa_bsp[0],sizeof(double),nbblock*nasQ,Ea_bsf);
+        size_t val=fread(Da_bsp[0],sizeof(double),nbblock*nasQ,Da_bsf);
+        val=fread(Aa_bsp[0],sizeof(double),nbblock*nasQ,Ea_bsf);
         C_DAXPY(nbblock*nasQ,1.0,Aa_bsp[0],1,Da_bsp[0],1);
         fseek(Da_bsf,sizeof(double)*bstart*nasQ,SEEK_SET);
         fwrite(Da_bsp[0],sizeof(double),nbblock*nasQ,Da_bsf);
@@ -2286,8 +2286,8 @@ void USAPT0::mp2_terms()
     fseek(Eb_bsf,0L,SEEK_SET);
     for (int bstart = 0; bstart < nbb; bstart += 2L * maxb_b) {
         int nbblock = (bstart + maxb_b >= nbb ? nbb - bstart : maxb_b);
-        fread(Db_bsp[0],sizeof(double),nbblock*nbsQ,Db_bsf);
-        fread(Ab_bsp[0],sizeof(double),nbblock*nbsQ,Eb_bsf);
+        size_t val=fread(Db_bsp[0],sizeof(double),nbblock*nbsQ,Db_bsf);
+        val=fread(Ab_bsp[0],sizeof(double),nbblock*nbsQ,Eb_bsf);
         C_DAXPY(nbblock*nbsQ,1.0,Ab_bsp[0],1,Db_bsp[0],1);
         fseek(Db_bsf,sizeof(double)*bstart*nbsQ,SEEK_SET);
         fwrite(Db_bsp[0],sizeof(double),nbblock*nbsQ,Db_bsf);
@@ -2313,17 +2313,17 @@ void USAPT0::mp2_terms()
         int nb_ablock = (astart + maxb_a >= nba ? nba - astart : maxb_a);
 
         if ( na_ablock > 0) {
-            fread(Aa_arp[0],sizeof(double),na_ablock*narQ,Aa_arf);
-            fread(Ba_asp[0],sizeof(double),na_ablock*nasQ,Ba_asf);
-            fread(Ca_asp[0],sizeof(double),na_ablock*nasQ,Ca_asf);
-            fread(Da_arp[0],sizeof(double),na_ablock*narQ,Da_arf);
+            size_t val=fread(Aa_arp[0],sizeof(double),na_ablock*narQ,Aa_arf);
+            val=fread(Ba_asp[0],sizeof(double),na_ablock*nasQ,Ba_asf);
+            val=fread(Ca_asp[0],sizeof(double),na_ablock*nasQ,Ca_asf);
+            val=fread(Da_arp[0],sizeof(double),na_ablock*narQ,Da_arf);
         }
 
         if ( nb_ablock > 0) {
-            fread(Ab_arp[0],sizeof(double),nb_ablock*nbrQ,Ab_arf);
-            fread(Bb_asp[0],sizeof(double),nb_ablock*nbsQ,Bb_asf);
-            fread(Cb_asp[0],sizeof(double),nb_ablock*nbsQ,Cb_asf);
-            fread(Db_arp[0],sizeof(double),nb_ablock*nbrQ,Db_arf);
+            size_t val=fread(Ab_arp[0],sizeof(double),nb_ablock*nbrQ,Ab_arf);
+            val=fread(Bb_asp[0],sizeof(double),nb_ablock*nbsQ,Bb_asf);
+            val=fread(Cb_asp[0],sizeof(double),nb_ablock*nbsQ,Cb_asf);
+            val=fread(Db_arp[0],sizeof(double),nb_ablock*nbrQ,Db_arf);
         }
 
 
@@ -2340,17 +2340,17 @@ void USAPT0::mp2_terms()
             int nb_bblock = (bstart + maxb_b >= nbb ? nbb - bstart : maxb_b);
 
             if ( na_bblock > 0) {
-                fread(Aa_bsp[0],sizeof(double),na_bblock*nasQ,Aa_bsf);
-                fread(Ba_brp[0],sizeof(double),na_bblock*narQ,Ba_brf);
-                fread(Ca_brp[0],sizeof(double),na_bblock*narQ,Ca_brf);
-                fread(Da_bsp[0],sizeof(double),na_bblock*nasQ,Da_bsf);
+                size_t val=fread(Aa_bsp[0],sizeof(double),na_bblock*nasQ,Aa_bsf);
+                val=fread(Ba_brp[0],sizeof(double),na_bblock*narQ,Ba_brf);
+                val=fread(Ca_brp[0],sizeof(double),na_bblock*narQ,Ca_brf);
+                val=fread(Da_bsp[0],sizeof(double),na_bblock*nasQ,Da_bsf);
             }
 
             if ( nb_bblock > 0) {
-                fread(Ab_bsp[0],sizeof(double),nb_bblock*nbsQ,Ab_bsf);
-                fread(Bb_brp[0],sizeof(double),nb_bblock*nbrQ,Bb_brf);
-                fread(Cb_brp[0],sizeof(double),nb_bblock*nbrQ,Cb_brf);
-                fread(Db_bsp[0],sizeof(double),nb_bblock*nbsQ,Db_bsf);
+                size_t val=fread(Ab_bsp[0],sizeof(double),nb_bblock*nbsQ,Ab_bsf);
+                val=fread(Bb_brp[0],sizeof(double),nb_bblock*nbrQ,Bb_brf);
+                val=fread(Cb_brp[0],sizeof(double),nb_bblock*nbrQ,Cb_brf);
+                val=fread(Db_bsp[0],sizeof(double),nb_bblock*nbsQ,Db_bsf);
             }
 
             long int nab = (na_ablock + nb_ablock) * (na_bblock + nb_bblock);
