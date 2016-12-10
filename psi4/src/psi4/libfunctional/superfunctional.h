@@ -71,29 +71,33 @@ class SuperFunctional {
 protected:
 
     // => Meta-Data <= //
-
     std::string name_;
     std::string description_;
     std::string citation_;
     bool locked_;
 
     // => Exchange-side DFA functionals <= //
-
     std::vector<std::shared_ptr<Functional> > x_functionals_;
     double x_alpha_;
     double x_beta_;
     double x_omega_;
 
     // => Correlation-side DFA functionals <= //
-
     std::vector<std::shared_ptr<Functional> > c_functionals_;
     double c_alpha_;
-    double c_ss_alpha_;
-    double c_os_alpha_;
     double c_omega_;
 
-    // => Functional values and partials <= //
+    // => Asymptotic corrections <= //
+    bool needs_grac_;
+    std::shared_ptr<Functional> ac_functional_;
+    double grac_shift_;
 
+    // => VV10 parameters corrections <= //
+    bool needs_vv10_;
+    double vv10_b_;
+    double vv10_c_;
+
+    // => Functional values and partials <= //
     bool libxc_xc_func_;
     int max_points_;
     int deriv_;
@@ -140,11 +144,13 @@ public:
 
     std::vector<std::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<std::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
+    std::shared_ptr<Functional> ac_functional() { return ac_functional_; }
 
     std::shared_ptr<Functional> x_functional(const std::string& name);
     std::shared_ptr<Functional> c_functional(const std::string& name);
     void add_x_functional(std::shared_ptr<Functional> fun);
     void add_c_functional(std::shared_ptr<Functional> fun);
+    void set_ac_functional(std::shared_ptr<Functional> fun) { ac_functional_ = fun; }
 
     // => Setters <= //
 
@@ -161,8 +167,9 @@ public:
     void set_x_alpha(double alpha);
     void set_x_beta(double beta);
     void set_c_alpha(double alpha);
-    void set_c_ss_alpha(double alpha);
-    void set_c_os_alpha(double alpha);
+    void set_vv10_b(double b);
+    void set_vv10_c(double c);
+    void set_grac_shift(double grac_shift);
 
     // => Accessors <= //
 
@@ -179,10 +186,13 @@ public:
     double x_alpha() const { return x_alpha_; }
     double x_beta() const { return x_beta_; }
     double c_alpha() const { return c_alpha_; }
-    double c_ss_alpha() const { return c_ss_alpha_; }
-    double c_os_alpha() const { return c_os_alpha_; }
+    double vv10_b() const { return vv10_b_; }
+    double vv10_c() const { return vv10_c_; }
+    double grac_shift() const { return grac_shift_; }
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
+    bool needs_vv10() const {return needs_vv10_; };
+    bool needs_grac() const {return needs_grac_; };
     bool is_unpolarized() const;
     bool is_meta() const;
     bool is_gga() const;
@@ -190,7 +200,6 @@ public:
     bool is_c_lrc() const { return c_omega_ != 0.0; }
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
-    bool is_c_scs_hybrid() const { return c_os_alpha_ != 0.0 || c_ss_alpha_ != 0.0; }
 
     // => Utility <= //
 

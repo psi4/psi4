@@ -1706,8 +1706,9 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
 
                 double tmp_val = 0.0, v2_val_a = 0.0, v2_val_b;
 
+                // This isnt quite right
                 for (int P = 0; P < npoints; P++) {
-                    if ((rho_a[P] < 1.e-6) || (rho_b[P] < 1.e-6)) continue;
+                    if ((rho_a[P] < v2_rho_cutoff_) || (rho_b[P] < v2_rho_cutoff_)) continue;
                     // continue;
 
                     // V alpha contributions

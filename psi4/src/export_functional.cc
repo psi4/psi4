@@ -69,15 +69,12 @@ void export_functional(py::module &m)
         def("x_alpha", &SuperFunctional::x_alpha, "Amount of exact HF exchange.").
         def("x_beta", &SuperFunctional::x_beta, "Amount of exact HF exchange.").
         def("c_alpha", &SuperFunctional::c_alpha, "Amount of MP2 correlation.").
-        def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "Same-spin correlation scaling.").
-        def("c_os_alpha", &SuperFunctional::c_os_alpha, "Opposite-spin correlation scaling.").
         def("is_gga", &SuperFunctional::is_gga, "Is this a GGA?").
         def("is_meta", &SuperFunctional::is_meta, "Is this a MGGA?").
         def("is_x_lrc", &SuperFunctional::is_x_lrc, "Contains range-seperated exchange?").
         def("is_c_lrc", &SuperFunctional::is_c_lrc, "Contains range-seperated correlation?").
         def("is_x_hybrid", &SuperFunctional::is_x_hybrid, "Requires exact exchange?").
         def("is_c_hybrid", &SuperFunctional::is_c_hybrid, "Requires MP2 correlation?").
-        def("is_c_scs_hybrid", &SuperFunctional::is_c_scs_hybrid, "Is a spin-component scaled hyrbid?").
         def("set_name", &SuperFunctional::set_name, "Sets the SuperFunctional name.").
         def("set_description", &SuperFunctional::set_description, "Sets the SuperFunctional description.").
         def("set_citation", &SuperFunctional::set_citation, "Sets the SuperFunctional citation.").
@@ -88,8 +85,9 @@ void export_functional(py::module &m)
         def("set_c_omega", &SuperFunctional::set_c_omega, "Sets the range-seperation correlation parameter.").
         def("set_x_alpha", &SuperFunctional::set_x_alpha, "Sets the amount of exact HF exchange.").
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "Sets the amount of MP2 correlation.").
-        def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "Sets the same-spin scaling parameter.").
-        def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "Sets the opposite-spin scaling parameter.").
+        def("needs_xc", &SuperFunctional::needs_xc, "Does this functional need XC quantities.").
+        def("needs_vv10", &SuperFunctional::needs_vv10, "Does this functional need VV10 dispersion.").
+        def("needs_grac", &SuperFunctional::needs_grac, "Does this functional need GRAC.").
         def("print_out",&SuperFunctional::py_print, "Prints out functional details.").
         def("print_detail",&SuperFunctional::py_print_detail, "Prints all SuperFunctional information.");
 

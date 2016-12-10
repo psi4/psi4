@@ -28,7 +28,7 @@
 #ifndef LibXC_FUNCTIONAL_H
 #define LibXC_FUNCTIONAL_H
 
-#include "functional.h"
+#include "psi4/libmints/typedefs.h"
 #include "libxc/xc.h"
 
 namespace psi {
@@ -46,6 +46,14 @@ private:
     double global_exch_;
     double lr_exch_;
     bool user_omega_;
+    bool exc_;
+    bool vxc_;
+    bool fxc_;
+
+    // Needs vv10
+    bool needs_vv10_;
+    double vv10_b_;
+    double vv10_c_;
 
 public:
 
@@ -65,6 +73,9 @@ public:
 
     double global_exchange() { return global_exch_; }
     double lr_exchange() { return lr_exch_; }
+    double needs_vv10() { return needs_vv10_; }
+    double vv10_b() { return vv10_b_; }
+    double vv10_c() { return vv10_c_; }
 
 
 

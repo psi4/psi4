@@ -49,8 +49,11 @@ void SuperFunctional::common_init() {
     x_alpha_ = 0.0;
     x_beta_ = 0.0;
     c_alpha_ = 0.0;
-    c_ss_alpha_ = 0.0;
-    c_os_alpha_ = 0.0;
+    grac_shift_ = 0.0;
+    vv10_b_ = 0.0;
+    vv10_c_ = 0.0;
+    needs_vv10_ = false;
+    needs_grac_ = false;
     libxc_xc_func_ = false;
     locked_ = false;
 }
@@ -64,7 +67,6 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     }
 
     // Build the superfuncitonal
-
     std::shared_ptr<SuperFunctional> sup = std::shared_ptr<SuperFunctional>(new SuperFunctional());
 
     // Build LibXC functional
@@ -77,6 +79,11 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_x_omega(xc_func->omega());
     sup->set_x_alpha(xc_func->global_exchange());
     sup->set_x_beta(xc_func->lr_exchange());
+    sup->set_x_beta(xc_func->lr_exchange());
+    if (xc_func->needs_vv10()){
+        sup->set_vv10_b(xc_func->vv10_b());
+        sup->set_vv10_c(xc_func->vv10_c());
+    }
     sup->add_c_functional(static_cast<std::shared_ptr<Functional>>(xc_func));
     sup->libxc_xc_func_ = true;
 
@@ -97,6 +104,16 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
     sup->deriv_ = deriv_;
     sup->max_points_ = max_points_;
     sup->libxc_xc_func_ = libxc_xc_func_;
+    if (needs_vv10_) {
+        sup->vv10_b_ = vv10_b_;
+        sup->vv10_c_ = vv10_c_;
+        sup->needs_vv10_ = true;
+    }
+    if (needs_grac_) {
+        sup->needs_grac_ = true;
+        sup->grac_shift_ = grac_shift_;
+        sup->set_ac_functional(ac_functional_->build_worker());
+    }
     sup->allocate();
 
     return sup;
@@ -135,7 +152,19 @@ void SuperFunctional::print(std::string out, int level) const {
     // printer->Printf( "    C_SCS_Hybrid = %14s\n", (is_c_scs_hybrid() ? "TRUE" : "FALSE"));
     // printer->Printf( "    C_SS_Alpha   = %14.6E\n", c_ss_alpha_);
     // printer->Printf( "    C_OS_Alpha   = %14.6E\n", c_os_alpha_);
-    printer->Printf("\n");
+
+    if (needs_grac_){
+        printer->Printf("   => Asymptotic correction <=\n\n");
+        printer->Printf("    GRAC Shift   = %16.4E\n", grac_shift_);
+        printer->Printf("\n");
+    }
+
+    if (needs_vv10_){
+        printer->Printf("   => VV10 Non-Local Parameters <=\n\n");
+        printer->Printf("    VV10_beta    = %16.4E\n", vv10_b_);
+        printer->Printf("    VV10_C       = %16.4E\n", vv10_c_);
+        printer->Printf("\n");
+    }
 
     if (libxc_xc_func_){
         // Well thats nasty
@@ -246,12 +275,6 @@ void SuperFunctional::print(std::string out, int level) const {
     if (c_alpha_) {
         printer->Printf("    %6.4f %7s \n", c_alpha_, "MP2");
     }
-    if (c_ss_alpha_) {
-        printer->Printf("    %6.4f %s \n", c_ss_alpha_, "Same-Spin SCS-DF-MP2");
-    }
-    if (c_os_alpha_) {
-        printer->Printf("    %6.4f %s \n", c_os_alpha_, "Opposite-Spin SCS-DF-MP2");
-    }
     printer->Printf("\n");
 
     if (level > 1) {
@@ -291,13 +314,20 @@ void SuperFunctional::set_c_alpha(double alpha) {
     can_edit();
     c_alpha_ = alpha;
 }
-void SuperFunctional::set_c_ss_alpha(double alpha) {
+void SuperFunctional::set_vv10_b(double vv10_b) {
     can_edit();
-    c_ss_alpha_ = alpha;
+    needs_vv10_ = true;
+    vv10_b_ = vv10_b;
 }
-void SuperFunctional::set_c_os_alpha(double alpha) {
+void SuperFunctional::set_vv10_c(double vv10_c) {
     can_edit();
-    c_os_alpha_ = alpha;
+    needs_vv10_ = true;
+    vv10_c_ = vv10_c;
+}
+void SuperFunctional::set_grac_shift(double grac_shift) {
+    can_edit();
+    needs_grac_ = true;
+    grac_shift_ = grac_shift;
 }
 void SuperFunctional::add_x_functional(std::shared_ptr<Functional> fun) {
     can_edit();
