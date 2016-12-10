@@ -1,21 +1,21 @@
-set(sources_list apps.cc 
-                 v.cc 
-                 hamiltonian.cc 
+set(sources_list apps.cc
+                 v.cc
+                 hamiltonian.cc
                  points.cc
-                 cubature.cc 
-                 solver.cc 
-                 link.cc 
+                 cubature.cc
+                 solver.cc
+                 link.cc
                  direct_screening.cc
-                 wrapper.cc 
-                 jk.cc 
-                 DiskJK.cc 
-                 PKJK.cc 
-                 DirectJK.cc 
+                 wrapper.cc
+                 jk.cc
+                 DiskJK.cc
+                 PKJK.cc
+                 DirectJK.cc
                  DFJK.cc
-                 CDJK.cc 
-                 FastDFJK.cc 
-                 PSJK.cc 
-                 GTFockJK.cc 
+                 CDJK.cc
+                 FastDFJK.cc
+                 #PSJK.cc
+                 GTFockJK.cc
                  soscf.cc
                  PK_workers.cc
                  PKmanagers.cc

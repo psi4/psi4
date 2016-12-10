@@ -12,7 +12,7 @@ set(sources_list buf_rd_arr2.cc
                  buf_wrt_arr_SI_nocut.cc 
                  buf_rd_all_act.cc 
                  buf_close.cc 
-                 buf_toend.cc 
+                 #buf_toend.cc 
                  buf_wrt_mat.cc 
                  buf_wrt_all.cc 
                  buf_wrt_arr.cc 
