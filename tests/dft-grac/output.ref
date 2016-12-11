@@ -1,0 +1,285 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Sunday, 11 December 2016 05:00PM
+
+    Process ID:  37093
+    PSIDATADIR: /Users/daniel/Gits/psixc/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Double-hybrid density functional B2PYLP. Reproduces portion of Table I
+#! in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
+
+memory 250 mb
+
+molecule h2o {
+  0 1
+  Ne
+  symmetry c1
+}
+
+set basis aug-cc-pVDZ
+set dft_grac_shift 0.203293
+
+scf_e, scf_wfn = energy("PBE0", return_wfn=True)
+eps = scf_wfn.epsilon_a_subset("AO", "ALL")
+scf_homo = eps[4]
+scf_lumo = eps[5]
+
+compare_values(-128.82046204690357, scf_e, 6, "Ne PBE0AC Energy") #TEST
+compare_values(-0.787998, scf_homo, 3, "Ne PBE0AC Eigenvalue LUMO") #TEST
+compare_values(-0.005747, scf_lumo, 3, "Ne PBE0AC Eigenvalue HOMO") #TEST
+
+
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on verizon-ar.imtc.gatech.edu
+*** at Sun Dec 11 17:00:42 2016
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          NE          0.000000000000     0.000000000000     0.000000000000    19.992440175420
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz.gbs
+    Number of shells: 9
+    Number of basis function: 23
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Deriv            =              1
+    GGA              =           TRUE
+    Meta             =          FALSE
+
+    Exch LRC         =          FALSE
+    Exch Hybrid      =           TRUE
+    Exch Alpha       =       0.250000
+    Exch Beta        =       0.000000
+    Exch Omega       =       0.000000
+
+   => Exchange Functionals <=
+
+    0.7500   XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000   XC_GGA_C_PBE
+
+   => Asymptotic Correction <=
+
+    Functional       =    XC_GGA_X_LB
+    Bulk Shift       =       0.203293
+    GRAC Alpha       =       0.500000
+    GRAC Beta        =      40.000000
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =          22046
+    Total Blocks     =            240
+    Max Points       =            200
+    Max Functions    =             23
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         23      23       0       0       0       0
+   -------------------------------------------------------
+    Total      23      23       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs
+    Number of shells: 28
+    Number of basis function: 86
+    Number of Cartesian functions: 101
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 9.8616913390E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   1:  -122.77276496638302   -1.22773e+02   1.54198e-01 
+   @DF-RKS iter   2:  -117.51307381425408    5.25969e+00   1.90989e-01 DIIS
+   @DF-RKS iter   3:  -128.71559647154004   -1.12025e+01   2.55429e-02 DIIS
+   @DF-RKS iter   4:  -128.80682981493132   -9.12333e-02   9.72287e-03 DIIS
+   @DF-RKS iter   5:  -128.82008950966105   -1.32597e-02   1.36430e-03 DIIS
+   @DF-RKS iter   6:  -128.82045616892390   -3.66659e-04   3.81840e-05 DIIS
+   @DF-RKS iter   7:  -128.82046204137009   -5.87245e-06   1.97145e-06 DIIS
+   @DF-RKS iter   8:  -128.82046204690363   -5.53354e-09   3.50779e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -31.293472     2A     -1.697955     3A     -0.788419  
+       4A     -0.788419     5A     -0.787998  
+
+    Virtual:                                                              
+
+       6A     -0.005747     7A      0.045317     8A      0.045317  
+       9A      0.079661    10A      1.315426    11A      1.315426  
+      12A      1.315766    13A      1.315766    14A      1.316106  
+      15A      1.459065    16A      1.459065    17A      1.465142  
+      18A      2.219925    19A      5.682304    20A      5.682304  
+      21A      5.682519    22A      5.682519    23A      5.682673  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:  -128.82046204690363
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -182.2930392931311019
+    Two-Electron Energy =                  62.8437245067780879
+    DFT Exchange-Correlation Energy =      -9.3711472605506092
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -128.8204620469036286
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on verizon-ar.imtc.gatech.edu at Sun Dec 11 17:00:43 2016
+Module time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	Ne PBE0AC Energy..................................................PASSED
+	Ne PBE0AC Eigenvalue LUMO.........................................PASSED
+	Ne PBE0AC Eigenvalue HOMO.........................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

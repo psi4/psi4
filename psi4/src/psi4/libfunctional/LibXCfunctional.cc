@@ -185,12 +185,12 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
     // => Input variables <= //
 
-    if ((deriv >= 1) & (!fxc_)) {
-        std::string error = "LibXCfunctional: No second derivative implemented for " + name_ + ".";
+    if ((deriv >= 1) & (!vxc_)) {
+        std::string error = "LibXCfunctional: No derivative implemented for " + name_ + ".";
         throw PSIEXCEPTION(error.c_str());
     }
-    if ((deriv >= 2) & (!vxc_)) {
-        std::string error = "LibXCfunctional: No derivative implemented for " + name_ + ".";
+    if ((deriv >= 2) & (!fxc_)) {
+        std::string error = "LibXCfunctional: No second derivative implemented for " + name_ + ".";
         throw PSIEXCEPTION(error.c_str());
     }
     if (deriv >= 3) {
@@ -199,17 +199,15 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
     // => Input variables <= //
 
-    double* rho_ap = NULL;
-    double* rho_bp = NULL;
-    double* gamma_aap = NULL;
-    double* gamma_abp = NULL;
-    double* gamma_bbp = NULL;
-    double* tau_ap = NULL;
-    double* tau_bp = NULL;
-    double* lapl_ap = NULL;
-    double* lapl_bp = NULL;
-
-    // gga_ = true;
+    double* rho_ap = nullptr;
+    double* rho_bp = nullptr;
+    double* gamma_aap = nullptr;
+    double* gamma_abp = nullptr;
+    double* gamma_bbp = nullptr;
+    double* tau_ap = nullptr;
+    double* tau_bp = nullptr;
+    double* lapl_ap = nullptr;
+    double* lapl_bp = nullptr;
 
     if (true) {
         rho_ap = in.find("RHO_A")->second->pointer();
@@ -236,53 +234,51 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
     // => Outut variables <= //
 
-    double* v = NULL;
+    double* v = nullptr;
 
-    double* v_rho_a = NULL;
-    double* v_rho_b = NULL;
-    double* v_gamma_aa = NULL;
-    double* v_gamma_ab = NULL;
-    double* v_gamma_bb = NULL;
-    double* v_tau_a = NULL;
-    double* v_tau_b = NULL;
-    double* v_lapl_a = NULL;
-    double* v_lapl_b = NULL;
+    double* v_rho_a = nullptr;
+    double* v_rho_b = nullptr;
+    double* v_gamma_aa = nullptr;
+    double* v_gamma_ab = nullptr;
+    double* v_gamma_bb = nullptr;
+    double* v_tau_a = nullptr;
+    double* v_tau_b = nullptr;
+    double* v_lapl_a = nullptr;
+    double* v_lapl_b = nullptr;
 
-    double* v_rho_a_rho_a = NULL;
-    double* v_rho_a_rho_b = NULL;
-    double* v_rho_b_rho_b = NULL;
-    double* v_gamma_aa_gamma_aa = NULL;
-    double* v_gamma_aa_gamma_ab = NULL;
-    double* v_gamma_aa_gamma_bb = NULL;
-    double* v_gamma_ab_gamma_ab = NULL;
-    double* v_gamma_ab_gamma_bb = NULL;
-    double* v_gamma_bb_gamma_bb = NULL;
-    double* v_tau_a_tau_a = NULL;
-    double* v_tau_a_tau_b = NULL;
-    double* v_tau_b_tau_b = NULL;
-    double* v_rho_a_gamma_aa = NULL;
-    double* v_rho_a_gamma_ab = NULL;
-    double* v_rho_a_gamma_bb = NULL;
-    double* v_rho_b_gamma_aa = NULL;
-    double* v_rho_b_gamma_ab = NULL;
-    double* v_rho_b_gamma_bb = NULL;
-    double* v_rho_a_tau_a = NULL;
-    double* v_rho_a_tau_b = NULL;
-    double* v_rho_b_tau_a = NULL;
-    double* v_rho_b_tau_b = NULL;
-    double* v_gamma_aa_tau_a = NULL;
-    double* v_gamma_aa_tau_b = NULL;
-    double* v_gamma_ab_tau_a = NULL;
-    double* v_gamma_ab_tau_b = NULL;
-    double* v_gamma_bb_tau_a = NULL;
-    double* v_gamma_bb_tau_b = NULL;
+    double* v_rho_a_rho_a = nullptr;
+    double* v_rho_a_rho_b = nullptr;
+    double* v_rho_b_rho_b = nullptr;
+    double* v_gamma_aa_gamma_aa = nullptr;
+    double* v_gamma_aa_gamma_ab = nullptr;
+    double* v_gamma_aa_gamma_bb = nullptr;
+    double* v_gamma_ab_gamma_ab = nullptr;
+    double* v_gamma_ab_gamma_bb = nullptr;
+    double* v_gamma_bb_gamma_bb = nullptr;
+    double* v_tau_a_tau_a = nullptr;
+    double* v_tau_a_tau_b = nullptr;
+    double* v_tau_b_tau_b = nullptr;
+    double* v_rho_a_gamma_aa = nullptr;
+    double* v_rho_a_gamma_ab = nullptr;
+    double* v_rho_a_gamma_bb = nullptr;
+    double* v_rho_b_gamma_aa = nullptr;
+    double* v_rho_b_gamma_ab = nullptr;
+    double* v_rho_b_gamma_bb = nullptr;
+    double* v_rho_a_tau_a = nullptr;
+    double* v_rho_a_tau_b = nullptr;
+    double* v_rho_b_tau_a = nullptr;
+    double* v_rho_b_tau_b = nullptr;
+    double* v_gamma_aa_tau_a = nullptr;
+    double* v_gamma_aa_tau_b = nullptr;
+    double* v_gamma_ab_tau_a = nullptr;
+    double* v_gamma_ab_tau_b = nullptr;
+    double* v_gamma_bb_tau_a = nullptr;
+    double* v_gamma_bb_tau_b = nullptr;
 
     if (deriv >= 0) {
-        v = out.find("V")->second->pointer();
-
-        // Special cases
-        if (name_ == "XC_GGA_X_LB"){
-            v = nullptr;
+        // Energy doesnt make sense for all functionals
+        if (exc_) {
+            v = out.find("V")->second->pointer();
         }
     }
     if (deriv >= 1) {
@@ -373,44 +369,55 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
         }
 
-        // Allocate
-        std::vector<double> frho(npoints);
-        std::vector<double> fv(npoints);
-        std::vector<double> fv_rho(npoints);
-
-        // GGA
-        std::vector<double> fgamma, fv_gamma;
-        if (gga_) {
-            fgamma.resize(npoints);
-            fv_gamma.resize(npoints);
-        }
-
-        // Meta
-        std::vector<double> flapl, fv_lapl, fv_tau;
-        if (meta_) {
-            flapl.resize(npoints);
-            fv_lapl.resize(npoints);
-            fv_tau.resize(npoints);
-        }
 
         // Compute deriv
         if (deriv >= 1) {
+            // Allocate
+            std::vector<double> fv(npoints);
+            std::vector<double> fv_rho(npoints);
+
+            // GGA
+            std::vector<double> fgamma, fv_gamma;
+            if (gga_) {
+                fgamma.resize(npoints);
+                fv_gamma.resize(npoints);
+            }
+
+            // Meta
+            std::vector<double> flapl, fv_lapl, fv_tau;
+            if (meta_) {
+                flapl.resize(npoints);
+                fv_lapl.resize(npoints);
+                fv_tau.resize(npoints);
+            }
+
+            double* fvp;
+            if (exc_){
+                fvp = fv.data();
+            } else{
+                fvp = nullptr;
+            }
+
+            // Compute
             if (meta_) {
                 xc_mgga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, flapl.data(), tau_ap,
-                                fv.data(), fv_rho.data(), fv_gamma.data(), fv_lapl.data(),
+                                fvp, fv_rho.data(), fv_gamma.data(), fv_lapl.data(),
                                 fv_tau.data());
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, fv.data(),
+                xc_gga_exc_vxc(&xc_functional_, npoints, rho_ap, gamma_aap, fvp,
                                fv_rho.data(), fv_gamma.data());
 
             } else {
-                xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, fv.data(), fv_rho.data());
+                xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, fvp, fv_rho.data());
             }
 
             // Re-apply
-            for (size_t i = 0; i < npoints; i++) {
-                v[i] += alpha_ * fv[i] * rho_ap[i];
+            if (exc_){
+                for (size_t i = 0; i < npoints; i++) {
+                    v[i] += alpha_ * fv[i] * rho_ap[i];
+                }
             }
+
             C_DAXPY(npoints, alpha_, fv_rho.data(), 1, v_rho_a, 1);
 
             if (gga_) {

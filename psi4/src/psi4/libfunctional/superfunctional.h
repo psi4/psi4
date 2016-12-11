@@ -54,14 +54,6 @@ class Functional;
  * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha_x E_X^HF + (1-\alpha_x) E_X^HF,LR
  * E_C  = E_C^DFA [\omega_c] + \alpha_c E_C^MP2
  *
- * If SCS-MP2:
- * E_C  = E_C^DFA [\omega_c] + \alpha_c_ss E_C^SS-MP2 + \alpha_c_os E_C^OS-MP2
- *
- * (Note: earlier versions of this code defined --- but did not fully implement --- a
- * range-separated MP2 correction, like \alpha_c E_C^MP2 + (1-\alpha_c) E_C^MP2,LR.
- * This is not currently supported given the reworking of how alpha_c works for
- * scaling the MP2 correlation (it needs to be independent of the DFT corrleation
- * in general, not related by \alpha_c and (1-\alpha_c).)
  *
  * E(-D) is an empirical dispersion correction of some form
  *
@@ -89,8 +81,10 @@ protected:
 
     // => Asymptotic corrections <= //
     bool needs_grac_;
-    std::shared_ptr<Functional> ac_functional_;
+    std::shared_ptr<Functional> grac_functional_;
     double grac_shift_;
+    double grac_alpha_;
+    double grac_beta_;
 
     // => VV10 parameters corrections <= //
     bool needs_vv10_;
@@ -102,6 +96,7 @@ protected:
     int max_points_;
     int deriv_;
     std::map<std::string, SharedVector> values_;
+    std::map<std::string, SharedVector> ac_values_;
 
     // Set up a null Superfunctional
     void common_init();
@@ -144,13 +139,16 @@ public:
 
     std::vector<std::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<std::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
-    std::shared_ptr<Functional> ac_functional() { return ac_functional_; }
+    std::shared_ptr<Functional> grac_functional() { return grac_functional_; }
 
     std::shared_ptr<Functional> x_functional(const std::string& name);
     std::shared_ptr<Functional> c_functional(const std::string& name);
     void add_x_functional(std::shared_ptr<Functional> fun);
     void add_c_functional(std::shared_ptr<Functional> fun);
-    void set_ac_functional(std::shared_ptr<Functional> fun) { ac_functional_ = fun; }
+    void set_grac_functional(std::shared_ptr<Functional> fun) {
+        needs_grac_ = true;
+        grac_functional_ = fun;
+    }
 
     // => Setters <= //
 
@@ -170,6 +168,8 @@ public:
     void set_vv10_b(double b);
     void set_vv10_c(double c);
     void set_grac_shift(double grac_shift);
+    void set_grac_alpha(double grac_alpha);
+    void set_grac_beta(double grac_beta);
 
     // => Accessors <= //
 
@@ -189,6 +189,8 @@ public:
     double vv10_b() const { return vv10_b_; }
     double vv10_c() const { return vv10_c_; }
     double grac_shift() const { return grac_shift_; }
+    double grac_alpha() const { return grac_alpha_; }
+    double grac_beta() const { return grac_beta_; }
 
     bool needs_xc() const { return ((c_functionals_.size() + x_functionals_.size()) > 0); }
     bool needs_vv10() const {return needs_vv10_; };

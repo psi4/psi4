@@ -371,6 +371,11 @@ void HF::common_init()
         potential_ = VBase::build_V(basisset_, functional_, options_, (options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
         potential_->initialize();
 
+        // Do the GRAC
+        if (options_.get_double("DFT_GRAC_SHIFT") != 0.0){
+            potential_->set_grac_shift(options_.get_double("DFT_GRAC_SHIFT"));
+        }
+
         // Print the KS-specific stuff
         potential_->print_header();
     } else {

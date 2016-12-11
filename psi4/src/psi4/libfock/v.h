@@ -84,6 +84,9 @@ protected:
     /// Vector of C1 D matrices (built by USO2AO)
     std::vector<SharedMatrix> D_AO_;
 
+    // GRAC data
+    bool grac_initialized_;
+
     /// Set things up
     void common_init();
 public:
@@ -107,6 +110,9 @@ public:
     // Set the D matrix, get it back if needed
     void set_D(std::vector<SharedMatrix> Dvec);
     const std::vector<SharedMatrix>& Dao() const { return D_AO_; }
+
+    // Set the site of the grac shift
+    void set_grac_shift(double value);
 
     /// Throws by default
     virtual void compute_V(std::vector<SharedMatrix> ret);

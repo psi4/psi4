@@ -28,6 +28,8 @@
 
 
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libfunctional/functional.h"
+#include "psi4/libfunctional/LibXCfunctional.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 
@@ -44,6 +46,7 @@
 #include <sstream>
 #include <string>
 #include <numeric>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -62,6 +65,7 @@ void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
     v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+    grac_initialized_ = false;
     num_threads_ = 1;
 #ifdef _OPENMP
     num_threads_ = omp_get_max_threads();
@@ -129,6 +133,11 @@ void VBase::initialize() {
     timer_on("V: Grid");
     grid_ = std::shared_ptr<DFTGrid>(new DFTGrid(primary_->molecule(), primary_, options_));
     timer_off("V: Grid");
+    for (size_t i = 0; i < num_threads_; i++) {
+
+        // Need a functional worker per thread
+        functional_workers_.push_back(functional_->build_worker());
+    }
 }
 SharedMatrix VBase::compute_gradient() {
     throw PSIEXCEPTION("VBase: gradient not implemented for this V instance.");
@@ -142,7 +151,44 @@ void VBase::compute_V(std::vector<SharedMatrix> ret) {
 void VBase::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret) {
     throw PSIEXCEPTION("VBase: deriv not implemented for this Vx instance.");
 }
-void VBase::finalize() { grid_.reset(); }
+void VBase::set_grac_shift(double grac_shift) {
+
+    // Well this is a flaw in my plan
+    if (!grac_initialized_){
+        double grac_alpha = options_.get_double("DFT_GRAC_ALPHA");
+        double grac_beta = options_.get_double("DFT_GRAC_BETA");
+        std::shared_ptr<Functional> grac_func = static_cast<std::shared_ptr<Functional>>(
+            new LibXCFunctional(options_.get_str("DFT_GRAC_FUNC"), functional_->is_unpolarized()));
+
+        double lr_exch = functional_->x_alpha() + functional_->x_beta();
+        grac_func->set_alpha(1.0 - lr_exch);
+
+        functional_->set_lock(false);
+        functional_->set_grac_alpha(grac_alpha);
+        functional_->set_grac_beta(grac_beta);
+        functional_->set_grac_functional(grac_func);
+        functional_->allocate();
+        functional_->set_lock(false);
+        for (size_t i = 0; i < num_threads_; i++) {
+            functional_workers_[i]->set_lock(false);
+            functional_workers_[i]->set_grac_alpha(grac_alpha);
+            functional_workers_[i]->set_grac_beta(grac_beta);
+            functional_workers_[i]->set_grac_functional(grac_func->build_worker());
+            functional_workers_[i]->allocate();
+            functional_workers_[i]->set_lock(false);
+        }
+        grac_initialized_ = true;
+    }
+
+    functional_->set_lock(false);
+    functional_->set_grac_shift(grac_shift);
+    functional_->set_lock(false);
+    for (size_t i = 0; i < num_threads_; i++) {
+        functional_workers_[i]->set_lock(false);
+        functional_workers_[i]->set_grac_shift(grac_shift);
+        functional_workers_[i]->set_lock(false);
+    }
+}
 void VBase::print_header() const {
     outfile->Printf("  ==> DFT Potential <==\n\n");
     functional_->print("outfile", print_);
@@ -150,6 +196,7 @@ void VBase::print_header() const {
 }
 std::shared_ptr<BlockOPoints> VBase::get_block(int block) { return grid_->blocks()[block]; }
 size_t VBase::nblocks() { return grid_->blocks().size(); }
+void VBase::finalize() { grid_.reset(); }
 
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary,
        Options& options)
@@ -165,9 +212,6 @@ void RV::initialize() {
             std::shared_ptr<PointFunctions>(new RKSFunctions(primary_, max_points, max_functions));
         point_tmp->set_ansatz(functional_->ansatz());
         point_workers_.push_back(point_tmp);
-
-        // Need a functional worker per thread
-        functional_workers_.push_back(functional_->build_worker());
     }
 }
 void RV::finalize() { VBase::finalize(); }
@@ -1158,9 +1202,6 @@ void UV::initialize() {
             std::shared_ptr<PointFunctions>(new UKSFunctions(primary_, max_points, max_functions));
         point_tmp->set_ansatz(functional_->ansatz());
         point_workers_.push_back(point_tmp);
-
-        // Need a functional worker per thread
-        functional_workers_.push_back(functional_->build_worker());
     }
 }
 void UV::finalize()

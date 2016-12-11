@@ -165,6 +165,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 
         # pragma simd
         for (int P = 0; P < npoints; P++) {
+            // 2.0 for Px D P + P D Px
             double rho_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tp[P], 1);
             double rho_y = 2.0 * C_DDOT(nlocal, phiyp[P], 1, Tp[P], 1);
             double rho_z = 2.0 * C_DDOT(nlocal, phizp[P], 1, Tp[P], 1);
@@ -454,6 +455,7 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double* gammabbp = point_values_["GAMMA_BB"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
+            // 2.0 for Px D P + P D Px
             double rhoa_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tap[P], 1);
             double rhoa_y = 2.0 * C_DDOT(nlocal, phiyp[P], 1, Tap[P], 1);
             double rhoa_z = 2.0 * C_DDOT(nlocal, phizp[P], 1, Tap[P], 1);

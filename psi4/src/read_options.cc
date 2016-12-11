@@ -1424,6 +1424,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_V2_RHO_CUTOFF", 1.e-6);
     /*- The gradient regularized asymptotic correction shift value -*/
     options.add_double("DFT_GRAC_SHIFT", 0.0);
+    /*- The gradient regularized asymptotic correction alpha value -*/
+    options.add_double("DFT_GRAC_ALPHA", 0.5);
+    /*- The gradient regularized asymptotic correction beta value -*/
+    options.add_double("DFT_GRAC_BETA", 40.0);
     /*- The gradient regularized asymptotic correction functional form. !expert -*/
     options.add_str("DFT_GRAC_FUNC", "XC_GGA_X_LB");
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/

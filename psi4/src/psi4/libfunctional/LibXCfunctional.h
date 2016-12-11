@@ -43,12 +43,15 @@ private:
     std::string xc_func_name_;
     xc_func_type xc_functional_;
     int func_id_;
-    double global_exch_;
-    double lr_exch_;
     bool user_omega_;
     bool exc_;
     bool vxc_;
     bool fxc_;
+
+    // **ONLY** Used to pass information up the chain.
+    // Exchange
+    double global_exch_;
+    double lr_exch_;
 
     // Needs vv10
     bool needs_vv10_;
@@ -71,6 +74,8 @@ public:
     void set_omega(double omega);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
+
+    // Only used to pass information up the chain
     double global_exchange() { return global_exch_; }
     double lr_exchange() { return lr_exch_; }
     double needs_vv10() { return needs_vv10_; }
