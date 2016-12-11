@@ -69,6 +69,11 @@ void export_functional(py::module &m)
         def("x_alpha", &SuperFunctional::x_alpha, "Amount of exact HF exchange.").
         def("x_beta", &SuperFunctional::x_beta, "Amount of exact HF exchange.").
         def("c_alpha", &SuperFunctional::c_alpha, "Amount of MP2 correlation.").
+        def("vv10_b", &SuperFunctional::vv10_b, "The VV10 b parameter.").
+        def("vv10_c", &SuperFunctional::vv10_c, "The VV10 c parameter.").
+        def("grac_shift", &SuperFunctional::grac_shift, "Shift of the bulk potenital.").
+        def("grac_alpha", &SuperFunctional::grac_alpha, "GRAC Alpha.").
+        def("grac_beta", &SuperFunctional::grac_beta, "GRAC Beta.").
         def("is_gga", &SuperFunctional::is_gga, "Is this a GGA?").
         def("is_meta", &SuperFunctional::is_meta, "Is this a MGGA?").
         def("is_x_lrc", &SuperFunctional::is_x_lrc, "Contains range-seperated exchange?").
@@ -85,6 +90,11 @@ void export_functional(py::module &m)
         def("set_c_omega", &SuperFunctional::set_c_omega, "Sets the range-seperation correlation parameter.").
         def("set_x_alpha", &SuperFunctional::set_x_alpha, "Sets the amount of exact HF exchange.").
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "Sets the amount of MP2 correlation.").
+        def("set_vv10_b", &SuperFunctional::set_vv10_b, "Sets the VV10 b parameter.").
+        def("set_vv10_c", &SuperFunctional::set_vv10_c, "Sets the VV10 c parameter.").
+        def("set_grac_shift", &SuperFunctional::set_grac_shift, "Sets the GRAC bulk shift value.").
+        def("set_grac_alpha", &SuperFunctional::set_grac_alpha, "Sets the GRAC alpha parameter.").
+        def("set_grac_beta", &SuperFunctional::set_grac_beta, "Sets the GRAC beta parameter.").
         def("needs_xc", &SuperFunctional::needs_xc, "Does this functional need XC quantities.").
         def("needs_vv10", &SuperFunctional::needs_vv10, "Does this functional need VV10 dispersion.").
         def("needs_grac", &SuperFunctional::needs_grac, "Does this functional need GRAC.").

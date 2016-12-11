@@ -488,27 +488,39 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             C_DCOPY(npoints, tau_bp, 1, (ftau.data() + 1), 2);
         }
 
+
         // Compute first deriv
         if (deriv == 0) {
             throw PSIEXCEPTION("LibXCFunction deriv=0 is not implemented, call deriv >=1");
         }
         if (deriv >= 1) {
+
+            // Special cases
+            double* fvp;
+            if (exc_){
+                fvp = fv.data();
+            } else{
+                fvp = nullptr;
+            }
+
             if (meta_) {
                 xc_mgga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), flapl.data(),
-                                ftau.data(), fv.data(), fv_rho.data(), fv_gamma.data(),
+                                ftau.data(), fvp, fv_rho.data(), fv_gamma.data(),
                                 fv_lapl.data(), fv_tau.data());
 
             } else if (gga_) {
-                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), fv.data(),
+                xc_gga_exc_vxc(&xc_functional_, npoints, frho.data(), fgamma.data(), fvp,
                                fv_rho.data(), fv_gamma.data());
 
             } else {
-                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fv.data(), fv_rho.data());
+                xc_lda_exc_vxc(&xc_functional_, npoints, frho.data(), fvp, fv_rho.data());
             }
 
             // Re-apply
-            for (size_t i = 0; i < npoints; i++) {
-                v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
+            if (exc_){
+                for (size_t i = 0; i < npoints; i++) {
+                    v[i] += alpha_ * fv[i] * (rho_ap[i] + rho_bp[i]);
+                }
             }
 
             C_DAXPY(npoints, alpha_, fv_rho.data(), 2, v_rho_a, 1);

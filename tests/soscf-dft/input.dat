@@ -3,7 +3,6 @@
 #### UHF Triplet Oxygen energy, triplet
 molecule mol {
     0 3
-#    Ar
     O
     O 1 1.2
 }

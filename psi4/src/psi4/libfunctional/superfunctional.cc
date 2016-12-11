@@ -533,7 +533,7 @@ void SuperFunctional::allocate() {
         ac_values_["V_RHO_A"] = SharedVector(new Vector("V_RHO_A", max_points_));
         ac_values_["V_GAMMA_AA"] = SharedVector(new Vector("V_GAMMA_AA", max_points_));
         if (is_polar) {
-            throw PSIEXCEPTION("GRAC is not implemented for UKS functionals for now.");
+            // throw PSIEXCEPTION("GRAC is not implemented for UKS functionals for now.");
             ac_values_["V_RHO_B"] = SharedVector(new Vector("V_RHO_B", max_points_));
             ac_values_["V_GAMMA_AB"] = SharedVector(new Vector("V_GAMMA_AB", max_points_));
             ac_values_["V_GAMMA_BB"] = SharedVector(new Vector("V_GAMMA_BB", max_points_));
@@ -585,17 +585,53 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             for (size_t i = 0; i < npoints; i++){
                 double denx = std::fabs(rho_x[i] + rho_y[i] + rho_z[i]) / std::pow(rho[i], 4.0 / 3.0);
                 double grac_fx = 1.0 / (1.0 + std::exp(galpha * (denx - gbeta)));
-
-                double tmp_rho = (1.0 - grac_fx) * (v_rho[i] - gshift);
-                tmp_rho += grac_fx * grac_v_rho[i];
-                v_rho[i] = tmp_rho;
-
-                double tmp_gamma = (1.0 - grac_fx) * v_gamma[i];
-                tmp_gamma += grac_fx * grac_v_gamma[i];
-                v_gamma[i] = tmp_gamma;
-
+                v_rho[i] = ((1.0 - grac_fx) * (v_rho[i] - gshift)) + (grac_fx * grac_v_rho[i]);
+                v_gamma[i] = ((1.0 - grac_fx) * v_gamma[i]) + (grac_fx * grac_v_gamma[i]);
             }
+        }
 
+        else{
+
+            double* rho_a = vals.find("RHO_A")->second->pointer();
+            double* rho_a_x = vals.find("RHO_AX")->second->pointer();
+            double* rho_a_y = vals.find("RHO_AY")->second->pointer();
+            double* rho_a_z = vals.find("RHO_AZ")->second->pointer();
+
+            double* rho_b = vals.find("RHO_B")->second->pointer();
+            double* rho_b_x = vals.find("RHO_BX")->second->pointer();
+            double* rho_b_y = vals.find("RHO_BY")->second->pointer();
+            double* rho_b_z = vals.find("RHO_BZ")->second->pointer();
+
+            double* v_rho_a = values_["V_RHO_A"]->pointer();
+            double* v_rho_b = values_["V_RHO_B"]->pointer();
+            double* v_gamma_aa = values_["V_GAMMA_AA"]->pointer();
+            double* v_gamma_ab = values_["V_GAMMA_AB"]->pointer();
+            double* v_gamma_bb = values_["V_GAMMA_BB"]->pointer();
+
+            double* grac_v_rho_a = ac_values_["V_RHO_A"]->pointer();
+            double* grac_v_rho_b = ac_values_["V_RHO_B"]->pointer();
+            double* grac_v_gamma_aa = ac_values_["V_GAMMA_AA"]->pointer();
+            double* grac_v_gamma_ab = ac_values_["V_GAMMA_AB"]->pointer();
+            double* grac_v_gamma_bb = ac_values_["V_GAMMA_BB"]->pointer();
+
+            const double galpha = -1.0 * grac_alpha_;
+            const double gbeta = grac_beta_;
+            const double gshift = grac_shift_;
+
+            # pragma omp simd
+            for (size_t i = 0; i < npoints; i++){
+                double denx = std::fabs(rho_a_x[i] + rho_a_y[i] + rho_a_z[i] + rho_b_x[i] +
+                                          rho_b_y[i] + rho_b_z[i]) /
+                                std::pow((rho_a[i] + rho_b[i]), 4.0 / 3.0);
+                double grac_fx = 1.0 / (1.0 + std::exp(galpha * (denx - gbeta)));
+
+                v_rho_a[i] = (1.0 - grac_fx) * (v_rho_a[i] - gshift) + (grac_fx * grac_v_rho_a[i]);
+                v_rho_b[i] = (1.0 - grac_fx) * (v_rho_b[i] - gshift) + (grac_fx * grac_v_rho_b[i]);
+
+                v_gamma_aa[i] = ((1.0 - grac_fx) * v_gamma_aa[i]) + (grac_fx * grac_v_gamma_aa[i]);
+                v_gamma_ab[i] = ((1.0 - grac_fx) * v_gamma_ab[i]) + (grac_fx * grac_v_gamma_ab[i]);
+                v_gamma_bb[i] = ((1.0 - grac_fx) * v_gamma_bb[i]) + (grac_fx * grac_v_gamma_bb[i]);
+            }
         }
     }
 
