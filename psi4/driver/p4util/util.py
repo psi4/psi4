@@ -130,20 +130,29 @@ def success(label):
 
 
 # Test functions
-def compare_values(expected, computed, digits, label):
+def compare_values(expected, computed, digits, label, exitonfail=True):
     """Function to compare two values. Prints :py:func:`util.success`
-    when value *computed* matches value *expected* to number of *digits*.
-    Performs a system exit on failure. Used in input files in the test suite.
+    when value *computed* matches value *expected* to number of *digits*
+    (or to *digits* itself when *digits* < 1 e.g. digits=0.04). Performs
+    a system exit on failure unless *exitonfail* False, in which case
+    returns error message. Used in input files in the test suite.
 
     """
-    message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d decimal places." % (label, digits+1, computed, digits+1, expected, digits))
-    if (abs(expected - computed) > 10 ** (-digits)):
+    if digits > 1:
+        thresh = 10 ** -digits
+        message = ("\t%s: computed value (%.*f) does not match (%.*f) to %d digits." % (label, digits+1, computed, digits+1, expected, digits))
+    else:
+        thresh = digits
+        message = ("\t%s: computed value (%f) does not match (%f) to %f digits." % (label, computed, expected, digits))
+    if abs(expected - computed) > thresh:
         print(message)
-        raise TestComparisonError(message)
-    if ( math.isnan(computed) ):
+        if exitonfail:
+            raise TestComparisonError(message)
+    if math.isnan(computed):
         print(message)
         print("\tprobably because the computed value is nan.")
-        raise TestComparisonError(message)
+        if exitonfail:
+            raise TestComparisonError(message)
     success(label)
 
 
