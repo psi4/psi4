@@ -177,6 +177,7 @@ endif()
 if(ENABLE_erd)
     add_subdirectory(erd)
     message(STATUS "Adding test cases: Psi4 + erd")
+endif()
 
 # <<<  gCP  >>>
 
@@ -186,7 +187,7 @@ find_program(gCP_EXECUTABLE
 
 if(gCP_EXECUTABLE)
     add_subdirectory(gcp)
-    message(STATUS "Found gCP: ${gCP_EXECUTABLE}")
+    message(STATUS "${Cyan}Found gCP${ColourReset}: ${gCP_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + gCP")
 endif()
 

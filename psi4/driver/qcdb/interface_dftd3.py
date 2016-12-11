@@ -245,7 +245,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
 
     # Print program output to file if verbose
     if not verbose and isP4regime:
-        verbose = True if psi4.get_option('SCF', 'PRINT') >= 3 else False
+        verbose = True if core.get_option('SCF', 'PRINT') >= 3 else False
     if verbose:
 
         text = '\n  ==> DFTD3 Output <==\n'

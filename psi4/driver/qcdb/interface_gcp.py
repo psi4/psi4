@@ -163,8 +163,8 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     # Setup unique scratch directory and move in
     current_directory = os.getcwd()
     if isP4regime:
-        psioh = psi4.IOManager.shared_object()
-        psio = psi4.IO.shared_object()
+        psioh = core.IOManager.shared_object()
+        psio = core.IO.shared_object()
         os.chdir(psioh.get_default_path())
         gcp_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
             '.gcp.' + str(random.randint(0, 99999))
@@ -258,13 +258,13 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 
     # Prepare results for Psi4
     if isP4regime and dertype != 0:
-        psi4.set_variable('GCP CORRECTION ENERGY', dashd)
-        psi_dashdderiv = psi4.Matrix(self.natom(), 3)
+        core.set_variable('GCP CORRECTION ENERGY', dashd)
+        psi_dashdderiv = core.Matrix(self.natom(), 3)
         psi_dashdderiv.set(dashdderiv)
 
     # Print program output to file if verbose
     if not verbose and isP4regime:
-        verbose = True if psi4.get_option('SCF', 'PRINT') >= 3 else False
+        verbose = True if core.get_option('SCF', 'PRINT') >= 3 else False
     if verbose:
 
         text = '\n  ==> GCP Output <==\n'
@@ -274,7 +274,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
                 text += handle.read().replace('D', 'E')
             text += '\n'
         if isP4regime:
-            psi4.print_out(text)
+            core.print_out(text)
         else:
             print(text)
 
@@ -294,7 +294,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 #        ValidationError('Unable to remove dftd3 temporary directory %s' % e)
     os.chdir(current_directory)
 
-#    # return -D & d(-D)/dx
+    # return -D & d(-D)/dx
     if dertype == -1:
         return dashd, dashdderiv
     elif dertype == 0:
@@ -304,7 +304,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
 
 try:
     # Attach method to libmints psi4.Molecule class
-    psi4.Molecule.run_gcp = run_gcp
+    core.Molecule.run_gcp = run_gcp
 except (NameError, AttributeError):
     # But don't worry if that doesn't work b/c
     #   it'll get attached to qcdb.Molecule class
