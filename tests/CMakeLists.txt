@@ -177,6 +177,17 @@ endif()
 if(ENABLE_erd)
     add_subdirectory(erd)
     message(STATUS "Adding test cases: Psi4 + erd")
+
+# <<<  gCP  >>>
+
+find_program(gCP_EXECUTABLE
+             NAMES gcp
+             DOC "Path to Grimme's gCP executable")
+
+if(gCP_EXECUTABLE)
+    add_subdirectory(gcp)
+    message(STATUS "Found gCP: ${gCP_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + gCP")
 endif()
 
 # <<<  GDMA  >>>

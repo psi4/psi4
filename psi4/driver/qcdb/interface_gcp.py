@@ -41,6 +41,7 @@ try:
 except ImportError:
     from .exceptions import *
 #from .dashparam import *
+from .p4regex import *
 from .molecule import Molecule
 
 # DGAS This should be removed!
@@ -217,7 +218,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     if dertype != 0:
         command.append('-grad')
     try:
-        print('command', command)
+        #print('command', command)
         dashout = subprocess.Popen(command, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
         raise ValidationError('Program gcp not found in path. %s' % e)

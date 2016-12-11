@@ -30,6 +30,7 @@ Module to provide lightweight definitions of emperical dispersion terms.
 """
 from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
+from psi4.driver.qcdb import interface_gcp as gcp
 
 
 class EmpericalDispersion(object):
@@ -189,14 +190,27 @@ class EmpericalDispersion(object):
 
     def compute_energy(self, molecule):
         if self.disp_type == 'gr':
-            return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
-                                   dashparam=self.dash_params, verbose=False, dertype=0)
+            if self.alias == 'PBEH3C':
+                dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
+                                             dashparam=self.dash_params, verbose=False, dertype=0)
+                gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=0)
+                return dashd_part + gcp_part
+            else:
+                return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
+                                       dashparam=self.dash_params, verbose=False, dertype=0)
         else:
             return self.disp.compute_energy(molecule)
 
     def compute_gradient(self, molecule):
         if self.disp_type == 'gr':
-            return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
-                                   dashparam=self.dash_params, verbose=False, dertype=1)
+            if self.alias == 'PBEH3C':
+                dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
+                                             dashparam=self.dash_params, verbose=False, dertype=1)
+                gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=1)
+                dashd_part.add(gcp_part)
+                return dashd_part
+            else:
+                return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
+                                       dashparam=self.dash_params, verbose=False, dertype=1)
         else:
             return self.disp.compute_gradient(molecule)

@@ -3009,6 +3009,7 @@ for key in superfunctionals.keys():
 # Figure out what Grimme functionals we have
 p4_funcs = set(superfunctionals.keys())
 p4_funcs -= set(['b97-d'])
+p4_funcs -= set(['pbeh3c'])
 for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
     func_list = (set(superfunctional_listues.keys()) & p4_funcs)
     for func in func_list:
@@ -3065,6 +3066,10 @@ def build_superfunctional(alias):
         sup = (core.get_option("DFT_CUSTOM_FUNCTIONAL"), False)
         if not isinstance(sup[0], core.SuperFunctional):
             raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
+
+    elif name == 'pbeh3c':
+        func = superfunctionals[name](name, npoints, deriv)[0]
+        sup = (func, (name, 'd3bj'))
 
     elif name in superfunctionals.keys():
         sup = superfunctionals[name](name, npoints, deriv)
