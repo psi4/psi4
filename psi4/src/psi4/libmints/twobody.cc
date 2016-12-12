@@ -45,6 +45,10 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     original_bs2_(integral_->basis2()),
     original_bs3_(integral_->basis3()),
     original_bs4_(integral_->basis4()),
+    bs1_(original_bs1_),
+    bs2_(original_bs2_),
+    bs3_(original_bs3_),
+    bs4_(original_bs4_),
     target_full_(nullptr), target_(nullptr),
     source_full_(nullptr), source_(nullptr),
     deriv_(deriv)
@@ -58,8 +62,13 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     force_cartesian_ = false;
     tformbuf_ = nullptr;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+}
 
-    // derived class should call create_blocks
+TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt & rhs)
+    : TwoBodyAOInt(rhs.integral_, rhs.deriv_)
+{
+    blocks12_ = rhs.blocks12_;
+    blocks34_ = rhs.blocks34_;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()
@@ -91,12 +100,12 @@ std::shared_ptr<BasisSet> TwoBodyAOInt::basis4()
     return original_bs4_;
 }
 
-bool TwoBodyAOInt::cloneable()
+bool TwoBodyAOInt::cloneable() const
 {
     return false;
 }
 
-TwoBodyAOInt* TwoBodyAOInt::clone()
+TwoBodyAOInt* TwoBodyAOInt::clone() const
 {
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
