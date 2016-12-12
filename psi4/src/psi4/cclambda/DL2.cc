@@ -51,6 +51,14 @@ namespace psi { namespace cclambda {
 	  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
 	  global_dpd_->buf4_copy(&D, PSIF_CC_LAMBDA, "New LIjAb");
 	  global_dpd_->buf4_close(&D);
+         // Add T3 contribution to CCSD(T) lambda equations
+          if(params.wfn == "CCSD_T") {
+            global_dpd_->buf4_init(&D, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "SIjAb(T)");
+            global_dpd_->buf4_init(&X2, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "New LIjAb");
+            global_dpd_->buf4_axpy(&D, &X2, 1.0);
+            global_dpd_->buf4_close(&X2);
+            global_dpd_->buf4_close(&D);
+           }
 	}
 	else if(params.ref == 1) { /** ROHF **/
 	  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");

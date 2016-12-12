@@ -870,7 +870,7 @@ def select_ccsd_t__gradient(name, **kwargs):
     # Considering only ccenergy
 
     func = None
-    if reference == 'UHF':
+    if reference in ['RHF', 'UHF']:
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
@@ -2212,10 +2212,6 @@ def run_ccenergy_gradient(name, **kwargs):
     elif name == 'ccsd(t)':
         core.set_local_option('CCLAMBDA', 'WFN', 'CCSD_T')
         core.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
-
-        user_ref = core.get_option('CCENERGY', 'REFERENCE')
-        if user_ref != 'UHF':
-            raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
     core.cchbar(ccwfn)
     core.cclambda(ccwfn)
