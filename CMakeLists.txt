@@ -122,7 +122,6 @@ find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
-set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 
 include(autocmake_omp)
 include(custom_cxxstandard)
