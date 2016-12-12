@@ -372,21 +372,9 @@ void RadialIntegral::buildU(ECP &U, int l, int N, GCQuadrature &grid, double *Ut
 	
 	// Tabulate weighted ECP values
 	double r;
-	bool foundStart = false;
-	double startTolerance = tolerance / 1000.0; // Distributions are left-skewed
 	for (int i = 0; i < gridSize; i++) {
 		r = gridPoints[i];
 		Utab[i] = pow(r, N+2) * U.evaluate(r, l);
-		
-		// Set pre-screening limits
-		if(Utab[i] > startTolerance && !foundStart) {
-			 grid.start = i;
-			 foundStart = true;
-		}
-		if(Utab[i] < tolerance && foundStart) {
-			grid.end = i-1;
-			foundStart = false;
-		}
 	}
 }
 
@@ -451,11 +439,28 @@ void RadialIntegral::type1(int maxL, int N, int offset, ECP &U, const GaussianSh
 			buildU(U, U.getL(), N, newGrid, Utab);
 			buildBessel(gridPoints, gridSize, maxL, besselValues, 2.0*p(a,b)*P(a,b));
 			
+			// Start building intvalues, and prescreen
+			bool foundStart = false, tooSmall = false;
+			for (int i = 0; i < gridSize; i++) {
+				for (int l = offset; l <= maxL; l+=2) {
+					intValues(l, i) = Utab[i] * besselValues(l, i); 
+					tooSmall = intValues(l, i) < tolerance;
+				}
+				if (!tooSmall && !foundStart) {
+					foundStart = true; 
+					newGrid.start = i;
+				}
+				if (tooSmall && foundStart) {
+					newGrid.end = i-1;
+					break;
+				}
+			}
+			
 			for (int i = newGrid.start; i <= newGrid.end; i++) {
 				val = -p(a, b) * (gridPoints[i]*(gridPoints[i] - 2*P(a, b)) + P2(a, b));
 				val = exp(val);
 				for (int l = offset; l <= maxL; l+=2)
-					intValues(l, i) = Utab[i] * val * besselValues(l, i);
+					intValues(l, i) *= val;
 			}
 
 			int test = integrate(maxL, gridSize, intValues, newGrid, tempValues, offset, 2);
@@ -527,20 +532,33 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 	buildF(shellA, Avec, l1start, l1end, gridPoints, gridSize, smallGrid.start, smallGrid.end, Fa);
 	buildF(shellB, Bvec, l2start, l2end, gridPoints, gridSize, smallGrid.start, smallGrid.end, Fb);
 	
-	// Build the integrals
+	// Build radial integrals
+	bool foundStart, tooSmall;
 	TwoIndex<double> intValues(l2end +1, gridSize, 0.0);
 	std::vector<int> tests(l1end +1);
 	std::vector<double> tempValues;
 	bool failed = false;
 	values.assign(l1end+1, l2end+1, 0.0);
+	double weightedTolerance = tolerance / gridSize;
 	for (int l1 = l1start; l1 <= l1end; l1+=2) {
-		for (int i = smallGrid.start; i <= smallGrid.end; i++) {
-			for (int l2 = l2start; l2 <= l2end; l2+=2) 
+		foundStart = false;
+		for (int i = 0; i < gridSize; i++) {
+			for (int l2 = l2start; l2 <= l2end; l2+=2) {
 				intValues(l2, i) = Utab[i] * Fa(l1, i) * Fb(l2, i);
+				tooSmall = fabs(intValues(l2, i)) < weightedTolerance;
+			}
+			if (!tooSmall && !foundStart) {
+				smallGrid.start = i;
+				foundStart = true;
+			}
+			if (tooSmall && foundStart) {
+				smallGrid.end = i-1;
+				break;
+			}
 		}
 		tests[l1] = integrate(l2end, gridSize, intValues, smallGrid, tempValues, l2start, 2);
 		failed = failed || (tests[l1] == 0);
-		for (int l2 = l2start; l2 <= l2end; l2+=2) values(l1, l2) = tempValues[l2];
+		for (int l2 = l2start; l2 <= l2end; l2+=2) values(l1, l2) = tempValues[l2]; 
 	}
 	
 	if (failed) {
