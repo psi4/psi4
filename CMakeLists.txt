@@ -118,13 +118,11 @@ include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(custom_color_messages)
 
-#find_package(PythonLibsNew REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
-add_subdirectory(external)
 
 include(autocmake_omp)
 include(custom_cxxstandard)
@@ -146,7 +144,7 @@ set(LAPACK_LANG "CXX")
 # should thus link against it and not try to play Intel link line advisor
 # ourselves.
 #
-# The final link line should be:
+# The final link line should be (assuming you are linking with threads):
 # -L${MKLROOT}/lib/intel64 -lmkl_rt -lpthread -lm -ldl
 include(ConfigMath)
 #These packages don't believe in configuration files...
@@ -160,6 +158,7 @@ endforeach()
 list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
 
 #RMR-This needs to be down here so other projects get the correct paths
+#in particular efp which needs blas too
 add_subdirectory(external)
 
 ################################  Main Project  ################################

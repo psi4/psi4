@@ -811,12 +811,15 @@ bool py_psi_set_global_option_array(std::string const& key, py::list values, Dat
     }
     Options& options=Process::environment.options;
     for(py::handle oi: values){
-        if(can_cast<py::list>(oi)){
+        //This needs to be above py::list b/c for some reason a string in a
+        //py::list is convertible to a py::list, which will trigger infinite
+        //recursion until the stack overflows...
+        if(can_cast<std::string>(oi))
+            options.set_global_array_string(nonconst_key, oi.cast<std::string>(), entry);
+        else if(can_cast<py::list>(oi)){
             DataType* newentry = options.set_global_array_array(nonconst_key, entry);
             py_psi_set_global_option_array(key,oi.cast<py::list>(),newentry);
         }
-        else if(can_cast<std::string>(oi))
-            options.set_global_array_string(nonconst_key, oi.cast<std::string>(), entry);
         else if(can_cast<int>(oi))
             options.set_global_array_int(nonconst_key, oi.cast<int>(), entry);
         else if(can_cast<double>(oi))
