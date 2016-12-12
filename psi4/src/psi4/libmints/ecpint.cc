@@ -639,8 +639,9 @@ double ECPIntegral::calcC(int a, int m, double A, std::vector<double> &fac) cons
 	return value;
 }
 
-void ECPIntegral::makeC(ThreeIndex<double> &C, int L, double *A, std::vector<double> &fac) {
+void ECPIntegral::makeC(FiveIndex<double> &C, int L, double *A, std::vector<double> &fac) {
 	int z; double Ck, Cl;
+	int na = 0;
 	for (int x = 0; x <= L; x++) {
 		for (int y = 0; y <= L - x; y++) {
 			z = L - x - y;
@@ -649,20 +650,22 @@ void ECPIntegral::makeC(ThreeIndex<double> &C, int L, double *A, std::vector<dou
 				Ck = calcC(x, k, A[0], fac);
 				for (int l = 0; l <= y; l++) {
 					Cl = calcC(y, l, A[1], fac);
-					for (int m = 0; m <= z; m++) C(k, l, m) = Ck * Cl * calcC(z, m, A[2], fac);
+					for (int m = 0; m <= z; m++) C(0, na, k, l, m) = Ck * Cl * calcC(z, m, A[2], fac);
 				}
 			}
+			
+			na++;
 		}
 	}
 }
 
-void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, ThreeIndex<double> &CA, ThreeIndex<double> &CB, TwoIndex<double> &values) { 
+void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) { 
 	
 	int LA = shellA.am(); int LB = shellB.am();
 	int maxLBasis = LA > LB ? LA : LB;
 	
 	// Build radial integrals
-	int L = LA + LB + U.getL();
+	int L = LA + LB;
 	TwoIndex<double> temp;
 	ThreeIndex<double> radials(L+1, L+1, 2*L+1);
 	for (int ix = 0; ix <= L; ix++) {
@@ -702,7 +705,7 @@ void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell
 									for (int m1 = 0; m1 <= z1; m1++) {
 										for (int m2 = 0; m2 <= z2; m2++){
 											m = m1 + m2;
-											C = CA(k1, l1, m1) * CB(k2, l2, m2);
+											C = CA(0, na, k1, l1, m1) * CB(0, nb, k2, l2, m2);
 
 											if ( fabs(C) > 1e-14 ) {
 												// Build radial integrals
@@ -735,7 +738,7 @@ void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell
 	
 }
 
-void ECPIntegral::type2(int lam, ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, ThreeIndex<double> &CA, ThreeIndex<double> &CB, ThreeIndex<double> &values) {
+void ECPIntegral::type2(int lam, ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
 	double prefac = 16.0 * M_PI * M_PI;
 	int LA = shellA.am();
 	int LB = shellB.am();
@@ -799,7 +802,7 @@ void ECPIntegral::type2(int lam, ECP& U, const GaussianShell &shellA, const Gaus
 								for (int l2 = 0; l2 <= y2; l2++) {
 									for (int m1 = 0; m1 <= z1; m1++) {
 										for (int m2 = 0; m2 <= z2; m2++){
-											C = CA(k1, l1, m1) * CB(k2, l2, m2);
+											C = CA(0, na, k1, l1, m1) * CB(0, nb, k2, l2, m2);
 											
 											N1 = k1 + l1 + m1;
 											N2 = k2 + l2 + m2;
@@ -849,8 +852,8 @@ void ECPIntegral::compute_shell_pair(ECP &U, const GaussianShell &shellA, const 
 	std::vector<double> fac = facArray(maxLBasis);
 	
 	// Construct coefficients 
-	ThreeIndex<double> CA(LA+1, LA+1, LA+1);
-	ThreeIndex<double> CB(LB+1, LB+1, LB+1);
+	FiveIndex<double> CA(1, shellA.nprimitive(), LA+1, LA+1, LA+1);
+	FiveIndex<double> CB(1, shellB.nprimitive(), LB+1, LB+1, LB+1);
 	makeC(CA, LA, A, fac);
 	makeC(CB, LB, B, fac);
 	

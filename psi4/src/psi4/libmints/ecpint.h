@@ -292,12 +292,12 @@ private:
 	
 	/// Worker functions for calculating binomial expansion coefficients
 	double calcC(int a, int m, double A, std::vector<double> &fac) const;
-	void makeC(ThreeIndex<double> &C, int L, double *A, std::vector<double> &fac);
+	void makeC(FiveIndex<double> &C, int L, double *A, std::vector<double> &fac);
 	
 	/// Calculates the type 1 integrals for the given ECP center over the given shell pair
-	void type1(ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, ThreeIndex<double> &CA, ThreeIndex<double> &CB, TwoIndex<double> &values);
+	void type1(ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values);
 	/// Calculates the type 2 integrals for the given ECP center over the given shell pair
-	void type2(int l, ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, ThreeIndex<double> &CA, ThreeIndex<double> &CB, ThreeIndex<double> &values);
+	void type2(int l, ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values);
 	
 	/// Overridden shell-pair integral calculation over all ECP centers
 	void compute_pair(const GaussianShell &shellA, const GaussianShell &shellB);
