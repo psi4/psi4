@@ -55,8 +55,12 @@ class SimintTwoElectronInt : public TwoBodyAOInt
         initialize_shell_pair_single_(const std::vector<ShellPairBlock> & vsh,
                                       const ShellVec & shell1, const ShellVec & shell2);
 
+        void create_blocks(void);
 
-        size_t multi_batchsize_;
+        size_t batchsize_;
+        size_t allwork_size_;
+        bool bra_same_, ket_same_, braket_same_;
+
         double * allwork_;
         double * sharedwork_;
 
@@ -73,13 +77,8 @@ class SimintTwoElectronInt : public TwoBodyAOInt
         std::shared_ptr<ShellPairVec> multi_spairs_ket_;
 
 
-        // a buffer for shell pairs
-        simint_multi_shellpair P_, Q_;
-
-        // number of shells in each basis set
-        int nsh1_, nsh2_, nsh3_, nsh4_;
-
-        void create_blocks(void);
+    protected:
+        SimintTwoElectronInt(const SimintTwoElectronInt & rhs);
 
     public:
         SimintTwoElectronInt(const IntegralFactory * integral, int deriv=0, bool use_shell_pairs=false);
@@ -101,7 +100,13 @@ class SimintTwoElectronInt : public TwoBodyAOInt
 
 class SimintERI : public SimintTwoElectronInt
 {
+    protected:
+        SimintERI(const SimintERI & rhs);
+
     public:
+        virtual bool cloneable() const override { return true; };
+        virtual SimintERI * clone() const override { return new SimintERI(*this); }
+
         SimintERI(const IntegralFactory * integral, int deriv=0, bool use_shell_pairs=false);
 };
 
