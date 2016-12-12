@@ -357,9 +357,9 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot,
         if (Jroot == -1) Jroot = Iroot;
 
         std::stringstream opdm_name;
-        if (spin == "SUM") opdm_name << "MO-basis OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
-        else if (spin == "A") opdm_name << "MO-basis Alpha OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
-        else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+        if (spin == "SUM") opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else if (spin == "A") opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
         else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
 
         if (opdm_map_.count(opdm_name.str()) == 0){

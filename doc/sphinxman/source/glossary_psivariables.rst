@@ -337,7 +337,7 @@ PSI Variables by Alpha
 
    The total electronic energy [H] and correlation energy component [H]
    for the requested configuration interaction level of theory and root 
-   *n* (numbering starts at 1).
+   *n* (numbering starts at 0).
 
 .. psivar:: CI STATE-AVERAGED TOTAL ENERGY
    CI STATE-AVERAGED CORRELATION ENERGY

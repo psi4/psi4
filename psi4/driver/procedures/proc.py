@@ -2585,7 +2585,7 @@ def run_detci_property(name, **kwargs):
     states = core.get_global_option('avg_states')
     nroots = core.get_global_option('num_roots')
     if len(states) != nroots:
-        states = range(1, nroots + 1)
+        states = range(nroots)
 
     # Run OEProp
     oe = core.OEProp(ciwfn)
@@ -2602,7 +2602,6 @@ def run_detci_property(name, **kwargs):
         core.print_out("\n   ===> %s properties for all CI roots <=== \n\n" % name.upper())
         for root in states:
             oe.set_title("%s ROOT %d" % (name.upper(), root))
-            root = root - 1
             if ciwfn.same_a_b_dens():
                 oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True))
             else:
@@ -2618,8 +2617,7 @@ def run_detci_property(name, **kwargs):
 
         core.print_out("\n   ===> %s properties for all CI transition density matrices <=== \n\n" % name.upper())
         for root in states[1:]:
-            oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 1, root))
-            root = root - 1
+            oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 0, root))
             if ciwfn.same_a_b_dens():
                 oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True))
             else:

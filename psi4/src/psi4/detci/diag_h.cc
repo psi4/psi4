@@ -571,24 +571,24 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         tval = evals[i] + edrc + nucrep;
 
         std::stringstream s;
-        s << "CI ROOT " << (i + 1) << " TOTAL ENERGY";
+        s << "CI ROOT " << i << " TOTAL ENERGY";
         Process::environment.globals[s.str()] = tval;
         s.str(std::string());
-        s << "CI ROOT " << (i + 1) << " CORRELATION ENERGY";
+        s << "CI ROOT " << i << " CORRELATION ENERGY";
         Process::environment.globals[s.str()] = tval - CalcInfo_->escf;
     }
 
     if (Parameters_->average_num > 1) {
         tval = 0.0;
-        for (i = 0; i < Parameters_->average_num; i++)
+        for (i = 0; i < Parameters_->average_num; i++) {
             tval += Parameters_->average_weights[i] *
                     (edrc + nucrep + evals[Parameters_->average_states[i]]);
+        }
         Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
         Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
             tval - CalcInfo_->escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] =
-            Process::environment
-                .globals["CI STATE-AVERAGED CORRELATION ENERGY"];
+            Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"];
     }
 
     // Set the energy as MCSCF would find it
@@ -597,7 +597,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"];
     } else if (Parameters_->root != 0) {  // follow some specific root != lowest
         std::stringstream s;
-        s << "CI ROOT " << (Parameters_->root + 1) << " TOTAL ENERGY";
+        s << "CI ROOT " << Parameters_->root << " TOTAL ENERGY";
         Process::environment.globals["MCSCF TOTAL ENERGY"] =
             Process::environment.globals[s.str()];
     } else {

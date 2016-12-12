@@ -131,21 +131,20 @@ void CIWavefunction::form_opdm(void) {
     }
 
     // Figure out which OPDM should be current
-    if (Parameters_->opdm_ave){
+    if (Parameters_->opdm_ave) {
         Dimension act_dim = get_dimension("ACT");
         opdm_a_ = SharedMatrix(new Matrix("MO-basis Alpha OPDM", nirrep_, act_dim, act_dim));
         opdm_b_ = SharedMatrix(new Matrix("MO-basis Beta OPDM", nirrep_, act_dim, act_dim));
-        opdm_   = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
+        opdm_ = SharedMatrix(new Matrix("MO-basis OPDM", nirrep_, act_dim, act_dim));
 
-        for(int i=0; i<Parameters_->average_num; i++) {
+        for (int i = 0; i < Parameters_->average_num; i++) {
             int croot = Parameters_->average_states[i];
             double weight = Parameters_->average_weights[i];
             opdm_a_->axpy(weight, opdm_list[croot][0]);
             opdm_b_->axpy(weight, opdm_list[croot][1]);
             opdm_->axpy(weight, opdm_list[croot][2]);
         }
-    }
-    else{
+    } else {
         int croot = Parameters_->root;
         opdm_a_ = opdm_list[croot][0]->clone();
         opdm_b_ = opdm_list[croot][1]->clone();
@@ -457,15 +456,15 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
     }
 
     std::stringstream opdm_name;
-    opdm_name << "MO-basis Alpha OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+    opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
     SharedMatrix new_OPDM_a(new Matrix(opdm_name.str(), nirrep_, act_dim, act_dim));
 
     opdm_name.str(std::string());
-    opdm_name << "MO-basis Beta OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+    opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
     SharedMatrix new_OPDM_b(new Matrix(opdm_name.str(), nirrep_, act_dim, act_dim));
 
     opdm_name.str(std::string());
-    opdm_name << "MO-basis OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+    opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
     SharedMatrix new_OPDM(new Matrix(opdm_name.str(), nirrep_, act_dim, act_dim));
 
     int offset = 0;
@@ -570,120 +569,6 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
   }
 
 }// End OPDM Block
-
-/*
-** Here we compute all properties for opdms in opdm_map_ from form_opdm
-*/
-void CIWavefunction::opdm_properties()
-{
-    if (!opdm_called_){
-        throw PSIEXCEPTION("CIWavefunction::opdm_properties: Called before form_opdm, no opdms to run properties on!");
-    }
-
-    // Figure out which opdms we needs
-    std::vector<std::pair<int, int> > root_list;
-    for (int i = 0; i < Parameters_->num_roots; i++) {
-        root_list.push_back(std::pair<int, int>(i, i));
-    }
-    if (Parameters_->transdens) {
-        for (int i = 1; i < Parameters_->num_roots; i++) {
-            root_list.push_back(std::pair<int, int>(0, i));
-        }
-    }
-
-    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
-    oe->set_Ca(get_orbitals("ALL"));
-    SharedMatrix opdm_a;
-    SharedMatrix opdm_b;
-    std::stringstream opdm_name, oeprop_label;
-    double inactive_value = 0.0;
-
-    std::stringstream ss;
-
-    // Loop over roots
-    for (int i = 0; i < root_list.size(); i++) {
-        int Iroot = root_list[i].first;
-        int Jroot = root_list[i].second;
-
-        if (Iroot == Jroot) inactive_value = 1.0;
-        else inactive_value = 0.0;
-
-        opdm_name.str(std::string());
-        opdm_name << "MO-basis Alpha OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
-        opdm_a = opdm_add_inactive(opdm_map_[opdm_name.str()], inactive_value, true);
-        oe->set_Da_mo(opdm_a);
-
-        if (Parameters_->ref == "ROHF") {
-            opdm_name.str(std::string());
-            opdm_name << "MO-basis Beta OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
-            opdm_b = opdm_add_inactive(opdm_map_[opdm_name.str()], inactive_value, true);
-            oe->set_Db_mo(opdm_b);
-        }
-
-        oe->clear();
-        oeprop_label.str(std::string());
-        if (Iroot == Jroot) {
-            oe->add("DIPOLE");
-            oe->add("MULLIKEN_CHARGES");
-            oe->add("NO_OCCUPATIONS");
-            oe->add("QUADRUPOLE");
-            oeprop_label << "CI ROOT " << (Iroot+1);
-        }
-        else {
-            oe->add("TRANSITION_DIPOLE");
-            oe->add("TRANSITION_QUADRUPOLE");
-            oeprop_label << "CI ROOT " << (Iroot+1) << " -> ROOT " << (Jroot+1);
-        }
-        oe->set_title(oeprop_label.str());
-
-
-        outfile->Printf( "\n  ==> Properties %s <==\n", oeprop_label.str().c_str());
-        oe->compute();
-
-        // if this is the "special" root, then copy over OEProp
-        // Process::environment variables from the current root into
-        // more general locations
-
-        if ((Iroot == Parameters_->root) && (Jroot == Parameters_->root)) {
-          std::stringstream ss2;
-          ss2 << oeprop_label.str() << " DIPOLE X";
-          Process::environment.globals["CI DIPOLE X"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " DIPOLE Y";
-          Process::environment.globals["CI DIPOLE Y"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " DIPOLE Z";
-          Process::environment.globals["CI DIPOLE Z"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " QUADRUPOLE XX";
-          Process::environment.globals["CI QUADRUPOLE XX"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " QUADRUPOLE YY";
-          Process::environment.globals["CI QUADRUPOLE YY"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " QUADRUPOLE ZZ";
-          Process::environment.globals["CI QUADRUPOLE ZZ"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " QUADRUPOLE XY";
-          Process::environment.globals["CI QUADRUPOLE XY"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " QUADRUPOLE XZ";
-          Process::environment.globals["CI QUADRUPOLE XZ"] = Process::environment.globals[ss2.str()];
-
-          ss2.str(std::string());
-          ss2 << oeprop_label.str() << " QUADRUPOLE YZ";
-          Process::environment.globals["CI QUADRUPOLE YZ"] = Process::environment.globals[ss2.str()];
-        }
-
-    } // End loop over roots
-}
 
 void CIWavefunction::ci_nat_orbs() {
   // We can only do restricted orbitals
