@@ -513,8 +513,15 @@ void DFJK::initialize_JK_core()
     std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
     const double **buffer = new const double*[nthread];
     std::shared_ptr<TwoBodyAOInt> *eri = new std::shared_ptr<TwoBodyAOInt>[nthread];
-    for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    buffer[0] = eri[0]->buffer();
+
+    for (int Q = 1; Q<nthread; Q++) {
+        if(eri[0]->cloneable())
+            eri[Q] = std::shared_ptr<TwoBodyAOInt>(eri[0]->clone());
+        else
+            eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+
         buffer[Q] = eri[Q]->buffer();
     }
 

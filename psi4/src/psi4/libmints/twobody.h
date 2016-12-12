@@ -62,15 +62,16 @@ class TwoBodyAOInt
 protected:
     const IntegralFactory* integral_;
 
+    const std::shared_ptr<BasisSet> original_bs1_;
+    const std::shared_ptr<BasisSet> original_bs2_;
+    const std::shared_ptr<BasisSet> original_bs3_;
+    const std::shared_ptr<BasisSet> original_bs4_;
+
     std::shared_ptr<BasisSet> bs1_;
     std::shared_ptr<BasisSet> bs2_;
     std::shared_ptr<BasisSet> bs3_;
     std::shared_ptr<BasisSet> bs4_;
 
-    const std::shared_ptr<BasisSet> original_bs1_;
-    const std::shared_ptr<BasisSet> original_bs2_;
-    const std::shared_ptr<BasisSet> original_bs3_;
-    const std::shared_ptr<BasisSet> original_bs4_;
 
     /// Buffer to hold the final integrals.
     double *target_full_;
@@ -101,7 +102,7 @@ protected:
 
     /*! Create the optimal blocks of shell pairs
      *
-     * This should fill in blocks12_ and blocks34_ members
+     * Default implementation
      */
     void create_blocks(void);
 
@@ -122,6 +123,8 @@ protected:
 //               int deriv = 0);
 
     TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv=0);
+
+    TwoBodyAOInt(const TwoBodyAOInt & rhs);
 
 public:
     virtual ~TwoBodyAOInt();
@@ -192,10 +195,10 @@ public:
                       std::shared_ptr<GaussianShell>, std::shared_ptr<GaussianShell>, int nchunk=1);
 
     /// Return true if the clone member can be called. By default returns false.
-    virtual bool cloneable();
+    virtual bool cloneable() const;
 
     /// Returns a clone of this object. By default throws an exception
-    virtual TwoBodyAOInt* clone();
+    virtual TwoBodyAOInt* clone() const;
 
     /// Results go back to buffer_
     void pure_transform(int, int, int, int, int nchunk, bool copy_to_source = true);

@@ -34,8 +34,8 @@
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/integral.h"
 
-#define SIMINT_SCREEN_TOL 1e-13
-#define SIMINT_SCREEN 2 
+#define SIMINT_SCREEN_TOL 0.0
+#define SIMINT_SCREEN 0
 
 namespace psi {
 
@@ -117,38 +117,25 @@ SimintTwoElectronInt::SimintTwoElectronInt(const IntegralFactory * integral, int
     // initialize the library
     simint_init();
 
-    simint_initialize_multi_shellpair(&P_);
-    simint_initialize_multi_shellpair(&Q_);
+    bool use_shell_pairs_;
 
-    multi_batchsize_ = 32;
+    batchsize_ = 32;
 
     size_t size = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
                   INT_NCART(basis3()->max_am()) * INT_NCART(basis4()->max_am());
 
-    size_t fullsize = size * multi_batchsize_;
+    size_t fullsize = size * batchsize_;
+    allwork_size_ = sizeof(double) * (fullsize * 2 + size);
 
     sharedwork_ = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    allwork_ = (double *)SIMINT_ALLOC(allwork_size_);
 
-    allwork_ = (double *)SIMINT_ALLOC(sizeof(double) * (fullsize * 2 + size));
     target_full_ = allwork_;
     source_full_ = allwork_ + fullsize;
     tformbuf_ = allwork_ + 2*fullsize;
 
     target_ = target_full_;
     source_ = source_full_;
-
-    // we don't do any fancy permutations, etc - they are
-    // handled by the simint library
-    bs1_ = original_bs1_;
-    bs2_ = original_bs2_;
-    bs3_ = original_bs3_;
-    bs4_ = original_bs4_;
-
-    // store for later use
-    nsh1_ = original_bs1_->nshell();
-    nsh2_ = original_bs2_->nshell();
-    nsh3_ = original_bs3_->nshell();
-    nsh4_ = original_bs4_->nshell();
 
     // build plain shells
     shells1_ = CreateShellVec(*original_bs1_);
@@ -175,12 +162,14 @@ SimintTwoElectronInt::SimintTwoElectronInt(const IntegralFactory * integral, int
         shells4_ = CreateShellVec(*original_bs4_);
     
 
-    bool bra_ket_same = (original_bs1_ == original_bs3_ &&
-                         original_bs2_ == original_bs4_);
+    bra_same_ = (original_bs1_ == original_bs2_);
+    ket_same_ = (original_bs3_ == original_bs4_);
+    braket_same_ = (original_bs1_ == original_bs3_ &&
+                    original_bs2_ == original_bs4_);
 
     single_spairs_bra_ = CreateShellPairs(*shells1_, *shells2_);
 
-    if(bra_ket_same)
+    if(braket_same_)
         single_spairs_ket_ = single_spairs_bra_;
     else
         single_spairs_ket_ = CreateShellPairs(*shells3_, *shells4_);
@@ -188,11 +177,39 @@ SimintTwoElectronInt::SimintTwoElectronInt(const IntegralFactory * integral, int
     create_blocks();
 }
 
+SimintTwoElectronInt::SimintTwoElectronInt(const SimintTwoElectronInt & rhs)
+    : TwoBodyAOInt(rhs),
+      batchsize_(rhs.batchsize_),
+      allwork_size_(rhs.allwork_size_),
+      bra_same_(rhs.bra_same_),
+      ket_same_(rhs.ket_same_),
+      braket_same_(rhs.braket_same_),
+      shells1_(rhs.shells1_),
+      shells2_(rhs.shells2_),
+      shells3_(rhs.shells3_),
+      shells4_(rhs.shells4_),
+      single_spairs_bra_(rhs.single_spairs_bra_),
+      single_spairs_ket_(rhs.single_spairs_ket_),
+      multi_spairs_bra_(rhs.multi_spairs_bra_),
+      multi_spairs_ket_(rhs.multi_spairs_ket_)
+{
+    // allocate and reconfigure workspace
+    sharedwork_ = (double *)SIMINT_ALLOC(SIMINT_OSTEI_MAX_WORKMEM);
+    allwork_ = (double *)SIMINT_ALLOC(allwork_size_);
+
+    // we can do this without storing all the various
+    // sizes for the components by simply using the offsets
+    // from the object we are copying
+    target_full_ = allwork_;
+    source_full_ = allwork_ + (rhs.source_full_ - rhs.allwork_);
+    tformbuf_ = allwork_ + (rhs.tformbuf_ - rhs.allwork_);
+    target_ = target_full_;
+    source_ = source_full_;
+}
+
 SimintTwoElectronInt::~SimintTwoElectronInt()
 {
     simint_finalize();
-    simint_free_multi_shellpair(&P_);
-    simint_free_multi_shellpair(&Q_);
     SIMINT_FREE(allwork_);
     SIMINT_FREE(sharedwork_);
 }
@@ -218,6 +235,9 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 {
     target_ = target_full_;
     source_ = source_full_;
+
+    const auto nsh2 = original_bs2_->nshell();
+    const auto nsh4 = original_bs4_->nshell();
 
     const auto & shell1 = original_bs1_->shell(sh1);
     const auto & shell2 = original_bs2_->shell(sh2);
@@ -247,8 +267,8 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     curr_buff_size_ = n1 * n2 * n3 * n4;
 
     // get the precomputed simint_multi_shellpair
-    simint_multi_shellpair P = (*single_spairs_bra_)[sh1*nsh2_ + sh2];
-    simint_multi_shellpair Q = (*single_spairs_ket_)[sh3*nsh4_ + sh4];
+    simint_multi_shellpair * P = &(*single_spairs_bra_)[sh1*nsh2 + sh2];
+    simint_multi_shellpair * Q = &(*single_spairs_ket_)[sh3*nsh4 + sh4];
 
     // actually compute
     // if we are doing cartesian, put directly in target. Otherwise, put in source
@@ -256,10 +276,10 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     size_t ncomputed = 0;
 
     if(do_cart)
-        ncomputed = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, sharedwork_, target_);
+        ncomputed = simint_compute_eri_sharedwork(P, Q, SIMINT_SCREEN_TOL, sharedwork_, target_);
     else
     {
-        ncomputed = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
+        ncomputed = simint_compute_eri_sharedwork(P, Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
         pure_transform(sh1, sh2, sh3, sh4, 1, false);
     }
 
@@ -353,7 +373,7 @@ SimintTwoElectronInt::compute_shell_blocks(int shellpair1, int shellpair2,
 
     if(nshell1234 == 0)
         throw PSIEXCEPTION("No shells passed to calculate");
-    if(nshell1234 > multi_batchsize_)
+    if(nshell1234 > batchsize_)
         throw PSIEXCEPTION("Not enough space allocated for that many shells\n");
 
     P.nshell12_clip = npair1;
@@ -434,8 +454,6 @@ void SimintTwoElectronInt::create_blocks(void)
 
     // form pairs for the bra
     // these aren't batched
-    bool bra_same = (basis1() == basis2());
-    bool ket_same = (basis3() == basis4());
 
     for(int iam = 0; iam <= am1; iam++)
     for(int jam = 0; jam <= am2; jam++)
@@ -443,7 +461,7 @@ void SimintTwoElectronInt::create_blocks(void)
         for(int ishell : sorted_shells1[iam])
         for(int jshell : sorted_shells2[jam])
         {
-            if(!bra_same || (bra_same && jshell <= ishell) )
+            if(!bra_same_ || (bra_same_ && jshell <= ishell) )
                 blocks12_.push_back( {{ishell, jshell}} );
         }
     }
@@ -457,10 +475,10 @@ void SimintTwoElectronInt::create_blocks(void)
         for(int ishell : sorted_shells3[iam])
         for(int jshell : sorted_shells4[jam])
         {
-            if(!ket_same || (ket_same && jshell <= ishell) )
+            if(!ket_same_ || (ket_same_ && jshell <= ishell) )
             {
                 curblock.push_back({ishell, jshell});
-                if(curblock.size() == multi_batchsize_)
+                if(curblock.size() == batchsize_)
                 {
                     blocks34_.push_back(curblock);
                     curblock.clear();
@@ -474,13 +492,16 @@ void SimintTwoElectronInt::create_blocks(void)
 
     multi_spairs_bra_ = initialize_shell_pair_single_(blocks12_, *shells1_, *shells2_); 
     multi_spairs_ket_ = initialize_shell_pair_single_(blocks34_, *shells3_, *shells4_); 
+
 }
 
 SimintERI::SimintERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
     : SimintTwoElectronInt(integral, deriv, use_shell_pairs)
-{
-}
+{ }
 
+SimintERI::SimintERI(const SimintERI & rhs)
+    : SimintTwoElectronInt(rhs)
+{ }
 
 
 
