@@ -247,15 +247,9 @@ void AngularIntegral::makeOmega(FiveIndex<double> &U) {
 								om_plus = om_minus = 0.0;
 								for (int i = 0; i<= lam; i++ ) {
 									for (int j = 0; j <= lam - i; j++) {
-										test2 = (rho + m + lam - i - j) % 2 == sigma % 2;
-										test3 = (1 - 2*((l+j) % 2)) * sigma >= 0;
-										test3 = test3 && (sigma == 0 ? ((l+j)%2 == 0 ? true : false) : true);
-										
-										if (test1 && test2 && test3) {
 											wval = W(k+i, l+j, m+lam-i-j, rho, rho+sigma);
 											om_plus += U(lam, mu, i, j, 0) * wval;
 											om_minus += U(lam, mu, i, j, 1) * wval;
-										}
 									}
 								}
 								if (mu == 0) om_minus = om_plus;
@@ -450,7 +444,7 @@ void RadialIntegral::type1(int maxL, int N, int offset, ECP &U, const GaussianSh
 			newGrid.transformRMinMax(p(a, b), (za * A + zb * B)/p(a, b));
 			std::vector<double> &gridPoints = newGrid.getX();
 			newGrid.start = 0;
-			newGrid.end = gridSize;
+			newGrid.end = gridSize-1;
 			
 			// Build U and bessel tabs
 			double Utab[gridSize];
@@ -522,7 +516,7 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 	
 	// Reset grid starting points
 	smallGrid.start = 0;
-	smallGrid.end = gridSize;
+	smallGrid.end = gridSize-1;
 	
 	double Utab[gridSize];
 	buildU(U, l, N, smallGrid, Utab);
@@ -578,7 +572,7 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 						GCQuadrature newGrid = bigGrid;
 						std::vector<double> &gridPoints2 = newGrid.getX();
 						newGrid.start = 0;
-						newGrid.end = gridSize;
+						newGrid.end = gridSize-1;
 						newGrid.transformRMinMax(p(a,b), (zeta_a * A + zeta_b * B)/p(a, b));
 				
 						// Build the U tab
@@ -601,12 +595,6 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 					
 						if(integrate(l2end, gridSize, intValues, newGrid, tempValues, l2start, 2) == 0) {
 							std::cerr << " Failed at second attempt!\n";
-							if (l1 == 3 && a == 7 && b == 3) {
-							for (int i = newGrid.start; i <= newGrid.end; i++) {
-								std::cout << gridPoints2[i] << " " << intValues(l2start, i) << "\n";
-							}
-							std::cout << "\n\n";
-							}
 						}
 						for (int l2 = l2start; l2 <= l2end; l2+=2) values(l1, l2) += c_a*c_b*tempValues[l2];
 					}
@@ -870,7 +858,7 @@ void ECPIntegral::compute_pair(const GaussianShell &shellA, const GaussianShell 
 	
 	TwoIndex<double> tempValues;
 	int ao12;
-	for (int i = 0; i <= basis.getN(); i++) {
+	for (int i = 0; i < basis.getN(); i++) {
 		 compute_shell_pair(basis.getECP(i), shellA, shellB, tempValues);
 		 ao12 = 0;
 		 for (int a = 0; a < shellA.ncartesian(); a++) {
