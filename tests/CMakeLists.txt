@@ -33,7 +33,7 @@ find_package(Perl QUIET)
 set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
-foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1 
+foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
                   cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc14 cc15 cc16 
@@ -46,7 +46,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp casscf-sp castup1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2 
                   ci-property cubeprop decontract dcft-grad1 dcft-grad2 
                   dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 
-                  dcft7 dcft8 dcft9 dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
+                  dcft7 dcft8 dcft9 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
                   dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
                   dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-grad1
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfomp2-1 dfomp2-2 dfomp2-3
@@ -104,6 +104,11 @@ endforeach()
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 add_subdirectory(json)
+if(ENABLE_psi4pasture)
+  add_subdirectory(pasture-ccsorttransqt2)
+  message(STATUS "${Cyan}Pasture Enabled:${ColourReset}:")
+  message(STATUS " Adding test cases: Psi4 + Pasture")
+endif()
 
 
 

@@ -488,7 +488,6 @@ void CIWavefunction::get_parameters(Options &options)
   if (Parameters_->dipmom == 1) Parameters_->opdm = 1;
 
   Parameters_->root = options.get_int("FOLLOW_ROOT");
-  Parameters_->root -= 1;
   if (Parameters_->root < 0) Parameters_->root = 0;
 
   if (options["TPDM"].has_changed())
@@ -592,41 +591,42 @@ void CIWavefunction::get_parameters(Options &options)
 
   /* Does the user request a state-averaged calculation? */
   if (options["AVG_STATES"].has_changed()) {
-    i = options["AVG_STATES"].size();
-    if (i < 1 || i > Parameters_->num_roots) {
-      std::string str = "Invalid number of states to average (";
-      str += std::to_string( i) ;
-      str += ")";
-      throw PsiException(str,__FILE__,__LINE__);
-    }
+      i = options["AVG_STATES"].size();
+      if (i < 1 || i > Parameters_->num_roots) {
+          std::string str = "Invalid number of states to average (";
+          str += std::to_string(i);
+          str += ")";
+          throw PsiException(str, __FILE__, __LINE__);
+      }
 
-    Parameters_->average_states.resize(i);
-    Parameters_->average_weights.resize(i);
-    Parameters_->average_num = i;
-    for (i=0;i<Parameters_->average_num;i++) {
-      Parameters_->average_states[i] = options["AVG_STATES"][i].to_integer();
-      if (Parameters_->average_states[i] < 1) {
-        std::string str = "AVG_STATES start numbering from 1.\n";
-        str += "Invalid state number ";
-        str += std::to_string( Parameters_->average_states[i]) ;
-        throw PsiException(str,__FILE__,__LINE__);
+      Parameters_->average_states.resize(i);
+      Parameters_->average_weights.resize(i);
+      Parameters_->average_num = i;
+      for (i = 0; i < Parameters_->average_num; i++) {
+          Parameters_->average_states[i] = options["AVG_STATES"][i].to_integer();
+          if (Parameters_->average_states[i] >= Parameters_->num_roots) {
+              throw PsiException("Average state greater than the number of roots!", __FILE__, __LINE__);
+          }
+          if (Parameters_->average_states[i] < 0) {
+              std::string str = "AVG_STATES start numbering from 0.\n";
+              str += "Invalid state number ";
+              str += std::to_string(Parameters_->average_states[i]);
+              throw PsiException(str, __FILE__, __LINE__);
+          }
+          Parameters_->average_weights[i] = 1.0 / ((double)Parameters_->average_num);
       }
-      Parameters_->average_states[i] -= 1; /* number from 1 externally */
-      Parameters_->average_weights[i] = 1.0/((double)Parameters_->average_num);
-    }
 
-    if (options["AVG_WEIGHTS"].has_changed()) {
-      if (options["AVG_WEIGHTS"].size() != Parameters_->average_num) {
-        std::string str = "Mismatched number of average weights (";
-        str += std::to_string( i) ;
-        str += ")";
-        throw PsiException(str,__FILE__,__LINE__);
+      if (options["AVG_WEIGHTS"].has_changed()) {
+          if (options["AVG_WEIGHTS"].size() != Parameters_->average_num) {
+              std::string str = "Mismatched number of average weights (";
+              str += std::to_string(i);
+              str += ")";
+              throw PsiException(str, __FILE__, __LINE__);
+          }
+          for (i = 0; i < Parameters_->average_num; i++) {
+              Parameters_->average_weights[i] = options["AVG_WEIGHTS"][i].to_double();
+          }
       }
-      for (i=0; i<Parameters_->average_num; i++) {
-        Parameters_->average_weights[i] =
-          options["AVG_WEIGHTS"][i].to_double();
-      }
-    }
 
     if (Parameters_->average_num > 1) Parameters_->opdm_ave = 1;
 
@@ -938,7 +938,7 @@ void CIWavefunction::print_parameters(void) {
     outfile->Printf("\n    STATE AVERAGE  = ");
     for (i  = 0; i < Parameters_->average_num; i++) {
         if (i % 5 == 0 && i != 0) outfile->Printf("\n");
-        outfile->Printf("%2d(%4.2lf) ", Parameters_->average_states[i] + 1,
+        outfile->Printf("%2d(%4.2lf) ", Parameters_->average_states[i],
                         Parameters_->average_weights[i]);
     }
 
@@ -1508,7 +1508,7 @@ void CIWavefunction::print_ras_parameters(void) {
 
   // Virtual spaces
   if (Parameters_->mcscf) {
-    orbital_info << _concat_dim("Restricted DOCC", sdist, get_dimension("VIR"), tdist, hdist);
+    orbital_info << _concat_dim("Restricted UOCC", sdist, get_dimension("VIR"), tdist, hdist);
     orbital_info << _concat_dim("Frozen UOCC", sdist, get_dimension("FZV"), tdist, hdist);
   } else {
     orbital_info << _concat_dim("Dropped UOCC", sdist, get_dimension("DRV"), tdist, hdist);

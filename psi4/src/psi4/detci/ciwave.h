@@ -331,6 +331,13 @@ private:
     void transform_dfmcscf_ints(bool approx_only = false);
     void rotate_dfmcscf_twoel_ints(SharedMatrix K, SharedVector twoel_out);
 
+    /// MO transformation through TeraCHEM-like
+    /// Added in by Kevin Patrick Hannon
+    void transform_mcscf_ints_ao(bool approx_only = false);
+    void setup_mcscf_ints_ao();
+    SharedMatrix tei_raaa_;
+    SharedMatrix tei_aaaa_;
+
     /// => Globals <= //
     struct stringwr **alplist_;
     struct stringwr **betlist_;
@@ -434,7 +441,6 @@ private:
     std::vector<std::vector<SharedMatrix> > opdm(SharedCIVector Ivec, SharedCIVector Jvec,
                                                 std::vector<std::tuple<int, int> > states_vec);
     SharedMatrix opdm_add_inactive(SharedMatrix opdm, double value, bool virt=false);
-    void opdm_properties(void);
     void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
             double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,

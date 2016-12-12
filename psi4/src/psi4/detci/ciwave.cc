@@ -357,9 +357,9 @@ SharedMatrix CIWavefunction::get_opdm(int Iroot, int Jroot,
         if (Jroot == -1) Jroot = Iroot;
 
         std::stringstream opdm_name;
-        if (spin == "SUM") opdm_name << "MO-basis OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
-        else if (spin == "A") opdm_name << "MO-basis Alpha OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
-        else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot+1 << "| Etu |" << Jroot+1 << ">";
+        if (spin == "SUM") opdm_name << "MO-basis OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else if (spin == "A") opdm_name << "MO-basis Alpha OPDM <" << Iroot << "| Etu |" << Jroot << ">";
+        else if (spin == "B") opdm_name << "MO-basis Beta OPDM <" << Iroot << "| Etu |" << Jroot << ">";
         else throw PSIEXCEPTION("CIWavefunction::get_opdm: Spin type must be A, B, or SUM.");
 
         if (opdm_map_.count(opdm_name.str()) == 0){
@@ -622,7 +622,11 @@ void CIWavefunction::init_mcscf_object(){
     if (Parameters_->mcscf_type == "DF") {
         if (!df_ints_init_) setup_dfmcscf_ints();
         somcscf_ = std::shared_ptr<SOMCSCF>(new DFSOMCSCF(jk_, dferi_, AO2SO_, H_));
-    } else {
+    } else if (Parameters_->mcscf_type == "AO" ){
+        if (!ints_init_) setup_mcscf_ints_ao();
+        somcscf_ = std::shared_ptr<SOMCSCF>(new IncoreSOMCSCF(jk_, AO2SO_, H_));
+    }
+    else {
         if (!ints_init_) setup_mcscf_ints();
         somcscf_ = std::shared_ptr<SOMCSCF>(new DiskSOMCSCF(jk_, ints_, AO2SO_, H_));
     }

@@ -89,6 +89,7 @@ def mcscf_solver(ref_wfn):
     converged = False
     ah_step = False
     qc_step = False
+    approx_integrals_only = True
 
     # Fake info to start with the inital diagonalization
     ediff = 1.e-4
@@ -135,16 +136,20 @@ def mcscf_solver(ref_wfn):
         mtype = "   @MCSCF"
         core.print_out("\n   ==> Starting MCSCF iterations <==\n\n")
         core.print_out("        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
-    else:
+    elif mcscf_type == "DF":
         mtype = "   @DF-MCSCF"
         core.print_out("\n   ==> Starting DF-MCSCF iterations <==\n\n")
+        core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
+    else:
+        mtype = "   @AO-MCSCF"
+        core.print_out("\n   ==> Starting AO-MCSCF iterations <==\n\n")
         core.print_out("           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB\n")
 
     # Iterate !
     for mcscf_iter in range(1, mcscf_max_macroiteration + 1):
 
         # Transform integrals, diagonalize H
-        ciwfn.transform_mcscf_integrals(mcscf_current_step_type == 'TS')
+        ciwfn.transform_mcscf_integrals(approx_integrals_only)
         nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
 
         ciwfn.form_opdm()
@@ -159,7 +164,7 @@ def mcscf_solver(ref_wfn):
         tpdm = ciwfn.get_tpdm("SUM", True)
         mcscf_obj.update(Cocc, Cact, Cvir, opdm, tpdm)
 
-        current_energy = core.get_variable('CURRENT ENERGY')
+        current_energy = core.get_variable("MCSCF TOTAL ENERGY")
 
         orb_grad_rms = mcscf_obj.gradient_rms()
         ediff = current_energy - eold
@@ -231,8 +236,10 @@ def mcscf_solver(ref_wfn):
                 (mcscf_iter >= 2):
 
             if mcscf_target_conv_type == 'AH':
+                approx_integrals_only = False
                 ah_step = True
             elif mcscf_target_conv_type == 'OS':
+                approx_integrals_only = False
                 mcscf_current_step_type = 'OS, Prep'
                 break
             else:
@@ -336,11 +343,11 @@ def mcscf_solver(ref_wfn):
 
     irrep_labels = ciwfn.molecule().irrep_labels()
     for root in range(mcscf_nroots):
-        core.print_out("\n   ==> CI root %d information <==\n\n" % (root + 1))
+        core.print_out("\n   ==> CI root %d information <==\n\n" % (root))
 
         # Print total energy
-        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root + 1))
-        core.print_out("    CI Root %2d energy =  %20.15f\n" % (root + 1, root_e))
+        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root))
+        core.print_out("    CI Root %2d energy =  %20.15f\n" % (root, root_e))
 
         # Print natural occupations
         core.print_out("\n   Natural occupation numbers:\n\n")
@@ -364,10 +371,13 @@ def mcscf_solver(ref_wfn):
             cnt += 1
             if (cnt % 3) == 0:
                 core.print_out("\n")
+        core.print_out("\n")
 
         # Print CIVector information
         ciwfn.print_vector(dvec, root)
 
+    # Set final energy
+    core.set_variable("CURRENT ENERGY", core.get_variable("MCSCF TOTAL ENERGY"))
 
     # What do we need to cleanup?
     if core.get_option("DETCI", "MCSCF_CI_CLEANUP"):

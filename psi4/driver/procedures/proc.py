@@ -1253,11 +1253,11 @@ def scf_helper(name, **kwargs):
             raise ValidationError("Cannot compute projection of different symmetries.")
 
         if basis_name == scf_wfn.basisset().name():
-            core.print_out("  Reading orbitals from file 180, no projection.\n")
+            core.print_out("  Reading orbitals from file 180, no projection.\n\n")
             scf_wfn.guess_Ca(Ca_occ)
             scf_wfn.guess_Cb(Cb_occ)
         else:
-            core.print_out("  Reading orbitals from file 180, projecting to new basis.\n")
+            core.print_out("  Reading orbitals from file 180, projecting to new basis.\n\n")
 
             puream = int(data["BasisSet PUREAM"])
 
@@ -1265,7 +1265,7 @@ def scf_helper(name, **kwargs):
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
             old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
-            core.print_out("\n  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
+            core.print_out("  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
 
             nalphapi = core.Dimension.from_list(data["nalphapi"])
             nbetapi = core.Dimension.from_list(data["nbetapi"])
@@ -2172,8 +2172,12 @@ def run_ccenergy(name, **kwargs):
     if core.get_global_option('RUN_CCTRANSORT'):
         core.cctransort(ref_wfn)
     else:
-        core.transqt2(ref_wfn)
-        core.ccsort()
+        try:
+            from psi4.driver.pasture import addins
+            addins.ccsort_transqt2(ref_wfn)
+        except:
+            raise PastureRequiredError("RUN_CCTRANSORT")
+
 
     ccwfn = core.ccenergy(ref_wfn)
 
@@ -2233,7 +2237,6 @@ def run_bccd(name, **kwargs):
 
     """
     optstash = p4util.OptionsState(
-        ['TRANSQT2', 'DELETE_TEI'],
         ['TRANSQT2', 'WFN'],
         ['CCSORT', 'WFN'],
         ['CCENERGY', 'WFN'])
@@ -2266,16 +2269,21 @@ def run_bccd(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
 
-    core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
     core.set_local_option('CCTRANSORT', 'DELETE_TEI', 'false')
 
     bcc_iter_cnt = 0
+    if (core.get_global_option("RUN_CCTRANSORT")):
+        sort_func = core.cctransort
+    else:
+        try:
+            from psi4.driver.pasture import addins
+            core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
+            sort_func = addins.ccsort_transqt2
+        except:
+            raise PastureRequiredError("RUN_CCTRANSORT")
+
     while True:
-        if (core.get_global_option("RUN_CCTRANSORT")):
-            core.cctransort(ref_wfn)
-        else:
-            core.transqt2(ref_wfn)
-            core.ccsort()
+        sort_func(ref_wfn)
 
         ref_wfn = core.ccenergy(ref_wfn)
         core.print_out('Brueckner convergence check: %s\n' % bool(core.get_variable('BRUECKNER CONVERGED')))
@@ -2577,7 +2585,7 @@ def run_detci_property(name, **kwargs):
     states = core.get_global_option('avg_states')
     nroots = core.get_global_option('num_roots')
     if len(states) != nroots:
-        states = range(1, nroots + 1)
+        states = range(nroots)
 
     # Run OEProp
     oe = core.OEProp(ciwfn)
@@ -2594,7 +2602,6 @@ def run_detci_property(name, **kwargs):
         core.print_out("\n   ===> %s properties for all CI roots <=== \n\n" % name.upper())
         for root in states:
             oe.set_title("%s ROOT %d" % (name.upper(), root))
-            root = root - 1
             if ciwfn.same_a_b_dens():
                 oe.set_Da_mo(ciwfn.get_opdm(root, root, "A", True))
             else:
@@ -2610,8 +2617,7 @@ def run_detci_property(name, **kwargs):
 
         core.print_out("\n   ===> %s properties for all CI transition density matrices <=== \n\n" % name.upper())
         for root in states[1:]:
-            oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 1, root))
-            root = root - 1
+            oe.set_title("%s ROOT %d -> ROOT %d" % (name.upper(), 0, root))
             if ciwfn.same_a_b_dens():
                 oe.set_Da_mo(ciwfn.get_opdm(0, root, "A", True))
             else:
@@ -4000,13 +4006,14 @@ def run_detcas(name, **kwargs):
 
         # If RHF get MP2 NO's
         # Why doesnt this work for conv?
-        # if (psi4.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and\
-        #             (psi4.get_option('DETCI', 'MCSCF_TYPE') == 'DF'):
-        #     psi4.set_global_option('ONEPDM', True)
-        #     psi4.set_global_option('OPDM_RELAX', False)
-        #     ref_wfn = run_dfmp2_gradient(name, **kwargs)
-        # else:
-        ref_wfn = scf_helper(name, **kwargs)
+        if ((core.get_option('SCF', 'SCF_TYPE') == 'DF') and (user_ref == 'RHF') and
+                    (core.get_option('DETCI', 'MCSCF_TYPE') in ['DF', 'AO']) and
+                    (core.get_option("DETCI", "MCSCF_GUESS") == "MP2")):
+            core.set_global_option('ONEPDM', True)
+            core.set_global_option('OPDM_RELAX', False)
+            ref_wfn = run_dfmp2_gradient(name, **kwargs)
+        else:
+            ref_wfn = scf_helper(name, **kwargs)
 
         # Ensure IWL files have been written
         if (core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV'):
@@ -4018,8 +4025,6 @@ def run_detcas(name, **kwargs):
 
     # The DF case
     if core.get_option('DETCI', 'MCSCF_TYPE') == 'DF':
-
-        # Do NOT set global options in general, this is a bit of a hack
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'DF')
 
@@ -4029,13 +4034,21 @@ def run_detcas(name, **kwargs):
                                             puream=ref_wfn.basisset().has_puream())
         ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
-    # The non-DF case
-    else:
+    # The AO case
+    elif core.get_option('DETCI', 'MCSCF_TYPE') == 'AO':
+        if not core.has_option_changed('SCF', 'SCF_TYPE'):
+            core.set_global_option('SCF_TYPE', 'DIRECT')
+
+    # The conventional case
+    elif core.get_option('DETCI', 'MCSCF_TYPE') == 'CONV':
         if not core.has_option_changed('SCF', 'SCF_TYPE'):
             core.set_global_option('SCF_TYPE', 'PK')
 
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+    else:
+        raise ValidationError("Run DETCAS: MCSCF_TYPE %s not understood." % str(core.get_option('DETCI', 'MCSCF_TYPE')))
+
 
     # Second-order SCF requires non-symmetric density matrix support
     if core.get_option('DETCI', 'MCSCF_ALGORITHM') in ['AH', 'OS']:
