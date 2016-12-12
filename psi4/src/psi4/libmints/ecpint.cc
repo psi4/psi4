@@ -2,13 +2,14 @@
 
 #include "ecpint.h"
 #include "gshell.h"
+#include "wavefunction.h"
 #include <iostream>
 #include <functional>
 #include <cmath>
 
 // Compute all the real spherical harmonics Slm(theta, phi) for l,m up to lmax
 // x = cos (theta)
-static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi, std::vector<double> &fac, std::vector<double> &dfac){
+static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi) {
 	TwoIndex<double> rshValues(lmax+1, 2*lmax+1, 0.0);
 
 	if (lmax > 0) {
@@ -24,7 +25,7 @@ static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi, s
 		double ox2m = 1.0;
 		for (int m = 1; m <= lmax; m++) {
 			ox2m *= -sox2;
-			Plm[m][m] = ox2m * dfac[2*m-1];
+			Plm[m][m] = ox2m * df[2*m];
 		}
 		
 		// Then increment l for each m
@@ -65,7 +66,7 @@ static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi, s
 	return rshValues;
 }
 
-double AngularIntegral::calcG(int l, int m, std::vector<double> &fac) const {
+double AngularIntegral::calcG(int l, int m) const {
 	double value = 0.0;
 	double value1 = pow(2.0, l) * fac[l];
 	value1 = 1.0 / value1; 
@@ -75,7 +76,7 @@ double AngularIntegral::calcG(int l, int m, std::vector<double> &fac) const {
 	return value;
 } 
 
-double AngularIntegral::calcH1(int i, int j, int l, int m, std::vector<double> &fac) const {
+double AngularIntegral::calcH1(int i, int j, int l, int m) const {
 	double value = 0.0; 
 
 	value = fac[l]/(fac[j]*fac[l - i]*fac[i-j]);
@@ -84,7 +85,7 @@ double AngularIntegral::calcH1(int i, int j, int l, int m, std::vector<double> &
 	return value;
 }
 
-double AngularIntegral::calcH2(int i, int j, int k, int m, std::vector<double> &fac) const {
+double AngularIntegral::calcH2(int i, int j, int k, int m) const {
 	double value = 0.0; 
 	int ki2 = k - 2*i;
 	if ( m >= ki2 && ki2 >= 0 ) {
@@ -96,13 +97,13 @@ double AngularIntegral::calcH2(int i, int j, int k, int m, std::vector<double> &
 }
 
 
-ThreeIndex<double> AngularIntegral::uklm(int lam, int mu, std::vector<double> &fac) const {
+ThreeIndex<double> AngularIntegral::uklm(int lam, int mu) const {
 	ThreeIndex<double> values(lam+1, lam+1, 2);
 	 
   	double or2 = 1.0/sqrt(2.0);
   	double u = 0.0;
 	double um = 0.0;
-	double g = calcG(lam, mu, fac);
+	double g = calcG(lam, mu);
 
   	double u1, h1, h2;
   	int j;
@@ -113,11 +114,11 @@ ThreeIndex<double> AngularIntegral::uklm(int lam, int mu, std::vector<double> &f
 		if (j % 2 == 0 && j > -1) { 
 			u1 = 0.0;
 			j/=2;
-			for (int i = j; i <= (lam - mu)/2; i++) u1 += calcH1(i, j, lam, mu, fac);
+			for (int i = j; i <= (lam - mu)/2; i++) u1 += calcH1(i, j, lam, mu);
 			
 			u = g * u1;
 			u1 = 0;
-			for (int i = 0; i <= j; i++) u1 += calcH2(i, j, k, mu, fac);
+			for (int i = 0; i <= j; i++) u1 += calcH2(i, j, k);
 			u *= u1;
 			um = u;
 			
@@ -157,13 +158,13 @@ ThreeIndex<double> AngularIntegral::Pijk(int maxI) const {
 	return values;
 }
 
-FiveIndex<double> AngularIntegral::makeU(std::vector<double> &fac) {
+FiveIndex<double> AngularIntegral::makeU() {
 	int dim = maxL + 1;
 
 	FiveIndex<double> values(dim, dim, dim, dim, 2);
 	for (int lam = 0; lam <= maxL; lam++) {
 		for (int mu = 0; mu <= lam; mu++) {
-			ThreeIndex<double> Uij = uklm(lam, mu, fac);
+			ThreeIndex<double> Uij = uklm(lam, mu);
 			for (int i = 0; i <= lam; i++) {
 				for (int j = 0; j <= lam - i; j++){
 					values(lam, mu, i, j, 0) = Uij(i, j, 0);
@@ -176,7 +177,7 @@ FiveIndex<double> AngularIntegral::makeU(std::vector<double> &fac) {
 	return values;
 }
 
-void AngularIntegral::makeW(std::vector<double> &fac, FiveIndex<double> &U) {
+void AngularIntegral::makeW(FiveIndex<double> &U) {
 	int LB2 = 2*LB;
 	int dim = wDim;
 	int maxI = (maxL + dim)/2;
@@ -281,11 +282,9 @@ void AngularIntegral::init(int _LB, int _LE ) {
 	
 }
 
-void AngularIntegral::compute() {
-	std::vector<double> fac = facArray(2*wDim);
-	
-	FiveIndex<double> U = makeU(fac);
-	makeW(fac, U);
+void AngularIntegral::compute() {	
+	FiveIndex<double> U = makeU();
+	makeW(U);
 	makeOmega(U);
 }
 
@@ -414,9 +413,6 @@ void RadialIntegral::type1(int maxL, int N, int offset, ECP &U, const GaussianSh
 	std::vector<double> tempValues;
 	values.assign(maxL+1, 2*maxL + 1, 0.0);
 	
-	std::vector<double> fac = facArray(2*maxL);
-	std::vector<double> dfac = dfacArray(2*maxL);
-	
 	// Tabulate integrand
 	double x, phi, Px, Py;
 	for (int a = 0; a < npA; a++) {
@@ -472,7 +468,7 @@ void RadialIntegral::type1(int maxL, int N, int offset, ECP &U, const GaussianSh
 			Px = (za * Avec[0] + zb * Bvec[0]) / p(a, b);
 			phi = atan2(Py, Px);
 
-			TwoIndex<double> harmonics = realSphericalHarmonics(maxL, x, phi, fac, dfac);
+			TwoIndex<double> harmonics = realSphericalHarmonics(maxL, x, phi);
 			for (int l = offset; l <= maxL; l+=2) {
 				for (int mu = -l; mu <= l; mu++)
 					values(l, l+mu) += da * db * harmonics(l, l+mu) * K(a, b) * tempValues[l];
@@ -632,14 +628,14 @@ ECPIntegral::ECPIntegral(ECPBasis &_basis, int maxLB) : basis(_basis) {
 	radInts.(2*maxLB + U.getL());
 }
 
-double ECPIntegral::calcC(int a, int m, double A, std::vector<double> &fac) const {
+double ECPIntegral::calcC(int a, int m, double A) const {
 	double value = 1.0 - 2*((a-m) % 2);
 	value *= pow(A, a-m);
 	value *= fac[a]/(fac[m] * fac[a-m]);
 	return value;
 }
 
-void ECPIntegral::makeC(FiveIndex<double> &C, int L, double *A, std::vector<double> &fac) {
+void ECPIntegral::makeC(FiveIndex<double> &C, int L, double *A) {
 	int z; double Ck, Cl;
 	int na = 0;
 	for (int x = 0; x <= L; x++) {
@@ -647,10 +643,10 @@ void ECPIntegral::makeC(FiveIndex<double> &C, int L, double *A, std::vector<doub
 			z = L - x - y;
 			
 			for (int k = 0; k<= x; k++) {
-				Ck = calcC(x, k, A[0], fac);
+				Ck = calcC(x, k, A[0]);
 				for (int l = 0; l <= y; l++) {
-					Cl = calcC(y, l, A[1], fac);
-					for (int m = 0; m <= z; m++) C(0, na, k, l, m) = Ck * Cl * calcC(z, m, A[2], fac);
+					Cl = calcC(y, l, A[1]);
+					for (int m = 0; m <= z; m++) C(0, na, k, l, m) = Ck * Cl * calcC(z, m, A[2]);
 				}
 			}
 			
@@ -763,10 +759,6 @@ void ECPIntegral::type2(int lam, ECP& U, const GaussianShell &shellA, const Gaus
 		}
 	}
 	
-	// Loop over all basis functions in shell
-	std::vector<double> fac = facArray(2*(lam + maxLBasis) + 1);
-	std::vector<double> dfac = dfacArray(2*(lam + maxLBasis) + 1);
-	
 	// Unpack positions
 	double Ax = A[0]; double Ay = A[1]; double Az = A[2];
 	double Bx = B[0]; double By = B[1]; double Bz = B[2];
@@ -779,8 +771,8 @@ void ECPIntegral::type2(int lam, ECP& U, const GaussianShell &shellA, const Gaus
 	double xB = Bm > 0 ? Bz / Bm : 0.0;
 	double phiA = atan2(Ay, Ax);
 	double phiB = atan2(By, Bx);
-	TwoIndex<double> SA = realSphericalHarmonics(lam+LA, xA, phiA, fac, dfac);
-	TwoIndex<double> SB = realSphericalHarmonics(lam+LB, xB, phiB, fac, dfac);
+	TwoIndex<double> SA = realSphericalHarmonics(lam+LA, xA, phiA);
+	TwoIndex<double> SB = realSphericalHarmonics(lam+LB, xB, phiB);
 	
 	// Calculate chi_ab for all ab in shells
 	int z1, z2, ix, N1, N2;
@@ -849,13 +841,11 @@ void ECPIntegral::compute_shell_pair(ECP &U, const GaussianShell &shellA, const 
 	int LA = shellA.am(); int LB = shellB.am();
 	int maxLBasis = LA > LB ? LA : LB;
 	
-	std::vector<double> fac = facArray(maxLBasis);
-	
 	// Construct coefficients 
 	FiveIndex<double> CA(1, shellA.nprimitive(), LA+1, LA+1, LA+1);
 	FiveIndex<double> CB(1, shellB.nprimitive(), LB+1, LB+1, LB+1);
-	makeC(CA, LA, A, fac);
-	makeC(CB, LB, B, fac);
+	makeC(CA, LA, A);
+	makeC(CB, LB, B);
 	
 	// Calculate type1 integrals
 	type1(U, shellA, shellB, A, B, CA, CB, values);
