@@ -237,6 +237,13 @@ void Gijab_RHF(void)
   global_dpd_->buf4_copy(&L, PSIF_CC_GAMMA, "GIjAb");
   global_dpd_->buf4_close(&L);
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+  /* add the T3 contributions to CCSD(T) tpdm calculated in cctriples*/
+  if (params.wfn == "CCSD_T"){
+      global_dpd_->buf4_init(&V, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "GIjAb(T)");
+      global_dpd_->buf4_axpy(&V, &G, 1.0);
+      global_dpd_->buf4_close(&V);
+    }
+
   /* Tau(Ij,Ab) * (L0*R0 = 1, ground or 0, excited */
   if (params.ground) {
     global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");

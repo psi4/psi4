@@ -61,7 +61,7 @@ namespace psi { namespace ccdensity {
 
 void onepdm(struct RHO_Params rho_params)
 {
-  dpdfile2 D, T1, L1, Z;
+  dpdfile2 D, D1, T1, L1, Z;
   dpdbuf4 T2, L2;
   double trace=0.0, dot_AI, dot_IA, dot_ai, dot_ia;
   double factor=0.0;
@@ -142,6 +142,33 @@ void onepdm(struct RHO_Params rho_params)
     global_dpd_->file2_close(&T1);
     trace += global_dpd_->file2_trace(&D);
     global_dpd_->file2_close(&D);
+    /* add the T3 contributions to CCSD(T) onepdm calculated
+     in cctriples*/
+    if(params.wfn == "CCSD_T" && params.ref == 0) {
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+      global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 0, "DIJ(T)");
+      global_dpd_->file2_axpy(&D1, &D, 1.0, 0);
+      global_dpd_->file2_close(&D);
+      global_dpd_->file2_close(&D1);
+
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.Dij_lbl);
+      global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 0, "DIJ(T)");
+      global_dpd_->file2_axpy(&D1, &D, 1.0, 0);
+      global_dpd_->file2_close(&D);
+      global_dpd_->file2_close(&D1);
+
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+      global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 1, 1, "DAB(T)");
+      global_dpd_->file2_axpy(&D1, &D, 1.0, 0);
+      global_dpd_->file2_close(&D);
+      global_dpd_->file2_close(&D1);
+
+      global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.Dab_lbl);
+      global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 1, 1, "DAB(T)");
+      global_dpd_->file2_axpy(&D1, &D, 1.0, 0);
+      global_dpd_->file2_close(&D);
+      global_dpd_->file2_close(&D1);
+    }
 
     /*outfile->Printf( "\n\tTrace of onepdm = %20.15f\n", trace);*/
 

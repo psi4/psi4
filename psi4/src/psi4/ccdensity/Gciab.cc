@@ -155,6 +155,12 @@ void Gciab(void)
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
+   /* add the T3 contributions to CCSD(T) tpdm calculated in cctriples*/
+    if (params.wfn == "CCSD_T"){
+        global_dpd_->buf4_init(&V, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "GCiAb(T)");
+        global_dpd_->buf4_axpy(&V, &G, 1.0);
+        global_dpd_->buf4_close(&V);
+   }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
