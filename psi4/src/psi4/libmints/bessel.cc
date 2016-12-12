@@ -4,30 +4,9 @@
  */
 
 #include "bessel.h"
+#include "wavefunction.h"
 #include <cmath>
 #include <iostream>
-
-// Compute single and double factorials iteratively
-std::vector<double> facArray(int l) {
-	std::vector<double> values(l+1, 0.0);
-	if (l > -1) {
-		values[0] = 1.0;
-		for (int i = 1; i < l + 1; i++) values[i] = values[i-1]*i;
-	}
-	return values; 
-}
-
-std::vector<double> dfacArray(int l) {
-	std::vector<double> values(l+1, 0.0);
-	if (l > -1) {
-		values[0] = 1.0;
-		if (l > 0) {
-			values[1] = 1.0;
-			for (int i = 2; i <= l; i++) values[i] = values[i-2] * i;
-		}
-	}
-	return values;
-}
 
 // Constructor
 BesselFunction::BesselFunction() {}
@@ -65,8 +44,6 @@ int BesselFunction::tabulate(const double accuracy) {
 	int lmax = lMax + TAYLOR_CUT;
 	
 	double F[order + 1]; // F_j above
-	// Calculate all needed double factorials
-	std::vector<double> dfac = dfacArray(2*order + 2*lmax + 1);
 	
 	K[0][0] = 1.0;
 	double z, z2; // z and z^2 / 2
@@ -77,7 +54,7 @@ int BesselFunction::tabulate(const double accuracy) {
 		z2 = z * z / 2.0;
 		
 		F[0] = exp(-z);
-		ratio = F[0] / dfac[0];
+		ratio = F[0] / df[1];
 		K[i][0] = ratio;
 		
 		// Series expansion for K_0(z)
@@ -91,7 +68,7 @@ int BesselFunction::tabulate(const double accuracy) {
 			} 
 			
 			F[j] = F[j-1] * z2 / ((double)j);
-			ratio = F[j] / dfac[2*j+1];
+			ratio = F[j] / df[2*j+2];
 			K[i][0] += ratio;
 		}
 		//if ( ratio > accuracy ) { retval = -1; break; } // Not converged
@@ -100,7 +77,7 @@ int BesselFunction::tabulate(const double accuracy) {
 		z2 = z;
 		for (l=1; l<=lmax; l++) {
 			ratio = 0;
-			for (int m=0; m < j; m++) ratio += F[m]/dfac[2*l + 2*m + 1];
+			for (int m=0; m < j; m++) ratio += F[m]/df[2*l + 2*m + 2];
 			K[i][l] = z2 * ratio;
 			z2 *= z; 
 		}
@@ -117,7 +94,7 @@ int BesselFunction::tabulate(const double accuracy) {
 // for l = 0 to lMax. This restricts K(z) to the interval [0,1].
 void BesselFunction::calculate(const double z, int maxL, std::vector<double> &values) {
 	if (lMax < maxL) {
-		std::cout << "Asked for " << maxL << " but only initialised to maximum L = " << lMax << "\n";
+		std::cerr << "Asked for " << maxL << " but only initialised to maximum L = " << lMax << "\n";
 		maxL = lMax;
 	}
 	values.assign(maxL + 1, 0.0);

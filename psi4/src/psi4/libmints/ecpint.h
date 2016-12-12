@@ -28,11 +28,9 @@ class GaussianShell;
   * @param lmax - the maximum angular momentum needed
   * @param x - cos(theta), where theta is the polar angle in spherical coordinates
   * @param phi - the azimuth angle in spherical coordinates
-  * @param fac - a vector of factorials up to 2*lmax
-  * @param dfac - a vector of double factorials up to 2*lmax
   * @return a matrix S(l, l+m) of the spherical harmonic values
   */
-static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi, std::vector<double> &fac, std::vector<double> &dfac);  
+static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi);  
 
 /** 
   * \ingroup MINTS
@@ -56,18 +54,17 @@ private:
 	SevenIndex<double> omega; 
 	
 	/// Worker functions for calculating terms in the USP to spherical transformation coefficients
-	double calcG(int l, int m, std::vector<double> &fac) const;
-	double calcH1(int i, int j, int l, int m, std::vector<double> &fac) const;
-	double calcH2(int i, int j, int k, int m, std::vector<double> &fac) const;
+	double calcG(int l, int m) const;
+	double calcH1(int i, int j, int l, int m) const;
+	double calcH2(int i, int j, int k, int m) const;
 	
 	/**
 	  * Calculates all possible USP to spherical transformation coefficients for a given angular momentum
 	  * @param lam - the angular momentum
 	  * @param mu - the subshell
-	  * @param fac - vector of factorials up to at least lam + mu
 	  * @return ThreeIndex of the values U_lam,mu(k, l, m)
 	  */
-	ThreeIndex<double> uklm(int lam, int mu, std::vector<double> &fac) const;
+	ThreeIndex<double> uklm(int lam, int mu) const;
 	/**
 	  * Calculates the polynomial integrals, int (x^i y^j z^k dOm) where dOm is the solid angle differential
 	  * @param maxI - the maximum power, i, to determine
@@ -77,16 +74,14 @@ private:
 	
 	/**
 	  * Builds the USP to spherical transformation coefficients for use in calculating the type 1 and 2 integrals
-	  * @param fac - vector of factorials up to 2 * wDim
 	  * @return FiveIndex of the coefficients U(lam, lam+mu, k, l, m)
 	  */
-	FiveIndex<double> makeU(std::vector<double> &fac);
+	FiveIndex<double> makeU();
 	/**
 	  * Builds the type 1 angular integrals
-	  * @param fac - vector of factorials up to 2 * wDim
 	  * @param U - the USP to spherical transformation coefficients
 	  */
-	void makeW(std::vector<double> &fac, FiveIndex<double> &U);
+	void makeW(FiveIndex<double> &U);
 	/** 
 	  * Builds the type 2 angular integrals
 	  * @param U - the USP to spherical transformation coefficients
@@ -291,8 +286,8 @@ private:
 	ECPBasis &basis;
 	
 	/// Worker functions for calculating binomial expansion coefficients
-	double calcC(int a, int m, double A, std::vector<double> &fac) const;
-	void makeC(FiveIndex<double> &C, int L, double *A, std::vector<double> &fac);
+	double calcC(int a, int m, double A) const;
+	void makeC(FiveIndex<double> &C, int L, double *A);
 	
 	/// Calculates the type 1 integrals for the given ECP center over the given shell pair
 	void type1(ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, double *A, double *B, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values);

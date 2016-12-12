@@ -16,21 +16,6 @@
 
 namespace psi {
 
-/** 
-  * Computes a vector of factorials up to a given maximum
-  * @param l - the maximum factorial needed
-  * @return - a std::vector<double> of the factorials
-  */
-std::vector<double> facArray(int l);
-
-/**
-  * Computes a vector of double factorials up to a given maximum
-  * @param l - the maximum double factorial needed
-  * @return - a std::vector<double> of the double factorials
-  */
-std::vector<double> dfacArray(int l);
-
-
 const double SMALL = 1.0E-7;
 const int TAYLOR_CUT = 5;
 
