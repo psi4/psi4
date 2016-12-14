@@ -865,14 +865,14 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
             for (int P = 0; P < bs3->nshell(); P++) {
 
                 ints->compute_shell(M, N, P);
+                int Mfi = bs1->shell(M).function_index();
+                int Nfi = bs2->shell(N).function_index();
+                int Pfi = bs3->shell(P).function_index();
 
-                for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
-                    for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
-                        for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
-                            Ip[(bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n]
-                            [(bs3->shell(P).function_index() + p)]
-                                    = buffer[index];
-
+                for (int m = Mfi, index = 0; m < (Mfi + bs1->shell(M).nfunction()); m++) {
+                    for (int n = Nfi; n < (Nfi + bs2->shell(N).nfunction()); n++) {
+                        for (int p = Pfi; p < (Pfi + bs3->shell(P).nfunction()); p++) {
+                            Ip[m * nbf2 + n][p] = buffer[index++];
                         }
                     }
                 }

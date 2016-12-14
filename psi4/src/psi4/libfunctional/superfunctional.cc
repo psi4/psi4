@@ -533,7 +533,7 @@ void SuperFunctional::allocate() {
         ac_values_["V_RHO_A"] = SharedVector(new Vector("V_RHO_A", max_points_));
         ac_values_["V_GAMMA_AA"] = SharedVector(new Vector("V_GAMMA_AA", max_points_));
         if (is_polar) {
-            // throw PSIEXCEPTION("GRAC is not implemented for UKS functionals for now.");
+            throw PSIEXCEPTION("GRAC is not implemented for UKS functionals.");
             ac_values_["V_RHO_B"] = SharedVector(new Vector("V_RHO_B", max_points_));
             ac_values_["V_GAMMA_AB"] = SharedVector(new Vector("V_GAMMA_AB", max_points_));
             ac_values_["V_GAMMA_BB"] = SharedVector(new Vector("V_GAMMA_BB", max_points_));
@@ -556,8 +556,8 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
         c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_);
     }
 
-    // Apply the grac shift
-    if (needs_grac_) {
+    // Apply the grac shift, only valid for gradient computations
+    if (needs_grac_ && (deriv_ == 1)) {
         for (std::map<std::string, SharedVector>::const_iterator it = ac_values_.begin();
              it != ac_values_.end(); ++it) {
             ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
@@ -587,9 +587,14 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
                 double grac_fx = 1.0 / (1.0 + std::exp(galpha * (denx - gbeta)));
                 v_rho[i] = ((1.0 - grac_fx) * (v_rho[i] - gshift)) + (grac_fx * grac_v_rho[i]);
                 v_gamma[i] = ((1.0 - grac_fx) * v_gamma[i]) + (grac_fx * grac_v_gamma[i]);
+
+                // We neglect the gradient of denx with v_gamma, as it requires the laplacian and
+                // there is virtually no difference. See DOI: 10.1002/cphc.200700504
             }
         }
 
+
+        // This is turned off by allocate for now, this doesnt appear to be quite correct.
         else{
 
             double* rho_a = vals.find("RHO_A")->second->pointer();

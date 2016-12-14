@@ -213,7 +213,7 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
         }
     }
 
-    normalize_am(sA, sB, sC);
+    // normalize_am(sA, sB, sC);
     pure_transform(sA, sB, sC);
 }
 
