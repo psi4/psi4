@@ -48,7 +48,8 @@ namespace psi {
 **             dpd_init()].
 **   int qnum: The orbital subspace number for the right index [see
 **             dpd_init()].
-**   char *label: A string labelling for this buffer.
+**   char *label: A string labelling for this buffer. If it exists 
+**                in cache, it will be loaded.
 **   int print_flag: A boolean for the print routines.
 **   std::string OutFileRMR: The formatted output file stream.
 */
