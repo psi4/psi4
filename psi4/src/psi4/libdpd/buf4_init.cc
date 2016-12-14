@@ -52,7 +52,8 @@ namespace psi {
 **                   data as it will be stored on disk.
 **   int anti: Boolean flag which indicates whether the data needs to
 **             be antisymmetrized as it is read from disk.
-**   char *label: The string labelling the PSIO TOC entry on disk.
+**   char *label: The string labelling the PSIO TOC entry on disk. If it
+**                exists in cache, it will be loaded.
 */
 
 int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
