@@ -6,7 +6,7 @@ if(${libint_FOUND})
     add_library(libint_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
-    message(STATUS "Suitable libint could not be located, building one instead.")
+    message(STATUS "Suitable libint could not be located, ${Magenta}Building libint${ColourReset} instead.")
     ExternalProject_Add(libint_external
         GIT_REPOSITORY https://github.com/psi4/libint
         #GIT_TAG v1.7.1  # TODO tag when stable

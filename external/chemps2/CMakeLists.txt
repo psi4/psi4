@@ -7,7 +7,7 @@ if(${ENABLE_CheMPS2})
         add_library(chemps2_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
-        message(STATUS "Suitable CheMPS2 could not be located, building one instead.")
+        message(STATUS "Suitable CheMPS2 could not be located, ${Magenta}Building CheMPS2${ColourReset} instead.")
 
         if(${BUILD_SHARED_LIBS})
             set(_a_only  OFF)

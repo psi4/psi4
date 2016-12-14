@@ -5,7 +5,7 @@ if(${pybind11_FOUND})
     add_library(pybind11_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
-    message(STATUS "Suitable pybind11 could not be located, building one instead.")
+    message(STATUS "Suitable pybind11 could not be located, ${Magenta}Building pybind11${ColourReset} instead.")
     ExternalProject_Add(pybind11_external
         GIT_REPOSITORY https://github.com/psi4/pybind11
         GIT_TAG nov16ud

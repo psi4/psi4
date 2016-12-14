@@ -8,7 +8,7 @@ if(${ENABLE_PCMSolver})
         add_library(pcmsolver_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
-        message(STATUS "Suitable PCMSolver could not be located, building one instead.")
+        message(STATUS "Suitable PCMSolver could not be located, ${Magenta}Building PCMSolver${ColourReset} instead.")
 
         if(${BUILD_SHARED_LIBS})
 #            set(_a_only  OFF)

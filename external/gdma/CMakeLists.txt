@@ -7,7 +7,7 @@ if(${ENABLE_gdma})
         add_library(gdma_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
-        message(STATUS "Suitable gdma could not be located, building one instead.")
+        message(STATUS "Suitable gdma could not be located, ${Magenta}Building gdma${ColourReset} instead.")
         ExternalProject_Add(gdma_external
             GIT_REPOSITORY https://github.com/psi4/gdma
             #GIT_TAG v1.7.1  # TODO tag when stable

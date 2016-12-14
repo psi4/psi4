@@ -7,7 +7,7 @@ if(${ENABLE_erd})
         add_library(erd_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
-        message(STATUS "Suitable erd could not be located, building one instead.")
+        message(STATUS "Suitable erd could not be located, ${Magenta}Building erd${ColourReset} instead.")
         ExternalProject_Add(erd_external
             GIT_REPOSITORY https://github.com/psi4/erd
             #GIT_TAG v1.7.1  # TODO tag when stable

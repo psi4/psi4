@@ -6,7 +6,7 @@ if(${libefp_FOUND})
     add_library(libefp_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
-    message(STATUS "Suitable libefp could not be located, building one instead.")
+    message(STATUS "Suitable libefp could not be located, ${Magenta}Building libefp${ColourReset} instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
         GIT_TAG config3

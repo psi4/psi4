@@ -7,7 +7,7 @@ if(${ENABLE_dkh})
         add_library(dkh_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
-        message(STATUS "Suitable dkh could not be located, building one instead.")
+        message(STATUS "Suitable dkh could not be located, ${Magenta}Building dkh${ColourReset} instead.")
         ExternalProject_Add(dkh_external
             GIT_REPOSITORY https://github.com/psi4/dkh
             #GIT_TAG v1.7.1  # TODO tag when stable

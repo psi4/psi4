@@ -27,6 +27,11 @@ message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind1
 set_property(TARGET pybind11::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
 
 find_package(Threads)
+
+#set(THREADS_PREFER_PTHREAD_FLAG ON)
+#find_package(Threads REQUIRED)
+#target_link_libraries(my_app Threads::Threads)
+
 find_package(DL)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
