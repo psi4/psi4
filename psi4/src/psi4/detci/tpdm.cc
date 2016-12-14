@@ -100,7 +100,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
   int Jblock, Jblock2, Jbuf, Jac, Jbc, Jnas, Jnbs, Jairr;
   int do_Jblock, do_Jblock2;
 
-  timer_on("CIWave: tpdm");
+  timer_on("CIWave: TPDM");
   if (!CalcInfo_->sigma_initialized) sigma_init(*(Ivec).get(), *(Jvec).get());
 
   int nact = CalcInfo_->num_ci_orbs;
@@ -374,6 +374,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
     throw PSIEXCEPTION("CIWavefunction::tpdm: unrecognized core option!\n");
   }
 
+  timer_on("CIWave: TPDM Reorder");
   // Symmetrize and reorder the TPDM
   SharedMatrix tpdm_aam(new Matrix("MO-basis TPDM AA", nact2, nact2));
   SharedMatrix tpdm_abm(new Matrix("MO-basis TPDM AB", nact2, nact2));
@@ -384,19 +385,20 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
 
   // Reorder our density matrices
   for (int p = 0; p < nact; p++) {
+    int r_p = CalcInfo_->act_order[p];
     for (int q = 0; q < nact; q++) {
+      int r_q = CalcInfo_->act_order[q];
+      int r_pq = r_p * nact + r_q;
+      int pq = p * nact + q;
       for (int r = 0; r < nact; r++) {
+        int r_r = CalcInfo_->act_order[r];
         for (int s = 0; s < nact; s++) {
+
           // Reorder index
-          int r_p = CalcInfo_->act_order[p];
-          int r_q = CalcInfo_->act_order[q];
-          int r_r = CalcInfo_->act_order[r];
           int r_s = CalcInfo_->act_order[s];
-          int r_pq = r_p * nact + r_q;
           int r_rs = r_r * nact + r_s;
 
           // aa/bb index
-          int pq = p * nact + q;
           int rs = r * nact + s;
           size_t pqrs = INDEX(pq, rs);
 
@@ -417,10 +419,10 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
 
   for (int p = 0; p < nact; p++) {
     for (int q = 0; q < nact; q++) {
+      int pq = p * nact + q;
+      int qp = q * nact + p;
       for (int r = 0; r < nact; r++) {
         for (int s = 0; s < nact; s++) {
-          int pq = p * nact + q;
-          int qp = q * nact + p;
           int rs = r * nact + s;
           int sr = s * nact + r;
 
@@ -430,6 +432,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
       }
     }
   }
+  timer_off("CIWave: TPDM Reorder");
 
   // Ivec->buf_unlock();
   // Jvec->buf_unlock();
@@ -448,7 +451,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
   ret_list.push_back(tpdm_bbm);
   ret_list.push_back(tpdm);
 
-  timer_off("CIWave: tpdm");
+  timer_off("CIWave: TPDM");
 
   return ret_list;
 }
@@ -470,11 +473,15 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
   double C1, C2, Ib_sgn, Ia_sgn, Kb_sgn, Ka_sgn, tval;
   int i, j, k, l, ij, kl, ijkl, oij, okl, *Jboij, *Jaoij, *Kboij, *Kaoij;
 
+  double cutoff = 1.e-14;
+
+  timer_on("CIWave: TPDM Block");
   /* loop over Ia in Ia_list */
   if (Ia_list == Ja_list) {
     for (Ia_idx = 0; Ia_idx < Inas; Ia_idx++) {
       for (Jb = betlist[Jb_list], Jb_idx = 0; Jb_idx < Jnbs; Jb_idx++, Jb++) {
         C1 = CJ[Ia_idx][Jb_idx] * weight;
+        if (std::fabs(C1) < cutoff) continue;
 
         /* loop over excitations E^b_{kl} from |B(J_b)> */
         for (Kb_list = 0; Kb_list < nbetlists; Kb_list++) {
@@ -490,6 +497,8 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
             Kb = betlist[Kb_list] + Kb_idx;
             if (Kb_list == Ib_list) {
               C2 = CI[Ia_idx][Kb_idx];
+              if (std::fabs(C2) < cutoff) continue;
+
               i = okl / nbf;
               l = okl % nbf;
               for (j = 0; j < nbf && j <= i; j++) {
@@ -530,6 +539,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
     for (Ib_idx = 0; Ib_idx < Inbs; Ib_idx++) {
       for (Ja = alplist[Ja_list], Ja_idx = 0; Ja_idx < Jnas; Ja_idx++, Ja++) {
         C1 = CJ[Ja_idx][Ib_idx] * weight;
+        if (std::fabs(C1) < cutoff) continue;
 
         /* loop over excitations E^a_{kl} from |A(J_a)> */
         for (Ka_list = 0; Ka_list < nalplists; Ka_list++) {
@@ -545,6 +555,8 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
             Ka = alplist[Ka_list] + Ka_idx;
             if (Ka_list == Ia_list) {
               C2 = CI[Ka_idx][Ib_idx];
+              if (std::fabs(C2) < cutoff) continue;
+
               i = okl / nbf;
               l = okl % nbf;
               for (j = 0; j < nbf && j <= i; j++) {
@@ -596,6 +608,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
       /* loop over Jb */
       for (Jb = betlist[Jb_list], Jb_idx = 0; Jb_idx < Jnbs; Jb_idx++, Jb++) {
         C1 = CJ[Ja_idx][Jb_idx] * weight;
+        if (std::fabs(C1) < cutoff) continue;
 
         /* loop over excitations E^b_{ij} from |B(J_b)> */
         Jbcnt = Jb->cnt[Ib_list];
@@ -608,6 +621,8 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
           Ib_idx = *Jbridx++;
           Ib_sgn = (double)*Jbsgn++;
           C2 = CI[Ia_idx][Ib_idx];
+          if (std::fabs(C2) < cutoff) continue;
+
           // alpha-beta matrix is stored without packing bra and ket together
           ijkl = oij * nbf2 + okl;
           tval = Ib_sgn * Ia_sgn * C1 * C2;
@@ -620,6 +635,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
       } /* end loop over Jb */
     }   /* end loop over Ja_ex */
   }     /* end loop over Ja */
+  timer_off("CIWave: TPDM Block");
 }
 
 }} // namespace psi::detci
