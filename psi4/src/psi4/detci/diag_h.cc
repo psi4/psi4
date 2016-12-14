@@ -341,7 +341,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
             for (i = 0; i < nroots; i++) {
                 outfile->Printf("\n\n* ROOT %2d CI total energy = %17.13lf\n",
-                                i + 1, evals[i] + nucrep);
+                                i, evals[i] + nucrep);
                 Cvec.setarray(evecs[i], size);
                 zero_arr(mi_coeff, Parameters_->nprint);
                 Cvec.max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
