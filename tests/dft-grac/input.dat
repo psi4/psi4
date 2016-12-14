@@ -1,5 +1,4 @@
-#! Double-hybrid density functional B2PYLP. Reproduces portion of Table I
-#! in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
+#! Gradient regularized asymptotic correction (GRAC) test.
 
 memory 250 mb
 
@@ -20,26 +19,3 @@ scf_lumo = eps[5]
 compare_values(-128.82046204690357, scf_e, 6, "Ne PBE0AC Energy") #TEST
 compare_values(-0.787998, scf_homo, 4, "Ne PBE0AC Eigenvalue LUMO") #TEST
 compare_values(-0.005747, scf_lumo, 4, "Ne PBE0AC Eigenvalue HOMO") #TEST
-
-
-molecule o2 {
-  0 3
-  O
-  O 1 1.2
-  symmetry c1
-}
-
-
-set reference uhf
-set basis aug-cc-pVDZ
-set dft_grac_shift 0.0675347
-
-scf_e, scf_wfn = energy("PBE0", return_wfn=True)
-eps_a = scf_wfn.epsilon_a_subset("AO", "ALL")
-eps_b = scf_wfn.epsilon_b_subset("AO", "ALL")
-
-compare_values(-150.19648058101589, scf_e, 6, "O2 PBE0AC Energy") #TEST
-compare_values(-0.398118, eps_a[8], 4, "O2 PBE0AC Alpha Eigenvalue LUMO") #TEST
-compare_values(-0.005877, eps_a[9], 4, "O2 PBE0AC Alpha Eigenvalue HOMO") #TEST
-compare_values(-0.551124, eps_b[6], 4, "O2 PBE0AC Beta Eigenvalue LUMO") #TEST
-compare_values(-0.176105, eps_b[7], 4, "O2 PBE0AC Beta Eigenvalue HOMO") #TEST

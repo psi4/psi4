@@ -511,13 +511,11 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     SharedMatrix IFock = Matrix::triplet(Ca_, Fa_, Ca_, true, false, false);
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, doccpi_, virpi));
 
-    # pragma omp parallel for
     for (size_t h = 0; h < nirrep_; h++) {
         if (!doccpi_[h] || !virpi[h]) continue;
         double* denomp = Precon->pointer(h)[0];
         double** fp = IFock->pointer(h);
 
-        # pragma omp simd
         for (size_t i = 0, target = 0; i < doccpi_[h]; i++) {
             for (size_t a = doccpi_[h]; a < nmopi_[h]; a++) {
                 denomp[target++] = -fp[i][i] + fp[a][a];
