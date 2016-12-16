@@ -25,7 +25,7 @@ ref_vals = [
            ]
 CFOUR_GRAD = psi4.Matrix(3, 3)
 CFOUR_GRAD.set(ref_vals)
-compare_matrices(analytic, CFOUR_GRAD, 10, "1. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
+compare_matrices(analytic, CFOUR_GRAD, 8, "1. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
 
 molecule N2{
 N 0 0 1.05723396
@@ -48,4 +48,4 @@ ref_vals = [
 	   ]
 CFOUR_GRAD = psi4.Matrix(2, 3)
 CFOUR_GRAD.set(ref_vals)
-compare_matrices(analytic, CFOUR_GRAD, 10, "2. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
+compare_matrices(analytic, CFOUR_GRAD, 8, "2. RHF-CCSD(T) gradient comparison with CFOUR") #TEST

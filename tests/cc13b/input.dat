@@ -27,7 +27,7 @@ ref_vals = [
            ]
 fin_diff = psi4.Matrix(3, 3)
 fin_diff.set(ref_vals)
-compare_matrices(analytic, fin_diff, 10, "1. RHF-CCSD(T) gradient comparison with finite differences") #TEST
+compare_matrices(analytic, fin_diff, 8, "1. RHF-CCSD(T) gradient comparison with finite differences") #TEST
 
 molecule N2 {
 0 1
@@ -51,6 +51,6 @@ ref_vals = [
 	   ]
 fin_diff = psi4.Matrix(2, 3)                                                
 fin_diff.set(ref_vals)
-compare_matrices(analytic, fin_diff, 10, "2. RHF-CCSD(T) gradient comparison with finite differences") #TEST
+compare_matrices(analytic, fin_diff, 8, "2. RHF-CCSD(T) gradient comparison with finite differences") #TEST
 
 
