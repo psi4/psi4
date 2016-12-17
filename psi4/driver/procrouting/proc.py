@@ -3089,6 +3089,52 @@ def run_dfmp2(name, **kwargs):
     core.tstop()
     return dfmp2_wfn
 
+def run_dfep2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted MP2 calculation.
+
+    """
+    core.tstart()
+    optstash = p4util.OptionsState(
+        ['DF_BASIS_MP2'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    core.print_out('\n')
+    p4util.banner('DFEP2')
+    core.print_out('\n')
+
+    if core.get_global_option('REFERENCE') == "ROHF":
+        ref_wfn.semicanonicalize()
+
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_EP2",
+                                    core.get_option("DFMP2", "DF_BASIS_EP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_EP2", aux_basis)
+
+    dfmp2_wfn = core.DFEP2Wavefunction(ref_wfn)
+    dfmp2_wfn.compute_energy()
+
+    if name == 'scs-mp2':
+        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
+    elif name == 'mp2':
+        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
+        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
+
+    optstash.restore()
+    core.tstop()
+    return dfmp2_wfn
+
 
 def run_dmrgscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for

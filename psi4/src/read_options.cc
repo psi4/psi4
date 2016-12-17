@@ -2191,6 +2191,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute one-particle density matrix? -*/
     options.add_bool("ONEPDM",false);
   }
+  if(name == "DFEP2"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs density-fitted EP2 computations for RHF reference wavefunctions. -*/
+
+    /*- Auxiliary basis set for EP2 density fitting computations.
+    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+    options.add_str("DF_BASIS_EP2","");
+    /*- Which orbitals do we want to compute EP2 for? Defaults to the HOMO, HOMO -1, and HOMO -2 -*/
+    options.add("EP2_ORBITALS", new ArrayType());
+    /*- What is the maximum number of iterations? -*/
+    options.add_double("EP2_CONVERGENCE", 5.e-5);
+    /*- What is the maximum number of iterations? -*/
+    options.add_int("EP2_MAXITER", 20);
+  }
   if(name == "PSIMRCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory should be used only by
         advanced users with a good working knowledge of multireference techniques. -*/

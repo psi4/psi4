@@ -49,6 +49,8 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfock/v.h"
 
+#include "psi4/dfep2/dfep2.h"
+
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
@@ -179,6 +181,12 @@ void export_wavefunction(py::module& m)
 
     py::class_<scf::CUHF, std::shared_ptr<scf::CUHF>, scf::HF>(m, "CUHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
+
+    py::class_<dfep2::DFEP2Wavefunction, std::shared_ptr<dfep2::DFEP2Wavefunction>, Wavefunction>(
+        m, "DFEP2Wavefunction", "A density-fitted second-order Electron Propagator Wavefunction.")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("compute", &dfep2::DFEP2Wavefunction::compute,
+             "Computes the density-fitted EP2 energy for the input orbitals");
 
     /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,

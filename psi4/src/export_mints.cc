@@ -63,6 +63,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 
+
 #include <string>
 
 using namespace psi;
@@ -201,10 +202,10 @@ void export_mints(py::module& m)
         .def("clone", &Matrix::clone, "docstring")
         .def_property("name", py::cpp_function(&Matrix::name), py::cpp_function(&Matrix::set_name),
                       "The name of the Matrix. Used in printing.")
-        .
+
         // def("set_name", &Matrix::set_name, "docstring").
         // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
-        def("print_out", &Matrix::print_out, "docstring")
+        .def("print_out", &Matrix::print_out, "docstring")
         .def("rows", &Matrix::rowdim, "docstring")
         .def("cols", &Matrix::coldim, "docstring")
         .def("rowdim", matrix_ret_dimension(&Matrix::rowspi), py::return_value_policy::copy,
@@ -221,9 +222,9 @@ void export_mints(py::module& m)
         .def("zero", &Matrix::zero, "docstring")
         .def("zero_diagonal", &Matrix::zero_diagonal, "docstring")
         .def("trace", &Matrix::trace, "docstring")
-        .
-        //            def("transpose", &Matrix::transpose).
-        def("add", matrix_one(&Matrix::add), "docstring")
+
+        .def("transpose_this", &Matrix::transpose_this)
+        .def("add", matrix_one(&Matrix::add), "docstring")
         .def("axpy", &Matrix::axpy, "docstring")
         .def("subtract", matrix_one(&Matrix::subtract), "docstring")
         .def("accumulate_product", matrix_two(&Matrix::accumulate_product), "docstring")
@@ -243,21 +244,21 @@ void export_mints(py::module& m)
         .def("diagonalize", matrix_diagonalize(&Matrix::diagonalize), "docstring")
         .def("cholesky_factorize", &Matrix::cholesky_factorize, "docstring")
         .def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring")
-        .
+
         // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization,
         // CanonicalOrthog()).
         // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, py::arg("delta")
         // = 0.0, py::arg("eigvec") = SharedMatrix()).
-        def("schmidt", &Matrix::schmidt)
+        .def("schmidt", &Matrix::schmidt)
         .def("invert", &Matrix::invert, "docstring")
         .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring")
         .def("copy", matrix_one(&Matrix::copy), "docstring")
         .def("power", &Matrix::power, "docstring")
-        .
+
         // def("doublet", &Matrix::doublet, py::arg("transA") = false, py::arg("transB") = false).
         // def("triplet", &Matrix::triplet, py::arg("transA") = false, py::arg("transB") = false,
         //                                  py::arg("transC") = false, "docstring").
-        def("doublet", &Matrix::doublet, "docstring")
+        .def("doublet", &Matrix::doublet, "docstring")
         .def("triplet", &Matrix::triplet, "docstring")
         .def("get", matrix_get3(&Matrix::get), "docstring")
         .def("get", matrix_get2(&Matrix::get), "docstring")
