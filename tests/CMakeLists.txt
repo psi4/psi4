@@ -104,10 +104,10 @@ endforeach()
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 add_subdirectory(json)
-if(ENABLE_psi4pasture)
+if(ENABLE_pasture)
   add_subdirectory(pasture-ccsorttransqt2)
-  message(STATUS "${Cyan}Pasture Enabled:${ColourReset}:")
-  message(STATUS " Adding test cases: Psi4 + Pasture")
+  message(STATUS "${Cyan}Found Pasture${ColourReset}")
+  message(STATUS "Adding test cases: Psi4 + Pasture")
 endif()
 
 

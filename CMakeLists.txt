@@ -71,7 +71,7 @@ option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
 
 # Append modules added to pasture as needed
 if(ENABLE_ccsort OR ENABLE_transqt2)
-  set(ENABLE_psi4pasture ON)
+  set(ENABLE_pasture ON)
   message(STATUS "Enabling pasture plugins")
 endif()
 
@@ -123,7 +123,7 @@ find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
-add_subdirectory(external)
+add_subdirectory(external/upstream)
 
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 include(autocmake_omp)
@@ -179,7 +179,6 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
-              -DENABLE_psi4pasture=${ENABLE_psi4pasture}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
@@ -211,7 +210,7 @@ add_dependencies(psi4_core ambit_external
                            libint_external
                            pcmsolver_external
                            pybind11_external)
-add_subdirectory(internals/pasture)
+add_subdirectory(external/downstream)
 add_subdirectory(doc)
 include(ConfigTesting)
 

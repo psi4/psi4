@@ -1,5 +1,5 @@
-if(ENABLE_psi4pasture)
-  ExternalProject_Add(psi4pasture
+if(ENABLE_pasture)
+  ExternalProject_Add(pasture
     DEPENDS psi4_core
     GIT_REPOSITORY https://github.com/psi4/psi4pasture
     CMAKE_ARGS -DENABLE_ccsort=${ENABLE_ccsort}

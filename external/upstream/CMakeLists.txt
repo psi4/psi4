@@ -1,5 +1,12 @@
-foreach(dir pybind11 libint ambit libefp pcmsolver chemps2 
-            erd dkh gdma
+foreach(dir ambit
+            chemps2
+            dkh
+            libefp
+            erd
+            gdma
+            libint
+            pcmsolver
+            pybind11
 )
    add_subdirectory(${dir})
 endforeach()
