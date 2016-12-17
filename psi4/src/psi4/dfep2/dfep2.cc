@@ -28,6 +28,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
 #include "psi4/dfep2/dfep2.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
@@ -37,6 +38,13 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/aiohandler.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace psi { namespace dfep2 {
 
@@ -45,10 +53,18 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     // Copy the wavefuntion then update
     shallow_copy(ref_wfn);
 
+    outfile->Printf("\n");
+    outfile->Printf("         ---------------------------------------------------------\n");
+    outfile->Printf("                  Second-Order Electron Propagator Theory\n");
+    outfile->Printf("\n");
+    outfile->Printf("                            by Daniel G. A. Smith\n");
+    outfile->Printf("         ---------------------------------------------------------\n\n");
+
+
     conv_thresh_ = options_.get_double("EP2_CONVERGENCE");
     max_iter_ = options_.get_int("EP2_MAXITER");
     debug_ = options_.get_int("DEBUG");
-    memory_doubles_ = (size_t) 0.07 * Process::environment.get_memory();
+    memory_doubles_ = (size_t)(0.1 * (double)Process::environment.get_memory());
 
     dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_EP2"), options_);
     dferi_->print_header();
@@ -57,6 +73,8 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     AO_Cocc_ = Ca_subset("AO", "OCC");
     AO_Cvir_ = Ca_subset("AO", "VIR");
     AO_eps_ = epsilon_a_subset("AO", "ALL");
+
+    unit_ = PSIF_DFMP2_QIA;
 
     for (size_t h = 0; h < nirrep_; h++) {
         for (size_t i = 0; i < nmopi_[h]; i++) {
@@ -102,15 +120,21 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         }
 
     }
+    outfile->Printf("  ==> Algorithm <==\n\n");
+    outfile->Printf("  Number of orbitals:     %5zu\n", nE);
+    outfile->Printf("  Maximum iterations:     %5zu\n", max_iter_);
+    outfile->Printf("  Convergence threshold:  %3.2e\n\n", conv_thresh_);
 
     // Debug printing
     if (debug_ > 1) {
-        printf("Nsolve %zu\n", nE);
-        printf("Nfound %zu\n", nfound);
+        outfile->Printf("\n\nNsolve %zu\n", nE);
+        outfile->Printf("Nfound %zu\n", nfound);
         for (size_t i = 0; i < orb_positions.size(); i++) {
-            printf("orb_pos: %zu irrep: %zu irrep_pos: %zu\n", std::get<0>(orb_positions[i]),
-                   std::get<1>(orb_positions[i]), std::get<2>(orb_positions[i]));
+            outfile->Printf("orb_pos: %zu irrep: %zu irrep_pos: %zu\n",
+                            std::get<0>(orb_positions[i]), std::get<1>(orb_positions[i]),
+                            std::get<2>(orb_positions[i]));
         }
+        outfile->Printf("\n\n");
     }
 
     if (nE != nfound){
@@ -173,117 +197,262 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     dferi_->add_space("E", nocc + nvir, nocc + nvir + nE);
 
     dferi_->add_pair_space("iaQ", "i", "a");
-    dferi_->add_pair_space("aiQ", "i", "a", -1.0 / 2.0, true);
-    dferi_->add_pair_space("EiQ", "E", "i");
-    dferi_->add_pair_space("EaQ", "E", "a");
+    // dferi_->add_pair_space("aiQ", "i", "a", -0.5, true);
+    dferi_->add_pair_space("iEQ", "i", "E");
+    dferi_->add_pair_space("aEQ", "a", "E");
     dferi_->compute();
 
     std::map<std::string, std::shared_ptr<Tensor>>& dfints = dferi_->ints();
     size_t nQ = dferi_->size_Q();
 
-    // ==> Setup contraction <== /
+    // ==> Build ERI's <== /
+
+    std::shared_ptr<PSIO> psio = PSIO::shared_object();
+    std::shared_ptr<AIOHandler> aio(new AIOHandler(psio));
+
+    psio->open(unit_, PSIO_OPEN_OLD);
+
+    aio->zero_disk(unit_, "EP2 I_ovvE Integrals", (ULI)(nocc * nvir), (ULI)(nvir * nE));
+    // aio->zero_disk(unit_, "EP2 I_ovoE Integrals", (ULI)(nocc * nvir), (ULI)(nocc * nE));
+    aio->zero_disk(unit_, "EP2 I_vooE Integrals", (ULI)(nocc * nvir), (ULI)(nocc * nE));
+    aio->synchronize();
+
+    // How much memory are we working with?
+    size_t E_tensor_size = nE * nvir * nQ + nE * nocc * nQ;
+    size_t I_block_sizes = nvir * nvir * nE + nocc * nvir * nE + nvir * nQ;
+    size_t free_doubles = memory_doubles_ - E_tensor_size;
+
+    size_t block_size = free_doubles / I_block_sizes;
+    if (block_size > nocc) block_size = nocc;
+    block_size = 2;
+
+    size_t nblocks = 1 + ((nocc - 1) / block_size);
+
+    if (debug_ > 1){
+        outfile->Printf("\n\n");
+        outfile->Printf("memory_doubles_ %zu\n", memory_doubles_);
+        outfile->Printf("free_doubles    %zu\n", free_doubles);
+        outfile->Printf("E_tensor_size   %zu\n", E_tensor_size);
+        outfile->Printf("I_block_sizes   %zu\n", I_block_sizes);
+        outfile->Printf("Block size      %zu\n", block_size);
+        outfile->Printf("N Block         %zu\n", nblocks);
+        outfile->Printf("\n\n");
+    }
+
+    if (block_size < 1){
+        std::stringstream message;
+        double mem_gb = ((double)(E_tensor_size + I_block_sizes) / 1.e10);
+        message << "DF-EP2 requires at least is nvir^2 * number solve orbitals in memory." << std::endl;
+        message << "       After taxes this is " << std::setprecision(2) << mem_gb << " GB of memory.";
+
+        throw PSIEXCEPTION(message.str());
+    }
+
+    size_t fstat;
+
+
+    // Read in part of the tensors
+    std::shared_ptr<Tensor> aEQT = dfints["aEQ"];
+    SharedMatrix aEQ(new Matrix("aEQ", nE * nvir, nQ));
+    double* aEQp = aEQ->pointer()[0];
+    FILE* aEQF = aEQT->file_pointer();
+    fseek(aEQF, 0L, SEEK_SET);
+    fstat = fread(aEQp, sizeof(double), nE * nvir * nQ, aEQF);
+
+    std::shared_ptr<Tensor> iEQT = dfints["iEQ"];
+    SharedMatrix iEQ(new Matrix("iEQ", nE * nocc, nQ));
+    double* iEQp = iEQ->pointer()[0];
+    FILE* iEQF = iEQT->file_pointer();
+    fseek(iEQF, 0L, SEEK_SET);
+    fstat = fread(iEQp, sizeof(double), nE * nocc * nQ, iEQF);
+
+    // Allocate temps
+    SharedMatrix block_iaQ(new Matrix(block_size * nvir, nQ));
+    SharedMatrix temp_ovvE(new Matrix(block_size * nvir, nvir * nE));
+    SharedMatrix temp_ovoE(new Matrix(block_size * nvir, nocc * nE));
+
+    // Pointer to read from
+    std::shared_ptr<Tensor> iaQT = dfints["iaQ"];
+    FILE* iaQF = iaQT->file_pointer();
+    double* block_iaQp = block_iaQ->pointer()[0];
+    fseek(iaQF, 0L, SEEK_SET);
+
+    psio_address ovvE_addr = psio_get_address(PSIO_ZERO, 0);
+    psio_address ovoE_addr = psio_get_address(PSIO_ZERO, 0);
+    psio_address vooE_addr = psio_get_address(PSIO_ZERO, 0);
+
+    for (size_t block = 0; block < nblocks; block++){
+        size_t bstart = block * block_size;
+
+        // Make sure we dont read past the line
+        if ((bstart + block_size) > nocc){
+            block_size = nocc - block * block_size;
+            block_iaQ->zero();
+        }
+
+        // Read a IA block
+        fstat = fread(block_iaQp, sizeof(double), block_size * nvir * nQ, iaQF);
+
+        // Write out OVVE
+        temp_ovvE->gemm(false, true, 1.0, block_iaQ, aEQ, 0.0);
+        psio_->write(unit_, "EP2 I_ovvE Integrals", (char*)temp_ovvE->pointer()[0],
+                     sizeof(double) * block_size * nvir * nvir * nE, ovvE_addr, &ovvE_addr);
+
+        // Write out VOOE
+        temp_ovoE->gemm(false, true, 1.0, block_iaQ, iEQ, 0.0);
+        double** temp_ovoEp = temp_ovoE->pointer();
+        for (size_t a = 0; a < nvir; a++){
+            size_t local_i = 0;
+            for (size_t i = bstart; i < bstart + block_size; i++){
+                psio_address vooE_addr =
+                    psio_get_address(PSIO_ZERO, sizeof(double) * (a * nocc + i) * nocc * nE);
+                psio_->write(unit_, "EP2 I_vooE Integrals", (char*)temp_ovoEp[local_i * nvir + a],
+                             sizeof(double) * nocc * nE, vooE_addr, &vooE_addr);
+                local_i++;
+            }
+        }
+        // psio_->write(unit_, "EP2 I_ovoE Integrals", (char*)temp_ovoE->pointer()[0],
+        //              sizeof(double) * block_size * nvir * nocc * nE, ovoE_addr, &ovoE_addr);
+
+    }
+    // Blow away the temp tensors
+    block_iaQ.reset();
+    temp_ovvE.reset();
+    temp_ovoE.reset();
+    aEQ.reset();
+    iEQ.reset();
+
+
+    // SharedMatrix I_ovvE(new Matrix(nocc * nvir, nvir * nE));
+    // psio_->read(unit_, "EP2 I_ovvE Integrals", (char*)I_ovvE->pointer()[0],
+    //             sizeof(double) * nocc * nvir * nvir * nE, PSIO_ZERO, &ovvE_addr);
+
+    // SharedMatrix I_ovoE(new Matrix(nocc * nvir, nocc * nE));
+    // psio_->read(unit_, "EP2 I_ovoE Integrals", (char*)I_ovoE->pointer()[0],
+    //             sizeof(double) * nocc * nvir * nocc * nE, PSIO_ZERO, &ovoE_addr);
+
+    SharedMatrix I_vooE(new Matrix(nocc * nvir, nocc * nE));
+    psio_->read(unit_, "EP2 I_vooE Integrals", (char*)I_vooE->pointer()[0],
+                sizeof(double) * nocc * nvir * nocc * nE, PSIO_ZERO, &ovoE_addr);
+
+
+
+    // ==> More Sizing <== /
+
+    size_t aaE_size = memory_doubles_ / nvir * nvir * nE;
+    if (aaE_size > nocc) aaE_size = nocc;
+    aaE_size = 2;
+
+    size_t ooE_size = memory_doubles_ / nocc * nocc * nE;
+    if (ooE_size > nvir) ooE_size = nvir;
+    ooE_size = 2;
+
+    size_t aaE_nblocks = 1 + ((nocc - 1) / aaE_size);
+    size_t ooE_nblocks = 1 + ((nvir - 1) / ooE_size);
+
+
+    if (debug_ > 1){
+        outfile->Printf("\n\n");
+        outfile->Printf("aaE_size %zu\n", aaE_size);
+        outfile->Printf("ooE_size    %zu\n", ooE_size);
+        outfile->Printf("aaE_nblocks   %zu\n", aaE_nblocks);
+        outfile->Printf("ooE_nblocks   %zu\n", ooE_nblocks);
+        outfile->Printf("\n\n");
+    }
+
+
+    // ==> Iterate <== /
+    outfile->Printf( "   --------------------------------------------\n");
+    outfile->Printf( "    Iter   Residual RMS      Max RMS    Remain\n");
+    outfile->Printf( "   --------------------------------------------\n");
 
     std::vector<double> Eold(nE);
     std::vector<double> Esigma(nE);
     std::vector<double> Ederiv(nE);
     std::vector<double> Eerror(nE);
 
-    size_t fstat;
-
-    // Always read
-    std::shared_ptr<Tensor> EaQT = dfints["EaQ"];
-    SharedMatrix EaQ(new Matrix("EaQ", nE * nvir, nQ));
-    double* EaQp = EaQ->pointer()[0];
-    FILE* EaQF = EaQT->file_pointer();
-    fseek(EaQF, 0L, SEEK_SET);
-    fstat = fread(EaQp, sizeof(double), nE * nvir * nQ, EaQF);
-
-    // Read blocks
-    std::shared_ptr<Tensor> aiQT = dfints["aiQ"];
-    SharedMatrix aiQ(new Matrix("aiQ", nocc * nvir, nQ));
-    double* aiQp = aiQ->pointer()[0];
-    FILE* aiQF = aiQT->file_pointer();
-    fseek(aiQF, 0L, SEEK_SET);
-    fstat = fread(aiQp, sizeof(double), nocc * nvir * nQ, aiQF);
-    aiQ->print();
-
-    SharedMatrix I_Evvo = Matrix::doublet(EaQ, aiQ, false, true);
-
-    // Always read
-    std::shared_ptr<Tensor> EiQT = dfints["EiQ"];
-    SharedMatrix EiQ(new Matrix("EiQ", nE * nocc, nQ));
-    double* EiQp = EiQ->pointer()[0];
-    FILE* EiQF = EiQT->file_pointer();
-    fseek(EiQF, 0L, SEEK_SET);
-    fstat = fread(EiQp, sizeof(double), nE * nocc * nQ, EiQF);
-
-    // Read blocks
-    std::shared_ptr<Tensor> iaQT = dfints["iaQ"];
-    SharedMatrix iaQ(new Matrix("iaQ", nocc * nvir, nQ));
-    double* iaQp = iaQ->pointer()[0];
-    FILE* iaQF = iaQT->file_pointer();
-    fseek(iaQF, 0L, SEEK_SET);
-    fstat = fread(iaQp, sizeof(double), nocc * nvir * nQ, iaQF);
-
-    SharedMatrix I_Eoov = Matrix::doublet(EiQ, iaQ, false, true);
-
-    // SharedMatrix tmp_mat(new Matrix(nE * nvir, nvir * nocc));
-    // SharedMatrix eps_mat(new Matrix(nE * nvir, nvir * nocc));
-
-    // ==> Iterate <== /
 
     for (size_t iter = 0; iter < max_iter_; iter++) {
+
+        // Reset data for loop
         for (size_t i = 0; i < nE; i++) {
             Esigma[i] = 0.0;
             Ederiv[i] = 0.0;
             Eold[i] = Enew[i];
         }
 
+
         // => Excitations <= //
         // sigma <= (Eabi - Ebai) * Eabi / (E - v - v + o)
-        double** I_Evvop = I_Evvo->pointer();
-        // double** tmpp = tmp_mat->pointer();
-        // double** epsp = eps_mat->pointer();
-        for (size_t e = 0; e < nE; e++) {
-            // printf("%16.8f\n", denom_E[e]);
-            for (size_t a = 0; a < nvir; a++) {
-                for (size_t b = 0; b < nvir; b++) {
-                    for (size_t i = 0; i < nocc; i++) {
-                        double Eabi = I_Evvop[e * nvir + a][b * nocc + i];
-                        double Ebai = I_Evvop[e * nvir + b][a * nocc + i];
-                        double numer = (2.0 * Eabi - Ebai) * Eabi;
-                        double denom = (denom_E[e] - eps_vir[a] - eps_vir[b] + eps_occ[i]);
-                        // tmpp[e * nvir + a][b * nocc + i] = numer;
-                        // epsp[e * nvir + a][b * nocc + i] = denom;
 
-                        Esigma[e] += numer / denom;
-                        Ederiv[e] += numer / (denom * denom);
+        ovvE_addr = psio_get_address(PSIO_ZERO, 0);
+        SharedMatrix I_ovvE(new Matrix(aaE_size * nvir, nvir * nE));
+        double** I_ovvEp = I_ovvE->pointer();
+
+        for (size_t i_block = 0; i_block < aaE_nblocks; i_block++){
+            size_t i_start = aaE_size * i_block;
+            size_t ib_size = aaE_size;
+            if ((i_start + aaE_size) > nocc){
+                ib_size = nocc - i_start;
+            }
+
+            psio_->read(unit_, "EP2 I_ovvE Integrals", (char*)I_ovvEp[0],
+                        (sizeof(double) * ib_size * nvir * nvir * nE), ovvE_addr, &ovvE_addr);
+
+            for (size_t i = 0; i < ib_size; i++) {
+                for (size_t a = 0; a < nvir; a++) {
+                    for (size_t b = 0; b < nvir; b++) {
+                        for (size_t e = 0; e < nE; e++) {
+                            double Eabi = I_ovvEp[i * nvir + b][a * nE + e];
+                            double Ebai = I_ovvEp[i * nvir + a][b * nE + e];
+                            double numer = (2.0 * Eabi - Ebai) * Eabi;
+                            double denom = (denom_E[e] - eps_vir[a] - eps_vir[b] + eps_occ[i_start + i]);
+
+                            Esigma[e] += numer / denom;
+                            Ederiv[e] += numer / (denom * denom);
+                        }
                     }
                 }
             }
         }
+        I_ovvE.reset();
 
         // => De-excitations <= //
         // sigma <= (Eija - Ejia) * Eija / (E - o - o + v)
-        double** I_Eoovp = I_Eoov->pointer();
-        for (size_t e = 0; e < nE; e++) {
-            for (size_t i = 0; i < nocc; i++) {
-                for (size_t j = 0; j < nocc; j++) {
-                    for (size_t a = 0; a < nvir; a++) {
-                        double Eija = I_Eoovp[e * nocc + i][j * nvir + a];
-                        double Ejia = I_Eoovp[e * nocc + j][i * nvir + a];
-                        double numer = (2.0 * Eija - Ejia) * Eija;
-                        double denom = (denom_E[e] - eps_occ[i] - eps_occ[j] + eps_vir[a]);
-                        // tmpp[e * nocc + i][j * nvir + a] = numer;
-                        // epsp[e * nocc + j][i * nvir + a] = denom;
 
-                        Esigma[e] += numer / denom;
-                        Ederiv[e] += numer / (denom * denom);
+        vooE_addr = psio_get_address(PSIO_ZERO, 0);
+        SharedMatrix I_vooE(new Matrix(ooE_size * nocc, nocc * nE));
+        double** I_vooEp = I_vooE->pointer();
+
+        for (size_t a_block = 0; a_block < ooE_nblocks; a_block++){
+            size_t a_start = ooE_size * a_block;
+            size_t ab_size = ooE_size;
+            if ((a_start + ooE_size) > nvir){
+                ab_size = nvir - a_start;
+            }
+
+            psio_->read(unit_, "EP2 I_vooE Integrals", (char*)I_vooEp[0],
+                        sizeof(double) * ab_size * nocc * nocc * nE, vooE_addr, &vooE_addr);
+
+            for (size_t a = 0; a < ab_size; a++) {
+                for (size_t i = 0; i < nocc; i++) {
+                    for (size_t j = 0; j < nocc; j++) {
+                        for (size_t e = 0; e < nE; e++) {
+                            double Eija = I_vooEp[a * nocc + j][i * nE + e];
+                            double Ejia = I_vooEp[a * nocc + i][j * nE + e];
+                            double numer = (2.0 * Eija - Ejia) * Eija;
+                            double denom = (denom_E[e] - eps_occ[i] - eps_occ[j] + eps_vir[a_start + a]);
+
+                            Esigma[e] += numer / denom;
+                            Ederiv[e] += numer / (denom * denom);
+                        }
                     }
                 }
             }
         }
+        I_vooE.reset();
 
+        // Update
         double max_error = 0.0;
         double mean_error = 0.0;
         size_t nremain = nE;
@@ -312,10 +481,11 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         mean_error /= (size_t)nE;
         // printf("\n");
 
-        printf("%zu %16.8f %16.8f %zu\n", (iter + 1), mean_error, max_error, nremain);
+        outfile->Printf("    %3zu %14.8f %14.8f   %4zu\n", (iter + 1), mean_error, max_error, nremain);
 
         if (max_error < conv_thresh_) break;
     }
+    outfile->Printf( "   --------------------------------------------\n\n");
 
     // Build output array and remap symmetry
     std::vector<std::vector<std::pair<double, double>>> ret;
@@ -330,6 +500,8 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         ret[h][i].first = Enew[k];
         ret[h][i].second = Eerror[k];
     }
+
+    psio->close(unit_, 0);
 
     return ret;
 

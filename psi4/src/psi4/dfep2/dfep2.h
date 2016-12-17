@@ -40,6 +40,7 @@ namespace dfep2 {
 
 class DFEP2Wavefunction : public Wavefunction {
    protected:
+
     // Auxiliary basis
     std::shared_ptr<BasisSet> ribasis_;
 
@@ -58,6 +59,7 @@ class DFEP2Wavefunction : public Wavefunction {
     size_t max_iter_;
     size_t debug_;
     size_t memory_doubles_;
+    size_t unit_;
 
 
    public:

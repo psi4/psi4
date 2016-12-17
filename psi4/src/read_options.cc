@@ -2194,19 +2194,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "DFEP2"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted EP2 computations for RHF reference wavefunctions. -*/
 
-    /*- Auxiliary basis set for EP2 density fitting computations.
-    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
-    options.add_str("DF_BASIS_EP2","");
-    /*- Which orbitals do we want to compute EP2 for? Defaults to the HOMO, HOMO -1, and HOMO -2 -*/
-    options.add("EP2_ORBITALS", new ArrayType());
-    /*- What is the maximum number of iterations? -*/
-    options.add_double("EP2_CONVERGENCE", 5.e-5);
-    /*- What is the maximum number of iterations? -*/
-    options.add_int("EP2_MAXITER", 20);
+      /*- Auxiliary basis set for EP2 density fitting computations.
+      :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+      options.add_str("DF_BASIS_EP2", "");
+      /*- Number of Ionization Potentials to compute, starting with the HOMO. -*/
+      options.add_int("EP2_NUM_IP", 3);
+      /*- Number of Electron Affinities to compute, starting with the LUMO. -*/
+      options.add_int("EP2_NUM_EA", 0);
+      /*- Explicitly pick orbitals to use in the EP2 method, overrides EP2_NUM_ options. Input
+         array should be [[orb1, orb2], [], ...] for each irrep. -*/
+      options.add("EP2_ORBITALS", new ArrayType());
+      /*- What is the maximum number of iterations? -*/
+      options.add_double("EP2_CONVERGENCE", 5.e-5);
+      /*- What is the maximum number of iterations? -*/
+      options.add_int("EP2_MAXITER", 20);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory should be used only by
-        advanced users with a good working knowledge of multireference techniques. -*/
+      /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory
+         should be used only by advanced users with a good working knowledge of multireference
+         techniques. -*/
 
     /*- The multiplicity, $M@@S(M@@S+1)$, of the target state.  Must be specified if different from the reference $M@@s$. -*/
       options.add_int("CORR_MULTP",1);
