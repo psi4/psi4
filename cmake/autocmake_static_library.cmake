@@ -2,6 +2,7 @@
 #   https://github.com/PCMSolver/pcmsolver/blob/release/1.Y/cmake/custom/static_library.cmake
 # * suppressed STATIC_LIBRARY_ONLY
 # * moved option up
+# * corrected CXX block matches statements from C --> CXX compiler
 
 #.rst:
 #
@@ -42,13 +43,13 @@ if(ENABLE_GENERIC)
     endif()
 
     if(DEFINED CMAKE_CXX_COMPILER_ID)
-        if(CMAKE_C_COMPILER_ID MATCHES GNU)
+        if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
         endif()
-        if(CMAKE_C_COMPILER_ID MATCHES Intel)
+        if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--as-needed -static-libstdc++ -static-libgcc -static-intel -wd10237")
         endif()
-        if(CMAKE_C_COMPILER_ID MATCHES Clang)
+        if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++")
         endif()
     endif()

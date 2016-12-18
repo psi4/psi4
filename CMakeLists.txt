@@ -86,7 +86,7 @@ if(ENABLE_erd)
 endif()
 
 ############################  Options: Build How?  #############################
-include(Psi4Macros)
+include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
 option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)

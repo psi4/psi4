@@ -9,7 +9,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
-include(Psi4Macros)
+include(psi4OptionsTools)
 include(TestRestrict)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
