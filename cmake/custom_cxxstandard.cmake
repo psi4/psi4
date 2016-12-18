@@ -10,16 +10,29 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
         message(FATAL_ERROR "ICPC version must be at least 2016!")
     endif()
 
-    execute_process(COMMAND gcc -dumpversion
-                    OUTPUT_VARIABLE GCC_VERSION
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(_testfl ${CMAKE_BINARY_DIR}/test_gcc_version.cc)
+    file(WRITE  ${_testfl} "
+    #include <stdio.h>
+    
+    int main() {
+        printf(\"%d.%d.%d\", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+        return 0;
+    }
+    ")
+    try_run(GCCV_COMPILES
+            GCCV_RUNS
+            ${CMAKE_BINARY_DIR} ${_testfl}
+            RUN_OUTPUT_VARIABLE GCC_VERSION)
+    message(STATUS "Found GCC ${GCC_VERSION}")
+    file(REMOVE ${_testfl})
+
     if (APPLE)
         if (${GCC_VERSION} VERSION_LESS 6.1)
-            message(WARNING "Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc")
+            message(FATAL_ERROR "Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc")
         endif()
     else ()
         if (${GCC_VERSION} VERSION_LESS 4.9)
-            message(WARNING "${BoldYellow}Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc\n${ColourReset}${Yellow}This message ${BoldYellow}will${ColourReset}${Yellow} remain after the likely correction of adding gcc/gxx-name.${ColourReset}")
+            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc\n${ColourReset}")
         endif()
     endif()
 
