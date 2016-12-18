@@ -156,7 +156,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-              -DCMAKE_CXX_STANDARD=${PSI4_CXX_STANDARD}
+              -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
               -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}

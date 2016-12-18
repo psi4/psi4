@@ -38,9 +38,9 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 
     if("${CMAKE_VERSION}" VERSION_LESS "3.6")
         # add flag by hand if CMake does not support ICPC
-        if("${PSI4_CXX_STANDARD}" MATCHES "11|14")
+        if("${psi4_CXX_STANDARD}" MATCHES "11|14")
             #add_compile_options(-std=c++${CMAKE_CXX_STANDARD})
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${PSI4_CXX_STANDARD}")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${psi4_CXX_STANDARD}")
         endif()
     endif()
 

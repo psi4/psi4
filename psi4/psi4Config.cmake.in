@@ -86,7 +86,7 @@ function(add_psi4_plugin TARGET SOURCES)
     target_link_libraries(${TARGET} ${core_LIBRARY})
     set_target_properties(${TARGET} PROPERTIES
                           PREFIX ""
-                          COMPILE_FLAGS "-std=c++11")
+                          COMPILE_FLAGS "-std=c++@CMAKE_CXX_STANDARD@")
     if (APPLE)
         set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
     endif()

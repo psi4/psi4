@@ -22,6 +22,8 @@ test_restrict(restrict)
 # * headers: Python.h for pybind11 to build against
 # * library: not at all
 find_package(PythonLibsNew REQUIRED)
+#  <<  Pybind11 & Python  >>
+set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 find_package(pybind11 CONFIG REQUIRED)
 message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING})")
 set_property(TARGET pybind11::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
