@@ -60,6 +60,7 @@ class DFEP2Wavefunction : public Wavefunction {
     size_t debug_;
     size_t memory_doubles_;
     size_t unit_;
+    size_t num_threads_;
 
 
    public:

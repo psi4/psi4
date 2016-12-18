@@ -3109,31 +3109,92 @@ def run_dfep2(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    core.print_out('\n')
-    p4util.banner('DFEP2')
-    core.print_out('\n')
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("DF-EP2 is not availabel for %s references.",
+                              core.get_global_option('REFERENCE'))
 
-    if core.get_global_option('REFERENCE') == "ROHF":
-        ref_wfn.semicanonicalize()
 
+    # Build the wavefunction
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_EP2",
-                                    core.get_option("DFMP2", "DF_BASIS_EP2"),
+                                    core.get_option("DFEP2", "DF_BASIS_EP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_EP2", aux_basis)
 
-    dfmp2_wfn = core.DFEP2Wavefunction(ref_wfn)
-    dfmp2_wfn.compute_energy()
+    dfep2_wfn = core.DFEP2Wavefunction(ref_wfn)
 
-    if name == 'scs-mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('SCS-MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('SCS-MP2 CORRELATION ENERGY'))
-    elif name == 'mp2':
-        core.set_variable('CURRENT ENERGY', core.get_variable('MP2 TOTAL ENERGY'))
-        core.set_variable('CURRENT CORRELATION ENERGY', core.get_variable('MP2 CORRELATION ENERGY'))
+    # Figure out what were doing
+    if core.has_option_changed('DFEP2', 'EP2_ORBITALS'):
+        ep2_input = core.get_global_option("EP2_ORBITALS")
 
-    optstash.restore()
+    else:
+        n_ip = core.get_global_option("EP2_NUM_IP")
+        n_ea = core.get_global_option("EP2_NUM_EA")
+
+        eps = np.hstack(dfep2_wfn.epsilon_a().nph)
+        irrep_map = np.hstack([np.ones_like(dfep2_wfn.epsilon_a().nph[x]) * x for x in range(dfep2_wfn.nirrep())])
+        sort = np.argsort(eps)
+
+        ip_map = sort[dfep2_wfn.nalpha() - n_ip:dfep2_wfn.nalpha()]
+        ea_map = sort[dfep2_wfn.nalpha():dfep2_wfn.nalpha() + n_ea]
+
+        ep2_input = [[] for x in range(dfep2_wfn.nirrep())]
+        nalphapi = tuple(dfep2_wfn.nalphapi())
+
+        # Add IP info
+        ip_info = np.unique(irrep_map[ip_map], return_counts=True)
+        for irrep, cnt in zip(*ip_info):
+            irrep = int(irrep)
+            ep2_input[irrep].extend(range(nalphapi[irrep] - cnt, nalphapi[irrep]))
+
+        # Add EA info
+        ea_info = np.unique(irrep_map[ea_map], return_counts=True)
+        for irrep, cnt in zip(*ea_info):
+            irrep = int(irrep)
+            ep2_input[irrep].extend(range(nalphapi[irrep], nalphapi[irrep] + cnt))
+
+    # Compute
+    ret = dfep2_wfn.compute(ep2_input)
+
+    # Resort it...
+    ret_eps = []
+    for h in range(dfep2_wfn.nirrep()):
+        ep2_data = ret[h]
+        inp_data = ep2_input[h]
+
+        for i in range(len(ep2_data)):
+            tmp = [h, ep2_data[i][0], ep2_data[i][1], dfep2_wfn.epsilon_a().get(h, inp_data[i]), inp_data[i]]
+            ret_eps.append(tmp)
+
+    ret_eps.sort(key=lambda x: x[3])
+
+    h2ev = p4const.psi_hartree2ev
+    irrep_labels = dfep2_wfn.molecule().irrep_labels()
+
+    core.print_out("  ==> Results <==\n\n")
+    core.print_out("   %8s  %12s %12s %8s\n" % ("Orbital", "Koopmans (eV)", "EP2 (eV)", "EP2 PS"))
+    core.print_out("  ----------------------------------------------\n")
+    for irrep, ep2, ep2_ps, kt, pos in ret_eps:
+        label = str(pos + 1)  + irrep_labels[irrep]
+        core.print_out("  %8s    % 12.3f  % 12.3f   % 6.3f\n" % (label, (kt * h2ev), (ep2 * h2ev), ep2_ps))
+        core.set_variable("EP2 " + label.upper() + " ENERGY", ep2)
+    core.print_out("  ----------------------------------------------\n\n")
+
+    # Figure out the IP and EA
+    sorted_vals = np.array([x[1] for x in ret_eps])
+    ip_vals = sorted_vals[sorted_vals < 0]
+    ea_vals = sorted_vals[sorted_vals > 0]
+
+    ip_value = None
+    ea_value = None
+    if len(ip_vals):
+        core.set_variable("EP2 IONIZATION POTENTIAL", ip_vals[-1])
+    if len(ea_vals):
+        core.set_variable("EP2 ELECTRON AFFINITY", ea_vals[0])
+
+    core.print_out("  EP2 has completed successfully!\n\n")
+
     core.tstop()
-    return dfmp2_wfn
+    return dfep2_wfn
 
 
 def run_dmrgscf(name, **kwargs):

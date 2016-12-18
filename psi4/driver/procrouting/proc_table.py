@@ -43,6 +43,7 @@ procedures = {
             'scf'           : proc.run_scf,
             'mcscf'         : proc.run_mcscf,
             'dcft'          : proc.run_dcft,
+            'ep2'           : proc.run_dfep2,
             'mp3'           : proc.select_mp3,
             'mp2.5'         : proc.select_mp2p5,
             'mp2'           : proc.select_mp2,
