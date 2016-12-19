@@ -18,7 +18,6 @@ macro(test_restrict variable)
                 try_compile(test_${variable} "${CMAKE_BINARY_DIR}"
                             "${CMAKE_BINARY_DIR}/test_restrict.c"
                             COMPILE_DEFINITIONS "-DTESTRESTRICTDEF=${keyword}" )
-                message("QWER ${variable} ${test_${variable}}")
                 set(last_restrict_keyword ${keyword})
             endif()
         endforeach()

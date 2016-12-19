@@ -22,5 +22,5 @@ add_custom_target(plugin_${PLUG}
     VERBATIM)
 
 include(TestingMacros)
-add_regression_test(${PLUG} "psi;plug;minitests")
+add_regression_test(${PLUG} "psi;plug;minitests;quicktests")
 

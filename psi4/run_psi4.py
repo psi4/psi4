@@ -231,7 +231,7 @@ except Exception as exception:
     tb_str += '\n'
     tb_str += type(exception).__name__
     tb_str += ': '
-    tb_str += exception.message
+    tb_str += str(exception)
     psi4.core.print_out("\n")
     psi4.core.print_out(tb_str)
     psi4.core.print_out("\n")
