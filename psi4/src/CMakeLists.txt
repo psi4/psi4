@@ -30,7 +30,7 @@ target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_O
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PRIVATE pybind11::pybind11)
-target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(core PRIVATE Threads::Threads)
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints

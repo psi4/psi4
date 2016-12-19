@@ -111,16 +111,21 @@ option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed
 option_with_Default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
-option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
+option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(custom_color_messages)
 
-#find_package(PythonLibsNew REQUIRED)
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
+# Python use in psi4 (not incl. external/)
+# * interpreter: run the versioner in psi4-core. run tests and build docs in psi4
+# * headers: Python.h for pybind11 to build against in psi4-core
+# * library: not at all
+
+set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5)  # adjust with CMake minimum FindPythonInterp
+find_package(PythonLibsNew REQUIRED)
+message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 add_subdirectory(external/upstream)

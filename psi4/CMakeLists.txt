@@ -13,26 +13,19 @@ include(psi4OptionsTools)
 include(TestRestrict)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(custom_color_messages)
 test_restrict(restrict)
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
-# using Python in psi4-core
-# * interpreter: run the versioner (and elsewhere to run tests, docs)
-# * headers: Python.h for pybind11 to build against
-# * library: not at all
-find_package(PythonLibsNew REQUIRED)
 #  <<  Pybind11 & Python  >>
 set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 find_package(pybind11 CONFIG REQUIRED)
-message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING})")
-set_property(TARGET pybind11::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
+message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
+message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
-find_package(Threads)
-
-#set(THREADS_PREFER_PTHREAD_FLAG ON)
-#find_package(Threads REQUIRED)
-#target_link_libraries(my_app Threads::Threads)
+set(CMAKE_THREAD_PREFER_PTHREAD ON)
+find_package(Threads REQUIRED)
 
 find_package(DL)
 
@@ -41,33 +34,49 @@ set_property(GLOBAL PROPERTY PSI4_MODULES "")
 if(${ENABLE_CheMPS2})
     find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
     get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
-    message(STATUS "Found CheMPS2: ${_loc} (found version ${CheMPS2_VERSION})")
+    message(STATUS "${Cyan}Using CheMPS2${ColourReset}: ${_loc} (version ${CheMPS2_VERSION})")
+else()
+    message(STATUS "Disabled CheMPS2")
 endif ()
+
 if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED)
     get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
-    message(STATUS "Found dkh: ${_loc} (found version ${dkh_VERSION})")
+    message(STATUS "${Cyan}Using dkh${ColourReset}: ${_loc} (version ${dkh_VERSION})")
+else()
+    message(STATUS "Disabled dkh")
 endif()
+
 find_package(libefp CONFIG REQUIRED COMPONENTS shallow)
 get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-message(STATUS "Found libefp: ${_loc} (found version ${libefp_VERSION})")
+message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
+
 if(${ENABLE_erd})
     find_package(erd CONFIG REQUIRED)
     get_property(_loc TARGET erd::erd PROPERTY LOCATION)
-    message(STATUS "Found erd: ${_loc} (found version ${erd_VERSION})")
+    message(STATUS "${Cyan}Using erd${ColourReset}: ${_loc} (version ${erd_VERSION})")
+else()
+    message(STATUS "Disabled erd")
 endif()
+
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED)
     get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
-    message(STATUS "Found gdma: ${_loc} (found version ${gdma_VERSION})")
+    message(STATUS "${Cyan}Using gdma${ColourReset}: ${_loc} (version ${gdma_VERSION})")
+else()
+    message(STATUS "Disabled gdma")
 endif()
+
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET libint::int PROPERTY LOCATION)
-message(STATUS "Found libint: ${_loc} (found version ${libint_VERSION})")
+message(STATUS "${Cyan}Using libint${ColourReset}: ${_loc} (version ${libint_VERSION})")
+
 if(${ENABLE_PCMSolver})
     find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
     #get_property(_loc TARGET PCMSolver::PCMSolver PROPERTY LOCATION)
-    #message(STATUS "Found PCMSolver: ${_loc} (found version ${PCMSolver_VERSION})")
+    #message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
+#else()
+    #message(STATUS "Disabled PCMSolver")
 endif ()
 
 if(APPLE)
