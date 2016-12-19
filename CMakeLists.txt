@@ -125,7 +125,7 @@ find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 add_subdirectory(external/upstream)
 
-    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
+    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(autocmake_static_library)
@@ -148,7 +148,7 @@ list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
 
 ################################  Main Project  ################################
 include(ExternalProject)
-ExternalProject_Add(psi4_core
+ExternalProject_Add(psi4-core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -200,7 +200,7 @@ ExternalProject_Add(psi4_core
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
-add_dependencies(psi4_core ambit_external
+add_dependencies(psi4-core ambit_external
                            chemps2_external
                            dkh_external
                            libefp_external
