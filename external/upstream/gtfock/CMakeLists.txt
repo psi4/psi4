@@ -15,7 +15,7 @@ if(${ENABLE_GTFock})
             GIT_REPOSITORY https://github.com/psi4/GTFock
             #GIT_TAG v1.7.1  # TODO tag when stable
             UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -31,7 +31,7 @@ if(${ENABLE_GTFock})
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
 
-        set(GTFock_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/GTFock CACHE PATH "path to internally built GTFockConfig.cmake" FORCE)
+        set(GTFock_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/GTFock CACHE PATH "path to internally built GTFockConfig.cmake" FORCE)
     endif()
 else()
     add_library(gtfock_external INTERFACE)  # dummy

@@ -12,7 +12,7 @@ if(${ENABLE_dkh})
             GIT_REPOSITORY https://github.com/psi4/dkh
             #GIT_TAG v1.7.1  # TODO tag when stable
             UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -28,7 +28,7 @@ if(${ENABLE_dkh})
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
 
-        set(dkh_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/dkh CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
+        set(dkh_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/dkh CACHE PATH "path to internally built dkhConfig.cmake" FORCE)
     endif()
 else()
     add_library(dkh_external INTERFACE)  # dummy

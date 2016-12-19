@@ -51,7 +51,7 @@ install(TARGETS core
 #    set(PSI4_RPATH
 #            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
 #endforeach()
-set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external/${CMAKE_INSTALL_LIBDIR}")
+set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
 # The other big source of RPaths are the math libraries
 foreach(math_comp ${LAPACKBLAS_LIBRARIES})

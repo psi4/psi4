@@ -149,8 +149,6 @@ foreach(pkg in pcmsolver)
    endif()
 endforeach()
 
-list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
-
 ################################  Main Project  ################################
 include(ExternalProject)
 ExternalProject_Add(psi4-core

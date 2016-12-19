@@ -21,7 +21,7 @@ if(${ENABLE_CheMPS2})
             GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
             GIT_TAG v1.8.3
             UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
+            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -43,7 +43,7 @@ if(${ENABLE_CheMPS2})
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
             DESTDIR=${CMAKE_BINARY_DIR}/stage)
 
-        set(CheMPS2_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/CheMPS2 CACHE PATH "path to internally built CheMPS2Config.cmake" FORCE)
+        set(CheMPS2_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/CheMPS2 CACHE PATH "path to internally built CheMPS2Config.cmake" FORCE)
     endif()
 else()
     add_library(chemps2_external INTERFACE)  # dummy

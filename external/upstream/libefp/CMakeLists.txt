@@ -13,7 +13,7 @@ else()
         #GIT_REPOSITORY https://github.com/ilyak/libefp
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/external
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
@@ -32,6 +32,6 @@ else()
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
 
-    set(libefp_DIR ${STAGED_INSTALL_PREFIX}/external/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
+    set(libefp_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/libefp CACHE PATH "path to internally built libefpConfig.cmake" FORCE)
 endif()
 
