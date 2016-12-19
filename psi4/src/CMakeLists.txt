@@ -29,17 +29,21 @@ target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_O
 
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
-target_link_libraries(core PRIVATE pybind11::pybind11)
+target_link_libraries(core PUBLIC pybind11::pybind11)
 target_link_libraries(core PRIVATE Threads::Threads)
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
+target_include_directories(core INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 install(TARGETS core
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
+        EXPORT "psi4Targets"
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(EXPORT "psi4Targets"
+        NAMESPACE "psi4::"
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
 ### >>  Stuff below this is for RPaths and doesn't work quite right
 
@@ -69,6 +73,7 @@ set(PSI4_RPATH ${psi4_install_lib}
 
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
+                           EXPORT_NAME core
                            SUFFIX ".so"  # for python module
                            #SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
                            INSTALL_RPATH "${PSI4_RPATH}"

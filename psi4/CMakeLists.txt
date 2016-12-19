@@ -15,6 +15,8 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(custom_color_messages)
 test_restrict(restrict)
+#   explicit "share" not "DATADIR" for CMake search path
+set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
@@ -108,10 +110,6 @@ configure_file(run_psi4.py psi4 @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
-# configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
-# install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
-#         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
     # <<<  install lib/  >>>
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
@@ -143,10 +141,6 @@ install(DIRECTORY share/psi4/
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
 
-configure_file(config.py.in config.py @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/config.py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
-
     # <<<  install external's share/ to psi4 share/  >>>
 
         # bring libefp's fraglib to PSIDATADIR's attention
@@ -168,35 +162,27 @@ endforeach()
 
 # <<<  Export Config  >>>
 
-    # explicit "share" not "DATADIR" for CMake search path
-set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
-#configure_package_config_file(psi4Config.cmake.in
-#                              "${CMAKE_CURRENT_BINARY_DIR}/psi4Config.cmake"
-#                              INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-#write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/psi4ConfigVersion.cmake
-#                                 VERSION ${psi4_VERSION}
-#                                 COMPATIBILITY SameMajorVersion)
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/psi4Config.cmake
-#              ${CMAKE_CURRENT_BINARY_DIR}/psi4ConfigVersion.cmake
-#        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-#install(EXPORT "psi4Targets"
-#        NAMESPACE "psi4::"
-#        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+configure_file(psi4PluginCache.cmake.in psi4PluginCache.cmake @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
+              ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
+              ${PSI4_ROOT}/cmake/autocmake_static_library.cmake
+              ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
+              ${PSI4_ROOT}/cmake/CheckFortranCompilerFlag.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>
 # Determine relative path from Psi4's include directory to PyBind11's
 file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
     ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
     ${pybind11_INCLUDE_DIR})
-set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/psi4")
 configure_package_config_file(
-        share/cmake/psi4/psi4Config.cmake.in
+        psi4Config.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
         INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
-        VERSION ${PSI4_VERSION}
+        VERSION ${psi4_VERSION}
         COMPATIBILITY SameMajorVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
