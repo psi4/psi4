@@ -27,16 +27,12 @@
 # @END LICENSE
 #
 
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-
-# These were the compilers used to compile Psi4. They may or may not be
-# required to successfully run your plugin.
-set(CMAKE_C_COMPILER @C@)
-set(CMAKE_CXX_COMPILER @CXX@)
-set(CMAKE_Fortran_COMPILER @Fortran@)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 project(@plugin@ CXX)
 
 find_package(psi4 1.0 REQUIRED)
+
+include(custom_cxxstandard)
 
 add_psi4_plugin(@plugin@ @sources@)

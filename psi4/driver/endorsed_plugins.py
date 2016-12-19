@@ -25,30 +25,9 @@
 # @END LICENSE
 #
 
-"""Attempts to catch Python based import errors and provides possible solutions."""
-
-# NumPy import
-try:
-    import numpy as np
-except:
-    msg = """
-    NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
-
-    NumPy installation with a package manager can be accomplished by the following lines:
-        - conda install numpy
-        - sudo yum install numpy
-        - sudo apt-get install python-numpy
-        - brew install numpy
-    """
-    raise ImportError(msg)
-
-# Import plugin add-ons here for now
-try:
-    import csx4psi
-except ImportError:
-    pass
+"""Import plugins eligible to be accessible in input files if detected."""
 
 try:
-    from . import pasture
+    import v2rdm_casscf
 except ImportError:
     pass

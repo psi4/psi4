@@ -68,7 +68,10 @@ atexit.register(core.set_legacy_molecule, None)
 atexit.register(core.clean)
 atexit.register(core.finalize)
 
+# Make official plugins accessible in input
+from .driver import endorsed_plugins
 
+# Load driver and outfile paraphernalia
 from .driver import *
 from .header import print_header
 from .metadata import __version__, version_formatter
