@@ -133,7 +133,7 @@ add_subdirectory(external/upstream)
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(autocmake_omp)
 include(custom_cxxstandard)
-include(autocmake_static_library)
+include(custom_static_library)
 
 ################################  Dependencies  ################################
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")

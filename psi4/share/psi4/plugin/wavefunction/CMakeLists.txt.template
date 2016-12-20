@@ -33,6 +33,4 @@ project(@plugin@ CXX)
 
 find_package(psi4 1.0 REQUIRED)
 
-include(custom_cxxstandard)
-
 add_psi4_plugin(@plugin@ @sources@)

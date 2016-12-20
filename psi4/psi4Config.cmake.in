@@ -114,6 +114,9 @@ function(add_psi4_plugin TARGET SOURCES)
     # remove ${TARGET} from ${ARGV} to use ${ARGV} as ${SOURCES}
     list(REMOVE_AT ARGV 0)
 
+    # checks compiler (and gcc, if necessary) C++11 compliant
+    include(custom_cxxstandard)
+
     add_library(${TARGET} MODULE ${ARGV})
     target_link_libraries(${TARGET} PRIVATE psi4::core)
     set_target_properties(${TARGET} PROPERTIES PREFIX "")

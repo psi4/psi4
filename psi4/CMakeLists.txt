@@ -165,7 +165,7 @@ endforeach()
 configure_file(psi4PluginCache.cmake.in psi4PluginCache.cmake @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
               ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
-              ${PSI4_ROOT}/cmake/autocmake_static_library.cmake
+              ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
               ${PSI4_ROOT}/cmake/CheckFortranCompilerFlag.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
