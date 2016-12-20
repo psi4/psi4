@@ -21,7 +21,7 @@ h2o = qcdb.Molecule("""
     H 1 R 2 A
 """)
 
-print "\n Testing Z-matrix coordinates\n"  #TEST
+print("\n Testing Z-matrix coordinates\n")  #TEST
 
 count = 0
 for R in Rvals:
@@ -38,7 +38,7 @@ for R in Rvals:
 # every change of geometry
 
 
-print "\n Testing polar coordinates\n"  #TEST
+print("\n Testing polar coordinates\n")  #TEST
 
 count = 0
 for R in Rvals:

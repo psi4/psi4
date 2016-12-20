@@ -5,7 +5,7 @@ find_package(Perl QUIET)
 #
 # The following labels are defined:
 #
-#  minitests   = Does Psi4 work? A few basic operational tests plus
+#  smoketests  = Does Psi4 work? A few basic operational tests plus
 #                one from each addon and addin
 #  quicktests  = Best coverage possible in a 20 min envelope (for Travis-CI).
 #                This subset is chosen to provide one or more tests for each
