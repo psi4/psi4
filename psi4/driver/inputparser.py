@@ -44,6 +44,8 @@ from psi4.driver import pubchem
 from psi4.driver.p4util.exceptions import *
 from psi4 import core
 
+# globally available regex strings
+pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
 
 # inputfile contents to be preserved from the processor
 literals = {}
@@ -230,7 +232,6 @@ def process_molecule_command(matchobj):
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     geometry = matchobj.group(3)
-    pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = pubchemre.sub(process_pubchem_command, geometry)
     from_filere = re.compile(r'^(\s*from_file\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
     geometry = from_filere.sub(process_from_file_command,geometry)
