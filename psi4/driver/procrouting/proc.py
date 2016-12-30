@@ -3188,8 +3188,11 @@ def run_dfep2(name, **kwargs):
     ea_value = None
     if len(ip_vals):
         core.set_variable("EP2 IONIZATION POTENTIAL", ip_vals[-1])
+        core.set_variable("CURRENT ENERGY", ip_vals[-1])
     if len(ea_vals):
         core.set_variable("EP2 ELECTRON AFFINITY", ea_vals[0])
+        if core.get_variable("EP2 IONIZATION POTENTIAL") == 0.0:
+            core.set_variable("CURRENT ENERGY", ea_vals[0])
 
     core.print_out("  EP2 has completed successfully!\n\n")
 

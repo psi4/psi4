@@ -222,7 +222,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     psio->open(unit_, PSIO_OPEN_OLD);
 
     aio->zero_disk(unit_, "EP2 I_ovvE Integrals", (ULI)(nocc * nvir), (ULI)(nvir * nE));
-    // aio->zero_disk(unit_, "EP2 I_ovoE Integrals", (ULI)(nocc * nvir), (ULI)(nocc * nE));
     aio->zero_disk(unit_, "EP2 I_vooE Integrals", (ULI)(nocc * nvir), (ULI)(nocc * nE));
     aio->synchronize();
 
@@ -320,8 +319,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
                 local_i++;
             }
         }
-        // psio_->write(unit_, "EP2 I_ovoE Integrals", (char*)temp_ovoE->pointer()[0],
-        //              sizeof(double) * block_size * nvir * nocc * nE, ovoE_addr, &ovoE_addr);
 
     }
     // Blow away the temp tensors
@@ -330,20 +327,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     temp_ovoE.reset();
     aEQ.reset();
     iEQ.reset();
-
-
-    // SharedMatrix I_ovvE(new Matrix(nocc * nvir, nvir * nE));
-    // psio_->read(unit_, "EP2 I_ovvE Integrals", (char*)I_ovvE->pointer()[0],
-    //             sizeof(double) * nocc * nvir * nvir * nE, PSIO_ZERO, &ovvE_addr);
-
-    // SharedMatrix I_ovoE(new Matrix(nocc * nvir, nocc * nE));
-    // psio_->read(unit_, "EP2 I_ovoE Integrals", (char*)I_ovoE->pointer()[0],
-    //             sizeof(double) * nocc * nvir * nocc * nE, PSIO_ZERO, &ovoE_addr);
-
-    // SharedMatrix I_vooE(new Matrix(nocc * nvir, nocc * nE));
-    // psio_->read(unit_, "EP2 I_vooE Integrals", (char*)I_vooE->pointer()[0],
-    //             sizeof(double) * nocc * nvir * nocc * nE, PSIO_ZERO, &ovoE_addr);
-
 
 
     // ==> More Sizing <== /
@@ -510,7 +493,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
             }
 
         }
-        mean_error /= (size_t)nE;
+        mean_error /= (double)nE;
         // printf("\n");
 
         outfile->Printf("    %3zu %14.8f %14.8f   %4zu\n", (iter + 1), mean_error, max_error, nremain);
@@ -542,7 +525,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         ret[h][i].first = Enew[k];
         ret[h][i].second = 1.0 - Ederiv[k];
     }
-
 
     return ret;
 
