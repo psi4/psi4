@@ -523,7 +523,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         size_t h = std::get<1>(orb_positions[k]);
         size_t i = std::get<3>(orb_positions[k]);
         ret[h][i].first = Enew[k];
-        ret[h][i].second = 1.0 - Ederiv[k];
+        ret[h][i].second = 1.0 / (1.0 - Ederiv[k]);
     }
 
     return ret;
