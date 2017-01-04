@@ -921,6 +921,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Proportion of memory available for the DF-MP2 three-index integral
         buffers used to evaluate dispersion. !expert -*/
     options.add_double("SAPT_MEM_FACTOR", 0.9);
+
+
+    /*- SUBSECTION SAPT(DFT) -*/
+
+    options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT EP2");
+    options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
+    options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
+    options.add_bool("SAPT_DFT_DO_DHF", false);
+    options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "PBE0");
+
+
   }
 
   if (name == "FISAPT"|| options.read_globals()) {

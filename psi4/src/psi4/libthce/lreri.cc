@@ -692,6 +692,9 @@ void DFERI::fit()
 
         double power = (*it);
 
+        // No metric to apply!
+        if (power == 0.0) continue;
+
         std::shared_ptr<Matrix> J = Jpow(power);
         double** Jp = J->pointer();
 

@@ -25,4 +25,3 @@
 # @END LICENSE
 #
 
-from .sapt_proc import run_sapt_dft
