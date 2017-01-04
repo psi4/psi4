@@ -143,15 +143,19 @@ void SuperFunctional::print(std::string out, int level) const {
     printer->Printf("    Meta             = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
     printer->Printf("\n");
 
-    printer->Printf("    Exch LRC         = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
-    printer->Printf("    Exch Hybrid      = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
-    printer->Printf("    Exch Alpha       = %14.6f\n", x_alpha_);
-    printer->Printf("    Exch Beta        = %14.6f\n", x_beta_);
-    printer->Printf("    Exch Omega       = %14.6f\n", x_omega_);
+    printer->Printf("    Exchange Hybrid  = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
+    printer->Printf("    Exchange Alpha   = %14.6f\n", x_alpha_);
+    printer->Printf("\n");
+
+    printer->Printf("    Exchange LRC     = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
+    printer->Printf("    Exchange Beta    = %14.6f\n", x_beta_);
+    printer->Printf("    Exchange Omega   = %14.6f\n", x_omega_);
     if (is_c_lrc() || is_c_hybrid()) {
-        printer->Printf("    MP2 LRC          = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
+        printer->Printf("\n");
         printer->Printf("    MP2 Hybrid       = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
         printer->Printf("    MP2 Alpha        = %14.6f\n", c_alpha_);
+        printer->Printf("\n");
+        printer->Printf("    MP2 LRC          = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
         printer->Printf("    MP2 Omega        = %14.6f\n", c_omega_);
     }
     printer->Printf("\n");
@@ -580,13 +584,20 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             const double galpha = -1.0 * grac_alpha_;
             const double gbeta = grac_beta_;
             const double gshift = grac_shift_;
+            const double pow43 = 4.0 / 3.0;
+            // printf("%zu | %16.12f %16.12f %16.12f %16.12f\n", 0, v_rho[0], v_gamma[0], grac_v_rho[0], grac_v_gamma[0]);
 
             # pragma omp simd
             for (size_t i = 0; i < npoints; i++){
-                double denx = std::fabs(rho_x[i] + rho_y[i] + rho_z[i]) / std::pow(rho[i], 4.0 / 3.0);
+                double denx = std::fabs(rho_x[i] + rho_y[i] + rho_z[i]) / std::pow(rho[i], pow43);
                 double grac_fx = 1.0 / (1.0 + std::exp(galpha * (denx - gbeta)));
+
+                // if (std::isinf(grac_fx) || std::isinf(grac_v_rho[i])  || std::isinf(grac_v_gamma[i])){
+                //     printf("Found inf grac_fx\n");
+                // }
+
                 v_rho[i] = ((1.0 - grac_fx) * (v_rho[i] - gshift)) + (grac_fx * grac_v_rho[i]);
-                v_gamma[i] = ((1.0 - grac_fx) * v_gamma[i]) + (grac_fx * grac_v_gamma[i]);
+                v_gamma[i] = (1.0 - grac_fx) * v_gamma[i];
 
                 // We neglect the gradient of denx with v_gamma, as it requires the laplacian and
                 // there is virtually no difference. See DOI: 10.1002/cphc.200700504
@@ -597,6 +608,7 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
         // This is turned off by allocate for now, this doesnt appear to be quite correct.
         else{
 
+            throw PSIEXCEPTION("GRAC is not implemented for UKS functionals.");
             double* rho_a = vals.find("RHO_A")->second->pointer();
             double* rho_a_x = vals.find("RHO_AX")->second->pointer();
             double* rho_a_y = vals.find("RHO_AY")->second->pointer();

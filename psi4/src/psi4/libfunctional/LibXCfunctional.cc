@@ -391,11 +391,9 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 fv_tau.resize(npoints);
             }
 
-            double* fvp;
+            double* fvp = nullptr;
             if (exc_){
                 fvp = fv.data();
-            } else{
-                fvp = nullptr;
             }
 
             // Compute
@@ -410,6 +408,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
             } else {
                 xc_lda_exc_vxc(&xc_functional_, npoints, rho_ap, fvp, fv_rho.data());
             }
+            // printf("%s | %lf %lf\n", xc_func_name_.c_str(), fv_rho[0], fv_gamma[0]);
 
             // Re-apply
             if (exc_){
