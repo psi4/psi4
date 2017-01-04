@@ -929,7 +929,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
     options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
     options.add_bool("SAPT_DFT_DO_DHF", false);
-    options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "PBE0");
+    options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "");
 
 
   }

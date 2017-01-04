@@ -37,6 +37,7 @@ from psi4.driver.molutil import *
 from psi4.driver.procedures.proc import scf_helper
 
 from . import sapt_jk_terms
+from .sapt_util import print_sapt_summary
 
 # Only export the run_ scripts
 __all__ = ['run_sapt_dft']
@@ -74,10 +75,40 @@ def run_sapt_dft(name, **kwargs):
     sapt_dimer.fix_com(True)
     sapt_dimer.update_geometry()
 
-    # Grab the overall data
+    # Grab overall settings
     mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
     mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
+    sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
+
+    # Print out the title and some information
+    core.print_out("\n");
+    core.print_out("         ---------------------------------------------------------\n");
+    core.print_out("         " + "SAPT(DFT) Procedure".center(58) + "\n");
+    core.print_out("\n");
+    core.print_out("         " + "by Daniel G. A. Smith".center(58) + "\n");
+    core.print_out("         ---------------------------------------------------------\n");
+    core.print_out("\n");
+
+    core.print_out("  ==> Algorithm <==\n\n")
+    core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
+    core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
+    core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
+    core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
+    core.print_out("   JK Algorithm            %12s\n" % core.get_option("SCF", "SCF_TYPE"))
+    core.print_out("\n")
+    core.print_out("   Required computations:\n")
+    if (do_delta_hf):
+        core.print_out("     HF (Dimer)\n")
+        core.print_out("     HF (Monomer A)\n")
+        core.print_out("     HF (Monomer B)\n")
+    core.print_out("     DFT (Monomer A)\n")
+    core.print_out("     DFT (Monomer B)\n")
+
+
+
+    if (mon_a_shift == 0.0) or (mon_b_shift == 0.0):
+        raise ValidationError('SAPT(DFT): must set both "SAPT_DFT_GRAC_SHIFT_A" and "B".')
 
     if (core.get_option('SCF', 'REFERENCE') != 'RHF'):
         raise ValidationError('SAPT(DFT) currently only supports restricted references.')
@@ -122,10 +153,10 @@ def run_sapt_dft(name, **kwargs):
     # Save the JK object
     core.set_global_option("SAVE_JK", True)
 
+    core.print_out("\n         ---------------------------------------------------------\n");
+    core.print_out("         " + "SAPT(DFT): DFT Monomer A".center(58));
+
     core.IO.set_default_namespace('monomerA')
-    core.print_out('\n')
-    p4util.banner('Monomer A HF')
-    core.print_out('\n')
     wfn_A = scf_helper("SCF", molecule=monomerA, **kwargs)
     data["SCF MONOMERA"] = psi4.core.get_variable("CURRENT ENERGY")
 
@@ -140,24 +171,49 @@ def run_sapt_dft(name, **kwargs):
 
 
     core.IO.set_default_namespace('monomerB')
-    core.print_out('\n')
-    p4util.banner('Monomer B HF')
-    core.print_out('\n')
+    core.print_out("\n         ---------------------------------------------------------\n");
+    core.print_out("         " + "SAPT(DFT): DFT Monomer B".center(58));
     wfn_B = scf_helper("SCF", molecule=monomerB, **kwargs)
     data["SCF MONOMERB"] = psi4.core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
-    # Compute SAPT interaction
+    # Print out the title and some information
+    core.print_out("\n");
+    core.print_out("         ---------------------------------------------------------\n");
+    core.print_out("         " + "SAPT(DFT): Intermolecular Interaction Segment".center(58) + "\n");
+    core.print_out("\n");
+    core.print_out("         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n");
+    core.print_out("         ---------------------------------------------------------\n");
+    core.print_out("\n");
+
+    core.print_out("  ==> Algorithm <==\n\n")
+    core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
+    core.print_out("   Monomer A GRAC Shift    %12.6f\n" % mon_a_shift)
+    core.print_out("   Monomer B GRAC Shift    %12.6f\n" % mon_b_shift)
+    core.print_out("   Delta HF                %12s\n" % ("True" if do_delta_hf else "False"))
+    core.print_out("   JK Algorithm            %12s\n" % core.get_option("SCF", "SCF_TYPE"))
 
     # Build cache and JK
     sapt_jk = wfn_B.jk()
-
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
 
-
+    # Electostatics
     elst = sapt_jk_terms.electrostatics(cache, True)
+    data.update(elst)
+
+    # Exchange
     exch = sapt_jk_terms.exchange(cache, sapt_jk, True)
-    ind = sapt_jk_terms.induction(cache, sapt_jk, True)
+    data.update(exch)
+
+    # Induction
+    ind = sapt_jk_terms.induction(cache, sapt_jk, True,
+                                  maxiter=core.get_option("SAPT", "MAXITER"),
+                                  conv=core.get_option("SAPT", "D_CONVERGENCE"))
+    data.update(ind)
+
+    core.print_out("\n")
+    core.print_out(print_sapt_summary(data, "SAPT(DFT)"))
+
 
 
