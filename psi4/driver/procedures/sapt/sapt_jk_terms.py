@@ -44,7 +44,7 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     Constructs the DCBS cache data required to compute ELST/EXCH/IND
     """
 
-    core.print_out("\n   ==> Preparing SAPT Data Cache <== \n\n")
+    core.print_out("\n  ==> Preparing SAPT Data Cache <== \n\n")
     cache = {}
     cache["wfn_A"] = wfn_A
     cache["wfn_B"] = wfn_B
@@ -102,13 +102,12 @@ def electrostatics(cache, do_print=True):
     Computes the E10 electrostatics from a build_sapt_jk_cache datacache.
     """
 
-    core.print_out("\n   ==> E10 Electostatics <== \n\n")
+    core.print_out("\n  ==> E10 Electostatics <== \n\n")
     # ELST
     Elst10  = 4.0 * cache["D_B"].vector_dot(cache["J_A"])
     Elst10 += 2.0 * cache["D_A"].vector_dot(cache["V_B"])
     Elst10 += 2.0 * cache["D_B"].vector_dot(cache["V_A"])
     Elst10 += cache["nuclear_repulsion_energy"]
-
 
     core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
     core.print_out("\n");
@@ -119,7 +118,7 @@ def exchange(cache, jk, do_print=True):
     Computes the E10 exchange (S^2 and S^inf) from a build_sapt_jk_cache datacache.
     """
 
-    core.print_out("\n   ==> E10 Exchange <== \n\n")
+    core.print_out("\n  ==> E10 Exchange <== \n\n")
 
     # Build potenitals
     h_A = cache["V_A"].clone()
@@ -203,7 +202,7 @@ def exchange(cache, jk, do_print=True):
 
 def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True):
 
-    core.print_out("\n   ==> E20 Induction <== \n\n")
+    core.print_out("\n  ==> E20 Induction <== \n\n")
 
     # Build Induction and Exchange-Induction potentials
     S = cache["S"].np
@@ -294,7 +293,7 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     w_A_MOB = core.Matrix.triplet(cache["Cocc_B"], w_A, cache["Cvir_B"], True, False, False)
 
     # Do uncoupled
-    core.print_out("    => Uncoupled Induction <= \n\n")
+    core.print_out("   => Uncoupled Induction <= \n\n")
     unc_x_B_MOA = w_B_MOA.np / (cache["eps_occ_A"].np.reshape(-1, 1) - cache["eps_vir_A"].np)
     unc_x_A_MOB = w_A_MOB.np / (cache["eps_occ_B"].np.reshape(-1, 1) - cache["eps_vir_B"].np)
 
@@ -320,10 +319,12 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
 
     # Do coupled
     if do_response:
-        core.print_out("\n    => Coupled Induction <= \n\n")
-        core.print_out("    => CPHF Monomer A <= \n")
+        core.print_out("\n   => Coupled Induction <= \n\n")
+
+        core.print_out("   => CPHF Monomer A <= \n")
         x_B_MOA = cache["wfn_A"].cphf_solve([w_B_MOA], conv, maxiter, 2)[0]
-        core.print_out("    => CPHF Monomer B <= \n")
+
+        core.print_out("   => CPHF Monomer B <= \n")
         x_A_MOB = cache["wfn_B"].cphf_solve([w_A_MOB], conv, maxiter, 2)[0]
 
         x_B = np.dot(cache["Cocc_A"], x_B_MOA).dot(cache["Cvir_A"].np.T)

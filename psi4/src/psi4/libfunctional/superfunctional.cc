@@ -585,16 +585,19 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             const double gbeta = grac_beta_;
             const double gshift = grac_shift_;
             const double pow43 = 4.0 / 3.0;
-            // printf("%zu | %16.12f %16.12f %16.12f %16.12f\n", 0, v_rho[0], v_gamma[0], grac_v_rho[0], grac_v_gamma[0]);
+            double denx;
 
             # pragma omp simd
             for (size_t i = 0; i < npoints; i++){
-                double denx = std::fabs(rho_x[i] + rho_y[i] + rho_z[i]) / std::pow(rho[i], pow43);
-                double grac_fx = 1.0 / (1.0 + std::exp(galpha * (denx - gbeta)));
 
-                // if (std::isinf(grac_fx) || std::isinf(grac_v_rho[i])  || std::isinf(grac_v_gamma[i])){
-                //     printf("Found inf grac_fx\n");
-                // }
+                // Gotta be careful of this, specially for CP results
+                if (rho[i] < 1.e-14){
+                    denx = 1.e8; // Will force grac_fx to 1
+                } else {
+                    denx = std::fabs(rho_x[i] + rho_y[i] + rho_z[i]) / std::pow(rho[i], pow43);
+                }
+
+                double grac_fx = 1.0 / (1.0 + std::exp(galpha * (denx - gbeta)));
 
                 v_rho[i] = ((1.0 - grac_fx) * (v_rho[i] - gshift)) + (grac_fx * grac_v_rho[i]);
                 v_gamma[i] = (1.0 - grac_fx) * v_gamma[i];

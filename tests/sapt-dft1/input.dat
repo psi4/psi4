@@ -3,16 +3,15 @@
 
 memory 250 mb
 
-Eref = [ 85.189064196429101,  -0.00359915058,  0.00362911158,  #TEST
-         -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
+Eref = {"SAPT ELST ENERGY":  -0.00007808151, # TEST
+        "SAPT EXCH ENERGY":   0.00030618033, # TEST
+        "SAPT IND ENERGY":    0.00000124532} # TEST
 
 molecule dimer {
-     0 1
-     Ne
-     --
-     0 1
-     Ar 1 6.5
-     units bohr
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
 }
 
 eps_homo_pbe0_ar=-0.440936                 # HOMO(Ar)/PBE0 functional
@@ -22,25 +21,18 @@ ip_ne=0.7925                               # exp. ionisation potential
 shift_ar=ip_ar+eps_homo_pbe0_ar            # shift for bulk xc potential (Ar)
 shift_ne=ip_ne+eps_homo_pbe0_ne            # shift for bulk xc potential (Ne)
 
-
 set {
     basis         cc-pvdz
     scf_type      df
     sapt_dft_grac_shift_a 0.203293
     sapt_dft_grac_shift_b 0.138264
-    DFT_BLOCK_MAX_POINTS 500000
-    DFT_BLOCK_MIN_POINTS 100000
     DFT_SPHERICAL_POINTS 302
     DFT_RADIAL_POINTS    50
-    scf_type OUT_OF_CORE
     e_convergence 1e-8
     d_convergence 1e-8
 }
 
 energy('sapt(dft)', molecule=dimer)
 
-#Eelst = psi4.get_variable("SAPT ELST ENERGY")
-#Eexch = psi4.get_variable("SAPT EXCH ENERGY")
-#Eind  = psi4.get_variable("SAPT IND ENERGY")
-#Edisp = psi4.get_variable("SAPT DISP ENERGY")
-#ET    = psi4.get_variable("SAPT0 TOTAL ENERGY")
+for k, v in Eref.items():                         # TEST
+    compare_values(v, psi4.get_variable(k), 6, k) # TEST

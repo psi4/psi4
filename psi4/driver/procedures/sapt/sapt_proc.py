@@ -154,7 +154,8 @@ def run_sapt_dft(name, **kwargs):
     core.set_global_option("SAVE_JK", True)
 
     core.print_out("\n         ---------------------------------------------------------\n");
-    core.print_out("         " + "SAPT(DFT): DFT Monomer A".center(58));
+    core.print_out("         " + "SAPT(DFT): DFT Monomer A".center(58) + "\n");
+    core.print_out("\n         ---------------------------------------------------------\n");
 
     core.IO.set_default_namespace('monomerA')
     wfn_A = scf_helper("SCF", molecule=monomerA, **kwargs)
@@ -172,7 +173,8 @@ def run_sapt_dft(name, **kwargs):
 
     core.IO.set_default_namespace('monomerB')
     core.print_out("\n         ---------------------------------------------------------\n");
-    core.print_out("         " + "SAPT(DFT): DFT Monomer B".center(58));
+    core.print_out("         " + "SAPT(DFT): DFT Monomer B".center(58) + "\n");
+    core.print_out("\n         ---------------------------------------------------------\n");
     wfn_B = scf_helper("SCF", molecule=monomerB, **kwargs)
     data["SCF MONOMERB"] = psi4.core.get_variable("CURRENT ENERGY")
 
@@ -196,6 +198,9 @@ def run_sapt_dft(name, **kwargs):
 
     # Build cache and JK
     sapt_jk = wfn_B.jk()
+    core.print_out("\n")
+    sapt_jk.print_header()
+
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
 
     # Electostatics
@@ -215,5 +220,5 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("\n")
     core.print_out(print_sapt_summary(data, "SAPT(DFT)"))
 
-
+    return None
 
