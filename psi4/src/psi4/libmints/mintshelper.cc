@@ -889,7 +889,7 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
 SharedMatrix MintsHelper::ao_3coverlap()
 {
     std::vector<SphericalTransform> trans;
-    for (int i=0; i<basisset_->max_am(); i++){
+    for (int i = 0; i <= basisset_->max_am(); i++) {
         trans.push_back(SphericalTransform(i));
     }
     std::shared_ptr<ThreeCenterOverlapInt> ints(new ThreeCenterOverlapInt(trans, basisset_, basisset_, basisset_));
@@ -900,10 +900,9 @@ SharedMatrix MintsHelper::ao_3coverlap(std::shared_ptr<BasisSet> bs1,
                                        std::shared_ptr<BasisSet> bs2,
                                        std::shared_ptr<BasisSet> bs3)
 {
-
     int max_am = std::max(std::max(bs1->max_am(), bs2->max_am()), bs3->max_am());
     std::vector<SphericalTransform> trans;
-    for (int i=0; i<max_am; i++){
+    for (int i = 0; i <= max_am ; i++) {
         trans.push_back(SphericalTransform(i));
     }
     std::shared_ptr<ThreeCenterOverlapInt> ints(new ThreeCenterOverlapInt(trans, bs1, bs2, bs3));

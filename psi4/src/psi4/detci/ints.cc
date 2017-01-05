@@ -136,11 +136,12 @@ void CIWavefunction::setup_dfmcscf_ints() {
     jk_->set_do_J(true);
     jk_->set_do_K(true);
     jk_->initialize();
-    jk_->set_memory(Process::environment.get_memory() * 0.8);
+    jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->print_header();
 
     /// Build DF object
     dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
+    dferi_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     dferi_->print_header();
 
     df_ints_init_ = true;

@@ -1087,6 +1087,7 @@ def scf_helper(name, **kwargs):
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
     ref_func = kwargs.pop('functional', None)
+    banner = kwargs.pop('banner', None)
     if ref_wfn is not None:
         raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
 
@@ -1206,6 +1207,11 @@ def scf_helper(name, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+        core.print_out("\n         ---------------------------------------------------------\n");
+        if banner:
+            core.print_out("         " + banner.center(58));
+        if cast:
+            core.print_out("         " + "SCF Castup computation".center(58));
         ref_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn,
                                            functional=ref_func)
         core.set_legacy_wavefunction(ref_wfn)
@@ -1253,6 +1259,10 @@ def scf_helper(name, **kwargs):
 
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
+    if banner:
+        core.print_out("\n         ---------------------------------------------------------\n");
+        core.print_out("         " + banner.center(58));
+
     scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn,
                                        functional=ref_func)
     core.set_legacy_wavefunction(scf_wfn)

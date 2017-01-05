@@ -25,17 +25,11 @@
 # @END LICENSE
 #
 
-import psi4
 import numpy as np
 import time
-from psi4 import core
 
-from psi4 import extras
-from psi4.driver import p4util
-from psi4.driver import qcdb
+from psi4 import core
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.molutil import *
-from psi4.driver.procedures.proc import scf_helper
 
 from .sapt_util import print_sapt_var
 
@@ -102,15 +96,19 @@ def electrostatics(cache, do_print=True):
     Computes the E10 electrostatics from a build_sapt_jk_cache datacache.
     """
 
-    core.print_out("\n  ==> E10 Electostatics <== \n\n")
+    if do_print:
+        core.print_out("\n  ==> E10 Electostatics <== \n\n")
+
     # ELST
     Elst10  = 4.0 * cache["D_B"].vector_dot(cache["J_A"])
     Elst10 += 2.0 * cache["D_A"].vector_dot(cache["V_B"])
     Elst10 += 2.0 * cache["D_B"].vector_dot(cache["V_A"])
     Elst10 += cache["nuclear_repulsion_energy"]
 
-    core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
-    core.print_out("\n");
+    if do_print:
+        core.print_out(print_sapt_var("Elst10,r ", Elst10, short=True))
+        core.print_out("\n");
+
     return {"Elst10,r": Elst10}
 
 def exchange(cache, jk, do_print=True):
@@ -118,7 +116,8 @@ def exchange(cache, jk, do_print=True):
     Computes the E10 exchange (S^2 and S^inf) from a build_sapt_jk_cache datacache.
     """
 
-    core.print_out("\n  ==> E10 Exchange <== \n\n")
+    if do_print:
+        core.print_out("\n  ==> E10 Exchange <== \n\n")
 
     # Build potenitals
     h_A = cache["V_A"].clone()
@@ -168,7 +167,7 @@ def exchange(cache, jk, do_print=True):
     jk.C_left_add(cache["Cocc_B"])
     jk.C_right_add(core.Matrix.doublet(cache["Cocc_A"], Tmo_AB, False, False))
 
-    jk.C_left_add(psi4.core.Matrix.from_array( np.dot(P_B, cache["S"]).dot(cache["Cocc_A"])))
+    jk.C_left_add(core.Matrix.from_array( np.dot(P_B, cache["S"]).dot(cache["Cocc_A"])))
     jk.C_right_add(cache["Cocc_A"])
 
     jk.compute()
@@ -181,8 +180,10 @@ def exchange(cache, jk, do_print=True):
     Exch_s2 -= 2.0 * np.vdot(np.dot(cache["D_A"], cache["S"]).dot(cache["D_B"]).dot(cache["S"]).dot(P_A), w_B)
     Exch_s2 -= 2.0 * np.vdot(np.dot(cache["D_B"], cache["S"]).dot(cache["D_A"]).dot(cache["S"]).dot(P_B), w_A)
     Exch_s2 -= 2.0 * np.vdot(np.dot(P_A, cache["S"]).dot(cache["D_B"]), Kij.np.T)
-    core.print_out(print_sapt_var("Exch10(S^2) ", Exch_s2, short=True))
-    core.print_out("\n");
+
+    if do_print:
+        core.print_out(print_sapt_var("Exch10(S^2) ", Exch_s2, short=True))
+        core.print_out("\n");
 
 
     # Start Sinf
@@ -195,14 +196,17 @@ def exchange(cache, jk, do_print=True):
     Exch10 += 4.0 * np.vdot(T_A, JT_AB.np - 0.5 * KT_AB.np)
     Exch10 += 4.0 * np.vdot(T_B, JT_A.np - 0.5 *  KT_A.np)
     Exch10 += 4.0 * np.vdot(T_AB, JT_AB.np - 0.5 * KT_AB.np.T)
-    core.print_out(print_sapt_var("Exch10", Exch10, short=True))
-    core.print_out("\n");
+
+    if do_print:
+        core.print_out(print_sapt_var("Exch10", Exch10, short=True))
+        core.print_out("\n");
 
     return {"Exch10(S^2)": Exch_s2, "Exch10": Exch10}
 
 def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True):
 
-    core.print_out("\n  ==> E20 Induction <== \n\n")
+    if do_print:
+        core.print_out("\n  ==> E20 Induction <== \n\n")
 
     # Build Induction and Exchange-Induction potentials
     S = cache["S"].np
@@ -219,9 +223,9 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
 
     jk.C_clear()
 
-    C_O_A = psi4.core.Matrix.from_array(D_B.dot(S).dot(cache["Cocc_A"]))
-    C_P_A = psi4.core.Matrix.from_array(D_B.dot(S).dot(D_A).dot(S).dot(cache["Cocc_B"]))
-    C_P_B = psi4.core.Matrix.from_array(D_A.dot(S).dot(D_B).dot(S).dot(cache["Cocc_A"]))
+    C_O_A = core.Matrix.from_array(D_B.dot(S).dot(cache["Cocc_A"]))
+    C_P_A = core.Matrix.from_array(D_B.dot(S).dot(D_A).dot(S).dot(cache["Cocc_B"]))
+    C_P_B = core.Matrix.from_array(D_A.dot(S).dot(D_B).dot(S).dot(cache["Cocc_A"]))
 
     jk.C_left_add(C_O_A)
     jk.C_right_add(cache["Cocc_A"])
@@ -237,7 +241,7 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     J_O, J_P_B, J_P_A = jk.J()
     K_O, K_P_B, K_P_A = jk.K()
 
-    K_O = psi4.core.Matrix.from_array(K_O.np.T)
+    K_O = core.Matrix.from_array(K_O.np.T)
     W_A  = -1.0 * K_B.copy()
     W_A -= 2.0 * np.dot(S, D_B).dot(J_A)
     W_A += 1.0 * K_O.np
@@ -261,7 +265,7 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     W_A += 1.0 * np.dot(S, D_B).dot(S).dot(D_A).dot(V_B)
     W_A = np.dot(cache["Cocc_A"].np.T, W_A).dot(cache["Cvir_A"])
 
-    K_O = psi4.core.Matrix.from_array(K_O.np.T)
+    K_O = core.Matrix.from_array(K_O.np.T)
     W_B  = -1.0 * K_A.copy()
     W_B -= 2.0 * np.dot(S, D_A).dot(J_B)
     W_B += 1.0 * K_O.np
@@ -313,9 +317,10 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     plist = ["Ind20,u (A<-B)", "Ind20,u (A->B)", "Ind20,u", "Ind-Exch20,u (A<-B)",
              "Ind-Exch20,u (A->B)", "Ind-Exch20,u"]
 
-    for name in plist:
-        core.print_out(print_sapt_var(name, ret[name], short=True))
-        core.print_out("\n");
+    if do_print:
+        for name in plist:
+            core.print_out(print_sapt_var(name, ret[name], short=True))
+            core.print_out("\n");
 
     # Do coupled
     if do_response:
@@ -342,9 +347,10 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
         ret["Ind-Exch20,r (A->B)"] = indexch_ba
         ret["Ind-Exch20,r"] = indexch_ba + indexch_ab
 
-        for name in plist:
-            name = name.replace(",u", ",r")
-            core.print_out(print_sapt_var(name, ret[name], short=True))
-            core.print_out("\n");
+        if do_print:
+            for name in plist:
+                name = name.replace(",u", ",r")
+                core.print_out(print_sapt_var(name, ret[name], short=True))
+                core.print_out("\n");
 
     return ret

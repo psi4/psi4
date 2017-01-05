@@ -1,0 +1,391 @@
+/*
+ * @BEGIN LICENSE
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2016 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
+
+#include "psi4/libmints/local.h"
+#include "psi4/libthce/thce.h"
+#include "psi4/libthce/lreri.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libparallel/parallel.h"
+#include "psi4/libsapt_solver/fdds_disp.h"
+#include "psi4/libmints/3coverlap.h"
+#include <iomanip>
+
+// OMP
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
+
+namespace psi {
+
+namespace sapt {
+
+FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
+                                 std::shared_ptr<BasisSet> auxiliary,
+                                 std::map<std::string, SharedMatrix> matrix_cache,
+                                 std::map<std::string, SharedVector> vector_cache)
+    : primary_(primary),
+      auxiliary_(auxiliary),
+      matrix_cache_(matrix_cache),
+      vector_cache_(vector_cache) {
+    Options& options = Process::environment.options;
+
+    // ==> Check incoming cache <==
+    std::vector<std::string> matrix_cache_check = {"Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"};
+    for (auto key : matrix_cache_check) {
+        if (matrix_cache_.find(key) == matrix_cache_.end()) {
+            outfile->Printf("FDDS_Dispersion: Missing matrix_cache key %s\n", key.c_str());
+            throw PSIEXCEPTION("FDDS_Dispersion: Missing values in the matrix_cache!");
+        }
+    }
+
+    std::vector<std::string> vector_cache_check = {"eps_occ_A", "eps_vir_A", "eps_occ_B",
+                                                   "eps_vir_B"};
+    for (auto key : vector_cache_check) {
+        if (vector_cache_.find(key) == vector_cache_.end()) {
+            outfile->Printf("FDDS_Dispersion: Missing vector_cache key %s\n", key.c_str());
+            throw PSIEXCEPTION("FDDS_Dispersion: Missing values in the vector_cache!");
+        }
+    }
+
+    // ==> Form Metric <==
+
+    size_t naux = auxiliary_->nbf();
+    metric_ = SharedMatrix(new Matrix("Inv Coulomb Metric", naux, naux));
+
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    size_t nthread = 1;
+#ifdef _OPENMP
+    nthread = omp_get_max_threads();
+#endif
+
+    // == (A|B) Block == //
+    IntegralFactory metric_factory(auxiliary_, zero, auxiliary_, zero);
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> metric_ints(nthread);
+    std::vector<const double*> metric_buff(nthread);
+    for (size_t thread = 0; thread < nthread; thread++) {
+        metric_ints[thread] = std::shared_ptr<TwoBodyAOInt>(metric_factory.eri());
+        metric_buff[thread] = metric_ints[thread]->buffer();
+    }
+
+    double** metricp = metric_->pointer();
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    for (size_t MU = 0; MU < auxiliary_->nshell(); ++MU) {
+        size_t nummu = auxiliary_->shell(MU).nfunction();
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        // Triangular
+        for (size_t NU = 0; NU <= MU; ++NU) {
+            size_t numnu = auxiliary_->shell(NU).nfunction();
+
+            metric_ints[thread]->compute_shell(MU, 0, NU, 0);
+
+            size_t index = 0;
+#pragma simd collapse(2)
+            for (size_t mu = 0; mu < nummu; ++mu) {
+                size_t omu = auxiliary_->shell(MU).function_index() + mu;
+
+                for (size_t nu = 0; nu < numnu; ++nu, ++index) {
+                    size_t onu = auxiliary_->shell(NU).function_index() + nu;
+
+                    metricp[omu][onu] = metricp[onu][omu] = metric_buff[thread][index];
+                }
+            }
+        }
+    }
+
+    metric_ints.clear();
+    metric_buff.clear();
+
+    metric_->power(-1.0, 1.e-12);
+
+    // ==> Form Aux overlap <==
+
+    IntegralFactory factory(auxiliary_, auxiliary_);
+    std::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
+    aux_overlap_ = SharedMatrix(new Matrix("Auxiliary Overlap", naux, naux));
+    overlap->compute(aux_overlap_);
+
+    // ==> Form 3-index object <==
+
+    // Build C Stack
+    std::vector<SharedMatrix> Cstack_vec;
+    Cstack_vec.push_back(matrix_cache["Cocc_A"]);
+    Cstack_vec.push_back(matrix_cache["Cvir_A"]);
+    Cstack_vec.push_back(matrix_cache["Cocc_B"]);
+    Cstack_vec.push_back(matrix_cache["Cvir_B"]);
+
+    SharedMatrix Cstack = Matrix::horzcat(Cstack_vec);
+
+    // Build DFERI
+    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
+    dferi_ = DFERI::build(primary_, auxiliary_, options);
+    dferi_->clear();
+    dferi_->set_memory(doubles);
+
+    // Define spaces
+    dferi_->set_C(Cstack);
+
+    size_t offset = 0;
+    dferi_->add_space("i", offset, offset + matrix_cache["Cocc_A"]->colspi()[0]);
+    offset += matrix_cache["Cocc_A"]->colspi()[0];
+
+    dferi_->add_space("a", offset, offset + matrix_cache["Cvir_A"]->colspi()[0]);
+    offset += matrix_cache["Cvir_A"]->colspi()[0];
+
+    dferi_->add_space("j", offset, offset + matrix_cache["Cocc_B"]->colspi()[0]);
+    offset += matrix_cache["Cocc_B"]->colspi()[0];
+
+    dferi_->add_space("b", offset, offset + matrix_cache["Cvir_B"]->colspi()[0]);
+    offset += matrix_cache["Cvir_B"]->colspi()[0];
+
+    dferi_->add_pair_space("iaQ", "i", "a", 0.0, false);
+    dferi_->add_pair_space("jbQ", "j", "b", 0.0, false);
+    dferi_->compute();
+}
+
+FDDS_Dispersion::~FDDS_Dispersion() {}
+
+std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedMatrix> densities){
+
+    // Perform the contraction
+    // (PQS) (S|R)^-1 (R|pq) Dpq -> PQ
+
+    // ==> Contract (R|pq) Dpq <== //
+
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    size_t nthread = 1;
+#ifdef _OPENMP
+    nthread = omp_get_max_threads();
+#endif
+
+    // Build integral threads
+    IntegralFactory df_factory(auxiliary_, zero, primary_, primary_);
+
+    std::vector<std::shared_ptr<TwoBodyAOInt>> df_ints(nthread);
+    std::vector<const double*> df_buff(nthread);
+    for (size_t thread = 0; thread < nthread; thread++) {
+        df_ints[thread] = std::shared_ptr<TwoBodyAOInt>(df_factory.eri());
+        df_buff[thread] = df_ints[thread]->buffer();
+    }
+
+    size_t naux = auxiliary_->nbf();
+    size_t nbf = primary_->nbf();
+    size_t nbf2 = nbf * nbf;
+
+    // Pack the DF pairs
+    std::vector<std::pair<size_t, size_t>> df_pairs;
+    for (size_t M = 0; M < primary_->nshell(); M++) {
+        for (size_t N = 0; N <= M; N++) {
+            df_pairs.push_back(std::pair<size_t, size_t>(M, N));
+        }
+    }
+
+    // Check on memory real quick
+    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
+    size_t mem_size = nbf2 * auxiliary_->max_nprimitive() * nthread;
+    if (mem_size > doubles){
+        std::stringstream message;
+        double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
+        message << "FDDS Dispersion requires at least nbf^2 * max_ang * nthread of memory." << std::endl;
+        message << "       After taxes this is " << std::setprecision(2) << mem_gb << " GB of memory.";
+        throw PSIEXCEPTION(message.str());
+    }
+
+    // Build result and temp vectors
+    std::vector<SharedVector> aux_dens;
+    for (size_t i = 0; i < densities.size(); i++){
+        aux_dens.push_back(SharedVector(new Vector(naux)));
+    }
+
+    std::vector<SharedMatrix> collapse_temp;
+    for (size_t i = 0; i < nthread; i++){
+        collapse_temp.push_back(SharedMatrix(new Matrix(auxiliary_->max_function_per_shell(), nbf2)));
+    }
+
+    // Do the contraction
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    for (size_t Rshell = 0; Rshell < auxiliary_->nshell(); Rshell++) {
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        collapse_temp[thread]->zero();
+        double** tempp = collapse_temp[thread]->pointer();
+
+        size_t num_r = auxiliary_->shell(Rshell).nfunction();
+        size_t index_r = auxiliary_->shell(Rshell).function_index();
+
+        // Loop over our PQ shells
+        for (auto PQshell : df_pairs){
+
+            size_t Pshell = PQshell.first;
+            size_t Qshell = PQshell.second;
+
+            df_ints[thread]->compute_shell(Rshell, 0, Pshell, Qshell);
+
+            size_t num_p = primary_->shell(Pshell).nfunction();
+            size_t index_p = primary_->shell(Pshell).function_index();
+
+            size_t num_q = primary_->shell(Qshell).nfunction();
+            size_t index_q = primary_->shell(Qshell).function_index();
+
+            size_t index = 0;
+            for (size_t r = 0; r < num_r; r++){
+                for (size_t p = index_p; p < index_p + num_p; p++){
+                    for (size_t q = index_q; q < index_q + num_q; q++){
+                        tempp[r][p * nbf + q] = tempp[r][q * nbf + p] = df_buff[thread][index++];
+                    }
+                }
+            }
+        }
+
+        // Stitch it together
+        for (size_t i = 0; i < densities.size(); i++) {
+            C_DGEMV('N', num_r, nbf2, 1.0, tempp[0], nbf2, densities[i]->pointer()[0], 1, 0.0,
+                    (aux_dens[i]->pointer() + index_r), 1);
+        }
+
+    } // End Rshell
+
+    // Clear a few temps
+    collapse_temp.clear();
+    df_buff.clear();
+    df_ints.clear();
+    df_pairs.clear();
+
+    // ==> Contract (R|pq) Dpq <== //
+    std::vector<SharedVector> aux_dens_inv;
+    for (size_t i = 0; i < densities.size(); i++) {
+        aux_dens_inv.push_back(SharedVector(new Vector(naux)));
+        aux_dens_inv[i]->gemv(false, 1.0, (metric_.get()), (aux_dens[i].get()), 0.0);
+    }
+
+    // ==> Contract (PQS) S -> PQ <== //
+    std::vector<SphericalTransform> trans;
+    for (size_t i = 0; i <= auxiliary_->max_am(); i++) {
+        trans.push_back(SphericalTransform(i));
+    }
+    std::vector<std::shared_ptr<ThreeCenterOverlapInt>> aux_ints(nthread);
+    std::vector<const double*> aux_buff(nthread);
+
+    for (size_t i = 0; i < nthread; i++) {
+        aux_ints[i] = std::shared_ptr<ThreeCenterOverlapInt>(
+            new ThreeCenterOverlapInt(trans, auxiliary_, auxiliary_, auxiliary_));
+        aux_buff[i] = aux_ints[i]->buffer();
+    }
+
+    // Pack the Aux pairs
+    std::vector<std::pair<size_t, size_t>> aux_pairs;
+    for (size_t M = 0; M < auxiliary_->nshell(); M++) {
+        for (size_t N = 0; N <= M; N++) {
+            aux_pairs.push_back(std::pair<size_t, size_t>(M, N));
+        }
+    }
+
+    // Build result and temp vectors
+    std::vector<SharedMatrix> ret;
+    for (size_t i = 0; i < densities.size(); i++) {
+        ret.push_back(SharedMatrix(new Matrix(naux, naux)));
+    }
+
+    size_t max_func = auxiliary_->max_function_per_shell();
+    for (size_t i = 0; i < nthread; i++) {
+        collapse_temp.push_back(SharedMatrix(new Matrix(max_func * max_func, naux)));
+    }
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    for (auto PQshell : aux_pairs){
+
+        size_t thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+
+        size_t Pshell = PQshell.first;
+        size_t Qshell = PQshell.second;
+
+        size_t num_p = auxiliary_->shell(Pshell).nfunction();
+        size_t index_p = auxiliary_->shell(Pshell).function_index();
+
+        size_t num_q = auxiliary_->shell(Qshell).nfunction();
+        size_t index_q = auxiliary_->shell(Qshell).function_index();
+
+        double** tempp = collapse_temp[thread]->pointer();
+
+        // Build aux temp
+        for (size_t Rshell = 0; Rshell < auxiliary_->nshell(); Rshell++) {
+            size_t num_r = auxiliary_->shell(Rshell).nfunction();
+            size_t index_r = auxiliary_->shell(Rshell).function_index();
+
+            aux_ints[thread]->compute_shell(Pshell, Qshell, Rshell);
+
+            size_t index = 0;
+            for (size_t p = 0; p < num_p; p++) {
+                for (size_t q = 0; q < num_q; q++) {
+                    for (size_t r = index_r; r < num_r + index_r; r++) {
+                        tempp[p * num_q + q][r] = aux_buff[thread][index++];
+                    }
+                }
+            }
+        }
+
+        // Contract back to aux
+        for (size_t i = 0; i < densities.size(); i++) {
+            double** retp = ret[i]->pointer();
+            double* dens = aux_dens_inv[i]->pointer();
+            for (size_t p = 0; p < num_p; p++) {
+                size_t abs_p = index_p + p;
+                for (size_t q = 0; q < num_q; q++) {
+                    size_t abs_q = index_q + q;
+
+                    retp[abs_p][abs_q] = retp[abs_q][abs_p] =
+                        C_DDOT(naux, tempp[p * num_q + q], 1, dens, 1);
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+
+}} // End namespace
+

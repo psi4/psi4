@@ -74,7 +74,7 @@ def print_sapt_summary(data, name, short=False):
 
     # Total energy
     total = data["Elst10,r"] + data["Exch10"] + ind
-    ret += print_sapt_var("Total %-15s" % name, ind_ba, start_spacer="   ") + "\n"
+    ret += print_sapt_var("Total %-15s" % name, total, start_spacer="   ") + "\n"
     core.set_variable("SAPT0 TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)
     core.set_variable("CURRENT ENERGY", total)

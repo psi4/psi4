@@ -25,19 +25,17 @@
 # @END LICENSE
 #
 
-import psi4
 import numpy as np
-from psi4 import core
 
-from psi4 import extras
+from psi4 import core
 from psi4.driver import p4util
-from psi4.driver import qcdb
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
 from psi4.driver.procedures.proc import scf_helper
 
 from . import sapt_jk_terms
 from .sapt_util import print_sapt_summary
+from . import sapt_mp2_terms
 
 # Only export the run_ scripts
 __all__ = ['run_sapt_dft']
@@ -50,6 +48,7 @@ def run_sapt_dft(name, **kwargs):
         ['SCF', 'DFT_GRAC_SHIFT'],
         ['SCF', 'SAVE_JK'])
 
+    core.tstart()
     # Alter default algorithm
     if not core.has_option_changed('SCF', 'SCF_TYPE'):
         core.set_local_option('SCF', 'SCF_TYPE', 'DF')
@@ -104,6 +103,7 @@ def run_sapt_dft(name, **kwargs):
         core.print_out("     HF (Monomer B)\n")
     core.print_out("     DFT (Monomer A)\n")
     core.print_out("     DFT (Monomer B)\n")
+    core.print_out("\n")
 
 
 
@@ -133,14 +133,14 @@ def run_sapt_dft(name, **kwargs):
     #     core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # dimer_wfn = scf_helper("SCF", molecule=sapt_dimer, **kwargs)
-    # data["SCF DIMER"] = psi4.core.get_variable("CURRENT ENERGY")
+    # data["SCF DIMER"] = core.get_variable("CURRENT ENERGY")
 
     # Set the primary functional
     core.set_global_option("DFT_FUNCTIONAL", core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL"))
     core.set_local_option('SCF', 'REFERENCE', 'RKS')
 
     if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
-        core.set_global_option('DF_INTS_IO', 'LOAD')
+        # core.set_global_option('DF_INTS_IO', 'LOAD')
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute Monomer A wavefunction
@@ -152,14 +152,9 @@ def run_sapt_dft(name, **kwargs):
 
     # Save the JK object
     core.set_global_option("SAVE_JK", True)
-
-    core.print_out("\n         ---------------------------------------------------------\n");
-    core.print_out("         " + "SAPT(DFT): DFT Monomer A".center(58) + "\n");
-    core.print_out("\n         ---------------------------------------------------------\n");
-
     core.IO.set_default_namespace('monomerA')
-    wfn_A = scf_helper("SCF", molecule=monomerA, **kwargs)
-    data["SCF MONOMERA"] = psi4.core.get_variable("CURRENT ENERGY")
+    wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
+    data["SCF MONOMERA"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
@@ -172,11 +167,8 @@ def run_sapt_dft(name, **kwargs):
 
 
     core.IO.set_default_namespace('monomerB')
-    core.print_out("\n         ---------------------------------------------------------\n");
-    core.print_out("         " + "SAPT(DFT): DFT Monomer B".center(58) + "\n");
-    core.print_out("\n         ---------------------------------------------------------\n");
-    wfn_B = scf_helper("SCF", molecule=monomerB, **kwargs)
-    data["SCF MONOMERB"] = psi4.core.get_variable("CURRENT ENERGY")
+    wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
+    data["SCF MONOMERB"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
@@ -217,8 +209,19 @@ def run_sapt_dft(name, **kwargs):
                                   conv=core.get_option("SAPT", "D_CONVERGENCE"))
     data.update(ind)
 
+    # Dispersion
+    primary_basis = wfn_A.basisset()
+    aux_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_MP2",
+                                    core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
+
+    # Print out final data
     core.print_out("\n")
     core.print_out(print_sapt_summary(data, "SAPT(DFT)"))
+
+
+    core.tstop()
 
     return None
 
