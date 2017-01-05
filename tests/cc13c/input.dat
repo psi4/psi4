@@ -1,0 +1,51 @@
+#! Tests RHF CCSD(T)gradients
+memory 256 mb
+
+molecule water{
+H        -0.000000000000     1.344767972762     0.924701422022
+O         0.000000000000     0.000000000000    -0.116529192243
+H        -0.000000000000    -1.344767972762     0.924701422022
+
+units bohr
+}
+
+set {
+   reference rhf
+   basis cc-pVDZ 
+   r_convergence 14
+   e_convergence 14
+   d_convergence 14
+}
+
+analytic, wfn = gradient('ccsd(t)', return_wfn=True)
+ref_vals = [
+             [ 0.0000000000, -0.0655653749, -0.0499834310],  # 
+             [ 0.0000000000,  0.0000000000,  0.0999668620],  # CFOUR RESULTS
+             [ 0.0000000000,  0.0655653749, -0.0499834310]   #
+           ]
+CFOUR_GRAD = psi4.Matrix(3, 3)
+CFOUR_GRAD.set(ref_vals)
+compare_matrices(analytic, CFOUR_GRAD, 8, "1. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
+
+molecule N2{
+N 0 0 1.05723396
+N 0 0 -1.05723396
+units bohr
+}
+
+set {
+   reference rhf
+   basis cc-pVDZ 
+   e_convergence 14
+   r_convergence 14
+   d_convergence 14
+}
+
+analytic, wfn = gradient('ccsd(t)', return_wfn=True)
+ref_vals = [                                                        
+             [  0.000000000000,     0.000000000000,     0.0013878869],  #TEST   CFOUR RESULTS
+             [  0.000000000000,     0.000000000000,    -0.0013878869]   #TEST   CFOUR RESULTS
+	   ]
+CFOUR_GRAD = psi4.Matrix(2, 3)
+CFOUR_GRAD.set(ref_vals)
+compare_matrices(analytic, CFOUR_GRAD, 8, "2. RHF-CCSD(T) gradient comparison with CFOUR") #TEST

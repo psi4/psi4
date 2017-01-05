@@ -28,9 +28,11 @@
 """Module with utility functions that act on molecule objects."""
 from __future__ import absolute_import
 import math
+import re
 
 from psi4 import core
 from psi4.driver.p4util import p4const
+from psi4.driver.inputparser import process_pubchem_command, pubchemre
 
 
 def extract_clusters(mol, ghost=True, cluster_size=0):
@@ -300,6 +302,7 @@ def geometry(geom, name="default"):
     driver in favor of explicit molecule-passing.
 
     """
+    geom = pubchemre.sub(process_pubchem_command, geom)
     molecule = core.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 

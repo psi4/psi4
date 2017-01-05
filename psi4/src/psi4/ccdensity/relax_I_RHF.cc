@@ -46,8 +46,8 @@ namespace psi { namespace ccdensity {
 
 void relax_I_RHF(void)
 {
-  dpdfile2 I, D, f;
-  dpdbuf4 E;
+  dpdfile2 I, D, f, I1, I2, I3;
+  dpdbuf4 E, A, C, D4;
   int h, nirreps, i, j, e, *occpi, *virtpi, *openpi;
 
   nirreps = moinfo.nirreps;
@@ -66,7 +66,54 @@ void relax_I_RHF(void)
   global_dpd_->file2_close(&f);
   global_dpd_->file2_close(&D);
   global_dpd_->file2_close(&I);
+  /* Add the contributions of dependent pairs (i,j) and (a,b) to the Lagrangian i
+   * due to the use of canonical perturbed orbitals  */
+  /*  Iji -= fjj * I'ij   */ 
+  if (params.wfn == "CCSD_T" && params.dertype == 1){
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
+  global_dpd_->file2_init(&I2, PSIF_CC_TMP, 0, 0, 0, "delta_I/delta_f_IJ");
+  global_dpd_->file2_init(&I3, PSIF_CC_TMP, 0, 1, 1, "delta_I/delta_f_AB");
+  global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->contract222(&f, &I2, &I, 0, 0, -1, 1);
+  global_dpd_->file2_close(&f);
 
+  global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+  global_dpd_->buf4_scmcopy(&A, PSIF_CC_MISC, "4 <kj|li> - <kj|il> - <ki|jl>", 4);
+  global_dpd_->buf4_sort_axpy(&A, PSIF_CC_MISC, pqsr, 0, 0, "4 <kj|li> - <kj|il> - <ki|jl>", -1);
+  global_dpd_->buf4_sort_axpy(&A, PSIF_CC_MISC, prsq, 0, 0, "4 <kj|li> - <kj|il> - <ki|jl>", -1);
+  global_dpd_->buf4_close(&A);
+
+  /*  Iji -= 1/2 sum_kl (4<kj|li> - <kj|il> - <ki|jl>)(I'kl - I'lk)/(fkk - fll)   */ 
+  global_dpd_->buf4_init(&A, PSIF_CC_MISC, 0, 0, 0, 0, 0, 0, "4 <kj|li> - <kj|il> - <ki|jl>");
+  global_dpd_->dot13(&I2, &A, &I, 0, 0, -0.5, 1.0);
+  global_dpd_->buf4_close(&A);
+  global_dpd_->file2_close(&I2);
+
+
+  global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 11, 11, 11, 11, 0, "C <ai|bj>");
+  global_dpd_->buf4_scmcopy(&C, PSIF_CC_MISC, "4 <aj|bi> - <aj|ib> - <ai|jb>", 4);
+  global_dpd_->buf4_init(&D4, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_sort_axpy(&D4, PSIF_CC_MISC, rqsp, 11, 11, "4 <aj|bi> - <aj|ib> - <ai|jb>", -1);
+  global_dpd_->buf4_sort_axpy(&D4, PSIF_CC_MISC, rpsq, 11, 11, "4 <aj|bi> - <aj|ib> - <ai|jb>", -1);
+  global_dpd_->buf4_close(&C);
+  global_dpd_->buf4_close(&D4);
+
+  /*  Iji -= 1/2 sum_ab (4<aj|bi> - <aj|ib> - <ai|jb>)(I'ab - I'ba)/(faa - fbb)   */ 
+  global_dpd_->buf4_init(&C, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "4 <aj|bi> - <aj|ib> - <ai|jb>");
+  global_dpd_->dot13(&I3, &C, &I, 0, 0, -0.5, 1.0);
+  global_dpd_->buf4_close(&C);
+  global_dpd_->file2_close(&I3);
+  global_dpd_->file2_close(&I);
+
+  /*  Iab -= faa * I'ab   */ 
+  global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
+  global_dpd_->file2_init(&I1, PSIF_CC_TMP, 0, 1, 1, "delta_I/delta_f_AB");
+  global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->contract222(&f, &I1, &I, 0, 1, -1, 1);
+  global_dpd_->file2_close(&I);
+  global_dpd_->file2_close(&I1);
+  global_dpd_->file2_close(&f);
+   }
   /* RHF Case: I(i,j) = I'(i,j) - D(orb)(e,c) [4 <ei|mj> - <ei|jm> - <ej|im>] */
   global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
   global_dpd_->file2_copy(&I, PSIF_CC_OEI, "I(I,J)");

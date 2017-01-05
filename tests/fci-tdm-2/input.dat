@@ -38,11 +38,11 @@ thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE'
 
 compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
-compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
-compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
-compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
-compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI root 2 correlation energy")  #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 0 ENERGY") #TEST
+compare_values(refci2,   get_variable("CI ROOT 1 TOTAL ENERGY"),       7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refcorr1, get_variable("CI ROOT 0 CORRELATION ENERGY"), 7, "CI ROOT 0 correlation energy")  #TEST
+compare_values(refcorr2, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI ROOT 1 correlation energy")  #TEST
 compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")      #TEST
-compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 3, "CI ROOT 1 Z Component of dipole")        #TEST
-compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 3, "CI ROOT 2 Z Component of dipole")        #TEST
-compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 3, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
+compare_values(refDipCI1, get_variable("CI ROOT 0 DIPOLE Z"), 3, "CI ROOT 0 Z Component of dipole")        #TEST
+compare_values(refDipCI2, get_variable("CI ROOT 1 DIPOLE Z"), 3, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(abs(refTDM), abs(get_variable("CI ROOT 0 -> ROOT 1 DIPOLE Z")), 3, "CI ROOT 0 -> ROOT 1 Z Component of dipole")        #TEST
