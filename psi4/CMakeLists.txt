@@ -9,24 +9,26 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
-include(Psi4Macros)
+include(psi4OptionsTools)
 include(TestRestrict)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(custom_color_messages)
 test_restrict(restrict)
+#   explicit "share" not "DATADIR" for CMake search path
+set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
-# using Python in psi4-core
-# * interpreter: run the versioner (and elsewhere to run tests, docs)
-# * headers: Python.h for pybind11 to build against
-# * library: not at all
-find_package(PythonLibsNew REQUIRED)
+#  <<  Pybind11 & Python  >>
+set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 find_package(pybind11 CONFIG REQUIRED)
-message(STATUS "Found pybind11: ${pybind11_INCLUDE_DIR} (found version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING})")
-set_property(TARGET pybind11::pybind11 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
+message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
+message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
-find_package(Threads)
+set(CMAKE_THREAD_PREFER_PTHREAD ON)
+find_package(Threads REQUIRED)
+
 find_package(DL)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
@@ -34,33 +36,49 @@ set_property(GLOBAL PROPERTY PSI4_MODULES "")
 if(${ENABLE_CheMPS2})
     find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
     get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
-    message(STATUS "Found CheMPS2: ${_loc} (found version ${CheMPS2_VERSION})")
+    message(STATUS "${Cyan}Using CheMPS2${ColourReset}: ${_loc} (version ${CheMPS2_VERSION})")
+else()
+    message(STATUS "Disabled CheMPS2")
 endif ()
+
 if(${ENABLE_dkh})
     find_package(dkh CONFIG REQUIRED)
     get_property(_loc TARGET dkh::dkh PROPERTY LOCATION)
-    message(STATUS "Found dkh: ${_loc} (found version ${dkh_VERSION})")
+    message(STATUS "${Cyan}Using dkh${ColourReset}: ${_loc} (version ${dkh_VERSION})")
+else()
+    message(STATUS "Disabled dkh")
 endif()
+
 find_package(libefp CONFIG REQUIRED COMPONENTS shallow)
 get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-message(STATUS "Found libefp: ${_loc} (found version ${libefp_VERSION})")
+message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
+
 if(${ENABLE_erd})
     find_package(erd CONFIG REQUIRED)
     get_property(_loc TARGET erd::erd PROPERTY LOCATION)
-    message(STATUS "Found erd: ${_loc} (found version ${erd_VERSION})")
+    message(STATUS "${Cyan}Using erd${ColourReset}: ${_loc} (version ${erd_VERSION})")
+else()
+    message(STATUS "Disabled erd")
 endif()
+
 if(${ENABLE_gdma})
     find_package(gdma CONFIG REQUIRED)
     get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
-    message(STATUS "Found gdma: ${_loc} (found version ${gdma_VERSION})")
+    message(STATUS "${Cyan}Using gdma${ColourReset}: ${_loc} (version ${gdma_VERSION})")
+else()
+    message(STATUS "Disabled gdma")
 endif()
+
 find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET libint::int PROPERTY LOCATION)
-message(STATUS "Found libint: ${_loc} (found version ${libint_VERSION})")
+message(STATUS "${Cyan}Using libint${ColourReset}: ${_loc} (version ${libint_VERSION})")
+
 if(${ENABLE_PCMSolver})
     find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
     #get_property(_loc TARGET PCMSolver::PCMSolver PROPERTY LOCATION)
-    #message(STATUS "Found PCMSolver: ${_loc} (found version ${PCMSolver_VERSION})")
+    #message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
+#else()
+    #message(STATUS "Disabled PCMSolver")
 endif ()
 
 if(APPLE)
@@ -91,10 +109,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
 configure_file(run_psi4.py psi4 @ONLY)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
-# configure_file("psi4-config.in" "psi4-config.tmp" @ONLY)
-# install(PROGRAMS ${CMAKE_BINARY_DIR}/psi4-config
-#         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 
     # <<<  install lib/  >>>
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
@@ -127,10 +141,6 @@ install(DIRECTORY share/psi4/
 install(DIRECTORY include/psi4/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4)
 
-configure_file(config.py.in config.py @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/config.py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
-
     # <<<  install external's share/ to psi4 share/  >>>
 
         # bring libefp's fraglib to PSIDATADIR's attention
@@ -152,35 +162,27 @@ endforeach()
 
 # <<<  Export Config  >>>
 
-    # explicit "share" not "DATADIR" for CMake search path
-set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
-#configure_package_config_file(psi4Config.cmake.in
-#                              "${CMAKE_CURRENT_BINARY_DIR}/psi4Config.cmake"
-#                              INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-#write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/psi4ConfigVersion.cmake
-#                                 VERSION ${psi4_VERSION}
-#                                 COMPATIBILITY SameMajorVersion)
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/psi4Config.cmake
-#              ${CMAKE_CURRENT_BINARY_DIR}/psi4ConfigVersion.cmake
-#        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
-#install(EXPORT "psi4Targets"
-#        NAMESPACE "psi4::"
-#        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+configure_file(psi4PluginCache.cmake.in psi4PluginCache.cmake @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
+              ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
+              ${PSI4_ROOT}/cmake/custom_static_library.cmake
+              ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
+              ${PSI4_ROOT}/cmake/CheckFortranCompilerFlag.cmake
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>
 # Determine relative path from Psi4's include directory to PyBind11's
 file(RELATIVE_PATH RELATIVE_PYBIND11_INCLUDE_DIR
     ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
     ${pybind11_INCLUDE_DIR})
-set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATADIR}/cmake/psi4")
 configure_package_config_file(
-        share/cmake/psi4/psi4Config.cmake.in
+        psi4Config.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
         INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
-        VERSION ${PSI4_VERSION}
+        VERSION ${psi4_VERSION}
         COMPATIBILITY SameMajorVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4Config.cmake
-        ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/share/cmake/psi4/psi4ConfigVersion.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})

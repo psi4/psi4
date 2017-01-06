@@ -279,7 +279,7 @@ if(PERL_FOUND AND SPHINX_FOUND)
                 ${CCBD}/source/autodoc_basissets_byfamily.rst
                 ${CCBD}/source/autodoc_available_efpfrag.rst
         COMMENT "Preparing Sphinx HTML documentation build")
-    add_dependencies(sphinxman psi4_core)
+    add_dependencies(sphinxman psi4-core)
 
     install(
         DIRECTORY ${CCBD}/html

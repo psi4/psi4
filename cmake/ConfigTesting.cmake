@@ -24,3 +24,4 @@ set(DART_TESTING_TIMEOUT
 
 # This must come last!!
 add_subdirectory(tests)
+add_subdirectory(plugins)

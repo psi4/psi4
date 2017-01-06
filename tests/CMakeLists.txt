@@ -5,7 +5,7 @@ find_package(Perl QUIET)
 #
 # The following labels are defined:
 #
-#  minitests   = Does Psi4 work? A few basic operational tests plus
+#  smoketests  = Does Psi4 work? A few basic operational tests plus
 #                one from each addon and addin
 #  quicktests  = Best coverage possible in a 20 min envelope (for Travis-CI).
 #                This subset is chosen to provide one or more tests for each
@@ -104,10 +104,10 @@ endforeach()
 add_subdirectory(psi4numpy)
 add_subdirectory(python)
 add_subdirectory(json)
-if(ENABLE_psi4pasture)
+if(ENABLE_pasture)
   add_subdirectory(pasture-ccsorttransqt2)
-  message(STATUS "${Cyan}Pasture Enabled:${ColourReset}:")
-  message(STATUS " Adding test cases: Psi4 + Pasture")
+  message(STATUS "${Cyan}Found Pasture${ColourReset}")
+  message(STATUS "Adding test cases: Psi4 + Pasture")
 endif()
 
 

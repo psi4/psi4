@@ -12,7 +12,7 @@ macro(add_regression_test _name _labels)
     # This is the psi command to actually run the tests
     set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4)
     # This is the path to the psi4 library
-    set(PSILIB ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+    set(PSILIB ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR})
     # This is the python script that we call, to call psi4, to run the tests
     set(TESTEXE ${PROJECT_SOURCE_DIR}/tests/runtest.py)
     # This is the psidatadir directory that the script that we call, to call psi4, to run the tests gets its info

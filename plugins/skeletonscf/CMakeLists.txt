@@ -3,20 +3,21 @@
 # symlinks input.dat back to source dir to satisfy TestingMacro
 set(CCSD "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CCBD "${CMAKE_CURRENT_BINARY_DIR}")
-set(PSIEXE ${PROJECT_BINARY_DIR}/bin/psi4${CMAKE_EXECUTABLE_SUFFIX})
+set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4)
 
 set(PLUG "skeletonscf")
-set(PLUGSRC ${PLUG}.cc input.dat Makefile pymodule.py __init__.py doc.rst scf.cc scf.h)
 
 add_custom_target(plugin_${PLUG}
     ALL
-    DEPENDS ${PSIEXE}
+    DEPENDS psi4-core
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/${PLUG}
-    COMMAND ${PSIEXE} -l ${PROJECT_SOURCE_DIR}/share --new-plugin ${PLUG} +scf
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CCBD}/${PLUG} ${CCBD}
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/${PLUG}
-    COMMAND $(MAKE)
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CCBD}/input.dat ${CCSD}/input.dat
+    COMMAND ${PSIEXE} --plugin-name ${PLUG} --plugin-template scf
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" cmake -C ${STAGED_INSTALL_PREFIX}/share/cmake/psi4/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH=${STAGED_INSTALL_PREFIX} .
+    COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" ${CMAKE_MAKE_PROGRAM}
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CCBD}/${PLUG}/input.dat ${CCSD}/input.dat
+    COMMAND ${CMAKE_COMMAND} -E create_symlink "${PLUG}/${PLUG}.so" "${PLUG}.so"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink "${PLUG}/__init__.py" "__init__.py"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink "${PLUG}/pymodule.py" "pymodule.py"
     COMMENT "Build ${PLUG} example plugin"
     VERBATIM)
 
