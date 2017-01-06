@@ -111,7 +111,7 @@ if(NOT TARGET ${PN}::core)
 endif()
 
 function(add_psi4_plugin TARGET SOURCES)
-    # remove ${TARGET} from ${ARGV} to use ${ARGV} as ${SOURCES}
+    # remove ${TARGET} from ${ARGV} to use ${ARGV} as SOURCES
     list(REMOVE_AT ARGV 0)
 
     # checks compiler (and gcc, if necessary) C++11 compliant
@@ -123,10 +123,7 @@ function(add_psi4_plugin TARGET SOURCES)
     if (APPLE)
         set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
     endif()
-
-    # Add additional properties to the "make clean" to delete *.pyc
-    set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "*.pyc")
-endfunction(add_psi4_plugin)
+endfunction()
 
 # make detectable the various cmake modules exported by psi4
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
