@@ -52,6 +52,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
+#include "psi4/libmints/writer_file_prefix.h"
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -88,8 +89,6 @@ char *psi_file_prefix;
 std::string outfile_name;
 std::string restart_id;
 std::shared_ptr<PsiOutStream> outfile;
-
-std::string get_writer_file_prefix(std::string molecule_name);
 
 // Wavefunction returns
 namespace adc       { SharedWavefunction       adc(SharedWavefunction, Options&); }
