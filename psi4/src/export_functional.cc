@@ -256,5 +256,7 @@ void export_functional(py::module &m)
         .def("metric", &sapt::FDDS_Dispersion::metric, "Obtains the FDDS metric.")
         .def("aux_overlap", &sapt::FDDS_Dispersion::aux_overlap, "Obtains the FDDS aux_overlap.")
         .def("project_densities", &sapt::FDDS_Dispersion::project_densities,
-             "Projects a density from the primary AO to auxiliary AO space.");
+             "Projects a density from the primary AO to auxiliary AO space.")
+        .def("form_unc_amplitude", &sapt::FDDS_Dispersion::form_unc_amplitude,
+             "Forms the uncoupled amplitudes for either monomer.");
 }

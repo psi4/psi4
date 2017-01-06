@@ -145,10 +145,10 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
 
     // Build C Stack
     std::vector<SharedMatrix> Cstack_vec;
-    Cstack_vec.push_back(matrix_cache["Cocc_A"]);
-    Cstack_vec.push_back(matrix_cache["Cvir_A"]);
-    Cstack_vec.push_back(matrix_cache["Cocc_B"]);
-    Cstack_vec.push_back(matrix_cache["Cvir_B"]);
+    Cstack_vec.push_back(matrix_cache_["Cocc_A"]);
+    Cstack_vec.push_back(matrix_cache_["Cvir_A"]);
+    Cstack_vec.push_back(matrix_cache_["Cocc_B"]);
+    Cstack_vec.push_back(matrix_cache_["Cvir_B"]);
 
     SharedMatrix Cstack = Matrix::horzcat(Cstack_vec);
 
@@ -162,17 +162,17 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     dferi_->set_C(Cstack);
 
     size_t offset = 0;
-    dferi_->add_space("i", offset, offset + matrix_cache["Cocc_A"]->colspi()[0]);
-    offset += matrix_cache["Cocc_A"]->colspi()[0];
+    dferi_->add_space("i", offset, offset + matrix_cache_["Cocc_A"]->colspi()[0]);
+    offset += matrix_cache_["Cocc_A"]->colspi()[0];
 
-    dferi_->add_space("a", offset, offset + matrix_cache["Cvir_A"]->colspi()[0]);
-    offset += matrix_cache["Cvir_A"]->colspi()[0];
+    dferi_->add_space("a", offset, offset + matrix_cache_["Cvir_A"]->colspi()[0]);
+    offset += matrix_cache_["Cvir_A"]->colspi()[0];
 
-    dferi_->add_space("j", offset, offset + matrix_cache["Cocc_B"]->colspi()[0]);
-    offset += matrix_cache["Cocc_B"]->colspi()[0];
+    dferi_->add_space("j", offset, offset + matrix_cache_["Cocc_B"]->colspi()[0]);
+    offset += matrix_cache_["Cocc_B"]->colspi()[0];
 
-    dferi_->add_space("b", offset, offset + matrix_cache["Cvir_B"]->colspi()[0]);
-    offset += matrix_cache["Cvir_B"]->colspi()[0];
+    dferi_->add_space("b", offset, offset + matrix_cache_["Cvir_B"]->colspi()[0]);
+    offset += matrix_cache_["Cvir_B"]->colspi()[0];
 
     dferi_->add_pair_space("iaQ", "i", "a", 0.0, false);
     dferi_->add_pair_space("jbQ", "j", "b", 0.0, false);
@@ -386,6 +386,108 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     return ret;
 }
 
+SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double omega){
+
+    // ==> Configuration <==
+    SharedVector eps_occ, eps_vir;
+    std::string ovQ_tensor_name;
+
+    if (monomer == "A") {
+        eps_occ = vector_cache_["eps_occ_A"];
+        eps_vir = vector_cache_["eps_vir_A"];
+        ovQ_tensor_name = "iaQ";
+    } else if (monomer == "B") {
+        eps_occ = vector_cache_["eps_occ_B"];
+        eps_vir = vector_cache_["eps_vir_B"];
+        ovQ_tensor_name = "jbQ";
+
+    } else {
+        throw PSIEXCEPTION("FDDS_Dispersion::form_unc_amplitude: Monomer must be A or B!");
+    }
+
+    // Sizes
+    size_t nocc = eps_occ->dim(0);
+    size_t nvir = eps_vir->dim(0);
+    size_t naux = auxiliary_->nbf();
+
+    // Check on memory real quick
+    size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
+    size_t mem_size = 2 * naux * nvir + naux * naux + nvir * nocc;
+    if (mem_size > doubles) {
+        std::stringstream message;
+        double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
+        message << "FDDS Dispersion requires at least naux * nvir + naux * naux of memory."
+                << std::endl;
+        message << "       After taxes this is " << std::setprecision(2) << mem_gb
+                << " GB of memory.";
+        throw PSIEXCEPTION(message.str());
+    }
+
+    // ==> Uncoupled Amplitudes <==
+    SharedMatrix amp(new Matrix(nocc, nvir));
+
+    double** ampp = amp->pointer();
+    double* eoccp = eps_occ->pointer();
+    double* evirp = eps_vir->pointer();
+    for (size_t i = 0; i < nocc; i++) {
+        for (size_t a = 0; a < nvir; a++) {
+            double val = -1.0 * (eoccp[i] - evirp[a]);
+            // Lets see how stable this is, should be fine
+            // ampp[i][a] = 4.0 * val / (val * val + omega * omega);
+            ampp[i][a] = std::pow(4.0 * val / (val * val + omega * omega), 0.5);
+        }
+    }
+
+    amp->print();
+
+    // ==> Contract <==
+
+    size_t dmem = doubles - naux * naux - nvir * nocc;
+    size_t bsize = dmem / (naux * nvir);
+    if (bsize > nocc){
+        bsize = nocc;
+    }
+    size_t nblocks = 1 + ((nocc - 1) / bsize);
+
+    // printf("dmem:    %zu\n", dmem);
+    // printf("bsize:   %zu\n", bsize);
+    FILE* tensor_file = dferi_->ints()[ovQ_tensor_name]->file_pointer();
+    fseek(tensor_file, 0L, SEEK_SET);
+
+    SharedMatrix ret(new Matrix("UNC Amplitude", naux, naux));
+    SharedMatrix tmp(new Matrix("iaQ tmp", bsize * nvir, naux));
+
+    double** tmpp = tmp->pointer();
+    double** retp = ret->pointer();
+
+    size_t rstat, osize;
+    for (size_t block = 0; block < nblocks; block++){
+        // printf("Block %zu\n", block);
+        if (((block + 1) * bsize) > nocc) {
+            osize = nocc - block * bsize;
+            tmp->zero();
+        } else {
+            osize = bsize;
+        }
+
+        rstat = fread(tmpp[0], sizeof(double), osize * nvir * naux, tensor_file);
+        size_t shift_i = block * bsize;
+
+        # pragma omp parallel for collapse (2)
+        for (size_t i = 0; i < osize; i++){
+            for (size_t a = 0; a < nvir; a++){
+                for (size_t Q = 0; Q < naux; Q++){
+                    tmpp[i * nvir + a][Q] *= ampp[i + shift_i][a];
+                }
+            }
+        }
+
+        ret->gemm(true, false, 1.0, tmp, tmp, 1.0);
+    }
+
+    return ret;
+
+}
 
 }} // End namespace
 

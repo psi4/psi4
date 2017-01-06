@@ -327,6 +327,14 @@ std::shared_ptr<Matrix> DFERI::Jpow(double power)
     std::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
     double** Jp = J->pointer();
 
+    // This is ugly
+    if (power == 0.0){
+        for (size_t i = 0; i < naux; i++){
+            Jp[i][i] = 1.0;
+        }
+        return J;
+    }
+
     std::shared_ptr<IntegralFactory> Jfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jeri;
     for (int thread = 0; thread < nthread; thread++) {
@@ -691,9 +699,6 @@ void DFERI::fit()
         it != unique_pows.end(); ++it) {
 
         double power = (*it);
-
-        // No metric to apply!
-        if (power == 0.0) continue;
 
         std::shared_ptr<Matrix> J = Jpow(power);
         double** Jp = J->pointer();

@@ -46,9 +46,11 @@ def df_fdds_dispersion(primary, auxiliary, cache, do_print=True):
 
     fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache)
 
-
+    # Densities
     D = fdds_obj.project_densities([cache["D_A"], cache["D_B"]])
-    print(D[0].np[:5, :5])
+    X_A = fdds_obj.form_unc_amplitude("A", 1.0)
+    print(X_A.np[:5, :5])
+    print(np.linalg.norm(X_A))
 
     print("Done with D!")
     # Check me!
@@ -74,8 +76,21 @@ def df_fdds_dispersion(primary, auxiliary, cache, do_print=True):
 
     tc_aux = np.array(mints.ao_3coverlap(auxiliary, auxiliary, auxiliary))
 
-    print(np.einsum("PQS,S->PQ", tc_aux, SA)[:5, :5])
     print("Dens close %s" % np.allclose(np.einsum("PQS,S->PQ", tc_aux, SA), D[0]))
+
+    # Amps
+    Ebs = - cache["eps_occ_A"].np.reshape(-1, 1) + cache["eps_vir_A"].np
+    tmp = (4.0 * Ebs / (Ebs **2 + 1.0))
+
+
+    # print(Ebs)
+    print(tmp ** 0.5)
+    trans = np.einsum('Qpq,qi,pa->Qia', Qpq, cache["Cocc_A"], cache["Cvir_A"])
+    print(np.squeeze(trans.T)[:, 10:])
+    X_Anp = np.einsum('Pia,ia,Qia->PQ', trans, tmp, trans)
+    print(X_Anp[:5, :5])
+    print(np.linalg.norm(X_Anp - X_A.np))
+
 
 
 
