@@ -29,11 +29,16 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-# These were the compilers used to compile Psi4. They may or may not be
-# required to successfully run your plugin.
+# These were the compilers used to compile Psi4 along with the additional
+# compiler flags used. Edit as needed.
 set(CMAKE_C_COMPILER @C@)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} @C_FLAGS@")
+
 set(CMAKE_CXX_COMPILER @CXX@)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} @CXX_FLAGS@")
+
 set(CMAKE_Fortran_COMPILER @Fortran@)
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} @Fortran_FLAGS@")
 
 project(@plugin@ CXX)
 
