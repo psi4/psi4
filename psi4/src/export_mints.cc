@@ -1026,7 +1026,7 @@ void export_mints(py::module& m)
                                             &detci::CIvect::copy;
     void (detci::CIvect::*py_civ_scale)(double, int) = &detci::CIvect::scale;
 
-    py::class_<detci::CIvect, std::shared_ptr<detci::CIvect> >(m, "CIVector", "docstring")
+    py::class_<detci::CIvect, std::shared_ptr<detci::CIvect> >(m, "CIVector", py::buffer_protocol(), "docstring")
         .def("vdot", &detci::CIvect::vdot, "docstring")
         .def("axpy", &detci::CIvect::axpy, "docstring")
         .def("vector_multiply", &detci::CIvect::vector_multiply, "docstring")
