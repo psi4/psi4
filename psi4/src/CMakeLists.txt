@@ -22,7 +22,8 @@ set(sources_list export_psio.cc
         core.cc
         )
 
-add_library(core SHARED ${sources_list})
+set(psi4_all_sources ${sources_list})
+add_library(core SHARED ${psi4_all_sources})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
 if(ENABLE_psi4pasture)
@@ -30,7 +31,8 @@ if(ENABLE_psi4pasture)
 endif()
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
-target_link_libraries(core PRIVATE pybind11::pybind11)
+target_link_libraries(core PRIVATE ${PYTHON_LIBRARIES})
+target_link_libraries(core PRIVATE PYBIND11::PYBIND11)
 target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 

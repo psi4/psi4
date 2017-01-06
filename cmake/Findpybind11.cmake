@@ -37,13 +37,13 @@ find_package(PythonLibs REQUIRED)
 
 # Search PYBIND11_ROOT first if it is set.
 if(PYBIND11_ROOT)
-  set(_PYBIND11_SEARCH_ROOT PATHS ${PYBIND11_ROOT} NO_DEFAULT_PATH)
+  set(_PYBIND11_SEARCH_ROOT ${PYBIND11_ROOT})
   list(APPEND _PYBIND11_SEARCHES _PYBIND11_SEARCH_ROOT)
 endif()
 
 # Normal search.
 set(_PYBIND11_SEARCH_NORMAL
-  PATHS "[HKEY_LOCAL_MACHINE\\SOFTWARE\\GnuWin32\\PyBind11;InstallPath]"
+        "[HKEY_LOCAL_MACHINE\\SOFTWARE\\GnuWin32\\PyBind11;InstallPath]"
         "$ENV{PROGRAMFILES}/pybind11"
         "/usr"
   )
@@ -56,7 +56,7 @@ unset(PYBIND11_INCLUDE_DIR CACHE)
 foreach(search ${_PYBIND11_SEARCHES})
     find_path(PYBIND11_INCLUDE_DIR 
         NAMES pybind11/pybind11.h
-        ${${search}}
+        PATHS ${${search}}
         PATH_SUFFIXES include ${CMAKE_INSTALL_INCLUDEDIR})
 endforeach()
 

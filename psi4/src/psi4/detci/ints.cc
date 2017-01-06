@@ -298,7 +298,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     double* aaQp = aaQ->pointer()[0];
     FILE* aaQF = aaQT->file_pointer();
     fseek(aaQF, 0L, SEEK_SET);
-    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+    int val=fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
     SharedMatrix actMO = Matrix::doublet(aaQ, aaQ, false, true);
     aaQ.reset();
 
@@ -734,7 +734,7 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
     double* RaQp = RaQ->pointer()[0];
     FILE* RaQF = RaQT->file_pointer();
     fseek(RaQF, 0L, SEEK_SET);
-    fread(RaQp, sizeof(double), nrot * nact * nQ, RaQF);
+    size_t val=fread(RaQp, sizeof(double), nrot * nact * nQ, RaQF);
 
     // We could slice it or... I like my raw GEMM
     // Uact_av DFERI_R_a_Q - > DFERI_a_aQ
@@ -768,7 +768,7 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
     double* aaQp = aaQ->pointer()[0];
     FILE* aaQF = aaQT->file_pointer();
     fseek(aaQF, 0L, SEEK_SET);
-    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+    val=fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
 
 
     // Form ERI's

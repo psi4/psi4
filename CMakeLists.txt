@@ -118,14 +118,11 @@ include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(custom_color_messages)
 
-#find_package(PythonLibsNew REQUIRED)
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
 
-set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
-add_subdirectory(external)
+# external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 
-    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(autocmake_static_library)
@@ -134,8 +131,21 @@ include(autocmake_static_library)
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
 set(BLAS_LANG "CXX")
 set(LAPACK_LANG "CXX")
+#RMR-I modified the ConfigMath scripts so that the first MKL set of libraries it
+# looks for is the ones suggested by this url: 
+#
+# https://software.intel.com/en-us/articles/a-new-linking-model-single-dynamic-library-mkl_rt-since-intel-mkl-103
+#
+# Intel has introduced libmkl_rt.so for exactly the scenario the new inverted
+# Psi4 presents, i.e. a library that is dlopened at runtime.  The point
+# of libmkl_rt.so is that at dlopen time it automatically loads the appropriate
+# mkl libraries instead of having to have rpaths to all possible libraries. We
+# should thus link against it and not try to play Intel link line advisor
+# ourselves.
+#
+# The final link line should be (assuming you are linking with threads):
+# -L${MKLROOT}/lib/intel64 -lmkl_rt -lpthread -lm -ldl
 include(ConfigMath)
-
 #These packages don't believe in configuration files...
 foreach(pkg in pcmsolver)
    string(TOUPPER "${pkg}" PKG)
@@ -145,6 +155,10 @@ foreach(pkg in pcmsolver)
 endforeach()
 
 list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
+
+#RMR-This needs to be down here so other projects get the correct paths
+#in particular efp which needs blas too
+add_subdirectory(external)
 
 ################################  Main Project  ################################
 include(ExternalProject)
@@ -171,6 +185,7 @@ ExternalProject_Add(psi4_core
               -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+              -DPYBIND11_ROOT=${PYBIND11_ROOT}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}

@@ -77,6 +77,10 @@ set(PSI4_INCLUDE_DIRS
 set(psi4_FOUND TRUE)
 set(PSI4_FOUND TRUE)
 
+add_library(psi4 INTERFACE)
+target_include_directories(psi4 INTERFACE ${PSI4_INCLUDE_DIRS})
+target_link_libraries(psi4 INTERFACE ${core_LIBRARY})
+
 function(add_psi4_plugin TARGET SOURCES)
     # remove ${TARGET} from ${ARGV} to use ${ARGV} as ${SOURCES}
     list(REMOVE_AT ARGV 0)
