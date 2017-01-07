@@ -254,6 +254,7 @@ void export_functional(py::module &m)
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       std::map<std::string, SharedMatrix>, std::map<std::string, SharedVector>>())
         .def("metric", &sapt::FDDS_Dispersion::metric, "Obtains the FDDS metric.")
+        .def("metric_inv", &sapt::FDDS_Dispersion::metric_inv, "Obtains the FDDS metric_inv.")
         .def("aux_overlap", &sapt::FDDS_Dispersion::aux_overlap, "Obtains the FDDS aux_overlap.")
         .def("project_densities", &sapt::FDDS_Dispersion::project_densities,
              "Projects a density from the primary AO to auxiliary AO space.")

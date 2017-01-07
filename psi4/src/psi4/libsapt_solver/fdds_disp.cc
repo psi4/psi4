@@ -88,7 +88,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     nthread = omp_get_max_threads();
 #endif
 
-    // == (A|B) Block == //
+    // ==> (P|Q) Metric <==
     IntegralFactory metric_factory(auxiliary_, zero, auxiliary_, zero);
 
     std::vector<std::shared_ptr<TwoBodyAOInt>> metric_ints(nthread);
@@ -132,7 +132,8 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     metric_ints.clear();
     metric_buff.clear();
 
-    metric_->power(-1.0, 1.e-12);
+    metric_inv_ = metric_->clone();
+    metric_inv_->power(-1.0, 1.e-12);
 
     // ==> Form Aux overlap <==
 
@@ -295,7 +296,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     std::vector<SharedVector> aux_dens_inv;
     for (size_t i = 0; i < densities.size(); i++) {
         aux_dens_inv.push_back(SharedVector(new Vector(naux)));
-        aux_dens_inv[i]->gemv(false, 1.0, (metric_.get()), (aux_dens[i].get()), 0.0);
+        aux_dens_inv[i]->gemv(false, 1.0, metric_inv_.get(), aux_dens[i].get(), 0.0);
     }
 
     // ==> Contract (PQS) S -> PQ <== //
@@ -332,15 +333,14 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-    for (auto PQshell : aux_pairs){
-
+    for (size_t PQi = 0; PQi < aux_pairs.size(); PQi++){
         size_t thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
 
-        size_t Pshell = PQshell.first;
-        size_t Qshell = PQshell.second;
+        size_t Pshell = aux_pairs[PQi].first;
+        size_t Qshell = aux_pairs[PQi].second;
 
         size_t num_p = auxiliary_->shell(Pshell).nfunction();
         size_t index_p = auxiliary_->shell(Pshell).function_index();
@@ -377,7 +377,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
                     size_t abs_q = index_q + q;
 
                     retp[abs_p][abs_q] = retp[abs_q][abs_p] =
-                        C_DDOT(naux, tempp[p * num_q + q], 1, dens, 1);
+                        2.0 * C_DDOT(naux, tempp[p * num_q + q], 1, dens, 1);
                 }
             }
         }
@@ -429,6 +429,8 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     double** ampp = amp->pointer();
     double* eoccp = eps_occ->pointer();
     double* evirp = eps_vir->pointer();
+
+    # pragma omp parallel for
     for (size_t i = 0; i < nocc; i++) {
         for (size_t a = 0; a < nvir; a++) {
             double val = -1.0 * (eoccp[i] - evirp[a]);
@@ -438,7 +440,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         }
     }
 
-    amp->print();
+    // amp->print();
 
     // ==> Contract <==
 

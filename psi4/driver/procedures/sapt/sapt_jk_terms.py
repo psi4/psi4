@@ -39,6 +39,8 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     """
 
     core.print_out("\n  ==> Preparing SAPT Data Cache <== \n\n")
+    jk.print_header()
+
     cache = {}
     cache["wfn_A"] = wfn_A
     cache["wfn_B"] = wfn_B

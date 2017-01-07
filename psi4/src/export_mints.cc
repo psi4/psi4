@@ -255,9 +255,11 @@ void export_mints(py::module& m)
         .def("copy", matrix_one(&Matrix::copy), "docstring")
         .def("power", &Matrix::power, "docstring")
 
-        // def("doublet", &Matrix::doublet, py::arg("transA") = false, py::arg("transB") = false).
-        // def("triplet", &Matrix::triplet, py::arg("transA") = false, py::arg("transB") = false,
-        //                                  py::arg("transC") = false, "docstring").
+        // .def("doublet", &Matrix::doublet, "docstring", py::arg("A"), py::arg("B"),
+        //      py::arg("transA") = false, py::arg("transB") = false)
+        // .def("triplet", &Matrix::triplet, "docstring", py::arg("A"), py::arg("B"), py::arg("C"),
+        //      py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false)
+
         .def("doublet", &Matrix::doublet, "docstring")
         .def("triplet", &Matrix::triplet, "docstring")
         .def("get", matrix_get3(&Matrix::get), "docstring")
@@ -653,9 +655,7 @@ void export_mints(py::module& m)
         .def("sigma_xy", &SymmetryOperation::sigma_xy, "Set equal to reflection in xy plane")
         .def("sigma_yz", &SymmetryOperation::sigma_yz, "Set equal to reflection in yz plane")
         .def("sigma_xz", &SymmetryOperation::sigma_xz, "Set equal to reflection in xz plane")
-        .
-        //        def("sigma_yz", &SymmetryOperation::sigma_yz).
-        def("rotate_n", intFunction(&SymmetryOperation::rotation),
+        .def("rotate_n", intFunction(&SymmetryOperation::rotation),
             "Set equal to a clockwise rotation by 2pi/n")
         .def("rotate_theta", doubleFunction(&SymmetryOperation::rotation),
              "Set equal to a clockwise rotation by theta")
@@ -889,9 +889,7 @@ void export_mints(py::module& m)
         .def_static("make_filename", &BasisSet::make_filename,
                     "Returns filename for basis name: pluses, stars, parentheses replaced and gbs "
                     "extension added")
-        .
-        //            def_static("construct", &BasisSet::construct, "docstring").
-        def_static("zero_ao_basis_set", &BasisSet::zero_ao_basis_set,
+        .def_static("zero_ao_basis_set", &BasisSet::zero_ao_basis_set,
                    "Returns a BasisSet object that actually has a single s-function at the origin "
                    "with an exponent of 0.0 and contraction of 1.0.")
         .def("nbf", &BasisSet::nbf,

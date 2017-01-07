@@ -46,6 +46,9 @@ protected:
     std::shared_ptr<BasisSet> primary_;
     std::shared_ptr<BasisSet> auxiliary_;
 
+    // Coulomb metric inverse
+    SharedMatrix metric_inv_;
+
     // Coulomb metric
     SharedMatrix metric_;
 
@@ -93,6 +96,12 @@ public:
      * @return Metric
      */
     SharedMatrix metric() { return metric_; }
+
+    /**
+     * Returns the metric_inv matrix
+     * @return Metric
+     */
+    SharedMatrix metric_inv() { return metric_inv_; }
 
     /**
      * Returns the auxiliary overlap matrix

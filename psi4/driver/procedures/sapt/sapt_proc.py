@@ -190,8 +190,6 @@ def run_sapt_dft(name, **kwargs):
 
     # Build cache and JK
     sapt_jk = wfn_B.jk()
-    core.print_out("\n")
-    sapt_jk.print_header()
 
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
 
