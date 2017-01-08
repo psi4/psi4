@@ -3696,7 +3696,8 @@ def run_fisapt(name, **kwargs):
     ref_wfn.set_basisset("MINAO", minao)
 
 
-    fisapt_wfn = core.fisapt(ref_wfn)
+    fisapt_wfn = core.FISAPT(ref_wfn)
+    fisapt_wfn.compute_energy()
 
     optstash.restore()
     return fisapt_wfn

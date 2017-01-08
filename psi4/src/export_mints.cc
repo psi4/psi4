@@ -63,6 +63,26 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 
+<<<<<<< e9bb2ccb600087fd6aa4616f452e6ec49562c3bc
+=======
+#include "psi4/libscf_solver/hf.h"
+#include "psi4/libscf_solver/rhf.h"
+#include "psi4/libscf_solver/uhf.h"
+#include "psi4/libscf_solver/rohf.h"
+#include "psi4/libscf_solver/cuhf.h"
+#include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libfock/v.h"
+
+#include "psi4/dfep2/dfep2.h"
+
+#include "psi4/detci/ciwave.h"
+#include "psi4/detci/civect.h"
+
+#include "psi4/fisapt/fisapt.h"
+
+#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
+>>>>>>> XC: Fine tuning FDDS Dispersion
 
 #include <string>
 
@@ -224,6 +244,7 @@ void export_mints(py::module& m)
         .def("trace", &Matrix::trace, "docstring")
 
         .def("transpose_this", &Matrix::transpose_this)
+        .def("transpose", &Matrix::transpose)
         .def("add", matrix_one(&Matrix::add), "docstring")
         .def("axpy", &Matrix::axpy, "docstring")
         .def("subtract", matrix_one(&Matrix::subtract), "docstring")
@@ -251,6 +272,7 @@ void export_mints(py::module& m)
         // = 0.0, py::arg("eigvec") = SharedMatrix()).
         .def("schmidt", &Matrix::schmidt)
         .def("invert", &Matrix::invert, "docstring")
+        .def("general_invert", &Matrix::general_invert, "docstring")
         .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring")
         .def("copy", matrix_one(&Matrix::copy), "docstring")
         .def("power", &Matrix::power, "docstring")

@@ -57,13 +57,13 @@ def print_sapt_summary(data, name, short=False):
     ret += "\n"
     core.set_variable("SAPT EXCH ENERGY", data["Exch10"])
 
-    ind = data["Ind20,r"] + data["Ind-Exch20,r"]
-    ind_ab = data["Ind20,r (A<-B)"] + data["Ind-Exch20,r (A<-B)"]
-    ind_ba = data["Ind20,r (A->B)"] + data["Ind-Exch20,r (A->B)"]
+    ind = data["Ind20,r"] + data["Exch-Ind20,r"]
+    ind_ab = data["Ind20,r (A<-B)"] + data["Exch-Ind20,r (A<-B)"]
+    ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
 
     ret += print_sapt_var("Induction", ind) + "\n"
     ret += print_sapt_var("  Ind20,r", data["Ind20,r"]) + "\n"
-    ret += print_sapt_var("  Ind-Exch20,r", data["Ind-Exch20,r"]) + "\n"
+    ret += print_sapt_var("  Exch-Ind20,r", data["Exch-Ind20,r"]) + "\n"
     ret += print_sapt_var("  Induction (A<-B)", ind_ab) + "\n"
     ret += print_sapt_var("  Induction (A->B)", ind_ba) + "\n"
     ret += "\n"

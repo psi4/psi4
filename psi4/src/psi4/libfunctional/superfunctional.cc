@@ -591,8 +591,8 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
             for (size_t i = 0; i < npoints; i++){
 
                 // Gotta be careful of this, specially for CP results
-                if (rho[i] < 1.e-14){
-                    denx = 1.e8; // Will force grac_fx to 1
+                if (rho[i] < 1.e-12){
+                    denx = 1.e12; // Will force grac_fx to 1
                 } else {
                     denx = std::fabs(rho_x[i] + rho_y[i] + rho_z[i]) / std::pow(rho[i], pow43);
                 }

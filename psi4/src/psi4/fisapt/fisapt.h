@@ -119,8 +119,6 @@ protected:
     void exch();
     /// Induction
     void ind();
-    /// Dispersion
-    void disp();
     /// Print SAPT results
     void print_trailer();
 
@@ -140,12 +138,18 @@ protected:
 
 public:
     /// Initialize an FISAPT object with an SCF reference
+    FISAPT(std::shared_ptr<Wavefunction> scf);
     FISAPT(std::shared_ptr<Wavefunction> scf, Options& options);
     virtual ~FISAPT();
 
     /// Gogo!
     void compute_energy();
 
+    /// Dispersion
+    void disp(std::map<std::string, SharedMatrix> matrix_cache,
+              std::map<std::string, SharedVector> vector_cache, bool do_print);
+
+    std::map<std::string, double> scalars(){ return scalars_; }
 };
 
 class FISAPTSCF {

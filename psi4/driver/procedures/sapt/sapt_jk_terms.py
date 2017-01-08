@@ -62,20 +62,37 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
     cache["D_A"] = core.Matrix.doublet(cache["Cocc_A"], cache["Cocc_A"], False, True)
     cache["D_B"] = core.Matrix.doublet(cache["Cocc_B"], cache["Cocc_B"], False, True)
 
+    cache["P_A"] = core.Matrix.doublet(cache["Cvir_A"], cache["Cvir_A"], False, True)
+    cache["P_B"] = core.Matrix.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
+
     # Potential ints
     mints = core.MintsHelper(wfn_A.basisset())
     cache["V_A"] = mints.ao_potential()
+    # cache["V_A"].axpy(1.0, wfn_A.Va())
 
     mints = core.MintsHelper(wfn_B.basisset())
     cache["V_B"] = mints.ao_potential()
+    # cache["V_B"].axpy(1.0, wfn_B.Va())
 
     # Anything else we might need
     cache["S"] = wfn_A.S().clone()
 
     # J and K matrices
     jk.C_clear()
+
+    # Normal J/K for Monomer A
     jk.C_left_add(wfn_A.Ca_subset("SO", "OCC"))
+    jk.C_right_add(wfn_A.Ca_subset("SO", "OCC"))
+
+    # Normal J/K for Monomer B
     jk.C_left_add(wfn_B.Ca_subset("SO", "OCC"))
+    jk.C_right_add(wfn_B.Ca_subset("SO", "OCC"))
+
+    # K_O J/K
+    C_O_A = core.Matrix.triplet(cache["D_B"], cache["S"], cache["Cocc_A"], False, False, False)
+    jk.C_left_add(C_O_A)
+    jk.C_right_add(cache["Cocc_A"])
+
     jk.compute()
 
     # Clone them as the JK object will overwrite.
@@ -84,6 +101,10 @@ def build_sapt_jk_cache(wfn_A, wfn_B, jk, do_print=True):
 
     cache["J_B"] = jk.J()[1].clone()
     cache["K_B"] = jk.K()[1].clone()
+
+    cache["J_O"] = jk.J()[2].clone()
+    cache["K_O"] = jk.K()[2].clone()
+    cache["K_O"].transpose_this()
 
     monA_nr = wfn_A.molecule().nuclear_repulsion_energy()
     monB_nr = wfn_B.molecule().nuclear_repulsion_energy()
@@ -146,7 +167,7 @@ def exchange(cache, jk, do_print=True):
     Sab.np[:nocc_A, nocc_A:] = SAB.np
     Sab.np[nocc_A:, :nocc_A] = SAB.np.T
     Sab.np[np.diag_indices_from(Sab.np)] += 1
-    Sab.power(-1.0, 1.e-12)
+    Sab.power(-1.0, 1.e-14)
     Sab.np[np.diag_indices_from(Sab.np)] -= 1.0
 
     Tmo_AA = core.Matrix.from_array(Sab.np[:nocc_A, :nocc_A])
@@ -157,8 +178,8 @@ def exchange(cache, jk, do_print=True):
     T_B  = np.dot(cache["Cocc_B"], Tmo_BB).dot(cache["Cocc_B"].np.T)
     T_AB = np.dot(cache["Cocc_A"], Tmo_AB).dot(cache["Cocc_B"].np.T)
 
-    P_A = core.Matrix.doublet(cache["Cvir_A"], cache["Cvir_A"], False, True)
-    P_B = core.Matrix.doublet(cache["Cvir_B"], cache["Cvir_B"], False, True)
+    P_A = cache["P_A"]
+    P_B = cache["P_B"]
 
     # Compute the J and K matrices
     jk.C_clear()
@@ -205,7 +226,7 @@ def exchange(cache, jk, do_print=True):
 
     return {"Exch10(S^2)": Exch_s2, "Exch10": Exch10}
 
-def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True):
+def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True):
 
     if do_print:
         core.print_out("\n  ==> E20 Induction <== \n\n")
@@ -222,6 +243,9 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     V_B = cache["V_B"].np
     J_B = cache["J_B"].np
     K_B = cache["K_B"].np
+
+    K_O = cache["K_O"].np
+    J_O = cache["J_O"].np
 
     jk.C_clear()
 
@@ -240,14 +264,14 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
 
     jk.compute()
 
-    J_O, J_P_B, J_P_A = jk.J()
-    K_O, K_P_B, K_P_A = jk.K()
+    J_Ot, J_P_B, J_P_A = jk.J()
+    K_Ot, K_P_B, K_P_A = jk.K()
 
-    K_O = core.Matrix.from_array(K_O.np.T)
+    # K_O = core.Matrix.from_array(K_O.np.T)
     W_A  = -1.0 * K_B.copy()
     W_A -= 2.0 * np.dot(S, D_B).dot(J_A)
-    W_A += 1.0 * K_O.np
-    W_A -= 2.0 * J_O.np
+    W_A += 1.0 * K_O
+    W_A -= 2.0 * J_O
 
     W_A += 1.0 * np.dot(S, D_B).dot(K_A)
     W_A -= 2.0 * np.dot(J_B, D_B).dot(S)
@@ -259,7 +283,7 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     W_A += 2.0 * J_P_B.np
 
     W_A += 2.0 * np.dot(S, D_B).dot(S).dot(D_A).dot(J_B)
-    W_A -= 1.0 * np.dot(S, D_B).dot(K_O.np.T)
+    W_A -= 1.0 * np.dot(S, D_B).dot(K_O.T)
     W_A -= 1.0 * np.dot(S, D_B).dot(V_A)
     W_A -= 1.0 * np.dot(V_B, D_B).dot(S)
     W_A += 1.0 * np.dot(S, D_B).dot(V_A).dot(D_B).dot(S)
@@ -267,20 +291,19 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     W_A += 1.0 * np.dot(S, D_B).dot(S).dot(D_A).dot(V_B)
     W_A = np.dot(cache["Cocc_A"].np.T, W_A).dot(cache["Cvir_A"])
 
-    K_O = core.Matrix.from_array(K_O.np.T)
     W_B  = -1.0 * K_A.copy()
     W_B -= 2.0 * np.dot(S, D_A).dot(J_B)
-    W_B += 1.0 * K_O.np
-    W_B -= 2.0 * J_O.np
+    W_B += 1.0 * K_O.T
+    W_B -= 2.0 * J_O
     W_B += 1.0 * np.dot(S, D_A).dot(K_B)
     W_B -= 2.0 * np.dot(J_A, D_A).dot(S)
     W_B += 1.0 * np.dot(K_A, D_A).dot(S)
     W_B += 2.0 * np.dot(S, D_A).dot(J_B).dot(D_A).dot(S)
     W_B += 2.0 * np.dot(J_A, D_B).dot(S).dot(D_A).dot(S)
-    W_B -= 1.0 * np.dot(K_O, D_A).dot(S)
+    W_B -= 1.0 * np.dot(K_O.T, D_A).dot(S)
     W_B += 2.0 * J_P_A.np
     W_B += 2.0 * np.dot(S, D_A).dot(S).dot(D_B).dot(J_A)
-    W_B -= 1.0 * np.dot(S, D_A).dot(K_O.np.T)
+    W_B -= 1.0 * np.dot(S, D_A).dot(K_O)
     W_B -= 1.0 * np.dot(S, D_A).dot(V_B)
     W_B -= 1.0 * np.dot(V_A, D_A).dot(S)
     W_B += 1.0 * np.dot(S, D_A).dot(V_B).dot(D_A).dot(S)
@@ -312,12 +335,12 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
     ret["Ind20,u (A<-B)"] = unc_ind_ab
     ret["Ind20,u (A->B)"] = unc_ind_ba
     ret["Ind20,u"] = unc_ind_ab + unc_ind_ba
-    ret["Ind-Exch20,u (A<-B)"] = unc_indexch_ab
-    ret["Ind-Exch20,u (A->B)"] = unc_indexch_ba
-    ret["Ind-Exch20,u"] = unc_indexch_ba + unc_indexch_ab
+    ret["Exch-Ind20,u (A<-B)"] = unc_indexch_ab
+    ret["Exch-Ind20,u (A->B)"] = unc_indexch_ba
+    ret["Exch-Ind20,u"] = unc_indexch_ba + unc_indexch_ab
 
-    plist = ["Ind20,u (A<-B)", "Ind20,u (A->B)", "Ind20,u", "Ind-Exch20,u (A<-B)",
-             "Ind-Exch20,u (A->B)", "Ind-Exch20,u"]
+    plist = ["Ind20,u (A<-B)", "Ind20,u (A->B)", "Ind20,u", "Exch-Ind20,u (A<-B)",
+             "Exch-Ind20,u (A->B)", "Exch-Ind20,u"]
 
     if do_print:
         for name in plist:
@@ -345,9 +368,9 @@ def induction(cache, jk, do_print=True, maxiter=20, conv=1.e-8, do_response=True
         ret["Ind20,r (A<-B)"] = ind_ab
         ret["Ind20,r (A->B)"] = ind_ba
         ret["Ind20,r"] = ind_ab + ind_ba
-        ret["Ind-Exch20,r (A<-B)"] = indexch_ab
-        ret["Ind-Exch20,r (A->B)"] = indexch_ba
-        ret["Ind-Exch20,r"] = indexch_ba + indexch_ab
+        ret["Exch-Ind20,r (A<-B)"] = indexch_ab
+        ret["Exch-Ind20,r (A->B)"] = indexch_ba
+        ret["Exch-Ind20,r"] = indexch_ba + indexch_ab
 
         if do_print:
             for name in plist:

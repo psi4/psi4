@@ -56,6 +56,12 @@ namespace psi {
 
 namespace fisapt {
 
+FISAPT::FISAPT(SharedWavefunction scf) :
+    options_(Process::environment.options),
+    reference_(scf)
+{
+    common_init();
+}
 FISAPT::FISAPT(SharedWavefunction scf, Options& options) :
     options_(options),
     reference_(scf)
@@ -115,7 +121,7 @@ void FISAPT::compute_energy()
     exch();
     ind();
     if (!options_.get_bool("FISAPT_DO_FSAPT")) {
-        disp(); // Expensive, only do if needed
+        disp(matrices_, vectors_, true); // Expensive, only do if needed
     }
 
     // => F-SAPT0 <= //
@@ -1897,24 +1903,26 @@ std::shared_ptr<Matrix> FISAPT::build_exch_ind_pot(std::map<std::string, std::sh
     return Matrix::triplet(Ca,W,Cr,true,false,false);
 }
 
-void FISAPT::disp()
-{
-    outfile->Printf("  ==> Dispersion <==\n\n");
+void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
+                  std::map<std::string, SharedVector> vector_cache, bool do_print) {
+    if (do_print) {
+        outfile->Printf("  ==> Dispersion <==\n\n");
+    }
 
     // => Auxiliary Basis Set <= //
     std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
 
     // => Pointers <= //
 
-    std::shared_ptr<Matrix> Cocc0A = matrices_["Caocc0A"];
-    std::shared_ptr<Matrix> Cocc0B = matrices_["Caocc0B"];
-    std::shared_ptr<Matrix> Cvir0A = matrices_["Cvir0A"];
-    std::shared_ptr<Matrix> Cvir0B = matrices_["Cvir0B"];
+    std::shared_ptr<Matrix> Cocc0A = matrix_cache["Caocc0A"];
+    std::shared_ptr<Matrix> Cocc0B = matrix_cache["Caocc0B"];
+    std::shared_ptr<Matrix> Cvir0A = matrix_cache["Cvir0A"];
+    std::shared_ptr<Matrix> Cvir0B = matrix_cache["Cvir0B"];
 
-    std::shared_ptr<Vector> eps_occ0A = vectors_["eps_aocc0A"];
-    std::shared_ptr<Vector> eps_occ0B = vectors_["eps_aocc0B"];
-    std::shared_ptr<Vector> eps_vir0A = vectors_["eps_vir0A"];
-    std::shared_ptr<Vector> eps_vir0B = vectors_["eps_vir0B"];
+    std::shared_ptr<Vector> eps_occ0A = vector_cache["eps_aocc0A"];
+    std::shared_ptr<Vector> eps_occ0B = vector_cache["eps_aocc0B"];
+    std::shared_ptr<Vector> eps_vir0A = vector_cache["eps_vir0A"];
+    std::shared_ptr<Vector> eps_vir0B = vector_cache["eps_vir0B"];
 
     // => Sizing <= //
 
@@ -1935,18 +1943,18 @@ void FISAPT::disp()
 
     // => Stashed Variables <= //
 
-    std::shared_ptr<Matrix> S   = matrices_["S"];
-    std::shared_ptr<Matrix> D_A = matrices_["D_A"];
-    std::shared_ptr<Matrix> P_A = matrices_["P_A"];
-    std::shared_ptr<Matrix> V_A = matrices_["V_A"];
-    std::shared_ptr<Matrix> J_A = matrices_["J_A"];
-    std::shared_ptr<Matrix> K_A = matrices_["K_A"];
-    std::shared_ptr<Matrix> D_B = matrices_["D_B"];
-    std::shared_ptr<Matrix> P_B = matrices_["P_B"];
-    std::shared_ptr<Matrix> V_B = matrices_["V_B"];
-    std::shared_ptr<Matrix> J_B = matrices_["J_B"];
-    std::shared_ptr<Matrix> K_B = matrices_["K_B"];
-    std::shared_ptr<Matrix> K_O = matrices_["K_O"];
+    std::shared_ptr<Matrix> S   = matrix_cache["S"];
+    std::shared_ptr<Matrix> D_A = matrix_cache["D_A"];
+    std::shared_ptr<Matrix> P_A = matrix_cache["P_A"];
+    std::shared_ptr<Matrix> V_A = matrix_cache["V_A"];
+    std::shared_ptr<Matrix> J_A = matrix_cache["J_A"];
+    std::shared_ptr<Matrix> K_A = matrix_cache["K_A"];
+    std::shared_ptr<Matrix> D_B = matrix_cache["D_B"];
+    std::shared_ptr<Matrix> P_B = matrix_cache["P_B"];
+    std::shared_ptr<Matrix> V_B = matrix_cache["V_B"];
+    std::shared_ptr<Matrix> J_B = matrix_cache["J_B"];
+    std::shared_ptr<Matrix> K_B = matrix_cache["K_B"];
+    std::shared_ptr<Matrix> K_O = matrix_cache["K_O"];
 
     // => Auxiliary C matrices <= //
 
@@ -2368,10 +2376,12 @@ void FISAPT::disp()
 
     scalars_["Disp20"] = Disp20;
     scalars_["Exch-Disp20"] = ExchDisp20;
-    outfile->Printf("    Disp20              = %18.12lf [Eh]\n",Disp20);
-    outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",ExchDisp20);
-    outfile->Printf("\n");
-    //fflush(outfile);
+    if (do_print){
+        outfile->Printf("    Disp20              = %18.12lf [Eh]\n",Disp20);
+        outfile->Printf("    Exch-Disp20         = %18.12lf [Eh]\n",ExchDisp20);
+        outfile->Printf("\n");
+    }
+
 }
 void FISAPT::print_trailer()
 {

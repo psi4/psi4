@@ -188,6 +188,14 @@ void export_wavefunction(py::module& m)
         .def("compute", &dfep2::DFEP2Wavefunction::compute,
              "Computes the density-fitted EP2 energy for the input orbitals");
 
+    py::class_<fisapt::FISAPT, std::shared_ptr<fisapt::FISAPT>>(m, "FISAPT",
+                                                                "A Fragment-SAPT Wavefunction")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("compute_energy", &fisapt::FISAPT::compute_energy, "Computes the FSAPT energy.")
+        .def("scalars", &fisapt::FISAPT::scalars, "Return the interally computed scalars.")
+        .def("disp", &fisapt::FISAPT::disp,
+             "Computes the MP2-based DispE20 and Exch-DispE20 energy.");
+
     /// CIWavefunction data
     void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>,
                                     std::shared_ptr<psi::detci::CIvect>, int, int) =

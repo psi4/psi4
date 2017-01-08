@@ -212,7 +212,9 @@ def run_sapt_dft(name, **kwargs):
     aux_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
-    disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
+    fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
+
+    mp2_disp = sapt_mp2_terms.df_mp2_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
 
     # Print out final data
     core.print_out("\n")
