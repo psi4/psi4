@@ -9,7 +9,7 @@ else()
     message(STATUS "Suitable libefp could not be located, ${Magenta}Building libefp${ColourReset} instead.")
     ExternalProject_Add(libefp_external
         GIT_REPOSITORY https://github.com/psi4/libefp
-        GIT_TAG config3
+        GIT_TAG e4e1525858532153ae24ec8ffe59d9d57f221181
         #GIT_REPOSITORY https://github.com/ilyak/libefp
         #GIT_TAG v1.7.1  # TODO tag when stable
         UPDATE_COMMAND ""
