@@ -106,7 +106,7 @@ Dimension& Dimension::operator =(const Dimension& other)
     name_ = other.name_;
 
     if (n_ < other.n_) {
-        delete blocks_;
+        delete [] blocks_;
         blocks_ = new int[other.n_];
     }
     n_ = other.n_;

@@ -809,6 +809,11 @@ DCFTSolver::compute_ewdm_odc_RHF()
     // Presort TPDM (MO) for Deriv use
     presort_mo_tpdm_AA();
 
+    delete [] alpha_pitzer_to_corr;
+    delete [] beta_pitzer_to_corr;
+    delete [] aocc_qt;
+    delete [] bocc_qt;
+
     psio_->close(PSIF_DCFT_DENSITY, 1);
 }
 

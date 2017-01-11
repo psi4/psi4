@@ -919,6 +919,7 @@ void DFJK::initialize_JK_disk()
     // ==> Close out <== //
     Qmn_.reset();
     delete[] eri;
+    delete[] buffer;
 
     psio_->close(unit_,1);
 }
@@ -1512,6 +1513,8 @@ void DFJK::initialize_wK_disk()
     }
     Amn2.reset();
     delete[] eri2;
+    delete[] buffer;
+    delete[] buffer2;
 
     psio_->write_entry(unit_, "Omega", (char*) &omega_, sizeof(double));
     psio_->close(unit_,1);
@@ -1638,6 +1641,7 @@ void DFJK::rebuild_wK_disk()
     }
     Amn2.reset();
     delete[] eri2;
+    delete[] buffer2;
 
     psio_->write_entry(unit_, "Omega", (char*) &omega_, sizeof(double));
     // No need to close

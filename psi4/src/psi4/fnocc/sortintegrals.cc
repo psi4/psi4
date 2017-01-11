@@ -2121,6 +2121,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      }
      // free extra memory
      free(buffer2_count);
+     free(buffer2_total);
      free(buffer2);
   }
 }
@@ -2195,7 +2196,7 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
 
      psio->rename_file(PSIF_DCC_TEMP,PSIFILE);
 
-     delete addr;
+     delete [] addr;
   }
 }
 

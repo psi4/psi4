@@ -372,6 +372,7 @@ if (wfn_type_ != "OMP2") {
 
     delete [] aocc_qt;
     delete [] avir_qt;
+    delete[] alpha_pitzer_to_corr;
 
     psio_->close(PSIF_OCC_DENSITY, 1);
 
@@ -866,6 +867,8 @@ if (wfn_type_ != "OMP2") {
     delete [] bocc_qt;
     delete [] avir_qt;
     delete [] bvir_qt;
+    delete [] alpha_pitzer_to_corr;
+    delete [] beta_pitzer_to_corr;
 
     psio_->close(PSIF_OCC_DENSITY, 1);
 
@@ -1935,4 +1938,3 @@ void OCCWave::oeprop()
 
 
 }} // End Namespaces
-

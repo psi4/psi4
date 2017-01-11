@@ -243,6 +243,8 @@ void FittingMetric::form_fitting_metric()
         }
         delete[] Tbuffer;
         delete[] Tint;
+        delete[] Obuffer;
+        delete[] Oint;
     }
 
     // If C1, form indexing and exit immediately (multiplying by 1 is not so gratifying)

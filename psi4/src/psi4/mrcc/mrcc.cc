@@ -314,20 +314,34 @@ public:
                     nbucket_++;
                     memory_limit = memory_limit - row_length;
                     /* Make room for another bucket */
-                    bucket_offset_ = (int **) realloc((void *) bucket_offset_,
-                                                      nbucket_ * sizeof(int *));
-                    bucket_offset_[nbucket_ - 1] = init_int_array(nirrep);
-                    bucket_offset_[nbucket_ - 1][h] = row;
+		    int **p;
 
-                    bucket_row_dim_ = (int **) realloc((void *) bucket_row_dim_,
-                                                       nbucket_ * sizeof(int *));
-                    bucket_row_dim_[nbucket_ - 1] = init_int_array(nirrep);
-                    bucket_row_dim_[nbucket_ - 1][h] = 1;
+		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_offset_),
+						    nbucket_ * sizeof(int *)));
+		    if(p == NULL)
+		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+		    else
+		      bucket_offset_ = p;
+		    bucket_offset_[nbucket_-1] = init_int_array(nirrep);
+		    bucket_offset_[nbucket_-1][h] = row;
 
-                    bucket_size_ = (int **) realloc((void *) bucket_size_,
-                                                    nbucket_ * sizeof(int *));
-                    bucket_size_[nbucket_ - 1] = init_int_array(nirrep);
-                    bucket_size_[nbucket_ - 1][h] = row_length;
+		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_row_dim_),
+						    nbucket_ * sizeof(int *)));
+		    if(p == NULL)
+		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+		    else
+		      bucket_row_dim_ = p;
+		    bucket_row_dim_[nbucket_-1] = init_int_array(nirrep);
+		    bucket_row_dim_[nbucket_-1][h] = 1;
+
+		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_size_),
+						    nbucket_ * sizeof(int *)));
+		    if(p == NULL)
+		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+		    else
+		      bucket_size_ = p;
+		    bucket_size_[nbucket_-1] = init_int_array(nirrep);
+		    bucket_size_[nbucket_-1][h] = row_length;
                 }
                 int p = I_->params->roworb[h][row][0];
                 int q = I_->params->roworb[h][row][1];
