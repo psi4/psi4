@@ -391,7 +391,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     ``SEMTEST``.  The ``SEM`` method is the most robust, but it also
     requires $2NM+1$ CI vectors on disk, where $N$ is the maximum number of
     iterations and $M$ is the number of roots. -*/
-    options.add_str("DIAG_METHOD", "SEM", "RSP OLSEN MITRUSHENKOV DAVIDSON SEM SEMTEST");
+    options.add_str("DIAG_METHOD", "SEM", "RSP DAVIDSON SEM");
 
     /*- This specifies the type of preconditioner to use in the selected
     diagonalization method.  The valid options are: ``DAVIDSON`` which
