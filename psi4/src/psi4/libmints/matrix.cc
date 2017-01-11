@@ -2291,6 +2291,8 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
             order.push_back(imax);
         }
         sigpi[h] = nQ;
+
+	delete [] Dp;
     }
 
     // Copy out to properly sized array

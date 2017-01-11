@@ -102,18 +102,33 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
               core_left = memoryd - row_length;
 
               /* Make room for another bucket */
-              bucket_offset = (int **) realloc((void *) bucket_offset,
-                                               nbuckets * sizeof(int *));
+	      int **p;
+
+
+	      p = static_cast<int **>(realloc(static_cast<void *>(bucket_offset),
+                                              nbuckets * sizeof(int *)));
+	      if(p == NULL)
+		throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+	      else
+		bucket_offset = p;
               bucket_offset[nbuckets-1] = init_int_array(nirreps);
               bucket_offset[nbuckets-1][h] = row;
 
-              bucket_rowdim = (int **) realloc((void *) bucket_rowdim,
-                                               nbuckets * sizeof(int *));
+	      p = static_cast<int **>(realloc(static_cast<void *>(bucket_rowdim),
+                                              nbuckets * sizeof(int *)));
+	      if(p == NULL)
+		throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+	      else
+		bucket_rowdim = p;
               bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
               bucket_rowdim[nbuckets-1][h] = 1;
 
-              bucket_size = (int **) realloc((void *) bucket_size,
-                                             nbuckets * sizeof(int *));
+	      p = static_cast<int **>(realloc(static_cast<void *>(bucket_size),
+                                              nbuckets * sizeof(int *)));
+	      if(p == NULL)
+		throw PsiException("file_build: allocation error", __FILE__, __LINE__);
+	      else
+		bucket_size = p;
               bucket_size[nbuckets-1] = init_int_array(nirreps);
               bucket_size[nbuckets-1][h] = row_length;
             }
@@ -228,9 +243,11 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
   for(n=0; n < nbuckets; n++) {
       free(bucket_offset[n]);
       free(bucket_rowdim[n]);
+      free(bucket_size[n]);
     }
   free(bucket_offset);
   free(bucket_rowdim);
+  free(bucket_size);
 
   free(SortBuf);
 

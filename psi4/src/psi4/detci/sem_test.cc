@@ -194,7 +194,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
- 
+
       if (N<100 && print_ >=3) {
         outfile->Printf("\n b matrix\n");
         print_mat(b,L,N,"outfile");
@@ -292,7 +292,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
-        
+
         if (N<100 && print_ >= 3) {
         outfile->Printf(" Reformed G matrix (%d)\n",iter-1);
         print_mat(G,L,L,"outfile");
@@ -410,6 +410,9 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
    free_matrix(alpha, maxnvect);
    free_matrix(sigma_overlap, maxnvect);
    for (i=0; i<M; i++) free_matrix(Mmatrix[i], maxnvect);
+   free(Mmatrix);
+   for (i=0; i<maxnvect; i++) free_matrix(m_alpha[i], maxnvect);
+   free(m_alpha);
 }
 
 }} // namespace psi::detci
