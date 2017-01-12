@@ -178,8 +178,14 @@ def exchange(cache, jk, do_print=True):
     T_B  = np.dot(cache["Cocc_B"], Tmo_BB).dot(cache["Cocc_B"].np.T)
     T_AB = np.dot(cache["Cocc_A"], Tmo_AB).dot(cache["Cocc_B"].np.T)
 
+    S = cache["S"]
+
+    D_A = cache["D_A"]
     P_A = cache["P_A"]
+
+    D_B = cache["D_B"]
     P_B = cache["P_B"]
+
 
     # Compute the J and K matrices
     jk.C_clear()
@@ -190,8 +196,8 @@ def exchange(cache, jk, do_print=True):
     jk.C_left_add(cache["Cocc_B"])
     jk.C_right_add(core.Matrix.doublet(cache["Cocc_A"], Tmo_AB, False, False))
 
-    jk.C_left_add(core.Matrix.from_array( np.dot(P_B, cache["S"]).dot(cache["Cocc_A"])))
-    jk.C_right_add(cache["Cocc_A"])
+    jk.C_left_add(cache["Cocc_A"])
+    jk.C_right_add(core.Matrix.chain_dot(P_B, S, cache["Cocc_A"]))
 
     jk.compute()
 
@@ -200,9 +206,16 @@ def exchange(cache, jk, do_print=True):
 
     # Start S^2
     Exch_s2 = 0.0
-    Exch_s2 -= 2.0 * np.vdot(np.dot(cache["D_A"], cache["S"]).dot(cache["D_B"]).dot(cache["S"]).dot(P_A), w_B)
-    Exch_s2 -= 2.0 * np.vdot(np.dot(cache["D_B"], cache["S"]).dot(cache["D_A"]).dot(cache["S"]).dot(P_B), w_A)
-    Exch_s2 -= 2.0 * np.vdot(np.dot(P_A, cache["S"]).dot(cache["D_B"]), Kij.np.T)
+
+    tmp = core.Matrix.chain_dot(D_A, S, D_B, S, P_A)
+    Exch_s2 -= 2.0 * w_B.vector_dot(tmp)
+
+
+    tmp = core.Matrix.chain_dot(D_B, S, D_A, S, P_B)
+    Exch_s2 -= 2.0 * w_A.vector_dot(tmp)
+
+    tmp = core.Matrix.chain_dot(P_A, S, D_B)
+    Exch_s2 -= 2.0 * Kij.vector_dot(tmp)
 
     if do_print:
         core.print_out(print_sapt_var("Exch10(S^2) ", Exch_s2, short=True))
@@ -232,34 +245,38 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
         core.print_out("\n  ==> E20 Induction <== \n\n")
 
     # Build Induction and Exchange-Induction potentials
-    S = cache["S"].np
+    S = cache["S"]
 
-    D_A = cache["D_A"].np
-    V_A = cache["V_A"].np
-    J_A = cache["J_A"].np
-    K_A = cache["K_A"].np
+    D_A = cache["D_A"]
+    V_A = cache["V_A"]
+    J_A = cache["J_A"]
+    K_A = cache["K_A"]
 
-    D_B = cache["D_B"].np
-    V_B = cache["V_B"].np
-    J_B = cache["J_B"].np
-    K_B = cache["K_B"].np
+    D_B = cache["D_B"]
+    V_B = cache["V_B"]
+    J_B = cache["J_B"]
+    K_B = cache["K_B"]
 
-    K_O = cache["K_O"].np
-    J_O = cache["J_O"].np
+    K_O = cache["K_O"]
+    J_O = cache["J_O"]
 
     jk.C_clear()
 
-    C_O_A = core.Matrix.from_array(D_B.dot(S).dot(cache["Cocc_A"]))
-    C_P_A = core.Matrix.from_array(D_B.dot(S).dot(D_A).dot(S).dot(cache["Cocc_B"]))
-    C_P_B = core.Matrix.from_array(D_A.dot(S).dot(D_B).dot(S).dot(cache["Cocc_A"]))
+    # C_O_A = core.Matrix.chain_dot(D_B, S, cache["Cocc_A"])
+    # C_P_B = core.Matrix.chain_dot(D_B, S, D_A, S, cache["Cocc_B"])
+    # C_P_A = core.Matrix.chain_dot(D_A, S, D_B, S, cache["Cocc_A"])
 
-    jk.C_left_add(C_O_A)
+    # C_O_A = core.Matrix.from_array(D_B.dot(S).dot(cache["Cocc_A"]))
+    # C_P_B = core.Matrix.from_array(D_B.dot(S).dot(D_A).dot(S).dot(cache["Cocc_B"]))
+    # C_P_A = core.Matrix.from_array(D_A.dot(S).dot(D_B).dot(S).dot(cache["Cocc_A"]))
+
+    jk.C_left_add(core.Matrix.chain_dot(D_B, S, cache["Cocc_A"]))
     jk.C_right_add(cache["Cocc_A"])
 
-    jk.C_left_add(C_P_A)
+    jk.C_left_add(core.Matrix.chain_dot(D_B, S, D_A, S, cache["Cocc_B"]))
     jk.C_right_add(cache["Cocc_B"])
 
-    jk.C_left_add(C_P_B)
+    jk.C_left_add(core.Matrix.chain_dot(D_A, S, D_B, S, cache["Cocc_A"]))
     jk.C_right_add(cache["Cocc_A"])
 
     jk.compute()
@@ -267,49 +284,57 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     J_Ot, J_P_B, J_P_A = jk.J()
     K_Ot, K_P_B, K_P_A = jk.K()
 
-    # K_O = core.Matrix.from_array(K_O.np.T)
-    W_A  = -1.0 * K_B.copy()
-    W_A -= 2.0 * np.dot(S, D_B).dot(J_A)
-    W_A += 1.0 * K_O
-    W_A -= 2.0 * J_O
+    # Exch-Ind Potential A
+    EX_A = K_B.clone()
+    EX_A.scale(-1.0)
+    EX_A.axpy(-2.0, core.Matrix.chain_dot(S, D_B, J_A))
+    EX_A.axpy( 1.0, K_O)
+    EX_A.axpy(-2.0, J_O)
 
-    W_A += 1.0 * np.dot(S, D_B).dot(K_A)
-    W_A -= 2.0 * np.dot(J_B, D_B).dot(S)
-    W_A += 1.0 * np.dot(K_B, D_B).dot(S)
+    EX_A.axpy( 1.0, core.Matrix.chain_dot(S, D_B, K_A))
+    EX_A.axpy(-2.0, core.Matrix.chain_dot(J_B, D_B, S))
+    EX_A.axpy( 1.0, core.Matrix.chain_dot(K_B, D_B, S))
 
-    W_A += 2.0 * np.dot(S, D_B).dot(J_A).dot(D_B).dot(S)
-    W_A += 2.0 * np.dot(J_B, D_A).dot(S).dot(D_B).dot(S)
-    W_A -= 1.0 * np.dot(K_O, D_B).dot(S)
-    W_A += 2.0 * J_P_B.np
+    EX_A.axpy( 2.0, core.Matrix.chain_dot(S, D_B, J_A, D_B, S))
+    EX_A.axpy( 2.0, core.Matrix.chain_dot(J_B, D_A, S, D_B, S))
+    EX_A.axpy(-1.0, core.Matrix.chain_dot(K_O, D_B, S))
+    EX_A.axpy( 2.0, J_P_B)
 
-    W_A += 2.0 * np.dot(S, D_B).dot(S).dot(D_A).dot(J_B)
-    W_A -= 1.0 * np.dot(S, D_B).dot(K_O.T)
-    W_A -= 1.0 * np.dot(S, D_B).dot(V_A)
-    W_A -= 1.0 * np.dot(V_B, D_B).dot(S)
-    W_A += 1.0 * np.dot(S, D_B).dot(V_A).dot(D_B).dot(S)
-    W_A += 1.0 * np.dot(V_B, D_A).dot(S).dot(D_B).dot(S)
-    W_A += 1.0 * np.dot(S, D_B).dot(S).dot(D_A).dot(V_B)
-    W_A = np.dot(cache["Cocc_A"].np.T, W_A).dot(cache["Cvir_A"])
+    EX_A.axpy( 2.0, core.Matrix.chain_dot(S, D_B, S, D_A, J_B))
+    EX_A.axpy(-1.0, core.Matrix.chain_dot(S, D_B, K_O, trans=[False, False, True]))
+    EX_A.axpy(-1.0, core.Matrix.chain_dot(S, D_B, V_A))
+    EX_A.axpy(-1.0, core.Matrix.chain_dot(V_B, D_B, S))
+    EX_A.axpy( 1.0, core.Matrix.chain_dot(S, D_B, V_A, D_B, S))
+    EX_A.axpy( 1.0, core.Matrix.chain_dot(V_B, D_A, S, D_B, S))
+    EX_A.axpy( 1.0, core.Matrix.chain_dot(S, D_B, S, D_A, V_B))
 
-    W_B  = -1.0 * K_A.copy()
-    W_B -= 2.0 * np.dot(S, D_A).dot(J_B)
-    W_B += 1.0 * K_O.T
-    W_B -= 2.0 * J_O
-    W_B += 1.0 * np.dot(S, D_A).dot(K_B)
-    W_B -= 2.0 * np.dot(J_A, D_A).dot(S)
-    W_B += 1.0 * np.dot(K_A, D_A).dot(S)
-    W_B += 2.0 * np.dot(S, D_A).dot(J_B).dot(D_A).dot(S)
-    W_B += 2.0 * np.dot(J_A, D_B).dot(S).dot(D_A).dot(S)
-    W_B -= 1.0 * np.dot(K_O.T, D_A).dot(S)
-    W_B += 2.0 * J_P_A.np
-    W_B += 2.0 * np.dot(S, D_A).dot(S).dot(D_B).dot(J_A)
-    W_B -= 1.0 * np.dot(S, D_A).dot(K_O)
-    W_B -= 1.0 * np.dot(S, D_A).dot(V_B)
-    W_B -= 1.0 * np.dot(V_A, D_A).dot(S)
-    W_B += 1.0 * np.dot(S, D_A).dot(V_B).dot(D_A).dot(S)
-    W_B += 1.0 * np.dot(V_A, D_B).dot(S).dot(D_A).dot(S)
-    W_B += 1.0 * np.dot(S, D_A).dot(S).dot(D_B).dot(V_A)
-    W_B = np.dot(cache["Cocc_B"].np.T, W_B).dot(cache["Cvir_B"])
+    EX_A = core.Matrix.chain_dot(cache["Cocc_A"], EX_A, cache["Cvir_A"], trans=[True, False, False])
+
+    # Exch-Ind Potential B
+    EX_B = K_A.clone()
+    EX_B.scale(-1.0)
+    EX_B.axpy(-2.0, core.Matrix.chain_dot(S, D_A, J_B))
+    EX_B.axpy( 1.0, K_O.transpose())
+    EX_B.axpy(-2.0, J_O)
+
+    EX_B.axpy( 1.0, core.Matrix.chain_dot(S, D_A, K_B))
+    EX_B.axpy(-2.0, core.Matrix.chain_dot(J_A, D_A, S))
+    EX_B.axpy( 1.0, core.Matrix.chain_dot(K_A, D_A, S))
+
+    EX_B.axpy( 2.0, core.Matrix.chain_dot(S, D_A, J_B, D_A, S))
+    EX_B.axpy( 2.0, core.Matrix.chain_dot(J_A, D_B, S, D_A, S))
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(K_O, D_A, S, trans=[True, False, False]))
+    EX_B.axpy( 2.0, J_P_A)
+
+    EX_B.axpy( 2.0, core.Matrix.chain_dot(S, D_A, S, D_B, J_A))
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(S, D_A, K_O))
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(S, D_A, V_B))
+    EX_B.axpy(-1.0, core.Matrix.chain_dot(V_A, D_A, S))
+    EX_B.axpy( 1.0, core.Matrix.chain_dot(S, D_A, V_B, D_A, S))
+    EX_B.axpy( 1.0, core.Matrix.chain_dot(V_A, D_B, S, D_A, S))
+    EX_B.axpy( 1.0, core.Matrix.chain_dot(S, D_A, S, D_B, V_A))
+
+    EX_B = core.Matrix.chain_dot(cache["Cocc_B"], EX_B, cache["Cvir_B"], trans=[True, False, False])
 
     # Build electrostatic potenital
     w_A = cache["V_A"].clone()
@@ -323,13 +348,15 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
 
     # Do uncoupled
     core.print_out("   => Uncoupled Induction <= \n\n")
-    unc_x_B_MOA = w_B_MOA.np / (cache["eps_occ_A"].np.reshape(-1, 1) - cache["eps_vir_A"].np)
-    unc_x_A_MOB = w_A_MOB.np / (cache["eps_occ_B"].np.reshape(-1, 1) - cache["eps_vir_B"].np)
+    unc_x_B_MOA = w_B_MOA.clone()
+    unc_x_B_MOA.np[:] /= (cache["eps_occ_A"].np.reshape(-1, 1) - cache["eps_vir_A"].np)
+    unc_x_A_MOB = w_A_MOB.clone()
+    unc_x_A_MOB.np[:] /= (cache["eps_occ_B"].np.reshape(-1, 1) - cache["eps_vir_B"].np)
 
-    unc_ind_ab = 2.0 * np.vdot(unc_x_B_MOA, w_B_MOA)
-    unc_ind_ba = 2.0 * np.vdot(unc_x_A_MOB, w_A_MOB)
-    unc_indexch_ba = 2.0 * np.vdot(W_B, unc_x_A_MOB)
-    unc_indexch_ab = 2.0 * np.vdot(W_A, unc_x_B_MOA)
+    unc_ind_ab = 2.0 * unc_x_B_MOA.vector_dot(w_B_MOA)
+    unc_ind_ba = 2.0 * unc_x_A_MOB.vector_dot(w_A_MOB)
+    unc_indexch_ab = 2.0 * unc_x_B_MOA.vector_dot(EX_A)
+    unc_indexch_ba = 2.0 * unc_x_A_MOB.vector_dot(EX_B)
 
     ret = {}
     ret["Ind20,u (A<-B)"] = unc_ind_ab
@@ -357,13 +384,10 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
         core.print_out("   => CPHF Monomer B <= \n")
         x_A_MOB = cache["wfn_B"].cphf_solve([w_A_MOB], conv, maxiter, 2)[0]
 
-        x_B = np.dot(cache["Cocc_A"], x_B_MOA).dot(cache["Cvir_A"].np.T)
-        x_A = np.dot(cache["Cocc_B"], x_A_MOB).dot(cache["Cvir_B"].np.T)
-
         ind_ab = 2.0 * x_B_MOA.vector_dot(w_B_MOA)
         ind_ba = 2.0 * x_A_MOB.vector_dot(w_A_MOB)
-        indexch_ba = 2.0 * np.vdot(W_B, x_A_MOB)
-        indexch_ab = 2.0 * np.vdot(W_A, x_B_MOA)
+        indexch_ab = 2.0 * x_B_MOA.vector_dot(EX_A)
+        indexch_ba = 2.0 * x_A_MOB.vector_dot(EX_B)
 
         ret["Ind20,r (A<-B)"] = ind_ab
         ret["Ind20,r (A->B)"] = ind_ba
