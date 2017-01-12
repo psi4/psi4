@@ -188,7 +188,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
     core.print_out(print_sapt_var("Disp20,u", Disp20_uc, short=True) + "\n")
     core.print_out(print_sapt_var("Disp20", Disp20_c, short=True) + "\n")
 
-    return {"Disp20,FDDS (unc)" : Disp20_uc, "Disp20,FDDS" : Disp20_c}
+    return {"Disp20,FDDS (unc)" : Disp20_uc, "Disp20" : Disp20_c}
 
 
 def df_mp2_dispersion(wfn, primary, auxiliary, cache, do_print=True):
@@ -223,7 +223,10 @@ def df_mp2_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     core.print_out(print_sapt_var("Disp20 (MP2)", scalars["Disp20"], short=True) + "\n")
     core.print_out(print_sapt_var("Exch-Disp20,u", scalars["Exch-Disp20"], short=True) + "\n")
 
-    return {}
+    ret = {}
+    ret["Exch-Disp20,u"] = scalars["Exch-Disp20"]
+    ret["Disp20,u"] = scalars["Disp20"]
+    return ret
 
 
 

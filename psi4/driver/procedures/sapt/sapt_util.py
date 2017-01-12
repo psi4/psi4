@@ -70,10 +70,16 @@ def print_sapt_summary(data, name, short=False):
     core.set_variable("SAPT IND ENERGY", ind)
 
     # Dispersion
-    # core.set_variable("SAPT DISP ENERGY"], disp)
+    disp = data["Disp20"] + data["Exch-Disp20,u"]
+    ret += print_sapt_var("Dispersion", disp) + "\n"
+    ret += print_sapt_var("  Disp20,r", data["Disp20"]) + "\n"
+    ret += print_sapt_var("  Disp20,u", data["Disp20,u"]) + "\n"
+    ret += print_sapt_var("  Exch-Disp20,u", data["Exch-Disp20,u"]) + "\n"
+    ret += "\n"
+    core.set_variable("SAPT DISP ENERGY", disp)
 
     # Total energy
-    total = data["Elst10,r"] + data["Exch10"] + ind
+    total = data["Elst10,r"] + data["Exch10"] + ind + disp
     ret += print_sapt_var("Total %-15s" % name, total, start_spacer="   ") + "\n"
     core.set_variable("SAPT0 TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)

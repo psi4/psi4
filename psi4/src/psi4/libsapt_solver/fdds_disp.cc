@@ -116,7 +116,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
             metric_ints[thread]->compute_shell(MU, 0, NU, 0);
 
             size_t index = 0;
-#pragma simd collapse(2)
+// #pragma simd collapse(2)
             for (size_t mu = 0; mu < nummu; ++mu) {
                 size_t omu = auxiliary_->shell(MU).function_index() + mu;
 
@@ -478,8 +478,10 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         # pragma omp parallel for collapse (2)
         for (size_t i = 0; i < osize; i++){
             for (size_t a = 0; a < nvir; a++){
+                double val =  ampp[i + shift_i][a];
+                # pragma omp simd
                 for (size_t Q = 0; Q < naux; Q++){
-                    tmpp[i * nvir + a][Q] *= ampp[i + shift_i][a];
+                    tmpp[i * nvir + a][Q] *= val;
                 }
             }
         }
