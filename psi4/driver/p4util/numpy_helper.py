@@ -487,6 +487,33 @@ def _from_serial(self, json_data):
 
 
 # Matrix attributes
+def _chain_dot(*args, trans=None):
+    """
+    Chains dot products together from a series of Psi4 Matrix classes.
+
+    By default there is no transposes, an optional vector of booleans can be passed in.
+    """
+
+    if trans is None:
+        trans = [False for x in range(len(args))]
+    else:
+        if len(trans) != len(args):
+            raise ValidationError("Chain dot: The length of the transpose arguements is not equal to the length of args.")
+
+    # Setup chain
+    ret = args[0]
+    if trans[0]:
+        ret = ret.transpose()
+
+    # Run through
+    for n, mat in enumerate(args[1:]):
+        ret = core.Matrix.doublet(ret, mat, False, trans[n + 1])
+
+    return ret
+
+
+
+# Matirx attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
 core.Matrix.to_array = _to_array
 core.Matrix.shape = _np_shape
@@ -497,6 +524,7 @@ core.Matrix.np_write = _np_write
 core.Matrix.np_read = classmethod(_np_read)
 core.Matrix.to_serial = _to_serial
 core.Matrix.from_serial = classmethod(_from_serial)
+core.Matrix.chain_dot = _chain_dot
 
 # Vector attributes
 core.Vector.from_array = classmethod(array_to_matrix)
