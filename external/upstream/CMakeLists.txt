@@ -7,6 +7,7 @@ foreach(dir ambit
             libint
             pcmsolver
             pybind11
+            simint
 )
    add_subdirectory(${dir})
 endforeach()

@@ -276,10 +276,10 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     size_t ncomputed = 0;
 
     if(do_cart)
-        ncomputed = simint_compute_eri_sharedwork(P, Q, SIMINT_SCREEN_TOL, sharedwork_, target_);
+        ncomputed = simint_compute_eri(P, Q, SIMINT_SCREEN_TOL, sharedwork_, target_);
     else
     {
-        ncomputed = simint_compute_eri_sharedwork(P, Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
+        ncomputed = simint_compute_eri(P, Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
         pure_transform(sh1, sh2, sh3, sh4, 1, false);
     }
 
@@ -385,10 +385,10 @@ SimintTwoElectronInt::compute_shell_blocks(int shellpair1, int shellpair2,
     size_t ncomputed = 0;
 
     if(do_cart)
-        ncomputed = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, sharedwork_, target_);
+        ncomputed = simint_compute_eri(&P, &Q, SIMINT_SCREEN_TOL, sharedwork_, target_);
     else
     {
-        ncomputed = simint_compute_eri_sharedwork(&P, &Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
+        ncomputed = simint_compute_eri(&P, &Q, SIMINT_SCREEN_TOL, sharedwork_, source_);
         if(!do_cart)
         {
             for(int i = 0; i < npair1; i++)
