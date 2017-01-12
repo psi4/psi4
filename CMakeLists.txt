@@ -195,6 +195,7 @@ ExternalProject_Add(psi4-core
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
+              -Dsimint_DIR=${simint_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}
