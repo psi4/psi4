@@ -1388,10 +1388,11 @@ void HF::guess()
             nbetapi_ = guess_Cb_->colspi();
             nalpha_ = nalphapi_.sum();
             nbeta_ = nbetapi_.sum();
-            doccpi_ = nalphapi_;
             soccpi_ = nalphapi_ - nbetapi_;
+            doccpi_ = nalphapi_ - soccpi_;
         }
 
+        format_guess();
         form_D();
 
         // This is a guess iteration similar to SAD
@@ -1461,6 +1462,11 @@ void HF::guess()
 
 
     E_ = 0.0; // don't use this guess in our convergence checks
+}
+
+void HF::format_guess()
+{
+    // Nothing to do, only for special cases
 }
 
 
@@ -1822,6 +1828,8 @@ void HF::print_energies()
     if (fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
+
+    Process::environment.globals["SCF ITERATIONS"] = iteration_;
 
     // Only print this alert if we are actually doing EFP or PCM
     if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
