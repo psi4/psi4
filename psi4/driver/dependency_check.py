@@ -47,10 +47,6 @@ try:
     import csx4psi
 except ImportError:
     pass
-try:
-    import v2rdm_casscf
-except ImportError:
-    pass
 
 try:
     from . import pasture

@@ -274,19 +274,19 @@ import qcdb
 
 def testem(odb, ss, bm, ans):
     dbse = odb.dbse
-    print """<<<  {} {} {}  >>>""".format(dbse, ss.lower(), bm.upper())
+    print("""<<<  {} {} {}  >>>""".format(dbse, ss.lower(), bm.upper()))
     for mtd in active_methods:
         pub = ans[mtd]
         perr = odb.compute_statistics(mtd + mode, benchmark=bm, sset=ss)
         qcdb.compare_values(pub, perr[dbse][err], digits, dbse + ' @ ' + mtd, exitonfail=False)
-    print ''
+    print('')
 
 err = 'rmse'
 digits = 0.02
 mode = '-unCP-atz'
 active_methods = ['PBE', 'B3LYP', 'VV10', 'LCVV10', 'WB97XD', 'WB97XV', 'M062X', 'M11L', 'M11']
 
-print """\n<<<  Mardirossian:2014:9904  PCCP 2014, 16, 9904  >>>\n"""
+print("""\n<<<  Mardirossian:2014:9904  PCCP 2014, 16, 9904  >>>\n""")
 
 asdf = qcdb.Database('s22')
 asdf.load_qcdata_byproject('dhdft')

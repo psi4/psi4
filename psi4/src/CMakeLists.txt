@@ -25,22 +25,25 @@ set(sources_list export_psio.cc
 add_library(core SHARED ${sources_list})
 
 get_property(psi4_binmodules GLOBAL PROPERTY BINLIST)
-if(ENABLE_psi4pasture)
-  target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} qt ${POST_LIBRARY_OPTION})
-endif()
+target_link_libraries(core PRIVATE ${PRE_LIBRARY_OPTION} dpd qt ${POST_LIBRARY_OPTION})
+
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
-target_link_libraries(core PRIVATE pybind11::pybind11)
-target_link_libraries(core PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(core PUBLIC pybind11::module)
+target_link_libraries(core PRIVATE Threads::Threads)
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
+target_include_directories(core INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 install(TARGETS core
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
-        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
-
+        EXPORT "psi4Targets"
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(EXPORT "psi4Targets"
+        NAMESPACE "psi4::"
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
 ### >>  Stuff below this is for RPaths and doesn't work quite right
 
@@ -52,7 +55,7 @@ install(TARGETS core
 #    set(PSI4_RPATH
 #            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
 #endforeach()
-set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/external/${CMAKE_INSTALL_LIBDIR}")
+set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
 # The other big source of RPaths are the math libraries
 foreach(math_comp ${LAPACKBLAS_LIBRARIES})
@@ -70,6 +73,7 @@ set(PSI4_RPATH ${psi4_install_lib}
 
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
+                           EXPORT_NAME core
                            SUFFIX ".so"  # for python module
                            #SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
                            INSTALL_RPATH "${PSI4_RPATH}"

@@ -74,13 +74,7 @@ tests/*/plot/*
 
 # Automatically generated files
 share/python/pcm_placeholder.py
-plugins/skeleton/input.dat
-plugins/skeletonambit/input.dat
-plugins/skeletonaointegrals/input.dat
-plugins/skeletonmointegrals/input.dat
-plugins/skeletonscf/input.dat
-plugins/skeletonsointegrals/input.dat
-plugins/skeletonwavefunction/input.dat
+plugins/skeleton*/input.dat
 
 # Compilation directories that people use
 obj*

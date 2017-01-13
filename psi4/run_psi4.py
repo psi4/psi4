@@ -31,13 +31,15 @@ import sys
 import os
 import json
 import argparse
+from argparse import RawTextHelpFormatter
 
-parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry")
-parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default input.dat.")
-parser.add_argument("-o", "--output", help="Redirect output elsewhere.\n"
-                                           "Default: when input filename is 'input.dat', then defaults to 'output.dat'. "
-                                           "Otherwise, output filename defaults to input filename with any '.in' or 'dat' extension replaced by '.out'\n")
-
+parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
+parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default: input.dat.")
+parser.add_argument("-o", "--output", help="""\
+Redirect output elsewhere.
+Default: when input filename is 'input.dat', 'output.dat'.
+Otherwise, output filename defaults to input filename with
+any '.in' or 'dat' extension replaced by '.out'""")
 parser.add_argument("-v", "--verbose", action='store_true', help="Print a lot of information.")
 parser.add_argument("-V", "--version", action='store_true', help="Print version information.")
 
@@ -47,7 +49,7 @@ parser.add_argument("-m", "--messy", action='store_true', help="Leave temporary 
 # parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
 
 parser.add_argument("-s", "--scratch", help="Psi4 scratch directory to use.")
-parser.add_argument("-a", "--append", action='store_true', help="Append results to output file. Default Truncate first")
+parser.add_argument("-a", "--append", action='store_true', help="Append results to output file. Default: Truncate first")
 parser.add_argument("-l", "--psidatadir",
                     help="Specify where to look for the Psi data directory. Overrides PSIDATADIR.")
 parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use (overrides OMP_NUM_THREADS)")
@@ -57,14 +59,20 @@ parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the s
 parser.add_argument("--json", action='store_true', help="Runs a JSON input file. !Warning! experimental option.")
 
 # For plugins
-parser.add_argument("--new-plugin",
-                    help="Creates a new directory with files for writing a "
-                         "new plugin. You can specify an additional argument "
-                         "that specifies a template to use, for example "
-                         "--new-plugin name +mointegrals")
-parser.add_argument('--new-plugin-template', default='basic',
+parser.add_argument("--plugin-name", help="""\
+Creates a new directory with files for writing a new plugin.
+You can specify an additional argument that specifies a
+template to use, for example
+>>> psi4 --plugin-name mygreatcode --plugin-template mointegrals""")
+parser.add_argument('--plugin-template', default='basic',
                     choices=['aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
                     help='New plugin template to use.')
+parser.add_argument('--plugin-compile', action='store_true', help="""\
+Generates a CMake command for building a plugin against this psi4 installation.
+>>> cd <plugin_directory>
+>>> `psi4 --plugin-compile`
+>>> make
+>>> psi4""")
 
 # print("Environment Variables\n");
 # print("     PSI_SCRATCH           Directory where scratch files are written.")
@@ -76,7 +84,7 @@ args, unknown = parser.parse_known_args()
 args = args.__dict__  # Namespace object seems silly
 
 # Figure out pythonpath
-cmake_install_prefix = os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..'
+cmake_install_prefix = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.path.sep + '..')
 lib_dir = os.path.sep.join([cmake_install_prefix, "@CMAKE_INSTALL_LIBDIR@", "@PYMOD_INSTALL_LIBDIR@"])
 
 if args["inplace"]:
@@ -114,6 +122,12 @@ if args["output"] is None:
     else:
         args["output"] = args["input"] + ".dat"
 
+# Plugin compile line
+if args['plugin_compile']:
+    share_cmake_dir = os.path.sep.join([cmake_install_prefix, 'share', 'cmake', 'psi4'])
+    print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(share_cmake_dir, cmake_install_prefix))
+    sys.exit()
+
 # Transmit any argument psidatadir through environ
 if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
@@ -129,10 +143,9 @@ if args["version"]:
     print(psi4.__version__)
     sys.exit()
 
-# if args["new_plugin"] or args["new_plugin_makefile"]:
-if args['new_plugin']:
+if args['plugin_name']:
     # This call does not return.
-    psi4.plugin.create_plugin(args)
+    psi4.plugin.create_plugin(args['plugin_name'], args['plugin_template'])
 
 if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
@@ -219,7 +232,7 @@ except Exception as exception:
     tb_str += '\n'
     tb_str += type(exception).__name__
     tb_str += ': '
-    tb_str += exception.message
+    tb_str += str(exception)
     psi4.core.print_out("\n")
     psi4.core.print_out(tb_str)
     psi4.core.print_out("\n")

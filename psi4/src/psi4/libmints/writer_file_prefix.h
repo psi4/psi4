@@ -32,7 +32,7 @@
 
 namespace psi {
 
-std::string get_writer_file_prefix(std::string molecule_name);
+std::string get_writer_file_prefix(const std::string& molecule_name);
 
 }
 

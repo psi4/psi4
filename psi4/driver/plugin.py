@@ -30,7 +30,6 @@ import sys
 
 from psi4.driver.util.filesystem import *
 from psi4.driver.util import tty
-import psi4.config as config
 
 
 def sanitize_name(name):
@@ -87,25 +86,18 @@ def sanitize_name(name):
 
 # Determine the available plugins
 available_plugins = []
-plugin_path = join_path(config.share_dir, "plugin")
+psidatadir = os.environ.get('PSIDATADIR', None)
+plugin_path = join_path(psidatadir, "plugin")
 for dir in os.listdir(plugin_path):
     if os.path.isdir(join_path(plugin_path, dir)):
         available_plugins.append(dir)
 
 
-# def create_new_plugin_makefile():
-#     """Generate here (.) a plugin Makefile with current build settings."""
-#
-#     print("""Creating new plugin Makefile in the current directory.""")
-#     file_manager(name='.', files={'Makefile': 'Makefile.template'})
+def create_plugin(name, template):
+    """Generate plugin in directory with sanitized *name* based upon *template*."""
 
-
-def create_plugin(args):
-    """Generate plugin in sanitized directory of same name based upon *type*"""
-
-    name = sanitize_name(args['new_plugin'])
-    ptype = args['new_plugin_template']
-    template_path = join_path(plugin_path, ptype)
+    name = sanitize_name(name)
+    template_path = join_path(plugin_path, template)
 
     # Create, but do not overwrite, plugin directory
     if os.path.exists(name):
@@ -123,7 +115,7 @@ def create_plugin(args):
         if temp_file.endswith('.cc.template'):
             source_files.append(target_file)
 
-    tty.hline("""Creating "{}" with "{}" template.""".format(name, ptype))
+    tty.hline("""Creating "{}" with "{}" template.""".format(name, template))
 
     os.mkdir(name)
     created_files = []
@@ -145,9 +137,6 @@ def create_plugin(args):
         contents = contents.replace('@Plugin@', name.capitalize())
         contents = contents.replace('@PLUGIN@', name.upper())
         contents = contents.replace('@sources@', ' '.join(source_files))
-        contents = contents.replace('@C@', config.c_compiler)
-        contents = contents.replace('@CXX@', config.cxx_compiler)
-        contents = contents.replace('@Fortran@', config.fortran_compiler)
 
         try:
             with open(join_path(name, target_file), 'w') as temp_file:
@@ -158,6 +147,6 @@ def create_plugin(args):
             tty.error(err)
             sys.exit(1)
 
-    tty.info("Created plugin files: ", ", ".join(created_files))
+    tty.info("Created plugin files (in {} as {}): ".format(name, template), ", ".join(created_files))
 
     sys.exit(0)

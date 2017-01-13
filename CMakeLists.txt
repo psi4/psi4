@@ -71,7 +71,7 @@ option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
 
 # Append modules added to pasture as needed
 if(ENABLE_ccsort OR ENABLE_transqt2)
-  set(ENABLE_psi4pasture ON)
+  set(ENABLE_pasture ON)
   message(STATUS "Enabling pasture plugins")
 endif()
 
@@ -86,7 +86,7 @@ if(ENABLE_erd)
 endif()
 
 ############################  Options: Build How?  #############################
-include(Psi4Macros)
+include(psi4OptionsTools)
 option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on libraries as shared, not static" OFF)
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
 option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
@@ -111,24 +111,29 @@ option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed
 option_with_Default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
-option_with_default(PSI4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
+option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(custom_color_messages)
 
-#find_package(PythonLibsNew REQUIRED)
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs ${PYTHON_VERSION_MAJOR} REQUIRED)
+# Python use in psi4 (not incl. external/)
+# * interpreter: run the versioner in psi4-core. run tests and build docs in psi4
+# * headers: Python.h for pybind11 to build against in psi4-core
+# * library: not at all
+
+set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5)  # adjust with CMake minimum FindPythonInterp
+find_package(PythonLibsNew REQUIRED)
+message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
-add_subdirectory(external)
+add_subdirectory(external/upstream)
 
-    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4_core
+    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(autocmake_omp)
 include(custom_cxxstandard)
-include(autocmake_static_library)
+include(custom_static_library)
 
 ################################  Dependencies  ################################
 set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
@@ -144,11 +149,9 @@ foreach(pkg in pcmsolver)
    endif()
 endforeach()
 
-list(APPEND CMAKE_PREFIX_PATH  ${STAGED_INSTALL_PREFIX}/external)
-
 ################################  Main Project  ################################
 include(ExternalProject)
-ExternalProject_Add(psi4_core
+ExternalProject_Add(psi4-core
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -156,7 +159,7 @@ ExternalProject_Add(psi4_core
               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-              -DCMAKE_CXX_STANDARD=${PSI4_CXX_STANDARD}
+              -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
               -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
@@ -179,7 +182,6 @@ ExternalProject_Add(psi4_core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
-              -DENABLE_psi4pasture=${ENABLE_psi4pasture}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
@@ -201,7 +203,7 @@ ExternalProject_Add(psi4_core
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
-add_dependencies(psi4_core ambit_external
+add_dependencies(psi4-core ambit_external
                            chemps2_external
                            dkh_external
                            libefp_external
@@ -211,7 +213,7 @@ add_dependencies(psi4_core ambit_external
                            libint_external
                            pcmsolver_external
                            pybind11_external)
-add_subdirectory(internals/pasture)
+add_subdirectory(external/downstream)
 add_subdirectory(doc)
 include(ConfigTesting)
 
