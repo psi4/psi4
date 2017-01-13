@@ -49,7 +49,8 @@ CubeProperties::CubeProperties(SharedWavefunction wfn) :
     options_(Process::environment.options)
 {
     basisset_ = wfn->basisset();
-    auxiliary_ = wfn->get_basisset("DF_BASIS_SCF");
+    if (wfn->basisset_exists("DF_BASIS_SCF"))
+        auxiliary_ = wfn->get_basisset("DF_BASIS_SCF");
 
     Ca_ = wfn->Ca_subset("AO", "ALL");
     Da_ = wfn->Da_subset("AO");
