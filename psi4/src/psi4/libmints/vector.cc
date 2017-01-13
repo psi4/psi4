@@ -58,13 +58,13 @@ Vector::Vector(const Vector &c)
     name_ = c.name_;
 }
 
-Vector::Vector(int nirreps, int *dimpi)
-        : dimpi_(nirreps)
-{
-    nirrep_ = nirreps;
-    dimpi_ = dimpi;
-    alloc();
-}
+//Vector::Vector(int nirreps, int *dimpi)
+//        : dimpi_(nirreps)
+//{
+//    nirrep_ = nirreps;
+//    dimpi_ = dimpi;
+//    alloc();
+//}
 
 Vector::Vector(int dim)
         : dimpi_(1)
@@ -74,16 +74,16 @@ Vector::Vector(int dim)
     alloc();
 }
 
-Vector::Vector(const std::string &name, int nirreps, int *dimpi)
-        : dimpi_(nirreps)
-{
-    nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
-    alloc();
-    name_ = name;
-}
+//Vector::Vector(const std::string &name, int nirreps, int *dimpi)
+//        : dimpi_(nirreps)
+//{
+//    nirrep_ = nirreps;
+//    dimpi_ = new int[nirrep_];
+//    for (int h = 0; h < nirrep_; ++h)
+//        dimpi_[h] = dimpi[h];
+//    alloc();
+//    name_ = name;
+//}
 
 Vector::Vector(const std::string &name, int dim)
         : dimpi_(1)
@@ -146,7 +146,7 @@ void Vector::init(const Dimension &v)
 
 Vector *Vector::clone()
 {
-    Vector *temp = new Vector(nirrep_, dimpi_);
+    Vector *temp = new Vector(dimpi_);
     temp->copy(this);
     return temp;
 }

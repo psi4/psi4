@@ -151,8 +151,8 @@ void ROHF::semicanonicalize()
     SharedMatrix bFVV = bVV();
 
     // Canonicalize the Alpha occ-occ block
-    evecs = SharedMatrix(new Matrix(nirrep_, aoccpi, aoccpi));
-    evals = SharedVector(new Vector(nirrep_, aoccpi));
+    evecs = SharedMatrix(new Matrix(aoccpi, aoccpi));
+    evals = SharedVector(new Vector(aoccpi));
     aFOO->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -171,8 +171,8 @@ void ROHF::semicanonicalize()
         }
     }
     // Canonicalize the Alpha vir-vir block
-    evecs = SharedMatrix(new Matrix(nirrep_, avirpi, avirpi));
-    evals = SharedVector(new Vector(nirrep_, avirpi));
+    evecs = SharedMatrix(new Matrix(avirpi, avirpi));
+    evals = SharedVector(new Vector(avirpi));
     aFVV->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -191,8 +191,8 @@ void ROHF::semicanonicalize()
         }
     }
     // Canonicalize the Beta occ-occ block
-    evecs = SharedMatrix(new Matrix(nirrep_, boccpi, boccpi));
-    evals = SharedVector(new Vector(nirrep_, boccpi));
+    evecs = SharedMatrix(new Matrix(boccpi, boccpi));
+    evals = SharedVector(new Vector(boccpi));
     bFOO->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -211,8 +211,8 @@ void ROHF::semicanonicalize()
         }
     }
     // Canonicalize the Beta vir-vir block
-    evecs = SharedMatrix(new Matrix(nirrep_, bvirpi, bvirpi));
-    evals = SharedVector(new Vector(nirrep_, bvirpi));
+    evecs = SharedMatrix(new Matrix(bvirpi, bvirpi));
+    evals = SharedVector(new Vector(bvirpi));
     bFVV->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
