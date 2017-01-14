@@ -37,6 +37,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
@@ -71,8 +72,8 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn)
         moinfo.escf = wfn->reference_wavefunction()->reference_energy();
     else
         moinfo.escf = wfn->reference_energy();
-    moinfo.orbspi = wfn->nmopi();
-    moinfo.openpi = wfn->soccpi();
+    moinfo.orbspi = const_cast<psi::Dimension*>(&wfn->nmopi())->pointer();
+    moinfo.openpi = const_cast<psi::Dimension*>(&wfn->soccpi())->pointer();
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
