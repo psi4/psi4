@@ -127,7 +127,7 @@ void MatrixRHamiltonian::print_header() const
 }
 std::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
 {
-    std::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->nirrep(), M_->rowspi()));
+    std::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->rowspi()));
     for (int h = 0; h < M_->nirrep(); ++h) {
         int n = M_->rowspi()[h];
         if (!n) continue;
@@ -169,8 +169,8 @@ void MatrixUHamiltonian::print_header() const
 }
 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > MatrixUHamiltonian::diagonal()
 {
-    std::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
-    std::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
+    std::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->rowspi()));
+    std::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->rowspi()));
     for (int h = 0; h < M_.first->nirrep(); ++h) {
         int n = M_.first->rowspi()[h];
         if (!n) continue;

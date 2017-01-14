@@ -593,12 +593,18 @@ public:
     const Dimension& rowspi() const {
         return rowspi_;
     }
+    Dimension& rowspi() {
+        return rowspi_;
+    }
     /// Returns the rows per irrep array
     int rowspi(const int& h) const {
         return rowdim(h);
     }
     /// Returns the columns per irrep array
     const Dimension& colspi() const {
+        return colspi_;
+    }
+    Dimension& colspi() {
         return colspi_;
     }
     /// Returns the columns per irrep array

@@ -114,7 +114,9 @@ void CIWavefunction::get_mo_info() {
                   CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
                   CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc,
                   CalcInfo_->rstr_uocc, CalcInfo_->ras_opi,
-                  reference_wavefunction_->frzcpi(), CalcInfo_->reorder.data(), 1,
+                  const_cast<psi::Dimension*>(&reference_wavefunction_->frzcpi())->pointer(),
+//                  reference_wavefunction_->frzcpi(),
+                  CalcInfo_->reorder.data(), 1,
                   (Parameters_->mcscf ? true : false), options_)) {
         throw PsiException("Error in ras_set3(). Aborting.", __FILE__,
                            __LINE__);

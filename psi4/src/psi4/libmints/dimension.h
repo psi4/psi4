@@ -57,23 +57,27 @@ public:
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
-    /// Re-initializes the object.
+    /// Re-initializes the object
     void init(int n, const std::string& name = "");
 
     /// Return the rank
     int n() const { return static_cast<int>(blocks_.size()); }
 
-    /// Return the name of the dimension.
+    /// Return the name of the dimension
     const std::string& name() const { return name_; }
 
-    /// Set the name of the dimension.
-    void set_name(const std::string& nme) { name_ = nme; }
+    /// Set the name of the dimension
+    void set_name(const std::string& name) { name_ = name; }
 
     /// Blocks access
     int& operator[](int i) { return blocks_[i]; }
     const int& operator[](int i) const { return blocks_[i]; }
     const std::vector<int>& blocks() const { return blocks_; }
 
+    /// Casting operator to  int*
+    int* pointer() { return blocks_.data(); }
+    /// Casting operator to  int*
+    operator int*() { return blocks_.data(); }
     /// Casting operator to const int*
     operator const int*() const { return blocks_.data(); }
 
@@ -81,7 +85,7 @@ public:
     int sum() const;
     int max() const;
 
-    /// Zero all the elements.
+    /// Zero all the elements
     void zero();
 
     void print() const;
