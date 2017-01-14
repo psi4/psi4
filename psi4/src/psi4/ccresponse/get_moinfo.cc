@@ -70,10 +70,10 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn)
     moinfo.nso = wfn->nso();
     moinfo.nao = wfn->basisset()->nao();
     moinfo.labels = wfn->molecule()->irrep_labels();
-    moinfo.sopi = wfn->nsopi();
-    moinfo.orbspi = wfn->nmopi();
+    moinfo.sopi = const_cast<psi::Dimension*>(&wfn->nsopi())->pointer();
+    moinfo.orbspi = const_cast<psi::Dimension*>(&wfn->nmopi())->pointer();
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
-    moinfo.openpi = wfn->soccpi();
+    moinfo.openpi = const_cast<psi::Dimension*>(&wfn->soccpi())->pointer();
     for(int h = 0; h < moinfo.nirreps; ++h)
         moinfo.clsdpi[h] = wfn->doccpi()[h];
     moinfo.natom = wfn->molecule()->natom();

@@ -789,7 +789,7 @@ std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, boo
 {
     SharedMatrix D = Dmo(T1, diff);
     SharedMatrix C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
-    std::shared_ptr<Vector> O(new Vector("Occupation", D->nirrep(), D->rowspi()));
+    std::shared_ptr<Vector> O(new Vector("Occupation", D->rowspi()));
 
     D->diagonalize(C,O,descending);
 

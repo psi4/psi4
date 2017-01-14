@@ -204,7 +204,7 @@ public:
     int dim(int h = 0) const { return dimpi_[h]; }
 
     /// Returns the dimension array
-    int *dimpi() const { return dimpi_; }
+    int *dimpi() { return dimpi_; }
 
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }
