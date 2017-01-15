@@ -234,6 +234,7 @@ def exchange(cache, jk, do_print=True):
     Exch10 += 4.0 * np.vdot(T_AB, JT_AB.np - 0.5 * KT_AB.np.T)
 
     if do_print:
+        core.set_variable("Exch10", Exch10)
         core.print_out(print_sapt_var("Exch10", Exch10, short=True))
         core.print_out("\n");
 
@@ -261,14 +262,6 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     J_O = cache["J_O"]
 
     jk.C_clear()
-
-    # C_O_A = core.Matrix.chain_dot(D_B, S, cache["Cocc_A"])
-    # C_P_B = core.Matrix.chain_dot(D_B, S, D_A, S, cache["Cocc_B"])
-    # C_P_A = core.Matrix.chain_dot(D_A, S, D_B, S, cache["Cocc_A"])
-
-    # C_O_A = core.Matrix.from_array(D_B.dot(S).dot(cache["Cocc_A"]))
-    # C_P_B = core.Matrix.from_array(D_B.dot(S).dot(D_A).dot(S).dot(cache["Cocc_B"]))
-    # C_P_A = core.Matrix.from_array(D_A.dot(S).dot(D_B).dot(S).dot(cache["Cocc_A"]))
 
     jk.C_left_add(core.Matrix.chain_dot(D_B, S, cache["Cocc_A"]))
     jk.C_right_add(cache["Cocc_A"])
@@ -371,6 +364,7 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
 
     if do_print:
         for name in plist:
+            # core.set_variable(name, ret[name])
             core.print_out(print_sapt_var(name, ret[name], short=True))
             core.print_out("\n");
 
@@ -399,6 +393,8 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
         if do_print:
             for name in plist:
                 name = name.replace(",u", ",r")
+
+                # core.set_variable(name, ret[name])
                 core.print_out(print_sapt_var(name, ret[name], short=True))
                 core.print_out("\n");
 

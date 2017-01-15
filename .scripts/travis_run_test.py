@@ -8,7 +8,7 @@ import subprocess
 # <<<  run ctest  >>>
 retcode = subprocess.Popen(['ctest', '-j2', '-L', 'quick'], bufsize=0,
                             stdout=subprocess.PIPE, universal_newlines=True)
-print_all = False
+print_all = True
 ctestout = ''
 while True:
     data = retcode.stdout.readline()
@@ -40,6 +40,9 @@ sys.stdout.write("""\n  <<<  CTest complete with status %d.  >>>\n\n""" %
                  (ctest_exit_status))
 
 ctestout = str(ctest_exit_status) + "\n" + ctestout
+
+with open('Testing/Temporary/LastTest.log', 'r') as ttllog:
+    sys.stdout.write(ttllog.read())
 
 with open('full_ctest_output.dat', 'w') as outfile:
     outfile.write(ctestout)

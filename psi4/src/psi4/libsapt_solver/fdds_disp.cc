@@ -434,9 +434,13 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     for (size_t i = 0; i < nocc; i++) {
         for (size_t a = 0; a < nvir; a++) {
             double val = -1.0 * (eoccp[i] - evirp[a]);
+            double tmp = 4.0 * val / (val * val + omega * omega);
             // Lets see how stable this is, should be fine
-            // ampp[i][a] = 4.0 * val / (val * val + omega * omega);
-            ampp[i][a] = std::pow(4.0 * val / (val * val + omega * omega), 0.5);
+            if (tmp < 1.e-14){
+                ampp[i][a] = 0.0;
+            } else {
+                ampp[i][a] = std::pow(tmp, 0.5);
+            }
         }
     }
 
