@@ -111,7 +111,7 @@ void HF::common_init()
 
     nmo_ = 0;
     nso_ = 0;
-    int* dimpi = factory_->colspi();
+    const Dimension& dimpi = factory_->colspi();
     for (int h = 0; h< factory_->nirrep(); h++){
         nsopi_[h] = dimpi[h];
         nmopi_[h] = nsopi_[h]; //For now, may change in S^-1/2
@@ -1004,7 +1004,7 @@ void HF::form_Shalf()
     eigval_store->copy(eigval.get());
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
-    int *dimpi = eigval->dimpi();
+    const Dimension& dimpi = eigval->dimpi();
     double min_S = fabs(eigval->get(0,0));
     for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi[h]; ++i) {

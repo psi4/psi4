@@ -362,8 +362,8 @@ SharedMatrix SOMCSCF::H_approx_diag()
     int relact = 0;
     int nact3 = nact_*nact_*nact_;
 
-    SharedVector dI(new Vector("dI", nirrep_, nactpi_));
-    SharedVector DIF(new Vector("IF * OPDM", nirrep_, nactpi_));
+    SharedVector dI(new Vector("dI", nactpi_));
+    SharedVector DIF(new Vector("IF * OPDM", nactpi_));
     for (int h=0; h<nirrep_; h++){
         if (!nactpi_[h]) continue;
 
