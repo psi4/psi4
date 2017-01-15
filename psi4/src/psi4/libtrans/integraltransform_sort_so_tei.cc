@@ -289,20 +289,22 @@ IntegralTransform::presort_so_tei()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketOffset = p;
+		}
                 bucketOffset[nBuckets-1] = init_int_array(nirreps_);
                 bucketOffset[nBuckets-1][h] = row;
 
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketRowDim = p;
+		}
 		bucketRowDim[nBuckets-1] = init_int_array(nirreps_);
 		bucketRowDim[nBuckets-1][h] = 1;
 
@@ -310,10 +312,11 @@ IntegralTransform::presort_so_tei()
 		long int **pp;
 		pp = static_cast<long int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(long int *)));
-		if(pp == NULL)
+		if(pp == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketSize = pp;
+		}
                 bucketSize[nBuckets-1] = init_long_int_array(nirreps_);
                 bucketSize[nBuckets-1][h] = rowLength;
             }

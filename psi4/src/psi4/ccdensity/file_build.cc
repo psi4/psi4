@@ -104,31 +104,33 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
               /* Make room for another bucket */
 	      int **p;
 
-
 	      p = static_cast<int **>(realloc(static_cast<void *>(bucket_offset),
                                               nbuckets * sizeof(int *)));
-	      if(p == NULL)
+	      if(p == NULL) {
 		throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-	      else
+	      } else {
 		bucket_offset = p;
-              bucket_offset[nbuckets-1] = init_int_array(nirreps);
+	      }
+	      bucket_offset[nbuckets-1] = init_int_array(nirreps);
               bucket_offset[nbuckets-1][h] = row;
 
 	      p = static_cast<int **>(realloc(static_cast<void *>(bucket_rowdim),
                                               nbuckets * sizeof(int *)));
-	      if(p == NULL)
+	      if(p == NULL) {
 		throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-	      else
+	      } else {
 		bucket_rowdim = p;
+	      }
               bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
               bucket_rowdim[nbuckets-1][h] = 1;
 
 	      p = static_cast<int **>(realloc(static_cast<void *>(bucket_size),
                                               nbuckets * sizeof(int *)));
-	      if(p == NULL)
+	      if(p == NULL) {
 		throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-	      else
+	      } else {
 		bucket_size = p;
+	      }
               bucket_size[nbuckets-1] = init_int_array(nirreps);
               bucket_size[nbuckets-1][h] = row_length;
             }

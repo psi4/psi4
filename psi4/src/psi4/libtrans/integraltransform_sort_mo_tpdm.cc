@@ -101,30 +101,33 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketOffset = p;
+		}
                 bucketOffset[nBuckets-1] = init_int_array(nirreps_);
                 bucketOffset[nBuckets-1][h] = row;
 
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketRowDim = p;
+		}
 		bucketRowDim[nBuckets-1] = init_int_array(nirreps_);
 		bucketRowDim[nBuckets-1][h] = 1;
 
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketSize = p;
+		}
                 bucketSize[nBuckets-1] = init_int_array(nirreps_);
                 bucketSize[nBuckets-1][h] = rowLength;
             }
@@ -261,30 +264,33 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketOffset),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketOffset = p;
+		}
                 bucketOffset[nBuckets-1] = init_int_array(nirreps_);
                 bucketOffset[nBuckets-1][h] = row;
 
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketRowDim),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketRowDim = p;
+		}
 		bucketRowDim[nBuckets-1] = init_int_array(nirreps_);
 		bucketRowDim[nBuckets-1][h] = 1;
 
 
 		p = static_cast<int **>(realloc(static_cast<void *>(bucketSize),
 						nBuckets * sizeof(int *)));
-		if(p == NULL)
+		if(p == NULL) {
 		  throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		else
+		} else {
 		  bucketSize = p;
+		}
                 bucketSize[nBuckets-1] = init_int_array(nirreps_);
                 bucketSize[nBuckets-1][h] = rowLength;
             }

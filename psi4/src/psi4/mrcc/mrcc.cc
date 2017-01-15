@@ -318,28 +318,31 @@ public:
 
 		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_offset_),
 						    nbucket_ * sizeof(int *)));
-		    if(p == NULL)
+		    if(p == NULL) {
 		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		    else
+		    } else {
 		      bucket_offset_ = p;
+		    }
 		    bucket_offset_[nbucket_-1] = init_int_array(nirrep);
 		    bucket_offset_[nbucket_-1][h] = row;
 
 		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_row_dim_),
 						    nbucket_ * sizeof(int *)));
-		    if(p == NULL)
+		    if(p == NULL) {
 		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		    else
+		    } else {
 		      bucket_row_dim_ = p;
+		    }
 		    bucket_row_dim_[nbucket_-1] = init_int_array(nirrep);
 		    bucket_row_dim_[nbucket_-1][h] = 1;
 
 		    p = static_cast<int **>(realloc(static_cast<void *>(bucket_size_),
 						    nbucket_ * sizeof(int *)));
-		    if(p == NULL)
+		    if(p == NULL) {
 		      throw PsiException("file_build: allocation error", __FILE__, __LINE__);
-		    else
+		    } else {
 		      bucket_size_ = p;
+		    }
 		    bucket_size_[nbucket_-1] = init_int_array(nirrep);
 		    bucket_size_[nbucket_-1][h] = row_length;
                 }
