@@ -576,8 +576,8 @@ void CIWavefunction::ci_nat_orbs() {
   outfile->Printf("   !Warning: New orbitals will be sorted by occuption number,\n");
   outfile->Printf("   orbital spaces (occ/act/vir) may change.\n\n");
 
-  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->nirrep(), Da_->rowspi(), Da_->colspi()));
-  SharedVector NO_occ(new Vector("OPDM Occuption", Da_->nirrep(), Da_->rowspi()));
+  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->rowspi(), Da_->colspi()));
+  SharedVector NO_occ(new Vector("OPDM Occuption", Da_->rowspi()));
 
   SharedMatrix D = opdm_add_inactive(opdm_, 2.0, true);
   D->diagonalize(NO_vecs, NO_occ, descending);

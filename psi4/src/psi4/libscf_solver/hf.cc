@@ -1416,7 +1416,7 @@ void HF::guess()
 
         Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        int *opi = S_->rowspi();
+        const int *opi = S_->rowspi();
         int nirreps = S_->nirrep();
         for (h=0; h<nirreps; ++h) {
             for (i=0; i<opi[h]; ++i) {
@@ -2180,8 +2180,8 @@ void HF::reset_occupation()
 }
 SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 {
-    int* nsopi = Cso->rowspi();
-    int* nmopi = Cso->colspi();
+    const int* nsopi = Cso->rowspi();
+    const int* nmopi = Cso->colspi();
     int* nvirpi = new int[nirrep_];
 
     for (int h = 0; h < nirrep_; h++)
@@ -2190,8 +2190,8 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
     SharedMatrix Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
 
     // Hack to get orbital e for this Fock
-    SharedMatrix C2(new Matrix("C2", nirrep_, nsopi, nmopi));
-    std::shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
+    SharedMatrix C2(new Matrix("C2", Cso->rowspi(), Cso->colspi()));
+    std::shared_ptr<Vector> E2(new Vector("E2", Cso->colspi()));
     diagonalize_F(Fso, C2, E2);
 
     for (int h = 0; h < nirrep_; h++) {
