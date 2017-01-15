@@ -1441,8 +1441,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_GRAC_ALPHA", 0.5);
     /*- The gradient regularized asymptotic correction beta value -*/
     options.add_double("DFT_GRAC_BETA", 40.0);
-    /*- The gradient regularized asymptotic correction functional form. !expert -*/
-    options.add_str("DFT_GRAC_FUNC", "XC_GGA_X_LB");
+    /*- The gradient regularized asymptotic correction functional exch form. !expert -*/
+    options.add_str("DFT_GRAC_X_FUNC", "XC_GGA_X_LB");
+    /*- The gradient regularized asymptotic correction functional corr form. !expert -*/
+    options.add_str("DFT_GRAC_C_FUNC", "XC_LDA_C_VWN");
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/

@@ -223,6 +223,19 @@ void export_functional(py::module &m)
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
 
+    py::class_<DFTGrid, std::shared_ptr<DFTGrid>>(m, "DFTGrid", "docstring")
+        .def_static("build",
+                     [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
+                         return DFTGrid(mol, basis, Process::environment.options);
+                     })
+        .def("print", &DFTGrid::print, "Prints grid information.")
+        .def("orientation", &DFTGrid::orientation, "Returns the orientation of the grid.")
+        .def("npoints", &DFTGrid::npoints, "Returns the number of grid points.")
+        .def("max_points", &DFTGrid::max_points, "Returns the maximum number of points in a block.")
+        .def("max_functions", &DFTGrid::max_functions,
+             "Returns the maximum number of functions in a block.")
+        .def("blocks", &DFTGrid::blocks, "Returns a list of blocks.");
+
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
         .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0,
                    py::arg("p1") = 0.0, py::arg("p2") = 0.0, py::arg("p3") = 0.0, "docstring")

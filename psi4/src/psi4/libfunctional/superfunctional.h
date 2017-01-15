@@ -81,7 +81,8 @@ protected:
 
     // => Asymptotic corrections <= //
     bool needs_grac_;
-    std::shared_ptr<Functional> grac_functional_;
+    std::shared_ptr<Functional> grac_x_functional_;
+    std::shared_ptr<Functional> grac_c_functional_;
     double grac_shift_;
     double grac_alpha_;
     double grac_beta_;
@@ -139,15 +140,20 @@ public:
 
     std::vector<std::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<std::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
-    std::shared_ptr<Functional> grac_functional() { return grac_functional_; }
+    std::shared_ptr<Functional> grac_x_functional() { return grac_x_functional_; }
+    std::shared_ptr<Functional> grac_c_functional() { return grac_c_functional_; }
 
     std::shared_ptr<Functional> x_functional(const std::string& name);
     std::shared_ptr<Functional> c_functional(const std::string& name);
     void add_x_functional(std::shared_ptr<Functional> fun);
     void add_c_functional(std::shared_ptr<Functional> fun);
-    void set_grac_functional(std::shared_ptr<Functional> fun) {
+    void set_grac_x_functional(std::shared_ptr<Functional> fun) {
         needs_grac_ = true;
-        grac_functional_ = fun;
+        grac_x_functional_ = fun;
+    }
+    void set_grac_c_functional(std::shared_ptr<Functional> fun) {
+        needs_grac_ = true;
+        grac_c_functional_ = fun;
     }
 
     // => Setters <= //

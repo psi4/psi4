@@ -157,36 +157,41 @@ void VBase::set_grac_shift(double grac_shift) {
     if (!grac_initialized_){
         double grac_alpha = options_.get_double("DFT_GRAC_ALPHA");
         double grac_beta = options_.get_double("DFT_GRAC_BETA");
-        std::shared_ptr<Functional> grac_func = static_cast<std::shared_ptr<Functional>>(
-            new LibXCFunctional(options_.get_str("DFT_GRAC_FUNC"), functional_->is_unpolarized()));
+        std::shared_ptr<Functional> grac_x_func = static_cast<std::shared_ptr<Functional>>(
+            new LibXCFunctional(options_.get_str("DFT_GRAC_X_FUNC"), functional_->is_unpolarized()));
+
+        std::shared_ptr<Functional> grac_c_func = static_cast<std::shared_ptr<Functional>>(
+            new LibXCFunctional(options_.get_str("DFT_GRAC_C_FUNC"), functional_->is_unpolarized()));
 
         double lr_exch = functional_->x_alpha() + functional_->x_beta();
-        grac_func->set_alpha(1.0 - lr_exch);
+        grac_x_func->set_alpha(1.0 - lr_exch);
 
         functional_->set_lock(false);
         functional_->set_grac_alpha(grac_alpha);
         functional_->set_grac_beta(grac_beta);
-        functional_->set_grac_functional(grac_func);
+        functional_->set_grac_x_functional(grac_x_func);
+        functional_->set_grac_c_functional(grac_c_func);
         functional_->allocate();
-        functional_->set_lock(false);
+        functional_->set_lock(true);
         for (size_t i = 0; i < num_threads_; i++) {
             functional_workers_[i]->set_lock(false);
             functional_workers_[i]->set_grac_alpha(grac_alpha);
             functional_workers_[i]->set_grac_beta(grac_beta);
-            functional_workers_[i]->set_grac_functional(grac_func->build_worker());
+            functional_workers_[i]->set_grac_x_functional(grac_x_func->build_worker());
+            functional_workers_[i]->set_grac_c_functional(grac_c_func->build_worker());
             functional_workers_[i]->allocate();
-            functional_workers_[i]->set_lock(false);
+            functional_workers_[i]->set_lock(true);
         }
         grac_initialized_ = true;
     }
 
     functional_->set_lock(false);
     functional_->set_grac_shift(grac_shift);
-    functional_->set_lock(false);
+    functional_->set_lock(true);
     for (size_t i = 0; i < num_threads_; i++) {
         functional_workers_[i]->set_lock(false);
         functional_workers_[i]->set_grac_shift(grac_shift);
-        functional_workers_[i]->set_lock(false);
+        functional_workers_[i]->set_lock(true);
     }
 }
 void VBase::print_header() const {
