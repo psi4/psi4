@@ -393,6 +393,9 @@ protected:
     /** Form X'(FDS - SDF)X (for DIIS) **/
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
+    /** Performs any operations required for a incoming guess **/
+    virtual void format_guess();
+
     /** Save orbitals to use later as a guess **/
     // virtual void save_orbitals();
 
