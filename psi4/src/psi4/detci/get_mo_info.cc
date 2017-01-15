@@ -108,14 +108,14 @@ void CIWavefunction::get_mo_info() {
     CalcInfo_->frozen_uocc = Dimension(CalcInfo_->nirreps, "Frozen virtual orbitals");
     CalcInfo_->rstr_uocc = Dimension(CalcInfo_->nirreps, "Restricted virtual orbitals");
 
+    Dimension frzcpi = reference_wavefunction_->frzcpi();
     // This routine sets all orbital subspace arrays properly given
     // some minimal starting information and an Options object
     if (!ras_set3(CalcInfo_->nirreps, CalcInfo_->nmo, nmopi_,
                   CalcInfo_->docc, CalcInfo_->socc, CalcInfo_->frozen_docc,
                   CalcInfo_->frozen_uocc, CalcInfo_->rstr_docc,
                   CalcInfo_->rstr_uocc, CalcInfo_->ras_opi,
-                  const_cast<psi::Dimension*>(&reference_wavefunction_->frzcpi())->pointer(),
-//                  reference_wavefunction_->frzcpi(),
+                  frzcpi,
                   CalcInfo_->reorder.data(), 1,
                   (Parameters_->mcscf ? true : false), options_)) {
         throw PsiException("Error in ras_set3(). Aborting.", __FILE__,
