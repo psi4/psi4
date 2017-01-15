@@ -50,9 +50,9 @@ class MatrixFactory {
     /// Number of orbitals
     int nso_;
     /// Number of rows per irrep
-    int *rowspi_;
+    Dimension rowspi_;
     /// Number of columns per irrep
-    int *colspi_;
+    Dimension colspi_;
 
 public:
     /// Default constructor, does nothing.
@@ -74,13 +74,13 @@ public:
     int nirrep() const;
 
     /// Returns the rows per irrep array
-    int *rowspi() const;
+    const Dimension& rowspi() const;
 
     /// Returns the number of rows in irrep h
     int nrow(int h) const;
 
     /// Returns the columns per irrep array
-    int *colspi() const;
+    const Dimension& colspi() const;
 
     /// Returns the number of columns in irrep h
     int ncol(int h) const;
