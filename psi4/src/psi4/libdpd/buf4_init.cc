@@ -53,6 +53,13 @@ namespace psi {
 **   int anti: Boolean flag which indicates whether the data needs to
 **             be antisymmetrized as it is read from disk.
 **   char *label: The string labelling the PSIO TOC entry on disk.
+**
+**   Note: Make sure that you use the correct label and inputfile combination.
+**      If you intend to read from or write to an existing quantity on disk be sure
+**      that the label string/file number point to that quantity. If you intend to
+**      create and populate a new quantity on disk, ensure that the label is not
+**      already used in the file.  PSIO::tocprint(int filenum) can be used to print
+**      the labels currently used in in filenum and is quite useful for debugging.
 */
 
 int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
