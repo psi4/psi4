@@ -111,7 +111,7 @@ void HF::common_init()
 
     nmo_ = 0;
     nso_ = 0;
-    int* dimpi = factory_->colspi();
+    const Dimension& dimpi = factory_->colspi();
     for (int h = 0; h< factory_->nirrep(); h++){
         nsopi_[h] = dimpi[h];
         nmopi_[h] = nsopi_[h]; //For now, may change in S^-1/2
@@ -155,12 +155,10 @@ void HF::common_init()
             size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            int *temp_docc = new int[full_nirreps];
+            Dimension temp_docc(full_nirreps);
             for(int h = 0; h < full_nirreps; ++h)
                 temp_docc[h] = options_["DOCC"][h].to_integer();
-            map_irreps(temp_docc);
-            doccpi_ = temp_docc;
-            delete[] temp_docc;
+            doccpi_ = map_irreps(temp_docc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["DOCC"].size() != nirreps)
@@ -180,12 +178,10 @@ void HF::common_init()
             size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            int *temp_socc = new int[full_nirreps];
+            Dimension temp_socc(full_nirreps);
             for(int h = 0; h < full_nirreps; ++h)
                 temp_socc[h] = options_["SOCC"][h].to_integer();
-            map_irreps(temp_socc);
-            soccpi_ = temp_socc;
-            delete[] temp_socc;
+            soccpi_ = map_irreps(temp_socc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["SOCC"].size() != nirreps)
@@ -1004,7 +1000,7 @@ void HF::form_Shalf()
     eigval_store->copy(eigval.get());
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
-    int *dimpi = eigval->dimpi();
+    const Dimension& dimpi = eigval->dimpi();
     double min_S = fabs(eigval->get(0,0));
     for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
@@ -1417,7 +1413,7 @@ void HF::guess()
 
         Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        int *opi = S_->rowspi();
+        const int *opi = S_->rowspi();
         int nirreps = S_->nirrep();
         for (h=0; h<nirreps; ++h) {
             for (i=0; i<opi[h]; ++i) {
@@ -1920,8 +1916,8 @@ void HF::reset_occupation()
 }
 SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 {
-    int* nsopi = Cso->rowspi();
-    int* nmopi = Cso->colspi();
+    const int* nsopi = Cso->rowspi();
+    const int* nmopi = Cso->colspi();
     int* nvirpi = new int[nirrep_];
 
     for (int h = 0; h < nirrep_; h++)
@@ -1930,8 +1926,8 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
     SharedMatrix Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
 
     // Hack to get orbital e for this Fock
-    SharedMatrix C2(new Matrix("C2", nirrep_, nsopi, nmopi));
-    std::shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
+    SharedMatrix C2(new Matrix("C2", Cso->rowspi(), Cso->colspi()));
+    std::shared_ptr<Vector> E2(new Vector("E2", Cso->colspi()));
     diagonalize_F(Fso, C2, E2);
 
     for (int h = 0; h < nirrep_; h++) {

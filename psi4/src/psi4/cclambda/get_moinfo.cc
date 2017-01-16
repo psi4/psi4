@@ -69,12 +69,17 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn)
         moinfo.escf = wfn->reference_wavefunction()->reference_energy();
     else
         moinfo.escf = wfn->reference_energy();
-    moinfo.sopi = wfn->nsopi();
-    moinfo.orbspi = wfn->nmopi();
-    moinfo.openpi = wfn->soccpi();
+
+    moinfo.sopi = init_int_array(moinfo.nirreps);
+    moinfo.orbspi = init_int_array(moinfo.nirreps);
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
-    for(int h = 0; h < moinfo.nirreps; ++h)
+    moinfo.openpi = init_int_array(moinfo.nirreps);
+    for(int h = 0; h < moinfo.nirreps; ++h){
+        moinfo.sopi[h] = wfn->nsopi()[h];
+        moinfo.orbspi[h] = wfn->nmopi()[h];
         moinfo.clsdpi[h] = wfn->doccpi()[h];
+        moinfo.openpi[h] = wfn->soccpi()[h];
+    }
 
     sym = 0;
     for (i=0;i<moinfo.nirreps;++i)
@@ -256,11 +261,11 @@ void cleanup(void)
         free(moinfo.Cb);
     }
 
-//    free(moinfo.sopi);
+    free(moinfo.sopi);
 //    free(moinfo.sosym);
-//    free(moinfo.orbspi);
+    free(moinfo.orbspi);
     free(moinfo.clsdpi);
-//    free(moinfo.openpi);
+    free(moinfo.openpi);
 //    free(moinfo.uoccpi);
 //    free(moinfo.fruocc);
 //    free(moinfo.frdocc);
