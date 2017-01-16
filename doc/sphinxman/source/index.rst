@@ -39,7 +39,6 @@
    
    introduction
    external
-   build_index
    tutorial
    psithoninput
    methods

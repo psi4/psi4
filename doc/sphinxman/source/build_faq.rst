@@ -1,79 +1,112 @@
 
+.. _`sec:buildrunfaq`:
 
 ===============
 Build & Run FAQ
 ===============
 
-Building, Configuring, and Installing |PSIfour|
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Obtaining and Updating |PSIfour|
+--------------------------------
 
 #. :ref:`faq:obtainpsi4`
-#. :ref:`faq:getting-and-using-the-psi4dependencies-package`
-#. :ref:`faq:libmwcondapy`
+#. :ref:`faq:quiz`
+#. :ref:`faq:binary`
+#. :ref:`faq:clonepsi4public`
+#. :ref:`faq:forkpsi4public`
+#. :ref:`faq:tarballpsi4public`
+#. :ref:`faq:psi3sourceforge`
+#. :ref:`faq:recompile`
+
+Configuring, Building, and Installing |PSIfour|
+-----------------------------------------------
+
+#. :ref:`faq:cmakeviasetup`
 #. :ref:`faq:buildquick`
 #. :ref:`faq:builddetailed`
+
 #. :ref:`faq:setuphelp`
-#. :ref:`faq:coredepend`
-#. :ref:`faq:approvedgcc`
 #. :ref:`faq:chooseobjdir`
-#. :ref:`faq:setupobjdir`
-#. :ref:`faq:libintscratch`
-#. :ref:`bfaq:setupprefix`
-#. :ref:`faq:doconfigure`
-#. :ref:`faq:cmakeverbose`
-#. :ref:`faq:cmakeviasetup`
-#. :ref:`faq:setup`
-#. :ref:`faq:getcmakemac`
-#. :ref:`faq:setuptype`
+#. :ref:`faq:setupprefix`
 #. :ref:`faq:setupmaxameri`
-#. :ref:`faq:setupd`
-#. :ref:`faq:psi4so`
-#. :ref:`faq:macboostbrew`
-#. :ref:`faq:psi4scratch`
-#. :ref:`faq:chemps2gccflto`
+#. :ref:`faq:cmakeverbose`
+#. :ref:`faq:doconfigure`
+
+
+Non-QC Dependencies
+-------------------
+
+#. :ref:`faq:coredepend`
+#. :ref:`cmake:python`
+#. :ref:`faq:libmwcondapy`
+#. :ref:`cmake:cxx`
+#. :ref:`faq:approvedcxx`
 #. :ref:`faq:modgcc`
-#. :ref:`faq:wrongpyfalse`
+#. :ref:`faq:macxcode`
+#. :ref:`cmake:fortran`
+#. :ref:`faq:approvedfc`
+#. :ref:`faq:macgfortran`
 
-Running |PSIfour|
-^^^^^^^^^^^^^^^^^
+QC Dependencies and Extensions
+------------------------------
 
-#. :ref:`faq:erroreriam`
-#. :ref:`faq:runfromprefix`
-#. :ref:`faq:runfromobjdir`
-#. :ref:`faq:psi4fileretention`
-#. :ref:`faq:psi4PBS`
-#. :ref:`faq:condapymacrequest`
-#. :ref:`faq:nomodulenumpy`
+#. :ref:`faq:addondepend`
+#. :ref:`cmake:chemps2`
+#. :ref:`faq:chemps2gccflto`
+#. :ref:`cmake:dkh`
+#. :ref:`cmake:libefp`
+#. :ref:`cmake:erd`
+#. :ref:`cmake:gdma`
+#. :ref:`cmake:libint`
+#. :ref:`cmake:pcmsolver`
 
 Testing 
-^^^^^^^
+-------
 
 #. :ref:`faq:testsoutput`
 #. :ref:`faq:subsettests`
 #. :ref:`faq:minutetests`
 
-Compiler Options
-^^^^^^^^^^^^^^^^
+Runtime Setup
+-------------
 
-#. :ref:`faq:approvedfc`
-#. :ref:`faq:fortranflags`
-#. :ref:`faq:macgfortran`
-#. :ref:`faq:approvedcxx`
-#. :ref:`faq:cxxflags`
-#. :ref:`faq:macxcode`
-
-Add-Ons
-^^^^^^^
-
-#. :ref:`faq:addondepend`
-
-Other FAQ's
-^^^^^^^^^^^
-
-#. :ref:`faq:getversion`
-#. :ref:`faq:prebuiltboost`
-#. :ref:`faq:badmkl`
-#. :ref:`faq:badicpc`
-#. :ref:`faq:python3`
+#. :ref:`faq:runordinaryexe`
+#. :ref:`faq:runordinarymodule`
+#. :ref:`faq:runfrombinary`
+#. :ref:`faq:psi4scratch`
 #. :ref:`faq:psidatadir`
+
+Running |PSIfour|
+-----------------
+
+#. :ref:`What command line options does Psi4 have <sec:commandLineOptions>`
+#. :ref:`What environment variables affect Psi4 <sec:environmentVariables>`
+#. :ref:`faq:runtimepython`
+#. :ref:`faq:psi4PBS`
+#. :ref:`faq:psi4fileretention`
+
+Runtime Errors and Debugging
+----------------------------
+
+#. :ref:`faq:gdblldb`
+#. :ref:`faq:setuptype`
+#. :ref:`faq:wrongpyfalse`
+#. :ref:`faq:erroreriam`
+
+Managing Code
+-------------
+
+#. :ref:`faq:dirlayoutinstall`
+#. :ref:`faq:githubworkflow`
+#. :ref:`faq:vigitmerge`
+
+Miscellaneous
+-------------
+
+#. :ref:`faq:writepsi4`
+
+
+
+.. #. :ref:`faq:getversion`
+.. #. :ref:`faq:binarypackage`
+.. #. :ref:`faq:getting-and-using-the-psi4dependencies-package`
 

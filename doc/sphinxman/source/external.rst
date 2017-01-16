@@ -31,42 +31,13 @@
 Installation and Runtime Configuration
 ======================================
 
-Obtaining |PSIfour|
-===================
-
-The latest version of the |PSIfour| program package may be
-obtained at `psicode.org <http://psicode.org>`_. The
-package is available as a binary for Linux, macOS, or Windows
-Subsystem for Linux (:ref:`Installing
-from Binary <sec:conda>`) or as source code (zipped
-archive or git repository from `https://github.com/psi4/psi4
-<http://www.github.com/psi4/psi4>`_).
-
-
-Installing from Binary
-======================
-
 .. toctree::
    :maxdepth: 2
 
-   conda
-
-
-.. index:: prerequisites, compiling, installing
-.. _`sec:installFile`:
-
-Compiling and Installing from Source
-====================================
-
-Please see the `CMake Options Section <https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L105>`_. The below wiki references are temporarily out of date.
-
-Detailed directions on 
-`obtaining <https://github.com/psi4/psi4/wiki/1_Obtaining>`_, 
-`prerequisites <https://github.com/psi4/psi4/wiki/2_Planning#-what-are-the-tools-and-dependencies-strictly-required-for-building-psi4>`_,
-`building and installing <https://github.com/psi4/psi4/wiki/3_Building>`_,
-and `FAQ <https://github.com/psi4/psi4/wiki/0_FAQ>`_
-are maintained on the `GitHub Wiki <https://github.com/psi4/psi4/wiki>`_. 
-If uncertain, `start here <https://github.com/psi4/psi4/wiki/1_Obtaining#quiz>`_.
+   FAQ <build_faq>
+   build_obtaining
+   build_planning
+   Installing from Binary <conda>
 
 
 .. index:: scratch files, restart
@@ -623,11 +594,10 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: PSIDATADIR
 
    Path in which the |PSIfour| executable looks for its non-compiled
-   dependencies (*i.e.*, Python driver, basis sets, databases, *etc.*).
-   Not used when running from an installed (``make install``) executable
-   or when running from a conda binary,
-   so this variable is relevant primarily to developers running the
-   executable directly from the compilation directory. Value should be set
+   dependencies (*i.e.*, basis sets, databases, quadratures, *etc.*).
+   This path is always known by the |PSIfour| program or shared library,
+   so this variable is relevant primarily to developers wanting a
+   non-standard location. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
    ending in ``share/psi4``.
 

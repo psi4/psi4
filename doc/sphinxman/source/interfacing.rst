@@ -46,9 +46,11 @@ platform capabilities, *etc*.
    chemps2
    dftd3
    dkh
+   libefp
+   erd
    fchk
    gdma
-   libefp
+   libint
    pcmsolver
    molden
    mrcc

@@ -29,8 +29,8 @@
 
 .. _`sec:conda`:
 
-Binary Distribution
-===================
+Conda Binary Distribution
+=========================
 
 |PSIfour| is available as a pre-compiled binary for Linux and Mac architectures
 through `Continuum Analytics

@@ -498,15 +498,18 @@ Implementation within Psi4
 Supported Architectures
 =======================
 
-The majority of |PSIfour| was developed on Mac and Linux machines. In
-principle, it should work on any Unix system; however, we have not tested
-extensively on systems other than Mac and Linux. There is not a Windows
-version of |PSIfour|.
+The majority of |PSIfour| was developed on Mac and Linux machines; in
+principle, it should work on any Unix system. The latest version of the
+|PSIfour| program package may be obtained at `psicode.org
+<http://psicode.org>`_. The package is available as a binary for Linux,
+macOS, or Windows Subsystem for Linux (:ref:`Installing from Binary
+<sec:conda>`) or as source code (zipped archive or git repository from
+`https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang
-compilers. For the Intel compilers, we recommend at least 12.1 (we have
-had trouble with version 12.0 and 13.0.1). GCC version 4.6 or above is
-recommended. For some architectures, a :ref:`precompiled binary
+compilers. For the Intel compilers, we recommend at least 2016 versions.
+GCC version 4.9 or above is
+required. For some architectures, a :ref:`precompiled binary
 <sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
