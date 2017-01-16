@@ -78,7 +78,7 @@ void ROHF::common_init()
     moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_     = SharedMatrix(factory_->create_matrix("C"));
+    Ca_      = SharedMatrix(factory_->create_matrix("C"));
     Cb_      = Ca_;
     Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
@@ -101,6 +101,20 @@ void ROHF::common_init()
 
     if (functional_->needs_xc()){
         throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+    }
+}
+
+void ROHF::format_guess()
+{
+    // Need to build Ct_
+    
+    // Canonical Orthogonalization
+    if (X_->rowspi() != X_->colspi()){
+        throw PSIEXCEPTION("ROHF::format_guess: 'GUESS READ' is not available for canonical orthogonalization cases.");
+
+    // Symmetric Orthogonalization
+    } else {
+        Ct_ = Matrix::triplet(X_, S_, Ca_);
     }
 }
 
@@ -376,6 +390,7 @@ void ROHF::form_initialF()
 
 void ROHF::form_F()
 {
+
     // Start by constructing the standard Fa and Fb matrices encountered in UHF
     Fa_->copy(H_);
     Fb_->copy(H_);

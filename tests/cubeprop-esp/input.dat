@@ -1,0 +1,25 @@
+#! RHF orbitals and density for water.
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis cc-pvqz
+set cubeprop_tasks ['esp']
+
+e, wfn = energy('scf', return_wfn=True)
+cubeprop(wfn)
+
+#for n in ['1_1-A1','2_2-A1','3_1-B2','4_3-A1','5_1-B1']:
+#    ref_cube = open('Psi_a_%s.cube.ref' % n,'r').read()
+#    this_cube = open('Psi_a_%s.cube' % n,'r').read()
+#    compare_cubes(ref_cube,this_cube,"Comparing MO %s" % n) #TEST
+#
+for s in ['Dt', 'ESP']:
+    ref_cube = open('%s.cube.ref' % s,'r').read()
+    this_cube = open('%s.cube' % s,'r').read()
+    compare_cubes(ref_cube,this_cube,"Comparing %s" % s) #TEST
+

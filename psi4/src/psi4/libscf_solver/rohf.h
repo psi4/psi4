@@ -73,6 +73,7 @@ protected:
     virtual void finalize();
 
     void save_density_and_energy();
+    void format_guess();
 
     // Second-order convergence code
     void Hx(SharedMatrix x, SharedMatrix ret);
