@@ -306,6 +306,7 @@ public:
     /// Getters and setters for other basis sets
     std::shared_ptr<BasisSet> get_basisset(std::string label);
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
+    bool basisset_exists(std::string label);
 
 
     /// Returns the MatrixFactory object that pertains to this wavefunction

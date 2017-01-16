@@ -455,6 +455,7 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       free(WABC);
       free(VABC);
       free(XABC);
+      free(Y);
 
       global_dpd_->file2_mat_wrt(&Dab);
       global_dpd_->file2_mat_close(&Dab);

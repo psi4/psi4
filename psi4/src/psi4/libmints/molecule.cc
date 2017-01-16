@@ -1102,17 +1102,13 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 
             unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
 
-            double *frag_atom_Z = new double[efp_natom];
-            frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
+            double *frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
 
-            double *frag_atom_mass = new double[efp_natom];
-            frag_atom_mass = Process::environment.get_efp()->get_frag_atom_mass(efpCount);
+            double *frag_atom_mass = Process::environment.get_efp()->get_frag_atom_mass(efpCount);
 
-            std::vector <std::string> frag_atom_label;
-            frag_atom_label = Process::environment.get_efp()->get_frag_atom_label(efpCount);
+            std::vector <std::string> frag_atom_label = Process::environment.get_efp()->get_frag_atom_label(efpCount);
 
-            double *frag_atom_coord = new double[3 * efp_natom];
-            frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
+            double *frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
             for (unsigned int at = 0; at < efp_natom; at++) {
                 // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and

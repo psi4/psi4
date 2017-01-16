@@ -62,6 +62,8 @@ protected:
     std::vector<std::tuple<double, int, int> > info_a_;
     /// Info for beta electrons (epsilon,rel. index,irrep)
     std::vector<std::tuple<double, int, int> > info_b_;
+    /// Auxiliary Basis Set if Any
+    std::shared_ptr<BasisSet> auxiliary_;
 
     // => Computers <= //
 

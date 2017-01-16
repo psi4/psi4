@@ -62,17 +62,19 @@ void Diagonalize(integer N,doublereal*A,doublereal*W){
   char UPLO = 'U';
   integer LDA = N;
   integer LWORK = 3*N-1;
-  doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal)); 
+  doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal));
   integer INFO=0;
   DSYEV(JOBZ,UPLO,N,A,LDA,W,WORK,LWORK,INFO);
+  free(WORK);
 }
 void Diagonalize2(integer N,doublereal*AP,doublereal*W,doublereal*Z){
   char JOBZ = 'V';
   char UPLO = 'U';
   integer LDZ = N;
-  doublereal*WORK=(doublereal*)malloc(3*N*sizeof(doublereal)); 
+  doublereal*WORK=(doublereal*)malloc(3*N*sizeof(doublereal));
   integer INFO=0;
   DSPEV(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
+  free(WORK);
 }
 
 /**
@@ -92,6 +94,7 @@ void SVD(integer M,integer N,doublereal*A,doublereal*U,doublereal*VT,doublereal*
 
   integer INFO=0;
   DGESVD(JOBU,JOBVT,M,N,A,LDA,S,U,LDU,VT,LDVT,WORK,LWORK,INFO);
+  free(WORK);
 }
 
 }}

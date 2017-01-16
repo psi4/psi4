@@ -432,6 +432,14 @@ void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> bas
     }
 }
 
+bool Wavefunction::basisset_exists(std::string label)
+{
+    if (basissets_.count(label) == 0)
+        return false;
+    else
+        return true;
+}
+
 std::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
 {
     return sobasisset_;

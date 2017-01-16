@@ -4732,6 +4732,8 @@ DCFTSolver::compute_ewdm_dc()
     iwl_buf_close(&AB, 1);
     iwl_buf_close(&BB, 1);
 
+    delete [] alpha_pitzer_to_corr;
+    delete [] beta_pitzer_to_corr;
 }
 
 void
@@ -5246,6 +5248,8 @@ DCFTSolver::compute_ewdm_odc()
     iwl_buf_close(&AB, 1);
     iwl_buf_close(&BB, 1);
 
+    delete [] alpha_pitzer_to_corr;
+    delete [] beta_pitzer_to_corr;
 }
 
 }} // Namespace

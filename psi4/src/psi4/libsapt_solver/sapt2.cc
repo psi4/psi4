@@ -892,8 +892,8 @@ void SAPT2::df_integrals()
 
   free(Schwartz);
   free(DFSchwartz);
-
-
+  delete [] eri;
+  delete [] buffer;
 }
 
 void SAPT2::w_integrals()

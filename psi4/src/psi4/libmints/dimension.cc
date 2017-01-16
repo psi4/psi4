@@ -99,7 +99,7 @@ void Dimension::print() const
 Dimension& Dimension::operator =(const Dimension& other)
 {
     name_ = other.name_;
-    blocks_ = other.blocks_;
+    blocks_ = other.blocks_; 
     return *this;
 }
 
