@@ -507,9 +507,9 @@ macOS, or Windows Subsystem for Linux (:ref:`Installing from Binary
 `https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang
-compilers. For the Intel compilers, we recommend at least 2016 versions.
-GCC version 4.9 or above is
-required. For some architectures, a :ref:`precompiled binary
+compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
+C++11 compliance (*i.e.*, GCC version 4.9 or above).
+For some architectures, a :ref:`precompiled binary
 <sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 

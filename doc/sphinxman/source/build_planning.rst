@@ -425,7 +425,7 @@ Create a file like ``do-configure`` with the ``cmake`` command and options
 
  >>> cd {top-level-psi4-dir}
  >>> cat do-configure
-     cmake -H. -Bobjdir5 \
+     cmake -H. -B{objdir} \
          -DCMAKE_INSTALL_PATH="/Users/me/psi4" \
          -DCMAKE_PREFIX_PATH="/Users/me/externals/install-libint" \
          -DMAX_AM_ERI=6 \
@@ -451,12 +451,12 @@ installation.
 .. code-block:: bash
 
  /
- bin/                                                   (executables fro psi4 + any external proj)
- bin/psi4                                                      (py script masquerading as c++ exe)
+ bin/                                                   (executables for psi4 + any external proj)
+ bin/psi4                                             (psi4 executable, actually just a py script)
  include/                                         (installed headers for psi4 + any external proj)
  include/psi4/                                                     (header files for #include-ing)
  include/psi4/psi4-dec.h                                                     (primary psi4 header)
- include/psi4/masses.h                                                  (project-wide psi4 header)
+ include/psi4/masses.h                                                (a project-wide psi4 header)
  include/psi4/libmints/                                                     (psi4 library headers)
  include/psi4/libfock/                                                                     (ditto)
  share/                                  (read-only arch-indep files for psi4 + any external proj)
