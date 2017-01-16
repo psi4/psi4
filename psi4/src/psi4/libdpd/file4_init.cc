@@ -48,7 +48,8 @@ namespace psi {
 **              data as it will be stored on disk.
 **   int rsnum: The index combination for the ket indices for the
 **              data as it will be stored on disk.
-**   char *label: A string labelling for this buffer.
+**   char *label: A string labelling for this buffer. If it exists
+**                in cache, it will be loaded.
 */
 
 int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
