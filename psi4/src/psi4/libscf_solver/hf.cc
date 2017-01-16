@@ -155,12 +155,10 @@ void HF::common_init()
             size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            int *temp_docc = new int[full_nirreps];
+            Dimension temp_docc(full_nirreps);
             for(int h = 0; h < full_nirreps; ++h)
                 temp_docc[h] = options_["DOCC"][h].to_integer();
-            map_irreps(temp_docc);
-            doccpi_ = temp_docc;
-            delete[] temp_docc;
+            doccpi_ = map_irreps(temp_docc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["DOCC"].size() != nirreps)
@@ -180,12 +178,10 @@ void HF::common_init()
             size_t full_nirreps = old_pg->char_table().nirrep();
             if(options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            int *temp_socc = new int[full_nirreps];
+            Dimension temp_socc(full_nirreps);
             for(int h = 0; h < full_nirreps; ++h)
                 temp_socc[h] = options_["SOCC"][h].to_integer();
-            map_irreps(temp_socc);
-            soccpi_ = temp_socc;
-            delete[] temp_socc;
+            soccpi_ = map_irreps(temp_socc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["SOCC"].size() != nirreps)
