@@ -74,7 +74,7 @@ public:
     const int& operator[](int i) const { return blocks_[i]; }
     const std::vector<int>& blocks() const { return blocks_; }
 
-    /// Casting operator to  int*
+    /// Casting operator to int*
     operator int*() { return blocks_.data(); }
     /// Casting operator to const int*
     operator const int*() const { return blocks_.data(); }
