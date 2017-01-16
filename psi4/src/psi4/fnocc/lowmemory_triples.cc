@@ -138,6 +138,9 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
      long int min_memory_reqd = 8L*(2L*vvoo+vooo+vo+5L*ooo);
      if (min_memory_reqd > memory) {
          outfile->Printf("        Sorry, not even enough memory for 1 thread.\n");
+	 delete [] name;
+	 delete [] space;
+	 free(E2ijak);
          return Failure;
      }
 
@@ -481,6 +484,19 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   }
   else{
      outfile->Printf("on the to do pile!\n");
+     delete [] name;
+     delete [] space;
+     free(E2ijak);
+     for (int i=0; i<nthreads; i++) free(Z4[i]);
+     free(Z4);
+     free(etrip);
+     nabc = 0;
+     for (long int a=0; a<v; a++)
+       for (long int b=0; b<=a; b++)
+	 for (long int c=0; c<=b; c++)
+	   free(abc[nabc++]);
+     free(abc);
+
      return Failure;
   }
   for (int i = 0; i < nthreads; i++) {
@@ -529,6 +545,14 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   free(Z4);
   free(E2abci);
   free(etrip);
+
+  nabc = 0;
+  for (long int a=0; a<v; a++)
+    for (long int b=0; b<=a; b++)
+      for (long int c=0; c<=b; c++)
+	free(abc[nabc++]);
+  free(abc);
+
 
   return Success;
 }

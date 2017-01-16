@@ -470,6 +470,8 @@ void CholeskyDenominator::decompose()
         C_DCOPY(nspan, L[d], 1, Lar[d], 1);
         delete[] L[d];
     }
+
+    delete [] diagonal;
 }
 
 void CholeskyDenominator::debug()
