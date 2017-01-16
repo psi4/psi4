@@ -278,7 +278,7 @@ GUI, which the developers have never looked at). However, the top half of
 the main CMakeLists.txt is a passable summary:
 
 .. literalinclude:: @SFNX_INCLUDE@CMakeLists.txt
-   :lines: 13-113
+   :lines: 13-116
 
 Note that external projects will have their own sets of build
 configuration options. Only the most-common user knobs of those are

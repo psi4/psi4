@@ -183,7 +183,7 @@ Fork from GitHub Repository
 * **Contribute Back**
 
   |PSIfour| contributions process :ref:`here <faq:githubworkflow>` and
-  :source:`.github/CONTRIBUTING.md`.
+  :source:`here <.github/CONTRIBUTING.md>`.
   Consider `preparing your contribution in a branch
   <http://blog.jasonmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/>`_
   then issue a `GitHub pull request
