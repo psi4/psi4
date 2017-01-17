@@ -34,6 +34,8 @@ Runs a JSON input psi file.
 from psi4.driver import driver
 from psi4.driver import molutil
 from psi4 import core
+import psi4
+
 import json
 import uuid
 import copy
@@ -86,7 +88,7 @@ def run_json(json_data):
                 Indicates if the run was successful or not.
             - error : str
                 If an error is raised the result is returned here.
-            - output : str
+            - raw_output : str
                 The full Psi4 output if requested.
 
 
@@ -103,32 +105,59 @@ def run_json(json_data):
 
     >>> json_data["molecule"] = "He 0 0 0\n--\nHe 0 0 1"
     >>> json_data["driver"] = "energy"
-    >>> json_data["args"] = 'SCF'
+    >>> json_data["method"] = 'SCF'
     >>> json_data["kwargs"] = {"bsse_type": "cp"}
     >>> json_data["options"] = {"BASIS": "STO-3G"}
 
     >>> run_json(json_data)
-    {'status': 'finished', 'success': True, 'kwargs': {'bsse_type': 'cp'},
-     'molecule': 'He 0 0 0\n--\nHe 0 0 1', 'variables': {u'CURRENT REFERENCE
-     ENERGY': -5.433191881443323, u'HF TOTAL ENERGY': -5.433191881443323, u'CURRENT
-     DIPOLE Z': 0.0, u'COUNTERPOISE CORRECTED INTERACTION ENERGY':
-     0.1839360538612116, u'CURRENT DIPOLE X': 0.0, u'CURRENT DIPOLE Y': 0.0,
-     u'NUCLEAR REPULSION ENERGY': 2.11670883436, u'TWO-ELECTRON ENERGY':
-     4.124089347186247, u'SCF ITERATION ENERGY': -5.433191881443323, u'CP-CORRECTED
-     2-BODY INTERACTION ENERGY': 0.1839360538612116, u'SCF DIPOLE Y': 0.0,
-     u'COUNTERPOISE CORRECTED TOTAL ENERGY': -5.433191881443323, u'CURRENT ENERGY':
-     0.1839360538612116, u'SCF TOTAL ENERGY': -5.433191881443323, u'SCF DIPOLE Z':
-     0.0, u'ONE-ELECTRON ENERGY': -11.67399006298957, u'SCF DIPOLE X': 0.0}, 'args':
-     'SCF', 'driver': 'energy', 'return_value': 0.1839360538612116, 'error': '',
-     'output': '', 'options': {'BASIS': 'STO-3G'}}
+    {
+        "raw_output": "Output storing was not requested.",
+        "options": {
+            "BASIS": "STO-3G"
+        },
+        "driver": "energy",
+        "molecule": "He 0 0 0\n--\nHe 0 0 1",
+        "method": "SCF",
+        "variables": {
+            "SCF N ITERS": 2.0,
+            "SCF DIPOLE Y": 0.0,
+            "CURRENT DIPOLE Y": 0.0,
+            "CP-CORRECTED 2-BODY INTERACTION ENERGY": 0.1839360538612116,
+            "HF TOTAL ENERGY": -5.433191881443323,
+            "SCF TOTAL ENERGY": -5.433191881443323,
+            "TWO-ELECTRON ENERGY": 4.124089347186247,
+            "SCF ITERATION ENERGY": -5.433191881443323,
+            "CURRENT DIPOLE X": 0.0,
+            "CURRENT DIPOLE Z": 0.0,
+            "CURRENT REFERENCE ENERGY": -5.433191881443323,
+            "CURRENT ENERGY": 0.1839360538612116,
+            "COUNTERPOISE CORRECTED TOTAL ENERGY": -5.433191881443323,
+            "SCF DIPOLE Z": 0.0,
+            "COUNTERPOISE CORRECTED INTERACTION ENERGY": 0.1839360538612116,
+            "NUCLEAR REPULSION ENERGY": 2.11670883436,
+            "SCF DIPOLE X": 0.0,
+            "ONE-ELECTRON ENERGY": -11.67399006298957
+        },
+        "return_value": 0.1839360538612116,
+        "error": "",
+        "success": true,
+        "provenance": {
+            "creator": "Psi4",
+            "routine": "psi4.run_json",
+            "version": "1.1a1"
+        },
+        "kwargs": {
+            "bsse_type": "cp"
+        }
+    }
     """
 
     # Set a few variables
     json_data["error"] = ""
-    json_data["output"] = ""
+    json_data["raw_output"] = "Output storing was not requested."
 
     # Check input
-    for check in ["driver", "args", "molecule"]:
+    for check in ["driver", "method", "molecule"]:
         if check not in list(json_data):
             json_data["error"] = "Minimum input requires the %s field." % check
             return False
@@ -147,7 +176,7 @@ def run_json(json_data):
     if return_output:
         outfile = str(uuid.uuid4()) + ".json_out"
         core.set_output_file(outfile, False)
-        json_data["output"] = "Not yet run."
+        json_data["raw_output"] = "Not yet run."
 
     try:
         # Set options
@@ -156,7 +185,7 @@ def run_json(json_data):
                 core.set_global_option(k, v)
 
         # Rework args
-        args = json_data["args"]
+        args = json_data["method"]
         if not isinstance(args, (list, tuple)):
             args = [args]
 
@@ -183,13 +212,19 @@ def run_json(json_data):
         json_data["variables"] = core.get_variables()
         json_data["success"] = True
 
+        prov = {}
+        prov["version"] = psi4.__version__
+        prov["routine"] = "psi4.run_json"
+        prov["creator"] = "Psi4"
+        json_data["provenance"] = prov
+
     except Exception as error:
         json_data["error"] += repr(error)
         json_data["success"] = False
 
     if return_output:
         with open(outfile, 'r') as f:
-            json_data["output"] = f.read()
+            json_data["raw_output"] = f.read()
         os.unlink(outfile)
 
     return json_data
