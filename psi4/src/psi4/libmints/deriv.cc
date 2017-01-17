@@ -493,9 +493,9 @@ SharedMatrix Deriv::compute()
     v_int->compute_deriv1(h_deriv, cdsalcs_);
 
     int ncd = cdsalcs_.ncd();
-    SharedVector TPDMcont_vector(new Vector(1, &ncd));
-    SharedVector Xcont_vector(new Vector(1, &ncd));
-    SharedVector Dcont_vector(new Vector(1, &ncd));
+    SharedVector TPDMcont_vector(new Vector(ncd));
+    SharedVector Xcont_vector(new Vector(ncd));
+    SharedVector Dcont_vector(new Vector(ncd));
     SharedVector TPDM_ref_cont_vector;
     SharedVector X_ref_cont_vector;
     SharedVector D_ref_cont_vector;
@@ -550,9 +550,9 @@ SharedMatrix Deriv::compute()
            the correlated part.  The reference contributions must be harvested from the reference_wavefunction
            member.  If density fitting was used, we don't want to compute two electron contributions here*/
         if (wfn_->density_fitted()) {
-            X_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
-            D_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
-            TPDM_ref_cont_vector = SharedVector(new Vector(1, &ncd));
+            X_ref_cont_vector    = SharedVector(new Vector(ncd));
+            D_ref_cont_vector    = SharedVector(new Vector(ncd));
+            TPDM_ref_cont_vector = SharedVector(new Vector(ncd));
             X_ref_cont           = X_ref_cont_vector->pointer();
             D_ref_cont           = D_ref_cont_vector->pointer();
             TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();

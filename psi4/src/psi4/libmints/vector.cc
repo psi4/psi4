@@ -122,7 +122,7 @@ SharedVector Vector::create(const std::string &name, const Dimension &dim)
 
 void Vector::init(int nirreps, int *dimpi)
 {
-    dimpi_.init("", nirreps);
+    dimpi_.init(nirreps);
     nirrep_ = nirreps;
     dimpi_ = dimpi;
     alloc();
@@ -131,7 +131,7 @@ void Vector::init(int nirreps, int *dimpi)
 void Vector::init(int nirreps, const int *dimpi, const std::string &name)
 {
     name_ = name;
-    dimpi_.init("", nirreps);
+    dimpi_.init(nirreps);
     dimpi_ = dimpi;
     alloc();
 }
@@ -146,7 +146,7 @@ void Vector::init(const Dimension &v)
 
 Vector *Vector::clone()
 {
-    Vector *temp = new Vector(nirrep_, dimpi_);
+    Vector *temp = new Vector(dimpi_);
     temp->copy(this);
     return temp;
 }
