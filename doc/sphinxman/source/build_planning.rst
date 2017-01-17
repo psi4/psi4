@@ -154,7 +154,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * :ref:`C++ and C Compilers <cmake:cxx>` (C++11 compliant)
 
-* Optimized [BLAS and LAPACK libraries](9_BlasLapack) (preferably NOT one supplied by a standard
+* Optimized BLAS and LAPACK libraries (preferably NOT one supplied by a standard
   Linux distribution)
 
 * :ref:`Python interpreter and headers <cmake:python>` (2.7 or 3.5) https://www.python.org/
@@ -468,6 +468,7 @@ installation.
  share/psi4/basis                                                                     (basis sets)
  share/psi4/plugins                                                        (plugin template files)
  share/psi4/fsapt                                                                  (fsapt scripts)
+ share/psi4/samples/                                                          (sample input files)
  lib/                               (shared libraries and py modules for psi4 + any external proj)
  # ordinary
  lib/psi4/                                                                          (object files)
@@ -571,7 +572,9 @@ How to run Psi4 as executable or Python module from conda installation
 The configuration commands below are generic versions of the ones printed
 to your screen as advice upon installing |PSIfour| into a Anaconda,
 Miniconda, or Psi4conda distribution, :samp:`{condadist} =
-{ana|mini|psi4}conda`. If you hadn't already done so, issue the following
+{ana|mini|psi4}conda`. If ``which conda python psi4`` points to your
+:samp:`{condadist}` and ``echo $PSI_SCRATCH`` is set, skip ahead to the
+"Run |PSIfour|\" commands below. Otherwise, issue the following
 commands directly in your terminal or place them into your "rc" file and
 open a new terminal.
 
@@ -618,7 +621,7 @@ Run |PSIfour| as executable. ::
     >>> psi4 sample.in
     SCF E.............................................................PASSED
 
-Or run |PSIfour| as Python module. ::
+*or* Run |PSIfour| as Python module. ::
 
     >>> cat sample.py
     import psi4
@@ -1013,10 +1016,10 @@ appears. It is harmless, proceed.
    CMake Warning at src/bin/psi4/CMakeLists.txt:58 (add_executable):
      Cannot generate a safe runtime search path for target psi4 because files in
      some directories may conflict with libraries in implicit directories:
-   
+
        runtime library [libm.so.6] in /usr/lib64 may be hidden by files in:
          /theoryfs2/common/software/anaconda/lib
-   
+
    Some of these libraries may not be found correctly.
 
 
@@ -1082,7 +1085,7 @@ How to run a minute's worth of tests
 ------------------------------------
 
 When you want to do a very minimal test of the build and have
-[CTest](9_CMake) installed, the following command can be useful. ::
+CTest installed, the following command can be useful. ::
 
     >>> ctest -L smoke -j`getconf _NPROCESSORS_ONLN`
 
@@ -1092,13 +1095,15 @@ When you want to do a very minimal test of the build and have
 How to run a subset of tests
 ----------------------------
 
-[CTest](9_CMake) allows flexibly partitioned running of the test suite. In
+CTest allows flexibly partitioned running of the test suite. In
 the examples below, *testname* are regex of :source:`test names <tests>`,
 and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 ``libefp``).
 
-* Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`make -j\`getconf _NPROCESSORS_ONLN\`\ `
-* Run about a third of the tests in 10--20 minutes, the so-called *quicktests*: ``ctest -L quicktests``
+* Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
+* Run full test suite: ``ctest``
+* Run about a third of the tests in 10--20 minutes, the so-called *quicktests*: ``ctest -L quick``
+* Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``ctest -L smoke``
 * Run tests matching by name: ``ctest -R testname``
 * Run tests excluding those by name: ``ctest -E testname``
 * Run tests matching by label: ``ctest -L testlabel``

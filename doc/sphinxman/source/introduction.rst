@@ -652,7 +652,7 @@ Where-to-post summary:[#f6]_
 
 * When will you? -- `ask the forum <http://forum.psicode.org>`_
 
-* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or `post on the wiki itself <https://github.com/psi4/psi4/wiki>`_
+* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or :source:`add to the documentation itself <doc/sphinxman/source>`
 
 * Anything you want to share privately -- `crawdad@vt.edu <mailto:crawdad@vt.edu>`_ or `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_
 
