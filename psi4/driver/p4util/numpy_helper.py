@@ -487,13 +487,14 @@ def _from_serial(self, json_data):
 
 
 # Matrix attributes
-def _chain_dot(*args, trans=None):
+def _chain_dot(*args, **kwargs):
     """
     Chains dot products together from a series of Psi4 Matrix classes.
 
     By default there is no transposes, an optional vector of booleans can be passed in.
     """
 
+    trans = kwargs.pop("trans", None)
     if trans is None:
         trans = [False for x in range(len(args))]
     else:
