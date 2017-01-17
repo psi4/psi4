@@ -108,7 +108,7 @@ option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
 option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed" lib)
-option_with_Default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
+option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
@@ -117,6 +117,11 @@ option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
 include(GNUInstallDirs)
 include(autocmake_safeguards)
 include(custom_color_messages)
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "/usr/local/psi4" CACHE PATH "Install path" FORCE)
+endif()
+message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 # Python use in psi4 (not incl. external/)
 # * interpreter: run the versioner in psi4-core. run tests and build docs in psi4
@@ -228,5 +233,3 @@ install(DIRECTORY samples
         USE_SOURCE_PERMISSIONS
         PATTERN "example_psi4rc_file" EXCLUDE)
 
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-#        DESTINATION ${CMAKE_INSTALL_PREFIX} USE_SOURCE_PERMISSIONS)
