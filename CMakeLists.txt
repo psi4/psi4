@@ -49,7 +49,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 
 #  <<<  Install  >>>
 #
-#    - CMAKE_INSTALL_PREFIX "Location to which Psi4 and internally built add-ons are installed (e.g., /path/to/install-psi4)"
+#    - CMAKE_INSTALL_PREFIX "Location to which Psi4 and internally built add-ons are installed (default: /usr/local/psi4)"
 #    - CMAKE_INSTALL_BINDIR "Location within CMAKE_INSTALL_PREFIX to which executables are installed (default: bin)"
 #    - CMAKE_INSTALL_LIBDIR "Location within CMAKE_INSTALL_PREFIX to which libraries are installed (default: lib)"
 #    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"
