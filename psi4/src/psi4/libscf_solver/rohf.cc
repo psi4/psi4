@@ -78,7 +78,7 @@ void ROHF::common_init()
     moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_     = SharedMatrix(factory_->create_matrix("C"));
+    Ca_      = SharedMatrix(factory_->create_matrix("C"));
     Cb_      = Ca_;
     Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
@@ -101,6 +101,20 @@ void ROHF::common_init()
 
     if (functional_->needs_xc()){
         throw PSIEXCEPTION("ROHF: Cannot compute XC components!");
+    }
+}
+
+void ROHF::format_guess()
+{
+    // Need to build Ct_
+    
+    // Canonical Orthogonalization
+    if (X_->rowspi() != X_->colspi()){
+        throw PSIEXCEPTION("ROHF::format_guess: 'GUESS READ' is not available for canonical orthogonalization cases.");
+
+    // Symmetric Orthogonalization
+    } else {
+        Ct_ = Matrix::triplet(X_, S_, Ca_);
     }
 }
 
@@ -151,8 +165,8 @@ void ROHF::semicanonicalize()
     SharedMatrix bFVV = bVV();
 
     // Canonicalize the Alpha occ-occ block
-    evecs = SharedMatrix(new Matrix(nirrep_, aoccpi, aoccpi));
-    evals = SharedVector(new Vector(nirrep_, aoccpi));
+    evecs = SharedMatrix(new Matrix(aoccpi, aoccpi));
+    evals = SharedVector(new Vector(aoccpi));
     aFOO->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -171,8 +185,8 @@ void ROHF::semicanonicalize()
         }
     }
     // Canonicalize the Alpha vir-vir block
-    evecs = SharedMatrix(new Matrix(nirrep_, avirpi, avirpi));
-    evals = SharedVector(new Vector(nirrep_, avirpi));
+    evecs = SharedMatrix(new Matrix(avirpi, avirpi));
+    evals = SharedVector(new Vector(avirpi));
     aFVV->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -191,8 +205,8 @@ void ROHF::semicanonicalize()
         }
     }
     // Canonicalize the Beta occ-occ block
-    evecs = SharedMatrix(new Matrix(nirrep_, boccpi, boccpi));
-    evals = SharedVector(new Vector(nirrep_, boccpi));
+    evecs = SharedMatrix(new Matrix(boccpi, boccpi));
+    evals = SharedVector(new Vector(boccpi));
     bFOO->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -211,8 +225,8 @@ void ROHF::semicanonicalize()
         }
     }
     // Canonicalize the Beta vir-vir block
-    evecs = SharedMatrix(new Matrix(nirrep_, bvirpi, bvirpi));
-    evals = SharedVector(new Vector(nirrep_, bvirpi));
+    evecs = SharedMatrix(new Matrix(bvirpi, bvirpi));
+    evals = SharedVector(new Vector(bvirpi));
     bFVV->diagonalize(evecs, evals);
     for(int h = 0; h < nirrep_; ++h){
         double **pC  = Crohf->pointer(h);
@@ -376,6 +390,7 @@ void ROHF::form_initialF()
 
 void ROHF::form_F()
 {
+
     // Start by constructing the standard Fa and Fb matrices encountered in UHF
     Fa_->copy(H_);
     Fb_->copy(H_);

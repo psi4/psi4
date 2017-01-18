@@ -287,12 +287,9 @@ public:
     bool same_a_b_orbs() const { return same_a_b_orbs_; }
     bool same_a_b_dens() const { return same_a_b_dens_; }
 
-    /// Takes an irrep-by-irrep array (e.g. DOCC) and maps it into the current point group
-    void map_irreps(std::vector<int*> &arrays);
-    /// A wrapper to the Vector version of this function
-    void map_irreps(int* &array);
-    /// A wrapper to the Vector version of this function
-    void map_irreps(Dimension &array);
+    /// Takes a Dimension object (e.g. DOCC) and returns a new Dimension object
+    /// with occupations mapped to the current point group
+    Dimension map_irreps(const Dimension &dimpi);
 
     /// Returns the molecule object that pertains to this wavefunction.
     std::shared_ptr<Molecule> molecule() const;
@@ -309,6 +306,7 @@ public:
     /// Getters and setters for other basis sets
     std::shared_ptr<BasisSet> get_basisset(std::string label);
     void set_basisset(std::string label, std::shared_ptr<BasisSet> basis);
+    bool basisset_exists(std::string label);
 
 
     /// Returns the MatrixFactory object that pertains to this wavefunction

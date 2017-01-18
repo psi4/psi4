@@ -470,7 +470,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_mo()
 {
     SharedMatrix D = Da_mo();
     SharedMatrix C(new Matrix("Na_mo", D->nirrep(), D->rowspi(), D->rowspi()));
-    std::shared_ptr<Vector> O(new Vector("Alpha Occupation", D->nirrep(), D->rowspi()));
+    std::shared_ptr<Vector> O(new Vector("Alpha Occupation", D->rowspi()));
 
     D->diagonalize(C,O,descending);
 
@@ -483,7 +483,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_mo()
 
     SharedMatrix D = Db_mo();
     SharedMatrix C(new Matrix("Nb_mo", D->nirrep(), D->rowspi(), D->rowspi()));
-    std::shared_ptr<Vector> O(new Vector("Beta Occupation", D->nirrep(), D->rowspi()));
+    std::shared_ptr<Vector> O(new Vector("Beta Occupation", D->rowspi()));
 
     D->diagonalize(C,O,descending);
 
@@ -643,7 +643,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_mo()
 {
     SharedMatrix D = Dt_mo();
     SharedMatrix C(new Matrix("Nt_mo", D->nirrep(), D->rowspi(), D->rowspi()));
-    std::shared_ptr<Vector> O(new Vector("Total Occupation", D->nirrep(), D->rowspi()));
+    std::shared_ptr<Vector> O(new Vector("Total Occupation", D->rowspi()));
 
     D->diagonalize(C,O,descending);
 

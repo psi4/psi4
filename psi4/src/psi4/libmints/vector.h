@@ -82,12 +82,14 @@ public:
     Vector(const Vector &copy);
 
     /// Constructor, allocates memory
+    /// (this should be deprecated in favor of the Dimension-based version)
     Vector(int nirrep, int *dimpi);
 
     /// Constructor, convenience for 1 irrep
     Vector(int dim);
 
     /// Constructor, allocates memory
+    /// (this should be deprecated in favor of the Dimension-based version)
     Vector(const std::string &name, int nirrep, int *dimpi);
 
     /// Constructor, convenience for 1 irrep
@@ -200,11 +202,12 @@ public:
     /// Returns a copy of the vector_
     double *to_block_vector();
 
+
     /// Returns the dimension per irrep h
     int dim(int h = 0) const { return dimpi_[h]; }
 
     /// Returns the dimension array
-    int *dimpi() const { return dimpi_; }
+    const Dimension& dimpi() const { return dimpi_; }
 
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }

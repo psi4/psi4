@@ -118,7 +118,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         double* evals_vp = evals_v->pointer();
         for (size_t root = 0; root < nroots; root++) {
             for (size_t i = 0; i < size; i++) {
-                tmp_buff[i] = evecsp[root][i];
+                tmp_buff[i] = evecsp[i][root];
             }
             Dvec->setarray(tmp_buff, size);
             Dvec->write(root, 0);
@@ -138,7 +138,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
             for (i = 0; i < nroots; i++) {
                 outfile->Printf("\n\n* ROOT %2d CI total energy = %17.13lf\n",
-                                i + 1, evals[i] + nucrep);
+                                i, evals[i] + nucrep);
                 Dvec->read(i, 0);
                 zero_arr(mi_coeff, Parameters_->nprint);
                 Dvec->max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,

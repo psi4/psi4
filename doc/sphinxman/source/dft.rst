@@ -514,8 +514,7 @@ option, which may take one of the following values:
 The spherical grids are rotated according to a common set of rules developed
 during the implementation of SG1. At the moment, the rules for tetrahedral,
 octohedral, and icosohedral systems are not complete, so there may be some
-ambiguity in the grid orientation for these systems. A complete grid orientation
-rule set will be available in RC1. 
+ambiguity in the grid orientation for these systems.
 
 Radial grid types are controlled by the |scf__dft_radial_scheme| option, which
 at the moment may be either TREUTLER or BECKE, while the number of radial points
@@ -524,12 +523,10 @@ integer (typically 50-100). The radial grids are "centered" on the Bragg-Slater
 radius of each atom, as described in Becke's 1988 paper. If inaccurate
 integration is suspected in systems with anions or very diffuse basis functions,
 the |scf__dft_bs_radius_alpha| option may be increased from 1.0 to a larger value to
-force the radial grid to span a larger extent in space. The MultiExp, Mura, and
-EM radial grids will be available in RC1.  
+force the radial grid to span a larger extent in space.
 
 The atomic weighting scheme is controlled by the |scf__dft_nuclear_scheme|
-option, which may be one of TREUTLER, BECKE, or NAIVE. The faster Stratmann
-weighting scheme is under development, and will be available in RC1. 
+option, which may be one of TREUTLER, BECKE, or NAIVE.
 
 Once the molecular quadrature grid is built, the points are partitioned into
 blocks of points which are spatially close to each other. We use an octree
