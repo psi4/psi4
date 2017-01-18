@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -99,12 +99,12 @@ this operation is identical to the above.
 .. warning:: The following will lead to reference errors: ``view =
    psi4.Matrix(3, 3).np``. Here, the Python garbage collection deletes the Matrix
    object, the view then points to deleted data resulting in the view effectively
-   reading random data. As a general rule never assigned the ``.nph`` or ``.np``
+   reading random data. As a general rule, never assign the ``.nph`` or ``.np``
    accessors.
 
 
-Psi4 Data Objects with Irreps
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+|PSIfour| Data Objects with Irreps
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |PSIfour| data objects natively support multiple irreducible representations
 which is quite useful for Quantum Chemistry. However, this is not fundamental

@@ -12,7 +12,7 @@ strives to be friendly to both users and developers.
 
 * **Users' Website**  www.psicode.org
 
-* **Downloading and Installing Psi4** https://github.com/psi4/psi4/wiki (wiki is temporarily out of date, see [CMakeLists.txt](CMakeLists.txt))
+* **Downloading and Installing Psi4** http://psicode.org/psi4manual/master/build_faq.html (for the CMake adept, see [CMakeLists.txt](CMakeLists.txt)
 
 * **Manual**  [http://bit.ly/psi4manual](http://psicode.org/psi4manual/master/index.html) (built nightly from master branch)
 
@@ -24,16 +24,13 @@ strives to be friendly to both users and developers.
 
 * **Public Github**  https://github.com/psi4/psi4 (authoritative repository)
 
-* **Private Github**  https://github.com/psi4/psi4private (scheduled to become read-only mirror of public GitHub master)
-
 * **Travis CI build status** [![Build Status](https://travis-ci.org/psi4/psi4.svg?branch=master)](https://travis-ci.org/psi4/psi4)
 
-* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#quick-installation)
+* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux and Mac [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#quick-installation)
 
-* **CdoeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
+* **CodeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
 
-
-* **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 or store private branches at psi4/psi4private)
+* **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4)
 
 * **Sample Inputs**  http://www.psicode.org/psi4manual/master/testsuite.html (also in share/psi4/samples)
 

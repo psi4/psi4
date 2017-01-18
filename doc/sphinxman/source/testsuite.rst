@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -33,8 +33,8 @@ Test Suite and Sample Inputs
 |PSIfour| is distributed with an extensive test suite, which can
 be found in :source:`tests`. After building the source code, these
 can automatically be run by running ``ctest`` in the compilation
-directory. More info on ``ctest`` options can be found on the
-`Wiki <https://github.com/psi4/psi4/wiki/4_Testing>`_. Sample input files
+directory. More info on ``ctest`` options can be found
+:ref:`here <faq:subsettests>`. Sample input files
 can be found in the :source:`samples` subdirectory of the top-level Psi
 directory. The samples and a brief description are provided below.
 
