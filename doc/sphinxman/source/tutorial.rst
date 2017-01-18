@@ -78,7 +78,7 @@ For your convenience, the above example can be found in
 :srcsample:`tu1-h2o-energy`.
 You can run it if you wish.
 Once |PSIfour| is in your path (see the 
-`User Configuration <https://github.com/psi4/psi4/wiki/3_Building#configure-runtime>`_ 
+:ref:`User Configuration <faq:runordinaryexe>`
 section of the installation instructions), you can run this computation by typing
 
    >>> psi4 input.dat output.dat

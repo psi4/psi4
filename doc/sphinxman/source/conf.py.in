@@ -110,7 +110,7 @@ suppress_warnings = ['image.nonlocal_uri']
 
 # General information about the project.
 project = u'Psi4'  # u'P\uA731\u026A4'
-copyright = u'2016, The {0} Project'.format(project)
+copyright = u'2017, The {0} Project'.format(project)
 
 def get_version_info():
     import psi4

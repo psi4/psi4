@@ -47,6 +47,8 @@ entities, which are compiled independently of the Psi source, but can
 still link against Psi's vast library. The plugins can be loaded at
 run-time from any location.
 
+.. _`sec:newplugins`:
+
 Creating a New Plugin
 ---------------------
 

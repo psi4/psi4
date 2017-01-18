@@ -28,11 +28,11 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 
     if (APPLE)
         if (${GCC_VERSION} VERSION_LESS 6.1)
-            message(FATAL_ERROR "Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc")
+            message(FATAL_ERROR "Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without GCC intervention: http://psicode.org/psi4manual/master/build_planning.html#faq-modgcc")
         endif()
     else ()
         if (${GCC_VERSION} VERSION_LESS 4.9)
-            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: https://github.com/psi4/psi4/wiki/8_FAQ_Contents#modgcc\n${ColourReset}")
+            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of GCC (detected: ${GCC_VERSION}; required for C++11: 4.9) so this build won't work without GCC intervention: http://psicode.org/psi4manual/master/build_planning.html#faq-modgcc\n${ColourReset}")
         endif()
     endif()
 
