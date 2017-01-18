@@ -75,6 +75,28 @@ def build_blyp_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+def build_bop_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('BOP')
+    sup.set_description('    BOP GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    T. Tsuneda et. al., J. Chem. Phys. 110, 10664-10678, 1999\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional.build_base('XC_GGA_X_B88', restricted))
+    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_OP_B88', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 def build_b86bpbe_superfunctional(name, npoints, deriv, restricted):
 
     # Call this first
@@ -249,4 +271,5 @@ gga_superfunc_list = {
           "bp86"    : build_bp86_superfunctional,
           "pw91"    : build_pw91_superfunctional,
           "ft97"    : build_ft97_superfunctional,
+          "bop"     : build_bop_superfunctional,
 }

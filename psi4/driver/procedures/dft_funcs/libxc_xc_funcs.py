@@ -167,6 +167,8 @@ for x in xc_func_list:
 # Add extra translations
 psi_to_xc_translate["b97-0"] = "XC_HYB_GGA_XC_B97"
 psi_to_xc_translate["hcth"] = "XC_GGA_XC_HCTH_93"
+psi_to_xc_translate["b1b95"] = "XC_HYB_MGGA_XC_B88B95"
+psi_to_xc_translate["bhhlyp"] = "XC_HYB_GGA_XC_BHANDHLYP"
 
 
 def find_xc_func_name(name):

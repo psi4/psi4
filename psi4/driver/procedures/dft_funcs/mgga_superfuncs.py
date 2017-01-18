@@ -70,9 +70,102 @@ def build_dldfd10_superfunctional(name, npoints, deriv, restricted):
 
     return (sup, ('dlDF', '-DAS2010'))
 
+def build_m11_l_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('M11-L')
+    sup.set_description('    M11-L Meta-GGA XC Functional\n')
+    sup.set_citation('    R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett. 3, 117-124, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_M11_L', restricted))
+    sup.add_c_functional(core.LibXCFunctional.build_base('XC_MGGA_C_M11_L', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+def build_mgga_ms0_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MGGA_MS0')
+    sup.set_description('    MGGA_MS0 Meta-GGA XC Functional\n')
+    sup.set_citation('    J. Sun et. al., J. Chem. Phys. 137, 051101, 2012\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_MS0', restricted))
+    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_REGTPSS', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+
+def build_mgga_ms1_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MGGA_MS1')
+    sup.set_description('    MGGA_MS1 Meta-GGA XC Functional\n')
+    sup.set_citation('    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_MS1', restricted))
+    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_REGTPSS', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
+def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('MGGA_MS2')
+    sup.set_description('    MGGA_MS2 Meta-GGA XC Functional\n')
+    sup.set_citation('    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n')
+
+    # Add member functionals
+    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_MS2', restricted))
+    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_REGTPSS', restricted))
+
+    # Call this last
+    sup.allocate()
+    return (sup, False)
+
 
 mgga_superfunc_list = {
-          "dldf" : build_dldf_superfunctional,
+          "dldf"     : build_dldf_superfunctional,
           "dldf+d09" : build_dldfd09_superfunctional,
-          "dldf+d" : build_dldfd10_superfunctional,
+          "dldf+d"   : build_dldfd10_superfunctional,
+          "m11-l"    : build_m11_l_superfunctional,
+          "mgga_ms0" : build_mgga_ms0_superfunctional,
+          "mgga_ms1" : build_mgga_ms1_superfunctional,
+          "mgga_ms2" : build_mgga_ms2_superfunctional,
 }
