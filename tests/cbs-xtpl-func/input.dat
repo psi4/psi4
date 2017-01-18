@@ -15,25 +15,28 @@ set g_convergence gau_verytight
 
 E1 = energy(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
 E2 = energy(sherrill_gold_standard, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
-compare_values(E1, E2, 5, 'Match gold_standard energy')  #TEST
+compare_values(E1, E2, 5, '[1] Match gold_standard energy')  #TEST
 
-G1 = gradient(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
+G1 = gradient(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g', dertype='energy')
 G2 = gradient(sherrill_gold_standard, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
-compare_matrices(G1, G2, 5, 'Match gold_standard gradient')  #TEST
+compare_matrices(G1, G2, 5, '[2] Match gold_standard gradient')  #TEST
 
 # Reset mol geometries
 mol.R = 1.0
 mol.A = 100.0
-E = optimize(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g')
-compare_values(-76.3707500218, E, 5, '[1a] opt(cbs, sherrill) energy')  #TEST
-compare_values(0.960940174888, mol.R, 3, '[1b] opt(cbs, sherrill) bond')  #TEST
-compare_values(103.436972667, mol.A, 2, '[1c] opt(cbs, sherrill) angle')  #TEST
+E = optimize(cbs, corl_wfn='mp2', corl_basis='cc-pV[DT]Z', delta_wfn='ccsd(t)', delta_basis='3-21g', dertype=0)
+compare_values(-76.3707500218, E, 5, '[3a] opt(cbs, sherrill) energy')  #TEST
+compare_values(0.960940174888, mol.R, 3, '[3b] opt(cbs, sherrill) bond')  #TEST
+compare_values(103.436972667, mol.A, 2, '[3c] opt(cbs, sherrill) angle')  #TEST
 
 # Reset mol geometries
 mol.R = 1.0
 mol.A = 100.0
 E = optimize(sherrill_gold_standard, scf_basis='cc-pVTZ', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
-compare_values(-76.3707500218, E, 5, '[2a] opt(sherrill) energy')  #TEST
-compare_values(0.960940174888, mol.R, 3, '[2b] opt(sherrill) bond')  #TEST
-compare_values(103.436972667, mol.A, 2, '[2c] opt(sherrill) angle')  #TEST
+compare_values(-76.3707500218, E, 5, '[4a] opt(sherrill) energy')  #TEST
+compare_values(0.960940174888, mol.R, 3, '[4b] opt(sherrill) bond')  #TEST
+compare_values(103.436972667, mol.A, 2, '[4c] opt(sherrill) angle')  #TEST
 
+# Note: with new analytical ccsd(t) gradients, calcs G1 and 3 default  #TEST
+#   to sum-of-analytic. Want to compare with custom_func values that are  #TEST
+#   always findif, so force findif on grad(cbs and opt(cbs counterparts.  #TEST
