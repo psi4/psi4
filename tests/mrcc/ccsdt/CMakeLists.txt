@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(mrcc-ccsdt "psi;quicktests;mrcc;addon;cc")
+add_regression_test(mrcc-ccsdt "psi;quicktests;smoketests;mrcc;addon;cc")

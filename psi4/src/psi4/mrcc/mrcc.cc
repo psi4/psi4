@@ -601,7 +601,7 @@ bool has_key(const py::dict &data, const std::string &key)
 {
     bool found = false;
     for (auto item : data) {
-        if (item.first == py::str(key)) {
+        if (std::string(py::str(item.first)) == key) {
             found = true;
             break;
         }
