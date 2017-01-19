@@ -348,8 +348,12 @@ double UHF::compute_E()
     coulomb_E += Db_->vector_dot(J_);
 
     double XC_E = 0.0;
+    double VV10_E = 0.0;
     if (functional_->needs_xc()) {
         XC_E = potential_->quadrature_values()["FUNCTIONAL"];
+    }
+    if (functional_->needs_vv10()){
+        VV10_E = potential_->quadrature_values()["VV10"];
     }
 
     double exchange_E = 0.0;
@@ -368,6 +372,7 @@ double UHF::compute_E()
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
     energies_["XC"] = XC_E;
+    energies_["VV10"] = VV10_E;
     energies_["-D"] = variables_["-D Energy"];
     double dashD_E = energies_["-D"];
 

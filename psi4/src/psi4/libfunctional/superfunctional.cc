@@ -151,25 +151,25 @@ void SuperFunctional::print(std::string out, int level) const {
     printer->Printf("%s", citation_.c_str());
     printer->Printf("\n\n");
 
-    printer->Printf("    Deriv            = %14d\n", deriv_);
-    printer->Printf("    GGA              = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
-    printer->Printf("    Meta             = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
+    printer->Printf("    Deriv               = %14d\n", deriv_);
+    printer->Printf("    GGA                 = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
+    printer->Printf("    Meta                = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
     printer->Printf("\n");
 
-    printer->Printf("    Exchange Hybrid  = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
-    printer->Printf("    Exchange Alpha   = %14.6f\n", x_alpha_);
+    printer->Printf("    Exchange Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
+    printer->Printf("    Exchange Alpha      = %14.6f\n", x_alpha_);
     printer->Printf("\n");
 
-    printer->Printf("    Exchange LRC     = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
-    printer->Printf("    Exchange Beta    = %14.6f\n", x_beta_);
-    printer->Printf("    Exchange Omega   = %14.6f\n", x_omega_);
+    printer->Printf("    Exchange LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
+    printer->Printf("    Exchange Beta       = %14.6f\n", x_beta_);
+    printer->Printf("    Exchange Omega      = %14.6f\n", x_omega_);
     if (is_c_lrc() || is_c_hybrid()) {
         printer->Printf("\n");
-        printer->Printf("    MP2 Hybrid       = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
-        printer->Printf("    MP2 Alpha        = %14.6f\n", c_alpha_);
+        printer->Printf("    MP2 Hybrid          = %14s\n", (is_c_hybrid() ? "TRUE" : "FALSE"));
+        printer->Printf("    MP2 Alpha           = %14.6f\n", c_alpha_);
         printer->Printf("\n");
-        printer->Printf("    MP2 LRC          = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
-        printer->Printf("    MP2 Omega        = %14.6f\n", c_omega_);
+        printer->Printf("    MP2 LRC             = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
+        printer->Printf("    MP2 Omega           = %14.6f\n", c_omega_);
     }
     printer->Printf("\n");
 
@@ -279,18 +279,20 @@ void SuperFunctional::print(std::string out, int level) const {
 
     if (needs_grac_) {
         printer->Printf("   => Asymptotic Correction <=\n\n");
-        printer->Printf("    X Functional     = %14s\n", grac_x_functional_->name().c_str());
-        printer->Printf("    C Functional     = %14s\n", grac_c_functional_->name().c_str());
-        printer->Printf("    Bulk Shift       = %14.6f\n", grac_shift_);
-        printer->Printf("    GRAC Alpha       = %14.6f\n", grac_alpha_);
-        printer->Printf("    GRAC Beta        = %14.6f\n", grac_beta_);
+        printer->Printf("    X Functional        = %14s\n", grac_x_functional_->name().c_str());
+        printer->Printf("    C Functional        = %14s\n", grac_c_functional_->name().c_str());
+        printer->Printf("    Bulk Shift          = %14.6f\n", grac_shift_);
+        printer->Printf("    GRAC Alpha          = %14.6f\n", grac_alpha_);
+        printer->Printf("    GRAC Beta           = %14.6f\n", grac_beta_);
         printer->Printf("\n");
     }
 
     if (needs_vv10_){
         printer->Printf("   => VV10 Non-Local Parameters <=\n\n");
-        printer->Printf("    VV10 beta        = %16.4E\n", vv10_b_);
-        printer->Printf("    VV10 C           = %16.4E\n", vv10_c_);
+        printer->Printf("    VV10 B              = %14.4E\n", vv10_b_);
+        printer->Printf("    VV10 C              = %14.4E\n", vv10_c_);
+        // printer->Printf("    NL Radial Points    = %14d\n", options_.get_int("DFT_VV10_RADIAL_POINTS"));
+        // printer->Printf("    NL Spherical Points = %14d\n", options_.get_int("DFT_VV10_SPHERICAL_POINTS"));
         printer->Printf("\n");
     }
 
@@ -711,7 +713,7 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
     double tmp1 = 0.0;
     double tmp2 = 0.0;
     double tmp3 = 0.0;
-    for (size_t i = 0; i < npoints; i++){
+    for (size_t i = 0; i < npoints; i++) {
         // if (rhop[i] < rho_thresh) continue;
 
         double Wp = Wp_pref * rhop[i];
@@ -728,10 +730,9 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
     }
     // printf("W0p/kappa/rho % 16.12f % 16.12f % 16.12f\n", tmp1, tmp2, tmp3);
 
-    if (internal){
+    if (internal) {
         return vv_values_;
     }
-
 
     std::map<std::string, SharedVector> ret;
 

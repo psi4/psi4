@@ -210,7 +210,7 @@ RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> pr
 RV::~RV() {}
 void RV::initialize() {
     VBase::initialize();
-    int max_points = grid_->max_points();
+    int max_points = options_.get_int("DFT_BLOCK_MAX_POINTS");
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
@@ -451,7 +451,6 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BX"]     = quad_values_["RHO_AX"];
     quad_values_["RHO_BY"]     = quad_values_["RHO_AY"];
     quad_values_["RHO_BZ"]     = quad_values_["RHO_AZ"];
-    printf("    VV10 Value:         %24.16f\n", quad_values_["VV10"]);
 
     if (debug_) {
         outfile->Printf("   => Numerical Integrals <=\n\n");

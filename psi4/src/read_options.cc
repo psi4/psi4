@@ -1485,7 +1485,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number) for VV10 NL integration. -*/
-    options.add_int("DFT_VV10_SPHERICAL_POINTS", 110);
+    options.add_int("DFT_VV10_SPHERICAL_POINTS", 50);
     /*- Number of radial points for VV10 NL integration. -*/
     options.add_int("DFT_VV10_RADIAL_POINTS", 20);
     /*- Rho cutoff for VV10 NL integration. !expert -*/
