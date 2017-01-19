@@ -205,13 +205,17 @@ protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// Master builder methods
-    void buildGridFromOptions();
+    void buildGridFromOptions(size_t nradpts, size_t nangpts);
     /// The Options object
     Options& options_;
 
 public:
     DFTGrid(std::shared_ptr<Molecule> molecule,
             std::shared_ptr<BasisSet> primary,
+            Options& options);
+    DFTGrid(std::shared_ptr<Molecule> molecule,
+            std::shared_ptr<BasisSet> primary,
+            size_t nradpts, size_t nangpts,
             Options& options);
     virtual ~DFTGrid();
 };

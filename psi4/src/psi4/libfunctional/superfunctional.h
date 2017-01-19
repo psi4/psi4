@@ -38,6 +38,7 @@ namespace psi {
 
 class Options;
 class Functional;
+class BlockOPoints;
 
 /**
  * SuperFunctional: High-level semilocal DFA object
@@ -91,6 +92,7 @@ protected:
     bool needs_vv10_;
     double vv10_b_;
     double vv10_c_;
+    double vv10_beta_;
 
     // => Functional values and partials <= //
     bool libxc_xc_func_;
@@ -98,6 +100,7 @@ protected:
     int deriv_;
     std::map<std::string, SharedVector> values_;
     std::map<std::string, SharedVector> ac_values_;
+    std::map<std::string, SharedVector> vv_values_;
 
     // Set up a null Superfunctional
     void common_init();
@@ -132,6 +135,16 @@ public:
                          SharedVector gamma_bb,
                          SharedVector tau_a,
                          SharedVector tau_b);
+
+    // Compute the cache data for VV10 dispersion
+    std::map<std::string, SharedVector> compute_vv10_cache(
+        const std::map<std::string, SharedVector>& vals, std::shared_ptr<BlockOPoints> block,
+        double rho_thresh, int npoints = -1, bool internal = false);
+
+    // Copmutes the Cache data for VV10 dispersion
+    double compute_vv10_kernel(const std::map<std::string, SharedVector>& vals,
+                               const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+                               std::shared_ptr<BlockOPoints> block, int npoints = -1);
 
     // => Input/Output <= //
 

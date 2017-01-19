@@ -152,7 +152,7 @@ xc_func_list.remove("XC_GGA_XC_OPWLYP_D")
 xc_func_list.remove("XC_GGA_XC_OBLYP_D")
 
 # filter out -V for now
-xc_func_list = [x for x in xc_func_list if "_V" not in x]
+# xc_func_list = [x for x in xc_func_list if "_V" not in x]
 
 # Deal with xc mix upper/lower case
 lower_to_xc_dict = {x.lower() : x for x in xc_func_list}

@@ -1071,7 +1071,7 @@ def scf_helper(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
-        ['SCF', 'SCF_TYPE']  # Hack: scope gets changed internally with the Andy trick
+        ['SCF', 'SCF_TYPE'],  # Hack: scope gets changed internally with the Andy trick
     )
 
     optstash2 = p4util.OptionsState(

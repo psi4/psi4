@@ -26,14 +26,20 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/vector.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libfock/cubature.h"
+#include "psi4/libfock/points.h"
 #include "superfunctional.h"
 #include "functional.h"
 #include "LibXCfunctional.h"
+
 #include <cmath>
-using namespace psi;
+#include <cstdlib>
+
+// using namespace psi;
 
 namespace psi {
 
@@ -60,6 +66,7 @@ void SuperFunctional::common_init() {
     needs_vv10_ = false;
     vv10_b_ = 0.0;
     vv10_c_ = 0.0;
+    vv10_beta_ = 0.0;
 
     libxc_xc_func_ = false;
     locked_ = false;
@@ -107,17 +114,22 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
         sup->add_c_functional(c_functionals_[i]->build_worker());
     }
 
+    // Workers dont need omega or alpha
+
     sup->deriv_ = deriv_;
     sup->max_points_ = max_points_;
     sup->libxc_xc_func_ = libxc_xc_func_;
     if (needs_vv10_) {
+        sup->needs_vv10_ = true;
         sup->vv10_b_ = vv10_b_;
         sup->vv10_c_ = vv10_c_;
-        sup->needs_vv10_ = true;
+        sup->vv10_beta_ = vv10_beta_;
     }
     if (needs_grac_) {
         sup->needs_grac_ = true;
         sup->grac_shift_ = grac_shift_;
+        sup->grac_alpha_ = grac_alpha_;
+        sup->grac_beta_ = grac_beta_;
         sup->set_grac_x_functional(grac_x_functional_->build_worker());
         sup->set_grac_c_functional(grac_c_functional_->build_worker());
     }
@@ -331,6 +343,7 @@ void SuperFunctional::set_vv10_b(double vv10_b) {
     can_edit();
     needs_vv10_ = true;
     vv10_b_ = vv10_b;
+    vv10_beta_ =  1.0 / 32.0 * std::pow((3.0 / (vv10_b_ * vv10_b_)), (3.0 / 4.0));
 }
 void SuperFunctional::set_vv10_c(double vv10_c) {
     can_edit();
@@ -551,6 +564,11 @@ void SuperFunctional::allocate() {
             ac_values_["V_GAMMA_BB"] = SharedVector(new Vector("V_GAMMA_BB", max_points_));
         }
     }
+
+    if (needs_vv10_) {
+        vv_values_["W0"] = SharedVector(new Vector("W0", max_points_));
+        vv_values_["KAPPA"] = SharedVector(new Vector("KAPPA", max_points_));
+    }
 }
 std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
     const std::map<std::string, SharedVector>& vals, int npoints) {
@@ -667,6 +685,181 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
     }
 
     return values_;
+}
+std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
+    const std::map<std::string, SharedVector>& vals, std::shared_ptr<BlockOPoints> block,
+    double rho_thresh, int npoints, bool internal){
+
+    npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
+
+    // Precompute prefactors
+    const double Wp_pref = (4.0 / 3.0) * M_PI;
+    const double Wg_pref = vv10_c_;
+    const double kappa_pref = (1.5 * vv10_b_ * M_PI) / std::pow(9.0 * M_PI, 1.0 / 6.0);
+    const double kappa_pow = 1.0 / 6.0;
+
+    size_t nact = 0;
+
+    // Zero out the vectors
+    vv_values_.find("W0")->second->zero();
+    vv_values_.find("KAPPA")->second->zero();
+
+    double* w0p = vv_values_.find("W0")->second->pointer();
+    double* kappap = vv_values_.find("KAPPA")->second->pointer();
+    double* rhop = vals.find("RHO_A")->second->pointer();
+    double* gammap = vals.find("GAMMA_AA")->second->pointer();
+    double tmp1 = 0.0;
+    double tmp2 = 0.0;
+    double tmp3 = 0.0;
+    for (size_t i = 0; i < npoints; i++){
+        // if (rhop[i] < rho_thresh) continue;
+
+        double Wp = Wp_pref * rhop[i];
+
+        double Wg_tmp = gammap[i] / (rhop[i] * rhop[i]);
+        double Wg = Wg_pref * Wg_tmp * Wg_tmp;
+
+        w0p[i] = std::sqrt(Wp + Wg);
+        kappap[i] = kappa_pref * std::pow(rhop[i], kappa_pow);
+        nact++;
+        tmp1 += w0p[i];
+        tmp2 += kappap[i];
+        tmp3 += rhop[i];
+    }
+    // printf("W0p/kappa/rho % 16.12f % 16.12f % 16.12f\n", tmp1, tmp2, tmp3);
+
+    if (internal){
+        return vv_values_;
+    }
+
+
+    std::map<std::string, SharedVector> ret;
+
+    SharedVector w_vec(new Vector("W Grid points", npoints));
+    C_DCOPY(npoints, block->w(), 1, w_vec->pointer(), 1);
+
+    SharedVector x_vec(new Vector("X Grid points", npoints));
+    C_DCOPY(npoints, block->x(), 1, x_vec->pointer(), 1);
+
+    SharedVector y_vec(new Vector("Y Grid points", npoints));
+    C_DCOPY(npoints, block->y(), 1, y_vec->pointer(), 1);
+
+    SharedVector z_vec(new Vector("Z Grid points", npoints));
+    C_DCOPY(npoints, block->z(), 1, z_vec->pointer(), 1);
+
+    SharedVector rho_vec(new Vector("RHO points", npoints));
+    C_DCOPY(npoints, rhop, 1, rho_vec->pointer(), 1);
+
+    SharedVector w0_vec(new Vector("W0 points", npoints));
+    C_DCOPY(npoints, w0p, 1, w0_vec->pointer(), 1);
+
+    SharedVector kappa_vec(new Vector("KAPPA points", npoints));
+    C_DCOPY(npoints, kappap, 1, kappa_vec->pointer(), 1);
+
+
+    ret["W"] = w_vec;
+    ret["X"] = x_vec;
+    ret["Y"] = y_vec;
+    ret["Z"] = z_vec;
+    ret["RHO"] = rho_vec;
+    ret["W0"] = w0_vec;
+    ret["KAPPA"] = kappa_vec;
+
+    return ret;
+
+}
+double SuperFunctional::compute_vv10_kernel(
+    const std::map<std::string, SharedVector>& vals,
+    const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+    std::shared_ptr<BlockOPoints> block, int npoints) {
+
+    // Kernel between left (*this) and right (vv10_cache) grids
+
+    // Compute the vv10 cache in place
+    size_t l_npoints = block->npoints();
+    compute_vv10_cache(vals, block, 1.e-24, block->npoints(), true);
+
+    // Grab values to update
+    double vv10_e = 0.0;
+    double* v_rho = values_["V_RHO_A"]->pointer();
+    double* v_gamma = values_["V_GAMMA_AA"]->pointer();
+
+    // Constants
+    const double vv10_beta = vv10_beta_;
+
+    // Get left points
+    double* l_x = block->x();
+    double* l_y = block->y();
+    double* l_z = block->z();
+    double* l_w = block->w();
+    double* l_rho = vals.find("RHO_A")->second->pointer();
+    double* l_gamma = vals.find("GAMMA_AA")->second->pointer();
+    double* l_W0 = vv_values_.find("W0")->second->pointer();
+    double* l_kappa = vv_values_.find("KAPPA")->second->pointer();
+
+    for (size_t i = 0; i < l_npoints; i++){
+        if (l_rho[i] < 1.e-24) continue;
+
+        // Compute interior kernel
+        double phi = 0.0;
+        double U = 0.0;
+        double W = 0.0;
+        for (auto r_block : vv10_cache){
+
+            // Get right points
+            double* r_x = r_block.find("X")->second->pointer();
+            double* r_y = r_block.find("Y")->second->pointer();
+            double* r_z = r_block.find("Z")->second->pointer();
+            double* r_w = r_block.find("W")->second->pointer();
+            double* r_rho = r_block.find("RHO")->second->pointer();
+            double* r_W0 = r_block.find("W0")->second->pointer();
+            double* r_kappa = r_block.find("KAPPA")->second->pointer();
+
+            size_t r_npoints = r_block.find("KAPPA")->second->dimpi()[0];
+
+            // Interior Kernel
+            for (size_t j = 0; j < r_npoints; j++) {
+                // if (r_rho[i] < 1.e-8) continue;
+
+                // Distance between grid points
+                double d_x = l_x[i] - r_x[j];
+                double d_y = l_y[i] - r_y[j];
+                double d_z = l_z[i] - r_z[j];
+                double R2 = 0.0;
+                R2 += d_x * d_x;
+                R2 += d_y * d_y;
+                R2 += d_z * d_z;
+
+                // g/gp values
+                double g = l_W0[i] * R2 + l_kappa[i];
+                double gp = r_W0[j] * R2 + r_kappa[j];
+                double gs = g + gp;
+
+                // Sum the kernel
+                double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
+
+                // Dumb question, does FMA do subtraction?
+                phi += phi_kernel;
+                double tmp_U = phi_kernel * ((1.0 / g) + (1.0 / gs));
+                U -= tmp_U;
+                W -= tmp_U * R2;
+            }
+
+        } // End r blocks
+        // Mathematica for the win
+        const double kappa_dn = l_kappa[i] / (6.0 * l_rho[i]);
+        const double w0_dgamma = vv10_c_ * l_gamma[i] / (l_W0[i] * std::pow(l_rho[i], 4.0));
+        const double w0_drho = 2.0 / l_W0[i] *
+            (M_PI / 3.0 - vv10_c_ * (l_gamma[i] * l_gamma[i]) / std::pow(l_rho[i], 5.0));
+
+        // Sum it all together
+        vv10_e += l_w[i] * l_rho[i] * (vv10_beta + 0.5 * phi);
+        v_rho[i] += vv10_beta + phi + l_rho[i] * (kappa_dn * U + w0_drho * W);
+        v_gamma[i] += l_rho[i] * w0_dgamma * W;
+    }
+
+    return vv10_e;
+
 }
 void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa,
                                       SharedVector gamma_ab, SharedVector gamma_bb,

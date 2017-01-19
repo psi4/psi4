@@ -65,6 +65,7 @@ void VBase::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
     v2_rho_cutoff_ = options_.get_double("DFT_V2_RHO_CUTOFF");
+    vv10_rho_cutoff_ = options_.get_double("DFT_VV10_RHO_CUTOFF");
     grac_initialized_ = false;
     num_threads_ = 1;
 #ifdef _OPENMP
@@ -258,6 +259,37 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     std::vector<double> rhoayq(num_threads_);
     std::vector<double> rhoazq(num_threads_);
 
+    // VV10 kernel data if requested
+    std::vector<double> vv10_exc(num_threads_);
+    std::vector<std::map<std::string, SharedVector>> vv10_cache;
+    if (functional_->needs_vv10()){
+        DFTGrid nlgrid =
+            DFTGrid(primary_->molecule(), primary_, options_.get_int("DFT_VV10_RADIAL_POINTS"),
+                    options_.get_int("DFT_VV10_SPHERICAL_POINTS"), options_);
+        // nlgrid.print("outfile", print_);
+
+        vv10_cache.resize(nlgrid.blocks().size());
+
+        #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+        for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
+
+            // Get thread info
+            #ifdef _OPENMP
+                rank = omp_get_thread_num();
+            #endif
+
+            // Get workers and compute data
+            std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
+            std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+            std::shared_ptr<BlockOPoints> block = nlgrid.blocks()[Q];
+            // printf("Block %zu\n", Q);
+
+            pworker->compute_points(block);
+            vv10_cache[Q] = fworker->compute_vv10_cache(pworker->point_values(), block, vv10_rho_cutoff_, block->npoints(), false);
+        }
+
+
+    }
 
     // Traverse the blocks of points
     #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
@@ -293,6 +325,10 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         // Compute functional values
         // timer_on("V: Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
+        if (functional_->needs_vv10()){
+            // Updates the vals map and returns the energy
+            vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints);
+        }
         // timer_off("V: Functional");
 
         if (debug_ > 4) {
@@ -405,6 +441,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         ret[0]->copy(V_AO);
     }
 
+    quad_values_["VV10"] = std::accumulate(vv10_exc.begin(), vv10_exc.end(), 0.0);
     quad_values_["FUNCTIONAL"] = std::accumulate(functionalq.begin(), functionalq.end(), 0.0);
     quad_values_["RHO_A"]      = std::accumulate(rhoaq.begin(), rhoaq.end(), 0.0);
     quad_values_["RHO_AX"]     = std::accumulate(rhoaxq.begin(), rhoaxq.end(), 0.0);
@@ -414,15 +451,17 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     quad_values_["RHO_BX"]     = quad_values_["RHO_AX"];
     quad_values_["RHO_BY"]     = quad_values_["RHO_AY"];
     quad_values_["RHO_BZ"]     = quad_values_["RHO_AZ"];
+    printf("    VV10 Value:         %24.16f\n", quad_values_["VV10"]);
 
     if (debug_) {
         outfile->Printf("   => Numerical Integrals <=\n\n");
-        outfile->Printf("    Functional Value:  %24.16E\n", quad_values_["FUNCTIONAL"]);
+        outfile->Printf("    VV10 Value:         %24.16E\n", quad_values_["VV10"]);
+        outfile->Printf("    Functional Value:   %24.16E\n", quad_values_["FUNCTIONAL"]);
         outfile->Printf("    <\\rho_a>        :  %24.16E\n", quad_values_["RHO_A"]);
         outfile->Printf("    <\\rho_b>        :  %24.16E\n", quad_values_["RHO_B"]);
-        outfile->Printf("    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",
+        outfile->Printf("    <\\vec r\\rho_a> : <%24.16E,%24.16E,%24.16E>\n",
                         quad_values_["RHO_AX"], quad_values_["RHO_AY"], quad_values_["RHO_AZ"]);
-        outfile->Printf("    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",
+        outfile->Printf("    <\\vec r\\rho_b> : <%24.16E,%24.16E,%24.16E>\n\n",
                         quad_values_["RHO_BX"], quad_values_["RHO_BY"], quad_values_["RHO_BZ"]);
     }
 }
@@ -432,6 +471,10 @@ void RV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     }
     if ((Dx.size() != ret.size()) || (Dx.size() == 0)) {
         throw PSIEXCEPTION("Vx: RKS input and output sizes should be the same.");
+    }
+
+    if (functional_->needs_vv10()){
+        throw PSIEXCEPTION("V: RKS cannot compute VV10 Vx contribution.");
     }
 
     // Thread info
@@ -677,6 +720,9 @@ SharedMatrix RV::compute_gradient()
     if ((D_AO_.size() != 1))
         throw PSIEXCEPTION("V: RKS should have only one D Matrix");
 
+    if (functional_->needs_vv10()){
+        throw PSIEXCEPTION("V: RKS cannot compute VV10 gradient contribution.");
+    }
     // How many atoms?
     int natom = primary_->molecule()->natom();
 
@@ -943,6 +989,10 @@ SharedMatrix RV::compute_hessian()
 
     if ((D_AO_.size() != 1))
         throw PSIEXCEPTION("V: RKS should have only one D Matrix");
+
+    if (functional_->needs_vv10()){
+        throw PSIEXCEPTION("V: RKS cannot compute VV10 Hessian contribution.");
+    }
 
     // Build the target Hessian Matrix
     int natom = primary_->molecule()->natom();
@@ -1219,8 +1269,13 @@ void UV::print_header() const
 }
 void UV::compute_V(std::vector<SharedMatrix> ret)
 {
-    if ((D_AO_.size() != 2) || (ret.size() != 2))
+    if ((D_AO_.size() != 2) || (ret.size() != 2)){
         throw PSIEXCEPTION("V: UKS should have two D/V Matrices");
+    }
+
+    if (functional_->needs_grac() || functional_->needs_vv10()){
+        throw PSIEXCEPTION("V: UKS cannot compute VV10 or GRAC corrections.");
+    }
 
     // Thread info
     int rank = 0;
@@ -1479,6 +1534,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
     }
     if ((Dx.size() % 2) != 0) {
         throw PSIEXCEPTION("Vx: UKS input and output sizes should be the same.");
+    }
+
+    if (functional_->needs_vv10()){
+        throw PSIEXCEPTION("V: UKS cannot compute VV10 Vx contribution.");
     }
 
     // Thread info
@@ -1940,6 +1999,10 @@ SharedMatrix UV::compute_gradient()
 {
     if ((D_AO_.size() != 2))
         throw PSIEXCEPTION("V: UKS should have two D Matrices");
+
+    if (functional_->needs_vv10()){
+        throw PSIEXCEPTION("V: UKS cannot compute VV10 gradient contribution.");
+    }
 
     int rank = 0;
 

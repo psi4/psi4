@@ -3952,13 +3952,22 @@ DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule,
                  Options& options) :
     MolecularGrid(molecule), primary_(primary), options_(options)
 {
-    buildGridFromOptions();
+    buildGridFromOptions(options_.get_int("DFT_RADIAL_POINTS"),
+                         options_.get_int("DFT_SPHERICAL_POINTS"));
+}
+DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> primary,
+                 size_t nradpts, size_t nangpts,
+                 Options& options) :
+    MolecularGrid(molecule), primary_(primary), options_(options)
+{
+    buildGridFromOptions(nradpts, nangpts);
 }
 DFTGrid::~DFTGrid()
 {
 }
 
-void DFTGrid::buildGridFromOptions()
+void DFTGrid::buildGridFromOptions(size_t nradpts, size_t nangpts)
 {
     MolecularGridOptions opt;
     opt.bs_radius_alpha = options_.get_double("DFT_BS_RADIUS_ALPHA");
@@ -3967,8 +3976,8 @@ void DFTGrid::buildGridFromOptions()
     opt.prunescheme = RadialPruneMgr::WhichPruneScheme(options_.get_str("DFT_PRUNING_SCHEME").c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("DFT_NUCLEAR_SCHEME").c_str());
     opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("DFT_GRID_NAME").c_str());
-    opt.nradpts = options_.get_int("DFT_RADIAL_POINTS");
-    opt.nangpts = options_.get_int("DFT_SPHERICAL_POINTS");
+    opt.nradpts = nradpts;
+    opt.nangpts = nangpts;
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp(); // Tell what the admissible values are.

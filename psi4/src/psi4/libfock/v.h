@@ -62,6 +62,8 @@ protected:
     int nbf_;
     /// Rho threshold for the second derivative;
     double v2_rho_cutoff_;
+    /// VV10 interior kernel threshold
+    double vv10_rho_cutoff_;
     /// Options object, used to build grid
     Options& options_;
     /// Basis set used in the integration

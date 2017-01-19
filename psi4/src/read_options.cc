@@ -925,14 +925,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION SAPT(DFT) -*/
 
-    options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT EP2");
+    /*- How is the GRAC correction determined? -*/
+    options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
+    /*- Monomer A GRAC shift? -*/
     options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
+    /*- Monomer B GRAC shift? -*/
     options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
+    /*- Compute the Delta-HF correction? -*/
     options.add_bool("SAPT_DFT_DO_DHF", false);
+    /*- Underlying funcitonal to use for SAPT(DFT) !expert -*/
     options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "");
+    /*- Number of points in the Legendre FDDS Dispersion time integration !expert -*/
     options.add_int("SAPT_FDDS_DISP_NUM_POINTS", 10);
+    /*- Lambda shift in the space morphing for the FDDS Dispersion time integration !expert -*/
     options.add_double("SAPT_FDDS_DISP_LEG_LAMBDA", 0.3);
-
 
   }
 
@@ -1478,6 +1484,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     :ref:`Dispersion Corrections <table:dashd>` for the order in which
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
+    /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number) for VV10 NL integration. -*/
+    options.add_int("DFT_VV10_SPHERICAL_POINTS", 110);
+    /*- Number of radial points for VV10 NL integration. -*/
+    options.add_int("DFT_VV10_RADIAL_POINTS", 20);
+    /*- Rho cutoff for VV10 NL integration. !expert -*/
+    options.add_double("DFT_VV10_RHO_CUTOFF", 1.e-8);
     /*- The convergence on the orbital localization procedure -*/
     options.add_double("LOCAL_CONVERGENCE",1E-12);
     /*- The maxiter on the orbital localization procedure -*/
