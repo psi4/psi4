@@ -75,18 +75,18 @@ def build_b5050lyp_superfunctional(name, npoints, deriv, restricted):
     sup.set_citation('    Y. Shao et. al., J. Chem. Phys., 188, 4807-4818, 2003\n')
 
     # Add member functionals
-    slater = core.LibXCFunctional.build_base("XC_LDA_X", restricted)
+    slater = core.LibXCFunctional("XC_LDA_X", restricted)
     slater.set_alpha(0.08)
     sup.add_x_functional(slater)
-    becke = core.LibXCFunctional.build_base("XC_GGA_X_B88", restricted)
+    becke = core.LibXCFunctional("XC_GGA_X_B88", restricted)
     becke.set_alpha(0.42)
     sup.add_x_functional(becke)
     sup.set_x_alpha(0.50) 
 
-    vwn = core.LibXCFunctional.build_base("XC_LDA_C_VWN", restricted) 
+    vwn = core.LibXCFunctional("XC_LDA_C_VWN", restricted) 
     vwn.set_alpha(0.19)
     sup.add_c_functional(vwn)
-    lyp = core.LibXCFunctional.build_base("XC_GGA_C_LYP", restricted) 
+    lyp = core.LibXCFunctional("XC_GGA_C_LYP", restricted) 
     lyp.set_alpha(0.81)
     sup.add_c_functional(lyp)
 

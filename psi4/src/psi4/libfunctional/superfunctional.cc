@@ -701,20 +701,21 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
     const double kappa_pow = 1.0 / 6.0;
 
     size_t nact = 0;
+    // rho_thresh = 0.0;
 
     // Zero out the vectors
-    vv_values_.find("W0")->second->zero();
-    vv_values_.find("KAPPA")->second->zero();
+    vv_values_["W0"]->zero();
+    vv_values_["KAPPA"]->zero();
 
-    double* w0p = vv_values_.find("W0")->second->pointer();
-    double* kappap = vv_values_.find("KAPPA")->second->pointer();
+    double* w0p = vv_values_["W0"]->pointer();
+    double* kappap = vv_values_["KAPPA"]->pointer();
     double* rhop = vals.find("RHO_A")->second->pointer();
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
-    double tmp1 = 0.0;
-    double tmp2 = 0.0;
-    double tmp3 = 0.0;
+
+    // Eh, worth a shot
+    # pragma omp simd
     for (size_t i = 0; i < npoints; i++) {
-        // if (rhop[i] < rho_thresh) continue;
+        if (rhop[i] < rho_thresh) continue;
 
         double Wp = Wp_pref * rhop[i];
 
@@ -724,39 +725,47 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(
         w0p[i] = std::sqrt(Wp + Wg);
         kappap[i] = kappa_pref * std::pow(rhop[i], kappa_pow);
         nact++;
-        tmp1 += w0p[i];
-        tmp2 += kappap[i];
-        tmp3 += rhop[i];
     }
-    // printf("W0p/kappa/rho % 16.12f % 16.12f % 16.12f\n", tmp1, tmp2, tmp3);
 
     if (internal) {
         return vv_values_;
     }
 
+    // printf("Nact/Ntot %zu / %d\n", nact, npoints);
+    // Sieve the results
+    SharedVector w_vec(new Vector("W Grid points", nact));
+    SharedVector x_vec(new Vector("X Grid points", nact));
+    SharedVector y_vec(new Vector("Y Grid points", nact));
+    SharedVector z_vec(new Vector("Z Grid points", nact));
+    SharedVector rho_vec(new Vector("RHO points", nact));
+    SharedVector w0_vec(new Vector("W0 points", nact));
+    SharedVector kappa_vec(new Vector("KAPPA points", nact));
+
+    double* w_vecp = w_vec->pointer();
+    double* x_vecp = x_vec->pointer();
+    double* y_vecp = y_vec->pointer();
+    double* z_vecp = z_vec->pointer();
+    double* rho_vecp = rho_vec->pointer();
+    double* w0_vecp = w0_vec->pointer();
+    double* kappa_vecp = kappa_vec->pointer();
+
+    size_t sieve_pos = 0;
+    for (size_t i = 0; i < npoints; i++) {
+        if (rhop[i] < rho_thresh) continue;
+
+        w_vecp[sieve_pos] = block->w()[i];
+        x_vecp[sieve_pos] = block->x()[i];
+        y_vecp[sieve_pos] = block->y()[i];
+        z_vecp[sieve_pos] = block->z()[i];
+
+        rho_vecp[sieve_pos] = rhop[i];
+        w0_vecp[sieve_pos] = w0p[i];
+        kappa_vecp[sieve_pos] = kappap[i];
+
+        sieve_pos++;
+    }
+
     std::map<std::string, SharedVector> ret;
-
-    SharedVector w_vec(new Vector("W Grid points", npoints));
-    C_DCOPY(npoints, block->w(), 1, w_vec->pointer(), 1);
-
-    SharedVector x_vec(new Vector("X Grid points", npoints));
-    C_DCOPY(npoints, block->x(), 1, x_vec->pointer(), 1);
-
-    SharedVector y_vec(new Vector("Y Grid points", npoints));
-    C_DCOPY(npoints, block->y(), 1, y_vec->pointer(), 1);
-
-    SharedVector z_vec(new Vector("Z Grid points", npoints));
-    C_DCOPY(npoints, block->z(), 1, z_vec->pointer(), 1);
-
-    SharedVector rho_vec(new Vector("RHO points", npoints));
-    C_DCOPY(npoints, rhop, 1, rho_vec->pointer(), 1);
-
-    SharedVector w0_vec(new Vector("W0 points", npoints));
-    C_DCOPY(npoints, w0p, 1, w0_vec->pointer(), 1);
-
-    SharedVector kappa_vec(new Vector("KAPPA points", npoints));
-    C_DCOPY(npoints, kappap, 1, kappa_vec->pointer(), 1);
-
 
     ret["W"] = w_vec;
     ret["X"] = x_vec;
@@ -777,8 +786,9 @@ double SuperFunctional::compute_vv10_kernel(
     // Kernel between left (*this) and right (vv10_cache) grids
 
     // Compute the vv10 cache in place
+    double l_thresh = 1.e-12;
     size_t l_npoints = block->npoints();
-    compute_vv10_cache(vals, block, 1.e-24, block->npoints(), true);
+    compute_vv10_cache(vals, block, l_thresh, block->npoints(), true);
 
     // Grab values to update
     double vv10_e = 0.0;
@@ -795,11 +805,16 @@ double SuperFunctional::compute_vv10_kernel(
     double* l_w = block->w();
     double* l_rho = vals.find("RHO_A")->second->pointer();
     double* l_gamma = vals.find("GAMMA_AA")->second->pointer();
-    double* l_W0 = vv_values_.find("W0")->second->pointer();
-    double* l_kappa = vv_values_.find("KAPPA")->second->pointer();
+    double* l_W0 = vv_values_["W0"]->pointer();
+    double* l_kappa = vv_values_["KAPPA"]->pointer();
 
     for (size_t i = 0; i < l_npoints; i++){
-        if (l_rho[i] < 1.e-24) continue;
+
+        // Add Phi agnostic quantities
+        vv10_e += l_w[i] * l_rho[i] * vv10_beta;
+        v_rho[i] += vv10_beta;
+
+        if (l_rho[i] < l_thresh) continue;
 
         // Compute interior kernel
         double phi = 0.0;
@@ -808,17 +823,18 @@ double SuperFunctional::compute_vv10_kernel(
         for (auto r_block : vv10_cache){
 
             // Get right points
-            double* r_x = r_block.find("X")->second->pointer();
-            double* r_y = r_block.find("Y")->second->pointer();
-            double* r_z = r_block.find("Z")->second->pointer();
-            double* r_w = r_block.find("W")->second->pointer();
-            double* r_rho = r_block.find("RHO")->second->pointer();
-            double* r_W0 = r_block.find("W0")->second->pointer();
-            double* r_kappa = r_block.find("KAPPA")->second->pointer();
+            double* r_x = r_block["X"]->pointer();
+            double* r_y = r_block["Y"]->pointer();
+            double* r_z = r_block["Z"]->pointer();
+            double* r_w = r_block["W"]->pointer();
+            double* r_rho = r_block["RHO"]->pointer();
+            double* r_W0 = r_block["W0"]->pointer();
+            double* r_kappa = r_block["KAPPA"]->pointer();
 
-            size_t r_npoints = r_block.find("KAPPA")->second->dimpi()[0];
+            size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
 
             // Interior Kernel
+            # pragma omp simd reduction(+: phi, U, W)
             for (size_t j = 0; j < r_npoints; j++) {
                 // if (r_rho[i] < 1.e-8) continue;
 
@@ -841,9 +857,9 @@ double SuperFunctional::compute_vv10_kernel(
 
                 // Dumb question, does FMA do subtraction?
                 phi += phi_kernel;
-                double tmp_U = phi_kernel * ((1.0 / g) + (1.0 / gs));
-                U -= tmp_U;
-                W -= tmp_U * R2;
+                double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
+                U += tmp_U;
+                W += tmp_U * R2;
             }
 
         } // End r blocks
@@ -854,11 +870,12 @@ double SuperFunctional::compute_vv10_kernel(
             (M_PI / 3.0 - vv10_c_ * (l_gamma[i] * l_gamma[i]) / std::pow(l_rho[i], 5.0));
 
         // Sum it all together
-        vv10_e += l_w[i] * l_rho[i] * (vv10_beta + 0.5 * phi);
-        v_rho[i] += vv10_beta + phi + l_rho[i] * (kappa_dn * U + w0_drho * W);
+        vv10_e += 0.5 * l_w[i] * l_rho[i] * phi;
+        v_rho[i] += phi + l_rho[i] * (kappa_dn * U + w0_drho * W);
         v_gamma[i] += l_rho[i] * w0_dgamma * W;
     }
 
+    // printf("Nact/Ntot Ext %zu / %zu\n", nact, l_npoints);
     return vv10_e;
 
 }

@@ -90,8 +90,8 @@ def build_bop_superfunctional(name, npoints, deriv, restricted):
     sup.set_citation('    T. Tsuneda et. al., J. Chem. Phys. 110, 10664-10678, 1999\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional.build_base('XC_GGA_X_B88', restricted))
-    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_OP_B88', restricted))
+    sup.add_x_functional(core.LibXCFunctional('XC_GGA_X_B88', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_OP_B88', restricted))
 
     # Call this last
     sup.allocate()

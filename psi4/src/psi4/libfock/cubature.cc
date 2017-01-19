@@ -3952,32 +3952,58 @@ DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule,
                  Options& options) :
     MolecularGrid(molecule), primary_(primary), options_(options)
 {
-    buildGridFromOptions(options_.get_int("DFT_RADIAL_POINTS"),
-                         options_.get_int("DFT_SPHERICAL_POINTS"));
+    std::map<std::string, std::string> opts_map;
+    std::map<std::string, int> int_opts_map;
+    buildGridFromOptions(int_opts_map, opts_map);
 }
 DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule,
                  std::shared_ptr<BasisSet> primary,
-                 size_t nradpts, size_t nangpts,
+                 std::map<std::string, int> int_opts_map,
+                 std::map<std::string, std::string> opts_map,
                  Options& options) :
     MolecularGrid(molecule), primary_(primary), options_(options)
 {
-    buildGridFromOptions(nradpts, nangpts);
+    buildGridFromOptions(int_opts_map, opts_map);
 }
 DFTGrid::~DFTGrid()
 {
 }
 
-void DFTGrid::buildGridFromOptions(size_t nradpts, size_t nangpts)
+void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map)
 {
+
+    std::map<std::string, std::string> full_str_options;
+    std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME", "DFT_GRID_NAME"};
+    for (auto key : str_keys){
+        if (opts_map.find(key) != opts_map.end()){
+            full_str_options[key] = opts_map[key];
+        } else {
+            full_str_options[key] = options_.get_str(key);
+        }
+        // printf("%s : %s\n", key.c_str(), full_str_options[key].c_str());
+    }
+
+    std::map<std::string, int> full_int_options;
+    std::vector<std::string> int_keys = {"DFT_BLOCK_MAX_POINTS", "DFT_BLOCK_MIN_POINTS", "DFT_SPHERICAL_POINTS", "DFT_RADIAL_POINTS"};
+    for (auto key : int_keys){
+        if (int_opts_map.find(key) != int_opts_map.end()){
+            full_int_options[key] = int_opts_map[key];
+        } else {
+            full_int_options[key] = options_.get_int(key);
+        }
+        // printf("%s : %d\n", key.c_str(), full_int_options[key]);
+    }
+
+
     MolecularGridOptions opt;
     opt.bs_radius_alpha = options_.get_double("DFT_BS_RADIUS_ALPHA");
     opt.pruning_alpha = options_.get_double("DFT_PRUNING_ALPHA");
-    opt.radscheme = RadialGridMgr::WhichScheme(options_.get_str("DFT_RADIAL_SCHEME").c_str());
-    opt.prunescheme = RadialPruneMgr::WhichPruneScheme(options_.get_str("DFT_PRUNING_SCHEME").c_str());
-    opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("DFT_NUCLEAR_SCHEME").c_str());
-    opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("DFT_GRID_NAME").c_str());
-    opt.nradpts = nradpts;
-    opt.nangpts = nangpts;
+    opt.radscheme = RadialGridMgr::WhichScheme(full_str_options["DFT_RADIAL_SCHEME"].c_str());
+    opt.prunescheme = RadialPruneMgr::WhichPruneScheme(full_str_options["DFT_PRUNING_SCHEME"].c_str());
+    opt.nucscheme = NuclearWeightMgr::WhichScheme(full_str_options["DFT_NUCLEAR_SCHEME"].c_str());
+    opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
+    opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
+    opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp(); // Tell what the admissible values are.
@@ -3987,8 +4013,8 @@ void DFTGrid::buildGridFromOptions(size_t nradpts, size_t nangpts)
     MolecularGrid::buildGridFromOptions(opt);
 
     // Blocking/sieving info
-    int max_points = options_.get_int("DFT_BLOCK_MAX_POINTS");
-    int min_points = options_.get_int("DFT_BLOCK_MIN_POINTS");
+    int max_points = full_int_options["DFT_BLOCK_MAX_POINTS"];
+    int min_points = full_int_options["DFT_BLOCK_MIN_POINTS"];
     double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
     std::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));

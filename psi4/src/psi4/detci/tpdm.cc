@@ -481,7 +481,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
     for (Ia_idx = 0; Ia_idx < Inas; Ia_idx++) {
       for (Jb = betlist[Jb_list], Jb_idx = 0; Jb_idx < Jnbs; Jb_idx++, Jb++) {
         C1 = CJ[Ia_idx][Jb_idx] * weight;
-        if (std::fabs(C1) < cutoff) continue;
+        // if (std::fabs(C1) < cutoff) continue;
 
         /* loop over excitations E^b_{kl} from |B(J_b)> */
         for (Kb_list = 0; Kb_list < nbetlists; Kb_list++) {
@@ -497,7 +497,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
             Kb = betlist[Kb_list] + Kb_idx;
             if (Kb_list == Ib_list) {
               C2 = CI[Ia_idx][Kb_idx];
-              if (std::fabs(C2) < cutoff) continue;
+              // if (std::fabs(C2) < cutoff) continue;
 
               i = okl / nbf;
               l = okl % nbf;
@@ -539,7 +539,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
     for (Ib_idx = 0; Ib_idx < Inbs; Ib_idx++) {
       for (Ja = alplist[Ja_list], Ja_idx = 0; Ja_idx < Jnas; Ja_idx++, Ja++) {
         C1 = CJ[Ja_idx][Ib_idx] * weight;
-        if (std::fabs(C1) < cutoff) continue;
+        // if (std::fabs(C1) < cutoff) continue;
 
         /* loop over excitations E^a_{kl} from |A(J_a)> */
         for (Ka_list = 0; Ka_list < nalplists; Ka_list++) {
@@ -555,7 +555,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
             Ka = alplist[Ka_list] + Ka_idx;
             if (Ka_list == Ia_list) {
               C2 = CI[Ka_idx][Ib_idx];
-              if (std::fabs(C2) < cutoff) continue;
+              // if (std::fabs(C2) < cutoff) continue;
 
               i = okl / nbf;
               l = okl % nbf;
@@ -608,7 +608,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
       /* loop over Jb */
       for (Jb = betlist[Jb_list], Jb_idx = 0; Jb_idx < Jnbs; Jb_idx++, Jb++) {
         C1 = CJ[Ja_idx][Jb_idx] * weight;
-        if (std::fabs(C1) < cutoff) continue;
+        // if (std::fabs(C1) < cutoff) continue;
 
         /* loop over excitations E^b_{ij} from |B(J_b)> */
         Jbcnt = Jb->cnt[Ib_list];
@@ -621,7 +621,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
           Ib_idx = *Jbridx++;
           Ib_sgn = (double)*Jbsgn++;
           C2 = CI[Ia_idx][Ib_idx];
-          if (std::fabs(C2) < cutoff) continue;
+          // if (std::fabs(C2) < cutoff) continue;
 
           // alpha-beta matrix is stored without packing bra and ket together
           ijkl = oij * nbf2 + okl;

@@ -205,19 +205,17 @@ protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// Master builder methods
-    void buildGridFromOptions(size_t nradpts, size_t nangpts);
+    void buildGridFromOptions(std::map<std::string, int> int_opts_map,
+                              std::map<std::string, std::string> opts_map);
     /// The Options object
     Options& options_;
 
 public:
-    DFTGrid(std::shared_ptr<Molecule> molecule,
-            std::shared_ptr<BasisSet> primary,
-            Options& options);
-    DFTGrid(std::shared_ptr<Molecule> molecule,
-            std::shared_ptr<BasisSet> primary,
-            size_t nradpts, size_t nangpts,
-            Options& options);
-    virtual ~DFTGrid();
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
+         std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map,
+         Options& options);
+virtual ~DFTGrid();
 };
 
 class RadialGrid {

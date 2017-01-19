@@ -85,8 +85,8 @@ def build_m11_l_superfunctional(name, npoints, deriv, restricted):
     sup.set_citation('    R. Peverati and D. G. Truhlar, J. Phys. Chem. Lett. 3, 117-124, 2012\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_M11_L', restricted))
-    sup.add_c_functional(core.LibXCFunctional.build_base('XC_MGGA_C_M11_L', restricted))
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_M11_L', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_MGGA_C_M11_L', restricted))
 
     # Call this last
     sup.allocate()
@@ -107,8 +107,8 @@ def build_mgga_ms0_superfunctional(name, npoints, deriv, restricted):
     sup.set_citation('    J. Sun et. al., J. Chem. Phys. 137, 051101, 2012\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_MS0', restricted))
-    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_REGTPSS', restricted))
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_MS0', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_REGTPSS', restricted))
 
     # Call this last
     sup.allocate()
@@ -130,8 +130,8 @@ def build_mgga_ms1_superfunctional(name, npoints, deriv, restricted):
     sup.set_citation('    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_MS1', restricted))
-    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_REGTPSS', restricted))
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_MS1', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_REGTPSS', restricted))
 
     # Call this last
     sup.allocate()
@@ -152,8 +152,8 @@ def build_mgga_ms2_superfunctional(name, npoints, deriv, restricted):
     sup.set_citation('    J. Sun et. al., J. Chem. Phys. 138, 044113, 2013\n')
 
     # Add member functionals
-    sup.add_x_functional(core.LibXCFunctional.build_base('XC_MGGA_X_MS2', restricted))
-    sup.add_c_functional(core.LibXCFunctional.build_base('XC_GGA_C_REGTPSS', restricted))
+    sup.add_x_functional(core.LibXCFunctional('XC_MGGA_X_MS2', restricted))
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_REGTPSS', restricted))
 
     # Call this last
     sup.allocate()

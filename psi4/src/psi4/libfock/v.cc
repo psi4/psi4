@@ -210,7 +210,7 @@ RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> pr
 RV::~RV() {}
 void RV::initialize() {
     VBase::initialize();
-    int max_points = options_.get_int("DFT_BLOCK_MAX_POINTS");
+    int max_points = grid_->max_points();
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
@@ -263,12 +263,18 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     std::vector<double> vv10_exc(num_threads_);
     std::vector<std::map<std::string, SharedVector>> vv10_cache;
     if (functional_->needs_vv10()){
-        DFTGrid nlgrid =
-            DFTGrid(primary_->molecule(), primary_, options_.get_int("DFT_VV10_RADIAL_POINTS"),
-                    options_.get_int("DFT_VV10_SPHERICAL_POINTS"), options_);
+        std::map<std::string, std::string> opt_map;
+        opt_map["DFT_PRUNING_SCHEME"] = "FLAT";
+
+        std::map<std::string, int> opt_int_map;
+        opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("DFT_VV10_RADIAL_POINTS");
+        opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("DFT_VV10_SPHERICAL_POINTS");
+
+        DFTGrid nlgrid = DFTGrid(primary_->molecule(), primary_, opt_int_map, opt_map, options_);
         // nlgrid.print("outfile", print_);
 
-        vv10_cache.resize(nlgrid.blocks().size());
+        std::vector<std::map<std::string, SharedVector>> vv10_tmp_cache;
+        vv10_tmp_cache.resize(nlgrid.blocks().size());
 
         #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
         for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
@@ -285,9 +291,53 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
             // printf("Block %zu\n", Q);
 
             pworker->compute_points(block);
-            vv10_cache[Q] = fworker->compute_vv10_cache(pworker->point_values(), block, vv10_rho_cutoff_, block->npoints(), false);
+            vv10_tmp_cache[Q] = fworker->compute_vv10_cache(pworker->point_values(), block, vv10_rho_cutoff_, block->npoints(), false);
         }
 
+
+        // Stitch the cache together to make a single contiguous cache
+
+        size_t total_size = 0;
+        for (auto cache : vv10_tmp_cache){
+            total_size += cache["W"]->dimpi()[0];
+        }
+
+        // printf("VV10 NL Total size %zu\n", total_size);
+
+        // Leave this as a vector of maps in case we ever revisit the on-the fly manipulation
+        vv10_cache.resize(1);
+        vv10_cache[0]["W"] =  SharedVector(new Vector("W Grid points", total_size));
+        vv10_cache[0]["X"] =  SharedVector(new Vector("X Grid points", total_size));
+        vv10_cache[0]["Y"] =  SharedVector(new Vector("Y Grid points", total_size));
+        vv10_cache[0]["Z"] =  SharedVector(new Vector("Z Grid points", total_size));
+        vv10_cache[0]["RHO"] =  SharedVector(new Vector("RHO Grid points", total_size));
+        vv10_cache[0]["W0"] =  SharedVector(new Vector("W0 Grid points", total_size));
+        vv10_cache[0]["KAPPA"] =  SharedVector(new Vector("KAPPA Grid points", total_size));
+
+        double* w_vecp = vv10_cache[0]["W"]->pointer();
+        double* x_vecp = vv10_cache[0]["X"]->pointer();
+        double* y_vecp = vv10_cache[0]["Y"]->pointer();
+        double* z_vecp = vv10_cache[0]["Z"]->pointer();
+        double* rho_vecp = vv10_cache[0]["RHO"]->pointer();
+        double* w0_vecp = vv10_cache[0]["W0"]->pointer();
+        double* kappa_vecp = vv10_cache[0]["KAPPA"]->pointer();
+
+        size_t offset = 0;
+        for (auto cache : vv10_tmp_cache){
+            size_t csize = cache["W"]->dimpi()[0];
+            C_DCOPY(csize, cache["W"]->pointer(), 1, (w_vecp + offset), 1);
+            C_DCOPY(csize, cache["X"]->pointer(), 1, (x_vecp + offset), 1);
+            C_DCOPY(csize, cache["Y"]->pointer(), 1, (y_vecp + offset), 1);
+            C_DCOPY(csize, cache["Z"]->pointer(), 1, (z_vecp + offset), 1);
+            C_DCOPY(csize, cache["RHO"]->pointer(), 1, (rho_vecp + offset), 1);
+            C_DCOPY(csize, cache["W0"]->pointer(), 1, (w0_vecp + offset), 1);
+            C_DCOPY(csize, cache["KAPPA"]->pointer(), 1, (kappa_vecp + offset), 1);
+
+            offset += csize;
+        }
+
+        // Should cleanup, but...
+        vv10_tmp_cache.clear();
 
     }
 
@@ -382,6 +432,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
 
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
         // timer_on("V: LSDA");
+        // printf("nlocal: %d, npoints %d, maxf %d\n", nlocal, npoints, max_functions);
         C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions,
                 0.0, V2p[0], max_functions);
 
