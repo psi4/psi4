@@ -13,7 +13,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
     set(_testfl ${CMAKE_BINARY_DIR}/test_gcc_version.cc)
     file(WRITE  ${_testfl} "
     #include <stdio.h>
-    
+
     int main() {
         #ifdef __clang__
         printf(\"%d.%d.%d\", __clang_major__, __clang_minor__, __clang_patchlevel__);
@@ -32,7 +32,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 
     if (APPLE)
         if (${GCC_VERSION} VERSION_LESS 6.1)
-            message(FATAL_ERROR "Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without GCC intervention: http://psicode.org/psi4manual/master/build_planning.html#faq-modgcc")
+            message(FATAL_ERROR "${BoldYellow}Intel ICPC makes use of CLANG (detected: ${GCC_VERSION}; required for C++11: 6.1) so this build won't work without CLANG intervention: http://psicode.org/psi4manual/master/build_planning.html\n${ColourReset}")
         endif()
     else ()
         if (${GCC_VERSION} VERSION_LESS 4.9)
