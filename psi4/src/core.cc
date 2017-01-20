@@ -1483,6 +1483,10 @@ PYBIND11_PLUGIN(core) {
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
     core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
+    core.def("set_output_file", [](const std::string ofname){
+                 outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, TRUNCATE));
+                 outfile_name = ofname;
+                 });
     core.def("set_output_file", [](const std::string ofname, bool append){
                  outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
                  outfile_name = ofname;
