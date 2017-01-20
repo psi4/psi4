@@ -78,6 +78,8 @@ protected:
     // => Correlation-side DFA functionals <= //
     std::vector<std::shared_ptr<Functional> > c_functionals_;
     double c_alpha_;
+    double c_ss_alpha_;
+    double c_os_alpha_;
     double c_omega_;
 
     // => Asymptotic corrections <= //
@@ -184,6 +186,8 @@ public:
     void set_x_alpha(double alpha);
     void set_x_beta(double beta);
     void set_c_alpha(double alpha);
+    void set_c_ss_alpha(double alpha);
+    void set_c_os_alpha(double alpha);
     void set_vv10_b(double b);
     void set_vv10_c(double c);
     void set_grac_shift(double grac_shift);
@@ -205,6 +209,8 @@ public:
     double x_alpha() const { return x_alpha_; }
     double x_beta() const { return x_beta_; }
     double c_alpha() const { return c_alpha_; }
+    double c_ss_alpha() const { return c_ss_alpha_; }
+    double c_os_alpha() const { return c_os_alpha_; }
     double vv10_b() const { return vv10_b_; }
     double vv10_c() const { return vv10_c_; }
     double grac_shift() const { return grac_shift_; }
@@ -221,6 +227,7 @@ public:
     bool is_c_lrc() const { return c_omega_ != 0.0; }
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
+    bool is_c_scs_hybrid() const { return c_os_alpha_ != 0.0 || c_ss_alpha_ != 0.0; }
 
     // => Utility <= //
 

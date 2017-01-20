@@ -78,7 +78,7 @@ jk.set_memory(int(1.25e8))  # 1GB
 jk.initialize()
 jk.print_header()
 
-diis_obj = psi4.p4util.solvers.DIIS_solver(max_vec=3, removal_policy="largest")
+diis_obj = psi4.p4util.solvers.DIIS(max_vec=3, removal_policy="largest")
 
 psi4.core.print_out('\nTotal time taken for setup: %.3f seconds\n' % (time.time() - t))
 
