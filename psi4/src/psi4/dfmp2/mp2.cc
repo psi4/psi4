@@ -229,7 +229,7 @@ double DFMP2::compute_energy()
 SharedMatrix DFMP2::compute_gradient()
 {
     print_header();
-    
+
     if (Ca_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
         if (Cb_subset("AO","ACTIVE_OCC")->colspi()[0] == 0) {
             throw PSIEXCEPTION("There are no occupied orbitals with alpha or beta spin.");
@@ -3235,7 +3235,7 @@ void UDFMP2::print_header()
     int avir_b = Cavir_b_->colspi()[0];
     int occ_b = focc_b + aocc_b;
     int vir_b = fvir_b + avir_b;
-    
+
 
     outfile->Printf( "\t --------------------------------------------------------\n");
     outfile->Printf( "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
@@ -3244,7 +3244,7 @@ void UDFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
-    
+
 }
 void UDFMP2::form_Aia()
 {
@@ -3919,7 +3919,7 @@ void RODFMP2::print_header()
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "ALPHA", focc_a, occ_a, aocc_a, avir_a, vir_a, fvir_a);
     outfile->Printf( "\t %7s %7d %7d %7d %7d %7d %7d\n", "BETA", focc_b, occ_b, aocc_b, avir_b, vir_b, fvir_b);
     outfile->Printf( "\t --------------------------------------------------------\n\n");
-    
+
 }
 
 }}

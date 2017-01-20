@@ -269,7 +269,7 @@ def _to_array(matrix, copy=True, dense=False):
     --------
 
     >>> data = psi4.Matrix(3, 3)
-    >>> data._to_array()
+    >>> data.to_array()
     [[ 0.  0.  0.]
      [ 0.  0.  0.]
      [ 0.  0.  0.]]
