@@ -9,6 +9,8 @@
 #include <iostream>
 #include <algorithm>
 
+namespace psi {
+
 // GaussianECP constructor and copy constructor
 GaussianECP::GaussianECP() : n(0), l(0), a(0), d(0) {}
 GaussianECP::GaussianECP(int _n, int _l, double _a, double _d) : n(_n), l(_l), a(_a), d(_d) {}
@@ -61,3 +63,4 @@ void ECPBasis::addECP(ECP &U) {
 
 ECP& ECPBasis::getECP(int i) { return basis[i]; }
 
+}

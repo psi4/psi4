@@ -7,6 +7,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace psi {
+
 // Constructor
 GCQuadrature::GCQuadrature() {
 	// Currently does nothing
@@ -243,4 +245,5 @@ void GCQuadrature::transformRMinMax(double z, double p) {
 		x[i] = rmid * x[i] + amid;
 		w[i] *= rmid;
 	}
+}
 }

@@ -8,6 +8,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace psi {
+
 // Constructor
 BesselFunction::BesselFunction() {}
 BesselFunction::BesselFunction(int _lMax, int _N, int _order, const double accuracy)
@@ -173,3 +175,4 @@ void BesselFunction::calculate(const double z, int maxL, std::vector<double> &va
 	}
 }
 
+}

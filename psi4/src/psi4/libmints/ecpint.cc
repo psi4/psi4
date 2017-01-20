@@ -7,6 +7,8 @@
 #include <functional>
 #include <cmath>
 
+namespace psi {
+
 // Compute all the real spherical harmonics Slm(theta, phi) for l,m up to lmax
 // x = cos (theta)
 static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi) {
@@ -887,4 +889,4 @@ void ECPIntegral::compute_pair(const GaussianShell &shellA, const GaussianShell 
 	}
 }
 
-
+}
