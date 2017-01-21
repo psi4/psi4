@@ -159,27 +159,8 @@ void SuperFunctional::print(std::string out, int level) const {
     printer->Printf("\n");
 
     printer->Printf("    Exchange Hybrid     = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
-    printer->Printf("    MP2 Hybrid          = %14s\n", ((is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) ? "TRUE" : "FALSE"));
-    // printer->Printf("    Exchange Alpha      = %14.6f\n", x_alpha_);
-    // printer->Printf("\n");
-
-    // printer->Printf("    Exchange LRC        = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
-    // printer->Printf("    Exchange Beta       = %14.6f\n", x_beta_);
-    // printer->Printf("    Exchange Omega      = %14.6f\n", x_omega_);
-    // if (is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) {
-    //     printer->Printf("\n");
-    //     if (is_c_scs_hybrid()){
-    //         printer->Printf("    MP2 SCS Hybrid      = %14s\n", "TRUE");
-    //         printer->Printf("    MP2 OS Alpha        = %14.6f\n", c_os_alpha_);
-    //         printer->Printf("    MP2 SS Alpha        = %14.6f\n", c_ss_alpha_);
-    //     } else {
-    //         printer->Printf("    MP2 Hybrid          = %14s\n", "TRUE");
-    //         printer->Printf("    MP2 Alpha           = %14.6f\n", c_alpha_);
-    //     }
-    //     printer->Printf("\n");
-    //     printer->Printf("    MP2 LRC             = %14s\n", (is_c_lrc() ? "TRUE" : "FALSE"));
-    //     printer->Printf("    MP2 Omega           = %14.6f\n", c_omega_);
-    // }
+    printer->Printf("    MP2 Hybrid          = %14s\n",
+                    ((is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()) ? "TRUE" : "FALSE"));
     printer->Printf("\n");
 
     if (libxc_xc_func_){
@@ -209,7 +190,7 @@ void SuperFunctional::print(std::string out, int level) const {
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 2) continue;
 
-                printer->Printf("    %6.4f   %7s", std::get<2>(mix_data[i]),
+                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]),
                                 std::get<0>(mix_data[i]).c_str());
                 printer->Printf("\n");
             }
@@ -221,7 +202,7 @@ void SuperFunctional::print(std::string out, int level) const {
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 0) continue;
 
-                printer->Printf("    %6.4f   %7s", std::get<2>(mix_data[i]),
+                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]),
                                 std::get<0>(mix_data[i]).c_str());
                 if (c_functionals_[0]->omega()) {
                     printer->Printf(" [omega = %6.4f]", c_functionals_[0]->omega());
@@ -234,11 +215,11 @@ void SuperFunctional::print(std::string out, int level) const {
         if ((x_omega_ + x_alpha_) > 0.0) {
             printer->Printf("   => Exact (HF) Exchange <=\n\n");
             if (x_omega_) {
-                printer->Printf("    %6.4f   %7s [omega = %6.4f]\n", (x_beta_), "HF,LR",
+                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR",
                                 x_omega_);
             }
             if (x_alpha_) {
-                printer->Printf("    %6.4f   %7s \n", x_alpha_, "HF");
+                printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
             }
             printer->Printf("\n");
         }
@@ -248,7 +229,7 @@ void SuperFunctional::print(std::string out, int level) const {
             for (int i = 0; i < mix_data.size(); i++) {
                 if (std::get<1>(mix_data[i]) != 1) continue;
 
-                printer->Printf("    %6.4f   %7s", std::get<2>(mix_data[i]),
+                printer->Printf("    %6.4f   %14s", std::get<2>(mix_data[i]),
                                 std::get<0>(mix_data[i]).c_str());
                 printer->Printf("\n");
             }
@@ -258,7 +239,7 @@ void SuperFunctional::print(std::string out, int level) const {
     } else {
         printer->Printf("   => Exchange Functionals <=\n\n");
         for (int i = 0; i < x_functionals_.size(); i++) {
-            printer->Printf("    %6.4f   %7s", x_functionals_[i]->alpha(),
+            printer->Printf("    %6.4f   %14s", x_functionals_[i]->alpha(),
                             x_functionals_[i]->name().c_str());
             if (x_functionals_[i]->omega()) {
                 printer->Printf(" [omega = %6.4f]", x_functionals_[i]->omega());
@@ -270,18 +251,18 @@ void SuperFunctional::print(std::string out, int level) const {
         if ((x_omega_ + x_alpha_) > 0.0) {
             printer->Printf("   => Exact (HF) Exchange <=\n\n");
             if (x_omega_) {
-                printer->Printf("    %6.4f   %7s [omega = %6.4f]\n", (x_beta_), "HF,LR",
+                printer->Printf("    %6.4f   %14s [omega = %6.4f]\n", (x_beta_), "HF,LR",
                                 x_omega_);
             }
             if (x_alpha_) {
-                printer->Printf("    %6.4f   %7s \n", x_alpha_, "HF");
+                printer->Printf("    %6.4f   %14s \n", x_alpha_, "HF");
             }
             printer->Printf("\n");
         }
 
         printer->Printf("   => Correlation Functionals <=\n\n");
         for (int i = 0; i < c_functionals_.size(); i++) {
-            printer->Printf("    %6.4f   %7s", c_functionals_[i]->alpha(),
+            printer->Printf("    %6.4f   %14s", c_functionals_[i]->alpha(),
                             c_functionals_[i]->name().c_str());
             if (c_functionals_[i]->omega()) {
                 printer->Printf(" [omega = %6.4f]", c_functionals_[i]->omega());
@@ -290,13 +271,22 @@ void SuperFunctional::print(std::string out, int level) const {
         }
     }
 
-    if (c_omega_) {
-        printer->Printf("    %6.4f   %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+    if (is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()){
+        printer->Printf("\n   => MP2 Correlation <=\n\n");
+        if (c_omega_) {
+            printer->Printf("    %6.4f   %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+        }
+        if (c_alpha_) {
+            if (is_c_scs_hybrid()) {
+                printer->Printf("    MP2 SCS Hybrid      = %14s\n", "TRUE");
+                printer->Printf("    MP2 OS Alpha        = %14.6f\n", c_os_alpha_);
+                printer->Printf("    MP2 SS Alpha        = %14.6f\n", c_ss_alpha_);
+            } else {
+                printer->Printf("    %6.4f   %7s \n", c_alpha_, "MP2");
+            }
+            printer->Printf("\n");
+        }
     }
-    if (c_alpha_) {
-        printer->Printf("    %6.4f   %7s \n", c_alpha_, "MP2");
-    }
-    printer->Printf("\n");
 
     if (needs_grac_) {
         printer->Printf("   => Asymptotic Correction <=\n\n");
@@ -312,8 +302,6 @@ void SuperFunctional::print(std::string out, int level) const {
         printer->Printf("   => VV10 Non-Local Parameters <=\n\n");
         printer->Printf("    VV10 B              = %14.4E\n", vv10_b_);
         printer->Printf("    VV10 C              = %14.4E\n", vv10_c_);
-        // printer->Printf("    NL Radial Points    = %14d\n", options_.get_int("DFT_VV10_RADIAL_POINTS"));
-        // printer->Printf("    NL Spherical Points = %14d\n", options_.get_int("DFT_VV10_SPHERICAL_POINTS"));
         printer->Printf("\n");
     }
 

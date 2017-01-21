@@ -2890,7 +2890,7 @@ def run_dft(name, **kwargs):
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
 
-            vdh = dfun.c_alpha() * core.get_variable('SCS-MP2 CORRELATION ENERGY')
+            vdh = core.get_variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
