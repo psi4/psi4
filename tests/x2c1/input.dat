@@ -4,8 +4,8 @@
 ref_nuc_energy =  8.316179709840201 #TEST
 scf_ref_nr_energy  = -76.00770336258013 #TEST 
 scf_ref_rel_energy = -76.059287839660001 #TEST
-ccsd_ref_nr_energy =  -76.280731819537309 # TEST
-ccsd_ref_rel_energy = -76.332592039115724 # TEST
+ccsd_ref_nr_energy =  -76.280731819537309  #TEST
+ccsd_ref_rel_energy = -76.332592039115724  #TEST
 
 molecule h2o {
 O

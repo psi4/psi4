@@ -1,5 +1,5 @@
 #! Multi-fragment opt of C2h methane dimer with user-combined reference points.
-OPT_ENERGY = -80.7431166 # TEST
+OPT_ENERGY = -80.7431166  #TEST
 
 memory 1 gb
 
