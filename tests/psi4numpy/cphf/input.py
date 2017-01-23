@@ -45,16 +45,34 @@ vir = np.array(scf_wfn.epsilon_a_subset("AO", "VIR"))
 precon.np[:] = (-occ.reshape(-1, 1) + vir)
 
 # Build a preconditioner function
-def precon_func(matrices):
+def precon_func(matrices, active_mask):
     ret = []
-    for x in matrices:
-        p = x.clone()
-        p.apply_denominator(precon)
-        ret.append(p)
+    for act, mat in zip(active_mask, matrices):
+        if act:
+            p = mat.clone()
+            p.apply_denominator(precon)
+            ret.append(p)
+        else:
+            ret.append(False)
     return ret 
 
+def wrap_Hx(matrices, active_mask):
+    x_vec = [mat for act, mat in zip(active_mask, matrices) if act]
+    Hx_vec = scf_wfn.cphf_Hx(x_vec)
+
+    ret = []
+    cnt = 0
+    for act, mat in zip(active_mask, matrices):
+        if act:
+            ret.append(Hx_vec[cnt])
+            cnt += 1
+        else:
+            ret.append(False)
+
+    return scf_wfn.cphf_Hx(matrices)
+
 # Solve
-ret, resid = psi4.p4util.solvers.cg_solver(dipoles_xyz, scf_wfn.cphf_Hx, precon_func)
+ret, resid = psi4.p4util.solvers.cg_solver(dipoles_xyz, wrap_Hx, precon_func, rcond=1.e-6)
 
 polar = np.empty((3, 3))
 for numx in range(3):

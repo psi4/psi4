@@ -26,12 +26,11 @@
 #
 
 from __future__ import print_function
-"""Module with utility classes and functions related
-to data tables and text.
+"""
+Generalized iterative solvers for Psi4.
 
 """
-import sys
-import re
+import time
 import numpy as np
 
 from psi4 import core
@@ -39,7 +38,7 @@ from psi4.driver import p4const
 from .exceptions import *
 
 
-def cg_solver(rhs_vec, hx_function, preconditioner=None, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):
+def cg_solver(rhs_vec, hx_function, preconditioner, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):
     """
     Solves the Ax = b linear equations via Conjugate Gradient. The `A` matrix must be a hermitian, positive definite matrix.
 
@@ -48,9 +47,9 @@ def cg_solver(rhs_vec, hx_function, preconditioner=None, printer=None, printlvl=
     rhs_vec : list of :py:class:`~psi4.core.Matrix`
         The RHS vector in the Ax=b equation.
     hx_function : function
-        Takes in a list of :py:class:`~psi4.core.Matrix` objects and returns the Hessian-vector product. In addition a list
-    precondition : function
-        Takes in a list of :py:class:`~psi4.core.Matrix` objects and returns the preconditioned value.
+        Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the Hessian-vector product.
+    preconditioner : function
+        Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the preconditioned value.
     printer : function
         Takes in a list of current x and residual vectors and provides a print function. This function can also
         return a value that represents the current residual.
@@ -78,33 +77,34 @@ def cg_solver(rhs_vec, hx_function, preconditioner=None, printer=None, printlvl=
 
     """
 
+    tstart = time.time()
     if printlvl:
-        core.print_out("\n");
-        core.print_out("         ---------------------------------------------------------\n");
-        core.print_out("         " + "Generalized CG Solver".center(58) + "\n");
-        core.print_out("\n");
-        core.print_out("         " + "by Daniel G. A. Smith".center(58) + "\n");
-        core.print_out("         ---------------------------------------------------------\n");
-        core.print_out("\n");
-
-    if preconditioner is None:
-        preconditioner = lambda vec: [x.clone() for x in vec]
+        core.print_out("\n   -----------------------------------------------------\n")
+        core.print_out("   " + "Generalized CG Solver".center(52) + "\n")
+        core.print_out("   " + "by Daniel. G. A. Smith".center(52) + "\n")
+        core.print_out("   -----------------------------------------------------\n")
+        core.print_out("    Maxiter             = %11d\n" % maxiter)
+        core.print_out("    Convergence         = %11.3E\n" % rcond)
+        core.print_out("    Number of equations = %11ld\n\n" % len(rhs_vec))
+        core.print_out("     %4s %14s %12s  %6s  %6s\n" %
+                       ("Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]"))
+        core.print_out("   -----------------------------------------------------\n")
 
     nrhs = len(rhs_vec)
-    complete = [False for x in range(nrhs)]
+    active_mask = [True for x in range(nrhs)]
 
     # Start function
-    x_vec =  preconditioner(rhs_vec)
-    Ax_vec = hx_function(x_vec)
+    x_vec = preconditioner(rhs_vec, active_mask)
+    Ax_vec = hx_function(x_vec, active_mask)
 
     # Set it up
-    r_vec = [] # Residual vectors
+    r_vec = []  # Residual vectors
     for x in range(nrhs):
         tmp_r = rhs_vec[x].clone()
         tmp_r.axpy(-1.0, Ax_vec[x])
         r_vec.append(tmp_r)
 
-    z_vec = preconditioner(r_vec)
+    z_vec = preconditioner(r_vec, active_mask)
     p_vec = [x.clone() for x in z_vec]
 
     # First RMS
@@ -115,45 +115,73 @@ def cg_solver(rhs_vec, hx_function, preconditioner=None, printer=None, printlvl=
     if printer:
         resid = printer(0, x_vec, r_vec)
     elif printlvl:
-        core.print_out('         CG Iteration Guess:    Rel. RMS = %1.5e\n' %  np.mean(resid))
+        # core.print_out('         CG Iteration Guess:    Rel. RMS = %1.5e\n' %  np.mean(resid))
+        core.print_out("    %5s %14.3e %12.3e %7d %9d\n" % (
+            "Guess", np.mean(resid), np.max(resid), len(z_vec), time.time() - tstart))
 
     rms = np.mean(resid)
+    rz_old = [0.0 for x in range(nrhs)]
+    alpha = [0.0 for x in range(nrhs)]
+    active = np.where(active_mask)[0]
 
     # CG iterations
     for rot_iter in range(maxiter):
-        rz_old = [r_vec[x].vector_dot(z_vec[x]) for x in range(nrhs)]
 
-        Ap_vec = hx_function(p_vec)
+        # Build old RZ so we can discard vectors
+        for x in active:
+            rz_old[x] = r_vec[x].vector_dot(z_vec[x])
 
-        alpha = [rz_old[x] / Ap_vec[x].vector_dot(p_vec[x]) for x in range(nrhs)]
+        # Build Hx product
+        Ap_vec = hx_function(p_vec, active_mask)
 
-        for x in range(nrhs):
+        # Update x and r
+        for x in active:
+            alpha[x] = rz_old[x] / Ap_vec[x].vector_dot(p_vec[x])
+            if np.isnan(alpha)[0]:
+                print("CG: Alpha is NaN for vector %d. Stopping vector." % x)
+                active_mask[x] = False
+                continue
+
             x_vec[x].axpy(alpha[x], p_vec[x])
             r_vec[x].axpy(-alpha[x], Ap_vec[x])
+            resid[x] = (r_vec[x].sum_of_squares() / grad_dot[x]) ** 0.5
 
-        prec_vec = preconditioner(r_vec)
-        for x in range(nrhs):
-            z_vec[x].copy(prec_vec[x])
 
-        resid = [(r_vec[x].sum_of_squares() / grad_dot[x]) ** 0.5 for x in range(nrhs)]
-        rms = np.mean(resid)
-
+        # Print out or compute the resid function
         if printer:
             resid = printer(rot_iter + 1, x_vec, r_vec)
-        elif printlvl:
-            core.print_out('         CG Iteration %5d:    Rel. RMS = %1.5e\n' %  (rot_iter + 1, rms))
 
-        if rms < rcond:
+        # Figure out active updated active mask
+        for x in active:
+            if (resid[x] < rcond):
+                active_mask[x] = False
+
+        # Print out if requested
+        if printlvl:
+            core.print_out("    %5d %14.3e %12.3e %7d %9d\n" % (
+                rot_iter + 1, np.mean(resid), np.max(resid), sum(active_mask), time.time() - tstart))
+
+
+        active = np.where(active_mask)[0]
+
+        if sum(active_mask) == 0:
             break
 
-        for x in range(nrhs):
+        # Update p
+        z_vec = preconditioner(r_vec, active_mask)
+        for x in active:
             beta = r_vec[x].vector_dot(z_vec[x]) / rz_old[x]
             p_vec[x].scale(beta)
             p_vec[x].axpy(1.0, z_vec[x])
 
+    if printlvl:
+        core.print_out("   -----------------------------------------------------\n")
+
     return x_vec, r_vec
 
+
 class DIIS(object):
+
     """
     An object to assist in the DIIS extrpolation procedure.
     """
@@ -227,7 +255,6 @@ class DIIS(object):
             del self.error[pos]
             diis_count -= 1
 
-
         # Build error matrix B
         B = np.empty((diis_count + 1, diis_count + 1))
         B[-1, :] = 1
@@ -236,7 +263,8 @@ class DIIS(object):
         for num1, e1 in enumerate(self.error):
             B[num1, num1] = e1.vector_dot(e1)
             for num2, e2 in enumerate(self.error):
-                if num2 >= num1: continue
+                if num2 >= num1:
+                    continue
                 val = e1.vector_dot(e2)
                 B[num1, num2] = B[num2, num1] = val
 
