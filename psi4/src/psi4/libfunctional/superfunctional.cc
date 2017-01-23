@@ -269,10 +269,11 @@ void SuperFunctional::print(std::string out, int level) const {
             }
             printer->Printf("\n");
         }
+        printer->Printf("\n");
     }
 
     if (is_c_lrc() || is_c_hybrid() || is_c_scs_hybrid()){
-        printer->Printf("\n   => MP2 Correlation <=\n\n");
+        printer->Printf("   => MP2 Correlation <=\n\n");
         if (c_omega_) {
             printer->Printf("    %6.4f   %7s [omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
         }
