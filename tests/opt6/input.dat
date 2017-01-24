@@ -3,9 +3,9 @@
 
 memory 250 mb
 
-OH_frozen_stre_rhf       = -150.78104113  # TEST
-OOH_frozen_bend_rhf      = -150.78628057  # TEST
-HOOH_frozen_dihedral_rhf = -150.78667424  # TEST
+OH_frozen_stre_rhf       = -150.78104113   #TEST
+OOH_frozen_bend_rhf      = -150.78628057   #TEST
+HOOH_frozen_dihedral_rhf = -150.78667424   #TEST
 
 set {
   diis false

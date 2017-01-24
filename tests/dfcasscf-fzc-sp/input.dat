@@ -16,5 +16,5 @@ set {
 
 casscf_energy = energy('casscf')
 
-compare_values(-76.01725998335047, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(-76.01725998335047, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
 compare_values(-76.07373669020915, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
