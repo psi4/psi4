@@ -1,7 +1,7 @@
 if(NOT(${ENABLE_SIMINT} STREQUAL "None"))
    include(ExternalProject)
 
-   set(SIMINT_VER "0.5")
+   set(SIMINT_VER "0.6")
    string(TOLOWER ${ENABLE_SIMINT} SIMINT_VECTOR)
    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -14,6 +14,7 @@ if(NOT(${ENABLE_SIMINT} STREQUAL "None"))
                  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                  -DSIMINT_C_FLAGS=-fPIC
                  -DSIMINT_VECTOR=${SIMINT_VECTOR}
+                 -DSIMINT_BUILD_TYPE=${CMAKE_BUILD_TYPE}
       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${CMAKE_BINARY_DIR}/stage
    )
 
