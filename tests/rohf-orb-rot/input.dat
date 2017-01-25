@@ -1,3 +1,4 @@
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 #!   Test if DGAS's orbital rotation code matches expected values.
 #!   The first two calculations compute the X (symm A'') and A (symm A') states of HO2 in Cs
 #! by restricting the occupations of the two states.
@@ -6,6 +7,11 @@
 #! (i.e., by swapping these two orbitals). The orb_rotate() function accomplishes this.
 
 # Restrict occupations to compute CCSD/6-31G energy of X state (symm A'') of HO2 in Cs.
+=======
+#! Test if DGAS's orbital rotation code matches expected values
+
+#Restrict occupations to compute lowest A'' state (X state)
+>>>>>>> Added test case for dgasmith's orbital rotation code
 set { 
     basis 6-31G
     reference rohf
@@ -30,12 +36,21 @@ molecule ho2 {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 clean()
 
 # Restrict occupations to compute CCSD/6-31G energy of A state (symm A') of HO2 in Cs.
+=======
+compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy')
+compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy')
+
+clean()
+
+#Restrict occupations to compute lowest A' state (A state)
+>>>>>>> Added test case for dgasmith's orbital rotation code
 set {
     docc [6, 2]
     socc [1, 0]
@@ -44,12 +59,21 @@ set {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
 clean()
 
 # Compute CCSD/6-31G energy of X state of HO2 in C1.
+=======
+compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy')
+compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy')
+
+clean()
+
+#Compute X state with symmetry turned off
+>>>>>>> Added test case for dgasmith's orbital rotation code
 set {
     docc [8]
     socc [1]
@@ -66,12 +90,20 @@ molecule ho2 {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 # Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
 
 # Quick orbital rotation code.
+=======
+compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy')
+compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy')
+
+#Rotate orbitals to obtain A state in C1
+# Quick orbital rotation code
+>>>>>>> Added test case for dgasmith's orbital rotation code
 def orb_rotate(C, h, i, j, theta):
 
    if h > C.nirrep():
@@ -93,7 +125,11 @@ def orb_rotate(C, h, i, j, theta):
    C.nph[h][:, i] = xp
    C.nph[h][:, j] = yp
 
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 # Rotate columns here.
+=======
+# Rotate columns here
+>>>>>>> Added test case for dgasmith's orbital rotation code
 orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
 
 filename = core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".180.npz"
@@ -117,7 +153,10 @@ data["BasisSet"] = scf_wfn.basisset().name()
 data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
 np.savez(filename, **data)
 
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 # Read in rotated guess and compute CCSD/6-31G energy of A state of HO2 in C1.
+=======
+>>>>>>> Added test case for dgasmith's orbital rotation code
 set {
     guess read
 }
@@ -125,5 +164,10 @@ set {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
+=======
+compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy')
+compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy')
+>>>>>>> Added test case for dgasmith's orbital rotation code
