@@ -78,7 +78,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1 pywrap-db2
                   pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap 
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o 
-                  rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
+                  rasci-ne rasscf-sp rohf-orb-rot sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
                   sapt7 sapt8 scf-bz2 scf-guess-read1 scf-guess-read2 scf-bs scf1 scf-occ
                   scf2 scf3 scf4 scf5 scf6 scf-property soscf1 soscf2 stability1
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
