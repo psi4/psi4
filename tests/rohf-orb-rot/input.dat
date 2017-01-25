@@ -10,8 +10,12 @@
 =======
 #! Test if DGAS's orbital rotation code matches expected values
 
+<<<<<<< 7819a47644c3672b444a933382ee4068767409dd
 #Restrict occupations to compute lowest A'' state (X state)
 >>>>>>> Added test case for dgasmith's orbital rotation code
+=======
+# Restrict occupations to compute lowest A'' state (X state)
+>>>>>>> Added #TEST
 set { 
     basis 6-31G
     reference rohf
@@ -36,6 +40,7 @@ molecule ho2 {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< 7819a47644c3672b444a933382ee4068767409dd
 <<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
@@ -51,6 +56,14 @@ clean()
 
 #Restrict occupations to compute lowest A' state (A state)
 >>>>>>> Added test case for dgasmith's orbital rotation code
+=======
+compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
+compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
+
+clean()
+
+# Restrict occupations to compute lowest A' state (A state)
+>>>>>>> Added #TEST
 set {
     docc [6, 2]
     socc [1, 0]
@@ -59,6 +72,7 @@ set {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< 7819a47644c3672b444a933382ee4068767409dd
 <<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
@@ -74,6 +88,14 @@ clean()
 
 #Compute X state with symmetry turned off
 >>>>>>> Added test case for dgasmith's orbital rotation code
+=======
+compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
+compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
+
+clean()
+
+# Compute X state with symmetry turned off
+>>>>>>> Added #TEST
 set {
     docc [8]
     socc [1]
@@ -90,6 +112,7 @@ molecule ho2 {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< 7819a47644c3672b444a933382ee4068767409dd
 <<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
@@ -100,8 +123,12 @@ compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 =======
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy')
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy')
+=======
+compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
+compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
+>>>>>>> Added #TEST
 
-#Rotate orbitals to obtain A state in C1
+# Rotate orbitals to obtain A state in C1
 # Quick orbital rotation code
 >>>>>>> Added test case for dgasmith's orbital rotation code
 def orb_rotate(C, h, i, j, theta):
@@ -164,6 +191,7 @@ set {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
+<<<<<<< 7819a47644c3672b444a933382ee4068767409dd
 <<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
@@ -171,3 +199,7 @@ compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy')
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy')
 >>>>>>> Added test case for dgasmith's orbital rotation code
+=======
+compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
+compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
+>>>>>>> Added #TEST
