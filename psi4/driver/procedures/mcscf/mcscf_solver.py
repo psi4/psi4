@@ -54,6 +54,7 @@ def mcscf_solver(ref_wfn):
     # Begin with a normal two-step
     step_type = 'Initial CI'
     total_step = core.Matrix("Total step", ciwfn.get_dimension('OA'), ciwfn.get_dimension('AV'))
+    # total_U = core.Matrix("Total step", ciwfn.get_dimension('OA'), ciwfn.get_dimension('AV'))
     start_orbs = ciwfn.get_orbitals("ROT").clone()
     ciwfn.set_orbitals("ROT", start_orbs)
 
@@ -207,6 +208,7 @@ def mcscf_solver(ref_wfn):
             core.print_out('      Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
             step.scale(mcscf_steplimit / maxstep)
 
+        xstep = total_step.clone()
         total_step.add(step)
 
         # Do or add DIIS
@@ -227,8 +229,20 @@ def mcscf_solver(ref_wfn):
                 total_step = diis_obj.extrapolate()
                 mcscf_current_step_type = 'TS, DIIS'
 
+        # Build the rotation by continuous updates
+        if mcscf_iter == 1:
+            totalU = mcscf_obj.form_rotation_matrix(total_step)
+        else:
+            xstep.axpy(-1.0, total_step)
+            xstep.scale(-1.0)
+            Ustep = mcscf_obj.form_rotation_matrix(xstep)
+            totalU = core.Matrix.doublet(totalU, Ustep, False, False)
+
+        # Build the rotation directly (not recommended)
+        # orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
+
         # Finally rotate and set orbitals
-        orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
+        orbs_mat = core.Matrix.doublet(start_orbs, totalU, False, False)
         ciwfn.set_orbitals("ROT", orbs_mat)
 
         # Figure out what the next step should be

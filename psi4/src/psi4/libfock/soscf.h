@@ -92,6 +92,12 @@ public:
      * @param IFock The AO based IFock matrix
      */
     void set_AO_IFock(SharedMatrix IFock);
+    /**
+     * Forms the rotation matrix exp(U).
+     * @param  x The [oa, av] non-redundant orbital rotation parameters.
+     * @return   The rotation matrix.
+     */
+    SharedMatrix form_rotation_matrix(SharedMatrix x, size_t order = 2);
 
     /**
      * Rotate the current orbitals for a given rotation matrix.
