@@ -1284,6 +1284,18 @@ def scf_helper(name, **kwargs):
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
         core.print_out("  Unable to find file 180, defaulting to SAD guess.\n")
         core.set_local_option('SCF', 'GUESS', 'SAD')
+        sad_basis_list = core.BasisSet.build(scf_wfn.molecule(), "ORBITAL",
+                                             core.get_global_option("BASIS"),
+                                             puream=scf_wfn.basisset().has_puream(),
+                                             return_atomlist=True)
+        scf_wfn.set_sad_basissets(sad_basis_list)
+
+        if (core.get_option("SCF", "SAD_SCF_TYPE") == "DF"):
+            sad_fitting_list = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_SAD",
+                                                   core.get_option("SCF", "DF_BASIS_SAD"),
+                                                   puream=scf_wfn.basisset().has_puream(),
+                                                   return_atomlist=True)
+            scf_wfn.set_sad_fitting_basissets(sad_fitting_list)
 
 
     if cast:
