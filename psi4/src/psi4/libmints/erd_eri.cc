@@ -636,23 +636,35 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
     outfile->Printf( "%d integrals were computed\n", nbatch);
 #endif
 
-    if(nbatch == 0){
+    int n1, n2, n3, n4;
+    if (force_cartesian_) {
+        n1 = gs1.ncartesian();
+        n2 = gs2.ncartesian();
+        n3 = gs3.ncartesian();
+        n4 = gs4.ncartesian();
+    } else {
+        n1 = gs1.nfunction();
+        n2 = gs2.nfunction();
+        n3 = gs3.nfunction();
+        n4 = gs4.nfunction();
+    }
+    const int n1234 = n1 * n2 * n3 * n4;
+
+    if(nbatch == 0) {
         // The code should check the return value, and ignore the integrals in the buffer if we get here
         //TODO: LOTS OF CODE DOESN'T DO THIS
-        ::memset(target_, 0, sizeof(double)*gs1.nfunction() *gs2.nfunction() *gs3.nfunction() *gs4.nfunction());
-        return 0;
+        ::memset(target_, 0, sizeof(double)*n1234);
     }
-
-    if(has_puream_ && !spheric_){
+    else if(has_puream_ && !spheric_ && !force_cartesian_) {
         double * sourcetmp = source_;
         source_ = &(dscratch_[buffer_offset_-1]);
         pure_transform(shell_i, shell_j, shell_k, shell_l, 1);
         source_ = sourcetmp;
-    }else{
+    }
+    else {
         ::memcpy(target_, &(dscratch_[buffer_offset_-1]), sizeof(double)*nbatch);
     }
-    return nbatch;
-
+    return n1234;
 }
 
 
