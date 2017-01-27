@@ -60,7 +60,7 @@ option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_erd "Enables use of ERD instead of LibInt (requires Fortran)" OFF)
-set(ENABLE_SIMINT "None" CACHE STRING "Enables use of SIMINT instead of LibInt")
+option(ENABLE_simint "Enables use of Simint two-electron integral library")
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
@@ -83,6 +83,8 @@ endif()
 if(ENABLE_erd)
     message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
+
+set(SIMINT_VECTOR "sse" CACHE BOOL "Vectorization type to use for simint")
 
 ############################  Options: Build How?  #############################
 include(psi4OptionsTools)

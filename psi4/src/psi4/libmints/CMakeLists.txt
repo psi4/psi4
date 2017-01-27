@@ -70,7 +70,7 @@ set(sources_list local.cc
 
 if(TARGET simint)
     list(APPEND sources_list siminteri.cc)
-    add_definitions("-DUSING_SIMINT")
+    add_definitions("-DUSING_simint")
     add_definitions("-Drestrict=__restrict__")
 endif()
 
