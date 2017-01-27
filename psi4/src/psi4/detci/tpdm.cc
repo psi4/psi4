@@ -66,6 +66,8 @@ void CIWavefunction::form_tpdm(void) {
 
   tpdm_list = tpdm(Ivec, Jvec, states_vec);
 
+  Ivec->close_io_files(true); // Closes Jvec too
+
   tpdm_aa_ = tpdm_list[0];
   tpdm_ab_ = tpdm_list[1];
   tpdm_bb_ = tpdm_list[2];

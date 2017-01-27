@@ -129,6 +129,7 @@ void CIWavefunction::form_opdm(void) {
         opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
         opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
     }
+    Ivec->close_io_files(true); // Closes Jvec too
 
     // Figure out which OPDM should be current
     if (Parameters_->opdm_ave) {
