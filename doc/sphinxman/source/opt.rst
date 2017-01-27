@@ -49,7 +49,7 @@ Sec. :ref:`sec:optking`.
 need to access directly to perform geometry optimizations. Behind
 the scenes, :py:func:`~psi4.optimize` is a wrapper that repeatedly
 calls :py:func:`~psi4.gradient` that computes the gradient then adds a
-call to the :ref:`geometry projection module <sec:optking>`.
+call to the :ref:`geometry optimization module <sec:optking>`.
 
 .. autofunction:: psi4.optimize(name [, molecule, return_wfn, func, mode, dertype, hessian_with])
 
