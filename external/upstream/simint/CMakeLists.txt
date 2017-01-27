@@ -2,10 +2,10 @@ if(NOT(${ENABLE_SIMINT} STREQUAL "None"))
    include(ExternalProject)
 
    set(SIMINT_VER "0.6")
-   string(TOLOWER ${ENABLE_SIMINT} SIMINT_VECTOR)
+   string(TOLOWER ${SIMINT_VECTOR} SIMINT_VECTOR)
    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-   message(STATUS "Using SIMINT ${SIMINT_VECTOR} v${SIMINT_VER} for integrals")
+   message(STATUS "Using Simint v${SIMINT_VER} (vectorization = ${SIMINT_VECTOR}) for integrals")
 
    ExternalProject_Add(simint_external
       URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2

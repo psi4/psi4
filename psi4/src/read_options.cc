@@ -139,8 +139,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- Psi4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
-  /*- Integral package to use. If compiled with ERD support, toggle this to use it; LibInt is used otherwise. -*/
-  options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT");
+  /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used otherwise. -*/
+  options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT SIMINT");
 
   // Note that case-insensitive options are only functional as
   //   globals, not as module-level, and should be defined sparingly
