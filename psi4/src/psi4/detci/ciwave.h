@@ -257,6 +257,9 @@ public:
     void form_opdm();
     void form_tpdm();
 
+    // Form CI Natural Orbitals (Warning! must build the OPDM beforehand)
+    void ci_nat_orbs();
+
     // Extraneous
     void cleanup_ci();
     void cleanup_dpd();
@@ -445,7 +448,6 @@ private:
             double **onepdm_a, double **onepdm_b, double **CJ, double **CI, int Ja_list,
             int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list,
             int Inas, int Inbs);
-    void ci_nat_orbs();
 
     // OPDM holders, opdm_map holds lots of active-active opdms
     // opdm_, opdm_a_, etc are for "the" current OPDM

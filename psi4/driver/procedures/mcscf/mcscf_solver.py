@@ -376,6 +376,10 @@ def mcscf_solver(ref_wfn):
         # Print CIVector information
         ciwfn.print_vector(dvec, root)
 
+    # Do we diagonalize the opdm?
+    if core.get_option("DETCI", "NAT_ORBS"):
+        ciwfn.ci_nat_orbs()
+
     # Set final energy
     core.set_variable("CURRENT ENERGY", core.get_variable("MCSCF TOTAL ENERGY"))
 
