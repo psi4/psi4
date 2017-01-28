@@ -45,6 +45,10 @@
 #include <sstream>
 #include <vector>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifdef USING_dkh
 #include <DKH/DKH_MANGLE.h>
 #define F_DKH  DKH_MANGLE_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
@@ -160,6 +164,12 @@ void MintsHelper::common_init()
     // Print the basis set
     if (print_)
         basisset_->print_detail();
+
+    // How many threads?
+    nthread_ = 1;
+    #ifdef _OPENMP
+        nthread_ = omp_get_max_threads();
+    #endif
 
     // Create integral factory
     integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_));
@@ -418,12 +428,82 @@ void MintsHelper::integral_hessians()
     throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);
 }
 
+void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints,
+                                       SharedMatrix out, bool symm) {
+    // Grab basis info
+    std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
+    std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
+
+    // Limit to the number of incoming onbody ints
+    size_t nthread = nthread_;
+    if (nthread > ints.size()) {
+        nthread = ints.size();
+    }
+
+    // Grab the buffers
+    std::vector<const double *> ints_buff(nthread);
+    for (size_t thread = 0; thread < nthread; thread++) {
+        ints_buff[thread] = ints[thread]->buffer();
+    }
+
+    double **outp = out->pointer();
+    size_t rank = 0;
+
+    // Loop it
+    for (size_t MU = 0; MU < bs1->nshell(); ++MU) {
+        size_t num_mu = bs1->shell(MU).nfunction();
+        size_t index_mu = bs1->shell(MU).function_index();
+
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        if (symm) {
+            // Triangular
+            for (size_t NU = 0; NU <= MU; ++NU) {
+                size_t num_nu = bs2->shell(NU).nfunction();
+                size_t index_nu = bs2->shell(NU).function_index();
+
+                ints[rank]->compute_shell(MU, NU);
+
+                size_t index = 0;
+                for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
+                    for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
+                        outp[mu][nu] = outp[nu][mu] = ints_buff[rank][index++];
+                    }
+                }
+            }  // End NU
+        }      // End Symm
+        else {
+            // Rectangular
+            for (size_t NU = 0; NU < bs2->nshell(); ++NU) {
+                size_t num_nu = bs2->shell(NU).nfunction();
+                size_t index_nu = bs2->shell(NU).function_index();
+
+                ints[rank]->compute_shell(MU, NU);
+
+                size_t index = 0;
+                for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
+                    for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
+                        // printf("%zu %zu | %zu %zu | %lf\n", MU, NU, mu, nu, ints_buff[rank][index]);
+                        outp[mu][nu] = ints_buff[rank][index++];
+                    }
+                }
+            }  // End NU
+        }      // End Rectangular
+    }          // End Mu
+}
 SharedMatrix MintsHelper::ao_overlap()
 {
     // Overlap
-    std::shared_ptr <OneBodyAOInt> overlap(integral_->ao_overlap());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
+    }
     SharedMatrix overlap_mat(new Matrix(PSIF_AO_S, basisset_->nbf(), basisset_->nbf()));
-    overlap->compute(overlap_mat);
+    one_body_ao_computer(ints_vec, overlap_mat, true);
+
+    // Is this needed?
     overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
 }
@@ -433,51 +513,69 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr <BasisSet> bs1, std::shared
 {
     // Overlap
     IntegralFactory factory(bs1, bs2);
-    std::shared_ptr <OneBodyAOInt> overlap(factory.ao_overlap());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_overlap()));
+    }
     SharedMatrix overlap_mat(new Matrix(PSIF_AO_S, bs1->nbf(), bs2->nbf()));
-    overlap->compute(overlap_mat);
+    one_body_ao_computer(ints_vec, overlap_mat, false);
     return overlap_mat;
 }
 
 SharedMatrix MintsHelper::ao_kinetic()
 {
-    std::shared_ptr <OneBodyAOInt> T(integral_->ao_kinetic());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
+    }
     SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf()));
-    T->compute(kinetic_mat);
+    one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
 }
 
 SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
     IntegralFactory factory(bs1, bs2);
-    std::shared_ptr <OneBodyAOInt> T(factory.ao_kinetic());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_kinetic()));
+    }
     SharedMatrix kinetic_mat(new Matrix("AO-basis Kinetic Ints", bs1->nbf(), bs2->nbf()));
-    T->compute(kinetic_mat);
+    one_body_ao_computer(ints_vec, kinetic_mat, false);
     return kinetic_mat;
 }
 
 SharedMatrix MintsHelper::ao_potential()
 {
-    std::shared_ptr <OneBodyAOInt> V(integral_->ao_potential());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential()));
+    }
     SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf()));
-    V->compute(potential_mat);
+    one_body_ao_computer(ints_vec, potential_mat, true);
     return potential_mat;
 }
 
 SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
     IntegralFactory factory(bs1, bs2);
-    std::shared_ptr <OneBodyAOInt> V(factory.ao_potential());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_potential()));
+    }
     SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf(), bs2->nbf()));
-    V->compute(potential_mat);
+    one_body_ao_computer(ints_vec, potential_mat, false);
     return potential_mat;
 }
 
 SharedMatrix MintsHelper::ao_pvp()
 {
-    std::shared_ptr <OneBodyAOInt> pVp(integral_->ao_rel_potential());
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_rel_potential()));
+    }
     SharedMatrix pVp_mat(new Matrix("AO-basis pVp Ints", basisset_->nbf(), basisset_->nbf()));
-    pVp->compute(pVp_mat);
+    one_body_ao_computer(ints_vec, pVp_mat, true);
     return pVp_mat;
 }
 
