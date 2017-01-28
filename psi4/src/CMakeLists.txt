@@ -6,17 +6,19 @@ add_subdirectory(psi4)
 ### >> We also add in versioning, settings for plugins, and
 ### >> exports for Python here.
 
-set(sources_list export_psio.cc
-        export_mints.cc
+set(sources_list
+        export_benchmarks.cc
+        export_blas_lapack.cc
+        export_cubeprop.cc
+        export_efp.cc
         export_fock.cc
         export_functional.cc
+        export_mints.cc
+        export_misc.cc
         export_oeprop.cc
         export_plugins.cc
-        export_blas_lapack.cc
-        export_benchmarks.cc
-        export_efp.cc
-        export_cubeprop.cc
-        export_misc.cc
+        export_psio.cc
+        export_wavefunction.cc
         create_new_plugin.cc
         read_options.cc
         core.cc
