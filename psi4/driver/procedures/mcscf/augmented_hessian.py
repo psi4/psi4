@@ -32,7 +32,7 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
 
-np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
+# np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=True):
     """
