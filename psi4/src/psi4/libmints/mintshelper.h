@@ -83,7 +83,6 @@ private:
     void common_init();
 
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> obv, SharedMatrix out, bool symm);
-    // void one_body_so_computer(std::vector<std::shared_ptr<OneBodyAOInt>>, SharedMatrix out);
 
 public:
 
