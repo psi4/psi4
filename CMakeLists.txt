@@ -7,8 +7,7 @@ set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
 set(psi4_LICENSE "GNU General Public License, version 2")
 set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
-                              ${CMAKE_SOURCE_DIR}/cmake/math)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 ################  Options: Overview and Not Otherwise Mentioned  ###############
 
@@ -130,9 +129,10 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5)  # adjust with CMake minimum FindPythonInterp
 find_package(PythonLibsNew REQUIRED)
-message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
+message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
+add_subdirectory(external/common)
 add_subdirectory(external/upstream)
 
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
@@ -141,11 +141,6 @@ include(custom_cxxstandard)
 include(custom_static_library)
 
 ################################  Dependencies  ################################
-set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
-set(BLAS_LANG "CXX")
-set(LAPACK_LANG "CXX")
-include(ConfigMath)
-
 #These packages don't believe in configuration files...
 foreach(pkg in pcmsolver)
    string(TOUPPER "${pkg}" PKG)
@@ -195,6 +190,8 @@ ExternalProject_Add(psi4-core
               -Dgdma_DIR=${gdma_DIR}
               -DGTFock_DIR=${GTFock_DIR}
               -Dlibint_DIR=${libint_DIR}
+              -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+              -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
@@ -202,8 +199,6 @@ ExternalProject_Add(psi4-core
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
-                    -DLAPACKBLAS_LIBRARIES:LIST=${LAPACKBLAS_LIBRARIES}
-                    -DLAPACKBLAS_INCLUDE_DIRS:LIST=${LAPACKBLAS_INCLUDE_DIRS}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage

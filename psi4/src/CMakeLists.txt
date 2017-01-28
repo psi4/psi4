@@ -61,10 +61,11 @@ install(EXPORT "psi4Targets"
 set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
 # The other big source of RPaths are the math libraries
-foreach(math_comp ${LAPACKBLAS_LIBRARIES})
-    get_filename_component(math_lib ${math_comp} DIRECTORY)
-    set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
-endforeach()
+#foreach(math_comp tgt::lapack)
+#    message("${math_comp}")
+#    get_filename_component(math_lib ${math_comp} DIRECTORY)
+#    set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
+#endforeach()
 
 get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
 

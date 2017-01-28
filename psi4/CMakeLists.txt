@@ -20,6 +20,20 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
+find_package(TargetLAPACK CONFIG REQUIRED)
+get_property(_ill TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+list(GET _ill 0 _ill0)
+message(STATUS "${Cyan}Found LAPACK${ColourReset}: ${_ill0};...")
+
+find_package(TargetHDF5 CONFIG)
+if(TARGET tgt::hdf5)
+    get_property(_ill TARGET tgt::hdf5 PROPERTY INTERFACE_LINK_LIBRARIES)
+    list(GET _ill 0 _ill0)
+    message(STATUS "${Cyan}Found HDF5${ColourReset}: ${_ill0};... (found version ${${PN}_VERSION})")
+else()
+    message(STATUS "Unfound HDF5")
+endif()
+
 #  <<  Pybind11 & Python  >>
 set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 find_package(pybind11 2.0.0 CONFIG REQUIRED)

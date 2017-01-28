@@ -3555,7 +3555,7 @@ def run_mrcc(name, **kwargs):
     try:
         retcode = subprocess.Popen([external_exe], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
-        sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
+        sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
         core.print_out('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
         message = ("Program %s not found in path or execution failed: %s\n" % (external_exe, e.strerror))
         raise ValidationError(message)

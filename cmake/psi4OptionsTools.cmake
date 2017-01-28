@@ -68,7 +68,7 @@ macro(psi4_add_module binlib libname sources)
         target_link_libraries(${libname} PRIVATE ${name_i})
     endforeach()
     target_link_libraries(${libname} PRIVATE pybind11::module)
-    target_link_libraries(${libname} PRIVATE ${LAPACKBLAS_LIBRARIES})
+    target_link_libraries(${libname} PRIVATE tgt::lapack)
 endmacro()
 
 include(CheckCCompilerFlag)
