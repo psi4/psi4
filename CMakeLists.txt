@@ -203,7 +203,8 @@ ExternalProject_Add(psi4-core
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
-add_dependencies(psi4-core ambit_external
+add_dependencies(psi4-core lapack_external
+                           ambit_external
                            chemps2_external
                            dkh_external
                            libefp_external
