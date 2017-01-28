@@ -339,7 +339,7 @@ void CIWavefunction::set_ciblks()
 
    if (print_) {
      outfile->Printf(
-       "    The CI space requires %.0lf (%1.2E) determinants and %d blocks\n\n",
+       "    The CI space requires %.0lf (%1.2E) determinants and %d blocks\n",
        (double) CIblks_->vectlen, (double) CIblks_->vectlen, nblocks);
      }
 

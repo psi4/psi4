@@ -575,7 +575,7 @@ void CIWavefunction::ci_nat_orbs() {
   // We can only do restricted orbitals
   outfile->Printf("\n   Computing CI Natural Orbitals\n");
   outfile->Printf("   !Warning: New orbitals will be sorted by occuption number,\n");
-  outfile->Printf("   orbital spaces (occ/act/vir) may change.\n\n");
+  outfile->Printf("   orbital spaces (occ/act/vir) may change.\n");
 
   SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->rowspi(), Da_->colspi()));
   SharedVector NO_occ(new Vector("OPDM Occuption", Da_->rowspi()));

@@ -2936,6 +2936,18 @@ def run_detci(name, **kwargs):
 
     ciwfn = core.detci(ref_wfn)
 
+    print_nos = False
+    if core.get_option("DETCI", "NAT_ORBS"):
+        ciwfn.ci_nat_orbs()
+        print_nos = True
+
+    proc_util.print_ci_results(ciwfn, name.upper(), core.get_variable("HF TOTAL ENERGY"), core.get_variable("CURRENT ENERGY"), print_nos)
+
+    core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
+    core.print_out("\t\t\t - Starship Troopers\n\n");
+    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+    core.print_out("\t\t\t - Edward Valeev\n");
+
     if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
         # We always would like to print a little dipole information
         oeprop = core.OEProp(ciwfn)
@@ -2946,6 +2958,9 @@ def run_detci(name, **kwargs):
         core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
         core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
         core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+
+    ciwfn.cleanup_ci()
+    ciwfn.cleanup_dpd()
 
     optstash.restore()
     return ciwfn

@@ -164,6 +164,7 @@ void CIvect::common_init(void) {
     cur_size_ = 0;
     first_unit_ = 0;
     print_lvl_ = 0;
+    fopen_ = false;
 }
 
 void CIvect::set(int incor, int maxvect, int nunits, int funit,
@@ -1834,19 +1835,20 @@ double ** CIvect::blockptr(int blknum)
 **
 ** Returns: none
 */
-void CIvect::init_io_files(bool open_old)
-{
-   int i;
+void CIvect::init_io_files(bool open_old) {
+    int i;
 
-   for (i=0; i<nunits_; i++) {
-     if (!psio_open_check((ULI) units_[i])) {
-       if (open_old) psio_open((ULI) units_[i], PSIO_OPEN_OLD);
-       else psio_open((ULI) units_[i], PSIO_OPEN_NEW);
-     }
-   }
+    for (i = 0; i < nunits_; i++) {
+        if (!psio_open_check((ULI)units_[i])) {
+            if (open_old) {
+                psio_open((ULI)units_[i], PSIO_OPEN_OLD);
+            } else {
+                psio_open((ULI)units_[i], PSIO_OPEN_NEW);
+            }
+        }
+    }
+    fopen_ = true;
 }
-
-
 
 /*
 ** CIvect::close_io_files()
@@ -1856,17 +1858,18 @@ void CIvect::init_io_files(bool open_old)
 **
 ** Returns: none
 */
-void CIvect::close_io_files(int keep)
-{
-   int i;
+void CIvect::close_io_files(int keep) {
 
-   for (i=0; i<nunits_; i++) {
-     // rclose(units[i], keep ? 3 : 4); // old way
-     psio_close(units_[i], keep); // new way
-   }
+    // Nothing to do if its already closed
+    if (!fopen_) {
+        return;
+    }
+
+    for (size_t i = 0; i < nunits_; i++) {
+        psio_close(units_[i], keep);
+    }
+    fopen_ = false;
 }
-
-
 
 /*
 ** CIvect::read(): Read in a section of a CI vector from external storage.
@@ -1952,7 +1955,6 @@ int CIvect::write(int ivect, int ibuf)
    //    timer_off("CIWave: CIvect write");
    //    return(0);
    //    }
-
 
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;

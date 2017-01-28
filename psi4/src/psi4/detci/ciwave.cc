@@ -157,21 +157,16 @@ double CIWavefunction::compute_energy() {
     }
 
     // Finished CI, setting wavefunction parameters
-    if (!Parameters_->zaptn && (Parameters_->opdm || Parameters_->transdens)) {
+    if (!Parameters_->zaptn &&
+        (Parameters_->opdm || Parameters_->transdens || Parameters_->opdm_diag)) {
         form_opdm();
     }
 
-    if (Parameters_->opdm_diag) ci_nat_orbs();
+    // if (Parameters_->opdm_diag) ci_nat_orbs();
     if (Parameters_->tpdm) form_tpdm();
-    if (print_ > 0) {
-        outfile->Printf("\t\t \"A good bug is a dead bug\" \n\n");
-        outfile->Printf("\t\t\t - Starship Troopers\n\n");
-        outfile->Printf("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
-        outfile->Printf("\t\t\t - Edward Valeev\n\n");
-    }
 
-    cleanup_ci();
-    cleanup_dpd();
+    // cleanup_ci();
+    // cleanup_dpd();
 
     return Process::environment.globals["CURRENT ENERGY"];
 }
@@ -542,10 +537,7 @@ SharedCIVector CIWavefunction::new_civector(int maxnvect, int filenum,
     return civect;
 }
 SharedCIVector CIWavefunction::D_vector(){
-    SharedCIVector civect(new CIvect(Parameters_->icore, Parameters_->maxnvect,
-                                     1, Parameters_->d_filenum, CIblks_, CalcInfo_,
-                                     Parameters_, H0block_, true));
-    civect->init_io_files(true);
+    SharedCIVector civect = new_civector(Parameters_->num_roots, Parameters_->d_filenum, true, true);
     return civect;
 }
 SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
