@@ -447,13 +447,14 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
     }
 
     double **outp = out->pointer();
-    size_t rank = 0;
 
     // Loop it
+    #pragma omp parallel for schedule (dynamic) num_threads(nthread)
     for (size_t MU = 0; MU < bs1->nshell(); ++MU) {
         size_t num_mu = bs1->shell(MU).nfunction();
         size_t index_mu = bs1->shell(MU).function_index();
 
+        size_t rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
@@ -1125,25 +1126,22 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
 
 SharedMatrix MintsHelper::so_overlap()
 {
-    std::shared_ptr <OneBodySOInt> S(integral_->so_overlap());
     SharedMatrix overlap_mat(factory_->create_matrix(PSIF_SO_S));
-    S->compute(overlap_mat);
+    overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
     return overlap_mat;
 }
 
 SharedMatrix MintsHelper::so_kinetic()
 {
-    std::shared_ptr <OneBodySOInt> T(integral_->so_kinetic());
     SharedMatrix kinetic_mat(factory_->create_matrix(PSIF_SO_T));
-    T->compute(kinetic_mat);
+    kinetic_mat->apply_symmetry(ao_kinetic(), petite_list()->aotoso());
     return kinetic_mat;
 }
 
 SharedMatrix MintsHelper::so_potential(bool include_perturbations)
 {
-    std::shared_ptr <OneBodySOInt> V(integral_->so_potential());
     SharedMatrix potential_mat(factory_->create_matrix(PSIF_SO_V));
-    V->compute(potential_mat);
+    potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
 
     // Handle addition of any perturbations here and not in SCF code.
     if (include_perturbations) {
