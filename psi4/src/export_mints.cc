@@ -1021,7 +1021,8 @@ void export_mints(py::module& m)
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring")
         .def("cleanup_ci", &detci::CIWavefunction::cleanup_ci, "docstring")
-        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring");
+        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring")
+        .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;

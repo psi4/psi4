@@ -498,8 +498,20 @@ void CIWavefunction::cleanup_dpd(void) {
         mcscf_object_init_ = false;
     }
 }
+void CIWavefunction::set_ci_guess(std::string guess) {
+    if (guess == "UNIT") {
+        Parameters_->guess_vector = PARM_GUESS_VEC_UNIT;
+    } else if (guess == "H0_BLOCK") {
+        Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+    } else if (guess == "DFILE") {
+        Parameters_->guess_vector = PARM_GUESS_VEC_DFILE;
+    } else {
+        throw PSIEXCEPTION(
+            "CIWavefunction::set_ci_guess: Guess can only be UNIT, H0_BLOCK, or DFILE");
+    }
+}
 void CIWavefunction::title(bool is_mcscf) {
-    if (is_mcscf){
+    if (is_mcscf) {
         outfile->Printf("\n");
         outfile->Printf("         ---------------------------------------------------------\n");
         outfile->Printf("                Multi-Configurational Self-Consistent Field\n");
@@ -550,7 +562,7 @@ SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
 SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
     BIGINT size = (hsize) ? (BIGINT)hsize : CIblks_->vectlen;
     double h_size = (double)(8 * size * size);
-    if (h_size > (Process::environment.get_memory() * 0.8)) {
+    if (h_size > (Process::environment.get_memory() * 0.4)) {
         outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size / 1E9);
         throw PSIEXCEPTION("CIWave::hamiltonian: Size is too large for"
                            "explicit hamiltonian build");

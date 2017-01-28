@@ -128,13 +128,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->ras3_lvl = -1;
   Parameters_->ras4_lvl = -1;
 
-  if (Parameters_->wfn == "DETCAS" ||
-      Parameters_->wfn == "CASSCF" ||
-      Parameters_->wfn == "RASSCF")
-    Parameters_->guess_vector = PARM_GUESS_VEC_DFILE;
-  else
-    Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-
+  Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
 
   Parameters_->neg_only = 1;
   Parameters_->nunits = 1;

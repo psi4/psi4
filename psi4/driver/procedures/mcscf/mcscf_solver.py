@@ -153,6 +153,9 @@ def mcscf_solver(ref_wfn):
         ciwfn.transform_mcscf_integrals(approx_integrals_only)
         nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
 
+        # After the first diag we need to switch to READ
+        ciwfn.set_ci_guess("DFILE")
+
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
         ci_grad_rms = core.get_variable("DETCI AVG DVEC NORM")

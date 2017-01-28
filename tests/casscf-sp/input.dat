@@ -16,7 +16,6 @@ set {
 }
 
 cisd_energy, cisd_wfn = energy("CISD", return_wfn=True)
-psi4.clean()
 
 compare_values(-76.2198474477531, cisd_energy, 6, 'CISD Energy')  #TEST
 
