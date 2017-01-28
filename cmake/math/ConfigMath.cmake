@@ -60,7 +60,7 @@ foreach(_service BLAS LAPACK)
             ${EXTERNAL_LIBS}
             ${EXPLICIT_${_service}_LIB}
             )
-        message("-- ${_service}: using explit library (${EXPLICIT_${_service}_LIB})")
+        message("-- ${_service}: using explicit library (${EXPLICIT_${_service}_LIB})")
     endif()
 endforeach()
 
@@ -105,8 +105,3 @@ foreach(_service BLAS LAPACK)
     endif()
 endforeach()
 
-if(APPLE)
-    set(LAPACKBLAS_LIBRARIES ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
-else()
-    set(LAPACKBLAS_LIBRARIES -Wl,--start-group ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES} -Wl,--end-group)
-endif()
