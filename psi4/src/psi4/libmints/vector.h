@@ -145,43 +145,19 @@ public:
     void add(const std::vector<double> &rhs);
 
     /// Adds other vector to this
-    void add(const std::shared_ptr<Vector> &other) {
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int m = 0; m < dimpi_[h]; ++m) {
-                vector_[h][m] += other->vector_[h][m];
-            }
-        }
-    }
+    void add(const std::shared_ptr<Vector> &other);
+    void add(const Vector &other);
 
     /// Subtracts other vector from this
-    void subtract(const std::shared_ptr<Vector> &other) {
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int m = 0; m < dimpi_[h]; ++m) {
-                vector_[h][m] -= other->vector_[h][m];
-            }
-        }
-    }
+    void subtract(const std::shared_ptr<Vector> &other);
+    void subtract(const Vector &other);
+
+    void axpy(double scale, const std::shared_ptr<Vector> &other);
+    void axpy(double scale, const Vector &other);
 
     /// Zeros the vector out
     void zero();
 
-    /// Adds other vector to this
-    void add(const Vector &other) {
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int m = 0; m < dimpi_[h]; ++m) {
-                vector_[h][m] += other.vector_[h][m];
-            }
-        }
-    }
-
-    /// Subtracts other vector from this
-    void subtract(const Vector &other) {
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int m = 0; m < dimpi_[h]; ++m) {
-                vector_[h][m] -= other.vector_[h][m];
-            }
-        }
-    }
 
     double &operator()(int i) { return vector_[0][i]; }
 
@@ -201,7 +177,6 @@ public:
 
     /// Returns a copy of the vector_
     double *to_block_vector();
-
 
     /// Returns the dimension per irrep h
     int dim(int h = 0) const { return dimpi_[h]; }
@@ -245,10 +220,14 @@ public:
     void gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta);
 
     /// Vector dot product
+    double vector_dot(const std::shared_ptr<Vector> &other);
+    double vector_dot(const Vector &other);
     double dot(Vector *X);
 
     /// Vector norm
     double norm();
+    double sum_of_squares();
+    double rms();
 
     /// Scale the elements of the vector
     void scale(const double &sc);

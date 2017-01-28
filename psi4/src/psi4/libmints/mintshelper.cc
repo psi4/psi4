@@ -449,10 +449,10 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
     double **outp = out->pointer();
 
     // Loop it
-    #pragma omp parallel for schedule (dynamic) num_threads(nthread)
+    #pragma omp parallel for schedule(guided) num_threads(nthread)
     for (size_t MU = 0; MU < bs1->nshell(); ++MU) {
-        size_t num_mu = bs1->shell(MU).nfunction();
-        size_t index_mu = bs1->shell(MU).function_index();
+        const size_t num_mu = bs1->shell(MU).nfunction();
+        const size_t index_mu = bs1->shell(MU).function_index();
 
         size_t rank = 0;
 #ifdef _OPENMP
@@ -462,15 +462,15 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         if (symm) {
             // Triangular
             for (size_t NU = 0; NU <= MU; ++NU) {
-                size_t num_nu = bs2->shell(NU).nfunction();
-                size_t index_nu = bs2->shell(NU).function_index();
+                const size_t num_nu = bs2->shell(NU).nfunction();
+                const size_t index_nu = bs2->shell(NU).function_index();
 
                 ints[rank]->compute_shell(MU, NU);
 
                 size_t index = 0;
                 for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
                     for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
-                        outp[mu][nu] = outp[nu][mu] = ints_buff[rank][index++];
+                        outp[nu][mu] = outp[mu][nu] = ints_buff[rank][index++];
                     }
                 }
             }  // End NU
@@ -478,8 +478,8 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         else {
             // Rectangular
             for (size_t NU = 0; NU < bs2->nshell(); ++NU) {
-                size_t num_nu = bs2->shell(NU).nfunction();
-                size_t index_nu = bs2->shell(NU).function_index();
+                const size_t num_nu = bs2->shell(NU).nfunction();
+                const size_t index_nu = bs2->shell(NU).function_index();
 
                 ints[rank]->compute_shell(MU, NU);
 
@@ -1126,22 +1126,42 @@ SharedMatrix MintsHelper::mo_spin_eri_helper(SharedMatrix Iso, int n1, int n2)
 
 SharedMatrix MintsHelper::so_overlap()
 {
-    SharedMatrix overlap_mat(factory_->create_matrix(PSIF_SO_S));
-    overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
-    return overlap_mat;
+    if (factory_->nirrep() == 1) {
+        SharedMatrix ret = ao_overlap();
+        ret->set_name(PSIF_SO_S);
+        return ret;
+    } else {
+        SharedMatrix overlap_mat(factory_->create_matrix(PSIF_SO_S));
+        overlap_mat->apply_symmetry(ao_overlap(), petite_list()->aotoso());
+        return overlap_mat;
+    }
 }
 
 SharedMatrix MintsHelper::so_kinetic()
 {
-    SharedMatrix kinetic_mat(factory_->create_matrix(PSIF_SO_T));
-    kinetic_mat->apply_symmetry(ao_kinetic(), petite_list()->aotoso());
-    return kinetic_mat;
+    if (factory_->nirrep() == 1) {
+        SharedMatrix ret = ao_kinetic();
+        ret->set_name(PSIF_SO_T);
+        return ret;
+    } else {
+        SharedMatrix kinetic_mat(factory_->create_matrix(PSIF_SO_T));
+        kinetic_mat->apply_symmetry(ao_kinetic(), petite_list()->aotoso());
+        return kinetic_mat;
+    }
 }
 
 SharedMatrix MintsHelper::so_potential(bool include_perturbations)
 {
-    SharedMatrix potential_mat(factory_->create_matrix(PSIF_SO_V));
-    potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
+    // No symmetry
+    SharedMatrix potential_mat;
+    if (factory_->nirrep() == 1) {
+        SharedMatrix ret = ao_potential();
+        ret->set_name(PSIF_SO_V);
+        return ret;
+    } else {
+        potential_mat = factory_->create_shared_matrix(PSIF_SO_V);
+        potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
+    }
 
     // Handle addition of any perturbations here and not in SCF code.
     if (include_perturbations) {

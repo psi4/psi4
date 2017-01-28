@@ -1129,16 +1129,10 @@ void Matrix::transpose_this()
 
 void Matrix::add(const Matrix *const plus)
 {
-    double *lhs, *rhs;
     for (int h = 0; h < nirrep_; ++h) {
         size_t size = rowspi_[h] * colspi_[h ^ symmetry_];
         if (size) {
-            lhs = matrix_[h][0];
-            rhs = plus->matrix_[h][0];
-            //#pragma omp parallel for
-            for (size_t ij = 0; ij < size; ++ij) {
-                lhs[ij] += rhs[ij];
-            }
+            C_DAXPY(size, 1.0, plus->matrix_[h][0], 1, matrix_[h][0], 1);
         }
     }
 }
@@ -1155,16 +1149,10 @@ void Matrix::add(const SharedMatrix &plus)
 
 void Matrix::subtract(const Matrix *const plus)
 {
-    double *lhs, *rhs;
     for (int h = 0; h < nirrep_; ++h) {
         size_t size = rowspi_[h] * colspi_[h ^ symmetry_];
         if (size) {
-            lhs = matrix_[h][0];
-            rhs = plus->matrix_[h][0];
-            //#pragma omp parallel for
-            for (size_t ij = 0; ij < size; ++ij) {
-                lhs[ij] -= rhs[ij];
-            }
+            C_DAXPY(size, -1.0, plus->matrix_[h][0], 1, matrix_[h][0], 1);
         }
     }
 }
@@ -1182,10 +1170,9 @@ void Matrix::apply_denominator(const Matrix *const plus)
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
+#pragma omp parallel for simd
             for (size_t ij = 0; ij < size; ++ij) {
-                *lhs /= *rhs;
-                lhs++;
-                rhs++;
+                lhs[ij] /= rhs[ij];
             }
         }
     }
@@ -1237,7 +1224,7 @@ double Matrix::sum_of_squares()
 {
     double sum = (double) 0.0;
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for
+#pragma omp parallel for reduction(+:sum)
         for (int i = 0; i < rowspi_[h]; ++i) {
             for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
@@ -1253,6 +1240,7 @@ double Matrix::rms()
     double sum = (double) 0.0;
     long terms = 0;
     for (int h = 0; h < nirrep_; ++h) {
+#pragma omp parallel for reduction(+:sum)
         for (int i = 0; i < rowspi_[h]; ++i) {
             for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
                 sum += matrix_[h][i][j] * matrix_[h][i][j];
@@ -1268,7 +1256,6 @@ double Matrix::absmax()
 {
     double max = (double) 0.0;
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for
         for (int i = 0; i < rowspi_[h]; ++i) {
             for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
                 double absval = std::abs(matrix_[h][i][j]);
@@ -2665,6 +2652,7 @@ void Matrix::zero_lower()
     }
 
     for (int h = 0; h < nirrep_; ++h) {
+#pragma omp parallel for schedule(dynamic) 
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < m; ++n) {
                 matrix_[h][m][n] = 0.0;
@@ -2681,6 +2669,7 @@ void Matrix::zero_upper()
     }
 
     for (int h = 0; h < nirrep_; ++h) {
+#pragma omp parallel for schedule(dynamic) 
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < m; ++n) {
                 matrix_[h][n][m] = 0.0;
@@ -2695,6 +2684,7 @@ void Matrix::zero_row(int h, int i)
     if (i >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::zero_row: index is out of bounds.");
     }
+#pragma omp parallel for simd
     for (int m = 0; m < colspi_[h]; ++m) {
         matrix_[h][i][m] = 0.0;
     }
@@ -2705,6 +2695,7 @@ void Matrix::zero_column(int h, int i)
     if (i >= colspi_[h]) {
         throw PSIEXCEPTION("Matrix::zero_column: index is out of bounds.");
     }
+#pragma omp parallel for
     for (int m = 0; m < rowspi_[h]; ++m) {
         matrix_[h][m][i] = 0.0;
     }

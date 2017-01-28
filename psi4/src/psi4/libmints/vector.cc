@@ -290,35 +290,15 @@ void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta)
     }
 }
 
-double Vector::dot(Vector *X)
-{
-    double tmp = 0.0;
-
-    for (int h = 0; h < nirrep_; ++h) {
-        if (dimpi_[h] != X->dimpi_[h]) {
-            printf("Vector::dot: Vectors are not of the same size.\n");
-            return 0.0;
-        }
-        for (int i = 0; i < dimpi_[h]; ++i) {
-            tmp += vector_[h][i] * X->vector_[h][i];
-        }
-    }
-
-    return tmp;
+double Vector::vector_dot(const std::shared_ptr<Vector> &other) { return vector_dot(*other.get()); }
+double Vector::vector_dot(const Vector &other) {
+    return C_DDOT(v_.size(), v_.data(), 1, const_cast<double*>(other.v_.data()), 1);
 }
+double Vector::dot(Vector *X) { return C_DDOT(v_.size(), v_.data(), 1, X->v_.data(), 1); }
 
-double Vector::norm()
-{
-    double tmp = 0.0;
-
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < dimpi_[h]; ++i) {
-            tmp += vector_[h][i] * vector_[h][i];
-        }
-    }
-
-    return tmp;
-}
+double Vector::norm() { return C_DDOT(v_.size(), v_.data(), 1, v_.data(), 1); }
+double Vector::sum_of_squares() { return norm(); }
+double Vector::rms() { return sqrt(norm() / v_.size()); }
 
 template<class T>
 struct scale_vector
@@ -338,16 +318,21 @@ struct scale_vector
     }
 };
 
-void Vector::scale(const double &sc)
-{
-    std::transform(v_.begin(), v_.end(), v_.begin(), scale_vector<double>(sc));
-}
+void Vector::scale(const double &sc) { C_DSCAL(v_.size(), sc, v_.data(), 1); }
 
-void Vector::add(const std::vector<double> &rhs)
-{
-    size_t min = std::min(rhs.size(), v_.size());
-    for (size_t i = 0; i < min; ++i)
-        v_[i] += rhs[i];
+void Vector::add(const std::shared_ptr<Vector> &other) { axpy(1.0, *other.get()); }
+void Vector::add(const Vector &other) { axpy(1.0, other); }
+
+void Vector::subtract(const std::shared_ptr<Vector> &other) { axpy(-1.0, *other.get()); }
+void Vector::subtract(const Vector &other) { axpy(-1.0, other); }
+
+void Vector::axpy(double scale, const SharedVector &other) { axpy(scale, *other.get()); }
+void Vector::axpy(double scale, const Vector &other) {
+    if (v_.size() != other.v_.size()){
+        throw PSIEXCEPTION("Vector::axpy: Vector sizes do not match!");
+    }
+
+    C_DAXPY(v_.size(), scale, const_cast<double*>(other.v_.data()), 1, v_.data(), 1);
 }
 
 void Vector::send()
