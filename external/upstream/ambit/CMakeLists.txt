@@ -21,7 +21,7 @@ if(${ENABLE_ambit})
             DEPENDS lapack_external
                     hdf5_external
             GIT_REPOSITORY https://github.com/jturney/ambit
-            GIT_TAG cmakelab  # todo
+            GIT_TAG cmakelab2
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -35,8 +35,8 @@ if(${ENABLE_ambit})
                        -DENABLE_OMP=${ENABLE_OPENMP}
                        #-DENABLE_VECTORIZATION=${ENABLE_VECTORIZATION}
                        #-DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
-                       #-DEXTRA_C_FLAGS=${CMAKE_EXTRA_C_FLAGS}
-                       #-DEXTRA_CXX_FLAGS=${CMAKE_EXTRA_CXX_FLAGS}
+                       -DEXTRA_C_FLAGS=${CMAKE_C_FLAGS}
+                       -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                        #-DBOOST_ROOT=${BOOST_ROOT}
                        -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
                        -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}

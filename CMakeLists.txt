@@ -183,6 +183,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -Dambit_DIR=${ambit_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Dlibefp_DIR=${libefp_DIR}

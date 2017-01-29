@@ -27,7 +27,11 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PN}")
 configure_package_config_file(${PN}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake"
                               INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+write_basic_package_version_file (${CMAKE_CURRENT_BINARY_DIR}/${PN}ConfigVersion.cmake
+                                  VERSION ${${PN}_VERSION}
+                                  COMPATIBILITY ExactVersion)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PN}Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/${PN}ConfigVersion.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 install(EXPORT "${PN}Targets"
         NAMESPACE "tgt::"
