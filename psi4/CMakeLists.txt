@@ -47,6 +47,14 @@ find_package(DL)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
 
+if(${ENABLE_ambit})
+    find_package(ambit CONFIG REQUIRED)
+    get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)
+    message(STATUS "${Cyan}Using ambit${ColourReset}: ${_loc} (version ${ambit_VERSION})")
+else()
+    message(STATUS "Disabled ambit")
+endif ()
+
 if(${ENABLE_CheMPS2})
     find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
     get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)

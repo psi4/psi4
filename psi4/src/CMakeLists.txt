@@ -32,6 +32,7 @@ if(TARGET dkh::dkh)
 endif()
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
+target_link_libraries(core PUBLIC ${PRE_LIBRARY_OPTION} ambit::ambit ${POST_LIBRARY_OPTION})
 target_link_libraries(core PUBLIC pybind11::module)
 target_link_libraries(core PRIVATE Threads::Threads)
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
