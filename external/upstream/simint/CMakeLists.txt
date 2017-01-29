@@ -1,4 +1,4 @@
-if(NOT(${ENABLE_SIMINT} STREQUAL "None"))
+if(${ENABLE_simint})
    include(ExternalProject)
 
    set(SIMINT_VER "0.6")
