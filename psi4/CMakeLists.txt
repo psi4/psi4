@@ -95,7 +95,7 @@ if(${ENABLE_PCMSolver})
     #message(STATUS "Disabled PCMSolver")
 endif ()
 
-if(NOT(${ENABLE_SIMINT} STREQUAL "None"))
+if(${ENABLE_simint})
     find_package(simint CONFIG REQUIRED)
     message(STATUS "Found simint: ${simint_DIR}")
 endif()
