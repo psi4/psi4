@@ -626,29 +626,39 @@ void export_mints(py::module& m)
             def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry, "Do reinterpret coordinate entries during update_geometry().").
             def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame").
             def("fix_com", &Molecule::set_com_fixed, "Whether to fix the Cartesian position, or to translate to the C.O.M.").
-            def("add_atom", &Molecule::add_atom, "Adds to Molecule arg1 an atom with atomic number arg2, Cartesian coordinates in Bohr (arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and lineno arg9 (optional)").
+            def("add_atom", &Molecule::add_atom, "Adds to Molecule arg0 an atom with atomic number arg1, Cartesian coordinates in Bohr (arg2, arg3, arg4), atomic symbol arg5, mass arg6, charge arg7 (optional), and lineno arg8 (optional)").
             def("natom", &Molecule::natom, "Number of real atoms").
-            def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
+            def("nallatom", &Molecule::nallatom, "Number of real and dummy atoms").
+            def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as $2M_s + 1$) of full molecule").
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
+            def("nactive_fragments", &Molecule::nactive_fragments, "Gets the number of active (non-ghosted) fragments in the molecule").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
             def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule, "Gets a string reexpressing in input format the current states of the molecule").
             def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2").
             def("save_string_xyz_file", &Molecule::save_string_xyz_file, "Saves an XYZ file to arg2").
             def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2").
-            def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of atom").
-            def("x", &Molecule::x, "x position of atom").
-            def("y", &Molecule::y, "y position of atom").
-            def("z", &Molecule::z, "z position of atom").
+            def("Z", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of atom arg1 (0-indexed)").
+            def("x", &Molecule::x, "x position of atom arg1 (0-indexed in Bohr)").
+            def("y", &Molecule::y, "y position of atom arg1 (0-indexed in Bohr)").
+            def("z", &Molecule::z, "z position of atom arg1 (0-indexed in Bohr)").
+            def("fZ", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of atom arg1 (0-indexed including dummies)").
+            def("fx", &Molecule::x, "x position of atom arg1 (0-indexed including dummies in Bohr)").
+            def("fy", &Molecule::y, "y position of atom arg1 (0-indexed including dummies in Bohr)").
+            def("fz", &Molecule::z, "z position of atom arg1 (0-indexed including dummies in Bohr)").
             //def("xyz", &Molecule::xyz).
             def("center_of_mass", &Molecule::center_of_mass, "Computes center of mass of molecule (does not translate molecule)").
-            def("translate", &Molecule::translate, "Translates molecule by arg2").
+            def("translate", &Molecule::translate, "Translates molecule by arg1").
             def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass").
-            def("mass", &Molecule::mass, "Gets mass of atom arg2").
-            def("set_mass", &Molecule::set_mass, "Gets mass of atom arg2").
-            def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)").
-            def("label", &Molecule::label, "Gets the original label of the atom as given in the input file (C2, H4)").
-            def("charge", &Molecule::charge, "Gets charge of atom").
-            def("molecular_charge", &Molecule::molecular_charge, "Gets the molecular charge").
+            def("mass", &Molecule::mass, "Gets mass of atom arg1 (0-indexed)").
+            def("set_mass", &Molecule::set_mass, "Gets mass of atom arg1").
+            def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg1 (C2 => C, H4 = H) (0-indexed)").
+            def("label", &Molecule::label, "Gets the original label of the atom arg1 as given in the input file (C2, H4) (0-indexed)").
+            def("charge", &Molecule::charge, "Gets charge of atom arg1 (0-indexed)").
+            def("fmass", &Molecule::mass, "Gets mass of atom arg1 (0-indexed including dummies)").
+            def("fsymbol", &Molecule::symbol, "Gets the cleaned up label of atom arg1 (C2 => C, H4 = H) (0-indexed including dummies)").
+            def("flabel", &Molecule::label, "Gets the original label of the atom arg1 as given in the input file (C2, H4) (0-indexed including dummies)").
+            def("fcharge", &Molecule::charge, "Gets charge of atom arg1 (0-indexed including dummies)").
+            def("molecular_charge", &Molecule::molecular_charge, "Gets the charge on full molecule").
             def("extract_subsets", &Molecule::py_extract_subsets_1, "Returns copy of arg1 with arg2 fragments Real and arg3 fragments Ghost").
             def("extract_subsets", &Molecule::py_extract_subsets_2, "Returns copy of arg1 with arg2 fragments Real and arg3 fragment Ghost").
             def("extract_subsets", &Molecule::py_extract_subsets_3, "Returns copy of arg1 with arg2 fragment Real and arg3 fragments Ghost").
@@ -676,7 +686,7 @@ void export_mints(py::module& m)
             def("schoenflies_symbol", &Molecule::schoenflies_symbol, "Returns the Schoenflies symbol").
             def("form_symmetry_information", &Molecule::form_symmetry_information, "Uses the point group object obtain by calling point_group()").
             def("symmetrize", &Molecule::symmetrize_to_abelian_group, "Finds the highest point Abelian point group within the specified tolerance, and forces the geometry to have that symmetry.").
-            def_static("create_molecule_from_string", &Molecule::create_molecule_from_string, "Returns a new Molecule with member data from the geometry string arg1 in psi4 format").
+            def_static("create_molecule_from_string", &Molecule::create_molecule_from_string, "Returns a new Molecule with member data from the geometry string arg0 in Psi4 format").
             def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").
             def("set_variable", &Molecule::set_variable, "Assigns the value arg3 to the variable arg2 in the list of geometry variables, then calls update_geometry()").
             def("get_variable", &Molecule::get_variable, "Checks if variable arg2 is in the list, sets it to val and returns true if it is, and returns false if not").
@@ -686,6 +696,10 @@ void export_mints(py::module& m)
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms, "Sets basis set arg2 to all atoms").
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
+            def("distance_matrix", &Molecule::distance_matrix, "Returns Matrix of interatom distances").
+            def("print_distances", &Molecule::print_distances, "Print the interatomic distance geometrical parameters").
+            def("print_bond_angles", &Molecule::print_bond_angles, "Print the bond angle geometrical parameters").
+            def("print_out_of_planes", &Molecule::print_out_of_planes, "Print the out-of-plane angle geometrical parameters").
             //def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").  // dangerous for user use
             def("irrep_labels", [](Molecule &mol){
                 std::vector<std::string> ret;
@@ -698,7 +712,7 @@ void export_mints(py::module& m)
                 return ret;
             }).
             def_property("units", py::cpp_function(&Molecule::units), py::cpp_function(&Molecule::set_units), "Units (Angstrom or Bohr) used to define the geometry").
-            def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
+            def("clone", &Molecule::clone, "Returns a new Molecule identical to arg0").
             def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "docstring").
