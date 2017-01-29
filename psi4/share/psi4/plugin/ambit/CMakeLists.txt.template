@@ -35,4 +35,4 @@ find_package(psi4 1.0 REQUIRED)
 find_package(ambit REQUIRED)
 
 add_psi4_plugin(@plugin@ @sources@)
-target_link_libraries(@plugin@ ambit::ambit)
+target_link_libraries(@plugin@ PRIVATE ambit::ambit)
