@@ -103,13 +103,9 @@ def vpt2(name, **kwargs):
 
        - Manage scratch / subdir better.
 
-       - Untangle CCSD(T) vs CCSD[T] and FJOBARC issue
-
        - Allow CFOUR_BASIS
 
        - Consider forcing some tighter convcrit, c4 and p4
-
-       - sow/reap
 
        - mixed ang/bohr signals
 
@@ -119,17 +115,7 @@ def vpt2(name, **kwargs):
 
        - Remember additional FJOBARC record TOTENER2 if EXCITE .ne. NONE
 
-       - S/R P4grad
-
-       - S/R C4grad
-
-       - C P4grad
-
-       - C C4grad
-
        - switch C --> S/R with recovery using shelf
-
-       - pure C mode where only need P4 for wrapper
 
     """
     lowername = name.lower()
@@ -640,7 +626,7 @@ def vpt2_reaprun_files(item, linkage, isSowReap, isC4notP4, isC4fully, zmat, out
             handle.write(run_cfour_module('xvmol'))
             handle.write(run_cfour_module('xvmol2ja'))
         core.print_out('  CFOUR scratch file %s for %s has been read\n' % ('JOBARC (binary)', item))
-        c4mol = qcdb.cfour.jajo2mol(qcdb.jajo.getrec(['COORD   ', 'ATOMCHRG', 'MAP2ZMAT']))
+        c4mol = qcdb.cfour.jajo2mol(qcdb.jajo.getrec(['COORD   ', 'ATOMCHRG', 'MAP2ZMAT', 'IFLAGS  ']))
 
         # S/R: Reap results from output file
         if isSowReap:
