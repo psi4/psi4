@@ -1284,6 +1284,18 @@ def scf_helper(name, **kwargs):
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
         core.print_out("  Unable to find file 180, defaulting to SAD guess.\n")
         core.set_local_option('SCF', 'GUESS', 'SAD')
+        sad_basis_list = core.BasisSet.build(scf_wfn.molecule(), "ORBITAL",
+                                             core.get_global_option("BASIS"),
+                                             puream=scf_wfn.basisset().has_puream(),
+                                             return_atomlist=True)
+        scf_wfn.set_sad_basissets(sad_basis_list)
+
+        if (core.get_option("SCF", "SAD_SCF_TYPE") == "DF"):
+            sad_fitting_list = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_SAD",
+                                                   core.get_option("SCF", "DF_BASIS_SAD"),
+                                                   puream=scf_wfn.basisset().has_puream(),
+                                                   return_atomlist=True)
+            scf_wfn.set_sad_fitting_basissets(sad_fitting_list)
 
 
     if cast:
@@ -2924,6 +2936,18 @@ def run_detci(name, **kwargs):
 
     ciwfn = core.detci(ref_wfn)
 
+    print_nos = False
+    if core.get_option("DETCI", "NAT_ORBS"):
+        ciwfn.ci_nat_orbs()
+        print_nos = True
+
+    proc_util.print_ci_results(ciwfn, name.upper(), core.get_variable("HF TOTAL ENERGY"), core.get_variable("CURRENT ENERGY"), print_nos)
+
+    core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
+    core.print_out("\t\t\t - Starship Troopers\n\n");
+    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+    core.print_out("\t\t\t - Edward Valeev\n");
+
     if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
         # We always would like to print a little dipole information
         oeprop = core.OEProp(ciwfn)
@@ -2934,6 +2958,9 @@ def run_detci(name, **kwargs):
         core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
         core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
         core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+
+    ciwfn.cleanup_ci()
+    ciwfn.cleanup_dpd()
 
     optstash.restore()
     return ciwfn

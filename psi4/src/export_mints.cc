@@ -1010,6 +1010,7 @@ void export_mints(py::module& m)
         .def("get_tpdm", &detci::CIWavefunction::get_tpdm, "docstring")
         .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
         .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
+        .def("ci_nat_orbs", &detci::CIWavefunction::ci_nat_orbs, "docstring")
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
@@ -1020,7 +1021,8 @@ void export_mints(py::module& m)
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring")
         .def("cleanup_ci", &detci::CIWavefunction::cleanup_ci, "docstring")
-        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring");
+        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring")
+        .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
 
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) =
                                             &detci::CIvect::copy;

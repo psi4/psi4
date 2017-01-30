@@ -144,7 +144,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist, int repl_otf
             addr = subgr_lex_addr(subgraph->lvl,occs,nel_expl,Graph->num_orb);
 
             if (addr < 0) {
-               printf("(stringlist): Impossible string addr\n");
+              outfile->Printf("(stringlist): Impossible string addr\n");
             }
 
             if (repl_otf){
