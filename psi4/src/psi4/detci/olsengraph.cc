@@ -426,7 +426,7 @@ void olsengraph(struct olsen_graph *Graph, int ci_orbs, int num_el,
             if (print_lvl > 4) {
               outfile->Printf( "n1 = %d, n2 = %d, n3 = %d, n4 = %d\n",
                  n1, n2, n3, n4) ;
-              if (n2 < 0) printf("Error: n2 < 0 in form_strings()\n") ;
+              if (n2 < 0)outfile->Printf("Error: n2 < 0 in form_strings()\n") ;
             }
 
             Ras2.resize(n2) ;
@@ -556,11 +556,11 @@ void og_add_walk(int ras1_idx, int ras3_num, int ras4_num, int *occs,
    subgraph = Graph->sg[irrep] + code;
 
    if (subgraph == NULL) {
-      printf("Error (og_add_walk): NULL subgraph pointer\n");
+     outfile->Printf("Error (og_add_walk): NULL subgraph pointer\n");
       return;
       }
    if (code < 0) {
-      printf("Error (og_add_walk): negative RAS code\n");
+     outfile->Printf("Error (og_add_walk): negative RAS code\n");
       return;
       }
 
@@ -644,7 +644,7 @@ void og_fill(int num_el, int norb, int nirreps, int num_drc_orbs,
 
          subgraph = (Graph->sg)[irrep] + code;
          if (subgraph == NULL) {
-            printf("Error (fill_og): NULL subgraph pointer\n") ;
+           outfile->Printf("Error (fill_og): NULL subgraph pointer\n") ;
             return;
             }
 

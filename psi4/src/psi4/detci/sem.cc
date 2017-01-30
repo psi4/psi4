@@ -429,7 +429,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          for (j=0; Parameters_->Ms0 && j<L && !tmpi; j++) {
             l = H0block_->pair[j];
             if (l == -1) {
-               printf("(sem_iter): Warning: unpaired h0block member!\n");
+              outfile->Printf("(sem_iter): Warning: unpaired h0block member!\n");
                tmpi = 1;
                }
             tval = H0block_->H0b_diag[l][i];
@@ -840,7 +840,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             } /* end collapse_size > 1 */
 
         if (L2 != L3) {
-          printf("(sem_iter): L2 != L3.  Bad. \n");
+         outfile->Printf("(sem_iter): L2 != L3.  Bad. \n");
           outfile->Printf("(sem_iter): L2 != L3.  Bad. \n");
           }
 

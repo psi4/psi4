@@ -38,8 +38,10 @@
 ** University of Georgia
 */
 
-#include <cstdio>
 #include "psi4/detci/odometer.h"
+#include "psi4/psi4-dec.h"
+
+#include <cstdio>
 
 namespace psi { namespace detci {
 
@@ -234,9 +236,9 @@ void Odometer::print()
    int i ;
 
    for (i=length-1; i>=0; i--) {
-      printf("%d ", value[i]);
+     outfile->Printf("%d ", value[i]);
       }
-   printf("\n");
+  outfile->Printf("\n");
 }
  
 

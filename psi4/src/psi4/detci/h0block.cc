@@ -305,7 +305,7 @@ void CIWavefunction::H0block_gather(double **mat, int al, int bl, int cscode, in
    else if (cscode == 1)
       target = H0block_->s0b;
    else {
-      printf("(H0block_gather): invalid cscode\n");
+     outfile->Printf("(H0block_gather): invalid cscode\n");
       return;
       }
 
@@ -401,7 +401,7 @@ void CIWavefunction::H0block_setup(int num_blocks, int *Ia_code, int *Ib_code)
          }
       if (!found) {
          H0block_->blknum[member] = -1;
-         printf("(H0block_setup): Can't find CI block!\n");
+        outfile->Printf("(H0block_setup): Can't find CI block!\n");
          }
 
       } /* end loop over members of H0block */

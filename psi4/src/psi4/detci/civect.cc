@@ -426,7 +426,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
         buffer_size_ = maxbufsize;  // Why didn't I do it this way before?
     }                               /* end icore==0 */
     else {
-        printf("CIvect::set(): unrecognized option for icore = %d\n", icore_);
+       outfile->Printf("CIvect::set(): unrecognized option for icore = %d\n", icore_);
         return;
     }
 
@@ -674,7 +674,7 @@ void CIvect::symnormalize(double a, int tvec) {
     } /* end icore_ == 1 */
 
     else {
-        printf("(CIvect::symnorm): Only supports incore=1 at the moment\n");
+       outfile->Printf("(CIvect::symnorm): Only supports incore=1 at the moment\n");
         return;
     }
 }
@@ -1050,7 +1050,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
       } /* end icore==0 */
 
    else {
-      printf("(diag_mat_els): Unrecognized icore_ option!\n");
+     outfile->Printf("(diag_mat_els): Unrecognized icore_ option!\n");
       }
 }
 
@@ -1156,7 +1156,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
       } /* end icore==0 */
 
    else {
-      printf("(diag_mat_els): Unrecognized icore_ option!\n");
+     outfile->Printf("(diag_mat_els): Unrecognized icore_ option!\n");
       }
 }
 
@@ -1566,7 +1566,7 @@ void CIvect::symnorm(double a, int vecode, int gather_vec)
       } /* end case icore==0 */
 
    else {
-      printf("(CIvect::symnorm): Unrecognized icore option\n");
+     outfile->Printf("(CIvect::symnorm): Unrecognized icore option\n");
       return;
       }
 
@@ -1598,7 +1598,7 @@ double CIvect::zero_det(int iac, int ia, int ibc, int ib)
 
   blk = decode_[iac][ibc];
   tval = blocks_[blk][ia][ib];
-  printf("zero_det reports coefficient %12.6lf\n", tval);
+ outfile->Printf("zero_det reports coefficient %12.6lf\n", tval);
   tval = tval*tval;
   blocks_[blk][ia][ib] = 0.0;
 
@@ -1651,7 +1651,7 @@ void CIvect::buf_lock(double *a)
    int i,j,k;
 
    if (buf_locked_) {
-      printf("Warning (CIvect::buf_lock): CIvector is already locked!\n");
+     outfile->Printf("Warning (CIvect::buf_lock): CIvector is already locked!\n");
       }
 
    if (icore_ == 1) { /* whole vector in-core */
@@ -1808,7 +1808,7 @@ void CIvect::symmetrize(double phase, int iblock)
 
 
    else {
-      printf("(CIvect::symmetrize): Unrecognized icore option\n");
+     outfile->Printf("(CIvect::symmetrize): Unrecognized icore option\n");
       return;
       }
 
@@ -1898,7 +1898,7 @@ int CIvect::read(int ivect, int ibuf)
       }
 
    if (ivect < 0 || ibuf < 0) {
-      printf("(CIvect::read): Called with negative argument\n");
+     outfile->Printf("(CIvect::read): Called with negative argument\n");
       timer_off("CIWave: CIvect read");
       return(0);
       }
