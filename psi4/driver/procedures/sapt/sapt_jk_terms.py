@@ -250,6 +250,9 @@ def exchange(cache, jk, do_print=True):
 
 
 def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True):
+    """
+    Compute Ind20 and Exch-Ind20 quantities from a SAPT cache and JK object.
+    """
 
     if do_print:
         core.print_out("\n  ==> E20 Induction <== \n\n")
@@ -389,11 +392,6 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
     if do_response:
         core.print_out("\n   => Coupled Induction <= \n\n")
 
-        # core.print_out("   => CPHF Monomer A <= \n")
-        # x_B_MOA = cache["wfn_A"].cphf_solve([w_B_MOA], conv, maxiter, 2)[0]
-
-        # core.print_out("   => CPHF Monomer B <= \n")
-        # x_A_MOB = cache["wfn_B"].cphf_solve([w_A_MOB], conv, maxiter, 2)[0]
         x_B_MOA, x_A_MOB = _sapt_cpscf_solve(
             cache, jk, w_B_MOA, w_A_MOB, 20, 1.e-6)
 
@@ -422,6 +420,9 @@ def induction(cache, jk, do_print=True, maxiter=12, conv=1.e-8, do_response=True
 
 
 def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv):
+    """
+    Solve the SAPT CPHF (or CPKS) equations.
+    """
 
     # Make a preconditioner function
     P_A = core.Matrix(cache["eps_occ_A"].shape[0], cache["eps_vir_A"].shape[0])
@@ -470,8 +471,7 @@ def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv):
     core.print_out("   " + ("-" * sep_size) + "\n")
 
     tstart = time.time()
-    core.print_out("     %4s %12s     %12s     %9s\n" %
-                   ("Iter", "(A<-B)", "(B->A)", "Time [s]"))
+    core.print_out("     %4s %12s     %12s     %9s\n" % ("Iter", "(A<-B)", "(B->A)", "Time [s]"))
     core.print_out("   " + ("-" * sep_size) + "\n")
 
     start_resid = [rhsA.sum_of_squares(), rhsB.sum_of_squares()]
@@ -501,7 +501,7 @@ def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv):
                        (niter, valA, cA, valB, cB, time.time() - tstart))
         return [valA, valB]
 
-
+    # Compute the solver
     vecs, resid = solvers.cg_solver(
         [rhsA, rhsB], hessian_vec, apply_precon, maxiter=maxiter, rcond=conv, printlvl=0, printer=pfunc)
     core.print_out("   " + ("-" * sep_size) + "\n")

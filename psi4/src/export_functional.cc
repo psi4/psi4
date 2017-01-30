@@ -156,8 +156,14 @@ void export_functional(py::module &m)
                        std::string type) {
                         return VBase::build_V(basis, func, Process::environment.options, type);
                     })
-        .def("initialize", &VBase::initialize, "doctsring")
-        .def("finalize", &VBase::finalize, "doctsring")
+        .def("basis", &VBase::basis, "Returns the internal basis set.")
+        .def("functional", &VBase::functional, "Returns the interal superfunctional.")
+        .def("properties", &VBase::properties, "Returns the properties computer.")
+        .def("grid", &VBase::grid, "Returns the grid object.")
+        .def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.")
+        .def("nblocks", &VBase::nblocks, "Total number of blocks.")
+        .def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.")
+
         .def("set_D", &VBase::set_D, "Sets the internal density.")
         .def("Dao", &VBase::set_D, "Returns internal AO density.")
         .def("compute_V", &VBase::compute_V, "doctsring")
@@ -166,15 +172,15 @@ void export_functional(py::module &m)
              "Compute the DFT nuclear gradient contribution.")
         .def("compute_hessain", &VBase::compute_hessian,
              "Compute the DFT nuclear Hessian contribution.")
+
+        .def("set_print", &VBase::set_print, "Sets the print level of the object.")
+        .def("set_debug", &VBase::set_debug, "Sets the debug level of the object.")
+
         .def("initialize", &VBase::initialize, "Initializes the V object.")
         .def("finalize", &VBase::finalize, "Finalizes the V object.")
+        .def("print_header", &VBase::print_header, "Prints the objects header.");
 
-        .def("basis", &VBase::basis, "Returns the internal basis set.")
-        .def("functional", &VBase::functional, "Returns the interal superfunctional.")
-        .def("properties", &VBase::properties, "Returns the properties computer.")
-        .def("get_block", &VBase::get_block, "Returns the requested BlockOPoints.")
-        .def("nblocks", &VBase::nblocks, "Total number of blocks.")
-        .def("quadrature_values", &VBase::quadrature_values, "Returns the quadrature values.");
+
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
         .def("max_functions", &BasisFunctions::max_functions, "docstring")
@@ -184,10 +190,17 @@ void export_functional(py::module &m)
         .def("compute_functions", &BasisFunctions::compute_functions, "docstring")
         .def("basis_values", &BasisFunctions::basis_values, "docstring");
 
+    typedef void (PointFunctions::*matrix_set1)(SharedMatrix);
+    typedef void (PointFunctions::*matrix_set2)(SharedMatrix, SharedMatrix);
+
     py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions",
                                                                                 "docstring")
         .def("print_out", &PointFunctions::print, py::arg("OutFileRMR") = "outfile",
              py::arg("print") = 2, "docstring")
+        .def("ansatz", &PointFunctions::ansatz, "docstring")
+        .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
+        .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
+        .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
         .def("compute_points", &PointFunctions::compute_points, "docstring")
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
@@ -228,18 +241,20 @@ void export_functional(py::module &m)
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
 
-    py::class_<DFTGrid, std::shared_ptr<DFTGrid>>(m, "DFTGrid", "docstring")
+    py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
+        .def("print", &MolecularGrid::print, "Prints grid information.")
+        .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
+        .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
+        .def("max_points", &MolecularGrid::max_points, "Returns the maximum number of points in a block.")
+        .def("max_functions", &MolecularGrid::max_functions,
+             "Returns the maximum number of functions in a block.")
+        .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
+
+    py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
         .def_static("build",
                      [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
                          return DFTGrid(mol, basis, Process::environment.options);
-                     })
-        .def("print", &DFTGrid::print, "Prints grid information.")
-        .def("orientation", &DFTGrid::orientation, "Returns the orientation of the grid.")
-        .def("npoints", &DFTGrid::npoints, "Returns the number of grid points.")
-        .def("max_points", &DFTGrid::max_points, "Returns the maximum number of points in a block.")
-        .def("max_functions", &DFTGrid::max_functions,
-             "Returns the maximum number of functions in a block.")
-        .def("blocks", &DFTGrid::blocks, "Returns a list of blocks.");
+                     });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
         .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0,

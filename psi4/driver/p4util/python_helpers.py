@@ -30,7 +30,7 @@ import os
 import re
 import sys
 import uuid
-import subprocess
+import numpy as np
 
 from . import optproc
 from psi4.driver import qcdb
@@ -170,6 +170,38 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
     return jk
 
 core.JK.build = pybuild_JK
+
+## Grid Helpers
+
+def get_np_xyzw(Vpot):
+    """
+    Returns the x, y, z, and weights of a grid as a tuple of NumPy array objects.
+    """
+    x_list = []
+    y_list = []
+    z_list = []
+    w_list = []
+
+    # Loop over every block in the potenital
+    for b in range(Vpot.nblocks()):
+
+        # Obtain the block
+        block = Vpot.get_block(b)
+
+        # Obtain the x, y, and z coordinates along with the weight
+        x_list.append(block.x())
+        y_list.append(block.y())
+        z_list.append(block.z())
+        w_list.append(block.w())
+
+    x = np.hstack(x_list)
+    y = np.hstack(y_list)
+    z = np.hstack(z_list)
+    w = np.hstack(w_list)
+
+    return (x, y, z, w)
+
+core.VBase.get_np_xyzw = get_np_xyzw
 
 ## Python other helps
 

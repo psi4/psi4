@@ -138,7 +138,7 @@ def cg_solver(rhs_vec, hx_function, preconditioner, printer=None, printlvl=1, ma
         for x in active:
             alpha[x] = rz_old[x] / Ap_vec[x].vector_dot(p_vec[x])
             if np.isnan(alpha)[0]:
-                print("CG: Alpha is NaN for vector %d. Stopping vector." % x)
+                core.print_out("CG: Alpha is NaN for vector %d. Stopping vector." % x)
                 active_mask[x] = False
                 continue
 
