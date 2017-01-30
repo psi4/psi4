@@ -1,6 +1,11 @@
-#! Test if DGAS's orbital rotation code matches expected values
+#!   Test if DGAS's orbital rotation code matches expected values.
+#!   The first two calculations compute the X (symm A'') and A (symm A') states of HO2 in Cs
+#! by restricting the occupations of the two states.
+#!   The second two calculations compute the X and A states of HO2 in C1. Computation
+#! of the A state requires a rotation of the HOMO and SOMO by 90 degrees
+#! (i.e., by swapping these two orbitals). The orb_rotate() function accomplishes this.
 
-# Restrict occupations to compute lowest A'' state (X state)
+# Restrict occupations to compute CCSD/6-31G energy of X state (symm A'') of HO2 in Cs.
 set { 
     basis 6-31G
     reference rohf
@@ -30,7 +35,7 @@ compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 clean()
 
-# Restrict occupations to compute lowest A' state (A state)
+# Restrict occupations to compute CCSD/6-31G energy of A state (symm A') of HO2 in Cs.
 set {
     docc [6, 2]
     socc [1, 0]
@@ -44,7 +49,7 @@ compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
 clean()
 
-# Compute X state with symmetry turned off
+# Compute CCSD/6-31G energy of X state of HO2 in C1.
 set {
     docc [8]
     socc [1]
@@ -64,8 +69,9 @@ ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
-# Rotate orbitals to obtain A state in C1
-# Quick orbital rotation code
+# Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
+
+# Quick orbital rotation code.
 def orb_rotate(C, h, i, j, theta):
 
    if h > C.nirrep():
@@ -87,7 +93,7 @@ def orb_rotate(C, h, i, j, theta):
    C.nph[h][:, i] = xp
    C.nph[h][:, j] = yp
 
-# Rotate columns here
+# Rotate columns here.
 orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
 
 filename = core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".180.npz"
@@ -111,6 +117,7 @@ data["BasisSet"] = scf_wfn.basisset().name()
 data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
 np.savez(filename, **data)
 
+# Read in rotated guess and compute CCSD/6-31G energy of A state of HO2 in C1.
 set {
     guess read
 }
