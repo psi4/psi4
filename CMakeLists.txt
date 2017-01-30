@@ -40,7 +40,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, pybind11
+#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, PCMSolver, pybind11
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -148,15 +148,6 @@ include(autocmake_omp)
 include(custom_cxxstandard)
 include(custom_static_library)
 
-################################  Dependencies  ################################
-#These packages don't believe in configuration files...
-foreach(pkg in pcmsolver)
-   string(TOUPPER "${pkg}" PKG)
-   if(NOT ${PKG}_ROOT)
-      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external)
-   endif()
-endforeach()
-
 ################################  Main Project  ################################
 include(ExternalProject)
 ExternalProject_Add(psi4-core
@@ -190,7 +181,8 @@ ExternalProject_Add(psi4-core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
-              -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+              -DTargetHDF5_DIR=${TargetHDF5_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Dlibefp_DIR=${libefp_DIR}
@@ -198,8 +190,7 @@ ExternalProject_Add(psi4-core
               -Dgdma_DIR=${gdma_DIR}
               -DGTFock_DIR=${GTFock_DIR}
               -Dlibint_DIR=${libint_DIR}
-              -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
-              -DTargetHDF5_DIR=${TargetHDF5_DIR}
+              -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}

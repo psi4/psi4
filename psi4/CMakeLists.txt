@@ -102,12 +102,12 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using libint${ColourReset}: ${_loc} (version ${libint_VERSION})")
 
 if(${ENABLE_PCMSolver})
-    find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
-    #get_property(_loc TARGET PCMSolver::PCMSolver PROPERTY LOCATION)
-    #list(APPEND _addons ${_loc})
-    #message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
-#else()
-    #message(STATUS "Disabled PCMSolver")
+    find_package(PCMSolver CONFIG REQUIRED)
+    get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
+else()
+    message(STATUS "Disabled PCMSolver")
 endif ()
 
 if(APPLE)
