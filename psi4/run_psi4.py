@@ -133,6 +133,9 @@ if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
     os.environ["PSIDATADIR"] = data_dir
 
+if "@ENABLE_PCMSolver@" in ["ON", "YES", "TRUE"]:
+    sys.path.insert(1, "@PCMSolver_PYMOD@")
+
 ### Actually import psi4 and apply setup ###
 
 # Import installed psi4
