@@ -179,3 +179,10 @@ before_script:
 script:
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
+
+# safelist
+branches:
+  only:
+  - master
+  - 1.0.x
+  - libxc
