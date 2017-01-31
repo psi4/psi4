@@ -99,23 +99,26 @@ class CorrelationFactor;
 /// Evaluates the Boys function F_j(T)
 class Fjt {
 public:
-    Fjt();
-    virtual ~Fjt();
+    Fjt() { };
+
+    virtual ~Fjt() { };
+
     /** Computed F_j(T) for every 0 <= j <= J (total of J+1 doubles).
-        The user may read/write these values.
-        The values will be overwritten with the next call to this functions.
-        The pointer will be invalidated after the call to ~Fjt. */
-    virtual double *values(int J, double T) =0;
+     *  Output is to F
+     */
+    virtual void calculate(double * F, int J, double T) =0;
     virtual void set_rho(double /*rho*/) { }
 };
 
 /// Uses Taylor interpolation of up to 8-th order to compute the Boys function
 class Split_Fjt : public Fjt {
 public:
-    Split_Fjt(unsigned int jmax);
+    Split_Fjt(unsigned int maxJ);
+
     virtual ~Split_Fjt();
-    /// Implements Fjt::values()
-    double *values(int J, double T);
+
+    void calculate(double * F, int J, double T);
+
 private:
 
     bool initialized_;  /* Has the table been initialized */
@@ -124,33 +127,30 @@ private:
                            of m (max_m+1 columns) */
 	int max_T_;         /* Maximum T index stored (10*max T value) */
 	double max_Tval_;   /* Maximum T value stored */
-    int max_m_;         /* Maximum value of m in the table, depends on cutoff
-                                  and the number of terms in Taylor interpolation */
-    double *F_;         /* Here computed values of Fj(T) are stored */
+    int max_J_;         /* Maximum value of J in the table */
 };
 
 class GaussianFundamental : public Fjt {
 protected:
     std::shared_ptr<CorrelationFactor> cf_;
     double rho_;
-    double* value_;
 
 public:
     GaussianFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~GaussianFundamental();
 
-    virtual double* values(int J, double T) = 0;
+    virtual void calculate(double * F, int J, double T) = 0;
     void set_rho(double rho);
 };
 
-    /**
-     *  Solves \scp -\gamma r_{12}
-     */
+/**
+ *  Solves \scp -\gamma r_{12}
+ */
 class F12Fundamental : public GaussianFundamental {
 public:
     F12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12Fundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
 };
 
 /**
@@ -160,51 +160,51 @@ class F12ScaledFundamental : public GaussianFundamental {
 public:
     F12ScaledFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12ScaledFundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
 };
 
 class F12SquaredFundamental : public GaussianFundamental {
 public:
     F12SquaredFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12SquaredFundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
 };
 
 class F12G12Fundamental : public GaussianFundamental {
 private:
-    std::shared_ptr<Split_Fjt> Fm_;
+    Split_Fjt Fm_;
 public:
     F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12G12Fundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
 };
 
 class F12DoubleCommutatorFundamental : public GaussianFundamental {
 public:
     F12DoubleCommutatorFundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12DoubleCommutatorFundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
 };
 
 class ErfFundamental : public GaussianFundamental {
 private:
     double omega_;
-    std::shared_ptr<Split_Fjt> boys_;
+    Split_Fjt boys_;
 public:
     ErfFundamental(double omega, int max);
     virtual ~ErfFundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
     void setOmega(double omega) { omega_ = omega; }
 };
 
 class ErfComplementFundamental : public GaussianFundamental {
 private:
     double omega_;
-    std::shared_ptr<Split_Fjt> boys_;
+    Split_Fjt boys_;
 public:
     ErfComplementFundamental(double omega, int max);
     virtual ~ErfComplementFundamental();
-    double* values(int J, double T);
+    virtual void calculate(double * F, int J, double T);
     void setOmega(double omega) { omega_ = omega; }
 };
 

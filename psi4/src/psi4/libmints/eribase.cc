@@ -1670,7 +1670,8 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
                                   int nprim1, int nprim2, int nprim3, int nprim4,
                                   bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl)
 {
-    double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T, *F;
+    double F[am+deriv_lvl+1];
+    double zeta, eta, ooze, rho, poz, coef1, PQx, PQy, PQz, PQ2, Wx, Wy, Wz, o12, o34, T;
     double a1, a2, a3, a4;
     int p1, p2, p3, p4, i;
     size_t nprim = 0L;
@@ -1774,7 +1775,7 @@ static size_t fill_primitive_data(prim_data *PrimQuartet, Fjt *fjt,
 
                     T = rho * PQ2;
                     fjt->set_rho(rho);
-                    F = fjt->values(am + deriv_lvl, T);
+                    fjt->calculate(F, am + deriv_lvl, T);
 
                     for (i = 0; i <= am + deriv_lvl; ++i)
                         PrimQuartet[nprim].F[i] = F[i] * coef1;
@@ -2392,6 +2393,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     int nprim3;
     int nprim4;
     double A[3], B[3], C[3], D[3];
+    double F[am+1];
 
     A[0] = s1.center()[0];
     A[1] = s1.center()[1];
@@ -2550,7 +2552,7 @@ size_t TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
                         double T = rho * PQ2;
                         fjt_->set_rho(rho);
-                        double *F = fjt_->values(am, T);
+                        fjt_->calculate(F, am, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI * oon, 3.0 / 2.0) * exp(-a3 * a4 * oon * CD2) * c3 * c4;
@@ -2765,6 +2767,7 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
     int nprim4 = s4.nprimitive();
     size_t nprim;
 
+    double F[am+2];
     double A[3], B[3], C[3], D[3];
     A[0] = s1.center()[0];
     A[1] = s1.center()[1];
@@ -2902,7 +2905,7 @@ size_t TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4
                         libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                         double T = rho * PQ2;
-                        double *F = fjt_->values(am + 1, T);
+                        fjt_->calculate(F, am + 1, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI * oon, 3.0 / 2.0) * exp(-a3 * a4 * oon * CD2) * c3 * c4;
@@ -3103,6 +3106,7 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
     int nprim4 = s4.nprimitive();
     size_t nprim = 0;
 
+    double F[am+3];
     double A[3], B[3], C[3], D[3];
     A[0] = s1.center()[0];
     A[1] = s1.center()[1];
@@ -3238,7 +3242,7 @@ size_t TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4
                         libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                         double T = rho * PQ2;
-                        double *F = fjt_->values(am + 2, T);
+                        fjt_->calculate(F, am + 2, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI * oon, 3.0 / 2.0) * exp(-a3 * a4 * oon * CD2) * c3 * c4;
