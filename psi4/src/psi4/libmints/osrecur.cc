@@ -32,7 +32,6 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/wavefunction.h"   // for df
 #include "psi4/libmints/osrecur.h"
-#include "psi4/libmints/fjt.h"
 #include "psi4/libpsi4util/exception.h"
 
 using namespace psi;
@@ -171,7 +170,8 @@ void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double 
 }
 
 ObaraSaikaTwoCenterEFPRecursion::ObaraSaikaTwoCenterEFPRecursion(int max_am1, int max_am2):
-    max_am1_(max_am1), max_am2_(max_am2)
+    max_am1_(max_am1), max_am2_(max_am2),
+    boys_(max_am1+max_am2)
 {
     if (max_am1 < 0)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMVIRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
@@ -245,14 +245,13 @@ void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
+    double F[mmax+1];
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    Split_Fjt fjt(mmax);
-    fjt.calculate(F, mmax, u);
+    boys_.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -775,7 +774,6 @@ void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double
             }
         }
     }
-    delete[] F;
 }
 
 
@@ -876,7 +874,8 @@ void ObaraSaikaTwoCenterRecursion::compute(double PA[3], double PB[3], double ga
 }
 
 ObaraSaikaTwoCenterVIRecursion::ObaraSaikaTwoCenterVIRecursion(int max_am1, int max_am2):
-    max_am1_(max_am1), max_am2_(max_am2)
+    max_am1_(max_am1), max_am2_(max_am2),
+    boys_(max_am1 + max_am2_)
 {
     if (max_am1 < 0)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterVIRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
@@ -912,11 +911,10 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1];
+    double F[mmax+1];
 
     // Form Fm(U) from A20
-    Split_Fjt fjt(mmax);
-    fjt.calculate(F, mmax, u);
+    boys_.calculate(F, mmax, u);
 
     // Think we're having problems with values being left over.
     //zero_box(vi_, size_, size_, mmax + 1);
@@ -1040,9 +1038,6 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
             }
         }
     }
-
-    delete[] F;
-
 }
 
 void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2, double zetam)
@@ -1063,10 +1058,9 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
     double tmp = sqrt(zetam) * M_2_SQRTPI;
     // U from A21
     double u = zetam * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1];
+    double F[mmax+1];
 
-    Split_Fjt fjt(mmax);
-    fjt.calculate(F, mmax, u);
+    boys_.calculate(F, mmax, u);
 
     // Think we're having problems with values being left over.
     //zero_box(vi_, size_, size_, mmax + 1);
@@ -1195,9 +1189,6 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
             }
         }
     }
-
-    delete[] F;
-
 }
 
 ObaraSaikaTwoCenterVIDerivRecursion::ObaraSaikaTwoCenterVIDerivRecursion(int max_am1, int max_am2)
@@ -1233,14 +1224,13 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1];
+    double F[mmax+1];
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    Split_Fjt fjt(mmax);
-    fjt.calculate(F, mmax, u);
+    boys_.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -1441,7 +1431,6 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterVIDeriv2Recursion::ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2)
@@ -1485,14 +1474,13 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
+    double F[mmax+1];
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    Split_Fjt fjt(mmax);
-    fjt.calculate(F, mmax, u);
+    boys_.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -1824,7 +1812,6 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterElectricField::ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2)
@@ -1861,14 +1848,13 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
+    double F[mmax+1];
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    Split_Fjt fjt(mmax);
-    fjt.calculate(F, mmax, u);
+    boys_.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -2071,7 +2057,6 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterElectricFieldGradient::ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2)

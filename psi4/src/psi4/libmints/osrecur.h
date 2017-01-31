@@ -29,6 +29,8 @@
 #ifndef _psi_src_lib_libmints_osrecur_h
 #define _psi_src_lib_libmints_osrecur_h
 
+#include "psi4/libmints/fjt.h"
+
 namespace psi {
 
 /*! \ingroup MINTS
@@ -109,8 +111,7 @@ protected:
 
     double ***vi_;
 
-    // Forms Fm(U) from A20 (OS 1986)
-    void calculate_f(double *F, int n, double t);
+    Split_Fjt boys_;
 
 private:
     // No default constructor
@@ -300,8 +301,7 @@ protected:
     double*** yzz_;
     double*** zzz_;
 
-    // Forms Fm(U) from A20 (OS 1986)
-    void calculate_f(double *F, int n, double t);
+    Split_Fjt boys_;
 
 private:
     // No default constructor

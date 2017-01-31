@@ -56,6 +56,8 @@
 #ifndef _chemistry_qc_basis_fjt_h
 #define _chemistry_qc_basis_fjt_h
 
+#include <memory>
+
 // This table stores some common factors for the boys function
 // asymptotic form
 #define BOYS_LONGFAC_MAXN 50 // maximum value of nu stored
@@ -121,13 +123,14 @@ public:
 
 private:
 
-    bool initialized_;  /* Has the table been initialized */
-    double **grid_;     /* Table of "exact" Fm(T) values. Row index corresponds to
-                           values of T (max_T_+1 rows), column index to values
-                           of m (max_m+1 columns) */
-	int max_T_;         /* Maximum T index stored (10*max T value) */
-	double max_Tval_;   /* Maximum T value stored */
-    int max_J_;         /* Maximum value of J in the table */
+    static std::unique_ptr<double[]> grid_; /* Table of "exact" Fm(T) values. Row index corresponds to
+                                               values of T (max_T_+1 rows), column index to values
+                                               of m (max_m+1 columns) */
+    static int nrow_;       /* number of rows in the grid */
+    static int ncol_;       /* number of columns in the grid */
+    static int max_T_;        /* Maximum T index stored (10*max T value) */
+    static double max_Tval_;  /* Maximum T value stored */
+    static int max_J_;        /* Maximum value of J in the table */
 };
 
 class GaussianFundamental : public Fjt {

@@ -57,18 +57,21 @@
 #include "fjt.h"
 #include "wavefunction.h"
 #include "integralparameters.h"
-
-#include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cmath>
 
 using namespace psi;
-;
 
-const double oon[] = {0.0, 1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0/7.0, 1.0/8.0, 1.0/9.0, 1.0/10.0, 1.0/11.0};
 
+// Static variables of the Split_Fjt class
+std::unique_ptr<double[]> psi::Split_Fjt::grid_;
+int psi::Split_Fjt::max_T_ = 0;
+double psi::Split_Fjt::max_Tval_ = 0.0;
+int psi::Split_Fjt::max_J_ = 0;
+int psi::Split_Fjt::nrow_ = 0;
+int psi::Split_Fjt::ncol_ = 0;
 
 // calculates a value of the boys function. Slow, but accurate
 // n = J in other code
@@ -89,15 +92,15 @@ void calculate_f(double * F, int n, double t)
 
     if (t>20.0){
         t2 = 2*t;
-        et = exp(-t);
-        t = sqrt(t);
-        F[0] = K*erf(t)/t;
+        et = std::exp(-t);
+        t = std::sqrt(t);
+        F[0] = K*std::erf(t)/t;
         for(m=0; m<=n-1; m++){
             F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
         }
     }
     else {
-        et = exp(-t);
+        et = std::exp(-t);
         t2 = 2*t;
         m2 = 2*n;
         num = df[m2];
@@ -121,45 +124,36 @@ Split_Fjt::Split_Fjt(unsigned int maxJ)
 {
     // If we have a grid, it is big enough?
     // If not, free it
-	/*
-    if(initialized_ && max_m_ < mmax)
-    {
-        free_block(grid_);
-        grid_ = nullptr;
-        initialized_ = false;
-        max_m_ = 0;
-    }
-	*/
-
-	initialized_ = false;
+    if(grid_ && max_J_ < maxJ)
+        grid_.reset();
 
     // initialize the grid if we have to
-    if(!initialized_)
+    if(!grid_)
     {
         max_Tval_ = 43.0; // rough
         max_T_ = 430;
         max_J_ = maxJ;
 
-        // initialize the table
-        const int nrow = max_T_+1;
-        const int ncol = max_J_+8+1;  // +8 for the higher orders required by the taylor series
-        grid_ = block_matrix(nrow, ncol);
-
+        nrow_ = max_T_+1;
+        ncol_ = max_J_+8+1;  // +8 for the higher orders required by the taylor series
+        grid_ = std::unique_ptr<double[]>(new double[nrow_ * ncol_]);
 
         for(int i = 0; i <= max_T_; i++) 
         {
             // we are using a 0.1-spaced grid
             const double Tval = 0.1*static_cast<double>(i);
 
+            // start of the rown in the (flattened) grid
+            double * gridpt = grid_.get() + i*ncol_;
+
             // Fill in all the values for this row
-            calculate_f(grid_[i], max_J_+8, Tval);
+            calculate_f(gridpt, max_J_+8, Tval);
         }
     }
 }
 
 Split_Fjt::~Split_Fjt()
 {
-    free_block(grid_);
 }
 
 void Split_Fjt::calculate(double * F, int J, double T)
@@ -169,8 +163,8 @@ void Split_Fjt::calculate(double * F, int J, double T)
     {
         // long range asymptotic formula
         const double p = -(2*J+1);
-        const double T2 = pow(T, p);
-        F[J] = boys_longfac[J] * sqrt(T2);
+        const double T2 = std::pow(T, p);
+        F[J] = boys_longfac[J] * std::sqrt(T2);
     }
     else
     {
@@ -186,7 +180,7 @@ void Split_Fjt::calculate(double * F, int J, double T)
         // (but including a negative sign)
         const double dx = xi - T;
 
-        const double * gridpts = &(grid_[lookup_idx][J]);
+        const double * gridpts = grid_.get() + lookup_idx*ncol_ + J;
 
         F[J] = gridpts[0]
                 + dx * (                  gridpts[1]
@@ -203,7 +197,7 @@ void Split_Fjt::calculate(double * F, int J, double T)
     // calculate the others by downward recursion
     if(J > 0)
     {
-        const double eT = exp(-T);
+        const double eT = std::exp(-T);
         for(int m = J-1; m >= 0; m--)
             F[m] = (2*T*F[m+1] + eT)/(2*m+1);
     }
@@ -265,8 +259,8 @@ void F12Fundamental::calculate(double * F, int J, double T)
     for (int i=0; i<nparam; ++i) {
         omega = exps[i];
         rhotilde = omega / (rho_ + omega);
-        pfac = coeffs[i] * pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
-        expterm = exp(-rhotilde*T)*pfac;
+        pfac = coeffs[i] * std::pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
+        expterm = std::exp(-rhotilde*T)*pfac;
         for (int n=0; n<=J; ++n) {
             F[n] += expterm;
             expterm *= rhotilde;
@@ -308,8 +302,8 @@ void F12ScaledFundamental::calculate(double * F, int J, double T)
     for (int i=0; i<nparam; ++i) {
         omega = exps[i];
         rhotilde = omega / (rho_ + omega);
-        pfac = coeffs[i] * pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
-        expterm = exp(-rhotilde*T)*pfac;
+        pfac = coeffs[i] * std::pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
+        expterm = std::exp(-rhotilde*T)*pfac;
         for (int n=0; n<=J; ++n) {
             F[n] += expterm;
             expterm *= rhotilde;
@@ -349,8 +343,8 @@ void F12SquaredFundamental::calculate(double * F, int J, double T)
         for (int j=0; j<nparam; ++j) {
             omega = exps[i] + exps[j];
             rhotilde = omega / (rho_ + omega);
-            pfac = coeffs[i] * coeffs[j] * pow(M_PI/(rho_+omega), 1.5) * eri_correct;
-            expterm = exp(-rhotilde * T) * pfac;
+            pfac = coeffs[i] * coeffs[j] * std::pow(M_PI/(rho_+omega), 1.5) * eri_correct;
+            expterm = std::exp(-rhotilde * T) * pfac;
             for (int n=0; n<=J; ++n) {
                 F[n] += expterm;
                 expterm *= rhotilde;
@@ -393,12 +387,12 @@ void F12G12Fundamental::calculate(double * F, int J, double T)
         omega = exps[i];
         rhotilde = omega / (rho_ + omega);
         rhohat = rho_ / (rho_ + omega);
-        expterm = exp(-rhotilde * T);
+        expterm = std::exp(-rhotilde * T);
         pfac = 2*M_PI / (rho_ + omega) * coeffs[i] * expterm * eri_correct;
         Fm_.calculate(Fvals, J, rhohat * T);
         for (int n=0; n<=J; ++n) {
             boysterm = 0.0;
-            rhotilde_term = pow(rhotilde, n);
+            rhotilde_term = std::pow(rhotilde, n);
             rhohat_term = 1.0;
             for (int m=0; m<=n; ++m) {
                 binom_term = bc[n][m];   // bc is formed by Wavefunction::initialize_singletons
@@ -444,8 +438,8 @@ void F12DoubleCommutatorFundamental::calculate(double * F, int J, double T)
             omega = exps[i] + exps[j];
             rhotilde = omega / (rho_ + omega);
             rhohat = rho_ / (rho_ + omega);
-            expterm = exp(-rhotilde * T);
-            sqrt_term = sqrt(M_PI*M_PI*M_PI / pow(rho_ + omega, 5.0));
+            expterm = std::exp(-rhotilde * T);
+            sqrt_term = std::sqrt(M_PI*M_PI*M_PI / std::pow(rho_ + omega, 5.0));
             pfac = 4.0*coeffs[i] * coeffs[j] * exps[i] * exps[j] * sqrt_term * eri_correct * expterm;
 
             term1 = 1.5*rhotilde + rhotilde*rhohat*T;
@@ -486,7 +480,7 @@ void ErfFundamental::calculate(double * F, int J, double T)
     // build the erf constants
     double omegasq = omega_ * omega_;
     double T_prefac = omegasq / (omegasq + rho_);
-    double F_prefac = sqrt(T_prefac);
+    double F_prefac = std::sqrt(T_prefac);
     double erf_T = T_prefac * T;
 
     boys_.calculate(Fvals, J, erf_T);
@@ -523,7 +517,7 @@ void ErfComplementFundamental::calculate(double * F, int J, double T)
     // build the erf constants
     double omegasq = omega_ * omega_;
     double T_prefac = omegasq / (omegasq + rho_);
-    double F_prefac = sqrt(T_prefac);
+    double F_prefac = std::sqrt(T_prefac);
     double erf_T = T_prefac * T;
 
     boys_.calculate(Fvals, J, erf_T);
