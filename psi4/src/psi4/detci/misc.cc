@@ -29,6 +29,8 @@
     \ingroup DETCI
     \brief Enter brief description of file here 
 */
+#include "psi4/psi4-dec.h"
+
 #include <cstdio>
 
 namespace psi { namespace detci {
@@ -44,8 +46,8 @@ void transp_sigma(double **a, int rows, int cols, int phase)
    int i,j;
 
    if (rows != cols) {
-      printf("(transp_sigma): Error, rows != cols\n");
-      printf("\trows = %d, cols = %d\n", rows, cols);
+     outfile->Printf("(transp_sigma): Error, rows != cols\n");
+     outfile->Printf("\trows = %d, cols = %d\n", rows, cols);
       return;
       }
 

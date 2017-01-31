@@ -1,8 +1,10 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 (inplace)
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev (inplace)
+
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -11,17 +13,21 @@
     and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
     (doi: 10.1002/wcms.93)
 
+
                          Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:13:26 2016
+    Psi4 started on: Friday, 27 January 2017 07:13PM
 
-    Process ID:   7599
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  43481
+    PSIDATADIR: /Users/daniel/Gits/psixc/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -36,11 +42,20 @@ H 1 1.00 2 103.1
 set {
     basis           6-31G**
     reference       rhf
+    scf_type        pk
+    mcscf_algorithm ah
+    qc_module       detci
+    nat_orbs        True
+}
+
+cisd_energy, cisd_wfn = energy("CISD", return_wfn=True)
+psi4.clean()
+
+set {
     restricted_docc [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
 }
-
-casscf_energy = energy('casscf')
+casscf_energy = energy('casscf', ref_wfn=cisd_wfn)
 
 compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST
 --------------------------------------------------------------------------
@@ -48,15 +63,12 @@ compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST
     Specify the multiplicity in the molecule input block.
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:26 2016
-
-
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    524 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -90,14 +102,14 @@ compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
 
-  Basis Set: 6-31G**
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/6-31gss.gbs
     Number of shells: 12
     Number of basis function: 25
     Number of Cartesian functions: 25
@@ -119,43 +131,50 @@ compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     119] index = [             0,7140]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 105950 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.3361254517E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    0,    1 ]
-
-   @RHF iter   1:   -68.35488457246672   -6.83549e+01   2.48278e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -71.39794022308773   -3.04306e+00   1.69239e-01 DIIS
-   @RHF iter   3:   -75.77170401393613   -4.37376e+00   5.54856e-02 DIIS
-   @RHF iter   4:   -76.00006701597427   -2.28363e-01   1.31202e-02 DIIS
-   @RHF iter   5:   -76.01682090954422   -1.67539e-02   2.09674e-03 DIIS
-   @RHF iter   6:   -76.01724892558673   -4.28016e-04   5.46825e-04 DIIS
-   @RHF iter   7:   -76.01729488133479   -4.59557e-05   9.91002e-05 DIIS
-   @RHF iter   8:   -76.01729645124915   -1.56991e-06   2.21001e-05 DIIS
-   @RHF iter   9:   -76.01729655271551   -1.01466e-07   4.42514e-06 DIIS
-   @RHF iter  10:   -76.01729655526388   -2.54838e-09   2.88963e-07 DIIS
-   @RHF iter  11:   -76.01729655528263   -1.87441e-11   5.49384e-08 DIIS
-   @RHF iter  12:   -76.01729655528317   -5.40012e-13   7.01071e-09 DIIS
+   @RHF iter   0:   -75.82951076464855   -7.58295e+01   1.07180e-01 
+   @RHF iter   1:   -75.98146354647254   -1.51953e-01   1.99695e-02 
+   @RHF iter   2:   -76.00857007826824   -2.71065e-02   1.08486e-02 DIIS
+   @RHF iter   3:   -76.01702430446386   -8.45423e-03   1.29100e-03 DIIS
+   @RHF iter   4:   -76.01726906952128   -2.44765e-04   3.56773e-04 DIIS
+   @RHF iter   5:   -76.01729529303978   -2.62235e-05   6.56935e-05 DIIS
+   @RHF iter   6:   -76.01729650790381   -1.21486e-06   1.22886e-05 DIIS
+   @RHF iter   7:   -76.01729655357197   -4.56682e-08   2.33344e-06 DIIS
+   @RHF iter   8:   -76.01729655525068   -1.67871e-09   3.47337e-07 DIIS
+   @RHF iter   9:   -76.01729655528288   -3.22018e-11   3.20903e-08 DIIS
+   @RHF iter  10:   -76.01729655528300   -1.13687e-13   3.37776e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -172,7 +191,7 @@ compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST
        4A1     0.202466     2B2     0.292719     3B2     0.981164  
        5A1     1.056318     6A1     1.129179     2B1     1.168639  
        4B2     1.294985     7A1     1.413596     1A2     1.802875  
-       8A1     1.806916     3B1     1.918871     9A1     2.513248  
+       8A1     1.806916     3B1     1.918871     9A1     2.513249  
        5B2     2.537822     6B2     2.713577     2A2     2.921065  
        4B1     2.947486    10A1     3.291755    11A1     3.620730  
        7B2     3.874917    12A1     4.077740  
@@ -183,179 +202,370 @@ compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')  #TEST
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01729655528317
+  @RHF Final Energy:   -76.01729655528300
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8046866186390567
-    One-Electron Energy =                -122.3894311909410959
-    Two-Electron Energy =                  37.5674480170188758
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0172965552831670
+    One-Electron Energy =                -122.3894315296196282
+    Two-Electron Energy =                  37.5674483556975787
+    Total Energy =                        -76.0172965552829965
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0351
+     X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1532
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8819     Total:     0.8819
+     X:     0.0000      Y:     0.0000      Z:     0.8819     Total:     0.8819
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.2414     Total:     2.2414
+     X:     0.0000      Y:     0.0000      Z:     2.2414     Total:     2.2414
 
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-  Saving occupied orbitals to File 180.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:26 2016
-Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  12    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13773 non-zero two-electron integrals.
+        Stored in file 33.
+
 
          ---------------------------------------------------------
-                                 D E T C I  
+                          Configuration Interaction
+                            (a 'D E T C I' module)
 
-                             C. David Sherrill
-                             Matt L. Leininger
-                               18 June 1999
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
          ---------------------------------------------------------
 
 
-DETCI PARAMETERS: 
-   EX LEVEL      =        8      H0 BLOCKSIZE =      400
-   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
-   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   MAXITER       =       12      NUM PRINT    =       20
-   NUM ROOTS     =        1      ICORE        =        1
-   PRINT         =        1      FCI          =      yes
-   R CONV        = 1.00e-07      MIXED        =      yes
-   E CONV        = 1.00e-06      MIXED4       =      yes
-   OEI FILE      =       35      R4S          =       no
-   REPL OTF      =       no
-   TEI FILE      =       72      DIAG METHOD  =      SEM
-   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
-   S             =   0.0000      Ms0          =      yes
-   MAX NUM VECS  =       13
-   RESTART       =       no
-   GUESS VECTOR  =   D FILE      OPENTYPE     =     NONE
-   REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
-   LSE           =       no      LSE ITER     =        0
-   HD OTF        =      yes      NO DFILE     =       no
-   MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      MPN WIGNER   =       no
-   PERT Z        =   1.0000      FOLLOW ROOT  =        0
-   NUM THREADS   =        1
-   VECS WRITE    =       no      NUM VECS WRITE =      0
-   FILTER GUESS  =       no      SF RESTRICT  =       no
-   OPDM          =      yes      TRANS DENSITY=       no
+   ==> Parameters <==
 
-   FILES         =  50 51 52 53
+    EX LEVEL       =        2      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =       NO
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
 
-   EX ALLOW      =  1  1  1  1  1  1  1  1 
-   STATE AVERAGE =  1(1.00) 
+    EX ALLOW       =  1  1 
+    STATE AVERAGE  =  0(1.00) 
 
-ORBITALS:
-   NMO          =       25
-   FROZEN CORE  =        0      RESTR CORE   =        1
-   FROZEN VIRT  =        0      RESTR VIRT   =       18
-   DROPPED CORE =        1      DROPPED VIRT =       18
-   EXPLICIT CORE=        0      ORBS IN CI   =        6
-   NUM ALP      =        5      NUM BET      =        5
-   NUM ALP EXPL =        4      NUM BET EXPL =        4
-   IOPEN        =       no
+   ==> CI Orbital and Space information <==
 
-   DOCC            =   3   0   1   1 
-   SOCC            =   0   0   0   0 
-
-   FROZEN DOCC     =   0   0   0   0 
-   RESTRICTED DOCC =   1   0   0   0 
-   ACTIVE          =   3   0   1   2 
-   RESTRICTED UOCC =   8   2   3   5 
-   FROZEN UOCC     =   0   0   0   0 
-         ---------------------------------------------------------
-
+    RAS1 LVL      =        4      A RAS3 MAX    =        2
+    RAS1 MIN      =        8      B RAS3 MAX    =        2
+    A RAS1 LVL    =        4      RAS4 LVL      =       25
+    A RAS1 MIN    =        3      A RAS4 MAX    =        0
+    A RAS1 MAX    =        5      B RAS4 MAX    =        0
+    B RAS1 LVL    =        4      RAS4 MAX      =        0
+    B RAS1 MIN    =        3      A RAS34 MAX   =        2
+    B RAS1 MAX    =        5      B RAS34 MAX   =        2
+    RAS3 LVL      =        5      RAS34 MAX     =        2
+    RAS3 MAX      =        2
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       25    12     2     4     7
+                 Nmo       25    12     2     4     7
+               Ndocc        5     3     0     1     1
+               Nsocc        0     0     0     0     0
+   ------------------------------------------------------
+                       CI Spaces
+   ------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0
+                RAS1        5     3     0     1     1
+                RAS2        0     0     0     0     0
+                RAS3       20     9     2     3     6
+                RAS4        0     0     0     0     0
+      Active (total)       25    12     2     4     7
+        Dropped UOCC        0     0     0     0     0
+   ------------------------------------------------------
 
    ==> Setting up CI strings <==
 
-   There are 15 alpha and 15 beta strings
-   The CI space requires 65 (6.50E+01) determinants and 4 blocks
+    There are 2001 alpha and 2001 beta strings
+    The CI space requires 3831 (3.83E+03) determinants and 9 blocks
+
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** H0 Block Eigenvalue = -76.17567487
+
+Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
+Using 1 initial trial vectors
+Iter  0  Root  1 = -76.175674865   Delta_E -8.498E+01   Delta_C  5.712E-01  
+Iter  1  Root  1 = -76.219434320   Delta_E -4.376E-02   Delta_C  4.860E-02  
+Iter  2  Root  1 = -76.219796775   Delta_E -3.625E-04   Delta_C  1.504E-02  
+Iter  3  Root  1 = -76.219843937   Delta_E -4.716E-05   Delta_C  3.535E-03  
+Iter  4  Root  1 = -76.219847196   Delta_E -3.259E-06   Delta_C  8.097E-04  
+Iter  5  Root  1 = -76.219847432   Delta_E -2.359E-07   Delta_C  2.823E-04  
+Iter  6  Root  1 = -76.219847448   Delta_E -1.603E-08   Delta_C  7.483E-05 c
+
+* ROOT 1 CI total energy = -76.2198474477533
+
+   The 20 most important determinants:
+
+    *   1    0.973608  (  475,  475)  1A1X  2A1X  3A1X  1B1X  1B2X  
+    *   2   -0.047868  (  503,  503)  1A1X  2A1X  3A1X  1B2X  2B1X  
+    *   3   -0.038770  (  506,  506)  1A1X  2A1X  3A1X  1B1X  2B2X  
+    *   4   -0.031728  (  482,  482)  1A1X  2A1X  1B1X  1B2X  6A1X  
+    *   5   -0.027070  (  507,  507)  1A1X  2A1X  3A1X  1B1X  3B2X  
+    *   6   -0.025589  (  482,  503)  1A1X  2A1X  3A1B  1B1A  1B2X  6A1A  2B1B  
+    *   7   -0.025589  (  503,  482)  1A1X  2A1X  3A1A  1B1B  1B2X  6A1B  2B1A  
+    *   8    0.022976  (  503,  508)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
+    *   9    0.022976  (  508,  503)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  4B2A  
+    *  10    0.022863  (  503,  506)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
+    *  11    0.022863  (  506,  503)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
+    *  12   -0.022767  ( 1011, 1011)  1A1X  2A1X  3A1X  1B1X  5A1X  
+    *  13   -0.022682  (  508,  508)  1A1X  2A1X  3A1X  1B1X  4B2X  
+    *  14   -0.022588  (  476,  476)  1A1X  2A1X  1B1X  1B2X  4A1X  
+    *  15   -0.021958  (  506,  508)  1A1X  2A1X  3A1X  1B1X  2B2A  4B2B  
+    *  16   -0.021958  (  508,  506)  1A1X  2A1X  3A1X  1B1X  2B2B  4B2A  
+    *  17    0.021325  (  476,  506)  1A1X  2A1X  3A1B  1B1X  1B2A  4A1A  2B2B  
+    *  18    0.021325  (  506,  476)  1A1X  2A1X  3A1A  1B1X  1B2B  4A1B  2B2A  
+    *  19   -0.020580  ( 1024, 1024)  1A1X  2A1X  1B1X  1B2X  3B2X  
+    *  20   -0.018744  ( 1010, 1010)  1A1X  2A1X  3A1X  1B1X  4A1X  
+
+
+
+   Computing CI Natural Orbitals
+   !Warning: New orbitals will be sorted by occuption number,
+   orbital spaces (occ/act/vir) may change.
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  12    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13773 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+         ---------------------------------------------------------
+                Multi-Configurational Self-Consistent Field
+                            (a 'D E T C I' module)
+
+                 Daniel G. A. Smith, C. David Sherrill, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        8      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       12      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-07      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =   D FILE      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       13      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       25    12     2     4     7
+                 Nmo       25    12     2     4     7
+               Ndocc        5     3     0     1     1
+               Nsocc        0     0     0     0     0
+   ------------------------------------------------------
+                        MCSCF Spaces
+   ------------------------------------------------------
+         Frozen DOCC        0     0     0     0     0
+     Restricted DOCC        1     1     0     0     0
+              Active        6     3     0     1     2
+     Restricted UOCC       18     8     2     3     5
+         Frozen UOCC        0     0     0     0     0
+   ------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 15 alpha and 15 beta strings
+    The CI space requires 65 (6.50E+01) determinants and 4 blocks
 
 
    ==> Setting up MCSCF integrals <==
 
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 105950 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):              3200
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
 
    ==> Starting MCSCF iterations <==
 
-                        Total Energy        Delta E      RMS Grad   NCI
+        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
+   @MCSCF  1:    -76.072259447914   -7.6072e+01  9.69e-03  4.47e-14    1    1  Initial CI
+   @MCSCF  2:    -76.073626023341   -1.3666e-03  3.06e-03  2.81e-06    6    1  TS
+   @MCSCF  3:    -76.073797573887   -1.7155e-04  1.28e-03  7.99e-07    6    1  TS
+   @MCSCF  4:    -76.073838741982   -4.1168e-05  8.24e-04  2.53e-07    6    1  TS, DIIS
+   @MCSCF  5:    -76.073852990568   -1.4249e-05  5.24e-04  1.22e-07    6    1  TS, DIIS
+   @MCSCF  6:    -76.073861306642   -8.3161e-06  3.46e-04  1.06e-07    6    1  TS, DIIS
+   @MCSCF  7:    -76.073863518895   -2.2123e-06  1.71e-04  1.52e-07    6    1  TS, DIIS
+   @MCSCF  8:    -76.073864870342   -1.3514e-06  3.53e-05  5.59e-08    6    1  TS, DIIS
+   @MCSCF  9:    -76.073864941220   -7.0878e-08  4.86e-05  1.98e-08    6    1  TS, DIIS
+      !Warning. Augmented Hessian did not converge. Taking an approx step.
+   @MCSCF 10:    -76.073864994348   -5.3128e-08  1.50e-05  1.12e-08    6   16  TS, DIIS
+      !Warning. Augmented Hessian did not converge. Taking an approx step.
+   @MCSCF 11:    -76.073864995156   -8.0848e-10  7.76e-06  4.92e-09    6   16  TS, DIIS
 
-   @MCSCF Iter   1:  -76.02993400974383   -1.2637e-02   9.0407e-03   1   Initial CI
-   @MCSCF Iter   2:  -76.06895453744022   -3.9021e-02   1.2293e-02   9   APPROX
-   @MCSCF Iter   3:  -76.07303819968908   -4.0837e-03   4.0475e-03   7   APPROX
-   @MCSCF Iter   4:  -76.07365002735702   -6.1183e-04   1.5715e-03   7   APPROX
-   @MCSCF Iter   5:  -76.07377666913578   -1.2664e-04   8.6198e-04   7   APPROX, DIIS
-   @MCSCF Iter   6:  -76.07382713310184   -5.0464e-05   6.1418e-04   7   APPROX, DIIS
-   @MCSCF Iter   7:  -76.07383432103029   -7.1879e-06   4.0875e-04   6   APPROX, DIIS
-   @MCSCF Iter   8:  -76.07384701966481   -1.2699e-05   2.6732e-04   6   APPROX, DIIS
-   @MCSCF Iter   9:  -76.07386199516125   -1.4975e-05   1.5245e-04   6   APPROX, DIIS
-   @MCSCF Iter  10:  -76.07386492373843   -2.9286e-06   8.4825e-05   6   APPROX, DIIS
-   @MCSCF Iter  11:  -76.07386498547316   -6.1735e-08   3.0814e-05   5   APPROX, DIIS
+          @MCSCF has converged!
 
-       MCSCF has converged!
+   @MCSCF Final Energy:  -76.073864995156455
 
-   @MCSCF Final Energy:   -76.073864985473165
+   ==> Energetics <==
 
-
-   => Energetics <=
-
-   SCF energy =              -76.017296555283167
-   Total CI energy =         -76.073864985473165
-
-
-   CI Root  1 energy =       -76.073864985473165
+    SCF energy =            0.000000000000000
+    Total CI energy =     -76.073864995156455
 
 
-The 20 most important determinants
+   ==> CI root 0 information <==
 
-    1   -0.986833  (    3,    3)  2A1X  3A1X  1B1X  1B2X  
-    2    0.080301  (    6,    6)  2A1X  3A1X  1B1X  2B2X  
-    3    0.052780  (    4,    4)  2A1X  4A1X  1B1X  1B2X  
-    4   -0.051072  (    4,    6)  2A1X  3A1B  4A1A  1B1X  1B2A  2B2B  
-    5   -0.051072  (    6,    4)  2A1X  3A1A  4A1B  1B1X  1B2B  2B2A  
-    6    0.032182  (    4,    5)  2A1A  3A1B  4A1X  1B1X  1B2X  
-    7    0.032182  (    5,    4)  2A1B  3A1A  4A1X  1B1X  1B2X  
-    8   -0.031035  (    5,    6)  2A1B  3A1X  4A1A  1B1X  1B2A  2B2B  
-    9   -0.031035  (    6,    5)  2A1A  3A1X  4A1B  1B1X  1B2B  2B2A  
-   10    0.030833  (    9,    9)  2A1X  3A1X  4A1X  1B1X  
-   11    0.030041  (    5,    5)  3A1X  4A1X  1B1X  1B2X  
-   12    0.028952  (   10,   10)  2A1X  1B1X  1B2X  2B2X  
-   13    0.026532  (    9,   10)  2A1X  3A1A  4A1A  1B1X  1B2B  2B2B  
-   14    0.026532  (   10,    9)  2A1X  3A1B  4A1B  1B1X  1B2A  2B2A  
-   15   -0.024540  (    3,    7)  2A1X  3A1A  4A1B  1B1X  1B2A  2B2B  
-   16   -0.024540  (    7,    3)  2A1X  3A1B  4A1A  1B1X  1B2B  2B2A  
-   17    0.019856  (    9,   11)  2A1A  3A1X  4A1A  1B1X  1B2B  2B2B  
-   18    0.019856  (   11,    9)  2A1B  3A1X  4A1B  1B1X  1B2A  2B2A  
-   19    0.017609  (   11,   11)  3A1X  1B1X  1B2X  2B2X  
-   20    0.015798  (   13,   13)  2A1X  3A1X  4A1X  1B2X  
+    CI Root  0 energy =   -76.073864995156455
 
+   Natural occupation numbers:
+
+        B1   1.999341        A1   1.998802        A1   1.976077
+        B2   1.973937        B2   0.026628        A1   0.025216
+
+
+   The 20 most important determinants:
+
+    *   1   -0.987032  (    3,    3)  2A1X  3A1X  1B1X  1B2X  
+    *   2    0.080374  (    6,    6)  2A1X  3A1X  1B1X  2B2X  
+    *   3    0.068576  (    4,    4)  2A1X  4A1X  1B1X  1B2X  
+    *   4   -0.057847  (    4,    6)  2A1X  3A1B  4A1A  1B1X  1B2A  2B2B  
+    *   5   -0.057847  (    6,    4)  2A1X  3A1A  4A1B  1B1X  1B2B  2B2A  
+    *   6    0.031068  (    9,   10)  2A1X  3A1A  4A1A  1B1X  1B2B  2B2B  
+    *   7    0.031068  (   10,    9)  2A1X  3A1B  4A1B  1B1X  1B2A  2B2A  
+    *   8    0.030845  (    9,    9)  2A1X  3A1X  4A1X  1B1X  
+    *   9    0.027561  (   10,   10)  2A1X  1B1X  1B2X  2B2X  
+    *  10   -0.026779  (    3,    7)  2A1X  3A1A  4A1B  1B1X  1B2A  2B2B  
+    *  11   -0.026779  (    7,    3)  2A1X  3A1B  4A1A  1B1X  1B2B  2B2A  
+    *  12    0.020860  (    4,    5)  2A1A  3A1B  4A1X  1B1X  1B2X  
+    *  13    0.020860  (    5,    4)  2A1B  3A1A  4A1X  1B1X  1B2X  
+    *  14    0.018980  (   11,   11)  3A1X  1B1X  1B2X  2B2X  
+    *  15    0.015798  (   13,   13)  2A1X  3A1X  4A1X  1B2X  
+    *  16   -0.015335  (    5,    6)  2A1B  3A1X  4A1A  1B1X  1B2A  2B2B  
+    *  17   -0.015335  (    6,    5)  2A1A  3A1X  4A1B  1B1X  1B2B  2B2A  
+    *  18    0.014417  (    5,    5)  3A1X  4A1X  1B1X  1B2X  
+    *  19   -0.012923  (    7,    7)  2A1X  4A1X  1B1X  2B2X  
+    *  20    0.011552  (    9,   11)  2A1A  3A1X  4A1A  1B1X  1B2B  2B2B  
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the CASSCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0351
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2208
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8143     Total:     0.8143
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.0696     Total:     2.0696
 
 	CASSCF Energy.....................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

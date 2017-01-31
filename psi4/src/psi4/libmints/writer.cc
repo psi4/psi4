@@ -1417,6 +1417,42 @@ void MOWriter::write_mos(Molecule & mol){
 
     CharacterTable ct = mol.point_group()->char_table();
 
+    BasisSet& basisset = *wavefunction_->basisset().get();
+    
+    std::vector<std::string> ao_labels;
+    for (int s = 0; s < basisset.nshell(); s++) {
+        GaussianShell shell = basisset.shell(s);
+        int center = shell.ncenter()+1;
+        int am = shell.am();
+        char amchar = shell.amchar();
+        std::string basename = mol.symbol(shell.ncenter()) + std::to_string(center) + " ";
+        basename += char(amchar);
+       
+        if (shell.is_pure()) {
+            ao_labels.push_back(basename+"0");
+            for (int i = 0; i < am; i++) {
+                ao_labels.push_back(basename + "+" + std::to_string(i+1));
+                ao_labels.push_back(basename + "-" + std::to_string(i+1));
+            }
+            continue;
+        }
+        
+        for (int j = 0; j < am+1; j++) {
+            int lx = am - j;
+            for (int lz = 0; lz < j+1; lz++) {
+                int ly = j - lz;
+                std::string x = "";
+                for (int count = 0; count < lx; count++) x+="x";
+                std::string y = "";
+                for (int count = 0; count < ly; count++) y+="y";
+                std::string z = "";
+                for (int count = 0; count < lz; count++) z+="z";
+                std::string name = basename + x + y + z;
+                ao_labels.push_back(basename+x+y+z);
+            }
+        }
+    }
+
     // print mos (5 columns)
     int ncols = 5;
     int ncolsleft = nmo % ncols;
@@ -1427,7 +1463,7 @@ void MOWriter::write_mos(Molecule & mol){
     for (int i = 0; i < nrows; i++) {
 
         // print blank space
-        outfile->Printf("     ");
+        outfile->Printf("                ");
         // print mo number
         for (int j = 0; j < ncols; j++){
             outfile->Printf("%13d",count+j+1);
@@ -1436,8 +1472,8 @@ void MOWriter::write_mos(Molecule & mol){
         outfile->Printf("\n");
         // print orbitals
         for (int mu = 0; mu < nso; mu++) {
-            // print ao number
-            outfile->Printf("%5i",mu+1);
+            // print ao labels
+            outfile->Printf(" %-4d %-10s",mu+1,ao_labels[mu].c_str());
             for (int j = 0; j < ncols; j++){
 
                 outfile->Printf("%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
@@ -1446,19 +1482,19 @@ void MOWriter::write_mos(Molecule & mol){
         }
         outfile->Printf("\n");
         // print energy
-        outfile->Printf(" Ene ");
+        outfile->Printf("            Ene ");
         for (int j = 0; j < ncols; j++){
             outfile->Printf("%13.7lf",eps[ map[count + j] ]);
         }
         outfile->Printf("\n");
         // print symmetry
-        outfile->Printf(" Sym ");
+        outfile->Printf("            Sym ");
         for (int j = 0; j < ncols; j++){
             outfile->Printf("%13s",ct.gamma(sym[map[count+j]]).symbol());
         }
         outfile->Printf("\n");
         // print occupancy
-        outfile->Printf(" Occ ");
+        outfile->Printf("            Occ ");
         for (int j = 0; j < ncols; j++){
             outfile->Printf("%13d",occ[map[count+j]]);
         }
@@ -1472,7 +1508,7 @@ void MOWriter::write_mos(Molecule & mol){
     if ( ncolsleft > 0 ) {
 
         // print blank space
-        outfile->Printf("     ");
+        outfile->Printf("               ");
         // print mo number
         for (int j = 0; j < ncolsleft; j++){
             outfile->Printf("%13d",count+j+1);
@@ -1481,8 +1517,8 @@ void MOWriter::write_mos(Molecule & mol){
         outfile->Printf("\n");
         // print orbitals
         for (int mu = 0; mu < nso; mu++) {
-            // print ao number
-            outfile->Printf("%5i",mu+1);
+            // print ao labels
+            outfile->Printf(" %-4d %-10s",mu+1,ao_labels[mu].c_str());
             for (int j = 0; j < ncolsleft; j++){
                 outfile->Printf("%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
             }
@@ -1490,18 +1526,18 @@ void MOWriter::write_mos(Molecule & mol){
         }
         outfile->Printf("\n");
         // print energy
-        outfile->Printf(" Ene ");
+        outfile->Printf("            Ene ");
         for (int j = 0; j < ncolsleft; j++){
             outfile->Printf("%13.7lf",eps[ map[count + j] ]);
         }
         outfile->Printf("\n");
-        outfile->Printf(" Sym ");
+        outfile->Printf("            Sym ");
         for (int j = 0; j < ncolsleft; j++){
             outfile->Printf("%13s",ct.gamma(sym[map[count+j]]).symbol());
         }
         outfile->Printf("\n");
         // print occupancy
-        outfile->Printf(" Occ ");
+        outfile->Printf("            Occ ");
         for (int j = 0; j < ncolsleft; j++){
             outfile->Printf("%13d",occ[map[count+j]]);
         }

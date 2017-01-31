@@ -164,6 +164,7 @@ void CIvect::common_init(void) {
     cur_size_ = 0;
     first_unit_ = 0;
     print_lvl_ = 0;
+    fopen_ = false;
 }
 
 void CIvect::set(int incor, int maxvect, int nunits, int funit,
@@ -425,7 +426,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
         buffer_size_ = maxbufsize;  // Why didn't I do it this way before?
     }                               /* end icore==0 */
     else {
-        printf("CIvect::set(): unrecognized option for icore = %d\n", icore_);
+       outfile->Printf("CIvect::set(): unrecognized option for icore = %d\n", icore_);
         return;
     }
 
@@ -673,7 +674,7 @@ void CIvect::symnormalize(double a, int tvec) {
     } /* end icore_ == 1 */
 
     else {
-        printf("(CIvect::symnorm): Only supports incore=1 at the moment\n");
+       outfile->Printf("(CIvect::symnorm): Only supports incore=1 at the moment\n");
         return;
     }
 }
@@ -1049,7 +1050,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
       } /* end icore==0 */
 
    else {
-      printf("(diag_mat_els): Unrecognized icore_ option!\n");
+     outfile->Printf("(diag_mat_els): Unrecognized icore_ option!\n");
       }
 }
 
@@ -1155,7 +1156,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
       } /* end icore==0 */
 
    else {
-      printf("(diag_mat_els): Unrecognized icore_ option!\n");
+     outfile->Printf("(diag_mat_els): Unrecognized icore_ option!\n");
       }
 }
 
@@ -1565,7 +1566,7 @@ void CIvect::symnorm(double a, int vecode, int gather_vec)
       } /* end case icore==0 */
 
    else {
-      printf("(CIvect::symnorm): Unrecognized icore option\n");
+     outfile->Printf("(CIvect::symnorm): Unrecognized icore option\n");
       return;
       }
 
@@ -1597,7 +1598,7 @@ double CIvect::zero_det(int iac, int ia, int ibc, int ib)
 
   blk = decode_[iac][ibc];
   tval = blocks_[blk][ia][ib];
-  printf("zero_det reports coefficient %12.6lf\n", tval);
+ outfile->Printf("zero_det reports coefficient %12.6lf\n", tval);
   tval = tval*tval;
   blocks_[blk][ia][ib] = 0.0;
 
@@ -1650,7 +1651,7 @@ void CIvect::buf_lock(double *a)
    int i,j,k;
 
    if (buf_locked_) {
-      printf("Warning (CIvect::buf_lock): CIvector is already locked!\n");
+     outfile->Printf("Warning (CIvect::buf_lock): CIvector is already locked!\n");
       }
 
    if (icore_ == 1) { /* whole vector in-core */
@@ -1807,7 +1808,7 @@ void CIvect::symmetrize(double phase, int iblock)
 
 
    else {
-      printf("(CIvect::symmetrize): Unrecognized icore option\n");
+     outfile->Printf("(CIvect::symmetrize): Unrecognized icore option\n");
       return;
       }
 
@@ -1834,19 +1835,20 @@ double ** CIvect::blockptr(int blknum)
 **
 ** Returns: none
 */
-void CIvect::init_io_files(bool open_old)
-{
-   int i;
+void CIvect::init_io_files(bool open_old) {
+    int i;
 
-   for (i=0; i<nunits_; i++) {
-     if (!psio_open_check((ULI) units_[i])) {
-       if (open_old) psio_open((ULI) units_[i], PSIO_OPEN_OLD);
-       else psio_open((ULI) units_[i], PSIO_OPEN_NEW);
-     }
-   }
+    for (i = 0; i < nunits_; i++) {
+        if (!psio_open_check((ULI)units_[i])) {
+            if (open_old) {
+                psio_open((ULI)units_[i], PSIO_OPEN_OLD);
+            } else {
+                psio_open((ULI)units_[i], PSIO_OPEN_NEW);
+            }
+        }
+    }
+    fopen_ = true;
 }
-
-
 
 /*
 ** CIvect::close_io_files()
@@ -1856,17 +1858,18 @@ void CIvect::init_io_files(bool open_old)
 **
 ** Returns: none
 */
-void CIvect::close_io_files(int keep)
-{
-   int i;
+void CIvect::close_io_files(int keep) {
 
-   for (i=0; i<nunits_; i++) {
-     // rclose(units[i], keep ? 3 : 4); // old way
-     psio_close(units_[i], keep); // new way
-   }
+    // Nothing to do if its already closed
+    if (!fopen_) {
+        return;
+    }
+
+    for (size_t i = 0; i < nunits_; i++) {
+        psio_close(units_[i], keep);
+    }
+    fopen_ = false;
 }
-
-
 
 /*
 ** CIvect::read(): Read in a section of a CI vector from external storage.
@@ -1895,7 +1898,7 @@ int CIvect::read(int ivect, int ibuf)
       }
 
    if (ivect < 0 || ibuf < 0) {
-      printf("(CIvect::read): Called with negative argument\n");
+     outfile->Printf("(CIvect::read): Called with negative argument\n");
       timer_off("CIWave: CIvect read");
       return(0);
       }
@@ -1952,7 +1955,6 @@ int CIvect::write(int ivect, int ibuf)
    //    timer_off("CIWave: CIvect write");
    //    return(0);
    //    }
-
 
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;

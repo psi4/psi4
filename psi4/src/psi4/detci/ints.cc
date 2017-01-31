@@ -147,7 +147,7 @@ void CIWavefunction::setup_dfmcscf_ints() {
 void CIWavefunction::transform_mcscf_integrals(bool approx_only) {
     if (Parameters_->mcscf_type == "DF") {
         transform_dfmcscf_ints(approx_only);
-    } 
+    }
     else if (Parameters_->mcscf_type == "AO")
         transform_mcscf_ints_ao(approx_only);
     else {
@@ -386,7 +386,7 @@ void CIWavefunction::setup_mcscf_ints_ao()
     outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
 
     timer_on("CIWave: Setup MCSCF INTS AO");
-    std::string scf_type = options_.get_str("SCF_TYPE"); 
+    std::string scf_type = options_.get_str("SCF_TYPE");
     if(scf_type == "GTFOCK")
     {
  #ifdef HAVE_JK_FACTORY
@@ -423,7 +423,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     ///Perform a integral transformation using jk object
     ///KPH got this idea from Hohenstein's AO-CASSCF paper.
     ///The goal is to use direct scf algorithm for computing the transformed integrals
-    ///This takes advantage of sparsity and allows for larger scale casscf calculations.  
+    ///This takes advantage of sparsity and allows for larger scale casscf calculations.
 
     /// J(D)_{mu nu} = (mu nu | rho sigma ) D_{rho sigma}
     ///Step 1:  Form a density for every active orbital ie
@@ -450,7 +450,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     if (nirrep_ > 1) {
         Crot = SharedMatrix(new Matrix(nso_, nrot));
         timer_on("CIWave: Transform C matrix from SO to AO");
-   
+
         SharedMatrix Cso_rot = get_orbitals("ROT");
         int nao = AO2SO_->rowspi()[0];
 
@@ -467,7 +467,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
                 C_DGEMM('N', 'N', nao, nrotpih, hnso, 1.0, Up[0], hnso, CSOp[0],
                         nrotpih, 0.0, &Crotp[0][offset], nrot);
                 offset += nrotpih;
-            } 
+            }
         }
 
         //std::vector<int> nmo_offset(nirrep_, 0);
@@ -483,10 +483,10 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
         //    for (int i = CalcInfo_->frozen_docc[h]; i < nmopi_[h] - CalcInfo_->frozen_uocc[h]; ++i) {
         //        size_t nao = nso_;
         //        size_t nso = nsopi_[h];
-    
+
         //        if (!nso) continue;
         //        int index = nmo_offset[h] + i;
-    
+
         //        C_DGEMV('N', nao, nso, 1.0, AO2SO_->pointer(h)[0], nso, &Ca_->pointer(h)[0][i],
         //                nmopi_[h], 0.0, &Crot->pointer()[0][index], nrot);
         //    }
@@ -504,13 +504,13 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
         }
         orbnum += CalcInfo_->rstr_uocc[h];
     }
-    
+
     SharedMatrix Cact(new Matrix(nso_, nact));
     for (size_t v = 0; v < nact; v++) {
         SharedVector Crot_vec = Crot->get_column(0, active_abs[v]);
         Cact->set_column(0, v, Crot_vec);
     }
-    
+
     timer_on("CIWave: Forming Active Psuedo Density");
     /// Step 1:  D_{mu nu} ^{tu} = C_{mu t} C_{nu u} forall t, u in active
     std::vector<std::tuple<int, int, SharedMatrix, SharedMatrix>> D_vec;
@@ -548,7 +548,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     SharedMatrix casscf_ints(new Matrix("ALL Active", nrot * nact, nact * nact));
 
     ///Step 3:  Fill the integrals for SOSCF in_core
-    ///TODO: Figure out WTF is going on with ordering.  
+    ///TODO: Figure out WTF is going on with ordering.
     /// For LARGE (>40) active spaces, it is possible that N*A^3 might become too big
     timer_on("CIWave: Filling the (pu|xy) integrals");
     for(int D_tasks = 0; D_tasks < D_vec.size(); D_tasks++)
@@ -557,7 +557,7 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
         int j = std::get<1>(D_vec[D_tasks]);
         SharedMatrix J = jk_->J()[D_tasks];
         SharedMatrix half_trans = Matrix::triplet(Crot, J, Cact, true, false, false);
-        #pragma omp parallel for schedule(static) 
+        #pragma omp parallel for schedule(static)
         for(size_t p = 0; p < nrot; p++){
             for(size_t q = 0; q < nact; q++){
                 casscf_ints->set(p * nact + q, i * nact + j, half_trans->get(p, q));

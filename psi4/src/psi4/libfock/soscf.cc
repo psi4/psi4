@@ -143,32 +143,32 @@ double SOMCSCF::rhf_energy(SharedMatrix C)
     D.reset();
     return erhf;
 }
-
-SharedMatrix SOMCSCF::Ck(SharedMatrix C, SharedMatrix x)
-{
-
+SharedMatrix SOMCSCF::form_rotation_matrix(SharedMatrix x, size_t order) {
     SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
 
     // Form full antisymmetric matrix
-    for (size_t h=0; h<nirrep_; h++){
-
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!noapi_[h] || !navpi_[h]) continue;
         double** Up = U->pointer(h);
-        double**  xp = x->pointer(h);
+        double** xp = x->pointer(h);
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
-        for (size_t i=0, target=0; i<noapi_[h]; i++){
-            for (size_t a=fmax(noccpi_[h], i); a<nmopi_[h]; a++){
-                Up[i][a] = xp[i][a-noccpi_[h]];
-                Up[a][i] = -1.0 * xp[i][a-noccpi_[h]];
+        for (size_t i = 0, target = 0; i < noapi_[h]; i++) {
+            for (size_t a = fmax(noccpi_[h], i); a < nmopi_[h]; a++) {
+                Up[i][a] = xp[i][a - noccpi_[h]];
+                Up[a][i] = -1.0 * xp[i][a - noccpi_[h]];
             }
         }
     }
 
     // Build exp(U)
-    U->expm(2, true);
+    U->expm(order, true);
+    return U;
+}
 
+SharedMatrix SOMCSCF::Ck(SharedMatrix C, SharedMatrix x) {
     // C' = C U
+    SharedMatrix U = form_rotation_matrix(x);
     SharedMatrix Cp = Matrix::doublet(C, U);
 
     return Cp;

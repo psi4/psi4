@@ -128,13 +128,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->ras3_lvl = -1;
   Parameters_->ras4_lvl = -1;
 
-  if (Parameters_->wfn == "DETCAS" ||
-      Parameters_->wfn == "CASSCF" ||
-      Parameters_->wfn == "RASSCF")
-    Parameters_->guess_vector = PARM_GUESS_VEC_DFILE;
-  else
-    Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-
+  Parameters_->guess_vector = PARM_GUESS_VEC_H0_BLOCK;
 
   Parameters_->neg_only = 1;
   Parameters_->nunits = 1;
@@ -340,17 +334,26 @@ void CIWavefunction::get_parameters(Options &options)
 
   Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
   if (options["DIAG_METHOD"].has_changed()) {
-    std::string line1 = options.get_str("DIAG_METHOD");
-    if (line1 == "RSP") Parameters_->diag_method = METHOD_RSP;
-    if (line1 == "OLSEN") Parameters_->diag_method = METHOD_OLSEN;
-    if (line1 == "MITRUSHENKOV")
-      Parameters_->diag_method = METHOD_MITRUSHENKOV;
-    if (line1 == "DAVIDSON")
-      Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
-    if (line1 == "SEM")
-      Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
-    if (line1 == "SEMTEST")
-      Parameters_->diag_method = METHOD_RSPTEST_OF_SEM;
+      std::string line1 = options.get_str("DIAG_METHOD");
+      if (line1 == "RSP") {
+          Parameters_->diag_method = METHOD_RSP;
+          Parameters_->neg_only = 0;
+      }
+      else if (line1 == "OLSEN") {
+          Parameters_->diag_method = METHOD_OLSEN;
+      }
+      else if (line1 == "MITRUSHENKOV") {
+          Parameters_->diag_method = METHOD_MITRUSHENKOV;
+      }
+      else if (line1 == "DAVIDSON") {
+          Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
+      }
+      else if (line1 == "SEM") {
+          Parameters_->diag_method = METHOD_DAVIDSON_LIU_SEM;
+      }
+      else if (line1 == "SEMTEST") {
+          Parameters_->diag_method = METHOD_RSPTEST_OF_SEM;
+      }
   }
 
   if ((Parameters_->diag_method == METHOD_RSP) & (Parameters_->icore != 1)){
