@@ -32,6 +32,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/wavefunction.h"   // for df
 #include "psi4/libmints/osrecur.h"
+#include "psi4/libmints/fjt.h"
 #include "psi4/libpsi4util/exception.h"
 
 using namespace psi;
@@ -226,49 +227,6 @@ ObaraSaikaTwoCenterEFPRecursion::~ObaraSaikaTwoCenterEFPRecursion()
     free_box(xyz_, size_, size_);
 }
 
-#define EPS 1.0e-17
-
-void ObaraSaikaTwoCenterEFPRecursion::calculate_f(double *F, int n, double t)
-{
-    int i, m;
-    int m2;
-    double t2;
-    double num;
-    double sum;
-    double term1;
-    static double K = 1.0/M_2_SQRTPI;
-    double et;
-
-
-    if (t>20.0){
-        t2 = 2*t;
-        et = exp(-t);
-        t = sqrt(t);
-        F[0] = K*erf(t)/t;
-        for(m=0; m<=n-1; m++){
-            F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
-        }
-    }
-    else {
-        et = exp(-t);
-        t2 = 2*t;
-        m2 = 2*n;
-        num = df[m2];
-        i=0;
-        sum = 1.0/(m2+1);
-        do{
-            i++;
-            num = num*t2;
-            term1 = num/df[m2+2*i+2];
-            sum += term1;
-        } while (std::fabs(term1) > EPS && i < MAX_FAC);
-        F[n] = sum*et;
-        for(m=n-1;m>=0;m--){
-            F[m] = (t2*F[m+1] + et)/(2*m+1);
-        }
-    }
-}
-
 void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2)
 {
     int a, b, m;
@@ -293,7 +251,8 @@ void ObaraSaikaTwoCenterEFPRecursion::compute(double PA[3], double PB[3], double
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    Split_Fjt fjt(mmax);
+    fjt.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -935,49 +894,6 @@ ObaraSaikaTwoCenterVIRecursion::~ObaraSaikaTwoCenterVIRecursion()
     free_box(vi_, size_, size_);
 }
 
-#define EPS 1.0e-17
-
-void ObaraSaikaTwoCenterVIRecursion::calculate_f(double *F, int n, double t)
-{
-    int i, m;
-    int m2;
-    double t2;
-    double num;
-    double sum;
-    double term1;
-    static double K = 1.0/M_2_SQRTPI;
-    double et;
-
-
-    if (t>20.0){
-        t2 = 2*t;
-        et = exp(-t);
-        t = sqrt(t);
-        F[0] = K*erf(t)/t;
-        for(m=0; m<=n-1; m++){
-            F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
-        }
-    }
-    else {
-        et = exp(-t);
-        t2 = 2*t;
-        m2 = 2*n;
-        num = df[m2];
-        i=0;
-        sum = 1.0/(m2+1);
-        do{
-            i++;
-            num = num*t2;
-            term1 = num/df[m2+2*i+2];
-            sum += term1;
-        } while (std::fabs(term1) > EPS && i < MAX_FAC);
-        F[n] = sum*et;
-        for(m=n-1;m>=0;m--){
-            F[m] = (t2*F[m+1] + et)/(2*m+1);
-        }
-    }
-}
-
 void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2)
 {
     int a, b, m;
@@ -999,7 +915,8 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
     double *F = new double[mmax+1];
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    Split_Fjt fjt(mmax);
+    fjt.calculate(F, mmax, u);
 
     // Think we're having problems with values being left over.
     //zero_box(vi_, size_, size_, mmax + 1);
@@ -1148,8 +1065,8 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
     double u = zetam * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
     double *F = new double[mmax+1];
 
-    // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    Split_Fjt fjt(mmax);
+    fjt.calculate(F, mmax, u);
 
     // Think we're having problems with values being left over.
     //zero_box(vi_, size_, size_, mmax + 1);
@@ -1322,7 +1239,8 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    Split_Fjt fjt(mmax);
+    fjt.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -1573,7 +1491,8 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    Split_Fjt fjt(mmax);
+    fjt.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
@@ -1948,7 +1867,8 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     memset(F, 0, sizeof(double) * (mmax+1));
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    Split_Fjt fjt(mmax);
+    fjt.calculate(F, mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
