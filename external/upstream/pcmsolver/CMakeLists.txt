@@ -33,25 +33,21 @@ if(${ENABLE_PCMSolver})
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DENABLE_psi4=ON
+                       -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
                        -DSTATIC_LIBRARY_ONLY=${_a_only}
                        -DSHARED_LIBRARY_ONLY=${_so_only}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant for thread safety
-                       #-DENABLE_XHOST=???  # option missing
                        #-DENABLE_XHOST=${ENABLE_XHOST}  # option missing
-                       #-DBUILD_FPIC=${BUILD_FPIC}  # always fpic'd
+                       # always fpic'd
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
+                       -DENABLE_DOCS=OFF
+                       -DENABLE_TESTS=OFF
+                       -DENABLE_TIMER=OFF
+                       -DENABLE_LOGGER=OFF
+                       -DBUILD_STANDALONE=OFF
+                       -DENABLE_FORTRAN_API=OFF
                        -DENABLE_CXX11_SUPPORT=ON
                        -DENABLE_64BIT_INTEGERS=ON
-#                  -DENABLE_TESTS=OFF
-#                  -DENABLE_LOGGER=OFF
-#                  -DENABLE_TIMER=OFF
-#                  -DBUILD_STANDALONE=OFF
-#                  -DENABLE_FORTRAN_API=OFF
-#                  -DSTATIC_LIBRARY_ONLY=${ENABLE_STATIC}
-#                  -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-# -DENABLE_DOCS=OFF \
-
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
