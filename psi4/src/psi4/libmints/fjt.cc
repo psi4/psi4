@@ -69,467 +69,159 @@ using namespace psi;
 
 const double oon[] = {0.0, 1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0/7.0, 1.0/8.0, 1.0/9.0, 1.0/10.0, 1.0/11.0};
 
-#define SOFT_ZERO 1e-6
 
-#ifndef M_SQRT_PI
-#define M_SQRT_PI	1.772453850905516027298167483341	/* sqrt(pi) */
-#endif
+// calculates a value of the boys function. Slow, but accurate
+// n = J in other code
+// t = T in other code
+void calculate_f(double * F, int n, double t)
+{
+    const double eps = 1e-17;
 
-#ifndef M_SQRT_PI_2
-#define M_SQRT_PI_2 1.2533141373155002512078826424055   // sqrt(Pi/2)
-#endif
+    int i, m;
+    int m2;
+    double t2;
+    double num;
+    double sum;
+    double term1;
+    static double K = 1.0/M_2_SQRTPI;
+    double et;
+
+
+    if (t>20.0){
+        t2 = 2*t;
+        et = exp(-t);
+        t = sqrt(t);
+        F[0] = K*erf(t)/t;
+        for(m=0; m<=n-1; m++){
+            F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
+        }
+    }
+    else {
+        et = exp(-t);
+        t2 = 2*t;
+        m2 = 2*n;
+        num = df[m2];
+        i=0;
+        sum = 1.0/(m2+1);
+        do{
+            i++;
+            num = num*t2;
+            term1 = num/df[m2+2*i+2];
+            sum += term1;
+        } while (fabs(term1) > eps && i < MAX_FAC);
+        F[n] = sum*et;
+        for(m=n-1;m>=0;m--){
+            F[m] = (t2*F[m+1] + et)/(2*m+1);
+        }
+    }
+}
+
 
 Fjt::Fjt() {}
 Fjt::~Fjt() {}
-
-double Taylor_Fjt::relative_zero_(1e-6);
 
 /*------------------------------------------------------
   Initialize Taylor_Fm_Eval object (computes incomplete
   gamma function via Taylor interpolation)
  ------------------------------------------------------*/
-Taylor_Fjt::Taylor_Fjt(size_t mmax, double accuracy) :
-    cutoff_(accuracy), interp_order_(TAYLOR_INTERPOLATION_ORDER),
+Split_Fjt::Split_Fjt(unsigned int mmax):
     F_(new double[mmax+1])
 {
-    const double sqrt_pi = M_SQRT_PI;
-
-    /*---------------------------------------
-    We are doing Taylor interpolation with
-    n=TAYLOR_ORDER terms here:
-    error <= delT^n/(n+1)!
-   ---------------------------------------*/
-    delT_ = 2.0*std::pow(cutoff_*fac[interp_order_+1],
-                         1.0/interp_order_);
-    oodelT_ = 1.0/delT_;
-    max_m_ = mmax + interp_order_ - 1;
-
-    T_crit_ = new double[max_m_ + 1];   /*--- m=0 is included! ---*/
-    max_T_ = 0;
-    /*--- Figure out T_crit for each m and put into the T_crit ---*/
-    for(int m=max_m_; m>=0; --m) {
-        /*------------------------------------------
-      Damped Newton-Raphson method to solve
-      T^{m-0.5}*exp(-T) = epsilon*Gamma(m+0.5)
-      The solution is the max T for which to do
-      the interpolation
-     ------------------------------------------*/
-        double T = -log(cutoff_);
-        const double egamma = cutoff_ * sqrt_pi * df[2*m]/std::pow(2.0,m);
-        double T_new = T;
-        double func;
-        do {
-            const double damping_factor = 0.2;
-            T = T_new;
-            /* f(T) = the difference between LHS and RHS of the equation above */
-            func = std::pow(T,m-0.5) * std::exp(-T) - egamma;
-            const double dfuncdT = ((m-0.5) * std::pow(T,m-1.5) - std::pow(T,m-0.5)) * std::exp(-T);
-            /* f(T) has 2 roots and has a maximum in between. If f'(T) > 0 we are to the left of the hump. Make a big step to the right. */
-            if (dfuncdT > 0.0) {
-                T_new *= 2.0;
-            }
-            else {
-                /* damp the step */
-                double deltaT = -func/dfuncdT;
-                const double sign_deltaT = (deltaT > 0.0) ? 1.0 : -1.0;
-                const double max_deltaT = damping_factor * T;
-                if (std::fabs(deltaT) > max_deltaT)
-                    deltaT = sign_deltaT * max_deltaT;
-                T_new = T + deltaT;
-            }
-            if ( T_new <= 0.0 ) {
-                T_new = T / 2.0;
-            }
-        } while (std::fabs(func/egamma) >= SOFT_ZERO);
-        T_crit_[m] = T_new;
-        const int T_idx = (int)std::floor(T_new/delT_);
-        max_T_ = std::max(max_T_,T_idx);
-    }
-
-    // allocate the grid (see the comments below)
+    // If we have a grid, it is big enough?
+    // If not, free it
+	/*
+    if(initialized_ && max_m_ < mmax)
     {
-        const int nrow = max_T_+1;
-        const int ncol = max_m_+1;
-        grid_ = block_matrix(nrow, ncol);
-        //grid_ = new double*[nrow];
-        //grid_[0] = new double[nrow*ncol];
-        //for(int r=1; r<nrow; ++r)
-        //    grid_[r] = grid_[r-1] + ncol;
+        free_block(grid_);
+        grid_ = nullptr;
+        initialized_ = false;
+        max_m_ = 0;
     }
+	*/
 
-    /*-------------------------------------------------------
-    Tabulate the gamma function from t=delT to T_crit[m]:
-    1) include T=0 though the table is empty for T=0 since
-       Fm(0) is simple to compute
-    2) modified MacLaurin series converges fastest for
-       the largest m -> use it to compute Fmmax(T)
-       see JPC 94, 5564 (1990).
-    3) then either use the series to compute the rest
-       of the row or maybe use downward recursion
-   -------------------------------------------------------*/
-    /*--- do the mmax first ---*/
-    const double cutoff_o_10 = 0.1 * cutoff_;
-    for(int m=0; m<=max_m_; ++m) {
-        for(int T_idx = max_T_;
-            T_idx >= 0;
-            --T_idx) {
-            const double T = T_idx * delT_;
-            double denom = (m+0.5);
-            double term = 0.5*std::exp(-T)/denom;
-            double sum = term;
-            //            double rel_error;
-            double epsilon;
-            do {
-                denom += 1.0;
-                term *= T/denom;
-                sum += term;
-                //                rel_error = term/sum;
-                // stop if adding a term smaller or equal to cutoff_/10 and smaller than relative_zero * sum
-                // When sum is small in absolute value, the second threshold is more important
-                epsilon = std::min(cutoff_o_10, sum*relative_zero_);
-            } while (term > epsilon);
-            //            } while (term > epsilon || term > sum*relative_zero_);
+	initialized_ = false;
 
-            grid_[T_idx][m] = sum;
+    // initialize the grid if we have to
+    if(!initialized_)
+    {
+        max_Tval_ = 43.0; // rough
+        max_T_ = 430;
+        max_m_ = mmax;
+
+        // initialize the table
+        const int nrow = max_T_+1;
+        const int ncol = max_m_+8+1;  // +8 for the higher orders required by the taylor series
+        grid_ = block_matrix(nrow, ncol);
+
+
+        for(int i = 0; i <= max_T_; i++) 
+        {
+            // we are using a 0.1-spaced grid
+            const double Tval = 0.1*static_cast<double>(i);
+
+            // Fill in all the values for this row
+            calculate_f(grid_[i], max_m_+8, Tval);
         }
     }
 }
 
-Taylor_Fjt::~Taylor_Fjt()
+Split_Fjt::~Split_Fjt()
 {
     delete[] F_;
-    delete[] T_crit_;
-    T_crit_ = 0;
     free_block(grid_);
-    grid_ = NULL;
 }
 
-/* Using the tabulated incomplete gamma function in gtable, compute
- * the incomplete gamma function for a particular wval for all 0<=j<=J.
- * The result is placed in the global intermediate int_fjttable.
- */
 double *
-Taylor_Fjt::values(int l, double T)
+Split_Fjt::values(int J, double T)
 {
-    const double two_T = 2.0*T;
-
-    // since Tcrit grows with l, this condition only needs to be determined once
-    const bool T_gt_Tcrit = T > T_crit_[l];
-    // start recursion at j=jrecur
-    const int jrecur = TAYLOR_INTERPOLATION_AND_RECURSION ? l : 0;
-    /*-------------------------------------
-     Compute Fj(T) from l down to jrecur
-   -------------------------------------*/
-    if (T_gt_Tcrit) {
-#define UPWARD_RECURSION 1
-#define AVOID_POW 1 // Pow is only used in the downwards recursion case
-#if UPWARD_RECURSION
-    #if TAYLOR_INTERPOLATION_AND_RECURSION
-        #error upward recursion cannot be used with taylor interpolation
-    #endif
-        double X = 1.0/two_T;
-        double dffac = 1.0;
-        double jfac = 1.0; // (j!! X^-j)
-        double Fj = M_SQRT_PI_2 * sqrt(X); // Start with F0; this is why interpolation can't be used
-        for(int j=0; j<l; ++j) {
-            /*--- Asymptotic formula, c.f. IJQC 40 745 (1991) ---*/
-            F_[j] = jfac * Fj;
-            jfac *= dffac * X;
-            dffac += 2.0;
-        }
-        F_[l] = jfac * Fj;
-#else
-    #if AVOID_POW
-        double X = 1.0/two_T;
-        double pow_two_T_to_minusjp05 = X;
-        for(int i = 0; i < l; ++i)
-            pow_two_T_to_minusjp05 *= X*X;
-        pow_two_T_to_minusjp05 = sqrt(pow_two_T_to_minusjp05);
-    #else
-        double pow_two_T_to_minusjp05 = std::pow(two_T,-l-0.5);
-    #endif
-    for(int j=l; j>=jrecur; --j) {
-        /*--- Asymptotic formula ---*/
-        F_[j] = df[2*j] * M_SQRT_PI_2 * pow_two_T_to_minusjp05;
-        pow_two_T_to_minusjp05 *= two_T;
+    // Calculate the boys function for the highest n value
+    if(T > max_Tval_)
+    {
+        // long range asymptotic formula
+        const double p = -(2*J+1);
+        const double T2 = pow(T, p);
+        F_[J] = boys_longfac[J] * sqrt(T2);
     }
-#endif
+    else
+    {
+        // lookup + taylor series
+        // this calculates the index of the row of the lookup table
+        // (ie, finds the closest value of T for which we have precomputed values)
+        const int lookup_idx = (int)(10*(T+0.05));
+
+        // this is the value of that closest value on the grid
+        const double xi = ((double)lookup_idx) * 0.1;
+
+        // delta x parameter for the taylor series
+        // (but including a negative sign)
+        const double dx = xi - T;
+
+        const double * gridpts = &(grid_[lookup_idx][J]);
+
+        F_[J] = gridpts[0]
+                + dx * (                  gridpts[1]
+                + dx * ( (1.0/2.0   )   * gridpts[2]
+                + dx * ( (1.0/6.0   )   * gridpts[3]
+                + dx * ( (1.0/24.0  )   * gridpts[4]
+                + dx * ( (1.0/120.0 )   * gridpts[5]
+                + dx * ( (1.0/720.0 )   * gridpts[6]
+                + dx * ( (1.0/5040.0)   * gridpts[7]
+                )))))));
+
     }
-    else {
-        const int T_ind = (int)std::floor(0.5+T*oodelT_);
-        const double h = T_ind * delT_ - T;
-        const double* F_row = grid_[T_ind] + l;
 
-        for(int j=l; j>=jrecur; --j, --F_row) {
-
-            /*--- Taylor interpolation ---*/
-            F_[j] =          F_row[0]
-        #if TAYLOR_INTERPOLATION_ORDER > 0
-                    +       h*(F_row[1]
-                   #endif
-                   #if TAYLOR_INTERPOLATION_ORDER > 1
-                               +oon[2]*h*(F_row[2]
-                              #endif
-                              #if TAYLOR_INTERPOLATION_ORDER > 2
-                                          +oon[3]*h*(F_row[3]
-                                         #endif
-                                         #if TAYLOR_INTERPOLATION_ORDER > 3
-                                                     +oon[4]*h*(F_row[4]
-                                                    #endif
-                                                    #if TAYLOR_INTERPOLATION_ORDER > 4
-                                                                +oon[5]*h*(F_row[5]
-                                                               #endif
-                                                               #if TAYLOR_INTERPOLATION_ORDER > 5
-                                                                           +oon[6]*h*(F_row[6]
-                                                                          #endif
-                                                                          #if TAYLOR_INTERPOLATION_ORDER > 6
-                                                                                      +oon[7]*h*(F_row[7]
-                                                                                     #endif
-                                                                                     #if TAYLOR_INTERPOLATION_ORDER > 7
-                                                                                                 +oon[8]*h*(F_row[8])
-                                                                                     #endif
-                                                                                     #if TAYLOR_INTERPOLATION_ORDER > 6
-                                                                                                 )
-                                                                          #endif
-                                                                          #if TAYLOR_INTERPOLATION_ORDER > 5
-                                                                                      )
-                                                               #endif
-                                                               #if TAYLOR_INTERPOLATION_ORDER > 4
-                                                                           )
-                                                    #endif
-                                                    #if TAYLOR_INTERPOLATION_ORDER > 3
-                                                                )
-                                         #endif
-                                         #if TAYLOR_INTERPOLATION_ORDER > 2
-                                                     )
-                              #endif
-                              #if TAYLOR_INTERPOLATION_ORDER > 1
-                                          )
-                   #endif
-                   #if TAYLOR_INTERPOLATION_ORDER > 0
-                               )
-        #endif
-                    ;
-        } // interpolation for F_j(T), jrecur<=j<=l
-    } // if T < T_crit
-
-    /*------------------------------------
-    And then do downward recursion in j
-   ------------------------------------*/
-#if TAYLOR_INTERPOLATION_AND_RECURSION
-    if (l > 0 && jrecur > 0) {
-        double F_jp1 = F_[jrecur];
-        const double exp_jT = std::exp(-T);
-        for(int j=jrecur-1; j>=0; --j) {
-            const double F_j = (exp_jT + two_T*F_jp1)*oo2np1[j];
-            F_[j] = F_j;
-            F_jp1 = F_j;
-        }
+    // calculate the others by downward recursion
+    if(J > 0)
+    {
+        const double eT = exp(-T);
+        for(int m = J-1; m >= 0; m--)
+            F_[m] = (2*T*F_[m+1] + eT)/(2*m+1);
     }
-#endif
 
     return F_;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-
-/* Tablesize should always be at least 121. */
-#define TABLESIZE 121
-
-/* Tabulate the incomplete gamma function and put in gtable. */
-/*
- *     For J = JMAX a power series expansion is used, see for
- *     example Eq.(39) given by V. Saunders in "Computational
- *     Techniques in Quantum Chemistry and Molecular Physics",
- *     Reidel 1975.  For J < JMAX the values are calculated
- *     using downward recursion in J.
- */
-FJT::FJT(int max)
-{
-    int i,j;
-    double denom,d2jmax1,r2jmax1,wval,d2wval,sum,term,rexpw;
-
-    maxj = max;
-
-    /* Allocate storage for gtable and int_fjttable. */
-    int_fjttable = new double[maxj+1];
-    gtable = new double*[ngtable()];
-    for (i=0; i<ngtable(); i++) {
-        gtable[i] = new double[TABLESIZE];
-    }
-
-    /* Tabulate the gamma function for t(=wval)=0.0. */
-    denom = 1.0;
-    for (i=0; i<ngtable(); i++) {
-        gtable[i][0] = 1.0/denom;
-        denom += 2.0;
-    }
-
-    /* Tabulate the gamma function from t(=wval)=0.1, to 12.0. */
-    d2jmax1 = 2.0*(ngtable()-1) + 1.0;
-    r2jmax1 = 1.0/d2jmax1;
-    for (i=1; i<TABLESIZE; i++) {
-        wval = 0.1 * i;
-        d2wval = 2.0 * wval;
-        term = r2jmax1;
-        sum = term;
-        denom = d2jmax1;
-        for (j=2; j<=200; j++) {
-            denom = denom + 2.0;
-            term = term * d2wval / denom;
-            sum = sum + term;
-            if (term <= 1.0e-15) break;
-        }
-        rexpw = exp(-wval);
-
-        /* Fill in the values for the highest j gtable entries (top row). */
-        gtable[ngtable()-1][i] = rexpw * sum;
-
-        /* Work down the table filling in the rest of the column. */
-        denom = d2jmax1;
-        for (j=ngtable() - 2; j>=0; j--) {
-            denom = denom - 2.0;
-            gtable[j][i] = (gtable[j+1][i]*d2wval + rexpw)/denom;
-        }
-    }
-
-    /* Form some denominators, so divisions can be eliminated below. */
-    denomarray = new double[max+1];
-    denomarray[0] = 0.0;
-    for (i=1; i<=max; i++) {
-        denomarray[i] = 1.0/(2*i - 1);
-    }
-
-    wval_infinity = 2*max + 37.0;
-    itable_infinity = (int) (10 * wval_infinity);
-
-}
-
-FJT::~FJT()
-{
-    delete[] int_fjttable;
-    for (int i=0; i<maxj+7; i++) {
-        delete[] gtable[i];
-    }
-    delete[] gtable;
-    delete[] denomarray;
-}
-
-/* Using the tabulated incomplete gamma function in gtable, compute
- * the incomplete gamma function for a particular wval for all 0<=j<=J.
- * The result is placed in the global intermediate int_fjttable.
- */
-double *
-FJT::values(int J,double wval)
-{
-    const double sqrpih =  0.886226925452758;
-    const double coef2 =  0.5000000000000000;
-    const double coef3 = -0.1666666666666667;
-    const double coef4 =  0.0416666666666667;
-    const double coef5 = -0.0083333333333333;
-    const double coef6 =  0.0013888888888889;
-    const double gfac30 =  0.4999489092;
-    const double gfac31 = -0.2473631686;
-    const double gfac32 =  0.321180909;
-    const double gfac33 = -0.3811559346;
-    const double gfac20 =  0.4998436875;
-    const double gfac21 = -0.24249438;
-    const double gfac22 =  0.24642845;
-    const double gfac10 =  0.499093162;
-    const double gfac11 = -0.2152832;
-    const double gfac00 = -0.490;
-
-    double wdif, d2wal, rexpw, /* denom, */ gval, factor, rwval, term;
-    int i, itable, irange;
-
-    if (J>maxj) {
-        outfile->Printf( "the int_fjt routine has been incorrectly used\n");
-        outfile->Printf( "J = %d but maxj = %d\n", J, maxj);
-        abort();
-    }
-
-    /* Compute an index into the table. */
-    /* The test is needed to avoid floating point exceptions for
-   * large values of wval. */
-    if (wval > wval_infinity) {
-        itable = itable_infinity;
-    }
-    else {
-        itable = (int) (10.0 * wval);
-    }
-
-    /* If itable is small enough use the table to compute int_fjttable. */
-    if (itable < TABLESIZE) {
-
-        wdif = wval - 0.1 * itable;
-
-        /* Compute fjt for J. */
-        int_fjttable[J] = (((((coef6 * gtable[J+6][itable]*wdif
-                               + coef5 * gtable[J+5][itable])*wdif
-                              + coef4 * gtable[J+4][itable])*wdif
-                             + coef3 * gtable[J+3][itable])*wdif
-                            + coef2 * gtable[J+2][itable])*wdif
-                           -  gtable[J+1][itable])*wdif
-                +  gtable[J][itable];
-
-        /* Compute the rest of the fjt. */
-        d2wal = 2.0 * wval;
-        rexpw = exp(-wval);
-        /* denom = 2*J + 1; */
-        for (i=J; i>0; i--) {
-            /* denom = denom - 2.0; */
-            int_fjttable[i-1] = (d2wal*int_fjttable[i] + rexpw)*denomarray[i];
-        }
-    }
-    /* If wval <= 2*J + 36.0, use the following formula. */
-    else if (itable <= 20*J + 360) {
-        rwval = 1.0/wval;
-        rexpw = exp(-wval);
-
-        /* Subdivide wval into 6 ranges. */
-        irange = itable/30 - 3;
-        if (irange == 1) {
-            gval = gfac30 + rwval*(gfac31 + rwval*(gfac32 + rwval*gfac33));
-            int_fjttable[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else if (irange == 2) {
-            gval = gfac20 + rwval*(gfac21 + rwval*gfac22);
-            int_fjttable[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else if (irange == 3 || irange == 4) {
-            gval = gfac10 + rwval*gfac11;
-            int_fjttable[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else if (irange == 5 || irange == 6) {
-            gval = gfac00;
-            int_fjttable[0] = sqrpih*sqrt(rwval) - rexpw*gval*rwval;
-        }
-        else {
-            int_fjttable[0] = sqrpih*sqrt(rwval);
-        }
-
-        /* Compute the rest of the int_fjttable from int_fjttable[0]. */
-        factor = 0.5 * rwval;
-        term = factor * rexpw;
-        for (i=1; i<=J; i++) {
-            int_fjttable[i] = factor * int_fjttable[i-1] - term;
-            factor = rwval + factor;
-        }
-    }
-    /* For large values of wval use this algorithm: */
-    else {
-        rwval = 1.0/wval;
-        int_fjttable[0] = sqrpih*sqrt(rwval);
-        factor = 0.5 * rwval;
-        for (i=1; i<=J; i++) {
-            int_fjttable[i] = factor * int_fjttable[i-1];
-            factor = rwval + factor;
-        }
-    }
-    /* printf(" %2d %12.8f %4d %12.8f\n",J,wval,itable,int_fjttable[0]); */
-
-    return int_fjttable;
-}
 
 ////////
 // GaussianFundamental
@@ -696,7 +388,7 @@ double* F12SquaredFundamental::values(int J, double T)
 F12G12Fundamental::F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max)
     : GaussianFundamental(cf, max)
 {
-    Fm_ = std::shared_ptr<FJT>(new FJT(max));
+    Fm_ = std::shared_ptr<Split_Fjt>(new Split_Fjt(max));
 }
 
 F12G12Fundamental::~F12G12Fundamental()
@@ -803,7 +495,7 @@ ErfFundamental::ErfFundamental(double omega, int max)
 {
     omega_ = omega;
     rho_ = 0;
-    boys_ = std::shared_ptr<FJT>(new FJT(max));
+    boys_ = std::shared_ptr<Split_Fjt>(new Split_Fjt(max));
 }
 
 ErfFundamental::~ErfFundamental()
@@ -841,7 +533,7 @@ ErfComplementFundamental::ErfComplementFundamental(double omega, int max)
 {
     omega_ = omega;
     rho_ = 0;
-    boys_ = std::shared_ptr<FJT>(new FJT(max));
+    boys_ = std::shared_ptr<Split_Fjt>(new Split_Fjt(max));
 }
 
 ErfComplementFundamental::~ErfComplementFundamental()

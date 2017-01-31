@@ -56,6 +56,42 @@
 #ifndef _chemistry_qc_basis_fjt_h
 #define _chemistry_qc_basis_fjt_h
 
+// This table stores some common factors for the boys function
+// asymptotic form
+#define BOYS_LONGFAC_MAXN 50 // maximum value of nu stored
+static const double boys_longfac[BOYS_LONGFAC_MAXN + 1] =
+{
+ /* n =  0 */  0.886226925452758014    , /* n =  1 */  0.443113462726379007    ,
+ /* n =  2 */  0.66467019408956851     , /* n =  3 */  1.66167548522392128     ,
+ /* n =  4 */  5.81586419828372446     , /* n =  5 */  26.1713888922767601     ,
+ /* n =  6 */  143.94263890752218      , /* n =  7 */  935.627152898894173     ,
+ /* n =  8 */  7017.2036467417063      , /* n =  9 */  59646.2309973045035     ,
+ /* n = 10 */  566639.194474392784     , /* n = 11 */  5949711.54198112423     ,
+ /* n = 12 */  68421682.7327829286     , /* n = 13 */  855271034.159786608     ,
+ /* n = 14 */  11546158961.1571192     , /* n = 15 */  167419304936.778228     ,
+ /* n = 16 */  2594999226520.06254     , /* n = 17 */  42817487237581.0319     ,
+ /* n = 18 */  749306026657668.059     , /* n = 19 */  13862161493166859.1     ,
+ /* n = 20 */  270312149116753752.0    , /* n = 21 */  5.54139905689345192e+18 ,
+ /* n = 22 */  1.19140079723209216e+20 , /* n = 23 */  2.68065179377220737e+21 ,
+ /* n = 24 */  6.29953171536468731e+22 , /* n = 25 */  1.54338527026434839e+24 ,
+ /* n = 26 */  3.9356324391740884e+25  , /* n = 27 */  1.04294259638113343e+27 ,
+ /* n = 28 */  2.86809214004811692e+28 , /* n = 29 */  8.17406259913713322e+29 ,
+ /* n = 30 */  2.4113484667454543e+31  , /* n = 31 */  7.35461282357363562e+32 ,
+ /* n = 32 */  2.31670303942569522e+34 , /* n = 33 */  7.52928487813350946e+35 ,
+ /* n = 34 */  2.52231043417472567e+37 , /* n = 35 */  8.70197099790280356e+38 ,
+ /* n = 36 */  3.08919970425549526e+40 , /* n = 37 */  1.12755789205325577e+42 ,
+ /* n = 38 */  4.22834209519970914e+43 , /* n = 39 */  1.62791170665188802e+45 ,
+ /* n = 40 */  6.43025124127495768e+46 , /* n = 41 */  2.60425175271635786e+48 ,
+ /* n = 42 */  1.08076447737728851e+50 , /* n = 43 */  4.59324902885347618e+51 ,
+ /* n = 44 */  1.99806332755126214e+53 , /* n = 45 */  8.89138180760311651e+54 ,
+ /* n = 46 */  4.04557872245941801e+56 , /* n = 47 */  1.88119410594362937e+58 ,
+ /* n = 48 */  8.93567200323223953e+59 , /* n = 49 */  4.33380092156763617e+61 ,
+ /* n = 50 */  2.14523145617597991e+63 ,
+};
+
+
+
+
 namespace psi {
 
 class CorrelationFactor;
@@ -73,55 +109,24 @@ public:
     virtual void set_rho(double /*rho*/) { }
 };
 
-#define TAYLOR_INTERPOLATION_ORDER 6
-#define TAYLOR_INTERPOLATION_AND_RECURSION 0  // compute F_lmax(T) and then iterate down to F_0(T)? Else use interpolation only
 /// Uses Taylor interpolation of up to 8-th order to compute the Boys function
-class Taylor_Fjt : public Fjt {
-    static double relative_zero_;
+class Split_Fjt : public Fjt {
 public:
-    static const int max_interp_order = 8;
-
-    Taylor_Fjt(size_t jmax, double accuracy);
-    virtual ~Taylor_Fjt();
+    Split_Fjt(unsigned int jmax);
+    virtual ~Split_Fjt();
     /// Implements Fjt::values()
     double *values(int J, double T);
 private:
-    double **grid_;            /* Table of "exact" Fm(T) values. Row index corresponds to
-                                  values of T (max_T+1 rows), column index to values
-                                  of m (max_m+1 columns) */
-    double delT_;              /* The step size for T, depends on cutoff */
-    double oodelT_;            /* 1.0 / delT_, see above */
-    double cutoff_;            /* Tolerance cutoff used in all computations of Fm(T) */
-    int interp_order_;         /* Order of (Taylor) interpolation */
-    int max_m_;                /* Maximum value of m in the table, depends on cutoff
+
+    bool initialized_;  /* Has the table been initialized */
+    double **grid_;     /* Table of "exact" Fm(T) values. Row index corresponds to
+                           values of T (max_T_+1 rows), column index to values
+                           of m (max_m+1 columns) */
+	int max_T_;         /* Maximum T index stored (10*max T value) */
+	double max_Tval_;   /* Maximum T value stored */
+    int max_m_;         /* Maximum value of m in the table, depends on cutoff
                                   and the number of terms in Taylor interpolation */
-    int max_T_;                /* Maximum index of T in the table, depends on cutoff
-                                  and m */
-    double *T_crit_;           /* Maximum T for each row, depends on cutoff;
-                                  for a given m and T_idx <= max_T_idx[m] use Taylor interpolation,
-                                  for a given m and T_idx > max_T_idx[m] use the asymptotic formula */
-    double *F_;                /* Here computed values of Fj(T) are stored */
-};
-
-/// "Old" intv3 code from Curt
-/// Computes F_j(T) using 6-th order Taylor interpolation
-class FJT: public Fjt {
-private:
-    double **gtable;
-
-    int maxj;
-    double *denomarray;
-    double wval_infinity;
-    int itable_infinity;
-
-    double *int_fjttable;
-
-    int ngtable() const { return maxj + 7; }
-public:
-    FJT(int n);
-    virtual ~FJT();
-    /// implementation of Fjt::values()
-    double *values(int J, double T);
+    double *F_;         /* Here computed values of Fj(T) are stored */
 };
 
 class GaussianFundamental : public Fjt {
@@ -167,7 +172,7 @@ public:
 
 class F12G12Fundamental : public GaussianFundamental {
 private:
-    std::shared_ptr<FJT> Fm_;
+    std::shared_ptr<Split_Fjt> Fm_;
 public:
     F12G12Fundamental(std::shared_ptr<CorrelationFactor> cf, int max);
     virtual ~F12G12Fundamental();
@@ -184,7 +189,7 @@ public:
 class ErfFundamental : public GaussianFundamental {
 private:
     double omega_;
-    std::shared_ptr<FJT> boys_;
+    std::shared_ptr<Split_Fjt> boys_;
 public:
     ErfFundamental(double omega, int max);
     virtual ~ErfFundamental();
@@ -195,7 +200,7 @@ public:
 class ErfComplementFundamental : public GaussianFundamental {
 private:
     double omega_;
-    std::shared_ptr<FJT> boys_;
+    std::shared_ptr<Split_Fjt> boys_;
 public:
     ErfComplementFundamental(double omega, int max);
     virtual ~ErfComplementFundamental();
