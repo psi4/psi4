@@ -34,7 +34,7 @@ from psi4.driver.molutil import *
 from psi4.driver.procedures.proc import scf_helper
 
 from . import sapt_jk_terms
-from .sapt_util import print_sapt_summary
+from .sapt_util import print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms
 
 # Only export the run_ scripts
@@ -98,9 +98,9 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("\n")
     core.print_out("   Required computations:\n")
     if (do_delta_hf):
-        core.print_out("     HF (Dimer)\n")
-        core.print_out("     HF (Monomer A)\n")
-        core.print_out("     HF (Monomer B)\n")
+        core.print_out("     HF  (Dimer)\n")
+        core.print_out("     HF  (Monomer A)\n")
+        core.print_out("     HF  (Monomer B)\n")
     core.print_out("     DFT (Monomer A)\n")
     core.print_out("     DFT (Monomer B)\n")
     core.print_out("\n")
@@ -125,23 +125,72 @@ def run_sapt_dft(name, **kwargs):
     core.IO.set_default_namespace('dimer')
     data = {}
 
-    # # Compute dimer wavefunction
-    # core.print_out('\n')
-    # p4util.banner('Dimer HF')
-    # core.print_out('\n')
-    # if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
-    #     core.set_global_option('DF_INTS_IO', 'SAVE')
+    core.set_global_option("SAVE_JK", True)
+    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+        # core.set_global_option('DF_INTS_IO', 'LOAD')
+        core.set_global_option('DF_INTS_IO', 'SAVE')
 
-    # dimer_wfn = scf_helper("SCF", molecule=sapt_dimer, **kwargs)
-    # data["SCF DIMER"] = core.get_variable("CURRENT ENERGY")
+    # # Compute dimer wavefunction
+    if do_delta_hf:
+        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+            core.set_global_option('DF_INTS_IO', 'SAVE')
+
+        hf_data = {}
+        hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
+        hf_data["HF DIMER"] = core.get_variable("CURRENT ENERGY")
+
+        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+            core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
+        hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
+
+        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+            core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+        hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
+        hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
+
+        # Move it back to monomer A
+        if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+            core.IO.change_file_namespace(97, 'monomerB', 'dimer')
+
+        core.print_out("\n");
+        core.print_out("         ---------------------------------------------------------\n");
+        core.print_out("         " + "SAPT(DFT): delta HF Segement".center(58) + "\n");
+        core.print_out("\n");
+        core.print_out("         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n");
+        core.print_out("         ---------------------------------------------------------\n");
+        core.print_out("\n");
+
+        # Build cache and JK
+        sapt_jk = hf_wfn_B.jk()
+
+        hf_cache = sapt_jk_terms.build_sapt_jk_cache(hf_wfn_A, hf_wfn_B, sapt_jk, True)
+
+        # Electostatics
+        elst = sapt_jk_terms.electrostatics(hf_cache, True)
+        hf_data.update(elst)
+
+        # Exchange
+        exch = sapt_jk_terms.exchange(hf_cache, sapt_jk, True)
+        hf_data.update(exch)
+
+        # Induction
+        ind = sapt_jk_terms.induction(hf_cache, sapt_jk, True,
+                                      maxiter=core.get_option("SAPT", "MAXITER"),
+                                      conv=core.get_option("SAPT", "D_CONVERGENCE"))
+        hf_data.update(ind)
+
+
+        dhf_value = hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
+
+        core.print_out("\n")
+        core.print_out(print_sapt_hf_summary(hf_data, "SAPT(HF)", delta_hf=dhf_value))
+
+        data["Delta HF Correction"] =  core.get_variable("SAPT(DFT) Delta HF")
 
     # Set the primary functional
     core.set_global_option("DFT_FUNCTIONAL", core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL"))
     core.set_local_option('SCF', 'REFERENCE', 'RKS')
-
-    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
-        # core.set_global_option('DF_INTS_IO', 'LOAD')
-        core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # Compute Monomer A wavefunction
     if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
@@ -151,10 +200,9 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option("DFT_GRAC_SHIFT", mon_a_shift)
 
     # Save the JK object
-    core.set_global_option("SAVE_JK", True)
     core.IO.set_default_namespace('monomerA')
     wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
-    data["SCF MONOMERA"] = core.get_variable("CURRENT ENERGY")
+    data["DFT MONOMERA"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
@@ -168,7 +216,7 @@ def run_sapt_dft(name, **kwargs):
 
     core.IO.set_default_namespace('monomerB')
     wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
-    data["SCF MONOMERB"] = core.get_variable("CURRENT ENERGY")
+    data["DFT MONOMERB"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
@@ -220,7 +268,7 @@ def run_sapt_dft(name, **kwargs):
 
     # Print out final data
     core.print_out("\n")
-    core.print_out(print_sapt_summary(data, "SAPT(DFT)"))
+    core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
 
     core.tstop()

@@ -39,7 +39,7 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
     else:
         return start_spacer + "%-20s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
 
-def print_sapt_summary(data, name, short=False):
+def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
 
     ret = "   %s Results\n" % name
     ret += "  " + "-" * 97 + "\n"
@@ -57,6 +57,7 @@ def print_sapt_summary(data, name, short=False):
     ret += "\n"
     core.set_variable("SAPT EXCH ENERGY", data["Exch10"])
 
+
     ind = data["Ind20,r"] + data["Exch-Ind20,r"]
     ind_ab = data["Ind20,r (A<-B)"] + data["Exch-Ind20,r (A<-B)"]
     ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
@@ -69,23 +70,93 @@ def print_sapt_summary(data, name, short=False):
     ret += "\n"
     core.set_variable("SAPT IND ENERGY", ind)
 
+    if delta_hf:
+        total_sapt = (data["Elst10,r"] + data["Exch10"] + ind)
+        sapt_hf_delta = delta_hf - total_sapt
+
+        core.set_variable("SAPT(DFT) Delta HF", sapt_hf_delta)
+
+        ret += print_sapt_var("%-21s" % "Total SAPT", total_sapt, start_spacer="   ") + "\n"
+        ret += print_sapt_var("%-21s" % "Total HF", delta_hf, start_spacer="   ") + "\n"
+        ret += print_sapt_var("%-21s" % "Delta HF", sapt_hf_delta, start_spacer="   ") + "\n"
+
+        ret += "  " + "-" * 97 + "\n"
+        return ret
+
+    else:
+        # Dispersion
+        disp = data["Disp20"] + data["Exch-Disp20,u"]
+        ret += print_sapt_var("Dispersion", disp) + "\n"
+        ret += print_sapt_var("  Disp20", data["Disp20,u"]) + "\n"
+        ret += print_sapt_var("  Exch-Disp20", data["Exch-Disp20,u"]) + "\n"
+        ret += "\n"
+        core.set_variable("SAPT DISP ENERGY", disp)
+
+        # Total energy
+        total = data["Elst10,r"] + data["Exch10"] + ind + disp
+        ret += print_sapt_var("Total %-15s" % name, total, start_spacer="   ") + "\n"
+        core.set_variable("SAPT0 TOTAL ENERGY", total)
+        core.set_variable("SAPT TOTAL ENERGY", total)
+        core.set_variable("CURRENT ENERGY", total)
+
+        ret += "  " + "-" * 97 + "\n"
+        return ret
+
+
+def print_sapt_dft_summary(data, name, short=False):
+
+    ret = "   %s Results\n" % name
+    ret += "  " + "-" * 97 + "\n"
+
+    # Elst
+    ret += print_sapt_var("Electrostatics", data["Elst10,r"]) + "\n"
+    ret += print_sapt_var("  Elst1,r", data["Elst10,r"]) + "\n"
+    ret += "\n"
+    core.set_variable("SAPT ELST ENERGY", data["Elst10,r"])
+
+    # Exchange
+    ret += print_sapt_var("Exchange", data["Exch10"]) + "\n"
+    ret += print_sapt_var("  Exch1", data["Exch10"]) + "\n"
+    ret += print_sapt_var("  Exch1(S^2)", data["Exch10(S^2)"]) + "\n"
+    ret += "\n"
+    core.set_variable("SAPT EXCH ENERGY", data["Exch10"])
+
+    # Induction
+    ind = data["Ind20,r"] + data["Exch-Ind20,r"]
+    ind_ab = data["Ind20,r (A<-B)"] + data["Exch-Ind20,r (A<-B)"]
+    ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
+
+    if "Delta HF Correction" in list(data):
+        ind +=  data["Delta HF Correction"]
+
+    ret += print_sapt_var("Induction", ind) + "\n"
+
+    ret += print_sapt_var("  Ind2,r", data["Ind20,r"]) + "\n"
+    ret += print_sapt_var("  Exch-Ind2,r", data["Exch-Ind20,r"]) + "\n"
+    ret += print_sapt_var("  Induction (A<-B)", ind_ab) + "\n"
+    ret += print_sapt_var("  Induction (A->B)", ind_ba) + "\n"
+
+    if "Delta HF Correction" in list(data):
+        ret += print_sapt_var("  delta HF,r (2)", data["Delta HF Correction"]) + "\n"
+
+    ret += "\n"
+    core.set_variable("SAPT IND ENERGY", ind)
+
     # Dispersion
     disp = data["Disp20"] + data["Exch-Disp20,u"]
     ret += print_sapt_var("Dispersion", disp) + "\n"
-    ret += print_sapt_var("  Disp20,r", data["Disp20"]) + "\n"
-    ret += print_sapt_var("  Disp20,u", data["Disp20,u"]) + "\n"
-    ret += print_sapt_var("  Exch-Disp20,u", data["Exch-Disp20,u"]) + "\n"
+    ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"
+    ret += print_sapt_var("  Disp2,u", data["Disp20,u"]) + "\n"
+    ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
     ret += "\n"
     core.set_variable("SAPT DISP ENERGY", disp)
 
     # Total energy
     total = data["Elst10,r"] + data["Exch10"] + ind + disp
     ret += print_sapt_var("Total %-15s" % name, total, start_spacer="   ") + "\n"
-    core.set_variable("SAPT0 TOTAL ENERGY", total)
+    core.set_variable("SAPT(DFT) TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)
     core.set_variable("CURRENT ENERGY", total)
 
-
     ret += "  " + "-" * 97 + "\n"
     return ret
-
