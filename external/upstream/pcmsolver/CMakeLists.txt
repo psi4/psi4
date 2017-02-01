@@ -38,16 +38,17 @@ if(${ENABLE_PCMSolver})
                        -DSHARED_LIBRARY_ONLY=${_so_only}
                        -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant for thread safety
                        #-DENABLE_XHOST=${ENABLE_XHOST}  # option missing
-                       # always fpic'd
+                       #-DBUILD_FPIC=${BUILD_FPIC}  # always fpic'd
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
-                       -DENABLE_DOCS=OFF
+                       -DENABLE_CXX11_SUPPORT=ON
+                       -DENABLE_64BIT_INTEGERS=OFF
                        -DENABLE_TESTS=OFF
-                       -DENABLE_TIMER=OFF
                        -DENABLE_LOGGER=OFF
+                       -DENABLE_TIMER=OFF
                        -DBUILD_STANDALONE=OFF
                        -DENABLE_FORTRAN_API=OFF
-                       -DENABLE_CXX11_SUPPORT=ON
-                       -DENABLE_64BIT_INTEGERS=ON
+                       -DENABLE_DOCS=OFF
+
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
                              -DCMAKE_Fortran_FLAGS:STRING=${CMAKE_Fortran_FLAGS}
