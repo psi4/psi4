@@ -153,19 +153,24 @@ void HF::common_init()
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
             size_t full_nirreps = old_pg->char_table().nirrep();
-            if(options_["DOCC"].size() != full_nirreps)
-                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             Dimension temp_docc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h)
+            for(int h = 0; h < full_nirreps; ++h) {
                 temp_docc[h] = options_["DOCC"][h].to_integer();
+	    }
             doccpi_ = map_irreps(temp_docc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["DOCC"].size() != nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h)
-                doccpi_[h] = options_["DOCC"][h].to_integer();
+            for(int h = 0; h < nirreps; ++h) {
+	      doccpi_[h] = options_["DOCC"][h].to_integer();
+	    }
         }
+	for(int h = 0; h < nirreps; ++h) {
+	  if(doccpi_[h] >= nmopi_[h]) {
+	    throw PSIEXCEPTION("Not enough basis functions to satisfy DOCC");
+	  }
+	}
     } // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
@@ -179,16 +184,23 @@ void HF::common_init()
             if(options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             Dimension temp_socc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h)
+            for(int h = 0; h < full_nirreps; ++h) {
                 temp_socc[h] = options_["SOCC"][h].to_integer();
+	    }
             soccpi_ = map_irreps(temp_socc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["SOCC"].size() != nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h)
+            for(int h = 0; h < nirreps; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
+	    }
         }
+	for(int h = 0; h < nirreps; ++h) {
+	  if(soccpi_[h] >= nmopi_[h]) {
+	    throw PSIEXCEPTION("Not enough basis functions to satisfy SOCC");
+	  }
+	}
     } // else take the reference wavefunctions soccpi
 
     if (input_socc_ || input_docc_) {
@@ -1074,6 +1086,16 @@ void HF::form_Shalf()
 
         if (print_)
             outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
+
+	// Double check occupation vectors
+	for(int h = 0; h < eigval->nirrep(); ++h) {
+	  if(soccpi_[h] >= nmopi_[h]) {
+	    throw PSIEXCEPTION("Not enough orbitals to satisfy SOCC");
+	  }
+	  if(doccpi_[h] >= nmopi_[h]) {
+	    throw PSIEXCEPTION("Not enough orbitals to satisfy DOCC");
+	  }
+	}
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
