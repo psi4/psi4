@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -196,6 +196,7 @@ and ``no_com`` and ``no_reorient`` are implied). ::
 
 Running EFP 
 ~~~~~~~~~~~~
+
 EFP can be invoked in similar fashion as other theories provided in |PSIfour|.
 For example, if you want to obtain the EFP interaction energy for benzene and two waters,
 simply provide the following::
@@ -293,4 +294,48 @@ additional configuration.
 
 .. include:: autodoc_available_efpfrag.rst
 
+
+.. _`cmake:libefp`:
+
+How to configure libefp for building Psi4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Role and Dependencies**
+
+* Role |w---w| In |PSIfour|, libefp is a library that provides additional
+  molecular modeling capabilities (EFP).
+
+* Downstream Dependencies |w---w| |PSIfour| |dr| libefp
+
+* Upstream Dependencies |w---w| libefp |dr| None
+
+**CMake Variables**
+
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For libefp, set to an installation directory containing ``include/efp.h``
+* :makevar:`libefp_DIR` |w---w| CMake variable to specify where pre-built libefp can be found. Set to installation directory containing ``share/cmake/libefp/libefpConfig.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_libefp` |w---w| CMake variable to force internal build of libefp instead of detecting pre-built
+
+**Examples**
+
+A. Build bundled
+
+  .. code-block:: bash
+
+    >>> cmake
+
+B. Link against pre-built
+
+  .. code-block:: bash
+
+    >>> cmake -DCMAKE_PREFIX_PATH=/path/to/libefp/root
+
+  .. code-block:: bash
+
+    >>> cmake -Dlibefp_DIR=/path/to/libefp/configdir
+
+C. Build bundled despite pre-built being detectable
+
+  .. code-block:: bash
+
+    >>> cmake -DCMAKE_PREFIX_PATH=/path/to/unwanted/libefp/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_libefp=ON
 

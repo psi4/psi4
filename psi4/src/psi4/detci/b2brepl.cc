@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -118,7 +118,7 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    J_n2 = nel - J_n1 - J_n3 - J_n4;
    if (I_n1 < 0 || I_n2 < 0 || I_n3 < 0 || J_n1 < 0 || J_n2 < 0 || J_n3 < 0
           || I_n4 < 0 || J_n4 < 0) {
-      printf("b2brepl: got less than 1 electron in a partition\n");
+     outfile->Printf("b2brepl: got less than 1 electron in a partition\n");
       return;
       }
 
@@ -205,7 +205,7 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
       if (ijsym == 0) {
          ridx = subgr_lex_addr(subgr_head, O, nel, norb);
          if (ridx < 0) {
-            printf("b2bgen1: invalid string index = %d\n", ridx);
+           outfile->Printf("b2bgen1: invalid string index = %d\n", ridx);
             continue;
             }
          for (k=0; k<nel; k++) {
@@ -269,7 +269,7 @@ void b2bgen1(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
                ridx = subgr_lex_addr(subgr_head, T, nel, norb);
                /* wouldn't be found if i is actually occupied */
                if (ridx < 0) {
-                  printf("b2bgen1: invalid string index = %d\n", ridx);
+                 outfile->Printf("b2bgen1: invalid string index = %d\n", ridx);
                   continue;
                   }
 
@@ -363,7 +363,7 @@ void b2bgen2(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
             ridx = subgr_lex_addr(subgr_head, T, nel, norb);
             /* wouldn't be found if i is actually occupied */
             if (ridx < 0) {
-               printf("b2bgen2: invalid string index = %d\n", ridx);
+              outfile->Printf("b2bgen2: invalid string index = %d\n", ridx);
                continue;
                }
 

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2016 The Psi4 Developers.
+# Copyright (c) 2007-2017 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,6 +35,7 @@ from psi4.driver import qcdb
 
 from .augmented_hessian import ah_iteration
 from . import diis_helper
+from .. import proc_util
 
 #np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
@@ -152,6 +153,9 @@ def mcscf_solver(ref_wfn):
         ciwfn.transform_mcscf_integrals(approx_integrals_only)
         nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
 
+        # After the first diag we need to switch to READ
+        ciwfn.set_ci_guess("DFILE")
+
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
         ci_grad_rms = core.get_variable("DETCI AVG DVEC NORM")
@@ -207,6 +211,7 @@ def mcscf_solver(ref_wfn):
             core.print_out('      Warning! Maxstep = %4.2f, scaling to %4.2f\n' % (maxstep, mcscf_steplimit))
             step.scale(mcscf_steplimit / maxstep)
 
+        xstep = total_step.clone()
         total_step.add(step)
 
         # Do or add DIIS
@@ -227,8 +232,20 @@ def mcscf_solver(ref_wfn):
                 total_step = diis_obj.extrapolate()
                 mcscf_current_step_type = 'TS, DIIS'
 
+        # Build the rotation by continuous updates
+        if mcscf_iter == 1:
+            totalU = mcscf_obj.form_rotation_matrix(total_step)
+        else:
+            xstep.axpy(-1.0, total_step)
+            xstep.scale(-1.0)
+            Ustep = mcscf_obj.form_rotation_matrix(xstep)
+            totalU = core.Matrix.doublet(totalU, Ustep, False, False)
+
+        # Build the rotation directly (not recommended)
+        # orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
+
         # Finally rotate and set orbitals
-        orbs_mat = mcscf_obj.Ck(start_orbs, total_step)
+        orbs_mat = core.Matrix.doublet(start_orbs, totalU, False, False)
         ciwfn.set_orbitals("ROT", orbs_mat)
 
         # Figure out what the next step should be
@@ -253,8 +270,7 @@ def mcscf_solver(ref_wfn):
     # If we are not converged load in Dvec and build iters array
     else:
         one_step_iters = range(mcscf_iter + 1, mcscf_max_macroiteration + 1)
-        dvec = ciwfn.new_civector(1, mcscf_d_file, True, True)
-        dvec.set_nvec(1)
+        dvec = ciwfn.D_vector()
         dvec.init_io_files(True)
         dvec.read(0, 0)
         dvec.symnormalize(1.0, 0)
@@ -331,50 +347,16 @@ def mcscf_solver(ref_wfn):
         else:
             core.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
 
-    # Print out energetics
-    core.print_out("\n   ==> Energetics <==\n\n")
-    core.print_out("    SCF energy =         %20.15f\n" % scf_energy)
-    core.print_out("    Total CI energy =    %20.15f\n\n" % current_energy)
-
     # Print out CI vector information
-    if mcscf_target_conv_type != 'SO':
-        dvec = ciwfn.new_civector(mcscf_nroots, mcscf_d_file, True, True)
-        dvec.init_io_files(True)
+    if mcscf_target_conv_type == 'SO':
+        dvec.close_io_files()
+        ci_grad.close_io_files()
 
-    irrep_labels = ciwfn.molecule().irrep_labels()
-    for root in range(mcscf_nroots):
-        core.print_out("\n   ==> CI root %d information <==\n\n" % (root))
+    # Do we diagonalize the opdm?
+    if core.get_option("DETCI", "NAT_ORBS"):
+        ciwfn.ci_nat_orbs()
 
-        # Print total energy
-        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root))
-        core.print_out("    CI Root %2d energy =  %20.15f\n" % (root, root_e))
-
-        # Print natural occupations
-        core.print_out("\n   Natural occupation numbers:\n\n")
-
-        occs_list = []
-        r_opdm = ciwfn.get_opdm(root, root, "SUM", False)
-        for h in range(len(r_opdm.nph)):
-            if 0 in r_opdm.nph[h].shape:
-                continue
-            nocc, rot = np.linalg.eigh(r_opdm.nph[h])
-            for e in nocc:
-                occs_list.append((e, irrep_labels[h]))
-
-        occs_list.sort(key=lambda x: -x[0])
-
-
-        cnt = 0
-        for value, label in occs_list:
-            value, label = occs_list[cnt]
-            core.print_out("      %4s  % 8.6f" % (label, value))
-            cnt += 1
-            if (cnt % 3) == 0:
-                core.print_out("\n")
-        core.print_out("\n")
-
-        # Print CIVector information
-        ciwfn.print_vector(dvec, root)
+    proc_util.print_ci_results(ciwfn, "MCSCF", scf_energy, current_energy, print_opdm_no=True)
 
     # Set final energy
     core.set_variable("CURRENT ENERGY", core.get_variable("MCSCF TOTAL ENERGY"))

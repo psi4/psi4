@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -92,6 +92,7 @@ void export_fock(py::module& m)
     py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
             // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
             .def("Ck", &SOMCSCF::Ck)
+            .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, py::arg("x"), py::arg("order") = 2)
             .def("rhf_energy", &SOMCSCF::rhf_energy)
             .def("update", &SOMCSCF::update)
             .def("approx_solve", &SOMCSCF::approx_solve)

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -45,18 +45,13 @@ using namespace psi;
 MatrixFactory::MatrixFactory()
 {
     nirrep_ = 0;
-    rowspi_ = NULL;
-    colspi_ = NULL;
 }
 
 MatrixFactory::MatrixFactory(const MatrixFactory& copy)
 {
     nirrep_ = copy.nirrep_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-
-    memcpy(rowspi_, copy.rowspi_, sizeof(int) * nirrep_);
-    memcpy(colspi_, copy.colspi_, sizeof(int) * nirrep_);
+    rowspi_ = copy.rowspi_;
+    colspi_ = copy.colspi_;
 }
 
 MatrixFactory::~MatrixFactory()
@@ -66,8 +61,8 @@ MatrixFactory::~MatrixFactory()
 bool MatrixFactory::init_with(int nirreps, int *rowspi, int *colspi)
 {
     nirrep_ = nirreps;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
+    rowspi_ = Dimension(nirrep_);
+    colspi_ = Dimension(nirrep_);
 
     nso_ = 0;
     for (int i=0; i<nirrep_; ++i) {
@@ -86,13 +81,11 @@ bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols)
     if (rows.n() != cols.n())
         throw PSIEXCEPTION("MatrixFactory can only handle same symmetry for rows and cols.");
 
-    rowspi_ = new int[rows.n()];
-    colspi_ = new int[cols.n()];
+    rowspi_ = rows;
+    colspi_ = cols;
 
     nso_ = 0;
     for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = rows[i];
-        colspi_[i] = cols[i];
         nso_ += rowspi_[i];
     }
 
@@ -110,7 +103,7 @@ int MatrixFactory::nirrep() const {
 }
 
 /// Returns the rows per irrep array
-int *MatrixFactory::rowspi() const {
+const Dimension& MatrixFactory::rowspi() const {
     return rowspi_;
 }
 
@@ -120,7 +113,7 @@ int MatrixFactory::nrow(int h) const {
 }
 
 /// Returns the columns per irrep array
-int *MatrixFactory::colspi() const {
+const Dimension& MatrixFactory::colspi() const {
     return colspi_;
 }
 
@@ -180,15 +173,15 @@ void MatrixFactory::create_matrix(Matrix& mat, std::string name, int symmetry)
 /// Returns a new Vector object with default dimensions
 Vector * MatrixFactory::create_vector()
 {
-    return new Vector(nirrep_, rowspi_);
+    return new Vector(rowspi_);
 }
 
 void MatrixFactory::create_vector(Vector& vec)
 {
-    vec.init(nirrep_, rowspi_);
+    vec.init(rowspi_);
 }
 
 SharedVector MatrixFactory::create_shared_vector(const std::string& name)
 {
-    return SharedVector(new Vector(name, nirrep_, rowspi_));
+    return SharedVector(new Vector(name, rowspi_));
 }

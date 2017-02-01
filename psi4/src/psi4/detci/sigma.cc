@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -144,7 +144,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
    SigmaData_->sprime = NULL;
 
    if (CalcInfo_->sigma_initialized) {
-       // printf("(sigma_init): sigma_initialized already set to 1\n");
+       //outfile->Printf("(sigma_init): sigma_initialized already set to 1\n");
        return;
    }
 
@@ -208,14 +208,14 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
        if (maxcols > maxrows) maxrows = maxcols;
        SigmaData_->transp_tmp = (double **)malloc(maxrows * sizeof(double *));
        if (SigmaData_->transp_tmp == NULL) {
-           printf(
+          outfile->Printf(
                "(sigma_init): Trouble with malloc'ing "
                "SigmaData_->transp_tmp\n");
        }
        bufsz = C.get_max_blk_size();
        SigmaData_->transp_tmp[0] = init_array(bufsz);
        if (SigmaData_->transp_tmp[0] == NULL) {
-           printf(
+          outfile->Printf(
                "(sigma_init): Trouble with malloc'ing "
                "SigmaData_->transp_tmp[0]\n");
        }
@@ -234,7 +234,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
 
    SigmaData_->cprime = (double **)malloc(maxrows * sizeof(double *));
    if (SigmaData_->cprime == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime\n");
+      outfile->Printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime\n");
    }
    if (C.icore_ == 0 && C.Ms0_ && SigmaData_->transp_tmp != NULL &&
        SigmaData_->transp_tmp[0] != NULL)
@@ -243,17 +243,17 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
        SigmaData_->cprime[0] = init_array(bufsz);
 
    if (SigmaData_->cprime[0] == NULL) {
-       printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime[0]\n");
+      outfile->Printf("(sigma_init): Trouble with malloc'ing SigmaData_->cprime[0]\n");
    }
 
    if (Parameters_->bendazzoli) {
        SigmaData_->sprime = (double **)malloc(maxrows * sizeof(double *));
        if (SigmaData_->sprime == NULL) {
-           printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime\n");
+          outfile->Printf("(sigma_init): Trouble with malloc'ing SigmaData_->sprime\n");
        }
        SigmaData_->sprime[0] = init_array(bufsz);
        if (SigmaData_->sprime[0] == NULL) {
-           printf(
+          outfile->Printf(
                "(sigma_init): Trouble with malloc'ing SigmaData_->sprime[0]\n");
        }
    }
@@ -881,7 +881,7 @@ void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringw
       } /* end loop over sigma blocks */
 
    if (print_ > 4) {
-     printf("\nSigma 1:\n");
+    outfile->Printf("\nSigma 1:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
        for (j=0; j<C.num_blocks_; j++) {
@@ -890,7 +890,7 @@ void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringw
        outfile->Printf( "\n");
      }
 
-     printf("\n\nSigma 2:\n");
+    outfile->Printf("\n\nSigma 2:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
        for (j=0; j<C.num_blocks_; j++) {
@@ -899,7 +899,7 @@ void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringw
        outfile->Printf( "\n");
      }
 
-     printf("\n\nSigma 3:\n");
+    outfile->Printf("\n\nSigma 3:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
        for (j=0; j<C.num_blocks_; j++) {
@@ -1002,7 +1002,7 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
       } /* end loop over sigma blocks */
 
    if (print_ > 3) {
-     printf("\nSigma 1:\n");
+    outfile->Printf("\nSigma 1:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
        for (j=0; j<C.num_blocks_; j++) {
@@ -1011,7 +1011,7 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
        outfile->Printf( "\n");
      }
 
-     printf("\n\nSigma 2:\n");
+    outfile->Printf("\n\nSigma 2:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
        for (j=0; j<C.num_blocks_; j++) {
@@ -1020,7 +1020,7 @@ void CIWavefunction::sigma_get_contrib_rotf(CIvect &C, CIvect &S,
        outfile->Printf( "\n");
      }
 
-     printf("\n\nSigma 3:\n");
+    outfile->Printf("\n\nSigma 3:\n");
      for (i=0; i<S.num_blocks_; i++) {
        outfile->Printf( "Contributions to sigma block %d\n", i);
        for (j=0; j<C.num_blocks_; j++) {

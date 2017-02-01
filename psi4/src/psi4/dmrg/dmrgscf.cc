@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -94,10 +94,14 @@ int chemps2_groupnumber(const string SymmLabel){
 void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::shared_ptr<JK> myJK, std::shared_ptr<Wavefunction> wfn){
 
     const int nso    = wfn->nso();
-    int * nsopi      = wfn->nsopi();
     const int nmo    = wfn->nmo();
-    int * nmopi      = wfn->nmopi();
     const int nirrep = wfn->nirrep();
+    int * nmopi = init_int_array(nirrep);
+    int * nsopi = init_int_array(nirrep);
+    for ( int h = 0; h < nirrep; ++h ){
+        nmopi[h] = wfn->nmopi()[h];
+        nsopi[h] = wfn->nsopi()[h];
+    }
 
     // nso can be different from nmo
     SharedMatrix SO_RDM;     SO_RDM = SharedMatrix( new Matrix( "SO RDM",   nirrep, nsopi, nsopi ) );
@@ -217,8 +221,13 @@ SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, Shar
         }
     }
 
-    int * nmopi = wfn->nmopi();
-    int * nsopi = wfn->nsopi();
+    const int nirrep = wfn->nirrep();
+    int * nmopi = init_int_array(nirrep);
+    int * nsopi = init_int_array(nirrep);
+    for ( int h = 0; h < nirrep; ++h ){
+        nmopi[h] = wfn->nmopi()[h];
+        nsopi[h] = wfn->nsopi()[h];
+    }
     const int nao = wfn->aotoso()->rowspi( 0 );
 
     SharedMatrix tfo;       tfo = SharedMatrix( new Matrix( num_irreps, nao, nmopi ) );
@@ -300,8 +309,12 @@ void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices 
     const int nTriMo = nmo * (nmo + 1) / 2;
     const int nso    = wfn->nso();
     const int nTriSo = nso * (nso + 1) / 2;
-    int * mopi       = wfn->nmopi();
-    int * sopi       = wfn->nsopi();
+    int * mopi       = init_int_array(nirrep);
+    int * sopi       = init_int_array(nirrep);
+    for ( int h = 0; h < nirrep; ++h ){
+        mopi[h] = wfn->nmopi()[h];
+        sopi[h] = wfn->nsopi()[h];
+    }
     double * work1   = new double[ nTriSo ];
     double * work2   = new double[ nTriSo ];
     IWL::read_one(psio.get(), PSIF_OEI, PSIF_SO_T, work1, nTriSo, 0, 0, "outfile");
@@ -488,9 +501,14 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     const int SyGroup= chemps2_groupnumber( wfn->molecule()->sym_label() );
     const int nmo    = wfn->nmo();
     const int nirrep = wfn->nirrep();
-    int * orbspi     = wfn->nmopi();
-    int * docc       = wfn->doccpi();
-    int * socc       = wfn->soccpi();
+    int * orbspi     = init_int_array(nirrep);
+    int * docc       = init_int_array(nirrep);
+    int * socc       = init_int_array(nirrep);
+    for ( int h = 0; h < nirrep; ++h ){
+        orbspi[h] = wfn->nmopi()[h];
+        docc[h] = wfn->doccpi()[h];
+        socc[h] = wfn->soccpi()[h];
+    }
     if ( wfn_irrep<0 )                            { throw PSIEXCEPTION("Option DMRG_IRREP (integer) may not be smaller than zero!"); }
     if ( wfn_multp<1 )                            { throw PSIEXCEPTION("Option DMRG_MULTIPLICITY (integer) should be larger or equal to one: DMRG_MULTIPLICITY = (2S+1) >= 1 !"); }
     if ( ndmrg_states==0 )                        { throw PSIEXCEPTION("Option DMRG_SWEEP_STATES (integer array) should be set!"); }

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -46,6 +46,8 @@ useful plugin feature. This allows codes to be developed as standalone
 entities, which are compiled independently of the Psi source, but can
 still link against Psi's vast library. The plugins can be loaded at
 run-time from any location.
+
+.. _`sec:newplugins`:
 
 Creating a New Plugin
 ---------------------

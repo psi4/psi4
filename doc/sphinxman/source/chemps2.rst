@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -140,4 +140,80 @@ DMRG Keywords
 .. include:: /autodir_options_c/dmrg__dmrg_sweep_noise_prefac.rst
 .. include:: /autodir_options_c/dmrg__dmrg_sweep_states.rst
 .. include:: /autodir_options_c/dmrg__dmrg_unitary_write.rst
+
+.. _`cmake:chemps2`:
+
+How to configure CheMPS2 for building Psi4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Role and Dependencies**
+
+* Role |w---w| In |PSIfour|, CheMPS2 is a library that provides additional
+  quantum chemical capabilities (DMRG).
+
+* Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) CheMPS2
+
+* Upstream Dependencies |w---w| CheMPS2 |dr| HDF5 |dr| zlib
+
+**CMake Variables**
+
+* :makevar:`ENABLE_CheMPS2` |w---w| CMake variable toggling whether Psi4 builds with CheMPS2
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For CheMPS2, set to an installation directory containing ``include/chemps2/DMRG.h``
+* :makevar:`CheMPS2_DIR` |w---w| CMake variable to specify where pre-built CheMPS2 can be found. Set to installation directory containing ``share/cmake/CheMPS2/CheMPS2Config.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_CheMPS2` |w---w| CMake variable to force internal build of CheMPS2 instead of detecting pre-built
+
+**Examples**
+
+A. Build bundled
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_CheMPS2=ON
+
+B. Build *without* CheMPS2
+
+  .. code-block:: bash
+
+    >>> cmake
+
+C. Build bundled with specific HDF5
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_CheMPS2=ON -DCMAKE_PREFIX_PATH=/path/to/hdf5
+
+D. Link against pre-built
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_CheMPS2=ON -DCMAKE_PREFIX_PATH=/path/to/chemps2/root
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_CheMPS2=ON -DCheMPS2_DIR=/path/to/chemps2/configdir
+
+E. Link against pre-built with specific HDF5
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_CheMPS2=ON -DCMAKE_PREFIX_PATH="/path/to/chemps2/root;/path/to/hdf5/root"
+
+F. Build bundled despite pre-built being detectable
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_CheMPS2=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/chemps2/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_CheMPS2=ON
+
+
+.. _`faq:chemps2gccflto`:
+
+How to fix "``plugin needed to handle lto object``" when building CheMPS2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For building with GCC, errors involving unresolved symbols or a message
+"plugin needed to handle lto object" may indicate a failure of the
+interprocedural optimization. This can be resolved by passing full
+locations to gcc toolchain utilities to ``setup`` or ``cmake``:
+``-DCMAKE_RANLIB=/path/to/gcc-ranlib -DCMAKE_AR=/path/to/gcc-ar`` .
+Details at https://github.com/psi4/psi4/issues/414.
 

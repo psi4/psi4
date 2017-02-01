@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -789,7 +789,7 @@ std::pair<SharedMatrix, std::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, boo
 {
     SharedMatrix D = Dmo(T1, diff);
     SharedMatrix C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
-    std::shared_ptr<Vector> O(new Vector("Occupation", D->nirrep(), D->rowspi()));
+    std::shared_ptr<Vector> O(new Vector("Occupation", D->rowspi()));
 
     D->diagonalize(C,O,descending);
 

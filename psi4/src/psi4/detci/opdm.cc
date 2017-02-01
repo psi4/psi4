@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -129,6 +129,7 @@ void CIWavefunction::form_opdm(void) {
         opdm_map_[opdm_list[i][1]->name()] = opdm_list[i][1];
         opdm_map_[opdm_list[i][2]->name()] = opdm_list[i][2];
     }
+    Ivec->close_io_files(true); // Closes Jvec too
 
     // Figure out which OPDM should be current
     if (Parameters_->opdm_ave) {
@@ -239,13 +240,13 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
     transp_tmp = (double **)malloc(maxrows * sizeof(double *));
     transp_tmp2 = (double **)malloc(maxrows * sizeof(double *));
     if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
-      printf("(opdm): Trouble with malloc'ing transp_tmp\n");
+     outfile->Printf("(opdm): Trouble with malloc'ing transp_tmp\n");
     }
     unsigned long bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
     if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
-      printf("(opdm): Trouble with malloc'ing transp_tmp[0]\n");
+     outfile->Printf("(opdm): Trouble with malloc'ing transp_tmp[0]\n");
     }
   }
 
@@ -574,10 +575,10 @@ void CIWavefunction::ci_nat_orbs() {
   // We can only do restricted orbitals
   outfile->Printf("\n   Computing CI Natural Orbitals\n");
   outfile->Printf("   !Warning: New orbitals will be sorted by occuption number,\n");
-  outfile->Printf("   orbital spaces (occ/act/vir) may change.\n\n");
+  outfile->Printf("   orbital spaces (occ/act/vir) may change.\n");
 
-  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->nirrep(), Da_->rowspi(), Da_->colspi()));
-  SharedVector NO_occ(new Vector("OPDM Occuption", Da_->nirrep(), Da_->rowspi()));
+  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->rowspi(), Da_->colspi()));
+  SharedVector NO_occ(new Vector("OPDM Occuption", Da_->rowspi()));
 
   SharedMatrix D = opdm_add_inactive(opdm_, 2.0, true);
   D->diagonalize(NO_vecs, NO_occ, descending);

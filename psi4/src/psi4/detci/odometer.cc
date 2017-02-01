@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -38,8 +38,10 @@
 ** University of Georgia
 */
 
-#include <cstdio>
 #include "psi4/detci/odometer.h"
+#include "psi4/psi4-dec.h"
+
+#include <cstdio>
 
 namespace psi { namespace detci {
 
@@ -234,9 +236,9 @@ void Odometer::print()
    int i ;
 
    for (i=length-1; i>=0; i--) {
-      printf("%d ", value[i]);
+     outfile->Printf("%d ", value[i]);
       }
-   printf("\n");
+  outfile->Printf("\n");
 }
  
 

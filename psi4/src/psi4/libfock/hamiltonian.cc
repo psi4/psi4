@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -127,7 +127,7 @@ void MatrixRHamiltonian::print_header() const
 }
 std::shared_ptr<Vector> MatrixRHamiltonian::diagonal()
 {
-    std::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->nirrep(), M_->rowspi()));
+    std::shared_ptr<Vector> diag(new Vector("Matrix Diagonal", M_->rowspi()));
     for (int h = 0; h < M_->nirrep(); ++h) {
         int n = M_->rowspi()[h];
         if (!n) continue;
@@ -169,8 +169,8 @@ void MatrixUHamiltonian::print_header() const
 }
 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > MatrixUHamiltonian::diagonal()
 {
-    std::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
-    std::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->nirrep(), M_.first->rowspi()));
+    std::shared_ptr<Vector> diaga(new Vector("Alpha Matrix Diagonal", M_.first->rowspi()));
+    std::shared_ptr<Vector> diagb(new Vector("Beta Matrix Diagonal", M_.first->rowspi()));
     for (int h = 0; h < M_.first->nirrep(); ++h) {
         int n = M_.first->rowspi()[h];
         if (!n) continue;
@@ -226,15 +226,14 @@ std::shared_ptr<Vector> CISRHamiltonian::diagonal()
 {
 
     int nirrep = eps_aocc_->nirrep();
-    int* nov = new int[nirrep];
-    ::memset((void*)nov,'\0',nirrep*sizeof(int));
+    Dimension nov(nirrep);
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int h = 0; h < nirrep; ++h) {
             nov[symm] += eps_aocc_->dimpi()[h] * eps_avir_->dimpi()[symm^h];
         }
     }
 
-    std::shared_ptr<Vector> diag(new Vector("CIS Diagonal", nirrep, nov));
+    std::shared_ptr<Vector> diag(new Vector("CIS Diagonal", nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -272,7 +271,6 @@ std::shared_ptr<Vector> CISRHamiltonian::diagonal()
         }
     }
 
-    delete[] nov;
     return diag;
 }
 void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
@@ -479,15 +477,14 @@ void TDHFRHamiltonian::print_header() const
 std::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
 {
     int nirrep = eps_aocc_->nirrep();
-    int* nov = new int[nirrep];
-    ::memset((void*)nov,'\0',nirrep*sizeof(int));
+    Dimension nov(nirrep);
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int h = 0; h < nirrep; ++h) {
             nov[symm] += 2 * eps_aocc_->dimpi()[h] * eps_avir_->dimpi()[symm^h];
         }
     }
 
-    std::shared_ptr<Vector> diag(new Vector("TDHF Diagonal", nirrep, nov));
+    std::shared_ptr<Vector> diag(new Vector("TDHF Diagonal", nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -512,7 +509,6 @@ std::shared_ptr<Vector> TDHFRHamiltonian::diagonal()
         }
     }
 
-    delete[] nov;
     return diag;
 }
 void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
@@ -705,15 +701,14 @@ void CPHFRHamiltonian::print_header() const
 std::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
 {
     int nirrep = eps_aocc_->nirrep();
-    int* nov = new int[nirrep];
-    ::memset((void*)nov,'\0',nirrep*sizeof(int));
+    Dimension nov(nirrep);
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int h = 0; h < nirrep; ++h) {
             nov[symm] += eps_aocc_->dimpi()[h] * eps_avir_->dimpi()[symm^h];
         }
     }
 
-    std::shared_ptr<Vector> diag(new Vector("CPHF Diagonal", nirrep, nov));
+    std::shared_ptr<Vector> diag(new Vector("CPHF Diagonal", nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -736,14 +731,12 @@ std::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
         }
     }
 
-    delete[] nov;
     return diag;
 }
 std::map<std::string, SharedVector> CPHFRHamiltonian::pack(const std::map<std::string, SharedMatrix>& x)
 {
     int nirrep = eps_aocc_->nirrep();
-    int* nov = new int[nirrep];
-    ::memset((void*)nov,'\0',nirrep*sizeof(int));
+    Dimension nov(nirrep);
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int h = 0; h < nirrep; ++h) {
             nov[symm] += eps_aocc_->dimpi()[h] * eps_avir_->dimpi()[symm^h];
@@ -754,7 +747,7 @@ std::map<std::string, SharedVector> CPHFRHamiltonian::pack(const std::map<std::s
     for (std::map<std::string, SharedMatrix>::const_iterator it = x.begin();
         it != x.end(); ++it) {
 
-        std::shared_ptr<Vector> v(new Vector("X", nirrep, nov));
+        std::shared_ptr<Vector> v(new Vector("X", nov));
         SharedMatrix x2 = (*it).second;
         int symm = x2->symmetry();
         int offset = 0;
@@ -1430,24 +1423,22 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > USTABHamiltonian::d
 {
 
     int nirrepa = eps_occa_->nirrep();
-    int* nova = new int[nirrepa];
-    ::memset((void*)nova,'\0',nirrepa*sizeof(int));
+    Dimension nova(nirrepa);
     for (int symm = 0; symm < nirrepa; ++symm) {
         for (int h = 0; h < nirrepa; ++h) {
             nova[symm] += eps_occa_->dimpi()[h] * eps_vira_->dimpi()[symm^h];
         }
     }
     int nirrepb = eps_occb_->nirrep();
-    int* novb = new int[nirrepb];
-    ::memset((void*)novb,'\0',nirrepb*sizeof(int));
+    Dimension novb(nirrepb);
     for (int symm = 0; symm < nirrepb; ++symm) {
         for (int h = 0; h < nirrepb; ++h) {
             novb[symm] += eps_occb_->dimpi()[h] * eps_virb_->dimpi()[symm^h];
         }
     }
 
-    std::shared_ptr<Vector> diaga(new Vector("UStab Alpha Diagonal", nirrepa, nova));
-    std::shared_ptr<Vector> diagb(new Vector("UStab Beta Diagonal", nirrepb, novb));
+    std::shared_ptr<Vector> diaga(new Vector("UStab Alpha Diagonal", nova));
+    std::shared_ptr<Vector> diagb(new Vector("UStab Beta Diagonal", novb));
 
     for (int symm = 0; symm < nirrepa; ++symm) {
         long int offset = 0L;
@@ -1495,8 +1486,6 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > USTABHamiltonian::d
         outfile->Printf("Providing orbital energy difference");
     }
 
-    delete[] nova;
-    delete[] novb;
     return make_pair(diaga,diagb);
 }
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -71,6 +71,10 @@ void CIWavefunction::compute_mpn()
   struct stringwr *stralp, *strbet;
   int **drc_orbs;
   double tval;
+
+  if (print_){
+      outfile->Printf("\n   ==> Starting MPn CI Computation <==\n\n");
+  }
 
   if(Parameters_->zaptn){         /* Shift SCF eigenvalues for ZAPTn          */
     int h1, h2;
@@ -494,30 +498,30 @@ void CIWavefunction::mpn_generator(CIvect &Hd)
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2 - Process::environment.globals["CURRENT REFERENCE ENERGY"];
 
      if(Parameters_->zaptn)
-       outfile->Printf( "\nZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
+       outfile->Printf( "\n    ZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
      else
-       outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
+       outfile->Printf( "\n    MP%d energy saved\n", (Parameters_->maxnvect * 2) - 1);
    }
    else if (Parameters_->save_mpn2 == 2 && Parameters_->wigner) {
      Process::environment.globals["CURRENT ENERGY"] = Empn2a;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn2a - Process::environment.globals["CURRENT REFERENCE ENERGY"];
      if(Parameters_->zaptn)
-       outfile->Printf( "\nZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
+       outfile->Printf( "\n    ZAPT%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
      else
-       outfile->Printf( "\nMP%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
+       outfile->Printf( "\n    MP%d energy saved\n", (Parameters_->maxnvect * 2) - 2);
    }
    else {
      Process::environment.globals["CURRENT ENERGY"] = Empn;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = Empn - Process::environment.globals["CURRENT REFERENCE ENERGY"];
      if(Parameters_->zaptn)
-       outfile->Printf( "\nZAPT%d energy saved\n", Parameters_->maxnvect);
+       outfile->Printf( "\n    ZAPT%d energy saved\n", Parameters_->maxnvect);
      else
-       outfile->Printf( "\nMP%d energy saved\n", Parameters_->maxnvect);
+       outfile->Printf( "\n    MP%d energy saved\n", Parameters_->maxnvect);
    }
    if(Parameters_->zaptn)
-     outfile->Printf( "\nEZAPTn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
+     outfile->Printf( "\n    EZAPTn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
    else
-     outfile->Printf( "\nEMPn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
+     outfile->Printf( "\n    EMPn = %17.13lf\n", Process::environment.globals["CURRENT ENERGY"]);
 
 
    outfile->Printf("\n");

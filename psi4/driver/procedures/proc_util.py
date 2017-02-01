@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2016 The Psi4 Developers.
+# Copyright (c) 2007-2017 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -31,6 +31,8 @@ from __future__ import absolute_import
 from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
 from psi4 import core
+
+import numpy as np
 
 def scf_set_reference_local(name):
     """
@@ -154,3 +156,71 @@ def check_non_symmetric_jk_density(name):
         raise ValidationError("Method %s: Requires support for non-symmetric density matrices.\n"
                               "     Please set SCF_TYPE to %s" % (name, supp_string))
 
+def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
+    """
+    Printing for all CI Wavefunctions
+    """
+
+    # Print out energetics
+    core.print_out("\n   ==> Energetics <==\n\n")
+    core.print_out("    SCF energy =         %20.15f\n" % scf_e)
+    if "CI" in rname:
+        core.print_out("    Total CI energy =    %20.15f\n" % ci_e)
+    elif "MP" in rname:
+        core.print_out("    Total MP energy =    %20.15f\n" % ci_e)
+    elif "ZAPT" in rname:
+        core.print_out("    Total ZAPT energy =  %20.15f\n" % ci_e)
+    else:
+        core.print_out("    Total MCSCF energy = %20.15f\n" % ci_e)
+
+    # Nothing to be done for ZAPT or MP
+    if ("MP" in rname) or ("ZAPT" in rname):
+        core.print_out("\n")
+        return
+
+    # Initial info
+    ci_nroots = core.get_option("DETCI", "NUM_ROOTS")
+    irrep_labels = ciwfn.molecule().irrep_labels()
+
+    # Grab the D-vector
+    dvec = ciwfn.D_vector()
+    dvec.init_io_files(True)
+
+    for root in range(ci_nroots):
+        core.print_out("\n   ==> %s root %d information <==\n\n" % (rname, root))
+
+        # Print total energy
+        root_e = core.get_variable("CI ROOT %d TOTAL ENERGY" % (root))
+        core.print_out("    %s Root %d energy =  %20.15f\n" % (rname, root, root_e))
+
+        # Print natural occupations
+        if print_opdm_no:
+            core.print_out("\n   Active Space Natural occupation numbers:\n\n")
+
+            occs_list = []
+            r_opdm = ciwfn.get_opdm(root, root, "SUM", False)
+            for h in range(len(r_opdm.nph)):
+                if 0 in r_opdm.nph[h].shape:
+                    continue
+                nocc, rot = np.linalg.eigh(r_opdm.nph[h])
+                for e in nocc:
+                    occs_list.append((e, irrep_labels[h]))
+
+            occs_list.sort(key=lambda x: -x[0])
+
+            cnt = 0
+            for value, label in occs_list:
+                value, label = occs_list[cnt]
+                core.print_out("      %4s  % 8.6f" % (label, value))
+                cnt += 1
+                if (cnt % 3) == 0:
+                    core.print_out("\n")
+
+            if (cnt % 3):
+                core.print_out("\n")
+
+        # Print CIVector information
+        ciwfn.print_vector(dvec, root)
+
+    # True to keep the file
+    dvec.close_io_files(True)

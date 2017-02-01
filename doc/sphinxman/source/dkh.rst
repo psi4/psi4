@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -46,10 +46,7 @@ Interface to DKH by A. Wolf, M. Reiher, and B. A. Hess
    <br>
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
-
-`devel <http://www.reiher.ethz.ch/software/dkh-x2c.html>`_
-
-.. :target: http://sebwouters.github.io/CheMPS2/index.html
+   :target: http://www.reiher.ethz.ch/software/dkh-x2c.html
 
 .. _`sec:dkhinstall`:
 
@@ -121,4 +118,55 @@ When using this code please make reference to the appropriate following paper:
 * "The Generalized Douglas-Kroll Transformation," A. Wolf,
   M. Reiher, and B. A. Hess, *J. Chem. Phys.* **117**, 9215 (2002).
   (doi: `10.1063/1.1515314 <http://dx.doi.org/10.1063/1.1515314>`_)
+
+.. _`cmake:dkh`:
+
+How to configure dkh for building Psi4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Role and Dependencies**
+
+* Role |w---w| In |PSIfour|, DKH is a library that provides additional
+  quantum chemical capabilities (relativistic effects).
+
+* Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) dkh
+
+* Upstream Dependencies |w---w| dkh |dr| Fortran
+
+**CMake Variables**
+
+* :makevar:`ENABLE_dkh` |w---w| CMake variable toggling whether Psi4 builds with dkh
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For dkh, set to an installation directory containing ``include/DKH/DKH_MANGLE.h``
+* :makevar:`dkh_DIR` |w---w| CMake variable to specify where pre-built dkh can be found. Set to installation directory containing ``share/cmake/dkh/dkhConfig.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_dkh` |w---w| CMake variable to force internal build of dkh instead of detecting pre-built
+
+**Examples**
+
+A. Build bundled
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_dkh=ON
+
+B. Build *without* dkh
+
+  .. code-block:: bash
+
+    >>> cmake
+
+C. Link against pre-built
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_dkh=ON -DCMAKE_PREFIX_PATH=/path/to/dkh/root
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_dkh=ON -Ddkh_DIR=/path/to/dkh/configdir
+
+D. Build bundled despite pre-built being detectable
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_dkh=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/dkh/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_dkh=ON
 

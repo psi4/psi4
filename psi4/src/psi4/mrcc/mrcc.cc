@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -601,7 +601,7 @@ bool has_key(const py::dict &data, const std::string &key)
 {
     bool found = false;
     for (auto item : data) {
-        if (item.first == py::str(key)) {
+        if (std::string(py::str(item.first)) == key) {
             found = true;
             break;
         }

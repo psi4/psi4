@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -287,12 +287,9 @@ public:
     bool same_a_b_orbs() const { return same_a_b_orbs_; }
     bool same_a_b_dens() const { return same_a_b_dens_; }
 
-    /// Takes an irrep-by-irrep array (e.g. DOCC) and maps it into the current point group
-    void map_irreps(std::vector<int*> &arrays);
-    /// A wrapper to the Vector version of this function
-    void map_irreps(int* &array);
-    /// A wrapper to the Vector version of this function
-    void map_irreps(Dimension &array);
+    /// Takes a Dimension object (e.g. DOCC) and returns a new Dimension object
+    /// with occupations mapped to the current point group
+    Dimension map_irreps(const Dimension &dimpi);
 
     /// Returns the molecule object that pertains to this wavefunction.
     std::shared_ptr<Molecule> molecule() const;

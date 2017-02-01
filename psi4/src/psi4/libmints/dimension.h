@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -39,8 +39,7 @@ namespace psi {
 class Dimension
 {
     std::string name_;
-    int n_;
-    int *blocks_;
+    std::vector<int> blocks_;
 
 public:
     Dimension();
@@ -58,42 +57,46 @@ public:
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
-    /// Re-initializes the object.
-    void init(const std::string&, int n);
+    /// Re-initializes the object
+    void init(int n, const std::string& name = "");
 
     /// Return the rank
-    const int& n() const { return n_; }
+    int n() const { return static_cast<int>(blocks_.size()); }
 
-    /// Return the name of the dimension.
+    /// Return the name of the dimension
     const std::string& name() const { return name_; }
 
-    /// Set the name of the dimension.
-    void set_name(const std::string& nme) { name_ = nme; }
+    /// Set the name of the dimension
+    void set_name(const std::string& name) { name_ = name; }
 
     /// Blocks access
     int& operator[](int i) { return blocks_[i]; }
     const int& operator[](int i) const { return blocks_[i]; }
+    const std::vector<int>& blocks() const { return blocks_; }
 
     /// Casting operator to int*
-    operator int*() const { return blocks_; }
+    operator int*() { return blocks_.data(); }
     /// Casting operator to const int*
-    operator const int*() const { return blocks_; }
+    operator const int*() const { return blocks_.data(); }
 
     /// Return the sum of constituent dimensions
     int sum() const;
     int max() const;
+
+    /// Zero all the elements
+    void zero();
 
     void print() const;
 
     // Only used for python
     const int& get(int i) const { return blocks_[i]; }
     void set(int i, int val) { blocks_[i] = val; }
-};
 
-bool operator==(const Dimension& a, const Dimension& b);
-bool operator!=(const Dimension& a, const Dimension& b);
-Dimension operator+(const Dimension& a, const Dimension& b);
-Dimension operator-(const Dimension& a, const Dimension& b);
+    friend bool operator==(const Dimension& a, const Dimension& b);
+    friend bool operator!=(const Dimension& a, const Dimension& b);
+    friend Dimension operator+(const Dimension& a, const Dimension& b);
+    friend Dimension operator-(const Dimension& a, const Dimension& b);
+};
 
 }
 

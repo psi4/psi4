@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -149,7 +149,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
    /* check parameters */
    if (evecs == NULL || evals == NULL) {
-      printf("(sem): passed uncallocated pointers for evecs or evals\n") ;
+     outfile->Printf("(sem): passed uncallocated pointers for evecs or evals\n") ;
       return ;
       }
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,6 +66,8 @@ void CIWavefunction::form_tpdm(void) {
 
   tpdm_list = tpdm(Ivec, Jvec, states_vec);
 
+  Ivec->close_io_files(true); // Closes Jvec too
+
   tpdm_aa_ = tpdm_list[0];
   tpdm_ab_ = tpdm_list[1];
   tpdm_bb_ = tpdm_list[2];
@@ -123,13 +125,13 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
     transp_tmp = (double **)malloc(maxrows * sizeof(double *));
     transp_tmp2 = (double **)malloc(maxrows * sizeof(double *));
     if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
-      printf("(tpdm): Trouble with malloc'ing transp_tmp\n");
+     outfile->Printf("(tpdm): Trouble with malloc'ing transp_tmp\n");
     }
     unsigned long bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
     if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
-      printf("(tpdm): Trouble with malloc'ing transp_tmp[0]\n");
+     outfile->Printf("(tpdm): Trouble with malloc'ing transp_tmp[0]\n");
     }
   }
 

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -138,3 +138,55 @@ Options
 .. include:: autodir_options_c/gdma__gdma_multipole_units.rst
 .. include:: autodir_options_c/gdma__gdma_radius.rst
 .. include:: autodir_options_c/gdma__gdma_switch.rst
+
+.. _`cmake:gdma`:
+
+How to configure gdma for building Psi4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Role and Dependencies**
+
+* Role |w---w| In |PSIfour|, GDMA is a library that provides additional
+  quantum chemical capabilities (multipole analysis).
+
+* Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) gdma
+
+* Upstream Dependencies |w---w| gdma |dr| Fortran
+
+**CMake Variables**
+
+* :makevar:`ENABLE_gdma` |w---w| CMake variable toggling whether Psi4 builds with gdma
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For gdma, set to an installation directory containing ``include/GDMA/GDMA_MANGLE.h``
+* :makevar:`gdma_DIR` |w---w| CMake variable to specify where pre-built gdma can be found. Set to installation directory containing ``share/cmake/gdma/gdmaConfig.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_gdma` |w---w| CMake variable to force internal build of gdma instead of detecting pre-built
+
+**Examples**
+
+A. Build bundled
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_gdma=ON
+
+B. Build *without* gdma
+
+  .. code-block:: bash
+
+    >>> cmake
+
+C. Link against pre-built
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_gdma=ON -DCMAKE_PREFIX_PATH=/path/to/gdma/root
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_gdma=ON -Dgdma_DIR=/path/to/gdma/configdir
+
+D. Build bundled despite pre-built being detectable
+
+  .. code-block:: bash
+
+    >>> cmake -DENABLE_gdma=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/gdma/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_gdma=ON
+

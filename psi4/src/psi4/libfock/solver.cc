@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -151,19 +151,19 @@ void CGRSolver::initialize()
     for (int N = 0; N < nvec; ++N) {
         std::stringstream xs;
         xs << "Solution Vector " << N+1;
-        x_.push_back(std::shared_ptr<Vector>(new Vector(xs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        x_.push_back(std::shared_ptr<Vector>(new Vector(xs.str(),b_[0]->dimpi())));
         std::stringstream Aps;
         Aps << "Product Vector " << N+1;
-        Ap_.push_back(std::shared_ptr<Vector>(new Vector(Aps.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        Ap_.push_back(std::shared_ptr<Vector>(new Vector(Aps.str(),b_[0]->dimpi())));
         std::stringstream zs;
         zs << "Z Vector " << N+1;
-        z_.push_back(std::shared_ptr<Vector>(new Vector(zs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        z_.push_back(std::shared_ptr<Vector>(new Vector(zs.str(),b_[0]->dimpi())));
         std::stringstream rs;
         rs << "Residual Vector " << N+1;
-        r_.push_back(std::shared_ptr<Vector>(new Vector(rs.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        r_.push_back(std::shared_ptr<Vector>(new Vector(rs.str(),b_[0]->dimpi())));
         std::stringstream ps;
         ps << "Conjugate Vector " << N+1;
-        p_.push_back(std::shared_ptr<Vector>(new Vector(ps.str(),b_[0]->nirrep(),b_[0]->dimpi())));
+        p_.push_back(std::shared_ptr<Vector>(new Vector(ps.str(),b_[0]->dimpi())));
         alpha_.push_back(0.0);
         beta_.push_back(0.0);
         r_nrm2_.push_back(0.0);
@@ -279,8 +279,8 @@ void CGRSolver::setup()
             size_t n = (b_.size() > (nguess_ - i) ? (nguess_ - i) : b_.size());
             for (size_t j = 0; j < n; j++) {
                 size_t k = i + j;
-                x_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
-                b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Sigma", diag_->nirrep(), diag_->dimpi())));
+                x_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->dimpi())));
+                b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Sigma", diag_->dimpi())));
                 for (int h = 0; h < diag_->nirrep(); h++) {
                     if (k >= A_inds_[h].size()) continue;
                     b_[j]->set(h,A_inds_[h][k],1.0);
@@ -818,7 +818,7 @@ void DLRSolver::guess()
         int n = (max_subspace_ > (nguess_ - i) ? (nguess_ - i) : max_subspace_);
         for (int j = 0; j < n; j++) {
             size_t k = i + j;
-            b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
+            b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->dimpi())));
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
                 b_[j]->set(h,A_inds_[h][k],1.0);
@@ -853,7 +853,7 @@ void DLRSolver::guess()
     for (int i = 0; i < nroot_; i++) {
         std::stringstream ss;
         ss << "Guess " << i;
-        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->dimpi())));
         for (int h = 0; h < diag_->nirrep(); h++) {
             double** Up = U->pointer(h);
             double*  bp = b_[i]->pointer(h);
@@ -882,7 +882,7 @@ void DLRSolver::sigma()
     for (int i = 0; i < n; i++) {
         std::stringstream s;
         s << "Sigma Vector " << (i + offset);
-        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->dimpi())));
     }
 
     std::vector<std::shared_ptr<Vector> > x;
@@ -939,15 +939,14 @@ void DLRSolver::subspaceDiagonalization()
 {
     int n = s_.size();
     int nirrep = diag_->nirrep();
-    int* npi = new int[nirrep];
+    Dimension npi(nirrep);
     for (int h = 0; h < nirrep; ++h) {
         npi[h] = n;
     }
 
     SharedMatrix G2(G_->clone());
-    a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",nirrep,npi,npi));
-    l_ = std::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
-    delete[] npi;
+    a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",npi,npi));
+    l_ = std::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",npi));
 
     G2->diagonalize(a_,l_);
 
@@ -989,7 +988,7 @@ void DLRSolver::eigenvecs()
         for (int m = 0; m < nroot_; ++m) {
             std::stringstream s;
             s << "Eigenvector " << m;
-            std::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
+            std::shared_ptr<Vector> c(new Vector(s.str().c_str(), diag_->dimpi()));
             c_.push_back(c);
         }
     }
@@ -1052,7 +1051,7 @@ void DLRSolver::residuals()
             // Residual k
             std::stringstream s;
             s << "Residual Vector " << k;
-            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
+            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(), diag_->dimpi())));
         }
     }
 
@@ -1127,7 +1126,7 @@ void DLRSolver::correctors()
 
         std::stringstream s;
         s << "Corrector Vector " << k;
-        std::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
+        std::shared_ptr<Vector> d(new Vector(s.str().c_str(), diag_->dimpi()));
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
 
@@ -1278,10 +1277,10 @@ void DLRSolver::subspaceCollapse()
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
         bs << "Subspace Vector " << k;
-        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
+        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->dimpi())));
         std::stringstream ss;
         ss << "Sigma Vector " << k;
-        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->dimpi())));
     }
 
     int n = a_->rowspi()[0];
@@ -1646,7 +1645,7 @@ void DLRXSolver::guess()
     for (int i = 0; i < nguess_; ++i) {
         std::stringstream ss;
         ss << "Subspace Vector " << i;
-        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->dimpi())));
     }
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
@@ -1682,7 +1681,7 @@ void DLRXSolver::sigma()
     for (int i = 0; i < n; i++) {
         std::stringstream s;
         s << "Sigma Vector " << (i + offset);
-        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->dimpi())));
     }
 
     std::vector<std::shared_ptr<Vector> > x;
@@ -1752,15 +1751,14 @@ void DLRXSolver::subspaceDiagonalization()
 {
     int n = s_.size();
     int nirrep = diag_->nirrep();
-    int* npi = new int[nirrep];
+    Dimension npi(nirrep);
     for (int h = 0; h < nirrep; ++h) {
         npi[h] = 2*n;
     }
 
     // Reals
-    a_ = SharedMatrix (new Matrix("Subspace Right Eigenvectors",nirrep,npi,npi));
-    l_ = std::shared_ptr<Vector> (new Vector("Real Subspace Eigenvalues",nirrep,npi));
-    delete[] npi;
+    a_ = SharedMatrix (new Matrix("Subspace Right Eigenvectors",npi,npi));
+    l_ = std::shared_ptr<Vector> (new Vector("Real Subspace Eigenvalues",npi));
 
     // Temps
     SharedMatrix G2(G_->clone());
@@ -1867,7 +1865,7 @@ void DLRXSolver::eigenvecs()
         for (int m = 0; m < nroot_; ++m) {
             std::stringstream s;
             s << "Eigenvector " << m;
-            std::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
+            std::shared_ptr<Vector> c(new Vector(s.str().c_str(), diag_->dimpi()));
             c_.push_back(c);
         }
     }
@@ -1935,7 +1933,7 @@ void DLRXSolver::residuals()
             // Residual k
             std::stringstream s;
             s << "Residual Vector " << k;
-            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
+            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(), diag_->dimpi())));
         }
     }
 
@@ -2011,7 +2009,7 @@ void DLRXSolver::correctors()
 
         std::stringstream s;
         s << "Corrector Vector " << k;
-        std::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
+        std::shared_ptr<Vector> d(new Vector(s.str().c_str(), diag_->dimpi()));
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
 
@@ -2158,10 +2156,10 @@ void DLRXSolver::subspaceCollapse()
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
         bs << "Subspace Vector " << k;
-        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
+        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->dimpi())));
         std::stringstream ss;
         ss << "Sigma Vector " << k;
-        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->dimpi())));
     }
 
     int n = a_->rowspi()[0]/2;
@@ -2316,7 +2314,7 @@ void DLUSolver::initialize()
     // We get the dimension of the smallest irrep
 
     int nirrep = diag_->nirrep();
-    int* dim = diag_->dimpi();
+    const Dimension& dim = diag_->dimpi();
     int mindim=dim[0];
 
     for (int symm = 1; symm < nirrep; ++symm) {
@@ -2347,14 +2345,14 @@ std::shared_ptr<Vector> DLUSolver::contract_pair(
         throw PSIEXCEPTION("Alpha and Beta should have same number of irreps.\n");
     }
 
-    int* dima = components.first->dimpi();
-    int* dimb = components.second->dimpi();
-    int* dims = new int[nirrepa];
+    const Dimension& dima = components.first->dimpi();
+    const Dimension& dimb = components.second->dimpi();
+    Dimension dims(nirrepa);
     for (int symm = 0; symm < nirrepa; ++symm) {
         dims[symm] = dima[symm] + dimb[symm];
     }
 
-    std::shared_ptr<Vector> vec(new Vector("UStab Alpha + Beta", nirrepa, dims));
+    std::shared_ptr<Vector> vec(new Vector("UStab Alpha + Beta", dims));
 
     double val = 0;
     for (int symm = 0; symm < nirrepa; ++symm) {
@@ -2367,8 +2365,6 @@ std::shared_ptr<Vector> DLUSolver::contract_pair(
             vec->set(symm,dima[symm] + i,val);
         }
     }
-
-    delete [] dims;
 
     return vec;
 }
@@ -2386,9 +2382,9 @@ void DLUSolver::contract_pair(
         throw PSIEXCEPTION("Alpha and Beta should have same number of irreps.\n");
     }
 
-    int* dima = components.first->dimpi();
-    int* dimb = components.second->dimpi();
-    int* dims = result->dimpi();
+    const Dimension& dima = components.first->dimpi();
+    const Dimension& dimb = components.second->dimpi();
+    const Dimension& dims = result->dimpi();
     for (int symm = 0; symm < nirrepa; ++symm) {
         if (dims[symm] != dima[symm] + dimb[symm] ) {
             throw PSIEXCEPTION("Result vector dimpi should be the sum of alpha and beta.\n");
@@ -2422,9 +2418,9 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
         throw PSIEXCEPTION("Full vector irrep does not correspond to alpha or beta.\n");
     }
 
-    int* dima = diag_components.first->dimpi();
-    int* dimb = diag_components.second->dimpi();
-    int* dims = vec->dimpi();
+    const Dimension& dima = diag_components.first->dimpi();
+    const Dimension& dimb = diag_components.second->dimpi();
+    const Dimension& dims = vec->dimpi();
 
     for (int symm = 0; symm < nirrep; ++symm) {
         if ( dims[symm] != dima[symm] + dimb[symm]) {
@@ -2432,8 +2428,8 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
         }
     }
 
-    std::shared_ptr<Vector> pairalpha(new Vector("UStab Alpha", nirrepa, dima));
-    std::shared_ptr<Vector> pairbeta(new Vector("UStab Beta", nirrepb, dimb));
+    std::shared_ptr<Vector> pairalpha(new Vector("UStab Alpha", dima));
+    std::shared_ptr<Vector> pairbeta(new Vector("UStab Beta", dimb));
 
     double val = 0;
     for (int symm = 0; symm < nirrep; ++symm) {
@@ -2454,7 +2450,7 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
 // Expand a vector into an alpha/beta pair result, whose dimensions must match the sum
 // of alpha and beta in the input vector for each irrep.
 void DLUSolver::expand_pair(std::shared_ptr<Vector> vec,
-                 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > result)
+                 std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector>> result)
 {
     int nirrepa = result.first->nirrep();
     int nirrepb = result.second->nirrep();
@@ -2465,9 +2461,9 @@ void DLUSolver::expand_pair(std::shared_ptr<Vector> vec,
         throw PSIEXCEPTION("Full vector irrep does not correspond to alpha or beta.\n");
     }
 
-    int* dima = result.first->dimpi();
-    int* dimb = result.second->dimpi();
-    int* dims = vec->dimpi();
+    const Dimension& dima = result.first->dimpi();
+    const Dimension& dimb = result.second->dimpi();
+    const Dimension& dims = vec->dimpi();
 
     for (int symm = 0; symm < nirrep; ++symm) {
         if ( dims[symm] != dima[symm] + dimb[symm]) {
@@ -2597,7 +2593,7 @@ void DLUSolver::guess()
         int n = (max_subspace_ > (nguess_ - i) ? (nguess_ - i) : max_subspace_);
         for (int j = 0; j < n; j++) {
             size_t k = i + j;
-            b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
+            b_.push_back(std::shared_ptr<Vector>(new Vector("Delta Guess", diag_->dimpi())));
             for (int h = 0; h < diag_->nirrep(); h++) {
                 if (k >= A_inds_[h].size()) continue;
                 b_[j]->set(h,A_inds_[h][k],1.0);
@@ -2632,7 +2628,7 @@ void DLUSolver::guess()
     for (int i = 0; i < nroot_; i++) {
         std::stringstream ss;
         ss << "Guess " << i;
-        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        b_.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->dimpi())));
         for (int h = 0; h < diag_->nirrep(); h++) {
             double** Up = U->pointer(h);
             double*  bp = b_[i]->pointer(h);
@@ -2661,7 +2657,7 @@ void DLUSolver::sigma()
     for (int i = 0; i < n; i++) {
         std::stringstream s;
         s << "Sigma Vector " << (i + offset);
-        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+        s_.push_back(std::shared_ptr<Vector>(new Vector(s.str(), diag_->dimpi())));
     }
 
     std::vector<std::shared_ptr<Vector> > x;
@@ -2736,15 +2732,14 @@ void DLUSolver::subspaceDiagonalization()
 {
     int n = s_.size();
     int nirrep = diag_->nirrep();
-    int* npi = new int[nirrep];
+    Dimension npi(nirrep);
     for (int h = 0; h < nirrep; ++h) {
         npi[h] = n;
     }
 
     SharedMatrix G2(G_->clone());
-    a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",nirrep,npi,npi));
-    l_ = std::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
-    delete[] npi;
+    a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",npi,npi));
+    l_ = std::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",npi));
 
     G2->diagonalize(a_,l_);
 
@@ -2787,7 +2782,7 @@ void DLUSolver::eigenvecs()
         for (int m = 0; m < nroot_; ++m) {
             std::stringstream s;
             s << "Eigenvector " << m;
-            std::shared_ptr<Vector> c(new Vector(s.str().c_str(),diag_->nirrep(), diag_->dimpi()));
+            std::shared_ptr<Vector> c(new Vector(s.str().c_str(), diag_->dimpi()));
             c_.push_back(c);
         }
     }
@@ -2852,7 +2847,7 @@ void DLUSolver::residuals()
             // Residual k
             std::stringstream s;
             s << "Residual Vector " << k;
-            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi())));
+            r_.push_back(std::shared_ptr<Vector> (new Vector(s.str().c_str(), diag_->dimpi())));
         }
     }
 
@@ -2928,7 +2923,7 @@ void DLUSolver::correctors()
 
         std::stringstream s;
         s << "Corrector Vector " << k;
-        std::shared_ptr<Vector> d(new Vector(s.str().c_str(),diag_->nirrep(),diag_->dimpi()));
+        std::shared_ptr<Vector> d(new Vector(s.str().c_str(), diag_->dimpi()));
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
 
@@ -3081,10 +3076,10 @@ void DLUSolver::subspaceCollapse()
     for (int k = 0; k < min_subspace_; ++k) {
         std::stringstream bs;
         bs << "Subspace Vector " << k;
-        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->nirrep(), diag_->dimpi())));
+        b2.push_back(std::shared_ptr<Vector>(new Vector(bs.str(), diag_->dimpi())));
         std::stringstream ss;
         ss << "Sigma Vector " << k;
-        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+        s2.push_back(std::shared_ptr<Vector>(new Vector(ss.str(), diag_->dimpi())));
     }
 
     int n = a_->rowspi()[0];

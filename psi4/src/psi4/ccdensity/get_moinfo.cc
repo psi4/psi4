@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,6 +37,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
@@ -71,11 +72,15 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn)
         moinfo.escf = wfn->reference_wavefunction()->reference_energy();
     else
         moinfo.escf = wfn->reference_energy();
-    moinfo.orbspi = wfn->nmopi();
-    moinfo.openpi = wfn->soccpi();
+
+    moinfo.orbspi = init_int_array(moinfo.nirreps);
     moinfo.clsdpi = init_int_array(moinfo.nirreps);
-    for(int h = 0; h < moinfo.nirreps; ++h)
+    moinfo.openpi = init_int_array(moinfo.nirreps);
+    for(int h = 0; h < moinfo.nirreps; ++h){
+        moinfo.orbspi[h] = wfn->nmopi()[h];
         moinfo.clsdpi[h] = wfn->doccpi()[h];
+        moinfo.openpi[h] = wfn->soccpi()[h];
+    }
     scf_pitzer = wfn->Ca()->to_block_matrix();
 
     moinfo.sym = 0;
@@ -292,9 +297,9 @@ void cleanup(void)
 {
     int i;
 
-    //  free(moinfo.orbspi);
-      free(moinfo.clsdpi);
-    //  free(moinfo.openpi);
+    free(moinfo.orbspi);
+    free(moinfo.clsdpi);
+    free(moinfo.openpi);
     //  free(moinfo.uoccpi);
     //  free(moinfo.fruocc);
     //  free(moinfo.frdocc);

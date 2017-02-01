@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -64,6 +64,10 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     nroots = Parameters_->num_roots;
     Process::environment.globals["DETCI AVG DVEC NORM"] = 0.0;
 
+    if (print_){
+        outfile->Printf("\n   ==> Starting CI iterations <==\n\n");
+    }
+
     if (conv_rms < 0) conv_rms = Parameters_->convergence;
     if (conv_e < 0) conv_e = Parameters_->energy_convergence;
 
@@ -76,7 +80,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     edrc = CalcInfo_->edrc;
 
     if (Parameters_->bendazzoli)
-        outfile->Printf("\nBendazzoli algorithm selected for sigma3\n");
+        outfile->Printf("    Bendazzoli algorithm selected for sigma3\n");
 
     /* Direct Method --- use RSP diagonalization routine */
     if (Parameters_->diag_method == METHOD_RSP) {
@@ -84,20 +88,18 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         double h_size = (double)(8 * size * size);
         if (h_size > (Process::environment.get_memory() * 0.4)) {
             outfile->Printf(
-                "CIWave::Requsted size of the hamiltonian is %lf!\n",
+                "CIWave::Requsted size of the hamiltonian is %4.2lf GB!\n",
                 h_size / 1E9);
             throw PSIEXCEPTION(
                 "CIWave::hamiltonian: Size is too large for explicit "
-                "hamiltonian build");
+                "hamiltonian build. Increase memory to avoid this error.");
         }
 
-        SharedCIVector Dvec = new_civector(Parameters_->num_roots,
-                                           Parameters_->d_filenum, true, true);
-        Dvec->init_io_files(false);
-        Dvec->set_nvect(Parameters_->num_roots);
+        SharedCIVector Dvec = D_vector();
+        Dvec->init_io_files(true);
 
         if (print_) {
-            outfile->Printf("\nFinding all roots with RSP\n");
+            outfile->Printf("    Exact Diagonalization Algorithm\n");
         }
 
         SharedMatrix H = hamiltonian();
@@ -105,7 +107,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         SharedVector evals_v(new Vector("CI Eigenvalues", (size_t)size));
 
         if (print_ > 4 && size < 200) {
-            outfile->Printf("\nHamiltonian matrix:\n");
+            outfile->Printf("    Hamiltonian matrix:\n");
             H->print();
         }
 
@@ -128,34 +130,9 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         }
         delete[] tmp_buff;
 
-        // Print out energies
-        if (print_) {
-            int* mi_iac = init_int_array(Parameters_->nprint);
-            int* mi_ibc = init_int_array(Parameters_->nprint);
-            int* mi_iaidx = init_int_array(Parameters_->nprint);
-            int* mi_ibidx = init_int_array(Parameters_->nprint);
-            double* mi_coeff = init_array(Parameters_->nprint);
-
-            for (i = 0; i < nroots; i++) {
-                outfile->Printf("\n\n* ROOT %2d CI total energy = %17.13lf\n",
-                                i, evals[i] + nucrep);
-                Dvec->read(i, 0);
-                zero_arr(mi_coeff, Parameters_->nprint);
-                Dvec->max_abs_vals(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
-                                   mi_ibidx, mi_coeff, false);
-                print_vec(Parameters_->nprint, mi_iac, mi_ibc, mi_iaidx,
-                          mi_ibidx, mi_coeff);
-            }
-
-            free(mi_iac);
-            free(mi_ibc);
-            free(mi_iaidx);
-            free(mi_ibidx);
-            free(mi_coeff);
-        }
-
         // Init sigma for the future
         sigma_init(*(Dvec.get()), *(Dvec.get()));
+        Dvec->close_io_files(1);
 
         H.reset();
         evecs.reset();
@@ -179,8 +156,8 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         double *sm_evals, *sm_mat, **sm_evecs, tval;
 
         if (print_) {
-            outfile->Printf("\nFind the roots by the SEM Test Method\n");
-            outfile->Printf("(n.b. this is for debugging purposes only!)\n");
+            outfile->Printf("    Using the SEM Test Method\n");
+            outfile->Printf("    (n.b. this is for debugging purposes only!)\n");
         }
 
         /* get the diagonal elements of H into an array Hd */
@@ -218,7 +195,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         }
 
         if (print_ > 4 && Parameters_->hd_otf == FALSE) {
-            outfile->Printf("\nDiagonal elements of the Hamiltonian\n");
+            outfile->Printf("\n    Diagonal elements of the Hamiltonian\n");
             Hd.print();
         }
 
@@ -380,7 +357,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         if (!Parameters_->restart ||
             (Parameters_->restart && Parameters_->hd_otf)) {
             if (print_ > 1) {
-                outfile->Printf("\nForming diagonal elements of H\n");
+                outfile->Printf("\n    Forming diagonal elements of H\n");
             }
             Hd.diag_mat_els(alplist_, betlist_, CalcInfo_->onel_ints->pointer(),
                             CalcInfo_->twoel_ints->pointer(), edrc,
@@ -393,7 +370,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         /* get the biggest elements and put in H0block */
         if (H0block_->size) {
             if (print_ > 1) {
-                outfile->Printf("\nForming H0 block\n");
+                outfile->Printf("\n    Forming H0 block\n");
             }
 
             if (!Parameters_->hd_otf)
@@ -420,7 +397,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             if ((H0block_->oguess_size - H0block_->guess_size) &&
                 print_ > 1) {
                 outfile->Printf(
-                    "H0block guess size reduced by %d to ensure "
+                    "    H0block guess size reduced by %d to ensure "
                     "completion of spin-coupling sets\n",
                     (H0block_->oguess_size - H0block_->guess_size));
                 H0block_->oguess_size = H0block_->guess_size;
@@ -428,7 +405,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             if ((H0block_->ocoupling_size - H0block_->coupling_size) &&
                 print_ > 1) {
                 outfile->Printf(
-                    "H0block coupling size reduced by %d to ensure "
+                    "    H0block coupling size reduced by %d to ensure "
                     "completion of spin-coupling sets\n",
                     (H0block_->ocoupling_size - H0block_->coupling_size));
                 H0block_->ocoupling_size = H0block_->coupling_size;
@@ -442,21 +419,21 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
             if ((H0block_->osize - H0block_->size) &&
                 print_ > 1) {
                 outfile->Printf(
-                    "H0block size reduced by %d to ensure pairing"
+                    "    H0block size reduced by %d to ensure pairing"
                     "and spin-coupling.\n",
                     (H0block_->osize - H0block_->size));
             }
             if ((H0block_->oguess_size - H0block_->guess_size) &&
                 print_ > 1) {
                 outfile->Printf(
-                    "H0block guess size reduced by %d to "
+                    "    H0block guess size reduced by %d to "
                     "ensure pairing and spin-coupling.\n",
                     (H0block_->oguess_size - H0block_->guess_size));
             }
             if ((H0block_->ocoupling_size - H0block_->coupling_size) &&
                 print_ > 1) {
                 outfile->Printf(
-                    "H0block coupling size reduced by %d to "
+                    "    H0block coupling size reduced by %d to "
                     "ensure pairing and spin-coupling.\n",
                     (H0block_->ocoupling_size - H0block_->coupling_size));
             }
@@ -464,7 +441,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         Parameters_->neg_only = 0; /* MLL 7-2-97 */
         if (print_ > 4) {
-            outfile->Printf("\nDiagonal elements of the Hamiltonian\n");
+            outfile->Printf("\n    Diagonal elements of the Hamiltonian\n");
             Hd.print();
         }
 
@@ -484,9 +461,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         /* Davidson/Liu Simultaneous Expansion Method */
         if (Parameters_->diag_method == METHOD_DAVIDSON_LIU_SEM) {
             if (print_) {
-                outfile->Printf(
-                    "\nFind the roots by the Simultaneous Expansion Method ");
-                outfile->Printf("(Block Davidson Method)\n");
+                outfile->Printf("\n    Simultaneous Expansion Method (Block Davidson Method)\n");
             }
 
             evals = init_array(nroots);
@@ -499,13 +474,9 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
         else {
             if (print_) {
                 if (Parameters_->diag_method == METHOD_MITRUSHENKOV)
-                    outfile->Printf(
-                        "\nFind the roots with Mitrushenkov's two vector "
-                        "algorithm\n");
+                    outfile->Printf("\n    Mitrushenkov's two vector algorithm\n");
                 else if (Parameters_->diag_method == METHOD_OLSEN)
-                    outfile->Printf(
-                        "\nFind the roots with Olsen's single vector "
-                        "algorithm\n");
+                    outfile->Printf("\n    Olsen's single vector algorithm\n");
             }
 
             evals = init_array(nroots);
@@ -522,7 +493,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     if (!Parameters_->diag_h_converged){
        convergence_death();
        if (print_){
-           outfile->Printf("\nWarning! CI diagonalization did not fully converge!\n\n");
+           outfile->Printf("\n    Warning! CI diagonalization did not fully converge!\n\n");
        }
     }
 

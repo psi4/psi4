@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2016 The Psi4 Developers.
+# Copyright (c) 2007-2017 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1284,6 +1284,18 @@ def scf_helper(name, **kwargs):
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
         core.print_out("  Unable to find file 180, defaulting to SAD guess.\n")
         core.set_local_option('SCF', 'GUESS', 'SAD')
+        sad_basis_list = core.BasisSet.build(scf_wfn.molecule(), "ORBITAL",
+                                             core.get_global_option("BASIS"),
+                                             puream=scf_wfn.basisset().has_puream(),
+                                             return_atomlist=True)
+        scf_wfn.set_sad_basissets(sad_basis_list)
+
+        if (core.get_option("SCF", "SAD_SCF_TYPE") == "DF"):
+            sad_fitting_list = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_SAD",
+                                                   core.get_option("SCF", "DF_BASIS_SAD"),
+                                                   puream=scf_wfn.basisset().has_puream(),
+                                                   return_atomlist=True)
+            scf_wfn.set_sad_fitting_basissets(sad_fitting_list)
 
 
     if cast:
@@ -2924,6 +2936,18 @@ def run_detci(name, **kwargs):
 
     ciwfn = core.detci(ref_wfn)
 
+    print_nos = False
+    if core.get_option("DETCI", "NAT_ORBS"):
+        ciwfn.ci_nat_orbs()
+        print_nos = True
+
+    proc_util.print_ci_results(ciwfn, name.upper(), core.get_variable("HF TOTAL ENERGY"), core.get_variable("CURRENT ENERGY"), print_nos)
+
+    core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
+    core.print_out("\t\t\t - Starship Troopers\n\n");
+    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
+    core.print_out("\t\t\t - Edward Valeev\n");
+
     if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
         # We always would like to print a little dipole information
         oeprop = core.OEProp(ciwfn)
@@ -2934,6 +2958,9 @@ def run_detci(name, **kwargs):
         core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
         core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
         core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
+
+    ciwfn.cleanup_ci()
+    ciwfn.cleanup_dpd()
 
     optstash.restore()
     return ciwfn
@@ -3537,11 +3564,6 @@ def run_mrcc(name, **kwargs):
     core.print_out(open('fort.56', 'r').read())
     core.print_out('===== End   fort.56 input for MRCC ======\n')
 
-    # Close psi4 output file and reopen with filehandle
-    core.close_outfile()
-    pathfill = '' if os.path.isabs(core.outfile_name()) else current_directory + os.path.sep
-    p4out = open(pathfill + core.outfile_name(), 'a')
-
     # Modify the environment:
     #    PGI Fortan prints warning to screen if STOP is used
     os.environ['NO_STOP_MESSAGE'] = '1'
@@ -3561,7 +3583,7 @@ def run_mrcc(name, **kwargs):
         retcode = subprocess.Popen([external_exe], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
         sys.stderr.write('Program %s not found in path or execution failed: %s\n' % (cfour_executable, e.strerror))
-        p4out.write('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
+        core.print_out('Program %s not found in path or execution failed: %s\n' % (external_exe, e.strerror))
         message = ("Program %s not found in path or execution failed: %s\n" % (external_exe, e.strerror))
         raise ValidationError(message)
 
@@ -3570,29 +3592,8 @@ def run_mrcc(name, **kwargs):
         data = retcode.stdout.readline()
         if not data:
             break
-        if core.outfile_name() == 'stdout':
-            sys.stdout.write(data)
-        else:
-            p4out.write(data)
-            p4out.flush()
-        c4out += data
-
-#    try:
-#        if core.outfile_name() == 'stdout':
-#            retcode = subprocess.call('dmrcc', shell=True, env=lenv)
-#        else:
-#            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + core.outfile_name(), shell=True, env=lenv)
-#
-#        if retcode < 0:
-#            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
-#            exit(1)
-#        elif retcode > 0:
-#            print('MRCC errored %d' % retcode, file=sys.stderr)
-#            exit(1)
-#
-#    except OSError as e:
-#        print('Execution failed: %s' % e, file=sys.stderr)
-#        exit(1)
+        core.print_out(data.decode('utf-8'))
+        c4out += data.decode('utf-8')
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
@@ -3631,10 +3632,8 @@ def run_mrcc(name, **kwargs):
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
-    # Return to submission directory and reopen output file
+    # Return to submission directory
     os.chdir(current_directory)
-    p4out.close()
-    core.reopen_outfile()
 
     # If we're told to keep the files or the user provided a path, do nothing.
     if (keep != False or ('path' in kwargs)):

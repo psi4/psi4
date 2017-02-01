@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -92,6 +92,12 @@ public:
      * @param IFock The AO based IFock matrix
      */
     void set_AO_IFock(SharedMatrix IFock);
+    /**
+     * Forms the rotation matrix exp(U).
+     * @param  x The [oa, av] non-redundant orbital rotation parameters.
+     * @return   The rotation matrix.
+     */
+    SharedMatrix form_rotation_matrix(SharedMatrix x, size_t order = 2);
 
     /**
      * Rotate the current orbitals for a given rotation matrix.

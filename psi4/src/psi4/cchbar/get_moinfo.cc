@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -60,11 +60,14 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn, Options &options)
   moinfo.nirreps = wfn->nirrep();
   moinfo.nmo = wfn->nmo();
   moinfo.labels = wfn->molecule()->irrep_labels();
-  moinfo.orbspi = wfn->nmopi();
-  moinfo.openpi = wfn->soccpi();
+  moinfo.orbspi = init_int_array(moinfo.nirreps);
   moinfo.clsdpi = init_int_array(moinfo.nirreps);
-  for(int h = 0; h < moinfo.nirreps; ++h)
+  moinfo.openpi = init_int_array(moinfo.nirreps);
+  for(int h = 0; h < moinfo.nirreps; ++h){
+      moinfo.orbspi[h] = wfn->nmopi()[h];
       moinfo.clsdpi[h] = wfn->doccpi()[h];
+      moinfo.openpi[h] = wfn->soccpi()[h];
+  }
 
   nirreps = moinfo.nirreps;
 
@@ -173,9 +176,9 @@ void cleanup(void)
 {
   int i;
 
-//  free(moinfo.orbspi);
+  free(moinfo.orbspi);
   free(moinfo.clsdpi);
-//  free(moinfo.openpi);
+  free(moinfo.openpi);
 //  free(moinfo.uoccpi);
 //  free(moinfo.fruocc);
 //  free(moinfo.frdocc);

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -137,7 +137,7 @@ Orbital Visualization with VMD
 Included in |PSIfour| is functionality to automatically render specified surfaces, including molecular orbitals,
 densities, and basis functions, using VMD. The vmd_cube.py script takes the .cube files generated
 in a calculation and generates images aligned with user-input specifications. The script is located
-in :source:`/share/scripts/vmd_cube.py`.
+in :source:`psi4/share/psi4/scripts/vmd_cube.py`.
 
 Script Prerequisites
 --------------------

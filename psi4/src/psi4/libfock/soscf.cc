@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2016 The Psi4 Developers.
+ * Copyright (c) 2007-2017 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -143,32 +143,32 @@ double SOMCSCF::rhf_energy(SharedMatrix C)
     D.reset();
     return erhf;
 }
-
-SharedMatrix SOMCSCF::Ck(SharedMatrix C, SharedMatrix x)
-{
-
+SharedMatrix SOMCSCF::form_rotation_matrix(SharedMatrix x, size_t order) {
     SharedMatrix U(new Matrix("Ck", nirrep_, nmopi_, nmopi_));
 
     // Form full antisymmetric matrix
-    for (size_t h=0; h<nirrep_; h++){
-
+    for (size_t h = 0; h < nirrep_; h++) {
         if (!noapi_[h] || !navpi_[h]) continue;
         double** Up = U->pointer(h);
-        double**  xp = x->pointer(h);
+        double** xp = x->pointer(h);
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
-        for (size_t i=0, target=0; i<noapi_[h]; i++){
-            for (size_t a=fmax(noccpi_[h], i); a<nmopi_[h]; a++){
-                Up[i][a] = xp[i][a-noccpi_[h]];
-                Up[a][i] = -1.0 * xp[i][a-noccpi_[h]];
+        for (size_t i = 0, target = 0; i < noapi_[h]; i++) {
+            for (size_t a = fmax(noccpi_[h], i); a < nmopi_[h]; a++) {
+                Up[i][a] = xp[i][a - noccpi_[h]];
+                Up[a][i] = -1.0 * xp[i][a - noccpi_[h]];
             }
         }
     }
 
     // Build exp(U)
-    U->expm(2, true);
+    U->expm(order, true);
+    return U;
+}
 
+SharedMatrix SOMCSCF::Ck(SharedMatrix C, SharedMatrix x) {
     // C' = C U
+    SharedMatrix U = form_rotation_matrix(x);
     SharedMatrix Cp = Matrix::doublet(C, U);
 
     return Cp;
@@ -362,8 +362,8 @@ SharedMatrix SOMCSCF::H_approx_diag()
     int relact = 0;
     int nact3 = nact_*nact_*nact_;
 
-    SharedVector dI(new Vector("dI", nirrep_, nactpi_));
-    SharedVector DIF(new Vector("IF * OPDM", nirrep_, nactpi_));
+    SharedVector dI(new Vector("dI", nactpi_));
+    SharedVector DIF(new Vector("IF * OPDM", nactpi_));
     for (int h=0; h<nirrep_; h++){
         if (!nactpi_[h]) continue;
 

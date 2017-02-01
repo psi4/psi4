@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2016 The Psi4 Developers.
+# Copyright (c) 2007-2017 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -32,7 +32,7 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
 
-np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
+# np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=True):
     """

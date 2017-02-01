@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2016 The Psi4 Developers.
+.. # Copyright (c) 2007-2017 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -498,15 +498,18 @@ Implementation within Psi4
 Supported Architectures
 =======================
 
-The majority of |PSIfour| was developed on Mac and Linux machines. In
-principle, it should work on any Unix system; however, we have not tested
-extensively on systems other than Mac and Linux. There is not a Windows
-version of |PSIfour|.
+The majority of |PSIfour| was developed on Mac and Linux machines; in
+principle, it should work on any Unix system. The latest version of the
+|PSIfour| program package may be obtained at `psicode.org
+<http://psicode.org>`_. The package is available as a binary for Linux,
+macOS, or Windows Subsystem for Linux (:ref:`Installing from Binary
+<sec:conda>`) or as source code (zipped archive or git repository from
+`https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang
-compilers. For the Intel compilers, we recommend at least 12.1 (we have
-had trouble with version 12.0 and 13.0.1). GCC version 4.6 or above is
-recommended. For some architectures, a :ref:`precompiled binary
+compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
+C++11 compliance (*i.e.*, GCC version 4.9 or above).
+For some architectures, a :ref:`precompiled binary
 <sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
@@ -649,7 +652,7 @@ Where-to-post summary:[#f6]_
 
 * When will you? -- `ask the forum <http://forum.psicode.org>`_
 
-* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or `post on the wiki itself <https://github.com/psi4/psi4/wiki>`_
+* I have an experience that can improve the build documentation -- `inform the forum <http://forum.psicode.org>`_ or :source:`add to the documentation itself <doc/sphinxman/source>`
 
 * Anything you want to share privately -- `crawdad@vt.edu <mailto:crawdad@vt.edu>`_ or `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_
 
