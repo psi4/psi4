@@ -30,6 +30,7 @@ import time
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
+from psi4.driver import p4util
 
 from .sapt_util import print_sapt_var
 
@@ -191,11 +192,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
     return {"Disp20,FDDS (unc)" : Disp20_uc, "Disp20" : Disp20_c}
 
 
-def df_mp2_dispersion(wfn, primary, auxiliary, cache, do_print=True):
+def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
 
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
-
 
     # Build object
     df_matrix_keys = ["Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"]
@@ -228,5 +228,43 @@ def df_mp2_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     ret["Disp20,u"] = scalars["Disp20"]
     return ret
 
+def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True):
+
+    if do_print:
+        core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
+
+    optstash = p4util.OptionsState(
+        ['SAPT', 'SAPT0_E10'],
+        ['SAPT', 'SAPT0_E20IND'],
+        ['SAPT', 'SAPT0_E20DISP'],
+        ['SAPT', 'SAPT_QUIET'])
+
+    core.set_local_option("SAPT", "SAPT0_E10", False)
+    core.set_local_option("SAPT", "SAPT0_E20IND", False)
+    core.set_local_option("SAPT", "SAPT0_E20DISP", True)
+    core.set_local_option("SAPT", "SAPT_QUIET", True)
+
+    if core.get_option('SCF', 'REFERENCE') == 'RHF':
+        core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+
+    core.IO.set_default_namespace('dimer')
+
+    dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
+    dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+    e_sapt = core.sapt(dimer_wfn, wfn_A, wfn_B)
+
+    optstash.restore()
+
+    svars = dimer_wfn.variables()
+
+    core.print_out("\n")
+    core.print_out(print_sapt_var("Disp20 (MP2)", svars["E Disp20"], short=True) + "\n")
+    core.print_out(print_sapt_var("Exch-Disp20,u", svars["E Exch-Disp20"], short=True) + "\n")
+
+    ret = {}
+    ret["Exch-Disp20,u"] = svars["E Exch-Disp20"]
+    ret["Disp20,u"] = svars["E Disp20"]
+    return ret
 
 

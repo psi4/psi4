@@ -4,9 +4,9 @@ memory 250 mb
 
 Eref = {"SAPT ELST ENERGY":  -12.86731900, # TEST
         "SAPT EXCH ENERGY":   12.77393901, # TEST
-        "SAPT IND ENERGY":    -2.11274601, # TEST 
+        "SAPT IND ENERGY":    -3.53895378, # TEST 
         "SAPT DISP ENERGY":   -2.68085781, # TEST
-        "CURRENT ENERGY":     -4.88698382} # TEST
+        "CURRENT ENERGY":     -6.31319141} # TEST
 
 molecule dimer {
   O -2.930978458   -0.216411437    0.000000000
@@ -26,6 +26,7 @@ set {
     sapt_dft_grac_shift_a 0.136
     sapt_dft_grac_shift_b 0.136
     SAPT_DFT_FUNCTIONAL PBE0
+    SAPT_DFT_MP2_DISP_ALG FISAPT
 }
 
 energy('sapt(dft)', molecule=dimer)

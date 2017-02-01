@@ -38,7 +38,7 @@ from psi4.driver import p4const
 from .exceptions import *
 
 
-def cg_solver(rhs_vec, hx_function, preconditioner, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):
+def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):
     """
     Solves the Ax = b linear equations via Conjugate Gradient. The `A` matrix must be a hermitian, positive definite matrix.
 
@@ -50,6 +50,8 @@ def cg_solver(rhs_vec, hx_function, preconditioner, printer=None, printlvl=1, ma
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the Hessian-vector product.
     preconditioner : function
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the preconditioned value.
+    guess : list of :py:class:`~psi4.core.Matrix`
+        Starting vectors, if None use a preconditioner(rhs) guess
     printer : function
         Takes in a list of current x and residual vectors and provides a print function. This function can also
         return a value that represents the current residual.
@@ -94,7 +96,13 @@ def cg_solver(rhs_vec, hx_function, preconditioner, printer=None, printlvl=1, ma
     active_mask = [True for x in range(nrhs)]
 
     # Start function
-    x_vec = preconditioner(rhs_vec, active_mask)
+    if guess is None:
+        x_vec = preconditioner(rhs_vec, active_mask)
+    else:
+        if len(guess) != len(rhs_vec):
+            raise ValidationError("CG Solver: Guess vector length does not match RHS vector length.")
+        x_vec = [x.clone() for x in guess]
+
     Ax_vec = hx_function(x_vec, active_mask)
 
     # Set it up

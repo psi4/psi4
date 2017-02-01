@@ -21,7 +21,6 @@ set {
     scf_type      df
     sapt_dft_grac_shift_a 0.203293
     sapt_dft_grac_shift_b 0.138264
-    SAPT_DFT_DO_DHF True
 }
 
 energy('sapt(dft)', molecule=dimer)

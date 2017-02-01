@@ -281,16 +281,6 @@ SharedWavefunction py_psi_libfock(SharedWavefunction ref_wfn)
     return libfock::libfock(ref_wfn, Process::environment.options);
 }
 
-// double py_psi_scf_callbacks(PyObject *precallback, PyObject *postcallback)
-// {
-//     py_psi_prepare_options_for_module("SCF");
-//     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
-//         return Process::environment.globals["CURRENT ENERGY"];
-//     }
-//     else
-//         return 0.0;
-// }
-
 SharedWavefunction py_psi_mcscf(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("MCSCF");
@@ -358,18 +348,6 @@ SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom,
     return findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
-// SharedWavefunction py_psi_scf(SharedWavefunction ref_wfn)
-// {
-//     py_psi_prepare_options_for_module("SCF");
-//     return scf::scf(ref_wfn, Process::environment.options);
-// }
-
-// double py_psi_scf_dummy()
-// {
-//     py_psi_prepare_options_for_module("SCF");
-//     return scf::scf_dummy(Process::environment.options);
-// }
-
 SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("DCFT");
@@ -382,15 +360,6 @@ SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn)
     return dfmp2::dfmp2(ref_wfn, Process::environment.options);
 }
 
-// double py_psi_dfmp2grad()
-// {
-//     py_psi_prepare_options_for_module("DFMP2");
-//     if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
-//         return Process::environment.globals["CURRENT ENERGY"];
-//     }
-//     else
-//         return 0.0;
-// }
 
 double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
                    SharedWavefunction MonomerB)
@@ -402,16 +371,6 @@ double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
     else
         return 0.0;
 }
-
-// double py_psi_fisapt(SharedWavefunction ref_wfn)
-// {
-//     py_psi_prepare_options_for_module("FISAPT");
-//     if (fisapt::fisapt(ref_wfn, Process::environment.options) == Success) {
-//         return Process::environment.globals["SAPT ENERGY"];
-//     }
-//     else
-//         return 0.0;
-// }
 
 
 void py_psi_cctransort(SharedWavefunction ref_wfn)

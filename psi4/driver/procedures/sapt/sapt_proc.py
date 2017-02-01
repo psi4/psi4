@@ -131,6 +131,8 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # # Compute dimer wavefunction
+    hf_cache = {}
+    hf_wfn_dimer = None
     if do_delta_hf:
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.set_global_option('DF_INTS_IO', 'SAVE')
@@ -187,6 +189,11 @@ def run_sapt_dft(name, **kwargs):
         core.print_out(print_sapt_hf_summary(hf_data, "SAPT(HF)", delta_hf=dhf_value))
 
         data["Delta HF Correction"] =  core.get_variable("SAPT(DFT) Delta HF")
+
+    if hf_wfn_dimer is None:
+        dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
+    else:
+        dimer_wfn = hf_wfn_dimer
 
     # Set the primary functional
     core.set_global_option("DFT_FUNCTIONAL", core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL"))
@@ -263,15 +270,17 @@ def run_sapt_dft(name, **kwargs):
     fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
     data.update(fdds_disp)
 
-    mp2_disp = sapt_mp2_terms.df_mp2_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
+    if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
+        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
+    else:
+        mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True)
     data.update(mp2_disp)
 
     # Print out final data
     core.print_out("\n")
     core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
-
     core.tstop()
 
-    return None
+    return dimer_wfn
 
