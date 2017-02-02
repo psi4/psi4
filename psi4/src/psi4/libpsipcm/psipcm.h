@@ -100,7 +100,9 @@ class PCM {
 
 };
 
-typedef std::shared_ptr<psi::PCM> SharedPCM;
+typedef std::shared_ptr<PCM> SharedPCM;
+
+void host_writer(const char * message);
 
 } // psi
 #endif

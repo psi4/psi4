@@ -65,7 +65,7 @@ You can specify an additional argument that specifies a
 template to use, for example
 >>> psi4 --plugin-name mygreatcode --plugin-template mointegrals""")
 parser.add_argument('--plugin-template', default='basic',
-                    choices=['aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
+                    choices=['ambit', 'aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
                     help='New plugin template to use.')
 parser.add_argument('--plugin-compile', action='store_true', help="""\
 Generates a CMake command for building a plugin against this psi4 installation.
@@ -132,6 +132,9 @@ if args['plugin_compile']:
 if args["psidatadir"] is not None:
     data_dir = os.path.abspath(os.path.expanduser(args["psidatadir"]))
     os.environ["PSIDATADIR"] = data_dir
+
+if "@ENABLE_PCMSolver@" in ["ON", "YES", "TRUE"]:
+    sys.path.insert(1, "@PCMSolver_PYMOD@")
 
 ### Actually import psi4 and apply setup ###
 

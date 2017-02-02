@@ -7,8 +7,7 @@ set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
 set(psi4_LICENSE "GNU General Public License, version 2")
 set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
-                              ${CMAKE_SOURCE_DIR}/cmake/math)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 ################  Options: Overview and Not Otherwise Mentioned  ###############
 
@@ -41,7 +40,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, pybind11
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gdma, libint, PCMSolver, pybind11
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -57,7 +56,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake
 #    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /) must start with /"
 
 ############################  Options: Build What?  ############################
-option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
+option(ENABLE_ambit "Enables the ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_erd "Enables use of ERD instead of LibInt (requires Fortran)" OFF)
@@ -130,29 +129,16 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 set(Python_ADDITIONAL_VERSIONS 3.7 3.6 3.5)  # adjust with CMake minimum FindPythonInterp
 find_package(PythonLibsNew REQUIRED)
-message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
+message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
+add_subdirectory(external/common)
 add_subdirectory(external/upstream)
 
     # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(custom_static_library)
-
-################################  Dependencies  ################################
-set(MKL_COMPILER_BINDINGS "${CMAKE_CXX_COMPILER_ID}")
-set(BLAS_LANG "CXX")
-set(LAPACK_LANG "CXX")
-include(ConfigMath)
-
-#These packages don't believe in configuration files...
-foreach(pkg in pcmsolver)
-   string(TOUPPER "${pkg}" PKG)
-   if(NOT ${PKG}_ROOT)
-      set(${PKG}_ROOT ${STAGED_INSTALL_PREFIX}/external)
-   endif()
-endforeach()
 
 ################################  Main Project  ################################
 include(ExternalProject)
@@ -180,14 +166,16 @@ ExternalProject_Add(psi4-core
               -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
               -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
-              -DENABLE_AMBIT=${ENABLE_AMBIT}
+              -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
-              -DPCMSOLVER_ROOT=${PCMSOLVER_ROOT}
+              -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
+              -DTargetHDF5_DIR=${TargetHDF5_DIR}
+              -Dambit_DIR=${ambit_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
               -Dlibefp_DIR=${libefp_DIR}
@@ -195,6 +183,7 @@ ExternalProject_Add(psi4-core
               -Dgdma_DIR=${gdma_DIR}
               -DGTFock_DIR=${GTFock_DIR}
               -Dlibint_DIR=${libint_DIR}
+              -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
@@ -202,13 +191,12 @@ ExternalProject_Add(psi4-core
               -DFC_SYMBOL=${FC_SYMBOL}
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
-                    -DLAPACKBLAS_LIBRARIES:LIST=${LAPACKBLAS_LIBRARIES}
-                    -DLAPACKBLAS_INCLUDE_DIRS:LIST=${LAPACKBLAS_INCLUDE_DIRS}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                    DESTDIR=${CMAKE_BINARY_DIR}/stage
 )
-add_dependencies(psi4-core ambit_external
+add_dependencies(psi4-core lapack_external
+                           ambit_external
                            chemps2_external
                            dkh_external
                            libefp_external

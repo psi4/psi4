@@ -20,6 +20,20 @@ set(CMAKECONFIG_INSTALL_DIR "share/cmake/psi4")
 
 # <<<  Marshal Dependencies & Add-ons  >>>
 
+find_package(TargetLAPACK CONFIG REQUIRED)
+get_property(_ill TARGET tgt::lapk PROPERTY INTERFACE_LINK_LIBRARIES)
+list(GET _ill 0 _ill0)
+message(STATUS "${Cyan}Using LAPACK${ColourReset}: ${_ill0};...")
+
+find_package(TargetHDF5 CONFIG)
+if(TARGET tgt::hdf5)
+    get_property(_ill TARGET tgt::hdf5 PROPERTY INTERFACE_LINK_LIBRARIES)
+    list(GET _ill 0 _ill0)
+    message(STATUS "${Cyan}Using HDF5${ColourReset}: ${_ill0};... (found version ${${PN}_VERSION})")
+else()
+    message(STATUS "Unfound HDF5")
+endif()
+
 #  <<  Pybind11 & Python  >>
 set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 find_package(pybind11 2.0.0 CONFIG REQUIRED)
@@ -32,6 +46,14 @@ find_package(Threads REQUIRED)
 find_package(DL)
 
 set_property(GLOBAL PROPERTY PSI4_MODULES "")
+
+if(${ENABLE_ambit})
+    find_package(ambit CONFIG REQUIRED)
+    get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)
+    message(STATUS "${Cyan}Using ambit${ColourReset}: ${_loc} (version ${ambit_VERSION})")
+else()
+    message(STATUS "Disabled ambit")
+endif ()
 
 if(${ENABLE_CheMPS2})
     find_package(CheMPS2 1.8.3 CONFIG REQUIRED)
@@ -74,11 +96,11 @@ get_property(_loc TARGET libint::int PROPERTY LOCATION)
 message(STATUS "${Cyan}Using libint${ColourReset}: ${_loc} (version ${libint_VERSION})")
 
 if(${ENABLE_PCMSolver})
-    find_package(PCMSolver MODULE REQUIRED)  # todo CONFIG
-    #get_property(_loc TARGET PCMSolver::PCMSolver PROPERTY LOCATION)
-    #message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
-#else()
-    #message(STATUS "Disabled PCMSolver")
+    find_package(PCMSolver CONFIG REQUIRED)
+    get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
+    message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
+else()
+    message(STATUS "Disabled PCMSolver")
 endif ()
 
 if(APPLE)

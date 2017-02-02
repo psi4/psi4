@@ -18,8 +18,12 @@ if(${ENABLE_CheMPS2})
         endif()
 
         ExternalProject_Add(chemps2_external
-            GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
-            GIT_TAG v1.8.3
+            DEPENDS lapack_external
+                    hdf5_external
+            GIT_REPOSITORY https://github.com/loriab/CheMPS2
+            GIT_TAG config6
+            #GIT_REPOSITORY https://github.com/SebWouters/CheMPS2
+            #GIT_TAG v1.8.3
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -38,6 +42,8 @@ if(${ENABLE_CheMPS2})
                        -DCMAKE_AR=${CMAKE_AR}
                        -DCMAKE_NM=${CMAKE_NM}
                        -DENABLE_TESTS=OFF
+                       -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
+                       -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
