@@ -166,11 +166,6 @@ void HF::common_init()
 	      doccpi_[h] = options_["DOCC"][h].to_integer();
 	    }
         }
-	for(int h = 0; h < nirreps; ++h) {
-	  if(doccpi_[h] >= nmopi_[h]) {
-	    throw PSIEXCEPTION("Not enough basis functions to satisfy DOCC");
-	  }
-	}
     } // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
@@ -196,12 +191,14 @@ void HF::common_init()
                 soccpi_[h] = options_["SOCC"][h].to_integer();
 	    }
         }
-	for(int h = 0; h < nirreps; ++h) {
-	  if(soccpi_[h] >= nmopi_[h]) {
-	    throw PSIEXCEPTION("Not enough basis functions to satisfy SOCC");
-	  }
-	}
     } // else take the reference wavefunctions soccpi
+
+    // Check that we have enough basis functions
+    for(int h = 0; h < nirreps; ++h) {
+      if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
+	throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+      }
+    }
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
@@ -1089,11 +1086,8 @@ void HF::form_Shalf()
 
 	// Double check occupation vectors
 	for(int h = 0; h < eigval->nirrep(); ++h) {
-	  if(soccpi_[h] >= nmopi_[h]) {
-	    throw PSIEXCEPTION("Not enough orbitals to satisfy SOCC");
-	  }
-	  if(doccpi_[h] >= nmopi_[h]) {
-	    throw PSIEXCEPTION("Not enough orbitals to satisfy DOCC");
+	  if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
+	    throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
 	  }
 	}
 
