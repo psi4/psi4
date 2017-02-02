@@ -32,7 +32,7 @@ if(${ENABLE_PCMSolver})
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DSTATIC_LIBRARY_ONLY=${_a_only}
-#                       -DENABLE_OPENMP=???
+                       -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant for thread safety
                        #-DENABLE_XHOST=???  # option missing
                        #-DENABLE_XHOST=${ENABLE_XHOST}  # option missing
                        #-DBUILD_FPIC=${BUILD_FPIC}  # always fpic'd
