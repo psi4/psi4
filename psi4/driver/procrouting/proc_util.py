@@ -224,4 +224,4 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
         ciwfn.print_vector(dvec, root)
 
     # True to keep the file
-    # dvec.close_io_files(True)
+    dvec.close_io_files(True)
