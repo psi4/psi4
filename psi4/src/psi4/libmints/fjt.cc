@@ -80,42 +80,46 @@ void calculate_f(double * F, int n, double t)
 {
     const double eps = 1e-17;
 
-    int i, m;
-    int m2;
-    double t2;
-    double num;
-    double sum;
-    double term1;
-    static double K = 1.0/M_2_SQRTPI;
-    double et;
+    // K = sqrt(pi) / 2
+    const double K = 0.88622692545275801364908374167057259139877472806;
 
+    const double t2 = 2*t;
+    const double et = std::exp(-t);
 
-    if (t>20.0){
-        t2 = 2*t;
-        et = std::exp(-t);
-        t = std::sqrt(t);
+    if (t > 20.0)
+    {
+        // Start with n = 0 and use upward recursion
+        t = sqrt(t);
         F[0] = K*std::erf(t)/t;
-        for(m=0; m<=n-1; m++){
+        for(int m = 0; m <= n-1; m++)
             F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
-        }
     }
-    else {
-        et = std::exp(-t);
-        t2 = 2*t;
-        m2 = 2*n;
-        num = df[m2];
-        i=0;
-        sum = 1.0/(m2+1);
-        do{
+    else
+    {
+        /* For smaller t's compute F with highest n using
+           asymptotic series (see I. Shavitt in
+           Methods in Computational Physics, ed. B. Alder et al,
+           vol 2, 1963, page 8) */
+
+        const int n2 = 2*n;
+        double num = df[n2];
+        double den = df[n2+2];
+        int i = 0;
+        double sum = 1.0/(n2+1);
+        double term = 0.0;
+
+        do {
             i++;
-            num = num*t2;
-            term1 = num/df[m2+2*i+2];
-            sum += term1;
-        } while (fabs(term1) > eps && i < MAX_FAC);
+            num *= t2;
+            den *= (n2+2*i+1);
+            term = num/den;
+            sum += term;
+        } while (fabs(term) > eps);
         F[n] = sum*et;
-        for(m=n-1;m>=0;m--){
+
+        // downward recursion
+        for(int m = n-1; m >= 0; m--)
             F[m] = (t2*F[m+1] + et)/(2*m+1);
-        }
     }
 }
 
@@ -138,7 +142,7 @@ Split_Fjt::Split_Fjt(unsigned int maxJ)
         ncol_ = max_J_+8+1;  // +8 for the higher orders required by the taylor series
         grid_ = std::unique_ptr<double[]>(new double[nrow_ * ncol_]);
 
-        for(int i = 0; i <= max_T_; i++) 
+        for(int i = 0; i <= max_T_; i++)
         {
             // we are using a 0.1-spaced grid
             const double Tval = 0.1*static_cast<double>(i);
