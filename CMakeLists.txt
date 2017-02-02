@@ -80,7 +80,7 @@ if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFA
 endif()
 
 if(ENABLE_erd)
-    message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, so upon activating through ``set integral_package erd``, it will give *wrong* answers for density-fitting (default) calculations, indeed all except for ``set scf_type direct`` will be wrong. Consider this your warning.")
+    message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, gradients will be caught and halted, but LRC DFT, ESP, and perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
 
 ############################  Options: Build How?  #############################
