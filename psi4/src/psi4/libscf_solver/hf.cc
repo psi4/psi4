@@ -153,6 +153,8 @@ void HF::common_init()
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
             size_t full_nirreps = old_pg->char_table().nirrep();
+	    if(options_["DOCC"].size() != full_nirreps)
+	        throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             Dimension temp_docc(full_nirreps);
             for(int h = 0; h < full_nirreps; ++h) {
                 temp_docc[h] = options_["DOCC"][h].to_integer();
