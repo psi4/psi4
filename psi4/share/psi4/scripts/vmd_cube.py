@@ -1,36 +1,27 @@
 #!/usr/bin/env python
 
+# MIT License
 #
-# @BEGIN LICENSE
+# Copyright (c) 2017 Francesco Evangelista
 #
-# Psi4: an open-source quantum chemistry software package
-#
-# Copyright (c) 2007-2017 The Psi4 Developers.
-#
-# The copyrights for code used from other parties are included in
-# the corresponding files.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
-# @END LICENSE
-#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-# Francesco Evangelista
-# Emory University
-
-from __future__ import print_function
 import argparse
 import sys
 import re
@@ -42,10 +33,7 @@ from os import listdir, environ
 from os.path import isfile, join
 
 vmd_cube_help = """vmd_cube is a script to render cube files with vmd.
-To generate cube files with Psi4, add the command cubeprop(wfn) at the end
-of your input file, where *wfn* is a Wavefunction object that may be
-retrieved from any calculation and used following the pattern "ene, wave =
-energy('pbe', return_wfn=True)\\n cubeprop(wave)"."""
+To generate cube files with Psi4 add the command cubeprop() at the end of your input file."""
 
 vmd_exe = ""
 
@@ -58,7 +46,8 @@ vmd_template = """#
 # Load the molecule and change the atom style
 mol load cube PARAM_CUBEFILE.cube
 mol modcolor 0 PARAM_CUBENUM Element
-mol modstyle 0 PARAM_CUBENUM CPK 0.400000 0.40000 30.000000 16.000000
+mol modstyle 0 PARAM_CUBENUM Licorice 0.110000 10.000000 10.000000
+#mol modstyle 0 PARAM_CUBENUM CPK 0.400000 0.40000 30.000000 16.000000
 
 # Define the material
 material change ambient Opaque 0.310000
@@ -71,10 +60,10 @@ material change outlinewidth Opaque 0.000000
 material change transmode Opaque 0.000000
 material change specular Opaque 0.750000
 
-material change ambient EdgyShiny 0.310000
-material change diffuse EdgyShiny 0.720000
+material change ambient   EdgyShiny 0.310000
+material change diffuse   EdgyShiny 0.720000
 material change shininess EdgyShiny 1.0000
-material change opacity EdgyShiny PARAM_OPACITY
+material change opacity   EdgyShiny PARAM_OPACITY
 
 # Customize atom colors
 color Element C silver
@@ -91,6 +80,7 @@ scale by PARAM_SCALE
 axes location Off
 display projection Orthographic
 display depthcue off
+display resize PARAM_IMAGEW PARAM_IMAGEH
 color Display Background white"""
 
 
@@ -106,7 +96,14 @@ mol representation Isosurface PARAM_ISOVALUE2 0 0 0 1 1
 mol selection all
 mol material EdgyShiny
 mol addrep PARAM_CUBENUM
+"""
 
+vmd_template_interactive = """#
+# Disable rendering
+mol off PARAM_CUBENUM
+"""
+
+vmd_template_render = """
 # Render
 render TachyonInternal PARAM_CUBEFILE.tga
 mol delete PARAM_CUBENUM
@@ -135,9 +132,13 @@ options = {"SURF1ID"    : [None,"Surface1 Color Id"],
            "CUBEDIR"    : [None,"Cubefile Directory"],
            "SCALE"      : [None,"Scaling Factor"],
            "MONTAGE"    : [None,"Montage"],
+           "LABEL_MOS"  : [None,"Label MOs"],
            "FONTSIZE"   : [None,"Font size"],
-           "IMAGESIZE"  : [None,"Image size"],
-           "VMDPATH"    : [None,"VMD Path"]}
+           "IMAGEW"     : [None,"Image width"],
+           "IMAGEH"     : [None,"Image height"],
+           "VMDPATH"    : [None,"VMD Path"],
+           "INTERACTIVE": [None,"Interactive Mode"],
+           "GZIP"       : [None,"Gzip Cube Files"]}
 
 
 def which(program):
@@ -171,7 +172,7 @@ def find_vmd(options):
         vmdpath = multigsub({" " : r"\ "},vmdpath)
         options["VMDPATH"][0] = vmdpath
     else:
-        print("Please set the VMDPATH environmental variable to the path of VMD.")
+        print "Please set the VMDPATH environmental variable to the path of VMD."
         exit(1)
 
 
@@ -203,11 +204,11 @@ def read_options(options):
     parser.add_argument('--rz', metavar='<angle>', type=float, nargs='?',default=15.0,
                    help='the z-axis rotation angle (float, default = 15.0)')
                    
-    parser.add_argument('--tx', metavar='<angle>', type=float, nargs='?',default=0.0,
+    parser.add_argument('--tx', metavar='<length>', type=float, nargs='?',default=0.0,
                    help='the x-axis translation (float, default = 0.0)')
-    parser.add_argument('--ty', metavar='<angle>', type=float, nargs='?',default=0.0,
+    parser.add_argument('--ty', metavar='<length>', type=float, nargs='?',default=0.0,
                    help='the y-axis translation (float, default = 0.0)')
-    parser.add_argument('--tz', metavar='<angle>', type=float, nargs='?',default=0.0,
+    parser.add_argument('--tz', metavar='<length>', type=float, nargs='?',default=0.0,
                    help='the z-axis translation (float, default = 0.0)')
 
     parser.add_argument('--opacity', metavar='<opacity>', type=float, nargs='?',default=1.0,
@@ -215,14 +216,34 @@ def read_options(options):
 
     parser.add_argument('--scale', metavar='<factor>', type=float, nargs='?',default=1.0,
                    help='the scaling factor (float, default = 1.0)')
-    parser.add_argument('--montage', const=True, default=False, nargs='?',
+    parser.add_argument('--no-montage', action="store_true",
                    help='call montage to combine images. (string, default = false)')
+    parser.add_argument('--no-labels', action="store_true",
+                   help='do not add labels to images. (string, default = false)')
 
     parser.add_argument('--imagesize', metavar='<integer>', type=int, nargs='?',default=250,
                    help='the size of each image (integer, default = 250)')
+    parser.add_argument('--imagew', metavar='<integer>', type=int, nargs='?',default=250,
+                   help='the width of images (integer, default = 250)')
+    parser.add_argument('--imageh', metavar='<integer>', type=int, nargs='?',default=250,
+                   help='the height of images (integer, default = 250)')
     parser.add_argument('--fontsize', metavar='<integer>', type=int, nargs='?',default=20,
                    help='the font size (integer, default = 20)')
 
+    parser.add_argument('--interactive', action="store_true",
+                   help='run in interactive mode (default = false)')
+
+    parser.add_argument('--gzip', action="store_true",
+                   help='gzip cube files (default = false)')
+
+    parser.add_argument('--national_scheme', action="store_true",
+                   help='use a red/blue color scheme. (string, default = false)')
+    parser.add_argument('--silver_scheme', action="store_true",
+                   help='use a gray/white color scheme. (string, default = false)')
+    parser.add_argument('--bright_scheme', action="store_true",
+                   help='use a soft yellow/blue color scheme. (string, default = false)')
+    parser.add_argument('--electron_scheme', action="store_true",
+                   help='use a purple/green color scheme. (string, default = false)')
 
     args = parser.parse_args()
 
@@ -239,22 +260,63 @@ def read_options(options):
     options["TZ"][0] = str(args.tz)
     options["OPACITY"][0] = str(args.opacity)
     options["SCALE"][0] = str(args.scale)
-    options["MONTAGE"][0] = str(args.montage)
+    options["LABEL_MOS"][0] = str(not args.no_labels)
+    options["MONTAGE"][0] = str(not args.no_montage)
     options["FONTSIZE"][0] = str(args.fontsize)
-    options["IMAGESIZE"][0] = str(args.imagesize)
+    options["IMAGEW"][0] = str(args.imagew)
+    options["IMAGEH"][0] = str(args.imageh)
+    options["INTERACTIVE"][0] = str(args.interactive)
+    options["GZIP"][0] = str(args.gzip)
 
-    print("Parameters:")
-    for k,v in options.items():
-        print("  %-20s %s" % (v[1],v[0]))
+    if args.national_scheme:
+        options["SURF1ID"][0] = '23'
+        options["SURF2ID"][0] = '30'
 
+    if args.silver_scheme:
+        options["SURF1ID"][0] = '2'
+        options["SURF2ID"][0] = '8'
+
+    if args.electron_scheme:
+        options["SURF1ID"][0] = '13'
+        options["SURF2ID"][0] = '12'
+
+    if args.bright_scheme:
+        options["SURF1ID"][0] = '32'
+        options["SURF2ID"][0] = '22'
+
+    print "Parameters:"
+    sorted_parameters = sorted(options.keys())
+    for k in sorted_parameters:
+        print "  %-20s %s" % (options[k][1],options[k][0])
 
 def find_cubes(options):
     # Find all the cube files in a given directory
     dir = options["CUBEDIR"][0]
     sorted_files = []
+    zipped_files = []
+
     for f in listdir(options["CUBEDIR"][0]):
-        if ".cube" in f:
+        if "\'" in f:
+            nf = f.replace("\'", "p")
+            os.rename(f,nf)
+            f = nf
+        if "\"" in f:
+            nf = f.replace("\"", "pp")
+            os.rename(f,nf)
+            f = nf
+        if f[-5:] == '.cube':
             sorted_files.append(f)
+        elif f[-8:] == '.cube.gz':
+            found_zipped = True
+            # unzip file
+            sorted_files.append(f[:-3])
+            zipped_files.append(f)
+
+    if len(zipped_files) > 0:
+        print "\nDecompressing gzipped cube files"
+        FNULL = open(os.devnull, 'w')
+        subprocess.call(("gzip -d %s" % " ".join(zipped_files)),stdout=FNULL, shell=True)
+        options["GZIP"][0] = 'True'
 
     return sorted(sorted_files)
 
@@ -265,7 +327,7 @@ def write_and_run_vmd_script(options,cube_files):
 
     # Define a map that contains all the values of the VMD parameters
     replacement_map = {}
-    for k,v in options.items():
+    for k,v in options.iteritems():
         key = "PARAM_" + k.upper()
         replacement_map[key] = v[0]
 
@@ -275,14 +337,25 @@ def write_and_run_vmd_script(options,cube_files):
 
         vmd_script_surface = multigsub(replacement_map,vmd_template_surface)
         vmd_script_head = multigsub(replacement_map,vmd_template)
-        vmd_script.write(vmd_script_head + "\n" + vmd_script_surface)
+        
+        if options["INTERACTIVE"][0] == 'True':
+            vmd_script_render = multigsub(replacement_map,vmd_template_interactive)
+        else:
+            vmd_script_render = multigsub(replacement_map,vmd_template_render)
 
-    vmd_script.write("quit")
-    vmd_script.close()
+        vmd_script.write(vmd_script_head + "\n" + vmd_script_surface + "\n" + vmd_script_render)
 
-    # Call VMD
-    FNULL = open(os.devnull, 'w')
-    subprocess.call(("%s -dispdev text -e %s" % (options["VMDPATH"][0],vmd_script_name)),stdout=FNULL, shell=True)
+    if options["INTERACTIVE"][0] == 'False':
+        vmd_script.write("quit")
+        vmd_script.close()
+        # Call VMD in text mode
+        FNULL = open(os.devnull, 'w')
+        subprocess.call(("%s -dispdev text -e %s" % (options["VMDPATH"][0],vmd_script_name)),stdout=FNULL, shell=True)
+    else:
+        vmd_script.close()
+        # Call VMD in graphic mode
+        FNULL = open(os.devnull, 'w')
+        subprocess.call(("%s -e %s" % (options["VMDPATH"][0],vmd_script_name)),stdout=FNULL, shell=True)
 
 
 def call_montage(options,cube_files):
@@ -305,7 +378,6 @@ def call_montage(options,cube_files):
                 if "Phi" in f:
                     basis_functions.append(tga_file)
 
-
             # Sort the MOs
             sorted_mos = []
             for set in [alpha_mos,beta_mos]:
@@ -315,15 +387,18 @@ def call_montage(options,cube_files):
                     sorted_set.append((int(s_split[2]),"Psi_a_%s_%s" % (s_split[2],s_split[3])))
                 sorted_set = sorted(sorted_set)
                 sorted_mos.append([s[1] for s in sorted_set])
-                    
+           
             os.chdir(options["CUBEDIR"][0])
+                    
+            # Add labels
+            if options["LABEL_MOS"][0] == 'True':
+                for f in sorted_mos[0]:
+                    f_split = f.split('_')
+                    label = '%s\ \(%s\)' % (f_split[3][:-4],f_split[2])
+                    subprocess.call(("montage -pointsize %s -label %s %s -geometry '%sx%s+0+0>' %s" %
+                        (options["FONTSIZE"][0],label,f,options["IMAGEW"][0],options["IMAGEH"][0],f)), shell=True)
 
-            for f in sorted_mos[0]:
-                f_split = f.split('_')
-                label = "%s\ \(%s\)" % (f_split[3][:-4],f_split[2])
-                subprocess.call(("montage -pointsize %s -label %s %s -geometry '%sx%s+0+0>' %s" %
-                    (options["FONTSIZE"][0],label,f,options["IMAGESIZE"][0],options["IMAGESIZE"][0],f)), shell=True)
-            
+            # Combine together in one image
             if len(alpha_mos) > 0:
                 subprocess.call(("%s %s -geometry +2+2 AlphaMOs.tga" % (montage_exe," ".join(sorted_mos[0]))), shell=True)
             if len(beta_mos) > 0:
@@ -334,14 +409,22 @@ def call_montage(options,cube_files):
                 subprocess.call(("%s %s -geometry +2+2 BasisFunctions.tga" % (montage_exe," ".join(basis_functions))), shell=True)
 
 
+def zip_files(cube_files,options):
+    """Gzip cube files if requested or necessary."""
+    if options["GZIP"][0] == 'True':
+        print "\nCompressing cube files"
+        FNULL = open(os.devnull, 'w')
+        subprocess.call(("gzip %s" % " ".join(cube_files)),stdout=FNULL, shell=True)
+
+
 def main(argv):
-    read_options(options)
     find_vmd(options)
+    read_options(options)
     save_setup_command(argv)
     cube_files = find_cubes(options)
     write_and_run_vmd_script(options,cube_files)
     call_montage(options,cube_files)
-
+    zip_files(cube_files,options)
 
 if __name__ == '__main__':
     main(sys.argv)
