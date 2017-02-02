@@ -656,10 +656,8 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
         ::memset(target_, 0, sizeof(double)*n1234);
     }
     else if(has_puream_ && !spheric_ && !force_cartesian_) {
-        double * sourcetmp = source_;
         source_ = &(dscratch_[buffer_offset_-1]);
         pure_transform(shell_i, shell_j, shell_k, shell_l, 1);
-        source_ = sourcetmp;
     }
     else {
         ::memcpy(target_, &(dscratch_[buffer_offset_-1]), sizeof(double)*nbatch);
