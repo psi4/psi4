@@ -1,0 +1,15 @@
+@PACKAGE_INIT@
+
+set(PN TargetHDF5)
+check_required_components(${PN})
+
+#-----------------------------------------------------------------------------
+# Don't include targets if this file is being picked up by another
+# project which has already built this as a subproject
+#-----------------------------------------------------------------------------
+if(NOT TARGET tgt::hdf5)
+    include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets.cmake")
+    set(${PN}_VERSION @HDF5_VERSION@)
+
+    get_property(_ill TARGET tgt::hdf5 PROPERTY INTERFACE_LINK_LIBRARIES)
+endif()
