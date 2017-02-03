@@ -83,7 +83,7 @@ def _find_derivative_type(ptype, method_name, user_dertype):
         dertype = user_dertype
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
-        raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with gradients, so stopping.")
+        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
 
     # Summary validation
     if (dertype == 2) and (method_name in procedures['hessian']):

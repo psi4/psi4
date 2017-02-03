@@ -3079,6 +3079,9 @@ def build_superfunctional(alias):
         raise KeyError("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
                         % core.get_option("SCF", "SCF_TYPE"))
 
+    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
+        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
+
     return sup
 
 def test_ccl_functional(functional, ccl_functional):

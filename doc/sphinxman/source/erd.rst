@@ -58,11 +58,11 @@ non-derivative integrals.
 
 .. warning:: The interface between erd and libderiv is not fully
    debugged. So analytic gradients, particularly density-fitted ones,
-   are wrong; |PSIfour| will throw an error if you try to compute *any*
-   analytic gradient with |globals__integral_package| ``erd``. However,
-   ESP calculations and *energies* for long-range-corrected ("omega")
-   functionals are also wrong with erd, and these errors are *not* trapped.
-   So use with caution.
+   are wrong, as are ESP calculations and some energies for long-range
+   corrected ("omega") functionals. Insofar as faulty answers are
+   anticipated with |globals__integral_package| ``erd``, |PSIfour| will
+   throw an error if you try to execute that class of computation. But
+   there may be more, so use with caution.
 
 Installation
 ~~~~~~~~~~~~
