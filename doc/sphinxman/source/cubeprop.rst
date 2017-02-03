@@ -158,23 +158,19 @@ Running the Script
 
 1. Run a |PSIfour| calculation, generating .cube files as detailed in the above documentation.
 
-2. Copy vmd_script.py into a directory where the image files are desired, and pass the directory
-   pointing to the .cube files as an argument to run::
+2. Add vmd_cube.py to your path. Call vmd_cube.py and pass the directory containing
+   the .cube files as an argument::
 	
 	python vmd_cube.py /path/to/cube/files/
 
-   Alternatively, the script can be run in the same directory as the cube files with no need to pass the
-   directory as an argument.
+   By default the script will search for cube files in the directory in which it is called.
+   In addition to individual image files for each orbital, vmd_cube will also generate an image containing all surfaces in an array
+   (very useful for hand-picking orbital spaces)
 
-3. For an additional image containing all surfaces in an array (very useful for hand-picking orbital spaces), set the montage
-   flag to True::
+3. As an example, take the cube files generated from the water calculation from the above input file.
+   Using vmd_cube the alpha molecular orbitals can be rendered and output in one image with::
 
-	python vmd_cube.py /path/to/cube/files/ --montage=True
-
-3. As an example, take the cube files generated from the water calculation from the above input file. Using the script and montage,
-   the alpha molecular orbitals, for example, can be rendered and output in one image with::
-
-	python vmd_cube.py /path/to/cube/files/ --montage=True --opacity=0.5 --rx=90 --ry=60
+  python vmd_cube.py /path/to/cube/files/ --opacity=0.5 --rx=90 --ry=60
 
 The desired image in this case is called "AlphaMOs.tga", and looks like	this:
 
@@ -190,21 +186,21 @@ Script Options
     >>> ./vmd_cube.py --help
     usage: vmd_cube.py [-h] [--color1 [<integer>]] [--color2 [<integer>]]
                        [--iso [<isovalue>]] [--rx [<angle>]] [--ry [<angle>]]
-                       [--rz [<angle>]] [--tx [<angle>]] [--ty [<angle>]]
-                       [--tz [<angle>]] [--opacity [<opacity>]]
-                       [--scale [<factor>]] [--montage [MONTAGE]]
-                       [--imagesize [<integer>]] [--fontsize [<integer>]]
+                       [--rz [<angle>]] [--tx [<length>]] [--ty [<length>]]
+                       [--tz [<length>]] [--opacity [<opacity>]]
+                       [--scale [<factor>]] [--no-montage] [--no-labels]
+                       [--imagesize [<integer>]] [--imagew [<integer>]]
+                       [--imageh [<integer>]] [--fontsize [<integer>]]
+                       [--interactive] [--gzip] [--national_scheme]
+                       [--silver_scheme] [--bright_scheme] [--electron_scheme]
                        [<cubefile dir>]
-                                                                    .
+
     vmd_cube is a script to render cube files with vmd. To generate cube files
-    with Psi4, add the command cubeprop(wfn) at the end of your input file, where
-    *wfn* is a Wavefunction object that may be retrieved from any calculation and
-    used following the pattern "ene, wave = energy('pbe', return_wfn=True)\n
-    cubeprop(wave)".
-                                                                    .
+    with Psi4 add the command cubeprop() at the end of your input file.
+
     positional arguments:
       <cubefile dir>        The directory containing the cube files.
-                                                                    .
+
     optional arguments:
       -h, --help            show this help message and exit
       --color1 [<integer>]  the color ID of surface 1 (integer, default = 3)
@@ -213,16 +209,28 @@ Script Options
       --rx [<angle>]        the x-axis rotation angle (float, default = 30.0)
       --ry [<angle>]        the y-axis rotation angle (float, default = 40.0)
       --rz [<angle>]        the z-axis rotation angle (float, default = 15.0)
-      --tx [<angle>]        the x-axis translation (float, default = 0.0)
-      --ty [<angle>]        the y-axis translation (float, default = 0.0)
-      --tz [<angle>]        the z-axis translation (float, default = 0.0)
+      --tx [<length>]       the x-axis translation (float, default = 0.0)
+      --ty [<length>]       the y-axis translation (float, default = 0.0)
+      --tz [<length>]       the z-axis translation (float, default = 0.0)
       --opacity [<opacity>]
                             opacity of the isosurface (float, default = 1.0)
       --scale [<factor>]    the scaling factor (float, default = 1.0)
-      --montage [MONTAGE]   call montage to combine images. (string, default =
+      --no-montage          call montage to combine images. (string, default =
                             false)
+      --no-labels           do not add labels to images. (string, default = false)
       --imagesize [<integer>]
                             the size of each image (integer, default = 250)
+      --imagew [<integer>]  the width of images (integer, default = 250)
+      --imageh [<integer>]  the height of images (integer, default = 250)
       --fontsize [<integer>]
                             the font size (integer, default = 20)
+      --interactive         run in interactive mode (default = false)
+      --gzip                gzip cube files (default = false)
+      --national_scheme     use a red/blue color scheme. (string, default = false)
+      --silver_scheme       use a gray/white color scheme. (string, default =
+                            false)
+      --bright_scheme       use a soft yellow/blue color scheme. (string, default
+                            = false)
+      --electron_scheme     use a purple/green color scheme. (string, default =
+                            false)
 
