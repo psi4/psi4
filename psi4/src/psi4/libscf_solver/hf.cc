@@ -153,18 +153,20 @@ void HF::common_init()
         if(old_pg){
             // This is one of a series of displacements;  check the dimension against the parent point group
             size_t full_nirreps = old_pg->char_table().nirrep();
-            if(options_["DOCC"].size() != full_nirreps)
-                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+	    if(options_["DOCC"].size() != full_nirreps)
+	        throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
             Dimension temp_docc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h)
+            for(int h = 0; h < full_nirreps; ++h) {
                 temp_docc[h] = options_["DOCC"][h].to_integer();
+	    }
             doccpi_ = map_irreps(temp_docc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["DOCC"].size() != nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h)
-                doccpi_[h] = options_["DOCC"][h].to_integer();
+            for(int h = 0; h < nirreps; ++h) {
+	      doccpi_[h] = options_["DOCC"][h].to_integer();
+	    }
         }
     } // else take the reference wavefunctions doccpi
 
@@ -179,17 +181,26 @@ void HF::common_init()
             if(options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             Dimension temp_socc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h)
+            for(int h = 0; h < full_nirreps; ++h) {
                 temp_socc[h] = options_["SOCC"][h].to_integer();
+	    }
             soccpi_ = map_irreps(temp_socc);
         }else{
             // This is a normal calculation; check the dimension against the current point group then read
             if(options_["SOCC"].size() != nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h)
+            for(int h = 0; h < nirreps; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
+	    }
         }
     } // else take the reference wavefunctions soccpi
+
+    // Check that we have enough basis functions
+    for(int h = 0; h < nirreps; ++h) {
+      if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
+	throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+      }
+    }
 
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
@@ -1074,6 +1085,13 @@ void HF::form_Shalf()
 
         if (print_)
             outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
+
+	// Double check occupation vectors
+	for(int h = 0; h < eigval->nirrep(); ++h) {
+	  if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
+	    throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
+	  }
+	}
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
