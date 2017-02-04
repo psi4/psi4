@@ -29,13 +29,13 @@
 .. include:: autodoc_abbr_options_c.rst
 
 .. index::
-   triple: setting; keywords; property()
-   see: prop(); property()
+   triple: setting; keywords; properties()
+   see: prop(); properties()
 
 .. _`sec:prop()`:
 
 Property
 ========
 
-.. autofunction:: psi4.property(name [, properties, molecule])
+.. autofunction:: psi4.properties(name [, properties, molecule])
 
