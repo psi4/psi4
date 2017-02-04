@@ -36,27 +36,27 @@ matrix:
       - NAME='clang'
       - VERSION='3.6'
 
-  - os: linux
-    compiler: clang
-    addons: &2
-      apt:
-        sources:
-        - llvm-toolchain-precise-3.9
-        - ubuntu-toolchain-r-test
-        - george-edison55-precise-backports
-        packages:
-        - liblapack-dev
-        - clang-3.9
-        - libhdf5-serial-dev
-        - gfortran
-    env:
-      - CXX_COMPILER='clang++-3.9'
-      - PYTHON_VER='3.5'
-      - C_COMPILER='clang-3.9'
-      - Fortran_COMPILER='gfortran'
-      - BUILD_TYPE='release'
-      - NAME='clang'
-      - VERSION='3.9'
+  #- os: linux
+  #  compiler: clang
+  #  addons: &2
+  #    apt:
+  #      sources:
+  #      - llvm-toolchain-precise-3.9
+  #      - ubuntu-toolchain-r-test
+  #      - george-edison55-precise-backports
+  #      packages:
+  #      - liblapack-dev
+  #      - clang-3.9
+  #      - libhdf5-serial-dev
+  #      - gfortran
+  #  env:
+  #    - CXX_COMPILER='clang++-3.9'
+  #    - PYTHON_VER='3.5'
+  #    - C_COMPILER='clang-3.9'
+  #    - Fortran_COMPILER='gfortran'
+  #    - BUILD_TYPE='release'
+  #    - NAME='clang'
+  #    - VERSION='3.9'
 
   - os: linux
     compiler: gcc
