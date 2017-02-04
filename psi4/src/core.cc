@@ -1184,7 +1184,9 @@ bool psi4_python_module_initialize()
     read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
 
+#ifdef __INTEL_COMPILER
     for_rtl_init_(NULL, NULL);
+#endif
 
     initialized = true;
 
@@ -1193,7 +1195,9 @@ bool psi4_python_module_initialize()
 
 void psi4_python_module_finalize()
 {
+#ifdef __INTEL_COMPILER
     for_rtl_finish_();
+#endif
 
     py_psi_plugin_close_all();
 
