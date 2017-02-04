@@ -226,6 +226,7 @@ def set_module_options(module, options_dict):
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
 
+## OEProp helpers
 
 def pcm_helper(block):
     """Passes multiline string *block* to PCMSolver parser."""
@@ -327,3 +328,9 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
     qcdb.libmintsbasisset.basishorde[name.upper()] = anon
     if set_option:
         core.set_global_option(key, name)
+
+core.OEProp.valid_methods = [
+    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES',
+    'MAYER_INDICES', 'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+    'NO_OCCUPATIONS'
+]

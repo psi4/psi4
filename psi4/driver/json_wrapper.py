@@ -45,7 +45,7 @@ import os
 methods_dict = {
     'energy': driver.energy,
     'gradient': driver.gradient,
-    'property': driver.property,
+    'property': driver.properties,
     'optimize': driver.optimize,
     'hessian': driver.hessian,
     'frequency': driver.frequency,

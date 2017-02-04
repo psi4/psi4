@@ -50,6 +50,7 @@ from . import proc_util
 from . import empirical_dispersion
 from . import dft_funcs
 from . import mcscf
+from . import response
 
 # never import driver, wrappers, or aliases into this file
 
@@ -2436,17 +2437,61 @@ def run_scf_property(name, **kwargs):
     optstash = proc_util.scf_set_reference_local(name)
 
     properties = kwargs.pop('properties')
-    proc_util.oeprop_validator(properties)
 
+    # What response do we need?
+    response_list_vals = list(response.scf_response.property_dicts)
+    oeprop_list_vals = core.OEProp.valid_methods
+
+    oe_properties = []
+    linear_response = []
+    unknown_property = []
+    for prop in properties:
+
+        prop = prop.upper()
+        if prop in response_list_vals:
+            linear_response.append(prop)
+        elif (prop in oeprop_list_vals) or ("MULTIPOLE(" in prop):
+            oe_properties.append(prop)
+        else:
+            unknown_property.append(prop)
+
+    # Throw if we dont know what something is
+    if len(unknown_property):
+        complete_options = oeprop_list_vals + response_list_vals
+        alt_method_name = p4util.text.find_approximate_string_matches(unknown_property[0],
+                                                         complete_options, 2)
+        alternatives = ""
+        if len(alt_method_name) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
+
+        raise ValidationError("SCF Property: Feature '%s' is not recognized. %s" % (unknown_property[0], alternatives))
+
+    # Validate OEProp
+    proc_util.oeprop_validator(oe_properties)
+
+    if len(linear_response):
+        optstash_jk = p4util.OptionsState(["SAVE_JK"])
+        core.set_global_option("SAVE_JK", True)
+
+    # Compute the Wavefunction
     scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
     oe.set_title(name.upper())
-    for prop in properties:
+    for prop in oe_properties:
         oe.add(prop.upper())
     oe.compute()
     scf_wfn.set_oeprop(oe)
+
+    # Run Linear Respsonse
+    if len(linear_response):
+        core.prepare_options_for_module("SCF")
+        ret = response.scf_response.cpscf_linear_response(scf_wfn, *linear_response,
+                                                            conv_tol = core.get_global_option("SOLVER_CONVERGENCE"),
+                                                            max_iter = core.get_global_option("SOLVER_MAXITER"),
+                                                            print_lvl = (core.get_global_option("PRINT") + 1))
+        optstash_jk.restore()
 
     core.tstop()
     optstash.restore()

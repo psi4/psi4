@@ -14,7 +14,7 @@ set {
   roots_per_irrep [2, 2]
 }
 
-cc_energy, wfn = property('eom-cc2', properties=['oscillator_strength'],return_wfn=True)
+cc_energy, wfn = properties('eom-cc2', properties=['oscillator_strength'],return_wfn=True)
 
 gs_refs = {
         "CC DIPOLE X":                 0.0000,

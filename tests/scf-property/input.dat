@@ -28,7 +28,7 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
          'MULTIPOLE(5)', 'NO_OCCUPATIONS']
 
-property('scf', properties=props)
+properties('scf', properties=props)
 
 compare_values(psi4.get_variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")         #TEST
 compare_values(psi4.get_variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")    #TEST
@@ -41,7 +41,7 @@ compare_values(psi4.get_variable('SCF QUADRUPOLE XY'), 0.000000000000, 4, "SCF Q
 compare_values(psi4.get_variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")    #TEST
 compare_values(psi4.get_variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")    #TEST
 
-property('B3LYP', properties=props)
+properties('B3LYP', properties=props)
 
 compare_values(psi4.get_variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")    #TEST
 compare_values(psi4.get_variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")    #TEST

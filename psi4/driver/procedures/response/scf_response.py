@@ -1,5 +1,34 @@
-import numpy as np
+#
+# @BEGIN LICENSE
+#
+# Psi4: an open-source quantum chemistry software package
+#
+# Copyright (c) 2007-2017 The Psi4 Developers.
+#
+# The copyrights for code used from other parties are included in
+# the corresponding files.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# @END LICENSE
+#
+
 from psi4 import core
+from psi4.driver.p4util.exceptions import *
+
+import numpy as np
 
 dipole = {'name': 'Dipole polarizabilities', 'printout labels': ['X', 'Y', 'Z'],
           'mints function': core.MintsHelper.so_dipole, 'vector names': ["SO Dipole x", "SO Dipole y", "SO Dipole z"]}
@@ -16,11 +45,11 @@ traceless_quadrupole = {'name': 'Traceless quadrupole polarizabilities',
                                          'SO Traceless Quadrupole xz', 'SO Traceless Quadrupole y2',
                                          'SO Traceless Quadrupole yz', 'SO Traceless Quadrupole z2']}
 
-property_dicts = {'dipole_polarizabilities': dipole, 'quadrupole_polarizabilities': quadrupole,
-                  'traceless_quadrupole_polarizabilities': traceless_quadrupole}
+property_dicts = {'DIPOLE_POLARIZABILITIES': dipole, 'QUADRUPOLE_POLARIZABILITIES': quadrupole,
+                  'TRACELESS_QUADRUPOLE_POLARIZABILITIES': traceless_quadrupole}
 
 
-def static_solve(wfn, *args, **kwargs):
+def cpscf_linear_response(wfn, *args, **kwargs):
     """
     Compute the static properties from a reference wavefunction. The currently implemented properties are
       - dipole polarizability
@@ -51,18 +80,17 @@ def static_solve(wfn, *args, **kwargs):
     n_user = 0
 
     for arg in args:
-        argtype = type(arg)
 
         # for each string keyword, append the appropriate dictionary (vide supra) to our list
-        if argtype is str:
+        if isinstance(arg, str):
             ret = property_dicts.get(arg)
             if ret:
                 complete_dict.append(ret)
             else:
-                print('Do not understand {}. Skipping.'.format(arg))
+                raise ValidationError('Do not understand {}. Abort.'.format(arg))
 
         # the user passed a list of vectors. absorb them into a dictionary
-        elif argtype is tuple or argtype is list:
+        elif isinstance(arg, tuple) or isinstance(arg, list):
             complete_dict.append(
                 {'name': 'User Vectors', 'length': len(arg), 'vectors': arg,
                  'vector names': ['User Vector {}_{}'.format(n_user, i) for i in range(len(arg))]})
@@ -95,8 +123,7 @@ def static_solve(wfn, *args, **kwargs):
 
     # do we have any vectors to work with?
     if len(vectors) == 0:
-        print('I have no vectors to work with. Aborting.')
-        return None
+        raise ValidationError('I have no vectors to work with. Aborting.')
 
     # print information on module, vectors that will be used
     _print_header(complete_dict, n_user)
@@ -123,7 +150,8 @@ def static_solve(wfn, *args, **kwargs):
             ))
 
     # compute response vectors for each input vector
-    params = _get_cphf_solver_params(kwargs)        # TODO get the options from Psi4?
+    params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
+
     responses = wfn.cphf_solve(vectors, *params)
 
     # zip vectors, responses for easy access
@@ -163,7 +191,7 @@ def static_solve(wfn, *args, **kwargs):
 
 def _print_header(complete_dict, n_user):
     core.print_out('\n\n         ---------------------------------------------------------\n'
-                   '         {:^57}\n'.format('CPHF Solver') +
+                   '         {:^57}\n'.format('CPSCF Linear Response Solver') +
                    '         {:^57}\n'.format('by Marvin Lechner and Daniel Smith') +
                    '         ---------------------------------------------------------\n')
 
@@ -177,7 +205,7 @@ def _print_header(complete_dict, n_user):
         core.print_out('    {} user-supplied vector(s)\n'.format(n_user))
 
 
-def _print_matrix(descriptors, content):
+def _print_matrix(descriptors, content, title):
     length = len(descriptors)
 
     matrix_header = '         ' + ' {:^10}' * length + '\n'
@@ -188,6 +216,10 @@ def _print_matrix(descriptors, content):
         core.print_out('    {:^5}'.format(desc))
         for j in range(length):
             core.print_out(' {:>10.5f}'.format(content[i, j]))
+
+            # Set the name
+            var_name = title + " " + descriptors[i] + descriptors[j]
+            core.set_variable(var_name, content[i, j])
         core.print_out('\n')
 
 
@@ -198,33 +230,6 @@ def _print_output(complete_dict, output):
         if not 'User' in prop['name']:
             core.print_out('\n    => {} <=\n\n'.format(prop['name']))
             directions = prop['printout labels']
-            _print_matrix(directions, output[i])
+            var_name = prop['name'].upper().replace("IES", "Y")
+            _print_matrix(directions, output[i], var_name)
 
-
-def _get_cphf_solver_params(kwargs):
-    """
-    Extract the parameters for the cphf solver from the keyword arguments.
-
-    Parameters
-    ----------
-    kwargs : dict
-        The keyword parameters passed by the user.
-
-    Returns
-    -------
-    params : list
-        The cphf solver parameters ``conv_tol``, ``max_iter``, ``print_lvl``.
-    """
-    params = []
-    needed_params = ['conv_tol', 'max_iter', 'print_lvl']
-    default_values = [1e-5, 10, 2]
-
-    for i, param in enumerate(needed_params):
-        ret = kwargs.get(param)
-
-        if ret is None:
-            params.append(default_values[i])
-        else:
-            params.append(ret)
-
-    return params

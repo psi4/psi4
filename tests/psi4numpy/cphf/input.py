@@ -69,7 +69,7 @@ def wrap_Hx(matrices, active_mask):
         else:
             ret.append(False)
 
-    return scf_wfn.cphf_Hx(matrices)
+    return ret
 
 # Solve
 ret, resid = psi4.p4util.solvers.cg_solver(dipoles_xyz, wrap_Hx, precon_func, rcond=1.e-6)

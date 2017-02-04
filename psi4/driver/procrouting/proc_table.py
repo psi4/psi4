@@ -181,7 +181,7 @@ procedures = {
             'hf'            : proc.run_scf_hessian,
             'scf'            : proc.run_scf_hessian,
         },
-        'property' : {
+        'properties' : {
             'hf'       : proc.run_scf_property,
             'scf'      : proc.run_scf_property,
             'mp2'      : proc.select_mp2_property,
@@ -210,7 +210,7 @@ for ssuper in superfunc_list:
       procedures['energy'][ssuper.name().lower()] = proc.run_dft
 
       if not ssuper.is_c_hybrid():
-            procedures['property'][ssuper.name().lower()] = proc.run_dft_property
+            procedures['properties'][ssuper.name().lower()] = proc.run_dft_property
 
 for ssuper in superfunc_list:
       if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):

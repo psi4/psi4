@@ -744,7 +744,7 @@ def gradient(name, **kwargs):
             return wfn.gradient()
 
 
-def property(name, **kwargs):
+def properties(*args, **kwargs):
     r"""Function to compute various properties.
 
     :aliases: prop()
@@ -800,10 +800,9 @@ def property(name, **kwargs):
     :examples:
 
     >>> # [1] Optical rotation calculation
-    >>> property('cc2', properties=['rotation'])
+    >>> properties('cc2', properties=['rotation'])
 
     """
-    lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
 
@@ -812,15 +811,20 @@ def property(name, **kwargs):
     molecule.update_geometry()
 
     # Allow specification of methods to arbitrary order
+    lowername = args[0].lower()
     lowername, level = driver_util.parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
 
     properties = kwargs.get('properties', ['dipole', 'quadrupole'])
+
+    if len(args) > 1:
+        properties += args[1:]
+
     kwargs['properties'] = p4util.drop_duplicates(properties)
 
-    optstash = driver_util._set_convergence_criterion('property', lowername, 6, 10, 6, 10, 8)
-    wfn = procedures['property'][lowername](lowername, **kwargs)
+    optstash = driver_util._set_convergence_criterion('properties', lowername, 6, 10, 6, 10, 8)
+    wfn = procedures['properties'][lowername](lowername, **kwargs)
 
     optstash.restore()
 
@@ -1829,7 +1833,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     >>> molden(wfn, 'ccsd_no.molden', density_a=wfn.Da())
 
     >>> # [4] This WILL work, note the transformation of Da (SO->MO)
-    >>> E, wfn = property('ccsd', properties=['dipole'], return_wfn=True)
+    >>> E, wfn = properties('ccsd', properties=['dipole'], return_wfn=True)
     >>> Da_so = wfn.Da()
     >>> Da_mo = Matrix.triplet(wfn.Ca(), Da_so, wfn.Ca(), True, False, False)
     >>> molden(wfn, 'ccsd_no.molden', density_a=Da_mo)
@@ -1887,4 +1891,4 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 opt = optimize
 freq = frequency
 frequencies = frequency
-prop = property
+prop = properties
