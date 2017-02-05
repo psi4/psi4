@@ -55,7 +55,7 @@ enum GaussianType {
  */
 class ShellInfo
 {
-private:
+protected:
     /// Angular momentum
     int l_;
     /// Flag for pure angular momentum
@@ -191,7 +191,7 @@ public:
  */
 class GaussianShell
 {
-private:
+protected:
     /// Angular momentum
     int l_;
     /// Flag for pure angular momentum

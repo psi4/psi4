@@ -14,53 +14,97 @@
 #define ECP_HEAD
 
 #include <vector>
+#include <string>
+#include "psi4/libpsi4util/exception.h"
+#include "basisset.h"
+#include "basisset_parser.h"
+#include "gshell.h"
 
 namespace psi {
-// Object describing a Gaussian of angular momentum l of the form
-// d r^n e^{-ax^2}
-struct GaussianECP {
-	int n, l;
-	double a, d;
-	
-	GaussianECP();
-	GaussianECP(int n, int l, double a, double d);
-	GaussianECP(const GaussianECP& other);
+
+    class ECPShellInfo : public ShellInfo {
+    private:
+        std::vector<int> n_;
+        std::vector<int> sub_l_;
+    public:
+        ECPShellInfo(int am,
+                     const std::vector<double>& c,
+                     const std::vector<double>& e,
+                     const std::vector<int>& n,
+                     const std::vector<int>& sub_l,
+                     int nc,
+                     const Vector3& center,
+                     int start);
+        
+        ECPShellInfo copy();
+        ECPShellInfo copy(int nc, const Vector3& c);
+        
+        int n(int prim) const { return n_[prim]; }
+        int subl(int prim) const { return sub_l_[prim]; }
+        
+        bool operator==(const ECPShellInfo& RHS) const;
+        bool operator!=(const ECPShellInfo& RHS) const {
+            return !(*this==RHS);
+        }
+    };
+
+class ECPBasisSetParser : public BasisSetParser {
+public:
+    ECPBasisSetParser() : BasisSetParser() { }
+    virtual ~ECPBasisSetParser() { }
+    
+    std::vector<ECPShellInfo> ecp_parse(const std::string& symbol, const std::string& dataset) {
+        return ecp_parse(symbol, string_to_vector(dataset));
+    }
+    
+    virtual std::vector<ECPShellInfo> ecp_parse(const std::string& symbol, const std::vector<std::string>& dataset) = 0;
+
+};
+    
+class Gaussian94ECPBasisSetParser : public ECPBasisSetParser {
+public:
+    Gaussian94ECPBasisSetParser() : ECPBasisSetParser() {}
+    virtual std::vector<ECPShellInfo> ecp_parse(const std::string& symbol, const std::vector<std::string>& dataset);
 };
 
-class ECP {
+    
+class GaussianECPShell : public GaussianShell {
 private:
-	std::vector<GaussianECP> gaussians; // All the primitives in the ECP expansion
-	int N, L; // # of Gaussians and maximum angular momentum
-	const double *center_;
+    const int* n_;
+    const int* sub_l_;
 	
 public:
-	ECP();
-	ECP(const double *_center);
-	ECP(const ECP &other);
+	GaussianECPShell(int am,
+                     int nprimitive,
+                     const double *oc,
+                     const double *e,
+                     const int *n,
+                     const int *subl,
+                     int nc,
+                     const double* center,
+                     int start);
+    GaussianECPShell() { }
 	
-	void addPrimitive(int n, int l, double a, double d, bool needSort = true);
-	const double* center() const { return center_; }
-	void sort(); // Sort primitives according to angular momentum
+    int n(int prim) const { return n_[prim]; }
+    int subl(int prim) const { return sub_l_[prim]; }
 	
 	// Evaluate U_l(r)
-	double evaluate(double r, int l);
-  
- 	int getL() const { return L; }
+	double evaluate(double r, int l) const;
 	
 };
 
-class ECPBasis {
-private:
-	std::vector<ECP> basis;
-	int N, maxL;
-	
+class ECPBasisSet : public BasisSet {
+    friend class ECPBasisSetParser;
+    
+    int *uns_;
+    int *usubls_;
+    
 public:
-	ECPBasis();
+	ECPBasisSet();
+    ECPBasisSet(const std::string &basistype, SharedMolecule mol,
+                std::map<std::string, std::map<std::string, std::vector<ECPShellInfo> > > &shell_map);
 	
-	void addECP(ECP &U);
-	ECP& getECP(int i);
-	int getMaxL() const { return maxL; }
-	int getN() const { return N; }
+    
 };
 
 }

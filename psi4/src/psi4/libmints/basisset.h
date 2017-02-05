@@ -69,6 +69,7 @@ class IntegralFactory;
 */
 class BasisSet
 {
+protected:
     friend class BasisSetParser;
 
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
