@@ -15,7 +15,6 @@
 
 namespace psi {
 
-#include <functional>
 #include <vector>
 
 enum GCTYPE {
@@ -49,7 +48,7 @@ private:
 	GCTYPE t;
 	
    /// Worker function for integration routines, should not be called directly.	
-   double sumTerms(std::function<double(double, double*, int)> &f, double *p, int limit, int shift, int skip);
+   double sumTerms(double (*f)(double, double*, int), double *p, int limit, int shift, int skip);
 
 public:
 	/// Start and endpoints of integration, used for prescreening
@@ -77,7 +76,7 @@ public:
 	  * @param tolerance - change below which convergenced is considered to be achieved
   	  * @return true if integration converged, false otherwise
   	  */
-	bool integrate(std::function<double(double, double*, int)> &f, double *params, const double tolerance);
+	bool integrate(double (*f)(double, double*, int), double *params, const double tolerance);
 	
 	/**
 	  * Transforms the region of integration to [0, inf) using the logarithmic transformation of Krack98
