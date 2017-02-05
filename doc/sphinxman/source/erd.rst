@@ -33,7 +33,7 @@
 Interface to ERD by N. Flocke and V. Lotrich
 ============================================
 
-.. codeauthor:: Andrew C. Simmonett
+.. codeauthor:: Andrew C. Simmonett and Benjamin P. Pritchard
 .. sectionauthor:: Lori A. Burns
 
 .. *Module:* :ref:`Keywords <apdx:dkh>`, :ref:`Samples <apdx:testSuitedkh>`
@@ -50,11 +50,19 @@ Interface to ERD by N. Flocke and V. Lotrich
 
 .. _`sec:erdinstall`:
 
-These are the AcesIII electron repulsion integrals that have been
-partially interfaced into libmints. Only conventional (no density-fitted)
-integrals are accessible, so enabling erd and adding ``set
-integral_package erd``, essentially breaks |PSIfour| for all SCF except
-direct.
+These are the AcesIII electron repulsion integrals that have
+been partially interfaced into libmints. Enabling erd and adding
+``set integral_package erd`` (do this in ``~/.psi4rc`` for universal
+effect) runs libderiv from libint for derivative integrals and erd for
+non-derivative integrals.
+
+.. warning:: The interface between erd and libderiv is not fully
+   debugged. So analytic gradients, particularly density-fitted ones,
+   are wrong, as are ESP calculations and some energies for long-range
+   corrected ("omega") functionals. Insofar as faulty answers are
+   anticipated with |globals__integral_package| ``erd``, |PSIfour| will
+   throw an error if you try to execute that class of computation. But
+   there may be more, so use with caution.
 
 Installation
 ~~~~~~~~~~~~

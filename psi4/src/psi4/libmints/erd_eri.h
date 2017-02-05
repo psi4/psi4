@@ -117,6 +117,8 @@ protected:
     F_BOOL screen_;
     /// Whether ERD should use spherical harmonic basis functions
     F_BOOL spheric_;
+    /// Do any of the basis sets have spherical functions
+    bool has_puream_;
     /// Not relating to the monotony of integral computations, but whether the basis sets are all the same
     bool same_bs_;
 
