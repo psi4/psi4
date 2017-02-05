@@ -110,10 +110,10 @@ public:
     { return count_; }
 };
 
-MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int print)
+MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int print, std::shared_ptr<ECPBasisSet> ecpbasis)
         : options_(options), print_(print)
 {
-    init_helper(basis);
+    init_helper(basis, ecpbasis);
 }
 
 MintsHelper::MintsHelper(std::shared_ptr <Wavefunction> wavefunction)
@@ -144,9 +144,10 @@ void MintsHelper::init_helper(std::shared_ptr <Wavefunction> wavefunction)
     common_init();
 }
 
-void MintsHelper::init_helper(std::shared_ptr <BasisSet> basis)
+void MintsHelper::init_helper(std::shared_ptr <BasisSet> basis,  std::shared_ptr<ECPBasisSet> ecpbasis)
 {
     basisset_ = basis;
+	ecpbasis_ = ecpbasis; 
     molecule_ = basis->molecule();
     psio_ = _default_psio_lib_;
 
@@ -173,7 +174,7 @@ void MintsHelper::common_init()
     #endif
 
     // Create integral factory
-    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, ecpbasis_));
 
     // Get the SO basis object.
     sobasis_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
@@ -209,6 +210,11 @@ std::shared_ptr <BasisSet> MintsHelper::basisset() const
 std::shared_ptr <SOBasisSet> MintsHelper::sobasisset() const
 {
     return sobasis_;
+}
+
+std::shared_ptr<ECPBasisSet> MintsHelper::ecpbasisset() const 
+{
+	return ecpbasis_; 
 }
 
 std::shared_ptr <MatrixFactory> MintsHelper::factory() const
@@ -568,6 +574,23 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shar
     SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf(), bs2->nbf()));
     one_body_ao_computer(ints_vec, potential_mat, false);
     return potential_mat;
+}
+
+SharedMatrix MintsHelper::ao_ecp()
+{
+	std::shared_ptr <OneBodyAOInt> ECP(integral_->ao_ecp());
+	SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
+	ECP->compute(ecp_mat);
+	return ecp_mat;
+}
+
+SharedMatrix MintsHelper::ao_ecp(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, std::shared_ptr <ECPBasisSet> bsecp) 
+{
+	IntegralFactory factory(bs1, bs2, bsecp);
+	std::shared_ptr <OneBodyAOInt> ECP(factory.ao_ecp());
+	SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
+	ECP->compute(ecp_mat);
+	return ecp_mat; 
 }
 
 SharedMatrix MintsHelper::ao_pvp()
@@ -1177,6 +1200,13 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
         potential_mat = factory_->create_shared_matrix(PSIF_SO_V);
         potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
     }
+	
+	if (integral_->hasECP()) {
+		std::shared_ptr <OneBodySOInt> ECP(integral_->so_ecp());
+		SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", potential_mat->nrow(), potential_mat->ncol())); 
+		ECP->compute(ecp_mat); 
+		potential_mat->add(ecp_mat);
+	}
 
     // Handle addition of any perturbations here and not in SCF code.
     if (include_perturbations) {

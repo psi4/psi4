@@ -67,6 +67,7 @@
 namespace psi {
 
 class BasisSet;
+class ECPBasisSet;
 class GaussianShell;
 class OneBodyAOInt;
 class OneBodySOInt;
@@ -394,6 +395,8 @@ protected:
     std::shared_ptr<BasisSet> bs3_;
     /// Center 4 basis set
     std::shared_ptr<BasisSet> bs4_;
+    /// ECP basis set
+    std::shared_ptr<ECPBasisSet> bs_ecp_;
 
     /// Provides ability to transform to sphericals (d=0, f=1, g=2)
     std::vector<SphericalTransform> spherical_transforms_;
@@ -401,13 +404,15 @@ protected:
     std::vector<ISphericalTransform> ispherical_transforms_;
 
 public:
-    /** Initialize IntegralFactory object given a BasisSet for each center. */
+    /** Initialize IntegralFactory object given a BasisSet for each center, and optionally an ECPBasisSet. */
     IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
-    /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs2 | bs1 bs2). */
-    IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2);
-    /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs1 | bs1 bs1). */
-    IntegralFactory(std::shared_ptr<BasisSet> bs1);
+                    std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4,
+                    std::shared_ptr<ECPBasisSet> bsecp = nullptr);
+    /** Initialize IntegralFactory object given a BasisSet for two centers, and optionally an ECPBasisSet. Becomes (bs1 bs2 | bs1 bs2). */
+    IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                    std::shared_ptr<ECPBasisSet> bsecp = nullptr);
+    /** Initialize IntegralFactory object given a BasisSet for two centers, and optionally an ECPBasisSet. Becomes (bs1 bs1 | bs1 bs1). */
+    IntegralFactory(std::shared_ptr<BasisSet> bs1,  std::shared_ptr<ECPBasisSet> bsecp = nullptr);
 
     virtual ~IntegralFactory();
 
@@ -419,10 +424,14 @@ public:
     std::shared_ptr<BasisSet> basis3() const;
     /// Return the basis set on center 4.
     std::shared_ptr<BasisSet> basis4() const;
+    /// Return the ECP basis set
+    std::shared_ptr<ECPBasisSet> basisECP() const;
+    /// Return whether ECPs are present
+    bool hasECP() const; 
 
     /// Set the basis set for each center.
     virtual void set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-        std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4);
+        std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4,  std::shared_ptr<ECPBasisSet> bsecp);
 
     /// Returns an OneBodyInt that computes the overlap integral.
     virtual OneBodyAOInt* ao_overlap(int deriv=0);
@@ -440,6 +449,10 @@ public:
     /// Returns an OneBodyInt that computes the nuclear attraction integral.
     virtual OneBodyAOInt* ao_potential(int deriv=0);
     virtual OneBodySOInt* so_potential(int deriv=0);
+    
+    /// Returns an OneBodyInt that computes the ECP integral.
+    virtual OneBodyAOInt* ao_ecp(int deriv=0);
+    virtual OneBodySOInt* so_ecp(int deriv=0);
 
     /// Returns an OneBodyInt that computes the relativistic nuclear attraction integral.
     virtual OneBodyAOInt* ao_rel_potential(int deriv=0);

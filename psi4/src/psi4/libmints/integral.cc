@@ -46,7 +46,9 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/potentialint.h"
+#include "psi4/libmints/ecpint.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/erd_eri.h"
 
 #ifdef USING_simint
@@ -61,19 +63,21 @@ using namespace psi;
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1,
                                  std::shared_ptr<BasisSet> bs2,
                                  std::shared_ptr<BasisSet> bs3,
-                                 std::shared_ptr<BasisSet> bs4)
+                                 std::shared_ptr<BasisSet> bs4,
+								  std::shared_ptr<ECPBasisSet> bsecp)
 {
-    set_basis(bs1, bs2, bs3, bs4);
+    set_basis(bs1, bs2, bs3, bs4, bsecp);
 }
 
-IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+	 std::shared_ptr<ECPBasisSet> bsecp)
 {
-    set_basis(bs1, bs2, bs1, bs2);
+    set_basis(bs1, bs2, bs1, bs2, bsecp);
 }
 
-IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1)
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<ECPBasisSet> bsecp)
 {
-    set_basis(bs1, bs1, bs1, bs1);
+    set_basis(bs1, bs1, bs1, bs1, bsecp);
 }
 
 IntegralFactory::~IntegralFactory()
@@ -101,13 +105,24 @@ std::shared_ptr<BasisSet> IntegralFactory::basis4() const
     return bs4_;
 }
 
+std::shared_ptr<ECPBasisSet> IntegralFactory::basisECP() const
+{
+	return bs_ecp_;
+}
+
+bool IntegralFactory::hasECP() const
+{
+	return bs_ecp_ != nullptr; 
+}
+
 void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4)
+                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4, std::shared_ptr<ECPBasisSet> bsecp)
 {
     bs1_ = bs1;
     bs2_ = bs2;
     bs3_ = bs3;
     bs4_ = bs4;
+	bs_ecp_ = bsecp;
 
     // Use the max am from libint
     init_spherical_harmonics(LIBINT_MAX_AM+1);
@@ -149,6 +164,17 @@ OneBodySOInt* IntegralFactory::so_potential(int deriv)
 {
     std::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
     return new PotentialSOInt(ao_int, this);
+}
+
+OneBodyAOInt* IntegralFactory::ao_ecp(int deriv)
+{
+	return new ECPInt(spherical_transforms_, bs1_, bs2_, bs_ecp_, deriv);
+}
+
+OneBodySOInt* IntegralFactory::so_ecp(int deriv)
+{
+	std::shared_ptr<OneBodyAOInt> ao_int(ao_ecp(deriv));
+	return new ECPSOInt(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::ao_rel_potential(int deriv)
