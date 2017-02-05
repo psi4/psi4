@@ -145,7 +145,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
         # verify that this vector already has the correct shape
         elif shape != (ndocc, nvirt):
-            core.print_out('ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})\n'.format(
+            raise ValidationError('ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})'.format(
                 vector_names[i], nbf, nbf, ndocc, nvirt
             ))
 
