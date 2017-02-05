@@ -1,7 +1,7 @@
-/* 	class ECPIntegral calculates one-body ECP integrals
+/* 	class ECPInt calculates one-body ECP integrals
 	class AngularIntegral calculates and stores the angular integrals needed for the ECP integration
  	class RadialIntegral abstracts the calculation of the radial integrals needed for the ECP integration, 
-	such that if a different approach was desired later, this could be done with minimal alterations to ECPIntegral.
+	such that if a different approach was desired later, this could be done with minimal alterations to ECPInt.
 
    	Robert A. Shaw 2016	
 
@@ -231,11 +231,11 @@ public:
 	/**
 	  * Initialises the object, in turn intialising the quadrature grids and BesselFunction
 	  * @param maxL - the maximum angular momentum of integral needed
-	  * @param tol - the tolerance for convergence of integrals (defaults to 1e-12)
-	  * @param small - the maximum number of quadrature points for the small integration grid (default 128, minimum recommended)
+	  * @param tol - the tolerance for convergence of integrals (defaults to 1e-15)
+	  * @param small - the maximum number of quadrature points for the small integration grid (default 256, minimum recommended)
 	  * @param large - the maximum number of quadrature points for the large integration grid (default 1024, minimum recommended)
 	  */
-	void init(int maxL, double tol = 1e-12, int small = 128, int large = 1024);
+	void init(int maxL, double tol = 1e-15, int small = 256, int large = 1024);
 	
 	/**
 	  * Given two GaussianShells, builds the parameters needed by both kind of integral. 
@@ -287,7 +287,7 @@ public:
   * Given an ECP basis, and orbital bases, this will calculate the ECP integrals over all ECP centers. 
   * TODO: Implement derivatives (identical to normal integrals, but with shifted angular momenta)
   */
-class ECPIntegral : public OneBodyAOInt
+class ECPInt : public OneBodyAOInt
 {
 private:
 	/// The interface to the radial integral calculation
@@ -318,9 +318,18 @@ public:
 	  * @param basis - reference to the ECP basis set
 	  * @paramm maxLB - the maximum angular momentum in the orbital basis
 	  */
-	ECPIntegral(ECPBasis &basis, int maxLB, int maxLU, int deriv = 0);
+	ECPInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, ECPBasis &ecpbasis, int deriv = 0);
 	
 };
+    
+class ECPSOInt : public OneBodySOInt
+{
+    int natom_;
+public:
+    ECPSOInt(const std::shared_ptr<OneBodyAOInt>& , const std::shared_ptr<IntegralFactory> &);
+    ECPSOInt(const std::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
+};
+
 
 }
 #endif

@@ -505,6 +505,11 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 	int npA = shellA.nprimitive();
 	int npB = shellB.nprimitive();
 	
+	double A = data.Am;
+	double B = data.Bm;
+	
+	//buildParameters(shellA, shellB, Avec, Bvec);
+	std::function<double(double, double*, int)> intgd = integrand; 
 	// Start with the small grid
 	// Pretabulate U
 	int gridSize = smallGrid.getN();
@@ -516,124 +521,119 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 	
 	double Utab[gridSize];
 	buildU(U, l, N, smallGrid, Utab);
+	values.assign(l1end+1, l2end+1, 0.0);
 	
 	// Build the F matrices
+	// If shell is on same center as ECP, only l = 0 will be nonzero
+	if (A < 1e-15) l1end = 0; 
+	if (B < 1e-15) l2end = 0; 
 	TwoIndex<double> Fa;
 	TwoIndex<double> Fb;
 	buildF(shellA, data.Am, l1start, l1end, gridPoints, gridSize, smallGrid.start, smallGrid.end, Fa);
 	buildF(shellB, data.Bm, l2start, l2end, gridPoints, gridSize, smallGrid.start, smallGrid.end, Fb);
 	
-	// Build radial integrals
+	// Build the integrals
 	bool foundStart, tooSmall;
-	TwoIndex<double> intValues(l2end +1, gridSize, 0.0);
-	std::vector<int> tests(l1end +1);
-	std::vector<double> tempValues;
+	std::vector<int> tests((l1end +1) * (l2end+1));
+	double params[gridSize]; 
 	bool failed = false;
-	values.assign(l1end+1, l2end+1, 0.0);
-	double weightedTolerance = tolerance / gridSize;
-	for (int l1 = l1start; l1 <= l1end; l1+=2) {
-		foundStart = false;
-		for (int i = 0; i < gridSize; i++) {
-			for (int l2 = l2start; l2 <= l2end; l2+=2) {
-				intValues(l2, i) = Utab[i] * Fa(l1, i) * Fb(l2, i);
-				tooSmall = fabs(intValues(l2, i)) < weightedTolerance;
-			}
-			if (!tooSmall && !foundStart) {
-				smallGrid.start = i;
-				foundStart = true;
-			}
-			if (tooSmall && foundStart) {
-				smallGrid.end = i-1;
-				break;
-			}
+	int ix = 0;
+	for (int l1 = 0; l1 <= l1end; l1++) {
+		for (int l2 = 0; l2 <= l2end; l2++) {
+			
+			for (int i = 0; i < gridSize; i++) params[i] = Utab[i] * Fa(l1, i) * Fb(l2, i);
+			tests[ix] = smallGrid.integrate(intgd, params, tolerance);
+			failed = failed || (tests[ix] == 0); 
+			values(l1, l2) = tests[ix] == 0 ? 0.0 : smallGrid.getI();
+			ix++; 
+			
 		}
-		tests[l1] = integrate(l2end, gridSize, intValues, smallGrid, tempValues, l2start, 2);
-		failed = failed || (tests[l1] == 0);
-		for (int l2 = l2start; l2 <= l2end; l2+=2) values(l1, l2) = tempValues[l2]; 
 	}
 	
 	if (failed) {
-		std::cerr << "Failed at first attempt\n";
 		// Not converged, switch to big grid
-		double zeta_a, zeta_b, c_a, c_b, weight, XA, XB;
-		double A = data.Am;
-		double B = data.Bm;
-		
+		double zeta_a, zeta_b, c_a, c_b;
+				
 		gridSize = bigGrid.getN();
-		intValues.assign(l2end+1, gridSize, 0.0);
-		Fa.assign(l2end+1, gridSize, 0.0);
+		Fa.assign(l1end+1, gridSize, 0.0);
 		Fb.assign(l2end+1, gridSize, 0.0);
 		
-		for (int l1 = l1start; l1 <= l1end; l1+=2) {
-			if (tests[l1] == 0) { 
-				for (int l2 = l2start; l2 <= l2end; l2+=2) values(l1, l2) = 0.0;
+		for (int a = 0; a < npA; a++) {
+			c_a = shellA.coef(a);
+			zeta_a = shellA.exp(a);
 			
-				for (int a = 0; a < npA; a++) {
-					zeta_a = shellA.exp(a);
-					c_a = shellA.coef(a);
-					
-					for (int b = 0; b < npB; b++) {
-						zeta_b = shellB.exp(b);
-						c_b = shellB.coef(b); 
-					
-						// Set up grid
-						GCQuadrature newGrid = bigGrid;
-						std::vector<double> &gridPoints2 = newGrid.getX();
-						newGrid.start = 0;
-						newGrid.end = gridSize-1;
-						newGrid.transformRMinMax(p(a,b), (zeta_a * A + zeta_b * B)/p(a, b));
+			for (int b = 0; b < npB; b++) {
+				c_b = shellB.coef(b);
+				zeta_b = shellB.exp(b);
 				
-						// Build the U tab
-						double Utab2[gridSize];
-						buildU(U, l, N, newGrid, Utab2);	
-					
-						// Build bessel function values
-						weight = 2.0 * zeta_a * A;
-						buildBessel(gridPoints2, gridSize, l2end, Fa, weight);
-						weight = 2.0 * zeta_b * B;
-						buildBessel(gridPoints2, gridSize, l2end, Fb, weight);
-						for (int i = newGrid.start; i <= newGrid.end; i++) {
-							XA = gridPoints2[i] - A;
-							XA = exp(-zeta_a * XA * XA);
-							XB = gridPoints2[i] - B;
-							XB = exp(-zeta_b * XB * XB);
-							for (int l2 = l2start; l2 <= l2end; l2+=2)
-								intValues(l2, i) = Utab2[i] * XA * XB * Fa(l2, i) * Fb(l2, i);
+				GCQuadrature newGrid = bigGrid;
+				newGrid.transformRMinMax(p(a, b), (zeta_a * A + zeta_b * B)/p(a, b));
+				std::vector<double> &gridPoints2 = newGrid.getX();
+				newGrid.start = 0;
+				newGrid.end = gridSize - 1;
+			
+				// Build U and bessel tabs
+				double Utab2[gridSize];
+				buildU(U, l, N, newGrid, Utab2);
+				buildBessel(gridPoints2, gridSize, l1end, Fa, 2.0*zeta_a*A);
+				buildBessel(gridPoints2, gridSize, l2end, Fb, 2.0*zeta_b*B);
+				
+				double Xvals[gridSize];
+				double ria, rib;
+				for (int i = 0; i < gridSize; i++) {
+					ria = gridPoints2[i] - A;
+					rib = gridPoints2[i] - B;
+					Xvals[i] = exp(-zeta_a*ria*ria -zeta_b*rib*rib) * Utab2[i];
+				}
+				
+				double params2[gridSize]; 
+				int test;
+				ix = 0;
+				for (int l1 = 0; l1 <= l1end; l1++) {
+					for (int l2 = 0; l2 <= l2end; l2++) {
+						
+						if (tests[ix] == 0) {
+							for (int i = 0; i < gridSize; i++) params2[i] = Xvals[i] * Fa(l1, i) * Fb(l2, i);
+							test = newGrid.integrate(intgd, params2, tolerance); 
+							if (test == 0) std::cerr << "Failed at second attempt" << std::endl;
+							values(l1, l2) += c_a * c_b * newGrid.getI(); 
 						}
-					
-						if(integrate(l2end, gridSize, intValues, newGrid, tempValues, l2start, 2) == 0) {
-							std::cerr << " Failed at second attempt!\n";
-						}
-						for (int l2 = l2start; l2 <= l2end; l2+=2) values(l1, l2) += c_a*c_b*tempValues[l2];
+						ix++; 
+						
 					}
 				}
+				
 			}
 		}
+		
 	}
 	
 }
 
 //***************************************** ECP INTEGRAL ***********************************************
 
-ECPIntegral::ECPIntegral(ECPBasis &_basis, int maxLB, int maxLU, int deriv) : basis(_basis) {
+ECPInt::ECPInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, 
+	std::shared_ptr<BasisSet> bs2, ECPBasis &_basis, int maxLB, int maxLU, int deriv) : OneBodyAOInt(st, bs1, bs2, deriv), basis(_basis) {
 	// Initialise angular and radial integrators
+	int maxLB = bs1.max_am() > bs2.max_am() ? bs1.max_am() : bs2.max_am();
+	int maxLU = basis.getMaxL(); 
 	angInts.init(maxLB + deriv, maxLU);
 	angInts.compute();
 	radInts.(2*(maxLB + deriv) + maxLU);
 }
 
-double ECPIntegral::calcC(int a, int m, double A) const {
+double ECPInt::calcC(int a, int m, double A) const {
 	double value = 1.0 - 2*((a-m) % 2);
 	value *= pow(A, a-m);
 	value *= fac[a]/(fac[m] * fac[a-m]);
 	return value;
 }
 
-void ECPIntegral::makeC(FiveIndex<double> &C, int L, double *A) {
+void ECPInt::makeC(FiveIndex<double> &C, int L, double *A) {
 	int z; double Ck, Cl;
 	int na = 0;
-	for (int x = 0; x <= L; x++) {
-		for (int y = 0; y <= L - x; y++) {
+	for (int x = L; x >= 0; x--) {
+		for (int y = L-x; y >= 0; y--) {
 			z = L - x - y;
 			
 			for (int k = 0; k<= x; k++) {
@@ -649,7 +649,7 @@ void ECPIntegral::makeC(FiveIndex<double> &C, int L, double *A) {
 	}
 }
 
-void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) { 
+void ECPInt::type1(ECP &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) { 
 	
 	int LA = data.LA; int LB = data.LB;
 	int maxLBasis = data.maxLBasis;
@@ -675,13 +675,13 @@ void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell
 	int z1, z2, lparity, mparity, msign, ix, k, l, m;
 	double C;
 	int na = 0, nb = 0;
-	for (int x1 = 0; x1 <= LA; x1++) {
-		for (int y1 = 0; y1 <= LA - x1; y1++) {
+	for (int x1 = LA; x1 >= 0; x1--) {
+		for (int y1 = LA-x1; y1 >= 0; y1--) {
 			z1 = LA - x1 - y1;
 			nb = 0;
 			
-			for (int x2 = 0; x2 <= LB; x2++) {
-				for (int y2 = 0; y2 <= LB - x2; y2++) {
+			for (int x2 = LB; x2 >= 0; x2--) {
+				for (int y2 = LB-x2; y2 >=0; y2--) {
 					z2 = LB - x2 - y2;
 					
 					for (int k1 = 0; k1 <= x1; k1++) {
@@ -698,7 +698,6 @@ void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell
 											C = CA(0, na, k1, l1, m1) * CB(0, nb, k2, l2, m2);
 
 											if ( fabs(C) > 1e-14 ) {
-												// Build radial integrals
 												ix = k + l + m;
 												lparity = ix % 2;
 												msign = 1 - 2*(l%2);
@@ -728,102 +727,92 @@ void ECPIntegral::type1(ECP &U, const GaussianShell &shellA, const GaussianShell
 	
 }
 
-void ECPIntegral::type2(int lam, ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
+void ECPInt::type2(int lam, ECP& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
 	double prefac = 16.0 * M_PI * M_PI;
 	int LA = data.LA;
 	int LB = data.LB;
 	int L = LA + LB;	
 	int maxLBasis = data.maxLBasis;
 	
-	// Build radial integrals
-	int lparity = lam % 2;
-	int l1start,l2start;
-	ThreeIndex<double> radials(L+1, lam + LA + 1, lam + LB + 1);
+	ThreeIndex<double> radials(L+1, lam + LA + 1, lam + LB + 1); 
 	TwoIndex<double> temp;
-	for (int N1 = 0; N1 <= LA; N1++) {
-		l1start = abs(lam - N1);
-		
-		for (int N2 = 0; N2 <= LB; N2++) {
-			l2start = abs(lam - N2);
-			
-			radInts.type2(lam, l1start, lam + N1, l2start, lam + N2, N1 + N2, U, shellA, shellB, data, temp);
-			for (int l1 = l1start; l1 <= lam+N1; l1+=2) {
-				for (int l2 = l2start; l2 <= lam+N2; l2+=2) radials(N1 + N2, l1, l2) = temp(l1, l2);
-			}
-		}
+	for (int N = 0; N < L+1; N++) {
+		radInts.type2(lam, 0, lam + LA, 0, lam + LB, N, U, shellA, shellB, data, temp); 
+		for (int l1 = 0; l1 < lam + LA + 1; l1++)
+			for (int l2 = 0; l2 < lam + LB + 1; l2++)
+				radials(N, l1, l2) = temp(l1, l2); 
 	}
 	
-	// Unpack positions
+	std::vector<double> fac = facArray(2*(lam + maxLBasis) + 1);
+	std::vector<double> dfac = dfacArray(2*(lam + maxLBasis) + 1);
 	double Ax = data.A[0]; double Ay = data.A[1]; double Az = data.A[2];
 	double Bx = data.B[0]; double By = data.B[1]; double Bz = data.B[2];
 	double Am = data.Am; double Bm = data.Bm;
-	
-	// Build spherical harmonics
 	double xA = Am > 0 ? Az / Am : 0.0;
 	double xB = Bm > 0 ? Bz / Bm : 0.0;
 	double phiA = atan2(Ay, Ax);
 	double phiB = atan2(By, Bx);
-	TwoIndex<double> SA = realSphericalHarmonics(lam+LA, xA, phiA);
-	TwoIndex<double> SB = realSphericalHarmonics(lam+LB, xB, phiB);
+	TwoIndex<double> SA = realSphericalHarmonics(lam+LA, xA, phiA, fac, dfac);
+	TwoIndex<double> SB = realSphericalHarmonics(lam+LB, xB, phiB, fac, dfac);
 	
-	// Calculate chi_ab for all ab in shells
-	int z1, z2, ix, N1, N2;
-	double val, C;
-	int na = 0, nb = 0;
-	for (int x1 = 0; x1 <= LA; x1++) {
-		for (int y1 = 0; y1 <= LA - x1; y1++) {
-			z1 = LA - x1 - y1;
-			nb = 0;
+	int z1, z2;
+	double C, val1, val2;
+	int na = 0; 
+	for (int x1 = LA; x1 >= 0; x1--) {
+		for (int r1 = LA-x1; r1 >= 0; r1--) {
+			z1 = LA - x1 - r1; 
 			
-			for (int x2 = 0; x2 <= LB; x2++) {
-				for (int y2 = 0; y2 <= LB - x2; y2++) {
-					z2 = LB - x2 - y2;
+			int nb = 0;
+			for (int x2 = LB; x2 >= 0; x2--) {
+				for (int y2 = LB - x2; y2 >= 0; y2--) {
+					z2 = LB - x2 - y2; 
 					
-					for (int k1 = 0; k1 <= x1; k1++) {
-						for (int k2 = 0; k2 <= x2; k2++) {
-							for (int l1 = 0; l1 <= y1; l1++) {
+					for (int alpha_x = 0; alpha_x <= x1; alpha_x++) {
+						for (int alpha_y = 0; alpha_y <= r1; alpha_y++) {
+							for (int alpha_z = 0; alpha_z <= z1; alpha_z++) {
+								int alpha = alpha_x + alpha_y + alpha_z; 
 								
-								for (int l2 = 0; l2 <= y2; l2++) {
-									for (int m1 = 0; m1 <= z1; m1++) {
-										for (int m2 = 0; m2 <= z2; m2++){
-											C = CA(0, na, k1, l1, m1) * CB(0, nb, k2, l2, m2);
+								for (int beta_x = 0; beta_x <= x2; beta_x++) {
+									for (int beta_y = 0; beta_y <= y2; beta_y++) {
+										for (int beta_z = 0; beta_z <= z2; beta_z++) {
+											int beta = beta_x + beta_y + beta_z; 
+											int N = alpha + beta; 
+											C = CA(0, na, alpha_x, alpha_y, alpha_z) * CB(0, nb, beta_x, beta_y, beta_z); 
 											
-											N1 = k1 + l1 + m1;
-											N2 = k2 + l2 + m2;
-											l1start = abs(lam - N1);
-											l2start = abs(lam - N2);
-											ix = N1 + N2;
-											// Sum over rho/kappa/sigma/tau
-											for (int rho = l1start; rho <= lam + N1; rho+=2) {
-												for (int sigma = -rho; sigma <= rho; sigma++) {
-													for (int kappa = l2start; kappa <= lam + N2; kappa += 2) {
-														for (int tau = -kappa; tau <= kappa; tau++) {
-															val = C * SA(rho, rho+sigma) * SB(kappa, kappa+tau) * radials(ix, rho, kappa);
-								
+											for (int lam1 = 0; lam1 <= lam + alpha; lam1++) {
+												for (int lam2 = 0; lam2 <= lam + beta; lam2++) {
+													val1 = prefac * C * radials(N, lam1, lam2);
+													
+													for (int mu1 = -lam1; mu1 <= lam1; mu1++) {
+														for (int mu2 = -lam2; mu2 <= lam2; mu2++) {
+															
+															val2 = val1 * SA(lam1, lam1+mu1) * SB(lam2, lam2+mu2);
+															
 															for (int mu = -lam; mu <= lam; mu++) 
-															 	values(na, nb, lam+mu) += val * angInts.getIntegral(k1, l1, m1, lam, mu, rho, sigma) * angInts.getIntegral(k2, l2, m2, lam, mu, kappa, tau);
+																values(na, nb, lam+mu) += val2 * angInts.getIntegral(alpha_x, alpha_y, alpha_z, lam, mu, lam1, mu1) * angInts.getIntegral(beta_x, beta_y, beta_z, lam, mu, lam2, mu2);
+							
 														}
 													}
 												}
 											}
+											
 										}
 									}
 								}
 							}
 						}
 					}
-				
-					for (int mu = -lam; mu <= lam; mu++) values(na, nb, lam+mu) *= prefac;
+					
 					nb++;
 				}
 			}
 			
-			na++;
+			na++; 
 		}
 	}
 }
 
-void ECPIntegral::compute_shell_pair(ECP &U, const GaussianShell &shellA, const GaussianShell &shellB, TwoIndex<double> &values, int shiftA, int shiftB) {
+void ECPInt::compute_shell_pair(ECP &U, const GaussianShell &shellA, const GaussianShell &shellB, TwoIndex<double> &values, int shiftA, int shiftB) {
 	
 	ShellPairData data;
 	// Shift A and B to be relative to U
@@ -861,6 +850,7 @@ void ECPIntegral::compute_shell_pair(ECP &U, const GaussianShell &shellA, const 
 	// Now all the type2 integrals
 	ThreeIndex<double> t2vals(data.ncartA, data.ncartB, 2*U.getL() + 1);
 	for (int l = 0; l < U.getL(); l++) {
+		t2vals.fill(0.0);
 		type2(l, U, shellA, shellB, data, CA, CB, t2vals);
 		for (int m = -l; m <= l; m++) {
 			for(int na = 0; na < data.ncartA; na++) {
@@ -868,12 +858,11 @@ void ECPIntegral::compute_shell_pair(ECP &U, const GaussianShell &shellA, const 
 					values(na, nb) += t2vals(na, nb, l+m); 
 			}
 		}
-		t2vals.fill(0.0);
 	}
 	
 }
 
-void ECPIntegral::compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) {
+void ECPInt::compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) {
 	memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
 	
 	TwoIndex<double> tempValues;
@@ -887,6 +876,18 @@ void ECPIntegral::compute_pair(const GaussianShell &shellA, const GaussianShell 
 			 }
 		 }
 	}
+}
+
+ECPSOInt::ECPSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
+    : OneBodySOInt(aoint, fact)
+{
+    natom_ = ob_->basis1()->molecule()->natom();
+}
+
+ECPSOInt::ECPSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const IntegralFactory *fact)
+    : OneBodySOInt(aoint, fact)
+{
+    natom_ = ob_->basis1()->molecule()->natom();
 }
 
 }
