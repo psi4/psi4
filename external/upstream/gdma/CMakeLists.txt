@@ -1,5 +1,5 @@
 if(${ENABLE_gdma})
-    find_package(gdma CONFIG QUIET)
+    find_package(gdma 2.2.6 CONFIG QUIET)
 
     if(${gdma_FOUND})
         get_property(_loc TARGET gdma::gdma PROPERTY LOCATION)
@@ -10,7 +10,7 @@ if(${ENABLE_gdma})
         message(STATUS "Suitable gdma could not be located, ${Magenta}Building gdma${ColourReset} instead.")
         ExternalProject_Add(gdma_external
             GIT_REPOSITORY https://github.com/psi4/gdma
-            #GIT_TAG v1.7.1  # TODO tag when stable
+            GIT_TAG v2.2.6
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
