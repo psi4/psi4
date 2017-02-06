@@ -43,6 +43,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
+#include <sstream>
 #include <cctype> // for toupper()
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
@@ -52,11 +53,10 @@
 
 namespace psi { namespace detci {
 
-#define CONFIG_STRING_MAX 200
 #define FLAG_NONBLOCKS
 #define MIN_COEFF 1.0E-13
 
-void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr);
+std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int* orbs_per_irr);
 extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 
@@ -69,7 +69,6 @@ extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       int *Iaidx, int *Ibidx, double *coeff)
 {
-   char configstring[CONFIG_STRING_MAX];
    int Ia_abs, Ib_abs;
 
    /* print out the list of most important determinants */
@@ -97,11 +96,11 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
       outfile->Printf("%4d  %10.6lf  (%5d,%5d)  ", i+1, coeff[i],
          Ia_abs, Ib_abs);
 
-      print_config(AlphaG_->num_orb, AlphaG_->num_el_expl, BetaG_->num_el_expl,
+      std::string configstring(print_config(AlphaG_->num_orb, AlphaG_->num_el_expl, BetaG_->num_el_expl,
          alplist_[Ialist[i]] + Iaidx[i], betlist_[Iblist[i]] + Ibidx[i],
-         AlphaG_->num_drc_orbs, configstring);
+         AlphaG_->num_drc_orbs));
 
-      outfile->Printf("%s\n", configstring);
+      outfile->Printf("%s\n", configstring.c_str());
 
       } /* end loop over important determinants */
 
@@ -120,20 +119,18 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 ** David Sherrill, February 1995
 **
 */
-void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
-   struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
-   char *outstring)
+std::string CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
+	     struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs)
 {
    int j,k;
    int afound, bfound;
-   char olabel[10];
 
-   sprintf(outstring, "");
+   std::ostringstream oss;
 
    /* loop over orbitals */
    for (j=0; j<nbf; j++) {
 
-      orb2lbl(j+num_drc_orbs, olabel, CalcInfo_, nmopi_); /* get label for orbital j */
+     std::string olabel(orb2lbl(j+num_drc_orbs, CalcInfo_, nmopi_)); /* get label for orbital j */
 
       for (k=0,afound=0; k<num_alp_el; k++) {
          if ((stralp->occs)[k] > j) break;
@@ -149,13 +146,14 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
             break;
             }
          }
-      if (afound || bfound) strcat(outstring, olabel);
+      if (afound || bfound) oss << olabel;
 
-      if (afound && bfound) strcat(outstring, "X  ");
-      else if (afound) strcat(outstring, "A  ");
-      else if (bfound) strcat(outstring, "B  ");
+      if (afound && bfound) oss << "X ";
+      else if (afound) oss << "A ";
+      else if (bfound) oss << "B ";
       } /* end loop over orbitals */
 
+   return oss.str();
 }
 
 /*
@@ -186,7 +184,7 @@ void CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
 **    Allow it to handle more complex spaces...don't assume QT orbital order.
 **    It was getting labels all mixed up for RAS's.
 */
-void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr)
+std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int* orbs_per_irr)
 {
 
    int ir, j, pitzer_orb, rel_orb;
@@ -212,8 +210,9 @@ void orb2lbl(int orbnum, char *label, struct calcinfo *Cinfo, int* orbs_per_irr)
       outfile->Printf( "(orb2lbl): rel_orb > orbs_per_irrep[ir]\n");
       }
 
-   sprintf(label, "%d%s", rel_orb+1, Cinfo->labels[ir]);
-
+   std::ostringstream oss;
+   oss << rel_orb+1 << Cinfo->labels[ir];
+   return oss.str();
 }
 
 

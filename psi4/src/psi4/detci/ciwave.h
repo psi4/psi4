@@ -395,9 +395,8 @@ private:
     void H0block_filter_setup(void);
     void H0block_fill(void);
     void H0block_coupling_calc(double E);
-    void print_config(int nbf, int num_alp_el, int num_bet_el,
-       struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs,
-       char *outstring);
+    std::string print_config(int nbf, int num_alp_el, int num_bet_el,
+	  struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs);
 
     /// => Slater Matrix Elements <= //
     double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J);
