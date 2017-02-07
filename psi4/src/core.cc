@@ -57,6 +57,13 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
+// definitions for Fortran Runtime library init/finalize
+extern "C" {
+    void for_rtl_init_(int *, char **);
+    int for_rtl_finish_();
+    int for_set_reentrancy(int *);
+}
+
 using namespace psi;
 
 // Python helper wrappers
@@ -1177,6 +1184,10 @@ bool psi4_python_module_initialize()
     read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
 
+#ifdef __INTEL_COMPILER
+    for_rtl_init_(NULL, NULL);
+#endif
+
     initialized = true;
 
     return true;
@@ -1184,6 +1195,10 @@ bool psi4_python_module_initialize()
 
 void psi4_python_module_finalize()
 {
+#ifdef __INTEL_COMPILER
+    for_rtl_finish_();
+#endif
+
     py_psi_plugin_close_all();
 
     // Shut things down:

@@ -34,6 +34,7 @@ import os
 import math
 from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
+from psi4.driver.p4util.exceptions import *
 
 ## ==> Functionals <== ##
 
@@ -3078,6 +3079,9 @@ def build_superfunctional(alias):
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise KeyError("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
                         % core.get_option("SCF", "SCF_TYPE"))
+
+    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
+        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
 
     return sup
 

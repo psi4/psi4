@@ -80,6 +80,12 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
     bs4_ = original_bs4_;
     same_bs_ = (bs1_ == bs2_ && bs1_ == bs3_ && bs1_ == bs4_);
 
+    has_puream_ = bs1_->has_puream() || bs2_->has_puream() ||
+                  bs3_->has_puream() || bs4_->has_puream();
+
+    spheric_ = 0; //bs1_->has_puream() && bs2_->has_puream() &&
+                  //bs3_->has_puream() && bs4_->has_puream();
+
     size_t max_cart = INT_NCART(basis1()->max_am()) * INT_NCART(basis2()->max_am()) *
                       INT_NCART(basis3()->max_am()) * INT_NCART(basis4()->max_am());
 
@@ -159,7 +165,6 @@ ERDTwoElectronInt::ERDTwoElectronInt(const IntegralFactory* integral, int deriv,
 #endif
 
     screen_ = 0;
-    spheric_ = 0;
 
     // Ask ERD for the maximum amount of scratch it'll need
     compute_scratch_size();
@@ -631,20 +636,33 @@ size_t ERDTwoElectronInt::compute_shell(int shell_i, int shell_j, int shell_k, i
     outfile->Printf( "%d integrals were computed\n", nbatch);
 #endif
 
-    if(nbatch == 0){
-        // The code should check the return value, and ignore the integrals in the buffer if we get here
-        //::memset(target_, 0, sizeof(double)*gs1.nfunction() *gs2.nfunction() *gs3.nfunction() *gs4.nfunction());
-        return 0;
+    int n1, n2, n3, n4;
+    if (force_cartesian_) {
+        n1 = gs1.ncartesian();
+        n2 = gs2.ncartesian();
+        n3 = gs3.ncartesian();
+        n4 = gs4.ncartesian();
+    } else {
+        n1 = gs1.nfunction();
+        n2 = gs2.nfunction();
+        n3 = gs3.nfunction();
+        n4 = gs4.nfunction();
     }
+    const int n1234 = n1 * n2 * n3 * n4;
 
-    if(original_bs1_->has_puream()){
+    if(nbatch == 0) {
+        // The code should check the return value, and ignore the integrals in the buffer if we get here
+        //TODO: LOTS OF CODE DOESN'T DO THIS
+        ::memset(target_, 0, sizeof(double)*n1234);
+    }
+    else if(has_puream_ && !spheric_ && !force_cartesian_) {
         source_ = &(dscratch_[buffer_offset_-1]);
         pure_transform(shell_i, shell_j, shell_k, shell_l, 1);
-    }else{
+    }
+    else {
         ::memcpy(target_, &(dscratch_[buffer_offset_-1]), sizeof(double)*nbatch);
     }
-    return nbatch;
-
+    return n1234;
 }
 
 

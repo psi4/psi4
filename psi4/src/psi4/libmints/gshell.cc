@@ -83,14 +83,14 @@ void ShellInfo::erd_normalize_shell()
 {
     erd_coef_.clear();
     double sum = 0.0;
+    double m = ((double) l_ + 1.5);
     for(int j = 0; j < nprimitive(); j++){
         for(int k = 0; k <= j; k++){
             double a1 = exp_[j];
             double a2 = exp_[k];
             double temp = (original_coef(j) * original_coef(k));
-            double temp2 = ((double) l_ + 1.5);
             double temp3 = (2.0 * sqrt(a1 * a2) / (a1 + a2));
-            temp3 = pow(temp3, temp2);
+            temp3 = pow(temp3, m);
             temp = temp * temp3;
             sum = sum + temp;
             if(j != k)
@@ -102,7 +102,7 @@ void ShellInfo::erd_normalize_shell()
         prefac = pow(2.0, 2*l_) / df[2*l_];
     double norm = sqrt(prefac / sum);
     for(int j = 0; j < nprimitive(); j++){
-        erd_coef_.push_back(original_coef_[j] * norm);
+        erd_coef_.push_back(original_coef_[j] * norm * pow(exp_[j], 0.5*m));
     }
 }
 

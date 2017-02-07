@@ -790,7 +790,8 @@ void FCHKWriter::write(const std::string &filename)
             normfac = sqrt(df[2*am]/pow(2.0, 2.0*am));
         for(int prim = 0; prim < nprim; ++prim){
             exponents.push_back(s.exp(prim));
-            coefficients.push_back(normfac*s.erd_coef(prim));
+            double normfac2 = normfac / pow(s.exp(prim), 0.5*((double)am+1.5));
+            coefficients.push_back(normfac2*s.erd_coef(prim));
         }
     }
 
