@@ -95,16 +95,9 @@ class DIIS_helper(object):
         # Then we gotta do a custom inverse
         B *= S[:, None] * S
 
-        eigvals, eigvecs = np.linalg.eigh(B)
-        maxval = np.max(np.abs(eigvals[[0, -1]])) * 1.e-12
+        invB = core.Matrix.from_array(B)
+        invB.power(-1.0, 1.e-12)
 
-        # If the relative is too small, zero it out
-        eigvals[(np.abs(eigvals) < maxval)] = 0
-
-        # Make sure we dont invert actual zeros!
-        eigvals[np.abs(eigvals) > 1.e-16] = eigvals[np.abs(eigvals) > 1.e-16] ** -1
-
-        invB = np.dot(eigvecs * eigvals, eigvecs.T)
         ci = np.dot(invB, resid) * S
 
         # combination of previous fock matrices
