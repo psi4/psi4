@@ -59,18 +59,27 @@ void zero_bool_array(bool *A, long int n) {
 double *init_array(long int m) {
   if (!m) return NULL;
   double *A = (double *) malloc(m * sizeof(double));
+  if(A == NULL)
+    throw(opt::INTCO_EXCEPT("init_array : allocation error."));
+
   zero_array(A,m);
   return A;
 }
 
 int *init_int_array(int m) {
   int *A = (int *) malloc(m * sizeof(int));
+  if(A == NULL)
+    throw(opt::INTCO_EXCEPT("init_int_array : allocation error."));
+
   zero_int_array(A,m);
   return A;
 }
 
 bool *init_bool_array(int m) {
   bool *A = (bool *) malloc(m * sizeof(bool));
+  if(A == NULL)
+    throw(opt::INTCO_EXCEPT("init_bool_array : allocation error."));
+
   for (int i=0; i<m; ++i)
      A[i] = false;
   return A;
@@ -101,7 +110,7 @@ double **init_matrix(long int m, long int n) {
   B = (double *) malloc(m*n * (long int)sizeof(double));
 
   if ((A == NULL) || (B == NULL))
-    throw(INTCO_EXCEPT("init_matrix : allocation error."));
+    throw(opt::INTCO_EXCEPT("init_matrix : allocation error."));
 
   zero_array(B, m*n);
 
@@ -141,7 +150,7 @@ int **init_int_matrix(long int m, long int n) {
   A = (int **) malloc(m * (long int)sizeof(int *));
   B = (int *) malloc(m*n * (long int)sizeof(int));
 
-  if ((A == NULL) || (B == NULL)) throw(INTCO_EXCEPT("init_matrix : allocation error."));
+  if ((A == NULL) || (B == NULL)) throw(opt::INTCO_EXCEPT("init_int_matrix : allocation error."));
 
   zero_int_array(B, m*n);
 
@@ -167,7 +176,7 @@ bool **init_bool_matrix(long int m, long int n) {
   A = (bool **) malloc(m * (long int)sizeof(bool *));
   B = (bool *) malloc(m*n * (long int)sizeof(bool));
 
-  if ((A == NULL) || (B == NULL)) throw(INTCO_EXCEPT("init_bool_matrix : allocation error."));
+  if ((A == NULL) || (B == NULL)) throw(opt::INTCO_EXCEPT("init_bool_matrix : allocation error."));
 
   zero_bool_array(B, m*n);
 
@@ -189,6 +198,9 @@ extern "C" {
 
 double *opt_init_array(long int m) {
   double *A = (double *) malloc(m * sizeof(double));
+  if(A == NULL)
+    throw(opt::INTCO_EXCEPT("opt_init_array : allocation error."));
+
   for (int i=0; i<m; ++i)
     A[i]= 0.0;
   return A;
@@ -217,7 +229,7 @@ double **opt_init_matrix(long int m, long int n) {
   B = (double *) malloc(m*n * (long int)sizeof(double));
 
   if ((A == NULL) || (B == NULL))
-    throw(opt::INTCO_EXCEPT("init_matrix : allocation error."));
+    throw(opt::INTCO_EXCEPT("opt_init_matrix : allocation error."));
 
   for (i=0; i<m*n; ++i)
     B[i] = 0.0;

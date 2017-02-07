@@ -49,7 +49,6 @@
 namespace psi { namespace detci {
 
 #define SMALL_DET 1e-10
-#define CONFIG_STRING_MAX 200
 
 
 /*
@@ -145,17 +144,16 @@ void CIWavefunction::H0block_free(void)
 void CIWavefunction::H0block_print(void)
 {
    int i;
-   char configstring[CONFIG_STRING_MAX];
 
    outfile->Printf( "\nMembers of H0 block:\n\n");
    for (i=0; i<H0block_->size; i++) {
-      print_config(CalcInfo_->num_ci_orbs, CalcInfo_->num_alp_expl,
+     std::string configstring(print_config(CalcInfo_->num_ci_orbs, CalcInfo_->num_alp_expl,
          CalcInfo_->num_bet_expl, alplist_[H0block_->alplist[i]] +
          H0block_->alpidx[i], betlist_[H0block_->betlist[i]] +
-         H0block_->betidx[i], CalcInfo_->num_drc_orbs, configstring);
+         H0block_->betidx[i], CalcInfo_->num_drc_orbs));
       outfile->Printf( "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
          i+1, H0block_->pair[i] + 1, H0block_->H00[i], H0block_->blknum[i],
-         H0block_->alpidx[i], H0block_->betidx[i], configstring);
+         H0block_->alpidx[i], H0block_->betidx[i], configstring.c_str());
       }
 }
 
