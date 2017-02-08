@@ -81,8 +81,6 @@ public:
     AIOHandler(std::shared_ptr<PSIO> psio);
     /// Destructor
     ~AIOHandler();
-    /// Thread object this AIO_Handler is currently running on
-    std::shared_ptr<std::thread> get_thread();
     /// When called, synchronize will not return until all requested data has been read or written
     void synchronize();
     /// Asynchronous read, same as PSIO::read, but nonblocking
@@ -90,7 +88,7 @@ public:
               psio_address start, psio_address *end);
     /// Asynchronous write, same as PSIO::write, but nonblocking
     unsigned long int write(unsigned int unit, const char *key, char *buffer, ULI size,
-               psio_address start, psio_address *end, bool sync=false);
+               psio_address start, psio_address *end);
     /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
     unsigned long int read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking

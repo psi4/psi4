@@ -654,10 +654,10 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
         psio_address adr = psio_get_address(PSIO_ZERO, (start - min_ind[b]) * sizeof(double));
         size_t nints = stop - start;
         jobID_J_[buf_].push_back(AIO()->write(target_file(), labels_J_[buf_][i], (char *)(&J_bufs_[buf_][start - offset()]),
-                    nints * sizeof(double), adr, &dummy_, true));
+                    nints * sizeof(double), adr, &dummy_));
         labels_K_[buf_].push_back(get_label_K(b));
         jobID_K_[buf_].push_back(AIO()->write(target_file(), labels_K_[buf_][i], (char *)(&K_bufs_[buf_][start - offset()]),
-                    nints * sizeof(double), adr, &dummy_, true));
+                    nints * sizeof(double), adr, &dummy_));
     }
 
     // Update the buffer being written into
