@@ -1,7 +1,7 @@
 if(${ENABLE_simint})
    include(ExternalProject)
 
-   set(SIMINT_VER "0.6")
+   set(SIMINT_VER "0.7")
    string(TOLOWER ${SIMINT_VECTOR} SIMINT_VECTOR)
    list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
