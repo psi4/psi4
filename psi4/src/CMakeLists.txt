@@ -36,8 +36,9 @@ target_link_libraries(core PUBLIC pybind11::module)
 target_link_libraries(core PRIVATE Threads::Threads)
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-  # Enable call to for_rtl_init_() and link to the correct library
-  target_compile_definitions(core PRIVATE -DFortran_ENABLED)
+  # Enable call to for_rtl_init_() which is required if using the
+  # Intel fortran compiler
+  target_compile_definitions(core PRIVATE -DINTEL_Fortran_ENABLED)
 endif()
 
 
