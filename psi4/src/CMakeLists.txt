@@ -34,6 +34,13 @@ target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PUBLIC pybind11::module)
 target_link_libraries(core PRIVATE Threads::Threads)
+
+if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+  # Enable call to for_rtl_init_() and link to the correct library
+  target_compile_definitions(core PRIVATE -DFortran_ENABLED)
+endif()
+
+
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
 target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
