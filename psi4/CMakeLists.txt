@@ -95,6 +95,11 @@ if(${ENABLE_PCMSolver})
     #message(STATUS "Disabled PCMSolver")
 endif ()
 
+if(${ENABLE_simint})
+    find_package(simint CONFIG REQUIRED)
+    message(STATUS "Found simint: ${simint_DIR}")
+endif()
+
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
 elseif(UNIX)

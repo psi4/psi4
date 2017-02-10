@@ -242,14 +242,14 @@ public:
     /// Significant shell pairs, indexes by shell
     const std::vector<std::vector<int> >& shell_to_shell() const { return shell_to_shell_; }
 
-  //void shell_pair_values(std::vector<std::vector<std::pair<double, int> > >& values) const;
+    //void shell_pair_values(std::vector<std::vector<std::pair<double, int> > >& values) const;
 
-  // just return the value of the bound for pair m and n
-  double shell_pair_value(int m, int n) const;
-  // return the vector of
-  std::vector<double> shell_pair_values() { return shell_pair_values_;}
-  // return the vector of function pairs
-  std::vector<double> function_pair_values() {return function_pair_values_;}
+    // just return the value of the bound for pair m and n
+    double shell_pair_value(int m, int n) const;
+    // return the vector of
+    std::vector<double> shell_pair_values() { return shell_pair_values_;}
+    // return the vector of function pairs
+    std::vector<double> function_pair_values() {return function_pair_values_;}
 
     /// Set debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
