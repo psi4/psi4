@@ -35,7 +35,7 @@
   #include <omp.h>
 #endif
 
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
   #include <mkl.h>
 #endif
 

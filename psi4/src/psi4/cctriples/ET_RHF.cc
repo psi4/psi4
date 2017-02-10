@@ -43,7 +43,7 @@
 #include "globals.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 //MKL Header
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 
@@ -107,7 +107,7 @@ double ET_RHF(void)
   outfile->Printf("    Number of threads for explicit ijk threading: %4d\n\n", nthreads);
 
 // Don't parallelize mkl if explicit threads are used; should be added for acml too.
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
   int old_threads = mkl_get_max_threads();
   mkl_set_num_threads(1);
   outfile->Printf("    MKL num_threads set to 1 for explicit threading.\n\n");
@@ -283,7 +283,7 @@ double ET_RHF(void)
 
   timer_off("ET_RHF");
 
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
   mkl_set_num_threads(old_threads);
 #endif
 

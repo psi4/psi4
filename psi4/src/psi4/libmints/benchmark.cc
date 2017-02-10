@@ -40,7 +40,7 @@
 #include <string>
 #include <vector>
 
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 #include "psi4/libparallel/ParallelPrinter.h"
@@ -848,7 +848,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
     Timer* qq;
 
     int max_thread_count = 1;
-    #ifdef __INTEL_MKL__
+    #ifdef USING_LAPACK_MKL
         max_thread_count = max_threads;
     #endif
 
@@ -884,7 +884,7 @@ void benchmark_blas3(int N, double min_time, int max_threads)
         for (size_t op = 0; op < ops3.size(); op++)
             timings3[ops3[op]].resize(N);
 
-        #ifdef __INTEL_MKL__
+        #ifdef USING_LAPACK_MKL
             mkl_set_num_threads(thread);
         #endif
 
