@@ -51,6 +51,7 @@ A complete list of standard keywords is provided in Appendix
    occ
    psimrcc
    detci
+   mcscf
    sapt
    fisapt
    adc
