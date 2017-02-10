@@ -93,8 +93,8 @@ set(OPENBLAS_LAPACK_LIBS openblas)
 set(MKL_BLAS_INCLUDE_PATH_SUFFIXES)
 set(MKL_LAPACK_INCLUDE_PATH_SUFFIXES)
 
-set(MKL_BLAS_HEADERS   mkl_cblas.h)
-set(MKL_LAPACK_HEADERS mkl_lapack.h)
+set(MKL_BLAS_HEADERS   mkl.h) #mkl_cblas.h)
+set(MKL_LAPACK_HEADERS mkl.h) #mkl_lapack.h)
 
 if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     set(MKL_BLAS_LIBRARY_PATH_SUFFIXES   intel64 em64t)
