@@ -49,7 +49,7 @@
 
 //MKL Header
 
-#if __INTEL_MKL__
+#if USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 

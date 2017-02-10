@@ -42,7 +42,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/ParallelPrinter.h"
 //MKL Header
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 
@@ -98,7 +98,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
     p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
     int old_threads = mkl_get_max_threads();
     mkl_set_num_threads(1);
 #endif
@@ -319,7 +319,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     free(thread_data_array);
     free(p_thread);
 
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
     mkl_set_num_threads(old_threads);
 #endif
 

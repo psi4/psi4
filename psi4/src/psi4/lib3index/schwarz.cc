@@ -43,7 +43,7 @@
 #include "psi4/libmints/integral.h"
 
 //MKL Header
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 

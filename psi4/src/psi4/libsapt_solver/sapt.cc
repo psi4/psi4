@@ -55,7 +55,7 @@ SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
 
   psio_ = psio;
 
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
   mkl_set_dynamic(1);
 #endif
 

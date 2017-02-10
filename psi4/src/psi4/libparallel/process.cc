@@ -32,7 +32,7 @@
 #include <regex>
 
 //MKL Header
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 
@@ -88,7 +88,7 @@ void Process::Environment::set_n_threads(int nthread)
 #ifdef _OPENMP
     omp_set_num_threads(nthread_);
 #endif
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
     mkl_set_num_threads(nthread_);
 #endif
 

@@ -47,7 +47,7 @@
 #include "psi4/libmints/vector.h"
 
 //MKL Header
-#ifdef __INTEL_MKL__
+#ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
 
