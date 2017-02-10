@@ -89,15 +89,18 @@ model space as those which have no more than :math:`n` holes in the lowest set
 of orbitals (called RAS I) and no more than :math:`m` electrons in the highest
 set of orbitals (called RAS III).  An intermediate set of orbitals, if
 present (RAS II), has no restrictions placed upon it.  All determinants
-satisfying these rules are included in the CI.
+satisfying these rules are included in the RAS CI.
 
 The DETCI module is also very efficient at computing full configuration
 interaction
 wavefunctions, and it is used in this capacity in the complete-active-space
-self-consistent-field (CASSCF) code.  Use of DETCI for CASSCF
-wavefunctions is described in another section of this manual.
+self-consistent-field (CASSCF) code.  It can also perform approximate
+CASSCF computations in which one uses RAS restrictions on the CI excitations,
+rather than doing a full CI in the active space.  This is called a 
+RASSCF.  CASSCF and RASSCF computations are types of multi-configurational
+self-consistent-field procedures, and are described in :ref:`sec:mcscf`.
 
-As just mentioned, the DETCI module is designed for challenging
+As mentioned above, the DETCI module is designed for challenging
 chemical systems for which simple CISD is not suitable.  Because
 CI wavefunctions which go beyond CISD (such as RAS CI) are fairly complex,
 typically the DETCI code will be used in cases where the
@@ -108,16 +111,6 @@ attempting to use the program for a production-level project.  This user's
 manual will provide only an elementary introduction to the most
 important keywords.  Additional information is available in the complete
 list of keywords for DETCI provided in Appendix :ref:`apdx:detci`.
-
-The division of the molecular orbitals into various subspaces such as
-RAS spaces, or frozen *vs.* active orbitals, *etc.*, needs to be clear not
-only to detci, but also at least to the transformation program
-(and in the case of MCSCF, to other programs as well).  Thus, orbital
-subspace keywords such as |globals__ras1|,
-|globals__ras2|, |globals__ras3|, |globals__frozen_docc|, 
-|globals__frozen_uocc|,
-|globals__active|, etc., are set
-in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
 computation with DETCI is simply to call :py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, *etc.*,
@@ -134,6 +127,38 @@ which the driver has built-in shortcuts, so long as the relevant options
 (especially |detci__ex_level|) are set appropriately.  Some
 examples of single-refence CI, RASCI, and full CI computations are provided
 in :source:`samples`.
+
+.. _`table:ci_spaces`:
+
+.. table:: Orbital spaces for CI computations
+
+    +----------------------------+----------------------------+----------------------------+
+    | CI (e.g., CISD, FCI)       | RASCI                      | CASCI                      |
+    +============================+============================+============================+
+    | |globals__frozen_uocc|     | |globals__frozen_uocc|     |                            |
+    +----------------------------+----------------------------+                            +
+    | (all orbitals not in       | |globals__ras4|            |                            |
+    + |globals__frozen_uocc|     +----------------------------+                            +
+    | or |globals__frozen_docc|  | |globals__ras3|            |                            |
+    + are included in CI)        +----------------------------+                            +
+    |                            | |globals__ras2|            |                            |
+    +                            +----------------------------+                            +
+    |                            | |globals__ras1|            | |globals__active|          |
+    +----------------------------+----------------------------+----------------------------+
+    | |globals__frozen_docc|     | |globals__frozen_docc|     | |globals__frozen_docc|     |
+    +----------------------------+----------------------------+----------------------------+
+
+The table above shows the relevant orbitals spaces for CI computations (an
+analogous :ref:`table <table:mcscf_spaces>` for MCSCF is also available).  
+The third column of the
+table refers to CASCI, in which a full CI is performed in some smaller
+set of ``active`` orbitals; it is equivalent to CASSCF except without
+any orbital optimization.  It can be invoked via ``energy('fci')``
+with appropriate values selected for |globals__frozen_docc| and
+|globals__active|.  For CI computations, there is no difference between
+|globals__frozen_docc| and |globals__restricted_docc|, or between
+|globals__frozen_uocc| and |globals__restricted_uocc|.  There are
+differences betwen these keywords for :ref:`sec:mcscf`.
 
 .. index:: CI; basic-keywords
 
@@ -159,97 +184,6 @@ Basic DETCI Keywords
 
 For larger computations, additional keywords may be required, as
 described in the DETCI section of the Appendix :ref:`apdx:detci`.
-
-.. index:: 
-   pair: CI; multi-configurational self-consistent field
-
-Multi-Configurational Self-Consistent Field
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-As the cost of Full CI scales exponentially with respect to the number of
-active orbitals it is often advantageous to neglect orbitals that do not
-exhibit strong correlation. These orbitals are variationally optimized
-simultaneously with the CI coefficients and known as Multi-Configurational
-Self-Consistent Field (MCSCF). The most commonly used MCSCF procedure is the
-complete-active-space self-consistent-field (CASSCF) approach [Roos:1980]_,
-which includes all possible determinants (with the proper symmetry) that can be
-formed by distributing a set of active electrons among a set of active
-orbitals. The MCSCF module performs CASSCF optimization of molecular orbitals
-via a two-step procedure in which the CI coefficients and orbitals are
-optimized in an alternating manner. The program uses a fairly simple
-approximate orbital Hessian [Chaban:1997:88]_ and a Newton-Raphson update,
-accelerated by Pulay's DIIS procedure [Pulay:1980]_. We have also implemented
-the RASSCF method [Malmqvist:1990:RASSCF]_, which is another kind of MCSCF
-which is typically less complete (and less expensive) than CASSCF.
-
-Inactive orbitals in the MCSCF may be specified by the
-|globals__restricted_docc| and |globals__restricted_uocc| keywords. These
-orbitals will remain doubly-occupied or doubly-unoccupied, respectively, in the
-MCSCF wavefunction.  However, the form of these orbitals will be optimized in
-the MCSCF procedure.  It is also possible to literally freeze inactive orbitals
-in their original (SCF) form using the |globals__frozen_docc| and
-|globals__frozen_uocc| keywords.  This is not normally what one wishes to do in
-an MCSCF computation (*e.g.*, it complicates the computation of gradients), but
-it can make the computations faster and is helpful in some circumstances where
-unphysical mixing of inactive and active occupied orbitals might occur.
-Presently, it is not possible to mix the use of restricted and frozen orbitals
-in |PSIfour|.
-
-An illustrative CASSCF example is as follows::
-
-    molecule {
-    O
-    H 1 1.00
-    H 1 1.00 2 103.1
-    }
-    
-    set {
-        basis           6-31G**
-        restricted_docc [1, 0, 0, 0]
-        active          [3, 0, 1, 2]
-    }
-    energy('casscf')
-
-This input will compute the CASSCF energy of water where the 1s Oxygen orbital
-and several virtual orbitals are not included in the CI expansion, but are
-still optimized. The following is a full list of spaces within the various MCSCF
-types.
-
-.. _`table:mcscf_spaces`:
-
-.. table:: Spaces available in the MCSCF program
-
-    +----------------------------+----------------------------+----------------------------+
-    | CI                         | RASSCF                     | CASSCF                     |
-    +============================+============================+============================+
-    |                            | |globals__frozen_uocc|     | |globals__frozen_uocc|     |
-    +                            +----------------------------+----------------------------+
-    | |globals__restricted_uocc| | |globals__restricted_uocc| | |globals__restricted_uocc| |
-    +----------------------------+----------------------------+----------------------------+
-    | |globals__active|          | |globals__ras4|            | |globals__active|          |
-    +                            +----------------------------+                            +
-    |                            | |globals__ras3|            |                            |
-    +                            +----------------------------+                            +
-    |                            | |globals__ras2|            |                            |
-    +                            +----------------------------+                            +
-    |                            | |globals__ras1|            |                            |
-    +----------------------------+----------------------------+----------------------------+
-    | |globals__restricted_docc| | |globals__restricted_docc| | |globals__restricted_docc| |
-    +                            +----------------------------+----------------------------+
-    |                            | |globals__frozen_docc|     | |globals__frozen_docc|     |
-    +----------------------------+----------------------------+----------------------------+
-
-Basic MCSCF Keywords
-~~~~~~~~~~~~~~~~~~~~
-
-.. include:: autodir_options_c/detci__mcscf_e_convergence.rst
-.. include:: autodir_options_c/detci__mcscf_r_convergence.rst
-.. include:: autodir_options_c/detci__mcscf_type.rst
-.. include:: autodir_options_c/detci__mcscf_algorithm.rst
-.. include:: autodir_options_c/detci__mcscf_maxiter.rst
-.. include:: autodir_options_c/detci__mcscf_rotate.rst
-.. include:: autodir_options_c/detci__mcscf_diis_start.rst
-
 
 .. index:: 
    pair: CI; arbitrary-order perturbation theory
