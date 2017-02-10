@@ -1184,7 +1184,7 @@ bool psi4_python_module_initialize()
     read_options("", Process::environment.options, true);
     Process::environment.options.set_read_globals(false);
 
-#ifdef __INTEL_COMPILER
+#ifdef INTEL_Fortran_ENABLED
     for_rtl_init_(NULL, NULL);
 #endif
 
@@ -1195,7 +1195,7 @@ bool psi4_python_module_initialize()
 
 void psi4_python_module_finalize()
 {
-#ifdef __INTEL_COMPILER
+#ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif
 
