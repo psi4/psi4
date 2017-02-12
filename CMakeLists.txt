@@ -46,6 +46,14 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
 #    - CMAKE_DISABLE_FIND_PACKAGE_${AddON} "Set to OFF to force internal build"
 
+#  <<<  Detecting BLAS/LAPACK  >>>
+#
+#    - ENV(MATH_ROOT) "Root directory in which BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib64/libblas.so)"
+#    - BLAS_TYPE "BLAS distribution to target (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#    - LAPACK_TYPE "LAPACK distribution to target (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as a semicolon-separated list of full paths, bypassing math detection"
+#    - LAPACK_INCLUDE_DIRS "Location of BLAS/LAPACK headers (only needed for MKL), bypassing math detection"
+
 #  <<<  Install  >>>
 #
 #    - CMAKE_INSTALL_PREFIX "Location to which Psi4 and internally built add-ons are installed (default: /usr/local/psi4)"
@@ -59,7 +67,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
-option(ENABLE_erd "Enables use of ERD instead of LibInt (requires Fortran)" OFF)
+option(ENABLE_erd "Enables use of ERD instead of libint (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
 option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)

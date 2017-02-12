@@ -64,6 +64,7 @@ Non-QC Dependencies
 #. :ref:`faq:coredepend`
 #. :ref:`cmake:python`
 #. :ref:`faq:libmwcondapy`
+#. :ref:`cmake:lapack`
 #. :ref:`cmake:cxx`
 #. :ref:`faq:approvedcxx`
 #. :ref:`faq:modgcc`
