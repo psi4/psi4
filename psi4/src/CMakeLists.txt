@@ -38,7 +38,6 @@ endif()
 target_link_libraries(core PRIVATE ${psi4_binmodules})
 target_link_libraries(core PRIVATE ${LIBC_INTERJECT})
 target_link_libraries(core PUBLIC pybind11::module)
-target_link_libraries(core PRIVATE Libxc::xc)
 target_link_libraries(core PRIVATE Threads::Threads)
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
