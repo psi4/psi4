@@ -56,39 +56,45 @@ install(EXPORT "psi4Targets"
         NAMESPACE "psi4::"
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
-### >>  Stuff below this is for RPaths and doesn't work quite right
+# <<<  RPATH  >>>
 
-# TODO: Investiage relative RPaths.
-# Add both the build and install RPaths so we can test from build dir
-#set(PSI4_EXTERNAL ${CMAKE_INSTALL_PREFIX}/external)
-#set(PSI4_BIN_EXTERNAL ${CMAKE_BINARY_DIR}/stage${PSI4_EXTERNAL})
-#foreach(ex_proj libderiv libint libefp)
-#    set(PSI4_RPATH
-#            "${PSI4_RPATH};${PSI4_EXTERNAL}/${ex_proj}/lib;${PSI4_BIN_EXTERNAL}/${ex_proj}/lib")
-#endforeach()
-set(PSI4_RPATH "${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(_full_path_staged_libdir "${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+file(RELATIVE_PATH _rel ${_full_path_staged_libdir}${PYMOD_INSTALL_LIBDIR}/psi4
+                        ${_full_path_staged_libdir})
+set(psi4_RPATH "$ORIGIN/${_rel}")
 
-# The other big source of RPaths are the math libraries
-#foreach(math_comp tgt::lapack)
-#    message("${math_comp}")
-#    get_filename_component(math_lib ${math_comp} DIRECTORY)
-#    set(PSI4_RPATH "${PSI4_RPATH};${math_lib}")
-#endforeach()
+foreach(_al ${_addons})
+    get_filename_component(_ald ${_al} DIRECTORY)
 
-get_filename_component(PYTHON_LIB_DIR ${PYTHON_LIBRARIES} DIRECTORY)
+    if(${_al} MATCHES "\.${CMAKE_STATIC_LIBRARY_SUFFIX}$")
+        list(REMOVE_ITEM _addons ${_al})
+        #message("rpath: ${_al} dropped because static")
+    endif()
 
-set(psi4_install_lib ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
-set(PSI4_RPATH ${psi4_install_lib}
-        ${DESTDIR}/${psi4_install_lib}
-        ${PYTHON_LIB_DIR}
-        )
+    list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${_ald} _in_cpild)
+    if(_in_cpild GREATER -1)
+        list(REMOVE_ITEM _addons ${_al})
+        #message("rpath: ${_al} dropped because system lib")
+    endif()
+
+    if(${_ald} STREQUAL ${_full_path_staged_libdir})
+        list(REMOVE_ITEM _addons ${_al})
+        #message("rpath: ${_al} dropped because internal relative to core.so")
+    endif()
+endforeach()
+
+foreach(_al ${_addons})
+    get_filename_component(_ald ${_al} DIRECTORY)
+    list(APPEND psi4_RPATH ${_ald})
+endforeach()
+list(REMOVE_DUPLICATES psi4_RPATH)
+
+message(STATUS "Psi4 rpath: ${psi4_RPATH}")
 
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
                            OUTPUT_NAME core
                            EXPORT_NAME core
                            SUFFIX ".so"  # for python module
                            #SUFFIX "${PYTHON_MODULE_EXTENSION}"  # for python module
-                           INSTALL_RPATH "${PSI4_RPATH}"
-                           INSTALL_RPATH_USE_LINK_PATH TRUE
-                           BUILD_WITH_INSTALL_RPATH TRUE)
-
+                           INSTALL_RPATH "${psi4_RPATH}"
+                           BUILD_WITH_INSTALL_RPATH ON)
