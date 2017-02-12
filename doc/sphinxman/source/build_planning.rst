@@ -181,7 +181,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * :ref:`C++ and C Compilers <cmake:cxx>` (C++11 compliant)
 
-* Optimized BLAS and LAPACK libraries (preferably NOT one supplied by a standard
+* :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
 * :ref:`Python interpreter and headers <cmake:python>` (2.7 or 3.5) https://www.python.org/
@@ -738,7 +738,21 @@ D. Build with specific (Intel) compilers from :envvar:`PATH` based on GCC *not* 
 
   .. code-block:: bash
 
-    >>> cmake -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc -DCMAKE_C_FLAGS="-gcc-name=${GCC5}/bin/gcc" -DCMAKE_CXX_FLAGS="-gcc-name=${GCC5}/bin/gcc -gxx-name=${GCC5}/bin/g++"
+    >>> cmake -DCMAKE_C_COMPILER=icc \
+              -DCMAKE_CXX_COMPILER=icpc \
+              -DCMAKE_C_FLAGS="-gcc-name=${GCC5}/bin/gcc" \
+              -DCMAKE_CXX_FLAGS="-gcc-name=${GCC5}/bin/gcc -gxx-name=${GCC5}/bin/g++"
+
+E. Build with specific (Intel) compilers from :envvar:`PATH` based on GCC *not* in :envvar:`PATH` and also building Fortran Add-Ons
+
+  .. code-block:: bash
+
+    >>> cmake -DCMAKE_C_COMPILER=icc \
+              -DCMAKE_CXX_COMPILER=icpc \
+              -DCMAKE_Fortran_COMPILER=ifort \
+              -DCMAKE_C_FLAGS="-gcc-name=${GCC5}/bin/gcc" \
+              -DCMAKE_CXX_FLAGS="-gcc-name=${GCC5}/bin/gcc -gxx-name=${GCC5}/bin/g++" \
+              -DCMAKE_Fortran_FLAGS="-gcc-name=${GCC5}/bin/gcc -gxx-name=${GCC5}/bin/g++"
 
 
 .. _`faq:approvedcxx`:
@@ -761,7 +775,7 @@ On Mac, the following work nicely.
 >= 4.9. This compliance is checked for at build-time with file
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
-compilers also rely on GCC, so both `icpc` and `gcc` versions are checked.
+compilers also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
 
 * :ref:`faq:modgcc`
 
@@ -815,6 +829,9 @@ system. The latter route, tested on Linux with Intel compilers, is below.
         -DCMAKE_C_FLAGS="-gcc-name=${GCC5}/bin/gcc" \
         -DCMAKE_CXX_FLAGS="-gcc-name=${GCC5}/bin/gcc -gxx-name=${GCC5}/bin/g++" \
         ...
+        # if Fortran active ...
+        -DCMAKE_Fortran_COMPILER=icpc \
+        -DCMAKE_Fortran_FLAGS="-gcc-name=${GCC5}/bin/gcc -gxx-name=${GCC5}/bin/g++" \
 
    # Configure and build
 
@@ -867,11 +884,10 @@ On Linux and Mac, the following work nicely.
   * GNU: ``gfortran``
   * Intel: ``ifort``
 
-
-
 * Packages to install for specific OS or package managers:
 
   * Ubuntu ``gfortran``
+  * conda ``gcc`` or ``gcc-5`` to get ``gfortran``
 
 
 .. _`faq:macgfortran`:
@@ -893,6 +909,131 @@ old to compile |PSIfour|, but the Fortran compiler will work.
 .. <http://r.research.att.com/tools/>.  If you configure Psi on a Mac without
 .. any Fortran compiler it will set itself up correctly, so this is only
 .. necessary if you want a Fortran compiler for other purposes.
+
+
+.. _`cmake:lapack`:
+
+How to configure BLAS/LAPACK for building Psi4
+----------------------------------------------
+
+**Role and Dependencies**
+
+* Role |w---w| In |PSIfour|, BLAS and LAPACK control much of the speed
+  and efficiency of the code since computational chemistry is essentially
+  linear algebra on molecular systems.
+
+* Downstream Dependencies |w---w| |PSIfour| |dr| LAPACK Libraries
+
+**CMake Variables**
+
+* :makevar:`BLAS_TYPE` |w---w| CMake variable to specify which BLAS libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
+* :makevar:`LAPACK_TYPE` |w---w| CMake variable to specify which LAPACK libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
+* :envvar:`MKL_ROOT` |w---w| Environment variable set by Intel compilervars scripts. Sufficient to trigger math detection of MKL at this location.
+* :envvar:`MATH_ROOT` |w---w| Environment variable to specify root directory in which BLAS/LAPACK libraries should be detected (*e.g.*, ``${MATH_ROOT}/lib64/libblas.so`` and ``${MATH_ROOT}/lib64/liblapack.so``).
+* :makevar:`LAPACK_LIBRARIES` |w---w| CMake variable to specify BLAS/LAPACK libraries explicitly, bypassing math detection. Should be semicolon-separated list of full paths.
+* :makevar:`LAPACK_INCLUDE_DIRS` |w---w| CMake variable to specify BLAS/LAPACK header location explicitly, bypassing math detection. Only needed for MKL.
+
+**Examples**
+
+A. Build with any LAPACK in standard location
+
+  .. code-block:: bash
+
+    >>> cmake
+
+B. Build with native Accelerate LAPACK on Mac (MKL *not* also present)
+
+  .. code-block:: bash
+
+    >>> cmake
+
+C. Build with native Accelerate LAPACK on Mac (MKL also present)
+
+  .. code-block:: bash
+
+    >>> cmake -DBLAS_TYPE=SYSTEM_NATIVE -DLAPACK_TYPE=SYSTEM_NATIVE
+
+D. Build with Intel MKL
+
+  .. code-block:: bash
+
+    >>> source /path/to/intel/vers/linux/mkl/bin/mklvars.sh intel64  # adjust sh/csh and arch as needed
+    >>> cmake
+
+  .. code-block:: bash
+
+    >>> MATH_ROOT=/path/to/intel/vers/linux/mkl/ cmake
+
+E. Build with Intel MKL from conda
+
+  .. code-block:: bash
+
+    # won't work, as mkl.h header also needed
+
+F. OpenBLAS
+
+  .. code-block:: bash
+
+    >>> MATH_ROOT=/path/to/openblas/0.2.13_seq/x86_64/gcc_5.2.0/lib cmake
+
+G. Build with explicit MKL LAPACK
+
+  .. code-block:: bash
+
+    >>> cmake -DLAPACK_LIBRARIES="/path/to/lib/intel64/libmkl_lapack95_lp64.a;/path/to/lib/intel64/libmkl_rt.so" -DLAPACK_INCLUDE_DIRS="/path/to/mkl-h-include/"
+
+H. Build with explicit non-MKL LAPACK
+
+  .. code-block:: bash
+
+    >>> cmake -DLAPACK_LIBRARIES="/path/to/lib/liblapack.so;/path/to/lib/libblas.a"
+
+**Notes**
+
+* Much of |PSIfours| speed and efficiency depends on the corresponding
+  speed and efficiency of the linked BLAS and LAPACK libraries
+  (especially the former). Consider the following recommendations:
+
+  * It is NOT wise to use the stock BLAS library provided with many
+    Linux distributions like RedHat, as it is usually just the completely
+    unoptimized netlib distribution. The choice of LAPACK is less
+    critical, and so the unoptimized netlib distribution is acceptable.
+
+  * Perhaps the best choice, if available, is Intel's MKL library,
+    which includes efficient threaded BLAS and LAPACK (as of |PSIfour|
+    v1.1, earliest known working version is MKL 2013). On Mac, the
+    native Accelerate libraries are also recommended.
+
+  * For open-source LAPACK distributions, OpenBLAS (formerly GotoBLAS)
+    is known to work, while ATLAS is known
+    (https://github.com/psi4/psi4/issues/391) to have stability issues
+    with the DFOCC module.
+
+  * ACML libraries are known to work preferred with |PSIfour| v1.1 at
+    ACML 6.
+
+* The BLAS/LAPACK detected for |PSIfour| are also linked into any
+  Add-Ons (*e.g.*, libefp) that require them, rather than relying on
+  those packages' native math detection.
+
+* The separation between BLAS and LAPACK seen in detection printing
+  and CMake variables is purely formal. In practice, they get run
+  together and linked as ``${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}``.
+
+* Sometimes the CMake's library search capabilites falter at SONAMEs
+  (*e.g.*, ``libblas.so.3`` *vs.* ``libblas.so``), extensions (static
+  *vs.* dynamic), or suffixes (*e.g.*, ``libacml_mp.so`` *vs.*
+  ``libacml.so``). The developers would be interested in hearing
+  of such problems to expand the math detection capabilities. The
+  immediate solution, however, is to form symlinks between the
+  library names that exist and the names expected. Consult file
+  :source:`cmake/math/MathLibs.cmake` for the library patterns being
+  sought.
+
+* The BLAS/LAPACK interface is standardized, so only libraries, not
+  headers, need to be detected. The exception is MKL, where the ``mkl.h``
+  header defines additional functionality; it must be located to use
+  BLAS threading.
 
 
 .. _`cmake:python`:
