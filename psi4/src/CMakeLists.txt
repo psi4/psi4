@@ -66,29 +66,36 @@ set(psi4_RPATH "$ORIGIN/${_rel}")
 foreach(_al ${_addons})
     get_filename_component(_ald ${_al} DIRECTORY)
 
+    if(${_al} MATCHES "-Wl,")
+        list(REMOVE_ITEM _addons ${_al})
+        #message("rpath: ${_al} dropped because linker directive")
+        continue()
+    endif()
+
     if(${_al} MATCHES "\.${CMAKE_STATIC_LIBRARY_SUFFIX}$")
         list(REMOVE_ITEM _addons ${_al})
         #message("rpath: ${_al} dropped because static")
+        continue()
     endif()
 
     list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${_ald} _in_cpild)
     if(_in_cpild GREATER -1)
         list(REMOVE_ITEM _addons ${_al})
         #message("rpath: ${_al} dropped because system lib")
+        continue()
     endif()
 
     if(${_ald} STREQUAL ${_full_path_staged_libdir})
         list(REMOVE_ITEM _addons ${_al})
         #message("rpath: ${_al} dropped because internal relative to core.so")
+        continue()
     endif()
-endforeach()
 
-foreach(_al ${_addons})
-    get_filename_component(_ald ${_al} DIRECTORY)
     list(APPEND psi4_RPATH ${_ald})
+    #message("rpath: ${_al} included")
 endforeach()
-list(REMOVE_DUPLICATES psi4_RPATH)
 
+list(REMOVE_DUPLICATES psi4_RPATH)
 message(STATUS "Psi4 rpath: ${psi4_RPATH}")
 
 set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
