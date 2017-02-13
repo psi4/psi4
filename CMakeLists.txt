@@ -1,5 +1,5 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)  # CMAKE_CXX_STANDARD, BUILD_ALWAYS
+cmake_minimum_required(VERSION 3.2 FATAL_ERROR)  # 3.2: continue() 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
 project(psi4
         LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")

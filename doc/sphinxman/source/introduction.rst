@@ -666,7 +666,7 @@ Where-to-post summary:[#f6]_
 .. [#f5] Both EFP/EFP and QM/EFP energies are available.
 .. [#f6] Adapted from `here <https://groups.google.com/forum/#!topic/google-collections-users/m8FnCcmtC88>`_.
 .. [#f7] DH-DFT only available with DF-MP2.
-.. [#f8] Not all combinations of reference and algorithm available. In particular, non-RHF references only available as CONV.
+.. [#f8] Not all combinations of reference and algorithm available. In particular, non-RHF references only available as CONV. For CCSD(T), gradients are not available with frozen core.
 .. [#f9] Orbital-optimized variant available. In particular, all references available as CONV/DF.
 .. [#f10] Capabilities breakdown in great detail can be found :ref:`here <table:managedmethods>`.
 

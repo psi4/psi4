@@ -1,5 +1,17 @@
-Psi4: Open-Source Quantum Chemistry
------------------------------------
+<p align="center">
+<a href="https://travis-ci.org/psi4/psi4"> <img src="https://travis-ci.org/psi4/psi4.svg?branch=master" /></a>
+<a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
+<a href="https://codecov.io/gh/psi4/psi4"> <img src="https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg" /></a>
+<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>
+<a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
+<br>
+<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/1.0.svg" /></a>
+<a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
+<a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
+<a href="https://conda.anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
+<br><br>
+<img src="https://github.com/psi4/psi4media/blob/master/logos/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
+</p>
 
 Psi4 is an open-source suite of *ab initio* quantum chemistry programs
 designed for efficient, high-accuracy simulations of a variety of

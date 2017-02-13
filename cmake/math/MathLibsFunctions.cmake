@@ -252,6 +252,8 @@ macro(find_math_library _myservice _mytype)
     unset(${_myservice}_INCLUDE_DIRS)
     unset(${_myservice}_INCLUDE_DIRS CACHE)
     if(${_mytype} STREQUAL "MKL")
+        # fyi: special-casing is an ugly way of doing this.
+        #   better way would be extra variable specifying whether calling code (per dist) needs headers found.
         find_math_header(${_myservice} ${${_mytype}_${_myservice}_HEADERS})
     endif()
     set(MATH_LIBRARY_PATH_SUFFIXES ${${_mytype}_${_myservice}_LIBRARY_PATH_SUFFIXES})

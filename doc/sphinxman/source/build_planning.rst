@@ -1009,8 +1009,7 @@ H. Build with explicit non-MKL LAPACK
     (https://github.com/psi4/psi4/issues/391) to have stability issues
     with the DFOCC module.
 
-  * ACML libraries are known to work preferred with |PSIfour| v1.1 at
-    ACML 6.
+  * ACML libraries are known to work with |PSIfour| v1.1 at ACML 6.
 
 * The BLAS/LAPACK detected for |PSIfour| are also linked into any
   Add-Ons (*e.g.*, libefp) that require them, rather than relying on
