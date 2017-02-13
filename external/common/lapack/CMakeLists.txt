@@ -26,7 +26,7 @@ get_property(_ill TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 # <<  Examine library list for MKL-ness  >>
 foreach(_l IN LISTS LAPACK_LIBRARIES)
     if(${_l} MATCHES "mkl")
-        set(_isMKL "MKL ")
+        set(_isMKL "MKL " CACHE INTERNAL "")
         target_compile_definitions(lapack INTERFACE -DUSING_LAPACK_MKL)
         break()
     endif()

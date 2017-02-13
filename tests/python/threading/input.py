@@ -37,5 +37,7 @@ for th in threads:
             times["p4-n{}".format(th)] = retp4
             times["np-n{}".format(th)] = retnp
 
-print("  NumPy@n%d : Psi4@n%d ratio (want ~1): %.2f" % (threads[-1], threads[-1], times["np-n" + str(threads[-1])] / times["p4-n" + str(threads[-1])]))
-print("   Psi4@n%d : Psi4@n%d ratio (want ~%d): %.2f" % (threads[0], threads[-1], threads[-1], times["p4-n" + str(threads[0])] / times["p4-n" + str(threads[-1])]))
+rat1 = times["np-n" + str(threads[-1])] / times["p4-n" + str(threads[-1])]
+rat2 = times["p4-n" + str(threads[0])] / times["p4-n" + str(threads[-1])]
+psi4.compare_values(1.0, rat1, 1, "  NumPy@n%d : Psi4@n%d ratio (want ~1): %.2f" % (threads[-1], threads[-1], rat1))
+psi4.compare_values(threads[-1], rat2, 0, "   Psi4@n%d : Psi4@n%d ratio (want ~%d): %.2f" % (threads[0], threads[-1], threads[-1], rat2))
