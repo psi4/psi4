@@ -8,7 +8,7 @@
 <a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/1.0.svg" /></a>
 <a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
-<a href="https://conda.anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
+<a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
 <br><br>
 <img src="https://github.com/psi4/psi4media/blob/master/logos/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
 </p>
