@@ -171,7 +171,7 @@ private:
     int max_diis_vecs_;
 
     int diis_file_;
-    int vec_length_;
+    size_t vec_length_;
 
     int curr_vec_;
     int num_vecs_;
@@ -183,7 +183,7 @@ protected:
     std::shared_ptr<PSIO> psio_;
 
 public:
-    SAPTDIIS(int, const char *, const char *, int, int, std::shared_ptr<PSIO>);
+    SAPTDIIS(int, const char *, const char *, size_t, int, std::shared_ptr<PSIO>);
     ~SAPTDIIS();
 
     void store_vectors();

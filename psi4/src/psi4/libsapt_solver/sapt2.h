@@ -38,8 +38,8 @@ private:
   virtual void print_results();
 
 protected:
-  int no_nvirA_;
-  int no_nvirB_;
+  size_t no_nvirA_;
+  size_t no_nvirB_;
 
   double *no_evalsA_;
   double *no_evalsB_;
@@ -47,6 +47,8 @@ protected:
   double **no_CA_;
   double **no_CB_;
 
+// These ints should not overflow below 46000 basis functions
+// They contain indices up to nso_ * (nso_ + 1) / 2
   int *ioff_;
   int *index2i_;
   int *index2j_;

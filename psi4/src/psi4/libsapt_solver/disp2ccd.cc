@@ -240,7 +240,7 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
 
   double **tARBS = block_matrix(occA*virA,occB*virB); //!
 
-  C_DCOPY(occA*virA*occB*virB,&(vARBS[0][0]),1,&(tARBS[0][0]),1);
+  C_DCOPY((size_t)occA*virA*occB*virB,&(vARBS[0][0]),1,&(tARBS[0][0]),1);
 
   double **thARAR = block_matrix(occA*virA,occA*virA); //!
 
@@ -394,7 +394,7 @@ double SAPT2p::r_ccd_energy(const char *TARBS, const char *ARBS, int occA, int v
   psio_->read_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
     occA*virA*occB*virB*(ULI) sizeof(double));
 
-  double energy = C_DDOT(occA*virA*occB*virB,&(vARBS[0][0]),1,
+  double energy = C_DDOT((size_t)occA*virA*occB*virB,&(vARBS[0][0]),1,
     &(tARBS[0][0]),1);
 
   free_block(vARBS); //!
@@ -419,7 +419,7 @@ double SAPT2p::r_ccd_iterate(const char *TARBS, const char *TARBSerr, const char
   int iter = 1;
   double E_old=0.0, E_new=0.0, RMS=0.0;
 
-  SAPTDIIS diis(PSIF_SAPT_CCD,TARBS,TARBSerr,occA*virA*occB*virB,
+  SAPTDIIS diis(PSIF_SAPT_CCD,TARBS,TARBSerr,(size_t)occA*virA*occB*virB,
     max_ccd_vecs_,psio_);
 
   do {
@@ -569,10 +569,10 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   psio_->write_entry(PSIF_SAPT_CCD,TARBS,(char *) &(t2ARBS[0][0]),
     occA*virA*occB*virB*(ULI) sizeof(double));
 
-  C_DAXPY(occA*virA*occB*virB,-1.0,tARBS[0],1,t2ARBS[0],1);
+  C_DAXPY((size_t)occA*virA*occB*virB,-1.0,tARBS[0],1,t2ARBS[0],1);
 
-  double RMS = C_DDOT(occA*virA*occB*virB,t2ARBS[0],1,t2ARBS[0],1);
-  RMS /= (double) (occA*virA*occB*virB);
+  double RMS = C_DDOT((size_t)occA*virA*occB*virB,t2ARBS[0],1,t2ARBS[0],1);
+  RMS /= (double) ((size_t)occA*virA*occB*virB);
 
   psio_->write_entry(PSIF_SAPT_CCD,TARBSerr,(char *) &(t2ARBS[0][0]),
     occA*virA*occB*virB*(ULI) sizeof(double));
@@ -712,7 +712,7 @@ double SAPT2p::s_ccd_iterate(const char *SARAR, const char *SARARerr, const char
   int iter = 1;
   double E_old=0.0, E_new=0.0, RMS=0.0;
 
-  SAPTDIIS diis(PSIF_SAPT_CCD,SARAR,SARARerr,occA*virA*occA*virA,
+  SAPTDIIS diis(PSIF_SAPT_CCD,SARAR,SARARerr,(size_t)occA*virA*occA*virA,
     max_ccd_vecs_,psio_);
 
   do {
@@ -1077,9 +1077,9 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   psio_->write_entry(PSIF_SAPT_CCD,SARAR,(char *) &(s2ARAR[0][0]),
     occA*virA*occA*virA*(ULI) sizeof(double));
 
-  C_DAXPY(occA*virA*occA*virA,-1.0,sARAR[0],1,s2ARAR[0],1);
-  double RMS = C_DDOT(occA*virA*occA*virA,s2ARAR[0],1,s2ARAR[0],1);
-  RMS /= (double) (occA*virA*occA*virA);
+  C_DAXPY((size_t)occA*virA*occA*virA,-1.0,sARAR[0],1,s2ARAR[0],1);
+  double RMS = C_DDOT((size_t)occA*virA*occA*virA,s2ARAR[0],1,s2ARAR[0],1);
+  RMS /= (double) ((size_t)occA*virA*occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,SARARerr,(char *) &(s2ARAR[0][0]),
     occA*virA*occA*virA*(ULI) sizeof(double));
@@ -1661,7 +1661,7 @@ void SAPT2p::ccd_iterate(const char *TARAR, const char *TARARerr, const char *Th
   int iter = 1;
   double E_old=0.0, E_new=0.0, RMS=0.0;
 
-  SAPTDIIS diis(PSIF_SAPT_CCD,TARAR,TARARerr,occA*virA*occA*virA,
+  SAPTDIIS diis(PSIF_SAPT_CCD,TARAR,TARARerr,(size_t)occA*virA*occA*virA,
     max_ccd_vecs_,psio_);
 
   do {
@@ -1710,7 +1710,7 @@ double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, int occA, int vi
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
     occA*virA*occA*virA*(ULI) sizeof(double));
 
-  double energy = C_DDOT(occA*virA*occA*virA,&(gARAR[0][0]),1,
+  double energy = C_DDOT((size_t)occA*virA*occA*virA,&(gARAR[0][0]),1,
     &(tARAR[0][0]),1);
 
   free_block(gARAR); //!
@@ -1730,7 +1730,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(t2ARAR[0][0]),
     occA*virA*occA*virA*(ULI) sizeof(double));
 
-  C_DSCAL(occA*virA*occA*virA,0.5,&(t2ARAR[0][0]),1);
+  C_DSCAL((size_t)occA*virA*occA*virA,0.5,&(t2ARAR[0][0]),1);
 
   double **gARRA = block_matrix(occA*virA,occA*virA); //!
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
@@ -1993,10 +1993,10 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
 
   free_block(th2ARAR); //!
 
-  C_DAXPY(occA*virA*occA*virA,-1.0,t2ARAR[0],1,tARAR[0],1);
+  C_DAXPY((size_t)occA*virA*occA*virA,-1.0,t2ARAR[0],1,tARAR[0],1);
 
-  double RMS = C_DDOT(occA*virA*occA*virA,tARAR[0],1,tARAR[0],1);
-  RMS /= (double) (occA*virA*occA*virA);
+  double RMS = C_DDOT((size_t)occA*virA*occA*virA,tARAR[0],1,tARAR[0],1);
+  RMS /= (double) ((size_t)occA*virA*occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,TARARerr,(char *) &(tARAR[0][0]),
     occA*virA*occA*virA*(ULI) sizeof(double));
@@ -2029,7 +2029,7 @@ void SAPT2p::write_IJKL(double **A, int filenum, const char *label, int length_I
   free_block(A);
 }
 
-SAPTDIIS::SAPTDIIS(int ampfile, const char *amplabel, const char *errlabel, int length,
+SAPTDIIS::SAPTDIIS(int ampfile, const char *amplabel, const char *errlabel, size_t length,
                    int maxvec, std::shared_ptr<PSIO> psio) : psio_(psio), vec_label_(amplabel), err_label_(errlabel)
 {
     diis_file_ = 56;
