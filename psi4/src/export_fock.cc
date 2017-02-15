@@ -32,7 +32,7 @@
 #include "psi4/libfock/soscf.h"
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
-#include "psi4/lib3index/3index.h"
+#include "psi4/lib3index/df_helper.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
@@ -41,8 +41,7 @@
 
 using namespace psi;
 
-void export_fock(py::module& m)
-{
+void export_fock(py::module &m) {
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
            .def_static("build_JK", [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
                 return JK::build_JK(basis, aux, Process::environment.options);
@@ -73,21 +72,22 @@ void export_fock(py::module& m)
            .def("D", &JK::D, py::return_value_policy::reference_internal)
            .def("print_header", &JK::print_header, "docstring");
 
-    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator> >(m, "LaplaceDenominator", "docstring")
-            .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
-            .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
-            .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
+    py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator",
+                                                                        "docstring")
+        .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
+        .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
+        .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
 
-
-    py::class_<DFTensor, std::shared_ptr<DFTensor> >(m, "DFTensor", "docstring")
-            .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>, int, int>())
-            .def("Qso", &DFTensor::Qso, "doctsring")
-            .def("Qmo", &DFTensor::Qmo, "doctsring")
-            .def("Qoo", &DFTensor::Qoo, "doctsring")
-            .def("Qov", &DFTensor::Qov, "doctsring")
-            .def("Qvv", &DFTensor::Qvv, "doctsring")
-            .def("Imo", &DFTensor::Imo, "doctsring")
-            .def("Idfmo", &DFTensor::Idfmo, "doctsring");
+    py::class_<DFTensor, std::shared_ptr<DFTensor>>(m, "DFTensor", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<Matrix>,
+                      int, int>())
+        .def("Qso", &DFTensor::Qso, "doctsring")
+        .def("Qmo", &DFTensor::Qmo, "doctsring")
+        .def("Qoo", &DFTensor::Qoo, "doctsring")
+        .def("Qov", &DFTensor::Qov, "doctsring")
+        .def("Qvv", &DFTensor::Qvv, "doctsring")
+        .def("Imo", &DFTensor::Imo, "doctsring")
+        .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
     py::class_<DFChargeFitter, std::shared_ptr<DFChargeFitter>>(m, "DFChargeFitter", "docstring").
             def("setPrimary", &DFChargeFitter::setPrimary, "docstring").
@@ -118,29 +118,53 @@ void export_fock(py::module& m)
             def("getA", &PseudoTrial::getA, "docstring");
 
     py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
-            // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
-            .def("Ck", &SOMCSCF::Ck)
-            .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, py::arg("x"), py::arg("order") = 2)
-            .def("rhf_energy", &SOMCSCF::rhf_energy)
-            .def("update", &SOMCSCF::update)
-            .def("approx_solve", &SOMCSCF::approx_solve)
-            .def("solve", &SOMCSCF::solve)
-            .def("H_approx_diag", &SOMCSCF::H_approx_diag)
-            .def("compute_Hk", &SOMCSCF::Hk)
-            .def("compute_Q", &SOMCSCF::compute_Q)
-            .def("compute_Qk", &SOMCSCF::compute_Qk)
-            .def("compute_AFock", &SOMCSCF::compute_AFock)
-            .def("current_total_energy", &SOMCSCF::current_total_energy)
-            .def("current_docc_energy", &SOMCSCF::current_docc_energy)
-            .def("current_ci_energy", &SOMCSCF::current_ci_energy)
-            .def("current_AFock", &SOMCSCF::current_AFock)
-            .def("current_IFock", &SOMCSCF::current_IFock)
-            .def("zero_redundant", &SOMCSCF::zero_redundant)
-            .def("gradient", &SOMCSCF::gradient)
-            .def("gradient_rms", &SOMCSCF::gradient_rms);
+        // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
+        .def("Ck", &SOMCSCF::Ck)
+        .def("form_rotation_matrix", &SOMCSCF::form_rotation_matrix, py::arg("x"),
+             py::arg("order") = 2)
+        .def("rhf_energy", &SOMCSCF::rhf_energy)
+        .def("update", &SOMCSCF::update)
+        .def("approx_solve", &SOMCSCF::approx_solve)
+        .def("solve", &SOMCSCF::solve)
+        .def("H_approx_diag", &SOMCSCF::H_approx_diag)
+        .def("compute_Hk", &SOMCSCF::Hk)
+        .def("compute_Q", &SOMCSCF::compute_Q)
+        .def("compute_Qk", &SOMCSCF::compute_Qk)
+        .def("compute_AFock", &SOMCSCF::compute_AFock)
+        .def("current_total_energy", &SOMCSCF::current_total_energy)
+        .def("current_docc_energy", &SOMCSCF::current_docc_energy)
+        .def("current_ci_energy", &SOMCSCF::current_ci_energy)
+        .def("current_AFock", &SOMCSCF::current_AFock)
+        .def("current_IFock", &SOMCSCF::current_IFock)
+        .def("zero_redundant", &SOMCSCF::zero_redundant)
+        .def("gradient", &SOMCSCF::gradient)
+        .def("gradient_rms", &SOMCSCF::gradient_rms);
 
     py::class_<DFSOMCSCF, std::shared_ptr<DFSOMCSCF>, SOMCSCF>(m, "DFSOMCSCF", "docstring");
     py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
 
+    // DF Helper
+    typedef SharedMatrix (df_helper::DF_Helper::*take_string)(std::string);
 
+    py::class_<df_helper::DF_Helper, std::shared_ptr<df_helper::DF_Helper>>(
+        m, "DF_Helper", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
+        .def("set_memory", &df_helper::DF_Helper::set_memory)
+        .def("get_memory", &df_helper::DF_Helper::get_memory)
+        .def("set_method", &df_helper::DF_Helper::set_method)
+        .def("get_method", &df_helper::DF_Helper::get_method)
+        .def("set_schwarz_cutoff", &df_helper::DF_Helper::set_schwarz_cutoff)
+        .def("get_schwarz_cutoff", &df_helper::DF_Helper::get_schwarz_cutoff)
+        .def("set_on_core", &df_helper::DF_Helper::set_on_core)
+        .def("get_on_core", &df_helper::DF_Helper::get_on_core)
+        .def("set_MO_hint", &df_helper::DF_Helper::set_MO_hint)
+        .def("get_MO_hint", &df_helper::DF_Helper::get_MO_hint)
+        .def("add_space", &df_helper::DF_Helper::add_space)
+        .def("get_space", &df_helper::DF_Helper::get_space)
+        .def("initialize", &df_helper::DF_Helper::initialize)
+        .def("add_transformation", &df_helper::DF_Helper::add_transformation)
+        .def("transform", &df_helper::DF_Helper::transform)
+        .def("clear_spaces", &df_helper::DF_Helper::clear_spaces)
+        .def("clear_transformations", &df_helper::DF_Helper::clear_transformations)
+        .def("get_integral", take_string(&df_helper::DF_Helper::get_tensor));
 }

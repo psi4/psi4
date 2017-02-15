@@ -138,14 +138,14 @@ protected:
     size_t memory_ = 256000000;
 
     // method directive
-    std::string method_ = "store";
+    std::string method_ = "STORE";
     bool direct_;
 
     // threading
     size_t nthreads_ = 1;
 
     // schwarz cutoff
-    double cutoff_ = 1e-13;
+    double cutoff_ = 1e-12;
 
     // metric power
     double mpower_ = -0.5;
