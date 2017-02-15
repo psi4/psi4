@@ -415,7 +415,7 @@ bool SuperFunctional::is_gga() const {
         if (c_functionals_[i]->is_gga())
             return true;
     }
-    if (needs_grac_){
+    if (needs_grac_ || needs_vv10_){
         return true;
     }
     return false;
