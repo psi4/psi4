@@ -14,7 +14,7 @@ if(${ENABLE_simint})
                  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                  -DSIMINT_C_FLAGS=-fPIC
                  -DSIMINT_VECTOR=${SIMINT_VECTOR}
-                 -DSIMINT_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                 -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
       INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install DESTDIR=${CMAKE_BINARY_DIR}/stage
    )
 
