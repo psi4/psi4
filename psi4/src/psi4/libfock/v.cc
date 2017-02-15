@@ -339,6 +339,108 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         // Should cleanup, but...
         vv10_tmp_cache.clear();
 
+            // Traverse the blocks of points
+        #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+        for (size_t Q = 0; Q < nlgrid.blocks().size(); Q++) {
+
+            // Get thread info
+            #ifdef _OPENMP
+                rank = omp_get_thread_num();
+            #endif
+
+            std::shared_ptr<SuperFunctional> fworker = functional_workers_[rank];
+            std::shared_ptr<PointFunctions> pworker = point_workers_[rank];
+            double** V2p = V_local[rank]->pointer();
+            double* QTp = Q_temp[rank]->pointer();
+
+            // Scratch
+            double** Tp = pworker->scratch()[0]->pointer();
+
+            std::shared_ptr<BlockOPoints> block = nlgrid.blocks()[Q];
+            int npoints = block->npoints();
+            double * w = block->w();
+            const std::vector<int>& function_map = block->functions_local_to_global();
+            int nlocal = function_map.size();
+
+            // Compute Rho, Phi, etc
+            // timer_on("V: Properties");
+            pworker->compute_points(block);
+            std::map<std::string, SharedVector> vals = fworker->values();
+            // timer_off("V: Properties");
+
+            // Updates the vals map and returns the energy
+            vals["V_RHO_A"]->zero();
+            vals["V_GAMMA_AA"]->zero();
+            vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints);
+
+
+            // timer_on("V: V_XC");
+            double** phi = pworker->basis_value("PHI")->pointer();
+            double * rho_a = pworker->point_value("RHO_A")->pointer();
+            double * zk = vals["V"]->pointer();
+            double * v_rho_a = vals["V_RHO_A"]->pointer();
+
+
+            // => Quadrature values <= //
+            for (int P = 0; P < npoints; P++) {
+                QTp[P] = w[P] * rho_a[P];
+            }
+
+            // => LSDA contribution (symmetrized) <= //
+            // timer_on("V: LSDA");
+            for (int P = 0; P < npoints; P++) {
+                ::memset(static_cast<void*>(Tp[P]), '\0', nlocal * sizeof(double));
+                C_DAXPY(nlocal, 0.5 * v_rho_a[P] * w[P], phi[P], 1, Tp[P], 1);
+            }
+            // timer_off("V: LSDA");
+
+            // => GGA contribution (symmetrized) <= //
+            if (ansatz >= 1) {
+                // timer_on("V: GGA");
+                double** phix = pworker->basis_value("PHI_X")->pointer();
+                double** phiy = pworker->basis_value("PHI_Y")->pointer();
+                double** phiz = pworker->basis_value("PHI_Z")->pointer();
+                double * rho_ax = pworker->point_value("RHO_AX")->pointer();
+                double * rho_ay = pworker->point_value("RHO_AY")->pointer();
+                double * rho_az = pworker->point_value("RHO_AZ")->pointer();
+                double * v_sigma_aa = vals["V_GAMMA_AA"]->pointer();
+
+                for (int P = 0; P < npoints; P++) {
+                    C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P]), phix[P], 1, Tp[P], 1);
+                    C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1);
+                    C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_az[P]), phiz[P], 1, Tp[P], 1);
+                }
+                // timer_off("V: GGA");
+            }
+
+            // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
+            // timer_on("V: LSDA");
+            // printf("nlocal: %d, npoints %d, maxf %d\n", nlocal, npoints, max_functions);
+            C_DGEMM('T', 'N', nlocal, nlocal, npoints, 1.0, phi[0], max_functions, Tp[0], max_functions,
+                    0.0, V2p[0], max_functions);
+
+            // Symmetrization (V is Hermitian)
+            for (int m = 0; m < nlocal; m++) {
+                for (int n = 0; n <= m; n++) {
+                    V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m];
+                }
+            }
+
+            // => Unpacking <= //
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < ml; nl++) {
+                    int ng = function_map[nl];
+                    #pragma omp atomic update
+                    Vp[mg][ng] += V2p[ml][nl];
+                    #pragma omp atomic update
+                    Vp[ng][mg] += V2p[ml][nl];
+                }
+                #pragma omp atomic update
+                Vp[mg][mg] += V2p[ml][ml];
+            }
+        }
+
     }
 
     // Traverse the blocks of points
@@ -367,18 +469,20 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
         const std::vector<int>& function_map = block->functions_local_to_global();
         int nlocal = function_map.size();
 
+
         // Compute Rho, Phi, etc
         // timer_on("V: Properties");
         pworker->compute_points(block);
         // timer_off("V: Properties");
 
+
         // Compute functional values
         // timer_on("V: Functional");
         std::map<std::string, SharedVector>& vals = fworker->compute_functional(pworker->point_values(), npoints);
-        if (functional_->needs_vv10()){
-            // Updates the vals map and returns the energy
-            vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints);
-        }
+        // if (functional_->needs_vv10()){
+        //     // Updates the vals map and returns the energy
+        //     vv10_exc[rank] += fworker->compute_vv10_kernel(pworker->point_values(), vv10_cache, block, npoints);
+        // }
         // timer_off("V: Functional");
 
         if (debug_ > 4) {
