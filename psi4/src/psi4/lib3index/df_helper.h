@@ -260,6 +260,7 @@ protected:
     std::vector<std::string> AO_names_;
     void filename_maker(std::string name, size_t a0, size_t a1, size_t a2);
     void AO_filename_maker(size_t i);
+    void check_transformation_name(std::string);
 
 }; // End DF Helper class
 

@@ -128,7 +128,10 @@ void DF_Helper::initialize()
 {
     timer_on("DF_Helper~-- build-------   ");
     if(method_.compare("DIRECT") && method_.compare("STORE")){
-        perror("Specified method is incorrect!!\n"); exit(1);}
+        std::stringstream error;
+        error << "DF_Helper:initialize: specified method (" << method_ << ") is incorrect";
+        throw PSIEXCEPTION(error.str().c_str());
+    }        
 
     outfile->Printf("nao_: %zu, naux_: %zu, cutoff: %f\n", nao_, naux_, cutoff_);
 
@@ -385,7 +388,10 @@ std::pair<size_t, size_t> DF_Helper::shell_blocks(const size_t mem, size_t max,
         total += current;
         if((op ? 2*total : total + (wMO_*nao_ +  2*max)*tmpbs) + extra > mem || i==shell_tots-1){
             if(count==1 && i!=shell_tots-1){
-                perror("not enough mem for AO integral blocking!\n"); exit(1);}
+                std::stringstream error;
+                error << "DF_Helper: not enough memory for AO integral blocking!";
+                throw PSIEXCEPTION(error.str().c_str());
+            }        
             if(largest<total){
                 largest=total;
                 block_size=tmpbs;
@@ -469,7 +475,11 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1,
     // is everything contiguous?
     if(st==0){
         size_t s = fwrite(&Mp[0], sizeof(double), a0*a1, fp);
-        if(!s){ std::perror("Error writing..\n"); exit(1);}
+        if(!s){ 
+            std::stringstream error;
+            error << "DF_Helper:put_tensor: write error";
+            throw PSIEXCEPTION(error.str().c_str());
+        }
     }
     else
     {
@@ -477,7 +487,11 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1,
 
             // write
             size_t s = fwrite(&Mp[i*a1], sizeof(double), a1, fp);
-            if(!s){ std::perror("Error writing..\n"); exit(1);}
+            if(!s){
+                std::stringstream error;
+                error << "DF_Helper:put_tensor: write error";
+                throw PSIEXCEPTION(error.str().c_str());
+            }
 
             // advance stream
             fseek(fp, st*sizeof(double), SEEK_CUR);
@@ -485,7 +499,11 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1,
 
         // manual last one
         size_t s = fwrite(&Mp[(a0-1)*a1], sizeof(double), a1, fp);
-        if(!s){ std::perror("Error writing..\n"); exit(1);}
+        if(!s){ 
+            std::stringstream error;
+            error << "DF_Helper:put_tensor: write error";
+            throw PSIEXCEPTION(error.str().c_str());
+        }
     }
 }
 void DF_Helper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op)
@@ -498,7 +516,11 @@ void DF_Helper::put_tensor_AO(std::string file, double* Mp, size_t size, size_t 
 
     // everything is contiguous
     size_t s=fwrite(&Mp[0], sizeof(double), size, fp);
-    if(!s){ std::perror("Error writing..\n"); exit(1);}
+    if(!s){ 
+        std::stringstream error;
+        error << "DF_Helper:put_tensor_AO: write error";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
 }
 void DF_Helper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t start)
 {
@@ -510,7 +532,11 @@ void DF_Helper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t 
 
     // everything is contiguous
     size_t s = fread(&Mp[0], sizeof(double), size, fp);
-    if(!s){ std::perror("Error writing..\n"); exit(1);}
+    if(!s){ 
+        std::stringstream error;
+        error << "DF_Helper:get_tensor_AO: read error";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
 }
 void DF_Helper::get_tensor(std::string file, double* b, std::pair<size_t, size_t> i0,
   std::pair<size_t, size_t> i1, std::pair<size_t, size_t> i2)
@@ -561,23 +587,39 @@ void DF_Helper::get_tensor(std::string file, double* b, const size_t start1,
     // is everything contiguous?
     if(st==0){
         size_t s = fread(&b[0], sizeof(double), a0*a1, fp);
-        if(!s){ std::perror("Error reading..\n"); exit(1);}
+        if(!s){ 
+            std::stringstream error;
+            error << "DF_Helper:get_tensor: read error";
+            throw PSIEXCEPTION(error.str().c_str());
+        }
     }
     else
     {
         for(size_t i=0; i<a0-1; i++){
             // read
             size_t s = fread(&b[i*a1], sizeof(double), a1, fp);
-            if(!s){ std::perror("Error reading..\n"); exit(1);}
+            if(!s){ 
+                std::stringstream error;
+                error << "DF_Helper:get_tensor: read error";
+                throw PSIEXCEPTION(error.str().c_str());
+            }
 
             // advance stream
             s =fseek(fp, st*sizeof(double), SEEK_CUR);
-            if(s){ std::perror("Error readseeking..\n"); exit(1);}
+            if(s){ 
+                std::stringstream error;
+                error << "DF_Helper:get_tensor: read error";
+                throw PSIEXCEPTION(error.str().c_str());
+            }
         }
 
         // manual last one
         size_t s = fread(&b[(a0-1)*a1], sizeof(double), a1, fp);
-        if(!s){ std::perror("Error reading..\n"); exit(1);}
+        if(!s){ 
+            std::stringstream error;
+            error << "DF_Helper:get_tensor: read error";
+            throw PSIEXCEPTION(error.str().c_str());
+        }
     }
 }
 void DF_Helper::compute_AO_Q(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri)
@@ -816,7 +858,10 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
         if(tots<cost2+count*a0*a2 || i==a1-1){
 
             if(count==1 && i!=a1-1){
-                perror("Not enough memory for metric contraction!\n"); exit(1);}
+                std::stringstream error;
+                error << "DF_Helper:contract_metric: not enough memory.";
+                throw PSIEXCEPTION(error.str().c_str());
+            }    
 
             if(maxim<count)
                 maxim = count;
@@ -911,9 +956,15 @@ void DF_Helper::add_space(std::string key, SharedMatrix M)
     size_t a1 = M->colspi()[0];
 
     if(a0!=nao_){
-        perror("add_space: illegal space shape\n"); exit(1);}
+        std::stringstream error;
+        error << "DF_Helper:add_space: illegal space ("<< key <<"), primary axis is not nao";
+        throw PSIEXCEPTION(error.str().c_str());
+    }    
     else if(spaces_.find(key) != spaces_.end()){
-        outfile->Printf("key: (%s) is already in space list!\n", key.c_str()); exit (1);}
+        std::stringstream error;
+        error << "DF_Helper:add_space: illegal space ("<< key <<"), already in list! (call clear_spaces!)";
+        throw PSIEXCEPTION(error.str().c_str());
+    }    
 
     spaces_[key] = std::make_tuple(M, a1);
     sorted_spaces_.push_back(std::make_pair(key, a1));
@@ -921,11 +972,15 @@ void DF_Helper::add_space(std::string key, SharedMatrix M)
 void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2)
 {
     if(spaces_.find(key1) == spaces_.end()){
-        outfile->Printf("key1: (%s) is not in space list!\n", key1.c_str()); exit (1);}
+        std::stringstream error;
+        error << "DF_Helper:add_transformation: first space ("<< key1 <<"), is not in space list!";
+        throw PSIEXCEPTION(error.str().c_str());
+    }    
     else if(spaces_.find(key2) == spaces_.end()){
-        outfile->Printf("key2: (%s) is not in space list!\n", key2.c_str()); exit (1);}
-    else if(transf_.find(name) != transf_.end()){
-        outfile->Printf("name: (%s) is already in transformation list!\n", name.c_str()); exit (1);}
+        std::stringstream error;
+        error << "DF_Helper:add_transformation: second space ("<< key2 <<"), is not in space list!";
+        throw PSIEXCEPTION(error.str().c_str());
+    }    
 
     size_t a1 = std::get<1>(spaces_[key1]);
     size_t a2 = std::get<1>(spaces_[key2]);
@@ -1379,11 +1434,17 @@ void DF_Helper::transform_disc() {
     }
     outfile->Printf("transformations done\n");
 }
-void DF_Helper::get_tensor(std::string name, SharedMatrix M) {
+void DF_Helper::check_transformation_name(std::string name){
+    // Does the file exist?
     if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
+        std::stringstream error;
+        error << "DF_Helper:get_tensor: " << name << " not found.";
+        throw PSIEXCEPTION(error.str().c_str());
     }
+}
+void DF_Helper::get_tensor(std::string name, SharedMatrix M) {
+
+    check_transformation_name(name);
 
     std::string filename = std::get<1>(files_[name]);
     size_t A0 = std::get<0>(sizes_[filename]);
@@ -1416,12 +1477,7 @@ void DF_Helper::get_tensor(std::string name, SharedMatrix M) {
 }
 void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1) {
 
-    // Does the file exist?
-    if (files_.find(name) == files_.end()) {
-        std::stringstream error;
-        error << "DF_Helper:get_tensor: " << name << " not found.";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
+    check_transformation_name(name);
 
     std::string filename = std::get<1>(files_[name]);
     size_t A1 = std::get<1>(sizes_[filename]);
@@ -1430,10 +1486,7 @@ void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, s
 }
 void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
                            std::pair<size_t, size_t> a2) {
-    if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
-    }
+    check_transformation_name(name);
 
     std::string filename = std::get<1>(files_[name]);
     size_t A2 = std::get<2>(sizes_[filename]);
@@ -1441,10 +1494,7 @@ void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, s
 }
 void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
                            std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2) {
-    if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
-    }
+    check_transformation_name(name);
 
     size_t sta0 = std::get<0>(t0);
     size_t sto0 = std::get<1>(t0);
@@ -1501,10 +1551,7 @@ void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, s
     get_tensor(filename, b, t0, t1, t2);
 }
 SharedMatrix DF_Helper::get_tensor(std::string name) {
-    if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
-    }
+    check_transformation_name(name);
 
     std::string filename = std::get<1>(files_[name]);
     size_t A0 = std::get<0>(sizes_[filename]);
@@ -1527,10 +1574,7 @@ SharedMatrix DF_Helper::get_tensor(std::string name) {
     return M;
 }
 SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a1) {
-    if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
-    }
+    check_transformation_name(name);
 
     std::string file = std::get<1>(files_[name]);
     size_t A0 = std::get<1>(a1) - std::get<0>(a1) + 1;
@@ -1543,10 +1587,7 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a
 }
 SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a1,
                                    std::pair<size_t, size_t> a2) {
-    if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
-    }
+    check_transformation_name(name);
 
     std::string file = std::get<1>(files_[name]);
     size_t A0 = std::get<1>(a1) - std::get<0>(a1) + 1;
@@ -1559,10 +1600,7 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a
 }
 SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a1,
                                    std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3) {
-    if (files_.find(name) == files_.end()) {
-        outfile->Printf("incorrect name: (%s) for get_tensor()\n", name.c_str());
-        exit(1);
-    }
+    check_transformation_name(name);
 
     std::string file = std::get<1>(files_[name]);
     size_t A0 = std::get<1>(a1) - std::get<0>(a1) + 1;
