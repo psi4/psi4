@@ -69,7 +69,6 @@ option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_erd "Enables use of ERD instead of libint (requires Fortran)" OFF)
 option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
-option(ENABLE_GTFock "Enables GTFock (requires MPI)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 # These options are relevant to pasture
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
@@ -151,6 +150,17 @@ include(custom_static_library)
 ################################  Main Project  ################################
 include(ExternalProject)
 ExternalProject_Add(psi4-core
+   DEPENDS lapack_external
+           hdf5_external
+           ambit_external
+           chemps2_external
+           dkh_external
+           libefp_external
+           erd_external
+           gdma_external
+           libint_external
+           pcmsolver_external
+           pybind11_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -179,7 +189,6 @@ ExternalProject_Add(psi4-core
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_gdma=${ENABLE_gdma}
-              -DENABLE_GTFock=${ENABLE_GTFock}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
@@ -188,7 +197,6 @@ ExternalProject_Add(psi4-core
               -Dlibefp_DIR=${libefp_DIR}
               -Derd_DIR=${erd_DIR}
               -Dgdma_DIR=${gdma_DIR}
-              -DGTFock_DIR=${GTFock_DIR}
               -Dlibint_DIR=${libint_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
@@ -200,19 +208,8 @@ ExternalProject_Add(psi4-core
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1
    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-                   DESTDIR=${CMAKE_BINARY_DIR}/stage
-)
-add_dependencies(psi4-core lapack_external
-                           ambit_external
-                           chemps2_external
-                           dkh_external
-                           libefp_external
-                           erd_external
-                           gdma_external
-                           #gtfock_external
-                           libint_external
-                           pcmsolver_external
-                           pybind11_external)
+                   DESTDIR=${CMAKE_BINARY_DIR}/stage)
+
 add_subdirectory(external/downstream)
 add_subdirectory(doc)
 include(ConfigTesting)
@@ -227,4 +224,3 @@ install(DIRECTORY samples
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
         USE_SOURCE_PERMISSIONS
         PATTERN "example_psi4rc_file" EXCLUDE)
-
