@@ -167,8 +167,10 @@ endif()
 
 # <<<  LIBEFP  >>>
 
-add_subdirectory(libefp)
-message(STATUS "Adding test cases: Psi4 + libefp")
+if(ENABLE_libefp)
+    add_subdirectory(libefp)
+    message(STATUS "Adding test cases: Psi4 + libefp")
+endif()
 
 # <<<  ERD  >>>
 

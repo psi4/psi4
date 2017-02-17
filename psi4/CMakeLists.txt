@@ -73,10 +73,14 @@ else()
     message(STATUS "Disabled dkh")
 endif()
 
-find_package(libefp CONFIG REQUIRED COMPONENTS shallow)
-get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
-list(APPEND _addons ${_loc})
-message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
+if(${ENABLE_libefp})
+    find_package(libefp CONFIG REQUIRED COMPONENTS shallow)
+    get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using libefp${ColourReset}: ${_loc} (version ${libefp_VERSION})")
+else()
+    message(STATUS "Disabled libefp")
+endif()
 
 if(${ENABLE_erd})
     find_package(erd 3.0.6 CONFIG REQUIRED)
@@ -172,22 +176,23 @@ install(DIRECTORY include/psi4/
 
     # <<<  install external's share/ to psi4 share/  >>>
 
-        # bring libefp's fraglib to PSIDATADIR's attention
-# bring libefp's fraglib to PSIDATADIR's attention
-set(_fraglib_in_psi4_dir ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag)
+if(TARGET libefp::efp)
+    # bring libefp's fraglib to PSIDATADIR's attention
+    set(_fraglib_in_psi4_dir ${DESTDIR}${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag)
 
-add_custom_target(consolidate_psidatadir ALL
-                  VERBATIM
-                  COMMAND ${CMAKE_COMMAND} -E make_directory ${_fraglib_in_psi4_dir}
-                  COMMENT "Symlink external resources into PSIDATADIR")
+    add_custom_target(consolidate_psidatadir ALL
+                      VERBATIM
+                      COMMAND ${CMAKE_COMMAND} -E make_directory ${_fraglib_in_psi4_dir}
+                      COMMENT "Symlink external resources into PSIDATADIR")
 
-file(GLOB _dotefps "${libefp_FRAGLIB_DIRS}/*.efp")
-foreach(_dotefp ${_dotefps})
-    get_filename_component(_efpfile ${_dotefp} NAME)
-    add_custom_command(TARGET consolidate_psidatadir
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E create_symlink ${_dotefp} ${_fraglib_in_psi4_dir}/${_efpfile})
-endforeach()
+    file(GLOB _dotefps "${libefp_FRAGLIB_DIRS}/*.efp")
+    foreach(_dotefp ${_dotefps})
+        get_filename_component(_efpfile ${_dotefp} NAME)
+        add_custom_command(TARGET consolidate_psidatadir
+                           POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E create_symlink ${_dotefp} ${_fraglib_in_psi4_dir}/${_efpfile})
+    endforeach()
+endif()
 
 # <<<  Export Config  >>>
 

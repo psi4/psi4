@@ -36,7 +36,9 @@
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libfilesystem/path.h"
+#ifdef USING_libefp
 #include <efp.h>
+#endif
 
 #include <regex>
 
@@ -50,14 +52,37 @@ namespace psi { namespace efp {
 
 EFP::EFP(Options& options): options_(options)
 {
+#ifdef USING_libefp
     common_init();
+#endif
 }
 
 EFP::~EFP()
 {
+#ifdef USING_libefp
     efp_shutdown(efp_);
+#endif
 }
 
+/*
+ * Get number of fragments
+ */
+int EFP::get_frag_count(void)
+{
+    size_t n=0;
+#ifdef USING_libefp
+    enum efp_result res;
+
+    if ((res = efp_get_frag_count(efp_, &n)))
+        throw PsiException("EFP::get_frag_count(): " +
+            std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
+    nfrag_ = n;
+#endif
+    return n;
+}
+
+#ifdef USING_libefp
 /*
  * Basic creation of EFP object and options structure
  */
@@ -718,22 +743,6 @@ void EFP::compute() {
 }
 
 /*
- * Get number of fragments
- */
-int EFP::get_frag_count(void)
-{
-    enum efp_result res;
-    size_t n=0;
-
-    if ((res = efp_get_frag_count(efp_, &n)))
-        throw PsiException("EFP::get_frag_count(): " +
-            std::string (efp_result_to_string(res)),__FILE__,__LINE__);
-
-    nfrag_ = n;
-    return n;
-}
-
-/*
  * Prints efp geometry is styly of Molecule
  */
 void EFP::print_efp_geometry()
@@ -802,6 +811,7 @@ void EFP::print_out() {
     }
 }
 
+#endif // USING_libefp
 } } // End namespaces
 
 

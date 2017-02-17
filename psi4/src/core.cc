@@ -441,22 +441,6 @@ double py_psi_cctriples(SharedWavefunction ref_wfn)
         return 0.0;
 }
 
-std::shared_ptr<psi::efp::EFP> py_psi_efp_init()
-{
-    py_psi_prepare_options_for_module("EFP");
-    if (psi::efp::efp_init(Process::environment.options) == Success) {
-        return Process::environment.get_efp();
-    }
-    else
-        throw PSIEXCEPTION("Unable to initialize EFP library.");
-}
-
-void py_psi_efp_set_options()
-{
-    py_psi_prepare_options_for_module("EFP");
-    Process::environment.get_efp()->set_options();
-}
-
 SharedWavefunction py_psi_fnocc(SharedWavefunction ref_wfn)
 {
     py_psi_prepare_options_for_module("FNOCC");
@@ -479,7 +463,7 @@ double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
 #else
 double py_psi_gdma(SharedWavefunction ref_wfn, const std::string &datfilename)
 {
-    throw PSIEXCEPTION("GDMA not enabled. Recompile with it enabled.");
+    throw PSIEXCEPTION("GDMA not enabled. Recompile with -DENABLE_gdma.");
 }
 #endif
 
@@ -492,7 +476,7 @@ SharedWavefunction py_psi_dmrg(SharedWavefunction ref_wfn)
 #else
 double py_psi_dmrg(SharedWavefunction ref_wfn)
 {
-    throw PSIEXCEPTION("DMRG not enabled.");
+    throw PSIEXCEPTION("DMRG not enabled. Recompile with -DENABLE_CheMPS2");
 }
 #endif
 
@@ -994,11 +978,6 @@ std::shared_ptr<Molecule> py_psi_get_legacy_molecule()
     return Process::environment.legacy_molecule();
 }
 
-std::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
-{
-    return Process::environment.get_efp();
-}
-
 void py_psi_set_gradient(SharedMatrix grad)
 {
     Process::environment.set_gradient(grad);
@@ -1007,6 +986,28 @@ void py_psi_set_gradient(SharedMatrix grad)
 SharedMatrix py_psi_get_gradient()
 {
     return Process::environment.gradient();
+}
+
+std::shared_ptr<psi::efp::EFP> py_psi_efp_init()
+{
+    py_psi_prepare_options_for_module("EFP");
+    if (psi::efp::efp_init(Process::environment.options) == Success) {
+        return Process::environment.get_efp();
+    }
+    else
+        throw PSIEXCEPTION("Unable to initialize EFP library.");
+}
+
+std::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
+{
+    return Process::environment.get_efp();
+}
+
+#ifdef USING_libefp
+void py_psi_efp_set_options()
+{
+    py_psi_prepare_options_for_module("EFP");
+    Process::environment.get_efp()->set_options();
 }
 
 void py_psi_set_efp_torque(SharedMatrix torq)
@@ -1027,6 +1028,7 @@ SharedMatrix py_psi_get_efp_torque()
         return Process::environment.efp_torque();
     }
 }
+#endif
 
 void py_psi_set_frequencies(std::shared_ptr<Vector> freq)
 {
@@ -1286,13 +1288,17 @@ PYBIND11_PLUGIN(core) {
     core.def("set_gradient",
         py_psi_set_gradient,
         "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    core.def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
     core.def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
+#ifdef USING_libefp
+    core.def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
     core.def("get_efp_torque",
         py_psi_get_efp_torque,
         "Returns the most recently computed gradient for the EFP portion, as a Nefp by 6 Matrix object.");
     core.def("set_efp_torque",
         py_psi_set_efp_torque,
         "Assigns the global EFP gradient to the values stored in the Nefp by 6 Matrix argument.");
+#endif
     core.def("get_frequencies",
         py_psi_get_frequencies,
         "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
@@ -1441,8 +1447,6 @@ PYBIND11_PLUGIN(core) {
     core.def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
     core.def("run_gdma", py_psi_gdma, "Runs the GDMA code.");
     core.def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    core.def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
-    core.def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
     core.def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
     core.def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     core.def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
