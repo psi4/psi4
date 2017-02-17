@@ -43,34 +43,33 @@ using namespace psi;
 
 void export_fock(py::module &m) {
     py::class_<JK, std::shared_ptr<JK>>(m, "JK", "docstring")
-           .def_static("build_JK", [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux){
-                return JK::build_JK(basis, aux, Process::environment.options);
-            })
-           .def("initialize", &JK::initialize)
-           .def("set_cutoff", &JK::set_cutoff)
-           .def("set_memory", &JK::set_memory)
-           .def("set_omp_nthread", &JK::set_omp_nthread)
-           .def("set_do_J", &JK::set_do_J)
-           .def("set_do_K", &JK::set_do_K)
-           .def("set_do_wK", &JK::set_do_wK)
-           .def("set_omega", &JK::set_omega)
-           .def("compute", &JK::compute)
-           .def("finalize", &JK::finalize)
-           .def("C_clear", [](JK &jk){
-                jk.C_left().clear();
-                jk.C_right().clear();
-           })
-           .def("C_left_add", [](JK &jk, SharedMatrix Cl){
-                jk.C_left().push_back(Cl);
-           })
-           .def("C_right_add", [](JK &jk, SharedMatrix Cr){
-                jk.C_right().push_back(Cr);
-           })
-           .def("J", &JK::J, py::return_value_policy::reference_internal)
-           .def("K", &JK::K, py::return_value_policy::reference_internal)
-           .def("wK", &JK::wK, py::return_value_policy::reference_internal)
-           .def("D", &JK::D, py::return_value_policy::reference_internal)
-           .def("print_header", &JK::print_header, "docstring");
+        .def_static("build_JK",
+                    [](std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> aux) {
+                        return JK::build_JK(basis, aux, Process::environment.options);
+                    })
+        .def("initialize", &JK::initialize)
+        .def("set_cutoff", &JK::set_cutoff)
+        .def("set_memory", &JK::set_memory)
+        .def("set_omp_nthread", &JK::set_omp_nthread)
+        .def("set_do_J", &JK::set_do_J)
+        .def("set_do_K", &JK::set_do_K)
+        .def("set_do_wK", &JK::set_do_wK)
+        .def("set_omega", &JK::set_omega)
+        .def("compute", &JK::compute)
+        .def("finalize", &JK::finalize)
+        .def("C_clear",
+             [](JK &jk) {
+                 jk.C_left().clear();
+                 jk.C_right().clear();
+             })
+        .def("C_add", [](JK &jk, SharedMatrix Cl) { jk.C_left().push_back(Cl); jk.C_right().push_back(Cl); })
+        .def("C_left_add", [](JK &jk, SharedMatrix Cl) { jk.C_left().push_back(Cl); })
+        .def("C_right_add", [](JK &jk, SharedMatrix Cr) { jk.C_right().push_back(Cr); })
+        .def("J", &JK::J, py::return_value_policy::reference_internal)
+        .def("K", &JK::K, py::return_value_policy::reference_internal)
+        .def("wK", &JK::wK, py::return_value_policy::reference_internal)
+        .def("D", &JK::D, py::return_value_policy::reference_internal)
+        .def("print_header", &JK::print_header, "docstring");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator",
                                                                         "docstring")
