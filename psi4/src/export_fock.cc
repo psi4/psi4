@@ -161,9 +161,10 @@ void export_fock(py::module &m) {
         .def("add_space", &df_helper::DF_Helper::add_space)
         .def("get_space", &df_helper::DF_Helper::get_space)
         .def("initialize", &df_helper::DF_Helper::initialize)
-        .def("add_transformation", &df_helper::DF_Helper::add_transformation)
+        .def("add_transformation", &df_helper::DF_Helper::add_transformation,
+             py::arg("name"), py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
         .def("transform", &df_helper::DF_Helper::transform)
         .def("clear_spaces", &df_helper::DF_Helper::clear_spaces)
         .def("clear_transformations", &df_helper::DF_Helper::clear_transformations)
-        .def("get_integral", take_string(&df_helper::DF_Helper::get_tensor));
+        .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor));
 }

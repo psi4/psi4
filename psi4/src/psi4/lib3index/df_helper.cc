@@ -105,7 +105,7 @@ void DF_Helper::AO_filename_maker(size_t i)
     file.append(".dat");
     AO_files_[name] = file;
 }
-void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2)
+void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, int i)
 {
     std::string pfile = "dfh.p";
     pfile.append(name);
@@ -120,7 +120,14 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
     std::tuple<std::string, std::string> files(pfile.c_str(), file.c_str());
     files_[name] = files;
 
-    std::tuple<size_t, size_t, size_t> sizes(a0, a1, a2);
+    std::tuple<size_t, size_t, size_t> sizes;
+    if(i==0 || direct_)
+        sizes = std::make_tuple(a0, a1, a2);
+    else if(i==1)
+        sizes = std::make_tuple(a1, a2, a0);
+    else if(i==2)
+        sizes = std::make_tuple(a1, a0, a2);
+    
     sizes_[pfile]=sizes;
     sizes_[ file]=sizes;
 }
@@ -787,7 +794,7 @@ void DF_Helper::prepare_metric()
     std::string filename = "metric";
     filename.append(".");
     filename.append(std::to_string(1.0));
-    filename_maker(filename, naux_, naux_, 1);
+    filename_maker(filename, naux_, naux_, 1, 0);
     metric_keys_.push_back(std::make_pair(1.0, filename));
 
     // store
@@ -829,7 +836,7 @@ std::string DF_Helper::compute_metric(double pow)
         std::string name = "metric";
         name.append(".");
         name.append(std::to_string(pow));
-        filename_maker(name, naux_, naux_, 1);
+        filename_maker(name, naux_, naux_, 1, 0);
         metric_keys_.push_back(std::make_pair(pow, name));
 
         // store
@@ -862,7 +869,6 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
                 error << "DF_Helper:contract_metric: not enough memory.";
                 throw PSIEXCEPTION(error.str().c_str());
             }    
-
             if(maxim<count)
                 maxim = count;
 
@@ -969,7 +975,7 @@ void DF_Helper::add_space(std::string key, SharedMatrix M)
     spaces_[key] = std::make_tuple(M, a1);
     sorted_spaces_.push_back(std::make_pair(key, a1));
 }
-void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2)
+void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2, std::string order)
 {
     if(spaces_.find(key1) == spaces_.end()){
         std::stringstream error;
@@ -981,11 +987,23 @@ void DF_Helper::add_transformation(std::string name, std::string key1, std::stri
         error << "DF_Helper:add_transformation: second space ("<< key2 <<"), is not in space list!";
         throw PSIEXCEPTION(error.str().c_str());
     }    
+    
+    int op;
+    if(!order.compare("Qpq"))
+        op = 0;
+    else if(!order.compare("pqQ"))
+        op = 1;
+    else if(!order.compare("pQq"))
+        op = 2;
+    else{
+        throw PSIEXCEPTION("Matt doesnt do exceptions.");
+    }
+        
 
     size_t a1 = std::get<1>(spaces_[key1]);
     size_t a2 = std::get<1>(spaces_[key2]);
-    filename_maker(name, naux_, a1, a2);
-    transf_[name] = std::make_tuple(key1, key2);
+    filename_maker(name, naux_, a1, a2, op);
+    transf_[name] = std::make_tuple(key1, key2, order);
 }
 void DF_Helper::clear_spaces()
 {
@@ -1352,34 +1370,59 @@ void DF_Helper::transform_disc() {
                     // Transpose in memory for convenient formats
                     size_t st1 = bsize * wsize;
                     size_t st2 = bsize * block_size;
+                    size_t st3 = wsize * block_size;
 
-                    if (bspace.compare(left) == 0) {  // (w|Qb)->(Q|bw)
+                    if (bspace.compare(left) == 0) { 
                         timer_on("DF_Helper~transform - transp");
-#pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
-                        for (size_t x = 0; x < block_size; x++) {
-                            for (size_t y = 0; y < bsize; y++) {
-                                for (size_t z = 0; z < wsize; z++) {
-                                    Np[x * st1 + y * wsize + z] = Fp[z * st2 + x * bsize + y];
+                        if(!std::get<2>(transf_[order_[count + k]]).compare("Qpq") || direct_){ // (w|Qb)->(Q|bw)
+                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
+                            for (size_t x = 0; x < block_size; x++) {
+                                for (size_t y = 0; y < bsize; y++) {
+                                    for (size_t z = 0; z < wsize; z++) {
+                                        Np[x * st1 + y * wsize + z] = Fp[z * st2 + x * bsize + y];
+                                    }
+                                }
+                            }
+                        } else if(!std::get<2>(transf_[order_[count + k]]).compare("pqQ")) { // (w|Qb)->(bw|Q)
+                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
+                            for (size_t x = 0; x < block_size; x++) {
+                                for (size_t y = 0; y < bsize; y++) {
+                                    for (size_t z = 0; z < wsize; z++) {
+                                        Np[y * st3 + z * block_size + x] = Fp[z * st2 + x * bsize + y];
+                                    }
                                 }
                             }
                         }
+                        // else do nothing ~~ AKA we want (b|Qw)
                         timer_off("DF_Helper~transform - transp");
                         timer_on("DF_Helper~transform - write ");
                         put_tensor(putf, Np, std::make_pair(begin, end),
-                                   std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1),
-                                   "ab");
+                                   std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1), "ab");
                         timer_off("DF_Helper~transform - write ");
                     } else {  // (w|Qb)->(Q|wb)
                         timer_on("DF_Helper~transform - transp");
-#pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
-                        for (size_t x = 0; x < block_size; x++) {
-                            for (size_t z = 0; z < wsize; z++) {
-#pragma omp simd
+                        if(!std::get<2>(transf_[order_[count + k]]).compare("Qpq") || direct_){ // (w|Qb)->(Q|wb)
+                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
+                            for (size_t x = 0; x < block_size; x++) {
+                                for (size_t z = 0; z < wsize; z++) {
+                                    #pragma omp simd
+                                    for (size_t y = 0; y < bsize; y++) {
+                                        Np[x * st1 + z * bsize + y] = Fp[z * st2 + x * bsize + y];
+                                    }
+                                }
+                            }
+                        } 
+                        else if(!std::get<2>(transf_[order_[count + k]]).compare("pqQ")) { // (w|Qb)->(wb|Q)
+                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
+                            for (size_t x = 0; x < block_size; x++) {
                                 for (size_t y = 0; y < bsize; y++) {
-                                    Np[x * st1 + z * bsize + y] = Fp[z * st2 + x * bsize + y];
+                                    for (size_t z = 0; z < wsize; z++) {
+                                        Np[z * st2 + y * block_size + x] = Fp[z * st2 + x * bsize + y];
+                                    }
                                 }
                             }
                         }
+                        // else do nothing ~~ AKA we want (w|Qb)
                         timer_off("DF_Helper~transform - transp");
                         timer_on("DF_Helper~transform - write ");
                         put_tensor(putf, Np, std::make_pair(begin, end),

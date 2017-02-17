@@ -96,7 +96,7 @@ public:
     SharedMatrix get_space(std::string key) {return std::get<0>(spaces_[key]);}
 
     // add transformation with name using two space keys
-    void add_transformation(std::string name, std::string key1, std::string key2);
+    void add_transformation(std::string name, std::string key1, std::string key2, std::string order = "Qpq");
 
     // invoke transformations
     void transform();
@@ -214,7 +214,7 @@ protected:
 
     // spaces and transformation maps
     std::map<std::string, std::tuple<SharedMatrix, size_t>> spaces_;
-    std::map<std::string, std::tuple<std::string, std::string>> transf_;
+    std::map<std::string, std::tuple<std::string, std::string, std::string>> transf_;
     std::map<std::string, std::vector<double>> transf_core_;
 
     // transformation machinery
@@ -256,7 +256,7 @@ protected:
     std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2);
+    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, int i);
     void AO_filename_maker(size_t i);
     void check_transformation_name(std::string);
     void check_transformation_tuple(std::string name, std::pair<size_t, size_t> t0, 
