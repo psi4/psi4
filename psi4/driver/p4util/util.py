@@ -78,7 +78,7 @@ def cubeprop(wfn, **kwargs):
     >>> E, wfn = energy('b3lyp', return_wfn=True)
     >>> cubeprop(wfn)
 
-    >>> # [2] Cube files for density (alpha, beta, total, spin) and four orbitals 
+    >>> # [2] Cube files for density (alpha, beta, total, spin) and four orbitals
     >>> #     (two alpha, two beta)
     >>> set cubeprop_tasks ['orbitals', 'density']
     >>> set cubeprop_orbitals [5, 6, -5, -6]
@@ -264,10 +264,11 @@ def compare_arrays(expected, computed, digits, label):
     except:
         raise TestComparisonError("Input objects do not have a shape attribute.")
 
-    if shape1 != shape2: 
+    if shape1 != shape2:
         TestComparisonError("Input shapes do not match.")
 
-    if not np.allclose(expected, computed, atol=digits):
+    tol = 10 ** (-digits)
+    if not np.allclose(expected, computed, atol=tol):
         message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
         raise TestComparisonError(message)
     success(label)
