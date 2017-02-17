@@ -26,14 +26,14 @@ get_property(_ill TARGET lapk PROPERTY INTERFACE_LINK_LIBRARIES)
 # <<  Examine library list for MKL-ness  >>
 foreach(_l IN LISTS LAPACK_LIBRARIES)
     if(${_l} MATCHES "mkl")
-        set(_isMKL "MKL " CACHE INTERNAL "")
+        set(_isMKL " MKL" CACHE INTERNAL "")
         target_compile_definitions(lapack INTERFACE -DUSING_LAPACK_MKL)
         break()
     endif()
 endforeach()
 
 list(GET _ill 0 _ill0)
-message(STATUS "${Cyan}Found ${_isMKL}LAPACK${ColourReset}: ${_ill0};...")
+message(STATUS "${Cyan}Found LAPACK${_isMKL}${ColourReset}: ${_ill0};...")
 
 unset(BLAS_LIBRARIES)
 unset(LAPACK_LIBRARIES)

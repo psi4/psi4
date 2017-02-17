@@ -42,7 +42,7 @@ Planning: how to configure Psi4 and invoke CMake
 script ``setup`` as a frontend to CMake, but this is no more, and
 ``cmake`` is now invoked directly. An abbreviated build guide can be found
 `within the source itself
-<https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L106>`_.
+<https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L13-L122>`_.
 
 CMake does a good job scanning your computer to locate libraries, header
 files, and executables needed for compilation. So it's very possible that
@@ -186,7 +186,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * :ref:`Python interpreter and headers <cmake:python>` (2.7 or 3.5) https://www.python.org/
 
-* CMake (3.1 or higher) http://www.cmake.org/download/
+* CMake (3.2 or higher) http://www.cmake.org/download/
 
 * NumPy http://www.numpy.org/ (needed at runtime, not buildtime)
 
@@ -305,7 +305,7 @@ GUI, which the developers have never looked at). However, the top half of
 the main CMakeLists.txt is a passable summary:
 
 .. literalinclude:: @SFNX_INCLUDE@CMakeLists.txt
-   :lines: 13-116
+   :lines: 13-122
 
 Note that external projects will have their own sets of build
 configuration options. Only the most-common user knobs of those are

@@ -1,5 +1,5 @@
-if(TARGET PCMSolver::PCMSolver)
-    set(sources_list psipcm.cc host_writer.cpp)
+if(TARGET PCMSolver::pcm)
+    set(sources_list psipcm.cc)
     psi4_add_module(lib psipcm sources_list mints)
-    target_link_libraries(psipcm PRIVATE PCMSolver::PCMSolver)
+    target_link_libraries(psipcm PRIVATE PCMSolver::pcm)
 endif()
