@@ -390,8 +390,6 @@ def process_pcm_command(matchobj):
     fp = open('pcmsolver.inp', 'w')
     fp.write(block)
     fp.close()
-    import pcm_placeholder
-    sys.path.append(pcm_placeholder.PCMSolver_PARSE_DIR)
     import pcmsolver
     pcmsolver.parse_pcm_input('pcmsolver.inp')
     return "" # The file has been written to disk; nothing needed in Psi4 input
