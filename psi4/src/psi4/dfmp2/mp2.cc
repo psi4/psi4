@@ -27,6 +27,7 @@
 
 #include "mp2.h"
 #include "corr_grad.h"
+#include "psi4/liboptions/liboptions_python.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
@@ -40,6 +41,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/psifiles.h"
+#include "psi4/libmints/extern.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/oeprop.h"
@@ -2799,6 +2801,18 @@ void RDFMP2::form_gradient()
         }
     }
     timer_off("Grad: V");
+
+    // If an external field exists, add it to the one-electron Hamiltonian
+    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    if (pyExtern) {
+        std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
+        if (external) {
+            gradient_terms.push_back("External Potential");
+            timer_on("Grad: External");
+            gradients_["External Potential"] = external->computePotentialGradients(basisset_, PAO);
+            timer_off("Grad: External");
+        }  // end external
+    }
 
     //gradients_["One-Electron"] = SharedMatrix(gradients_["Nuclear"]->clone());
     //gradients_["One-Electron"]->set_name("One-Electron Gradient");
