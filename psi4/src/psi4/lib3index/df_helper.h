@@ -101,14 +101,12 @@ public:
     // invoke transformations
     void transform();
 
-    // obtain entire transformed integral
-    void get_tensor(std::string name, SharedMatrix M);
-
-    // obtain block of transformed integral, however you want
-    void get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1);
-    void get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
+    // obtain transformed integral, however you want
+    void fill_tensor(std::string name, SharedMatrix M);
+    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1);
+    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2);
-    void get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
+    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
 
     // with SharedMatrix returns
@@ -243,9 +241,9 @@ protected:
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3, std::string op);
     void put_tensor(std::string file, double* b, const size_t start1,
       const size_t stop1, const size_t start2, const size_t stop2, std::string op);
-    void get_tensor(std::string file, double* b, std::pair<size_t, size_t> a1,
+    void get_tensor_(std::string file, double* b, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
-    void get_tensor(std::string file, double* b,  const size_t start1,
+    void get_tensor_(std::string file, double* b,  const size_t start1,
       const size_t stop1, const size_t start2, const size_t stop2);
 
     // AO file i/o machinery
@@ -261,6 +259,10 @@ protected:
     void filename_maker(std::string name, size_t a0, size_t a1, size_t a2);
     void AO_filename_maker(size_t i);
     void check_transformation_name(std::string);
+    void check_transformation_tuple(std::string name, std::pair<size_t, size_t> t0, 
+        std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
+    void check_transformation_matrix(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
+        std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
 
 }; // End DF Helper class
 

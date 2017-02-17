@@ -538,7 +538,7 @@ void DF_Helper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t 
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
-void DF_Helper::get_tensor(std::string file, double* b, std::pair<size_t, size_t> i0,
+void DF_Helper::get_tensor_(std::string file, double* b, std::pair<size_t, size_t> i0,
   std::pair<size_t, size_t> i1, std::pair<size_t, size_t> i2)
 {
     // collapse to 2D, assume file has form (i1 | i2 i3)
@@ -557,18 +557,18 @@ void DF_Helper::get_tensor(std::string file, double* b, std::pair<size_t, size_t
 
     // check contiguity (a2)
     if(A2==a2){
-        get_tensor(file, b, sta0, sto0, a2*sta1, a2*(sto1+1)-1);
+        get_tensor_(file, b, sta0, sto0, a2*sta1, a2*(sto1+1)-1);
     }
     else{ // loop (a0, a1)
         for(size_t j=0; j<a0; j++){
             for(size_t i=0; i<a1; i++){
-                get_tensor(file, &b[j*(a1*a2)+i*a2], sta0+j, sta0+j,
+                get_tensor_(file, &b[j*(a1*a2)+i*a2], sta0+j, sta0+j,
                   (i+sta1)*A2+sta2, (i+sta1)*A2+sta2+a2-1);
             }
         }
     }
 }
-void DF_Helper::get_tensor(std::string file, double* b, const size_t start1,
+void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1,
  const size_t stop1, const size_t start2, const size_t stop2)
 {
     size_t a0 = stop1-start1+1;
@@ -822,7 +822,7 @@ std::string DF_Helper::compute_metric(double pow)
         std::string filename = return_metfile(1.0);
 
         // get and compute
-        get_tensor(std::get<0>(files_[filename]), metp, 0, naux_-1, 0, naux_-1);
+        get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_-1, 0, naux_-1);
         metric->power(pow);
 
         // make new file
@@ -879,7 +879,7 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
         size_t bs = end-begin + 1;
 
         // get
-        get_tensor(getf, Mp, 0, a0-1, begin*a2, (end+1)*a2-1);
+        get_tensor_(getf, Mp, 0, a0-1, begin*a2, (end+1)*a2-1);
 
         // contract
         C_DGEMM('N', 'N', a0, bs*a2, a0, 1.0, metp, a0, Mp, bs*a2, 0.0, Fp, bs*a2);
@@ -907,7 +907,7 @@ void DF_Helper::contract_metric_AO(double* Mp)
     std::string filename = return_metfile(mpower_);
     std::vector<double> metric; metric.reserve(naux_*naux_);
     double* metp = metric.data();
-    get_tensor(std::get<0>(files_[filename]), metp, 0, naux_-1, 0, naux_-1);
+    get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_-1, 0, naux_-1);
 
     // Contract metric according to previously calculated scheme
     size_t count=0;
@@ -1424,7 +1424,7 @@ void DF_Helper::transform_disc() {
             metp = metric.data();
             timer_on("DF_Helper~transform - getmet");
             std::string mfilename = return_metfile(mpower_);
-            get_tensor(std::get<0>(files_[mfilename]), metp, 0, naux_ - 1, 0, naux_ - 1);
+            get_tensor_(std::get<0>(files_[mfilename]), metp, 0, naux_ - 1, 0, naux_ - 1);
             timer_off("DF_Helper~transform - getmet");
             timer_on("DF_Helper~direct contracts  ");
             for (itr = order_.begin(); itr != order_.end(); itr++)
@@ -1434,68 +1434,31 @@ void DF_Helper::transform_disc() {
     }
     outfile->Printf("transformations done\n");
 }
-void DF_Helper::check_transformation_name(std::string name){
-    // Does the file exist?
-    if (files_.find(name) == files_.end()) {
-        std::stringstream error;
-        error << "DF_Helper:get_tensor: " << name << " not found.";
-        throw PSIEXCEPTION(error.str().c_str());
-    }
+void DF_Helper::fill_tensor(std::string name, SharedMatrix M) {
+    fill_tensor(name, M, std::make_pair(0,0), std::make_pair(0,0), std::make_pair(0,0));
 }
-void DF_Helper::get_tensor(std::string name, SharedMatrix M) {
-
-    check_transformation_name(name);
-
-    std::string filename = std::get<1>(files_[name]);
-    size_t A0 = std::get<0>(sizes_[filename]);
-    size_t A1 = std::get<1>(sizes_[filename]) * std::get<2>(sizes_[filename]);
-
-    if (core_) {
-        double* Mp = M->pointer()[0];
-        double* Fp = &transf_core_[name][0];
-#pragma omp parallel num_threads(nthreads_)
-        for (size_t i = 0; i < A0; i++) {
-#pragma omp simd
-            for (size_t j = 0; j < A1; j++) {
-                Mp[i * A1 + j] = Fp[i * A1 + j];
-            }
-        }
-    } else {
-        size_t a0 = M->rowspi()[0];
-        size_t a1 = M->colspi()[0];
-        if (A0 != a0 && A1 != a1) {
-            outfile->Printf(
-                "incorrect size when obtaining %s integral. you gave me a SharedMatrix ",
-                name.c_str());
-            outfile->Printf("of size (%zu, %zu), but size is (%zu, %zu)\n", a0, a1, A0, A1);
-            exit(1);
-        }
-
-        double* b = M->pointer()[0];
-        get_tensor(filename, b, 0, A0 - 1, 0, A1 - 1);
-    }
+void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1) {
+    fill_tensor(name, M, a1, std::make_pair(0, 0), std::make_pair(0, 0));
 }
-void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1) {
-
-    check_transformation_name(name);
-
-    std::string filename = std::get<1>(files_[name]);
-    size_t A1 = std::get<1>(sizes_[filename]);
-    size_t A2 = std::get<2>(sizes_[filename]);
-    get_tensor(name, M, a1, std::make_pair(0, A1), std::make_pair(0, A2));
-}
-void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
+void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
                            std::pair<size_t, size_t> a2) {
-    check_transformation_name(name);
-
-    std::string filename = std::get<1>(files_[name]);
-    size_t A2 = std::get<2>(sizes_[filename]);
-    get_tensor(name, M, a1, a2, std::make_pair(0, A2));
+    fill_tensor(name, M, a1, a2, std::make_pair(0, 0));
 }
-void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
+void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
                            std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2) {
+    
+    std::string filename = std::get<1>(files_[name]);
+    if (std::get<1>(t0) == 0)
+        t0 = std::make_pair(0, std::get<0>(sizes_[filename]) - 1); 
+    if (std::get<1>(t1) == 0)
+        t1 = std::make_pair(0, std::get<1>(sizes_[filename]) - 1); 
+    if (std::get<1>(t2) == 0)
+        t2 = std::make_pair(0, std::get<2>(sizes_[filename]) - 1); 
+    
     check_transformation_name(name);
-
+    check_transformation_tuple(name, t0, t1, t2);
+    check_transformation_matrix(name, M, t0, t1, t2);
+    
     size_t sta0 = std::get<0>(t0);
     size_t sto0 = std::get<1>(t0);
     size_t sta1 = std::get<0>(t1);
@@ -1503,113 +1466,166 @@ void DF_Helper::get_tensor(std::string name, SharedMatrix M, std::pair<size_t, s
     size_t sta2 = std::get<0>(t2);
     size_t sto2 = std::get<1>(t2);
 
-    std::string filename = std::get<1>(files_[name]);
-    size_t M0 = std::get<0>(sizes_[filename]);
-    size_t M1 = std::get<1>(sizes_[filename]);
-    size_t M2 = std::get<2>(sizes_[filename]);
-
-    if (sto0 > M0 - 1) {
-        outfile->Printf("your axis 0 tuple goes out of bounds when getting integral: (%s)",
-                        name.c_str());
-        outfile->Printf(". you entered (%zu, %zu), but bounds are (%d, %zu)", sta0, sto0, 0,
-                        M0 - 1);
-        exit(1);
-    }
-
-    if (sto1 > M1 - 1) {
-        outfile->Printf("your axis 0 tuple goes out of bounds when getting integral: (%s)",
-                        name.c_str());
-        outfile->Printf(". you entered (%zu, %zu), but bounds are (%d, %zu)", sta1, sto1, 0,
-                        M1 - 1);
-        exit(1);
-    }
-
-    if (sto2 > M2 - 1) {
-        outfile->Printf("your axis 0 tuple goes out of bounds when getting integral: (%s)",
-                        name.c_str());
-        outfile->Printf(". you entered (%zu, %zu), but bounds are (%d, %zu)", sta2, sto2, 0,
-                        M2 - 1);
-        exit(1);
-    }
-
-    size_t A0 = sto0 - sta0 + 1;
-    size_t A1 = (sto1 - sta1 + 1) * (sto2 - sta2 + 1);
-
-    size_t a0 = M->rowspi()[0];
-    size_t a1 = M->colspi()[0];
-    if (A0 != a0 && A1 != a1) {
-        outfile->Printf(
-            "your matrix contridicts your tuple sizes when obtaining the (%s) integral. ",
-            name.c_str());
-        outfile->Printf(
-            "you gave me a matrix of size (%zu, %zu), but tuple sizes give (%zu, %zu)\n", a0, a1,
-            A0, A1);
-        exit(1);
-    }
-
-    double* b = M->pointer()[0];
-    get_tensor(filename, b, t0, t1, t2);
-}
-SharedMatrix DF_Helper::get_tensor(std::string name) {
-    check_transformation_name(name);
-
-    std::string filename = std::get<1>(files_[name]);
-    size_t A0 = std::get<0>(sizes_[filename]);
-    size_t A1 = std::get<1>(sizes_[filename]) * std::get<2>(sizes_[filename]);
-    SharedMatrix M(new Matrix("M", A0, A1));
+    size_t A0 = (sto0-sta0+1);
+    size_t A1 = (sto1-sta1+1);
+    size_t A2 = (sto2-sta2+1);
+    
     double* Mp = M->pointer()[0];
-
     if (core_) {
+
+        size_t a0 = std::get<0>(sizes_[filename]);
+        size_t a1 = std::get<1>(sizes_[filename]);
+        size_t a2 = std::get<2>(sizes_[filename]);
+
         double* Fp = &transf_core_[name][0];
-#pragma omp parallel num_threads(nthreads_)
+        #pragma omp parallel num_threads(nthreads_)
         for (size_t i = 0; i < A0; i++) {
-#pragma omp simd
             for (size_t j = 0; j < A1; j++) {
-                Mp[i * A1 + j] = Fp[i * A1 + j];
+                #pragma omp simd
+                for(size_t k = 0; k < A2; k++){
+                    Mp[i*A1*A2 + j*A2 + k] = Fp[(sta0+i)*a1*a2 + (sta1+j)*a1 + (sta2+k)];
+                }
             }
         }
-    } else
-        get_tensor(filename, Mp, 0, A0 - 1, 0, A1 - 1);
-
-    return M;
+    } else { get_tensor_(filename, Mp, t0, t1, t2); }
+    M->set_numpy_shape({(int)A0, (int)A1, (int)A2});
+}
+SharedMatrix DF_Helper::get_tensor(std::string name) {
+ return get_tensor(name, std::make_pair(0,0), std::make_pair(0,0), std::make_pair(0,0));
 }
 SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a1) {
-    check_transformation_name(name);
-
-    std::string file = std::get<1>(files_[name]);
-    size_t A0 = std::get<1>(a1) - std::get<0>(a1) + 1;
-    size_t A1 = std::get<1>(sizes_[file]);
-    size_t A2 = std::get<2>(sizes_[file]);
-    SharedMatrix M(new Matrix("M", A0, A1 * A2));
-    get_tensor(name, M, a1, std::make_pair(0, A1), std::make_pair(0, A2));
-
-    return M;
+    
+ return get_tensor(name, a1, std::make_pair(0, 0), std::make_pair(0, 0));
 }
 SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a1,
                                    std::pair<size_t, size_t> a2) {
+ return get_tensor(name, a1, a2, std::make_pair(0, 0));
+}
+SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> t0,
+                                   std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2) {
+    
+    std::string filename = std::get<1>(files_[name]);
+    if (std::get<1>(t0) == 0)
+        t0 = std::make_pair(0, std::get<0>(sizes_[filename]) - 1); 
+    if (std::get<1>(t1) == 0)
+        t1 = std::make_pair(0, std::get<1>(sizes_[filename]) - 1); 
+    if (std::get<1>(t2) == 0)
+        t2 = std::make_pair(0, std::get<2>(sizes_[filename]) - 1); 
+    
     check_transformation_name(name);
+    check_transformation_tuple(name, t0, t1, t2);
+   
+    size_t sta0 = std::get<0>(t0);
+    size_t sto0 = std::get<1>(t0);
+    size_t sta1 = std::get<0>(t1);
+    size_t sto1 = std::get<1>(t1);
+    size_t sta2 = std::get<0>(t2);
+    size_t sto2 = std::get<1>(t2);
 
-    std::string file = std::get<1>(files_[name]);
-    size_t A0 = std::get<1>(a1) - std::get<0>(a1) + 1;
-    size_t A1 = std::get<1>(a2) - std::get<0>(a2) + 1;
-    size_t A2 = std::get<2>(sizes_[file]);
-    SharedMatrix M(new Matrix("M", A0, A1 * A2));
-    get_tensor(name, M, a1, a2, std::make_pair(0, A2));
+    size_t A0 = (sto0-sta0+1);
+    size_t A1 = (sto1-sta1+1);
+    size_t A2 = (sto2-sta2+1);
+    
+    SharedMatrix M(new Matrix("M", A0, A1*A2));
+    double* Mp = M->pointer()[0];
+    
+    if (core_) {
 
+        size_t a0 = std::get<0>(sizes_[filename]);
+        size_t a1 = std::get<1>(sizes_[filename]);
+        size_t a2 = std::get<2>(sizes_[filename]);
+
+        double* Fp = &transf_core_[name][0];
+        #pragma omp parallel num_threads(nthreads_)
+        for (size_t i = 0; i < A0; i++) {
+            for (size_t j = 0; j < A1; j++) {
+                #pragma omp simd
+                for(size_t k = 0; k < A2; k++){
+                    Mp[i*A1*A2 + j*A2 + k] = Fp[(sta0+i)*a1*a2 + (sta1+j)*a1 + (sta2+k)];
+                }
+            }
+        }
+    } else { get_tensor_(filename, Mp, t0, t1, t2); }
+    M->set_numpy_shape({(int)A0, (int)A1, (int)A2});
     return M;
 }
-SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> a1,
-                                   std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3) {
-    check_transformation_name(name);
-
-    std::string file = std::get<1>(files_[name]);
-    size_t A0 = std::get<1>(a1) - std::get<0>(a1) + 1;
-    size_t A1 = std::get<1>(a2) - std::get<0>(a2) + 1;
-    size_t A2 = std::get<1>(a3) - std::get<0>(a3) + 1;
-    SharedMatrix M(new Matrix("M", A0, A1 * A2));
-    get_tensor(name, M, a1, a2, a3);
-
-    return M;
+void DF_Helper::check_transformation_name(std::string name){
+    if (files_.find(name) == files_.end()) {
+        std::stringstream error;
+        error << "DF_Helper:get_tensor: " << name << " not found.";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
 }
+void DF_Helper::check_transformation_matrix(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
+    std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2)
+{
+    size_t A0 = std::get<1>(t0) - std::get<0>(t1) + 1;
+    size_t A1 =(std::get<1>(t1) - std::get<0>(t1) + 1) * (std::get<1>(t2) - std::get<0>(t2) + 1);
+
+    size_t a0 = M->rowspi()[0];
+    size_t a1 = M->colspi()[0];
+    
+    if (A0 != a0 && A1 != a1) {
+        std::stringstream error;
+        error << "DF_Helper:get_tensor: your matrix contridicts your tuple sizes when obtaining the" <<
+            name << "integral.  ";
+        error << "you gave me a matrix of size: (" << a0 << "," << a1 << "), but tuple sizes give:(" <<
+            A0 << "," << A1 << ")";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+}
+void DF_Helper::check_transformation_tuple(std::string name, std::pair<size_t, size_t> t0, 
+    std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2)
+{
+    size_t sta0 = std::get<0>(t0);
+    size_t sto0 = std::get<1>(t0);
+    size_t sta1 = std::get<0>(t1);
+    size_t sto1 = std::get<1>(t1);
+    size_t sta2 = std::get<0>(t2);
+    size_t sto2 = std::get<1>(t2);
+    std::string filename = std::get<1>(files_[name]);
+
+    if (sta0 > sto0) {
+        std::stringstream error;
+        error << "your axis 0 tuple has a larger start index: " << sta0 <<
+            " than its stop index: " << sto0;
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    if (sta1 > sto1) {
+        std::stringstream error;
+        error << "your axis 1 tuple has a larger start index: " << sta1 <<
+            " than its stop index: " << sto1;
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    if (sta2 > sto2) {
+        std::stringstream error;
+        error << "your axis 2 tuple has a larger start index: " << sta2 <<
+            " than its stop index: " << sto2;
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    size_t M0 = std::get<0>(sizes_[filename]);
+    if (sto0 > M0 - 1) {
+        std::stringstream error;
+        error << "your axis 0 tuple goes out of bounds when getting integral: " << name;
+        error << ". you entered ("<< sto0 << "), but bounds is ("<< M0-1 << ").";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    size_t M1 = std::get<1>(sizes_[filename]);
+    if (sto1 > M1 - 1) {
+        std::stringstream error;
+        error << "your axis 1 tuple goes out of bounds when getting integral: " << name;
+        error << ". you entered ("<< sto1 << "), but bounds is ("<< M1-1 << ").";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    size_t M2 = std::get<2>(sizes_[filename]);
+    if (sto2 > M2 - 1) {
+        std::stringstream error;
+        error << "your axis 2 tuple goes out of bounds when getting integral: " << name;
+        error << ". you entered ("<< sto2 << "), but bounds is ("<< M2-1 << ").";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+}
+
+
 }
 }  // End namespaces
