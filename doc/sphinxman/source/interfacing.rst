@@ -52,10 +52,11 @@ platform capabilities, *etc*.
    gcp
    gdma
    libint
-   pcmsolver
    molden
    mrcc
+   pcmsolver
    plugin_v2rdm_casscf
+   simint
 
 .. comment * MPI4Py
 .. comment * MADNESS
