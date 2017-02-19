@@ -1,4 +1,4 @@
-if(ENABLE_Ambit OR ENABLE_CheMPS2)
+if(ENABLE_ambit OR ENABLE_CheMPS2)
     project(TargetHDF5)
     set(PN ${PROJECT_NAME})
 

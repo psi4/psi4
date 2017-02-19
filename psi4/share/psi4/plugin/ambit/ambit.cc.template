@@ -38,7 +38,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 
-//#ifndef HAVE_AMBIT
+//#ifndef USING_ambit
 //#error Psi4 was not compiled with Ambit support.
 //#endif
 

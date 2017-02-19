@@ -30,8 +30,8 @@ if(${ENABLE_ambit})
                        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       #-DSTATIC_ONLY=${_a_only}
-                       #-DSHARED_ONLY=${_so_only}
+                       -DSTATIC_ONLY=${_a_only}
+                       -DSHARED_ONLY=${_so_only}
                        -DENABLE_OMP=${ENABLE_OPENMP}
                        #-DENABLE_VECTORIZATION=${ENABLE_VECTORIZATION}
                        #-DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
@@ -47,6 +47,7 @@ if(${ENABLE_ambit})
                        -DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}/psi4
                        -DPSI4_BINARY_DIR=${CMAKE_BINARY_DIR}
                        -DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
+                       -DENABLE_CXX11_SUPPORT=ON
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}

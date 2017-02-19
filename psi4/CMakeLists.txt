@@ -32,7 +32,7 @@ get_property(_illb TARGET tgt::blas PROPERTY INTERFACE_LINK_LIBRARIES)
 list(APPEND _addons ${_ill} ${_illb})
 message(STATUS "${Cyan}Using LAPACK${_isMKL}${ColourReset}: ${_ill0};...")
 
-if(ENABLE_Ambit OR ENABLE_CheMPS2)
+if(ENABLE_ambit OR ENABLE_CheMPS2)
     find_package(TargetHDF5 CONFIG REQUIRED)
     get_property(_ill TARGET tgt::hdf5 PROPERTY INTERFACE_LINK_LIBRARIES)
     list(GET _ill 0 _ill0)
