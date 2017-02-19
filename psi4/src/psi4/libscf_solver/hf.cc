@@ -1851,12 +1851,11 @@ void HF::print_energies()
 
     Process::environment.globals["SCF ITERATIONS"] = iteration_;
 
-#ifdef USING_libefp
     // Only print this alert if we are actually doing EFP or PCM
     if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
         outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
     }
-#endif
+
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
