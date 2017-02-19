@@ -203,7 +203,7 @@ endif()
 endmacro(optional_plugin plugin_name test_names)
 
 #Macro for adding a skeleton plugin
-macro(add_skeleton_plugin PLUG EXTRA_FLAGS)
+macro(add_skeleton_plugin PLUG TEMPLATE TESTLABELS)
     set(CCSD "${CMAKE_CURRENT_SOURCE_DIR}")
     set(CCBD "${CMAKE_CURRENT_BINARY_DIR}")
     set(PSIEXE ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/psi4)
@@ -212,7 +212,7 @@ add_custom_target(plugin_${PLUG}
     ALL
     DEPENDS psi4-core
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/${PLUG}
-    COMMAND ${PSIEXE} --plugin-name ${PLUG} ${EXTRA_FLAGS}
+    COMMAND ${PSIEXE} --plugin-name ${PLUG} --plugin-template ${TEMPLATE}
     COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" cmake -C ${STAGED_INSTALL_PREFIX}/share/cmake/psi4/psi4PluginCache.cmake "-DCMAKE_PREFIX_PATH=${DIR_2_PASS}" .
     COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" ${CMAKE_MAKE_PROGRAM}
     COMMAND ${CMAKE_COMMAND} -E create_symlink ${CCBD}/${PLUG}/input.dat ${CCSD}/input.dat
@@ -222,7 +222,7 @@ add_custom_target(plugin_${PLUG}
     COMMENT "Build ${PLUG} example plugin"
     VERBATIM)
 include(TestingMacros)
-add_regression_test(${PLUG} "${test_names}")
-endmacro(add_skeleton_plugin PLUG EXTRA_FLAGS)
+add_regression_test(${PLUG} "${TESTLABELS}")
+endmacro(add_skeleton_plugin)
 
 
