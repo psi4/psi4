@@ -42,7 +42,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, PCMSolver, pybind11
+#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, PCMSolver, pybind11, simint
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -74,7 +74,7 @@ option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_libefp "Enables LIBEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of libint (requires Fortran)" OFF)
-option(ENABLE_simint "Enables use of Simint two-electron integral library")
+option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 # These options are relevant to pasture
@@ -96,8 +96,6 @@ endif()
 if(ENABLE_erd)
     message(WARNING "ERD will build, link, and run in Psi4 just fine. However, it has not been hooked into Psi4 in all roles, notably gradients, LRC DFT energies, and ESP. So upon activating through ``set integral_package erd``, known failures will be caught and halted, but perhaps other types not tested and identified will give *wrong* answers. Consider this your warning.")
 endif()
-
-set(SIMINT_VECTOR "sse" CACHE BOOL "Vectorization type to use for simint")
 
 ############################  Options: Build How?  #############################
 include(psi4OptionsTools)
@@ -127,6 +125,7 @@ option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR t
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
+option_with_default(SIMINT_VECTOR "Vectorization type to use for simint" sse)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
