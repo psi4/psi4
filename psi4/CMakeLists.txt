@@ -116,7 +116,11 @@ endif ()
 
 if(${ENABLE_simint})
     find_package(simint CONFIG REQUIRED)
-    message(STATUS "Found simint: ${simint_DIR}")
+    get_property(_loc TARGET simint::simint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using simint${ColourReset}: ${_loc} (version ${simint_VERSION})")
+else()
+    message(STATUS "Disabled simint")
 endif()
 
 if(APPLE)

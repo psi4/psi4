@@ -217,6 +217,13 @@ if(ENABLE_PCMSolver)
     message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
 
+# <<<  SIMINT  >>>
+
+if(ENABLE_simint)
+    add_subdirectory(simint)
+    message(STATUS "Adding test cases: Psi4 + simint")
+endif()
+
 # plugin regime
 if(ENABLE_PLUGIN_TESTING)
     add_subdirectory(plugins)
