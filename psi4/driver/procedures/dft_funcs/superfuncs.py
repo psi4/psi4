@@ -161,7 +161,7 @@ def build_superfunctional(alias, restricted):
         raise KeyError("SCF: Functional (%s) not found!" % alias)
 
 
-    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup.is_x_lrc() or sup.is_c_lrc()):
+    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
 
     # Set options
