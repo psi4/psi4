@@ -27,6 +27,7 @@
 
 #include "df_helper.h"
 
+#include "psi4/psi4-dec.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libmints/integral.h"
@@ -94,7 +95,8 @@ void DF_Helper::prepare_blocking()
 }
 void DF_Helper::AO_filename_maker(size_t i)
 {
-    std::string name = "dfh.AO";
+    std::string name = PSIOManager::shared_object()->get_default_path();
+    name.append("dfh.AO");
     name.append(std::to_string(i));
     AO_names_.push_back(name);
     std::string file = name;
@@ -105,7 +107,7 @@ void DF_Helper::AO_filename_maker(size_t i)
     file.append(".dat");
     AO_files_[name] = file;
 }
-void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2, int i)
+void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2)
 {
     std::string pfile = "dfh.p";
     pfile.append(name);
@@ -117,22 +119,22 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
     std::string file = pfile;
     file.erase(4, 1);
 
-    std::tuple<std::string, std::string> files(pfile.c_str(), file.c_str());
-    files_[name] = files;
+    std::string scratch = PSIOManager::shared_object()->get_default_path();
+    std::string pfilename = scratch;
+    pfilename.append(pfile);
+    std::string  filename = scratch;
+    filename.append(file);
 
-    std::tuple<size_t, size_t, size_t> sizes;
-    if(i==0 || direct_)
-        sizes = std::make_tuple(a0, a1, a2);
-    else if(i==1)
-        sizes = std::make_tuple(a1, a2, a0);
-    else if(i==2)
-        sizes = std::make_tuple(a1, a0, a2);
+    std::tuple<std::string, std::string> files(pfilename.c_str(), filename.c_str());
+    files_[name] = files;
     
-    sizes_[pfile]=sizes;
-    sizes_[ file]=sizes;
+    std::tuple<size_t, size_t, size_t> sizes = std::make_tuple(a0, a1, a2);
+    sizes_[pfilename]=sizes;
+    sizes_[ filename]=sizes;
 }
 void DF_Helper::initialize()
 {
+    outfile->Printf("\n\n    ==> DF_Helper: initialize() <==\n\n");
     timer_on("DF_Helper~-- build-------   ");
     if(method_.compare("DIRECT") && method_.compare("STORE")){
         std::stringstream error;
@@ -140,7 +142,13 @@ void DF_Helper::initialize()
         throw PSIEXCEPTION(error.str().c_str());
     }        
 
-    outfile->Printf("nao_: %zu, naux_: %zu, cutoff: %f\n", nao_, naux_, cutoff_);
+    outfile->Printf("      nao           = %zu\n", nao_);
+    outfile->Printf("      naux          = %zu\n", naux_);
+    outfile->Printf("      Scwarz cutoff = %E\n", cutoff_);
+    outfile->Printf("      mem (doubles) = %zu\n", memory_);
+    outfile->Printf("      method        = %s\n", method_.c_str());
+    outfile->Printf("      core?         = %d\n", (int)core_);
+    outfile->Printf("      hold met?     = %d\n", (int)hold_met_);
 
     direct_ = (!method_.compare("DIRECT") ? true : false);
     prepare_sparsity();
@@ -168,6 +176,7 @@ void DF_Helper::initialize()
     }
 
     timer_off("DF_Helper~-- build-------   ");
+    outfile->Printf("\n\n    ==> DF_Helper: initialize() <==\n\n");
 }
 void DF_Helper::prepare_sparsity()
 {
@@ -312,7 +321,7 @@ void DF_Helper::prepare_AO()
     size_t jump = 0;
     size_t steps = psteps_.size();
     timer_on("DF_Helper~AO construction   ");
-    outfile->Printf("\n--Begin AO Blocked Construction--\n");
+    outfile->Printf("\n    ==> Begin AO Blocked Construction <==\n\n");
     for(size_t i=0; i<steps; i++){
 
         size_t start = std::get<0>(psteps_[i]);
@@ -331,7 +340,7 @@ void DF_Helper::prepare_AO()
         put_tensor_AO(putf, Mp, size, jump, "ab");
         jump += size;
     }
-    outfile->Printf("--End AO Blocked Construction----\n");
+    outfile->Printf("\n    ==> End AO Blocked Construction <==");
     timer_off("DF_Helper~AO construction   ");
     timer_on("DF_Helper~metric contraction");
     contract_metric_AO(Mp);
@@ -399,11 +408,17 @@ std::pair<size_t, size_t> DF_Helper::shell_blocks(const size_t mem, size_t max,
                 error << "DF_Helper: not enough memory for AO integral blocking!";
                 throw PSIEXCEPTION(error.str().c_str());
             }        
+            if(i == shell_tots-1)
+                b.push_back(std::make_pair(i-count+1, i));
+            else{
+                total -= current;
+                b.push_back(std::make_pair(i-count+1, i-1));
+                i--;
+            }                
             if(largest<total){
                 largest=total;
                 block_size=tmpbs;
             }
-            b.push_back(std::make_pair(i-count+1, i));
             count=0;
             total=0;
             tmpbs=0;
@@ -439,7 +454,7 @@ void DF_Helper::put_tensor(std::string file, double* b, std::pair<size_t, size_t
 {
     // collapse to 2D, assume file has form (i1 | i2 i3)
     size_t A2 = std::get<2>(sizes_[file]);
-
+    
     size_t sta0 = std::get<0>(i0);
     size_t sto0 = std::get<1>(i0);
     size_t sta1 = std::get<0>(i1);
@@ -491,7 +506,6 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1,
     else
     {
         for(size_t i=start1; i<stop1; i++){
-
             // write
             size_t s = fwrite(&Mp[i*a1], sizeof(double), a1, fp);
             if(!s){
@@ -499,11 +513,9 @@ void DF_Helper::put_tensor(std::string file, double* Mp, const size_t start1,
                 error << "DF_Helper:put_tensor: write error";
                 throw PSIEXCEPTION(error.str().c_str());
             }
-
             // advance stream
             fseek(fp, st*sizeof(double), SEEK_CUR);
         }
-
         // manual last one
         size_t s = fwrite(&Mp[(a0-1)*a1], sizeof(double), a1, fp);
         if(!s){ 
@@ -548,8 +560,12 @@ void DF_Helper::get_tensor_AO(std::string file, double* Mp, size_t size, size_t 
 void DF_Helper::get_tensor_(std::string file, double* b, std::pair<size_t, size_t> i0,
   std::pair<size_t, size_t> i1, std::pair<size_t, size_t> i2)
 {
+    // has this integral been transposed?
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(file) != tsizes_.end() ? tsizes_[file] : sizes_[file]);
+    
     // collapse to 2D, assume file has form (i1 | i2 i3)
-    size_t A2 = std::get<2>(sizes_[file]);
+    size_t A2 = std::get<2>(sizes);
 
     size_t sta0 = std::get<0>(i0);
     size_t sto0 = std::get<1>(i0);
@@ -581,8 +597,12 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1,
     size_t a0 = stop1-start1+1;
     size_t a1 = stop2-start2+1;
 
-    size_t A0 = std::get<0>(sizes_[file]);
-    size_t A1 = std::get<1>(sizes_[file])*std::get<2>(sizes_[file]);
+    // has this integral been transposed?
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(file) != tsizes_.end() ? tsizes_[file] : sizes_[file]);
+    
+    size_t A0 = std::get<0>(sizes);
+    size_t A1 = std::get<1>(sizes)*std::get<2>(sizes);
     size_t st = A1-a1;
 
     // check stream
@@ -610,7 +630,6 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1,
                 error << "DF_Helper:get_tensor: read error";
                 throw PSIEXCEPTION(error.str().c_str());
             }
-
             // advance stream
             s =fseek(fp, st*sizeof(double), SEEK_CUR);
             if(s){ 
@@ -619,7 +638,6 @@ void DF_Helper::get_tensor_(std::string file, double* b, const size_t start1,
                 throw PSIEXCEPTION(error.str().c_str());
             }
         }
-
         // manual last one
         size_t s = fread(&b[(a0-1)*a1], sizeof(double), a1, fp);
         if(!s){ 
@@ -688,7 +706,7 @@ void DF_Helper::compute_AO_p(const size_t start, const size_t stop, double* Mp, 
     size_t   end = pshell_aggs_[stop+1]-1;
     size_t block_size = end-begin+1;
     size_t startind = big_skips_[begin];
-    outfile->Printf("MU shell: (%zu, %zu)", start, stop);
+    outfile->Printf("      MU shell: (%zu, %zu)", start, stop);
     outfile->Printf(", nao index: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
     // prepare eri buffers
@@ -794,7 +812,7 @@ void DF_Helper::prepare_metric()
     std::string filename = "metric";
     filename.append(".");
     filename.append(std::to_string(1.0));
-    filename_maker(filename, naux_, naux_, 1, 0);
+    filename_maker(filename, naux_, naux_, 1);
     metric_keys_.push_back(std::make_pair(1.0, filename));
 
     // store
@@ -836,7 +854,7 @@ std::string DF_Helper::compute_metric(double pow)
         std::string name = "metric";
         name.append(".");
         name.append(std::to_string(pow));
-        filename_maker(name, naux_, naux_, 1, 0);
+        filename_maker(name, naux_, naux_, 1);
         metric_keys_.push_back(std::make_pair(pow, name));
 
         // store
@@ -854,7 +872,6 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
     size_t a1 = std::get<1>(sizes_[getf]);
     size_t a2 = std::get<2>(sizes_[getf]);
 
-    size_t cost2 = naux_*naux_;
     size_t count = 0;
     size_t maxim = 0;
 
@@ -862,8 +879,7 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
     std::vector<std::pair<size_t, size_t>> steps;
     for(size_t i=0; i<a1; i++){
         count++;
-        if(tots<cost2+count*a0*a2 || i==a1-1){
-
+        if(tots<count*a0*a2 || i==a1-1){
             if(count==1 && i!=a1-1){
                 std::stringstream error;
                 error << "DF_Helper:contract_metric: not enough memory.";
@@ -871,15 +887,21 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
             }    
             if(maxim<count)
                 maxim = count;
-
-            steps.push_back(std::make_pair(i-count+1, i));
+            
+            if(i == a1-1)
+                steps.push_back(std::make_pair(i-count+1, i));
+            else{
+                steps.push_back(std::make_pair(i-count+1, i-1));
+                i--;
+            }
             count=0;
         }
     }
 
+    std::string op = "wb";
     // contract in steps
     for(size_t i=0; i<steps.size(); i++){
-
+        
         size_t begin = std::get<0>(steps[i]);
         size_t end   = std::get<1>(steps[i]);
         size_t bs = end-begin + 1;
@@ -891,7 +913,7 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
         C_DGEMM('N', 'N', a0, bs*a2, a0, 1.0, metp, a0, Mp, bs*a2, 0.0, Fp, bs*a2);
 
         // put
-        std::string op = ( i? "rb+" : "wb");
+        //std::string op = ( i? "rb+" : "wb");
         put_tensor(putf, Fp, 0, a0-1, begin*a2, (end+1)*a2-1, op);
     }
 }
@@ -967,13 +989,16 @@ void DF_Helper::add_space(std::string key, SharedMatrix M)
         throw PSIEXCEPTION(error.str().c_str());
     }    
     else if(spaces_.find(key) != spaces_.end()){
-        std::stringstream error;
-        error << "DF_Helper:add_space: illegal space ("<< key <<"), already in list! (call clear_spaces!)";
-        throw PSIEXCEPTION(error.str().c_str());
+        if(a1 != std::get<1>(spaces_[key])){
+            std::stringstream error;
+            error << "DF_Helper:add_space: illegal space ("<< key <<"), new space has incorrect dimension!";
+            throw PSIEXCEPTION(error.str().c_str());
+        }
     }    
+    else
+        sorted_spaces_.push_back(std::make_pair(key, a1));
 
     spaces_[key] = std::make_tuple(M, a1);
-    sorted_spaces_.push_back(std::make_pair(key, a1));
 }
 void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2, std::string order)
 {
@@ -999,21 +1024,60 @@ void DF_Helper::add_transformation(std::string name, std::string key1, std::stri
         throw PSIEXCEPTION("Matt doesnt do exceptions.");
     }
         
-
     size_t a1 = std::get<1>(spaces_[key1]);
     size_t a2 = std::get<1>(spaces_[key2]);
-    filename_maker(name, naux_, a1, a2, op);
+    filename_maker(name, naux_, a1, a2);
     transf_[name] = std::make_tuple(key1, key2, order);
 }
-void DF_Helper::clear_spaces()
+void DF_Helper::clear()
 {
-    outfile->Printf("\n clearing spaces.. \n");
+    outfile->Printf("\n clearing everything (spaces, integrals)! \n");
+    
+    // clear spaces
     spaces_.clear();
     sorted_spaces_.clear();
-}
-void DF_Helper::clear_transformations()
-{
-    outfile->Printf("\n clearing transformations.. \n");
+    order_.clear();
+    bspace_.clear();
+    strides_.clear();    
+
+    // no ordering
+    ordered_ = false;
+    once_ = false;
+
+    std::string left;
+    std::string right;
+    
+    for(auto& kv : transf_){
+        
+        left  = std::get<0>(files_[kv.first]);
+        right = std::get<1>(files_[kv.first]);
+        
+        // close streams
+        if(!core_){
+            if(direct_)
+                fclose(file_status_[left].fp);
+            fclose(file_status_[right].fp);
+        }   
+
+        // delete stream holders
+        if(!core_){
+            if(direct_)
+                file_status_.erase(left);
+            file_status_.erase(right);
+        }        
+
+        // delete file holders, sizes
+        sizes_.erase(std::get<0>(files_[kv.first]));
+        sizes_.erase(std::get<1>(files_[kv.first]));
+        files_.erase(kv.first);
+    }   
+   
+    // tranposes too 
+    tsizes_.clear();
+    
+    // what transformations?
+    if(core_)
+        transf_core_.clear();
     transf_.clear();
 }
 std::pair<size_t, size_t> DF_Helper::identify_order()
@@ -1061,29 +1125,30 @@ std::pair<size_t, size_t> DF_Helper::identify_order()
         if(st>0) {strides_.push_back(st);}
     }
     print_order();
+    ordered_ = true;
 return std::make_pair(largest, maximum);
 }
 void DF_Helper::print_order()
 {
     size_t o = order_.size();
     size_t b = bspace_.size();
-    outfile->Printf("\n--Begin Transformation Information--\n");
-    outfile->Printf("Transformation order:\n");
+    outfile->Printf("\n     ==> DF_Helper:--Begin Transformations Information <==\n\n");
+    outfile->Printf("   Transformation order:\n");
     for(size_t i=0; i<o; i++){
         outfile->Printf("         %s: (%s, %s)\n", order_[i].c_str(),
           std::get<0>(transf_[order_[i]]).c_str(),std::get<1>(transf_[order_[i]]).c_str());
     }
-    outfile->Printf("\nBest Spaces:\n");
+    outfile->Printf("\n    Best Spaces:\n");
     for(size_t i=0; i<b; i++){
         outfile->Printf("         (space: %s, size: %zu)\n", bspace_[i].c_str(), std::get<1>(spaces_[bspace_[i]]));
     }
-    outfile->Printf("\nTransformation strides: ");
+    outfile->Printf("\n    Transformation strides: ");
     for(size_t i=0; i<b; i++){
         outfile->Printf("%zu", strides_[i]);
         if(i<b-1)
             outfile->Printf(", ");
     }
-    outfile->Printf("\n--End Transformation Information----\n");
+    outfile->Printf("\n\n     ==> DF_Helper:--End Transformations Information <==\n\n");
 }
 void DF_Helper::transform()
 {
@@ -1093,8 +1158,13 @@ void DF_Helper::transform()
 }
 void DF_Helper::transform_core()
 {
-    outfile->Printf("\n--Begin Transformations (core)--\n");
-    identify_order();
+    if(!ordered_)
+        identify_order();
+    
+    outfile->Printf("\n     ==> DF_Helper:--Begin Transformations (core)<==\n\n");
+    
+    // reset tranposes
+    tsizes_.clear();
 
     // determine largest buffers needed
     size_t wMO  = std::get<1>(sorted_spaces_[sorted_spaces_.size()-1]);
@@ -1233,24 +1303,32 @@ void DF_Helper::transform_core()
         }
         count += strides_[i];
     }
-    outfile->Printf("\n--End Transformations (core)--\n");
+    outfile->Printf("\n     ==> DF_Helper:--End Transformations (core)<==\n\n");
 }
 
 void DF_Helper::transform_disc() {
-    outfile->Printf("\n--Begin Transformations (disc)--\n");
-    std::pair<size_t, size_t> info = identify_order();
+    
+    if(!ordered_)
+        info_ = identify_order();
+    
+    outfile->Printf("\n     ==> DF_Helper:--Begin Transformations (disc)<==\n\n");
+
+    // reset transposes
+    tsizes_.clear();
 
     // determine largest buffers needed
     size_t tots = std::get<1>(Qlargest_);
-    size_t wMO = std::get<0>(info);
-    size_t max = std::get<1>(info);
+    size_t wMO = std::get<0>(info_);
+    size_t max = std::get<1>(info_);
     wMO_ = wMO;
 
     // prep stream, blocking
     if (!direct_)
         stream_check(AO_files_[AO_names_[1]], "rb");
-    else
+    else{
+        Qsteps_.clear();
         Qlargest_ = shell_blocks(memory_, max, 0, Qshells_, Qsteps_);
+    }
 
     timer_on("DF_Helper~transform - setup ");
     // enhance cache use
@@ -1305,7 +1383,7 @@ void DF_Helper::transform_disc() {
             size_t block_size = end - begin + 1;
 
             // print step info
-            outfile->Printf("Qshell: (%zu, %zu)", start, stop);
+            outfile->Printf("      Qshell: (%zu, %zu)", start, stop);
             outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
             // get AO chunk according to directive
@@ -1366,75 +1444,51 @@ void DF_Helper::transform_disc() {
                     // setup putf
                     std::string putf = (!direct_ ? std::get<1>(files_[order_[count + k]])
                                                  : std::get<0>(files_[order_[count + k]]));
+                    // fancy operations?
+                    std::string op = ( j ? "ab" : "wb");
 
                     // Transpose in memory for convenient formats
                     size_t st1 = bsize * wsize;
                     size_t st2 = bsize * block_size;
                     size_t st3 = wsize * block_size;
 
-                    if (bspace.compare(left) == 0) { 
+                    if (bspace.compare(left) == 0) { // (w|Qb)->(Q|bw) 
                         timer_on("DF_Helper~transform - transp");
-                        if(!std::get<2>(transf_[order_[count + k]]).compare("Qpq") || direct_){ // (w|Qb)->(Q|bw)
-                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
-                            for (size_t x = 0; x < block_size; x++) {
-                                for (size_t y = 0; y < bsize; y++) {
-                                    for (size_t z = 0; z < wsize; z++) {
-                                        Np[x * st1 + y * wsize + z] = Fp[z * st2 + x * bsize + y];
-                                    }
-                                }
-                            }
-                        } else if(!std::get<2>(transf_[order_[count + k]]).compare("pqQ")) { // (w|Qb)->(bw|Q)
-                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
-                            for (size_t x = 0; x < block_size; x++) {
-                                for (size_t y = 0; y < bsize; y++) {
-                                    for (size_t z = 0; z < wsize; z++) {
-                                        Np[y * st3 + z * block_size + x] = Fp[z * st2 + x * bsize + y];
-                                    }
+                        #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
+                        for (size_t x = 0; x < block_size; x++) {
+                            for (size_t y = 0; y < bsize; y++) {
+                                for (size_t z = 0; z < wsize; z++) {
+                                    Np[x * st1 + y * wsize + z] = Fp[z * st2 + x * bsize + y];
                                 }
                             }
                         }
-                        // else do nothing ~~ AKA we want (b|Qw)
                         timer_off("DF_Helper~transform - transp");
                         timer_on("DF_Helper~transform - write ");
-                        put_tensor(putf, Np, std::make_pair(begin, end),
-                                   std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1), "ab");
+                        put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, bsize - 1), 
+                                             std::make_pair(0, wsize - 1), op);
                         timer_off("DF_Helper~transform - write ");
                     } else {  // (w|Qb)->(Q|wb)
                         timer_on("DF_Helper~transform - transp");
-                        if(!std::get<2>(transf_[order_[count + k]]).compare("Qpq") || direct_){ // (w|Qb)->(Q|wb)
-                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
-                            for (size_t x = 0; x < block_size; x++) {
-                                for (size_t z = 0; z < wsize; z++) {
-                                    #pragma omp simd
-                                    for (size_t y = 0; y < bsize; y++) {
-                                        Np[x * st1 + z * bsize + y] = Fp[z * st2 + x * bsize + y];
-                                    }
-                                }
-                            }
-                        } 
-                        else if(!std::get<2>(transf_[order_[count + k]]).compare("pqQ")) { // (w|Qb)->(wb|Q)
-                            #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
-                            for (size_t x = 0; x < block_size; x++) {
+                        #pragma omp parallel for num_threads(nthreads_) firstprivate(st1, st2)
+                        for (size_t x = 0; x < block_size; x++) {
+                            for (size_t z = 0; z < wsize; z++) {
+                                #pragma omp simd
                                 for (size_t y = 0; y < bsize; y++) {
-                                    for (size_t z = 0; z < wsize; z++) {
-                                        Np[z * st2 + y * block_size + x] = Fp[z * st2 + x * bsize + y];
-                                    }
+                                    Np[x * st1 + z * bsize + y] = Fp[z * st2 + x * bsize + y];
                                 }
                             }
                         }
-                        // else do nothing ~~ AKA we want (w|Qb)
                         timer_off("DF_Helper~transform - transp");
                         timer_on("DF_Helper~transform - write ");
-                        put_tensor(putf, Np, std::make_pair(begin, end),
-                                   std::make_pair(0, wsize - 1), std::make_pair(0, bsize - 1),
-                                   "ab");
+                        put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, wsize - 1), 
+                                             std::make_pair(0, bsize - 1), op);
                         timer_off("DF_Helper~transform - write ");
                     }
                 }
                 count += strides_[i];
             }
         }
-        outfile->Printf("----End Transformations (disc)--\n");
+        outfile->Printf("\n     ==> DF_Helper:--End Transformations (disc)<==\n\n");
     }
     if (direct_) {
         // total size allowed, in doubles
@@ -1475,7 +1529,6 @@ void DF_Helper::transform_disc() {
         }
         timer_off("DF_Helper~direct contracts  ");
     }
-    outfile->Printf("transformations done\n");
 }
 void DF_Helper::fill_tensor(std::string name, SharedMatrix M) {
     fill_tensor(name, M, std::make_pair(0,0), std::make_pair(0,0), std::make_pair(0,0));
@@ -1491,12 +1544,16 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, 
                            std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2) {
     
     std::string filename = std::get<1>(files_[name]);
+    // has this integral been transposed?
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
+    
     if (std::get<1>(t0) == 0)
-        t0 = std::make_pair(0, std::get<0>(sizes_[filename]) - 1); 
+        t0 = std::make_pair(0, std::get<0>(sizes) - 1); 
     if (std::get<1>(t1) == 0)
-        t1 = std::make_pair(0, std::get<1>(sizes_[filename]) - 1); 
+        t1 = std::make_pair(0, std::get<1>(sizes) - 1); 
     if (std::get<1>(t2) == 0)
-        t2 = std::make_pair(0, std::get<2>(sizes_[filename]) - 1); 
+        t2 = std::make_pair(0, std::get<2>(sizes) - 1); 
     
     check_transformation_name(name);
     check_transformation_tuple(name, t0, t1, t2);
@@ -1516,9 +1573,9 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, 
     double* Mp = M->pointer()[0];
     if (core_) {
 
-        size_t a0 = std::get<0>(sizes_[filename]);
-        size_t a1 = std::get<1>(sizes_[filename]);
-        size_t a2 = std::get<2>(sizes_[filename]);
+        size_t a0 = std::get<0>(sizes);
+        size_t a1 = std::get<1>(sizes);
+        size_t a2 = std::get<2>(sizes);
 
         double* Fp = &transf_core_[name][0];
         #pragma omp parallel num_threads(nthreads_)
@@ -1548,12 +1605,16 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> t
                                    std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2) {
     
     std::string filename = std::get<1>(files_[name]);
+    // has this integral been transposed?
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
+    
     if (std::get<1>(t0) == 0)
-        t0 = std::make_pair(0, std::get<0>(sizes_[filename]) - 1); 
+        t0 = std::make_pair(0, std::get<0>(sizes) - 1); 
     if (std::get<1>(t1) == 0)
-        t1 = std::make_pair(0, std::get<1>(sizes_[filename]) - 1); 
+        t1 = std::make_pair(0, std::get<1>(sizes) - 1); 
     if (std::get<1>(t2) == 0)
-        t2 = std::make_pair(0, std::get<2>(sizes_[filename]) - 1); 
+        t2 = std::make_pair(0, std::get<2>(sizes) - 1); 
     
     check_transformation_name(name);
     check_transformation_tuple(name, t0, t1, t2);
@@ -1568,15 +1629,15 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> t
     size_t A0 = (sto0-sta0+1);
     size_t A1 = (sto1-sta1+1);
     size_t A2 = (sto2-sta2+1);
-    
+   
     SharedMatrix M(new Matrix("M", A0, A1*A2));
     double* Mp = M->pointer()[0];
     
     if (core_) {
 
-        size_t a0 = std::get<0>(sizes_[filename]);
-        size_t a1 = std::get<1>(sizes_[filename]);
-        size_t a2 = std::get<2>(sizes_[filename]);
+        size_t a0 = std::get<0>(sizes);
+        size_t a1 = std::get<1>(sizes);
+        size_t a2 = std::get<2>(sizes);
 
         double* Fp = &transf_core_[name][0];
         #pragma omp parallel num_threads(nthreads_)
@@ -1628,6 +1689,10 @@ void DF_Helper::check_transformation_tuple(std::string name, std::pair<size_t, s
     size_t sto2 = std::get<1>(t2);
     std::string filename = std::get<1>(files_[name]);
 
+    // has this integral been transposed?
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
+        
     if (sta0 > sto0) {
         std::stringstream error;
         error << "your axis 0 tuple has a larger start index: " << sta0 <<
@@ -1646,21 +1711,21 @@ void DF_Helper::check_transformation_tuple(std::string name, std::pair<size_t, s
             " than its stop index: " << sto2;
         throw PSIEXCEPTION(error.str().c_str());
     }
-    size_t M0 = std::get<0>(sizes_[filename]);
+    size_t M0 = std::get<0>(sizes);
     if (sto0 > M0 - 1) {
         std::stringstream error;
         error << "your axis 0 tuple goes out of bounds when getting integral: " << name;
         error << ". you entered ("<< sto0 << "), but bounds is ("<< M0-1 << ").";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    size_t M1 = std::get<1>(sizes_[filename]);
+    size_t M1 = std::get<1>(sizes);
     if (sto1 > M1 - 1) {
         std::stringstream error;
         error << "your axis 1 tuple goes out of bounds when getting integral: " << name;
         error << ". you entered ("<< sto1 << "), but bounds is ("<< M1-1 << ").";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    size_t M2 = std::get<2>(sizes_[filename]);
+    size_t M2 = std::get<2>(sizes);
     if (sto2 > M2 - 1) {
         std::stringstream error;
         error << "your axis 2 tuple goes out of bounds when getting integral: " << name;
@@ -1668,7 +1733,297 @@ void DF_Helper::check_transformation_tuple(std::string name, std::pair<size_t, s
         throw PSIEXCEPTION(error.str().c_str());
     }
 }
+void DF_Helper::transpose(std::string name, std::tuple<size_t, size_t, size_t> order){
+    (core_ ? transpose_core(name, order) : transpose_disc(name, order));
+}
+void DF_Helper::transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order){
 
+    std::vector<double> M = transf_core_[name];
+    double* Mp = M.data();
+    double* Fp = transf_core_[name].data();
+    
+    size_t a0 = std::get<0>(order);
+    size_t a1 = std::get<1>(order);
+    size_t a2 = std::get<2>(order);
 
+    std::string filename = std::get<1>(files_[name]);
+    size_t M0 = std::get<0>(sizes_[filename]);
+    size_t M1 = std::get<1>(sizes_[filename]);
+    size_t M2 = std::get<2>(sizes_[filename]);
+    std::tuple<size_t, size_t, size_t> sizes;
+    
+    bool on = false;
+    if(a0 == 0){
+        if(a1 == 2){
+            sizes = std::make_tuple(M0, M2, M1);
+            on = true;
+        }
+    } else if(a0 == 1)
+        if(a1 == 0){
+            sizes = std::make_tuple(M1, M0, M2);
+            on = true;    
+        }
+        else if(a1 == 2){
+            sizes = std::make_tuple(M1, M2, M0);
+            on = true;
+        }
+    else {
+        if(a1 == 0){
+            sizes = std::make_tuple(M2, M0, M1);
+            on = true;
+        }
+        else if(a1 == 1){
+            sizes = std::make_tuple(M2, M1, M0);
+            on = true;
+        }
+    }
+    
+    if(!on)
+        throw PSIEXCEPTION("you transposed all wrong!");
+
+    if(a0 == 0){
+        if(a1 == 2) { // (0|12) -> (0|21)
+            #pragma omp parallel num_threads(nthreads_)
+            for(size_t i=0; i<M0; i++){
+                for(size_t j=0; j<M1; j++){
+                    for(size_t k=0; k<M2; k++){ 
+                        Fp[i*M1*M2 + k*M1 + j] = Mp[i*M1*M2 + j*M2 + k];
+                    }
+                }
+            }
+        }
+    } else if(a0 == 1){
+        if(a1 == 0){ // (0|12) -> (1|02)
+            #pragma omp parallel num_threads(nthreads_)
+            for(size_t i=0; i<M0; i++){
+                for(size_t j=0; j<M1; j++){
+                    #pragma omp simd
+                    for(size_t k=0; k<M2; k++){ 
+                        Fp[j*M0*M2 + i*M2 + k] = Mp[i*M1*M2 + j*M2 + k];
+                    }
+                }
+            }
+        } else if(a1 == 2){ // (0|12) -> (1|20)
+            #pragma omp parallel num_threads(nthreads_)
+            for(size_t i=0; i<M0; i++){
+                for(size_t j=0; j<M1; j++){
+                    for(size_t k=0; k<M2; k++){ 
+                        Fp[j*M0*M2 + k*M0 + i] = Mp[i*M1*M2 + j*M2 + k];
+                    }
+                }
+            }
+        }
+    } else if(a0 == 2){ 
+        if(a1 == 0){ // (0|12) -> (2|01)
+            #pragma omp parallel num_threads(nthreads_)
+            for(size_t i=0; i<M0; i++){
+                for(size_t j=0; j<M1; j++){
+                    for(size_t k=0; k<M2; k++){ 
+                        Fp[k*M1*M0 + i*M1 + j] = Mp[i*M1*M2 + j*M2 + k];
+                    }
+                }
+            }
+        } else if(a1 == 1){ // (0|12) -> (2|10)
+            #pragma omp parallel num_threads(nthreads_)
+            for(size_t i=0; i<M0; i++){
+                for(size_t j=0; j<M1; j++){
+                    for(size_t k=0; k<M2; k++){ 
+                        Fp[k*M1*M0 + j*M0 + i] = Mp[i*M1*M2 + j*M2 + k];
+                    }
+                }
+            }
+        }
+    }
+    tsizes_[filename] = sizes;
+}
+void DF_Helper::transpose_disc(std::string name, std::tuple<size_t, size_t, size_t> order){
+    
+    size_t a0 = std::get<0>(order);
+    size_t a1 = std::get<1>(order);
+    size_t a2 = std::get<2>(order);
+
+    // determine blocking
+    std::string filename = std::get<1>(files_[name]);
+    size_t M0 = std::get<0>(sizes_[filename]);
+    size_t M1 = std::get<1>(sizes_[filename]);
+    size_t M2 = std::get<2>(sizes_[filename]);
+
+    size_t current=0, count=0, largest=0;;
+    std::vector<std::pair<size_t, size_t>> steps;
+    for(size_t i=0; i<M0; i++){
+        current += M1*M2;
+        count++;
+        if(current*2 > memory_ +1000000|| i==M0-1){
+            if(count==1 && i!=M0-1){
+                std::stringstream error;
+                error << "DF_Helper:contract_metric: not enough memory.";
+                throw PSIEXCEPTION(error.str().c_str());
+            }    
+            if(i == M0-1)
+                steps.push_back(std::make_pair(i-count+1, i));
+            else{
+                current -= M1*M2;
+                steps.push_back(std::make_pair(i-count+1, i-1));
+                i--;
+            }
+            if(largest < current)
+                largest = current;
+            count=0;
+            current=0;
+        }
+    }
+    
+    // declare
+    std::vector<double> M;
+    std::vector<double> F;
+    M.reserve(largest);
+    F.reserve(largest);
+    double* Mp = M.data();
+    double* Fp = F.data();
+    std::tuple<size_t, size_t, size_t> sizes;
+    
+    bool on = false;
+    if(a0 == 0){
+        if(a1 == 2){
+            sizes = std::make_tuple(M0, M2, M1);
+            on = true;
+        }
+    } else if(a0 == 1)
+        if(a1 == 0){
+            sizes = std::make_tuple(M1, M0, M2);
+            on = true;    
+        }
+        else if(a1 == 2){
+            sizes = std::make_tuple(M1, M2, M0);
+            on = true;
+        }
+    else {
+        if(a1 == 0){
+            sizes = std::make_tuple(M2, M0, M1);
+            on = true;
+        }
+        else if(a1 == 1){
+            sizes = std::make_tuple(M2, M1, M0);
+            on = true;
+        }
+    }
+    
+    if(!on)
+        throw PSIEXCEPTION("you transposed all wrong!");
+
+    std::string new_file = "newfilefortransposition";
+    filename_maker(new_file, std::get<0>(sizes), std::get<1>(sizes), std::get<2>(sizes));
+    std::string new_filename = std::get<1>(files_[new_file]);
+    std::string op = "wb";
+
+    for(size_t m=0; m<steps.size(); m++){
+
+        size_t start = std::get<0>(steps[m]);
+        size_t stop  = std::get<1>(steps[m]);
+        M0 = stop-start+1;
+         
+        // grab
+        get_tensor_(filename, Mp, start, stop, 0, M1*M2 - 1);
+
+        if(a0 == 0){
+            if(a1 == 2) { // (0|12) -> (0|21)
+                #pragma omp parallel num_threads(nthreads_)
+                for(size_t i=0; i<M0; i++){
+                    for(size_t j=0; j<M1; j++){
+                        for(size_t k=0; k<M2; k++){ 
+                            Fp[i*M1*M2 + k*M1 + j] = Mp[i*M1*M2 + j*M2 + k];
+                        }
+                    }
+                }
+                put_tensor(new_filename, Fp, std::make_pair(start, stop), std::make_pair(0, M2-1),
+                                          std::make_pair(0, M1-1), op);
+            }
+        } else if(a0 == 1){
+            if(a1 == 0){ // (0|12) -> (1|02)
+                #pragma omp parallel num_threads(nthreads_)
+                for(size_t i=0; i<M0; i++){
+                    for(size_t j=0; j<M1; j++){
+                        #pragma omp simd
+                        for(size_t k=0; k<M2; k++){ 
+                            Fp[j*M0*M2 + i*M2 + k] = Mp[i*M1*M2 + j*M2 + k];
+                        }
+                    }
+                }
+                put_tensor(new_filename, Fp, std::make_pair(0, M1-1), std::make_pair(start, stop),
+                                          std::make_pair(0, M2-1), op);
+            } else if(a1 == 2){ // (0|12) -> (1|20)
+                #pragma omp parallel num_threads(nthreads_)
+                for(size_t i=0; i<M0; i++){
+                    for(size_t j=0; j<M1; j++){
+                        for(size_t k=0; k<M2; k++){ 
+                            Fp[j*M0*M2 + k*M0 + i] = Mp[i*M1*M2 + j*M2 + k];
+                        }
+                    }
+                }
+                put_tensor(new_filename, Fp, std::make_pair(0, M1-1), std::make_pair(0, M2-1),
+                                          std::make_pair(start, stop), op);
+            }
+        } else if(a0 == 2){ 
+            if(a1 == 0){ // (0|12) -> (2|01)
+                #pragma omp parallel num_threads(nthreads_)
+                for(size_t i=0; i<M0; i++){
+                    for(size_t j=0; j<M1; j++){
+                        for(size_t k=0; k<M2; k++){ 
+                            Fp[k*M1*M0 + i*M1 + j] = Mp[i*M1*M2 + j*M2 + k];
+                        }
+                    }
+                }
+                put_tensor(new_filename, Fp, std::make_pair(0, M2-1), std::make_pair(start, stop),
+                                          std::make_pair(0, M1-1), op);
+            } else if(a1 == 1){ // (0|12) -> (2|10)
+                #pragma omp parallel num_threads(nthreads_)
+                for(size_t i=0; i<M0; i++){
+                    for(size_t j=0; j<M1; j++){
+                        for(size_t k=0; k<M2; k++){ 
+                            Fp[k*M1*M0 + j*M0 + i] = Mp[i*M1*M2 + j*M2 + k];
+                        }
+                    }
+                }
+                put_tensor(new_filename, Fp, std::make_pair(0, M2-1), std::make_pair(0, M1-1),
+                                          std::make_pair(start, stop), op);
+            }
+        }
+    }
+    // better be careful
+    remove(filename.c_str());
+    rename(new_filename.c_str(), filename.c_str());
+
+    file_status_[filename] = file_status_[new_filename];
+    stream_check(filename, "rb");
+    file_status_.erase(new_filename);
+        
+    files_.erase(new_file);
+    tsizes_[filename] = sizes;
+}
+size_t DF_Helper::get_space_size(std::string name){
+    if (spaces_.find(name) == spaces_.end()) {
+        std::stringstream error;
+        error << "DF_Helper:get_space_size: " << name << " not found.";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    return std::get<1>(spaces_[name]);
+}
+size_t DF_Helper::get_tensor_size(std::string name){
+    if (transf_.find(name) == transf_.end()) {
+        std::stringstream error;
+        error << "DF_Helper:get_tensor_size: " << name << " not found.";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    std::tuple<size_t, size_t, size_t> s = sizes_[std::get<1>(files_[name])];
+    return std::get<0>(s)*std::get<1>(s)*std::get<2>(s);
+}
+std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name){
+    if (transf_.find(name) == transf_.end()) {
+        std::stringstream error;
+        error << "DF_Helper:get_tensor_size: " << name << " not found.";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+    return sizes_[std::get<1>(files_[name])];
+}
 }
 }  // End namespaces

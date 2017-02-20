@@ -152,6 +152,7 @@ void export_fock(py::module &m) {
         .def("get_memory", &df_helper::DF_Helper::get_memory)
         .def("set_method", &df_helper::DF_Helper::set_method)
         .def("get_method", &df_helper::DF_Helper::get_method)
+        .def("hold_met", &df_helper::DF_Helper::hold_met)
         .def("set_schwarz_cutoff", &df_helper::DF_Helper::set_schwarz_cutoff)
         .def("get_schwarz_cutoff", &df_helper::DF_Helper::get_schwarz_cutoff)
         .def("set_on_core", &df_helper::DF_Helper::set_on_core)
@@ -159,12 +160,15 @@ void export_fock(py::module &m) {
         .def("set_MO_hint", &df_helper::DF_Helper::set_MO_hint)
         .def("get_MO_hint", &df_helper::DF_Helper::get_MO_hint)
         .def("add_space", &df_helper::DF_Helper::add_space)
-        .def("get_space", &df_helper::DF_Helper::get_space)
         .def("initialize", &df_helper::DF_Helper::initialize)
         .def("add_transformation", &df_helper::DF_Helper::add_transformation,
              py::arg("name"), py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
         .def("transform", &df_helper::DF_Helper::transform)
-        .def("clear_spaces", &df_helper::DF_Helper::clear_spaces)
-        .def("clear_transformations", &df_helper::DF_Helper::clear_transformations)
+        .def("clear", &df_helper::DF_Helper::clear)
+        .def("transpose", &df_helper::DF_Helper::transpose)
+        .def("get_space_size", &df_helper::DF_Helper::get_space_size)
+        .def("get_tensor_size", &df_helper::DF_Helper::get_tensor_size)
+        .def("get_tensor_shape", &df_helper::DF_Helper::get_tensor_shape)
         .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor));
+        
 }

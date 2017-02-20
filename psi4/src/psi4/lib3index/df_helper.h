@@ -91,9 +91,8 @@ public:
     // Initialize the object
     void initialize();
 
-    // Add transformation space with key and get with same key
+    // Add transformation space with key
     void add_space(std::string key, SharedMatrix M);
-    SharedMatrix get_space(std::string key) {return std::get<0>(spaces_[key]);}
 
     // add transformation with name using two space keys
     void add_transformation(std::string name, std::string key1, std::string key2, std::string order = "Qpq");
@@ -117,9 +116,16 @@ public:
     SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
 
+    // tranpose a tensor
+    void transpose(std::string name, std::tuple<size_t, size_t, size_t> order);
+    
     // clear spaces/transformations
-    void clear_spaces();
-    void clear_transformations();
+    void clear();
+
+    // get sizes, shapes
+    size_t get_space_size(std::string key);
+    size_t get_tensor_size(std::string key);
+    std::tuple<size_t, size_t, size_t> get_tensor_shape(std::string key);
 
 protected:
 
@@ -224,6 +230,10 @@ protected:
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
     std::vector<size_t> strides_;
+    
+    bool once_=false;
+    std::pair<size_t, size_t> info_;
+    bool ordered_=0;
     std::pair<size_t, size_t> identify_order();
     void print_order();
 
@@ -253,16 +263,21 @@ protected:
     // file accesses
     std::map<std::string, std::tuple<std::string, std::string>> files_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> sizes_;
+    std::map<std::string, std::tuple<size_t, size_t, size_t>> tsizes_;
     std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, int i);
+    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2);
     void AO_filename_maker(size_t i);
     void check_transformation_name(std::string);
     void check_transformation_tuple(std::string name, std::pair<size_t, size_t> t0, 
         std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
     void check_transformation_matrix(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
         std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
+
+    // tranpose a tensor
+    void transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order);
+    void transpose_disc(std::string name, std::tuple<size_t, size_t, size_t> order);
 
 }; // End DF Helper class
 
