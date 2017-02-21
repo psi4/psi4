@@ -52,6 +52,7 @@ class EFP {
     Options & options_;
     protected:
 
+#ifdef USING_libefp
         /// Number of fragments
         int nfrag_;
 
@@ -76,7 +77,7 @@ class EFP {
 
         /// If a gradient is available it will be here:
         SharedMatrix torque_;
-
+#endif
     public:
         /// Constructor
         EFP(Options& options);
@@ -84,6 +85,10 @@ class EFP {
         /// Destructor
         ~EFP();
 
+        /// Returns the number of EFP fragments; wrapper to efp_get_frag_count
+        int get_frag_count(void);
+
+#ifdef USING_libefp
         /// Add potential files and names for all fragments
         void add_fragments(std::vector<std::string> fnames);
 
@@ -133,9 +138,6 @@ class EFP {
         /// Compute energy and/or gradient
         void compute();
 
-        /// Returns the number of EFP fragments; wrapper to efp_get_frag_count
-        int get_frag_count(void);
-
         /// Print all of the EFP atoms
         void print_efp_geometry();
 
@@ -147,6 +149,7 @@ class EFP {
 
         /// Returns the gradient
         SharedMatrix torque() const { return torque_; }
+# endif // USING_libefp
 };
 
 }

@@ -534,7 +534,7 @@ double HF::finalize_E()
 
     // At this point, we are not doing any more SCF cycles
     // and we can compute and print final quantities.
-
+#ifdef USING_libefp
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->compute();
 
@@ -549,7 +549,7 @@ double HF::finalize_E()
 
         outfile->Printf("    Total SCF including Total EFP %20.12f [Eh]\n", E_);
     }
-
+#endif
 
     outfile->Printf( "\n  ==> Post-Iterations <==\n\n");
 
@@ -1555,6 +1555,7 @@ void HF::initialize()
         form_H(); //Core Hamiltonian
         timer_off("HF: Form H");
 
+#ifdef USING_libefp
         // EFP: Add in permanent moment contribution and cache
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_permanent();
@@ -1563,6 +1564,7 @@ void HF::initialize()
             Horig_->copy(H_);
             outfile->Printf( "  QM/EFP: iterating Total Energy including QM/EFP Induction\n");
         }
+#endif
 
         timer_on("HF: Form S/X");
         form_Shalf(); //S and X Matrix
@@ -1578,10 +1580,11 @@ void HF::initialize()
         E_ = compute_initial_E();
     }
 
+#ifdef USING_libefp
     if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
         Process::environment.get_efp()->set_qm_atoms();
     }
-
+#endif
 }
 
 void HF::iterations()
@@ -1606,13 +1609,14 @@ void HF::iterations()
         // Call any preiteration callbacks
 //        call_preiteration_callbacks();
 
-
+#ifdef USING_libefp
         // add efp contribution to Fock matrix
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             H_->copy(Horig_);
             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
             H_->add(Vefp);
         }
+#endif
 
         E_ = 0.0;
 
@@ -1636,11 +1640,13 @@ void HF::iterations()
 
         E_ += compute_E();
 
+#ifdef USING_libefp
         // add efp contribution to energy
         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
             double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
             E_ += efp_wfn_dependent_energy;
         }
+#endif
 
 #ifdef USING_PCMSolver
         // The PCM potential must be added to the Fock operator *after* the
@@ -1849,6 +1855,7 @@ void HF::print_energies()
     if(pcm_enabled_ || ( Process::environment.get_efp()->get_frag_count() > 0 ) ) {
         outfile->Printf("    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.");
     }
+
 //  Comment so that autodoc utility will find this PSI variable
 //     It doesn't really belong here but needs to be linked somewhere
 //  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]

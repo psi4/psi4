@@ -52,8 +52,8 @@ Interface to LIBEFP by I. Kaliman
 |PSIfour| contains code to interface to the LIBEFP library developed
 in L. Slipchenko's group by I. Kaliman. LIBEFP
 requires no additional licence,
-downloads, or configuration. Conversely, |Psifour| cannot build
-*without* LIBEFP.
+downloads, or configuration. Since February 2017, libefp is not required to build
+|Psifour|.
 
 Installation
 ~~~~~~~~~~~~
@@ -70,7 +70,8 @@ Installation
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
   libefp can be obtained through ``conda install libefp``.
-  Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
+  Then enable it as a feature with :makevar:`ENABLE_libefp`,
+  hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect libefp and activate dependent code.
 
 * To remove a conda installation, ``conda remove libefp``.
@@ -82,8 +83,8 @@ Installation
 
 * If using |PSIfour| built from source and you want libefp built from
   from source also,
-  let the build system fetch and build it and activate dependent code.
-
+  enable it as a feature with :makevar:`ENABLE_libefp`,
+  and let the build system fetch and build it and activate dependent code.
 
 .. index:: EFP; library fragments
    pair: EFP; adding new
@@ -305,12 +306,13 @@ How to configure libefp for building Psi4
 * Role |w---w| In |PSIfour|, libefp is a library that provides additional
   molecular modeling capabilities (EFP).
 
-* Downstream Dependencies |w---w| |PSIfour| |dr| libefp
+* Downstream Dependencies |w---w| |PSIfour| (\ |dr| optional) libefp
 
 * Upstream Dependencies |w---w| libefp |dr| None
 
 **CMake Variables**
 
+* :makevar:`ENABLE_libefp` |w---w| CMake variable toggling whether Psi4 builds with libefp
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For libefp, set to an installation directory containing ``include/efp.h``
 * :makevar:`libefp_DIR` |w---w| CMake variable to specify where pre-built libefp can be found. Set to installation directory containing ``share/cmake/libefp/libefpConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_libefp` |w---w| CMake variable to force internal build of libefp instead of detecting pre-built
@@ -321,21 +323,27 @@ A. Build bundled
 
   .. code-block:: bash
 
+    >>> cmake -DENABLE_libefp=ON
+
+B. Build *without* libefp
+
+  .. code-block:: bash
+
     >>> cmake
 
-B. Link against pre-built
+C. Link against pre-built
 
   .. code-block:: bash
 
-    >>> cmake -DCMAKE_PREFIX_PATH=/path/to/libefp/root
+    >>> cmake -DENABLE_libefp=ON -DCMAKE_PREFIX_PATH=/path/to/libefp/root
 
   .. code-block:: bash
 
-    >>> cmake -Dlibefp_DIR=/path/to/libefp/configdir
+    >>> cmake -DENABLE_libefp=ON -Dlibefp_DIR=/path/to/libefp/configdir
 
-C. Build bundled despite pre-built being detectable
+D. Build bundled despite pre-built being detectable
 
   .. code-block:: bash
 
-    >>> cmake -DCMAKE_PREFIX_PATH=/path/to/unwanted/libefp/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_libefp=ON
+    >>> cmake -DENABLE_libefp=ON -DCMAKE_PREFIX_PATH=/path/to/unwanted/libefp/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_libefp=ON
 

@@ -67,8 +67,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)
 option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
+option(ENABLE_libefp "Enables LIBEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of libint (requires Fortran)" OFF)
-option(ENABLE_gdma "Enables Stone's gdma multipole code (requires Fortran)" OFF)
+option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 # These options are relevant to pasture
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
@@ -187,6 +188,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_AMBIT=${ENABLE_AMBIT}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
+              -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}

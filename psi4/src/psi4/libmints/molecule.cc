@@ -902,6 +902,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 
     mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
 
+#ifdef USING_libefp
     if (!Process::environment.get_efp())
         throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
 
@@ -1006,6 +1007,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         // Finalize efp fragment composition
         Process::environment.get_efp()->finalize_fragments();
     }
+#endif // USING_libefp
 
     if (!lines.size())
         throw PSIEXCEPTION("No geometry specified");
@@ -1030,6 +1032,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
             mol->fragment_types_.push_back(Real);
             if (std::regex_search(lines[lineNumber - 1], reMatches, efpFileMarker_)) {
+#ifdef USING_libefp
                 fragment_levels.push_back(EFPatom);
                 // Overwrite the overall molecule chgmult written before loop
                 if (mol->fragments_.size() == 1) {
@@ -1038,6 +1041,10 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
                     mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
                     mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
                 }
+#else
+                outfile->Printf("    EFP fragments detected but are not available.\n");
+                throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
+#endif
             } else
                 fragment_levels.push_back(QMatom);
             firstAtom = atomCount;
@@ -1056,8 +1063,13 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             }
         } else {
             if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
+#ifdef USING_libefp
                 atomCount += Process::environment.get_efp()->get_frag_atom_count(efpCount);
                 ++efpCount;
+#else
+                outfile->Printf("    EFP fragments detected but are not available.\n");
+                throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
+#endif
             } else
                 ++atomCount;
         }
@@ -1068,9 +1080,14 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
     mol->fragment_types_.push_back(Real);
     if (std::regex_search(lines[lines.size() - 1], reMatches, efpFileMarker_)) {
+#ifdef USING_libefp
         fragment_levels.push_back(EFPatom);
         mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount - 1));
         mol->fragment_charges_.push_back(int(Process::environment.get_efp()->get_frag_charge(efpCount - 1)));
+#else
+        outfile->Printf("    EFP fragments detected but are not available.\n");
+        throw PSIEXCEPTION("EFP fragments requested but were not compiled in. Build with -DENABLE_libefp");
+#endif
     } else
         fragment_levels.push_back(QMatom);
 
@@ -1097,9 +1114,9 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     for (int currentAtom = 0; currentAtom < mol->fragments_.back().second;) {
 
         if ((currentAtom == mol->fragments_[currentFragment].first) && (fragment_levels[currentFragment] == EFPatom)) {
-            //if((currentAtom == mol->fragments_[currentFragment].first)){// && (mol->fragment_levels_[currentFragment] == EFPatom)) {
             // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
+#ifdef USING_libefp
             unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
 
             double *frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
@@ -1140,6 +1157,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             }
             ++efpCount;
             ++currentFragment;
+#endif
         } else {
             // currentAtom belongs to QM fragment so read geometry of atom from line
 
