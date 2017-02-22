@@ -292,7 +292,6 @@ def nbody_gufunc(func, method_string, **kwargs):
     ptype_dict = {}
     for n in compute_list.keys():
         core.print_out("\n   ==> N-Body: Now computing %d-body complexes <==\n\n" % n)
-        print("\n   ==> N-Body: Now computing %d-body complexes <==\n" % n)
         total = len(compute_list[n])
         for num, pair in enumerate(compute_list[n]):
             core.print_out("\n       N-Body: Computing complex (%d/%d) with fragments %s in the basis of fragments %s.\n\n" %
