@@ -62,6 +62,12 @@ from psi4.core import set_output_file, set_variable
 core.initialize()
 core.efp_init()
 
+if "PSI_SCRATCH" in os.environ.keys():
+    envvar_scratch = os.environ["PSI_SCRATCH"]
+    if not os.path.isdir(envvar_scratch):
+        raise Exception("Passed in scratch is not a directory (%s)." % envvar_scratch)
+    core.IOManager.shared_object().set_default_path(envvar_scratch)
+
 # Cleanup core at exit
 import atexit
 atexit.register(core.set_legacy_molecule, None)
@@ -70,6 +76,9 @@ atexit.register(core.finalize)
 
 # Make official plugins accessible in input
 from .driver import endorsed_plugins
+
+# Manage threads. Must be after endorsed plugins, honestly.
+core.set_nthread(1)
 
 # Load driver and outfile paraphernalia
 from .driver import *

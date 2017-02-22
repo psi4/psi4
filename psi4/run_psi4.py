@@ -48,11 +48,11 @@ parser.add_argument("-k", "--skip-preprocessor", action='store_true', help="Skip
 parser.add_argument("-m", "--messy", action='store_true', help="Leave temporary files after the run is completed.")
 # parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
 
-parser.add_argument("-s", "--scratch", help="Psi4 scratch directory to use.")
+parser.add_argument("-s", "--scratch", help="Psi4 scratch directory to use. Overrides PSI_SCRATCH.")
 parser.add_argument("-a", "--append", action='store_true', help="Append results to output file. Default: Truncate first")
 parser.add_argument("-l", "--psidatadir",
-                    help="Specify where to look for the Psi data directory. Overrides PSIDATADIR.")
-parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use (overrides OMP_NUM_THREADS)")
+                    help="Specify where to look for the Psi4 data directory. Overrides PSIDATADIR.")
+parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use. Overrides OMP_NUM_THREADS.")
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
 parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory. "
                                                            "!Warning! expert option.")
@@ -169,7 +169,7 @@ psi4.core.set_memory(524288000, True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 
-
+# Prepare scratch for inputparser
 if args["scratch"] is not None:
     if not os.path.isdir(args["scratch"]):
         raise Exception("Passed in scratch is not a directory (%s)." % args["scratch"])
@@ -213,9 +213,12 @@ if args["verbose"]:
 if args["messy"]:
     import atexit
 
-    for handler in atexit._exithandlers:
-        if handler[0] == psi4.core.clean:
-            atexit._exithandlers.remove(handler)
+    if sys.version_info >= (3, 0):
+        atexit.unregister(psi4.core.clean)
+    else:
+        for handler in atexit._exithandlers:
+            if handler[0] == psi4.core.clean:
+                atexit._exithandlers.remove(handler)
 
 # Register exit printing, failure GOTO coffee ELSE beer
 import atexit
