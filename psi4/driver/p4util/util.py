@@ -144,6 +144,7 @@ def compare_values(expected, computed, digits, label, exitonfail=True):
         if exitonfail:
             raise TestComparisonError(message)
     success(label)
+    return True
 
 
 def compare_integers(expected, computed, label):
@@ -156,6 +157,7 @@ def compare_integers(expected, computed, label):
         message = ("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
         raise TestComparisonError(message)
     success(label)
+    return True
 
 
 def compare_strings(expected, computed, label):
@@ -168,6 +170,7 @@ def compare_strings(expected, computed, label):
         message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
         raise TestComparisonError(message)
     success(label)
+    return True
 
 
 def compare_matrices(expected, computed, digits, label):
@@ -211,6 +214,7 @@ def compare_matrices(expected, computed, digits, label):
             expected.print_out()
             raise TestComparisonError("\n")
     success(label)
+    return True
 
 
 def compare_vectors(expected, computed, digits, label):
@@ -243,6 +247,8 @@ def compare_vectors(expected, computed, digits, label):
             message = ("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
             raise TestComparisonError(message)
     success(label)
+    return True
+
 
 def compare_arrays(expected, computed, digits, label):
     """Function to compare two numpy arrays. Prints :py:func:`util.success`
@@ -265,6 +271,7 @@ def compare_arrays(expected, computed, digits, label):
         message = "\tArray difference norm is %12.6f." % np.linalg.norm(expected - computed)
         raise TestComparisonError(message)
     success(label)
+    return True
 
 
 def compare_cubes(expected, computed, label):
@@ -285,6 +292,7 @@ def compare_cubes(expected, computed, label):
         message = ("\t%s: computed cube file does not match expected cube file." % (label, computed, expected))
         raise TestComparisonError(message)
     success(label)
+    return True
 
 
 def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):

@@ -54,6 +54,8 @@ parser.add_argument("-l", "--psidatadir",
                     help="Specify where to look for the Psi4 data directory. Overrides PSIDATADIR.")
 parser.add_argument("-n", "--nthread", default=1, help="Number of threads to use. Overrides OMP_NUM_THREADS.")
 parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
+parser.add_argument("--psiapi-path", action='store_true', help="""Generates a bash command to source correct Python """
+                                                               """interpreter and path for ``python -c "import psi4"``""")
 parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory. "
                                                            "!Warning! expert option.")
 parser.add_argument("--json", action='store_true', help="Runs a JSON input file. !Warning! experimental option.")
@@ -126,6 +128,11 @@ if args["output"] is None:
 if args['plugin_compile']:
     share_cmake_dir = os.path.sep.join([cmake_install_prefix, 'share', 'cmake', 'psi4'])
     print("""cmake -C {}/psi4PluginCache.cmake -DCMAKE_PREFIX_PATH={} .""".format(share_cmake_dir, cmake_install_prefix))
+    sys.exit()
+
+if args['psiapi_path']:
+    pyexe_dir = os.path.dirname("@PYTHON_EXECUTABLE@")
+    print("""export PATH={}:$PATH\nexport PYTHONPATH={}:$PYTHONPATH""".format(pyexe_dir, lib_dir))
     sys.exit()
 
 # Transmit any argument psidatadir through environ
