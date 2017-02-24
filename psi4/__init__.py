@@ -58,7 +58,7 @@ except ImportError as err:
     else:
         raise ImportError("{0}".format(err))
 
-from psi4.core import set_output_file, set_variable
+from psi4.core import set_output_file, set_variable, get_num_threads, set_num_threads
 core.initialize()
 core.efp_init()
 
@@ -78,7 +78,7 @@ atexit.register(core.finalize)
 from .driver import endorsed_plugins
 
 # Manage threads. Must be after endorsed plugins, honestly.
-core.set_nthread(1)
+core.set_num_threads(1, quiet=True)
 
 # Load driver and outfile paraphernalia
 from .driver import *

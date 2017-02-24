@@ -108,16 +108,6 @@ def get_memory():
     return core.get_memory()
 
 
-def set_num_threads(nthread):
-    """Function to reset the number of threads to parallelize across."""
-    core.set_nthread(nthread)
-
-
-def get_num_threads():
-    """Function to return the number of threads to parallelize across."""
-    return core.nthread()
-
-
 def success(label):
     """Function to print a '*label*...PASSED' line to screen.
     Used by :py:func:`util.compare_values` family when functions pass.
