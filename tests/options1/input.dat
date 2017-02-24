@@ -139,3 +139,33 @@ print(asdf, type(asdf), [type(v) for v in asdf[0]])
 # Boost:  [[1, 2.0, 'CAT', 'DOG', 0.05], [1, 2, 7, 8]]        <type 'list'> [<type 'int'>,  <type 'float'>, <type 'str'>,     <type 'str'>,     <type 'float'>]
 # Pybind: [[1L, 2.0, u'CAT', u'DOG', 0.05], [1L, 2L, 7L, 8L]] <type 'list'> [<type 'long'>, <type 'float'>, <type 'unicode'>, <type 'unicode'>, <type 'float'>]
 
+compare_strings('', get_global_option('BASIS'), 'glob opt empty')  #TEST
+compare_integers(0, has_global_option_changed('BASIS'), 'glob opt empty hc')  #TEST
+compare_strings('PK', get_option('SCF', 'SCF_TYPE'), 'loc opt empty')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SCF_TYPE'), 'loc opt empty hc')  #TEST
+compare_integers(5, get_option('SCF', 'SOSCF_MAX_ITER'), 'lloc opt empty')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SOSCF_MAX_ITER'), 'lloc opt empty hc')  #TEST
+compare_integers(5, get_local_option('SCF', 'SOSCF_MAX_ITER'), 'llloc opt empty')  #TEST
+compare_integers(0, has_local_option_changed('SCF', 'SOSCF_MAX_ITER'), 'llloc opt empty hc')  #TEST
+
+set basis cc-pvtz
+set scf_type df
+set scf soscf_max_iter 8
+compare_strings('CC-PVTZ', get_global_option('BASIS'), 'glob opt filled')  #TEST
+compare_integers(1, has_global_option_changed('BASIS'), 'glob opt filled hc')  #TEST
+compare_strings('DF', get_option('SCF', 'SCF_TYPE'), 'loc opt filled')  #TEST
+compare_integers(1, has_option_changed('SCF', 'SCF_TYPE'), 'loc opt filled hc')  #TEST
+compare_integers(8, get_option('SCF', 'SOSCF_MAX_ITER'), 'lloc opt filled')  #TEST
+compare_integers(1, has_option_changed('SCF', 'SOSCF_MAX_ITER'), 'lloc opt filled hc')  #TEST
+compare_integers(8, get_local_option('SCF', 'SOSCF_MAX_ITER'), 'llloc opt filled')  #TEST
+compare_integers(1, has_local_option_changed('SCF', 'SOSCF_MAX_ITER'), 'llloc opt filled hc')  #TEST
+
+clean_options()
+compare_strings('', get_global_option('BASIS'), 'glob opt reset')  #TEST
+compare_integers(0, has_global_option_changed('BASIS'), 'glob opt reset hc')  #TEST
+compare_strings('PK', get_option('SCF', 'SCF_TYPE'), 'loc opt reset')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SCF_TYPE'), 'loc opt hc')  #TEST
+compare_integers(5, get_option('SCF', 'SOSCF_MAX_ITER'), 'lloc opt reset')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SOSCF_MAX_ITER'), 'lloc opt reset hc')  #TEST
+compare_integers(5, get_local_option('SCF', 'SOSCF_MAX_ITER'), 'llloc opt reset')  #TEST
+compare_integers(0, has_local_option_changed('SCF', 'SOSCF_MAX_ITER'), 'llloc opt reset hc')  #TEST

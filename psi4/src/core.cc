@@ -627,6 +627,14 @@ std::vector<std::string> py_psi_get_global_option_list()
     return Process::environment.options.list_globals();
 }
 
+void py_psi_clean_options()
+{
+    Process::environment.options.clear();
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+}
+
 void py_psi_print_out(std::string s)
 {
     (*outfile) << s;
@@ -1249,6 +1257,7 @@ PYBIND11_PLUGIN(core) {
     core.def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
     core.def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     core.def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
+    core.def("clean_options", py_psi_clean_options, "Function to reset options to clean state.");
 
     core.def("get_writer_file_prefix", get_writer_file_prefix, "Returns the prefix to use for writing files for external programs.");
     // Benchmarks

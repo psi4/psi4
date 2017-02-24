@@ -1157,6 +1157,7 @@ DataType* Options::set_local_array_array(const std::string &module, const std::s
 
 void Options::clear(void)
 {
+    globals_.clear();
     locals_.clear();
 }
 
