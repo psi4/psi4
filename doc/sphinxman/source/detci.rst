@@ -132,21 +132,26 @@ in :source:`samples`.
 
 .. table:: Orbital spaces for CI computations
 
-    +----------------------------+----------------------------+----------------------------+
-    | CI (e.g., CISD, FCI)       | RASCI                      | CASCI                      |
-    +============================+============================+============================+
-    | |globals__frozen_uocc|     | |globals__frozen_uocc|     |                            |
-    +----------------------------+----------------------------+                            +
-    | (all orbitals not in       | |globals__ras4|            |                            |
-    + |globals__frozen_uocc|     +----------------------------+                            +
-    | or |globals__frozen_docc|  | |globals__ras3|            |                            |
-    + are included in CI)        +----------------------------+                            +
-    |                            | |globals__ras2|            |                            |
-    +                            +----------------------------+                            +
-    |                            | |globals__ras1|            | |globals__active|          |
-    +----------------------------+----------------------------+----------------------------+
-    | |globals__frozen_docc|     | |globals__frozen_docc|     | |globals__frozen_docc|     |
-    +----------------------------+----------------------------+----------------------------+
+    +----------------------------+----------------------------+-------------------------------+
+    | CI (e.g., CISD, FCI)       | RASCI                      | CASCI                         |
+    +============================+============================+===============================+
+    | |globals__frozen_uocc|     | |globals__frozen_uocc|     | |globals__frozen_uocc| [#f1]_ |
+    +----------------------------+----------------------------+-------------------------------+
+    | (all orbitals not in       | |globals__ras4|            |                               |
+    + |globals__frozen_uocc|     +----------------------------+                               +
+    | or |globals__frozen_docc|  | |globals__ras3|            |                               |
+    + are included in CI)        +----------------------------+                               +
+    |                            | |globals__ras2|            |                               |
+    +                            +----------------------------+                               +
+    |                            | |globals__ras1|            | |globals__active|             |
+    +----------------------------+----------------------------+-------------------------------+
+    | |globals__frozen_docc|     | |globals__frozen_docc|     | |globals__frozen_docc|        |
+    +----------------------------+----------------------------+-------------------------------+
+
+.. [#f1] |globals__frozen_uocc| is not required and will be inferred if 
+   |globals__active| is provided.  However, if it is easier to specify
+   |globals__frozen_uocc|, then this may be provided and |globals__active| can
+   be inferred.
 
 The table above shows the relevant orbitals spaces for CI computations (an
 analogous :ref:`table <table:mcscf_spaces>` for MCSCF is also available).  
@@ -158,7 +163,7 @@ with appropriate values selected for |globals__frozen_docc| and
 |globals__active|.  For CI computations, there is no difference between
 |globals__frozen_docc| and |globals__restricted_docc|, or between
 |globals__frozen_uocc| and |globals__restricted_uocc|.  There are
-differences betwen these keywords for :ref:`sec:mcscf`.
+differences between these keywords for :ref:`sec:mcscf`.
 
 .. index:: CI; basic-keywords
 
