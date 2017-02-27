@@ -297,13 +297,17 @@ void DF_Helper::prepare_AO()
 {
     // prepare eri buffers -- check here for size?
     size_t nthread = nthreads_;
+    size_t rank = 0;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
-    #pragma omp parallel num_threads(nthreads_)
+    #pragma omp parallel num_threads(nthreads_) private(rank)
     {
-        for(size_t i=0; i<nthread; i++)
-            eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        size_t rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
     // declare largest necessary according to plargest_
@@ -351,13 +355,16 @@ void DF_Helper::prepare_AO_core()
 
     // prepare eri buffers -- check here for size?
     size_t nthread = nthreads_;
+    size_t rank = 0;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
-    #pragma omp parallel num_threads(nthreads_)
+    #pragma omp parallel num_threads(nthreads_) private(rank)
     {
-        for(size_t i=0; i<nthread; i++)
-            eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
     if(!direct_){
@@ -365,8 +372,9 @@ void DF_Helper::prepare_AO_core()
         timer_on("DF_Helper~AO construction   ");
         compute_AO_p(0, pshells_-1, &Qpq[0], eri);
         timer_off("DF_Helper~AO construction   ");
+        double* metp = metric_prep_core(mpower_);
         timer_on("DF_Helper~metric contraction");
-        contract_metric_AO_core(&Qpq[0]);
+        contract_metric_AO_core(&Qpq[0], metp);
         timer_off("DF_Helper~metric contraction");
     }
     else{
@@ -965,10 +973,8 @@ void DF_Helper::contract_metric_AO(double* Mp)
         count += size;
     }
 }
-void DF_Helper::contract_metric_AO_core(double* Qpq)
+void DF_Helper::contract_metric_AO_core(double* Qpq, double* metp)
 {
-    double* metp = metric_prep_core(mpower_);
-
     // loop and contract
     #pragma omp parallel for num_threads(nthreads_) schedule(guided)
     for(size_t j=0; j<nao_; j++){
@@ -1336,6 +1342,11 @@ void DF_Helper::transform_disc() {
     size_t nao = nao_;
     int rank;
     std::vector<std::vector<double>> C_buffers(nthreads_);
+    // prepare eri buffers
+    size_t nthread = nthreads_;
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
 #pragma omp parallel private(rank) num_threads(nthreads_)
     {
 #ifdef _OPENMP
@@ -1343,17 +1354,7 @@ void DF_Helper::transform_disc() {
 #endif
         std::vector<double> Cp(nao * wMO);
         C_buffers[rank] = Cp;
-    }
-
-    // prepare eri buffers
-    size_t nthread = nthreads_;
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
-#pragma omp parallel num_threads(nthreads_)
-    {
-        for (size_t i = 0; i < nthread; i++)
-            eri[i] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
     // scope these declarations
@@ -2024,6 +2025,17 @@ std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name)
         throw PSIEXCEPTION(error.str().c_str());
     }
     return sizes_[std::get<1>(files_[name])];
+}
+SharedMatrix DF_Helper::get_fun_mask()
+{
+    SharedMatrix M(new Matrix("M", nao_, nao_));
+    double** Mp = M->pointer();
+
+    for(size_t i=0; i<nao_; i++)
+        for(size_t j=0; j<nao_; j++)
+            Mp[i][j] = schwarz_fun_mask_[i*nao_+j];
+
+    return M;
 }
 }
 }  // End namespaces
