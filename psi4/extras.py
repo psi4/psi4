@@ -84,8 +84,12 @@ def _psi4_which(command):
 
 
 def _plugin_import(plug):
-    from importlib import util
-    plug_spec = util.find_spec(plug)
+    if sys.version_info >= (3, 4):
+        from importlib import util
+        plug_spec = util.find_spec(plug)
+    else:
+        import pkgutil
+        plug_spec = pkgutil.find_loader(plug)
     if plug_spec is None:
         return False
     else:
