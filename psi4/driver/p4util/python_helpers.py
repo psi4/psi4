@@ -168,6 +168,7 @@ def set_options(options_dict):
     for k, v, in options_dict.items():
         core.set_global_option(k.upper(), v)
 
+
 def set_module_options(module, options_dict):
     """
     Sets Psi4 module options from a module specification and input dictionary.
@@ -177,5 +178,10 @@ def set_module_options(module, options_dict):
         core.set_local_option(module.upper(), k.upper(), v)
 
 
+def pcm_helper(block):
+    """Passes multiline string *block* to PCMSolver parser."""
 
-
+    with open('pcmsolver.inp', 'w') as handle:
+        handle.write(block)
+    import pcmsolver
+    pcmsolver.parse_pcm_input('pcmsolver.inp')

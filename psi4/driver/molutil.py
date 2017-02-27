@@ -314,8 +314,9 @@ def geometry(geom, name="default"):
     the string are filtered.
 
     """
-    geom = filter_comments(geom)
+    core.efp_init()
     geom = pubchemre.sub(process_pubchem_command, geom)
+    geom = filter_comments(geom)
     molecule = core.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 

@@ -86,5 +86,10 @@ from .header import print_header
 from .metadata import __version__, version_formatter
 
 # A few extraneous functions
-from .extras import get_input_directory
+from .extras import get_input_directory, addons, test
+
+# Python portions of compiled-in Add-Ons
+import sys
+if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+    sys.path.insert(1, "@PCMSolver_PYMOD@")
 

@@ -128,6 +128,7 @@ include_directories(src)
 add_subdirectory(src)
 
 # <<<  Version  >>>
+
 add_custom_target(update_version ALL
                   COMMAND ${PYTHON_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -157,12 +158,20 @@ install(DIRECTORY driver
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         FILES_MATCHING PATTERN "*.py")
 
-install(FILES header.py extras.py
+install(FILES header.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
 configure_file(__init__.py __init__.py @ONLY)
+configure_file(extras.py extras.py @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/__init__.py
+              ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
+
+install(FILES ../tests/pytest/conftest.py
+              ../tests/pytest/test_psi4_proper.py
+              ../tests/pytest/test_psi4_profiling.py
+              ../tests/pytest/test_psi4_addons.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>
 

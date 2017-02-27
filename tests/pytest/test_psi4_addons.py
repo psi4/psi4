@@ -24,6 +24,8 @@ using_pcmsolver = pytest.mark.skipif(psi4.addons("pcmsolver") is False,
                                 reason="Psi4 not compiled with PCMSolver. Rebuild with -DENABLE_PCMSolver")
 using_simint = pytest.mark.skipif(psi4.addons("simint") is False,
                                 reason="Psi4 not compiled with simint. Rebuild with -DENABLE_simint")
+using_v2rdm_casscf = pytest.mark.skipif(psi4.addons("v2rdm_casscf") is False,
+                                reason="Psi4 not detecting plugin v2rdm_casscf. Build if necessary and add to envvar PYTHONPATH")
 
 
 @using_gdma
@@ -249,15 +251,15 @@ def test_dftd3():
 
     psi4.print_stdout('  -D correction from C-side')
     psi4.activate(mA)
-    psi4.energy('b3lyp-d2p4')
-    ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
-    assert ans
-    psi4.energy('b3lyp-d2gr')
-    ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
-    assert ans
-    psi4.energy('b3lyp-d3zero')
-    ans = psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
-    assert ans
+    #psi4.energy('b3lyp-d2p4')
+    #ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
+    #assert ans
+    #psi4.energy('b3lyp-d2gr')
+    #ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
+    #assert ans
+    #psi4.energy('b3lyp-d3zero')
+    #ans = psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
+    #assert ans
     psi4.energy('b3lyp-d3bj')
     ans = psi4.compare_values(ref_d3bj[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
     assert ans
@@ -265,30 +267,30 @@ def test_dftd3():
     psi4.energy('b3lyp-d2')
     ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')
     assert ans
-    psi4.energy('b3lyp-d3')
-    ans = psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
-    assert ans
-    psi4.energy('b3lyp-d')
-    ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D (alias)')
-    assert ans
+    #psi4.energy('b3lyp-d3')
+    #ans = psi4.compare_values(ref_d3zero[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (alias)')
+    #assert ans
+    #psi4.energy('b3lyp-d')
+    #ans = psi4.compare_values(ref_d2[1], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D (alias)')
+    #assert ans
     psi4.energy('wb97x-d')
     ans = psi4.compare_values(-0.000834247063, psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')
     assert ans
 
     psi4.print_stdout('  non-default -D correction from C-side')
     psi4.activate(mB)
-    psi4.set_options({'dft_dispersion_parameters': [0.75]})
-    psi4.energy('b3lyp-d2p4')
-    ans = psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
-    assert ans
-    psi4.set_options({'dft_dispersion_parameters': [0.75, 20.0]})
-    psi4.energy('b3lyp-d2gr')
-    ans = psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
-    assert ans
-    psi4.set_options({'dft_dispersion_parameters': [1.0,  0.722, 1.217, 14.0]})
-    psi4.energy('b3lyp-d3zero')
-    ans = psi4.compare_values(ref_pbe_d3zero[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
-    assert ans
+    #psi4.set_options({'dft_dispersion_parameters': [0.75]})
+    #psi4.energy('b3lyp-d2p4')
+    #ans = psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling psi4 Disp class)')
+    #assert ans
+    #psi4.set_options({'dft_dispersion_parameters': [0.75, 20.0]})
+    #psi4.energy('b3lyp-d2gr')
+    #ans = psi4.compare_values(ref_pbe_d2[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (calling dftd3 -old)')
+    #assert ans
+    #psi4.set_options({'dft_dispersion_parameters': [1.0,  0.722, 1.217, 14.0]})
+    #psi4.energy('b3lyp-d3zero')
+    #ans = psi4.compare_values(ref_pbe_d3zero[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -zero)')
+    #assert ans
     psi4.set_options({'dft_dispersion_parameters': [1.000, 0.7875, 0.4289, 4.4407]})
     psi4.energy('b3lyp-d3bj')
     ans = psi4.compare_values(ref_pbe_d3bj[2], psi4.get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')
@@ -741,7 +743,7 @@ def test_json():
     ans = psi4.compare_integers(True, return_wfn, "Immutable input")
     assert ans
 
-    with open("output.dat", "w") as f:
+    with open("pytest_output.dat", "w") as f:
         f.write(json_data["output"])
 
 
@@ -782,3 +784,56 @@ def test_cfour():
     assert ans
     ans = psi4.compare_values(-0.282969089769, psi4.get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
     assert ans
+
+
+@using_v2rdm_casscf
+def test_v2rdm_casscf():
+    """v2rdm_casscf/tests/v2rdm1"""
+    #! cc-pvdz N2 (6,6) active space Test DQG
+
+    print('        N2 / cc-pVDZ / DQG(6,6), scf_type = CD / 1e-12, rNN = 0.5 A')
+
+    import v2rdm_casscf
+
+    n2 = psi4.geometry("""
+    0 1
+    n
+    n 1 r
+    """)
+
+    interloper = psi4.geometry("""
+    0 1
+    O
+    H 1 1.0
+    H 1 1.0 2 90.0
+    """)
+
+    psi4.set_options({
+      'basis': 'cc-pvdz',
+      'scf_type': 'cd',
+      'cholesky_tolerance': 1e-12,
+      'd_convergence': 1e-10,
+      'maxiter': 500,
+      'restricted_docc': [ 2, 0, 0, 0, 0, 2, 0, 0 ],
+      'active': [ 1, 0, 1, 1, 0, 1, 1, 1 ],
+    })
+    ##psi4.set_module_options('v2rdm_casscf', {
+    psi4.set_options({
+    #  'positivity': 'dqg',
+      'r_convergence': 1e-5,
+      'e_convergence': 1e-6,
+      'maxiter': 20000,
+    #  #'orbopt_frequency': 1000,
+    #  #'mu_update_frequency': 1000,
+    })
+
+    psi4.activate(n2)
+
+    n2.r     = 0.5
+    refscf   = -103.04337420425350
+    refv2rdm = -103.086205379481
+
+    psi4.energy('v2rdm-casscf', molecule=n2)
+
+    ans = psi4.compare_values(refscf, psi4.get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy")
+    ans = psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
