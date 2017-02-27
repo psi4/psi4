@@ -87,7 +87,7 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
   message(STATUS "Enabling pasture plugins")
 endif()
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
@@ -150,7 +150,7 @@ set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
 
-    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
+# external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(custom_static_library)
