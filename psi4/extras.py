@@ -84,6 +84,7 @@ def _psi4_which(command):
 
 
 def _plugin_import(plug):
+    import sys
     if sys.version_info >= (3, 4):
         from importlib import util
         plug_spec = util.find_spec(plug)
