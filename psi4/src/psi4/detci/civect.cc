@@ -844,7 +844,7 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
             }
          if (offdiag) {
             if (CI_Params_->Ms0 && ((int) CI_Params_->S % 2) &&
-                (!neg_only)) value -= value;
+                (!neg_only)) value = -value;
             if (abs_value >= minval) {
                for (m=0; m<nval; m++) {
                   if (abs_value > fabs(coeff[m])) {
