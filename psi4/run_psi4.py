@@ -34,33 +34,41 @@ import argparse
 from argparse import RawTextHelpFormatter
 
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
-parser.add_argument("-i", "--input", default="input.dat", help="Input file name. Default: input.dat.")
+parser.add_argument("-i", "--input", default="input.dat",
+                    help="Input file name. Default: input.dat.")
 parser.add_argument("-o", "--output", help="""\
 Redirect output elsewhere.
 Default: when input filename is 'input.dat', 'output.dat'.
 Otherwise, output filename defaults to input filename with
 any '.in' or 'dat' extension replaced by '.out'""")
-parser.add_argument("-v", "--verbose", action='store_true', help="Print a lot of information.")
-parser.add_argument("-V", "--version", action='store_true', help="Print version information.")
-
-# parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
-parser.add_argument("-k", "--skip-preprocessor", action='store_true', help="Skips input preprocessing. !Warning! expert option.")
-parser.add_argument("-m", "--messy", action='store_true', help="Leave temporary files after the run is completed.")
-# parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
-
-parser.add_argument("-s", "--scratch", help="Psi4 scratch directory to use. Overrides PSI_SCRATCH.")
-parser.add_argument("-a", "--append", action='store_true', help="Append results to output file. Default: Truncate first")
-parser.add_argument("-l", "--psidatadir",
-                    help="Specifies where to look for the Psi4 data directory. Overrides PSIDATADIR. !Warning! expert option.")
+parser.add_argument("-a", "--append", action='store_true',
+                    help="Appends results to output file. Default: Truncate first")
+parser.add_argument("-V", "--version", action='store_true',
+                    help="Prints version information.")
 parser.add_argument("-n", "--nthread", default=1,
                     help="Number of threads to use. Psi4 disregards OMP_NUM_THREADS/MKL_NUM_THREADS.")
-parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
-parser.add_argument("--psiapi-path", action='store_true', help="""Generates a bash command to source correct Python """
-                                                               """interpreter and path for ``python -c "import psi4"``""")
-parser.add_argument("--inplace", action='store_true', help="Runs psi4 from the source directory. "
-                                                           "!Warning! expert option.")
-parser.add_argument("--json", action='store_true', help="Runs a JSON input file. !Warning! experimental option.")
-parser.add_argument("-t", "--test", action='store_true', help="Runs smoke tests.")
+parser.add_argument("-s", "--scratch",
+                    help="Scratch directory to use. Overrides PSI_SCRATCH.")
+parser.add_argument("-m", "--messy", action='store_true',
+                    help="Leaves temporary files after the run is completed.")
+# parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
+# parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
+parser.add_argument("-p", "--prefix",
+                    help="Prefix name for psi files. Default psi")
+parser.add_argument("--psiapi-path", action='store_true',
+                    help="""Generates a bash command to source correct Python """
+                         """interpreter and path for ``python -c "import psi4"``""")
+parser.add_argument("-v", "--verbose", action='store_true', help="Prints Psithon to Python translation.")
+parser.add_argument("--inplace", action='store_true',
+                    help="Runs Psi4 from the source directory. !Warning! expert option.")
+parser.add_argument("-l", "--psidatadir",
+                    help="Specifies where to look for the Psi4 data directory. Overrides PSIDATADIR. !Warning! expert option.")
+parser.add_argument("-k", "--skip-preprocessor", action='store_true',
+                    help="Skips input preprocessing. !Warning! expert option.")
+parser.add_argument("--json", action='store_true',
+                    help="Runs a JSON input file. !Warning! experimental option.")
+parser.add_argument("-t", "--test", action='store_true',
+                    help="Runs smoke tests.")
 
 # For plugins
 parser.add_argument("--plugin-name", help="""\
@@ -72,7 +80,7 @@ parser.add_argument('--plugin-template', default='basic',
                     choices=['aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
                     help='Selects new plugin template to use.')
 parser.add_argument('--plugin-compile', action='store_true', help="""\
-Generates a CMake command for building a plugin against this psi4 installation.
+Generates a CMake command for building a plugin against this Psi4 installation.
 >>> cd <plugin_directory>
 >>> `psi4 --plugin-compile`
 >>> make
@@ -156,7 +164,7 @@ if args['plugin_name']:
     # This call does not return.
     psi4.plugin.create_plugin(args['plugin_name'], args['plugin_template'])
 
-if args["test"] is not None:
+if args["test"]:
     psi4.test()
     sys.exit()
 
