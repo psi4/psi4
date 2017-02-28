@@ -190,7 +190,7 @@ class EmpericalDispersion(object):
 
     def compute_energy(self, molecule):
         if self.disp_type == 'gr':
-            if self.alias == 'PBEH3C':
+            if self.alias in ['HF3C', 'PBEH3C']:
                 dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
                                              dashparam=self.dash_params, verbose=False, dertype=0)
                 gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=0)
@@ -203,7 +203,7 @@ class EmpericalDispersion(object):
 
     def compute_gradient(self, molecule):
         if self.disp_type == 'gr':
-            if self.alias == 'PBEH3C':
+            if self.alias in ['HF3C', 'PBEH3C']:
                 dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
                                              dashparam=self.dash_params, verbose=False, dertype=1)
                 gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=1)

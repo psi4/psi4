@@ -249,7 +249,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     if verbose:
 
         text = '\n  ==> DFTD3 Output <==\n'
-        text += out
+        text += out.decode('utf-8')
         if dertype != 0:
             with open(derivfile, 'r') as handle:
                 text += handle.read().replace('D', 'E')

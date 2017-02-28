@@ -1,9 +1,9 @@
 #
-#@BEGIN LICENSE
+# @BEGIN LICENSE
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2016 The Psi4 Developers.
+# Copyright (c) 2007-2017 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -22,30 +22,25 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#@END LICENSE
+# @END LICENSE
 #
 
-"""Module with functions that interface with Grimme's DFTD3 code."""
-from __future__ import absolute_import
-from __future__ import print_function
+"""Module with functions that interface with Grimme's GCP code."""
+from __future__ import absolute_import, print_function
 import os
 import re
-#import sys
-#import math
-#import shutil
 import socket
 import random
 import subprocess
 try:
-    from p4xcpt import *
+    from psi4.driver.p4util.exceptions import *
+    from psi4 import core
+    isP4regime = True
 except ImportError:
     from .exceptions import *
-#from .dashparam import *
+    isP4regime = False
 from .p4regex import *
 from .molecule import Molecule
-
-# DGAS This should be removed!
-from psi4 import core
 
 
 def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dashparam=None
@@ -227,6 +222,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     # Parse output
     success = False
     for line in out.splitlines():
+        line = line.decode('utf-8')
         if re.match('  Egcp:', line):
             sline = line.split()
             dashd = float(sline[1])
@@ -268,7 +264,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     if verbose:
 
         text = '\n  ==> GCP Output <==\n'
-        text += out
+        text += out.decode('utf-8')
         if dertype != 0:
             with open(derivfile, 'r') as handle:
                 text += handle.read().replace('D', 'E')

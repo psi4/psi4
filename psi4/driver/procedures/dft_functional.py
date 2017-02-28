@@ -2921,6 +2921,34 @@ def build_hf_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
+def build_hf3c_superfunctional(name, npoints, deriv):
+
+    # call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => user-customization <= #
+
+    # no spaces, keep it short and according to convention
+    sup.set_name('HF3C')
+    # tab in, trailing newlines
+    sup.set_description('    Hartree Fock as Roothan prescribed plus 3C\n')
+    # tab in, trailing newlines
+    sup.set_citation('    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n')
+
+    # 100% exact exchange
+    sup.set_x_alpha(1.0)
+
+    # Zero out other GKS
+    sup.set_c_omega(0.0)
+    sup.set_x_omega(0.0)
+    sup.set_c_alpha(0.0)
+
+    # Dont allocate, no functionals
+    return (sup, False)
+
+
 # Superfunctional lookup table
 superfunctionals = {
         'hf'              : build_hf_superfunctional,
@@ -2956,6 +2984,7 @@ superfunctionals = {
         'bp86'            : build_bp86_superfunctional,
         'pw91'            : build_pw91_superfunctional,
         'pbe'             : build_pbe_superfunctional,
+        'hf3c'            : build_hf3c_superfunctional,
         'pbeh3c'          : build_pbeh3c_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
@@ -3009,6 +3038,7 @@ for key in superfunctionals.keys():
 # Figure out what Grimme functionals we have
 p4_funcs = set(superfunctionals.keys())
 p4_funcs -= set(['b97-d'])
+p4_funcs -= set(['hf3c'])
 p4_funcs -= set(['pbeh3c'])
 for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
     func_list = (set(superfunctional_listues.keys()) & p4_funcs)
@@ -3067,7 +3097,7 @@ def build_superfunctional(alias):
         if not isinstance(sup[0], core.SuperFunctional):
             raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
 
-    elif name == 'pbeh3c':
+    elif name in ['hf3c', 'pbeh3c']:
         func = superfunctionals[name](name, npoints, deriv)[0]
         sup = (func, (name, 'd3bj'))
 
