@@ -63,92 +63,94 @@ void export_wavefunction(py::module& m)
             def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
-            def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "docstring").
-            def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "docstring").
-            def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "docstring").
-            def("same_a_b_dens", &Wavefunction::same_a_b_dens, "docstring").
-            def("nfrzc", &Wavefunction::nfrzc, "docstring").
-            def("nalpha", &Wavefunction::nalpha, "docstring").
-            def("nbeta", &Wavefunction::nbeta, "docstring").
-            def("nso", &Wavefunction::nso, "docstring").
-            def("nmo", &Wavefunction::nmo, "docstring").
-            def("nirrep", &Wavefunction::nirrep, "docstring").
-            def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, "docstring").
-            def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, "docstring").
-            def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "docstring").
-            def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "docstring").
-            def("Ca", &Wavefunction::Ca, "docstring").
-            def("Cb", &Wavefunction::Cb, "docstring").
-            def("Fa", &Wavefunction::Fa, "docstring").
-            def("Fb", &Wavefunction::Fb, "docstring").
-            def("Da", &Wavefunction::Da, "docstring").
-            def("Db", &Wavefunction::Db, "docstring").
-            def("X", &Wavefunction::X, "docstring").
-            def("basis_projection", &Wavefunction::basis_projection, "docstring").
-            def("H", &Wavefunction::H, "docstring").
-            def("S", &Wavefunction::S, "docstring").
-            def("aotoso", &Wavefunction::aotoso, "docstring").
-            def("epsilon_a", &Wavefunction::epsilon_a, "docstring").
-            def("epsilon_b", &Wavefunction::epsilon_b, "docstring").
-            def("basisset", &Wavefunction::basisset, "docstring").
-            def("get_basisset", &Wavefunction::get_basisset, "docstring").
-            def("set_basisset", &Wavefunction::set_basisset, "docstring").
-            def("sobasisset", &Wavefunction::sobasisset, "docstring").
-            def("energy", &Wavefunction::reference_energy, "docstring").
-            def("gradient", &Wavefunction::gradient, "docstring").
-            def("set_gradient", &Wavefunction::set_gradient, "docstring").
-            def("hessian", &Wavefunction::hessian, "docstring").
-            def("set_hessian", &Wavefunction::set_hessian, "docstring").
-            def("frequencies", &Wavefunction::frequencies, "docstring").
-            def("set_frequencies", &Wavefunction::set_frequencies, "docstring").
-            def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "docstring").
-            def("normalmodes", &Wavefunction::normalmodes, "docstring").
+            def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.").
+            def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "Deep copies the internal data.").
+            def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "Returns true if the alpha and beta orbitals are the same.").
+            def("same_a_b_dens", &Wavefunction::same_a_b_dens, "Returns true if the alpha and beta densities are the same.").
+            def("nfrzc", &Wavefunction::nfrzc, "Number of frozen core electrons.").
+            def("nalpha", &Wavefunction::nalpha, "Number of Alpha electrons.").
+            def("nbeta", &Wavefunction::nbeta, "Number of Beta electrons.").
+            def("nso", &Wavefunction::nso, "Number of symmetry orbitals.").
+            def("nmo", &Wavefunction::nmo, "Number of molecule orbitals.").
+            def("nirrep", &Wavefunction::nirrep, "Number of irreps in the system.").
+            def("Ca", &Wavefunction::Ca, "Returns the Alpha Orbitals.").
+            def("Cb", &Wavefunction::Cb, "Returns the Beta Orbitals.").
+            def("Ca_subset", &Wavefunction::Ca_subset, py::return_value_policy::take_ownership, "Returns the requested Alpha Orbital subset.").
+            def("Cb_subset", &Wavefunction::Cb_subset, py::return_value_policy::take_ownership, "Returns the requested Beta Orbital subset.").
+            def("Fa", &Wavefunction::Fa, "Returns the Alpha Fock Matrix.").
+            def("Fb", &Wavefunction::Fb, "Returns the Beta Fock Matrix.").
+            def("Da", &Wavefunction::Da, "Returns the Alpha Density Matrix.").
+            def("Db", &Wavefunction::Db, "Returns the Beta Density Matrix.").
+            def("Da_subset", &Wavefunction::Da_subset, py::return_value_policy::take_ownership, "Returns the requested Alpha Density subset.").
+            def("Db_subset", &Wavefunction::Db_subset, py::return_value_policy::take_ownership, "Returns the requested Beta Density subset.").
+            def("epsilon_a", &Wavefunction::epsilon_a, "Returns the Alpha Eigenvalues.").
+            def("epsilon_b", &Wavefunction::epsilon_b, "Returns the Beta Eigenvalues.").
+            def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "Returns the requested Alpha Eigenvalues subset.").
+            def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "Returns the requested Beta Eigenvalues subset.").
+            def("X", &Wavefunction::X, "Returns the Lagrangian Matrix.").
+            def("basis_projection", &Wavefunction::basis_projection, "Projects a orbital matrix from one basis to another.").
+            def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.").
+            def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.").
+            def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.").
+            def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.").
+            def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.").
+            def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.").
+            def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.").
+            def("energy", &Wavefunction::reference_energy, "Returns the Wavefunctions energy.").
+            def("gradient", &Wavefunction::gradient, "Returns the Wavefunctions gradient.").
+            def("set_gradient", &Wavefunction::set_gradient, "Sets the Wavefunctions gradient.").
+            def("hessian", &Wavefunction::hessian, "Returns the Wavefunctions Hessian.").
+            def("set_hessian", &Wavefunction::set_hessian, "Sets the Wavefunctions Hessian.").
+            def("frequencies", &Wavefunction::frequencies, "Returns the frequencies of the Hessian.").
+            def("set_frequencies", &Wavefunction::set_frequencies, "Sets the frequencies of the Hessian.").
+            def("atomic_point_charges", &Wavefunction::get_atomic_point_charges, "Returns the set atomic point charges.").
+            def("normalmodes", &Wavefunction::normalmodes, "Returns the normal modes of the Wavefunction.").
+            def("set_name", &Wavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.").
             def("name", &Wavefunction::name, py::return_value_policy::copy, "The level of theory this wavefunction corresponds to.").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
-            def("molecule", &Wavefunction::molecule, "docstring").
-            def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "docstring").
-            def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "docstring").
-            def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy, "docstring").
-            def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy, "docstring").
-            def("nalphapi", &Wavefunction::nalphapi, py::return_value_policy::copy, "docstring").
-            def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy, "docstring").
-            def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy, "docstring").
-            def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy, "docstring").
-            def("nalpha", &Wavefunction::nalpha, "docstring").
-            def("nbeta", &Wavefunction::nbeta, "docstring").
+            def("molecule", &Wavefunction::molecule, "Returns the Wavefunctions molecule.").
+            def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy, "Returns the number of doubly occupied orbitals per irrep.").
+            def("soccpi", &Wavefunction::soccpi, py::return_value_policy::copy, "Returns the number of singly occupied orbitals per irrep.").
+            def("nsopi", &Wavefunction::nsopi, py::return_value_policy::copy, "Returns the number of symmetry orbitals per irrep.").
+            def("nmopi", &Wavefunction::nmopi, py::return_value_policy::copy, "Returns the number of molecular orbitals per irrep.").
+            def("nalphapi", &Wavefunction::nalphapi, py::return_value_policy::copy, "Returns the number of alpha orbitals per irrep.").
+            def("nbetapi", &Wavefunction::nbetapi, py::return_value_policy::copy, "Returns the number of beta orbitals per irrep.").
+            def("frzcpi", &Wavefunction::frzcpi, py::return_value_policy::copy, "Returns the number of frozen core orbitals per irrep.").
+            def("frzvpi", &Wavefunction::frzvpi, py::return_value_policy::copy, "Returns the number of frozen virtual orbitals per irrep.").
             def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
-            def("oeprop", &Wavefunction::get_oeprop, "Get the OEProp object associated with this wavefunction").
-            def("set_print", &Wavefunction::set_print, "docstring").
-            def("compute_energy", &Wavefunction::compute_energy, "docstring").
-            def("compute_gradient", &Wavefunction::compute_gradient, "docstring").
-            def("get_variable", &Wavefunction::get_variable, "docstring").
-            def("set_variable", &Wavefunction::set_variable, "docstring").
-            def("variables", &Wavefunction::variables, "docstring").
-            def("get_array", &Wavefunction::get_array, "docstring").
-            def("set_array", &Wavefunction::set_array, "docstring").
-            def("arrays", &Wavefunction::arrays, "docstring");
+            def("oeprop", &Wavefunction::get_oeprop, "Returns the OEProp object associated with this wavefunction").
+            def("set_print", &Wavefunction::set_print, "Sets the print level of the Wavefunction.").
+            def("compute_energy", &Wavefunction::compute_energy, "Computes the energy of the Wavefunction.").
+            def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction").
+            def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.").
+            def("set_variable", &Wavefunction::set_variable, "Sets the requested internal variable.").
+            def("get_variable", &Wavefunction::get_variable, "Returns the requested internal variable.").
+            def("variables", &Wavefunction::variables, "Returns the map of all internal variables.").
+            def("get_array", &Wavefunction::get_array, "Sets the requested internal array.").
+            def("set_array", &Wavefunction::set_array, "Returns the requested internal array.").
+            def("arrays", &Wavefunction::arrays, "Returns the map of all internal arrays.");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
-            def("form_C", &scf::HF::form_C, "docstring").
-            def("form_D", &scf::HF::form_D, "docstring").
-            def("form_V", &scf::HF::form_V, "docstring").
-            def("guess_Ca", &scf::HF::guess_Ca, "docstring").
-            def("guess_Cb", &scf::HF::guess_Cb, "docstring").
-            def("reset_occ", &scf::HF::reset_occ, "docstring").
-            def("set_sad_basissets", &scf::HF::set_sad_basissets, "docstring").
-            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "docstring").
-            def("Va", &scf::HF::Va, "docstring").
-            def("Vb", &scf::HF::Vb, "docstring").
-            def("jk", &scf::HF::jk, "docstring").
-            def("functional", &scf::HF::functional, "docstring").
-            def("V_potential", &scf::HF::V_potential, "docstring").
-            def("initialize", &scf::HF::initialize, "docstring").
-            def("iterations", &scf::HF::iterations, "docstring").
-            def("finalize_E", &scf::HF::finalize_E, "docstring").
-            def("occupation_a", &scf::HF::occupation_a, "docstring").
-            def("occupation_b", &scf::HF::occupation_b, "docstring").
-            def("semicanonicalize", &scf::HF::semicanonicalize, "docstring");
+            def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.").
+            def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices").
+            def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices").
+            def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix").
+            def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix").
+            def("reset_occ", &scf::HF::reset_occ, "If True, the occupation will be reset after the guess to the inital occupation.").
+            def("set_sad_basissets", &scf::HF::set_sad_basissets, "Sets the Superposition of Atomic Densities basisset.").
+            def("set_sad_fitting_basissets", &scf::HF::set_sad_fitting_basissets, "Sets the Superposition of Atomic Densities density-fitted basisset.").
+            def("Va", &scf::HF::Va, "Returns the Alpha Kohn-Shame Potential Matrix.").
+            def("Vb", &scf::HF::Vb, "Returns the Alpha Kohn-Shame Potential Matrix.").
+            def("jk", &scf::HF::jk, "Returns the internal JK object.").
+            def("functional", &scf::HF::functional, "Returns the internal DFT Superfunctional.").
+            def("V_potential", &scf::HF::V_potential, "Returns the internal DFT V object.").
+            def("initialize", &scf::HF::initialize, "Initializes the Wavefunction.").
+            def("iterations", &scf::HF::iterations, "Iterates the Wavefunction until convergence criteria have been met.").
+            def("finalize_E", &scf::HF::finalize_E, "Computes the final SCF energy.").
+            def("occupation_a", &scf::HF::occupation_a, "Returns the Alpha occupation numbers.").
+            def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.").
+            def("semicanonicalize", &scf::HF::semicanonicalize, "Semicanonicalizes the orbitals for ROHF.");
 
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring").
             def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>());
