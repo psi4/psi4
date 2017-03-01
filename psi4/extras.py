@@ -109,6 +109,7 @@ _addons_ = {
     "dftd3": _psi4_which("dftd3"),
     "cfour": _psi4_which("xcfour"),
     "mrcc": _psi4_which("dmrcc"),
+    "gcp": _psi4_which("gcp"),
     "v2rdm_casscf": _plugin_import("v2rdm_casscf"),
 }
 

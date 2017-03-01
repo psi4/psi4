@@ -14,8 +14,7 @@ def test_psi4_basic():
     psi4.set_options({'basis': "cc-pVDZ"})
     psi4.energy('scf')
 
-    ans = psi4.compare_values(-76.0266327341067125, psi4.get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')
-    assert ans
+    assert psi4.compare_values(-76.0266327341067125, psi4.get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')
 
 
 def test_psi4_cas():
@@ -38,8 +37,7 @@ def test_psi4_cas():
 
     cisd_energy, cisd_wfn = psi4.energy("CISD", return_wfn=True)
 
-    ans = psi4.compare_values(-76.2198474477531, cisd_energy, 6, 'CISD Energy')
-    assert ans
+    assert psi4.compare_values(-76.2198474477531, cisd_energy, 6, 'CISD Energy')
 
     psi4.set_options({
         "restricted_docc": [1, 0, 0, 0],
@@ -47,8 +45,7 @@ def test_psi4_cas():
 
     casscf_energy = psi4.energy('casscf', ref_wfn=cisd_wfn)
 
-    ans = psi4.compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
-    assert ans
+    assert psi4.compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
 
 
 def test_psi4_cc():
@@ -70,14 +67,10 @@ def test_psi4_cc():
     refccsd  = -0.20823570806196
     reftotal = -76.2311784355056
 
-    ans = psi4.compare_values(refnuc,   h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")
-    assert ans
-    ans = psi4.compare_values(refscf,   psi4.get_variable("SCF total energy"), 5, "SCF energy")
-    assert ans
-    ans = psi4.compare_values(refccsd,  psi4.get_variable("CCSD correlation energy"), 4, "CCSD contribution")
-    assert ans
-    ans = psi4.compare_values(reftotal, psi4.get_variable("Current energy"), 7, "Total energy")
-    assert ans
+    assert psi4.compare_values(refnuc,   h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")
+    assert psi4.compare_values(refscf,   psi4.get_variable("SCF total energy"), 5, "SCF energy")
+    assert psi4.compare_values(refccsd,  psi4.get_variable("CCSD correlation energy"), 4, "CCSD contribution")
+    assert psi4.compare_values(reftotal, psi4.get_variable("Current energy"), 7, "Total energy")
 
 
 def test_psi4_dfmp2():
@@ -118,10 +111,8 @@ def test_psi4_dfmp2():
 
     e_cp = psi4.energy('mp2', bsse_type='cp')
 
-    ans = psi4.compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy")
-    assert ans
-    ans = psi4.compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")
-    assert ans
+    assert psi4.compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy")
+    assert psi4.compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")
 
 
 def test_psi4_sapt():
@@ -172,18 +163,12 @@ def test_psi4_sapt():
     Edisp = psi4.get_variable("SAPT DISP ENERGY")
     ET    = psi4.get_variable("SAPT0 TOTAL ENERGY")
 
-    ans = psi4.compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy")
-    assert ans
-    ans = psi4.compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")
-    assert ans
-    ans = psi4.compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")
-    assert ans
-    ans = psi4.compare_values(Eref[3], Eind, 6, "SAPT0 Eind")
-    assert ans
-    ans = psi4.compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")
-    assert ans
-    ans = psi4.compare_values(Eref[5], ET, 6, "SAPT0 Etotal")
-    assert ans
+    assert psi4.compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy")
+    assert psi4.compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")
+    assert psi4.compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")
+    assert psi4.compare_values(Eref[3], Eind, 6, "SAPT0 Eind")
+    assert psi4.compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")
+    assert psi4.compare_values(Eref[5], ET, 6, "SAPT0 Etotal")
 
 
 def test_psi4_scfproperty():
@@ -216,7 +201,7 @@ def test_psi4_scfproperty():
         "reference": "uhf"})
 
     ch2.update_geometry()
-    ans = psi4.compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
+    assert psi4.compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")
 
     props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
              'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
@@ -225,46 +210,26 @@ def test_psi4_scfproperty():
 
     psi4.property('scf', properties=props)
 
-    ans = psi4.compare_values(psi4.get_variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF DIPOLE Y'), 0.000000000000, 4, "SCF DIPOLE Y")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF DIPOLE Z'), 0.572697798348, 4, "SCF DIPOLE Z")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XX'), -7.664066833060, 4, "SCF QUADRUPOLE XX")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE YY'), -6.097755074075, 4, "SCF QUADRUPOLE YY")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE ZZ'), -7.074596012050, 4, "SCF QUADRUPOLE ZZ")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XY'), 0.000000000000, 4, "SCF QUADRUPOLE XY")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")
-    assert ans
+    assert psi4.compare_values(psi4.get_variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")
+    assert psi4.compare_values(psi4.get_variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")
+    assert psi4.compare_values(psi4.get_variable('SCF DIPOLE Y'), 0.000000000000, 4, "SCF DIPOLE Y")
+    assert psi4.compare_values(psi4.get_variable('SCF DIPOLE Z'), 0.572697798348, 4, "SCF DIPOLE Z")
+    assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XX'), -7.664066833060, 4, "SCF QUADRUPOLE XX")
+    assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE YY'), -6.097755074075, 4, "SCF QUADRUPOLE YY")
+    assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE ZZ'), -7.074596012050, 4, "SCF QUADRUPOLE ZZ")
+    assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XY'), 0.000000000000, 4, "SCF QUADRUPOLE XY")
+    assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")
+    assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")
 
     psi4.property('B3LYP', properties=props)
 
-    ans = psi4.compare_values(psi4.get_variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP DIPOLE Y'), -0.000000000000, 4, "B3LYP DIPOLE Y")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP DIPOLE Z'), 0.641741521158, 4, "B3LYP DIPOLE Z")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE XX'), -7.616483183211, 4, "B3LYP QUADRUPOLE XX")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE YY'), -6.005896804551, 4, "B3LYP QUADRUPOLE YY")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE ZZ'), -7.021817489904, 4, "B3LYP QUADRUPOLE ZZ")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE XY'), 0.000000000000, 4, "B3LYP QUADRUPOLE XY")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE XZ'), 0.000000000000, 4, "B3LYP QUADRUPOLE XZ")
-    assert ans
-    ans = psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3LYP QUADRUPOLE YZ")
-    assert ans
+    assert psi4.compare_values(psi4.get_variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")
+    assert psi4.compare_values(psi4.get_variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")
+    assert psi4.compare_values(psi4.get_variable('B3LYP DIPOLE Y'), -0.000000000000, 4, "B3LYP DIPOLE Y")
+    assert psi4.compare_values(psi4.get_variable('B3LYP DIPOLE Z'), 0.641741521158, 4, "B3LYP DIPOLE Z")
+    assert psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE XX'), -7.616483183211, 4, "B3LYP QUADRUPOLE XX")
+    assert psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE YY'), -6.005896804551, 4, "B3LYP QUADRUPOLE YY")
+    assert psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE ZZ'), -7.021817489904, 4, "B3LYP QUADRUPOLE ZZ")
+    assert psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE XY'), 0.000000000000, 4, "B3LYP QUADRUPOLE XY")
+    assert psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE XZ'), 0.000000000000, 4, "B3LYP QUADRUPOLE XZ")
+    assert psi4.compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3LYP QUADRUPOLE YZ")

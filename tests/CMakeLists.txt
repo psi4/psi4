@@ -217,3 +217,7 @@ if(ENABLE_PCMSolver)
     add_subdirectory(pcmsolver)
     message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
+
+
+# pytest regime
+add_subdirectory(pytest)

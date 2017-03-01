@@ -143,7 +143,7 @@ How to build, test, and install Psi4, in detail
 
 **5. Test**
 
-   Optionally, use CTest or pytest to test the build.
+   Optionally, use CTest (thorough) or pytest (cursory) to test the build.
 
    * :ref:`faq:minutetests`
    * :ref:`faq:subsettests`
@@ -153,6 +153,8 @@ How to build, test, and install Psi4, in detail
    ::
 
    >>> ctest -j`getconf _NPROCESSORS_ONLN`
+
+   >>> make pytest
 
 **6. Install**
 
@@ -1265,6 +1267,9 @@ CTest installed, the following command can be useful. ::
 
     >>> ctest -L smoke -j`getconf _NPROCESSORS_ONLN`
 
+If you have pytest installed, very similar coverage is obtained through::
+
+    >>> make pytest
 
 .. _`faq:subsettests`:
 
@@ -1318,12 +1323,17 @@ How to test a Psi4 installation
 machinery and so can only be performed from :samp:`{objdir}`
 (staged installation). To test an installed |PSIfour| (full or staged
 installation), a limited number of "smoke" tests are available to be
-run via pytest. ::
+run via pytest.
+
+  * From the executable::
+
+    psi4 --test
+
+  * From the library (|PSIfour| must be detectable as a Python
+    module. See the setup note at :ref:`faq:runordinarymodule`
+    if needed.)::
 
     python -c "import psi4; psi4.test()"
-
-For the above to work, |PSIfour| must be detectable as a Python
-module. See the note at :ref:`faq:runordinarymodule` for setup if needed.
 
 
 .. _`faq:writepsi4`:
