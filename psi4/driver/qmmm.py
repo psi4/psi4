@@ -145,7 +145,7 @@ class QMMM(object):
         position (*x*, *y*, *z*) Angstroms.
 
         """
-        self.charges.append([Q, x / p4const.psi_bohr2angstroms, y / p4const.psi_bohr2angstroms, z / p4const.psi_bohr2angstroms])
+        self.charges.append([Q, x / constants.bohr2angstroms, y / constants.bohr2angstroms, z / constants.bohr2angstroms])
 
     def __str__(self):
 

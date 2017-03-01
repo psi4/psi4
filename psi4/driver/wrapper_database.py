@@ -38,7 +38,7 @@ import warnings
 import pickle
 import copy
 import collections
-from psi4.driver import p4const
+from psi4.driver import constants
 from psi4.driver.driver import *
 # never import aliases into this file
 
@@ -686,10 +686,10 @@ def database(name, db_name, **kwargs):
             ERXN[db_rxn] = 0.0
             for i in range(len(ACTV[db_rxn])):
                 ERXN[db_rxn] += ERGT[ACTV[db_rxn][i]] * RXNM[db_rxn][ACTV[db_rxn][i]]
-            error = p4const.psi_hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
+            error = constants.hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
 
-            tables += """\n%23s   %8.4f %8.4f %10.4f %10.4f""" % (db_rxn, BIND[db_rxn], p4const.psi_hartree2kcalmol * ERXN[db_rxn],
-                error, error * p4const.psi_cal2J)
+            tables += """\n%23s   %8.4f %8.4f %10.4f %10.4f""" % (db_rxn, BIND[db_rxn], constants.hartree2kcalmol * ERXN[db_rxn],
+                error, error * constants.cal2J)
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -709,11 +709,11 @@ def database(name, db_name, **kwargs):
         MADerror /= float(count_rxn)
         RMSDerror = math.sqrt(RMSDerror / float(count_rxn))
 
-        tables += """%23s %19s %10.4f %10.4f\n""" % ('Minimal Dev', '', minDerror, minDerror * p4const.psi_cal2J)
-        tables += """%23s %19s %10.4f %10.4f\n""" % ('Maximal Dev', '', maxDerror, maxDerror * p4const.psi_cal2J)
-        tables += """%23s %19s %10.4f %10.4f\n""" % ('Mean Signed Dev', '', MSDerror, MSDerror * p4const.psi_cal2J)
-        tables += """%23s %19s %10.4f %10.4f\n""" % ('Mean Absolute Dev', '', MADerror, MADerror * p4const.psi_cal2J)
-        tables += """%23s %19s %10.4f %10.4f\n""" % ('RMS Dev', '', RMSDerror, RMSDerror * p4const.psi_cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Minimal Dev', '', minDerror, minDerror * constants.cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Maximal Dev', '', maxDerror, maxDerror * constants.cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Mean Signed Dev', '', MSDerror, MSDerror * constants.cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('Mean Absolute Dev', '', MADerror, MADerror * constants.cal2J)
+        tables += """%23s %19s %10.4f %10.4f\n""" % ('RMS Dev', '', RMSDerror, RMSDerror * constants.cal2J)
         tables += """   %s\n""" % (table_delimit)
 
         core.set_variable('%s DATABASE MEAN SIGNED DEVIATION' % (db_name), MSDerror)

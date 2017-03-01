@@ -2002,13 +2002,13 @@ def run_scf_hessian(name, **kwargs):
     else:
         nexternal = 6
 
-    fcscale = psi_hartree2J / (psi_bohr2m * psi_bohr2m * psi_amu2kg);
+    fcscale = constants.hartree2J / (constants.bohr2m * constants.bohr2m * constants.amu2kg);
     fc = fcscale * np.linalg.eigvalsh(mwhess)
     # Sort by magnitude of the force constants, to project out rot/vib
     ordering = np.argsort(np.abs(fc))
     projected = fc[ordering][nexternal:]
     freqs = np.sqrt(np.abs(projected))
-    freqs *= 1.0 / (2.0 * np.pi * psi_c * 100.0)
+    freqs *= 1.0 / (2.0 * np.pi * constants.c * 100.0)
     freqs[projected < 0] *= -1
     freqs.sort()
 
@@ -3204,8 +3204,8 @@ def run_sapt(name, **kwargs):
     core.set_global_option('DF_INTS_IO', df_ints_io)
 
     if core.get_option('SCF', 'REFERENCE') == 'RHF':
-        core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-        core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     core.IO.set_default_namespace('dimer')
     core.set_local_option('SAPT', 'E_CONVERGENCE', 10e-10)
@@ -3415,21 +3415,21 @@ def run_sapt_ct(name, **kwargs):
     core.print_out('\n')
     p4util.banner('Dimer Basis SAPT')
     core.print_out('\n')
-    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
-    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
     CTd = core.get_variable('SAPT CT ENERGY')
 
     core.print_out('\n')
     p4util.banner('Monomer Basis SAPT')
     core.print_out('\n')
-    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
-    core.IO.change_file_namespace(p4const.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
+    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
+    core.IO.change_file_namespace(constants.PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerAm_wfn, monomerBm_wfn)
     CTm = core.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm
 
-    units = (1000.0, p4const.psi_hartree2kcalmol, p4const.psi_hartree2kJmol)
+    units = (1000.0, constants.hartree2kcalmol, constants.hartree2kJmol)
     core.print_out('\n\n')
     core.print_out('    SAPT Charge Transfer Analysis\n')
     core.print_out('  ------------------------------------------------------------------------------------------------\n')

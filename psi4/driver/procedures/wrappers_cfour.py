@@ -583,7 +583,7 @@ def vpt2_reaprun_files(item, linkage, isSowReap, isC4notP4, isC4fully, zmat, out
 
             fje = results['CURRENT ENERGY']
             fjgrd = results['CURRENT GRADIENT']
-            fjdip = [item / p4const.psi_dipmom_au2debye for item in results['CURRENT DIPOLE']]
+            fjdip = [item / constants.dipmom_au2debye for item in results['CURRENT DIPOLE']]
             c4mol = qcdb.Molecule(results['CURRENT MOLECULE'])
             c4mol.update_geometry()
 
@@ -612,9 +612,9 @@ def vpt2_reaprun_files(item, linkage, isSowReap, isC4notP4, isC4fully, zmat, out
 
             fje = core.get_variable('CURRENT ENERGY')
             fjgrd = p4util.mat2arr(core.get_gradient())
-            fjdip = [core.get_variable('CURRENT DIPOLE X') / p4const.psi_dipmom_au2debye,
-                     core.get_variable('CURRENT DIPOLE Y') / p4const.psi_dipmom_au2debye,
-                     core.get_variable('CURRENT DIPOLE Z') / p4const.psi_dipmom_au2debye]
+            fjdip = [core.get_variable('CURRENT DIPOLE X') / constants.dipmom_au2debye,
+                     core.get_variable('CURRENT DIPOLE Y') / constants.dipmom_au2debye,
+                     core.get_variable('CURRENT DIPOLE Z') / constants.dipmom_au2debye]
             c4mol = qcdb.Molecule(core.get_active_molecule().create_psi4_string_from_molecule())
             c4mol.update_geometry()
 
@@ -651,7 +651,7 @@ def vpt2_reaprun_files(item, linkage, isSowReap, isC4notP4, isC4fully, zmat, out
 
             fje = results['CURRENT ENERGY']
             fjgrd = results['CURRENT GRADIENT']
-            fjdip = [item / p4const.psi_dipmom_au2debye for item in results['CURRENT DIPOLE']]
+            fjdip = [item / constants.dipmom_au2debye for item in results['CURRENT DIPOLE']]
 
         # C: Run the job and collect results
         else:
@@ -662,9 +662,9 @@ def vpt2_reaprun_files(item, linkage, isSowReap, isC4notP4, isC4fully, zmat, out
 
             fje = core.get_variable('CURRENT ENERGY')
             fjgrd = p4util.mat2arr(core.get_gradient())
-            fjdip = [core.get_variable('CURRENT DIPOLE X') / p4const.psi_dipmom_au2debye,
-                     core.get_variable('CURRENT DIPOLE Y') / p4const.psi_dipmom_au2debye,
-                     core.get_variable('CURRENT DIPOLE Z') / p4const.psi_dipmom_au2debye]
+            fjdip = [core.get_variable('CURRENT DIPOLE X') / constants.dipmom_au2debye,
+                     core.get_variable('CURRENT DIPOLE Y') / constants.dipmom_au2debye,
+                     core.get_variable('CURRENT DIPOLE Z') / constants.dipmom_au2debye]
 
         # Transform results into C4 orientation (defined by c4mol) & forge FJOBARC file
         fjobarc = qcdb.cfour.format_fjobarc(fje,

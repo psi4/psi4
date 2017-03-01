@@ -34,7 +34,7 @@ import sys
 import inspect
 import os
 
-from psi4.driver.p4const import *
+from psi4.driver.constants import *
 from psi4.driver.p4util import *
 from psi4 import core
 from . import findif_response_utils
@@ -150,11 +150,11 @@ def run_roa(name, **kwargs):
 # wavelength = copy.copy(omega[0])
 # # Set up units for scatter.cc
 # if units == 'NM':
-#     wavelength = (psi_c * psi_h * 1*(10**-9))/(wavelength * psi_hartree2J)
+#     wavelength = (constants.c * constants.h * 1*(10**-9))/(wavelength * constants.hartree2J)
 # if units == 'HZ':
-#     wavelength = wavelength * psi_h / psi_hartree2J
+#     wavelength = wavelength * constants.h / constants.hartree2J
 # if units == 'EV':
-#     wavelength = wavelength / psi_hartree2ev
+#     wavelength = wavelength / constants.hartree2ev
 # if units == 'atomic':
 #     pass
 # ################################

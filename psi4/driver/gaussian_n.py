@@ -36,7 +36,7 @@ import warnings
 from psi4 import core
 from psi4.driver import driver
 from psi4.driver import p4util
-from psi4.driver import p4const
+from psi4.driver import constants
 #from driver import *
 # never import aliases into this file
 
@@ -77,7 +77,7 @@ def run_gaussian_2(name, **kwargs):
     freqsum = 0.0
     for i in range(0, nfreq):
         freqsum += freqs.get(i)
-    zpe = freqsum / p4const.psi_hartree2wavenumbers * 0.8929 * 0.5
+    zpe = freqsum / constants.hartree2wavenumbers * 0.8929 * 0.5
     core.clean()
 
     # optimize geometry at mp2 (no frozen core) level
