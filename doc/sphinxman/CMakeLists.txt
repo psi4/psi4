@@ -213,12 +213,16 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
 
     # Autodoc efp fragments
-    add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
-        OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
-        DEPENDS ${CCSD}/document_efpfrag.py
-                ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/*efp
-        COMMENT "Autodoc efp fragments")
+    if(${ENABLE_libefp})
+        add_custom_command(
+            COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
+            OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
+            DEPENDS ${CCSD}/document_efpfrag.py
+                    ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/*efp
+            COMMENT "Autodoc efp fragments")
+    else()
+        file(WRITE ${CCBD}/source/autodoc_available_efpfrag.rst "")
+    endif()
 
 
     # Format git log for feed

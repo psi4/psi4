@@ -55,6 +55,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf 
                   dft-freq dft-grad dft-pbe0-2 dft-psivar dft-b3lyp dft1 
                   dft1-alt dft2 dft3 docs-bases docs-dft extern1 extern2
+                  fsapt1 fsapt2 isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
@@ -82,7 +83,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   scf2 scf3 scf4 scf5 scf6 scf-property soscf1 soscf2 stability1
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
-                  options1 fsapt1 fsapt2 isapt1 isapt2 cubeprop-esp
+                  options1 cubeprop-esp
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
