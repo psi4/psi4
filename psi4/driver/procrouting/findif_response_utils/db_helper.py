@@ -43,7 +43,7 @@ import os
 
 from psi4 import core
 from psi4.driver import p4util
-from psi4.driver.p4const import *
+from psi4.driver.constants import *
 
 
 

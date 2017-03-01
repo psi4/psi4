@@ -32,7 +32,7 @@ from psi4 import core
 from psi4.driver import qcdb
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.procedures import *
+from psi4.driver.procrouting import *
 
 
 def _method_exists(ptype, method_name):

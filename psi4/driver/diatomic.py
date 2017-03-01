@@ -30,7 +30,7 @@ from math import sqrt, pi
 import numpy as np
 
 from psi4 import core
-from psi4.driver import p4const
+from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 
 
@@ -85,7 +85,7 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
                  corresponding to the spectroscopic constants in cm-1
     """
 
-    angstrom_to_bohr = 1.0 / p4const.psi_bohr2angstroms
+    angstrom_to_bohr = 1.0 / constants.bohr2angstroms
     angstrom_to_meter = 10e-10;
 
     # Make sure the input is valid
@@ -126,21 +126,21 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
         raise Exception("Minimum energy point is outside range of points provided.  Use a higher range of r values.")
 
     # Convert to convenient units, and compute spectroscopic constants
-    d0,d1,d2,d3,d4 = derivs*p4const.psi_hartree2aJ
+    d0,d1,d2,d3,d4 = derivs*constants.hartree2aJ
     core.print_out("\nEquilibrium Energy %20.14f Hartrees\n" % e)
     core.print_out("Gradient           %20.14f\n" % g)
     core.print_out("Quadratic Force Constant %14.7f MDYNE/A\n" % d2)
     core.print_out("Cubic Force Constant     %14.7f MDYNE/A**2\n" % d3)
     core.print_out("Quartic Force Constant   %14.7f MDYNE/A**3\n" % d4)
 
-    hbar = p4const.psi_h / (2.0 * pi)
-    mu = ((m1*m2)/(m1+m2))*p4const.psi_amu2kg
+    hbar = constants.h / (2.0 * pi)
+    mu = ((m1*m2)/(m1+m2))*constants.amu2kg
     we = 5.3088375e-11*sqrt(d2/mu)
     wexe = (1.2415491e-6)*(we/d2)**2 * ((5.0*d3*d3)/(3.0*d2)-d4)
 
     # Rotational constant: Be
-    I = ((m1*m2)/(m1+m2)) * p4const.psi_amu2kg * (re * angstrom_to_meter)**2
-    B = p4const.psi_h / (8.0 * pi**2 * p4const.psi_c * I)
+    I = ((m1*m2)/(m1+m2)) * constants.amu2kg * (re * angstrom_to_meter)**2
+    B = constants.h / (8.0 * pi**2 * constants.c * I)
 
     # alpha_e and quartic centrifugal distortion constant
     ae = -(6.0 * B**2 / we) * ((1.05052209e-3*we*d3)/(sqrt(B * d2**3))+1.0)
@@ -148,8 +148,8 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
 
     # B0 and r0 (plus re check using Be)
     B0 = B - ae / 2.0
-    r0 = sqrt(p4const.psi_h / (8.0 * pi**2 * mu * p4const.psi_c * B0))
-    recheck = sqrt(p4const.psi_h / (8.0 * pi**2 * mu * p4const.psi_c * B))
+    r0 = sqrt(constants.h / (8.0 * pi**2 * mu * constants.c * B0))
+    recheck = sqrt(constants.h / (8.0 * pi**2 * mu * constants.c * B))
     r0 /= angstrom_to_meter;
     recheck /= angstrom_to_meter;
 
@@ -176,8 +176,8 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
             maxR = np.max(rvals)
 
             # Plot vibrational energy levels
-            we_au = we / p4const.psi_hartree2wavenumbers
-            wexe_au = wexe / p4const.psi_hartree2wavenumbers
+            we_au = we / constants.hartree2wavenumbers
+            wexe_au = wexe / constants.hartree2wavenumbers
             coefs2 = [ dvals[2], dvals[1], dvals[0] ]
             coefs4 = [ dvals[4], dvals[3], dvals[2], dvals[1], dvals[0] ]
             for n in range(3):

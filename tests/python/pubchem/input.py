@@ -1,5 +1,5 @@
 import psi4
-from psi4.driver.p4const.physconst import psi_hartree2ev
+from psi4.driver.constants.physconst import hartree2ev
 
 psi4.set_output_file("output.dat", False)
 
@@ -27,8 +27,8 @@ e_trip_rohf = psi4.energy('scf')
 psi4.set_options({"REFERENCE" : "UHF"})
 e_trip_uhf  = psi4.energy('scf')
 
-vertical_uhf  = psi_hartree2ev * (e_trip_uhf  - e_sing_rhf)
-vertical_rohf = psi_hartree2ev * (e_trip_rohf - e_sing_rhf)
+vertical_uhf  = hartree2ev * (e_trip_uhf  - e_sing_rhf)
+vertical_rohf = hartree2ev * (e_trip_rohf - e_sing_rhf)
 psi4.core.print_out("\nSinglet-Triplet gap (vertical, UHF)   = %8.2f eV\n" % vertical_uhf)
 psi4.core.print_out("\nSinglet-Triplet gap (vertical, ROHF)  = %8.2f eV\n" % vertical_rohf)
 

@@ -769,7 +769,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from psi4.driver.driver_cbs import xtpl_highest_1, scf_xtpl_helgaker_2, scf_xtpl_helgaker_3, corl_xtpl_helgaker_2\n'
     imports += 'from psi4.driver.wrapper_database import database, db, DB_RGT, DB_RXN\n'
     imports += 'from psi4.driver.wrapper_autofrag import auto_fragments\n'
-    imports += 'from psi4.driver.p4const.physconst import *\n'
+    imports += 'from psi4.driver.constants.physconst import *\n'
     imports += 'psi4_io = core.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
@@ -797,6 +797,12 @@ def process_input(raw_input, print_level=1):
     # Move up the psi4.core namespace
     for func in dir(core):
         temp = temp.replace("psi4." + func, "psi4.core." + func)
+
+    # Move pseudonamespace for physconst into proper namespace
+    from psi4.driver.p4util import constants
+    for pc in dir(constants.physconst):
+        if not pc.startswith('__'):
+            temp = temp.replace('psi_' + pc, 'psi4.constants.' + pc)
 
     return temp
 

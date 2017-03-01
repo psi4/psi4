@@ -31,7 +31,7 @@ import math
 import re
 
 from psi4 import core
-from psi4.driver.p4util import p4const
+from psi4.driver.p4util import constants
 from psi4.driver.inputparser import process_pubchem_command, pubchemre
 
 
@@ -254,7 +254,7 @@ def BFS(self):
         while Queue:                     # BFS within a fragment
             for u in Queue:              # find all white neighbors to vertex u
                 for i in White:
-                    dist = p4const.psi_bohr2angstroms * math.sqrt(
+                    dist = constants.bohr2angstroms * math.sqrt(
                            (self.x(i) - self.x(u)) ** 2 +
                            (self.y(i) - self.y(u)) ** 2 +
                            (self.z(i) - self.z(u)) ** 2)

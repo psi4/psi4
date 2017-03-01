@@ -56,7 +56,7 @@ sub read_file {
 # Now, grab the physical constants
 #
 my $PhysconstFile = $DriverPath . "../../psi4/include/psi4/physconst.h";
-my $PyPhysconstFile = $DriverPath . "../../psi4/driver/p4const/physconst.py";
+my $PyPhysconstFile = $DriverPath . "../../psi4/driver/constants/physconst.py";
 open(PHYSCONST, "<$PhysconstFile") or die "I can't open $PhysconstFile\n";
 open(TEXOUT, ">physconst.tex") or die "I can't write to physconst.tex\n";
 open(PYOUT, ">$PyPhysconstFile") or die "I can't write to $PyPhysconstFile\n";
@@ -73,12 +73,12 @@ printf RSTOUT "   +-%-23s-+-%-20s-+-%-100s-+\n", ('-' x 23), ('-' x 20), ('-' x 
 printf RSTOUT "   | %-23s | %-20s | %-100s |\n", "Label", "Value", "Description";
 printf RSTOUT "   +=%23s=+=%20s=+=%100s=+\n", ('=' x 23), ('=' x 20), ('=' x 100);
 while(<PHYSCONST>){
-    next unless /\s*#define\s+pc(\w+)\s+([-Ee0-9.]+)\s+\/\*-(.*)-\*\//;
+    next unless /\s*#define\s+pc_(\w+)\s+([-Ee0-9.]+)\s+\/\*-(.*)-\*\//;
     my $Var     = $1;
     my $Val     = $2;
     my $Comment = $3;
-    printf PYOUT "psi%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
-    printf RSTOUT "   | %23s | %-20s | %-100s |\n", "psi" . $Var, $Val, $Comment;
+    printf PYOUT "%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
+    printf RSTOUT "   | %23s | %-20s | %-100s |\n", $Var, $Val, $Comment;
     printf RSTOUT "   +-%-23s-+-%-20s-+-%-100s-+\n", ('-' x 23), ('-' x 20), ('-' x 100);
     $Var =~ s/_/\\_/g; # Make things TeX-friendly
     $Comment =~ s/_/\\_/g; # Make things TeX-friendly
