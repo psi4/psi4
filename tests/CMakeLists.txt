@@ -179,6 +179,18 @@ if(ENABLE_erd)
     message(STATUS "Adding test cases: Psi4 + erd")
 endif()
 
+# <<<  gCP  >>>
+
+find_program(gCP_EXECUTABLE
+             NAMES gcp
+             DOC "Path to Grimme's gCP executable")
+
+if(gCP_EXECUTABLE)
+    add_subdirectory(gcp)
+    message(STATUS "${Cyan}Found gCP${ColourReset}: ${gCP_EXECUTABLE}")
+    message(STATUS "Adding test cases: Psi4 + gCP")
+endif()
+
 # <<<  GDMA  >>>
 
 if(ENABLE_gdma)

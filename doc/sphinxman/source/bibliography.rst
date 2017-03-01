@@ -362,3 +362,11 @@ Bibliography
    *Modern Quantum Chemistry: Introduction to Advanced Electronic Structure Theory*
    **1982** ISBN:0486691861
 
+.. [Grimme:2015:054107]
+   S. Grimme, J. Brandenburg, C. Bannwarth, and A. Hansen,
+   *J. Chem. Phys.* **143**, 054107 (2015).
+
+.. [Sure:2013:1672]
+   R. Sure and S. Grimme,
+   *J. Comput. Chem.* **15**, 1672 (2013).
+

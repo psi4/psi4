@@ -1188,6 +1188,12 @@ def scf_helper(name, **kwargs):
         else:
             core.set_local_option('SCF', 'GUESS', 'CORE')
 
+    if core.get_global_option('BASIS') == '':
+        if name == 'hf3c':
+            core.set_global_option('BASIS', 'minix')
+        elif name == 'pbeh3c':
+            core.set_global_option('BASIS', 'def2-msvp')
+
     # the FIRST scf call
     if cast or do_broken:
         # Cast or broken are special cases

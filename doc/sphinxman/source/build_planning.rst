@@ -253,7 +253,7 @@ Additionally, there are runtime-only capabilities:
 
 * dftd3 |w---w| :ref:`[what is this?] <sec:dftd3>`
 
-* gcp
+* gcp |w---w| :ref:`[what is this?] <sec:gcp`
 
 * mrcc |w---w| :ref:`[what is this?] <sec:mrcc>`
 

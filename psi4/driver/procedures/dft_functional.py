@@ -1287,6 +1287,45 @@ def build_pbe0_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
+def build_pbeh3c_superfunctional(name, npoints, deriv):
+
+    # call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => user-customization <= #
+
+    # no spaces, keep it short and according to convention
+    sup.set_name('PBEH3C')
+    # tab in, trailing newlines
+    sup.set_description('    PBE-3C Hybrid GGA Exchange-Correlation Functional\n')
+    # tab in, trailing newlines
+    sup.set_citation('    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n')
+
+    # add member functionals
+    pbe_x3c = build_functional('PBE_X')
+    pbe_x3c.set_parameter('PBE_kp', 1.0245)
+    pbe_x3c.set_parameter('PBE_mu', 0.12345679)
+    sup.add_x_functional(pbe_x3c)
+    
+    pbe_c3c = build_functional('PBE_C')
+    pbe_c3c.set_parameter('bet', 0.03)
+    sup.add_c_functional(pbe_c3c)
+
+    # set gks up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.42)
+    sup.set_c_alpha(0.0)
+
+    # => end user-customization <= #
+
+    # call this last
+    sup.allocate()
+    return sup, False
+
+
 def build_sogga_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -2882,6 +2921,34 @@ def build_hf_superfunctional(name, npoints, deriv):
     return (sup, False)
 
 
+def build_hf3c_superfunctional(name, npoints, deriv):
+
+    # call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => user-customization <= #
+
+    # no spaces, keep it short and according to convention
+    sup.set_name('HF3C')
+    # tab in, trailing newlines
+    sup.set_description('    Hartree Fock as Roothan prescribed plus 3C\n')
+    # tab in, trailing newlines
+    sup.set_citation('    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n')
+
+    # 100% exact exchange
+    sup.set_x_alpha(1.0)
+
+    # Zero out other GKS
+    sup.set_c_omega(0.0)
+    sup.set_x_omega(0.0)
+    sup.set_c_alpha(0.0)
+
+    # Dont allocate, no functionals
+    return (sup, False)
+
+
 # Superfunctional lookup table
 superfunctionals = {
         'hf'              : build_hf_superfunctional,
@@ -2917,6 +2984,8 @@ superfunctionals = {
         'bp86'            : build_bp86_superfunctional,
         'pw91'            : build_pw91_superfunctional,
         'pbe'             : build_pbe_superfunctional,
+        'hf3c'            : build_hf3c_superfunctional,
+        'pbeh3c'          : build_pbeh3c_superfunctional,
         'ft97'            : build_ft97_superfunctional,
         'b3lyp'           : build_b3lyp_superfunctional,
         'b3lyp5'          : build_b3lyp5_superfunctional,
@@ -2969,6 +3038,8 @@ for key in superfunctionals.keys():
 # Figure out what Grimme functionals we have
 p4_funcs = set(superfunctionals.keys())
 p4_funcs -= set(['b97-d'])
+p4_funcs -= set(['hf3c'])
+p4_funcs -= set(['pbeh3c'])
 for dashlvl, superfunctional_listues in dftd3.dashcoeff.items():
     func_list = (set(superfunctional_listues.keys()) & p4_funcs)
     for func in func_list:
@@ -3025,6 +3096,10 @@ def build_superfunctional(alias):
         sup = (core.get_option("DFT_CUSTOM_FUNCTIONAL"), False)
         if not isinstance(sup[0], core.SuperFunctional):
             raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
+
+    elif name in ['hf3c', 'pbeh3c']:
+        func = superfunctionals[name](name, npoints, deriv)[0]
+        sup = (func, (name, 'd3bj'))
 
     elif name in superfunctionals.keys():
         sup = superfunctionals[name](name, npoints, deriv)
