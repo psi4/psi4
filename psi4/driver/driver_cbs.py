@@ -41,7 +41,7 @@ from psi4.driver import driver_util
 from psi4.driver import constants
 
 from psi4.driver.p4util.exceptions import *
-from psi4.driver.procedures.interface_cfour import cfour_psivar_list
+from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
 
 zeta_values = ['d', 't', 'q', '5', '6', '7', '8']
 zeta_val2sym = {k + 2: v for k, v in zip(range(7), zeta_values)}
