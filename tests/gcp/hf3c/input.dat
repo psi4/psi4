@@ -21,6 +21,7 @@ digits = 6
 #digits = 3
 
 # from suppmat of Grimme's HF-3c paper
+# Table S6 file:///Users/loriab/Downloads/jz5021313_si_001.pdf
 ans22 = [2.64, 5.93, 18.05, 15.47, 20.75, 18.07, 17.27, 0.56, 1.73, 1.57,
          3.47, 4.64, 8.40, 4.82, 10.43, 1.64, 3.52, 2.55, 3.92, 2.82, 5.57, 7.98]
 ans22 = [-x for x in ans22]
@@ -110,10 +111,10 @@ for rxn in [4, 8, 16, 20]:
             627.5095 * ie(hf3c_d3),
             627.5095 * ie(hf3c_hf)))
 
-    compare_values(orca22[rxn-1], hf3c, digits, 'HF-3c for S22-{}'.format(rxn))
+    compare_values(orca22[rxn-1], hf3c, digits, 'HF-3c for S22-{}'.format(rxn))  #TEST
 
     if rxn == 8:
         EE = energy('hf3c', molecule=di, bsse_type='nocp')
-        compare_values(orca22[rxn-1], EE, digits, ' " hf-3c')
+        compare_values(orca22[rxn-1], EE, digits, ' " hf-3c')  #TEST
         EE = energy('hf3c/minix', molecule=di, bsse_type='nocp')
-        compare_values(orca22[rxn-1], EE, digits, ' " hf-3c/minix')
+        compare_values(orca22[rxn-1], EE, digits, ' " hf-3c/minix')  #TEST

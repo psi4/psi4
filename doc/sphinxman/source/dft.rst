@@ -676,6 +676,8 @@ Dispersion Corrections
 
 :ref:`Dispersion corrections are discussed here. <sec:dftd3>`
 
+:ref:`HF-3c and PBEh-3c dispersion and BSSE corrections are discussed here. <sec:gcp>`
+
 Recommendations
 ~~~~~~~~~~~~~~~
 

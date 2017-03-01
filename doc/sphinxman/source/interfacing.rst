@@ -49,6 +49,7 @@ platform capabilities, *etc*.
    libefp
    erd
    fchk
+   gcp
    gdma
    libint
    pcmsolver

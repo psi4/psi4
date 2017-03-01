@@ -1,83 +1,4 @@
-memory 15 gb
-
-#molecule eneyne {
-#C   0.000000  -0.667578  -2.124659
-#C   0.000000   0.667578  -2.124659
-#H   0.923621  -1.232253  -2.126185
-#H  -0.923621  -1.232253  -2.126185
-#H  -0.923621   1.232253  -2.126185
-#H   0.923621   1.232253  -2.126185
-#--
-#C   0.000000   0.000000   2.900503
-#C   0.000000   0.000000   1.693240
-#H   0.000000   0.000000   0.627352
-#H   0.000000   0.000000   3.963929
-#}
-#
-#eneyne.update_geometry()
-
-#molecule s3 {
-#0 1
-#C  -1.888896  -0.179692   0.000000
-#O  -1.493280   1.073689   0.000000
-#O  -1.170435  -1.166590   0.000000
-#H  -2.979488  -0.258829   0.000000
-#H  -0.498833   1.107195   0.000000
-#--
-#0 1
-#C   1.888896   0.179692   0.000000
-#O   1.493280  -1.073689   0.000000
-#O   1.170435   1.166590   0.000000
-#H   2.979488   0.258829   0.000000
-#H   0.498833  -1.107195   0.000000
-#symmetry c1
-#}
-#
-#molecule s8 {
-#C   0.000000  -0.000140   1.859161
-#H  -0.888551   0.513060   1.494685
-#H   0.888551   0.513060   1.494685
-#H   0.000000  -1.026339   1.494868
-#H   0.000000   0.000089   2.948284
-#--
-#0 1
-#C   0.000000   0.000140  -1.859161
-#H   0.000000  -0.000089  -2.948284
-#H  -0.888551  -0.513060  -1.494685
-#H   0.888551  -0.513060  -1.494685
-#H   0.000000   1.026339  -1.494868
-#}
-#
-#molecule s9 {
-#0 1
-#C  -0.471925  -0.471925  -1.859111
-#C   0.471925   0.471925  -1.859111
-#H  -0.872422  -0.872422  -0.936125
-#H   0.872422   0.872422  -0.936125
-#H  -0.870464  -0.870464  -2.783308
-#H   0.870464   0.870464  -2.783308
-#--
-#0 1
-#C  -0.471925   0.471925   1.859111
-#C   0.471925  -0.471925   1.859111
-#H  -0.872422   0.872422   0.936125
-#H   0.872422  -0.872422   0.936125
-#H  -0.870464   0.870464   2.783308
-#H   0.870464  -0.870464   2.783308
-#}
-#
-#molecule s1 {
-#N  -1.578718  -0.046611   0.000000
-#H  -2.158621   0.136396  -0.809565
-#H  -2.158621   0.136396   0.809565
-#H  -0.849471   0.658193   0.000000
-#--
-#0 1
-#N   1.578718   0.046611   0.000000
-#H   2.158621  -0.136396  -0.809565
-#H   0.849471  -0.658193   0.000000
-#H   2.158621  -0.136396   0.809565
-#}
+#! validate PBEh-3c against the literature
 
 molecule s2di {
 0 1
@@ -93,29 +14,6 @@ symmetry c1
 }
 s2ma = s2di.extract_subsets(1)
 s2mb = s2di.extract_subsets(2)
-
-#molecule s2gr {
-#o  -3.12829134861628     -0.23300394043326      0.00000000000000
-#h  -1.33053765694300      0.06034211441874      0.00000000000000
-#h  -3.85253284374873      1.42432982102036      0.00000000000000
-#--
-#o   2.35500003894170      0.19405350461602      0.00000000000000
-#h   2.97818090518316     -0.72286074981094     -1.43347299098969
-#h   2.97818090518316     -0.72286074981094      1.43347299098969
-#units bohr
-#}
-#
-#molecule s66_1 {
-#0 1
-#O       -0.70219605    -0.05606026     0.00994226
-#H       -1.02219322     0.84677578    -0.01148871
-#H        0.25752106     0.04212150     0.00521900
-#--
-#0 1
-#O        2.22087107     0.02671679     0.00062048
-#H        2.59749268    -0.41166327     0.76674486
-#H        2.59313538    -0.44949618    -0.74478203
-#}
 
 molecule s4di {
 C  -2.018649   0.052883   0.000000
@@ -136,40 +34,6 @@ H   3.117061   0.013701   0.000000
 s4ma = s4di.extract_subsets(1)
 s4mb = s4di.extract_subsets(2)
 
-#molecule s14 {
-#0 1
-#C    -0.0210742    1.5318615   -1.3639345
-#C    -1.2746794    0.9741030   -1.6074097
-#C    -1.3783055   -0.2256981   -2.3084154
-#C    -0.2289426   -0.8664053   -2.7687944
-#C     1.0247882   -0.3035171   -2.5312410
-#C     1.1289996    0.8966787   -1.8299830
-#H     0.0600740    2.4565627   -0.8093957
-#H    -2.1651002    1.4654521   -1.2405676
-#H    -2.3509735   -0.6616122   -2.4926698
-#H    -0.3103419   -1.7955762   -3.3172704
-#H     1.9165847   -0.7940845   -2.8993942
-#H     2.1000347    1.3326757   -1.6400420
-#--
-#0 1
-#H    -2.9417647    0.8953834    2.2239054
-#C    -2.0220674    0.4258540    1.9013549
-#C    -0.8149418    1.0740453    2.1066982
-#H    -0.7851529    2.0443812    2.5856086
-#C     0.3704286    0.4492852    1.6847458
-#C     1.7508619    0.8038935    1.7194004
-#H     2.1870108    1.6998281    2.1275903
-#C     2.4451359   -0.2310742    1.1353313
-#N     1.5646462   -1.2137812    0.7555384
-#C     0.2861214   -0.8269486    1.0618752
-#C    -0.9284667   -1.4853121    0.8606937
-#H    -0.9729200   -2.4554847    0.3834013
-#C    -2.0792848   -0.8417668    1.2876443
-#H    -3.0389974   -1.3203846    1.1468400
-#H     1.8075741   -2.0366963    0.2333038
-#H     3.5028794   -0.3485344    0.9695233
-#}
-#
 molecule s16di {
 C   0.000000  -0.667578  -2.124659
 C   0.000000   0.667578  -2.124659
@@ -187,228 +51,118 @@ symmetry c1
 s16ma = s16di.extract_subsets(1)
 s16mb = s16di.extract_subsets(2)
 
-#molecule s17 {
-#0 1
-#C     0.7806117   -0.6098875   -1.2075426
-#C     0.4784039    0.7510406   -1.2079040
-#C     0.3276592    1.4318573    0.0000000
-#C     0.4784039    0.7510406    1.2079040
-#C     0.7806117   -0.6098875    1.2075426
-#C     0.9321510   -1.2899614    0.0000000
-#H     0.8966688   -1.1376051   -2.1441482
-#H     0.3573895    1.2782091   -2.1440546
-#H     0.0918593    2.4871407    0.0000000
-#H     0.3573895    1.2782091    2.1440546
-#H     0.8966688   -1.1376051    2.1441482
-#H     1.1690064   -2.3451668    0.0000000
-#--
-#0 1
-#O    -2.7885270   -0.2744854    0.0000000
-#H    -2.6229114   -1.2190831    0.0000000
-#H    -1.9015103    0.0979110    0.0000000
-#}
-#
-#molecule s18 {
-#0 1
-#C    -0.7392810    0.5158785   -1.2071079
-#C    -1.4261442    0.3965455    0.0000000
-#C    -0.7392810    0.5158785    1.2071079
-#C     0.6342269    0.7546398    1.2070735
-#C     1.3210434    0.8737566    0.0000000
-#C     0.6342269    0.7546398   -1.2070735
-#H    -1.2719495    0.4206316   -2.1432894
-#H    -2.4902205    0.2052381    0.0000000
-#H    -1.2719495    0.4206316    2.1432894
-#H     1.1668005    0.8474885    2.1436950
-#H     2.3863585    1.0596312    0.0000000
-#H     1.1668005    0.8474885   -2.1436950
-#--
-#0 1
-#N     0.1803930   -2.9491231    0.0000000
-#H     0.7595495   -3.1459477   -0.8060729
-#H     0.7595495   -3.1459477    0.8060729
-#H     0.0444167   -1.9449399    0.0000000
-#}
-#
-#molecule s19 {
-#0 1
-#C    -0.7097741   -0.9904230    1.2077018
-#C    -1.4065340   -0.9653529    0.0000000
-#C    -0.7097741   -0.9904230   -1.2077018
-#C     0.6839651   -1.0405105   -1.2078652
-#C     1.3809779   -1.0655522    0.0000000
-#C     0.6839651   -1.0405105    1.2078652
-#H    -1.2499482   -0.9686280    2.1440507
-#H    -2.4869197   -0.9237060    0.0000000
-#H    -1.2499482   -0.9686280   -2.1440507
-#H     1.2242882   -1.0580753   -2.1442563
-#H     2.4615886   -1.1029818    0.0000000
-#H     1.2242882   -1.0580753    2.1442563
-#--
-#0 1
-#N    -0.0034118    3.5353926    0.0000000
-#C     0.0751963    2.3707040    0.0000000
-#H     0.1476295    1.3052847    0.0000000
-#}
-#
-#molecule s21 {
-#0 1
-#C     2.5118997    1.6250148    0.0000000
-#C     2.7130094    0.9578537   -1.2082918
-#C     3.1177821   -0.3767436   -1.2083647
-#C     3.3213848   -1.0437307    0.0000000
-#C     3.1177821   -0.3767436    1.2083647
-#C     2.7130094    0.9578537    1.2082918
-#H     2.2024038    2.6611358    0.0000000
-#H     2.5511760    1.4736908   -2.1445900
-#H     3.2702999   -0.8951406   -2.1448379
-#H     3.6368139   -2.0781521    0.0000000
-#H     3.2702999   -0.8951406    2.1448379
-#H     2.5511760    1.4736908    2.1445900
-#--
-#0 1
-#H     0.8065245   -0.4358866    0.0000000
-#N    -0.1442408   -0.7686927    0.0000000
-#C    -0.5161122   -2.0893220    0.0000000
-#C    -1.8898755   -2.1814495    0.0000000
-#C    -2.3932317   -0.8470830    0.0000000
-#C    -1.2640653    0.0195887    0.0000000
-#C    -1.3896004    1.4117668    0.0000000
-#C    -2.6726501    1.9366450    0.0000000
-#C    -3.8054511    1.0974790    0.0000000
-#C    -3.6798167   -0.2817209    0.0000000
-#H     0.2310024   -2.8653173    0.0000000
-#H    -2.4585759   -3.0956052    0.0000000
-#H    -0.5188733    2.0539520    0.0000000
-#H    -2.8077570    3.0097859    0.0000000
-#H    -4.7905991    1.5439372    0.0000000
-#H    -4.5580187   -0.9142916    0.0000000
-#}
-#
-##di = s2
-##di = s4
-##di = s16
-#di = s1
-#
-#di.update_geometry()
-#ma = di.extract_subsets(1)
-#ma.update_geometry()
-#mb = di.extract_subsets(2)
-#mb.update_geometry()
 
 def ie(es):
     return es[0] - es[1] - es[2]
-
-## Note: error in manual where arg misspelled
 
 set scf_type df
 #set df_basis_scf def2-qzvpp-jfit
 
 E, G = s2di.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.000829530, E, 5, 'S22-2 pbeh-3c dftd3')
+compare_values(-0.000829530, E, 5, 'S22-2 pbeh-3c dftd3')  #TEST
 E, G = s2ma.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.000209566, E, 5, 'S22-2 pbeh-3c dftd3')
+compare_values(-0.000209566, E, 5, 'S22-2 pbeh-3c dftd3')  #TEST
 E, G = s2mb.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.000209573, E, 5, 'S22-2 pbeh-3c dftd3')
+compare_values(-0.000209573, E, 5, 'S22-2 pbeh-3c dftd3')  #TEST
 
 E, G = s4di.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.004456922, E, 5, 'S22-4 pbeh-3c dftd3')
+compare_values(-0.004456922, E, 5, 'S22-4 pbeh-3c dftd3')  #TEST
 E, G = s4ma.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.001422385, E, 5, 'S22-4 pbeh-3c dftd3')
+compare_values(-0.001422385, E, 5, 'S22-4 pbeh-3c dftd3')  #TEST
 E, G = s4mb.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.001422385, E, 5, 'S22-4 pbeh-3c dftd3')
+compare_values(-0.001422385, E, 5, 'S22-4 pbeh-3c dftd3')  #TEST
 
 E, G = s16di.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.002717356, E, 5, 'S22-16 pbeh-3c dftd3')
+compare_values(-0.002717356, E, 5, 'S22-16 pbeh-3c dftd3')  #TEST
 E, G = s16ma.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.001301388, E, 5, 'S22-16 pbeh-3c dftd3')
+compare_values(-0.001301388, E, 5, 'S22-16 pbeh-3c dftd3')  #TEST
 E, G = s16mb.run_dftd3('pbeh3c', 'd3bj')
-compare_values(-0.000698038, E, 5, 'S22-16 pbeh-3c dftd3')
+compare_values(-0.000698038, E, 5, 'S22-16 pbeh-3c dftd3')  #TEST
 
 
 E, G = s2di.run_gcp('pbeh3c')
-compare_values(0.007042223, E, 5, 'S22-2 pbeh-3c gcp')
+compare_values(0.007042223, E, 5, 'S22-2 pbeh-3c gcp')  #TEST
 E, G = s2ma.run_gcp('pbeh3c')
-compare_values(0.001331288, E, 4, 'S22-2 pbeh-3c gcp')  # !!!
+compare_values(0.001331288, E, 4, 'S22-2 pbeh-3c gcp')  # !!!  #TEST
 E, G = s2mb.run_gcp('pbeh3c')
-compare_values(0.001363547, E, 4, 'S22-2 pbeh-3c gcp')  # !!!
+compare_values(0.001363547, E, 4, 'S22-2 pbeh-3c gcp')  # !!!  #TEST
 
 E, G = s4di.run_gcp('pbeh3c')
-compare_values(0.032493010, E, 5, 'S22-4 pbeh-3c gcp')
+compare_values(0.032493010, E, 5, 'S22-4 pbeh-3c gcp')  #TEST
 E, G = s4ma.run_gcp('pbeh3c')
-compare_values(0.011321759, E, 5, 'S22-4 pbeh-3c gcp')
+compare_values(0.011321759, E, 5, 'S22-4 pbeh-3c gcp')  #TEST
 E, G = s4mb.run_gcp('pbeh3c')
-compare_values(0.011321759, E, 5, 'S22-4 pbeh-3c gcp')
+compare_values(0.011321759, E, 5, 'S22-4 pbeh-3c gcp')  #TEST
 
 E, G = s16di.run_gcp('pbeh3c')
-compare_values(0.007221331, E, 5, 'S22-16 pbeh-3c gcp')
+compare_values(0.007221331, E, 5, 'S22-16 pbeh-3c gcp')  #TEST
 E, G = s16ma.run_gcp('pbeh3c')
-compare_values(0.004955998, E, 5, 'S22-16 pbeh-3c gcp')
+compare_values(0.004955998, E, 5, 'S22-16 pbeh-3c gcp')  #TEST
 E, G = s16mb.run_gcp('pbeh3c')
-compare_values(0.001995109, E, 5, 'S22-16 pbeh-3c gcp')
+compare_values(0.001995109, E, 5, 'S22-16 pbeh-3c gcp')  #TEST
 
 
 E = energy('pbeh3c', molecule=s2di)
 D = get_variable('DISPERSION CORRECTION ENERGY')
-compare_values(-152.5317809, E - D, 3, 'S22-2 pbdh-3c df-scf')
+compare_values(-152.5317809, E - D, 3, 'S22-2 pbdh-3c df-scf')  #TEST
 E = energy('pbeh3c/def2-msvp', molecule=s2ma)
 D = get_variable('DISPERSION CORRECTION ENERGY')
-compare_values(-76.25917393, E - D, 3, 'S22-2 pbdh-3c df-scf')
+compare_values(-76.25917393, E - D, 3, 'S22-2 pbdh-3c df-scf')  #TEST
 E = energy('pbeh3c/def2-msvp', molecule=s2mb)
 D = get_variable('DISPERSION CORRECTION ENERGY')
-compare_values(-76.25916677, E - D, 3, 'S22-2 pbdh-3c df-scf')
+compare_values(-76.25916677, E - D, 3, 'S22-2 pbdh-3c df-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s4di)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-339.1053347, E - D, 3, 'S22-4 pbdh-3c df-scf')
+###compare_values(-339.1053347, E - D, 3, 'S22-4 pbdh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4ma)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-169.5357145, E - D, 3, 'S22-4 pbdh-3c df-scf')
+###compare_values(-169.5357145, E - D, 3, 'S22-4 pbdh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4mb)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-169.5357145, E - D, 3, 'S22-4 pbdh-3c df-scf')
+###compare_values(-169.5357145, E - D, 3, 'S22-4 pbdh-3c df-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s16di)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-155.5555081, E - D, 3, 'S22-16 pbdh-3c df-scf')
+###compare_values(-155.5555081, E - D, 3, 'S22-16 pbdh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16ma)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-78.40891313, E - D, 3, 'S22-16 pbdh-3c df-scf')
+###compare_values(-78.40891313, E - D, 3, 'S22-16 pbdh-3c df-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16mb)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-77.1436109,  E - D, 3, 'S22-16 pbdh-3c df-scf')
+###compare_values(-77.1436109,  E - D, 3, 'S22-16 pbdh-3c df-scf')  #TEST
 
 set scf_type pk
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s2di)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-152.5315952, E - D, 5, 'S22-2 pbeh-3c cv-scf')
+###compare_values(-152.5315952, E - D, 5, 'S22-2 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s2ma)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-76.25907424, E - D, 4, 'S22-2 pbeh-3c cv-scf')
+###compare_values(-76.25907424, E - D, 4, 'S22-2 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s2mb)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-76.25906757, E - D, 4, 'S22-2 pbeh-3c cv-scf')
+###compare_values(-76.25906757, E - D, 4, 'S22-2 pbeh-3c cv-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s4di)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-339.1049866, E - D, 5, 'S22-4 pbeh-3c cv-scf')
+###compare_values(-339.1049866, E - D, 5, 'S22-4 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4ma)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-169.5355168, E - D, 5, 'S22-4 pbeh-3c cv-scf')
+###compare_values(-169.5355168, E - D, 5, 'S22-4 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s4mb)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-169.5355168, E - D, 5, 'S22-4 pbeh-3c cv-scf')
+###compare_values(-169.5355168, E - D, 5, 'S22-4 pbeh-3c cv-scf')  #TEST
 
 ###E = energy('pbeh3c/def2-msvp', molecule=s16di)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-155.5553632, E - D, 5, 'S22-16 pbeh-3c cv-scf')
+###compare_values(-155.5553632, E - D, 5, 'S22-16 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16ma)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-78.40881566, E - D, 5, 'S22-16 pbeh-3c cv-scf')
+###compare_values(-78.40881566, E - D, 5, 'S22-16 pbeh-3c cv-scf')  #TEST
 ###E = energy('pbeh3c/def2-msvp', molecule=s16mb)
 ###D = get_variable('DISPERSION CORRECTION ENERGY')
-###compare_values(-77.14356134, E - D, 4, 'S22-16 pbeh-3c cv-scf')
+###compare_values(-77.14356134, E - D, 4, 'S22-16 pbeh-3c cv-scf')  #TEST
 
 set scf_type df
 
@@ -416,18 +170,18 @@ set scf_type df
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s2di))
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s2ma))
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s2mb))
-###compare_values( -5.963, ie(ieparts) * psi_hartree2kcalmol, 0.03, 'PBEh-3c/def2-mSVP')
+###compare_values( -5.963, ie(ieparts) * psi_hartree2kcalmol, 0.03, 'PBEh-3c/def2-mSVP')  #TEST
 ####energy('pbeh3c', molecule=s4di, bsse_type='nocp') shouldn't need basis
 ###ieparts = []
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s4di))
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s4ma))
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s4mb))
-###compare_values(-16.107, ie(ieparts) * psi_hartree2kcalmol, 0.03, 'PBEh-3c/def2-mSVP')
+###compare_values(-16.107, ie(ieparts) * psi_hartree2kcalmol, 0.03, 'PBEh-3c/def2-mSVP')  #TEST
 ###ieparts = []
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s16di))
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s16ma))
 ###ieparts.append(energy('pbeh3c/def2-msvp', molecule=s16mb))
-###compare_values( -2.153, ie(ieparts) * psi_hartree2kcalmol, 0.03, 'PBEh-3c/def2-mSVP')
+###compare_values( -2.153, ie(ieparts) * psi_hartree2kcalmol, 0.03, 'PBEh-3c/def2-mSVP')  #TEST
 
 
 
@@ -451,7 +205,7 @@ H  2.32844993329262 -1.73749824891602 0.00000000000000
 units bohr
 }
 ethene.update_geometry()
-compare_values(ethene.nuclear_repulsion_energy(), unopethene.nuclear_repulsion_energy(), 1, 'Ethene_2 geom')
+compare_values(ethene.nuclear_repulsion_energy(), unopethene.nuclear_repulsion_energy(), 1, 'Ethene_2 geom')  #TEST
 #print(ethene.nuclear_repulsion_energy())
 ethene.print_out()
 
@@ -482,6 +236,6 @@ ethene.print_out()
 ###units bohr
 ###}
 ###faon2.update_geometry()
-###compare_values(faon2.nuclear_repulsion_energy(), unopfaon2.nuclear_repulsion_energy(), 1, 'FaON_2 geom')
+###compare_values(faon2.nuclear_repulsion_energy(), unopfaon2.nuclear_repulsion_energy(), 1, 'FaON_2 geom')  #TEST
 ###print(faon2.nuclear_repulsion_energy())
 
