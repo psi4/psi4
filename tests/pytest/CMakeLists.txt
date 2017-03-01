@@ -7,7 +7,7 @@ if(NOT psi4_PYTEST_FOUND)
                     OUTPUT_QUIET ERROR_QUIET
                     RESULT_VARIABLE _exec_python_err)
     if(_exec_python_err)
-        message(FATAL_ERROR "Running these tests requires pytest. Please install it manually (try: ${PYTHON_EXECUTABLE} -m pip install pytest)")
+        message(STATUS "Running some tests requires pytest. Please install it manually (try: ${PYTHON_EXECUTABLE} -m pip install pytest)")
     endif()
     set(psi4_PYTEST_FOUND TRUE CACHE INTERNAL "")
 endif()
