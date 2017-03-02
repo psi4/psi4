@@ -16,5 +16,4 @@ endif()
 add_custom_target(pytest
                   COMMAND PYTHONPATH=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}
                           ${PYTHON_EXECUTABLE} -m pytest -rws -v --capture=sys ${CMAKE_CURRENT_SOURCE_DIR}
-                  DEPENDS psi4-core
                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})

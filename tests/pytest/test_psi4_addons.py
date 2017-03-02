@@ -750,7 +750,7 @@ def test_grimme_3c():
     """)
 
     ene = psi4.energy('pbeh3c', bsse_type='nocp')
-    assert psi4.compare_values(-2.153, ene * psi4.p4const.psi_hartree2kcalmol, 0.03, 'S22-16 PBEh-3c/def2-mSVP')
+    assert psi4.compare_values(-2.153, ene * psi4.constants.hartree2kcalmol, 0.03, 'S22-16 PBEh-3c/def2-mSVP')
 
     psi4.set_options({'basis': 'cc-pvdz'})  # try to confuse method
     psi4.set_options({'scf_type': 'pk'})

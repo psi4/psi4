@@ -1,7 +1,7 @@
 #! This test is used to construct the documentation;
 #! it is not suitable for emulation by users. !nosample
 
-from psi4.driver.procedures.dft_functional import superfunctional_list
+from psi4.driver.procrouting.dft_functional import superfunctional_list
 
 funcdict = {}
 
