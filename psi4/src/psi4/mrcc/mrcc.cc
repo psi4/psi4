@@ -29,6 +29,8 @@
 #include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 
+#include "psi4/libscf_solver/rohf.h"
+
 #include "psi4/libmints/view.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -640,8 +642,11 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     if (options.get_str("REFERENCE") == "UHF")
         restricted = false;
 
-    if (pertcc && options.get_str("REFERENCE") == "ROHF")
-        throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
+    if (pertcc && options.get_str("REFERENCE") == "ROHF") {
+        outfile->Printf("\n");
+        outfile->Printf("  WARNING: ROHF references are not implemented for perturbative\n");
+        outfile->Printf("           methods on older versions of MRCC. Proceed with caution.\n\n");
+    }
 
     // Use libtrans to initialize DPD
     std::vector <std::shared_ptr<MOSpace>> spaces;
@@ -753,13 +758,17 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     spaces.push_back(MOSpace::all);
 
     // Check the reference.
-    bool restricted = true;
+    bool closedshell = ref_wfn->same_a_b_dens();
+    bool canonical = true;
 
-    if (options.get_str("REFERENCE") == "UHF")
-        restricted = false;
+    if (options.get_str("REFERENCE") == "ROHF")
+        canonical = false;
 
-    if (pertcc && options.get_str("REFERENCE") == "ROHF")
-        throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
+    if (pertcc && options.get_str("REFERENCE") == "ROHF") {
+        outfile->Printf("\n");
+        outfile->Printf("  WARNING: ROHF references are not implemented for perturbative\n");
+        outfile->Printf("           methods on older versions of MRCC. Proceed with caution.\n\n");
+    }
 
     if (!_default_psio_lib_->exists(PSIF_SO_TEI)) {
         outfile->Printf("\n");
@@ -772,8 +781,14 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         MintsHelper helper(wave->basisset(), options, 0);
         helper.integrals();
     }
+
+    if (options.get_str("REFERENCE") == "ROHF") {
+        scf::HF* wave = (scf::HF*)ref_wfn.get();
+        wave->semicanonicalize();
+    }
+
     // Create integral transformation object
-    IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
+    IntegralTransform ints(wave, spaces, closedshell ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
 
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
@@ -792,7 +807,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     printer->Printf(" 150000\n");
 
     // RHF
-    if (restricted) {
+    if (closedshell) {
 
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
@@ -911,7 +926,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     int nsocc = active_socc.sum();
 
-    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF") {
+    if (!closedshell) {
         closed_shell = 0;
         nsing = 0;
         spatial_orbitals = 0;
@@ -939,6 +954,9 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     if (options["MRCC_NUM_DOUBLET_ROOTS"].has_changed())
         ndoub = options.get_int("MRCC_NUM_DOUBLET_ROOTS");
 
+    int HF_canonical = 1;
+    if (!canonical) HF_canonical = 0;
+
     int symm = 0;
     for (int h = 0; h < nirrep; ++h)
         for (int n = 0; n < active_socc[h]; ++n)
@@ -946,7 +964,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     symm += 1; // stupid 1 based fortran
     printer = std::shared_ptr<OutFile>(new OutFile("fort.56", TRUNCATE));
     //FILE* fort56 = fopen("fort.56", "w");
-    printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d     1%6d      0      0%6d     0     0    0.00    0%6lu\n",
+    printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d%6d%6d      0      0%6d     0     0    0.00    0%6lu\n",
                     exlevel,                                         // # 1
                     nsing,                                           // # 2
                     ntrip,                                           // # 3
@@ -955,6 +973,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
                     symm,                                            // # 8
                     closed_shell,                                    // #10
                     spatial_orbitals,                                // #11
+                    HF_canonical,                                    // #12
                     ndoub,                                           // #13
                     e_conv,                                          // #16
                     Process::environment.get_memory() / 1000 / 1000  // #21
