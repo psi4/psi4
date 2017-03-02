@@ -627,6 +627,14 @@ std::vector<std::string> py_psi_get_global_option_list()
     return Process::environment.options.list_globals();
 }
 
+void py_psi_clean_options()
+{
+    Process::environment.options.clear();
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+}
+
 void py_psi_print_out(std::string s)
 {
     (*outfile) << s;
@@ -1081,7 +1089,7 @@ void py_psi_set_memory(unsigned long int mem, bool quiet)
 {
     Process::environment.set_memory(mem);
     if (!quiet){
-        outfile->Printf("\n  Memory set to %7.3f %s by Python script.\n", (mem > 1000000000 ? mem / 1.0E9 : mem / 1.0E6), \
+        outfile->Printf("\n  Memory set to %7.3f %s by Python driver.\n", (mem > 1000000000 ? mem / 1.0E9 : mem / 1.0E6), \
             (mem > 1000000000 ? "GiB" : "MiB"));
     }
 }
@@ -1091,9 +1099,12 @@ unsigned long int py_psi_get_memory()
     return Process::environment.get_memory();
 }
 
-void py_psi_set_n_threads(int nthread)
+void py_psi_set_n_threads(unsigned int nthread, bool quiet)
 {
     Process::environment.set_n_threads(nthread);
+    if (!quiet){
+        outfile->Printf("  Threads set to %d by Python driver.\n", nthread);
+    }
 }
 
 int py_psi_get_n_threads()
@@ -1246,6 +1257,7 @@ PYBIND11_PLUGIN(core) {
     core.def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
     core.def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
     core.def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
+    core.def("clean_options", py_psi_clean_options, "Function to reset options to clean state.");
 
     core.def("get_writer_file_prefix", get_writer_file_prefix, "Returns the prefix to use for writing files for external programs.");
     // Benchmarks
@@ -1310,8 +1322,8 @@ PYBIND11_PLUGIN(core) {
         "Assigns the global frequencies to the values stored in the 3N-6 Vector argument.");
     core.def("set_memory", py_psi_set_memory, py::arg("memory"), py::arg("quiet")=false, "Sets the memory available to Psi (in bytes).");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
-    core.def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
-    core.def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
+    core.def("set_num_threads", py_psi_set_n_threads, py::arg("nthread"), py::arg("quiet")=false, "Sets the number of threads to use in SMP parallel computations.");
+    core.def("get_num_threads", py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
 //    core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
     core.def("set_parent_symmetry",
         py_psi_set_parent_symmetry,

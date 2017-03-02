@@ -92,6 +92,7 @@ Testing
 #. :ref:`faq:testsoutput`
 #. :ref:`faq:subsettests`
 #. :ref:`faq:minutetests`
+#. :ref:`faq:pytest`
 
 Runtime Setup
 -------------

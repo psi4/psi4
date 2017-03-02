@@ -228,6 +228,7 @@ void MintsHelper::integrals()
     //// Print out some useful information
     if (print_) {
         outfile->Printf("   Calculation information:\n");
+        outfile->Printf("      Number of threads:              %4d\n", Process::environment.get_n_threads());
         outfile->Printf("      Number of atoms:                %4d\n", molecule_->natom());
         outfile->Printf("      Number of AO shells:            %4d\n", basisset_->nshell());
         outfile->Printf("      Number of SO shells:            %4d\n", sobasis_->nshell());

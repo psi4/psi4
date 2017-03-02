@@ -326,6 +326,8 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
     commands = ''
     for opt in core.get_global_option_list():
         if core.has_global_option_changed(opt) or not changedOnly:
+            if opt in ['DFT_CUSTOM_FUNCTIONAL', 'EXTERN']:  # Feb 2017 hack
+                continue
             val = core.get_global_option(opt)
             options['GLOBALS'][opt] = {'value': val,
                                        'has_changed': core.has_global_option_changed(opt)}

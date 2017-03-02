@@ -58,9 +58,15 @@ except ImportError as err:
     else:
         raise ImportError("{0}".format(err))
 
-from psi4.core import set_output_file, set_variable
+from psi4.core import set_output_file, get_variable, set_variable, get_num_threads, set_num_threads
 core.initialize()
 core.efp_init()
+
+if "PSI_SCRATCH" in os.environ.keys():
+    envvar_scratch = os.environ["PSI_SCRATCH"]
+    if not os.path.isdir(envvar_scratch):
+        raise Exception("Passed in scratch is not a directory (%s)." % envvar_scratch)
+    core.IOManager.shared_object().set_default_path(envvar_scratch)
 
 # Cleanup core at exit
 import atexit
@@ -71,11 +77,19 @@ atexit.register(core.finalize)
 # Make official plugins accessible in input
 from .driver import endorsed_plugins
 
+# Manage threads. Must be after endorsed plugins, honestly.
+core.set_num_threads(1, quiet=True)
+
 # Load driver and outfile paraphernalia
 from .driver import *
 from .header import print_header
 from .metadata import __version__, version_formatter
 
 # A few extraneous functions
-from .extras import get_input_directory
+from .extras import get_input_directory, addons, test
+
+# Python portions of compiled-in Add-Ons
+import sys
+if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+    sys.path.insert(1, "@PCMSolver_PYMOD@")
 

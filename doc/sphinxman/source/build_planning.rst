@@ -143,15 +143,18 @@ How to build, test, and install Psi4, in detail
 
 **5. Test**
 
-   Optionally, use CTest to test the build.
+   Optionally, use CTest (thorough) or pytest (cursory) to test the build.
 
    * :ref:`faq:minutetests`
    * :ref:`faq:subsettests`
    * :ref:`faq:testsoutput`
+   * :ref:`faq:pytest`
 
    ::
 
    >>> ctest -j`getconf _NPROCESSORS_ONLN`
+
+   >>> make pytest
 
 **6. Install**
 
@@ -217,6 +220,7 @@ are available pre-built from conda.
 
   * CTest http://www.cmake.org/download/
   * Perl (for some coupled-cluster tests) http://perl.org
+  * pytest (for installed testing) http://doc.pytest.org/en/latest/
 
 * |PSIfour| Documentation (available pre-built at http://www.psicode.org/psi4manual/master/index.html)
 
@@ -577,6 +581,13 @@ use a staged installation directory, substitute
     # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
     export PYTHONPATH={prefix}/lib:$PYTHONPATH
     export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
+
+.. note:: If you know the location of the |PSIfour| executable
+   (``bin/psi4``) and want to know the corresponding location to add to
+   :envvar:`PYTHONPATH`, execute ``psi4 --psiapi-path``. It will return
+   bash commands to set :envvar:`PATH` (for correct python interpreter)
+   and :envvar:`PYTHONPATH` (to find psi4 module) correctly, after which
+   ``python -c "import psi4"`` will work.
 
 Run |PSIfour|. ::
 
@@ -1256,6 +1267,9 @@ CTest installed, the following command can be useful. ::
 
     >>> ctest -L smoke -j`getconf _NPROCESSORS_ONLN`
 
+If you have pytest installed, very similar coverage is obtained through::
+
+    >>> make pytest
 
 .. _`faq:subsettests`:
 
@@ -1298,6 +1312,28 @@ build directory for file
 ``.tmp`` extension, depending on whether the last test was interrupted and
 a few other factors. Either way, this file should contain CMake's testing
 output, as well as everything that was printed to the screen.
+
+
+.. _`faq:pytest`:
+
+How to test a Psi4 installation
+-------------------------------
+
+``ctest`` requires a connection to source files and ``cmake``
+machinery and so can only be performed from :samp:`{objdir}`
+(staged installation). To test an installed |PSIfour| (full or staged
+installation), a limited number of "smoke" tests are available to be
+run via pytest.
+
+  * From the executable::
+
+    psi4 --test
+
+  * From the library (|PSIfour| must be detectable as a Python
+    module. See the setup note at :ref:`faq:runordinarymodule`
+    if needed.)::
+
+    python -c "import psi4; psi4.test()"
 
 
 .. _`faq:writepsi4`:

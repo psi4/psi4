@@ -80,6 +80,16 @@ definition files at :source:`share/basis` in the source.  For basis set availabi
 element and the default value for keyword |globals__puream|, consult
 Appendix :ref:`apdx:basisElement`.
 
+|PSIfour| uses the angular momentum convention below that, consistent
+with EMSL, skips the letter ``J``. Note that Gaussian94 convention is
+*not* to skip this letter. Another portion of the G94 format, labeling
+angular momentum with :samp:`L={l}` syntax is not presently implemented,
+though this is coming. ::
+
+    L:    0123456789...
+    Psi4: SPDFGHIKLM...
+    G94:  SPDFGHIJKL...
+
 .. index:: basis set; multiple within molecule
 .. _`sec:psithonBasissets`:
 
@@ -121,16 +131,16 @@ example, ::
     
      or
     
-    basis {
-       assign cc-pVDZ-RI df_basis_mp2
+    df_basis_mp2 {
+       assign cc-pVDZ-RI
     }
 
 are both equivalent ways to set the auxiliary basis set for density fitted MP2
 computations.  To assign the aug-cc-pVDZ-RI to carbon atoms, the following
 command is used::
 
-    basis {
-       assign C aug-cc-pVDZ-RI df_basis_mp2
+    df_basis_mp2 {
+       assign C aug-cc-pVDZ-RI
     }
 
 When most popular basis sets are being used, including Dunning and

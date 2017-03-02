@@ -208,23 +208,27 @@ explained below. Note that each deeper level trumps all previous levels.
 
 .. rubric:: (1) OpenMP/MKL Environment Variables
 
-The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
-environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`.
+.. deprecated:: 1.1
+   Environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
+   do not affect threading in |PSIfour|.
 
-.. code-block:: tcsh
-
-    # csh, tcsh: add to shell or ~/.tcshrc file
-    setenv OMP_NUM_THREADS 4
-    setenv MKL_NUM_THREADS 4
-
-.. code-block:: bash
-
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
-    export OMP_NUM_THREADS=4
-    export MKL_NUM_THREADS=4
-
-|PSIfour| then detects these value via the API routines in ``<omp.h>`` and
-``<mkl.h>``, and runs all applicable code with 4 threads.
+.. The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
+.. environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`.
+..
+.. .. code-block:: tcsh
+..
+..     # csh, tcsh: add to shell or ~/.tcshrc file
+..     setenv OMP_NUM_THREADS 4
+..     setenv MKL_NUM_THREADS 4
+..
+.. .. code-block:: bash
+..
+..     # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+..     export OMP_NUM_THREADS=4
+..     export MKL_NUM_THREADS=4
+..
+.. |PSIfour| then detects these value via the API routines in ``<omp.h>`` and
+.. ``<mkl.h>``, and runs all applicable code with 4 threads.
 
 .. rubric:: (2) The -n Command Line Flag
 
@@ -235,13 +239,13 @@ example is:
 
     psi4 -i input.dat -o output.dat -n 4
 
-which will run on four threads.
+which will run on four threads. Note that is is not available for PsiAPI mode of operation.
 
 .. rubric:: (3) Setting Thread Numbers in an Input
 
 For more explicit control, the Process::environment class in |PSIfour| can
 override the number of threads set by environment variables. This functionality
-is accessed via the :py:func:`~p4util.util.set_num_threads` Psithon function, which controls
+is accessed via the :py:func:`psi4.set_num_threads` function, which controls
 both MKL and OpenMP thread numbers. The number of threads may be changed
 multiple times in a |PSIfour| input file. An example input for this feature is::
 
@@ -262,6 +266,9 @@ multiple times in a |PSIfour| input file. An example input for this feature is::
     for nthread in range(1,5):
         set_num_threads(nthread)
         energy('scf')
+
+In PsiAPI mode of operation, this syntax, ``psi4.set_num_threads(nthread)``, is
+the primary way to control threading.
 
 .. rubric:: (4) Method-Specific Control
 
@@ -293,9 +300,6 @@ a PBS job file for a threaded job, and a short explanation for each section. ::
     #PBS -N jobname
     #PBS -V
     
-    
-    setenv OMP_NUM_THREADS 4
-    setenv MKL_NUM_THREADS 4
     cd $PBS_O_WORKDIR
     setenv myscratch /scratch/user/psi4.$PBS_JOBID
     
@@ -310,7 +314,7 @@ a PBS job file for a threaded job, and a short explanation for each section. ::
     if ! ( $?PSIPATH ) setenv PSIPATH ""
     setenv PSIPATH /path/to/external/modules:${PSIPATH}
     setenv PSIPATH /path/to/python/modules:${PSIPATH}
-    /psi/install/directory/bin/psi4 -i input.in -o input.out
+    /psi/install/directory/bin/psi4 -i input.in -o input.out -n 4
     
     foreach i (`sort $PBS_NODEFILE | uniq`)
         echo "Removing scratch directory " $myscratch " on " $i
@@ -332,11 +336,11 @@ from the queuing system in dedicated files. ``PBS -l pmem=2120mb`` requests
 the job by PBS should generally be slightly greater than what indicated 
 in the input file (see :ref:`memory setting <sec:memory>`).
 
-In the next section, we define :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
-to use 4 threads for OpenMP parallelization and in threaded BLAS (see section :ref:`sec:threading`). ::
-
-    setenv OMP_NUM_THREADS 4
-    setenv MKL_NUM_THREADS 4
+.. In the next section, we define :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`
+.. to use 4 threads for OpenMP parallelization and in threaded BLAS (see section :ref:`sec:threading`). ::
+.. 
+..     setenv OMP_NUM_THREADS 4
+..     setenv MKL_NUM_THREADS 4
 
 Then, we move to the working directory using PBS variable ``$PBS_O_WORKDIR`` and 
 we create scratch directories on every node, using the ``$PBS_NODEFILE`` which 
@@ -360,15 +364,17 @@ by |PSIfour|: ::
     setenv PSIPATH /path/to/external/modules:${PSIPATH}
     setenv PSIPATH /path/to/python/modules:${PSIPATH}
 
-:envvar:`PSIDATADIR` does *not* need to be set if |PSIfour| has been *properly installed*.
-In the present example we unset it to make sure it does not interfere with the location
-of the installed directory. :envvar:`PSIPATH` is needed only if you are using external modules or 
+:envvar:`PSIDATADIR` does *not* need to be set.
+In the present example we unset it to make sure it does not interfere with the internal location-finding.
+:envvar:`PSIPATH` is needed only if you are using external modules or 
 plugins in |PSIfour| and should point to the directories where they can be found. In the
 present example, we make sure the variable is set with ``if ! ( $?PSIPATH ) setenv PSIPATH ""``
-before adding more paths to it. Finally, :envvar:`PSI_SCRATCH` should point to a fast, 
-local disk for temporary file storage. The next step is then to actually run the computation: ::
+before adding more paths to it. Finally, :envvar:`PSI_SCRATCH` should point to a fast, existing
+local disk for temporary file storage. To use 4 threads for OpenMP parallelization
+and threaded BLAS (see section :ref:`sec:threading`), we set ``-n4`` below.
+The next step is then to actually run the computation: ::
 
-    /psi/install/directory/bin/psi4 -i input.in -o input.out
+    /psi/install/directory/bin/psi4 -i input.in -o input.out -n 4
 
 And then to clean up the scratch directories previously created: ::
 
@@ -481,6 +487,9 @@ These environment variables will influence |PSIfours| behavior.
 
    Number of threads to use by operations with Intel threaded BLAS libraries.
 
+   .. deprecated: 1.1
+      See :ref:`sec:threading` for alternatives.
+
 .. envvar:: OMP_NESTED
 
    Do access nested DGEMM in OpenMP sections in DFMP2 for multi-socket
@@ -491,6 +500,9 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: OMP_NUM_THREADS
 
    Number of threads to use by modules with OpenMP threading.
+
+   .. deprecated: 1.1
+      See :ref:`sec:threading` for alternatives.
 
 .. envvar:: PATH
 

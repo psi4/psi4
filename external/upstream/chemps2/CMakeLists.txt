@@ -5,6 +5,9 @@ if(${ENABLE_CheMPS2})
         get_property(_loc TARGET CheMPS2::chemps2 PROPERTY LOCATION)
         message(STATUS "${Cyan}Found CheMPS2${ColourReset}: ${_loc} (found version ${CheMPS2_VERSION})")
         add_library(chemps2_external INTERFACE)  # dummy
+
+        # reset below necessary as find_package clears it. better solution sought
+        set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected CheMPS2Config.cmake" FORCE)
     else()
         include(ExternalProject)
         message(STATUS "Suitable CheMPS2 could not be located, ${Magenta}Building CheMPS2${ColourReset} instead.")

@@ -46,7 +46,7 @@ def print_header():
     git_info = version_formatter("""{{{branch}}} {githash} {clean}""")
     datadir = core.get_environment("PSIDATADIR")
     memory = sizeof_fmt(core.get_memory())
-    threads = str(core.nthread())
+    threads = str(core.get_num_threads())
 
     header = """
     -----------------------------------------------------------------------

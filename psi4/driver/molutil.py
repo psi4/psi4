@@ -287,6 +287,17 @@ def dynamic_variable_bind(cls):
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
 
+
+def filter_comments(string):
+    """Remove from *string* any Python-style comments ('#' to end of line)."""
+
+    filtered = []
+    for line in string.splitlines():
+        line = line.partition('#')[0]
+        filtered.append(line.rstrip())
+    return '\n'.join(filtered)
+
+
 #
 # Define geometry to be used by PSI4.
 # The molecule created by this will be set in options.
@@ -297,12 +308,15 @@ dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
 #   H  0.0 0.0 0.0
 #
 def geometry(geom, name="default"):
-    """Function to create a molecule object of name *name*
-    from the geometry in string *geom*. Permitted for user use but deprecated in
-    driver in favor of explicit molecule-passing.
+    """Function to create a molecule object of name *name* from the
+    geometry in string *geom*. Permitted for user use but deprecated
+    in driver in favor of explicit molecule-passing. Comments within
+    the string are filtered.
 
     """
+    core.efp_init()
     geom = pubchemre.sub(process_pubchem_command, geom)
+    geom = filter_comments(geom)
     molecule = core.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 

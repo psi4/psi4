@@ -3,7 +3,7 @@ import psi4
 psi4.set_output_file("output.dat", False)
 
 geom = psi4.geometry("""
-C
+C  # testing escaping comments
 """)
 
 psi4.set_options({"SCF_TYPE": "DF",

@@ -1,5 +1,7 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)  # 3.2: continue() 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)  # 3.3: EP_add(DEPENDS interfacelib
+                                                 # 3.2: continue()
+                                                 # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
 project(psi4
         LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")
@@ -171,6 +173,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
               -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
+              -DCMAKE_CXX_EXTENSIONS=OFF
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
               -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
@@ -220,7 +223,8 @@ include(ConfigTesting)
 
 install(DIRECTORY ${STAGED_INSTALL_PREFIX}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}
-        USE_SOURCE_PERMISSIONS)
+        USE_SOURCE_PERMISSIONS
+        PATTERN "*.pyc" EXCLUDE)
 
 install(DIRECTORY samples
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4
