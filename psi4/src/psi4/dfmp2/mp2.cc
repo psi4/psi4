@@ -848,7 +848,7 @@ void RDFMP2::print_header()
 {
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     outfile->Printf( "\t --------------------------------------------------------\n");
@@ -891,7 +891,7 @@ void RDFMP2::form_Aia()
     int nthread = 1;
     #ifdef _OPENMP
         if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
-            nthread = omp_get_max_threads();
+            nthread = Process::environment.get_n_threads();
         } else {
             nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
@@ -1058,7 +1058,7 @@ void RDFMP2::form_energy()
     // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // Memory
@@ -1185,7 +1185,7 @@ void RDFMP2::form_Pab()
     // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // Memory
@@ -1374,7 +1374,7 @@ void RDFMP2::form_Pij()
     // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // Memory
@@ -1554,7 +1554,7 @@ void RDFMP2::form_AB_x_terms()
 
     int num_threads = 1;
     #ifdef _OPENMP
-        num_threads = omp_get_max_threads();
+        num_threads = Process::environment.get_n_threads();
     #endif
 
     // => Integrals <= //
@@ -1710,7 +1710,7 @@ void RDFMP2::form_Amn_x_terms()
 
     int num_threads = 1;
     #ifdef _OPENMP
-        num_threads = omp_get_max_threads();
+        num_threads = Process::environment.get_n_threads();
     #endif
 
     // => Integrals <= //
@@ -1922,7 +1922,7 @@ void RDFMP2::form_L()
 
     int num_threads = 1;
     #ifdef _OPENMP
-        num_threads = omp_get_max_threads();
+        num_threads = Process::environment.get_n_threads();
     #endif
 
     // => Integrals <= //
@@ -2736,7 +2736,7 @@ void RDFMP2::form_gradient()
         // Thread count
         int threads = 1;
         #ifdef _OPENMP
-            threads = omp_get_max_threads();
+            threads = Process::environment.get_n_threads();
         #endif
 
         // Potential derivatives
@@ -2984,7 +2984,7 @@ void UDFMP2::print_header()
 {
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     outfile->Printf( "\t --------------------------------------------------------\n");
@@ -3032,7 +3032,7 @@ void UDFMP2::form_Aia()
     int nthread = 1;
     #ifdef _OPENMP
         if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
-            nthread = omp_get_max_threads();
+            nthread = Process::environment.get_n_threads();
         } else {
             nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
@@ -3235,7 +3235,7 @@ void UDFMP2::form_energy()
     // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // Memory
@@ -3356,7 +3356,7 @@ void UDFMP2::form_energy()
     // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // Memory
@@ -3481,7 +3481,7 @@ void UDFMP2::form_energy()
     // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // Memory
@@ -3660,7 +3660,7 @@ void RODFMP2::print_header()
 {
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     outfile->Printf( "\t --------------------------------------------------------\n");

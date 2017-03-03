@@ -621,7 +621,7 @@ void DFCoupledCluster::AllocateMemory() {
   outfile->Printf("            CCSD intermediates:          %9.2lf mb\n",total_memory-size_of_t2*t2_on_disk);
 
   if (options_.get_bool("COMPUTE_TRIPLES")) {
-      int nthreads = omp_get_max_threads();
+      int nthreads = Process::environment.get_n_threads();
       double mem_t = 8.*(2L*o*o*v*v+1L*o*o*o*v+o*v+3L*v*v*v*nthreads);
       outfile->Printf("\n");
       outfile->Printf("        (T) part (regular algorithm):    %9.2lf mb\n",
@@ -823,7 +823,7 @@ void DFCoupledCluster::Vabcd1(){
     psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
 
-    int nthreads = omp_get_max_threads();
+    int nthreads = Process::environment.get_n_threads();
 
     double * Vcdb = integrals;
     double * Vm   = integrals+v*v*v;

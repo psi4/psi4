@@ -165,7 +165,7 @@ primary_(primary), memory_(memory), options_(options) {
     // Get number of threads
     nthreads_ = 1;
 #ifdef _OPENMP
-    nthreads_ = omp_get_max_threads();
+    nthreads_ = Process::environment.get_n_threads();
 #endif
 }
 

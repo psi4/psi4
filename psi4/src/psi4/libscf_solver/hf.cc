@@ -745,7 +745,7 @@ void HF::print_header()
 {
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
 

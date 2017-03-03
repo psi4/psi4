@@ -89,9 +89,9 @@ void CorrGrad::common_init()
     bench_ = 0;
 
     memory_ = 32000000L;
-    omp_num_threads_ = 1;
+    nthreads_ = 1;
     #ifdef _OPENMP
-        omp_num_threads_ = omp_get_max_threads();
+        nthreads_ = Process::environment.get_n_threads();
     #endif
 
     cutoff_ = 0.0;
@@ -108,7 +108,7 @@ void DFCorrGrad::common_init()
 {
     df_ints_num_threads_ = 1;
     #ifdef _OPENMP
-        df_ints_num_threads_ = omp_get_max_threads();
+        df_ints_num_threads_ = Process::environment.get_n_threads();
     #endif
     condition_ = 1.0E-12;
     unit_a_ = 105;
@@ -121,7 +121,7 @@ void DFCorrGrad::print_header() const
     if (print_) {
         outfile->Printf( "  ==> DFCorrGrad: Density-Fitted Correlated Gradients <==\n\n");
 
-        outfile->Printf( "    OpenMP threads:    %11d\n", omp_num_threads_);
+        outfile->Printf( "    OpenMP threads:    %11d\n", nthreads_);
         outfile->Printf( "    Integrals threads: %11d\n", df_ints_num_threads_);
         outfile->Printf( "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         outfile->Printf( "    Schwarz Cutoff:    %11.0E\n", cutoff_);
@@ -374,7 +374,7 @@ void DFCorrGrad::build_Amn_terms()
             if (la) {
 
                 // > (A|mi) C_mj -> (A|ij) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int p = 0; p < np; p++) {
                     C_DGEMM('T','N',na,la,nso,1.0,Amip[p],na,Lap[0],la,0.0,&Aijp[0][p * (ULI) na * la],la);
                 }
@@ -387,7 +387,7 @@ void DFCorrGrad::build_Amn_terms()
             if (ra) {
 
                 // > (A|mi) C_mj -> (A|ij) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int p = 0; p < np; p++) {
                     C_DGEMM('T','N',na,ra,nso,1.0,Amip[p],na,Rap[0],ra,0.0,&Aijp[0][p * (ULI) na * ra],ra);
                 }
@@ -407,7 +407,7 @@ void DFCorrGrad::build_Amn_terms()
             if (lb) {
 
                 // > (A|mi) C_mj -> (A|ij) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int p = 0; p < np; p++) {
                     C_DGEMM('T','N',nb,lb,nso,1.0,Amip[p],na,Lbp[0],lb,0.0,&Aijp[0][p * (ULI) nb * lb],lb);
                 }
@@ -420,7 +420,7 @@ void DFCorrGrad::build_Amn_terms()
             if (rb) {
 
                 // > (A|mi) C_mj -> (A|ij) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int p = 0; p < np; p++) {
                     C_DGEMM('T','N',nb,rb,nso,1.0,Amip[p],na,Rbp[0],rb,0.0,&Aijp[0][p * (ULI) nb * rb],rb);
                 }
@@ -887,7 +887,7 @@ void DFCorrGrad::build_Amn_x_terms()
                 psio_->read(unit_a_, "(A|il)", (char*) Aijp[0], sizeof(double) * np * na * la, next_Aila, &next_Aila);
 
                 // > (A|ij) C_mi -> (A|mj) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int P = 0; P < np; P++) {
                     C_DGEMM('N','T',nso,na,la,1.0,Lap[0],la,&Aijp[0][P * (ULI) na * la],la,1.0,Amip[P],na);
                 }
@@ -899,7 +899,7 @@ void DFCorrGrad::build_Amn_x_terms()
                 psio_->read(unit_a_, "(A|ir)", (char*) Aijp[0], sizeof(double) * np * na * ra, next_Aira, &next_Aira);
 
                 // > (A|ij) C_mi -> (A|mj) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int P = 0; P < np; P++) {
                     C_DGEMM('N','T',nso,na,ra,-1.0,Rap[0],ra,&Aijp[0][P * (ULI) na * ra],ra,1.0,Amip[P],na);
                 }
@@ -921,7 +921,7 @@ void DFCorrGrad::build_Amn_x_terms()
                 psio_->read(unit_b_, "(A|il)", (char*) Aijp[0], sizeof(double) * np * nb * lb, next_Ailb, &next_Ailb);
 
                 // > (A|ij) C_mi -> (A|mj) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int P = 0; P < np; P++) {
                     C_DGEMM('N','T',nso,nb,lb,1.0,Lbp[0],lb,&Aijp[0][P * (ULI) nb * lb],lb,1.0,Amip[P],na);
                 }
@@ -934,7 +934,7 @@ void DFCorrGrad::build_Amn_x_terms()
                 psio_->read(unit_b_, "(A|ir)", (char*) Aijp[0], sizeof(double) * np * nb * rb, next_Airb, &next_Airb);
 
                 // > (A|ij) C_mi -> (A|mj) < //
-                #pragma omp parallel for num_threads(omp_num_threads_)
+                #pragma omp parallel for num_threads(nthreads_)
                 for (int P = 0; P < np; P++) {
                     C_DGEMM('N','T',nso,nb,rb,-1.0,Rbp[0],rb,&Aijp[0][P * (ULI) nb * rb],rb,1.0,Amip[P],na);
                 }

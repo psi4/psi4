@@ -239,7 +239,7 @@ void JK::common_init()
     memory_ = 32000000L;
     omp_nthread_ = 1;
     #ifdef _OPENMP
-    omp_nthread_ = omp_get_max_threads();
+    omp_nthread_ = Process::environment.get_n_threads();
     #endif
     cutoff_ = 1.0E-12;
 

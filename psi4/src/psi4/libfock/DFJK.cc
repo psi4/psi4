@@ -71,7 +71,7 @@ void DFJK::common_init()
 {
     df_ints_num_threads_ = 1;
     #ifdef _OPENMP
-        df_ints_num_threads_ = omp_get_max_threads();
+        df_ints_num_threads_ = Process::environment.get_n_threads();
     #endif
     df_ints_io_ = "NONE";
     condition_ = 1.0E-12;
@@ -137,7 +137,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 
     // Temps
     #ifdef _OPENMP
-    int temp_nthread = omp_get_max_threads();
+    int temp_nthread = Process::environment.get_n_threads();
     omp_set_num_threads(omp_nthread_);
     C_temp_.resize(omp_nthread_);
     Q_temp_.resize(omp_nthread_);
@@ -348,7 +348,7 @@ void DFJK::initialize_temps()
 
 
     #ifdef _OPENMP
-    int temp_nthread = omp_get_max_threads();
+    int temp_nthread = Process::environment.get_n_threads();
     omp_set_num_threads(omp_nthread_);
     C_temp_.resize(omp_nthread_);
     Q_temp_.resize(omp_nthread_);
@@ -378,7 +378,7 @@ void DFJK::initialize_w_temps()
     max_rows_w = (max_rows_w < 1 ? 1 : max_rows_w);
 
     #ifdef _OPENMP
-    int temp_nthread = omp_get_max_threads();
+    int temp_nthread = Process::environment.get_n_threads();
     omp_set_num_threads(omp_nthread_);
         C_temp_.resize(omp_nthread_);
         Q_temp_.resize(omp_nthread_);

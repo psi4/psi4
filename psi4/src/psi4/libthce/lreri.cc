@@ -154,7 +154,7 @@ std::shared_ptr<Matrix> LRERI::Jm12(std::shared_ptr<BasisSet> auxiliary, double 
 
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     int naux = auxiliary->nbf();
@@ -318,7 +318,7 @@ std::shared_ptr<Matrix> DFERI::Jpow(double power)
 
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     int naux = auxiliary_->nbf();
@@ -435,7 +435,7 @@ void DFERI::transform()
 
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // > Task merging < //
@@ -954,7 +954,7 @@ std::map<std::string, std::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std::
 
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // > Maximum orbital sizes < //

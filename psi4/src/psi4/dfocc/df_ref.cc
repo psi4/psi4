@@ -193,7 +193,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
 {
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     double **J = block_matrix(nQ_ref, nQ_ref);
@@ -322,7 +322,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));

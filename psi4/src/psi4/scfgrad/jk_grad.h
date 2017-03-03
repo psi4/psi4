@@ -48,7 +48,7 @@ protected:
     int bench_;
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
     unsigned long int memory_;
-    /// Number of OpenMP threads (defaults to 1 in no OpenMP, omp_get_max_thread() otherwise)
+    /// Number of OpenMP threads (defaults to 1 in no OpenMP, Process::environment.get_n_threads() otherwise)
     int omp_num_threads_;
     /// Integral cutoff (defaults to 0.0)
     double cutoff_;

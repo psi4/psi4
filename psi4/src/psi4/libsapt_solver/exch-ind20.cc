@@ -38,7 +38,7 @@ void SAPT0::exch_ind20A_B()
 
   int nthreads = 1;
 #ifdef _OPENMP
-  nthreads = omp_get_max_threads();
+  nthreads = Process::environment.get_n_threads();
 #endif
   int rank = 0;
 
@@ -363,7 +363,7 @@ void SAPT0::exch_ind20B_A()
 
   int nthreads = 1;
 #ifdef _OPENMP
-  nthreads = omp_get_max_threads();
+  nthreads = Process::environment.get_n_threads();
 #endif
   int rank = 0;
 

@@ -601,7 +601,7 @@ void SAPT0::df_integrals()
 
   int nthreads = 1;
   #ifdef _OPENMP
-    nthreads = omp_get_max_threads();
+    nthreads = Process::environment.get_n_threads();
   #endif
   int rank = 0;
 
@@ -1116,7 +1116,7 @@ void SAPT0::df_integrals_aio()
 
   int nthreads = 1;
   #ifdef _OPENMP
-    nthreads = omp_get_max_threads();
+    nthreads = Process::environment.get_n_threads();
   #endif
   int rank = 0;
 
@@ -1670,7 +1670,7 @@ void SAPT0::oo_df_integrals()
 
   int nthreads = 1;
   #ifdef _OPENMP
-    nthreads = omp_get_max_threads();
+    nthreads = Process::environment.get_n_threads();
   #endif
   int rank = 0;
 

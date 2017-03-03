@@ -1929,7 +1929,7 @@ void FISAPT::disp()
 
     int nT = 1;
     #ifdef _OPENMP
-        nT = omp_get_max_threads();
+        nT = Process::environment.get_n_threads();
     #endif
 
     // => Stashed Variables <= //
@@ -3758,7 +3758,7 @@ void FISAPT::fdisp()
 
     int nT = 1;
     #ifdef _OPENMP
-        nT = omp_get_max_threads();
+        nT = Process::environment.get_n_threads();
     #endif
 
     // => Targets <= //

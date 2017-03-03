@@ -1514,7 +1514,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
      *  -Polarizability
      * -*/
     options.add("CPHF_TASKS", new ArrayType());
-    /*- The maximum number of integral threads (0 for omp_get_max_threads())
+    /*- The maximum number of integral threads (0 for Process::environment.get_n_threads())
      -*/
     options.add_int("OMP_N_THREAD", 0);
     /*- The schwarz cutoff value

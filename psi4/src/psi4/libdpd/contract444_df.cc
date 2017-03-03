@@ -69,7 +69,7 @@ int DPD::contract444_df(dpdbuf4 *B, dpdbuf4 *tau_in, dpdbuf4 *tau_out, double al
 
     int nthreadz = 1;
 #ifdef _OPENMP
-    nthreadz = omp_get_max_threads();
+    nthreadz = Process::environment.get_n_threads();
 #endif
 
     // Create accumulation buffers

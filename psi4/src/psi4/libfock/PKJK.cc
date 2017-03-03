@@ -75,7 +75,7 @@ void PKJK::common_init()
     pk_file_ = PSIF_SO_PK;
     nthreads_ = 1;
 #ifdef _OPENMP
-    nthreads_ = omp_get_max_threads();
+    nthreads_ = Process::environment.get_n_threads();
 #endif
 }
 

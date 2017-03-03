@@ -118,7 +118,7 @@ void FittingMetric::form_fitting_metric()
     int nthread = 1;
     #ifdef _OPENMP
         if (!omp_in_parallel()) {
-            nthread = omp_get_max_threads();
+            nthread = Process::environment.get_n_threads();
         }
     #endif
 
