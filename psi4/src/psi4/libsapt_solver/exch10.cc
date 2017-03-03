@@ -36,7 +36,7 @@ void SAPT0::exch10_s2()
 
   int nthreads = 1;
 #ifdef _OPENMP
-  nthreads = omp_get_max_threads();
+  nthreads = Process::environment.get_n_threads();
 #endif
   int rank = 0;
 
@@ -208,7 +208,7 @@ void SAPT0::exch10()
 
   int nthreads = 1;
 #ifdef _OPENMP
-  nthreads = omp_get_max_threads();
+  nthreads = Process::environment.get_n_threads();
 #endif
   int rank = 0;
 
@@ -557,7 +557,7 @@ void SAPT2::exch10()
 
   int nthreads = 1;
 #ifdef _OPENMP
-  nthreads = omp_get_max_threads();
+  nthreads = Process::environment.get_n_threads();
 #endif
   int rank = 0;
 

@@ -85,7 +85,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
     long int memory = Process::environment.get_memory();
     int nthreads = 1;
 #ifdef _OPENMP
-    nthreads = omp_get_max_threads();
+    nthreads = Process::environment.get_n_threads();
 #endif
 
     outfile->Printf("   => Sizing <=\n\n");

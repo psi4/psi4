@@ -78,7 +78,7 @@ void Process::Environment::initialize()
     nthread_ = 1;
 
 #ifdef _OPENMP
-    nthread_ = omp_get_max_threads();
+    nthread_ = Process::environment.get_n_threads();
 #endif
 }
 

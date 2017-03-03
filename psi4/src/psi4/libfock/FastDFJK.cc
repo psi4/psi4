@@ -74,7 +74,7 @@ void FastDFJK::common_init()
 {
     df_ints_num_threads_ = 1;
     #ifdef _OPENMP
-        df_ints_num_threads_ = omp_get_max_threads();
+        df_ints_num_threads_ = Process::environment.get_n_threads();
     #endif
     df_ints_io_ = "NONE";
     condition_ = 1.0E-12;
@@ -626,7 +626,7 @@ void FastDFJK::build_J(std::shared_ptr<Matrix> Z,
 
     int nthread = 1;
     #ifdef _OPENMP
-        nthread = omp_get_max_threads();
+        nthread = Process::environment.get_n_threads();
     #endif
 
     // => Temporaries <= //

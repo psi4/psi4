@@ -161,7 +161,7 @@ void DFOCC::oei_grad()
         // Thread count
         int threads = 1;
         #ifdef _OPENMP
-            threads = omp_get_max_threads();
+            threads = Process::environment.get_n_threads();
         #endif
 
         // Potential derivatives

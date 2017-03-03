@@ -724,7 +724,7 @@ void CoupledCluster::DefineTilingCPU(){
 ===================================================================*/
 void CoupledCluster::AllocateMemory() {
 
-  long int nthreads = omp_get_max_threads();
+  long int nthreads = Process::environment.get_n_threads();
   long int o=ndoccact;
   long int v=nvirt;
   if (!options_.get_bool("RUN_MP2")) {

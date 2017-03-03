@@ -83,7 +83,7 @@ PsiReturnType CoupledCluster::triples(){
   E2ijak = (double*)malloc(vooo*sizeof(double));
   int nthreads = 1;
   #ifdef _OPENMP
-      nthreads = omp_get_max_threads();
+      nthreads = Process::environment.get_n_threads();
   #endif
 
   long int memory = Process::environment.get_memory();

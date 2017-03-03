@@ -57,7 +57,7 @@ void DFOCC::tei_grad_ref()
     // Two-electron gradients
     int df_ints_num_threads_ = 1;
     #ifdef _OPENMP
-        df_ints_num_threads_ = omp_get_max_threads();
+        df_ints_num_threads_ = Process::environment.get_n_threads();
     #endif
 
     // Read in the basis set informations

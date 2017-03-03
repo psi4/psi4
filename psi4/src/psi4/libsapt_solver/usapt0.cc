@@ -1831,7 +1831,7 @@ void USAPT0::mp2_terms()
 
     int nT = 1;
     #ifdef _OPENMP
-        nT = omp_get_max_threads();
+        nT = Process::environment.get_n_threads();
     #endif
 
     // => Stashed Variables <= //

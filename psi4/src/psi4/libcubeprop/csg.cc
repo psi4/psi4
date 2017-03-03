@@ -338,7 +338,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // => Density Fitting (TODO: Could be sped up) <= //

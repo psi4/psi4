@@ -127,7 +127,7 @@ void DCFTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<B
 //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     double **J = block_matrix(nQ_, nQ_);
@@ -217,7 +217,7 @@ void DCFTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Bas
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     std::shared_ptr<ERISieve> sieve = std::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
@@ -312,7 +312,7 @@ void DCFTSolver::df_memory(){
     double memory = Process::environment.get_memory();
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     outfile->Printf("\t => Sizing <=\n\n");
@@ -383,7 +383,7 @@ void DCFTSolver::transform_b_ao2so()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     double** bQmn_ao_p = bQmn_ao_->pointer();
@@ -440,7 +440,7 @@ void DCFTSolver::formb_oo()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Set up dimensions for b(Q|IJ)
@@ -539,7 +539,7 @@ void DCFTSolver::formb_ov()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Set up dimensions for b(Q|IA)
@@ -633,7 +633,7 @@ void DCFTSolver::formb_vv()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Set up dimensions for b(Q|AB)
@@ -732,7 +732,7 @@ void DCFTSolver::formb_pq()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Set up dimensions for b(Aux|PQ)
@@ -822,7 +822,7 @@ void DCFTSolver::form_df_g_ovov()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Alpha-Alpha
@@ -885,7 +885,7 @@ void DCFTSolver::form_df_g_oooo()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Alpha-Alpha
@@ -948,7 +948,7 @@ void DCFTSolver::form_df_g_vvoo()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     dpdbuf4 I;
@@ -1050,7 +1050,7 @@ void DCFTSolver::form_df_g_vooo()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     dpdbuf4 I;
@@ -1238,7 +1238,7 @@ void DCFTSolver::form_df_g_ovvv()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     dpdbuf4 I;
@@ -1324,7 +1324,7 @@ void DCFTSolver::form_df_g_vvvv()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     dpdbuf4 I;
@@ -1428,7 +1428,7 @@ void DCFTSolver::build_gbarlambda_RHF_v3mem()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Put detailed information of b(Q|ab) block into 'block'
@@ -1552,7 +1552,7 @@ void DCFTSolver::build_gbarGamma_RHF()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
@@ -1658,7 +1658,7 @@ void DCFTSolver::build_gbarKappa_RHF()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     mo_gbarKappa_A_ = SharedMatrix (new Matrix("MO-basis Gbar*Kappa", nirrep_, nmopi_, nmopi_));
@@ -1822,7 +1822,7 @@ void DCFTSolver::build_gbarlambda_UHF_v3mem()
     // Thread considerations
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     /********** Alpha-Alpha **********/
@@ -2167,7 +2167,7 @@ void DCFTSolver::build_gbarGamma_UHF()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
@@ -2333,7 +2333,7 @@ void DCFTSolver::build_gbarKappa_UHF()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     mo_gbarKappa_A_ = SharedMatrix (new Matrix("MO-basis Gbar_Kappa_A", nirrep_, nmopi_, nmopi_))    ;
@@ -2490,7 +2490,7 @@ void DCFTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_p
 //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     double **J = block_matrix(nQ_scf_, nQ_scf_);
@@ -2580,7 +2580,7 @@ void DCFTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     std::shared_ptr<ERISieve> sieve = std::shared_ptr<ERISieve>(new ERISieve(primary, 1.0E-20));
@@ -2677,7 +2677,7 @@ void DCFTSolver::transform_b_ao2so_scf()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     double** bQmn_ao_p = bQmn_ao_scf_->pointer();
@@ -2734,7 +2734,7 @@ void DCFTSolver::formb_oo_scf()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Set up dimensions for b(Q|IJ)
@@ -2833,7 +2833,7 @@ void DCFTSolver::formb_pq_scf()
 
     int nthreads = 1;
     #ifdef _OPENMP
-        nthreads = omp_get_max_threads();
+        nthreads = Process::environment.get_n_threads();
     #endif
 
     // Set up dimensions for b(Aux|PQ)
