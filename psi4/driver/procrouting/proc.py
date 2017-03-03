@@ -1080,10 +1080,13 @@ def scf_helper(name, **kwargs):
     use_c1 = kwargs.get('use_c1', False)
     scf_molecule = kwargs.get('molecule', core.get_active_molecule())
     read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
+    do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
         raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
 
+    if do_timer:
+        core.tstart()
     # Second-order SCF requires non-symmetric density matrix support
     if core.get_option('SCF', 'SOSCF'):
         proc_util.check_non_symmetric_jk_density("Second-order SCF")
@@ -1377,6 +1380,8 @@ def scf_helper(name, **kwargs):
     np.savez(filename, **data)
     extras.register_numpy_file(filename)
 
+    if do_timer:
+        core.tstop()
 
     optstash.restore()
     return scf_wfn
@@ -1928,14 +1933,11 @@ def run_scf(name, **kwargs):
 
     """
 
-    core.tstart() # Manage start and stop as there is no C wrapper
-
     optstash = proc_util.scf_set_reference_local(name)
 
     scf_wfn = scf_helper(name, **kwargs)
 
     optstash.restore()
-    core.tstop()
     return scf_wfn
 
 
@@ -2322,12 +2324,14 @@ def run_dft_property(name, **kwargs):
     since DFT properties all handled through oeprop.
 
     """
+
+    core.tstart()
     optstash = proc_util.dft_set_reference_local(name)
 
     properties = kwargs.pop('properties')
     proc_util.oeprop_validator(properties)
 
-    scf_wfn = run_scf(name, scf_do_dipole=False, *kwargs)
+    scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
@@ -2337,6 +2341,7 @@ def run_dft_property(name, **kwargs):
     oe.compute()
     scf_wfn.set_oeprop(oe)
 
+    core.tstop()
     optstash.restore()
     return scf_wfn
 
@@ -2348,12 +2353,13 @@ def run_scf_property(name, **kwargs):
 
     """
 
+    core.tstart()
     optstash = proc_util.scf_set_reference_local(name)
 
     properties = kwargs.pop('properties')
     proc_util.oeprop_validator(properties)
 
-    scf_wfn = run_scf(name, scf_do_dipole=False, **kwargs)
+    scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
@@ -2363,6 +2369,7 @@ def run_scf_property(name, **kwargs):
     oe.compute()
     scf_wfn.set_oeprop(oe)
 
+    core.tstop()
     optstash.restore()
     return scf_wfn
 
@@ -2977,7 +2984,6 @@ def run_dfmp2(name, **kwargs):
     a density-fitted MP2 calculation.
 
     """
-    core.tstart()
     optstash = p4util.OptionsState(
         ['DF_BASIS_MP2'],
         ['SCF', 'SCF_TYPE'])
@@ -2992,6 +2998,7 @@ def run_dfmp2(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
+    core.tstart()
     core.print_out('\n')
     p4util.banner('DFMP2')
     core.print_out('\n')
