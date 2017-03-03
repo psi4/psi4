@@ -15,8 +15,7 @@ set {
   DF_BASIS_SCF def2-sv_p_-jkfit
 }
 
-gradient('mp2')
-analytic_grad = psi4.get_gradient()
+analytic_grad = gradient('mp2')
 clean()
 memory 250 mb
 
@@ -33,8 +32,7 @@ set {
   DF_BASIS_SCF def2-sv_p_-jkfit
 }
 
-gradient('scf')
-analytic_grad = psi4.get_gradient()
+analytic_grad = gradient('scf')
 clean()
 memory 250 mb
 
@@ -116,8 +114,7 @@ set {
   scf_type pk
 }
 
-gradient('mp2')
-analytic_grad = psi4.get_gradient()
+analytic_grad = gradient('mp2')
 clean()
 memory 250 mb
 
@@ -133,6 +130,5 @@ set {
   scf_type pk
 }
 
-gradient('scf')
-analytic_grad = psi4.get_gradient()
+analytic_grad = gradient('scf')
 clean()

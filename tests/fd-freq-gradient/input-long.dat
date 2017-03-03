@@ -44,9 +44,8 @@ for n, displacement in enumerate(displacements):
 
   h2o.set_geometry(displacement)
 
-  gradient('scf')
+  G = gradient('scf')
 
-  G = psi4.get_gradient()
   gradients.append(G)
 
   psi4.clean()
