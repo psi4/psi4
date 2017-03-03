@@ -179,6 +179,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Algorithm to use for CI computation (e.g., CID or CISD).
   See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
   options.add_str("CI_TYPE", "CONV", "CONV");
+  /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
+  options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -1210,8 +1212,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
-    /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
-    options.add_bool("MOLDEN_WITH_VIRTUAL", true);
     /*- If true, then repeat the specified guess procedure for the orbitals every time -
     even during a geometry optimization. -*/
     options.add_bool("GUESS_PERSIST", false);

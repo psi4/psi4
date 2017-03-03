@@ -1836,18 +1836,22 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         NO_Ra = core.Matrix("NO Alpha Rotation Matrix", nmopi, nmopi)
         NO_occa = core.Vector(nmopi)
         density_a.diagonalize(NO_Ra, NO_occa, core.DiagonalizeOrder.Descending)
+        NO_Ca = core.Matrix("Ca Natural Orbitals", nsopi, nmopi)
+        NO_Ca.gemm(False, False, 1.0, wfn.Ca(), NO_Ra, 0)
 
         if density_b:
             NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
             NO_occa = core.Vector(nmopi)
             density_b.diagonalize(NO_Ra, NO_occa, core.DiagonalizeOrder.Descending)
+            NO_Cb = core.Matrix("Cb Natural Orbitals", nsopi, nmopi)
+            NO_Cb.gemm(False, False, 1.0, wfn.Cb(), NO_Rb, 0)
 
         else:
             NO_occb = NO_occa
-            NO_Rb = NO_Ra
+            NO_Cb = NO_Ca
 
         mw = core.MoldenWriter(wfn)
-        mw.writeNO(filename, NO_Ra, NO_Rb, NO_occa, NO_occb)
+        mw.write(filename, NO_Ca, NO_Cb, NO_occa, NO_occb, NO_occa, NO_occb, dovirt)
 
     else:
         try:
