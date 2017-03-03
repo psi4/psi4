@@ -786,7 +786,6 @@ void export_mints(py::module& m)
 
     py::class_<MoldenWriter, std::shared_ptr<MoldenWriter> >(m, "MoldenWriter", "docstring").
             def(py::init<std::shared_ptr<Wavefunction> >()).
-            def("writeNO", &MoldenWriter::writeNO, "docstring").
             def("write", &MoldenWriter::write, "docstring");
 
     py::class_<NBOWriter, std::shared_ptr<NBOWriter> >(m, "NBOWriter", "docstring").

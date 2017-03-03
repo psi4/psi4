@@ -413,9 +413,9 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       }
 
       //Get the NOs/occupation numbers
-      std::pair<SharedMatrix,SharedVector> NOa_pair = oe->Na_mo();
-      std::pair<SharedMatrix,SharedVector> NOb_pair = NOa_pair;
-      if(!ref_wfn->same_a_b_dens()){
+      std::pair<SharedMatrix, SharedVector> NOa_pair = oe->Na_mo();
+      std::pair<SharedMatrix, SharedVector> NOb_pair = NOa_pair;
+      if (!ref_wfn->same_a_b_dens()) {
         SharedMatrix cc_Db = oe->Db_so();
         SharedMatrix ref_Db = ref_wfn->Db();
         ref_Db->copy(cc_Db);
@@ -426,12 +426,14 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
       if(params.write_nos){
         MoldenWriter nowriter(ref_wfn);
         std::string mol_name = ref_wfn->molecule()->name();
-        nowriter.writeNO(mol_name+"NO.molden",NOa_pair.first,NOb_pair.first,
-            NOa_pair.second,NOb_pair.second);
+        SharedMatrix NO_Ca = Matrix::doublet(Ca, NOa_pair.first, false, false);
+        SharedMatrix NO_Cb = Matrix::doublet(Cb, NOb_pair.first, false, false);
+        nowriter.write(mol_name + "NO.molden", NO_Ca, NO_Cb, NOa_pair.second, NOb_pair.second,
+                       NOa_pair.second, NOb_pair.second, options.get_bool("MOLDEN_WITH_VIRTUAL"));
       }
     }else{
       // this should set psivars correctly for root Properties
-      oe->set_title(cc_prop_label+" ROOT "+std::to_string(i));
+      oe->set_title(cc_prop_label + " ROOT " + std::to_string(i));
       oe->compute();
       /*- Process::environment.globals["CC ROOT n DIPOLE X"] -*/
       /*- Process::environment.globals["CC ROOT n DIPOLE Y"] -*/

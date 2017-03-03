@@ -45,21 +45,20 @@ class BasisSet;
 class Wavefunction;
 class Options;
 
-class GradientWriter
-{
+class GradientWriter {
     std::shared_ptr<Molecule> molecule_;
-    const Matrix& gradient_;
+    const Matrix &gradient_;
 
-public:
-    GradientWriter(std::shared_ptr<Molecule> mol, const Matrix& grad);
+   public:
+    GradientWriter(std::shared_ptr<Molecule> mol, const Matrix &grad);
 
-    void write(const std::string& filename);
+    void write(const std::string &filename);
 };
 
-class FCHKWriter
-{
-private:
-    /*! \brief Extracts information from a wavefunction object, and writes it into a formatted FCHK file.  */
+class FCHKWriter {
+   private:
+    /*! \brief Extracts information from a wavefunction object, and writes it into a formatted FCHK
+     * file.  */
     std::shared_ptr<Wavefunction> wavefunction_;
     FILE *chk_;
     void write_number(const char *label, int value);
@@ -70,46 +69,44 @@ private:
     void write_matrix(const char *label, const std::vector<double> &mat);
     void write_matrix(const char *label, const std::vector<int> &mat);
 
-public:
+   public:
     FCHKWriter(std::shared_ptr<Wavefunction> wavefunction);
     void write(const std::string &filename);
 };
 
-class MoldenWriter
-{
+class MoldenWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
 
-public:
-    void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB, bool dovirtual);
-    void writeNO(const std::string &filename, std::shared_ptr<Matrix> Na, std::shared_ptr<Matrix> Nb, std::shared_ptr<Vector> Oa, std::shared_ptr<Vector> Ob);
+   public:
     MoldenWriter(std::shared_ptr<Wavefunction> wavefunction);
 
+    void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
+               std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,
+               std::shared_ptr<Vector> OccB, bool dovirtual);
 };
 
-class MOWriter
-{
+class MOWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
     bool restricted_;
-private:
-    double * Ca_pointer, * eps;
-    int * map, * sym, * occ, nmo, nso;
-    void write_mos(Molecule & mol);
-public:
+
+   private:
+    double *Ca_pointer, *eps;
+    int *map, *sym, *occ, nmo, nso;
+    void write_mos(Molecule &mol);
+
+   public:
     MOWriter(std::shared_ptr<Wavefunction> wavefunction);
     void write();
 };
 
-
-class NBOWriter
-{
+class NBOWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
 
-public:
+   public:
     NBOWriter(std::shared_ptr<Wavefunction> wavefunction);
 
     void write(const std::string &filename);
 };
-
 }
 
-#endif // WRITER_H
+#endif  // WRITER_H
