@@ -49,7 +49,7 @@ protected:
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
     unsigned long int memory_;
     /// Number of OpenMP threads (defaults to 1 in no OpenMP, Process::environment.get_n_threads() otherwise)
-    int nhreads_;
+    int nthreads_;
     /// Integral cutoff (defaults to 0.0)
     double cutoff_;
 
@@ -130,7 +130,7 @@ public:
      *        integral generation objects (BLAS/LAPACK can still
      *        run with their original maximum number)
      */
-    void set_omp_num_threads(int omp_nthread) { omp_num_threads_ = omp_nthread; }
+    void set_omp_num_threads(int omp_nthread) { nthreads_ = omp_nthread; }
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }
     /// Debug flag (defaults to 0)

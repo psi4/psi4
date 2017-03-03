@@ -36,7 +36,6 @@
     #include<omp.h>
 #else
     #define omp_get_wtime() 0.0
-    #define omp_get_max_threads() 1
 #endif
 
 #include"blas.h"
