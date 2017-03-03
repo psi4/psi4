@@ -168,7 +168,7 @@ void MintsHelper::common_init()
     // How many threads?
     nthread_ = 1;
     #ifdef _OPENMP
-        nthread_ = omp_get_max_threads();
+        nthread_ = Process::environment.get_n_threads();
     #endif
 
     // Create integral factory
@@ -231,14 +231,14 @@ void MintsHelper::integrals()
 
     // Get ERI object
     std::vector <std::shared_ptr<TwoBodyAOInt>> tb;
-    for (int i = 0; i < Process::environment.get_n_threads(); ++i)
+    for (int i = 0; i < nthread_; ++i)
         tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri()));
     std::shared_ptr <TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
     //// Print out some useful information
     if (print_) {
         outfile->Printf("   Calculation information:\n");
-        outfile->Printf("      Number of threads:              %4d\n", Process::environment.get_n_threads());
+        outfile->Printf("      Number of threads:              %4d\n", nthread_);
         outfile->Printf("      Number of atoms:                %4d\n", molecule_->natom());
         outfile->Printf("      Number of AO shells:            %4d\n", basisset_->nshell());
         outfile->Printf("      Number of SO shells:            %4d\n", sobasis_->nshell());
@@ -292,7 +292,7 @@ void MintsHelper::integrals_erf(double w)
 
     // Get ERI object
     std::vector <std::shared_ptr<TwoBodyAOInt>> tb;
-    for (int i = 0; i < Process::environment.get_n_threads(); ++i)
+    for (int i = 0; i < nthread_; ++i)
         tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
     std::shared_ptr <TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
@@ -324,7 +324,7 @@ void MintsHelper::integrals_erfc(double w)
 
     // Get ERI object
     std::vector <std::shared_ptr<TwoBodyAOInt>> tb;
-    for (int i = 0; i < Process::environment.get_n_threads(); ++i)
+    for (int i = 0; i < nthread_; ++i)
         tb.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega)));
     std::shared_ptr <TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
