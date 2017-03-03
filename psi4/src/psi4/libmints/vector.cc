@@ -280,43 +280,34 @@ double *Vector::to_block_vector()
     return temp;
 }
 
-void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta)
-{
+void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta) {
     char trans = transa ? 't' : 'n';
 
     for (int h = 0; h < nirrep_; ++h) {
-        C_DGEMV(trans, A->rowspi_[h], A->colspi_[h], alpha, &(A->matrix_[h][0][0]),
-                A->rowspi_[h], &(X->vector_[h][0]), 1, beta, &(vector_[h][0]), 1);
+        C_DGEMV(trans, A->rowspi_[h], A->colspi_[h], alpha, &(A->matrix_[h][0][0]), A->rowspi_[h],
+                &(X->vector_[h][0]), 1, beta, &(vector_[h][0]), 1);
     }
 }
 
 double Vector::vector_dot(const std::shared_ptr<Vector> &other) { return vector_dot(*other.get()); }
 double Vector::vector_dot(const Vector &other) {
-    return C_DDOT(v_.size(), v_.data(), 1, const_cast<double*>(other.v_.data()), 1);
-}
-double Vector::dot(Vector *X) { return C_DDOT(v_.size(), v_.data(), 1, X->v_.data(), 1); }
-
-double Vector::norm() { return C_DDOT(v_.size(), v_.data(), 1, v_.data(), 1); }
-double Vector::sum_of_squares() { return norm(); }
-double Vector::rms() { return sqrt(norm() / v_.size()); }
-
-template<class T>
-struct scale_vector
-{
-    typedef T data_type;
-    typedef data_type result_type;
-
-    const data_type scalar;
-
-    scale_vector(const data_type &sc) : scalar(sc)
-    {}
-
-    result_type operator()(data_type value) const
-    {
-        value *= scalar;
-        return value;
+    if (v_.size() != other.v_.size()) {
+        throw PSIEXCEPTION("Vector::vector_dot: Vector sizes do not match!");
     }
-};
+
+    return C_DDOT(v_.size(), v_.data(), 1, const_cast<double *>(other.v_.data()), 1);
+}
+double Vector::dot(Vector *X) {
+    if (v_.size() != X->v_.size()) {
+        throw PSIEXCEPTION("Vector::vector_dot: Vector sizes do not match!");
+    }
+
+    return C_DDOT(v_.size(), v_.data(), 1, X->v_.data(), 1);
+}
+
+double Vector::sum_of_squares() { return C_DDOT(v_.size(), v_.data(), 1, v_.data(), 1); }
+double Vector::norm() { return sqrt(sum_of_squares()); }
+double Vector::rms() { return sqrt(sum_of_squares() / v_.size()); }
 
 void Vector::scale(const double &sc) { C_DSCAL(v_.size(), sc, v_.data(), 1); }
 
@@ -328,20 +319,16 @@ void Vector::subtract(const Vector &other) { axpy(-1.0, other); }
 
 void Vector::axpy(double scale, const SharedVector &other) { axpy(scale, *other.get()); }
 void Vector::axpy(double scale, const Vector &other) {
-    if (v_.size() != other.v_.size()){
+    if (v_.size() != other.v_.size()) {
         throw PSIEXCEPTION("Vector::axpy: Vector sizes do not match!");
     }
 
-    C_DAXPY(v_.size(), scale, const_cast<double*>(other.v_.data()), 1, v_.data(), 1);
+    C_DAXPY(v_.size(), scale, const_cast<double *>(other.v_.data()), 1, v_.data(), 1);
 }
 
-void Vector::send()
-{
-}
+void Vector::send() {}
 
-void Vector::recv()
-{
-}
+void Vector::recv() {}
 
 void Vector::bcast(int)
 {
