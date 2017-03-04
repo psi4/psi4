@@ -164,7 +164,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
                 fread(Bjbp[0], sizeof(double), nj * nvQ, Bf);
             }
 
-#pragma omp parallel for reduction(+: E_MP2J, E_MP2K)
+#pragma omp parallel for reduction(+: E_MP2J, E_MP2K) num_threads(nthreads)
             for (int ijrel = 0; ijrel < ni *nj; ijrel++) {
 
                 int irel = ijrel / nj;
