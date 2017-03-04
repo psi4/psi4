@@ -373,6 +373,13 @@ class BlockOPoints {
 protected:
     /// number of points in this block
     int npoints_;
+
+    /// Data holders if requested
+    SharedVector xvec_;
+    SharedVector yvec_;
+    SharedVector zvec_;
+    SharedVector wvec_;
+
     /// Pointer to x (does not own)
     double* x_;
     /// Pointer to y (does not own)
@@ -399,6 +406,8 @@ protected:
     void bound();
 
 public:
+    BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
+                 std::shared_ptr<BasisExtents> extents);
     BlockOPoints(int npoints, double* x, double* y, double* z, double* w,
         std::shared_ptr<BasisExtents> extents);
     virtual ~BlockOPoints();

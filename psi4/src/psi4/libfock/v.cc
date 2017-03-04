@@ -400,8 +400,7 @@ void RV::initialize() {
     int max_functions = grid_->max_functions();
     for (size_t i = 0; i < num_threads_; i++) {
         // Need a points worker per thread
-        std::shared_ptr<PointFunctions> point_tmp =
-            std::shared_ptr<PointFunctions>(new RKSFunctions(primary_, max_points, max_functions));
+        std::shared_ptr<PointFunctions> point_tmp(new RKSFunctions(primary_, max_points, max_functions));
         point_tmp->set_ansatz(functional_->ansatz());
         point_workers_.push_back(point_tmp);
     }

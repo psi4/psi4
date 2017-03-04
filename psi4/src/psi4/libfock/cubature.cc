@@ -3832,17 +3832,30 @@ void BasisExtents::print(std::string out)
         printer->Printf( "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1,
             v[0], v[1], v[2], Rp[Q]);
     }
-    printer->Printf( "\n\n");
+    printer->Printf("\n\n");
 }
-BlockOPoints::BlockOPoints(int npoints, double* x, double* y, double* z, double* w, std::shared_ptr<BasisExtents> extents) :
-    npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents)
-{
+BlockOPoints::BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
+                           std::shared_ptr<BasisExtents> extents)
+    : npoints_(x->dimpi().sum()),
+      xvec_(x),
+      yvec_(y),
+      zvec_(z),
+      wvec_(w),
+      x_(xvec_->pointer()),
+      y_(yvec_->pointer()),
+      z_(zvec_->pointer()),
+      w_(wvec_->pointer()),
+      extents_(extents) {
     bound();
     populate();
 }
-BlockOPoints::~BlockOPoints()
-{
+BlockOPoints::BlockOPoints(int npoints, double *x, double *y, double *z, double *w,
+                           std::shared_ptr<BasisExtents> extents)
+    : npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents) {
+    bound();
+    populate();
 }
+BlockOPoints::~BlockOPoints() {}
 void BlockOPoints::bound()
 {
     // Initially: mean center and max spread of point cloud

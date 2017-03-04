@@ -185,6 +185,7 @@ void export_functional(py::module &m)
 
 
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, int, int>())
         .def("max_functions", &BasisFunctions::max_functions, "docstring")
         .def("max_points", &BasisFunctions::max_points, "docstring")
         .def("deriv", &BasisFunctions::deriv, "docstring")
@@ -207,32 +208,38 @@ void export_functional(py::module &m)
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
+    py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions",
+                                                                                "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, int, int>());
+
+    py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(m, "UKSFunctions",
+                                                                                "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, int, int>());
+
     py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
+        .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector,
+                      std::shared_ptr<BasisExtents>>())
         .def("x",
              [](BlockOPoints &grid) {
-                 SharedVector ret =
-                     std::shared_ptr<Vector>(new Vector("X Grid points", grid.npoints()));
+                 SharedVector ret(new Vector("X Grid points", grid.npoints()));
                  C_DCOPY(grid.npoints(), grid.x(), 1, ret->pointer(), 1);
                  return ret;
              })
         .def("y",
              [](BlockOPoints &grid) {
-                 SharedVector ret =
-                     std::shared_ptr<Vector>(new Vector("Y Grid points", grid.npoints()));
+                 SharedVector ret(new Vector("Y Grid points", grid.npoints()));
                  C_DCOPY(grid.npoints(), grid.y(), 1, ret->pointer(), 1);
                  return ret;
              })
         .def("z",
              [](BlockOPoints &grid) {
-                 SharedVector ret =
-                     std::shared_ptr<Vector>(new Vector("Z Grid points", grid.npoints()));
+                 SharedVector ret(new Vector("Z Grid points", grid.npoints()));
                  C_DCOPY(grid.npoints(), grid.z(), 1, ret->pointer(), 1);
                  return ret;
              })
         .def("w",
              [](BlockOPoints &grid) {
-                 SharedVector ret =
-                     std::shared_ptr<Vector>(new Vector("Grid Weights", grid.npoints()));
+                 SharedVector ret(new Vector("Grid Weights", grid.npoints()));
                  C_DCOPY(grid.npoints(), grid.w(), 1, ret->pointer(), 1);
                  return ret;
              })
@@ -242,6 +249,14 @@ void export_functional(py::module &m)
              py::arg("print") = 2, "docstring")
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
+
+    py::class_<BasisExtents, std::shared_ptr<BasisExtents>>(m, "BasisExtents", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, double>())
+        .def("set_delta", &BasisExtents::set_delta, "docstring")
+        .def("delta", &BasisExtents::delta, "docstring")
+        .def("basis", &BasisExtents::basis, "docstring")
+        .def("shell_extents", &BasisExtents::shell_extents, "docstring")
+        .def("maxR", &BasisExtents::maxR, "docstring");
 
     py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
         .def("print", &MolecularGrid::print, "Prints grid information.")
