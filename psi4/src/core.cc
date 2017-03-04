@@ -1102,10 +1102,18 @@ unsigned long int py_psi_get_memory()
 
 void py_psi_set_n_threads(unsigned int nthread, bool quiet)
 {
+#ifdef _OPENMP
     Process::environment.set_n_threads(nthread);
     if (!quiet){
         outfile->Printf("  Threads set to %d by Python driver.\n", nthread);
     }
+#else
+    Process::environment.set_n_threads(1);
+    if (!quiet){
+        outfile->Printf("  Python driver attempted to set threads to %d.\n"
+                        "  Psi4 was compiled without OpenMP, setting threads to 1.\n", nthread);
+    }
+#endif
 }
 
 int py_psi_get_n_threads()
