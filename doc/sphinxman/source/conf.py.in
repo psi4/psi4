@@ -74,6 +74,8 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    # from Jupyter
+    'nbsphinx',
     # from Cloud
     'cloud_sptheme.ext.index_styling',
     'cloud_sptheme.ext.escaped_samp_literals',
@@ -188,7 +190,7 @@ html_theme_path = [psp.get_theme_dir(), csp.get_theme_dir()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = None
+html_title = ''
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
@@ -295,6 +297,7 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
+nbsphinx_allow_errors = True
 
 # -- Options for manual page output --------------------------------------------
 

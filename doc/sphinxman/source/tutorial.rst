@@ -29,9 +29,19 @@
 
 .. _`sec:tutorial`:
 
-====================
-A |PSIfour| Tutorial
-====================
+==================================================
+Psithon Tutorial: Using |PSIfour| as an Executable
+==================================================
+
+.. note:: Psithon and PsiAPI refer to two modes of interacting with |PSIfour|. In
+   Psithon mode, you write an input file in our domain-specific language
+   (not quite Python) where commands don't have ``psi4.`` in front, then
+   submit it to the executable ``psi4`` which processes the Psithon into
+   pure Python and runs it internally. In PsiAPI mode, you write a pure
+   Python script with ``import psi4`` at the top and commands are behind
+   the ``psi4.`` namespace, then submit it to the ``python`` interpreter.
+   Both modes are equally powerful. This tutorial covers the Psithon
+   mode.
 
 .. note:: Some |PSIfour| functions and keywords have aliases.  For example,
           ``frequency()``, ``frequencies()``, and ``freq()`` all work to 

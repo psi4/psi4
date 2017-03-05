@@ -50,10 +50,12 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 #  <<<  Detecting BLAS/LAPACK  >>>
 #
-#    - ENV(MATH_ROOT) "Root directory in which BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib64/libblas.so)"
-#    - BLAS_TYPE "BLAS distribution to target (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
-#    - LAPACK_TYPE "LAPACK distribution to target (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
-#    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as a semicolon-separated list of full paths, bypassing math detection"
+#    - ENV(MATH_ROOT) "Root directory where BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib/libblas.so)"
+#    - BLAS_TYPE "Target BLAS distribution for math detection
+#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#    - LAPACK_TYPE "Target LAPACK distribution for math detection
+#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as ";"-separated list of full paths, bypassing math detection"
 #    - LAPACK_INCLUDE_DIRS "Location of BLAS/LAPACK headers (only needed for MKL), bypassing math detection"
 
 #  <<<  Install  >>>
@@ -63,7 +65,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - CMAKE_INSTALL_LIBDIR "Location within CMAKE_INSTALL_PREFIX to which libraries are installed (default: lib)"
 #    - CMAKE_INSTALL_DATADIR "Location within CMAKE_INSTALL_PREFIX to which resources are installed (default: share)"
 #    - CMAKE_INSTALL_INCLUDEDIR "Location within CMAKE_INSTALL_PREFIX to which headers are installed (default: include)"
-#    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /) must start with /"
+#    - PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed (default: /)
+#                            Must start with /"
 
 ############################  Options: Build What?  ############################
 option(ENABLE_AMBIT "Enables the Ambit tensor library" OFF)

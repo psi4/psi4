@@ -108,6 +108,10 @@ a time (and all nodes on the filesystem with |psirc| have similar memory
 capacities), it is advised to set memory in the input file on a
 per-calculation basis.
 
+That same command can be used for PsiAPI mode::
+
+    psi4.set_memory(int(5e8))
+
 .. note:: For parallel jobs, the ``memory`` keyword represents the total memory
    available to the job, *not* the memory per thread.
 
@@ -215,6 +219,18 @@ the input file, so if the last four commands in the above example were to read :
 
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
+
+In PsiAPI mode::
+
+   psi4.set_options({
+       'scf_type': 'pk',
+       'e_convergence': 1.e-5,
+       'soscf': True
+   })
+
+   psi4.set_module_options({
+       'geom_maxiter': 50
+   })
 
 Basis Sets
 ==========
