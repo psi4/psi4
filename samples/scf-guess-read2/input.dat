@@ -1,0 +1,40 @@
+#! Test if the the guess read in the same basis converges. 
+
+memory 250 mb
+
+molecule oxygen {
+    0 1
+    O
+    O 1 1.2
+}
+
+set reference rhf
+set basis cc-pVDZ
+set guess sad
+energy('scf')
+
+set guess read
+energy('scf')
+
+
+# ROHF
+oxygen.set_multiplicity(3)
+
+set reference rohf
+set guess sad
+energy('scf')
+
+set guess read
+energy('scf')
+
+
+# UHF
+set reference uhf
+set guess sad
+energy('scf')
+
+set guess read
+energy('scf')
+
+
+

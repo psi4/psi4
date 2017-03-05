@@ -22,7 +22,7 @@ set {
     mcscf_type      df
     basis           sto-3g
     num_roots       2
-    avg_states      [1, 2]
+    avg_states      [0, 1]
 }
 
 casscf_energy = energy('casscf')

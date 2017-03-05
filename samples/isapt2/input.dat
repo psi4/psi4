@@ -43,25 +43,6 @@ freeze_core true
 
 energy('fisapt0')
 
-keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot'] # TEST
 
-Eref = { # TEST
-    'Enuc'  : 338.311173124900847, # TEST
-    'Eelst' :  -0.01408984519,     # TEST
-    'Eexch' :  +0.01776897764,     # TEST
-    'Eind'  :  -0.00520103160,     # TEST
-    'Edisp' :  -0.00254901867,     # TEST
-    'Etot'  :  -0.00407091782,     # TEST
-    } # TEST
     
-Epsi = { # TEST
-    'Enuc'  : mol.nuclear_repulsion_energy(),          # TEST
-    'Eelst' : psi4.get_variable("SAPT ELST ENERGY"),   # TEST
-    'Eexch' : psi4.get_variable("SAPT EXCH ENERGY"),   # TEST    
-    'Eind'  : psi4.get_variable("SAPT IND ENERGY"),    # TEST   
-    'Edisp' : psi4.get_variable("SAPT DISP ENERGY"),   # TEST   
-    'Etot'  : psi4.get_variable("SAPT0 TOTAL ENERGY"), # TEST   
-    } # TEST
 
-for key in keys: # TEST
-    compare_values(Eref[key], Epsi[key], 6, key) # TEST

@@ -22,10 +22,13 @@ set {
     mcscf_type      df
     basis           sto-3g
     num_roots       2
-    avg_states      [1, 2]
+    avg_states      [0, 1]
 }
 
 casscf_energy = energy('casscf')
 
-compare_values(-153.103747672024809, casscf_energy, 6, 'CASSCF Energy')  #TEST
+compare_values(-153.017422024965640, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-153.103748057296741, psi4.get_variable("CI ROOT 0 TOTAL ENERGY"), 6, 'CASSCF Root 0 Energy')  #TEST
+compare_values(-152.826395504293657, psi4.get_variable("CI ROOT 1 TOTAL ENERGY"), 6, 'CASSCF Root 1 Energy')  #TEST
+compare_values(-152.965071780795427, casscf_energy, 6, 'CASSCF Energy')  #TEST
 

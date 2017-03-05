@@ -1,0 +1,56 @@
+#! Tests RHF CCSD(T)gradients
+memory 256 mb
+
+molecule h2o {
+0 1
+O
+H 1 R
+H 1 R 2 A
+
+R = 1.0
+A = 104.5
+}
+
+set {
+   reference rhf
+   basis 6-31g 
+   r_convergence 13
+   e_convergence 13
+   d_convergence 13
+}
+
+analytic, wfn = gradient('ccsd(t)', return_wfn=True)
+ref_vals = [
+             [ 0.00000000000000,     0.00000000000000,    -0.02788939642641],  # FINITE DIFFERENCE 5 POINT FORMULA
+             [ 0.00000000000000,    -0.00904503210340,     0.01394469821321],
+             [ 0.00000000000000,     0.00904503210340,     0.01394469821321]
+           ]
+fin_diff = psi4.Matrix(3, 3)
+fin_diff.set(ref_vals)
+compare_matrices(analytic, fin_diff, 8, "1. RHF-CCSD(T) gradient comparison with finite differences") #TEST
+
+molecule N2 {
+0 1
+N 0 0 0
+N 0 0 1.118928
+symmetry C1
+}
+
+set {
+   reference rhf
+   basis 6-31g 
+   e_convergence 13
+   r_convergence 13
+   d_convergence 13
+}
+
+analytic, wfn = gradient('ccsd(t)', return_wfn=True)
+ref_vals = [                                                        
+             [  0.000000000000,     0.000000000000,     0.03761157104212],  # FINITE DIFFERENCE 5 POINT FORMULA
+             [  0.000000000000,     0.000000000000,    -0.03761157104212]  
+	   ]
+fin_diff = psi4.Matrix(2, 3)                                                
+fin_diff.set(ref_vals)
+compare_matrices(analytic, fin_diff, 8, "2. RHF-CCSD(T) gradient comparison with finite differences") #TEST
+
+

@@ -12,8 +12,16 @@ set {
     frozen_docc     [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
     basis           6-31G**
+    nat_orbs        True
 }
 
-casscf_energy = energy('casscf')
+casscf_energy, cas_wfn = energy('casscf', return_wfn=True)
 
-compare_values(-76.073736690209159, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
+compare_values(-76.01725998335047, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.07373669020915, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
+
+# Double check NO's were build #TEST
+import numpy as np                                                      #TEST
+nov0 = np.array([0.99497, 0.82468, 0.70393, 1.15086, 3.99403, 3.38471,  #TEST
+                 1.6694,  2.07334, 1.43024, 4.27903, 2.23133, 2.10008]) #TEST
+compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs") #TEST

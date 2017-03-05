@@ -17,4 +17,3 @@ set {
 
 
 casscf_energy = energy('casscf')
-ref_casscf_energy = -76.073828605037164

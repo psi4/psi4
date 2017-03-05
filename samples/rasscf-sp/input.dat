@@ -23,4 +23,3 @@ molecule mol {
 
 rasscf_energy = energy('RASSCF')
 
-

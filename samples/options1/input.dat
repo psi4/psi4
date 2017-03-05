@@ -88,3 +88,9 @@ print(asdf, type(asdf), [type(v) for v in asdf[0]])
 # Boost:  [[1, 2.0, 'CAT', 'DOG', 0.05], [1, 2, 7, 8]]        <type 'list'> [<type 'int'>,  <type 'float'>, <type 'str'>,     <type 'str'>,     <type 'float'>]
 # Pybind: [[1L, 2.0, u'CAT', u'DOG', 0.05], [1L, 2L, 7L, 8L]] <type 'list'> [<type 'long'>, <type 'float'>, <type 'unicode'>, <type 'unicode'>, <type 'float'>]
 
+
+set basis cc-pvtz
+set scf_type df
+set scf soscf_max_iter 8
+
+clean_options()

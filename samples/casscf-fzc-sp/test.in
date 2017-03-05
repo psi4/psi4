@@ -18,4 +18,16 @@ set {
 casscf_energy = energy('casscf')
 
 
+compare_values(-76.017296555283, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
 compare_values(-76.073773094606, casscf_energy, 6, 'FZC CASSCF Energy')  #TEST
+
+
+set {
+    diag_method rsp
+}
+
+casscf_energy = energy('casscf')
+
+
+compare_values(-76.017296555283, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.073773094606, casscf_energy, 6, 'RSP-FZC CASSCF Energy')  #TEST
