@@ -1,5 +1,4 @@
 #! 6-31G MP2 transition-state optimization with initial, computed Hessian.
-TS_ENERGY = -303.30622629    # TEST
 
 memory 1 gb
 

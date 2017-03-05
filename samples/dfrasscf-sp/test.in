@@ -24,4 +24,5 @@ molecule mol {
 
 rasscf_energy = energy('RASSCF')
 
+compare_values(-76.017259983350470, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
 compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST

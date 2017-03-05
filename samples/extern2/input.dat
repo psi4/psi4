@@ -1,0 +1,32 @@
+#! External potential calculation involving a TIP3P water and a QM water for DFMP2.
+#! Finite different test of the gradient is performed to validate forces.
+memory 500 mb
+
+molecule water {
+  0 1
+  O  -0.778803000000  0.000000000000  1.132683000000
+  H  -0.666682000000  0.764099000000  1.706291000000
+  H  -0.666682000000  -0.764099000000  1.706290000000
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+# Define a TIP3P water as the external potential
+Chrgfield = QMMM()
+Chrgfield.extern.addCharge(-0.834,1.649232019048,0.0,-2.356023604706)
+Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-3.799961446760)
+Chrgfield.extern.addCharge(0.417,0.544757019107,0.0,-0.912085762652)
+psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+set {
+    scf_type df
+    d_convergence 8
+    basis 6-31G*
+}
+
+fd_grad = gradient('mp2', molecule=water, dertype=0)
+fd_ener = psi4.get_variable('CURRENT ENERGY')
+an_grad = gradient('mp2', molecule=water)
+an_ener = psi4.get_variable('CURRENT ENERGY')
+

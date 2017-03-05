@@ -1,7 +1,7 @@
 #! Various constrained energy minimizations of HOOH with cc-pvdz RHF.
 #! Cartesian-coordinate constrained optimizations of HOOH in internals.
-HOOH_E_fixed_H_xyz = -150.7866490998188     # TEST
-HOOH_E_fixed_O_xyz = -150.7866389583059     # TEST
+HOOH_E_fixed_H_xyz = -150.7866490998188      #TEST
+HOOH_E_fixed_O_xyz = -150.7866389583059      #TEST
 
 set { basis cc-pvdz }
 

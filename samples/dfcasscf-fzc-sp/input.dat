@@ -12,7 +12,9 @@ set {
     frozen_docc     [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
     basis           6-31G**
+    nat_orbs        True
 }
 
-casscf_energy = energy('casscf')
+casscf_energy, cas_wfn = energy('casscf', return_wfn=True)
+
 

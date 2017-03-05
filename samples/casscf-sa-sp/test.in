@@ -45,13 +45,15 @@ set detci {
   filter_guess_sign 1
   filter_guess_det1 [56, 56]
   filter_guess_det2 [66, 66]
-  avg_states [1, 2]
+  avg_states [0, 1]
   calc_s_squared True
 }
 
 
 
 casscf_energy = energy('casscf')
-
-compare_values(-75.604189247182, casscf_energy, 6, 'CASSCF Energy')  #TEST
+compare_values(-75.375529547673, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-75.604189023004, psi4.get_variable("CI ROOT 0 TOTAL ENERGY"), 6, 'CASSCF Root 0 Energy')  #TEST
+compare_values(-75.477044791109, psi4.get_variable("CI ROOT 1 TOTAL ENERGY"), 6, 'CASSCF Root 1 Energy')  #TEST
+compare_values(-75.540616907115, casscf_energy, 6, 'CASSCF Energy')  #TEST
 

@@ -1,12 +1,6 @@
 #! Various constrained energy minimizations of HOOH with cc-pvdz RHF.
 #! For "fixed" coordinates, the final value is provided by the user.
 
-# Minimized energy with OH bonds at 0.950 Angstroms. # TEST
-OH_950_stre       = -150.78666731                    # TEST
-# Minimized energy with OOH angles at 105.0 degrees. # TEST
-OOH_105_bend      = -150.78617685                    # TEST
-# Minimized energy with HOOH torsion at 120.0 degrees. # TEST
-HOOH_120_dihedral = -150.78664695                      # TEST
 
 set {
   diis false

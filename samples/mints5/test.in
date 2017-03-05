@@ -150,7 +150,7 @@ molecule H2O {
 }
 H2O.update_geometry()
 print_out("\t" + H2O.get_full_point_group() + "\n" )
-compare_strings("C2v", H2O.get_full_point_group(), "C2v point group"); # TEST
+compare_strings("C2v", H2O.get_full_point_group(), "C2v point group");  #TEST
 
 
 molecule CH2F2 {

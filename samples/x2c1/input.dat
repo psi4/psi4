@@ -63,8 +63,10 @@ D   1   1.00
 ****
 }
 
-testnr = energy('scf')
+ccsd_nr_energy = energy('ccsd')
+scf_nr_energy = psi4.get_variable("HF TOTAL ENERGY")
 set relativistic x2c
 set basis_relativistic adecon  # shouldn't need to specify
-testrel = energy('scf')
+ccsd_rel_energy = energy('ccsd')
+scf_rel_energy = psi4.get_variable("HF TOTAL ENERGY")
 

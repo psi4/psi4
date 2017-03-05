@@ -1,67 +1,36 @@
 #! single-point CCSD(T)/qz2p on water
 
-print '        <<< Literal ZMAT to Cfour >>>'
+###print('        <<< Literal ZMAT to Cfour >>>')
+###
+###cfour {
+###CCSD(T) single-point energy calculation
+###O
+###H 1 R
+###H 1 R 2 A
+###
+###R=0.958
+###A=104.5
+###
+###*ACES2(CALC=CCSD(T),BASIS=qz2p
+###SCF_CONV=12
+###CC_CONV=12
+###MEMORY=20000000)
+###}
+###
+###energy('cfour')
+###
+###compare_values(-76.062748460117, get_variable('scf total energy'), 6, 'SCF')  #TEST
+###compare_values(-76.332940127333, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
+###compare_values(-76.338453951890, get_variable('ccsd total energy'), 6, 'CCSD')  #TEST
+###compare_values(-0.275705491773, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+###compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
+###compare_values(-0.282969089769, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
+###
+###clean()
+###clean_variables()
+###cfour {}
 
-cfour {
-CCSD(T) single-point energy calculation
-O
-H 1 R
-H 1 R 2 A
-
-R=0.958
-A=104.5
-
-*ACES2(CALC=CCSD(T),BASIS=qz2p
-SCF_CONV=12
-CC_CONV=12
-MEMORY=20000000)
-}
-
-energy('cfour')
-
-compare_values(-76.062748460117, get_variable('scf total energy'), 6, 'SCF')  #TEST
-compare_values(-76.332940127333, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
-compare_values(-76.338453951890, get_variable('ccsd total energy'), 6, 'CCSD')  #TEST
-compare_values(-0.275705491773, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
-compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
-compare_values(-0.282969089769, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
-
-clean()
-clean_variables()
-cfour {}
-
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
-
-molecule {
-O
-H 1 R
-H 1 R 2 A
-
-R=0.958
-A=104.5
-}
-
-set {
-cfour_CALC_level=CCSD(T)
-cfour_BASIS=qz2p
-cfour_SCF_CONV=12
-cfour_CC_CONV=12
-}
-
-energy('cfour')
-
-compare_values(-76.062748460117, get_variable('scf total energy'), 6, 'SCF')  #TEST
-compare_values(-76.332940127333, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
-compare_values(-76.338453951890, get_variable('ccsd total energy'), 6, 'CCSD')  #TEST
-compare_values(-0.275705491773, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
-compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
-compare_values(-0.282969089769, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
-
-clean()
-clean_variables()
-cfour {}
-
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O
@@ -87,4 +56,35 @@ compare_values(-76.338453951890, get_variable('ccsd total energy'), 6, 'CCSD')  
 compare_values(-0.275705491773, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
 compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
 compare_values(-0.282969089769, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
+
+### clean()
+### clean_variables()
+### cfour {}
+### 
+### print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+### 
+### molecule {
+### O
+### H 1 R
+### H 1 R 2 A
+### 
+### R=0.958
+### A=104.5
+### }
+### 
+### set {
+### cfour_CALC_level=CCSD(T)
+### cfour_BASIS=qz2p
+### cfour_SCF_CONV=12
+### cfour_CC_CONV=12
+### }
+### 
+### energy('cfour')
+### 
+### compare_values(-76.062748460117, get_variable('scf total energy'), 6, 'SCF')  #TEST
+### compare_values(-76.332940127333, get_variable('mp2 total energy'), 6, 'MP2')  #TEST
+### compare_values(-76.338453951890, get_variable('ccsd total energy'), 6, 'CCSD')  #TEST
+### compare_values(-0.275705491773, get_variable('ccsd correlation energy'), 6, 'CCSD corl')  #TEST
+### compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
+### compare_values(-0.282969089769, get_variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')  #TEST
 

@@ -18,3 +18,12 @@ set {
 casscf_energy = energy('casscf')
 
 
+
+
+set {
+    diag_method rsp
+}
+
+casscf_energy = energy('casscf')
+
+
