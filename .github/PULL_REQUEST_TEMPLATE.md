@@ -9,9 +9,7 @@ Notable points that this PR has either accomplished or will accomplish.
   - [ ] Feature2
 
 ## Questions
-- [ ]  Question1
+- [ ] Question1
 
 ## Status
-- [ ]  Ready to go
-
-
+- [ ] Ready to go
