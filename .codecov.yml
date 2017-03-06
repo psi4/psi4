@@ -2,7 +2,14 @@ codecov:
   max_report_age: off
   notify:
     after_n_builds: 1
-    require_ci_to_pass: no
+    require_ci_to_pass: no    
+  status:
+    project:
+      default:
+        threshold: 50%
+    patch:
+      default:
+        threshold: 50%
 
 ignore:
  - "tests/"
