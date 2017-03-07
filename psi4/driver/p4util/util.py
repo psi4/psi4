@@ -99,10 +99,10 @@ def cubeprop(wfn, **kwargs):
     cp.compute_properties()
 
 
-def set_memory(value):
-    """Function to reset the total memory allocation. Takes memory value
-    as type *int*, *float*, or *str*; *int* and *float* are taken literally
-    as bytes to be set, *string* taken as a unit-containing value (e.g., 30 mb)
+def set_memory(inputval):
+    """Function to reset the total memory allocation. Takes memory value 
+    *inputval* as type int, float, or str; int and float are taken literally
+    as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
     which is case-insensitive.
     
     :returns: None
@@ -127,21 +127,24 @@ def set_memory(value):
      '': AttributeError("'NoneType' object has no attribute 'group'"),
      '21986': AttributeError("'NoneType' object has no attribute 'group'"),
      '100 kb': 100000L,
-     '100 KiB': 102400L,
+     '100.0 KiB': 102400L,
      '500 MB': 500000000L,
      '2 eb': 2000000000000000000L}
 
     """
     # Handle memory given in bytes directly (int or float)
-    if isinstance(value, int) or isinstance(value, float):
-        val = value
+    if isinstance(inputval, int) or isinstance(inputval, float):
+        val = inputval
         units = ''
     # Handle memory given as a sring
-    if isinstance(value, basestring):
+    if isinstance(inputval, basestring):
         memory_string = re.compile(r'\s*?([+-]?\d*\.?\d+)\s+([KMGTPBE]i?B)', re.IGNORECASE)
-        matchobj = re.search(memory_string, value)
-        units = str(matchobj.group(2))
-        val = float(str(matchobj.group(1)))
+        matchobj = re.search(memory_string, inputval)
+        try:
+            units = str(matchobj.group(2))
+            val = float(str(matchobj.group(1)))
+        except AttributeError as e:
+            raise ValidationError("""Invalid memory specification {}.""".format(inputval))
         
     # Units decimal or binary?
     multiplier = 1000
