@@ -105,7 +105,7 @@ def set_memory(inputval):
     as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
     which is case-insensitive.
     
-    :returns: None
+    :returns: *memory_amount* (float) Number of bytes of memory set
 
     :examples:
 
@@ -136,21 +136,22 @@ def set_memory(inputval):
     if isinstance(inputval, int) or isinstance(inputval, float):
         val = inputval
         units = ''
-    # Handle memory given as a sring
+    # Handle memory given as a string
     if isinstance(inputval, basestring):
         memory_string = re.compile(r'\s*?([+-]?\d*\.?\d+)\s+([KMGTPBE]i?B)', re.IGNORECASE)
         matchobj = re.search(memory_string, inputval)
         try:
             units = str(matchobj.group(2))
             val = float(str(matchobj.group(1)))
+
         except AttributeError as e:
-            raise ValidationError("""Invalid memory specification {}.""".format(inputval))
+            raise ValidationError("""Invalid memory specification '{}'.""".format(inputval))
         
     # Units decimal or binary?
     multiplier = 1000
     if "i" in units.lower():
         multiplier = 1024
-        units = ''.join(units.split('i'))
+        units = units.lower().replace("i", "").upper()
 
     # Build conversion factor, convert units        
     unit_list = ["", "KB", "MB", "GB", "TB", "PB", "EB"]
@@ -163,6 +164,7 @@ def set_memory(inputval):
     memory_amount = int(val * mult)     
     
     core.set_memory(memory_amount)
+    return memory_amount
 
 def get_memory():
     """Function to return the total memory allocation."""
