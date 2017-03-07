@@ -177,10 +177,10 @@ void DFMP2::common_init()
     //copy(reference_wavefunction_);
     name_ = "DF-MP2";
 
-    energies_["Singles Energy"] = 0.0;
-    energies_["Opposite-Spin Energy"] = 0.0;
-    energies_["Same-Spin Energy"] = 0.0;
-    energies_["Reference Energy"] = reference_wavefunction_->reference_energy();
+    variables_["MP2 SINGLES ENERGY"] = 0.0;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = 0.0;
+    variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->reference_energy();
 
     sss_ = options_.get_double("MP2_SS_SCALE");
     oss_ = options_.get_double("MP2_OS_SCALE");
@@ -223,7 +223,7 @@ double DFMP2::compute_energy()
     timer_off("DFMP2 Energy");
     print_energies();
 
-    return energies_["Total Energy"];
+    return variables_["MP2 TOTAL ENERGY"];
 }
 SharedMatrix DFMP2::compute_gradient()
 {
@@ -397,7 +397,7 @@ void DFMP2::form_singles()
 
     delete[] temp;
 
-    energies_["Singles Energy"] = E_singles_a + E_singles_b;
+    variables_["MP2 SINGLES ENERGY"] = E_singles_a + E_singles_b;
 
     if (debug_) {
         Caocc_a->print();
@@ -759,45 +759,51 @@ void DFMP2::apply_B_transpose(unsigned int file, ULI naux, ULI naocc, ULI navir)
 }
 void DFMP2::print_energies()
 {
-    energies_["Correlation Energy"] = energies_["Opposite-Spin Energy"] + energies_["Same-Spin Energy"] + energies_["Singles Energy"];
-    energies_["Total Energy"] = energies_["Reference Energy"] + energies_["Correlation Energy"];
+    variables_["MP2 CORRELATION ENERGY"] = variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                           variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
+                                           variables_["MP2 SINGLES ENERGY"];
+    variables_["MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] +
+                                     variables_["MP2 CORRELATION ENERGY"];
 
-    energies_["SCS Opposite-Spin Energy"] = oss_*energies_["Opposite-Spin Energy"];
-    energies_["SCS Same-Spin Energy"] = sss_*energies_["Same-Spin Energy"];
-    energies_["SCS Correlation Energy"] = energies_["SCS Opposite-Spin Energy"] + energies_["SCS Same-Spin Energy"] + energies_["Singles Energy"];
-    energies_["SCS Total Energy"] = energies_["Reference Energy"] + energies_["SCS Correlation Energy"];
+    variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = oss_*variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"];
+    variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = sss_*variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
+    variables_["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
+                                               variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] +
+                                               variables_["MP2 SINGLES ENERGY"];
+    variables_["SCS-MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] +
+                                         variables_["SCS-MP2 CORRELATION ENERGY"];
 
     outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\t ==================> DF-MP2 Energies <==================== \n");
     outfile->Printf( "\t-----------------------------------------------------------\n");
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Reference Energy",         energies_["Reference Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Singles Energy",           energies_["Singles Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Same-Spin Energy",         energies_["Same-Spin Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Opposite-Spin Energy",     energies_["Opposite-Spin Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Correlation Energy",       energies_["Correlation Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Total Energy",             energies_["Total Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Reference Energy",         variables_["SCF TOTAL ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Singles Energy",           variables_["MP2 SINGLES ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Same-Spin Energy",         variables_["MP2 SAME-SPIN CORRELATION ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Opposite-Spin Energy",     variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Correlation Energy",       variables_["MP2 CORRELATION ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "Total Energy",             variables_["MP2 TOTAL ENERGY"]);
     outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\t ================> DF-SCS-MP2 Energies <================== \n");
     outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
     outfile->Printf( "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);
-    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Total Energy",         energies_["SCS Total Energy"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Same-Spin Energy",     variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Opposite-Spin Energy", variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Correlation Energy",   variables_["SCS-MP2 CORRELATION ENERGY"]);
+    outfile->Printf( "\t %-25s = %24.16f [Eh]\n", "SCS Total Energy",         variables_["SCS-MP2 TOTAL ENERGY"]);
     outfile->Printf( "\t-----------------------------------------------------------\n");
     outfile->Printf( "\n");
 
 
-    Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
-    Process::environment.globals["MP2 TOTAL ENERGY"] = energies_["Total Energy"];
-    Process::environment.globals["MP2 SINGLES ENERGY"] = energies_["Singles Energy"];
-    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = energies_["Same-Spin Energy"];
-    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = energies_["Opposite-Spin Energy"];
-    Process::environment.globals["MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];
-    Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = energies_["SCS Total Energy"];
-    Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = energies_["SCS Correlation Energy"];
+    Process::environment.globals["CURRENT ENERGY"] = variables_["MP2 TOTAL ENERGY"];
+    Process::environment.globals["CURRENT CORRELATION ENERGY"] = variables_["MP2 CORRELATION ENERGY"];
+    Process::environment.globals["MP2 TOTAL ENERGY"] = variables_["MP2 TOTAL ENERGY"];
+    Process::environment.globals["MP2 SINGLES ENERGY"] = variables_["MP2 SINGLES ENERGY"];
+    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
+    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"];
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = variables_["MP2 CORRELATION ENERGY"];
+    Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = variables_["SCS-MP2 TOTAL ENERGY"];
+    Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 CORRELATION ENERGY"];
 
 }
 void DFMP2::print_gradients()
@@ -1168,8 +1174,8 @@ void RDFMP2::form_energy()
     }
     psio_->close(PSIF_DFMP2_AIA,0);
 
-    energies_["Same-Spin Energy"] = e_ss;
-    energies_["Opposite-Spin Energy"] = e_os;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = e_ss;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = e_os;
 }
 void RDFMP2::form_Pab()
 {
@@ -1357,8 +1363,8 @@ void RDFMP2::form_Pab()
 
     psio_->close(PSIF_DFMP2_AIA,1);
 
-    energies_["Same-Spin Energy"] = e_ss;
-    energies_["Opposite-Spin Energy"] = e_os;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = e_ss;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = e_os;
 }
 void RDFMP2::form_Pij()
 {
@@ -3597,8 +3603,8 @@ void UDFMP2::form_energy()
 
     /* End BB Terms */ }
 
-    energies_["Same-Spin Energy"] = e_ss;
-    energies_["Opposite-Spin Energy"] = e_os;
+    variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = e_ss;
+    variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = e_os;
 }
 void UDFMP2::form_Pab()
 {

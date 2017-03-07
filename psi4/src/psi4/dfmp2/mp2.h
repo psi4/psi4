@@ -44,8 +44,6 @@ protected:
 
     // Auxiliary basis
     std::shared_ptr<BasisSet> ribasis_;
-    // Energy map
-    std::map<std::string, double> energies_;
     // Gradients map
     std::map<std::string, SharedMatrix> gradients_;
 
