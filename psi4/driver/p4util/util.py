@@ -26,6 +26,7 @@
 #
 
 """Module with utility functions for use in input files."""
+import re
 import sys
 import os
 import math
@@ -98,10 +99,67 @@ def cubeprop(wfn, **kwargs):
     cp.compute_properties()
 
 
-def set_memory(bytes):
-    """Function to reset the total memory allocation."""
-    core.set_memory(bytes)
+def set_memory(value):
+    """Function to reset the total memory allocation. Takes memory value
+    as type *int*, *float*, or *str*; *int* and *float* are taken literally
+    as bytes to be set, *string* taken as a unit-containing value (e.g., 30 mb)
+    which is case-insensitive.
+    
+    :returns: None
 
+    :examples:
+
+    >>> # [1] Passing absolute number of bytes
+    >>> psi4.set_memory(20000000)
+    >>> psi4.get_memory()
+    Out[1]: 20000000L
+
+    >>> # [2] Passing memory value as string with units
+    >>> psi4.set_memory('30 GB')
+    >>> psi4.get_memory()
+    Out[2]: 30000000000L
+
+    :tests:
+
+    {2000: 2000L,
+     24088624.9: 24088624L,
+     1.0e8: 100000000L,
+     '': AttributeError("'NoneType' object has no attribute 'group'"),
+     '21986': AttributeError("'NoneType' object has no attribute 'group'"),
+     '100 kb': 100000L,
+     '100 KiB': 102400L,
+     '500 MB': 500000000L,
+     '2 eb': 2000000000000000000L}
+
+    """
+    # Handle memory given in bytes directly (int or float)
+    if isinstance(value, int) or isinstance(value, float):
+        val = value
+        units = ''
+    # Handle memory given as a sring
+    if isinstance(value, basestring):
+        memory_string = re.compile(r'\s*?([+-]?\d*\.?\d+)\s+([KMGTPBE]i?B)', re.IGNORECASE)
+        matchobj = re.search(memory_string, value)
+        units = str(matchobj.group(2))
+        val = float(str(matchobj.group(1)))
+        
+    # Units decimal or binary?
+    multiplier = 1000
+    if "i" in units.lower():
+        multiplier = 1024
+        units = ''.join(units.split('i'))
+
+    # Build conversion factor, convert units        
+    unit_list = ["", "KB", "MB", "GB", "TB", "PB", "EB"]
+    mult = 1
+    for unit in unit_list:
+        if units.upper() == unit:
+            break
+        mult *= multiplier
+            
+    memory_amount = int(val * mult)     
+    
+    core.set_memory(memory_amount)
 
 def get_memory():
     """Function to return the total memory allocation."""
