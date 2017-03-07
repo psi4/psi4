@@ -16,7 +16,8 @@ def set_up():
 def tear_down():
     import os
     import glob
-    patterns = ['cavity.*', 'grid*', 'pytest_output.*h5', 'pytest_output.dat',
+    patterns = ['cavity.*', 'grid*', 'pytest_output.*h5',
+                'pytest_output.dat',
                 '*pcmsolver.inp', 'PEDRA.OUT*', 'timer.dat']
     pytest_scratches = []
     for pat in patterns:

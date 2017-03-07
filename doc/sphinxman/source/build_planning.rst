@@ -1130,8 +1130,8 @@ Debugging |PSIfour| has gotten a little confusing now that it's running through 
 ::
 
   >>> cd {objdir}
-  >>> gdb python
-  >>> (gdb) run stage/{prefix}/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+  >>> gdb --args python stage/{prefix}/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+  >>> (gdb) run
 
 
 .. .. _`faq:valgrindpsi`:
