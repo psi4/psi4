@@ -168,9 +168,9 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
 install(FILES ../tests/pytest/conftest.py
-              ../tests/pytest/test_psi4_proper.py
-              ../tests/pytest/test_psi4_profiling.py
-              ../tests/pytest/test_psi4_addons.py
+              ../tests/pytest/test_psi4.py
+              ../tests/pytest/test_aaa_profiling.py
+              ../tests/pytest/test_addons.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

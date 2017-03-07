@@ -833,6 +833,8 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
+    :raises: psi4.ConvergenceError if |optking__geom_maxiter| exceeded without reaching geometry convergence.
+
     :PSI variables:
 
     .. hlist::
@@ -1139,12 +1141,12 @@ def optimize(name, **kwargs):
 
         n += 1
 
-    core.print_out('\tOptimizer: Did not converge!')
     if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
         if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
             core.opt_clean()
 
     optstash.restore()
+    raise ConvergenceError("""geometry optimization""", n - 1)
 
 
 def hessian(name, **kwargs):

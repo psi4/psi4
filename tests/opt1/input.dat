@@ -28,3 +28,14 @@ thisenergy = optimize('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 6, "Reference energy")                                #TEST
+
+set basis cc-pvdz
+set g_convergence gau_verytight
+set geom_maxiter 2
+
+convergence_error_set = False
+try:
+    optimize('scf')
+except psi4.ConvergenceError:
+    convergence_error_set = True
+compare_integers(1, int(convergence_error_set), 'opt() exit gracefully but truthfully')

@@ -22,6 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import print_function
+
 import argparse
 import sys
 import re
@@ -172,7 +174,7 @@ def find_vmd(options):
         vmdpath = multigsub({" " : r"\ "},vmdpath)
         options["VMDPATH"][0] = vmdpath
     else:
-        print "Please set the VMDPATH environmental variable to the path of VMD."
+        print("Please set the VMDPATH environmental variable to the path of VMD.")
         exit(1)
 
 
@@ -284,10 +286,10 @@ def read_options(options):
         options["SURF1ID"][0] = '32'
         options["SURF2ID"][0] = '22'
 
-    print "Parameters:"
+    print("Parameters:")
     sorted_parameters = sorted(options.keys())
     for k in sorted_parameters:
-        print "  %-20s %s" % (options[k][1],options[k][0])
+        print("  %-20s %s" % (options[k][1],options[k][0]))
 
 def find_cubes(options):
     # Find all the cube files in a given directory
@@ -313,7 +315,7 @@ def find_cubes(options):
             zipped_files.append(f)
 
     if len(zipped_files) > 0:
-        print "\nDecompressing gzipped cube files"
+        print("\nDecompressing gzipped cube files")
         FNULL = open(os.devnull, 'w')
         subprocess.call(("gzip -d %s" % " ".join(zipped_files)),stdout=FNULL, shell=True)
         options["GZIP"][0] = 'True'
@@ -412,7 +414,7 @@ def call_montage(options,cube_files):
 def zip_files(cube_files,options):
     """Gzip cube files if requested or necessary."""
     if options["GZIP"][0] == 'True':
-        print "\nCompressing cube files"
+        print("\nCompressing cube files")
         FNULL = open(os.devnull, 'w')
         subprocess.call(("gzip %s" % " ".join(cube_files)),stdout=FNULL, shell=True)
 

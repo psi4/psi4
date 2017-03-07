@@ -130,7 +130,7 @@ def test():
 
     try:
         import pytest
-    except:
+    except ImportError:
         raise RuntimeError('Testing module `pytest` is not installed. Run `conda install pytest`')
     abs_test_dir = os.path.sep.join([os.path.abspath(os.path.dirname(__file__)), "tests"])
     pytest.main(['-v', abs_test_dir])
