@@ -74,7 +74,7 @@ tests/*/plot/*
 
 # Automatically generated files
 share/python/pcm_placeholder.py
-plugins/skeleton*/input.dat
+tests/plugins/skeleton*/input.dat
 
 # Compilation directories that people use
 obj*

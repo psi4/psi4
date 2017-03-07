@@ -24,6 +24,3 @@ set(DART_TESTING_TIMEOUT
 
 # This must come last!!
 add_subdirectory(tests)
-if(ENABLE_PLUGIN_TESTING)
-    add_subdirectory(plugins)
-endif()

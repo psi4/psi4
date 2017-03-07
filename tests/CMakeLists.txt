@@ -218,6 +218,11 @@ if(ENABLE_PCMSolver)
     message(STATUS "Adding test cases: Psi4 + PCMSolver")
 endif()
 
+# plugin regime
+if(ENABLE_PLUGIN_TESTING)
+    add_subdirectory(plugins)
+    message(STATUS "Adding test cases: Psi4 plugins")
+endif()
 
 # pytest regime
 add_subdirectory(pytest)
