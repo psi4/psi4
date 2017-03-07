@@ -156,6 +156,7 @@ protected:
     bool hold_met_ = false;
 
     // => Internal holders <=
+    bool built = false;    
 
     // if you give me enough memory, i'll turn on the boosters
     bool core_ = 0;
@@ -216,7 +217,7 @@ protected:
     void contract_metric(std::string file, double* metp, double* Mp, double* Fp, const size_t tots);
     void contract_metric_core(std::string file);
     void contract_metric_AO(double* Mp);
-    void contract_metric_AO_core(double* Qpq);
+    void contract_metric_AO_core(double* Qpq, double* metp);
 
     // spaces and transformation maps
     std::map<std::string, std::tuple<SharedMatrix, size_t>> spaces_;
@@ -225,7 +226,7 @@ protected:
 
     // transformation machinery
     void transform_core();
-    void transform_disc();
+    void transform_disk();
     std::vector<std::pair<std::string, size_t>> sorted_spaces_;
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
@@ -277,7 +278,7 @@ protected:
 
     // tranpose a tensor
     void transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order);
-    void transpose_disc(std::string name, std::tuple<size_t, size_t, size_t> order);
+    void transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order);
 
 }; // End DF Helper class
 

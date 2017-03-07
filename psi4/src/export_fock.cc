@@ -144,6 +144,8 @@ void export_fock(py::module &m) {
 
     // DF Helper
     typedef SharedMatrix (df_helper::DF_Helper::*take_string)(std::string);
+    typedef SharedMatrix (df_helper::DF_Helper::*tensor_access3)(std::string, 
+        std::pair<size_t, size_t>, std::pair<size_t, size_t>, std::pair<size_t, size_t>);
 
     py::class_<df_helper::DF_Helper, std::shared_ptr<df_helper::DF_Helper>>(
         m, "DF_Helper", "docstring")
@@ -169,6 +171,6 @@ void export_fock(py::module &m) {
         .def("get_space_size", &df_helper::DF_Helper::get_space_size)
         .def("get_tensor_size", &df_helper::DF_Helper::get_tensor_size)
         .def("get_tensor_shape", &df_helper::DF_Helper::get_tensor_shape)
-        .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor));
-        
+        .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor))
+        .def("get_tensor", tensor_access3(&df_helper::DF_Helper::get_tensor));
 }
