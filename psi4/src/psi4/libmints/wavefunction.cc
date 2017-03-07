@@ -1034,10 +1034,13 @@ std::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const
 }
 double Wavefunction::get_variable(std::string label)
 {
-    if (variables_.count(label) == 0){
+    std::string uc_label = label;
+    std::transform(uc_label.begin(), uc_label.end(), uc_label.begin(), ::toupper);
+
+    if (variables_.count(uc_label) == 0){
         throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable was not set!\n");
     } else {
-        return variables_[label];
+        return variables_[uc_label];
     }
 }
 SharedMatrix Wavefunction::get_array(std::string label)
