@@ -136,7 +136,7 @@ void DF_Helper::initialize()
 {
     outfile->Printf("\n\n    ==> DF_Helper: initialize() <==\n\n");
     timer_on("DF_Helper~-- build-------   ");
-    if(method_.compare("DIRECT") && method_.compare("STORE")){
+    if(method_.compare("DIRECT") && method_.compare("STORE") && method_.compare("AO_CORE")){
         std::stringstream error;
         error << "DF_Helper:initialize: specified method (" << method_ << ") is incorrect";
         throw PSIEXCEPTION(error.str().c_str());
@@ -150,7 +150,8 @@ void DF_Helper::initialize()
     outfile->Printf("      core?         = %d\n", (int)core_);
     outfile->Printf("      hold met?     = %d\n", (int)hold_met_);
 
-    direct_ = (!method_.compare("DIRECT") ? true : false);
+    direct_ =  (!method_.compare("DIRECT" ) ? true : false);
+    AO_core_ = (!method_.compare("AO_CORE") ? true : false);
     prepare_sparsity();
     //print_masks();
 
@@ -2006,5 +2007,221 @@ std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name)
     }
     return sizes_[std::get<1>(files_[name])];
 }
+void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+    std::vector<SharedMatrix> J, std::vector<SharedMatrix> K) 
+{
+    timer_on("DF_Helper~JK-build          ");
+    core_ ? JK_core(Cleft, Cright, J, K) : JK_disk(Cleft, Cright, J, K);
+    timer_off("DF_Helper~JK-build          ");
 }
-}  // End namespaces
+void DF_Helper::JK_core(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+    std::vector<SharedMatrix> J, std::vector<SharedMatrix> K) 
+{
+    // to be implemented
+    return;
+}
+void DF_Helper::JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+    std::vector<SharedMatrix> J, std::vector<SharedMatrix> K) 
+{
+    outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds (disk)<==\n\n");
+
+    // determine largest buffers needed
+    size_t tots = std::get<1>(Qlargest_);
+    size_t wMO = std::get<0>(info_);
+    size_t max = std::get<1>(info_);
+    wMO_ = 500;
+
+    // prep stream, blocking
+    if (!direct_ && !AO_core_)
+        stream_check(AO_files_[AO_names_[1]], "rb");
+    else if(direct_) {
+        Qsteps_.clear();
+        Qlargest_ = shell_blocks(memory_, max, 0, Qshells_, Qsteps_);
+    } 
+    else { // AO_core
+        Qsteps_.clear();
+        Qsteps_.push_back(std::make_pair(0, naux_-1));
+    }
+
+    timer_on("DF_Helper~transform - setup ");
+    
+    // enhance cache use
+    size_t naux = naux_;
+    size_t nao = nao_;
+    int rank;
+    std::vector<std::vector<double>> C_buffers(nthreads_);
+    
+    // prepare eri buffers
+    size_t nthread = nthreads_;
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(aux_, zero, primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
+    #pragma omp parallel private(rank) num_threads(nthreads_)
+    {
+        #ifdef _OPENMP
+        rank = omp_get_thread_num();
+        #endif
+        std::vector<double> Cp(nao * nao);
+        C_buffers[rank] = Cp;
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    }
+
+    // declare bufs
+    std::vector<double> M; // AOs
+    std::vector<double> T; // tmp
+    std::vector<double> D; // original D
+    std::vector<double> d; // pruned d (m_p q)
+    std::vector<double> Jtmp; // J tmp
+    if(!AO_core_ || direct_)
+        M.reserve(std::get<0>(Qlargest_));
+    T.reserve(naux_*nao*wMO_);
+    D.reserve(nao * nao);
+    d.reserve(nao);
+    Jtmp.reserve(nao*nao);
+    double* Mp;
+    double* Tp = T.data();
+    double* Dp = D.data();
+    double* dp = d.data();
+    double* Jtmpp = Jtmp.data();
+    if(!AO_core_ || direct_)
+        Mp = M.data();
+    else
+        0;            // mysterious AOs
+
+    timer_off("DF_Helper~transform - setup ");
+
+    // transform in steps (blocks of Q)
+    for (size_t j = 0; j < Qsteps_.size(); j++) {
+        // Qshell step info
+        size_t start = std::get<0>(Qsteps_[j]);
+        size_t stop = std::get<1>(Qsteps_[j]);
+        size_t begin = Qshell_aggs_[start];
+        size_t end = Qshell_aggs_[stop + 1] - 1;
+        size_t block_size = end - begin + 1;
+
+        // print step info
+        outfile->Printf("      Qshell: (%zu, %zu)", start, stop);
+        outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
+
+        // get AO chunk according to directive
+        timer_on("DF_Helper~transform - grab  ");
+        if(direct_){
+            compute_AO_Q(start, stop, Mp, eri);
+        }
+        else if(!AO_core_)
+            grab_AO(start, stop, Mp);
+        timer_off("DF_Helper~transform - grab  ");
+ 
+        for (size_t i = 0; i < J.size(); i++) {
+            // grab orbital spaces
+            double* Clp = Cleft[i]->pointer()[0];
+            double* Crp = Cright[i]->pointer()[0];
+            size_t cleft = Cleft[i]->colspi()[0];
+            size_t cright = Cright[i]->colspi()[0];
+
+            // grab J/K
+            double* Jp = J[i]->pointer()[0];
+            double* Kp = K[i]->pointer()[0];
+
+            // compute D - maybe move these out?
+            C_DGEMM('N', 'T', nao_, nao_, cleft, 1.0, Clp, cleft, Crp, cright, 0.0, Dp, nao_);
+            
+            // initialize Tmp
+            for(size_t k = 0; k < naux; k++)
+                Tp[k] = 0.0;
+
+            // form temp, thread over spM (nao)
+            //#pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
+            for (size_t k = 0; k < nao_; k++) {
+                size_t jump = (big_skips_[k] * block_size) / naux_;
+                size_t sp_size = small_skips_[k];
+
+                #ifdef _OPENMP
+                rank = omp_get_thread_num();
+                #endif
+
+                for (size_t m = 0, sp_count = -1; m < nao_; m++) {
+                    if (schwarz_fun_mask_[k * nao_ + m]) {
+                        sp_count++;
+                        C_DCOPY(1, &Dp[nao*k+m], 1, &dp[sp_count], 1);
+                    }
+                }
+    
+                // (Qm)(mp) -> (Qp)
+                C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, dp, 1, 1.0, Tp, 1);
+            }
+
+            // complete
+            for(size_t k=0, count=0; k<nao_; k++){
+                size_t jump = (big_skips_[k] * block_size) / naux_;
+                size_t sp_size = small_skips_[k];
+                C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, Tp, 1, 0.0, &Jtmpp[count], 1);
+                count += sp_size;
+            }
+
+            // unpack
+            for(size_t k=0, count=-1; k<nao_; k++){
+                for(size_t m=0; m<nao_; m++){
+                    if(schwarz_fun_mask_[k*nao+m]){
+                        count++;
+                        Jp[k*nao+m] += Jtmp[count];
+                    }
+                }
+            }
+            
+            // form temp, thread over spM (nao)
+            #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
+            for (size_t k = 0; k < nao_; k++) {
+                size_t jump = (big_skips_[k] * block_size) / naux_;
+                size_t sp_size = small_skips_[k];
+
+                #ifdef _OPENMP
+                rank = omp_get_thread_num();
+                #endif
+                
+                for (size_t m = 0, sp_count = -1; m < nao_; m++) {
+                    if (schwarz_fun_mask_[k * nao_ + m]) {
+                        sp_count++;
+                        C_DCOPY(cleft, &Clp[m * cleft], 1, &C_buffers[rank][sp_count * cleft], 1);
+                    }
+                }
+                // (Qm)(mb)->(Qb)
+                C_DGEMM('N', 'N', block_size, cleft, sp_size, 1.0, &Mp[jump], sp_size,
+                        &C_buffers[rank][0], cleft, 0.0, &Tp[k * block_size * cleft], cleft);
+            }
+            if(Cleft[i] != Cright[i]){
+                std::vector<double> T2;
+                T2.reserve(block_size*cright*nao);
+                double* T2p = T2.data();
+            
+                #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
+                for (size_t k = 0; k < nao_; k++) {
+                    size_t jump = (big_skips_[k] * block_size) / naux_;
+                    size_t sp_size = small_skips_[k];
+
+                    #ifdef _OPENMP
+                    rank = omp_get_thread_num();
+                    #endif
+                    
+                    for (size_t m = 0, sp_count = -1; m < nao_; m++) {
+                        if (schwarz_fun_mask_[k * nao_ + m]) {
+                            sp_count++;
+                            C_DCOPY(cright, &Clp[m * cright], 1, &C_buffers[rank][sp_count * cright], 1);
+                        }
+                    }
+                    // (Qm)(mb)->(Qb)
+                    C_DGEMM('N', 'N', block_size, cright, sp_size, 1.0, &Mp[jump], sp_size,
+                            &C_buffers[rank][0], cright, 0.0, &T2p[k * block_size * cright], cright);
+                }
+                C_DGEMM('N', 'T', nao, nao, cleft*block_size, 1.0, Tp, cleft*block_size,
+                    T2p, cright*block_size, 0.0, Kp, nao);
+            } else {
+                C_DGEMM('N', 'T', nao, nao, cleft*block_size, 1.0, Tp, cleft*block_size,
+                    Tp, cleft*block_size, 1.0, Kp, nao);
+            }
+        }
+    }
+    outfile->Printf("\n     ==> DF_Helper:--End J/K Builds (disk)<==\n\n");
+}
+
+}}  // End namespaces
