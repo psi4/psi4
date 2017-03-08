@@ -220,7 +220,12 @@ the input file, so if the last four commands in the above example were to read :
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
 
-In PsiAPI mode::
+In PsiAPI mode, one can use commands :py:func:`~psi4.set_options` and
+:py:func:`~psi4.set_module_options` like below. Note that these values
+should be of correct type, strings for strings, floats for floats like
+convergences. The function `~psi4.core.clean_options` that reinitializes
+all options may also be useful to separate calculations in a PsiAPI
+session. ::
 
    psi4.set_options({
        'scf_type': 'pk',
