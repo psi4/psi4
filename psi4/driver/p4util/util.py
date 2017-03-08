@@ -133,18 +133,20 @@ def set_memory(inputval):
 
     """
     # Handle memory given in bytes directly (int or float)
-    if isinstance(inputval, int) or isinstance(inputval, float):
+    if isinstance(inputval, (int, float)):
         val = inputval
         units = ''
     # Handle memory given as a string
-    if isinstance(inputval, basestring):
-        memory_string = re.compile(r'^\s*?(\d*\.?\d+)\s+([KMGTPBE]i?B)', re.IGNORECASE)
+    elif isinstance(inputval, str):
+        memory_string = re.compile(r'^\s*?(\d*\.?\d+)\s+([KMGTPBE]i?B)$', re.IGNORECASE)
         matchobj = re.search(memory_string, inputval)
         if matchobj:
             val = float(matchobj.group(1))
             units = matchobj.group(2)
         else:
             raise ValidationError("""Invalid memory specification '{}'.""".format(inputval))
+    else:
+        raise TypeError("""Invalid type {0} for argument '{1}'. Supported argument types: 'int', 'float', or 'str'.""".format(type(inputval), inputval))
         
     # Units decimal or binary?
     multiplier = 1000
