@@ -138,13 +138,12 @@ def set_memory(inputval):
         units = ''
     # Handle memory given as a string
     if isinstance(inputval, basestring):
-        memory_string = re.compile(r'\s*?([+-]?\d*\.?\d+)\s+([KMGTPBE]i?B)', re.IGNORECASE)
+        memory_string = re.compile(r'^\s*?(\d*\.?\d+)\s+([KMGTPBE]i?B)', re.IGNORECASE)
         matchobj = re.search(memory_string, inputval)
-        try:
-            units = str(matchobj.group(2))
-            val = float(str(matchobj.group(1)))
-
-        except AttributeError as e:
+        if matchobj:
+            val = float(matchobj.group(1))
+            units = matchobj.group(2)
+        else:
             raise ValidationError("""Invalid memory specification '{}'.""".format(inputval))
         
     # Units decimal or binary?
