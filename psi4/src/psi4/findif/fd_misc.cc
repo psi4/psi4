@@ -155,9 +155,6 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 
 void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
 {
-    std::string geometry_fname = get_writer_file_prefix(mol->name()) + ".xyz";
-    mol->save_xyz_file(geometry_fname);
-
     std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
     std::shared_ptr <OutFile> printer(new OutFile(normal_modes_fname, TRUNCATE));
 
