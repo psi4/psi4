@@ -160,11 +160,11 @@ def run_json(json_data):
     for check in ["driver", "method", "molecule"]:
         if check not in list(json_data):
             json_data["error"] = "Minimum input requires the %s field." % check
-            return False
+            return json_data
 
     if json_data["driver"] not in list(methods_dict):
         json_data["error"] = "Driver parameters '%s' not recognized" % str(json_data["driver"])
-        return False
+        return json_data
 
 
     if "scratch_location" in list(json_data):
@@ -192,9 +192,10 @@ def run_json(json_data):
         # Deep copy kwargs
         if "kwargs" in list(json_data):
             kwargs = copy.deepcopy(json_data["kwargs"])
-            kwargs["molecule"] = molutil.geometry(json_data["molecule"])
         else:
             kwargs = {}
+
+        kwargs["molecule"] = molutil.geometry(json_data["molecule"])
 
         # Full driver call
         kwargs["return_wfn"] = True
