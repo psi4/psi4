@@ -2475,10 +2475,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("HESSIAN_WRITE", false);
-       /*- Do write a file containing the normal modes?  If so, the filename will
-      end in .modes, and the prefix is determined by |globals__writer_file_label|
-      (if set), or else by the name of the output file plus the name of
-      the current molecule. -*/
+       /*- Do write a file containing the normal modes in Molden format?
+      If so, the filename will end in .molden_normal_modes, and the prefix is
+      determined by |globals__writer_file_label| (if set), or else by the name
+      of the output file plus the name of the current molecule. -*/
       options.add_bool("NORMAL_MODES_WRITE", false);
   }
   if (name == "OCC"|| options.read_globals()) {

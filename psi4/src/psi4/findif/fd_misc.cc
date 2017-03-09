@@ -158,39 +158,35 @@ void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> m
     std::string geometry_fname = get_writer_file_prefix(mol->name()) + ".xyz";
     mol->save_xyz_file(geometry_fname);
 
-    std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".modes";
+    std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
     std::shared_ptr <OutFile> printer(new OutFile(normal_modes_fname, TRUNCATE));
 
-    /* save normal modes to file. It uses the following format:
-      Frequency: freq1
-      Atom1 Lx1 Ly1 Lz1
-      ...
-      AtomN LxN LyN LzN
-      [empty line]
-      Frequency: freq2
-      Atom1 Lx1 Ly1 Lz1
-      ...
-      AtomN LxN LyN LzN
-      [empty line]
-      ...
-    */
+    printer->Printf("[Molden Format]\n[FREQ]\n");
     for(int i = 0; i < modes.size(); ++i) { // print descending order
-      double frequency_cm = modes[i]->get_cm();
-      if (frequency_cm < 0.0)
-        printer->Printf( "Frequency: %8.2f i\n", -frequency_cm);
-      else
-        printer->Printf( "Frequency: %8.2f\n", frequency_cm);
-
-      int Natom = mol->natom();
-      for (int a=0; a<Natom; a++) {
-        printer->Printf("%-3s", mol->symbol(a).c_str() );
-
-        for (int xyz = 0; xyz < 3; ++xyz)
-          printer->Printf(" %10.5f", modes[i]->get_lx(3 * a + xyz));
-
-        printer->Printf("\n");
-      }
-      printer->Printf("\n");
+        double frequency_cm = modes[i]->get_cm();
+        printer->Printf("%.2f\n", frequency_cm);
+    }
+    printer->Printf("\n[FR-COORD]\n");
+    int Natom = mol->natom();
+    for (int a = 0; a < Natom; a++) {
+        double x = mol->x(a);
+        double y = mol->y(a);
+        double z = mol->z(a);
+        printer->Printf("%-3s %.6f %.6f %.6f\n",mol->symbol(a).c_str(),x,y,z);
+    }
+    printer->Printf("\n[FR-NORM-COORD]\n");
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+        printer->Printf("vibration %d\n",i + 1);
+        int Natom = mol->natom();
+        for (int a=0; a<Natom; a++) {
+            for (int xyz = 0; xyz < 3; ++xyz)
+                printer->Printf(" %.6f", modes[i]->get_lx(3 * a + xyz));
+            printer->Printf("\n");
+        }
+    }
+    printer->Printf("\n[INT]\n");
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+        printer->Printf("1.0\n");
     }
 }
 
