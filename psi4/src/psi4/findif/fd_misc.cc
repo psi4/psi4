@@ -175,9 +175,18 @@ void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> m
     for(int i = 0; i < modes.size(); ++i) { // print descending order
         printer->Printf("vibration %d\n",i + 1);
         int Natom = mol->natom();
-        for (int a=0; a<Natom; a++) {
-            for (int xyz = 0; xyz < 3; ++xyz)
-                printer->Printf(" %.6f", modes[i]->get_lx(3 * a + xyz));
+        double norm2 = 0.0;
+        for (int a = 0; a < Natom; a++) {
+            for (int xyz = 0; xyz < 3; ++xyz){
+                norm2 += std::pow(modes[i]->get_lx(3 * a + xyz),2.0);
+            }
+        }
+        double scaling_factor = 1.0 / std::sqrt(norm2);
+        for (int a = 0; a < Natom; a++) {
+            for (int xyz = 0; xyz < 3; ++xyz){
+                double scaled_mode = scaling_factor * modes[i]->get_lx(3 * a + xyz);
+                printer->Printf(" %.6f",scaled_mode);
+            }
             printer->Printf("\n");
         }
     }
