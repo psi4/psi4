@@ -181,8 +181,8 @@ testm = {800000000: 800000000,
          ' 100000000kB ': 100000000000,
          '2 eb': 2000000000000000000}
 for t in testm:
-    fn_says = psi4.set_memory(t)
-    p4_says = psi4.get_memory()
+    fn_says = set_memory(t)
+    p4_says = get_memory()
     compare_integers(testm[t], fn_says, '{}: {} == set == ret'.format(t, testm[t]))
     compare_integers(testm[t], p4_says, '{}: {} == set == get'.format(t, testm[t]))
 
@@ -190,7 +190,7 @@ teste = [{}, [], "50 dogs", "4 giib", "1e5 gb", "5e5", 2000, "-4 GB", -5e5, '', 
 for t in teste:
     works = 1
     try:
-        fn_says = psi4.set_memory(t)
+        fn_says = set_memory(t)
     except ValidationError as e:
         print(str(e))
         works = 0

@@ -302,7 +302,7 @@ def process_memory_command(matchobj):
 
     mem_in_bytes = set_memory(sig + units, execute=False)
 
-    return "%score.set_memory(%d)\n" % (spaces, mem_in_bytes)
+    return "%score.set_memory_bytes(%d)\n" % (spaces, mem_in_bytes)
 
 
 def basname(name):
@@ -789,9 +789,7 @@ def process_input(raw_input, print_level=1):
 
     # Move up the psi4.core namespace
     for func in dir(core):
-        # Except fns that have valid wrappers in driver
-        if func not in ['set_memory']:
-            temp = temp.replace("psi4." + func, "psi4.core." + func)
+        temp = temp.replace("psi4." + func, "psi4.core." + func)
 
     # Move pseudonamespace for physconst into proper namespace
     from psi4.driver.p4util import constants
