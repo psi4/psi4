@@ -99,37 +99,49 @@ def cubeprop(wfn, **kwargs):
     cp.compute_properties()
 
 
-def set_memory(inputval):
-    """Function to reset the total memory allocation. Takes memory value 
+def set_memory(inputval, execute=True):
+    """Function to reset the total memory allocation. Takes memory value
     *inputval* as type int, float, or str; int and float are taken literally
     as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
-    which is case-insensitive.
-    
+    which is case-insensitive. Set *execute* to False to interpret *inputval*
+    without setting in Psi4 core.
+
     :returns: *memory_amount* (float) Number of bytes of memory set
+
+    :raises: ValidationError when <500MiB or disallowed type or misformatted
 
     :examples:
 
     >>> # [1] Passing absolute number of bytes
-    >>> psi4.set_memory(20000000)
+    >>> psi4.set_memory(600000000)
     >>> psi4.get_memory()
-    Out[1]: 20000000L
+    Out[1]: 600000000L
 
     >>> # [2] Passing memory value as string with units
     >>> psi4.set_memory('30 GB')
     >>> psi4.get_memory()
     Out[2]: 30000000000L
 
-    :tests:
+    :good examples:
 
-    {2000: 2000L,
-     24088624.9: 24088624L,
-     1.0e8: 100000000L,
-     '': AttributeError("'NoneType' object has no attribute 'group'"),
-     '21986': AttributeError("'NoneType' object has no attribute 'group'"),
-     '100 kb': 100000L,
-     '100.0 KiB': 102400L,
-     '500 MB': 500000000L,
-     '2 eb': 2000000000000000000L}
+    800000000         # 800000000
+    2004088624.9      # 2004088624
+    1.0e9             # 1000000000
+    '600 mb'          # 600000000
+    '600.0 MiB'       # 629145600
+    '.6 Gb'           # 600000000
+    ' 100000000kB '   # 100000000000
+    '2 eb'            # 2000000000000000000
+
+    :bad examples:
+
+    {}         # odd type
+    ''         # no info
+    "8 dimms"  # unacceptable units
+    "1e5 gb"   # string w/ exponent
+    "5e5"      # string w/o units
+    2000       # mem too small
+    -5e5       # negative (and too small)
 
     """
     # Handle memory given in bytes directly (int or float)
@@ -138,33 +150,39 @@ def set_memory(inputval):
         units = ''
     # Handle memory given as a string
     elif isinstance(inputval, str):
-        memory_string = re.compile(r'^\s*?(\d*\.?\d+)\s+([KMGTPBE]i?B)$', re.IGNORECASE)
+        memory_string = re.compile(r'^\s*?(\d*\.?\d+)\s*([KMGTPBE]i?B)$', re.IGNORECASE)
         matchobj = re.search(memory_string, inputval)
         if matchobj:
             val = float(matchobj.group(1))
             units = matchobj.group(2)
         else:
-            raise ValidationError("""Invalid memory specification '{}'.""".format(inputval))
+            raise ValidationError("""Invalid memory specification: {}. Try 5e9 or '5 gb'.""".format(repr(inputval)))
     else:
-        raise TypeError("""Invalid type {0} for argument '{1}'. Supported argument types: 'int', 'float', or 'str'.""".format(type(inputval), inputval))
-        
+        raise ValidationError("""Invalid type {} in memory specification: {}. Try 5e9 or '5 gb'.""".format(
+            type(inputval), repr(inputval)))
+
     # Units decimal or binary?
     multiplier = 1000
     if "i" in units.lower():
         multiplier = 1024
         units = units.lower().replace("i", "").upper()
 
-    # Build conversion factor, convert units        
+    # Build conversion factor, convert units
     unit_list = ["", "KB", "MB", "GB", "TB", "PB", "EB"]
     mult = 1
     for unit in unit_list:
         if units.upper() == unit:
             break
         mult *= multiplier
-            
-    memory_amount = int(val * mult)     
-    
-    core.set_memory(memory_amount)
+
+    memory_amount = int(val * mult)
+
+    min_mem_allowed = 524288000
+    if memory_amount < min_mem_allowed:
+        raise ValidationError("""Please, sir, I want some memory. ({} < {} b)""".format(memory_amount, min_mem_allowed))
+
+    if execute:
+        core.set_memory(memory_amount)
     return memory_amount
 
 def get_memory():

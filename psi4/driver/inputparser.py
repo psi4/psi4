@@ -42,6 +42,7 @@ import sys
 import random
 from psi4.driver import pubchem
 from psi4.driver.p4util.exceptions import *
+from psi4.driver.p4util.util import set_memory
 from psi4 import core
 
 # globally available regex strings
@@ -299,17 +300,9 @@ def process_memory_command(matchobj):
     sig = str(matchobj.group(2))
     units = str(matchobj.group(3))
 
-    val = float(sig)
-    memory_amount = val
+    mem_in_bytes = set_memory(sig + units, execute=False)
 
-    if units.upper() == 'KB':
-        memory_amount = val * 1000
-    elif units.upper() == 'MB':
-        memory_amount = val * 1000000
-    elif units.upper() == 'GB':
-        memory_amount = val * 1000000000
-
-    return "%score.set_memory(%d)\n" % (spaces, int(memory_amount))
+    return "%score.set_memory(%d)\n" % (spaces, mem_in_bytes)
 
 
 def basname(name):
@@ -737,7 +730,7 @@ def process_input(raw_input, print_level=1):
     #temp = re.sub(print_string, process_print_command, temp)
 
     # Process "memory ... "
-    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
+    memory_string = re.compile(r'(\s*?)memory\s+(\d*\.?\d+)\s*([KMGTPBE]i?B)',
                                re.IGNORECASE)
     temp = re.sub(memory_string, process_memory_command, temp)
 
@@ -796,7 +789,9 @@ def process_input(raw_input, print_level=1):
 
     # Move up the psi4.core namespace
     for func in dir(core):
-        temp = temp.replace("psi4." + func, "psi4.core." + func)
+        # Except fns that have valid wrappers in driver
+        if func not in ['set_memory']:
+            temp = temp.replace("psi4." + func, "psi4.core." + func)
 
     # Move pseudonamespace for physconst into proper namespace
     from psi4.driver.p4util import constants
