@@ -39,8 +39,9 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/writer_file_prefix.h"
 
-
+#include "psi4/libparallel/ParallelPrinter.h"
 
 namespace psi {
 using SharedMatrix=std::shared_ptr<Matrix>;
@@ -151,6 +152,48 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
     free(irrep_lbls[i]);
   free(irrep_lbls);
 }
+
+void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
+{
+    std::string geometry_fname = get_writer_file_prefix(mol->name()) + ".xyz";
+    mol->save_xyz_file(geometry_fname);
+
+    std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".modes";
+    std::shared_ptr <OutFile> printer(new OutFile(normal_modes_fname, TRUNCATE));
+
+    /* save normal modes to file. It uses the following format:
+      Frequency: freq1
+      Atom1 Lx1 Ly1 Lz1
+      ...
+      AtomN LxN LyN LzN
+      [empty line]
+      Frequency: freq2
+      Atom1 Lx1 Ly1 Lz1
+      ...
+      AtomN LxN LyN LzN
+      [empty line]
+      ...
+    */
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+      double frequency_cm = modes[i]->get_cm();
+      if (frequency_cm < 0.0)
+        printer->Printf( "Frequency: %8.2f i\n", -frequency_cm);
+      else
+        printer->Printf( "Frequency: %8.2f\n", frequency_cm);
+
+      int Natom = mol->natom();
+      for (int a=0; a<Natom; a++) {
+        printer->Printf("%-3s", mol->symbol(a).c_str() );
+
+        for (int xyz = 0; xyz < 3; ++xyz)
+          printer->Printf(" %10.5f", modes[i]->get_lx(3 * a + xyz));
+
+        printer->Printf("\n");
+      }
+      printer->Printf("\n");
+    }
+}
+
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
