@@ -150,7 +150,7 @@ def set_memory(inputval, execute=True):
         units = ''
     # Handle memory given as a string
     elif isinstance(inputval, str):
-        memory_string = re.compile(r'^\s*?(\d*\.?\d+)\s*([KMGTPBE]i?B)$', re.IGNORECASE)
+        memory_string = re.compile(r'^\s*(\d*\.?\d+)\s*([KMGTPBE]i?B)\s*$', re.IGNORECASE)
         matchobj = re.search(memory_string, inputval)
         if matchobj:
             val = float(matchobj.group(1))
