@@ -1,8 +1,6 @@
 #! DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation,
 #! using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
 
-memory 250 mb
-
 Er    = -75.318545          #TEST
 Er_df = -75.319995          #TEST
 r_ref = [Er, Er, Er, Er_df] #TEST

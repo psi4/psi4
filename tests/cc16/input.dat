@@ -1,7 +1,5 @@
 #! ROHF and UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
 
-memory 250 mb
-
 molecule ch2 {
     0 3
     c

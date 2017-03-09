@@ -2,8 +2,6 @@
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
 
-memory 250 mb
-
 refnuc =  204.01995737868003 #TEST
 refscf = -228.95763005849557 #TEST
 

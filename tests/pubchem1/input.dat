@@ -2,8 +2,6 @@
 #! PubChem database to obtain the initial geometry, which is optimized at the HF/STO-3G
 #! level, before computing single point energies at the RHF, UHF and ROHF levels of theory.
 
-memory 250 mb
-
 molecule benz{
     pubchem:benzene
 }

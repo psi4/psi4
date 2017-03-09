@@ -1,7 +1,5 @@
 #! 6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atoms, just for demo and testing purposes.
 
-memory 250 mb
-
 nucenergy = 6.197322440574482     #TEST
 refenergy = -38.925486977153      #TEST
 

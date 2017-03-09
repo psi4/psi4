@@ -1,7 +1,5 @@
 #! Various basis set extrapolation tests
 
-memory 250 mb
-
 molecule {
 Li
 

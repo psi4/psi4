@@ -1,7 +1,5 @@
 #! RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
 
-memory 250 mb
-
 refnuc =   9.32942148818371   #TEST
 refscf = -76.02361501946214   #TEST
 

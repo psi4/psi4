@@ -1,8 +1,6 @@
 #! MP2/aug-cc-pv[DT]Z many body energies of an arbitrary Helium complex
 #! Size vs cost tradeoff is rough here
 
-memory 500 mb
-
 comparison_dict = {}                                                     #TEST
 comparison_dict['CP'] =   {2: -2.43090282019e-05, 3: -2.43315337922e-05} #TEST
 comparison_dict['NOCP'] = {2: -2.74246625658e-05, 3: -2.58619907516e-05} #TEST

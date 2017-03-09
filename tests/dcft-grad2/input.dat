@@ -4,8 +4,6 @@
 #! RHF-ODC-06 analytic gradient computations for H2O use
 #! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
 
-memory 250 mb
-
 # RHF-ODC-12 gradients
 ref_vals_odc12 = [
            [-0.000463315203,     0.011184720362,     0.000000000000],

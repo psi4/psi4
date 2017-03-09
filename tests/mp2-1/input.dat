@@ -1,7 +1,5 @@
 #! All-electron MP2 6-31G** geometry optimization of water
 
-memory 250 mb
-
 nucenergy =   9.1622581908184 #TEST
 refenergy = -76.2224486598878  #TEST
 

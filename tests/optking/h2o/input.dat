@@ -1,4 +1,3 @@
-memory 250 mb
 
 molecule h2o {
  O

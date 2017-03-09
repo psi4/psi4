@@ -4,8 +4,6 @@ refnuc      =  25.59060766929188 #TEST
 refscf      = -129.25910534911733 #TEST
 refomp2     = -129.58969878741422 #TEST
 
-memory 256 mb
-
 molecule {
 0 2
 N

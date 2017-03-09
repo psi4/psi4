@@ -1,7 +1,5 @@
 #! Verify HF-3c method over S22
 
-memory 200 mb
-
 def ie(es):
     return es[0] - es[1] - es[2]
 

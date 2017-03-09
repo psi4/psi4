@@ -1,7 +1,5 @@
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
-memory 500 mb
-
 nucenergy =   2.64588604295000  #TEST
 refenergy =  -25.1035468969791  #TEST
 

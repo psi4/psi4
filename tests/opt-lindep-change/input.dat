@@ -6,8 +6,6 @@
 #! file after each SCF run.  David Sherrill 3/19/14.  
 #! This is just for internal testing, not a good example.  !nosample
 
-memory 250 mb
-
 refenergy = -257.9314039622615837
 
 molecule Ne2 {
@@ -19,7 +17,10 @@ molecule Ne2 {
 set basis aug-cc-pvtz
 set s_tolerance 1.4E-2          #unusually large, chosen to get nmo to change
 set geom_maxiter 3
-optimize("b3lyp")
+try:
+    optimize("b3lyp")
+except ConvergenceError:
+    pass
 
 # comparison aginst ref might change if optimizer changes; 
 # if that happens just compare fewer digits or update the refenergy. 

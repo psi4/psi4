@@ -2,8 +2,6 @@
 #! that is not linear in the optimized structure but is in a 
 #! symmetry plane of the molecule.
 
-memory 250 mb
-
 SCF_E  = -795.1433964231258     #TEST
 
 molecule {

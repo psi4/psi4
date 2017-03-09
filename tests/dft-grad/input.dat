@@ -8,7 +8,6 @@ ref_bp86d2 = [
 ref = psi4.Matrix(3, 3)                                                 #TEST
 ref.set(ref_bp86d2)                                                       #TEST
 
-memory 250 mb
 molecule {
   0 1
   N    -0.0034118    3.5353926    0.0000000

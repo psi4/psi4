@@ -28,7 +28,7 @@ cfour {}  # clear literal block since running sequentially
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 
-memory 200 mb
+memory 600 mb
 
 molecule {
 O

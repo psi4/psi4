@@ -1,8 +1,6 @@
 from __future__ import print_function
 #! SCF cc-pVDZ geometry optimzation, with Z-matrix input
 
-memory 250 mb
-
 nucenergy = 9.3007                                        #TEST
 # This value is from a tightly converged QChem run  
 refenergy = -76.027053513                                 #TEST

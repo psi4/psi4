@@ -19,8 +19,6 @@ for h in range(0,nirrep):  #TEST
     for i in range(0,2):  #TEST
       ref.set(h,i,0,ref_vals_sym[h * 2 + i])  #TEST
 
-memory 500 mb
-
 nucenergy =   18.91527043470638  #TEST
 refenergy =  -92.19555660616885  #TEST
 
