@@ -192,6 +192,32 @@ void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> m
     }
     printer->Printf("\n[INT]\n");
     for(int i = 0; i < modes.size(); ++i) { // print descending order
+=======
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+        double frequency_cm = modes[i]->get_cm();
+        printer->Printf("%.2f\n", frequency_cm);
+    }
+    printer->Printf("\n[FR-COORD]\n");
+    int Natom = mol->natom();
+    for (int a = 0; a < Natom; a++) {
+        double x = mol->x(a);
+        double y = mol->y(a);
+        double z = mol->z(a);
+        printer->Printf("%-3s %.6f %.6f %.6f\n",mol->symbol(a).c_str(),x,y,z);
+    }
+    printer->Printf("\n[FR-NORM-COORD]\n");
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+        printer->Printf("vibration %d\n",i + 1);
+        int Natom = mol->natom();
+        for (int a=0; a<Natom; a++) {
+            for (int xyz = 0; xyz < 3; ++xyz)
+                printer->Printf(" %.6f", modes[i]->get_lx(3 * a + xyz));
+            printer->Printf("\n");
+        }
+    }
+    printer->Printf("\n[INT]\n");
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+>>>>>>> Save normal modes in Molden format.
         printer->Printf("1.0\n");
     }
 }
