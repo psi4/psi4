@@ -181,7 +181,7 @@ def set_memory(inputval, execute=True):
     # Check minimum memory requirement
     min_mem_allowed = 524288000
     if memory_amount < min_mem_allowed:
-        raise ValidationError("""set_memory(): Requested {0} MiB ({1} MB); minimum 500 MiB (525 MB). Please, sir, I want some more.""".format(
+        raise ValidationError("""set_memory(): Requested {:.3} MiB ({:.3} MB); minimum 500 MiB (525 MB). Please, sir, I want some more.""".format(
                 memory_amount / 1024 ** 2, memory_amount / 1000 ** 2))
 
 

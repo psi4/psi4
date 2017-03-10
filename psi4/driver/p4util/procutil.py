@@ -142,7 +142,7 @@ def format_options_for_input(molecule=None, **kwargs):
     if molecule is not None:
         symmetry = molecule.find_point_group(0.00001).symbol()
     commands = ''
-    commands += """\ncore.set_memory(%s)\n\n""" % (core.get_memory())
+    commands += """\ncore.set_memory_bytes(%s)\n\n""" % (core.get_memory())
     for chgdopt in core.get_global_option_list():
         if core.has_global_option_changed(chgdopt):
             chgdoptval = core.get_global_option(chgdopt)
