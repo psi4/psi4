@@ -40,8 +40,10 @@ aux = BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
 
 # Build and transform a OV basis
 dfobj = DF_Helper(wfn.basisset(), aux)
-#dfobj.set_on_core(True)
+dfobj.set_method("STORE")
+dfobj.set_MO_hint(wfn.basisset().nbf())
 dfobj.initialize()
+
 
 dfobj.add_space("O", wfn.Ca_subset("AO", "OCC"))
 dfobj.add_space("V", wfn.Ca_subset("AO", "VIR"))
