@@ -50,6 +50,16 @@ the scenes, :py:func:`~psi4.frequency` is a light wrapper over
 :py:func:`~psi4.hessian` that computes the Hessian then adds a
 thermochemical analysis.
 
+Visualization of Normal Modes
+-----------------------------
+
+|PSIfour| has the ability to export a Molden file that stores information about
+the harmonic frequancies and normal modes computed via :py:func:`~psi4.frequency`.
+This feature can be enabled by setting the option |globals__normal_modes_write| to true.
+The filename of the Molden file ends in ”.molden_normal_modes, and the prefix is
+determined by |globals__writer_file_label| (if set), or else by the name of the
+output file plus the name of the current molecule.
+
 .. autofunction:: psi4.frequency(name [, molecule, return_wfn, func, mode, dertype, irrep])
 
 .. autofunction:: psi4.hessian(name [, molecule, return_wfn, func, dertype, irrep])
