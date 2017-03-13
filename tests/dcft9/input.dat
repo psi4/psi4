@@ -5,8 +5,6 @@
 #! In the next RHF-ODC-12 computation, AO_BASIS=NONE is used, where four-virtual integrals
 #! are transformed into MO basis.
 
-memory 250 mb
-
 # UHF-ODC-12                            #TEST
 refscf_uhf      = -76.0266030959050312  #TEST 
 refmp2_uhf      = -76.230809106995821   #TEST

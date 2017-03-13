@@ -183,7 +183,7 @@ if args["prefix"] is not None:
     psi4.core.set_psi_file_prefix(args["prefix"])
 
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
-psi4.core.set_memory(524288000, True)
+psi4.core.set_memory_bytes(524288000, True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 psi4.print_header()
 

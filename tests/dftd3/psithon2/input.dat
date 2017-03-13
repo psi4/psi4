@@ -1,7 +1,5 @@
 #! Accesses basis sets, databases, plugins, and executables in non-install locations
 
-memory 250 mb
-
 import os
 os.environ['PSIPATH'] = 'psiaux1:psiaux2'
 

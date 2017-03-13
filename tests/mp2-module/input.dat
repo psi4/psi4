@@ -5,8 +5,6 @@ refscf      = -76.02674017978704 #TEST
 refomp2     = -76.22932767439706 #TEST
 
 
-memory 256 mb
-
 molecule hf {
 H
 F 1 0.917

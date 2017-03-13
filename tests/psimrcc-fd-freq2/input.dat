@@ -6,8 +6,6 @@ test_freq.set(0,582.44)
 test_freq.set(1,937.49)
 test_freq.set(2,1013.22) #TEST
 
-memory 250 mb
-
 molecule ch2 {
   0 1
             O    -2.1952205263  -0.0000000000   0.4671108832

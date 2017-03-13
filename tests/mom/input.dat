@@ -6,8 +6,6 @@
 # The latter is somewhat dicey, you never know what 
 # you are going to find.
 
-memory 250 mb
-
 Enuc        =   8.80146552997207 #TEST
 E0          = -76.02141844515498 #TEST 
 E56_singlet = -75.27755067036694 #TEST

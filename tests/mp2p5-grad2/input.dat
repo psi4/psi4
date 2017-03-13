@@ -7,8 +7,6 @@ ref_vals = [                                                       #TEST
 ref = psi4.Matrix(2, 3)                                          #TEST
 ref.set(ref_vals)
 
-memory 250 mb
-
 molecule no {
 0 2
 n

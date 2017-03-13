@@ -754,7 +754,7 @@ void HF::print_header()
     outfile->Printf( "                                   SCF\n");
     outfile->Printf( "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
     outfile->Printf( "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
-    outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
+    outfile->Printf( "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1048576L);
     outfile->Printf( "         ---------------------------------------------------------\n");
     outfile->Printf( "\n");
     outfile->Printf( "  ==> Geometry <==\n\n");

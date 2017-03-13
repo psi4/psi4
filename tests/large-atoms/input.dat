@@ -1,8 +1,5 @@
 #! Sample with post-Argon atoms !nosample
 
-memory 250 mb
-
-
 molecule {
 Ba
 Ba 1 2.0
@@ -17,7 +14,6 @@ set {
 
 analytic_grad = gradient('mp2')
 clean()
-memory 250 mb
 
 
 molecule {
@@ -34,7 +30,6 @@ set {
 
 analytic_grad = gradient('scf')
 clean()
-memory 250 mb
 
 
 molecule {
@@ -50,7 +45,6 @@ set {
 
 thisenergy = energy('mp2')
 clean()
-memory 250 mb
 
 
 molecule {
@@ -66,7 +60,6 @@ set {
 
 thisenergy = energy('scf')
 clean()
-memory 250 mb
 
 
 molecule {
@@ -83,7 +76,6 @@ set {
 
 thisenergy = energy('mp2')
 clean()
-memory 250 mb
 
 
 molecule {
@@ -100,7 +92,6 @@ set {
 
 thisenergy = energy('scf')
 clean()
-memory 250 mb
 
 
 molecule {
@@ -116,7 +107,6 @@ set {
 
 analytic_grad = gradient('mp2')
 clean()
-memory 250 mb
 
 
 molecule {

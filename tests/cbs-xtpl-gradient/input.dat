@@ -1,6 +1,5 @@
 #! Various gradients for a strained helium dimer and water molecule
 import numpy as np
-memory 500 mb
 
 lref_scf_dz =   [[ 0.0,  0.0,   0.01233095],  #TEST
                  [ 0.0,  0.0,  -0.01233095]]  #TEST

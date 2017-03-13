@@ -21,7 +21,6 @@ ref_geom.set(
        [  -0.989949493661,     3.555362334076,     0.000000000000]])
 
 
-memory 100 mb
 set basis 6-31G*
 
 banner('PSI4 Molecule Parsing')

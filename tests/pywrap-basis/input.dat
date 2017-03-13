@@ -2,8 +2,6 @@
 #! so driver auto-fragments it. Basis set and auxiliary basis sets are
 #! assigned by atom type.
 
-memory 200 mb
-
 molecule dimer {
 0 1
 N  -1.578718  -0.046611   0.000000

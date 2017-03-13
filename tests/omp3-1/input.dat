@@ -6,8 +6,6 @@ refomp3     = -76.23814597498308 #TEST
 refscsomp3  = -76.22939046807960 #TEST
 refsosomp3  = -76.22747332842629 #TEST
 
-memory 250 mb
-
 molecule h2o {
 0 1
 o

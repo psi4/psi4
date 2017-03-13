@@ -5,8 +5,6 @@
 #! comparison to castup3) that output file doesn't depend on options
 #! (scf_type) being set global or local. This input uses global.
 
-memory 256 mb
-
 molecule zinc {
    0 1 
    C

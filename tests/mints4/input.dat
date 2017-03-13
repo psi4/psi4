@@ -3,8 +3,6 @@
 #! to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries
 #! because the former define absolute positions, while the latter are relative.
 
-memory 250 mb
-
 refENuc   = 268.617178206572646  #TEST
 
 molecule dimer {

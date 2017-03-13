@@ -493,7 +493,7 @@ def database(name, db_name, **kwargs):
 
         # build string of commands for options from the input file  TODO: handle local options too
         commands = ''
-        commands += """\ncore.set_memory(%s)\n\n""" % (core.get_memory())
+        commands += """\ncore.set_memory_bytes(%s)\n\n""" % (core.get_memory())
         for chgdopt in core.get_global_option_list():
             if core.has_global_option_changed(chgdopt):
                 chgdoptval = core.get_global_option(chgdopt)
