@@ -39,12 +39,14 @@ aux = BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
                          "RIFIT", get_global_option('BASIS'))
 
 # Build and transform a OV basis
+print("Initializing DF_Helper object.")
 dfobj = DF_Helper(wfn.basisset(), aux)
-dfobj.set_method("STORE")
+dfobj.set_method("DIRECT")
 dfobj.set_MO_hint(wfn.basisset().nbf())
 dfobj.initialize()
 
 
+print("Transforming the AO->MO integrals.\n")
 dfobj.add_space("O", wfn.Ca_subset("AO", "OCC"))
 dfobj.add_space("V", wfn.Ca_subset("AO", "VIR"))
 dfobj.add_transformation("Qov", "O", "V")
