@@ -162,14 +162,20 @@ def run_json(json_data):
             json_data["error"] = "Minimum input requires the %s field." % check
             return json_data
 
+    # Check driver call
     if json_data["driver"] not in list(methods_dict):
         json_data["error"] = "Driver parameters '%s' not recognized" % str(json_data["driver"])
         return json_data
 
 
+    # Set scratch
     if "scratch_location" in list(json_data):
         psi4_io = core.IOManager.shared_object()
         psi4_io.set_default_path(json_data["scratch_location"])
+
+    # Set memory
+    if "memory" in list(json_data):
+        psi4.core.set_memory(int(json_data["memory"]))
 
     # Do we return the output?
     return_output = json_data.pop("return_output", False)
