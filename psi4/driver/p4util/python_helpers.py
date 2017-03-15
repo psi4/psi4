@@ -26,9 +26,10 @@
 #
 
 import os
-import subprocess
 import re
 import sys
+import random
+import subprocess
 
 from . import optproc
 from psi4.driver import qcdb
@@ -37,7 +38,7 @@ from psi4 import core
 ## Python basis helps
 
 @staticmethod
-def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, puream=-1, return_atomlist=False):
+def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, puream=-1, return_atomlist=False, quiet=False):
     horde = qcdb.libmintsbasisset.basishorde
 
     if key == 'ORBITAL':
@@ -55,12 +56,12 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
         pass
     elif key is None:
         target = core.get_global_option("BASIS")
+        key = 'BASIS'
     else:
         target = core.get_global_option(key)
 
     basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
                                           key, target, fitrole, other, return_atomlist=return_atomlist)
-
     if return_atomlist:
         atom_basis_list = []
         for atbs in basisdict:
@@ -69,6 +70,9 @@ def pybuild_basis(mol, key=None, target=None, fitrole='BASIS', other=None, purea
             atom_basis_list.append(lmbs)
             #lmbs.print_detail_out()
         return atom_basis_list
+
+    if not quiet:
+        core.print_out(basisdict['message'])
 
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     return psibasis
@@ -185,3 +189,84 @@ def pcm_helper(block):
         handle.write(block)
     import pcmsolver
     pcmsolver.parse_pcm_input('pcmsolver.inp')
+
+
+def filter_comments(string):
+    """Remove from *string* any Python-style comments ('#' to end of line)."""
+
+    filtered = []
+    for line in string.splitlines():
+        line = line.partition('#')[0]
+        filtered.append(line.rstrip())
+    return '\n'.join(filtered)
+
+
+def basname(name):
+    """Imitates BasisSet.make_filename() without the gbs extension"""
+    return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
+
+
+def basis_helper(block, name='', key='BASIS'):
+    """For PsiAPI mode, forms a basis specification function from *block*
+    and associates it with keyword *key* under handle *name*. Registers
+    the basis spec with Psi4 so that it can be applied again to future
+    molecules. For usage, see mints2, mints9, and cc54 test cases.
+
+    """
+    key = key.upper()
+    name = ('anonymous' + str(random.randint(0, 999))) if name == '' else name
+    cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
+    block = filter_comments(block)
+    command_lines = re.split('\n', block)
+
+    symbol_re = re.compile(r'^\s*assign\s+(?P<symbol>[A-Z]{1,3})\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    label_re = re.compile(r'^\s*assign\s+(?P<label>(?P<symbol>[A-Z]{1,3})(?:(_\w+)|(\d+))?)\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    all_re = re.compile(r'^\s*assign\s+(?P<basis>[-+*\(\)\w]+)\s*$', re.IGNORECASE)
+    basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
+
+    def anon(mol, role):
+        basstrings = {}
+
+        # Start by looking for assign lines, and remove them
+        leftover_lines = []
+        assignments = False
+        for line in command_lines:
+            if symbol_re.match(line):
+                m = symbol_re.match(line)
+                mol.set_basis_by_symbol(m.group('symbol'), m.group('basis'), role=role)
+                assignments = True
+
+            elif label_re.match(line):
+                m = label_re.match(line)
+                mol.set_basis_by_label(m.group('label'), m.group('basis'), role=role)
+                assignments = True
+
+            elif all_re.match(line):
+                m = all_re.match(line)
+                mol.set_basis_all_atoms(m.group('basis'), role=role)
+                assignments = True
+
+            else:
+                # Ignore blank lines and accumulate remainder
+                if line and not line.isspace():
+                    leftover_lines.append(line.strip())
+
+        # Now look for regular basis set definitions
+        basblock = list(filter(None, basislabel.split('\n'.join(leftover_lines))))
+        if len(basblock) == 1:
+            if not assignments:
+                # case with no [basname] markers where whole block is contents of gbs file
+                mol.set_basis_all_atoms(name, role=role)
+                basstrings[basname(name)] = basblock[0]
+            else:
+                message = ("Conflicting basis set specification: assign lines present but shells have no [basname] label.""")
+                raise TestComparisonError(message)
+        else:
+            # case with specs separated by [basname] markers
+            for idx in range(0, len(basblock), 2):
+                basstrings[basname(basblock[idx])] = basblock[idx + 1]
+
+        return basstrings
+    anon.__name__ = 'basisspec_psi4_yo__' + cleanbas
+    qcdb.libmintsbasisset.basishorde[name.upper()] = anon
+    core.set_global_option(key, name)

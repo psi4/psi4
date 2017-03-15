@@ -1,3 +1,6 @@
 add_subdirectory(energy)
 add_subdirectory(curve)
 add_subdirectory(pubchem)
+add_subdirectory(mints9)
+add_subdirectory(mints2)
+add_subdirectory(cc54)

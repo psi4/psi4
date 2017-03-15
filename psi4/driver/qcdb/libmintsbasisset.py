@@ -45,7 +45,7 @@ from .molecule import Molecule
 from .periodictable import *
 from .libmintsgshell import GaussianShell, ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
-from .basislist import corresponding_basis
+from .basislist import corresponding_basis, corresponding_zeta
 if sys.version_info >= (3,0):
     basestring = str
 
@@ -558,7 +558,7 @@ class BasisSet(object):
 #TRIAL#            return bsdict
 
     @staticmethod
-    def pyconstruct(mol, key, target, fitrole='BASIS', other=None, return_atomlist=False):
+    def pyconstruct(mol, key, target, fitrole='ORBITAL', other=None, return_atomlist=False):
         """Builds a BasisSet object for *mol* (either a qcdb.Molecule or
         a string that can be instantiated into one) from basis set
         specifications passed in as python functions or as a string that
@@ -578,8 +578,7 @@ class BasisSet(object):
         ``pyconstruct(mol, "DF_BASIS_MP2", "", "RIFIT", "6-31+G(d,p)")``
 
         """
-        #print(type(mol), type(key), type(target), type(fitrole), type(other))
-        orbonly = True if (fitrole == 'BASIS' and other is None) else False
+        orbonly = True if (fitrole == 'ORBITAL' and other is None) else False
         if orbonly:
             orb = target
             aux = None
@@ -609,32 +608,42 @@ class BasisSet(object):
             raise ValidationError("""Orbital basis argument must not be empty.""")
         elif callable(orb):
             basstrings['BASIS'] = orb(mol, 'BASIS')
+            callby = orb.__name__.replace('basisspec_psi4_yo__', '')
+        elif orb in basishorde:
+            basstrings['BASIS'] = basishorde[orb](mol, 'BASIS')
+            callby = orb
         elif isinstance(orb, basestring):
             mol.set_basis_all_atoms(orb, role='BASIS')
+            callby = orb
         else:
             raise ValidationError("""Orbital basis argument must be function that applies basis sets to Molecule or a string of the basis to be applied to all atoms.""")
 
-        if aux is None or aux == '':
-            pass
-        elif callable(aux):
-            basstrings[fitrole] = aux(mol, fitrole)
-        elif isinstance(aux, basestring):
-            mol.set_basis_all_atoms(aux, role=fitrole)
-        else:
-            raise ValidationError("""Auxiliary basis argument must be function that applies basis sets to Molecule or a string of the basis to be applied to all atoms.""")
+        if not orbonly:
+            if aux is None or aux == '':
+                callby = '({} Aux)'.format(callby)
+            elif callable(aux):
+                basstrings[fitrole] = aux(mol, fitrole)
+                callby = aux.__name__.replace('basisspec_psi4_yo__', '')
+            elif isinstance(aux, basestring):
+                mol.set_basis_all_atoms(aux, role=fitrole)
+                callby = aux
+            else:
+                raise ValidationError("""Auxiliary basis argument must be function that applies basis sets to Molecule or a string of the basis to be applied to all atoms.""")
 
         # Not like we're ever using a non-G94 format
         parser = Gaussian94BasisSetParser()
 
         # Molecule and parser prepped, call the constructor
-        bs, msg = BasisSet.construct(parser, mol, fitrole, None if fitrole == 'BASIS' else fitrole, basstrings[fitrole],
+        bs, msg = BasisSet.construct(parser, mol,
+                                     'BASIS' if fitrole == 'ORBITAL' else fitrole,
+                                     None if fitrole == 'ORBITAL' else fitrole,
+                                     basstrings['BASIS'] if fitrole == 'ORBITAL' else basstrings[fitrole],
                                      return_atomlist=return_atomlist)
-#        mol.update_geometry()
 
         text = """   => Loading Basis Set <=\n\n"""
+        text += """    Name: %s\n""" % (callby.upper())
         text += """    Role: %s\n""" % (fitrole)
         text += """    Keyword: %s\n""" % (key)
-        text += """    Name: %s\n""" % (target)
         text += msg
 
         if return_atomlist:
@@ -645,9 +654,11 @@ class BasisSet(object):
                 for atbs in bs:
                     bsdict = {}
                     bsdict['message'] = text
-                    bsdict['name'] = atbs.name
+                    bsdict['key'] = key
+                    bsdict['name'] = callby.upper()
+                    bsdict['blend'] = atbs.name.upper()
                     bsdict['puream'] = int(atbs.has_puream())
-                    bsdict['shell_map'] = atbs.export_for_libmints(fitrole)
+                    bsdict['shell_map'] = atbs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
                     bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
@@ -658,18 +669,20 @@ class BasisSet(object):
         else:
             bsdict = {}
             bsdict['message'] = text
-            bsdict['name'] = bs.name
+            bsdict['key'] = key
+            bsdict['name'] = callby.upper()
+            bsdict['blend'] = bs.name.upper()
             bsdict['puream'] = int(bs.has_puream())
-            bsdict['shell_map'] = bs.export_for_libmints(fitrole)
+            bsdict['shell_map'] = bs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
             return bsdict
 
     @classmethod
-    def construct(cls, parser, mol, role, deffit=None, basstrings=None, return_atomlist=False):
+    def construct(cls, parser, mol, key, deffit=None, basstrings=None, return_atomlist=False):
         """Returns a new BasisSet object configured from the *mol*
-        Molecule object for *role* (generally a Psi4 keyword: BASIS,
+        Molecule object for *key* (generally a Psi4 keyword: BASIS,
         DF_BASIS_SCF, etc.). Fails utterly if a basis has not been set for
-        *role* for every atom in *mol*, unless *deffit* is set (JFIT,
-        JKFIT, or RIFIT), whereupon empty atoms are assigned to *role*
+        *key* for every atom in *mol*, unless *deffit* is set (JFIT,
+        JKFIT, or RIFIT), whereupon empty atoms are assigned to *key*
         from the :py:class:`~BasisFamily`. This function is significantly
         re-worked from its libmints analog.
 
@@ -685,7 +698,8 @@ class BasisSet(object):
             ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
             libraryPath
 
-        # Validate deffit for role
+        # Validate deffit for key
+        univdef_zeta = 4
         univdef = {'JFIT': ('def2-qzvpp-jfit', 'def2-qzvpp-jfit', None),
                    'JKFIT': ('def2-qzvpp-jkfit', 'def2-qzvpp-jkfit', None),
                    'RIFIT': ('def2-qzvpp-ri', 'def2-qzvpp-ri', None),
@@ -700,6 +714,7 @@ class BasisSet(object):
         atom_basis_shell = OrderedDict()
         names = {}
         summary = []
+        bastitles = []
 
         for at in range(mol.natom()):
             symbol = mol.atom_entry(at).symbol()  # O, He
@@ -712,11 +727,11 @@ class BasisSet(object):
             # Establish search parameters for what/where basis entries suitable for atom
             seek = {}
             try:
-                requested_basname = basdict[role]
+                requested_basname = basdict[key]
             except KeyError:
-                if role == 'BASIS' or deffit is None:
+                if key == 'BASIS' or deffit is None:
                     raise BasisSetNotDefined("""BasisSet::construct: No basis set specified for %s and %s.""" %
-                        (symbol, role))
+                        (symbol, key))
                 else:
                     # No auxiliary basis set for atom, so try darnedest to find one.
                     #   This involves querying the BasisFamily for default and
@@ -726,7 +741,9 @@ class BasisSet(object):
                     tmp = []
                     tmp.append(corresponding_basis(basdict['BASIS'], deffit))
                     #NYI#tmp.append(corresponding_basis(basdict['BASIS'], deffit + '-DEFAULT'))
-                    tmp.append(univdef[deffit])
+                    orbital_zeta = corresponding_zeta(basdict['BASIS'])
+                    if orbital_zeta is None or orbital_zeta <= univdef_zeta:
+                        tmp.append(univdef[deffit])
                     seek['basis'] = [item for item in tmp if item != (None, None, None)]
                     seek['entry'] = [symbol]
                     seek['path'] = libraryPath
@@ -786,7 +803,8 @@ class BasisSet(object):
                         fmsg = ''
                     # -- Assign to Molecule
                     atom_basis_shell[label][bastitle] = shells
-                    mol.set_basis_by_number(at, bastitle, role=role)
+                    mol.set_basis_by_number(at, bastitle, role=key)
+                    bastitles.append(bastitle.upper())
                     summary.append("""entry %-10s %s %s %s""" % (entry, msg, index, fmsg))
                     break
 
@@ -801,11 +819,11 @@ class BasisSet(object):
                 text2 += """  Basis Sets: %s\n""" % (seek['basis'])
                 text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(':'))))
                 text2 += """  Input Blocks: %s\n""" % (', '.join(seek['strings']))
-                raise BasisSetNotFound('BasisSet::construct: Unable to find a basis set for atom %d for role %s among:\n%s' % \
-                    (at + 1, role, text2))
+                raise BasisSetNotFound('BasisSet::construct: Unable to find a basis set for atom %d for key %s among:\n%s' % \
+                    (at + 1, key, text2))
 
         # Construct the grand BasisSet for mol
-        basisset = BasisSet(role, mol, atom_basis_shell)
+        basisset = BasisSet(key, mol, atom_basis_shell)
 
         # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
         atom_basis_list = []
@@ -813,13 +831,14 @@ class BasisSet(object):
             oneatombasis = BasisSet(basisset, at)
             oneatombasishash = hashlib.sha1(oneatombasis.print_detail(numbersonly=True).encode('utf-8')).hexdigest()
             if return_atomlist:
-                oneatombasis.molecule.set_shell_by_number(0, oneatombasishash, role=role)
+                oneatombasis.molecule.set_shell_by_number(0, oneatombasishash, role=key)
                 atom_basis_list.append(oneatombasis)
-            mol.set_shell_by_number(at, oneatombasishash, role=role)
+            mol.set_shell_by_number(at, oneatombasishash, role=key)
         mol.update_geometry()  # re-evaluate symmetry taking basissets into account
 
-#TODO fix name
-        basisset.name = ' + '.join(names)
+        bastitles = list(set(bastitles))
+        bastitles.sort()
+        basisset.name = ' + '.join(bastitles)
 
         # Summary printing
         tmp = defaultdict(list)
@@ -834,12 +853,10 @@ class BasisSet(object):
                     sats = ", ".join("-".join(map(str, (g[0], g[-1])[:len(g)])) for g in G)
                     maxsats = max(maxsats, len(sats))
                     tmp2[sats] = msg
-        #text = """  ==> Loading Basis Set <==\n\n"""
-        #text += """  Role: %s\n""" % (role)
-        #text += """  Basis Set: %s\n""" % (basisset.name)
         text = ''
         for ats, msg in tmp2.items():
             text += """    atoms %s %s\n""" % (ats.ljust(maxsats), msg)
+        text += '\n'
 
         if return_atomlist:
             return atom_basis_list, text
@@ -1130,7 +1147,7 @@ class BasisSet(object):
         triplets of elements are each unique atom label, the hash
         of the string shells entry in gbs format and the
         shells entry in gbs format for that label. This packaging is
-        intended for return to libmints BasisSet::pyconstruct for
+        intended for return to libmints BasisSet::construct_from_pydict for
         instantiation of a libmints BasisSet clone of *self*.
 
         """
