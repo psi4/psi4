@@ -1,21 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
                                Psi4 1.1a2.dev204 
 
                          Git: Rev {master} 6c7a218 dirty
-=======
-                               Psi4 1.1a2.dev202 
-
-                         Git: Rev {master} cf3fa79 
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-                               Psi4 1.1a2.dev204 
-
-                         Git: Rev {master} 6c7a218 dirty
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
@@ -33,21 +21,9 @@
     -----------------------------------------------------------------------
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
     Psi4 started on: Monday, 30 January 2017 04:56PM
 
     Process ID:  28158
-=======
-    Psi4 started on: Wednesday, 25 January 2017 02:20PM
-
-    Process ID:  21426
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-    Psi4 started on: Monday, 30 January 2017 04:56PM
-
-    Process ID:  28158
->>>>>>> Added more comments in rohf-orb-rot test.
     PSIDATADIR: /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -55,10 +31,6 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
-=======
->>>>>>> Added more comments in rohf-orb-rot test.
 #!   Test if DGAS's orbital rotation code matches expected values.
 #!   The first two calculations compute the X (symm A'') and A (symm A') states of HO2 in Cs
 #! by restricting the occupations of the two states.
@@ -67,14 +39,6 @@
 #! (i.e., by swapping these two orbitals). The orb_rotate() function accomplishes this.
 
 # Restrict occupations to compute CCSD/6-31G energy of X state (symm A'') of HO2 in Cs.
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-=======
-#! Test if DGAS's orbital rotation code matches expected values
-
-#Restrict occupations to compute lowest A'' state (X state)
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
->>>>>>> Added more comments in rohf-orb-rot test.
 set { 
     basis 6-31G
     reference rohf
@@ -99,30 +63,12 @@ molecule ho2 {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 clean()
 
 # Restrict occupations to compute CCSD/6-31G energy of A state (symm A') of HO2 in Cs.
-=======
-compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy')
-compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy')
-
-clean()
-
-#Restrict occupations to compute lowest A' state (A state)
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
-compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
-
-clean()
-
-# Restrict occupations to compute CCSD/6-31G energy of A state (symm A') of HO2 in Cs.
->>>>>>> Added more comments in rohf-orb-rot test.
 set {
     docc [6, 2]
     socc [1, 0]
@@ -131,30 +77,12 @@ set {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
 clean()
 
 # Compute CCSD/6-31G energy of X state of HO2 in C1.
-=======
-compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy')
-compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy')
-
-clean()
-
-#Compute X state with symmetry turned off
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
-compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
-
-clean()
-
-# Compute CCSD/6-31G energy of X state of HO2 in C1.
->>>>>>> Added more comments in rohf-orb-rot test.
 set {
     docc [8]
     socc [1]
@@ -171,28 +99,12 @@ molecule ho2 {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
-=======
->>>>>>> Added more comments in rohf-orb-rot test.
 compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 # Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
 
 # Quick orbital rotation code.
-=======
-compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy')
-compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy')
-
-#Rotate orbitals to obtain A state in C1
-# Quick orbital rotation code
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-
-# Quick orbital rotation code.
->>>>>>> Added more comments in rohf-orb-rot test.
 def orb_rotate(C, h, i, j, theta):
 
    if h > C.nirrep():
@@ -214,15 +126,7 @@ def orb_rotate(C, h, i, j, theta):
    C.nph[h][:, i] = xp
    C.nph[h][:, j] = yp
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 # Rotate columns here.
-=======
-# Rotate columns here
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-# Rotate columns here.
->>>>>>> Added more comments in rohf-orb-rot test.
 orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
 
 filename = core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".180.npz"
@@ -246,14 +150,7 @@ data["BasisSet"] = scf_wfn.basisset().name()
 data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
 np.savez(filename, **data)
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 # Read in rotated guess and compute CCSD/6-31G energy of A state of HO2 in C1.
-=======
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-# Read in rotated guess and compute CCSD/6-31G energy of A state of HO2 in C1.
->>>>>>> Added more comments in rohf-orb-rot test.
 set {
     guess read
 }
@@ -261,30 +158,12 @@ set {
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 ccsd_e, ccsd_wfn = energy('ccsd', return_wfn=True)
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 --------------------------------------------------------------------------
 
 *** tstart() called on bzloink
 *** at Mon Jan 30 16:56:25 2017
-=======
-compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy')
-compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy')
---------------------------------------------------------------------------
-
-*** tstart() called on bzloink
-*** at Wed Jan 25 14:20:42 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
-compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
---------------------------------------------------------------------------
-
-*** tstart() called on bzloink
-*** at Mon Jan 30 16:56:25 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
          ---------------------------------------------------------
@@ -463,8 +342,6 @@ Properties computed using the SCF density matrix
      X:     0.8898      Y:     2.1845      Z:     0.0000     Total:     2.3588
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:26 2017
 Module time:
 	user time   =       0.26 seconds =       0.00 minutes
@@ -473,24 +350,6 @@ Module time:
 Total time:
 	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.28 seconds =       0.00 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:43 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:26 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.28 seconds =       0.00 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	total time  =          1 seconds =       0.02 minutes
 
          ---------------------------------------------------------
@@ -692,15 +551,7 @@ Properties computed using the SCF density matrix
 
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:26 2017
-=======
-*** at Wed Jan 25 14:20:43 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:26 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
 	Wfn Parameters:
@@ -782,8 +633,6 @@ Properties computed using the SCF density matrix
 	Two-electron energy          =    -51.21953509774529
 	Reference energy             =   -150.10813611650323
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:26 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
@@ -796,27 +645,6 @@ Total time:
 
 *** tstart() called on bzloink
 *** at Mon Jan 30 16:56:26 2017
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:43 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:26 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.52 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-*** at Wed Jan 25 14:20:43 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:26 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
             **************************
             *                        *
@@ -958,8 +786,6 @@ Total time:
       * CCSD total energy                     = -150.347533153677489
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:27 2017
 Module time:
 	user time   =       0.45 seconds =       0.01 minutes
@@ -968,38 +794,12 @@ Module time:
 Total time:
 	user time   =       1.01 seconds =       0.02 minutes
 	system time =       1.46 seconds =       0.02 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:44 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:27 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.94 seconds =       0.02 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       1.13 seconds =       0.02 minutes
-	system time =       1.43 seconds =       0.02 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       1.01 seconds =       0.02 minutes
-	system time =       1.46 seconds =       0.02 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	total time  =          2 seconds =       0.03 minutes
 	X SCF energy......................................................PASSED
 	X CCSD energy.....................................................PASSED
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:27 2017
-=======
-*** at Wed Jan 25 14:20:44 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:27 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
          ---------------------------------------------------------
@@ -1178,8 +978,6 @@ Properties computed using the SCF density matrix
      X:     0.8052      Y:     2.1825      Z:     0.0000     Total:     2.3263
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:27 2017
 Module time:
 	user time   =       0.16 seconds =       0.00 minutes
@@ -1188,24 +986,6 @@ Module time:
 Total time:
 	user time   =       1.17 seconds =       0.02 minutes
 	system time =       1.59 seconds =       0.03 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:44 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:27 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       1.30 seconds =       0.02 minutes
-	system time =       1.55 seconds =       0.03 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       1.17 seconds =       0.02 minutes
-	system time =       1.59 seconds =       0.03 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	total time  =          2 seconds =       0.03 minutes
 
          ---------------------------------------------------------
@@ -1407,15 +1187,7 @@ Properties computed using the SCF density matrix
 
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:27 2017
-=======
-*** at Wed Jan 25 14:20:45 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:27 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
 	Wfn Parameters:
@@ -1497,8 +1269,6 @@ Properties computed using the SCF density matrix
 	Two-electron energy          =    -51.19877127517272
 	Reference energy             =   -150.08729871591353
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:27 2017
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
@@ -1511,27 +1281,6 @@ Total time:
 
 *** tstart() called on bzloink
 *** at Mon Jan 30 16:56:27 2017
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:45 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:27 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.52 seconds =       0.03 minutes
-	system time =       2.01 seconds =       0.03 minutes
-	total time  =          2 seconds =       0.03 minutes
-
-*** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-*** at Wed Jan 25 14:20:45 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:27 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
             **************************
             *                        *
@@ -1673,8 +1422,6 @@ Total time:
       * CCSD total energy                     = -150.312480530946573
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:28 2017
 Module time:
 	user time   =       0.94 seconds =       0.02 minutes
@@ -1684,39 +1431,11 @@ Total time:
 	user time   =       2.46 seconds =       0.04 minutes
 	system time =       5.10 seconds =       0.09 minutes
 	total time  =          3 seconds =       0.05 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:46 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:28 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       3.09 seconds =       0.05 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       2.53 seconds =       0.04 minutes
-	system time =       5.12 seconds =       0.09 minutes
-	total time  =          4 seconds =       0.07 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       2.46 seconds =       0.04 minutes
-	system time =       5.10 seconds =       0.09 minutes
-	total time  =          3 seconds =       0.05 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	A SCF energy......................................................PASSED
 	A CCSD energy.....................................................PASSED
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:28 2017
-=======
-*** at Wed Jan 25 14:20:46 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:28 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
          ---------------------------------------------------------
@@ -1894,8 +1613,6 @@ Properties computed using the SCF density matrix
      X:     0.8898      Y:     2.1845      Z:     0.0000     Total:     2.3588
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:29 2017
 Module time:
 	user time   =       0.26 seconds =       0.00 minutes
@@ -1904,24 +1621,6 @@ Module time:
 Total time:
 	user time   =       2.72 seconds =       0.05 minutes
 	system time =       5.44 seconds =       0.09 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:46 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:29 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       2.80 seconds =       0.05 minutes
-	system time =       5.45 seconds =       0.09 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       2.72 seconds =       0.05 minutes
-	system time =       5.44 seconds =       0.09 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	total time  =          4 seconds =       0.07 minutes
 
          ---------------------------------------------------------
@@ -2080,15 +1779,7 @@ Total time:
     EFP Energy =                            0.0000000000000000
     Total Energy =                       -150.1081361165030899
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 
-=======
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-
->>>>>>> Added more comments in rohf-orb-rot test.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2130,15 +1821,7 @@ Properties computed using the SCF density matrix
 
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:29 2017
-=======
-*** at Wed Jan 25 14:20:46 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:29 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
 	Wfn Parameters:
@@ -2216,8 +1899,6 @@ Properties computed using the SCF density matrix
 	Two-electron energy          =    -51.21953509774523
 	Reference energy             =   -150.10813611650332
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:29 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
@@ -2230,27 +1911,6 @@ Total time:
 
 *** tstart() called on bzloink
 *** at Mon Jan 30 16:56:29 2017
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:46 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:29 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       3.06 seconds =       0.05 minutes
-	system time =       6.10 seconds =       0.10 minutes
-	total time  =          4 seconds =       0.07 minutes
-
-*** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-*** at Wed Jan 25 14:20:46 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:29 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
             **************************
             *                        *
@@ -2392,8 +2052,6 @@ Total time:
       * CCSD total energy                     = -150.347533153677546
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:30 2017
 Module time:
 	user time   =       1.13 seconds =       0.02 minutes
@@ -2403,39 +2061,11 @@ Total time:
 	user time   =       4.19 seconds =       0.07 minutes
 	system time =       9.45 seconds =       0.16 minutes
 	total time  =          5 seconds =       0.08 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:48 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:30 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       1.13 seconds =       0.02 minutes
-	system time =       3.35 seconds =       0.06 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       4.54 seconds =       0.08 minutes
-	system time =       9.40 seconds =       0.16 minutes
-	total time  =          6 seconds =       0.10 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       4.19 seconds =       0.07 minutes
-	system time =       9.45 seconds =       0.16 minutes
-	total time  =          5 seconds =       0.08 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	X SCF energy......................................................PASSED
 	X CCSD energy.....................................................PASSED
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:30 2017
-=======
-*** at Wed Jan 25 14:20:48 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:30 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
          ---------------------------------------------------------
@@ -2615,35 +2245,15 @@ Properties computed using the SCF density matrix
      X:     0.8052      Y:     2.1825      Z:    -0.0000     Total:     2.3263
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:30 2017
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:48 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:30 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 Module time:
 	user time   =       0.25 seconds =       0.00 minutes
 	system time =       0.29 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 	user time   =       4.46 seconds =       0.07 minutes
 	system time =       9.81 seconds =       0.16 minutes
 	total time  =          5 seconds =       0.08 minutes
-=======
-	user time   =       4.80 seconds =       0.08 minutes
-	system time =       9.76 seconds =       0.16 minutes
-	total time  =          6 seconds =       0.10 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       4.46 seconds =       0.07 minutes
-	system time =       9.81 seconds =       0.16 minutes
-	total time  =          5 seconds =       0.08 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 
          ---------------------------------------------------------
                                    SCF
@@ -2831,15 +2441,7 @@ Properties computed using the SCF density matrix
 
 
 *** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** at Mon Jan 30 16:56:31 2017
-=======
-*** at Wed Jan 25 14:20:48 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:31 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
 
 	Wfn Parameters:
@@ -2917,8 +2519,6 @@ Properties computed using the SCF density matrix
 	Two-electron energy          =    -51.19877127517213
 	Reference energy             =   -150.08729871591339
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:31 2017
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
@@ -2931,27 +2531,6 @@ Total time:
 
 *** tstart() called on bzloink
 *** at Mon Jan 30 16:56:31 2017
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:48 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:31 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       4.79 seconds =       0.08 minutes
-	system time =      10.41 seconds =       0.17 minutes
-	total time  =          6 seconds =       0.10 minutes
-
-*** tstart() called on bzloink
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-*** at Wed Jan 25 14:20:48 2017
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-*** at Mon Jan 30 16:56:31 2017
->>>>>>> Added more comments in rohf-orb-rot test.
 
             **************************
             *                        *
@@ -3102,8 +2681,6 @@ Total time:
       * CCSD total energy                     = -150.312480530947084
 
 
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-<<<<<<< b83a2d2206403c03d40f5211426087f42df9cc1d
 *** tstop() called on bzloink at Mon Jan 30 16:56:32 2017
 Module time:
 	user time   =       1.76 seconds =       0.03 minutes
@@ -3113,26 +2690,6 @@ Total time:
 	user time   =       6.55 seconds =       0.11 minutes
 	system time =      14.65 seconds =       0.24 minutes
 	total time  =          7 seconds =       0.12 minutes
-=======
-*** tstop() called on bzloink at Wed Jan 25 14:20:50 2017
-=======
-*** tstop() called on bzloink at Mon Jan 30 16:56:32 2017
->>>>>>> Added more comments in rohf-orb-rot test.
-Module time:
-	user time   =       1.76 seconds =       0.03 minutes
-	system time =       4.24 seconds =       0.07 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-<<<<<<< 34ffef92671f17e6b4ac8b7647e9eebe28193e55
-	user time   =       6.64 seconds =       0.11 minutes
-	system time =      14.87 seconds =       0.25 minutes
-	total time  =          8 seconds =       0.13 minutes
->>>>>>> Added test case for dgasmith's orbital rotation code
-=======
-	user time   =       6.55 seconds =       0.11 minutes
-	system time =      14.65 seconds =       0.24 minutes
-	total time  =          7 seconds =       0.12 minutes
->>>>>>> Added more comments in rohf-orb-rot test.
 	A SCF energy......................................................PASSED
 	A CCSD energy.....................................................PASSED
 
