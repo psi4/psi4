@@ -13,7 +13,6 @@ set {
     e_convergence 10
     d_convergence 10
     r_convergence 10
-    memory 60000
     freeze_core True
     scf_type pk
     docc [7, 1]
@@ -70,31 +69,8 @@ compare_values(-150.108136116503147, scf_e, 6, 'X SCF energy') #TEST
 compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 
 # Rotate HOMO and SOMO by 90 degrees to obtain guess for A state of HO2 in C1.
-
-# Quick orbital rotation code.
-def orb_rotate(C, h, i, j, theta):
-
-   if h > C.nirrep():
-       raise p4util.PsiException("ROTATE: Expression %s irrep number is larger than the number of irreps" %
-                               (str(h)))
-
-   if max(i, j) > C.coldim()[h]:
-       raise p4util.PsiException("ROTATE: Expression %s orbital number exceeds number of orbitals in irrep" %
-                               (str(max(i, j))))
-
-   theta = np.deg2rad(theta)
-
-   x = C.nph[h][:, i].copy()
-   y = C.nph[h][:, j].copy()
-
-   xp = np.cos(theta) * x - np.sin(theta) * y
-   yp = np.sin(theta) * x + np.cos(theta) * y
-
-   C.nph[h][:, i] = xp
-   C.nph[h][:, j] = yp
-
-# Rotate columns here.
-orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
+#orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
+Matrix.rotate_columns(scf_wfn.Ca(), 0, 7, 8, math.pi / 2.0)
 
 filename = core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".180.npz"
 data = {}
