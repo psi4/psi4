@@ -184,6 +184,7 @@ void BasisSet::print(std::string out) const
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
                                                    std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("  Basis Set: %s\n", name_.c_str());
+    printer->Printf("    Blend: %s\n", target_.c_str());
     printer->Printf("    Number of shells: %d\n", nshell());
     printer->Printf("    Number of basis function: %d\n", nbf());
     printer->Printf("    Number of Cartesian functions: %d\n", nao());
@@ -210,6 +211,7 @@ void BasisSet::print_summary(std::string out) const
                                                    std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("  -AO BASIS SET INFORMATION:\n");
     printer->Printf("    Name                   = %s\n", name_.c_str());
+    printer->Printf("    Blend                  = %s\n", target_.c_str());
     printer->Printf("    Total number of shells = %d\n", nshell());
     printer->Printf("    Number of primitives   = %d\n", nprimitive_);
     printer->Printf("    Number of AO           = %d\n", nao_);
@@ -460,10 +462,12 @@ std::shared_ptr <BasisSet> BasisSet::zero_ao_basis_set()
 
 std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream){
 
+    std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
+    std::string label = pybs["blend"].cast<std::string>();
     std::string message = pybs["message"].cast<std::string>();
-    if (Process::environment.options.get_int("PRINT") > 1)
-        outfile->Printf("%s\n", message.c_str());
+    //if (Process::environment.options.get_int("PRINT") > 1)
+    //    outfile->Printf("%s\n", message.c_str());
 
     // Handle mixed puream signals and seed parser with the resolution
     int native_puream = pybs["puream"].cast<int>();
@@ -478,7 +482,7 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
     // Not like we're ever using a non-G94 format
     const std::shared_ptr <BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
 
-    mol->set_basis_all_atoms(name, "CABS");  // key
+    mol->set_basis_all_atoms(name, key);
 
     // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
     typedef std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> map_ssv;
@@ -489,16 +493,16 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
         std::string label = shmp[ent].cast<std::string>();
         std::string hash = shmp[ent + 1].cast<std::string>();
         std::vector <std::string> basbit = parser->string_to_vector(shmp[ent + 2].cast<std::string>());
-        mol->set_shell_by_label(label, hash, "CABS");  // key
+        mol->set_shell_by_label(label, hash, key);
         basis_atom_shell[name][label] = parser->parse(label, basbit);
     }
     mol->update_geometry();  // update symmetry with basisset info
 
-    std::shared_ptr <BasisSet> basisset(new BasisSet("CABS", mol, basis_atom_shell));  // key
+    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell));
     basisset->name_.clear();
     basisset->name_ = name;
-//    basisset->key_ = key;
-//    basisset->target_ = target;
+    basisset->key_ = key;
+    basisset->target_ = label;
 
     //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
     //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());

@@ -672,6 +672,22 @@ Run |PSIfour| as executable. ::
     SCF E.............................................................PASSED
 
 
+.. _`faq:inplace`:
+
+How to run Psi4 as executable after compilation using driver from source
+------------------------------------------------------------------------
+
+When developing python driver code, it can be annoying to keep `make`\
+ing to test the code. |PSIfour| can be run "inplace" through the
+following procedure. To be clear, this is running compiled C++ from the
+build directory and python from the source directory. This is an expert
+option for development, and not all functionality will be available. ::
+
+    >>> cd {objdir}
+    >>> ln -s {top-level-psi4-dir}/{objdir}/stage/{prefix}/lib/psi4/core.so ../psi4/core.so
+    >>> python ../psi4/run_psi4.py --inplace input.dat
+
+
 .. _`faq:psidatadir`:
 
 How to set :envvar:`PSIDATADIR` and why

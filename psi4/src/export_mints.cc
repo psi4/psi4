@@ -727,7 +727,8 @@ void export_mints(py::module& m)
     typedef std::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const std::shared_ptr<BasisSet>&) const;
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring").
             def(py::init<const std::string&, std::shared_ptr<Molecule>, std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>()).
-            def("name", &BasisSet::name, "docstring").
+            def("name", &BasisSet::name, "Callback handle, may represent string or function").
+            def("blend", &BasisSet::target, "Plus-separated string of [basisname] values").
             def("molecule", &BasisSet::molecule, "docstring").
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").

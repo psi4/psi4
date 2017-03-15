@@ -1,11 +1,12 @@
 #! A test of the basis specification.  A benzene atom is defined using a ZMatrix containing dummy atoms
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
+import psi4
 
 refnuc =  204.01995737868003 #TEST
 refscf = -228.95763005849557 #TEST
 
-molecule bz {
+bz = psi4.geometry("""
     X
     X   1  RXX
     X   2  RXX  1  90.0
@@ -14,7 +15,7 @@ molecule bz {
     C1  3  RCC  2  90.0  1 120.0
     C   3  RCC  2  90.0  1 180.0
     C1  3  RCC  2  90.0  1 240.0
-    C   3  RCC  2  90.0  1 300.0
+    C   3  RCC  2  90.0  1 300.0  # unnecessary comment
     H1  3  RCH  2  90.0  1   0.0
     H   3  RCH  2  90.0  1  60.0
     H   3  RCH  2  90.0  1 120.0
@@ -25,7 +26,7 @@ molecule bz {
     RCC  = 1.3915
     RCH  = 2.4715
     RXX  = 1.00
-}
+""")
 
 # Here we specify some of the basis sets manually.  They could be written to one or more external
 # files and included by adding the directory to environment variable PSIPATH
@@ -56,7 +57,7 @@ molecule bz {
 # using either basis <opt_name> {...} are utilized first (in the order specified
 # in the input file). Any remaining basis sets required are extracted from the built-in library,
 # if they exist, or an error message is printed.
-basis  {
+psi4.basis_helper("""
 #
 # We start by assigning basis sets to atoms.  These commands can go anywhere in the basis block
 #
@@ -108,15 +109,15 @@ basis  {
     S   1   1.00
           0.1776000              1.0000000        
     ****
-}
+""")
 
+psi4.set_options({
+    'd_convergence': 11,
+    'e_convergence': 11,
+    'scf_type': 'pk'})
  
-set d_convergence 11
-set e_convergence 11
-set scf_type pk
- 
-scfenergy = energy('scf')
+scfenergy = psi4.energy('scf')
 
-compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST
-compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
-compare_values(refscf, scfenergy, 10, "SCF Energy")                                   #TEST
+psi4.compare_strings("c2v", bz.schoenflies_symbol(), "Point group")  #TEST
+psi4.compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy")  #TEST
+psi4.compare_values(refscf, scfenergy, 10, "SCF Energy")  #TEST

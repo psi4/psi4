@@ -31,7 +31,7 @@ import math
 import re
 
 from psi4 import core
-from psi4.driver.p4util import constants
+from psi4.driver.p4util import constants, filter_comments
 from psi4.driver.inputparser import process_pubchem_command, pubchemre
 
 
@@ -286,16 +286,6 @@ def dynamic_variable_bind(cls):
 
 
 dynamic_variable_bind(core.Molecule)  # pass class type, not class instance
-
-
-def filter_comments(string):
-    """Remove from *string* any Python-style comments ('#' to end of line)."""
-
-    filtered = []
-    for line in string.splitlines():
-        line = line.partition('#')[0]
-        filtered.append(line.rstrip())
-    return '\n'.join(filtered)
 
 
 #
