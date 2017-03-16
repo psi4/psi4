@@ -2025,6 +2025,9 @@ void DF_Helper::JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
 {
     outfile->Printf("\n     ==> DF_Helper:--Begin J/K builds (disk)<==\n\n");
 
+    size_t naux = naux_;
+    size_t nao = nao_;
+    
     // determine largest buffers needed
     size_t tots = std::get<1>(Qlargest_);
     size_t wMO = std::get<0>(info_);
@@ -2040,17 +2043,19 @@ void DF_Helper::JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
     } 
     else { // AO_core
         Qsteps_.clear();
-        Qsteps_.push_back(std::make_pair(0, naux_-1));
+        Qsteps_.push_back(std::make_pair(0, Qshells_-1));
     }
+        Qsteps_.clear();
+        Qsteps_.push_back(std::make_pair(0, Qshells_-1));
+        //Qsteps_.push_back(std::make_pair(Qshells_-14, Qshells_-1));
 
     timer_on("DF_Helper~transform - setup ");
     
-    // enhance cache use
-    size_t naux = naux_;
-    size_t nao = nao_;
-    int rank;
+    int rank = 0;
     std::vector<std::vector<double>> C_buffers(nthreads_);
-    
+    std::vector<double*> C_bufsp;
+    C_bufsp.reserve(nthreads_);    
+
     // prepare eri buffers
     size_t nthread = nthreads_;
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
@@ -2061,37 +2066,38 @@ void DF_Helper::JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         #ifdef _OPENMP
         rank = omp_get_thread_num();
         #endif
-        std::vector<double> Cp(nao * nao);
+        std::vector<double> Cp;
+        Cp.reserve(nao*nao);
         C_buffers[rank] = Cp;
+        C_bufsp[rank] = Cp.data();
         eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
     }
 
     // declare bufs
-    std::vector<double> M; // AOs
-    std::vector<double> T; // tmp
-    std::vector<double> D; // original D
-    std::vector<double> d; // pruned d (m_p q)
-    std::vector<double> Jtmp; // J tmp
-    if(!AO_core_ || direct_)
-        M.reserve(std::get<0>(Qlargest_));
-    T.reserve(naux_*nao*wMO_);
-    D.reserve(nao * nao);
-    d.reserve(nao);
-    Jtmp.reserve(nao*nao);
+    std::vector<double> T1; // Tmps
+    std::vector<double> T2; 
+    T1.reserve(naux_*nao*wMO_);
+    T2.reserve(naux_*nao*wMO_);
+    double* T1p = T1.data();
+    double* T2p = T2.data();
     double* Mp;
-    double* Tp = T.data();
-    double* Dp = D.data();
-    double* dp = d.data();
-    double* Jtmpp = Jtmp.data();
-    if(!AO_core_ || direct_)
+    
+    std::vector<double> M; // AOs
+    if(!AO_core_ || direct_){
+        M.reserve(500000/*std::get<0>(Qlargest_)*/);
         Mp = M.data();
-    else
-        0;            // mysterious AOs
+    }
+    //else
+    //    0;            // mysterious AOs
+
+    std::vector<SharedMatrix> D;
+    compute_D(D, Cleft, Cright);
 
     timer_off("DF_Helper~transform - setup ");
 
     // transform in steps (blocks of Q)
-    for (size_t j = 0; j < Qsteps_.size(); j++) {
+    for (size_t j = 0, bcount = 0; j < Qsteps_.size(); j++) {
+        
         // Qshell step info
         size_t start = std::get<0>(Qsteps_[j]);
         size_t stop = std::get<1>(Qsteps_[j]);
@@ -2111,69 +2117,149 @@ void DF_Helper::JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
         else if(!AO_core_)
             grab_AO(start, stop, Mp);
         timer_off("DF_Helper~transform - grab  ");
- 
-        for (size_t i = 0; i < J.size(); i++) {
-            // grab orbital spaces
-            double* Clp = Cleft[i]->pointer()[0];
-            double* Crp = Cright[i]->pointer()[0];
-            size_t cleft = Cleft[i]->colspi()[0];
-            size_t cright = Cright[i]->colspi()[0];
 
-            // grab J/K
-            double* Jp = J[i]->pointer()[0];
-            double* Kp = K[i]->pointer()[0];
+        timer_on("DF_Helper~JK        -   J   ");
+        compute_J(D, J, Mp, T1p, T2p, C_bufsp.data(), bcount, block_size);
+        timer_off("DF_Helper~JK        -   J   ");
 
-            // compute D - maybe move these out?
-            C_DGEMM('N', 'T', nao_, nao_, cleft, 1.0, Clp, cleft, Crp, cright, 0.0, Dp, nao_);
-            
-            // initialize Tmp
-            for(size_t k = 0; k < naux; k++)
-                Tp[k] = 0.0;
+        timer_on("DF_Helper~JK        -   K   ");
+        compute_K(Cleft, Cright, K, T1p, T2p, Mp, bcount, block_size, C_bufsp.data());
+        timer_off("DF_Helper~JK        -   K   ");
+     
+        bcount += block_size;
+    }
+    outfile->Printf("\n     ==> DF_Helper:--End J/K Builds (disk)<==\n\n");
+}
+void DF_Helper::compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright){
 
-            // form temp, thread over spM (nao)
-            //#pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
-            for (size_t k = 0; k < nao_; k++) {
-                size_t jump = (big_skips_[k] * block_size) / naux_;
-                size_t sp_size = small_skips_[k];
+    if(Cleft.size() != Cright.size()){
+        std::stringstream error;
+        error << "DF_Helper:compute_D - Cleft size (" << Cleft.size() <<
+            ") is not equal to Cright size (" << Cright.size() <<")";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
 
-                #ifdef _OPENMP
-                rank = omp_get_thread_num();
-                #endif
+    for(size_t i=0; i<Cleft.size(); i++){
+        size_t cleft = Cleft[i]->colspi()[0];
+        size_t cright = Cright[i]->colspi()[0];
+        if(cleft != cright){
+            std::stringstream error;
+            error << "DF_Helper:compute_D - Cleft[" << i <<"] has space size (" << cleft <<
+                "), which is not equal to Cright[" << i <<"] space size (" << cright <<")";
+            throw PSIEXCEPTION(error.str().c_str());
+        }
+        SharedMatrix d(new Matrix("D", nao_, nao_));
+        D.push_back(d);
+        double* Clp = Cleft[i]->pointer()[0];
+        double* Crp = Cright[i]->pointer()[0];
+        double* Dp = D[i]->pointer()[0];
+        C_DGEMM('N', 'T', nao_, nao_, cleft, 1.0, Clp, cleft, Crp, cleft, 0.0, Dp, nao_);
+    }
+}
+void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
+    double* T1p, double* T2p, double** D_buffers, size_t bcount, size_t block_size){
 
-                for (size_t m = 0, sp_count = -1; m < nao_; m++) {
-                    if (schwarz_fun_mask_[k * nao_ + m]) {
-                        sp_count++;
-                        C_DCOPY(1, &Dp[nao*k+m], 1, &dp[sp_count], 1);
-                    }
-                }
+    size_t nao = nao_;
+    size_t naux = naux_;
+    int rank = 0;
+
+    for (size_t i = 0; i < J.size(); i++) {
+        // grab orbital spaces
+        double* Dp = D[i]->pointer()[0];
+        double* Jp = J[i]->pointer()[0];
+
+        // initialize Tmp
+        #pragma omp simd
+        for(size_t k = 0; k < nthreads_*naux; k++)
+            T1p[k] = 0.0;
     
-                // (Qm)(mp) -> (Qp)
-                C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, dp, 1, 1.0, Tp, 1);
-            }
+        //#pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
+        for (size_t k = 0; k < nao; k++) {
+            size_t sp_size = small_skips_[k];
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
 
-            // complete
-            for(size_t k=0, count=0; k<nao_; k++){
-                size_t jump = (big_skips_[k] * block_size) / naux_;
-                size_t sp_size = small_skips_[k];
-                C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, Tp, 1, 0.0, &Jtmpp[count], 1);
-                count += sp_size;
-            }
+            #ifdef _OPENMP
+            rank = omp_get_thread_num();
+            #endif
 
-            // unpack
-            for(size_t k=0, count=-1; k<nao_; k++){
-                for(size_t m=0; m<nao_; m++){
-                    if(schwarz_fun_mask_[k*nao+m]){
-                        count++;
-                        Jp[k*nao+m] += Jtmp[count];
-                    }
+            for (size_t m = 0, sp_count = -1; m < nao_; m++) {
+                if (schwarz_fun_mask_[k * nao + m]) {
+                    sp_count++;
+                    C_DCOPY(1, &Dp[nao*k+m], 1, &D_buffers[rank][sp_count], 1);
                 }
             }
+            // (Qm)(m) -> (Q)
+            C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, &D_buffers[rank][0], 1, 1.0, &T1p[rank*naux], 1);
+        }
+        //// reduce
+        //for(size_t k=1; k<nthreads_; k++){
+        //    #pragma omp simd
+        //    for(size_t l=0; l<naux; l++)
+        //        T1p[l] += T1p[k*naux+l];
+        //}
+        for(size_t k=0; k<nao*nao; k++)
+            Jp[k] = Dp[k];
+        //for(size_t k=0; k<block_size; k++)
+        //    Jp[bcount+k] += T1p[k];
+        //// complete pruned J
+        //for(size_t k=0, count=0; k<nao; k++){
+        //    size_t sp_size = small_skips_[k];
+        //    size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
+        //    C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, T1p, 1, 0.0, &T2p[count], 1);
+        //    count += sp_size;
+        //}
+        //// unpack
+        //for(size_t k=0, count=-1; k<nao; k++){
+        //    for(size_t m=0; m<nao; m++){
+        //        if(schwarz_fun_mask_[k*nao+m]){
+        //            count++;
+        //            Jp[k*nao+m] += T2p[count];
+        //        }
+        //    }
+        //}
+    }
+}
+void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, 
+    std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K, double* Tp, double* T2p, 
+    double* Mp, size_t bcount, size_t block_size, double** C_buffers){
+
+    size_t nao = nao_;
+    size_t naux = naux_;
+    int rank = 0;
+
+    for (size_t i = 0; i < K.size(); i++) {
+        // grab orbital spaces
+        double* Clp = Cleft[i]->pointer()[0];
+        double* Crp = Cright[i]->pointer()[0];
+        size_t cleft = Cleft[i]->colspi()[0];
+        size_t cright = Cright[i]->colspi()[0];
+        double* Kp = K[i]->pointer()[0];
+
+        // form temp, thread over spM (nao)
+        #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
+        for (size_t k = 0; k < nao_; k++) {
+            size_t sp_size = small_skips_[k];
+            size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size: (big_skips_[k] * block_size) / naux_);
+
+            #ifdef _OPENMP
+            rank = omp_get_thread_num();
+            #endif
             
-            // form temp, thread over spM (nao)
+            for (size_t m = 0, sp_count = -1; m < nao_; m++) {
+                if (schwarz_fun_mask_[k * nao_ + m]) {
+                    sp_count++;
+                    C_DCOPY(cleft, &Clp[m * cleft], 1, &C_buffers[rank][sp_count * cleft], 1);
+                }
+            }
+            // (Qm)(mb)->(Qb)
+            C_DGEMM('N', 'N', block_size, cleft, sp_size, 1.0, &Mp[jump], sp_size,
+                    &C_buffers[rank][0], cleft, 0.0, &Tp[k * block_size * cleft], cleft);
+        }
+        if(Cleft[i] != Cright[i]){
             #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
             for (size_t k = 0; k < nao_; k++) {
-                size_t jump = (big_skips_[k] * block_size) / naux_;
                 size_t sp_size = small_skips_[k];
+                size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size: (big_skips_[k] * block_size) / naux_);
 
                 #ifdef _OPENMP
                 rank = omp_get_thread_num();
@@ -2182,46 +2268,19 @@ void DF_Helper::JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatri
                 for (size_t m = 0, sp_count = -1; m < nao_; m++) {
                     if (schwarz_fun_mask_[k * nao_ + m]) {
                         sp_count++;
-                        C_DCOPY(cleft, &Clp[m * cleft], 1, &C_buffers[rank][sp_count * cleft], 1);
+                        C_DCOPY(cright, &Crp[m * cright], 1, &C_buffers[rank][sp_count * cright], 1);
                     }
                 }
                 // (Qm)(mb)->(Qb)
-                C_DGEMM('N', 'N', block_size, cleft, sp_size, 1.0, &Mp[jump], sp_size,
-                        &C_buffers[rank][0], cleft, 0.0, &Tp[k * block_size * cleft], cleft);
+                C_DGEMM('N', 'N', block_size, cright, sp_size, 1.0, &Mp[jump], sp_size,
+                        &C_buffers[rank][0], cright, 0.0, &T2p[k * block_size * cright], cright);
             }
-            if(Cleft[i] != Cright[i]){
-                std::vector<double> T2;
-                T2.reserve(block_size*cright*nao);
-                double* T2p = T2.data();
-            
-                #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
-                for (size_t k = 0; k < nao_; k++) {
-                    size_t jump = (big_skips_[k] * block_size) / naux_;
-                    size_t sp_size = small_skips_[k];
-
-                    #ifdef _OPENMP
-                    rank = omp_get_thread_num();
-                    #endif
-                    
-                    for (size_t m = 0, sp_count = -1; m < nao_; m++) {
-                        if (schwarz_fun_mask_[k * nao_ + m]) {
-                            sp_count++;
-                            C_DCOPY(cright, &Clp[m * cright], 1, &C_buffers[rank][sp_count * cright], 1);
-                        }
-                    }
-                    // (Qm)(mb)->(Qb)
-                    C_DGEMM('N', 'N', block_size, cright, sp_size, 1.0, &Mp[jump], sp_size,
-                            &C_buffers[rank][0], cright, 0.0, &T2p[k * block_size * cright], cright);
-                }
-                C_DGEMM('N', 'T', nao, nao, cleft*block_size, 1.0, Tp, cleft*block_size,
-                    T2p, cright*block_size, 0.0, Kp, nao);
-            } else {
-                C_DGEMM('N', 'T', nao, nao, cleft*block_size, 1.0, Tp, cleft*block_size,
-                    Tp, cleft*block_size, 1.0, Kp, nao);
-            }
+            C_DGEMM('N', 'T', nao, nao, cleft*block_size, 1.0, Tp, cleft*block_size,
+                T2p, cright*block_size, 1.0, Kp, nao);
+        } else {
+            C_DGEMM('N', 'T', nao, nao, cleft*block_size, 1.0, Tp, cleft*block_size,
+                Tp, cleft*block_size, 1.0, Kp, nao);
         }
     }
-    outfile->Printf("\n     ==> DF_Helper:--End J/K Builds (disk)<==\n\n");
 }
-
 }}  // End namespaces

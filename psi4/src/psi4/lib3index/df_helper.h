@@ -127,6 +127,10 @@ public:
     size_t get_tensor_size(std::string key);
     std::tuple<size_t, size_t, size_t> get_tensor_shape(std::string key);
 
+    // => JK <=
+    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+        std::vector<SharedMatrix> J, std::vector<SharedMatrix> K); 
+
 protected:
 
     // basis sets
@@ -144,6 +148,7 @@ protected:
     // method directive
     std::string method_ = "STORE";
     bool direct_;
+    bool AO_core_;
 
     // threading
     size_t nthreads_ = 1;
@@ -279,6 +284,18 @@ protected:
     // tranpose a tensor
     void transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order);
     void transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order);
+
+    // => JK <=
+    void JK_core(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+        std::vector<SharedMatrix> J, std::vector<SharedMatrix> K); 
+    void JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+        std::vector<SharedMatrix> J, std::vector<SharedMatrix> K); 
+    void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
+    void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
+        double* T1p, double* T2p, double** D_buffers, size_t bcount, size_t block_size);
+    void compute_K(std::vector<SharedMatrix> Cleft, 
+        std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K, double* Tp, double* Jtmp, 
+        double* Mp, size_t bcount, size_t block_size, double** C_buffers);
 
 }; // End DF Helper class
 

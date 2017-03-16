@@ -172,5 +172,6 @@ void export_fock(py::module &m) {
         .def("get_tensor_size", &df_helper::DF_Helper::get_tensor_size)
         .def("get_tensor_shape", &df_helper::DF_Helper::get_tensor_shape)
         .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor))
-        .def("get_tensor", tensor_access3(&df_helper::DF_Helper::get_tensor));
+        .def("get_tensor", tensor_access3(&df_helper::DF_Helper::get_tensor))
+        .def("build_JK", &df_helper::DF_Helper::build_JK);
 }
