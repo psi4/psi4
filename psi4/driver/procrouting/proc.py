@@ -1250,7 +1250,9 @@ def scf_helper(name, **kwargs):
     scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn)
     core.set_legacy_wavefunction(scf_wfn)
 
-    read_filename = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    fname = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    read_filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname)
+    
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
         data = np.load(read_filename)
         Ca_occ = core.Matrix.np_read(data, "Ca_occ")
@@ -1358,7 +1360,8 @@ def scf_helper(name, **kwargs):
                  scf_wfn.occupation_b(), dovirt)
 
     # Write out orbitals and basis
-    filename = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    fname = core.get_writer_file_prefix(scf_molecule.name()) + ".180.npz"
+    write_filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname)
     data = {}
     data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
     data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
@@ -1377,8 +1380,8 @@ def scf_helper(name, **kwargs):
     data["symmetry"] = scf_molecule.schoenflies_symbol()
     data["BasisSet"] = scf_wfn.basisset().name()
     data["BasisSet PUREAM"] = scf_wfn.basisset().has_puream()
-    np.savez(filename, **data)
-    extras.register_numpy_file(filename)
+    np.savez(write_filename, **data)
+    extras.register_numpy_file(write_filename)
 
     if do_timer:
         core.tstop()
