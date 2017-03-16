@@ -274,6 +274,11 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     // This print function also saves frequencies in wavefunction.
     print_vibrations(mol, modes);
 
+    // Optionally, save normal modes to file.
+    if (options.get_bool("NORMAL_MODES_WRITE")) {
+        save_normal_modes(mol, modes);
+    }
+
     for (int i = 0; i < modes.size(); ++i)
         delete modes[i];
     modes.clear();
