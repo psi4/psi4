@@ -50,6 +50,10 @@ the scenes, :py:func:`~psi4.frequency` is a light wrapper over
 :py:func:`~psi4.hessian` that computes the Hessian then adds a
 thermochemical analysis.
 
+.. autofunction:: psi4.frequency(name [, molecule, return_wfn, func, mode, dertype, irrep])
+
+.. autofunction:: psi4.hessian(name [, molecule, return_wfn, func, dertype, irrep])
+
 Visualization of Normal Modes
 -----------------------------
 
