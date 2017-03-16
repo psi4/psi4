@@ -206,11 +206,13 @@ def basname(name):
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
 
 
-def basis_helper(block, name='', key='BASIS'):
+def basis_helper(block, name='', key='BASIS', set_option=True):
     """For PsiAPI mode, forms a basis specification function from *block*
     and associates it with keyword *key* under handle *name*. Registers
     the basis spec with Psi4 so that it can be applied again to future
-    molecules. For usage, see mints2, mints9, and cc54 test cases.
+    molecules. For usage, see mints2, mints9, and cc54 test cases. Unless
+    *set_option* is False, *name* will be set as current active *key*,
+    equivalent to `set key name` or `set_option({key: name})`.
 
     """
     key = key.upper()
@@ -269,4 +271,5 @@ def basis_helper(block, name='', key='BASIS'):
         return basstrings
     anon.__name__ = 'basisspec_psi4_yo__' + cleanbas
     qcdb.libmintsbasisset.basishorde[name.upper()] = anon
-    core.set_global_option(key, name)
+    if set_option:
+        core.set_global_option(key, name)

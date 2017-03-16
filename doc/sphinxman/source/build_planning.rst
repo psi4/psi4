@@ -866,6 +866,20 @@ system. The latter route, tested on Linux with Intel compilers, is below.
    >>> export LD_LIBRARY_PATH=${GCC5}/lib:$LD_LIBRARY_PATH
 
 
+.. _`faq:cray`:
+
+How to configure a Psi4 build on Cray
+-------------------------------------
+
+Cray systems strongly prefer to build static libraries, but |PSIfour|
+needs to be dynamic to function as a Python module. Courtesy of @misha
+at the forum and various supercomputer guides, building |PSIfour| on
+Cray requires setting environment variables :envvar:`CRAYPE_LINK_TYPE`
+and :envvar:`CRAY_ADD_RPATH` before running `cmake`. ::
+
+    CRAYPE_LINK_TYPE=dynamic CRAY_ADD_RPATH=yes cmake ...
+
+
 .. _`cmake:fortran`:
 
 How to configure Fortran compilers for building Psi4

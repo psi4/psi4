@@ -56,7 +56,7 @@ Configuring, Building, and Installing |PSIfour|
 #. :ref:`faq:setupmaxameri`
 #. :ref:`faq:cmakeverbose`
 #. :ref:`faq:doconfigure`
-
+#. :ref:`faq:cray`
 
 Non-QC Dependencies
 -------------------
