@@ -38,7 +38,7 @@ import os
 import subprocess
 import re
 import sys
-import random
+import uuid
 import inspect
 
 from psi4.driver import qcdb
@@ -133,7 +133,7 @@ def run_cfour(name, **kwargs):
     # Construct and move into cfour subdirectory of job scratch directory
     cfour_tmpdir = kwargs['path'] if 'path' in kwargs else \
         'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-        '.cfour.' + str(random.randint(0, 99999))
+        '.cfour.' + str(uuid.uuid4())[:8]
     if not os.path.exists(cfour_tmpdir):
         os.mkdir(cfour_tmpdir)
     os.chdir(cfour_tmpdir)

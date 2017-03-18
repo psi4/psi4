@@ -39,7 +39,7 @@ from __future__ import absolute_import
 import re
 import os
 import sys
-import random
+import uuid
 from psi4.driver import pubchem
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.p4util.util import set_memory
@@ -265,7 +265,7 @@ def process_cfour_command(matchobj):
     name = matchobj.group(2)
     cfourblock = matchobj.group(3)
 
-    literalkey = str(random.randint(0, 99999))
+    literalkey = str(uuid.uuid4())[:8]
     literals[literalkey] = cfourblock
     return "%score.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % \
         (spaces, 'LITERAL_CFOUR', 'literals_psi4_yo-' + literalkey)
@@ -315,7 +315,7 @@ def process_basis_block(matchobj):
     spaces = matchobj.group(1)
     basistype = matchobj.group(2).upper()
     name = matchobj.group(3)
-    name = ('anonymous' + str(random.randint(0, 999))) if name == '' else name
+    name = ('anonymous' + str(uuid.uuid4())[:8]) if name == '' else name
     cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
     command_lines = re.split('\n', matchobj.group(4))
 
