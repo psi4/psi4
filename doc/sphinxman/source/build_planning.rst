@@ -672,6 +672,22 @@ Run |PSIfour| as executable. ::
     SCF E.............................................................PASSED
 
 
+.. _`faq:inplace`:
+
+How to run Psi4 as executable after compilation using driver from source
+------------------------------------------------------------------------
+
+When developing python driver code, it can be annoying to keep `make`\
+ing to test the code. |PSIfour| can be run "inplace" through the
+following procedure. To be clear, this is running compiled C++ from the
+build directory and python from the source directory. This is an expert
+option for development, and not all functionality will be available. ::
+
+    >>> cd {objdir}
+    >>> ln -s {top-level-psi4-dir}/{objdir}/stage/{prefix}/lib/psi4/core.so ../psi4/core.so
+    >>> python ../psi4/run_psi4.py --inplace input.dat
+
+
 .. _`faq:psidatadir`:
 
 How to set :envvar:`PSIDATADIR` and why
@@ -848,6 +864,20 @@ system. The latter route, tested on Linux with Intel compilers, is below.
 
    # To Run:
    >>> export LD_LIBRARY_PATH=${GCC5}/lib:$LD_LIBRARY_PATH
+
+
+.. _`faq:cray`:
+
+How to configure a Psi4 build on Cray
+-------------------------------------
+
+Cray systems strongly prefer to build static libraries, but |PSIfour|
+needs to be dynamic to function as a Python module. Courtesy of @misha
+at the forum and various supercomputer guides, building |PSIfour| on
+Cray requires setting environment variables :envvar:`CRAYPE_LINK_TYPE`
+and :envvar:`CRAY_ADD_RPATH` before running `cmake`. ::
+
+    CRAYPE_LINK_TYPE=dynamic CRAY_ADD_RPATH=yes cmake ...
 
 
 .. _`cmake:fortran`:

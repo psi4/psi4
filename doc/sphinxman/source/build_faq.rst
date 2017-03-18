@@ -56,7 +56,7 @@ Configuring, Building, and Installing |PSIfour|
 #. :ref:`faq:setupmaxameri`
 #. :ref:`faq:cmakeverbose`
 #. :ref:`faq:doconfigure`
-
+#. :ref:`faq:cray`
 
 Non-QC Dependencies
 -------------------
@@ -100,6 +100,7 @@ Runtime Setup
 #. :ref:`faq:runordinaryexe`
 #. :ref:`faq:runordinarymodule`
 #. :ref:`faq:runfrombinary`
+#. :ref:`faq:inplace`
 #. :ref:`faq:psi4scratch`
 #. :ref:`faq:psidatadir`
 
