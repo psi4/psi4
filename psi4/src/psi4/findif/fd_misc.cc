@@ -39,8 +39,9 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/writer_file_prefix.h"
 
-
+#include "psi4/libparallel/ParallelPrinter.h"
 
 namespace psi {
 using SharedMatrix=std::shared_ptr<Matrix>;
@@ -151,6 +152,50 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
     free(irrep_lbls[i]);
   free(irrep_lbls);
 }
+
+void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
+{
+    std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
+    std::shared_ptr <OutFile> printer(new OutFile(normal_modes_fname, TRUNCATE));
+
+    printer->Printf("[Molden Format]\n[FREQ]\n");
+    for(int i = 0; i < modes.size(); ++i) { // print descending order
+        double frequency_cm = modes[i]->get_cm();
+        printer->Printf("%.2f\n", frequency_cm);
+    }
+    printer->Printf("\n[FR-COORD]\n");
+    int Natom = mol->natom();
+    for (int a = 0; a < Natom; a++) {
+        double x = mol->x(a);
+        double y = mol->y(a);
+        double z = mol->z(a);
+        printer->Printf("%-3s %.6f %.6f %.6f\n",mol->symbol(a).c_str(),x,y,z);
+    }
+    printer->Printf("\n[FR-NORM-COORD]\n");
+    for(int i = 0; i < modes.size(); ++i) {
+        printer->Printf("vibration %d\n",i + 1);
+        int Natom = mol->natom();
+        double norm2 = 0.0;
+        for (int a = 0; a < Natom; a++) {
+            for (int xyz = 0; xyz < 3; ++xyz){
+                norm2 += std::pow(modes[i]->get_lx(3 * a + xyz),2.0);
+            }
+        }
+        double scaling_factor = 1.0 / std::sqrt(norm2);
+        for (int a = 0; a < Natom; a++) {
+            for (int xyz = 0; xyz < 3; ++xyz){
+                double scaled_mode = scaling_factor * modes[i]->get_lx(3 * a + xyz);
+                printer->Printf(" %.6f",scaled_mode);
+            }
+            printer->Printf("\n");
+        }
+    }
+    printer->Printf("\n[INT]\n");
+    for(int i = 0; i < modes.size(); ++i) {
+        printer->Printf("1.0\n");
+    }
+}
+
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
 // disp_size is in mass-weighted coordinates; cartesian displacement is DX/sqrt(mass)
