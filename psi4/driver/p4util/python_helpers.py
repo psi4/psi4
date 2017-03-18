@@ -28,7 +28,7 @@
 import os
 import re
 import sys
-import random
+import uuid
 import subprocess
 
 from . import optproc
@@ -216,7 +216,7 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
 
     """
     key = key.upper()
-    name = ('anonymous' + str(random.randint(0, 999))) if name == '' else name
+    name = ('anonymous' + str(uuid.uuid4())[:8]) if name == '' else name
     cleanbas = basname(name).replace('-', '')  # further remove hyphens so can be function name
     block = filter_comments(block)
     command_lines = re.split('\n', block)

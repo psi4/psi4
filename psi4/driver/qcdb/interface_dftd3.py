@@ -31,9 +31,9 @@ import os
 import re
 import sys
 import math
+import uuid
 import shutil
 import socket
-import random
 import subprocess
 
 try:
@@ -140,9 +140,9 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
         psio = core.IO.shared_object()
         os.chdir(psioh.get_default_path())
         dftd3_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-            '.dftd3.' + str(random.randint(0, 99999))
+            '.dftd3.' + str(uuid.uuid4())[:8]
     else:
-        dftd3_tmpdir = os.environ['HOME'] + os.sep + 'dftd3_' + str(random.randint(0, 99999))
+        dftd3_tmpdir = os.environ['HOME'] + os.sep + 'dftd3_' + str(uuid.uuid4())[:8]
     if os.path.exists(dftd3_tmpdir) is False:
         os.mkdir(dftd3_tmpdir)
     os.chdir(dftd3_tmpdir)

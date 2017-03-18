@@ -29,8 +29,8 @@
 from __future__ import absolute_import, print_function
 import os
 import re
+import uuid
 import socket
-import random
 import subprocess
 try:
     from psi4.driver.p4util.exceptions import *
@@ -162,9 +162,9 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
         psio = core.IO.shared_object()
         os.chdir(psioh.get_default_path())
         gcp_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-            '.gcp.' + str(random.randint(0, 99999))
+            '.gcp.' + str(uuid.uuid4())[:8]
     else:
-        gcp_tmpdir = os.environ['HOME'] + os.sep + 'gcp_' + str(random.randint(0, 99999))
+        gcp_tmpdir = os.environ['HOME'] + os.sep + 'gcp_' + str(uuid.uuid4())[:8]
     if os.path.exists(gcp_tmpdir) is False:
         os.mkdir(gcp_tmpdir)
     os.chdir(gcp_tmpdir)

@@ -193,7 +193,7 @@ def vpt2(name, **kwargs):
     os.chdir(psioh.get_default_path())  # psi_scratch
     cfour_tmpdir = kwargs['path'] if 'path' in kwargs else \
         'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
-        '.cfour.' + str(random.randint(0, 99999))
+        '.cfour.' + str(uuid.uuid4())[:8]
     if not os.path.exists(cfour_tmpdir):
         os.mkdir(cfour_tmpdir)
     os.chdir(cfour_tmpdir)  # psi_scratch/cfour
