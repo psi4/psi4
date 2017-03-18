@@ -143,6 +143,7 @@ def run_cfour(name, **kwargs):
         'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
                 ':' + os.environ.get('PATH') + \
                 ':' + os.environ.get("PSIDATADIR") + '/basis',
+        'GENBAS_PATH': os.environ.get("PSIDATADIR") + '/basis',
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
 
@@ -152,7 +153,7 @@ def run_cfour(name, **kwargs):
     lenv = {k: v for k, v in lenv.items() if v is not None}
 
     # Load the GENBAS file
-    genbas_path = qcdb.search_file('GENBAS', lenv['PATH'])
+    genbas_path = qcdb.search_file('GENBAS', lenv['GENBAS_PATH'])
     if genbas_path:
         try:
             shutil.copy2(genbas_path, psioh.get_default_path() + cfour_tmpdir)
