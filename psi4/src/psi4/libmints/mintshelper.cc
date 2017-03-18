@@ -1155,9 +1155,8 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
     // No symmetry
     SharedMatrix potential_mat;
     if (factory_->nirrep() == 1) {
-        SharedMatrix ret = ao_potential();
-        ret->set_name(PSIF_SO_V);
-        return ret;
+        potential_mat = ao_potential();
+        potential_mat->set_name(PSIF_SO_V);
     } else {
         potential_mat = factory_->create_shared_matrix(PSIF_SO_V);
         potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
