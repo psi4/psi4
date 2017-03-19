@@ -1,7 +1,7 @@
 set(SIMINT_VER "0.7")
 
 if(${ENABLE_simint})
-    find_package(simint CONFIG QUIET)
+    find_package(simint CONFIG QUIET COMPONENTS am${MAX_AM_ERI} der0)
 
     if(${simint_FOUND})
         get_property(_loc TARGET simint::simint PROPERTY LOCATION)
@@ -11,9 +11,7 @@ if(${ENABLE_simint})
         include(ExternalProject)
         message(STATUS "Suitable simint could not be located, ${Magenta}Building simint${ColourReset} instead.")
         ExternalProject_Add(simint_external
-            #URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
-            GIT_REPOSITORY https://github.com/loriab/simint
-            GIT_TAG config6
+            URL http://www.bennyp.org/research/simint/download/simint-v${SIMINT_VER}.tar.bz2
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -24,10 +22,11 @@ if(${ENABLE_simint})
                        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                        # OpenMP relevant but always ON and handled by simint
                        # xHost handled through SIMINT_VECTOR. default sse equiv to XHOST=OFF
-                       -DBUILD_FPIC=${BUILD_FPIC}
-                       -DENABLE_GENERIC=${ENABLE_GENERIC}
+                       -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_FPIC}
+                       -DSIMINT_STANDALONE=${ENABLE_GENERIC}
                        -DENABLE_TESTS=OFF
                        -DSIMINT_VECTOR=${SIMINT_VECTOR}
+                       -DSIMINT_MAXAM=${MAX_AM_ERI}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                              -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install

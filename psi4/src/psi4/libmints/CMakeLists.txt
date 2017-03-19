@@ -70,6 +70,7 @@ set(sources_list local.cc
 if(TARGET simint::simint)
     list(APPEND sources_list siminteri.cc)
     add_definitions("-Drestrict=__restrict__")
+    add_definitions("-DUSING_simint")
 endif()
 psi4_add_module(lib mints sources_list iwl options psi4util trans efp_solver)
 
