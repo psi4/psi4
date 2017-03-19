@@ -72,8 +72,8 @@ compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 #orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
 Matrix.rotate_columns(scf_wfn.Ca(), 0, 7, 8, math.pi / 2.0)
 
-location = psi4.core.get_environment("PSI_SCRATCH")
-filename = location + '/' + core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".180.npz"
+fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_wfn.molecule().name())))[1]
+filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname + ".180.npz")
 data = {}
 data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
 data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
