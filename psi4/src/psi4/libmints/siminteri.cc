@@ -325,8 +325,8 @@ size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     curr_buff_size_ = n1 * n2 * n3 * n4;
 
     // get the precomputed simint_multi_shellpair
-    simint_multi_shellpair * P = &(*single_spairs_bra_)[sh1*nsh2 + sh2];
-    simint_multi_shellpair * Q = &(*single_spairs_ket_)[sh3*nsh4 + sh4];
+    const simint_multi_shellpair * P = &(*single_spairs_bra_)[sh1*nsh2 + sh2];
+    const simint_multi_shellpair * Q = &(*single_spairs_ket_)[sh3*nsh4 + sh4];
 
     // actually compute
     // if we are doing cartesian, put directly in target. Otherwise, put in source
