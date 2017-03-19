@@ -71,16 +71,19 @@ class SimintTwoElectronInt : public TwoBodyAOInt
         double * sharedwork_;
 
         // plain simint shells
-        std::shared_ptr<ShellVec> shells1_;
-        std::shared_ptr<ShellVec> shells2_;
-        std::shared_ptr<ShellVec> shells3_;
-        std::shared_ptr<ShellVec> shells4_;
+        // WARNING - these may be shared across threads, so
+        // they are const to prevent issues with threads
+        // changing data from under another thread
+        std::shared_ptr<const ShellVec> shells1_;
+        std::shared_ptr<const ShellVec> shells2_;
+        std::shared_ptr<const ShellVec> shells3_;
+        std::shared_ptr<const ShellVec> shells4_;
 
         // my shell pairs
-        std::shared_ptr<ShellPairVec> single_spairs_bra_;
-        std::shared_ptr<ShellPairVec> single_spairs_ket_;
-        std::shared_ptr<ShellPairVec> multi_spairs_bra_;
-        std::shared_ptr<ShellPairVec> multi_spairs_ket_;
+        std::shared_ptr<const ShellPairVec> single_spairs_bra_;
+        std::shared_ptr<const ShellPairVec> single_spairs_ket_;
+        std::shared_ptr<const ShellPairVec> multi_spairs_bra_;
+        std::shared_ptr<const ShellPairVec> multi_spairs_ket_;
 
 
 };
