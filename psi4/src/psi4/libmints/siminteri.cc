@@ -162,8 +162,8 @@ create_shared_multi_shellpair_(const std::vector<ShellPairBlock> & vsh,
 SimintTwoElectronInt::SimintTwoElectronInt(const IntegralFactory * integral, int deriv, bool use_shell_pairs)
     : TwoBodyAOInt(integral, deriv)
 {
-    int maxam_ = std::max( std::max(basis1()->max_am(), basis2()->max_am()),
-                           std::max(basis3()->max_am(), basis4()->max_am()) );
+    maxam_ = std::max( std::max(basis1()->max_am(), basis2()->max_am()),
+                       std::max(basis3()->max_am(), basis4()->max_am()) );
 
     if(maxam_ > SIMINT_OSTEI_MAXAM)
         throw PSIEXCEPTION("ERROR - SIMINT CANNOT HANDLE AM THIS HIGH\n");
