@@ -78,8 +78,9 @@ input file for MRCC for the methods listed in table below.
 To utilize any method described in the table, you must prefix
 the method name with ``MR``. For other methods, you will be required to
 use the MRCC keywords described in Appendix :ref:`apdx:mrcc`.
-Note that perturbative methods (``ccsd(t)``, ``ccsdtqp(h)_l``, etc.)
-are not available with |scf__reference| ROHF.
+Perturbative methods (``ccsd(t)``, ``ccsdtqp(h)_l``, etc.)
+are available with |scf__reference| ROHF in versions of MRCC published
+at least after July 1, 2014.
 
 .. include:: mrcc_table_energy.rst
 
