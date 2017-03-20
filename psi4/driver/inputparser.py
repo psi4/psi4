@@ -40,6 +40,7 @@ import re
 import os
 import sys
 import uuid
+from collections import namedtuple
 from psi4.driver import pubchem
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.p4util.util import set_memory
@@ -104,6 +105,85 @@ def dequotify(string):
         return string[1:-1]
     else:
         return string
+
+
+def segment_literals(raw_input):
+    # type: (str,) -> List[Tuple[str, str]]
+    """Segment the raw_input string into "literal" and "free" sections.
+
+    Literal sections are those in which no Psithon -> Python translation
+    should take place. This includes inside Python comments and inside
+    Python string literals. Free sections are those in which eligable
+    Psithon expressions should be searched for and processed.
+
+    Examples
+    --------
+    >>> segment_literals("""
+    a = 1
+    a = "hello world"
+    """)
+    [("free", "\na = 1\na = "), ("literal", '"hello world"'), ('free', '\n')]
+
+    Returns
+    -------
+    sections : List[Tuple[str, str]]
+        List of seconds. Each section is a 2-tuple where the first element
+        is either "free" or "literal", and the second element is a slice
+        of raw_input. Concatenating all of the second elements of this tuple
+        will give `raw_input` back.
+    """
+
+    segment = namedtuple('segment', ('state', 'start', 'end'))
+    sections = []
+    iterator = iter(xrange(len(raw_input)))
+    delims = {'"""', "'''", '"', "'"}
+    statemap = {'free': 'free', 'comment': 'literal'}
+    for d in delims:
+        statemap[d] = 'literal'
+
+    state = 'free'
+    prior_position = 0
+
+    for i in iterator:
+        if (state == 'free') and raw_input[i] == '#':
+            sections.append(segment(state, prior_position, i))
+            state, prior_position = 'comment', i
+            continue
+
+        if state == 'comment' and raw_input[i] == '\n':
+            sections.append(segment(state, prior_position, i+1))
+            state, prior_position = 'free', i+1
+            continue
+
+        if state == 'comment':
+            continue
+
+        delim_matched = False
+        for delim in delims:
+            if state == 'free' and raw_input[i:i+len(delim)] == delim:
+                for _ in xrange(len(delim)-1):
+                    next(iterator)
+                sections.append(segment(state, prior_position, i))
+                state, prior_position = raw_input[i:i+len(delim)], i
+                delim_matched = True
+                break
+
+            if state in delims and raw_input[i:i+len(delim)] == state:
+                sections.append(segment(state, prior_position, i+len(delim)))
+                state, prior_position = 'free', (i + len(delim))
+                delim_matched = True
+                break
+
+        if delim_matched:
+            continue
+
+    sections.append(segment(state, prior_position, i+1))
+
+    retval = []
+    for ss in sections:
+        if ss.end - ss.start > 0:
+            retval.append((statemap[ss.state], raw_input[ss.start:ss.end]))
+    return retval
 
 
 def process_option(spaces, module, key, value, line):
@@ -587,64 +667,19 @@ def process_multiline_arrays(inputfile):
     # Start by converting the input to a list, splitting at newlines
     input_list = inputfile.split("\n")
     set_re = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+\[.*', re.IGNORECASE)
-    newinput = ""
+    newinput_list = []
     while len(input_list):
         line = input_list[0]
         if set_re.match(line):
             # We've found the start of a set matrix [ .... line - hand it off for more checks
-            newinput += parse_multiline_array(input_list)
+            newinput_list.append(parse_multiline_array(input_list))
         else:
             # Nothing to do - just add the line to the string
-            newinput += "%s\n" % (input_list.pop(0))
-    return newinput
+            newinput_list.append(input_list.pop(0))
+    return '\n'.join(newinput_list)
 
 
-def process_input(raw_input, print_level=1):
-    """Function to preprocess *raw input*, the text of the input file, then
-    parse it, validate it for format, and convert it into legitimate Python.
-    *raw_input* is printed to the output file unless *print_level* =0. Does
-    a series of regular expression filters, where the matching portion of the
-    input is replaced by the output of the corresponding function (in this
-    module) call. Returns a string concatenating module import lines, a copy
-    of the user's .psi4rc files, a setting of the scratch directory, a dummy
-    molecule, and the processed *raw_input*.
-
-    """
-    # Check if the infile is actually an outfile (yeah we did)
-    psi4_id = re.compile(r'Psi4: An Open-Source Ab Initio Electronic Structure Package')
-    if re.search(psi4_id, raw_input):
-        input_lines = raw_input.split("\n")
-        input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')
-        input_start = -1
-        for line_count in range(len(input_lines)):
-            line = input_lines[line_count]
-            if re.match(input_re, line):
-                input_start = line_count + 3
-                break
-
-        stop_re = re.compile(r'^-{74}')
-        input_stop = -1
-        for line_count in range(input_start, len(input_lines)):
-            line = input_lines[line_count]
-            if re.match(stop_re, line):
-                input_stop = line_count
-                break
-
-        if input_start == -1 or input_stop == -1:
-            message = ('Cannot extract infile from outfile.')
-            raise TestComparisonError(message)
-
-        raw_input = '\n'.join(input_lines[input_start:input_stop])
-        raw_input += '\n'
-
-    # Echo the infile on the outfile
-    if print_level > 0:
-        core.print_out("\n  ==> Input File <==\n\n")
-        core.print_out("--------------------------------------------------------------------------\n")
-        core.print_out(raw_input)
-        core.print_out("--------------------------------------------------------------------------\n")
-        core.flush_outfile()
-
+def process_input_segment(raw_segment):
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
     #   which has the regex capture group:
@@ -661,7 +696,7 @@ def process_input(raw_input, print_level=1):
     # Process "cfour name? { ... }"
     cfour = re.compile(r'^(\s*?)cfour[=\s]*(\w*?)\s*\{(.*?)\}',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(cfour, process_cfour_command, raw_input)
+    temp = re.sub(cfour, process_cfour_command, raw_segment)
 
     # Return from handling literal blocks to normal processing
 
@@ -742,6 +777,70 @@ def process_input(raw_input, print_level=1):
     # Process literal blocks by substituting back in
     lit_block = re.compile(r'literals_psi4_yo-(\d*\d)')
     temp = re.sub(lit_block, process_literal_blocks, temp)
+    return temp
+
+
+def process_input(raw_input, print_level=1):
+    """Function to preprocess *raw input*, the text of the input file, then
+    parse it, validate it for format, and convert it into legitimate Python.
+    *raw_input* is printed to the output file unless *print_level* =0. Does
+    a series of regular expression filters, where the matching portion of the
+    input is replaced by the output of the corresponding function (in this
+    module) call. Returns a string concatenating module import lines, a copy
+    of the user's .psi4rc files, a setting of the scratch directory, a dummy
+    molecule, and the processed *raw_input*.
+
+    """
+    # Check if the infile is actually an outfile (yeah we did)
+    psi4_id = re.compile(r'Psi4: An Open-Source Ab Initio Electronic Structure Package')
+    if re.search(psi4_id, raw_input):
+        input_lines = raw_input.split("\n")
+        input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')
+        input_start = -1
+        for line_count in range(len(input_lines)):
+            line = input_lines[line_count]
+            if re.match(input_re, line):
+                input_start = line_count + 3
+                break
+
+        stop_re = re.compile(r'^-{74}')
+        input_stop = -1
+        for line_count in range(input_start, len(input_lines)):
+            line = input_lines[line_count]
+            if re.match(stop_re, line):
+                input_stop = line_count
+                break
+
+        if input_start == -1 or input_stop == -1:
+            message = ('Cannot extract infile from outfile.')
+            raise TestComparisonError(message)
+
+        raw_input = '\n'.join(input_lines[input_start:input_stop])
+        raw_input += '\n'
+
+    # Echo the infile on the outfile
+    if print_level > 0:
+        core.print_out("\n  ==> Input File <==\n\n")
+        core.print_out("--------------------------------------------------------------------------\n")
+        core.print_out(raw_input)
+        core.print_out("--------------------------------------------------------------------------\n")
+        core.flush_outfile()
+
+
+    # break the raw_input into sections using segment_literals, and then
+    # process all of the segments that are suitable for Psithon -> Python
+    # translation (and preserve those which are not)
+    processed_segments = []
+    for (section_type, raw_input_segment) in segment_literals(raw_input):
+        if section_type == 'free':
+            new_segment = process_input_segment(raw_input_segment)
+            processed_segments.append(new_segment)
+        elif section_type == 'literal':
+            processed_segments.append(raw_input_segment)
+        else:
+            raise RuntimeError()
+
+    temp = ''.join(processed_segments)
 
     future_imports = []
     def future_replace(m):
