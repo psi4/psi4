@@ -1,6 +1,6 @@
 memory 500 Mb
 
-set { 
+set {
     basis sto-3g
     reference rohf
     die_if_not_converged False
