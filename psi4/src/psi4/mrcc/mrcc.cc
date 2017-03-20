@@ -1024,6 +1024,10 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 //  Process::environment.globals["CCSD(T) CORRELATION ENERGY"] =
 //  Process::environment.globals["CCSDT(Q) TOTAL ENERGY"] =
 //  Process::environment.globals["CCSDT(Q) CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDT(Q)/A TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT(Q)/A CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDT(Q)/B TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT(Q)/B CORRELATION ENERGY"] =
 //  Process::environment.globals["CC(n-1)(n) TOTAL ENERGY"] =
 //  Process::environment.globals["CC(n-1)(n) CORRELATION ENERGY"] =
 

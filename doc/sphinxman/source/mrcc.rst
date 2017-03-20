@@ -82,6 +82,11 @@ Perturbative methods (``ccsd(t)``, ``ccsdtqp(h)_l``, etc.)
 are available with |scf__reference| ROHF in versions of MRCC published
 at least after July 1, 2014.
 
+When using ROHF-CCSDT(Q), MRCC will compute and report two variants:
+CCSDT(Q)/A and CCSDT(Q)/B.[Kallay:2008:144101]_ Psi4 will save both energies but will use
+the CCSDT(Q)/B as the CCSDT(Q) energy. CCSDT(Q)/B has been found to be
+more robust by Martin.[Matrin:2014:785]_
+
 .. include:: mrcc_table_energy.rst
 
 Frozen-core approximation is also supported in the MRCC interface.

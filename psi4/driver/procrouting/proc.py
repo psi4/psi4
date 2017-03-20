@@ -1252,7 +1252,7 @@ def scf_helper(name, **kwargs):
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
     read_filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname + ".180.npz")
-    
+
     if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
         data = np.load(read_filename)
         Ca_occ = core.Matrix.np_read(data, "Ca_occ")
@@ -3582,16 +3582,14 @@ def run_mrcc(name, **kwargs):
 
     # Modify the environment:
     #    PGI Fortan prints warning to screen if STOP is used
-    os.environ['NO_STOP_MESSAGE'] = '1'
+    lenv['NO_STOP_MESSAGE'] = '1'
 
-    # Obtain user's OMP_NUM_THREADS so that we don't blow it away.
-    omp_num_threads_found = 'OMP_NUM_THREADS' in os.environ
-    if omp_num_threads_found == True:
-        omp_num_threads_user = os.environ['OMP_NUM_THREADS']
+    # Obtain the number of threads MRCC should use
+    lenv['OMP_NUM_THREADS'] = str(core.get_num_threads())
 
     # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
     if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
-        os.environ['OMP_NUM_THREADS'] = str(core.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
+        lenv['OMP_NUM_THREADS'] = str(core.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
     external_exe = 'dmrcc'
@@ -3610,11 +3608,6 @@ def run_mrcc(name, **kwargs):
             break
         core.print_out(data.decode('utf-8'))
         c4out += data.decode('utf-8')
-
-    # Restore the OMP_NUM_THREADS that the user set.
-    if omp_num_threads_found == True:
-        if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
-            os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
     # Scan iface file and grab the file energy.
     ene = 0.0
