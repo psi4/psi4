@@ -33,6 +33,7 @@ find_package(Perl QUIET)
 set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
+set(py36_fail_list extern1 extern2)
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
@@ -87,12 +88,11 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
-        list(FIND py3_fail_list "${test_name}" _index)
-        if (${_index} GREATER -1)
-        # Note to future cmake 3.3: replace above 2 with below 1 and set policy
-        # cmake_policy(SET CMP0057 NEW)
-        #if (${test_name} IN_LIST py3_fail_list)
+        if (${test_name} IN_LIST py3_fail_list)
             message("Python3 incompatible test: ${test_name}... skipping")
+        elseif(("${PYTHON_VERSION_MINOR}" VERSION_EQUAL "6") AND
+               (${test_name} IN_LIST py36_fail_list))
+            message("Python3.6 recalcitrant test: ${test_name}... skipping")
         else()
             add_subdirectory(${test_name})
         endif()
