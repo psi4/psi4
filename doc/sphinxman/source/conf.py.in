@@ -298,6 +298,8 @@ latex_documents = [
 #latex_domain_indices = True
 
 nbsphinx_allow_errors = True
+nbsphinx_execute = 'never'
+nbsphinx_timeout = 180
 
 # -- Options for manual page output --------------------------------------------
 
