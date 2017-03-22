@@ -23,6 +23,7 @@
 #   erd - integrals library active
 #   gdma - multipole library active
 #   pcmsolver - solvation library active
+#   simint - integrals library active
 #
 #
 # Exported targets::
@@ -57,6 +58,7 @@ set (_valid_components
     erd
     gdma
     pcmsolver
+    simint
 )
 
 # location of script psi4
@@ -83,6 +85,7 @@ psi4_component(libefp @ENABLE_libefp@)
 psi4_component(erd @ENABLE_erd@)
 psi4_component(gdma @ENABLE_gdma@)
 psi4_component(pcmsolver @ENABLE_PCMSolver@)
+psi4_component(simint @ENABLE_simint@)
 
 foreach(_comp ${${PN}_FIND_COMPONENTS})
     if(${${PN}_${_comp}_FOUND})
