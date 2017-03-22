@@ -134,7 +134,7 @@ Matrix to Array
 ~~~~~~~~~~~~~~~
 A general function that converts NumPy arrays to |PSIfour| data objects.
 
-.. autofunction:: psi4.driver.p4util.numpy_helper.to_array
+.. autofunction:: psi4.driver.p4util.numpy_helper._to_array
 
 
 

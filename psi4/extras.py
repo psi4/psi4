@@ -75,8 +75,14 @@ def _psi4_which(command):
                     ':' + os.environ.get('PATH')}
     lenv = {k: v for k, v in lenv.items() if v is not None}
 
+    # thanks, http://stackoverflow.com/a/11270665
     try:
-        dashout = subprocess.Popen(command, stdout=subprocess.PIPE, env=lenv)
+        from subprocess import DEVNULL  # py3k
+    except ImportError:
+        DEVNULL = open(os.devnull, 'wb')
+
+    try:
+        dashout = subprocess.Popen(command, stdout=DEVNULL, stderr=subprocess.STDOUT, env=lenv)
     except OSError as e:
         return False
     else:
