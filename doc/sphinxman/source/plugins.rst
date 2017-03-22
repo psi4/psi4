@@ -106,39 +106,53 @@ one of the following commands that meets your needs::
 
 .. _`sec:condaplugins`:
 
-.. Creating a New Plugin Using a Conda Pre-compiled Binary
-.. -------------------------------------------------------
-.. 
-.. |PSIfour| plugins can also be created using Conda for both |PSIfour| binary and 
-.. development environment.
-.. To compile a plugin with the default ``Makefile``, it is necessary to have the 
-.. ``gcc`` compiler installed in the Conda distribution or environment (below, 
-.. ``$PSI4CONDA``) used to run |PSIfour|. ::
-.. 
+Creating a New Plugin Using a Conda Pre-compiled Binary
+-------------------------------------------------------
+
+|PSIfour| plugins can also be created using Conda for both |PSIfour|
+binary and development environment. On Linux, one can use the ``gcc``
+compiler installed alongside ``psi4`` itself in the Conda distribution
+or environment (below, ``$PSI4CONDA``). ::
+
 ..     # prepare
 ..     >>> bash
 ..     >>> export PATH=$PSI4CONDA/bin:$PATH  # usually already done from psi4 installation
 ..     >>> cd "$(dirname $(which psi4))"/..  # move into distribution/environment directory, $PSI4CONDA
 ..     >>> conda install gcc                 # install compilers into expected place
-.. 
-..     # check (yes, next line gives empty result. yes, LD_LIBRARY_PATH irrelevant)
-..     >>> echo $PYTHONHOME $PYTHONPATH $DYLD_LIBRARY_PATH $PSIDATADIR
-.. 
-..     >>> which python psi4 gcc
-..     $PSI4CONDA/bin/python
-..     $PSI4CONDA/bin/psi4
-..     $PSI4CONDA/bin/gcc
-.. 
-..     # create and compile plugin
-..     >>> psi4 --plugin-name testplugin     # generate new plugin
-..     >>> cd testplugin                     # move into plugin directory
-..     >>> make                              # compile the plugin to product testplugin.so
-..     >>> psi4                              # run sample input.dat
-..     Attention! This SCF may be density-fitted.
-.. 
-.. Please note that the conda distribution must be in ``$PATH`` or the
-.. conda enviroment must be activated before compilation and execution of
-.. plugins created using this procedure.
+
+    # check (yes, next line gives empty result. yes, LD_LIBRARY_PATH irrelevant)
+    >>> echo $PYTHONHOME $PYTHONPATH $DYLD_LIBRARY_PATH $PSIDATADIR
+
+    >>> which python psi4 gcc
+    $PSI4CONDA/bin/python
+    $PSI4CONDA/bin/psi4
+    $PSI4CONDA/bin/gcc
+
+    # create and compile plugin
+    >>> psi4 --plugin-name testplugin     # generate new plugin
+    -- Creating "testplugin" with "basic" template. -----------------
+    ==> Created plugin files (in testplugin as basic):
+      __init__.py, doc.rst, pymodule.py, plugin.cc, input.dat, CMakeLists.txt
+    >>> cd testplugin                     # move into plugin directory
+    >>> `psi4 --plugin-compile`           # use build info from parent psi4
+    loading initial cache file $PSI4CONDA/share/cmake/psi4/psi4PluginCache.cmake
+    -- The CXX compiler identification is GNU 5.2.0
+    -- Check for working CXX compiler: $PSI4CONDA/bin/g++
+    -- Check for working CXX compiler: $PSI4CONDA/bin/g++ -- works
+    ...
+    -- Generating done
+    -- Build files have been written to: testplugin
+    >>> make                              # compile the plugin to produce testplugin.so
+    Scanning dependencies of target testplugin
+    [ 50%] Building CXX object CMakeFiles/testplugin.dir/plugin.cc.o
+    [100%] Linking CXX shared module testplugin.so
+    [100%] Built target testplugin
+    >>> psi4                              # run sample input.dat
+    Attention! This SCF may be density-fitted.
+
+Please note that the conda distribution must be in ``$PATH`` or the
+conda enviroment must be activated before compilation and execution of
+plugins created using this procedure.
 
 Files in a Plugin Directory
 ---------------------------

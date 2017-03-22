@@ -33,5 +33,5 @@ A |PSIfour| Tutorial
    :maxdepth: 2
    
    tutorial
-   psiapi.ipynb
+   psiapi
 

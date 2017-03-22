@@ -187,9 +187,9 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
-* :ref:`Python interpreter and headers <cmake:python>` (2.7 or 3.5) https://www.python.org/
+* :ref:`Python interpreter and headers <cmake:python>` (2.7, 3.5, or 3.6) https://www.python.org/
 
-* CMake (3.2 or higher) http://www.cmake.org/download/
+* CMake (3.3 or higher) http://www.cmake.org/download/
 
 * NumPy http://www.numpy.org/ (needed at runtime, not buildtime)
 
