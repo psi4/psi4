@@ -485,7 +485,7 @@ def _from_serial(self, json_data):
     return ret
 
 
-# Matirx attributes
+# Matrix attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
 core.Matrix.to_array = _to_array
 core.Matrix.shape = _np_shape
