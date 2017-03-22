@@ -5,7 +5,7 @@ if(${ENABLE_simint})
 
     if(${simint_FOUND})
         get_property(_loc TARGET simint::simint PROPERTY LOCATION)
-        message(STATUS "${Cyan}Found simint${ColourReset}: ${_loc} (found version ${simint_VERSION}; vectorization ${simint_VECTOR})")
+        message(STATUS "${Cyan}Found simint ${simint_MAXAM}${ColourReset}: ${_loc} (found version ${simint_VERSION}; vectorization ${simint_VECTOR})")
         add_library(simint_external INTERFACE)  # dummy
     else()
         include(ExternalProject)
