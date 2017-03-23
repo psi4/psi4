@@ -3771,7 +3771,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       Use :ref:`optking <apdx:optking>` keywords instead. -*/
       options.add_str("CFOUR_NEGEVAL", "ABORT", "ABORT SWITCH RFA");
 
-      /*- All components of spherical AO’s are normalized to 1. This
+      /*- All components of spherical AO's are normalized to 1. This
       feature can help with numerical convergence issues if AO integrals
       are involved. Currently only working for single-point energy
       calculations. -*/

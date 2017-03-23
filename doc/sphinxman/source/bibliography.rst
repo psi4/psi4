@@ -213,7 +213,7 @@ Bibliography
 
 .. [Sosa:1989:148]
    C. Sosa, J. Geersten, G. W. Trucks, R. J. Barlett, and J. A. Franz, 
-   *Chem. Phys. Lett.* **159**, 148–154 (1989).
+   *Chem. Phys. Lett.* **159**, 148--154 (1989).
 
 .. [Roos:1980]
    B. O. Roos,

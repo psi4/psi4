@@ -543,7 +543,7 @@ PSI Variables by Alpha
    MPn CORRELATION ENERGY
 
    The total electronic energy [H] and correlation energy component [H]
-   for the labeled M\ |o_dots|\ ller–Plesset perturbation theory level.
+   for the labeled |MollerPlesset| perturbation theory level.
    *n* is MP perturbation order.
 
 .. psivar:: NUCLEAR REPULSION ENERGY

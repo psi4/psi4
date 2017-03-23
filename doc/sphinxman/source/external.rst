@@ -57,7 +57,7 @@ is not, it will significantly slow down the program and the network.
 By default, |PSIfour| will write temporary files to ``/tmp``, but this
 directory is often not large enough for typical computations.  Therefore,
 you need to (a) make sure there is a sufficiently large directory on a
-locally attached disk drive (100GB–1TB or more, depending on the size of
+locally attached disk drive (100GB--1TB or more, depending on the size of
 the molecules to be studied) and (b) tell |PSIfour| the path to this
 directory. Scratch file location can be specified through the 
 :envvar:`PSI_SCRATCH` environment variable or through the |psirc| file
