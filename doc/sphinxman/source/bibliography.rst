@@ -370,3 +370,11 @@ Bibliography
    R. Sure and S. Grimme,
    *J. Comput. Chem.* **15**, 1672 (2013).
 
+.. [Kallay:2008p144101]
+   M. Kallay and J. Gauss,
+   *J. Chem. Phys.* **129**, 144101 (2008).
+
+.. [Martin:2014:785]
+   J. M. L. Martin,
+   *Mol. Phys.* **112**, 785 (2014).
+
