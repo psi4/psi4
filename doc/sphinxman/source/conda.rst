@@ -137,14 +137,14 @@ will be available for download.
 .. code-block:: bash
 
     # Linux
-    >>> curl -O explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
+    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-Linux-x86_64.txt"
     >>> conda create --name p4env --file explicitenv2-latest-Linux-x86_64.txt
     >>> source activate p4env
 
 .. code-block:: bash
 
     # Mac
-    >>> curl -O explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
+    >>> curl -o explicit-latest.sh "https://repo.continuum.io/miniconda/explicit2-latest-MacOSX-x86_64.txt"
     >>> conda create --name p4env --file explicitenv2-latest-MacOSX-x86_64.txt
     >>> source activate p4env
 
@@ -160,8 +160,8 @@ main conda environment at ``$HOME/miniconda/bin/psi4``.
 .. code-block:: bash
 
     # Linux or Mac: select between next two lines
-    >>> curl -O Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh"
-    >>> curl -O Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh"
+    >>> curl -o Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh"
+    >>> curl -o Miniconda-latest.sh "https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh"
 
 .. code-block:: bash
 

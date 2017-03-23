@@ -77,7 +77,7 @@ def _psi4_which(command):
 
     # thanks, http://stackoverflow.com/a/11270665
     try:
-        from subprocess import DEVNULL  # py3k
+        from subprocess import DEVNULL  # py33
     except ImportError:
         DEVNULL = open(os.devnull, 'wb')
 
