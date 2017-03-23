@@ -6,8 +6,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
-        message(FATAL_ERROR "ICPC version must be at least 2016!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "16.0.2")
+        message(FATAL_ERROR "ICPC version must be at least 2016.0.2!")
     endif()
 
     set(_testfl ${CMAKE_BINARY_DIR}/test_gcc_version.cc)
