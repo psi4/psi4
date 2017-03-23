@@ -51,6 +51,8 @@
 
 #include "psi4/dfep2/dfep2.h"
 
+#include "psi4/fisapt/fisapt.h"
+
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 
@@ -140,8 +142,8 @@ void export_wavefunction(py::module& m)
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring").
             def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.").
             def("form_D", &scf::HF::form_D, "Forms the Density Matrices from the current Orbitals Matrices").
-            def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices").
-            .def("form_G", &scf::HF::form_V, "Forms the G matrix.")
+            def("form_V", &scf::HF::form_V, "Form the Kohn-Sham Potential Matrices from the current Density Matrices")
+            .def("form_G", &scf::HF::form_G, "Forms the G matrix.")
             .def("form_F", &scf::HF::form_V, "Forms the F matrix.")
             .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
             .def("twoel_Hx", &scf::HF::twoel_Hx, "Two-electron Hessian-vector products")
@@ -149,7 +151,7 @@ void export_wavefunction(py::module& m)
             .def("cphf_solve", &scf::HF::cphf_solve, py::arg("x_vec"), py::arg("conv_tol"),
              py::arg("max_iter"), py::arg("print_lvl") = 2,
              "Solves the CPHF equations for a given set of x vectors.")
-            .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.")
+            .def("cphf_converged", &scf::HF::cphf_converged, "Adds occupied guess alpha orbitals.").
             def("guess_Ca", &scf::HF::guess_Ca, "Sets the guess Alpha Orbital Matrix").
             def("guess_Cb", &scf::HF::guess_Cb, "Sets the guess Beta Orbital Matrix").
             def("reset_occ", &scf::HF::reset_occ, "If True, the occupation will be reset after the guess to the inital occupation.").

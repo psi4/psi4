@@ -33,6 +33,7 @@
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/lib3index/df_helper.h"
+#include "psi4/lib3index/fitter.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
@@ -92,7 +93,6 @@ void export_fock(py::module &m) {
             def("setPrimary", &DFChargeFitter::setPrimary, "docstring").
             def("setAuxiliary", &DFChargeFitter::setAuxiliary, "docstring").
             def("setD", &DFChargeFitter::setD, "docstring").
-            def("d", &DFChargeFitter::d, "docstring").
             def("fit", &DFChargeFitter::fit, "docstring");
 
     py::class_<FittingMetric, std::shared_ptr<FittingMetric> >(m, "FittingMetric", "docstring").
@@ -108,13 +108,6 @@ void export_fock(py::module &m) {
             def("form_QR_inverse", &FittingMetric::form_QR_inverse, "docstring").
             def("form_eig_inverse", &FittingMetric::form_eig_inverse, "docstring").
             def("form_full_inverse", &FittingMetric::form_full_inverse, "docstring");
-
-    py::class_<PseudoTrial, std::shared_ptr<PseudoTrial> >(m, "PseudoTrial", "docstring").
-            def("getI", &PseudoTrial::getI, "docstring").
-            def("getIPS", &PseudoTrial::getIPS, "docstring").
-            def("getQ", &PseudoTrial::getQ, "docstring").
-            def("getR", &PseudoTrial::getR, "docstring").
-            def("getA", &PseudoTrial::getA, "docstring");
 
     py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
         // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
@@ -144,7 +137,7 @@ void export_fock(py::module &m) {
 
     // DF Helper
     typedef SharedMatrix (df_helper::DF_Helper::*take_string)(std::string);
-    typedef SharedMatrix (df_helper::DF_Helper::*tensor_access3)(std::string, 
+    typedef SharedMatrix (df_helper::DF_Helper::*tensor_access3)(std::string,
         std::pair<size_t, size_t>, std::pair<size_t, size_t>, std::pair<size_t, size_t>);
 
     py::class_<df_helper::DF_Helper, std::shared_ptr<df_helper::DF_Helper>>(

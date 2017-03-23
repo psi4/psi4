@@ -63,26 +63,6 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 
-<<<<<<< e9bb2ccb600087fd6aa4616f452e6ec49562c3bc
-=======
-#include "psi4/libscf_solver/hf.h"
-#include "psi4/libscf_solver/rhf.h"
-#include "psi4/libscf_solver/uhf.h"
-#include "psi4/libscf_solver/rohf.h"
-#include "psi4/libscf_solver/cuhf.h"
-#include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libfock/v.h"
-
-#include "psi4/dfep2/dfep2.h"
-
-#include "psi4/detci/ciwave.h"
-#include "psi4/detci/civect.h"
-
-#include "psi4/fisapt/fisapt.h"
-
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
->>>>>>> XC: Fine tuning FDDS Dispersion
 
 #include <string>
 
