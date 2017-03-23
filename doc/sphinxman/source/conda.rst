@@ -359,7 +359,7 @@ Useful Commands
 Troubleshooting
 ^^^^^^^^^^^^^^^
 
-* If the target computer doesn't have libc >= 2.7 (released c.2007; for reference, 2.10 is newer than 2.7; unlike most libraries, libc generally not available in multiple versions on a computer), the |PSIfour| conda package won’t work. ::
+* If the target computer doesn't have libc >= 2.7 (released c.2007; for reference, 2.10 is newer than 2.7; unlike most libraries, libc generally not available in multiple versions on a computer), the |PSIfour| conda package won't work. ::
 
     # unsuitable computer
     >>> ldd --version
@@ -396,6 +396,6 @@ Troubleshooting
 .. comment find out about the current environment.
 .. comment pythonhome should be empty
 .. comment pythonpath should be empty or set to non-interfering packages (*e.g.*, qcdb)
-.. comment ld_library_path shouldn’t contain anything with a libpython
+.. comment ld_library_path shouldn't contain anything with a libpython
 .. comment >>> conda info -a
 

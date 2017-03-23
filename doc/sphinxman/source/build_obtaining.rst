@@ -51,10 +51,10 @@ select outright among:
 Find-the-code Quiz
 ------------------
 
-* I just want to run the code. I may tweak the Python, but I’m not
+* I just want to run the code. I may tweak the Python, but I'm not
   developing anything to contribute back to the code base.
 
-  * Provided I still get good, threaded BLAS/LAPACK, I’m willing to
+  * Provided I still get good, threaded BLAS/LAPACK, I'm willing to
     sacrifice processor architecture tuning to avoid compiling it myself.
 
     * I'm on Linux or Mac or Windows with Ubuntu Bash Shell.
