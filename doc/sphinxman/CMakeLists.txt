@@ -27,11 +27,23 @@ if(PERL_FOUND AND SPHINX_FOUND)
         @ONLY)
 
     # Static-doc reST files
-    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst nbody.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst fchk.rst freq.rst gdma.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst molden.rst cubeprop.rst dcft.rst relativistic.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst libefp.rst conda.rst pcmsolver.rst thermo.rst chemps2.rst fisapt.rst plugin_v2rdm_casscf.rst psi4api.rst addon.rst numpy.rst build_planning.rst build_faq.rst build_obtaining.rst libint.rst erd.rst gcp.rst index_tutorials.rst psiapi.ipynb)
+    set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst nbody.rst customizing.rst db.rst detci.rst dfmp2.rst diatomic.rst documentation.rst energy.rst external.rst fchk.rst freq.rst gdma.rst glossary_psivariables.rst index.rst intercalls.rst interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst oeprop.rst opt.rst optking.rst plugins.rst programming.rst prop.rst psithonfunc.rst psithoninput.rst quickaddalias.rst basissets_tables.rst quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst optionshandling.rst basissets_byfamily.rst psipep.rst pep0001.rst dftd3.rst occ.rst molden.rst cubeprop.rst dcft.rst relativistic.rst dkh.rst proc_py.rst psithonmol.rst cfour.rst mrcc_table_energy.rst cfour_table_energy.rst cfour_table_grad.rst libefp.rst conda.rst pcmsolver.rst thermo.rst chemps2.rst fisapt.rst plugin_v2rdm_casscf.rst psi4api.rst addon.rst numpy.rst build_planning.rst build_faq.rst build_obtaining.rst libint.rst erd.rst gcp.rst index_tutorials.rst)
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
         "import sys; import os; print('/' + os.path.relpath('${psi4_SOURCE_DIR}', '${CCBD}') + '/../')"
         OUTPUT_VARIABLE SFNX_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # * add ipynb doc if build env can handle it
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+        "import nbsphinx; import jupyter_client; import ipykernel"
+        OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
+    if(_exec_python_err)
+        message(STATUS "Some ipynb docs require extra modules (try: conda install nbsphinx jupyter_client ipykernel -c conda-forge)")
+        list(APPEND STATICDOC "psiapi.rst")
+        set(_jupy "")
+    else()
+        list(APPEND STATICDOC "psiapi.ipynb")
+        set(_jupy "w/Jupyter ")
+    endif()
     # * copy all over to objdir, substituting literalinclude along the way
     foreach(rst ${STATICDOC})
        configure_file(
@@ -244,9 +256,9 @@ if(PERL_FOUND AND SPHINX_FOUND)
 
     # * announcement
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)
-        message(STATUS "Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)")
+        message(STATUS "Documentation targets ${_jupy}available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)")
     else()
-        message(STATUS "Documentation targets available: sphinxman (html), sphinxmini (quick html)")
+        message(STATUS "Documentation targets ${_jupy}available: sphinxman (html), sphinxmini (quick html)")
     endif()
 
     # * quick mini-build for docs development
