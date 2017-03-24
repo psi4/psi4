@@ -1,5 +1,6 @@
 set(sources_list #dealias.cc
                  dftensor.cc
+                 df_helper.cc
                  #pstensor.cc
                  denominator.cc
                  pseudotrial.cc
