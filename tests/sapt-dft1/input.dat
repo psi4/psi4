@@ -1,7 +1,5 @@
 #! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
 
-memory 250 mb
-
 Eref = {"SAPT ELST ENERGY":  -0.10190449, # TEST
         "SAPT EXCH ENERGY":   0.36545706, # TEST
         "SAPT IND ENERGY":   -0.00840483, # TEST

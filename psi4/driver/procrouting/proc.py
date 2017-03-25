@@ -42,6 +42,7 @@ import numpy as np
 from psi4 import extras
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
 
@@ -3271,7 +3272,7 @@ def run_dfep2(name, **kwargs):
 
     ret_eps.sort(key=lambda x: x[3])
 
-    h2ev = p4const.psi_hartree2ev
+    h2ev = constants.hartree2ev
     irrep_labels = dfep2_wfn.molecule().irrep_labels()
 
     core.print_out("  ==> Results <==\n\n")
