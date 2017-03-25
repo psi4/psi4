@@ -34,7 +34,6 @@ import time
 import numpy as np
 
 from psi4 import core
-from psi4.driver import p4const
 from .exceptions import *
 
 

@@ -26,14 +26,14 @@
 #
 
 from psi4 import core
-from psi4.driver import p4const
+from psi4.driver import constants
 
 def print_sapt_var(name, value, short=False, start_spacer="    "):
     """
     Converts the incoming value as hartree to a correctly formatted Psi print format.
     """
 
-    vals = (name, value * 1000, value * p4const.psi_hartree2kcalmol, value * p4const.psi_hartree2kJmol)
+    vals = (name, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kcalmol)
     if short:
         return start_spacer + "%-20s % 15.8f [mEh]" % vals[:2]
     else:
