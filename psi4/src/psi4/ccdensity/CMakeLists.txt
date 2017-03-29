@@ -132,5 +132,6 @@ set(sources_list sortI.cc
                  x_Gciab_uhf.cc 
                  Gijab.cc 
                  x_xi_intermediates.cc 
+                 V_cc2.cc
 )
 psi4_add_module(bin ccdensity sources_list mints)
