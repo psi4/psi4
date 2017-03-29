@@ -46,53 +46,77 @@ void Gijab_RHF(void)
   double value;
   dpdfile2 T1, L1, g, ZZ, ZZ2, T1A, T1B;
   dpdbuf4 G, L, T, V, Z, Z1, Z2;
+  bool T2_L2_V = true;
+
+  /*  T2 * L2 * V is absent in CC2 Lagrangian */
+  if (params.wfn == "CC2" && params.dertype ==1) T2_L2_V = false;
 
   nirreps = moinfo.nirreps;
 
+  if (T2_L2_V){
   /* ( g(I,M) + L(M,E) T(I,E) ) --> Z(I,M)(TMP0)  */
   global_dpd_->file2_init(&g, PSIF_CC_GLG, 0, 0, 0, "GMI");
   global_dpd_->file2_copy(&g, PSIF_CC_TMP0, "Z(I,M)");
   global_dpd_->file2_close(&g);
+  }
   global_dpd_->file2_init(&ZZ, PSIF_CC_TMP0, 0, 0, 0, "Z(I,M)");
   global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  global_dpd_->contract222(&T1, &L1, &ZZ, 0, 0, 1.0, 1.0);
+  if (T2_L2_V) 
+     global_dpd_->contract222(&T1, &L1, &ZZ, 0, 0, 1.0, 1.0);
+  else  
+     global_dpd_->contract222(&T1, &L1, &ZZ, 0, 0, 1.0, 0.0);
   global_dpd_->file2_close(&T1);
   global_dpd_->file2_close(&L1);
   global_dpd_->file2_close(&ZZ);
 
+  if (T2_L2_V){
   /* ( g(i,m) + L(m,e) T(i,e) ) --> Z(i,m)(TMP1)  */
   global_dpd_->file2_init(&g, PSIF_CC_GLG, 0, 0, 0, "Gmi");
   global_dpd_->file2_copy(&g, PSIF_CC_TMP1, "Z(i,m)");
   global_dpd_->file2_close(&g);
+  }
   global_dpd_->file2_init(&ZZ, PSIF_CC_TMP1, 0, 0, 0, "Z(i,m)");
   global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "Lia");
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
-  global_dpd_->contract222(&T1, &L1, &ZZ, 0, 0, 1.0, 1.0);
+  if(T2_L2_V) 
+    global_dpd_->contract222(&T1, &L1, &ZZ, 0, 0, 1.0, 1.0);
+  else 
+    global_dpd_->contract222(&T1, &L1, &ZZ, 0, 0, 1.0, 0.0);
   global_dpd_->file2_close(&T1);
   global_dpd_->file2_close(&L1);
   global_dpd_->file2_close(&ZZ);
 
+  if (T2_L2_V){
   /* ( g(E,A) - L(M,E) T(M,A) ) --> Z(E,A)(TMP2) */
   global_dpd_->file2_init(&g, PSIF_CC_GLG, 0, 1, 1, "GAE");
   global_dpd_->file2_copy(&g, PSIF_CC_TMP2, "Z(E,A)");
   global_dpd_->file2_close(&g);
+  }
   global_dpd_->file2_init(&ZZ, PSIF_CC_TMP2, 0, 1, 1, "Z(E,A)");
   global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  global_dpd_->contract222(&L1, &T1, &ZZ, 1, 1, -1.0, 1.0);
+  if (T2_L2_V)
+     global_dpd_->contract222(&L1, &T1, &ZZ, 1, 1, -1.0, 1.0);
+  else 
+     global_dpd_->contract222(&L1, &T1, &ZZ, 1, 1, -1.0, 0.0);
   global_dpd_->file2_close(&T1);
   global_dpd_->file2_close(&L1);
   global_dpd_->file2_close(&ZZ);
 
+  if (T2_L2_V){
   /* ( g(e,a) - L(m,e) T(m,a) ) --> Z(e,a)(TMP3) */
   global_dpd_->file2_init(&g, PSIF_CC_GLG, 0, 1, 1, "Gae");
   global_dpd_->file2_copy(&g, PSIF_CC_TMP3, "Z(e,a)");
   global_dpd_->file2_close(&g);
+  }
   global_dpd_->file2_init(&ZZ, PSIF_CC_TMP3, 0, 1, 1, "Z(e,a)");
   global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "Lia");
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
-  global_dpd_->contract222(&L1, &T1, &ZZ, 1, 1, -1.0, 1.0);
+  if (T2_L2_V) 
+     global_dpd_->contract222(&L1, &T1, &ZZ, 1, 1, -1.0, 1.0);
+  else 
+     global_dpd_->contract222(&L1, &T1, &ZZ, 1, 1, -1.0, 0.0);
   global_dpd_->file2_close(&T1);
   global_dpd_->file2_close(&L1);
   global_dpd_->file2_close(&ZZ);
