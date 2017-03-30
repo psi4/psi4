@@ -355,14 +355,19 @@ SharedMatrix SCFGrad::compute_gradient()
         double zlambda = 0.0;
 
         std::string perturb_with = options_.get_str("PERTURB_WITH");
-        double lambda = options_.get_double("PERTURB_MAGNITUDE");
         if (perturb_with == "DIPOLE_X")
-            xlambda = lambda;
+            xlambda = options_.get_double("PERTURB_MAGNITUDE");
         else if (perturb_with == "DIPOLE_Y")
-            ylambda = lambda;
+            ylambda = options_.get_double("PERTURB_MAGNITUDE");
         else if (perturb_with == "DIPOLE_Z")
-            zlambda = lambda;
-        else {
+            zlambda = options_.get_double("PERTURB_MAGNITUDE");
+        else if (perturb_with == "DIPOLE") {
+            if(options_["PERTURB_DIPOLE"].size() !=3)
+                throw PSIEXCEPTION("The PERTURB dipole should have exactly three floating point numbers.");
+            xlambda = options_["PERTURB_DIPOLE"][0].to_double();
+            ylambda = options_["PERTURB_DIPOLE"][1].to_double();
+            zlambda = options_["PERTURB_DIPOLE"][2].to_double();
+        } else {
             std::string msg("Gradients for a ");
             msg += perturb_with;
             msg += " perturbation are not available yet.\n";

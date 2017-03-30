@@ -13,8 +13,8 @@ set {
 }
 
 set perturb_h true
-set perturb_with dipole_z
-set perturb_magnitude 0.01
+set perturb_with dipole
+set perturb_dipole [0, 0, 0.01]
 
 analytic = gradient('mp2')
 

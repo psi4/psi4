@@ -27,8 +27,8 @@ set {
 energies = []
 for l in lambdas:
     set perturb_h true
-    set perturb_with dipole_z
-    set perturb_magnitude $l
+    set perturb_with dipole
+    set perturb_dipole [0, 0, $l]
     energies.append(energy('scf'))
 
 # Now use 3- and 5-point finite difference formulae to compute the dipole
