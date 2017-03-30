@@ -279,7 +279,10 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_close(&T);
       }
       /* V(IJ,MN) Tau(MN,AB) */
-      global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+      if(T2_L2_V)
+         global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+      else
+         global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "t1_IJAB");
       global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 2, 2, 2, 2, 0, "VMNIJ");
       global_dpd_->contract444(&V, &T, &G, 0, 1, 1.0, 1.0);
       global_dpd_->buf4_close(&V);
@@ -315,6 +318,8 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_axpy(&Z1, &G, 1.0);
       global_dpd_->buf4_close(&Z1);
       global_dpd_->buf4_close(&G);
+
+      if (T2_L2_V){
       /* - P(IJ) P(AB) ( T'(IA,ME) (TMP4) V(JB,ME) + T(IA,me) (T2) V(JB,me) ) */
       global_dpd_->buf4_init(&Z, PSIF_CC_TMP8, 0, 20, 20, 20, 20, 0, "Z(IA,JB)");
       global_dpd_->buf4_init(&T, PSIF_CC_TMP4, 0, 20, 20, 20, 20, 0, "Z(IA,ME)");
@@ -347,6 +352,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_axpy(&Z, &G, -0.5);
       global_dpd_->buf4_close(&Z);
       global_dpd_->buf4_close(&G);
+      }
       /* T'(IA,ME) (TMP4) L(M,E) + T'(IA,me) (T2) L(m,e) --> ZZ(I,A) */
       global_dpd_->file2_init(&ZZ, PSIF_CC_TMP8, 0, 0, 1, "ZZ(I,A)");
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
@@ -529,7 +535,10 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_close(&T);
       }
       /* V(ij,mn) Tau(mn,ab) */
-      global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
+      if(T2_L2_V)
+         global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
+      else
+         global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "t1_ijab");
       global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 12, 12, 12, 12, 0, "Vmnij");
       global_dpd_->contract444(&V, &T, &G, 0, 1, 1.0, 1.0);
       global_dpd_->buf4_close(&V);
@@ -565,6 +574,8 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_axpy(&Z1, &G, 1.0);
       global_dpd_->buf4_close(&Z1);
       global_dpd_->buf4_close(&G);
+
+      if(T2_L2_V){
       /* - P(ij) P(ab) ( T'(ia,me) (TMP5) V(jb,me) + T(ia,ME) (T2) V(jb,ME) ) */
       global_dpd_->buf4_init(&Z, PSIF_CC_TMP8, 0, 30, 30, 30, 30, 0, "Z(ia,jb)");
       global_dpd_->buf4_init(&T, PSIF_CC_TMP5, 0, 30, 30, 30, 30, 0, "Z(ia,me)");
@@ -597,6 +608,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_axpy(&Z, &G, -0.5);
       global_dpd_->buf4_close(&Z);
       global_dpd_->buf4_close(&G);
+      }
       /* T'(ia,me) (TMP5) L(m,e) + T'(ia,ME) (T2) L(M,E) --> ZZ(i,a) */
       global_dpd_->file2_init(&ZZ, PSIF_CC_TMP8, 0, 2, 3, "ZZ(i,a)");
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 2, 3, "Lia");
@@ -779,7 +791,10 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_close(&T);
       }
       /* V(Ij,Mn) Tau(Mn,Ab) */
-      global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+      if (T2_L2_V)
+         global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+      else
+         global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "t1_IjAb");
       global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 22, 22, 22, 22, 0, "VMnIj");
       global_dpd_->contract444(&V, &T, &G, 0, 1, 1.0, 1.0);
       global_dpd_->buf4_close(&V);
@@ -836,6 +851,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_close(&Z1);
       global_dpd_->buf4_close(&G);
       /* - P(Ij) P(Ab) ( T'(IA,me) (T2) V(jb,me) + T'(IA,ME) (TMP4) V(jb,ME) ) */
+      if(T2_L2_V){
       global_dpd_->buf4_init(&Z, PSIF_CC_TMP8, 0, 20, 30, 20, 30, 0, "Z(IA,jb)");
       global_dpd_->buf4_init(&T, PSIF_CC_TMP4, 0, 20, 20, 20, 20, 0, "Z(IA,ME)");
       global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 30, 20, 30, 20, 0, "ViaJB");
@@ -893,6 +909,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_axpy(&Z, &G, -0.5);
       global_dpd_->buf4_close(&Z);
       global_dpd_->buf4_close(&G);
+      }
       /* T'(IA,me) (T2) L(m,e) + T'(IA,ME) (TMP4) L(M,E) --> ZZ(I,A) */
       global_dpd_->file2_init(&ZZ, PSIF_CC_TMP8, 0, 0, 1, "ZZ(I,A)");
       global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");

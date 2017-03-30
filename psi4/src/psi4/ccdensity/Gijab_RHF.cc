@@ -271,11 +271,14 @@ void Gijab_RHF(void)
   /* Tau(Ij,Ab) * (L0*R0 = 1, ground or 0, excited */
   if (params.ground) {
     global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
-    global_dpd_->buf4_axpy(&T, &G, 1.0);
+    global_dpd_->buf4_axpy(&T, &G, 1.0);    
     global_dpd_->buf4_close(&T);
   }
   /* V(Ij,Mn) Tau(Mn,Ab) */
-  global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+  if (T2_L2_V)
+     global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+  else
+     global_dpd_->buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "t1_IjAb");
   global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 0, 0, 0, 0, 0, "VMnIj");
   global_dpd_->contract444(&V, &T, &G, 0, 1, 1.0, 1.0);
   global_dpd_->buf4_close(&V);
@@ -331,6 +334,8 @@ void Gijab_RHF(void)
   global_dpd_->buf4_axpy(&Z1, &G, 1.0);
   global_dpd_->buf4_close(&Z1);
   global_dpd_->buf4_close(&G);
+  
+  if(T2_L2_V){
   /* - P(Ij) P(Ab) ( T'(IA,me) (T2) V(jb,me) + T'(IA,ME) (TMP4) V(jb,ME) ) */
   global_dpd_->buf4_init(&Z, PSIF_CC_TMP8, 0, 10, 10, 10, 10, 0, "Z(IA,jb)");
   global_dpd_->buf4_init(&T, PSIF_CC_TMP4, 0, 10, 10, 10, 10, 0, "Z(IA,ME)");
@@ -389,6 +394,7 @@ void Gijab_RHF(void)
   global_dpd_->buf4_axpy(&Z, &G, -0.5);
   global_dpd_->buf4_close(&Z);
   global_dpd_->buf4_close(&G);
+  }
   /* T'(IA,me) (T2) L(m,e) + T'(IA,ME) (TMP4) L(M,E) --> ZZ(I,A) */
   global_dpd_->file2_init(&ZZ, PSIF_CC_TMP8, 0, 0, 1, "ZZ(I,A)");
   global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");

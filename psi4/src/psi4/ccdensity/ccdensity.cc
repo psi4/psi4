@@ -267,7 +267,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
         x_Gijab();
       }
     }
-
+ 
     sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
     if (!params.onepdm) {
       if(!params.aobasis) energy(rho_params[i]);
