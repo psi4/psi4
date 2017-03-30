@@ -376,7 +376,15 @@ SharedMatrix SCFGrad::compute_gradient()
         gradients_["Perturbation"]->zero();
         double** Pp = gradients_["Perturbation"]->pointer();
 
-        // Dipole perturbation derivatives
+        // Nuclear dipole perturbation derivatives
+        for(int n = 0; n < natom; ++n){
+            double charge = molecule_->Z(n);
+            Pp[n][0] += xlambda*charge;
+            Pp[n][1] += ylambda*charge;
+            Pp[n][2] += zlambda*charge;
+        }
+
+        // Electronic dipole perturbation derivatives
         std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
         const double* buffer = Dint->buffer();
 

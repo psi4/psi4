@@ -349,6 +349,22 @@ int Molecule::atom_at_position2(Vector3 &b, double tol) const
     return -1;
 }
 
+Vector3 Molecule::nuclear_dipole() const
+{
+    Vector3 origin(0.0, 0.0, 0.0);
+    return nuclear_dipole(origin);
+}
+
+Vector3 Molecule::nuclear_dipole(const Vector3 &origin) const
+{
+    Vector3 dipole(0.0);
+
+    for(int i=0; i < natom(); ++i)
+        dipole += Z(i) * (xyz(i) - origin);
+
+    return dipole;
+}
+
 Vector3 Molecule::center_of_mass() const
 {
     Vector3 ret;

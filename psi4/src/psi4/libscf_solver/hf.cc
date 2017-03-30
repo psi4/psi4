@@ -266,13 +266,16 @@ void HF::common_init()
         if (options_["PERTURB_WITH"].has_changed()) {
             perturb_with = options_.get_str("PERTURB_WITH");
             // Do checks to see what perturb_with is.
-            if (perturb_with == "DIPOLE_X")
+            if (perturb_with == "DIPOLE_X") {
                 perturb_ = dipole_x;
-            else if (perturb_with == "DIPOLE_Y")
+                nuclearrep_ += lambda_*molecule_->nuclear_dipole()[0];
+            } else if (perturb_with == "DIPOLE_Y") {
                 perturb_ = dipole_y;
-            else if (perturb_with == "DIPOLE_Z")
+                nuclearrep_ += lambda_*molecule_->nuclear_dipole()[1];
+            } else if (perturb_with == "DIPOLE_Z") {
                 perturb_ = dipole_z;
-            else if (perturb_with == "EMBPOT") {
+                nuclearrep_ += lambda_*molecule_->nuclear_dipole()[2];
+            } else if (perturb_with == "EMBPOT") {
                 perturb_ = embpot;
                 lambda_ = 1.0;
             }
