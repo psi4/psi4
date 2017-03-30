@@ -31,7 +31,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libdpd/dpd.h>
+#include <psi4/libdpd/dpd.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "ccwave.h"
@@ -43,7 +43,7 @@ void CCEnergyWavefunction::t1_ijab(void)
   int h, ij, ab, i, j, a, b, I, J, A, B;
   int Isym, Jsym, Asym, Bsym;
   int nirreps;
-  dpdbuf4 t1_IJAB, t1_ijab, t1_IjAb; 
+  dpdbuf4 t1_IJAB, t1_ijab, t1_IjAb, t1_IjbA; 
   dpdfile2 tIA, tia;
 
   nirreps = moinfo_.nirreps;

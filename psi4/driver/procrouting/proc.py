@@ -786,6 +786,30 @@ def select_ccsd_gradient(name, **kwargs):
     else:
         return func(name, **kwargs)
 
+def select_cc2_gradient(name, **kwargs):
+    """Function selecting the algorithm for a CC2 gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'CCENERGY']:
+                func = run_ccenergy_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_cc2_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
 
 def select_fnoccsd_t_(name, **kwargs):
     """Function selecting the algorithm for a FNO-CCSD(T) energy call
@@ -2229,6 +2253,10 @@ def run_ccenergy_gradient(name, **kwargs):
 
     ccwfn = run_ccenergy(name, **kwargs)
 
+    if name == 'cc2':
+        core.set_local_option('CCHBAR', 'WFN', 'CC2')
+        core.set_local_option('CCLAMBDA', 'WFN', 'CC2')
+        core.set_local_option('CCDENSITY', 'WFN', 'CC2')
     if name == 'ccsd':
         core.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
         core.set_local_option('CCDENSITY', 'WFN', 'CCSD')

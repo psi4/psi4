@@ -86,7 +86,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V){
     /* - V(iA,mC) T(m,b) --> Z(iA,bC) */
@@ -215,7 +215,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
     
     if(T2_L2_V){
     /* - V(IA,MC) T(M,B) --> Z(IA,BC) */
@@ -328,7 +328,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V){
     /* - V(ia,mc) T(m,b) --> Z(ia,bc) */
@@ -440,7 +440,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V){
     /* - V(iA,mC) T(m,b) --> Z(iA,bC) */
@@ -564,7 +564,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V) {
     /* - V(Ia,Mc) T(M,B) --> Z(Ia,Bc) */
@@ -706,7 +706,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V){
     /* - V(IA,MC) T(M,B) --> Z(IA,BC) */
@@ -819,7 +819,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V) {
     /* - V(ia,mc) T(m,b) --> Z(ia,bc) */
@@ -932,7 +932,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if(T2_L2_V) {
     /* - V(iA,mC) T(m,b) --> Z(iA,bC) */
@@ -1055,7 +1055,7 @@ void Gciab(void)
     global_dpd_->contract444(&Z, &T, &G, 1, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
 
     if (T2_L2_V) {
     /* - V(Ia,Mc) T(M,B) --> Z(Ia,Bc) */
