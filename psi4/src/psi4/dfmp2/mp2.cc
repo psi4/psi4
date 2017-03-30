@@ -2646,6 +2646,8 @@ void RDFMP2::form_gradient()
     gradient_terms.push_back("Potential");
     gradient_terms.push_back("Overlap");
     gradient_terms.push_back("Coulomb");
+    if(options_.get_bool("PERTURB_H"))
+        gradient_terms.push_back("Perturbation");
     gradient_terms.push_back("Exchange");
     gradient_terms.push_back("Correlation");
     gradient_terms.push_back("Total");
@@ -2820,6 +2822,217 @@ void RDFMP2::form_gradient()
         }  // end external
     }
 
+
+    // => Perturbation Gradient <= //
+    if(options_.get_bool("PERTURB_H")) {
+        timer_on("Grad: Perturbation");
+
+        double xlambda = 0.0;
+        double ylambda = 0.0;
+        double zlambda = 0.0;
+
+        std::string perturb_with = options_.get_str("PERTURB_WITH");
+        double lambda = options_.get_double("PERTURB_MAGNITUDE");
+        if (perturb_with == "DIPOLE_X")
+            xlambda = lambda;
+        else if (perturb_with == "DIPOLE_Y")
+            ylambda = lambda;
+        else if (perturb_with == "DIPOLE_Z")
+            zlambda = lambda;
+        else {
+            std::string msg("Gradients for a ");
+            msg += perturb_with;
+            msg += " perturbation are not available yet.\n";
+            throw PSIEXCEPTION(msg);
+        }
+
+        gradients_["Perturbation"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Perturbation"]->set_name("Perturbation Gradient");
+        gradients_["Perturbation"]->zero();
+        double** Pp = gradients_["Perturbation"]->pointer();
+        // Nuclear dipole perturbation derivatives
+        for(int n = 0; n < natom; ++n){
+            double charge = molecule_->Z(n);
+            Pp[n][0] += xlambda*charge;
+            Pp[n][1] += ylambda*charge;
+            Pp[n][2] += zlambda*charge;
+        }
+
+        // Electronic dipole perturbation derivatives
+        std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
+        const double* buffer = Dint->buffer();
+
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            for (int Q = 0; Q <= P; Q++) {
+
+                Dint->compute_shell_deriv1(P,Q);
+
+                int nP = basisset_->shell(P).nfunction();
+                int oP = basisset_->shell(P).function_index();
+                int aP = basisset_->shell(P).ncenter();
+
+                int nQ = basisset_->shell(Q).nfunction();
+                int oQ = basisset_->shell(Q).function_index();
+                int aQ = basisset_->shell(Q).ncenter();
+
+                const double* ref = buffer;
+                double perm = (P == Q ? 1.0 : 2.0);
+                double prefac;
+
+                /*
+                 * Mu X derivatives
+                 */
+                if (xlambda != 0.0) {
+                    prefac = perm*xlambda;
+                    // Px
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Py
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Pz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qx
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qy
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+                } else {
+                    // Xlambda is zero, so we just advance the pointer to the buffer
+                    ref += 6*nP*nQ;
+                }
+
+                /*
+                 * Mu Y derivatives
+                 */
+                if (ylambda != 0.0) {
+                    prefac = perm*ylambda;
+                    // Px
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Py
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Pz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qx
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qy
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+                } else {
+                    // Ylambda is zero, so we just advance the pointer to the buffer
+                    ref += 6*nP*nQ;
+                }
+
+                /*
+                 * Mu Z derivatives
+                 */
+                if (zlambda != 0.0) {
+                    prefac = perm*zlambda;
+                    // Px
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Py
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Pz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aP][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qx
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][0] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qy
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][1] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+
+                    // Qz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            Pp[aQ][2] += prefac * PAOp[p + oP][q + oQ] * (*ref++);
+                        }
+                    }
+                }
+
+            }
+        }
+        timer_off("Grad: Perturbation");
+    }
     //gradients_["One-Electron"] = SharedMatrix(gradients_["Nuclear"]->clone());
     //gradients_["One-Electron"]->set_name("One-Electron Gradient");
     //gradients_["One-Electron"]->zero();
