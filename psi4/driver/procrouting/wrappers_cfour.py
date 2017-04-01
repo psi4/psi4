@@ -53,6 +53,7 @@ def run_cfour_module(xmod):
                 ':' + os.environ.get('PATH') + \
                 ':' + core.Process.environment["PSIDATADIR"] + '/basis' + \
                 ':' + core.psi_top_srcdir() + '/share/basis',
+        'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
     #   Filter out None values as subprocess will fault on them
