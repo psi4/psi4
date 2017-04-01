@@ -69,9 +69,8 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
     py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-//    std::shared_ptr <ExternalPotential> external = pyExtern.cast < std::shared_ptr < ExternalPotential >> ();
-    bool noextern = pyExtern ? false : true;
-    CdSalcList salc_list(mol, fact, 0xFF, noextern, noextern);
+    bool project = !pyExtern && !options.get_bool("PERTURB_H");
+    CdSalcList salc_list(mol, fact, 0xFF, project, project);
     int Nirrep = salc_list.nirrep();
 
     // build vectors that list indices of salcs for each irrep

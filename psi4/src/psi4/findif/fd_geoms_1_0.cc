@@ -61,8 +61,8 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     // Get SALCS from libmints
     std::shared_ptr<MatrixFactory> fact;
     py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-    bool noextern = pyExtern ? false : true;
-    CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);
+    bool project = !pyExtern && !options.get_bool("PERTURB_H");
+    CdSalcList cdsalc(mol, fact, 0x1, project, project);
 
     int Nsalc = cdsalc.ncd();
     outfile->Printf("\tNumber of symmetric SALC's is %d.\n", Nsalc);

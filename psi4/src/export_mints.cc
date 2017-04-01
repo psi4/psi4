@@ -66,16 +66,9 @@
 
 using namespace psi;
 
-std::shared_ptr<Vector> py_nuclear_dipole(std::shared_ptr<Molecule> mol)
-{
-    return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
-}
-
 
 void export_mints(py::module& m)
 {
-    m.def("nuclear_dipole", py_nuclear_dipole, "docstring");
-
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
     // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
@@ -620,10 +613,14 @@ void export_mints(py::module& m)
 //            def("set_symbol", &PointGroup::set_symbol);
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
+    typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
+    typedef Vector3 (Molecule::*nuclear_dipole2)() const;
 
     py::class_<Molecule, std::shared_ptr<Molecule> >(m, "Molecule", "Class to store the elements, coordinates, fragmentation pattern, basis sets, charge, multiplicity, etc. of a molecule.").
             def("set_geometry", matrix_set_geometry(&Molecule::set_geometry), "Sets the geometry, given a (Natom X 3) matrix arg2 of coordinates (in Bohr)").
             def("set_name", &Molecule::set_name, "Sets molecule name").
+            def("nuclear_dipole", nuclear_dipole1(&Molecule::nuclear_dipole), "Gets the nuclear contribution to the dipole, withe respect to a specified origin").
+            def("nuclear_dipole", nuclear_dipole2(&Molecule::nuclear_dipole), "Gets the nuclear contribution to the dipole, withe respect to the origin").
             def("name", &Molecule::name, "Gets molecule name").
             def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry, "Do reinterpret coordinate entries during update_geometry().").
             def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame").

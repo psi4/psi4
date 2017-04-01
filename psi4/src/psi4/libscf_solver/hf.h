@@ -152,9 +152,9 @@ protected:
     /// Perturb the Hamiltonian?
     int perturb_h_;
     /// How big of a perturbation
-    double lambda_;
+    Vector3 perturb_dipoles_;
     /// With what...
-    enum perturb { nothing, dipole_x, dipole_y, dipole_z, embpot, dx, sphere };
+    enum perturb { nothing, dipole_x, dipole_y, dipole_z, dipole, embpot, dx, sphere };
     perturb perturb_;
 
     /// The value below which integrals are neglected

@@ -754,6 +754,19 @@ and the coordinates always use the same units as the geometry specification in
 the regular QM region.  Additional MM molecules may be specified by adding
 extra calls to ``addCharge`` to describe the full MM region.
 
+To run a computation in a constant dipole field, the |scf__perturb_h|,
+|scf__perturb_with| and |scf__perturb_dipole| keywords can be used.  As an
+example, to add a dipole field of magnitude 0.05 a.u. in the y direction and
+0.1 a.u. in the z direction, we can use the following keywords::
+
+    set perturb_h true
+    set perturb_with dipole
+    set perturb_dipole [ 0, 0.05, 0.1 ]
+
+Note that if any specified fields do not fall along a symmetry axis, the
+symmetry of the calculation should be reduced accordingly; if in doubt run the
+calculation in C1 symmetry.  For examples of SCF and MP2 calculations in an
+external field, see :srcsample:`scf7` and :srcsample:`dfmp2-grad5`.
 
 Convergence and Algorithm Defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

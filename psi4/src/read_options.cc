@@ -1321,10 +1321,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
-    /*- Size of the perturbation (applies only to dipole perturbations) -*/
+    /*- Size of the perturbation (applies only to dipole perturbations).  Deprecated - use PERTURB_DIPOLE instead -*/
     options.add_double("PERTURB_MAGNITUDE", 0.0);
-    /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
+    /*- An array of length three describing the magnitude (atomic units) of the dipole field in the {x,y,z} directions -*/
+    options.add("PERTURB_DIPOLE", new ArrayType());
+    /*- The operator used to perturb the Hamiltonian, if requested.  DIPOLE_X, DIPOLE_Y and DIPOLE_Z will be
+        removed in favor of the DIPOLE option in the future -*/
+    options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
