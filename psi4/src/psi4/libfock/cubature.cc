@@ -3965,7 +3965,7 @@ void DFTGrid::buildGridFromOptions()
     opt.nradpts = options_.get_int("DFT_RADIAL_POINTS");
     opt.nangpts = options_.get_int("DFT_SPHERICAL_POINTS");
 
-    if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) < -1) {
+    if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp(); // Tell what the admissible values are.
         throw PSIEXCEPTION("Invalid number of spherical points (not a Lebedev number)");
     }
