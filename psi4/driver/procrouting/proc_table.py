@@ -156,7 +156,7 @@ procedures = {
         'gradient' : {
             'hf'            : proc.run_scf_gradient,
             'scf'           : proc.run_scf_gradient,
-            'cc2'           : proc.select_cc2_gradient,
+            'cc2'           : proc.select_ccsd_gradient,
             'ccsd'          : proc.select_ccsd_gradient,
             'ccsd(t)'       : proc.select_ccsd_t__gradient,
             'mp2'           : proc.select_mp2_gradient,

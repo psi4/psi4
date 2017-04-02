@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1a2.dev378 
+                               Psi4 1.1a2.dev386 
 
-                         Git: Rev {cc2_grad} 933a30b 
+                         Git: Rev {cc2_grad} a09eb1c dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -17,9 +17,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 01 April 2017 04:55PM
+    Psi4 started on: Sunday, 02 April 2017 05:57PM
 
-    Process ID:  44329
+    Process ID: 144376
     PSIDATADIR: /home/akumar1/newriver/installed/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -27,7 +27,6 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-memory 500 mb
 
 molecule water{
 0 1
@@ -42,7 +41,6 @@ A = 104.5
 set {
   reference RHF
   basis cc-pVDZ
-  dertype first
 }
 
 analytic, wfn = gradient('cc2', return_wfn=True)
@@ -53,12 +51,10 @@ fin_diff, wfn = gradient('cc2', dertype=0, return_wfn=True)
 compare_matrices(analytic, fin_diff, 7, "RHF-CC2  gradient test") #TEST
 
 --------------------------------------------------------------------------
-
-  Memory set to 476.837 MiB by Python driver.
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:30 2017
+*** at Sun Apr  2 17:57:48 2017
 
    => Loading Basis Set <=
 
@@ -73,7 +69,7 @@ gradient() will perform analytic gradient computation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -157,7 +153,7 @@ gradient() will perform analytic gradient computation.
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -223,7 +219,7 @@ gradient() will perform analytic gradient computation.
     EFP Energy =                            0.0000000000000000
     Total Energy =                        -76.0214184451548931
 
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -242,14 +238,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0955     Total:     2.0955
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:31 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:49 2017
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -276,7 +272,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:31 2017
+*** at Sun Apr  2 17:57:49 2017
 
 
 	Wfn Parameters:
@@ -363,18 +359,18 @@ Total time:
 	Two-electron energy          =     37.62246764468254
 	Reference energy             =    -76.02141844515492
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:31 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:49 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.59 seconds =       0.01 minutes
+	user time   =       0.55 seconds =       0.01 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:31 2017
+*** at Sun Apr  2 17:57:49 2017
 
             **************************
             *                        *
@@ -391,7 +387,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -467,18 +463,18 @@ MP2 correlation energy -0.2069490333187383
       * CC2 total energy                      =  -76.229368165449003
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:31 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:49 2017
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.09 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.71 seconds =       0.01 minutes
+	user time   =       0.64 seconds =       0.01 minutes
 	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:31 2017
+*** at Sun Apr  2 17:57:49 2017
 
 
 			**************************
@@ -488,18 +484,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:31 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:49 2017
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:31 2017
+*** at Sun Apr  2 17:57:49 2017
 
 
 			**************************
@@ -576,18 +572,18 @@ Total time:
 
 	Overlap <L|e^T> =        0.94592386612
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:31 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:49 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.75 seconds =       0.01 minutes
+	user time   =       0.68 seconds =       0.01 minutes
 	system time =       0.15 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:31 2017
+*** at Sun Apr  2 17:57:49 2017
 
 
 			**************************
@@ -715,15 +711,15 @@ Properties computed using the CC density matrix
   LUNO+3 :    5 A1    0.010
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:32 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:49 2017
 Module time:
 	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.90 seconds =       0.02 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
   Cartesian Displacement SALCs
   By SALC:
   Number of SALCs: 3, nirreps: 1
@@ -833,7 +829,7 @@ gradient() will perform gradient computation by finite difference of analytic en
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:32 2017
+*** at Sun Apr  2 17:57:50 2017
 
    => Loading Basis Set <=
 
@@ -848,7 +844,7 @@ gradient() will perform gradient computation by finite difference of analytic en
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -932,7 +928,7 @@ gradient() will perform gradient computation by finite difference of analytic en
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -1017,14 +1013,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.1031     Total:     2.1031
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:32 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:50 2017
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.58 seconds =       0.03 minutes
-	system time =       0.19 seconds =       0.00 minutes
+	user time   =       1.47 seconds =       0.02 minutes
+	system time =       0.18 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -1051,7 +1047,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:32 2017
+*** at Sun Apr  2 17:57:50 2017
 
 
 	Wfn Parameters:
@@ -1138,18 +1134,18 @@ Total time:
 	Two-electron energy          =     37.60502749084686
 	Reference energy             =    -76.02096126721680
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:32 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:50 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.67 seconds =       0.03 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       1.56 seconds =       0.03 minutes
+	system time =       0.20 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:32 2017
+*** at Sun Apr  2 17:57:50 2017
 
             **************************
             *                        *
@@ -1166,7 +1162,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -1244,22 +1240,22 @@ MP2 correlation energy -0.2071606371591009
       * CC2 total energy                      =  -76.229134533895362
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:33 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:50 2017
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.77 seconds =       0.03 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.66 seconds =       0.03 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:33 2017
+*** at Sun Apr  2 17:57:50 2017
 
    => Loading Basis Set <=
 
@@ -1274,7 +1270,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1358,7 +1354,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -1424,7 +1420,7 @@ Total time:
     EFP Energy =                            0.0000000000000000
     Total Energy =                        -76.0211928091286495
 
-
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1443,14 +1439,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0993     Total:     2.0993
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:33 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:51 2017
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.31 seconds =       0.04 minutes
-	system time =       0.30 seconds =       0.01 minutes
+	user time   =       2.18 seconds =       0.04 minutes
+	system time =       0.28 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -1477,7 +1473,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:33 2017
+*** at Sun Apr  2 17:57:51 2017
 
 
 	Wfn Parameters:
@@ -1564,18 +1560,18 @@ Total time:
 	Two-electron energy          =     37.61374869803158
 	Reference energy             =    -76.02119280912878
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:33 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:51 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.39 seconds =       0.04 minutes
-	system time =       0.33 seconds =       0.01 minutes
+	user time   =       2.27 seconds =       0.04 minutes
+	system time =       0.29 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:33 2017
+*** at Sun Apr  2 17:57:51 2017
 
             **************************
             *                        *
@@ -1592,7 +1588,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -1669,14 +1665,14 @@ MP2 correlation energy -0.2070546065154114
       * CC2 total energy                      =  -76.229254050069585
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:33 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:51 2017
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.48 seconds =       0.04 minutes
-	system time =       0.40 seconds =       0.01 minutes
+	user time   =       2.36 seconds =       0.04 minutes
+	system time =       0.35 seconds =       0.01 minutes
 	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -1684,7 +1680,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:33 2017
+*** at Sun Apr  2 17:57:51 2017
 
    => Loading Basis Set <=
 
@@ -1699,7 +1695,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1783,7 +1779,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -1868,14 +1864,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0916     Total:     2.0916
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:34 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:52 2017
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.01 seconds =       0.05 minutes
-	system time =       0.41 seconds =       0.01 minutes
+	user time   =       2.87 seconds =       0.05 minutes
+	system time =       0.36 seconds =       0.01 minutes
 	total time  =          4 seconds =       0.07 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -1902,7 +1898,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:34 2017
+*** at Sun Apr  2 17:57:52 2017
 
 
 	Wfn Parameters:
@@ -1989,18 +1985,18 @@ Total time:
 	Two-electron energy          =     37.63118421458576
 	Reference energy             =    -76.02163815410003
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:34 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:52 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.10 seconds =       0.05 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       2.96 seconds =       0.05 minutes
+	system time =       0.38 seconds =       0.01 minutes
 	total time  =          4 seconds =       0.07 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:34 2017
+*** at Sun Apr  2 17:57:52 2017
 
             **************************
             *                        *
@@ -2017,7 +2013,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -2095,14 +2091,14 @@ MP2 correlation energy -0.2068439185114692
       * CC2 total energy                      =  -76.229476860303649
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:34 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:52 2017
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.22 seconds =       0.05 minutes
-	system time =       0.49 seconds =       0.01 minutes
+	user time   =       3.05 seconds =       0.05 minutes
+	system time =       0.45 seconds =       0.01 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2110,7 +2106,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:34 2017
+*** at Sun Apr  2 17:57:52 2017
 
    => Loading Basis Set <=
 
@@ -2125,7 +2121,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2209,7 +2205,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -2294,14 +2290,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0878     Total:     2.0878
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:35 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:53 2017
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
+	user time   =       0.49 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.75 seconds =       0.06 minutes
-	system time =       0.50 seconds =       0.01 minutes
+	user time   =       3.57 seconds =       0.06 minutes
+	system time =       0.46 seconds =       0.01 minutes
 	total time  =          5 seconds =       0.08 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -2328,7 +2324,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:35 2017
+*** at Sun Apr  2 17:57:53 2017
 
 
 	Wfn Parameters:
@@ -2415,18 +2411,18 @@ Total time:
 	Two-electron energy          =     37.63989829050315
 	Reference energy             =    -76.02185191505237
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:35 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:53 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.83 seconds =       0.06 minutes
-	system time =       0.52 seconds =       0.01 minutes
+	user time   =       3.65 seconds =       0.06 minutes
+	system time =       0.48 seconds =       0.01 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:35 2017
+*** at Sun Apr  2 17:57:53 2017
 
             **************************
             *                        *
@@ -2443,7 +2439,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -2520,14 +2516,14 @@ MP2 correlation energy -0.2067392630201318
       * CC2 total energy                      =  -76.229580114246772
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:35 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:53 2017
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.92 seconds =       0.07 minutes
-	system time =       0.60 seconds =       0.01 minutes
+	user time   =       3.74 seconds =       0.06 minutes
+	system time =       0.55 seconds =       0.01 minutes
 	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2535,7 +2531,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:35 2017
+*** at Sun Apr  2 17:57:53 2017
 
    => Loading Basis Set <=
 
@@ -2550,7 +2546,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2634,7 +2630,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -2719,15 +2715,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0939     Total:     2.0939
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:36 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:53 2017
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.46 seconds =       0.07 minutes
-	system time =       0.60 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.25 seconds =       0.07 minutes
+	system time =       0.56 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -2753,7 +2749,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:36 2017
+*** at Sun Apr  2 17:57:53 2017
 
 
 	Wfn Parameters:
@@ -2840,18 +2836,18 @@ Total time:
 	Two-electron energy          =     37.60244899139336
 	Reference energy             =    -76.02079548553561
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:36 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:53 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.54 seconds =       0.08 minutes
-	system time =       0.62 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.34 seconds =       0.07 minutes
+	system time =       0.58 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:36 2017
+*** at Sun Apr  2 17:57:53 2017
 
             **************************
             *                        *
@@ -2868,7 +2864,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -2946,14 +2942,14 @@ MP2 correlation energy -0.2071294828361999
       * CC2 total energy                      =  -76.228936078810904
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:36 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:54 2017
 Module time:
-	user time   =       0.10 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.64 seconds =       0.08 minutes
-	system time =       0.71 seconds =       0.01 minutes
+	user time   =       4.42 seconds =       0.07 minutes
+	system time =       0.67 seconds =       0.01 minutes
 	total time  =          6 seconds =       0.10 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2961,7 +2957,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:36 2017
+*** at Sun Apr  2 17:57:54 2017
 
    => Loading Basis Set <=
 
@@ -2976,7 +2972,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3060,7 +3056,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -3145,15 +3141,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0947     Total:     2.0947
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:37 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:54 2017
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.17 seconds =       0.09 minutes
-	system time =       0.71 seconds =       0.01 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       4.93 seconds =       0.08 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -3179,7 +3175,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:37 2017
+*** at Sun Apr  2 17:57:54 2017
 
 
 	Wfn Parameters:
@@ -3266,18 +3262,18 @@ Total time:
 	Two-electron energy          =     37.61245040941486
 	Reference energy             =    -76.02111109256668
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:37 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:54 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.25 seconds =       0.09 minutes
-	system time =       0.73 seconds =       0.01 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       5.02 seconds =       0.08 minutes
+	system time =       0.70 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:37 2017
+*** at Sun Apr  2 17:57:54 2017
 
             **************************
             *                        *
@@ -3294,7 +3290,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -3371,14 +3367,14 @@ MP2 correlation energy -0.2070391407683874
       * CC2 total energy                      =  -76.229156110105791
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:37 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:55 2017
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       5.33 seconds =       0.09 minutes
-	system time =       0.82 seconds =       0.01 minutes
+	user time   =       5.11 seconds =       0.09 minutes
+	system time =       0.78 seconds =       0.01 minutes
 	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3386,7 +3382,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:37 2017
+*** at Sun Apr  2 17:57:55 2017
 
    => Loading Basis Set <=
 
@@ -3401,7 +3397,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3485,7 +3481,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -3570,14 +3566,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     2.0962     Total:     2.0962
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:37 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:55 2017
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.86 seconds =       0.10 minutes
-	system time =       0.83 seconds =       0.01 minutes
+	user time   =       5.61 seconds =       0.09 minutes
+	system time =       0.78 seconds =       0.01 minutes
 	total time  =          7 seconds =       0.12 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -3604,7 +3600,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:37 2017
+*** at Sun Apr  2 17:57:55 2017
 
 
 	Wfn Parameters:
@@ -3691,18 +3687,18 @@ Total time:
 	Two-electron energy          =     37.63250068817131
 	Reference energy             =    -76.02171746853745
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:37 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:55 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.95 seconds =       0.10 minutes
-	system time =       0.84 seconds =       0.01 minutes
+	user time   =       5.69 seconds =       0.09 minutes
+	system time =       0.80 seconds =       0.01 minutes
 	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:37 2017
+*** at Sun Apr  2 17:57:55 2017
 
             **************************
             *                        *
@@ -3719,7 +3715,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -3797,22 +3793,22 @@ MP2 correlation energy -0.2068591610252256
       * CC2 total energy                      =  -76.229572170660433
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:38 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:55 2017
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.05 seconds =       0.10 minutes
-	system time =       0.92 seconds =       0.02 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       5.79 seconds =       0.10 minutes
+	system time =       0.89 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:38 2017
+*** at Sun Apr  2 17:57:55 2017
 
    => Loading Basis Set <=
 
@@ -3827,7 +3823,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3911,7 +3907,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -3996,14 +3992,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0970     Total:     2.0970
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:38 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:56 2017
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.58 seconds =       0.11 minutes
-	system time =       0.93 seconds =       0.02 minutes
+	user time   =       6.32 seconds =       0.11 minutes
+	system time =       0.89 seconds =       0.01 minutes
 	total time  =          8 seconds =       0.13 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -4030,7 +4026,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:38 2017
+*** at Sun Apr  2 17:57:56 2017
 
 
 	Wfn Parameters:
@@ -4117,18 +4113,18 @@ Total time:
 	Two-electron energy          =     37.64254952920137
 	Reference energy             =    -76.02200808760111
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:38 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:56 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.67 seconds =       0.11 minutes
-	system time =       0.95 seconds =       0.02 minutes
+	user time   =       6.41 seconds =       0.11 minutes
+	system time =       0.91 seconds =       0.02 minutes
 	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:38 2017
+*** at Sun Apr  2 17:57:56 2017
 
             **************************
             *                        *
@@ -4145,7 +4141,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -4222,22 +4218,22 @@ MP2 correlation energy -0.2067695244132000
       * CC2 total energy                      =  -76.229768051069456
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:39 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:56 2017
 Module time:
 	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.76 seconds =       0.11 minutes
-	system time =       1.02 seconds =       0.02 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       6.50 seconds =       0.11 minutes
+	system time =       0.98 seconds =       0.02 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:39 2017
+*** at Sun Apr  2 17:57:56 2017
 
    => Loading Basis Set <=
 
@@ -4252,7 +4248,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    476 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4336,7 +4332,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -4421,14 +4417,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0955     Total:     2.0955
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:39 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:57 2017
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.30 seconds =       0.12 minutes
-	system time =       1.02 seconds =       0.02 minutes
+	user time   =       7.01 seconds =       0.12 minutes
+	system time =       0.99 seconds =       0.02 minutes
 	total time  =          9 seconds =       0.15 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -4455,7 +4451,7 @@ Total time:
 
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:39 2017
+*** at Sun Apr  2 17:57:57 2017
 
 
 	Wfn Parameters:
@@ -4542,18 +4538,18 @@ Total time:
 	Two-electron energy          =     37.62246764468254
 	Reference energy             =    -76.02141844515492
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:39 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:57 2017
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.39 seconds =       0.12 minutes
-	system time =       1.04 seconds =       0.02 minutes
+	user time   =       7.10 seconds =       0.12 minutes
+	system time =       1.01 seconds =       0.02 minutes
 	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on nrlogin1
-*** at Sat Apr  1 16:55:39 2017
+*** at Sun Apr  2 17:57:57 2017
 
             **************************
             *                        *
@@ -4570,7 +4566,7 @@ Total time:
     Wave function   =     CC2
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     500.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-08
@@ -4648,14 +4644,14 @@ MP2 correlation energy -0.2069490333187383
       * CC2 total energy                      =  -76.229368165514131
 
 
-*** tstop() called on nrlogin1 at Sat Apr  1 16:55:39 2017
+*** tstop() called on nrlogin1 at Sun Apr  2 17:57:57 2017
 Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.49 seconds =       0.12 minutes
-	system time =       1.12 seconds =       0.02 minutes
+	user time   =       7.21 seconds =       0.12 minutes
+	system time =       1.08 seconds =       0.02 minutes
 	total time  =          9 seconds =       0.15 minutes
 
 -------------------------------------------------------------
