@@ -270,36 +270,52 @@ void displace_atom(SharedMatrix geom, const int atom, const int coord, const int
 std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, Options &options) {
 
   // This is the size in bohr because geometry is in bohr at this point
-  // This equals 0.1 angstrom displacement
   double disp_size = options.get_double("DISP_SIZE");
+  int pts = options.get_int("POINTS");
 
   int natom = mol->natom();
 
-  // Geometry seems to be in bohr at this point
   Matrix ref_geom_temp = mol->geometry();
   SharedMatrix ref_geom(ref_geom_temp.clone());
 
   std::vector< SharedMatrix > disp_geoms;
 
   // Generate displacements
-  for(int atom=0; atom < natom; ++atom) {
-    for(int coord=0; coord < 3; ++coord) {
-      // plus displacement
-      SharedMatrix p_geom(ref_geom->clone());
-      displace_atom(p_geom, atom, coord, +1, disp_size);
-      disp_geoms.push_back(p_geom);
-      // minus displacement
-      SharedMatrix m_geom(ref_geom->clone());
-      displace_atom(m_geom, atom, coord, -1, disp_size);
-      disp_geoms.push_back(m_geom);
+  if (pts == 3) {
+    for(int atom=0; atom < natom; ++atom) {
+      for(int coord=0; coord < 3; ++coord) {
+        // minus displacement
+        SharedMatrix m_geom(ref_geom->clone());
+        displace_atom(m_geom, atom, coord, -1, disp_size);
+        disp_geoms.push_back(m_geom);
+        // plus displacement
+        SharedMatrix p_geom(ref_geom->clone());
+        displace_atom(p_geom, atom, coord, +1, disp_size);
+        disp_geoms.push_back(p_geom);
+      }
     }
   }
-
-  // put reference geometry in list
-  // disp_geoms.push_back(ref_geom);
-
+  else if (pts == 5) {
+    for(int atom=0; atom < natom; ++atom) {
+      for(int coord=0; coord < 3; ++coord) {
+        // minus displacements
+        SharedMatrix m2_geom(ref_geom->clone());
+        displace_atom(m2_geom, atom, coord, -2, disp_size);
+        disp_geoms.push_back(m2_geom);
+        SharedMatrix m1_geom(ref_geom->clone());
+        displace_atom(m1_geom, atom, coord, -1, disp_size);
+        disp_geoms.push_back(m1_geom);
+        // plus displacements
+        SharedMatrix p1_geom(ref_geom->clone());
+        displace_atom(p1_geom, atom, coord, +1, disp_size);
+        disp_geoms.push_back(p1_geom);
+        SharedMatrix p2_geom(ref_geom->clone());
+        displace_atom(p2_geom, atom, coord, +2, disp_size);
+        disp_geoms.push_back(p2_geom);
+      }
+    }
+  }
   return disp_geoms;
-
 }
 
 }}
