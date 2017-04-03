@@ -857,25 +857,22 @@ double SuperFunctional::compute_vv10_kernel(
                 // if (r_rho[i] < 1.e-8) continue;
 
                 // Distance between grid points
-                double d_x = l_x[i] - r_x[j];
-                double d_y = l_y[i] - r_y[j];
-                double d_z = l_z[i] - r_z[j];
-                double R2 = 0.0;
-                R2 += d_x * d_x;
-                R2 += d_y * d_y;
-                R2 += d_z * d_z;
+                const double d_x = l_x[i] - r_x[j];
+                const double d_y = l_y[i] - r_y[j];
+                const double d_z = l_z[i] - r_z[j];
+                const double R2 = d_x * d_x + d_y * d_y + d_z * d_z;
 
                 // g/gp values
-                double g = l_W0[i] * R2 + l_kappa[i];
-                double gp = r_W0[j] * R2 + r_kappa[j];
-                double gs = g + gp;
+                const double g = l_W0[i] * R2 + l_kappa[i];
+                const double gp = r_W0[j] * R2 + r_kappa[j];
+                const double gs = g + gp;
 
                 // Sum the kernel
-                double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
+                const double phi_kernel = (-1.5 * r_w[j] * r_rho[j]) / (g * gp * gs);
 
                 // Dumb question, does FMA do subtraction?
                 phi += phi_kernel;
-                double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
+                const double tmp_U = -1.0 * phi_kernel * ((1.0 / g) + (1.0 / gs));
                 U += tmp_U;
                 W += tmp_U * R2;
             }
