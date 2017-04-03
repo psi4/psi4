@@ -33,7 +33,7 @@ find_package(Perl QUIET)
 set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
-set(py36_fail_list extern1 extern2)
+#set(py36_fail_list extern1 extern2)
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
