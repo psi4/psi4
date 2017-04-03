@@ -66,6 +66,10 @@ set(sources_list local.cc
                  cdsalclist.cc
                  erd_eri.cc
                  angularmomentum.cc
+		 bessel.cc
+		 gaussquad.cc
+		 ecp.cc
+		 ecpint.cc
 )
 psi4_add_module(lib mints sources_list iwl options psi4util trans efp_solver)
 target_link_libraries(mints PRIVATE libint::libint)
