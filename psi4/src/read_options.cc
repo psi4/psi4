@@ -1489,9 +1489,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     parameters are to be specified in this array option. -*/
     options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number) for VV10 NL integration. -*/
-    options.add_int("DFT_VV10_SPHERICAL_POINTS", 50);
+    options.add_int("DFT_VV10_SPHERICAL_POINTS", 146);
     /*- Number of radial points for VV10 NL integration. -*/
-    options.add_int("DFT_VV10_RADIAL_POINTS", 20);
+    options.add_int("DFT_VV10_RADIAL_POINTS", 50);
     /*- Rho cutoff for VV10 NL integration. !expert -*/
     options.add_double("DFT_VV10_RHO_CUTOFF", 1.e-8);
     /*- The convergence on the orbital localization procedure -*/
