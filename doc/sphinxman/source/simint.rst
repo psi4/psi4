@@ -66,6 +66,8 @@ Installation
 
 * SIMINT is available as a conda package for Linux and macOS.
 
+* The conda package is compiled to least-common-denominator, namely SSE instruction set.
+
 .. * If using the |PSIfour| binary, simint has already been installed alongside.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
@@ -108,6 +110,7 @@ How to configure simint for building Psi4
 * :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For simint, set to an installation directory containing ``include/simint/simint.h``
 * :makevar:`simint_DIR` |w---w| CMake variable to specify where pre-built simint can be found. Set to installation directory containing ``share/cmake/simint/simintConfig.cmake``
 * :makevar:`CMAKE_DISABLE_FIND_PACKAGE_simint` |w---w| CMake variable to force internal build of simint instead of detecting pre-built
+* :makevar:`SIMINT_VECTOR` |w---w| CMake variable for simint vectorization (i.e., scalar sse avx avxfma micavx512). Default is ``avx``, *not* detected, so ``sse`` may be required for older chipsets. See http://www.bennyp.org/research/simint/README.txt for details.
 
 **Examples**
 
