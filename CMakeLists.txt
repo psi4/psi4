@@ -1,5 +1,5 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)  # 3.3: EP_add(DEPENDS interfacelib
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)  # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                                  # 3.2: continue()
                                                  # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
 project(psi4

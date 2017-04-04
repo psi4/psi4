@@ -238,6 +238,14 @@ def process_molecule_command(matchobj):
     geometry = from_filere.sub(process_from_file_command,geometry)
     molecule = spaces
 
+    if name != "":
+        if sys.version_info >= (3, 0):
+            if not name.isidentifier():
+                raise ValidationError('Molecule name not valid Python identifier: ' + name)
+        else:
+            if not re.match(r'^[^\d\W]\w*\Z', name):
+                raise ValidationError('Molecule name not valid Python identifier: ' + name)
+
     molecule += 'core.efp_init()\n'  # clear EFP object before Molecule read in
     molecule += spaces
 
@@ -702,7 +710,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
-    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}',
+    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\S*?)\s*\{(.*?)\}',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 

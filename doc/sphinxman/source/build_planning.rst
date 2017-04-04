@@ -178,7 +178,7 @@ What are the tools and dependencies strictly required for building Psi4
 -----------------------------------------------------------------------
 
 The core |PSIfour| build requires the software below. Note that Python,
-CMake, NumPy, libefp, and libint (and even C++ compilers on Linux) can be
+CMake, NumPy, and libint (and even C++ compilers on Linux) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
@@ -189,9 +189,9 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * :ref:`Python interpreter and headers <cmake:python>` (2.7, 3.5, or 3.6) https://www.python.org/
 
-* CMake (3.3 or higher) http://www.cmake.org/download/
+* CMake (3.3+) http://www.cmake.org/download/
 
-* NumPy http://www.numpy.org/ (needed at runtime, not buildtime)
+* NumPy (needed at runtime, not buildtime) http://www.numpy.org/
 
 * System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
 
@@ -217,13 +217,14 @@ are available pre-built from conda.
 * |PSIfour| Testing
 
   * CTest http://www.cmake.org/download/
-  * Perl (for some coupled-cluster tests) http://perl.org
+  * Perl (for some coupled-cluster CTest tests) http://perl.org
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
 
 * |PSIfour| Documentation (available pre-built at http://www.psicode.org/psi4manual/master/index.html)
 
-  * Sphinx (1.4) http://sphinx-doc.org
+  * Sphinx (1.4+) http://sphinx-doc.org
   * Perl (for some auto-documentation scripts) http://perl.org
+  * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
 
 * :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is this?] <sec:chemps2>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/chemps2/CMakeLists.txt#L2>`_
 
@@ -257,7 +258,7 @@ Additionally, there are runtime-only capabilities:
 
 * dftd3 |w---w| :ref:`[what is this?] <sec:dftd3>`
 
-* gcp |w---w| :ref:`[what is this?] <sec:gcp`
+* gcp |w---w| :ref:`[what is this?] <sec:gcp>`
 
 * mrcc |w---w| :ref:`[what is this?] <sec:mrcc>`
 
