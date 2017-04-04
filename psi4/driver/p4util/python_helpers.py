@@ -185,6 +185,15 @@ def set_module_options(module, options_dict):
 def pcm_helper(block):
     """Passes multiline string *block* to PCMSolver parser."""
 
+    # Setup unique scratch directory and move in, as done for other add-ons
+    psioh = core.IOManager.shared_object()
+    psio = core.IO.shared_object()
+    os.chdir(psioh.get_default_path())
+    pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
+        'pcmsolver.' + str(uuid.uuid4())[:8]
+    if os.path.exists(pcm_tmpdir) is False:
+        os.mkdir(pcm_tmpdir)
+    os.chdir(pcm_tmpdir)
     with open('pcmsolver.inp', 'w') as handle:
         handle.write(block)
     import pcmsolver
