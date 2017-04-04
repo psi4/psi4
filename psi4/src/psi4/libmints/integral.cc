@@ -47,6 +47,11 @@
 #include "psi4/libmints/potentialint.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/erd_eri.h"
+
+#ifdef USING_simint
+#include "psi4/libmints/siminteri.h"
+#endif
+
 #include <libint/libint.h>
 
 ;
@@ -261,16 +266,22 @@ OneBodyAOInt* IntegralFactory::electric_field()
 
 TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs)
 {
-#ifdef USING_erd
+#ifdef USING_simint
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
+        return new SimintERI(this, deriv, use_shell_pairs);
+#elif defined USING_erd
     if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
         return new ERDERI(this, deriv, use_shell_pairs);
 #endif
-    return new ERI(this, deriv, use_shell_pairs);
+    return eri(deriv, use_shell_pairs);
 }
 
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs)
 {
-#ifdef USING_erd
+#ifdef USING_simint
+    if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "SIMINT")
+        return new SimintERI(this, deriv, use_shell_pairs);
+#elif defined USING_erd
     if(deriv == 0 && Process::environment.options.get_str("INTEGRAL_PACKAGE") == "ERD")
         return new ERDERI(this, deriv, use_shell_pairs);
 #endif

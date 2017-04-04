@@ -164,7 +164,6 @@ void sortone_RHF(struct RHO_Params rho_params)
     }
 
   moinfo.opdm = O;
-
 }
 
 }} // namespace psi::ccdensity

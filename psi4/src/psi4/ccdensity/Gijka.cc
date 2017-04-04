@@ -48,6 +48,10 @@ namespace psi { namespace ccdensity {
       dpdfile2 L1, T1, g;
       dpdbuf4 G, V, T, L, Z, Z1, Z2;
       double factor=0.0;
+      bool T2_L2_V = true;
+
+      /*  T2 * L2 * V is absent in CC2 Lagrangian */
+      if (params.wfn == "CC2" && params.dertype ==1) T2_L2_V = false;
 
       nirreps = moinfo.nirreps;
 
@@ -71,7 +75,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(Ia,Kf) T(j,f) --> Z(Ka,Ij) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "Z(Ia,Kj)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "VIaJb");
@@ -144,19 +150,25 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+   }
    /* add the T3 contributions to CCSD(T) tpdm calculated in cctriples*/
     if(params.wfn == "CCSD_T"){
        global_dpd_->buf4_init(&V, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "GIjKa(T)");
        global_dpd_->buf4_axpy(&V, &G, -1.0);
        global_dpd_->buf4_close(&V);
     }
+
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
-    global_dpd_->file2_close(&g);
-    global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    /*global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);*/
       }
       else if(params.ref == 1) { /** ROHF **/
 
@@ -179,7 +191,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(IA,KF) T(J,F) --> Z(KA,IJ) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "Z(IA,KJ)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "VIAJB");
@@ -246,15 +260,20 @@ namespace psi { namespace ccdensity {
 
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
-    }
+     }
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+   }
 
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
 
 
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "Gijka");
@@ -276,7 +295,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(ia,kf) T(j,f) --> Z(ka,ij) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "Z(ia,kj)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "Viajb");
@@ -345,13 +366,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
 
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+   }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
 
 
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
@@ -373,7 +399,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(Ia,Kf) T(j,f) --> Z(Ka,Ij) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "Z(Ia,Kj)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "VIaJb");
@@ -446,14 +474,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+   }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
 
 
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GiJkA");
@@ -486,7 +518,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z(iJ,kA)");
     global_dpd_->buf4_axpy(&Z, &G, 1.0);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(iA,kF) T(J,F) --> Z(kA,iJ) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 0, 10, 0, 0, "Z(iA,kJ)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "ViAjB");
@@ -559,14 +593,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+    }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
       }
       else if(params.ref == 2) { /** UHF **/
 
@@ -595,7 +633,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(IA,KF) T(J,F) --> Z(KA,IJ) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 20, 0, 20, 0, 0, "Z(IA,KJ)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 20, 20, 20, 20, 0, "VIAJB");
@@ -663,14 +703,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+  }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
 
 
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 12, 30, 12, 30, 0, "Gijka");
@@ -692,7 +736,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(ia,kf) T(j,f) --> Z(ka,ij) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 30, 10, 30, 10, 0, "Z(ia,kj)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 30, 30, 30, 30, 0, "Viajb");
@@ -760,15 +806,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-
+     global_dpd_->file2_mat_close(&g);
+     global_dpd_->file2_close(&g);
+     global_dpd_->file2_mat_close(&T1);
+     global_dpd_->file2_close(&T1);
+ }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
-
+    global_dpd_->file2_close(&T1);*/
 
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 24, 22, 24, 0, "GIjKa");
     /* - tau(Ij,Ea) l(K,E) */
@@ -789,7 +838,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->contract424(&V, &T1, &G, 3, 0, 0, 1.0, 1.0);
     global_dpd_->file2_close(&T1);
     global_dpd_->buf4_close(&V);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(Ia,Kf) T(j,f) --> Z(Ka,Ij) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 24, 22, 24, 22, 0, "Z(Ia,Kj)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 24, 24, 24, 24, 0, "VIaJb");
@@ -862,14 +913,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+  }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
 
 
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 23, 27, 23, 27, 0, "GiJkA");
@@ -902,7 +957,9 @@ namespace psi { namespace ccdensity {
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 23, 27, 23, 27, 0, "Z(iJ,kA)");
     global_dpd_->buf4_axpy(&Z, &G, 1.0);
     global_dpd_->buf4_close(&Z);
-    global_dpd_->buf4_close(&G);
+    //global_dpd_->buf4_close(&G);
+
+    if (T2_L2_V){
     /* V(iA,kF) T(J,F) --> Z(kA,iJ) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 27, 23, 27, 23, 0, "Z(iA,kJ)");
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 27, 27, 27, 27, 0, "ViAjB");
@@ -975,14 +1032,18 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_mat_irrep_wrt(&G, h);
       global_dpd_->buf4_mat_irrep_close(&G, h);
     }
-
+      global_dpd_->file2_mat_close(&g);
+      global_dpd_->file2_close(&g);
+      global_dpd_->file2_mat_close(&T1);
+      global_dpd_->file2_close(&T1);
+   }
     global_dpd_->buf4_scm(&G, 0.5);
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->file2_mat_close(&g);
+    /*global_dpd_->file2_mat_close(&g);
     global_dpd_->file2_close(&g);
     global_dpd_->file2_mat_close(&T1);
-    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_close(&T1);*/
       }
 
     }

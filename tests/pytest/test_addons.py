@@ -437,14 +437,12 @@ def test_pcmsolver():
     assert psi4.compare_values(psi4.get_variable("PCM POLARIZATION ENERGY"), polenergy, 6, "Polarization energy (PCM, separate algorithm)")
 
 
-@using_erd
-def test_erd():
-    """erd/scf5"""
+def _test_scf5():
+    """scf5"""
     #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
 
-    psi4.set_options({'integral_package': 'ERD'})
-
     psi4.print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2')
+    psi4.print_stdout('    -Integral package: {}'.format(psi4.core.get_global_option('integral_package')))
 
     #Ensure that the checkpoint file is always nuked
     psi4.core.IOManager.shared_object().set_specific_retention(32,False)
@@ -473,7 +471,7 @@ def test_erd():
     singlet_o2.update_geometry()
     triplet_o2.update_geometry()
 
-    psi4.print_stdout('   -Nuclear Repulsion:')
+    psi4.print_stdout('    -Nuclear Repulsion:')
     assert psi4.compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")
     assert psi4.compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")
 
@@ -610,6 +608,21 @@ def test_erd():
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
 
+
+@using_erd
+def test_erd():
+    """erd/scf5"""
+
+    psi4.set_options({'integral_package': 'ERD'})
+    _test_scf5()
+
+
+@using_simint
+def test_simint():
+    """simint/scf5"""
+
+    psi4.set_options({'integral_package': 'simint'})
+    _test_scf5()
 
 def test_json():
     """json/energy"""

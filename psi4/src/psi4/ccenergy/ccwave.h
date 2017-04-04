@@ -132,6 +132,7 @@ private:
     void purge_cc2_Wmnij(void);
     void purge_cc2_Wmbij(void);
     void purge_cc2_Wabei(void);
+    void t1_ijab(void);
     void cc3_Wmnie(void);
     void cc3_Wamef(void);
     void cc3_Wmnij(void);

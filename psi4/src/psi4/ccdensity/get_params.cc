@@ -52,14 +52,17 @@ void get_params( Options& options)
 
   params.wfn  = options.get_str("WFN");
 
-  junk = options.get_str("REFERENCE");
-  if(junk == "RHF") params.ref = 0;
-  else if(junk == "ROHF") params.ref = 1;
-  else if(junk == "UHF") params.ref = 2;
-  else {
-    printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
-    throw PsiException("ccdensity: error", __FILE__, __LINE__);
-  }
+  //junk = options.get_str("REFERENCE");
+  //if(junk == "RHF") params.ref = 0;
+  //else if(junk == "ROHF") params.ref = 1;
+  //else if(junk == "UHF") params.ref = 2;
+  //else {
+  //  printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
+  //  throw PsiException("ccdensity: error", __FILE__, __LINE__);
+  //}
+  
+  psio_read_entry(PSIF_CC_INFO, "Reference Wavefunction", (char *) &(params.ref),
+                    sizeof(int));
 
   params.onepdm = options.get_bool("ONEPDM");
   params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");

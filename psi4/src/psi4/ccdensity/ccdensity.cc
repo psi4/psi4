@@ -125,6 +125,7 @@ void x_oe_intermediates_rhf(struct RHO_Params rho_params);
 void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
+void V_cc2(void);
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
 void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
@@ -239,10 +240,13 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
 
       /* Compute intermediates for construction of ground-state twopdm */
       if ( (params.L_irr == params.G_irr) || (params.use_zeta) ) {
+         if (params.wfn == "CC2" && params.dertype == 1)
+             V_cc2();
+         else {
         V_build(); /* uses CC_GLG, writes tau2*L2 to CC_MISC */
         G_build(); /* uses CC_GLG, writes t2*L2 to CC_GLG */
-      }
-
+       }
+     }
       /* Compute ground-state twopdm or ground-state-like contributions to the excited twodpm */
       if ( (params.L_irr == params.G_irr) || (params.use_zeta) )
         twopdm();
@@ -263,7 +267,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
         x_Gijab();
       }
     }
-
+ 
     sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
     if (!params.onepdm) {
       if(!params.aobasis) energy(rho_params[i]);

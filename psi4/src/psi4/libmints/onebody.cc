@@ -113,12 +113,12 @@ const double *OneBodyAOInt::buffer() const
     return buffer_;
 }
 
-bool OneBodyAOInt::cloneable()
+bool OneBodyAOInt::cloneable() const
 {
     return false;
 }
 
-OneBodyAOInt *OneBodyAOInt::clone()
+OneBodyAOInt *OneBodyAOInt::clone() const
 {
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }

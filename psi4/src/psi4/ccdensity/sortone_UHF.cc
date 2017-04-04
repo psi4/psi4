@@ -242,6 +242,7 @@ void sortone_UHF(struct RHO_Params rho_params)
 
   moinfo.opdm_a = O_a;
   moinfo.opdm_b = O_b;
+
 }
 
 }} // namespace psi::ccdensity
