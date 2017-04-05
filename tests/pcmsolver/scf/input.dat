@@ -1,5 +1,7 @@
 #! pcm
 
+from functools import reduce
+
 nucenergy   =  12.0367196636183458 #TEST
 polenergy   =  -0.0053060443528559 #TEST
 totalenergy = -55.4559426361734040 #TEST
