@@ -3070,6 +3070,7 @@ OrientationMgr::LMatrix OrientationMgr::RotMatrixFromOneAxis(LVector axis3)
     return Q;
 }
 
+#define EPSILON 1e-14
 // I hate to write wrapper functions, but it's easier this way...
 void OrientationMgr::diagonalize(LMatrix const& M, LMatrix *Q_out, LVector *D_out)
 {
@@ -3077,12 +3078,12 @@ void OrientationMgr::diagonalize(LMatrix const& M, LMatrix *Q_out, LVector *D_ou
     // The eigenvalues are returned in ascending order.
     Matrix I("Matrix to be diagonalized", 3, 3);
     double** Ip = I.pointer();
-    Ip[0][0]            = M.xx;
-    Ip[1][1]            = M.yy;
-    Ip[2][2]            = M.zz;
-    Ip[1][0] = Ip[0][1] = M.xy;
-    Ip[2][0] = Ip[0][2] = M.xz;
-    Ip[2][1] = Ip[1][2] = M.yz;
+    Ip[0][0]            = (fabs(M.xx) < EPSILON ? 0.0 : M.xx);
+    Ip[1][1]            = (fabs(M.yy) < EPSILON ? 0.0 : M.yy);
+    Ip[2][2]            = (fabs(M.zz) < EPSILON ? 0.0 : M.zz);
+    Ip[1][0] = Ip[0][1] = (fabs(M.xy) < EPSILON ? 0.0 : M.xy);
+    Ip[2][0] = Ip[0][2] = (fabs(M.xz) < EPSILON ? 0.0 : M.xz);
+    Ip[2][1] = Ip[1][2] = (fabs(M.yz) < EPSILON ? 0.0 : M.yz);
     Matrix VV("Eigenvectors", 3, 3);
     Vector DD("Eigenvalues", 3);
     I.diagonalize(&VV, &DD); // Note: This line ONLY works for symmetric matrices!
@@ -3095,6 +3096,7 @@ void OrientationMgr::diagonalize(LMatrix const& M, LMatrix *Q_out, LVector *D_ou
     Q_out->yx = evects[1][0]; Q_out->yy = evects[1][1]; Q_out->yz = evects[1][2];
     Q_out->zx = evects[2][0]; Q_out->zy = evects[2][1]; Q_out->zz = evects[2][2];
 }
+#undef EPSILON
 
 OrientationMgr::LMatrix OrientationMgr::buildRotationMatrix(LVector const& axis, double angle)
 {
