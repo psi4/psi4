@@ -3078,6 +3078,8 @@ void OrientationMgr::diagonalize(LMatrix const& M, LMatrix *Q_out, LVector *D_ou
     // The eigenvalues are returned in ascending order.
     Matrix I("Matrix to be diagonalized", 3, 3);
     double** Ip = I.pointer();
+    // Clean matrix by setting tiny values arising from numerical errors to zero
+    // to prevent generation of weird eigenvectors
     Ip[0][0]            = (fabs(M.xx) < EPSILON ? 0.0 : M.xx);
     Ip[1][1]            = (fabs(M.yy) < EPSILON ? 0.0 : M.yy);
     Ip[2][2]            = (fabs(M.zz) < EPSILON ? 0.0 : M.zz);
