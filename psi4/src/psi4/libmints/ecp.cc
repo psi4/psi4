@@ -62,7 +62,7 @@ namespace psi {
 	GaussianECPShell::GaussianECPShell(int am, int nprimitive, const double *oc, const double *e, const int *n,
 					 const int *subl, int nc, const double* center, int start) 
 						 : GaussianShell(am, nprimitive, oc, oc, oc, e, GaussianType::Cartesian, nc, center, start),
-					 n_(n), sub_l_(subl) {}
+                     n_(n), sub_l_(subl) {}
 
 	// class GaussianECPShell
 	// Evaluate U_l(r), assuming that gaussians sorted by angular momentum
@@ -117,7 +117,7 @@ namespace psi {
                     uexps.push_back(shell.exp(prim));
                     ucoefs.push_back(shell.coef(prim));
                     uoriginal_coefs.push_back(shell.original_coef(prim));
-                    uerd_coefs.push_back(shell.erd_coef(prim));
+                    uerd_coefs.push_back(0); // These are not needed for the ECP basis, but are left in for now
 					uns.push_back(shell.n(prim));
 					usubls.push_back(shell.subl(prim));
                     n_uprimitive_++;
@@ -237,6 +237,75 @@ namespace psi {
         }
     }
 }
+
+    std::shared_ptr<ECPBasisSet> ECPBasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pybs, const int forced_puream){
+
+        std::string key = pybs["key"].cast<std::string>();
+        std::string name = pybs["name"].cast<std::string>();
+        std::string label = pybs["blend"].cast<std::string>();
+        std::string message = pybs["message"].cast<std::string>();
+
+        mol->set_basis_all_atoms(name, key);
+
+        // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
+        typedef std::map <std::string, std::map<std::string, std::vector < ECPShellInfo>>> map_ssv;
+        map_ssv basis_atom_shell;
+        std::map< std::string, std::map<std::string, int>> basis_atom_ncore;
+        // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+        py::list basisinfo = pybs["ecp_shell_map"].cast<py::list>();
+        if(len(basisinfo) == 0)
+            throw PSIEXCEPTION("Empty ECP information being used to construct ECPBasisSet.");
+        for(int atom = 0; atom < py::len(basisinfo); ++atom){
+            std::vector<ECPShellInfo> vec_shellinfo;
+            py::list atominfo = basisinfo[atom].cast<py::list>();
+            std::string atomlabel = atominfo[0].cast<std::string>();
+            std::string hash = atominfo[1].cast<std::string>();
+            int ncore = atominfo[2].cast<int>();
+            for(int atomshells = 3; atomshells < py::len(atominfo); ++atomshells){
+                // Each shell entry has p primitives that look like
+                // [ angmom, [ [ e1, c1, r1 ], [ e2, c2, r2 ], ...., [ ep, cp, rp ] ] ]
+                py::list shellinfo = atominfo[atomshells].cast<py::list>();
+                int am = shellinfo[0].cast<int>();
+                std::vector<double> coefficients;
+                std::vector<double> exponents;
+                std::vector<int> ns;
+                std::vector<int> sub_ls;
+                int nprim = (pybind11::len(shellinfo)) - 1; // The leading entry is the angular momentum
+                for (int primitive = 1; primitive <= nprim; primitive++) {
+                    py::list primitiveinfo = shellinfo[primitive].cast<py::list>();
+                    exponents.push_back(primitiveinfo[0].cast<double>());
+                    coefficients.push_back(primitiveinfo[1].cast<double>());
+                    ns.push_back(primitiveinfo[2].cast<int>());
+                    sub_ls.push_back(am);
+                }
+                Vector3 fake_center; // TODO the center information is not used; we should rip it out of here and GShell
+                vec_shellinfo.push_back(ECPShellInfo(am, coefficients, exponents, ns, sub_ls, 0, fake_center, 0));
+            }
+            mol->set_shell_by_label(atomlabel, hash, key);
+            basis_atom_ncore[name][atomlabel] = ncore;
+            basis_atom_shell[name][atomlabel] = vec_shellinfo;
+        }
+        mol->update_geometry();  // update symmetry with basisset info
+
+        // Modify the nuclear charges, to account for the ECP.  Currently this assumes that the regular basis set
+        // has a pointer to the same molecule object, so these changes will propagate properly.  We may need to
+        // rethink that strategy at some point in the future.
+        for(int atom=0; atom<mol->natom(); ++atom){
+            const std::string &basis = mol->basis_on_atom(atom);
+            const std::string &label = mol->label(atom);
+            int ncore = basis_atom_ncore[basis][label];
+            int Z = mol->Z(atom);
+            Z -= ncore;
+            mol->set_nuclear_charge(atom, Z);
+        }
+        std::shared_ptr <ECPBasisSet> basisset(new ECPBasisSet(key, mol, basis_atom_shell));
+
+        basisset->name_.clear();
+        basisset->name_ = name;
+        basisset->key_ = key;
+        basisset->target_ = label;
+        return basisset;
+    }
 
 }
 

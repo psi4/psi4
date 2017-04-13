@@ -67,6 +67,7 @@ namespace psi {
 
 class Molecule;
 class BasisSet;
+class ECPBasisSet;
 class IntegralFactory;
 class Matrix;
 class Vector;
@@ -93,6 +94,9 @@ protected:
 
     /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
+
+    /// The ECP basis set
+    std::shared_ptr<ECPBasisSet> ecpbasisset_;
 
     /// Primary basis set for SO integrals
     std::shared_ptr<SOBasisSet> sobasisset_;
@@ -244,6 +248,11 @@ public:
                  std::shared_ptr<BasisSet> basis,
                  Options& options);
 
+    /// Constructor for an entirely new wavefunction with an existing basis
+    Wavefunction(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> basis,
+                 std::shared_ptr<ECPBasisSet> ecpbasis);
+
     /// Constructor for an entirely new wavefunction with an existing basis and global options
     Wavefunction(std::shared_ptr<Molecule> molecule,
                  std::shared_ptr<BasisSet> basis);
@@ -300,6 +309,8 @@ public:
     std::shared_ptr<IntegralFactory> integral() const;
     /// Returns the basis set object that pertains to this wavefunction.
     std::shared_ptr<BasisSet> basisset() const;
+    /// Returns this wavefunction's ECP basisset
+    std::shared_ptr<BasisSet> ecpbasisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
 
