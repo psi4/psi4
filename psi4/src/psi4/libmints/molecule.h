@@ -242,6 +242,8 @@ public:
 
     /// Get molecule name
     const std::string name() const {return name_; }
+    /// Returns the name of the basis set on the specified atom
+    const std::string& basis_on_atom(int atom) const;
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
@@ -274,6 +276,8 @@ public:
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
     void set_mass(int atom, double mass) { full_atoms_[atom]->set_mass(mass); }
+    /// Set the nuclear charge of an atom (primarily used in ECP calculations).
+    void set_nuclear_charge(int atom, double newZ);
 
     /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
     std::string symbol(int atom) const;

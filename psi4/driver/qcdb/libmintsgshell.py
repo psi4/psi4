@@ -162,7 +162,7 @@ class ShellInfo(object):
 
     """
 
-    def __init__(self, am, c, e, pure, nc, center, start, pt='Normalized'):
+    def __init__(self, am, c, e, pure, nc, center, start, pt='Normalized', rpowers=None):
         # Angular momentum
         self.l = am
         # Flag for pure angular momentum (Cartesian = 0, Pure = 1)
@@ -185,11 +185,15 @@ class ShellInfo(object):
         self.PYncartesian = INT_NCART(self.l)
         # How many functions? (1=s, 3=p, 5/6=d, ...) * Dependent on the value of puream_
         self.PYnfunction = INT_NFUNC(self.puream, self.l)
+        # These are the radial factors for ECPs.  They are not defined for regular shells.
+        self.rpowers = rpowers
 
         # Compute the normalization constants
         if pt == 'Unnormalized':
             self.normalize_shell()
             self.erd_normalize_shell()
+        else:
+            self.PYerd_coef = [0.0 for i in c]
 
     def primitive_normalization(self, p):
         """Normalizes a single primitive.
@@ -263,11 +267,11 @@ class ShellInfo(object):
         if nc is not None and c is not None:
             return ShellInfo(self.l, self.PYoriginal_coef, self.PYexp,
                 self.puream, nc, c,
-                self.start, 'Unnormalized')
+                self.start, 'Unnormalized', self.rpowers)
         else:
             return ShellInfo(self.l, self.PYoriginal_coef, self.PYexp,
                 self.puream, self.nc, self.center,
-                self.start, 'Unnormalized')
+                self.start, 'Unnormalized', self.rpowers)
         # better to just deepcopy?
 
     def nprimitive(self):
@@ -326,6 +330,10 @@ class ShellInfo(object):
         """Return unnormalized coefficient of pi'th primitive"""
         return self.PYoriginal_coef[pi]
 
+    def rpower(self, pi):
+        """Return r exponent (for ECP) of pi'th primitive"""
+        return self.rpowers[pi] if self.rpowers else None
+
     def exps(self):
         """Returns the exponent of the given primitive"""
         return self.PYexp
@@ -337,6 +345,11 @@ class ShellInfo(object):
     def original_coefs(self):
         """Return unnormalized coefficient of pi'th primitive and ci'th contraction"""
         return self.PYoriginal_coef
+
+    def aslist(self):
+        """Return minimal list of shell info"""
+        info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K], self.rpower(K)) for K in range(self.nprimitive())]
+        return info
 
     def pyprint(self, outfile=None):
         """Print out the shell"""
@@ -386,7 +399,8 @@ class GaussianShell(ShellInfo):
 
     """
 
-    def __init__(self, am, nprimitive, oc, c, ec, e, pure, nc, center, start):
+    def __init__(self, am, nprimitive, oc, c, ec, e, pure, nc, center, start, rpowers=None):
+        ShellInfo.__init__(self, am=am, c=c, e=e, pure=pure, nc=nc, center=center, start=start, pt='Normalized', rpowers=rpowers)
         """
         *  @param am Angular momentum.
         *  @param pure Pure spherical harmonics, or Cartesian.
@@ -401,18 +415,9 @@ class GaussianShell(ShellInfo):
         *  @param pt Is the shell already normalized?
 
         """
-        self.l = am
         self.PYnprimitive = nprimitive
-        self.puream = pure
-        self.PYexp = e
         self.PYoriginal_coef = oc
-        self.PYcoef = c
         self.PYerd_coef = ec
-        self.nc = nc
-        self.center = center
-        self.start = start
-        self.PYncartesian = INT_NCART(self.l)
-        self.PYnfunction = INT_NFUNC(self.puream, self.l)
 
     def nprimitive(self):
         """The number of primitive Gaussians"""

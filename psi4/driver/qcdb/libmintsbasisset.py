@@ -131,6 +131,8 @@ class BasisSet(object):
         self.uerd_coefficients = None
         # The flattened list of Cartesian coordinates for each atom
         self.xyz = None
+        # label/basis to number of core electrons mapping for ECPs
+        self.ecp_coreinfo = None
 
         # Divert to constructor functions
         if len(args) == 0:
@@ -226,6 +228,7 @@ class BasisSet(object):
         ucoefs = []
         uoriginal_coefs = []
         uerd_coefs = []
+        rpowers = []
         self.n_uprimitive = 0
 
         for symbolfirst, symbolsecond in shell_map.items():
@@ -240,6 +243,7 @@ class BasisSet(object):
                 for i in range(len(shells)):
                     shell = shells[i]
                     for prim in range(shell.nprimitive()):
+                        rpowers.append(shell.rpower(prim))
                         uexps.append(shell.exp(prim))
                         ucoefs.append(shell.coef(prim))
                         uoriginal_coefs.append(shell.original_coef(prim))
@@ -325,7 +329,7 @@ class BasisSet(object):
                     self.uerd_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    n, xyz_ptr, bf_count)
+                    n, xyz_ptr, bf_count, rpowers[tst:tsp])
                 for thisbf in range(thisshell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
                     self.function_center[bf_count] = n
@@ -635,11 +639,11 @@ class BasisSet(object):
         parser = Gaussian94BasisSetParser()
 
         # Molecule and parser prepped, call the constructor
-        bs, msg = BasisSet.construct(parser, mol,
-                                     'BASIS' if fitrole == 'ORBITAL' else fitrole,
-                                     None if fitrole == 'ORBITAL' else fitrole,
-                                     basstrings['BASIS'] if fitrole == 'ORBITAL' else basstrings[fitrole],
-                                     return_atomlist=return_atomlist)
+        bs, msg, ecp = BasisSet.construct(parser, mol,
+                                          'BASIS' if fitrole == 'ORBITAL' else fitrole,
+                                          None if fitrole == 'ORBITAL' else fitrole,
+                                          basstrings['BASIS'] if fitrole == 'ORBITAL' else basstrings[fitrole],
+                                          return_atomlist=return_atomlist)
 
         text = """   => Loading Basis Set <=\n\n"""
         text += """    Name: %s\n""" % (callby.upper())
@@ -649,7 +653,7 @@ class BasisSet(object):
 
         if return_atomlist:
             if returnBasisSet:
-                return bs
+                return bs, ecp
             else:
                 atom_basis_list = []
                 for atbs in bs:
@@ -660,13 +664,17 @@ class BasisSet(object):
                     bsdict['blend'] = atbs.name.upper()
                     bsdict['puream'] = int(atbs.has_puream())
                     bsdict['shell_map'] = atbs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
+                    if ecp:
+                        bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
+                    else:
+                        bsdict['ecp_shell_map'] = []
                     bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
 
         if returnBasisSet:
             #print(text)
-            return bs
+            return bs, ecp
         else:
             bsdict = {}
             bsdict['message'] = text
@@ -675,6 +683,10 @@ class BasisSet(object):
             bsdict['blend'] = bs.name.upper()
             bsdict['puream'] = int(bs.has_puream())
             bsdict['shell_map'] = bs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
+            if ecp:
+                bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
+            else:
+                bsdict['ecp_shell_map'] = []
             return bsdict
 
     @classmethod
@@ -713,6 +725,8 @@ class BasisSet(object):
 
         # Map of GaussianShells
         atom_basis_shell = OrderedDict()
+        ecp_atom_basis_shell = OrderedDict()
+        ecp_atom_basis_ncore = OrderedDict()
         names = {}
         summary = []
         bastitles = []
@@ -724,6 +738,8 @@ class BasisSet(object):
 
             if label not in atom_basis_shell:
                 atom_basis_shell[label] = OrderedDict()
+            if label not in ecp_atom_basis_shell:
+                ecp_atom_basis_shell[label] = OrderedDict()
 
             # Establish search parameters for what/where basis entries suitable for atom
             seek = {}
@@ -791,7 +807,7 @@ class BasisSet(object):
                 for entry in seek['entry']:
 
                     # Seek entry in lines, else skip to next entry
-                    shells, msg = parser.parse(entry, lines)
+                    shells, msg, ecp_shells, ecp_msg, ecp_ncore = parser.parse(entry, lines)
                     if shells is None:
                         continue
 
@@ -804,9 +820,15 @@ class BasisSet(object):
                         fmsg = ''
                     # -- Assign to Molecule
                     atom_basis_shell[label][bastitle] = shells
+                    ecp_atom_basis_shell[label][bastitle] = ecp_shells
+                    if key == 'BASIS':
+                        ecp_atom_basis_ncore[label] = ecp_ncore
                     mol.set_basis_by_number(at, bastitle, role=key)
                     bastitles.append(bastitle.upper())
-                    summary.append("""entry %-10s %s %s %s""" % (entry, msg, index, fmsg))
+                    if ecp_msg:
+                        summary.append("""entry %-10s %s (ECP: %s) %s %s""" % (entry, msg, ecp_msg, index, fmsg))
+                    else:
+                        summary.append("""entry %-10s %s %s %s""" % (entry, msg, index, fmsg))
                     break
 
                 # Break from outer loop if inner loop breaks
@@ -825,6 +847,10 @@ class BasisSet(object):
 
         # Construct the grand BasisSet for mol
         basisset = BasisSet(key, mol, atom_basis_shell)
+        ecpbasisset = None
+        if ecp_shells and key == 'BASIS':
+            ecpbasisset = BasisSet(key, mol, ecp_atom_basis_shell)
+            ecpbasisset.ecp_coreinfo = ecp_atom_basis_ncore
 
         # Construct all the one-atom BasisSet-s for mol's CoordEntry-s
         atom_basis_list = []
@@ -835,6 +861,7 @@ class BasisSet(object):
                 oneatombasis.molecule.set_shell_by_number(0, oneatombasishash, role=key)
                 atom_basis_list.append(oneatombasis)
             mol.set_shell_by_number(at, oneatombasishash, role=key)
+
         mol.update_geometry()  # re-evaluate symmetry taking basissets into account
 
         bastitles = list(set(bastitles))
@@ -860,9 +887,9 @@ class BasisSet(object):
         text += '\n'
 
         if return_atomlist:
-            return atom_basis_list, text
+            return atom_basis_list, text, None
         else:
-            return basisset, text
+            return basisset, text, ecpbasisset
 
     # <<< Simple Methods for Basic BasisSet Information >>>
 
@@ -1142,6 +1169,37 @@ class BasisSet(object):
         else:
             with open(out, mode='w') as handle:
                 handle.write(text)
+
+    def export_for_libmints2(self, role):
+        """From complete BasisSet object, returns array where
+        triplets of elements are each unique atom label, the hash
+        of the string shells entry in gbs format and the
+        shells entry in gbs format for that label. This packaging is
+        intended for return to libmints BasisSet::construct_from_pydict for
+        instantiation of a libmints BasisSet clone of *self*.
+
+        ACS 04/17 - I plan to replace the export_for_libmints function with something
+        like this.  I don't think the extra parsing of the string on the C++ side is
+        a very intuitive design.  With a pre-parsed list like this, we can remove all
+        C++ parsing utilities and make the code much cleaner.
+        """
+        info = []
+        for A in range(self.molecule.natom()):
+            label = self.molecule.label(A)
+            first_shell = self.center_to_shell[A]
+            n_shell = self.center_to_nshell[A]
+
+            atominfo = [label]
+            atominfo.append(self.molecule.atoms[A].shell(key=role))
+            try:
+               atominfo.append(self.ecp_coreinfo[label])
+            except KeyError:
+                raise ValidationError("Problem with number of cores in ECP constuction!")
+            for Q in range(n_shell):
+                atominfo.append(self.shells[Q + first_shell].aslist())
+            info.append(atominfo)
+        return info
+
 
     def export_for_libmints(self, role):
         """From complete BasisSet object, returns array where

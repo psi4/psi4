@@ -1200,8 +1200,8 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
         potential_mat = factory_->create_shared_matrix(PSIF_SO_V);
         potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
     }
-	
-	if (integral_->hasECP()) {
+
+    if (integral_->hasECP()) {
 		std::shared_ptr <OneBodySOInt> ECP(integral_->so_ecp());
 		SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", potential_mat->nrow(), potential_mat->ncol())); 
 		ECP->compute(ecp_mat); 

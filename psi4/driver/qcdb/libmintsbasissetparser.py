@@ -116,11 +116,13 @@ class Gaussian94BasisSetParser(object):
         separator = re.compile(r'^\s*\*\*\*\*')  # line starts with ****
         ATOM = '(([A-Z]{1,3}\d*)|([A-Z]{1,3}_\w+))'  # match 'C 0', 'Al c 0', 'P p88 p_pass 0' not 'Ofail 0', 'h99_text 0'
         atom_array = re.compile(r'^\s*((' + ATOM + '\s+)+)0\s*$', re.IGNORECASE)  # array of atomic symbols terminated by 0
+        atom_ecp = re.compile(r'^\s*((' + ATOM + '-ECP\s+)+)(\d+)\s+(\d+)\s*$', re.IGNORECASE)  # atom_ECP number number
         shell = re.compile(r'^\s*(\w+)\s*(\d+)\s*(-?\d+\.\d+)')  # Match beginning of contraction
         blank = re.compile(r'^\s*$')
         NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
         primitives1 = re.compile(r'^\s*' + NUMBER + '\s+' + NUMBER + '.*')  # Match s, p, d, f, g, ... functions
         primitives2 = re.compile(r'^\s*' + NUMBER + '\s+' + NUMBER + '\s+' + NUMBER + '.*')  # match sp functions
+        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + '\s+' + NUMBER + '.*')  # Match rpower, exponent, coefficient
 
         # s, p and s, p, d can be grouped together in Pople-style basis sets
         sp = 'SP'
@@ -145,8 +147,11 @@ class Gaussian94BasisSetParser(object):
         center = [0.0, 0.0, 0.0]
 
         shell_list = []
+        ecp_shell_list = []
         lineno = 0
-        found = False
+        ncore = 0
+        ecp_msg = None
+        basis_found = False
 
         while lineno < len(lines):
             line = lines[lineno]
@@ -180,103 +185,138 @@ class Gaussian94BasisSetParser(object):
             # or:    H    O...     0
             if atom_array.match(line):
                 what = atom_array.match(line).group(1).split()
-                # Check the captures and see if this basis set is for the atom we need.
-                found = False
                 if symbol in [x.upper() for x in what]:
-                    found = True
-                    msg = """line %5d""" % (lineno)
 
                     # Read in the next line
                     line = lines[lineno]
                     lineno += 1
 
-                    # Need to do the following until we match a "****" which is the end of the basis set
-                    while not separator.match(line):
-                        # Match shell information
-                        if shell.match(line):
-                            what = shell.match(line)
-                            shell_type = str(what.group(1)).upper()
-                            nprimitive = int(what.group(2))
-                            scale = float(what.group(3))
+                    # Match: H_ECP    0
+                    # or:    H_ECP    O_ECP ...     0
+                    if atom_ecp.match(line):
+                        ecp_msg = """line %5d""" % (lineno)
+                        symbol_to_am = { 0:0, 1:1, 2:2, 3:3, "s":0, "S":0, "p":1, "P":1, "d":2, "D":2, "f":3, "F":3 }
+                        # This is an ECP spec like "KR-ECP    3     28"
+                        matchobj = atom_ecp.match(line)
+                        sl = line.split()
+                        maxam = int(sl[-2])
+                        ncore = int(sl[-1])
+                        # This parser is not tolerant of comments of blank lines.  Perhaps the best strategy is to
+                        # remove all comments/blank lines first before getting in here.  This'll do for now.
+                        for am in range(maxam+1):
+                            #f-ul potential"
+                            line = lines[lineno]
+                            lineno += 1
+                            angmom = symbol_to_am[line.lstrip()[0]]
+                            line = lines[lineno]
+                            lineno += 1
+                            nprimitives = int(line)
+                            rpowers = [0 for i in range(nprimitives)]
+                            exponents = [0.0 for i in range(nprimitives)]
+                            contractions = [0.0 for i in range(nprimitives)]
+                            for term in range(nprimitives):
+                                line = lines[lineno]
+                                lineno += 1
+                                line = line.replace('D', 'e', 2)
+                                line = line.replace('d', 'e', 2)
+                                what = ecpinfo.match(line)
+                                if not what:
+                                    raise ValidationError("""Gaussian94BasisSetParser::parse: Bad ECP specification : line %d: %s""" % (lineno, line))
+                                rpowers[term] = int(what.group(1))
+                                exponents[term] = float(what.group(2))
+                                contractions[term] = float(what.group(3))
+                            # We have a full shell, push it to the basis set
+                            ecp_shell_list.append(ShellInfo(am, contractions, exponents,
+                                gaussian_type, 0, center, 0, 'Normalized', rpowers))
+                    else:
+                        # This is a basis set spec
+                        basis_found = True
+                        msg = """line %5d""" % (lineno)
+                        # Need to do the following until we match a "****" which is the end of the basis set
+                        while not separator.match(line):
+                            # Match shell information
+                            if shell.match(line):
+                                what = shell.match(line)
+                                shell_type = str(what.group(1)).upper()
+                                nprimitive = int(what.group(2))
+                                scale = float(what.group(3))
 
-                            if len(shell_type) == 1:
-                                am = shell_to_am[shell_type[0]]
+                                if len(shell_type) == 1:
+                                    am = shell_to_am[shell_type[0]]
 
-                                exponents = [0.0] * nprimitive
-                                contractions = [0.0] * nprimitive
+                                    exponents = [0.0] * nprimitive
+                                    contractions = [0.0] * nprimitive
 
-                                for p in range(nprimitive):
-                                    line = lines[lineno]
-                                    lineno += 1
-                                    line = line.replace('D', 'e', 2)
-                                    line = line.replace('d', 'e', 2)
+                                    for p in range(nprimitive):
+                                        line = lines[lineno]
+                                        lineno += 1
+                                        line = line.replace('D', 'e', 2)
+                                        line = line.replace('d', 'e', 2)
 
-                                    what = primitives1.match(line)
-                                    # Must match primitives1; will work on the others later
-                                    if not what:
-                                        raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction: line %d: %s""" % (lineno, line))
-                                    exponent = float(what.group(1))
-                                    contraction = float(what.group(2))
+                                        what = primitives1.match(line)
+                                        # Must match primitives1; will work on the others later
+                                        if not what:
+                                            raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction: line %d: %s""" % (lineno, line))
+                                        exponent = float(what.group(1))
+                                        contraction = float(what.group(2))
 
-                                    # Scale the contraction and save the information
-                                    contraction *= scale
-                                    exponents[p] = exponent
-                                    contractions[p] = contraction
+                                        # Scale the contraction and save the information
+                                        contraction *= scale
+                                        exponents[p] = exponent
+                                        contractions[p] = contraction
 
-                                # We have a full shell, push it to the basis set
-                                shell_list.append(ShellInfo(am, contractions, exponents,
-                                    gaussian_type, 0, center, 0, 'Unnormalized'))
+                                    # We have a full shell, push it to the basis set
+                                    shell_list.append(ShellInfo(am, contractions, exponents,
+                                        gaussian_type, 0, center, 0, 'Unnormalized'))
 
-                            elif len(shell_type) == 2:
-                                # This is to handle instances of SP, PD, DF, FG, ...
-                                am1 = shell_to_am[shell_type[0]]
-                                am2 = shell_to_am[shell_type[1]]
+                                elif len(shell_type) == 2:
+                                    # This is to handle instances of SP, PD, DF, FG, ...
+                                    am1 = shell_to_am[shell_type[0]]
+                                    am2 = shell_to_am[shell_type[1]]
 
-                                exponents = [0.0] * nprimitive
-                                contractions1 = [0.0] * nprimitive
-                                contractions2 = [0.0] * nprimitive
+                                    exponents = [0.0] * nprimitive
+                                    contractions1 = [0.0] * nprimitive
+                                    contractions2 = [0.0] * nprimitive
 
-                                for p in range(nprimitive):
-                                    line = lines[lineno]
-                                    lineno += 1
-                                    line = line.replace('D', 'e', 2)
-                                    line = line.replace('d', 'e', 2)
+                                    for p in range(nprimitive):
+                                        line = lines[lineno]
+                                        lineno += 1
+                                        line = line.replace('D', 'e', 2)
+                                        line = line.replace('d', 'e', 2)
 
-                                    what = primitives2.match(line)
-                                    # Must match primitivies2
-                                    if not what:
-                                        raise ValidationError("Gaussian94BasisSetParser::parse: Unable to match an exponent with two contractions: line %d: %s" % (lineno, line))
-                                    exponent = float(what.group(1))
-                                    contraction = float(what.group(2))
+                                        what = primitives2.match(line)
+                                        # Must match primitivies2
+                                        if not what:
+                                            raise ValidationError("Gaussian94BasisSetParser::parse: Unable to match an exponent with two contractions: line %d: %s" % (lineno, line))
+                                        exponent = float(what.group(1))
+                                        contraction = float(what.group(2))
 
-                                    # Scale the contraction and save the information
-                                    contraction *= scale
-                                    exponents[p] = exponent
-                                    contractions1[p] = contraction
+                                        # Scale the contraction and save the information
+                                        contraction *= scale
+                                        exponents[p] = exponent
+                                        contractions1[p] = contraction
 
-                                    # Do the other contraction
-                                    contraction = float(what.group(3))
+                                        # Do the other contraction
+                                        contraction = float(what.group(3))
 
-                                    # Scale the contraction and save the information
-                                    contraction *= scale
-                                    contractions2[p] = contraction
+                                        # Scale the contraction and save the information
+                                        contraction *= scale
+                                        contractions2[p] = contraction
 
-                                shell_list.append(ShellInfo(am1, contractions1, exponents,
-                                    gaussian_type, 0, center, 0, 'Unnormalized'))
-                                shell_list.append(ShellInfo(am2, contractions2, exponents,
-                                    gaussian_type, 0, center, 0, 'Unnormalized'))
+                                    shell_list.append(ShellInfo(am1, contractions1, exponents,
+                                        gaussian_type, 0, center, 0, 'Unnormalized'))
+                                    shell_list.append(ShellInfo(am2, contractions2, exponents,
+                                        gaussian_type, 0, center, 0, 'Unnormalized'))
+                                else:
+                                    raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping""")
                             else:
-                                raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping""")
-                        else:
-                            raise ValidationError("""Gaussian94BasisSetParser::parse: Expected shell information, but got: line %d: %s""" % (lineno, line))
-                        line = lines[lineno]
-                        lineno += 1
+                                raise ValidationError("""Gaussian94BasisSetParser::parse: Expected shell information, but got: line %d: %s""" % (lineno, line))
+                            line = lines[lineno]
+                            lineno += 1
 
-                    break
-
-        if not found:
+        if not basis_found:
             #raise BasisSetNotFound("Gaussian94BasisSetParser::parser: Unable to find the basis set for %s in %s" % \
             #   (symbol, self.filename), silent=True)
             return None, None
 
-        return shell_list, msg
+        return shell_list, msg, ecp_shell_list, ecp_msg, ncore

@@ -27,6 +27,7 @@
  */
 
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/oeprop.h"
@@ -62,6 +63,7 @@ void export_wavefunction(py::module& m)
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr()).
             def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>()).
             def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>()).
+            def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, std::shared_ptr<ECPBasisSet>>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
             def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.").
@@ -93,6 +95,7 @@ void export_wavefunction(py::module& m)
             def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.").
             def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.").
             def("aotoso", &Wavefunction::aotoso, "Returns the Atomic Orbital to Symmetry Orbital transformer.").
+            def("ecpbasisset", &Wavefunction::ecpbasisset, "Returns the current ECP basis.").
             def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.").
             def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.").
             def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.").

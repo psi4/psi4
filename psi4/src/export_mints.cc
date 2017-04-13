@@ -31,6 +31,7 @@
 #include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/view.h"
+#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/pointgrp.h"
@@ -632,6 +633,8 @@ void export_mints(py::module& m)
             def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as $2M_s + 1$) of full molecule").
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
             def("nactive_fragments", &Molecule::nactive_fragments, "Gets the number of active (non-ghosted) fragments in the molecule").
+            def("set_nuclear_charge", &Molecule::set_nuclear_charge, "Set the nuclear charge of the given atom to the value provided.").
+            def("basis_on_atom", &Molecule::basis_on_atom, py::return_value_policy::copy, "Gets the label of the orbital basis set on a given atom.").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
             def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule, "Gets a string reexpressing in input format the current states of the molecule").
             def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2").
@@ -731,6 +734,9 @@ void export_mints(py::module& m)
     //using ShellInfoMapMap = std::map<std::string,ShellInfoMap>;
     //class_<ShellInfoMapMap>("ShellInfoMapMap")
     //   .def(map_indexing_suite<ShellInfoMapMap>());
+
+    py::class_<ECPBasisSet, std::shared_ptr<ECPBasisSet>>(m, "ECPBasisSet", "docstring").
+            def_static("construct_ecp_from_pydict", &ECPBasisSet::construct_ecp_from_pydict, "docstring");
 
 
     typedef void (BasisSet::*basis_print_out)() const;

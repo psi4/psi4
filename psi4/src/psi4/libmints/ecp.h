@@ -100,9 +100,19 @@ class ECPBasisSet : public BasisSet {
     int *usubls_;
     
 public:
-	ECPBasisSet();
+    ECPBasisSet();
     ECPBasisSet(const std::string &basistype, SharedMolecule mol,
                 std::map<std::string, std::map<std::string, std::vector<ECPShellInfo> > > &shell_map);
+
+    /** Returns a new basis set object
+     * Constructs an ECP basis set from the parsed information
+     *
+     * @param mol           Psi4 molecule.  WARNING: The nuclear charges are modified by this routine
+     * @param py::dict      Python dictionary containing the basis information
+     * @param forced_puream Force puream or not
+    **/
+    static std::shared_ptr<ECPBasisSet> construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pybs, const int forced_puream);
+
 	
     
 };

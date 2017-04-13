@@ -76,7 +76,10 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
         core.print_out(basisdict['message'])
 
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
-    return psibasis
+    ecpbasis = None
+    if 'ecp_shell_map' in basisdict:
+        ecpbasis = core.ECPBasisSet.construct_ecp_from_pydict(mol, basisdict, puream)
+    return psibasis, ecpbasis
 
 core.BasisSet.build = pybuild_basis
 
@@ -85,14 +88,17 @@ core.BasisSet.build = pybuild_basis
 @staticmethod
 def pybuild_wavefunction(mol, basis=None):
     if basis is None:
-        basis = core.BasisSet.build(mol)
+        basis, ecpbasis = core.BasisSet.build(mol)
     elif (sys.version_info[0] == 2) and isinstance(basis, (str, unicode)):
-        basis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis, ecpbasis = core.BasisSet.build(mol, "ORBITAL", basis)
     elif (sys.version_info[0] > 2) and isinstance(basis, str):
-        basis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis, ecpbasis = core.BasisSet.build(mol, "ORBITAL", basis)
 
-
-    return core.Wavefunction(mol, basis)
+    if ecpbasis:
+        wfn = core.Wavefunction(mol, basis, ecpbasis)
+    else:
+        wfn = core.Wavefunction(mol, basis)
+    return wfn
 
 core.Wavefunction.build = pybuild_wavefunction
 

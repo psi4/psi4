@@ -3026,6 +3026,16 @@ double Molecule::fcharge(int atom) const
     return full_atoms_[atom]->charge();
 }
 
+void Molecule::set_nuclear_charge(int atom, double newZ)
+{
+    atoms_[atom]->set_nuclear_charge(newZ);
+}
+
+const std::string &Molecule::basis_on_atom(int atom) const
+{
+    return atoms_[atom]->basisset();
+}
+
 int Molecule::true_atomic_number(int atom) const
 {
     Element_to_Z Z;

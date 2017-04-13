@@ -1559,7 +1559,7 @@ void HF::initialize()
     }
 
     if(attempt_number_ == 1){
-        std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
+        std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0, ecpbasisset_));
         if ((options_.get_str("RELATIVISTIC") == "X2C") ||
             (options_.get_str("RELATIVISTIC") == "DKH")) {
             mints->set_rel_basisset(get_basisset("BASIS_RELATIVISTIC"));
