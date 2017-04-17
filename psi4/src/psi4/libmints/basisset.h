@@ -139,6 +139,8 @@ protected:
     double *ucoefficients_;
     /// The flattened lists of unique contraction coefficients (as provided by the user)
     double *uoriginal_coefficients_;
+    /// The flattened list of r exponenets for ECP calculations
+    int *uns_;
     /// The flattened lists of ERD normalized contraction coefficients
     double *uerd_coefficients_;
     /// The flattened list of Cartesian coordinates for each atom
@@ -329,6 +331,16 @@ public:
      * @param forced_puream Force puream or not
     **/
     static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream);
+
+    /** Returns a new basis set object
+     * Constructs an ECP basis set from the parsed information
+     *
+     * @param mol           Psi4 molecule.  WARNING: The nuclear charges are modified by this routine
+     * @param py::dict      Python dictionary containing the basis information
+     * @param forced_puream Force puream or not
+    **/
+
+    static std::shared_ptr<BasisSet> construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pybs, const int forced_puream);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

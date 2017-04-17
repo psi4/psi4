@@ -208,6 +208,7 @@ class Gaussian94BasisSetParser(object):
                             line = lines[lineno]
                             lineno += 1
                             angmom = symbol_to_am[line.lstrip()[0]]
+                            if am == 0: angmom = -angmom  # Flag this as a Type1 shell, by setting negative AM.  This'll be handled in the BasisSet builder.
                             line = lines[lineno]
                             lineno += 1
                             nprimitives = int(line)
@@ -226,7 +227,7 @@ class Gaussian94BasisSetParser(object):
                                 exponents[term] = float(what.group(2))
                                 contractions[term] = float(what.group(3))
                             # We have a full shell, push it to the basis set
-                            ecp_shell_list.append(ShellInfo(am, contractions, exponents,
+                            ecp_shell_list.append(ShellInfo(angmom, contractions, exponents,
                                 gaussian_type, 0, center, 0, 'Normalized', rpowers))
                     else:
                         # This is a basis set spec
@@ -317,6 +318,6 @@ class Gaussian94BasisSetParser(object):
         if not basis_found:
             #raise BasisSetNotFound("Gaussian94BasisSetParser::parser: Unable to find the basis set for %s in %s" % \
             #   (symbol, self.filename), silent=True)
-            return None, None
+            return None, None, None, None, None
 
         return shell_list, msg, ecp_shell_list, ecp_msg, ncore

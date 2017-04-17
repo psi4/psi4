@@ -27,7 +27,6 @@
  */
 
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/oeprop.h"
@@ -63,7 +62,7 @@ void export_wavefunction(py::module& m)
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr()).
             def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>()).
             def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>()).
-            def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, std::shared_ptr<ECPBasisSet>>()).
+            def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>()).
             def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring").
             def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring").
             def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.").

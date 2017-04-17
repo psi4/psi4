@@ -31,7 +31,6 @@
 #include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/view.h"
-#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/pointgrp.h"
@@ -735,10 +734,6 @@ void export_mints(py::module& m)
     //class_<ShellInfoMapMap>("ShellInfoMapMap")
     //   .def(map_indexing_suite<ShellInfoMapMap>());
 
-    py::class_<ECPBasisSet, std::shared_ptr<ECPBasisSet>>(m, "ECPBasisSet", "docstring").
-            def_static("construct_ecp_from_pydict", &ECPBasisSet::construct_ecp_from_pydict, "docstring");
-
-
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
@@ -772,7 +767,9 @@ void export_mints(py::module& m)
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
             def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
             def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
-            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring");
+            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring").
+            def_static("construct_ecp_from_pydict", &BasisSet::construct_ecp_from_pydict, "docstring");
+
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring").
             def("petite_list", &SOBasisSet::petite_list, "docstring");

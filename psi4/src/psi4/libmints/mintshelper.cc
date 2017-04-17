@@ -110,7 +110,7 @@ public:
     { return count_; }
 };
 
-MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int print, std::shared_ptr<ECPBasisSet> ecpbasis)
+MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int print, std::shared_ptr<BasisSet> ecpbasis)
         : options_(options), print_(print)
 {
     init_helper(basis, ecpbasis);
@@ -144,7 +144,7 @@ void MintsHelper::init_helper(std::shared_ptr <Wavefunction> wavefunction)
     common_init();
 }
 
-void MintsHelper::init_helper(std::shared_ptr <BasisSet> basis,  std::shared_ptr<ECPBasisSet> ecpbasis)
+void MintsHelper::init_helper(std::shared_ptr <BasisSet> basis,  std::shared_ptr<BasisSet> ecpbasis)
 {
     basisset_ = basis;
 	ecpbasis_ = ecpbasis; 
@@ -212,7 +212,7 @@ std::shared_ptr <SOBasisSet> MintsHelper::sobasisset() const
     return sobasis_;
 }
 
-std::shared_ptr<ECPBasisSet> MintsHelper::ecpbasisset() const 
+std::shared_ptr<BasisSet> MintsHelper::ecpbasisset() const
 {
 	return ecpbasis_; 
 }
@@ -584,9 +584,9 @@ SharedMatrix MintsHelper::ao_ecp()
 	return ecp_mat;
 }
 
-SharedMatrix MintsHelper::ao_ecp(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, std::shared_ptr <ECPBasisSet> bsecp) 
+SharedMatrix MintsHelper::ao_ecp(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, std::shared_ptr <BasisSet> bsecp)
 {
-	IntegralFactory factory(bs1, bs2, bsecp);
+    IntegralFactory factory(bs1, bs2, bs1, bs2, bsecp);
 	std::shared_ptr <OneBodyAOInt> ECP(factory.ao_ecp());
 	SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
 	ECP->compute(ecp_mat);
@@ -1202,11 +1202,14 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
     }
 
     if (integral_->hasECP()) {
-		std::shared_ptr <OneBodySOInt> ECP(integral_->so_ecp());
-		SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", potential_mat->nrow(), potential_mat->ncol())); 
-		ECP->compute(ecp_mat); 
-		potential_mat->add(ecp_mat);
-	}
+        outfile->Printf("Adding ECP terms to potential..\n");
+        std::shared_ptr <OneBodySOInt> ECP(integral_->so_ecp());
+        SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", potential_mat->nrow(), potential_mat->ncol()));
+        ECP->compute(ecp_mat);
+        potential_mat->print();
+        ecp_mat->print();
+        potential_mat->add(ecp_mat);
+    }
 
     // Handle addition of any perturbations here and not in SCF code.
     if (include_perturbations) {

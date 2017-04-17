@@ -37,15 +37,40 @@
 #include "psi4/libparallel/ParallelPrinter.h"
 using namespace psi;
 
-ShellInfo::ShellInfo(int am, const std::vector<double> &c,
-                             const std::vector<double> &e, GaussianType pure,
-                             int nc, const Vector3 &center, int start,
-                             PrimitiveType pt)
-    : l_(am), puream_(pure), exp_(e), coef_(c),
+ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<double> &e,
+                     const std::vector<int> &n, int nc, const Vector3 &center,
+                     int start)
+    : puream_(Cartesian), exp_(e), coef_(c), n_(n),
       nc_(nc), center_(center), start_(start)
 {
-    for(size_t n = 0; n < c.size(); ++n)
-        original_coef_.push_back(c[n]);
+    if(am < 0) {
+        shelltype_ = ECPType1;
+        l_ = -am;
+    } else {
+        shelltype_ = ECPType2;
+        l_ = am;
+    }
+
+    for(size_t prim = 0; prim < c.size(); ++prim){
+        original_coef_.push_back(c[prim]);
+        coef_.push_back(c[prim]);
+        erd_coef_.push_back(c[prim]);
+    }
+
+    ncartesian_ = INT_NCART(l_);
+    nfunction_  = INT_NFUNC(puream_, l_);
+}
+
+ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<double> &e,
+                     GaussianType pure, int nc, const Vector3 &center,
+                     int start, PrimitiveType pt)
+    : l_(am), puream_(pure), exp_(e), coef_(c),
+      nc_(nc), center_(center), start_(start), shelltype_(Gaussian)
+{
+    for(size_t prim = 0; prim < c.size(); ++prim){
+        original_coef_.push_back(c[prim]);
+        n_.push_back(0);
+    }
 
     ncartesian_ = INT_NCART(l_);
     nfunction_  = INT_NFUNC(puream_, l_);
@@ -190,6 +215,7 @@ bool ShellInfo::operator==(const ShellInfo& RHS)const
            erd_coef_==RHS.erd_coef_ &&
            original_coef_==RHS.erd_coef_ &&
            nc_==RHS.nc_ &&
+           n_ == RHS.n_ &&
            center_==RHS.center_ &&
            start_==RHS.start_ &&
            ncartesian_==RHS.ncartesian_ &&
@@ -198,11 +224,21 @@ bool ShellInfo::operator==(const ShellInfo& RHS)const
 }
 
 
-GaussianShell::GaussianShell(int am, int nprimitive, const double *oc, const double *c, const double *ec,
+GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const double *oc, const double *c, const double *ec,
                              const double *e, GaussianType pure,
                              int nc, const double *center, int start)
-    : l_(am), puream_(pure), exp_(e), original_coef_(oc), coef_(c), erd_coef_(ec),
-      nc_(nc), center_(center), start_(start), nprimitive_(nprimitive)
+    : l_(am), puream_(pure), exp_(e), n_(nullptr), original_coef_(oc), coef_(c), erd_coef_(ec),
+      nc_(nc), center_(center), start_(start), nprimitive_(nprimitive), shelltype_(shelltype)
+{
+    ncartesian_ = INT_NCART(l_);
+    nfunction_  = INT_NFUNC(puream_, l_);
+}
+
+GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const double *oc, const double *e,
+                             const int *n, GaussianType pure,
+                             int nc, const double *center, int start)
+    : l_(am), puream_(pure), exp_(e), original_coef_(oc), coef_(oc), erd_coef_(oc), n_(n),
+      nc_(nc), center_(center), start_(start), nprimitive_(nprimitive), shelltype_(shelltype)
 {
     ncartesian_ = INT_NCART(l_);
     nfunction_  = INT_NFUNC(puream_, l_);
@@ -230,6 +266,17 @@ void GaussianShell::print(std::string out) const
             printer->Printf( "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
 
     }
+}
+
+double GaussianShell::evaluate(double r, int l) const {
+    double value = 0.0;
+    if (l_ == l){
+        double r2 = r*r;
+        for (int i = 0; i < nprimitive_; i++){
+            value += pow(r, n_[i]) * original_coef_[i] * std::exp(-exp_[i] * r2);
+        }
+    }
+    return value;
 }
 
 

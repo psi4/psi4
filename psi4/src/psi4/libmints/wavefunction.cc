@@ -74,7 +74,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
                            std::shared_ptr<BasisSet> basis,
-                           std::shared_ptr<ECPBasisSet> ecpbasis) :
+                           std::shared_ptr<BasisSet> ecpbasis) :
         options_(Process::environment.options), basisset_(basis), ecpbasisset_(ecpbasis), molecule_(molecule)
 {
     common_init();

@@ -64,20 +64,30 @@ IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1,
                                  std::shared_ptr<BasisSet> bs2,
                                  std::shared_ptr<BasisSet> bs3,
                                  std::shared_ptr<BasisSet> bs4,
-								  std::shared_ptr<ECPBasisSet> bsecp)
+                                 std::shared_ptr<BasisSet> bsecp)
 {
     set_basis(bs1, bs2, bs3, bs4, bsecp);
 }
-
-IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-	 std::shared_ptr<ECPBasisSet> bsecp)
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1,
+                                 std::shared_ptr<BasisSet> bs2,
+                                 std::shared_ptr<BasisSet> bs3,
+                                 std::shared_ptr<BasisSet> bs4):
+    bs_ecp_(nullptr)
 {
-    set_basis(bs1, bs2, bs1, bs2, bsecp);
+
+    set_basis(bs1, bs2, bs3, bs4, bs_ecp_);
 }
 
-IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<ECPBasisSet> bsecp)
+
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bsecp)
 {
     set_basis(bs1, bs1, bs1, bs1, bsecp);
+}
+
+IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1):
+    bs_ecp_(nullptr)
+{
+    set_basis(bs1, bs1, bs1, bs1, bs_ecp_);
 }
 
 IntegralFactory::~IntegralFactory()
@@ -105,7 +115,7 @@ std::shared_ptr<BasisSet> IntegralFactory::basis4() const
     return bs4_;
 }
 
-std::shared_ptr<ECPBasisSet> IntegralFactory::basisECP() const
+std::shared_ptr<BasisSet> IntegralFactory::basisECP() const
 {
 	return bs_ecp_;
 }
@@ -116,7 +126,7 @@ bool IntegralFactory::hasECP() const
 }
 
 void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
-                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4, std::shared_ptr<ECPBasisSet> bsecp)
+                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4, std::shared_ptr<BasisSet> bsecp)
 {
     bs1_ = bs1;
     bs2_ = bs2;

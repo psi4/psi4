@@ -78,7 +78,7 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     ecpbasis = None
     if 'ecp_shell_map' in basisdict:
-        ecpbasis = core.ECPBasisSet.construct_ecp_from_pydict(mol, basisdict, puream)
+        ecpbasis = core.BasisSet.construct_ecp_from_pydict(mol, basisdict, puream)
     return psibasis, ecpbasis
 
 core.BasisSet.build = pybuild_basis
