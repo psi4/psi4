@@ -68,7 +68,6 @@ set(sources_list local.cc
                  angularmomentum.cc
 		 bessel.cc
 		 gaussquad.cc
-		 ecp.cc
 		 ecpint.cc
 )
 if(TARGET simint::simint)

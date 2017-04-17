@@ -665,8 +665,6 @@ class BasisSet(object):
                     bsdict['shell_map'] = atbs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
                     if ecp:
                         bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
-                    else:
-                        bsdict['ecp_shell_map'] = []
                     bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
@@ -684,8 +682,6 @@ class BasisSet(object):
             bsdict['shell_map'] = bs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
             if ecp:
                 bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
-            else:
-                bsdict['ecp_shell_map'] = []
             return bsdict
 
     @classmethod
@@ -847,7 +843,7 @@ class BasisSet(object):
         # Construct the grand BasisSet for mol
         basisset = BasisSet(key, mol, atom_basis_shell)
         ecpbasisset = None
-        if ecp_shells and key == 'BASIS':
+        if ecp_atom_basis_shell and key == 'BASIS':
             ecpbasisset = BasisSet(key, mol, ecp_atom_basis_shell)
             ecpbasisset.ecp_coreinfo = ecp_atom_basis_ncore
 

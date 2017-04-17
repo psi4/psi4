@@ -203,7 +203,7 @@ private:
 	  * @param grid - the quadrature grid to be used
 	  * @param Utab - the array to put the values into.
 	  */
-	void buildU(const GaussianECPShell &U, int l, int N, GCQuadrature &grid, double *Utab);
+    void buildU(const GaussianShell &U, int l, int N, GCQuadrature &grid, double *Utab);
 	
 	/**
 	  * Tabulate the F function values for the default mode of calculating type 2 integrals.
@@ -264,7 +264,7 @@ public:
 	  * @param B - position vector (relative to the ECP center) of shell B
 	  * @param values - the matrix to return the integrals in
 	  */
-	void type1(int maxL, int N, int offset, const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
+    void type1(int maxL, int N, int offset, const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
 	
     /**
       * Calculates all type 2 radial integrals over two Gaussian shells for the given ECP angular momentum l
@@ -281,7 +281,7 @@ public:
       * @param B - position vector (relative to the ECP center) of shell B
       * @param values - the matrix to return the integrals in
       */
-	void type2(int lam, int l1start, int l1end, int l2start, int l2end, int N, const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
+    void type2(int lam, int l1start, int l1end, int l2start, int l2end, int N, const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
 };
 
 
@@ -301,22 +301,22 @@ private:
 	/// The angular integrals, which can be reused over all ECP centers
 	AngularIntegral angInts;
 	/// The ECP basis
-    std::shared_ptr<ECPBasisSet> basis;
+    std::shared_ptr<BasisSet> basis;
 	
 	/// Worker functions for calculating binomial expansion coefficients
 	double calcC(int a, int m, double A) const;
 	void makeC(FiveIndex<double> &C, int L, double *A);
 	
 	/// Calculates the type 1 integrals for the given ECP center over the given shell pair
-	void type1(const GaussianECPShell& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values);
+    void type1(const GaussianShell& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values);
 	/// Calculates the type 2 integrals for the given ECP center over the given shell pair
-	void type2(int l, const GaussianECPShell& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values);
+    void type2(int l, const GaussianShell& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values);
 	
 	/// Overridden shell-pair integral calculation over all ECP centers
 	void compute_pair(const GaussianShell &shellA, const GaussianShell &shellB);
 	
 	/// Computes the overall ECP integrals over the given ECP center and shell pair
-	void compute_shell_pair(const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, TwoIndex<double> &values, int shiftA = 0, int shiftB = 0);
+    void compute_shell_pair(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, TwoIndex<double> &values, int shiftA = 0, int shiftB = 0);
 	
 public:
 	/**
@@ -324,7 +324,7 @@ public:
 	  * @param basis - reference to the ECP basis set
 	  * @paramm maxLB - the maximum angular momentum in the orbital basis
 	  */
-    ECPInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<ECPBasisSet>, int deriv = 0);
+    ECPInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     virtual ~ECPInt();
 	
 };

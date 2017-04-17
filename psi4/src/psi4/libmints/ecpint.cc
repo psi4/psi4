@@ -355,10 +355,10 @@ void RadialIntegral::buildParameters(const GaussianShell &shellA, const Gaussian
 	double Pvec[3];
 	double zetaA, zetaB;
 	for (int a = 0; a < npA; a++) {
-		zetaA = shellA.exp(a);
+        zetaA = shellA.exp(a);
 		
 		for (int b = 0; b < npB; b++) {
-			zetaB = shellB.exp(b);
+            zetaB = shellB.exp(b);
 			
 			p(a, b) = zetaA + zetaB;
 			for (int n = 0; n < 3; n++) 
@@ -372,7 +372,7 @@ void RadialIntegral::buildParameters(const GaussianShell &shellA, const Gaussian
 	}
 }
 
-void RadialIntegral::buildU(const GaussianECPShell &U, int l, int N, GCQuadrature &grid, double *Utab) {
+void RadialIntegral::buildU(const GaussianShell &U, int l, int N, GCQuadrature &grid, double *Utab) {
 	int gridSize = grid.getN();
 	std::vector<double> &gridPoints = grid.getX();
 	
@@ -400,7 +400,7 @@ int RadialIntegral::integrate(int maxL, int gridSize, TwoIndex<double> &intValue
 	return test;
 }
 
-void RadialIntegral::type1(int maxL, int N, int offset, const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values) {
+void RadialIntegral::type1(int maxL, int N, int offset, const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values) {
 	int npA = shellA.nprimitive(); 
 	int npB = shellB.nprimitive();
 	
@@ -423,22 +423,22 @@ void RadialIntegral::type1(int maxL, int N, int offset, const GaussianECPShell &
 	double x, phi, Px, Py;
 	for (int a = 0; a < npA; a++) {
 		da = shellA.coef(a);
-		za = shellA.exp(a);
+        za = shellA.exp(a);
 		
 		for (int b = 0; b < npB; b++) {
 			db = shellB.coef(b);
-			zb = shellB.exp(b);
+            zb = shellB.exp(b);
 			
 			// Reset grid starting points
 			GCQuadrature newGrid = bigGrid;
 			newGrid.transformRMinMax(p(a, b), (za * A + zb * B)/p(a, b));
 			std::vector<double> &gridPoints = newGrid.getX();
-			newGrid.start = 0;
+            newGrid.start = 0;
 			newGrid.end = gridSize-1;
 			
 			// Build U and bessel tabs
 			double Utab[gridSize];
-			buildU(U, U.am(), N, newGrid, Utab);
+            buildU(U, U.am(), N, newGrid, Utab);
 			buildBessel(gridPoints, gridSize, maxL, besselValues, 2.0*p(a,b)*P(a,b));
 			
 			// Start building intvalues, and prescreen
@@ -466,7 +466,7 @@ void RadialIntegral::type1(int maxL, int N, int offset, const GaussianECPShell &
 			}
 
 			int test = integrate(maxL, gridSize, intValues, newGrid, tempValues, offset, 2);
-			if (test == 0) std::cout << "Failed to converge: \n";
+            if (test == 0) std::cout << "Failed to converge: \n";
 				
 			// Calculate real spherical harmonic
 			x = fabs(P(a, b)) < 1e-12 ? 0.0 : (za * data.A[2] + zb * data.B[2]) / (p(a, b) * P(a, b));
@@ -492,7 +492,7 @@ void RadialIntegral::buildF(const GaussianShell &shell, double A, int lstart, in
 	
 	F.assign(lend + 1, nr, 0.0);
 	for (int a = 0; a < np; a++) {
-		zeta = shell.exp(a);
+        zeta = shell.exp(a);
 		c = shell.coef(a);
 		weight = 2.0 * zeta * A;
 		
@@ -508,7 +508,7 @@ void RadialIntegral::buildF(const GaussianShell &shell, double A, int lstart, in
 	}
 }
 
-void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end, int N, const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values) {
+void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end, int N, const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values) {
 
 	std::function<double(double, double*, int)> intgd = integrand; 
 	int npA = shellA.nprimitive();
@@ -567,11 +567,11 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 		
 		for (int a = 0; a < npA; a++) {
 			c_a = shellA.coef(a);
-			zeta_a = shellA.exp(a);
+            zeta_a = shellA.exp(a);
 			
 			for (int b = 0; b < npB; b++) {
 				c_b = shellB.coef(b);
-				zeta_b = shellB.exp(b);
+                zeta_b = shellB.exp(b);
 				
 				GCQuadrature newGrid = bigGrid;
 				newGrid.transformRMinMax(p(a, b), (zeta_a * A + zeta_b * B)/p(a, b));
@@ -620,7 +620,7 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 //***************************************** ECP INTEGRAL ***********************************************
 
 ECPInt::ECPInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, 
-	std::shared_ptr<BasisSet> bs2, std::shared_ptr<ECPBasisSet> _basis, int deriv) : OneBodyAOInt(st, bs1, bs2, deriv), basis(_basis) {
+    std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> _basis, int deriv) : OneBodyAOInt(st, bs1, bs2, deriv), basis(_basis) {
 	// Initialise angular and radial integrators
 	int maxam1 = bs1->max_am(); int maxam2 = bs2->max_am();  
 	int maxLB = maxam1 > maxam2 ? maxam1 : maxam2;
@@ -666,7 +666,7 @@ void ECPInt::makeC(FiveIndex<double> &C, int L, double *A) {
 	}
 }
 
-void ECPInt::type1(const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) { 
+void ECPInt::type1(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) {
 	
 	int LA = data.LA; int LB = data.LB;
 	int maxLBasis = data.maxLBasis;
@@ -674,22 +674,23 @@ void ECPInt::type1(const GaussianECPShell &U, const GaussianShell &shellA, const
 	// Build radial integrals
 	int L = LA + LB;
 	TwoIndex<double> temp;
-	ThreeIndex<double> radials(L+1, L+1, 2*L+1);
-	for (int ix = 0; ix <= L; ix++) {
-		radInts.type1(ix, ix, ix % 2, U, shellA, shellB, data, temp);
-		for(int l = 0; l <= ix; l++) {
-			for (int m = -l; m <= l; m++) radials(ix, l, l+m) = temp(l, l+m);
-		}
-	}
-	
-	values.assign(data.ncartA, data.ncartB, 0.0);
-	
+    ThreeIndex<double> radials(L+1, L+1, 2*L+1);
+    // TODO: I don't think this loop is needed.  Only ix==L should survive, I think. (ACS)
+    for (int ix = 0; ix <= L; ix++) {
+        radInts.type1(ix, ix, ix % 2, U, shellA, shellB, data, temp);
+        for(int l = 0; l <= ix; l++) {
+            for (int m = -l; m <= l; m++) {
+                radials(ix, l, l+m) = temp(l, l+m);
+            }
+        }
+    }
+
 	// Unpack positions
 	double Ax = data.A[0]; double Ay = data.A[1]; double Az = data.A[2];
 	double Bx = data.B[0]; double By = data.B[1]; double Bz = data.B[2];
 	
 	// Calculate chi_ab for all ab in shells
-	int z1, z2, lparity, mparity, msign, ix, k, l, m;
+    int z1, z2, lparity, mparity, msign, ix, k, l, m;
 	double C;
 	int na = 0, nb = 0;
 	for (int x1 = LA; x1 >= 0; x1--) {
@@ -744,7 +745,7 @@ void ECPInt::type1(const GaussianECPShell &U, const GaussianShell &shellA, const
 	
 }
 
-void ECPInt::type2(int lam, const GaussianECPShell& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
+void ECPInt::type2(int lam, const GaussianShell& U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
 	double prefac = 16.0 * M_PI * M_PI;
 	int LA = data.LA;
 	int LB = data.LB;
@@ -827,7 +828,7 @@ void ECPInt::type2(int lam, const GaussianECPShell& U, const GaussianShell &shel
 	}
 }
 
-void ECPInt::compute_shell_pair(const GaussianECPShell &U, const GaussianShell &shellA, const GaussianShell &shellB, TwoIndex<double> &values, int shiftA, int shiftB) {
+void ECPInt::compute_shell_pair(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, TwoIndex<double> &values, int shiftA, int shiftB) {
 	
 	ShellPairData data;
 	// Shift A and B to be relative to U
@@ -842,6 +843,7 @@ void ECPInt::compute_shell_pair(const GaussianECPShell &U, const GaussianShell &
 	data.LA = shellA.am() + shiftA; 
 	data.LB = shellB.am() + shiftB;
 	data.maxLBasis = data.LA > data.LB ? data.LA : data.LB;
+
 	data.ncartA = (data.LA+1)*(data.LA+2)/2;
 	data.ncartB = (data.LB+1)*(data.LB+2)/2;
 	
@@ -858,39 +860,45 @@ void ECPInt::compute_shell_pair(const GaussianECPShell &U, const GaussianShell &
 	FiveIndex<double> CB(1, data.ncartB, data.LB+1, data.LB+1, data.LB+1);
 	makeC(CA, data.LA, data.A);
 	makeC(CB, data.LB, data.B);
-	
-	// Calculate type1 integrals
-	type1(U, shellA, shellB, data, CA, CB, values);
 
-	// Now all the type2 integrals
-	ThreeIndex<double> t2vals(data.ncartA, data.ncartB, 2*U.am() + 1);
-	for (int l = 0; l < U.am(); l++) {
-		t2vals.fill(0.0);
-		type2(l, U, shellA, shellB, data, CA, CB, t2vals);
-		for (int m = -l; m <= l; m++) {
-			for(int na = 0; na < data.ncartA; na++) {
-				for (int nb = 0; nb < data.ncartB; nb++)
-					values(na, nb) += t2vals(na, nb, l+m); 
-			}
-		}
-	}
+    // Initialize the values to zero
+    values.assign(data.ncartA, data.ncartB, 0.0);
+
+    if(U.shell_type() == ECPType1){
+        // This is a type 1 shell
+        type1(U, shellA, shellB, data, CA, CB, values);
+    } else if (U.shell_type() == ECPType2){
+        // This is a type 2 shell
+        int l = U.am();
+        ThreeIndex<double> t2vals(data.ncartA, data.ncartB, 2*l+1);
+        t2vals.fill(0.0);
+        type2(l, U, shellA, shellB, data, CA, CB, t2vals);
+        for (int m = -l; m <= l; m++) {
+            for(int na = 0; na < data.ncartA; na++) {
+                for (int nb = 0; nb < data.ncartB; nb++)
+                    values(na, nb) += t2vals(na, nb, l+m);
+            }
+        }
+    } else {
+        throw PSIEXCEPTION("Unrecognized shell type in ECPInt::compute_shell_pair.");
+    }
 	
 }
 
 void ECPInt::compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) {
 	memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
-	
 	TwoIndex<double> tempValues;
 	int ao12;
-	for (int i = 0; i < basis->nshell(); i++) {
-		 compute_shell_pair(((GaussianECPShell&) basis->shell(i)), shellA, shellB, tempValues);
-		 ao12 = 0;
-		 for (int a = 0; a < shellA.ncartesian(); a++) {
-			 for (int b = 0; b < shellB.ncartesian(); b++) {
-				 buffer_[ao12++] += tempValues(a, b);
-			 }
-		 }
-	}
+    for (int i = 0; i < basis->nshell(); i++) {
+        const GaussianShell &myshell = basis->shell(i);
+        compute_shell_pair(myshell, shellA, shellB, tempValues);
+        ao12 = 0;
+        for (int a = 0; a < shellA.ncartesian(); a++) {
+            for (int b = 0; b < shellB.ncartesian(); b++) {
+                buffer_[ao12++] += tempValues(a, b);
+            }
+        }
+    }
 }
 
 ECPSOInt::ECPSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
