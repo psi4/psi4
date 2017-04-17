@@ -4365,7 +4365,7 @@ void FISAPT::fdrop()
         filesystem::create_directory(sSAPT_filepath);
 
         std::stringstream sSAPT_ss;
-        sSAPT_ss << sSAPT_filepath << "geom.xyz";
+        sSAPT_ss << sSAPT_filepath << "/geom.xyz";
         primary_->molecule()->save_xyz_file(sSAPT_ss.str(), true);
 
         matrices_["sIndAB_AB"]->set_name("IndAB");
