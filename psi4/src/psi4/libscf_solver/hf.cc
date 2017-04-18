@@ -809,6 +809,8 @@ void HF::print_header()
     outfile->Printf( "  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
+    if(ecpbasisset_)
+        ecpbasisset_->print_by_level("outfile", print_);
 
 }
 void HF::print_preiterations()

@@ -60,6 +60,8 @@ class Vector3;
 class SOBasisSet;
 class IntegralFactory;
 
+enum BasisType { GaussianBasis = 0, ECPBasis = 1 };
+
 /*! \ingroup MINTS */
 
 //! Basis set container class
@@ -82,8 +84,14 @@ protected:
     //! Array of gaussian shells
     GaussianShell *shells_;
 
+    //! The type of basis set this object encodes.
+    BasisType basistype_;
+
     //! vector of shells numbers sorted in acending AM order.
     std::vector<int> sorted_ao_shell_list_;
+
+    //! The number of core electrons for each atom type
+    std::map<std::string, int> ncore_;
 
     //! Molecule object.
     std::shared_ptr<Molecule> molecule_;
@@ -153,7 +161,8 @@ public:
     BasisSet();
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
-             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map);
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
+             BasisType type = GaussianBasis);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
@@ -243,6 +252,18 @@ public:
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
     const GaussianShell& shell(int center, int si) const;
+
+    /// Return the type of basis set this object encodes.
+    BasisType basis_type() const { return basistype_; }
+
+    /// Return the number of core electrons associated with this (ECP) basisset, for the specified label.
+    int ncore(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
+
+    /// Return the total number of core electrons assocated with this (ECP) basisset.
+    int ncore() const;
+
+    /// Set the number of electrons associated with the given atom label, for an ECP basis set.
+    void set_ncore(const std::string &label, int n) { ncore_[std::string(label)] = n; }
 
     /** @{
      *  Print the basis set.

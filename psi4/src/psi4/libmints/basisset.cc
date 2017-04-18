@@ -86,7 +86,7 @@ std::string to_upper_copy(const std::string &original)
 } // namespace anonmyous
 
 // Constructs a zero AO basis set
-BasisSet::BasisSet()
+BasisSet::BasisSet() : basistype_(GaussianBasis)
 {
     initialize_singletons();
 
@@ -180,17 +180,37 @@ std::shared_ptr <Molecule> BasisSet::molecule() const
     return molecule_;
 }
 
+int BasisSet::ncore() const
+{
+    int ncoreelectrons = 0;
+    for (int A = 0; A < molecule_->natom(); A++)
+       ncoreelectrons += ncore(molecule_->label(A));
+    return ncoreelectrons;
+}
+
 void BasisSet::print(std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
                                                    std::shared_ptr<OutFile>(new OutFile(out)));
-    printer->Printf("  Basis Set: %s\n", name_.c_str());
-    printer->Printf("    Blend: %s\n", target_.c_str());
-    printer->Printf("    Number of shells: %d\n", nshell());
-    printer->Printf("    Number of basis function: %d\n", nbf());
-    printer->Printf("    Number of Cartesian functions: %d\n", nao());
-    printer->Printf("    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
-    printer->Printf("    Max angular momentum: %d\n\n", max_am());
+    if(basistype_ == GaussianBasis) {
+        printer->Printf("  Basis Set: %s\n", name_.c_str());
+        printer->Printf("    Blend: %s\n", target_.c_str());
+        printer->Printf("    Number of shells: %d\n", nshell());
+        printer->Printf("    Number of basis function: %d\n", nbf());
+        printer->Printf("    Number of Cartesian functions: %d\n", nao());
+        printer->Printf("    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
+        printer->Printf("    Max angular momentum: %d\n\n", max_am());
+    } else if(basistype_ == ECPBasis) {
+
+        printer->Printf("  Core potential: %s\n", name_.c_str());
+        printer->Printf("    Blend: %s\n", target_.c_str());
+        printer->Printf("    Number of shells: %d\n", nshell());
+        printer->Printf("    Number of terms: %d\n", nprimitive());
+        printer->Printf("    Number of core electrons: %d\n", ncore());
+        printer->Printf("    Max angular momentum: %d\n\n", max_am());
+    } else {
+        throw PSIEXCEPTION("BasisSet::print(): Unknown basis type!");
+    }
 }
 
 void BasisSet::print_by_level(std::string out, int level) const
@@ -209,108 +229,204 @@ void BasisSet::print_summary(std::string out) const
 {
 
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
-    printer->Printf("  -AO BASIS SET INFORMATION:\n");
-    printer->Printf("    Name                   = %s\n", name_.c_str());
-    printer->Printf("    Blend                  = %s\n", target_.c_str());
-    printer->Printf("    Total number of shells = %d\n", nshell());
-    printer->Printf("    Number of primitives   = %d\n", nprimitive_);
-    printer->Printf("    Number of AO           = %d\n", nao_);
-    printer->Printf("    Number of SO           = %d\n", nbf_);
-    printer->Printf("    Maximum AM             = %d\n", max_am_);
-    printer->Printf("    Spherical Harmonics    = %s\n", (puream_ ? "TRUE" : "FALSE"));
-    printer->Printf("\n");
+                                                                      std::shared_ptr<OutFile>(new OutFile(out)));
 
-    printer->Printf("  -Contraction Scheme:\n");
-    printer->Printf("    Atom   Type   All Primitives // Shells:\n");
-    printer->Printf("   ------ ------ --------------------------\n");
+    if(basistype_ == GaussianBasis) {
+        printer->Printf("  -AO BASIS SET INFORMATION:\n");
+        printer->Printf("    Name                   = %s\n", name_.c_str());
+        printer->Printf("    Blend                  = %s\n", target_.c_str());
+        printer->Printf("    Total number of shells = %d\n", nshell());
+        printer->Printf("    Number of primitives   = %d\n", nprimitive_);
+        printer->Printf("    Number of AO           = %d\n", nao_);
+        printer->Printf("    Number of SO           = %d\n", nbf_);
+        printer->Printf("    Maximum AM             = %d\n", max_am_);
+        printer->Printf("    Spherical Harmonics    = %s\n", (puream_ ? "TRUE" : "FALSE"));
+        printer->Printf("\n");
 
-
-    int *nprims = new int[max_am_ + 1];
-    int *nunique = new int[max_am_ + 1];
-    int *nshells = new int[max_am_ + 1];
-    char *amtypes = new char[max_am_ + 1];
-
-    for (int A = 0; A < molecule_->natom(); A++) {
-
-        memset((void *) nprims, '\0', (max_am_ + 1) * sizeof(int));
-        memset((void *) nunique, '\0', (max_am_ + 1) * sizeof(int));
-        memset((void *) nshells, '\0', (max_am_ + 1) * sizeof(int));
+        printer->Printf("  -Contraction Scheme:\n");
+        printer->Printf("    Atom   Type   All Primitives // Shells:\n");
+        printer->Printf("   ------ ------ --------------------------\n");
 
 
-        printer->Printf("    %4d    ", A + 1);
-        printer->Printf("%2s     ", molecule_->symbol(A).c_str());
+        int *nprims = new int[max_am_ + 1];
+        int *nunique = new int[max_am_ + 1];
+        int *nshells = new int[max_am_ + 1];
+        char *amtypes = new char[max_am_ + 1];
+
+        for (int A = 0; A < molecule_->natom(); A++) {
+
+            memset((void *) nprims, '\0', (max_am_ + 1) * sizeof(int));
+            memset((void *) nunique, '\0', (max_am_ + 1) * sizeof(int));
+            memset((void *) nshells, '\0', (max_am_ + 1) * sizeof(int));
 
 
-        int first_shell = center_to_shell_[A];
-        int n_shell = center_to_nshell_[A];
+            printer->Printf("    %4d    ", A + 1);
+            printer->Printf("%2s     ", molecule_->symbol(A).c_str());
 
-        for (int Q = 0; Q < n_shell; Q++) {
-            const GaussianShell &shell = shells_[Q + first_shell];
-            nshells[shell.am()]++;
-            nunique[shell.am()] += shell.nprimitive();
-            nprims[shell.am()] += shell.nprimitive();
-            amtypes[shell.am()] = shell.amchar();
-        }
 
-        // All Primitives
-        for (int l = 0; l < max_am_ + 1; l++) {
-            if (nprims[l] == 0)
-                continue;
-            printer->Printf("%d%c ", nprims[l], amtypes[l]);
-        }
-        // Shells
-        printer->Printf("// ");
-        for (int l = 0; l < max_am_ + 1; l++) {
-            if (nshells[l] == 0)
-                continue;
-            printer->Printf("%d%c ", nshells[l], amtypes[l]);
+            int first_shell = center_to_shell_[A];
+            int n_shell = center_to_nshell_[A];
+
+            for (int Q = 0; Q < n_shell; Q++) {
+                const GaussianShell &shell = shells_[Q + first_shell];
+                nshells[shell.am()]++;
+                nunique[shell.am()] += shell.nprimitive();
+                nprims[shell.am()] += shell.nprimitive();
+                amtypes[shell.am()] = shell.amchar();
+            }
+
+            // All Primitives
+            for (int l = 0; l < max_am_ + 1; l++) {
+                if (nprims[l] == 0)
+                    continue;
+                printer->Printf("%d%c ", nprims[l], amtypes[l]);
+            }
+            // Shells
+            printer->Printf("// ");
+            for (int l = 0; l < max_am_ + 1; l++) {
+                if (nshells[l] == 0)
+                    continue;
+                printer->Printf("%d%c ", nshells[l], amtypes[l]);
+            }
+            printer->Printf("\n");
         }
         printer->Printf("\n");
-    }
-    printer->Printf("\n");
 
-    delete[] nprims;
-    delete[] nunique;
-    delete[] nshells;
-    delete[] amtypes;
+        delete[] nprims;
+        delete[] nunique;
+        delete[] nshells;
+        delete[] amtypes;
+    } else if(basistype_ == ECPBasis) {
+        printer->Printf("  -CORE POTENTIAL INFORMATION:\n");
+        printer->Printf("    Name                     = %s\n", name_.c_str());
+        printer->Printf("    Blend                    = %s\n", target_.c_str());
+        printer->Printf("    Total number of shells   = %d\n", nshell());
+        printer->Printf("    Number of terms          = %d\n", nprimitive_);
+        printer->Printf("    Number of core electrons = %d\n", ncore());
+        printer->Printf("    Maximum AM               = %d\n", max_am_);
+            printer->Printf("\n");
+
+        printer->Printf("  -Contraction Scheme:\n");
+        printer->Printf("    Atom   Type  #elec    All terms // Shells:   \n");
+        printer->Printf("   ------ ------ ----- --------------------------\n");
+
+
+        int *nprims = new int[max_am_ + 1];
+        int *nunique = new int[max_am_ + 1];
+        int *nshells = new int[max_am_ + 1];
+        char *amtypes = new char[max_am_ + 1];
+
+        for (int A = 0; A < molecule_->natom(); A++) {
+
+            memset((void *) nprims, '\0', (max_am_ + 1) * sizeof(int));
+            memset((void *) nunique, '\0', (max_am_ + 1) * sizeof(int));
+            memset((void *) nshells, '\0', (max_am_ + 1) * sizeof(int));
+
+
+            printer->Printf("    %4d    ", A + 1);
+            printer->Printf("%2s     ", molecule_->symbol(A).c_str());
+
+
+            int first_shell = center_to_shell_[A];
+            int n_shell = center_to_nshell_[A];
+            int ncoreelectrons = ncore(molecule_->label(A));
+            printer->Printf("%2d   ", ncoreelectrons);
+
+            for (int Q = 0; Q < n_shell; Q++) {
+                const GaussianShell &shell = shells_[Q + first_shell];
+                nshells[shell.am()]++;
+                nunique[shell.am()] += shell.nprimitive();
+                nprims[shell.am()] += shell.nprimitive();
+                amtypes[shell.am()] = shell.amchar();
+            }
+
+            // All Primitives
+            for (int l = 0; l < max_am_ + 1; l++) {
+                if (nprims[l] == 0)
+                    continue;
+                printer->Printf("%d%c ", nprims[l], amtypes[l]);
+            }
+            // Shells
+            printer->Printf("// ");
+            for (int l = 0; l < max_am_ + 1; l++) {
+                if (nshells[l] == 0)
+                    continue;
+                printer->Printf("%d%c ", nshells[l], amtypes[l]);
+            }
+            printer->Printf("\n");
+        }
+        printer->Printf("\n");
+
+        delete[] nprims;
+        delete[] nunique;
+        delete[] nshells;
+        delete[] amtypes;
+    } else {
+        throw PSIEXCEPTION("BasisSet::print(): Unknown basis type!");
+    }
+
 }
 
 void BasisSet::print_detail(std::string out) const
 {
     print_summary(out);
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                                      std::shared_ptr<OutFile>(new OutFile(out)));
 
-    printer->Printf("  ==> AO Basis Functions <==\n");
-    printer->Printf("\n");
-    printer->Printf("    [ %s ]\n", name_.c_str());
-    if (has_puream())
-        printer->Printf("    spherical\n");
-    else
-        printer->Printf("    cartesian\n");
-    printer->Printf("    ****\n");
-
-
-    for (int uA = 0; uA < molecule_->nunique(); uA++) {
-        const int A = molecule_->unique(uA);
-
-        printer->Printf("   %2s %3d\n", molecule_->symbol(A).c_str(), A + 1);
-
-
-        int first_shell = center_to_shell_[A];
-        int n_shell = center_to_nshell_[A];
-
-        for (int Q = 0; Q < n_shell; Q++)
-            shells_[Q + first_shell].print(out);
-
-
+    if(basistype_ == GaussianBasis) {
+        printer->Printf("  ==> AO Basis Functions <==\n");
+        printer->Printf("\n");
+        printer->Printf("    [ %s ]\n", name_.c_str());
+        if (has_puream())
+            printer->Printf("    spherical\n");
+        else
+            printer->Printf("    cartesian\n");
         printer->Printf("    ****\n");
 
+
+        for (int uA = 0; uA < molecule_->nunique(); uA++) {
+            const int A = molecule_->unique(uA);
+
+            printer->Printf("   %2s %3d\n", molecule_->symbol(A).c_str(), A + 1);
+
+
+            int first_shell = center_to_shell_[A];
+            int n_shell = center_to_nshell_[A];
+
+            for (int Q = 0; Q < n_shell; Q++)
+                shells_[Q + first_shell].print(out);
+
+
+            printer->Printf("    ****\n");
+
+        }
+
+        printer->Printf("\n");
+    } else if(basistype_ == ECPBasis){
+        printer->Printf("  ==> Core Potential Functions <==\n");
+        printer->Printf("\n");
+        printer->Printf("    [ %s ]\n", name_.c_str());
+        printer->Printf("    ****\n");
+
+        for (int uA = 0; uA < molecule_->nunique(); uA++) {
+            const int A = molecule_->unique(uA);
+            int first_shell = center_to_shell_[A];
+            int n_shell = center_to_nshell_[A];
+            int shellam = 0;
+            for(int shell = 0; shell < n_shell; ++shell)
+                shellam = shells_[shell+first_shell].am() > shellam ? shells_[shell+first_shell].am() : shellam;
+            printer->Printf("   %2s %3d\n", molecule_->symbol(A).c_str(), A + 1);
+            printer->Printf("   %2s-ECP  %d %3d\n", molecule_->symbol(A).c_str(), shellam, ncore(molecule_->label(A)));
+
+            for (int Q = 0; Q < n_shell; Q++)
+                shells_[Q + first_shell].print(out);
+
+            printer->Printf("    ****\n");
+
+        }
+
+        printer->Printf("\n");
     }
-
-    printer->Printf("\n");
-
 }
 
 std::string BasisSet::print_detail_cfour() const
@@ -502,6 +618,8 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
     }
     mol->update_geometry();  // update symmetry with basisset info
 
+    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell, ECPBasis));
+
     // Modify the nuclear charges, to account for the ECP.  Currently this assumes that the regular basis set
     // has a pointer to the same molecule object, so these changes will propagate properly.  We may need to
     // rethink that strategy at some point in the future.
@@ -512,8 +630,8 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
         int Z = mol->Z(atom);
         Z -= ncore;
         mol->set_nuclear_charge(atom, Z);
+        basisset->set_ncore(label, ncore);
     }
-    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell));
 
     basisset->name_.clear();
     basisset->name_ = name;
@@ -572,8 +690,8 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
 }
 
 BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
-                   std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> &shell_map)
-: name_ (basistype), molecule_(mol)
+                   std::map <std::string, std::map<std::string, std::vector < ShellInfo>>> &shell_map, BasisType type)
+: name_ (basistype), molecule_(mol), basistype_(type)
 {
     // Singletons
     initialize_singletons();

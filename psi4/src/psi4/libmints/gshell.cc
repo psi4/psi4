@@ -256,15 +256,21 @@ int GaussianShell::nprimitive() const
 
 void GaussianShell::print(std::string out) const
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
+                                                               std::shared_ptr<OutFile>(new OutFile(out)));
 
+
+    if(shelltype_ == ECPType1 || shelltype_ == ECPType2) {
+        printer->Printf( "    %c-ul potential\n", AMCHAR());
+        printer->Printf( "      %d\n", nprimitive());
+        for (int K = 0; K < nprimitive(); K++)
+            printer->Printf( "               %2d %20.8f %20.8f\n", n_[K], exp_[K], original_coef_[K]);
+    } else if(shelltype_ == Gaussian) {
         printer->Printf( "    %c %3d 1.00\n", AMCHAR(), nprimitive());
-
-    for (int K = 0; K < nprimitive(); K++) {
-
+        for (int K = 0; K < nprimitive(); K++)
             printer->Printf( "               %20.8f %20.8f\n",exp_[K], original_coef_[K]);
-
+    } else {
+        throw PSIEXCEPTION("Unknown shell type in GaussianShell::print()");
     }
 }
 

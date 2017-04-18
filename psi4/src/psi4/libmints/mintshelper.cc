@@ -1202,12 +1202,9 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
     }
 
     if (integral_->hasECP()) {
-        outfile->Printf("Adding ECP terms to potential..\n");
         std::shared_ptr <OneBodySOInt> ECP(integral_->so_ecp());
         SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", potential_mat->nrow(), potential_mat->ncol()));
         ECP->compute(ecp_mat);
-        potential_mat->print();
-        ecp_mat->print();
         potential_mat->add(ecp_mat);
     }
 
