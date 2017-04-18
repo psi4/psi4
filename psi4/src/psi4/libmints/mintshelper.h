@@ -31,7 +31,6 @@
 #include <vector>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/multipolesymmetry.h"
-#include "psi4/libmints/ecp.h"
 
 namespace psi {
 

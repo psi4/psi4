@@ -39,7 +39,6 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/integral.h"

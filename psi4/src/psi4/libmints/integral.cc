@@ -47,7 +47,6 @@
 #include "psi4/libmints/potentialint.h"
 #include "psi4/libmints/ecpint.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/erd_eri.h"
 
 #ifdef USING_simint
