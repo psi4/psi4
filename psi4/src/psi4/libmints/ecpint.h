@@ -19,7 +19,6 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/ecp.h"
 #include "psi4/libmints/bessel.h"
 
 namespace psi {
