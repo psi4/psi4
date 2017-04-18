@@ -56,8 +56,8 @@ DipoleInt::DipoleInt(std::vector<SphericalTransform>& spherical_transforms, std:
     }
     else if (deriv_ == 1) {
         natom_ = bs1_->molecule()->natom();
-        buffer_ = new double[3*3*natom_*maxnao1*maxnao2]; // 3 * 3 * N * maxnao1 * maxnao2
-        set_chunks(3*3*natom_);
+        buffer_ = new double[6*3*maxnao1*maxnao2];
+        set_chunks(6*3);
     }
 }
 
@@ -193,25 +193,24 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell
     B[1] = s2.center()[1];
     B[2] = s2.center()[2];
 
-    size_t xaxdisp = at1 * length * 9;
-    size_t xaydisp = xaxdisp + length;
-    size_t xazdisp = xaydisp + length;
-    size_t yaxdisp = xazdisp + length;
-    size_t yaydisp = yaxdisp + length;
-    size_t yazdisp = yaydisp + length;
-    size_t zaxdisp = yazdisp + length;
-    size_t zaydisp = zaxdisp + length;
-    size_t zazdisp = zaydisp + length;
-
-    size_t xbxdisp = at2 * length * 9;
-    size_t xbydisp = xbxdisp + length;
-    size_t xbzdisp = xbydisp + length;
-    size_t ybxdisp = xbzdisp + length;
-    size_t ybydisp = ybxdisp + length;
-    size_t ybzdisp = ybydisp + length;
-    size_t zbxdisp = ybzdisp + length;
-    size_t zbydisp = zbxdisp + length;
-    size_t zbzdisp = zbydisp + length;
+    size_t xaxdisp =  0;
+    size_t xaydisp =  1*length;
+    size_t xazdisp =  2*length;
+    size_t xbxdisp =  3*length;
+    size_t xbydisp =  4*length;
+    size_t xbzdisp =  5*length;
+    size_t yaxdisp =  6*length;
+    size_t yaydisp =  7*length;
+    size_t yazdisp =  8*length;
+    size_t ybxdisp =  9*length;
+    size_t ybydisp = 10*length;
+    size_t ybzdisp = 11*length;
+    size_t zaxdisp = 12*length;
+    size_t zaydisp = 13*length;
+    size_t zazdisp = 14*length;
+    size_t zbxdisp = 15*length;
+    size_t zbydisp = 16*length;
+    size_t zbzdisp = 17*length;
 
     // compute intermediates
     double AB2 = 0.0;
@@ -220,7 +219,7 @@ void DipoleInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
     // Zero out the buffer
-    memset(buffer_, 0, 3 * 3 * natom_ * length * sizeof(double));
+    memset(buffer_, 0, 6*3*length*sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();

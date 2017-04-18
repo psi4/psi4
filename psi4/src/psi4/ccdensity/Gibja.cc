@@ -72,11 +72,16 @@ void Gibja(void)
   int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
   dpdfile2 T1, L1, T1A, T1B, L1A, L1B;
   dpdbuf4 G, L, T, Z, Z1, V, G1, G2;
+  bool T2_L2_V = true;
+
+  /*  T2 * L2 * V is absent in CC2 Lagrangian */
+  if (params.wfn == "CC2" && params.dertype ==1) T2_L2_V = false;
 
   nirreps = moinfo.nirreps;
 
   if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
 
+    if (T2_L2_V){
     /* G(ia,jb) <-- L(im,ae) T(jm,be) */
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "VIAJB");
     global_dpd_->buf4_sort(&V, PSIF_CC_MISC, rspq, 10, 10, "GIAJB");
@@ -96,6 +101,7 @@ void Gibja(void)
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "ViAjB");
     global_dpd_->buf4_sort(&V, PSIF_CC_MISC, rspq, 10, 10, "GiAjB");
     global_dpd_->buf4_close(&V);
+    }
 
     /* G(IA,JB) <-- - L(IM,AE) T(J,E) T(M,B) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "Z(IM,AJ)");
@@ -113,10 +119,14 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 10, 10, "Z(IA,JB)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 10, 10, 10, 10, 0, "Z(IA,JB)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GIAJB");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
-    global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
+    if (T2_L2_V){
+       global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GIAJB");
+       global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+       global_dpd_->buf4_close(&G);
+    }
+    else
+    global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GIAJB", -1.0);
+      global_dpd_->buf4_close(&Z1);
 
     /* G(ia,jb) <-- - L(im,ae) T(j,e) T(m,b) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "Z(im,aj)");
@@ -134,10 +144,15 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 10, 10, "Z(ia,jb)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 10, 10, 10, 10, 0, "Z(ia,jb)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "Giajb");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "Giajb");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "Giajb", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
+
 
     /* G(IA,jb) <-- - L(Im,Ae) T(j,e) T(m,b) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "Z(Im,Aj)");
@@ -155,10 +170,14 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 10, 10, "Z(IA,jb)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 10, 10, 10, 10, 0, "Z(IA,jb)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GIAjb");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GIAjb");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GIAjb", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
 
     /* G(ia,JB) <-- - L(iM,aE) T(J,E) T(M,B) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 11, 0, 11, 0, "Z(iM,aJ)");
@@ -176,10 +195,14 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 10, 10, "Z(ia,JB)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 10, 10, 10, 10, 0, "Z(ia,JB)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GiaJB");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GiaJB");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GiaJB", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
 
     /* G(Ia,Jb) <-- - L(Im,Ea) T(J,E) T(m,b) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z(Im,Ja)");
@@ -196,11 +219,15 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP0, psrq, 10, 10, "Z(Ia,Jb)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z(Ia,Jb)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GIaJb");
-    global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GIaJb");
+      global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+      global_dpd_->buf4_scm(&G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GIaJb", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_scm(&G, -1.0);
-    global_dpd_->buf4_close(&G);
 
     /* G(iA,jB) <-- - L(iM,eA) T(j,e) T(M,B) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 10, 0, 10, 0, "Z(iM,jA)");
@@ -217,11 +244,15 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP0, psrq, 10, 10, "Z(iA,jB)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 10, 10, 10, 10, 0, "Z(iA,jB)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GiAjB");
-    global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 10, 10, 10, 10, 0, "GiAjB");
+      global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+      global_dpd_->buf4_scm(&G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GiAjB", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_scm(&G, -1.0);
-    global_dpd_->buf4_close(&G);
 
     global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_mat_init(&T1A);
@@ -414,6 +445,7 @@ void Gibja(void)
   }
   else if(params.ref == 2) { /** UHF **/
 
+    if (T2_L2_V){
     /* G(ia,jb) <-- L(im,ae) T(jm,be) */
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 20, 20, 20, 20, 0, "VIAJB");
     global_dpd_->buf4_sort(&V, PSIF_CC_MISC, rspq, 20, 20, "GIAJB");
@@ -433,6 +465,7 @@ void Gibja(void)
     global_dpd_->buf4_init(&V, PSIF_CC_MISC, 0, 27, 27, 27, 27, 0, "ViAjB");
     global_dpd_->buf4_sort(&V, PSIF_CC_MISC, rspq, 27, 27, "GiAjB");
     global_dpd_->buf4_close(&V);
+    }
 
     /* G(IA,JB) <-- - L(IM,AE) T(J,E) T(M,B) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 0, 21, 0, 21, 0, "Z(IM,AJ)");
@@ -450,10 +483,14 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 20, 20, "Z(IA,JB)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 20, 20, 20, 20, 0, "Z(IA,JB)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 20, 20, 20, 20, 0, "GIAJB");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 20, 20, 20, 20, 0, "GIAJB");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GIAJB", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
 
     /* G(ia,jb) <-- - L(im,ae) T(j,e) T(m,b) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 10, 31, 10, 31, 0, "Z(im,aj)");
@@ -471,10 +508,14 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 30, 30, "Z(ia,jb)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 30, 30, 30, 30, 0, "Z(ia,jb)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 30, 30, 30, 30, 0, "Giajb");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 30, 30, 30, 30, 0, "Giajb");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "Giajb", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
 
     /* G(IA,jb) <-- - L(Im,Ae) T(j,e) T(m,b) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 22, 26, 22, 26, 0, "Z(Im,Aj)");
@@ -492,10 +533,15 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 20, 30, "Z(IA,jb)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 20, 30, 20, 30, 0, "Z(IA,jb)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 20, 30, 20, 30, 0, "GIAjb");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 20, 30, 20, 30, 0, "GIAjb");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GIAjb", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
+
 
     /* G(ia,JB) <-- - L(iM,aE) T(J,E) T(M,B) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 23, 25, 23, 25, 0, "Z(iM,aJ)");
@@ -513,10 +559,14 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP1, pqsr, 30, 20, "Z(ia,JB)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP1, 0, 30, 20, 30, 20, 0, "Z(ia,JB)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 30, 20, 30, 20, 0, "GiaJB");
-    global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 30, 20, 30, 20, 0, "GiaJB");
+      global_dpd_->buf4_axpy(&Z1, &G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GiaJB", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_close(&G);
 
     /* G(Ia,Jb) <-- - L(Im,Ea) T(J,E) T(m,b) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 22, 24, 22, 24, 0, "Z(Im,Ja)");
@@ -533,11 +583,15 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP0, psrq, 24, 24, "Z(Ia,Jb)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 24, 24, 24, 24, 0, "Z(Ia,Jb)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 24, 24, 24, 24, 0, "GIaJb");
-    global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 24, 24, 24, 24, 0, "GIaJb");
+      global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+      global_dpd_->buf4_scm(&G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GIaJb", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_scm(&G, -1.0);
-    global_dpd_->buf4_close(&G);
 
     /* G(iA,jB) <-- - L(iM,eA) T(j,e) T(M,B) */
     global_dpd_->buf4_init(&Z, PSIF_CC_TMP0, 0, 23, 27, 23, 27, 0, "Z(iM,jA)");
@@ -554,11 +608,15 @@ void Gibja(void)
     global_dpd_->buf4_sort(&Z1, PSIF_CC_TMP0, psrq, 27, 27, "Z(iA,jB)");
     global_dpd_->buf4_close(&Z1);
     global_dpd_->buf4_init(&Z1, PSIF_CC_TMP0, 0, 27, 27, 27, 27, 0, "Z(iA,jB)");
-    global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 27, 27, 27, 27, 0, "GiAjB");
-    global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+    if (T2_L2_V){
+      global_dpd_->buf4_init(&G, PSIF_CC_MISC, 0, 27, 27, 27, 27, 0, "GiAjB");
+      global_dpd_->buf4_axpy(&Z1, &G, 1.0);
+      global_dpd_->buf4_scm(&G, -1.0);
+      global_dpd_->buf4_close(&G);
+    }
+    else
+      global_dpd_->buf4_scmcopy(&Z1, PSIF_CC_MISC, "GiAjB", -1.0);
     global_dpd_->buf4_close(&Z1);
-    global_dpd_->buf4_scm(&G, -1.0);
-    global_dpd_->buf4_close(&G);
 
     global_dpd_->file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     global_dpd_->file2_mat_init(&T1A);

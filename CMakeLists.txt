@@ -1,5 +1,5 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.3 FATAL_ERROR)  # 3.3: EP_add(DEPENDS interfacelib
+cmake_minimum_required(VERSION 3.3 FATAL_ERROR)  # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                                  # 3.2: continue()
                                                  # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
 project(psi4
@@ -42,7 +42,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python2.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, PCMSolver, pybind11
+#    For any ${AddOn} of: CheMPS2, dkh, libefp, erd, gdma, libint, PCMSolver, pybind11, simint
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
 #    - ${AddOn}_DIR "Set to directory containing ${AddOn}Config.cmake file to facilitate detection of external build"
@@ -74,6 +74,7 @@ option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
 option(ENABLE_libefp "Enables LIBEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of libint (requires Fortran)" OFF)
+option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
 option(ENABLE_gdma "Enables Stone's GDMA multipole code (requires Fortran)" OFF)
 option(ENABLE_PCMSolver "Enables PCMSolver library (requires Fortran)" OFF)
 # These options are relevant to pasture
@@ -86,7 +87,7 @@ if(ENABLE_ccsort OR ENABLE_transqt2)
   message(STATUS "Enabling pasture plugins")
 endif()
 
-if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver) # OR ENABLE_JKFACTORY
+if(ENABLE_gdma OR ENABLE_dkh OR ENABLE_erd OR ENABLE_PCMSolver)
     enable_language(Fortran)
     set(Fortran_ENABLED ON)  # communicate required languages with psi4-core
     message(STATUS "Enabling Fortran")
@@ -124,6 +125,7 @@ option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR t
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of system and math libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 11)
+option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
@@ -148,7 +150,7 @@ set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage${CMAKE_INSTALL_PREFIX})
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
 
-    # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
+# external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
 include(autocmake_omp)
 include(custom_cxxstandard)
 include(custom_static_library)
@@ -167,6 +169,7 @@ ExternalProject_Add(psi4-core
            libint_external
            pcmsolver_external
            pybind11_external
+           simint_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -196,6 +199,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_erd=${ENABLE_erd}
+              -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
@@ -208,6 +212,7 @@ ExternalProject_Add(psi4-core
               -Dlibint_DIR=${libint_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dpybind11_DIR=${pybind11_DIR}
+              -Dsimint_DIR=${simint_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}

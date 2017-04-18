@@ -33,11 +33,11 @@ find_package(Perl QUIET)
 set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
-set(py36_fail_list extern1 extern2)
+#set(py36_fail_list extern1 extern2)
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
-                  cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc14 cc15 cc16 
+                  cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c cc13d cc14 cc15 cc16 
                   cc17 cc18 cc19 cc2 cc21 cc22 cc23 cc24 cc25 cc26 cc27 cc28 
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a 
@@ -50,7 +50,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   dcft7 dcft8 dcft9 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
                   dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
                   dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-grad1
-                  dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfomp2-1 dfomp2-2 dfomp2-3
+                  dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp3-1 dfomp3-2 
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf 
@@ -81,7 +81,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o 
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
                   sapt7 sapt8 scf-bz2 scf-guess-read1 scf-guess-read2 scf-bs scf1 scf-occ
-                  scf2 scf3 scf4 scf5 scf6 scf-property soscf1 soscf2 stability1
+                  scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf1 soscf2 stability1
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
                   options1 cubeprop-esp
@@ -215,6 +215,13 @@ endif()
 if(ENABLE_PCMSolver)
     add_subdirectory(pcmsolver)
     message(STATUS "Adding test cases: Psi4 + PCMSolver")
+endif()
+
+# <<<  SIMINT  >>>
+
+if(ENABLE_simint)
+    add_subdirectory(simint)
+    message(STATUS "Adding test cases: Psi4 + simint")
 endif()
 
 # plugin regime

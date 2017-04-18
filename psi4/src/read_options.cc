@@ -139,8 +139,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- Psi4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
-  /*- Integral package to use. If compiled with ERD support, toggle this to use it; LibInt is used otherwise. -*/
-  options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT");
+  /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used otherwise. -*/
+  options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT SIMINT");
 
   // Note that case-insensitive options are only functional as
   //   globals, not as module-level, and should be defined sparingly
@@ -1321,10 +1321,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
-    /*- Size of the perturbation (applies only to dipole perturbations) -*/
+    /*- Size of the perturbation (applies only to dipole perturbations).  Deprecated - use PERTURB_DIPOLE instead -*/
     options.add_double("PERTURB_MAGNITUDE", 0.0);
-    /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
+    /*- An array of length three describing the magnitude (atomic units) of the dipole field in the {x,y,z} directions -*/
+    options.add("PERTURB_DIPOLE", new ArrayType());
+    /*- The operator used to perturb the Hamiltonian, if requested.  DIPOLE_X, DIPOLE_Y and DIPOLE_Z will be
+        removed in favor of the DIPOLE option in the future -*/
+    options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 

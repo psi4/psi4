@@ -2229,6 +2229,10 @@ def run_ccenergy_gradient(name, **kwargs):
 
     ccwfn = run_ccenergy(name, **kwargs)
 
+    if name == 'cc2':
+        core.set_local_option('CCHBAR', 'WFN', 'CC2')
+        core.set_local_option('CCLAMBDA', 'WFN', 'CC2')
+        core.set_local_option('CCDENSITY', 'WFN', 'CC2')
     if name == 'ccsd':
         core.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
         core.set_local_option('CCDENSITY', 'WFN', 'CCSD')

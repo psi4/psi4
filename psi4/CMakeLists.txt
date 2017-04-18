@@ -106,13 +106,22 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using libint ${libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${libint_VERSION})")
 
 if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.1.9 CONFIG REQUIRED)
+    find_package(PCMSolver 1.1.10 CONFIG REQUIRED)
     get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using PCMSolver${ColourReset}: ${_loc} (version ${PCMSolver_VERSION})")
 else()
     message(STATUS "Disabled PCMSolver")
 endif ()
+
+if(${ENABLE_simint})
+    find_package(simint CONFIG REQUIRED COMPONENTS am${MAX_AM_ERI} der0)
+    get_property(_loc TARGET simint::simint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using simint ${simint_MAXAM}${ColourReset}: ${_loc} (version ${simint_VERSION}; vectorization ${simint_VECTOR})")
+else()
+    message(STATUS "Disabled simint")
+endif()
 
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
@@ -228,7 +237,6 @@ install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
               ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
               ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
-              ${PSI4_ROOT}/cmake/CheckFortranCompilerFlag.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>

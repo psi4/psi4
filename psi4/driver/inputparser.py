@@ -238,6 +238,14 @@ def process_molecule_command(matchobj):
     geometry = from_filere.sub(process_from_file_command,geometry)
     molecule = spaces
 
+    if name != "":
+        if sys.version_info >= (3, 0):
+            if not name.isidentifier():
+                raise ValidationError('Molecule name not valid Python identifier: ' + name)
+        else:
+            if not re.match(r'^[^\d\W]\w*\Z', name):
+                raise ValidationError('Molecule name not valid Python identifier: ' + name)
+
     molecule += 'core.efp_init()\n'  # clear EFP object before Molecule read in
     molecule += spaces
 
@@ -379,10 +387,18 @@ def process_pcm_command(matchobj):
     """Function to process match of ``pcm name? { ... }``."""
     spacing = str(matchobj.group(1)) # Ignore..
     name = str(matchobj.group(2)) # Ignore..
-    block = str(matchobj.group(3))
-    fp = open('pcmsolver.inp', 'w')
-    fp.write(block)
-    fp.close()
+    block = str(matchobj.group(3)) # Get input to PCMSolver
+    # Setup unique scratch directory and move in, as done for other add-ons
+    psioh = core.IOManager.shared_object()
+    psio = core.IO.shared_object()
+    os.chdir(psioh.get_default_path())
+    pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
+        'pcmsolver.' + str(uuid.uuid4())[:8]
+    if os.path.exists(pcm_tmpdir) is False:
+        os.mkdir(pcm_tmpdir)
+    os.chdir(pcm_tmpdir)
+    with open('pcmsolver.inp', 'w') as handle:
+        handle.write(block)
     import pcmsolver
     pcmsolver.parse_pcm_input('pcmsolver.inp')
     return "" # The file has been written to disk; nothing needed in Psi4 input
@@ -702,7 +718,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
-    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}',
+    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\S*?)\s*\{(.*?)\}',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 

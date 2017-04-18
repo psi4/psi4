@@ -465,6 +465,8 @@ double CCEnergyWavefunction::compute_energy()
         print_pair_energies(emp2_aa, emp2_ab, ecc_aa, ecc_ab);
     }
 
+    if(params_.wfn == "CC2" && params_.dertype ==1) t1_ijab();
+
     if( (params_.wfn == "CC3" || params_.wfn == "EOM_CC3" )
             && (params_.dertype == 1 || params_.dertype == 3) && params_.ref == 0) {
         params_.ref = 1;

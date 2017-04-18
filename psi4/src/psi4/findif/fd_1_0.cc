@@ -52,9 +52,8 @@ SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::
     std::shared_ptr <MatrixFactory> fact;
 
     py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-//    std::shared_ptr <ExternalPotential> external = pyExtern.cast < std::shared_ptr < ExternalPotential >> ();
-    bool noextern = pyExtern ? false : true;
-    CdSalcList cdsalc(mol, fact, 0x1, noextern, noextern);
+    bool project = !pyExtern && !options.get_bool("PERTURB_H");
+    CdSalcList cdsalc(mol, fact, 0x1, project, project);
     int Nsalc = cdsalc.ncd();
 
     // Compute number of displacements - check with number of energies passed in
