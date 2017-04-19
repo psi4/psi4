@@ -578,19 +578,25 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shar
 
 SharedMatrix MintsHelper::ao_ecp()
 {
-	std::shared_ptr <OneBodyAOInt> ECP(integral_->ao_ecp());
-	SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
-	ECP->compute(ecp_mat);
-	return ecp_mat;
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_ecp()));
+    }
+    SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
+    one_body_ao_computer(ints_vec, ecp_mat, true);
+    return ecp_mat;
 }
 
 SharedMatrix MintsHelper::ao_ecp(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, std::shared_ptr <BasisSet> bsecp)
 {
     IntegralFactory factory(bs1, bs2, bs1, bs2, bsecp);
-	std::shared_ptr <OneBodyAOInt> ECP(factory.ao_ecp());
-	SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
-	ECP->compute(ecp_mat);
-	return ecp_mat; 
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_ecp()));
+    }
+    SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", bs1->nbf(), bs2->nbf()));
+    one_body_ao_computer(ints_vec, ecp_mat, false);
+    return ecp_mat;
 }
 
 SharedMatrix MintsHelper::ao_pvp()
@@ -1202,10 +1208,13 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
     }
 
     if (integral_->hasECP()) {
-        std::shared_ptr <OneBodySOInt> ECP(integral_->so_ecp());
-        SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", potential_mat->nrow(), potential_mat->ncol()));
-        ECP->compute(ecp_mat);
-        potential_mat->add(ecp_mat);
+        if (factory_->nirrep() == 1) {
+            potential_mat->add(ao_ecp());
+        } else {
+            SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
+            ecp_mat->apply_symmetry(ao_ecp(), petite_list()->aotoso());
+            potential_mat->add(ecp_mat);
+        }
     }
 
     // Handle addition of any perturbations here and not in SCF code.

@@ -66,7 +66,7 @@ double fac[MAX_FAC];
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
                            std::shared_ptr<BasisSet> basis,
                            Options &options) :
-        options_(options), basisset_(basis), molecule_(molecule)
+        options_(options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
 {
     common_init();
 }
@@ -80,7 +80,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
 }
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis) :
-        options_(Process::environment.options), basisset_(basis), molecule_(molecule)
+        options_(Process::environment.options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
 {
 
     common_init();

@@ -588,6 +588,7 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
     py::list basisinfo = pybs["ecp_shell_map"].cast<py::list>();
     if(len(basisinfo) == 0)
         throw PSIEXCEPTION("Empty ECP information being used to construct ECPBasisSet.");
+    int totalncore = 0;
     for(int atom = 0; atom < py::len(basisinfo); ++atom){
         std::vector<ShellInfo> vec_shellinfo;
         py::list atominfo = basisinfo[atom].cast<py::list>();
@@ -615,7 +616,12 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
         mol->set_shell_by_label(atomlabel, hash, key);
         basis_atom_ncore[name][atomlabel] = ncore;
         basis_atom_shell[name][atomlabel] = vec_shellinfo;
+        totalncore += ncore;
     }
+    // If there's no real ECP info, bail now.
+    if(totalncore == 0)
+        return nullptr;
+
     mol->update_geometry();  // update symmetry with basisset info
 
     std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell, ECPBasis));
