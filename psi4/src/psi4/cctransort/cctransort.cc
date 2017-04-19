@@ -656,7 +656,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 
   outfile->Printf("\tNuclear Rep. energy          =  %20.14f\n", enuc);
   outfile->Printf("\tSCF energy                   =  %20.14f\n", escf);
-  double eref = scf_check(reference, openpi) + enuc + efzc;
+  double Epcm = Process::environment.globals["PCM POLARIZATION ENERGY"];
+  double eref = scf_check(reference, openpi) + enuc + efzc + Epcm;
   outfile->Printf("\tReference energy             =  %20.14f\n", eref);
   psio->write_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(eref), sizeof(double));
 
