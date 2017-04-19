@@ -30,7 +30,8 @@ static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi) {
 		double Plm[lmax+1][lmax+1]; 
 		// First get all Pmm terms
 		Plm[0][0] = 1.0;
-		double sox2 = sqrt(1.0 - x2);
+        // Make sure that 1-x^2 doesn't go below 0, due to roundoff
+        double sox2 = sqrt(std::max(0.0, 1.0 - x2));
 		double ox2m = 1.0;
 		for (int m = 1; m <= lmax; m++) {
 			ox2m *= -sox2;
