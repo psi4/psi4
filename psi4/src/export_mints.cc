@@ -425,8 +425,9 @@ void export_mints(py::module& m)
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "docstring").
             def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
-            def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
+            def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
             def(py::init<std::shared_ptr<BasisSet> >()).
+            def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
             //def("shells_iterator", &IntegralFactory::shells_iterator_ptr, py::return_value_policy<manage_new_object>(), "docstring").
             def("shells_iterator", &IntegralFactory::shells_iterator_ptr, "docstring").
             def("eri", &IntegralFactory::eri, "docstring", py::arg("deriv") = 0, py::arg("use_shell_pairs") = true).

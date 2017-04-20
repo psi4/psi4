@@ -179,7 +179,7 @@ OrbitalSpace OrbitalSpace::transform(const OrbitalSpace &A, const std::shared_pt
 
 SharedMatrix OrbitalSpace::overlap(const OrbitalSpace &space1, const OrbitalSpace &space2)
 {
-    IntegralFactory mix_ints(space1.basisset(), space2.basisset());
+    IntegralFactory mix_ints(space1.basisset(), space2.basisset(), space1.basisset(), space2.basisset());
 
     PetiteList p1(space1.basisset(), space1.integral());
     PetiteList p2(space2.basisset(), space2.integral());
@@ -197,7 +197,7 @@ SharedMatrix OrbitalSpace::overlap(const OrbitalSpace &space1, const OrbitalSpac
 SharedMatrix OrbitalSpace::overlap(const std::shared_ptr<BasisSet> &basis1,
                                    const std::shared_ptr<BasisSet> &basis2)
 {
-    IntegralFactory mix_ints(basis1, basis2);
+    IntegralFactory mix_ints(basis1, basis2, basis1, basis2);
     SOBasisSet sobasis1(basis1, &mix_ints);
     SOBasisSet sobasis2(basis2, &mix_ints);
 

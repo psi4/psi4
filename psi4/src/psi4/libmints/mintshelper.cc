@@ -520,7 +520,7 @@ SharedMatrix MintsHelper::ao_overlap()
 SharedMatrix MintsHelper::ao_overlap(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
     // Overlap
-    IntegralFactory factory(bs1, bs2);
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++){
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_overlap()));
@@ -543,7 +543,7 @@ SharedMatrix MintsHelper::ao_kinetic()
 
 SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
-    IntegralFactory factory(bs1, bs2);
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++){
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_kinetic()));
@@ -566,7 +566,7 @@ SharedMatrix MintsHelper::ao_potential()
 
 SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
-    IntegralFactory factory(bs1, bs2);
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++){
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_potential()));

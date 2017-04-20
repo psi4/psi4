@@ -1276,7 +1276,9 @@ def scf_helper(name, **kwargs):
             if ".gbs" in basis_name:
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
-            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            old_basis, old_ecp_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            if old_ecp_basis:
+                raise ValidationError('Projection not yet available with ECPs.')
             core.print_out("  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
 
             nalphapi = core.Dimension.from_list(data["nalphapi"])
@@ -3508,8 +3510,10 @@ def run_fisapt(name, **kwargs):
                                      ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SAPT", sapt_basis)
 
-    minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
+    minao,ecpbasis = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
                                 core.get_global_option("MINAO_BASIS"))
+    if ecpbasis:
+        raise ValidationError("FISAPT does not yet work with ECPs.")
     ref_wfn.set_basisset("MINAO", minao)
 
 
