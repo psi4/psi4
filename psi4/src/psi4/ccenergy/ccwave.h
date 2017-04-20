@@ -108,6 +108,15 @@ private:
     void t2_build(void);
     int converged(double);
 
+    /* PCM */
+#ifdef USING_PCMSolver
+    void get_t1_rhf(SharedMatrix &_t1);
+    void get_t1_rohf(SharedMatrix &_t1_A, SharedMatrix &_t1_B);
+    void get_t1_uhf(SharedMatrix &_t1_A, SharedMatrix &_t1_B);
+    void update_F_pcm_rhf(SharedMatrix &MO_PCM_potential);
+    void update_F_pcm_uhf(SharedMatrix &MO_PCM_potential_A, SharedMatrix &MO_PCM_potential_B);
+#endif
+
     /* DPD cache */
     void init_priority_list(void);
     int **cacheprep_uhf(int level, int *cachefiles);

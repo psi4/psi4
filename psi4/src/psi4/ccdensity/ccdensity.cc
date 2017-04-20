@@ -56,6 +56,11 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/writer.h"
 #include "psi4/libmints/molecule.h"
+
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
+
 namespace psi { namespace ccdensity {
 
 void init_io(void);
@@ -127,6 +132,8 @@ void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
 void V_cc2(void);
+void update_F_pcm_rhf(SharedMatrix &MO_PCM_potential);
+void update_F_pcm_uhf(SharedMatrix &MO_PCM_potential_A, SharedMatrix &MO_PCM_potential_B);
 void ex_tdensity(char hand, struct TD_Params S, struct TD_Params U);
 void ex_td_setup(struct TD_Params S, struct TD_Params U);
 void ex_td_cleanup();
@@ -268,8 +275,125 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
         x_Gijab();
       }
     }
- 
+
     sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
+
+    /* PCM-CC stuff */
+    if (options.get_bool("PCM") && (options.get_str("PCM_CC_TYPE") == "PTED"))
+    {// PTED scheme: R. Cammi, JCP, 131, 164104 (2009)
+      //   Build the PCM polarization charges from the CC density matrix at the current iteration.
+      //   The polarization charges are then contracted with the electrostatic potential integrals
+      //   to build the PCM potential to be added in the CC T and Lambda equations.
+      SharedPCM cc_pcm = std::make_shared<PCM>(options, ref_wfn->psio(), moinfo.nirreps, ref_wfn->basisset());
+      if (params.ref == 0 || params.ref == 1) /** RHF or ROHF **/
+      {
+        SharedMatrix MO_OPDM(new Matrix("MO_OPDM", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
+        SharedMatrix MO_PCM_potential(new Matrix("MO_PCM_potential", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
+
+        int offset = 0;
+        for(int h = 0; h < moinfo.nirreps; ++h)
+        {
+          for(int i = 0; i < moinfo.orbspi[h]; ++i)
+          {
+            int iabs = moinfo.pitzer2qt[i + offset];
+            for(int j = 0; j < moinfo.orbspi[h]; ++j)
+            {
+              int jabs = moinfo.pitzer2qt[j + offset];
+              MO_OPDM->set(h, i, j, moinfo.opdm[iabs][jabs]);
+            }
+          }
+          offset += moinfo.orbspi[h];
+        }
+        //MO_OPDM->print();
+        SharedMatrix C = ref_wfn->Ca();
+        SharedMatrix SO_OPDM = SharedMatrix(new Matrix("SO_OPDM", ref_wfn->nsopi(), ref_wfn->nsopi()));
+        SO_OPDM->back_transform(MO_OPDM, C);
+        //SO_OPDM->print();
+        //ref_wfn->Da()->print();
+        // We have to get the 0.5 * (QV) energy contribution
+        double Epcm_correlated = cc_pcm->compute_E(SO_OPDM, psi::PCM::EleOnly);
+        Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+        double E_correlation = Process::environment.globals["CURRENT CORRELATION ENERGY"];
+        E_correlation -= Epcm_correlated;
+        Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
+        double E = Process::environment.globals["CURRENT ENERGY"];
+        E -= Epcm_correlated;
+        Process::environment.globals["CURRENT ENERGY"] = E;
+        //outfile->Printf("Epol_correlated = %20.12f\n", Epol_correlated);
+        SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic(); // This is in SO basis
+        // We now transform it to MO basis...
+        MO_PCM_potential->transform(SO_PCM_potential, C);
+        //MO_PCM_potential->print();
+        update_F_pcm_rhf(MO_PCM_potential);
+      }
+      else if (params.ref == 2) /** UHF case **/
+      {
+        SharedMatrix MO_OPDM_A(new Matrix("MO_OPDM_A", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
+        SharedMatrix MO_OPDM_B(new Matrix("MO_OPDM_B", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
+
+        SharedMatrix MO_PCM_potential_A(new Matrix("MO_PCM_potential_A", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
+        SharedMatrix MO_PCM_potential_B(new Matrix("MO_PCM_potential_B", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
+
+        int offset = 0;
+        for(int h = 0; h < moinfo.nirreps; ++h)
+        {
+          for(int i = 0; i < moinfo.orbspi[h]; ++i)
+          {
+            int iabs_A = moinfo.pitzer2qt[i + offset];
+            int iabs_B = moinfo.pitzer2qt[i + offset];
+            for(int j = 0; j < moinfo.orbspi[h]; ++j)
+            {
+              int jabs_A = moinfo.pitzer2qt[j + offset];
+              int jabs_B = moinfo.pitzer2qt[j + offset];
+              MO_OPDM_A->set(h, i, j, moinfo.opdm_a[iabs_A][jabs_A]);
+              MO_OPDM_B->set(h, i, j, moinfo.opdm_b[iabs_B][jabs_B]);
+            }
+          }
+          offset += moinfo.orbspi[h];
+        }
+        //MO_OPDM->print();
+        SharedMatrix Ca = ref_wfn->Ca();
+        SharedMatrix Cb = ref_wfn->Cb();
+        SharedMatrix SO_OPDM_A = SharedMatrix(new Matrix("SO_OPDM_A", ref_wfn->nsopi(), ref_wfn->nsopi()));
+        SharedMatrix SO_OPDM_B = SharedMatrix(new Matrix("SO_OPDM_B", ref_wfn->nsopi(), ref_wfn->nsopi()));
+        SO_OPDM_A->back_transform(MO_OPDM_A, Ca);
+        SO_OPDM_B->back_transform(MO_OPDM_B, Cb);
+        SO_OPDM_A->add(SO_OPDM_B);
+        //SO_OPDM->print();
+        //ref_wfn->Da()->print();
+        // We have to get the 0.5 * (QV) energy contribution
+        double Epcm_correlated = cc_pcm->compute_E(SO_OPDM_A, PCM::EleOnly);
+        Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+        double E_correlation = Process::environment.globals["CURRENT CORRELATION ENERGY"];
+        E_correlation -= Epcm_correlated;
+        Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
+        double E = Process::environment.globals["CURRENT ENERGY"];
+        E -= Epcm_correlated;
+        Process::environment.globals["CURRENT ENERGY"] = E;
+        //outfile->Printf("Epol_correlated = %20.12f\n", Epol_correlated);
+        SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic(); // This is in SO basis
+        // We now transform it to MO basis...
+        MO_PCM_potential_A->transform(SO_PCM_potential, Ca);
+        MO_PCM_potential_B->transform(SO_PCM_potential, Cb);
+        //MO_PCM_potential->print();
+        update_F_pcm_uhf(MO_PCM_potential_A, MO_PCM_potential_B);
+      }
+      double Epte = Process::environment.globals["PCM-CC-PTE CORRELATION ENERGY"];
+      double Epte_s = Process::environment.globals["PCM-CC-PTE(S) CORRELATED POLARIZATION ENERGY"];
+      outfile->Printf("\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
+      outfile->Printf("\tReference energy (file100)            = %20.15f\n", moinfo.eref);
+      outfile->Printf("\tPTE correlation energy                = %20.15f\n", Epte);
+      outfile->Printf("\tPTE(S) correlated polarization energy = %20.15f\n", Epte_s);
+      outfile->Printf("\tPTED correlated polarization energy   = %20.15f\n", Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"]);
+      outfile->Printf("\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
+      outfile->Printf("\tPCM-PTE-CCSD correlation energy       = %20.15f\n", Epte);
+      outfile->Printf("\tPCM-PTE(S)-CCSD correlation energy    = %20.15f\n", Epte + Epte_s);
+      outfile->Printf("\tPCM-PTED-CCSD correlation energy      = %20.15f\n", Process::environment.globals["CURRENT CORRELATION ENERGY"]);
+      outfile->Printf("      * PCM-PTE-CCSD total energy             = %20.15f\n", moinfo.eref + Epte);
+      outfile->Printf("      * PCM-PTE(S)-CCSD total energy          = %20.15f\n", moinfo.eref + Epte + Epte_s);
+      outfile->Printf("      * PCM-PTED-CCSD total energy            = %20.15f\n", Process::environment.globals["CURRENT ENERGY"]);
+    } /* PCM-CC stuff */
+
     if (!params.onepdm) {
       if(!params.aobasis && params.debug_) energy(rho_params[i]);
 
@@ -682,4 +806,331 @@ void exit_io(void)
   tstop();
 }
 
+void update_F_pcm_rhf(SharedMatrix &MO_PCM_potential)
+{
+  dpdfile2 fIJ, fij, fAB, fab, fIA, fia;
+  if (!(_default_psio_lib_->tocentry_exists(PSIF_CC_OEI, "fIJ original"))) // We check just one of the six blocks for existence
+  {
+    // If it doesn't exist load the various blocks...
+    global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+    global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+    global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+    global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
+    // ...copy them in the "original" file...
+    global_dpd_->file2_copy(&fIJ, PSIF_CC_OEI, "fIJ original");
+    global_dpd_->file2_copy(&fij, PSIF_CC_OEI, "fij original");
+    global_dpd_->file2_copy(&fAB, PSIF_CC_OEI, "fAB original");
+    global_dpd_->file2_copy(&fab, PSIF_CC_OEI, "fab original");
+    global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "fIA original");
+    global_dpd_->file2_copy(&fia, PSIF_CC_OEI, "fia original");
+    // ...and close.
+    global_dpd_->file2_close(&fIJ);
+    global_dpd_->file2_close(&fij);
+    global_dpd_->file2_close(&fAB);
+    global_dpd_->file2_close(&fab);
+    global_dpd_->file2_close(&fIA);
+    global_dpd_->file2_close(&fia);
+  }
+  // Read from the original Fock matrix (the one coming from the PCM-SCF step)
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ original");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij original");
+  global_dpd_->file2_mat_init(&fij);
+  global_dpd_->file2_mat_rd(&fij);
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB original");
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab original");
+  global_dpd_->file2_mat_init(&fab);
+  global_dpd_->file2_mat_rd(&fab);
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA original");
+  global_dpd_->file2_mat_init(&fIA);
+  global_dpd_->file2_mat_rd(&fIA);
+  global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia original");
+  global_dpd_->file2_mat_init(&fia);
+  global_dpd_->file2_mat_rd(&fia);
+  // Open a series of buffers to put the various blocks in
+  dpdfile2 fIJ2, fij2, fAB2, fab2, fIA2, fia2;
+  global_dpd_->file2_init(&fIJ2, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_mat_init(&fIJ2);
+  global_dpd_->file2_mat_rd(&fIJ2);
+  global_dpd_->file2_init(&fij2, PSIF_CC_OEI, 0, 0, 0, "fij");
+  global_dpd_->file2_mat_init(&fij2);
+  global_dpd_->file2_mat_rd(&fij2);
+  global_dpd_->file2_init(&fAB2, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_mat_init(&fAB2);
+  global_dpd_->file2_mat_rd(&fAB2);
+  global_dpd_->file2_init(&fab2, PSIF_CC_OEI, 0, 1, 1, "fab");
+  global_dpd_->file2_mat_init(&fab2);
+  global_dpd_->file2_mat_rd(&fab2);
+  global_dpd_->file2_init(&fIA2, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_mat_init(&fIA2);
+  global_dpd_->file2_mat_rd(&fIA2);
+  global_dpd_->file2_init(&fia2, PSIF_CC_OEI, 0, 0, 1, "fia");
+  global_dpd_->file2_mat_init(&fia2);
+  global_dpd_->file2_mat_rd(&fia2);
+
+  // Add MO_PCM_potential on top of the original Fock matrix
+  for(int h = 0; h < moinfo.nirreps; ++h)
+  {
+    int upper_bound_ij = moinfo.occpi[h] - moinfo.openpi[h];
+    int upper_bound_IA = moinfo.virtpi[h] - moinfo.openpi[h];
+    for(int i = 0; i < moinfo.occpi[h]; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int j = 0; j < moinfo.occpi[h]; ++j)
+      {
+        int J = j + moinfo.frdocc[h];
+        fIJ2.matrix[h][i][j] = fIJ.matrix[h][i][j] + MO_PCM_potential->get(h, I, J);
+      }
+    }
+    for(int i = 0; i < upper_bound_ij; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int j = 0; j < upper_bound_ij; ++j)
+      {
+        int J = j + moinfo.frdocc[h];
+        fij2.matrix[h][i][j] = fij.matrix[h][i][j] + MO_PCM_potential->get(h, I, J);
+      }
+    }
+    for(int i = 0; i < moinfo.occpi[h]; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int a = 0; a < upper_bound_IA; ++a)
+      {
+        int A = a + moinfo.frdocc[h] + moinfo.occpi[h];
+        fIA2.matrix[h][i][a] = fIA.matrix[h][i][a] + MO_PCM_potential->get(h, I, A);
+      }
+    }
+    for(int i = 0; i < upper_bound_ij; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int a = 0; a < upper_bound_IA; ++a)
+      {
+        int A = a + moinfo.frdocc[h] + moinfo.occpi[h];
+        fia2.matrix[h][i][a] = fia.matrix[h][i][a] + MO_PCM_potential->get(h, I, A);
+      }
+    }
+    for(int i = 0; i < upper_bound_ij; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int a = 0; a < moinfo.openpi[h]; ++a)
+      {
+        int A = a + upper_bound_IA;
+        int aA = a + moinfo.frdocc[h] + upper_bound_ij;
+        fia2.matrix[h][i][A] = fia.matrix[h][i][A] + MO_PCM_potential->get(h, I, aA);
+      }
+    }
+    for(int a = 0; a < upper_bound_IA; ++a)
+    {
+      int A = a + moinfo.frdocc[h] + moinfo.occpi[h];
+      for(int b = 0; b < upper_bound_IA; ++b)
+      {
+        int B = b + moinfo.frdocc[h] + moinfo.occpi[h];
+        fAB2.matrix[h][a][b] = fAB.matrix[h][a][b] + MO_PCM_potential->get(h, A, B);
+        fab2.matrix[h][a][b] = fab.matrix[h][a][b] + MO_PCM_potential->get(h, A, B);
+      }
+    }
+    for(int a = 0; a < moinfo.openpi[h]; ++a)
+    {
+      int A = a + upper_bound_IA;
+      int aA = a + moinfo.frdocc[h] + upper_bound_ij;
+      for(int b = 0; b < moinfo.openpi[h]; ++b)
+      {
+        int B = b + upper_bound_IA;
+        int bB = b + moinfo.frdocc[h] + upper_bound_ij;
+        fab2.matrix[h][A][B] = fab.matrix[h][A][B] + MO_PCM_potential->get(h, aA, bB);
+      }
+    }
+    for(int a = 0; a < upper_bound_IA; ++a)
+    {
+      int A = a + moinfo.frdocc[h] + moinfo.occpi[h];
+      for(int b = 0; b < moinfo.openpi[h]; ++b)
+      {
+        int B = b + upper_bound_IA;
+        int bB = b + moinfo.frdocc[h] + upper_bound_ij;
+        fab2.matrix[h][a][B] = fab.matrix[h][a][B] + MO_PCM_potential->get(h, A, bB);
+      }
+    }
+    for(int a = 0; a < moinfo.openpi[h]; ++a)
+    {
+      int A = a + upper_bound_IA;
+      int aA = a + moinfo.frdocc[h] + upper_bound_ij;
+      for(int b = 0; b < upper_bound_IA; ++b)
+      {
+        int B = b + moinfo.frdocc[h] + moinfo.occpi[h];
+        fab2.matrix[h][A][b] = fab.matrix[h][A][b] + MO_PCM_potential->get(h, aA, B);
+      }
+    }
+  }
+  // Write the updated Fock matrix
+  global_dpd_->file2_mat_wrt(&fIJ2);
+  global_dpd_->file2_mat_wrt(&fij2);
+  global_dpd_->file2_mat_wrt(&fAB2);
+  global_dpd_->file2_mat_wrt(&fab2);
+  global_dpd_->file2_mat_wrt(&fIA2);
+  global_dpd_->file2_mat_wrt(&fia2);
+  // Close the original Fock matrix
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fij);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fab);
+  global_dpd_->file2_close(&fIA);
+  global_dpd_->file2_close(&fia);
+  // Close the updated Fock matrix
+  global_dpd_->file2_close(&fIJ2);
+  global_dpd_->file2_close(&fij2);
+  global_dpd_->file2_close(&fAB2);
+  global_dpd_->file2_close(&fab2);
+  global_dpd_->file2_close(&fIA2);
+  global_dpd_->file2_close(&fia2);
+}
+
+void update_F_pcm_uhf(SharedMatrix &MO_PCM_potential_A, SharedMatrix &MO_PCM_potential_B)
+{
+  dpdfile2 fIJ, fij, fAB, fab, fIA, fia;
+  if (!(_default_psio_lib_->tocentry_exists(PSIF_CC_OEI, "fIJ original"))) // We check just one of the six blocks for existence
+  {
+    // If it doesn't exist load the various blocks...
+    global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+    global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+    global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+    global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
+    // ...copy them in the "original" file...
+    global_dpd_->file2_copy(&fIJ, PSIF_CC_OEI, "fIJ original");
+    global_dpd_->file2_copy(&fij, PSIF_CC_OEI, "fij original");
+    global_dpd_->file2_copy(&fAB, PSIF_CC_OEI, "fAB original");
+    global_dpd_->file2_copy(&fab, PSIF_CC_OEI, "fab original");
+    global_dpd_->file2_copy(&fIA, PSIF_CC_OEI, "fIA original");
+    global_dpd_->file2_copy(&fia, PSIF_CC_OEI, "fia original");
+    // ...and close.
+    global_dpd_->file2_close(&fIJ);
+    global_dpd_->file2_close(&fij);
+    global_dpd_->file2_close(&fAB);
+    global_dpd_->file2_close(&fab);
+    global_dpd_->file2_close(&fIA);
+    global_dpd_->file2_close(&fia);
+  }
+  // Read from the original Fock matrix (the one coming from the PCM-SCF step)
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ original");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij original");
+  global_dpd_->file2_mat_init(&fij);
+  global_dpd_->file2_mat_rd(&fij);
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB original");
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab original");
+  global_dpd_->file2_mat_init(&fab);
+  global_dpd_->file2_mat_rd(&fab);
+  global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA original");
+  global_dpd_->file2_mat_init(&fIA);
+  global_dpd_->file2_mat_rd(&fIA);
+  global_dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia original");
+  global_dpd_->file2_mat_init(&fia);
+  global_dpd_->file2_mat_rd(&fia);
+  // Open a series of buffers to put the various blocks in
+  dpdfile2 fIJ2, fij2, fAB2, fab2, fIA2, fia2;
+  global_dpd_->file2_init(&fIJ2, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_mat_init(&fIJ2);
+  global_dpd_->file2_mat_rd(&fIJ2);
+  global_dpd_->file2_init(&fij2, PSIF_CC_OEI, 0, 2, 2, "fij");
+  global_dpd_->file2_mat_init(&fij2);
+  global_dpd_->file2_mat_rd(&fij2);
+  global_dpd_->file2_init(&fAB2, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_mat_init(&fAB2);
+  global_dpd_->file2_mat_rd(&fAB2);
+  global_dpd_->file2_init(&fab2, PSIF_CC_OEI, 0, 3, 3, "fab");
+  global_dpd_->file2_mat_init(&fab2);
+  global_dpd_->file2_mat_rd(&fab2);
+  global_dpd_->file2_init(&fIA2, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  global_dpd_->file2_mat_init(&fIA2);
+  global_dpd_->file2_mat_rd(&fIA2);
+  global_dpd_->file2_init(&fia2, PSIF_CC_OEI, 0, 2, 3, "fia");
+  global_dpd_->file2_mat_init(&fia2);
+  global_dpd_->file2_mat_rd(&fia2);
+  // Add MO_PCM_potential on top of the original Fock matrix
+  for(int h = 0; h < moinfo.nirreps; ++h)
+  {
+    for(int i = 0; i < moinfo.aoccpi[h]; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int j = 0; j < moinfo.aoccpi[h]; ++j)
+      {
+        int J = j + moinfo.frdocc[h];
+        fIJ2.matrix[h][i][j] = fIJ.matrix[h][i][j] + MO_PCM_potential_A->get(h, I, J);
+      }
+    }
+    for(int i = 0; i < moinfo.boccpi[h]; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int j = 0; j < moinfo.boccpi[h]; ++j)
+      {
+        int J = j + moinfo.frdocc[h];
+        fij2.matrix[h][i][j] = fij.matrix[h][i][j] + MO_PCM_potential_B->get(h, I, J);
+      }
+    }
+    for(int i = 0; i < moinfo.aoccpi[h]; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int a = 0; a < moinfo.avirtpi[h]; ++a)
+      {
+        int A = a + moinfo.frdocc[h] + moinfo.aoccpi[h];
+        fIA2.matrix[h][i][a] = fIA.matrix[h][i][a] + MO_PCM_potential_A->get(h, I, A);
+      }
+    }
+    for(int i = 0; i < moinfo.boccpi[h]; ++i)
+    {
+      int I = i + moinfo.frdocc[h];
+      for(int a = 0; a < moinfo.bvirtpi[h]; ++a)
+      {
+        int A = a + moinfo.frdocc[h] + moinfo.boccpi[h];
+        fia2.matrix[h][i][a] = fia.matrix[h][i][a] + MO_PCM_potential_B->get(h, I, A);
+      }
+    }
+    for(int a = 0; a < moinfo.avirtpi[h]; ++a)
+    {
+      int A = a + moinfo.frdocc[h] + moinfo.aoccpi[h];
+      for(int b = 0; b < moinfo.avirtpi[h]; ++b)
+      {
+        int B = b + moinfo.frdocc[h] + moinfo.aoccpi[h];
+        fAB2.matrix[h][a][b] = fAB.matrix[h][a][b] + MO_PCM_potential_A->get(h, A, B);
+      }
+    }
+    for(int a = 0; a < moinfo.bvirtpi[h]; ++a)
+    {
+      int A = a + moinfo.frdocc[h] + moinfo.boccpi[h];
+      for(int b = 0; b < moinfo.bvirtpi[h]; ++b)
+      {
+        int B = b + moinfo.frdocc[h] + moinfo.boccpi[h];
+        fab2.matrix[h][a][b] = fab.matrix[h][a][b] + MO_PCM_potential_B->get(h, A, B);
+      }
+    }
+  }
+  global_dpd_->file2_mat_wrt(&fIJ2);
+  global_dpd_->file2_mat_wrt(&fij2);
+  global_dpd_->file2_mat_wrt(&fAB2);
+  global_dpd_->file2_mat_wrt(&fab2);
+  global_dpd_->file2_mat_wrt(&fIA2);
+  global_dpd_->file2_mat_wrt(&fia2);
+
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_close(&fij);
+  global_dpd_->file2_close(&fAB);
+  global_dpd_->file2_close(&fab);
+  global_dpd_->file2_close(&fIA);
+  global_dpd_->file2_close(&fia);
+  global_dpd_->file2_close(&fIJ2);
+  global_dpd_->file2_close(&fij2);
+  global_dpd_->file2_close(&fAB2);
+  global_dpd_->file2_close(&fab2);
+  global_dpd_->file2_close(&fIA2);
+  global_dpd_->file2_close(&fia2);
+}
 }} // namespace psi::ccdensity

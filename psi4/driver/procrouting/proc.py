@@ -2266,11 +2266,97 @@ def run_dfmp2_gradient(name, **kwargs):
     return dfmp2_wfn
 
 
+def run_ccenergy_pcm(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a PCM-PTED-CCSD calculation.
+
+    """
+
+    optstash = p4util.OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['CCENERGY', 'WFN'])
+
+    core.set_global_option('ONEPDM', 'TRUE')
+    core.set_global_option('DERTYPE', 'NONE')
+    if (name == 'ccsd'):
+        core.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+        core.set_local_option('CCSORT', 'WFN', 'CCSD')
+        core.set_local_option('CCTRANSORT', 'WFN', 'CCSD')
+        core.set_local_option('CCENERGY', 'WFN', 'CCSD')
+        core.set_local_option('CCHBAR', 'WFN', 'CCSD')
+        core.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
+        core.set_local_option('CCDENSITY', 'WFN', 'CCSD')
+    else:
+        raise ValidationError('CCSD only supported at this time!')
+
+    # Bypass routine scf if user did something special to get it to converge
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    if core.get_global_option('CC_TYPE') == 'DF':
+        aux_basis = core.BasisSet.build(ref_wfn.molecule(), 'DF_BASIS_CC',
+                                            core.get_global_option('DF_BASIS_CC'),
+                                            'RIFIT', core.get_global_option('BASIS'))
+        wfn.set_basisset('DF_BASIS_CC', aux_basis)
+
+    # Ensure IWL files have been written
+    proc_util.check_iwl_file_from_scf_type(core.get_option('SCF', 'SCF_TYPE'), ref_wfn)
+
+    if core.get_global_option('RUN_CCTRANSORT'):
+        core.cctransort(ref_wfn)
+    else:
+        try:
+            from psi4.driver.pasture import addins
+            addins.ccsort_transqt2(ref_wfn)
+        except:
+            raise PastureRequiredError('RUN_CCTRANSORT')
+
+    converged = False
+    E_old = 0.0
+    calc_stats = ''
+    for macroit in range(50):
+        core.set_variable('MACROITERATION', macroit)
+        ccwfn = core.ccenergy(ref_wfn)
+        core.cchbar(ref_wfn)
+        core.cclambda(ref_wfn)
+        core.ccdensity(ref_wfn)
+        E = core.get_variable('CURRENT ENERGY')
+        Ecorr = core.get_variable('CURRENT CORRELATION ENERGY')
+        t_micro = int(core.get_variable('T MICROITERATIONS'))
+        l_micro = int(core.get_variable('L MICROITERATIONS'))
+        Delta = E - E_old
+        E_old = E
+        # This prepares the string for the final calculation summary
+        calc_stats += ' {0} [{1:2} T, {2:2} L] {3:20.14f} {4:20.14f}           {5:.3e}\n'.format(macroit, t_micro, l_micro, E, Ecorr, abs(Delta))
+
+        if (abs(Delta) < core.get_option('CCENERGY', 'E_CONVERGENCE')):
+            converged = True
+            break
+    core.print_out('\n')
+    core.print_out('      Summary of PCM-CC-PTED macroiterations     \n')
+    core.print_out('  Macroiteration  Total energy (E_h)    Correlation energy (E_h)    Delta_E\n')
+    core.print_out('----------------------------------------------------------------------------\n')
+    core.print_out(calc_stats)
+
+    if not converged:
+        raise ConvergenceError('PCM-CC-PTED macroiteration did not converge!')
+
+    optstash.restore()
+    return ccwfn
+
+
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a CCSD, CC2, and CC3 calculation.
 
     """
+
+    if (core.get_global_option("PCM_CC_TYPE") == "PTED"):
+       run_ccenergy_pcm(name, **kwargs)
+       return
+
     optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['CCSORT', 'WFN'],

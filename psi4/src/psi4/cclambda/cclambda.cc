@@ -261,6 +261,8 @@ double CCLambdaWavefunction::compute_energy()
       for(moinfo.iter=1 ; moinfo.iter <= params.maxiter; moinfo.iter++) {
         sort_amps(pL_params[i].irrep);
 
+        if (options_.get_bool("PCM") && (options_.get_str("PCM_CC_TYPE") == "PTED")) Process::environment.globals["L MICROITERATIONS"] = (moinfo.iter + 1);
+
         /* must zero New L before adding RHS */
         L_zero(pL_params[i].irrep);
 
