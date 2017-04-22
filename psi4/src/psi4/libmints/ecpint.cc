@@ -31,8 +31,8 @@ static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi) {
 		// First get all Pmm terms
 		Plm[0][0] = 1.0;
         // Make sure that 1-x^2 doesn't go below 0, due to roundoff
-        double sox2 = sqrt(std  ::max(0.0, 1.0 - x2));
-		double ox2m = 1.0;
+        double sox2 = sqrt(std::max(0.0, 1.0 - x2));
+        double ox2m = 1.0;
 		for (int m = 1; m <= lmax; m++) {
 			ox2m *= -sox2;
 			Plm[m][m] = ox2m * df[2*m];
@@ -502,7 +502,7 @@ void RadialIntegral::buildF(const GaussianShell &shell, double A, int lstart, in
 			weight = r[i] - A;
 			weight = c * exp(-zeta * weight * weight);
 			
-			for (int l = lstart; l <= lend; l+=2) 
+            for (int l = lstart; l <= lend; ++l)
 				F(l, i) += weight * besselValues(l, i); 
 		}
 	}
@@ -675,7 +675,6 @@ void ECPInt::type1(const GaussianShell &U, const GaussianShell &shellA, const Ga
 	int L = LA + LB;
 	TwoIndex<double> temp;
     ThreeIndex<double> radials(L+1, L+1, 2*L+1);
-    // TODO: I don't think this loop is needed.  Only ix==L should survive, I think. (ACS)
     for (int ix = 0; ix <= L; ix++) {
         radInts.type1(ix, ix, ix % 2, U, shellA, shellB, data, temp);
         for(int l = 0; l <= ix; l++) {
