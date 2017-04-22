@@ -330,6 +330,8 @@ public:
     /// Returns whether this wavefunction was obtained using density fitting or not
     bool density_fitted() const { return density_fitted_; }
 
+    /// Returns the print level
+    int get_print() const { return print_; }
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array.

@@ -117,7 +117,7 @@ MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int
 }
 
 MintsHelper::MintsHelper(std::shared_ptr <Wavefunction> wavefunction)
-        : options_(wavefunction->options())
+        : options_(wavefunction->options()), print_(wavefunction->get_print())
 {
     init_helper(wavefunction);
 }
@@ -136,6 +136,7 @@ void MintsHelper::init_helper(std::shared_ptr <Wavefunction> wavefunction)
 
     psio_ = wavefunction->psio();
     basisset_ = wavefunction->basisset();
+    ecpbasis_ = wavefunction->ecpbasisset();
     molecule_ = basisset_->molecule();
 
     // Make sure molecule is valid.
@@ -1195,6 +1196,26 @@ SharedMatrix MintsHelper::so_kinetic()
     }
 }
 
+SharedMatrix MintsHelper::so_ecp()
+{
+    if (!integral_->hasECP()) {
+        SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
+        ecp_mat->zero();
+        outfile->Printf("\n\tWarning! ECP integrals requested, but no ECP basis detected.  Returning zeros.\n");
+        return ecp_mat;
+    }
+
+    if (factory_->nirrep() == 1) {
+        SharedMatrix ecp_mat(ao_ecp());
+        ecp_mat->set_name("AO Basis ECP");
+        return ecp_mat;
+    } else {
+        SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
+        ecp_mat->apply_symmetry(ao_ecp(), petite_list()->aotoso());
+        return ecp_mat;
+    }
+}
+
 SharedMatrix MintsHelper::so_potential(bool include_perturbations)
 {
     // No symmetry
@@ -1207,14 +1228,9 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
         potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
     }
 
+    // Add ECPs, if needed
     if (integral_->hasECP()) {
-        if (factory_->nirrep() == 1) {
-            potential_mat->add(ao_ecp());
-        } else {
-            SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
-            ecp_mat->apply_symmetry(ao_ecp(), petite_list()->aotoso());
-            potential_mat->add(ecp_mat);
-        }
+        potential_mat->add(so_ecp());
     }
 
     // Handle addition of any perturbations here and not in SCF code.

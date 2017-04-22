@@ -247,6 +247,8 @@ public:
     SharedMatrix so_overlap();
     /// SO Kinetic Integrals
     SharedMatrix so_kinetic();
+    /// SO ECP Integrals
+    SharedMatrix so_ecp();
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
     /// Vector SO Dipole Integrals

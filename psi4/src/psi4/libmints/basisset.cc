@@ -633,8 +633,7 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
         const std::string &basis = mol->basis_on_atom(atom);
         const std::string &label = mol->label(atom);
         int ncore = basis_atom_ncore[basis][label];
-        int Z = mol->Z(atom);
-        Z -= ncore;
+        int Z = mol->true_atomic_number(atom) - ncore;
         mol->set_nuclear_charge(atom, Z);
         basisset->set_ncore(label, ncore);
     }
@@ -1170,6 +1169,14 @@ std::pair <std::vector<std::string>, std::shared_ptr<BasisSet>> BasisSet::test_b
 
     return make_pair(labels, new_basis);
 #endif
+}
+
+void BasisSet::move_atom(int atom, const Vector3& trans)
+{
+    int offset = 3*atom;
+    xyz_[offset+0] += trans[0];
+    xyz_[offset+1] += trans[1];
+    xyz_[offset+2] += trans[2];
 }
 
 void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)

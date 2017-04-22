@@ -377,6 +377,8 @@ public:
     //! Returns the vector of sorted shell list.
     std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 
+    // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the underlying molecule object.
+    void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 

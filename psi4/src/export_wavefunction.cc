@@ -124,6 +124,7 @@ void export_wavefunction(py::module& m)
             def("set_oeprop", &Wavefunction::set_oeprop, "Associate an OEProp object with this wavefunction").
             def("oeprop", &Wavefunction::get_oeprop, "Returns the OEProp object associated with this wavefunction").
             def("set_print", &Wavefunction::set_print, "Sets the print level of the Wavefunction.").
+            def("get_print", &Wavefunction::get_print, "Get the print level of the Wavefunction.").
             def("compute_energy", &Wavefunction::compute_energy, "Computes the energy of the Wavefunction.").
             def("compute_gradient", &Wavefunction::compute_gradient, "Computes the gradient of the Wavefunction").
             def("compute_hessian", &Wavefunction::compute_hessian, "Computes the Hessian of the Wavefunction.").

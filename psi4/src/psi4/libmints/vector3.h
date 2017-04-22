@@ -135,6 +135,10 @@ public:
         else return 0.0;
     }
 
+    void set(int i, double val) {
+        if (i >= 0 && i <= 2) v_[i] = val;
+    }
+
     double dot(const Vector3& x) const {
         return v_[0]*x.v_[0] + v_[1]*x.v_[1] + v_[2]*x.v_[2];
     }
