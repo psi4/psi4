@@ -53,7 +53,7 @@ void SCF::save_info()
     nmo_ = nso_;
 
     // figure out how many frozen orbitals per irrep
-    int nfrzc = molecule_->nfrozen_core();
+    int nfrzc = molecule_->nfrozen_core(ecpbasisset_);
     intvec frz;
     for(int h = 0; h < nirreps; ++h) frz.push_back(0);
     vector<std::pair<double, int> > sorted_evals;

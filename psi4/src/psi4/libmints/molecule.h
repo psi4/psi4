@@ -46,7 +46,7 @@
 
 namespace psi {
 class PointGroup;
-
+class BasisSet;
 enum RotorType {RT_ASYMMETRIC_TOP, RT_SYMMETRIC_TOP, RT_SPHERICAL_TOP, RT_LINEAR, RT_ATOM};
 enum FullPointGroup {PG_ATOM, PG_Cinfv, PG_Dinfh, PG_C1, PG_Cs, PG_Ci, PG_Cn, PG_Cnv,
  PG_Cnh, PG_Sn, PG_Dn, PG_Dnd, PG_Dnh, PG_Td, PG_Oh, PG_Ih};
@@ -306,7 +306,7 @@ public:
     void set_shell_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
-    int nfrozen_core(const std::string& depth = "");
+    int nfrozen_core(std::shared_ptr<BasisSet> ecpbasis, const std::string& depth = "");
 
     /// @{
     /// Tests to see of an atom is at the passed position with a given tolerance

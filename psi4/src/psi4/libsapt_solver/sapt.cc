@@ -135,7 +135,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   ghostsA.push_back(1);
   std::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
     ghostsA);
-  foccA_ = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
+  foccA_ = monomerA->nfrozen_core(reference_wavefunction_->ecpbasisset(), options_.get_str("FREEZE_CORE"));
 
   std::vector<int> realsB;
   realsB.push_back(1);
@@ -143,7 +143,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   ghostsB.push_back(0);
   std::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
     ghostsB);
-  foccB_ = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
+  foccB_ = monomerB->nfrozen_core(reference_wavefunction_->ecpbasisset(), options_.get_str("FREEZE_CORE"));
 
   natomsA_ = 0;
   natomsB_ = 0;

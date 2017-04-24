@@ -36,6 +36,7 @@
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector3.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/coordentry.h"
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libmints/petitelist.h"
@@ -680,7 +681,7 @@ void Molecule::rotate_full(const Matrix &R)
     set_full_geometry(new_geom);
 }
 
-int Molecule::nfrozen_core(const std::string &depth)
+int Molecule::nfrozen_core(std::shared_ptr<BasisSet> ecpbasis, const std::string &depth)
 {
     std::string local = depth;
     if (depth.empty())
@@ -695,6 +696,10 @@ int Molecule::nfrozen_core(const std::string &depth)
         // will still have 3d electrons active.  Alkali earth atoms will
         // have one valence electron in this scheme.
         for (int A = 0; A < natom(); A++) {
+            // If this center as an ECP present, move along.
+            if(ecpbasis)
+                if(ecpbasis->ncore(label(A)))
+                    continue;
             if (Z(A) > 2) nfzc += 1;
             if (Z(A) > 10) nfzc += 4;
             if (Z(A) > 18) nfzc += 4;
