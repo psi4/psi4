@@ -2015,8 +2015,8 @@ def run_scf_gradient(name, **kwargs):
         ecpgradmat.print_atom_vector()
         grad.add(ecpgradmat)
         grad.print_atom_vector()
+        ref_wfn.set_print(old_print)
 
-    ref_wfn.set_print(old_print)
     ref_wfn.set_gradient(grad)
 
     optstash.restore()
