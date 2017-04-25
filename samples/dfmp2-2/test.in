@@ -4,8 +4,6 @@
 # This will remove the 32 file in each iteration of the for loop 
 psi4_io.set_specific_retention(32,False)
 
-memory 250 mb
-
 refnuc  = 0.587974676211111                           #TEST
 refscf  = [ -1.1163920251650830, -1.118727560574628 ] #TEST
 refmp2  = [ -1.1441651453612438, -1.151194028513022 ] #TEST

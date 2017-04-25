@@ -1,5 +1,3 @@
-memory 250 mb
-
 #! Test individual integral objects for correctness.
 print_stdout(' Case Study Test of Integrals')
 
@@ -19,7 +17,7 @@ set {
   basis sto-3g
 }
 
-wfn = Wavefunction(h2o, BasisSet.build(h2o))
+wfn = Wavefunction(h2o, BasisSet.build(h2o)[0])
 mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
@@ -46,7 +44,7 @@ set {
   basis 6-311G**
 }
 
-wfn = Wavefunction(h2o, BasisSet.build(h2o))
+wfn = Wavefunction(h2o, BasisSet.build(h2o)[0])
 mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
@@ -73,7 +71,7 @@ set {
   basis cc-pVTZ
 }
 
-wfn = Wavefunction(h2o, BasisSet.build(h2o))
+wfn = Wavefunction(h2o, BasisSet.build(h2o)[0])
 mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
@@ -104,7 +102,7 @@ set {
   basis sto-3g
 }
 
-wfn = Wavefunction(h2o, BasisSet.build(h2o))
+wfn = Wavefunction(h2o, BasisSet.build(h2o)[0])
 mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
@@ -131,7 +129,7 @@ set {
   basis 6-311G**
 }
 
-wfn = Wavefunction(h2o, BasisSet.build(h2o))
+wfn = Wavefunction(h2o, BasisSet.build(h2o)[0])
 mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 
@@ -158,7 +156,7 @@ set {
   basis cc-pVTZ
 }
 
-wfn = Wavefunction(h2o, BasisSet.build(h2o))
+wfn = Wavefunction(h2o, BasisSet.build(h2o)[0])
 mints = MintsHelper(wfn.basisset())
 factory = mints.factory()                                            #TEST
 

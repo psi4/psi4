@@ -1,7 +1,5 @@
 #! Frequencies for H2O B3LYP/6-31G* at optimized geometry
 
-memory 250 mb
-
 molecule h2o {
   O
   H 1 0.96864

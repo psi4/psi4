@@ -1,8 +1,6 @@
 #! Various constrained energy minimizations of HOOH with cc-pvdz RHF
 #! Internal-coordinate constraints in internal-coordinate optimizations.
 
-memory 250 mb
-
 
 set {
   diis false

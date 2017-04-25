@@ -14,8 +14,6 @@ H   1.680398  -0.373741  -0.758561
 H   1.680398  -0.373741   0.758561
 }
 
-memory 500 mb
-
 set basis aug-cc-pvdz
 set scf_type df
 set dft_radial_points 99

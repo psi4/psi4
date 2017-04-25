@@ -1,9 +1,7 @@
 #! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
-memory 250 mb
- 
-ref_energies  = [ -74.96628820891345, -74.96551669679566,   #TEST
-                  -74.96667781656006, -74.96513478409796 ]  #TEST
+ref_energies = [  -74.9652300618, -74.9665748439,           #TEST
+                  -74.9645615224, -74.9672510783 ]          #TEST
 ref_3pt = 0.672391029                                       #TEST
 ref_5pt = 0.672391714                                       #TEST
 
@@ -28,39 +26,31 @@ set {
 
 energies = []
 for l in lambdas:
-    set scf perturb_h true
-    set scf perturb_with dipole_z
-    set scf perturb_magnitude $l
+    set perturb_h true
+    set perturb_with dipole
+    set perturb_dipole [0, 0, $l]
     energies.append(energy('scf'))
-
-# The nuclear dipole is returned in a zero-based vector, containing [x, y, z]
-nuc = nuclear_dipole(h2o)
-nuc_z = nuc[2]
 
 # Now use 3- and 5-point finite difference formulae to compute the dipole
 dm_z_3point = (energies[0] - energies[1]) / (2.0*pert)
 dm_z_5point = (8.0*energies[0] - 8.0*energies[1] - energies[2] + energies[3]) / (12.0*pert)
 
-# The a.u. to Debye conversion factor is automatically available in Psithon as psi_dipmom_au2debye
-
-set scf perturb_h false
-# So we can get the analytic result to compare to
-energy('scf')
+set perturb_h false
+# Compute the analytic dipoles, for comparison
+e,wfn = energy('scf', return_wfn=True)
+oeprop(wfn, "MULTIPOLES(1)")
+analytic = get_variable("DIPOLE Z")
 
 # Tabulate the results of the energy computation
 for val in range(len(lambdas)):
     print_out("Perturbation strength = %7.4f, computed energy = %16.10f\n" % (lambdas[val], energies[val]))
     compare_values(ref_energies[val], energies[val], 8, "Energy for displacement %d" % val)  #TEST
 
-print_out("nuclear z component    = %10.6f ea0, %10.6f Debye\n" % (nuc_z, nuc_z*psi_dipmom_au2debye))
-print_out("Electronic contributions:\n")
-print_out("3 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*psi_dipmom_au2debye))
-print_out("5 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*psi_dipmom_au2debye))
-dm_z_3point = dm_z_3point + nuc_z
-dm_z_5point = dm_z_5point + nuc_z
+# The a.u. to Debye conversion factor is automatically available in Psithon as psi_dipmom_au2debye
 print_out("Total dipoles\n")
 print_out("3 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*psi_dipmom_au2debye))
 print_out("5 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*psi_dipmom_au2debye))
 
-compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")  #TEST
-compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")  #TEST
+compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")     #TEST
+compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")     #TEST
+compare_values(ref_5pt, analytic, 8, "Z dipole, analytic vs. 5 point formula") #TEST

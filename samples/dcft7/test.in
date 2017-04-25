@@ -1,8 +1,6 @@
 #! DCFT calculation for the triplet O2 using ODC-06 and ODC-12 functionals. 
 #! Only simultaneous algorithm is tested.
 
-memory 250 mb
-
 refscf      = -149.65367728294785   #TEST
 refmp2      = -150.17316961260252   #TEST
 

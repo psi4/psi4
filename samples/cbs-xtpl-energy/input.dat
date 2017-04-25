@@ -1,6 +1,5 @@
 #! Extrapolated water energies
 import numpy as np
-memory 500 mb
 
 
 molecule h2o {

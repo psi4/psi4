@@ -1,7 +1,5 @@
 #! TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
 
-memory 250 mb
-
 
 molecule ozone {
    O

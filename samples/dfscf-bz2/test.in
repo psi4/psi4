@@ -1,7 +1,5 @@
 #! Benzene Dimer DF-HF/cc-pVDZ
 
-memory 250 mb
-
 refnuc =  618.28964308647255 #TEST
 refscf = -461.43943376500806 #TEST
 

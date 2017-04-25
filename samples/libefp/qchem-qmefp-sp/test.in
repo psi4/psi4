@@ -1,8 +1,6 @@
 #! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
 #! An EFP-only calc performed first to test vales against q-chem.
 
-memory 200 mb
-
 molecule qmefp {
 # QM fragment
 0 1

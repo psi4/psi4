@@ -17,17 +17,14 @@ set {
    d_convergence 8
 }
 
-gradient('scf')
-analytic = get_gradient()
+analytic = gradient('scf')
 
 set findif points 3
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 
 set findif points 5
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 
 molecule h2o {
@@ -45,17 +42,14 @@ set {
    basis cc-pvdz
 }
 
-gradient('scf')
-analytic = get_gradient()
+analytic = gradient('scf')
 
 set findif points 3
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 
 set findif points 5
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 
 molecule h2o {
@@ -73,16 +67,13 @@ set {
    basis cc-pvdz
 }
 
-gradient('scf')
-analytic = get_gradient()
+analytic = gradient('scf')
 
 set findif points 3
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 
 set findif points 5
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 

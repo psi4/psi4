@@ -1,7 +1,5 @@
 #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
-memory 250 mb
-
 print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2') #TEST
 
 #Ensure that the checkpoint file is always nuked

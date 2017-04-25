@@ -1,7 +1,5 @@
 #! Spectroscopic constants of H2, and the full ci cc-pVTZ level of theory
 
-memory 250 mb
-
 molecule h2{
     H
     H 1 R

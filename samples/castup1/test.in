@@ -3,8 +3,6 @@
 nucenergy =   8.80146552997207 #TEST
 refenergy = -76.02141844515491 #TEST
 
-memory 250 mb
-
 molecule h2o {
 0 1
 O

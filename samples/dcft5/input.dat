@@ -2,8 +2,6 @@
 #! geometry optimization using two-step and simultaneous solution of the 
 #! response equations for the analytic gradient.
 
-memory 250 mb
-
 
 molecule O2 {
 0 3

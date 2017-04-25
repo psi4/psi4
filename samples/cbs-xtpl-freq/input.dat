@@ -1,6 +1,5 @@
 #! Various gradients for a strained helium dimer and water molecule
 import numpy as np
-memory 500 mb
 
 nucenergy_ref = 9.16819326039
 

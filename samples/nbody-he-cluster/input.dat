@@ -1,8 +1,6 @@
 #! MP2/aug-cc-pv[DT]Z many body energies of an arbitrary Helium complex
 #! Size vs cost tradeoff is rough here
 
-memory 500 mb
-
 
 molecule he_tetramer {
 He 0 0 0

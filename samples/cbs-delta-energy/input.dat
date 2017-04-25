@@ -1,5 +1,4 @@
 #! Extrapolated energies with delta correction
-memory 500 mb
 
 
 molecule hf {

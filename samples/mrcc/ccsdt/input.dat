@@ -1,6 +1,5 @@
 #! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
 
-memory 500 mb
 
 molecule h2o {
     o

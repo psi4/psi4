@@ -1,8 +1,6 @@
 #! SCF DZ allene geometry optimization, with Cartesian input, first in c2v symmetry,
 #! then in Cs symmetry from a starting point with a non-linear central bond angle.
 
-memory 250 mb
-
 nucenergy =   59.2532646680161                                                                 #TEST
 refenergy = -115.8302823663                                                                    #TEST
 

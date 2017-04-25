@@ -1,7 +1,5 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
-memory 250 mb
-
 
 
 molecule he2p {

@@ -1,5 +1,4 @@
 #! Extrapolated energies with delta correction
-memory 500 mb
 
 nucenergy_ref =   5.1767335623    #TEST
 

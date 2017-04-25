@@ -2,8 +2,6 @@
 #! energy calculation with the cc-pVDZ basis set
 
 
-memory 500 MB
-
 molecule alanine {
     N           -1.527107413251     0.745960643462     0.766603000356
     C           -0.075844098953     0.811790225041     0.711418672248

@@ -3,8 +3,6 @@
 #! mixing up the sequence is aspirational at present.
 #! Also aspirational is using the intended types of gradients.
 
-memory 250 mb
-
 
 
 molecule h2 {

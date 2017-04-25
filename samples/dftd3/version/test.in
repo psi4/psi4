@@ -52,8 +52,6 @@ refs2['dft']['wpbe'] = -77.56684350092559  #TEST
 refs2['dft']['b97'] = -77.5885046174022  #TEST
 
 
-memory 200 mb
-
 # <<<  Part 1  >>>
 
 molecule eeee {

@@ -1,8 +1,6 @@
 #! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
 #! This version tests the FROZEN_DOCC option explicitly
 
-memory 250 mb
-
 refnuc   =   2.64588604295000 #TEST
 refscf   = -25.10354689697916 #TEST
 refccsd  =  -0.10026580394658 #TEST
