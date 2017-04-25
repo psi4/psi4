@@ -347,7 +347,8 @@ void BasisSet::print_summary(std::string out) const
                 printer->Printf("%d%c ", nprims[l], amtypes[l]);
             }
             // Shells
-            printer->Printf("// ");
+            if(n_shell)
+                printer->Printf("// ");
             for (int l = 0; l < max_am_ + 1; l++) {
                 if (nshells[l] == 0)
                     continue;
