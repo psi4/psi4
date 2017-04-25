@@ -53,7 +53,7 @@ Interface to PCMSolver by R. Di Remigio
 by R. Di Remigio and L. Frediani.
 The PCMSolver library requires no additional licence, downloads, or
 configuration. The library allows for calculations in solution with the
-polarizable continuum model (PCM), a continuum solvation model.
+polarizable continuum model (PCM), a continuum solvation model [Tomasi:2005:2999]_.
 
 Installation
 ~~~~~~~~~~~~
@@ -100,13 +100,15 @@ is achieved by setting |globals__pcm| ``true`` in your input file.
 The latter forces the separate handling of nuclear and electronic electrostatic potentials and
 polarization charges. It is mainly useful for debugging.
 
-.. note:: At present PCM can only be used for energy calculations with SCF wavefunctions.
-   Moreover, the PCMSolver library **cannot** exploit molecular point group symmetry.
+.. note:: At present PCM can only be used for energy calculations with SCF
+          wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_
+
+.. warning:: The PCMSolver library **cannot** exploit molecular point group symmetry.
 
 The PCM model and molecular cavity are specified in a ``pcm`` section that has
 to be explicitly typed in by the user. This additional section follows a syntax
 that is slightly different from that of |Psifour| and is fully documented
-`here <http://pcmsolver.readthedocs.org/en/latest/users/input.html>`_
+`here <http://pcmsolver.readthedocs.io/en/latest/users/input.html>`_
 
 A typical input for a Hartree--Fock calculation with PCM would look like the following: ::
 
@@ -154,6 +156,7 @@ Keywords for PCMSolver
 
 .. include:: autodir_options_c/globals__pcm.rst
 .. include:: autodir_options_c/globals__pcm_scf_type.rst
+.. include:: autodir_options_c/globals__pcm_cc_type.rst
 
 .. _`cmake:pcmsolver`:
 

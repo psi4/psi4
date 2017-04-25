@@ -73,10 +73,10 @@ generate singly-excited, doubly-excited, *etc.*, determinants:
 
 with
 
-.. math:: 
+.. math::
 
    {\hat T}_1 | \Phi_0 \rangle &= \sum_{i}^{\rm occ} \sum_a^{\rm vir} t_i^a | \Phi_i^a \rangle \\
-   {\hat T}_2 | \Phi_0 \rangle &= \sum_{i<j}^{\rm occ} \sum_{a<b}^{\rm vir} t_{ij}^{ab} | \Phi_{ij}^{ab} \rangle, 
+   {\hat T}_2 | \Phi_0 \rangle &= \sum_{i<j}^{\rm occ} \sum_{a<b}^{\rm vir} t_{ij}^{ab} | \Phi_{ij}^{ab} \rangle,
 
 *etc.*  The popular coupled cluster singles and doubles (CCSD) model
 [Purvis:1982]_ truncates the expansion at :math:`{\hat{T}} = {\hat{T}_1}
@@ -107,6 +107,10 @@ also be computed by the CC2 and CC3 models, or by EOM-CCSD.  Table
 describes how to carry out coupled cluster calculations within |PSIfour|.
 For higher-order coupled-cluster methods like CCSDT and CCSDTQ, |PSIfour|
 can interface to K\ |a_acute|\ llay's MRCC code (see :ref:`MRCC <sec:mrcc>`).
+
+Solvent effects on energies can be taken into account using the polarizable
+continuum model (PCM) in the PTE approximation [Cammi:2009:164104]_, see
+:ref:`PCM <sec:pcmsolver>`
 
 .. _`table:ccsummary`:
 
@@ -160,7 +164,7 @@ Basic Keywords
 
 A complete list of keywords related to coupled-cluster computations is
 provided in the appendices, with the majority of the relevant
-keywords appearing in Appendix :ref:`apdx:ccenergy`.  For a standard ground-state 
+keywords appearing in Appendix :ref:`apdx:ccenergy`.  For a standard ground-state
 CCSD or CCSD(T) computation, the following keywords are common:
 
 .. include:: autodir_options_c/ccenergy__reference.rst
@@ -177,10 +181,10 @@ Larger Calculations
 ^^^^^^^^^^^^^^^^^^^
 
 Here are a few recommendations for carrying out large-basis-set coupled
-cluster calculations with |PSIfour|: 
+cluster calculations with |PSIfour|:
 
-* In most cases it is reasonable to set the ``memory`` keyword to 90% of 
-  the available physical memory, at most.  There is a small amount of overhead 
+* In most cases it is reasonable to set the ``memory`` keyword to 90% of
+  the available physical memory, at most.  There is a small amount of overhead
   associated with the
   coupled cluster modules that is not accounted for by the internal CC memory
   handling routines.  Thus, the user should *not* specify the entire
@@ -192,8 +196,8 @@ cluster calculations with |PSIfour|:
   lead to heap fragmentation and memory faults, even when sufficient
   physical memory exists.
 
-* Set the |globals__print| keyword to ``2``.  This 
-  will help narrow where memory bottlenecks or other errors exist in the 
+* Set the |globals__print| keyword to ``2``.  This
+  will help narrow where memory bottlenecks or other errors exist in the
   event of a crash.
 
 .. _`sec:eomcc`:
@@ -201,7 +205,7 @@ cluster calculations with |PSIfour|:
 Excited State Coupled Cluster Calculations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A complete list of keywords related to 
+A complete list of keywords related to
 coupled cluster linear response is provided in Appendix :ref:`apdx:cceom`.
 The most important keywords associated with EOM-CC calculations are:
 
@@ -215,7 +219,7 @@ Linear Response (CCLR) Calculations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Linear response computations are invoked like ``property('ccsd')``
-or ``property('cc2')``, along with a list of requested properties.  
+or ``property('cc2')``, along with a list of requested properties.
 A complete list of keywords related to
 coupled cluster linear response is provided in Appendix :ref:`apdx:ccresponse`.
 

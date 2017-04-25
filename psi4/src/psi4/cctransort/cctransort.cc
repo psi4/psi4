@@ -112,10 +112,14 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   char **labels = ref->molecule()->irrep_labels();
   double enuc = ref->molecule()->nuclear_repulsion_energy();
   double escf;
-  if(ref->reference_wavefunction())
+  double epcm;
+  if(ref->reference_wavefunction()) {
       escf = ref->reference_wavefunction()->reference_energy();
-  else
+      epcm = ref->reference_wavefunction()->get_variable("PCM POLARIZATION ENERGY");
+  } else {
       escf = ref->reference_energy();
+      epcm = ref->get_variable("PCM POLARIZATION ENERGY");
+  }
 
   Dimension nmopi = ref->nmopi();
   Dimension nsopi = ref->nsopi();
@@ -656,8 +660,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 
   outfile->Printf("\tNuclear Rep. energy          =  %20.14f\n", enuc);
   outfile->Printf("\tSCF energy                   =  %20.14f\n", escf);
-  double Epcm = Process::environment.globals["PCM POLARIZATION ENERGY"];
-  double eref = scf_check(reference, openpi) + enuc + efzc + Epcm;
+  double eref = scf_check(reference, openpi) + enuc + efzc + epcm;
   outfile->Printf("\tReference energy             =  %20.14f\n", eref);
   psio->write_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(eref), sizeof(double));
 

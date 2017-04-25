@@ -1689,7 +1689,7 @@ void HF::iterations()
             Epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
       }
           energies_["PCM Polarization"] = Epcm;
-      Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
+          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
           E_ += Epcm;
 
           // Add the PCM potential to the Fock matrix
