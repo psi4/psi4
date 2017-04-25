@@ -21,7 +21,7 @@ H_l -0.5  0.7 0.0
 set basis cc-pvdz
 
 print('[1]    <<<  uniform cc-pVDZ  >>>')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
@@ -35,7 +35,7 @@ basis dz_PLUS {  # basis block resets BASIS to DZ_PLUS
     assign cc-pvdz
     assign c aug-cc-pvdz
 }
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
@@ -50,7 +50,7 @@ basis dz_PLUSplus {
     assign c aug-cc-pvdz
     assign h_r aug-cc-pvdz
 }
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
@@ -71,7 +71,7 @@ basis dz_PLUSplusplus {
     assign h aug-cc-pvdz
 }
 #wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', 'dz_plusplusplus')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
@@ -83,7 +83,7 @@ mymol.print_out()
 set basis aug-cc-pvdz
 
 print('[9]    <<<  aug-cc-pVDZ  >>>')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 mymol.print_out()
 
 
@@ -103,7 +103,7 @@ H_c -0.5  0.0 0.7
 set basis dz_plusplusplus
 
 print('[11]   <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
-wert = psi4.core.BasisSet.build(mymol2, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol2, 'BASIS', get_global_option('BASIS'))
 mymol2.print_out()
 
 molecule hene {
@@ -118,7 +118,7 @@ basis disguised5z {
 set_global_option('DF_BASIS_MP2', '')  # clear df_basis_mp2 {...} to get autoaux below
 
 print('[12]   <<<  cc-pV5Z on HeNe  >>>')
-wert = psi4.core.BasisSet.build(hene, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(hene, 'BASIS', get_global_option('BASIS'))
 hene.print_out()
 
 print('[13]   <<<  RI for cc-pV5Z on HeNe  >>>')

@@ -49,6 +49,11 @@ scratch_dir = os.path.join(core.IOManager.shared_object().get_default_path(), 'p
 pcm_save = reduce(lambda l1, l2 : l1 + l2, (glob.glob(t) for t in [scratch_dir + '*/' + x for x in ['cavity.off__' + pid, 'PEDRA.OUT__' + pid, 'cavity.npz']]))
 filter(lambda x : shutil.copy(x, psi4.extras.get_input_directory()), pcm_save)
 
+pid = str(os.getpid())
+scratch_dir = os.path.join(core.IOManager.shared_object().get_default_path(), 'psi.' + pid + '.pcmsolver')
+pcm_save = reduce(lambda l1, l2 : l1 + l2, (glob.glob(t) for t in [scratch_dir + '*/' + x for x in ['cavity.off__' + pid, 'PEDRA.OUT__' + pid, 'cavity.npz']]))
+filter(lambda x : shutil.copy(x, psi4.extras.get_input_directory()), pcm_save)
+
 set pcm_scf_type separate
 print('RHF-PCM, separate algorithm')
 energy_scf2, wfn2 = energy('scf', return_wfn=True)
