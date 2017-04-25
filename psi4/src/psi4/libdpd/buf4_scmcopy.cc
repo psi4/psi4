@@ -54,8 +54,8 @@ namespace psi {
 int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double alpha)
 {
     int h, row, col, rowtot, coltot, all_buf_irrep;
-    int nbuckets, incore, n, size;
-    long int memoryd, rows_per_bucket, rows_left;
+    int nbuckets, incore, n;
+    long int size, memoryd, rows_per_bucket, rows_left;
     dpdbuf4 OutBuf;
 
     all_buf_irrep = InBuf->file.my_irrep;
@@ -106,7 +106,7 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
 
             rowtot = InBuf->params->rowtot[h];
             coltot = InBuf->params->coltot[h^all_buf_irrep];
-            size = rowtot*coltot;
+            size = ((long) rowtot)*((long) coltot);
 
             if(rowtot && coltot) {
                 memcpy((void *) &(OutBuf.matrix[h][0][0]),
