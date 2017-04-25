@@ -92,7 +92,7 @@ def INT_NCART(am):
     define INT_NCART(am) ((am>=0) ? ((((am)+2)*((am)+1))>>1) : 0)
 
     """
-    return (((am + 2) * (am + 1)) >> 1) if (am >= 0) else 0
+    return (((abs(am) + 2) * (abs(am) + 1)) >> 1)
 
 
 def INT_NPURE(am):
@@ -100,7 +100,7 @@ def INT_NPURE(am):
     #define INT_NPURE(am) (2*(am)+1)
 
     """
-    return 2 * am + 1
+    return 2 * abs(am) + 1
 
 
 def INT_NFUNC(pu, am):
