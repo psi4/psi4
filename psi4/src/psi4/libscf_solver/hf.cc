@@ -382,7 +382,7 @@ void HF::common_init()
 
     // Initialize PCM object, if requested
 #ifdef USING_PCMSolver
-    if(pcm_enabled_ = (options_.get_bool("PCM")))
+    if((pcm_enabled_ = (options_.get_bool("PCM"))))
       hf_pcm_ = static_cast<SharedPCM>(new PCM(options_, psio_, nirrep_, basisset_));
 #endif
 }

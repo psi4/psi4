@@ -42,7 +42,7 @@ strives to be friendly to both users and developers.
 
 * **CodeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
 
-* **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4)
+* **Interested Developers**  http://psicode.org/developers.php (welcome to fork psi4/psi4 and follow [GitHub contribution procedure](http://psicode.org/psi4manual/master/build_obtaining.html#faq-githubworkflow))
 
 * **Sample Inputs**  http://www.psicode.org/psi4manual/master/testsuite.html (also in share/psi4/samples)
 

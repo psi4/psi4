@@ -146,6 +146,7 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True):
 def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=1.63):
     r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
+    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
 
@@ -214,6 +215,7 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
 def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
+    Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
     """
@@ -272,13 +274,14 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
         return value
 
     else:
-        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+        raise ValidationError("scf_xtpl_helgaker_3: datatype is not recognized '%s'." % type(valueLO))
 
 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
 def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
+    Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson, Chem. Phys. Lett. 286 (1998) 243-252.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}
 
@@ -348,7 +351,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
         return value
 
     else:
-        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+        raise ValidationError("corl_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 
 def return_energy_components():
@@ -1588,13 +1591,19 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     if method_list[0] in ['scf', 'hf']:
         cbs_kwargs['scf_wfn'] = method_list[0]
         cbs_kwargs['scf_basis'] = basis_list[0]
+        if 'scf_scheme' in kwargs:
+            cbs_kwargs['scf_scheme'] = kwargs['scf_scheme']
     else:
         cbs_kwargs['corl_wfn'] = method_list[0]
         cbs_kwargs['corl_basis'] = basis_list[0]
+        if 'corl_scheme' in kwargs:
+            cbs_kwargs['corl_scheme'] = kwargs['corl_scheme']
 
     if len(method_list) > 1:
         cbs_kwargs['delta_wfn'] = method_list[1]
         cbs_kwargs['delta_basis'] = basis_list[1]
+        if 'delta_scheme' in kwargs:
+            cbs_kwargs['delta_scheme'] = kwargs['delta_scheme']
 
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 

@@ -375,21 +375,26 @@ def energy(name, **kwargs):
     >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
     >>> # Note that the integral transformation is not done automatically when detci is run in a separate step.
     >>> molecule H2 {\n0 1\nH\nH 1 0.74\n}
-    >>> set global basis cc-pVDZ
-    >>> set global reference rohf
-    >>> scf_e, scf_wfn = energy('scf', return_wfn = True)
+    >>> set basis cc-pVDZ
+    >>> set reference rohf
+    >>> scf_e, scf_wfn = energy('scf', return_wfn=True)
     >>> H2.set_multiplicity(3)
     >>> core.MintsHelper(scf_wfn.basisset()).integrals()
     >>> energy('detci', ref_wfn=scf_wfn)
 
     >>> # [5] Run two CI calculations, keeping the integrals generated in the first one.
     >>> molecule ne {\nNe\n}
-    >>> set globals  basis cc-pVDZ
-    >>> cisd_e, cisd_wfn = energy('cisd', return_wfn = True)
+    >>> set basis cc-pVDZ
+    >>> cisd_e, cisd_wfn = energy('cisd', return_wfn=True)
     >>> energy('fci', ref_wfn=cisd_wfn)
 
     >>> # [6] Can automatically perform complete basis set extrapolations
-    >>> energy("MP2/cc-pV[DT]Z")
+    >>> energy("CCSD/cc-pV[DT]Z")
+
+    >>> # [7] Can automatically perform delta corrections that include extrapolations
+    >>> # even with a user-defined extrapolation formula. See sample inputs named
+    >>> # cbs-xtpl* for more examples of this input style
+    >>> energy("MP2/aug-cc-pv([d,t]+d)z + d:ccsd(t)/cc-pvdz", corl_scheme=myxtplfn_2)
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
@@ -961,6 +966,11 @@ def optimize(name, **kwargs):
 
     >>> # [4] Can automatically perform complete basis set extrapolations
     >>> optimize('MP2/cc-pV([D,T]+d)Z')
+
+    >>> # [5] Can automatically perform delta corrections that include extrapolations
+    >>> # even with a user-defined extrapolation formula. See sample inputs named
+    >>> # cbs-xtpl* for more examples of this input style
+    >>> optimize("MP2/aug-cc-pv([d,t]+d)z + d:ccsd(t)/cc-pvdz", corl_scheme=myxtplfn_2)
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
