@@ -694,7 +694,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
                      [ex_lvl, max_holes_I, max_parts_IV, max_I+IV], ... ]
-    Optional additional restrictions on allowed exictations in
+    Optional additional restrictions on allowed excitations in
     coupled-cluster computations, based on macroconfiguration selection.
     For each sub-array, [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
     eliminate cluster amplitudes in which: [the excitation level
@@ -789,7 +789,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if (name == "SAPT"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT)
-    analysis to quantitatively analyze noncovalent interactions. -*/
+    analysis to quantitatively analyze non-covalent interactions. -*/
 
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
@@ -822,7 +822,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("D_CONVERGENCE",1e-8);
 
     /*- Don't solve the CPHF equations? Evaluate $E@@{ind}^{(20)}$ and
-    $E@@{exch-ind}^{(20)}$ instead of their response-including coupterparts.
+    $E@@{exch-ind}^{(20)}$ instead of their response-including counterparts.
     Only turn on this option if the induction energy is not going to be
     used. -*/
     options.add_bool("NO_RESPONSE",false);
@@ -849,7 +849,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CCD_T_CONVERGENCE",1E-8);
     /*- Maximum number of vectors used in CCD-DIIS -*/
     options.add_int("MAX_CCD_DIISVECS",10);
-    /*- Minimumnumber of vectors used in CCD-DIIS -*/
+    /*- Minimum number of vectors used in CCD-DIIS -*/
     options.add_int("MIN_CCD_DIISVECS",4);
     /*- Max CCD iterations -*/
     options.add_int("CCD_MAXITER",50);
@@ -1042,11 +1042,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation !expert-*/
       options.add_int("DIIS_MIN_VECS", 3);
-      /*- Controls whether to avoid the AO->MO transformation of the two-electron integrals for the four-virtual case
-      (<VV||VV>) by computing the corresponding terms in the AO basis. AO_BASIS = DISK algorithm reduces the memory
-      requirements and can significantly reduce the cost of the energy computation if SIMULTANEOUS
-      algorithm is used. For the TWOSTEP algorithm, however, AO_BASIS = DISK
-      option is not recommended due to extra I/O. -*/
+      /*- Controls whether to avoid the AO->MO transformation of the
+      two-electron integrals for the four-virtual case ($\langle VV||
+      VV \rangle$) by computing the corresponding terms in the AO
+      basis. AO_BASIS = DISK algorithm reduces the memory requirements
+      and can significantly reduce the cost of the energy computation
+      if SIMULTANEOUS algorithm is used. For the TWOSTEP algorithm,
+      however, AO_BASIS = DISK option is not recommended due to extra
+      I/O. -*/
       options.add_str("AO_BASIS", "DISK", "NONE DISK");
       /*- The amount (percentage) of damping to apply to the orbital update procedure:
       0 will result in a full update, 100 will completely stall the
@@ -1282,7 +1285,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SOSCF_MIN_ITER", 1);
     /*- Maximum number of second-order microiterations to perform. -*/
     options.add_int("SOSCF_MAX_ITER", 5);
-    /*- Secord order convergence threshold. -*/
+    /*- Second order convergence threshold. -*/
     options.add_double("SOSCF_CONV", 5.0E-3);
     /*- Do we print the SOSCF microiterations?. -*/
     options.add_bool("SOSCF_PRINT", false);
@@ -1335,11 +1338,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("RADIUS", 10.0); // bohr
     /*- Thickness (bohr) of a hard-sphere external potential -*/
     options.add_double("THICKNESS", 20.0); // bohr
-    /*- Number of radial grid points for sphereical potential integration -*/
+    /*- Number of radial grid points for spherical potential integration -*/
     options.add_int("R_POINTS", 100);
-    /*- Number of colatitude grid points for sphereical potential integration -*/
+    /*- Number of colatitude grid points for spherical potential integration -*/
     options.add_int("THETA_POINTS", 360);
-    /*- Number of azimuthal grid points for sphereical potential integration -*/
+    /*- Number of azimuthal grid points for spherical potential integration -*/
     options.add_int("PHI_POINTS", 360);
     /*- Read an external potential from the .dx file? -*/
     options.add_bool("ONEPOT_GRID_READ", false);
@@ -1520,7 +1523,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The maximum number of integral threads (0 for Process::environment.get_n_threads())
      -*/
     options.add_int("OMP_N_THREAD", 0);
-    /*- The schwarz cutoff value
+    /*- The Schwarz cutoff value
      -*/
     options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
     /*- Do we do the QQR integral sieve of Maurer et al. When false, just uses
@@ -1569,7 +1572,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Solver type (for interchangeable solvers)
      -*/
     options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH");
-    /*- Solver precondtion max steps
+    /*- Solver precondition max steps
     -*/
     options.add_int("SOLVER_PRECONDITION_MAXITER", 1);
     /*- Solver precondition step type
@@ -1589,11 +1592,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    /*- The algorithm to use for the $\left\langle VV||VV \right\rangle$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Delete the SO two-electron integrals after the transformation? -*/
     options.add_bool("DELETE_TEI", true);
-    /*- Cacheing level for libdpd -*/
+    /*- Caching level for libdpd -*/
     options.add_int("CACHELEVEL", 2);
     /*- Force conversion of ROHF MOs to semicanonical MOs to run UHF-based energies -*/
     options.add_bool("SEMICANONICAL", false);
@@ -1621,9 +1624,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE",1e-14);
-    /*- The amount of cacheing of data to perform -*/
+    /*- The amount of caching of data to perform -*/
     options.add_int("CACHELEVEL",2);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    /*- The algorithm to use for the $\left\langle VV||VV\right \rangle$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034. !expert -*/
     options.add_bool("AEL",false);
@@ -1652,7 +1655,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ONEPDM_GRID_DUMP",false);
     /*- Cutoff (e/A^3) for printing one-particle density matrix values on a grid -*/
     options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
-    /*- Stepsize (Angstrom) for one-particle density matrix values on a grid -*/
+    /*- Step size (Angstrom) for one-particle density matrix values on a grid -*/
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
     /* Do Write NOs (molden) */
     options.add_bool("WRITE_NOS",false);
@@ -1667,19 +1670,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do restart the coupled-cluster iterations from old $\lambda@@1$ and $\lambda@@2$
     amplitudes? -*/
     options.add_bool("RESTART",false);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    /*- Caching level for libdpd governing the storage of amplitudes,
     integrals, and intermediates in the CC procedure. A value of 0 retains
     no quantities in cache, while a level of 6 attempts to store all
     quantities in cache.  For particularly large calculations, a value of
     0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    which means that all four-index quantities with up to two virtual-orbital
+    indices (e.g., $\left\langle ij | ab \right\rangle$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",false);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    /*- The algorithm to use for the $\left\langle VV||VV \right\rangle$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Type of ABCD algorithm will be used -*/
     options.add_str("ABCD","NEW");
@@ -1690,7 +1693,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("JOBTYPE","");
     /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL",false);
-    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique avaliable option) treats weak pairs in
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option) treats weak pairs in
     the same manner as strong pairs. -*/
     options.add_str("LOCAL_WEAKP","NONE");
     /*- Value (always between one and zero) for the Broughton-Pulay completeness
@@ -1698,7 +1701,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
     and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF",0.02);
-    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique avaliable option) selects the method
+    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique available option) selects the method
     developed by H.-J. Werner and co-workers. -*/
     options.add_str("LOCAL_METHOD","WERNER");
     /*- Do apply local filtering to single de-excitation ($\lambda 1$ amplitudes? -*/
@@ -1751,15 +1754,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "SCF");
     /*- Reference wavefunction type for EOM computations -*/
     options.add_str("EOM_REFERENCE","RHF");
-    /*- Do compute the Tamplitude equation matrix elements? -*/
+    /*- Do compute the T amplitude equation matrix elements? -*/
     options.add_bool("T_AMPS",false);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    /*- Caching level for libdpd governing the storage of amplitudes,
     integrals, and intermediates in the CC procedure. A value of 0 retains
     no quantities in cache, while a level of 6 attempts to store all
     quantities in cache.  For particularly large calculations, a value of
     0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    which means that all four-index quantities with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Do use the minimal-disk algorithm for Wabei? It's VERY slow! -*/
     options.add_bool("WABEI_LOWDISK", false);
@@ -1774,13 +1777,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
     /*- Do use full effective Hamiltonian matrix? -*/
     options.add_bool("FULL_MATRIX",false);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    /*- Caching level for libdpd governing the storage of amplitudes,
     integrals, and intermediates in the CC procedure. A value of 0 retains
     no quantities in cache, while a level of 6 attempts to store all
     quantities in cache.  For particularly large calculations, a value of
     0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    which means that all four-index quantities with up to two virtual-orbital
+    indices (e.g., $\left\langle ij | ab \right\rangle$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- The criterion used to retain/release cached data -*/
     options.add_str("CACHETYPE", "LRU", "LOW LRU");
@@ -1890,7 +1893,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "SCF");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- Cacheing level for libdpd -*/
+    /*- Caching level for libdpd -*/
     options.add_int("CACHELEVEL",2);
     /*- Specifies the choice of representation of the electric dipole operator.
     Acceptable values are ``LENGTH`` for the usual length-gauge representation,
@@ -1906,7 +1909,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
     /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
-    (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
+    (default) for dipole polarizabilities, ``ROTATION`` for specific rotations,
     ``ROA`` for Raman Optical Activity (``ROA_TENSOR`` for each displacement),
     and ``ALL`` for all of the above. -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ROA_TENSOR ALL");
@@ -1921,10 +1924,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
     and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF",0.01);
-    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique avaliable option) selects the method
+    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique available option) selects the method
     developed by H.-J. Werner and co-workers. -*/
     options.add_str("LOCAL_METHOD","WERNER");
-    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique avaliable option) treats weak pairs in
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option) treats weak pairs in
     the same manner as strong pairs. -*/
     options.add_str("LOCAL_WEAKP","NONE");
     /*- Do apply local filtering to single excitation amplitudes? -*/
@@ -2052,7 +2055,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
     options.add_bool("FORCE_RESTART", 0);
 //#warning CCEnergy ao_basis keyword type was changed.
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms
+    /*- The algorithm to use for the $\left\langle VV||VV\right\rangle$ terms
     If AO_BASIS is ``NONE``, the MO-basis integrals will be used;
     if AO_BASIS is ``DISK``, the AO-basis integrals stored on disk will
     be used; if AO_BASIS is ``DIRECT``, the AO-basis integrals will be computed
@@ -2064,13 +2067,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     been significantly improved and are preferable to the AO-based approach.
     !expert -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    /*- Caching level for libdpd governing the storage of amplitudes,
     integrals, and intermediates in the CC procedure. A value of 0 retains
     no quantities in cache, while a level of 6 attempts to store all
     quantities in cache.  For particularly large calculations, a value of
     0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    which means that all four-index quantities with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL", 2);
     /*- Selects the priority type for maintaining the automatic memory
     cache used by the libdpd codes. A value of ``LOW`` selects a "low priority"
@@ -2113,7 +2116,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 10);
-    /*- Convergence criterion for Breuckner orbitals. The convergence is
+    /*- Convergence criterion for Brueckner orbitals. The convergence is
     determined based on the largest $T_1$ amplitude.  Default adjusts
     depending on |ccenergy__e_convergence|. -*/
     options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
@@ -2491,13 +2494,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
     options.add_int("MO_MAXITER",50);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    /*- Caching level for libdpd governing the storage of amplitudes,
     integrals, and intermediates in the CC procedure. A value of 0 retains
     no quantities in cache, while a level of 6 attempts to store all
     quantities in cache.  For particularly large calculations, a value of
     0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    which means that all four-index quantities with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Number of vectors used in orbital DIIS -*/
     options.add_int("MO_DIIS_NUM_VECS",6);
@@ -2682,7 +2685,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- The orbital optimization algorithm. Presently Quasy Newton-Raphson algorithm avaliable with several Hessian options. -*/
+    /*- The orbital optimization algorithm. Presently quasi-Newton-Raphson algorithm available with several Hessian options. -*/
     options.add_str("OPT_METHOD","QNR","QNR");
     /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the
       simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian
@@ -2735,11 +2738,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("READ_SCF_3INDEX",true);
     /*- Do compute one electron properties?  -*/
     options.add_bool("OEPROP",false);
-    /*- Do compute <S2> for DF-OMP2/DF-MP2?  -*/
+    /*- Do compute $\langle \hat{S}^2 \rangle$ for DF-OMP2/DF-MP2?  -*/
     options.add_bool("COMPUT_S2",false);
     /*- Do perform a QCHF computation?  -*/
     options.add_bool("QCHF",false);
-    /*- Do solve lambda amplitute equations?  -*/
+    /*- Do solve lambda amplitude equations?  -*/
     options.add_bool("CC_LAMBDA",false);
     /*- Do write a MOLDEN output file?  If so, the filename will end in
     .molden, and the prefix is determined by |globals__writer_file_label|
@@ -2769,7 +2772,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Minimum absolute value below which integrals are neglected. -*/
       options.add_double("INTS_TOLERANCE",1.0E-12);
 
-      /*- Maximum excitation level. This is used ONLY if it is explicity set by the user.
+      /*- Maximum excitation level. This is used ONLY if it is explicitly set by the user.
         Single-reference case: all excitations up to this level are
         included, e.g., 2 for CCSD, 3 for CCSDT, 4 for CCSDTQ, etc.
         This becomes ``ex.lev`` (option \#1) in fort.56. -*/
@@ -2969,7 +2972,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       example see |cfour__cfour_occupation| . -*/
       options.add("CFOUR_ACTIVE_ORBI", new ArrayType());
 
-      /*- Specifies treatment of anharmonc effects by calculating cubic
+      /*- Specifies treatment of anharmonic effects by calculating cubic
       and/or quartic force fields. VIBROT (=3) requests calculation
       of only those cubic constants of the form :math:`\phi_{nij}`, where n is a
       totally symmetric coordinate. These are sufficient to determine the
@@ -3015,7 +3018,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       is :math:`\times 10^6` the integer value specified. -*/
       options.add_int("CFOUR_ANH_STEPSIZE", 50000);
 
-      /*- Specifies whether nonabelian symmetry is to be exploited in
+      /*- Specifies whether non-abelian symmetry is to be exploited in
       determining displacements for |cfour__cfour_anharmonic| =VIBROT or VPT2 calculations. If
       set to NONABELIAN (=0), maximum advantage will be taken of symmetry
       and the full set of cubic force constants will be generated from a
@@ -3404,7 +3407,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       electron-attached states). -*/
       options.add_str("CFOUR_EXCITE", "NONE", "NONE EOMEE EOMIP EOMEA");
 
-      /*- Specifies the strength of a Fermi-Contact pertubation as
+      /*- Specifies the strength of a Fermi-Contact perturbation as
       required for finite-field calculations of spin densities and the FC
       contributions to indirect spin-spin coupling constants. The value
       must be specified as an integer and the FC strength used by the
@@ -3482,10 +3485,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       bytes, as your local system manager certainly understands. -*/
       options.add_int("CFOUR_FILE_RECSIZ", 2048);
 
-      /*- This option allows the splitting of files. Input is required in
-      the form N1/N2/N3/N4/N5, where N1, N2, N3, N4, and N5
-      specify the number of files in which ``MOINTS``, ``GAMLAM``, ``MOABCD``, ``DERINT``,
-      and ``DERGAM`` are splitted, respectively. -*/
+      /*- This option allows the splitting of files. Input is required
+      in the form N1/N2/N3/N4/N5, where N1, N2, N3, N4, and N5 specify
+      the number of files in which ``MOINTS``, ``GAMLAM``, ``MOABCD``,
+      ``DERINT``, and ``DERGAM`` are split, respectively. -*/
       options.add_str("CFOUR_FILE_STRIPE", "0/0/0/0/0");
 
       /*- Specifies the field strength for a perturbation (defined within
@@ -3515,7 +3518,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies whether in the correlation treatment all virtual
       orbitals (OFF =0) or only a subset of virtual orbitals (ON =1) are
       used. In the latter case, the threshold for deleting virtual
-      orbitals based on the orbital energey needs to be specified in a
+      orbitals based on the orbital energy needs to be specified in a
       ``%frozen_virt`` section. -*/
       options.add_bool("CFOUR_FROZEN_VIRT", false);
 
@@ -3792,7 +3795,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       case and excitation level will be printed. -*/
       options.add_int("CFOUR_NTOP_TAMP", 15);
 
-      /*- Specifies the orbital occupanc of the reference function in
+      /*- Specifies the orbital occupancy of the reference function in
       terms of the occupation numbers of the orbitals and their
       irreducible representations. The occupancy is specified by either
       NIRREP or 2*NIRREP integers specifying the number of occupied
@@ -3818,7 +3821,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       should not be blindly assumed.  (Default: The occupation is given
       by the core Hamiltonian initial guess).
       **Psi4 Interface:** The arrays above are specified in PSI as
-      (whitespace-tolerant) [3,1,1,0] and [[3,1,1,0],[3,0,1,0]]. -*/
+      (white space tolerant) [3,1,1,0] and [[3,1,1,0],[3,0,1,0]]. -*/
       options.add("CFOUR_OCCUPATION", new ArrayType());
 
       /*- Specifies which kind of open-shell CC treatment is employed. The
@@ -3847,7 +3850,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       spatial parts for both the $\alpha$ and the $\beta$ spin orbitals.
       SEMICANONICAL (=1) forces in ROHF type calculations a transformation
       to so-called semicanonical orbitals which diagonalize the
-      occupied-occupied and virtual-virtual blockes of the usual
+      occupied-occupied and virtual-virtual blocks of the usual
       Fock-matrices. The use of semicanonical orbitals is, for example,
       required for ROHF-CCSD(T) calculations and for those calculations
       also automatically set. LOCAL requests a localization of the HF
@@ -3940,7 +3943,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       be an extremely useful way to converge "difficult" SCF solutions,
       such as those that correspond to states that are not the lowest
       states of a given symmetry. Note that when this option is used, the
-      calculation that is performed is not a QRHF-CC calcualtion; it is
+      calculation that is performed is not a QRHF-CC calculation; it is
       instead a UHF-based or ROHF-based calculation, depending on what
       type of reference is specified by the |cfour__cfour_reference| keyword. The QRHF
       aspect of the calculation is used simply as a device to converge the
@@ -4006,7 +4009,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies the treatment of relativistic effects. The default is
       a non-relativistic treatment (OFF), while perturbational treatments
       are invoked via MVD1 (mass-velocity and 1-electron Darwin
-      conribution), MVD2 (mass-velocity and 1- and 2-electron Darwin
+      contribution), MVD2 (mass-velocity and 1- and 2-electron Darwin
       contribution), DPT2 (second-order direct perturbation theory
       approach), SF-DPT4 (scalar-relativistic part of fourth-order direct
       perturbation theory, DPT4 (full fourth-order DPT including
@@ -4039,7 +4042,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       //RESET_FLAGS
       //experimental use
 
-      /*- Offers the possibilty to restart a CC calculation which stopped
+      /*- Offers the possibility to restart a CC calculation which stopped
       for various reasons, e.g. time limit, in the correlation part.
       However, note that a restart which is specified by ON (= 1) needs
       the following files of the previous unfinished calculation: ``JOBARC``,
@@ -4109,7 +4112,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       |scf__maxiter| unless set explicitly.-*/
       options.add_int("CFOUR_SCF_MAXCYC", 150);
 
-      /*- Specifies the strength of a spin-dipole pertubation as required
+      /*- Specifies the strength of a spin-dipole perturbation as required
       for finite-field calculations of the SD contributions to indirect
       spin-spin coupling constants. The value must be specified as an
       integer and the SD strength used by the program will be the value of
@@ -4119,10 +4122,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       //SOPERT
       //Experimental Use!
       //Default : OFF.
-      ///*- Perturbative treatment of spin-orbit splittings in dublett-pi
+      ///*- Perturbative treatment of spin-orbit splittings in doublet-pi
       //states via multireference coupled-cluster theory. MKMRCC (=1)
       //requests a treatment based on Mukherjee's multireference
-      //coupled-cluster theory.EMRCCSO (=2) requests the expectation value
+      //coupled-cluster theory. EMRCCSO (=2) requests the expectation value
       //of a similarity transformed spin-orbit operator. Please note that
       //symmetric orbitals are needed, e.g., using AV_SCF. For more
       //information on the theory see J. Chem. Phys. 136, 111103 (2012). -*/
@@ -4402,7 +4405,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
             during successive DMRG instructions -*/
         options.add("DMRG_SWEEP_MAX_SWEEPS", new ArrayType());
 
-        /*- The noiseprefactors for successive DMRG instructions -*/
+        /*- The noise prefactors for successive DMRG instructions -*/
         options.add("DMRG_SWEEP_NOISE_PREFAC", new ArrayType());
 
         /*- The residual tolerances for the Davidson diagonalization during DMRG instructions -*/
@@ -4468,3 +4471,5 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 }
 
 } //end ::psi
+
+//  LocalWords:  Psi4
