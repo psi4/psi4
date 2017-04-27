@@ -112,14 +112,20 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   char **labels = ref->molecule()->irrep_labels();
   double enuc = ref->molecule()->nuclear_repulsion_energy();
   double escf;
-  double epcm;
   if(ref->reference_wavefunction()) {
       escf = ref->reference_wavefunction()->reference_energy();
-      epcm = ref->reference_wavefunction()->get_variable("PCM POLARIZATION ENERGY");
   } else {
       escf = ref->reference_energy();
-      epcm = ref->get_variable("PCM POLARIZATION ENERGY");
   }
+  double epcm = 0.0;
+#ifdef USING_PCMSolver
+  if(options.get_bool("PCM")) {
+    epcm = ref->reference_wavefunction()
+               ? ref->reference_wavefunction()->get_variable(
+                     "PCM POLARIZATION ENERGY")
+               : ref->get_variable("PCM POLARIZATION ENERGY");
+  }
+#endif
 
   Dimension nmopi = ref->nmopi();
   Dimension nsopi = ref->nsopi();
