@@ -1,5 +1,5 @@
 if(${ENABLE_libefp})
-    find_package(libefp CONFIG QUIET COMPONENTS shallow)
+    find_package(libefp 1.4.2 CONFIG QUIET COMPONENTS shallow)
 
     if(${libefp_FOUND})
         get_property(_loc TARGET libefp::efp PROPERTY LOCATION)
@@ -11,7 +11,7 @@ if(${ENABLE_libefp})
         ExternalProject_Add(libefp_external
             DEPENDS lapack_external
             GIT_REPOSITORY https://github.com/ilyak/libefp
-            GIT_TAG 985ad0f  # post 1.4.1
+            GIT_TAG 1.4.2
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

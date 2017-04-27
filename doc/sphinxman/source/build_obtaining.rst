@@ -277,3 +277,4 @@ What is the suggested GitHub workflow
 
 .. image:: /prflow.001.jpeg
 .. image:: /prflow.002.jpeg
+.. image:: /prflow.003.jpeg
