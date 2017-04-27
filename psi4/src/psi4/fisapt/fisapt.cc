@@ -2521,7 +2521,7 @@ void FISAPT::plot()
     csg->set_auxiliary_basis(reference_->get_basisset("DF_BASIS_SCF"));
 
     std::stringstream ss;
-    ss << filepath << "geom.xyz";
+    ss << filepath << "/geom.xyz";
     primary_->molecule()->save_xyz_file(ss.str(), true);
 
     /// Zeroth-order wavefunctions
@@ -4336,7 +4336,7 @@ void FISAPT::fdrop()
     filesystem::create_directory(filepath);
 
     std::stringstream ss;
-    ss << filepath << "geom.xyz";
+    ss << filepath << "/geom.xyz";
     primary_->molecule()->save_xyz_file(ss.str(), true);
 
     matrices_["Qocc0A"]->set_name("QA");
@@ -4365,7 +4365,7 @@ void FISAPT::fdrop()
         filesystem::create_directory(sSAPT_filepath);
 
         std::stringstream sSAPT_ss;
-        sSAPT_ss << sSAPT_filepath << "geom.xyz";
+        sSAPT_ss << sSAPT_filepath << "/geom.xyz";
         primary_->molecule()->save_xyz_file(sSAPT_ss.str(), true);
 
         matrices_["sIndAB_AB"]->set_name("IndAB");

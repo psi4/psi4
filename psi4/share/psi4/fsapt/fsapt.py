@@ -209,14 +209,20 @@ def partitionFragments(fragkeys,frags,Z,Q,completeness = 0.85):
         inds = sorted(range(len(sums)),key=lambda x:-sums[x])
         sum = sums[inds[0]] + sums[inds[1]]
         if sum <= completeness:
-            raise Exception('Orbital %d is not complete over two fragments.' % (a+1))
+            raise Exception("Orbital %d is not complete over two fragments. " 
+                            "To avoid this error, please try to avoid cutting "
+                            "multiple bonds, aromatic rings, etc., in your "
+                            "definitions of fragments." % (a+1))
         key1 = fragkeys[inds[0]]
         key2 = fragkeys[inds[1]]
 
         Ainds = sorted(range(nA),key = lambda x:-Q[x][a])
         sum = Q[Ainds[0]][a] + Q[Ainds[1]][a]
         if sum <= completeness:
-            raise Exception('Orbital %d is not complete over two link atoms.' % (a+1))
+            raise Exception("Orbital %d is not complete over two link atoms. "
+                            "To avoid this error, please try to avoid cutting "
+                            "multiple bonds, aromatic rings, etc., in your "
+                            "definitions of fragments." % (a+1))
         A1 = Ainds[0]
         A2 = Ainds[1]
 
