@@ -110,6 +110,7 @@ Running |PSIfour|
 #. :ref:`What command line options does Psi4 have <sec:commandLineOptions>`
 #. :ref:`What environment variables affect Psi4 <sec:environmentVariables>`
 #. :ref:`faq:runtimepython`
+#. :ref:`faq:psi4version`
 #. :ref:`faq:psi4PBS`
 #. :ref:`faq:psi4fileretention`
 

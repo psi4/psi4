@@ -1127,7 +1127,7 @@ What Python is Psi4 running
 The Python detected at build-time is embedded into the |PSIfour|
 executable. That is, the top line of ``bin/psi4`` is something like
 ``#!/path/to/miniconda/envs/p4deps/bin/python3.5``, and that's the Python
-through which |PSIfour| is running, *not* the Python of ``which python``.
+through which |PSIfour| is running, rather than the Python of ``which python``.
 To use a different Python with |PSIfour| in the short term, just
 ``path/to/desired/python psi4`` on the command line to override the
 shebang line. To use a different Python with |PSIfour| in the long term,
