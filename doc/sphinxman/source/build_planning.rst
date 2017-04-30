@@ -1281,7 +1281,8 @@ documentation for appropriate setup.
 How to update and rebuild Psi4
 ------------------------------
 
-Obtain code updates as appropriate from LINKTOVARMODIES. Move into
+Obtain code updates as appropriate from :ref:`faq:binary`,
+:ref:`faq:clonepsi4public`, or :ref:`faq:forkpsi4public`.  Move into
 :samp:`{objdir}` and reissue ``make``, whereupon CMake may reconfigure but
 will only rebuild objects and libraries depending on changed files. It is
 scarcely ever necessary for the user to reinvoke ``cmake`` to update
