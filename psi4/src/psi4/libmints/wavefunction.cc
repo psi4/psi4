@@ -1038,7 +1038,7 @@ double Wavefunction::get_variable(std::string label)
     std::transform(uc_label.begin(), uc_label.end(), uc_label.begin(), ::toupper);
 
     if (variables_.count(uc_label) == 0){
-        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable was not set!\n");
+        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable " + label + " was not set!\n");
     } else {
         return variables_[uc_label];
     }
@@ -1046,7 +1046,7 @@ double Wavefunction::get_variable(std::string label)
 SharedMatrix Wavefunction::get_array(std::string label)
 {
     if (arrays_.count(label) == 0){
-        throw PSIEXCEPTION("Wavefunction::get_array: Requested array was not set!\n");
+        throw PSIEXCEPTION("Wavefunction::get_array: Requested array " + label + " was not set!\n");
     } else {
         return arrays_[label];
     }

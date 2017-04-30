@@ -33,11 +33,11 @@ Bibliography
 |
 
 .. [Gonthier:2016:134106]
-   J. F. Gonthier and C.D. Sherrill, 
+   J. F. Gonthier and C.D. Sherrill,
    *J. Chem. Phys.* **145**, 134106 (2016).
 
 .. [Parrish:2015:051103]
-   R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C.D. Sherrill, 
+   R. M. Parrish, J. F. Gonthier, C. Corminboeuf, and C.D. Sherrill,
    *J. Chem. Phys.* **143**, 051103 (2015).
 
 .. [Parrish:2014:17386]
@@ -99,17 +99,17 @@ Bibliography
 .. [Cohen:GreenBook:2008]
    E. R. Cohen, T. Cvitas, J. G. Frey, B. Holmstr\ |o_dots|\ om,
    K. Kuchitsu, R. Marquardt, I. Mills, F. Pavese, M. Quack,
-   J. Stohner, H. L. Strauss, M. Takami, and A. J. Thor, 
+   J. Stohner, H. L. Strauss, M. Takami, and A. J. Thor,
    Quantities, Units, and Symbols in Physical chemistry, IUPAC Green
    Book, 3rd. Ed., IUPAC & RSC Publishing (Cambridge, 2008).
 
 .. [PubChem]
-   E. Bolton, Y. Wang, P. A. Thiessen, S. H. Bryant.  PubChem: 
+   E. Bolton, Y. Wang, P. A. Thiessen, S. H. Bryant.  PubChem:
    Integrated Platform of Small Molecules and Biological Activities,
    Chapter 12 in *Annual Reports in Computational Chemistry*, Volume
    4 (American Chemical Society: Washington, DC, 2008).
    See `pubchem.ncbi.nlm.nih.gov <http://pubchem.ncbi.nlm.nih.gov/>`_.
-   
+
 .. [Sherrill:1999:CI]
    C. D. Sherrill and H. F. Schaefer,
    *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots|\ wdin
@@ -125,7 +125,7 @@ Bibliography
 
 .. [Peng:1996:49]
    Peng, Ayala, Schlegel, and Frisch,
-   *J. Comput. Chem.* **17**, 49 (1996). 
+   *J. Comput. Chem.* **17**, 49 (1996).
 
 .. [Bakken:2002:9160]
    Bakken and Helgaker,
@@ -163,12 +163,12 @@ Bibliography
    J. Schirmer,
    *Phys. Rev. A* **26**, 2395 (1982).
 
-.. [Trofimov:2006] 
-   A. B. Trofimov, I. L, Krivdina, J. Weller, and J. Schirmer, 
+.. [Trofimov:2006]
+   A. B. Trofimov, I. L, Krivdina, J. Weller, and J. Schirmer,
    *Chem. Phys.* **329**, 1 (2006).
 
 .. [Haettig:2002]
-   C. H\ |a_dots|\ aettig and K. Hald, 
+   C. H\ |a_dots|\ aettig and K. Hald,
    *Phys. Chem. Chem. Phys.* **4**, 2111 (2002).
 
 .. [Saitow:2012]
@@ -184,12 +184,12 @@ Bibliography
    *Phys. Chem. Chem. Phys.* **11**, 4728 (2009).
 
 .. [Evangelista:2006:154113]
-   F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III, 
+   F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III,
    *J. Chem. Phys.* **125**, 154113 (2006).
 
 .. [Evangelista:2008:124104]
-   F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, 
-   *J. Chem. Phys.* **128**, 124104 (2008).    
+   F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss,
+   *J. Chem. Phys.* **128**, 124104 (2008).
 
 .. [Cheng:084114]
    L. Cheng and J. Gauss,
@@ -212,7 +212,7 @@ Bibliography
    *J. Chem. Phys.* **76**, 1910-1918 (1982).
 
 .. [Sosa:1989:148]
-   C. Sosa, J. Geersten, G. W. Trucks, R. J. Barlett, and J. A. Franz, 
+   C. Sosa, J. Geersten, G. W. Trucks, R. J. Barlett, and J. A. Franz,
    *Chem. Phys. Lett.* **159**, 148--154 (1989).
 
 .. [Roos:1980]
@@ -256,11 +256,11 @@ Bibliography
    *J. Chem. Theory Comput.* **9**, 2687-2696 (2013).
 
 .. [Curtiss:1991:7221]
-   L. A. Curtiss, K. Raghavachari, G. W. Trucks, and J. A. Pople, 
+   L. A. Curtiss, K. Raghavachari, G. W. Trucks, and J. A. Pople,
    *J. Chem. Phys.* **94**, 7221-7230 (1991).
 
 .. [Pople:1987:5968]
-   J. A. Pople, M. Head-Gordon, and K. J. Raghavachari, 
+   J. A. Pople, M. Head-Gordon, and K. J. Raghavachari,
    *Chem. Phys.* **87**, 5968 (1987).
 
 .. [Crawford:1997:instability]
@@ -347,12 +347,12 @@ Bibliography
 
 .. [FW:1950]
    L. L. Foldy and S. A. Wouthuysen,
-   *Phys. Rev.* **78**, 29-36 (1950) 
+   *Phys. Rev.* **78**, 29-36 (1950)
 
 .. [Kutzelnigg:1984]
    W. Kutzelnigg,
    *Int. J. Quantum Chem.* **25**, 107-129 (1984)
- 
+
 .. [Smith:2016:2197]
    D. Smith, L. Burns, K. Patkowski, and D. Sherrill,
    *J. Phys. Chem. Lett.* **7**, 2197-2203 (2016).
@@ -378,3 +378,10 @@ Bibliography
    J. M. L. Martin,
    *Mol. Phys.* **112**, 785 (2014).
 
+.. [Cammi:2009:164104]
+   R. Cammi,
+   *J. Chem. Phys.* **131**, 164104 (2009).
+
+.. [Tomasi:2005:2999]
+   J. Tomasi, B. Mennucci, and R. Cammi
+   *Chem. Rev.* **105**, 2999 (2005).

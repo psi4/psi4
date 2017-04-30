@@ -1679,18 +1679,18 @@ void HF::iterations()
           }
 
           // Compute the PCM charges and polarization energy
-          double Epcm = 0.0;
-      if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
-      {
-            Epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
-      }
-      else
-      {
-            Epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
-      }
-          energies_["PCM Polarization"] = Epcm;
-      Process::environment.globals["PCM POLARIZATION ENERGY"] = Epcm;
-          E_ += Epcm;
+          double epcm = 0.0;
+          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
+          {
+            epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
+          }
+          else
+          {
+            epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
+          }
+          energies_["PCM Polarization"] = epcm;
+          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+          E_ += epcm;
 
           // Add the PCM potential to the Fock matrix
           SharedMatrix V_pcm;
@@ -1700,6 +1700,9 @@ void HF::iterations()
             Fa_->add(V_pcm);
             Fb_->add(V_pcm);
           }
+        } else {
+          energies_["PCM Polarization"] = 0.0;
+          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
         }
 #endif
         std::string status = "";
@@ -1840,8 +1843,6 @@ void HF::print_energies()
     outfile->Printf("    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
     outfile->Printf("    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]);
     outfile->Printf("    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
-    if (!pcm_enabled_)
-        energies_["PCM Polarization"] = 0.0;
     outfile->Printf("    PCM Polarization Energy =         %24.16f\n", energies_["PCM Polarization"]);
     outfile->Printf("    EFP Energy =                      %24.16f\n", energies_["EFP"]);
     outfile->Printf("    Total Energy =                    %24.16f\n", energies_["Nuclear"] +
