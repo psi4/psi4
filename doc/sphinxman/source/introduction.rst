@@ -565,7 +565,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CCD                     | RHF            | DF/CD             | RHF          | DF             | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CC2                     | RHF/UHF/ROHF   | CONV              | RHF          | CONV            | threaded [#f3]_             |           |            |
+    | CC2                     | RHF/UHF/ROHF   | CONV              | RHF          | CONV           | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CCSD [#f10]_            | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
@@ -613,7 +613,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
 
 Geometry optimization can be performed using either analytic gradients
-or energy points. Likewise, vibrational frequencies can be 
+or energy points. Likewise, vibrational frequencies can be
 computed by analytic second derivatives, by finite
 differences of analytic gradients, or by finite differences of energies.
 |PSIfour| can also compute an extensive list of one-electron properties.
