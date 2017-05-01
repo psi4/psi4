@@ -119,7 +119,7 @@ Binary Installer
 
   Not applicable as binary is pre-built.
 
-* **Get Updates**
+* **Get Updates** :ref:`directions <faq:updatepsi4>`
 
   .. code-block:: bash
 

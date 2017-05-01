@@ -1127,7 +1127,7 @@ What Python is Psi4 running
 The Python detected at build-time is embedded into the |PSIfour|
 executable. That is, the top line of ``bin/psi4`` is something like
 ``#!/path/to/miniconda/envs/p4deps/bin/python3.5``, and that's the Python
-through which |PSIfour| is running, *not* the Python of ``which python``.
+through which |PSIfour| is running, rather than the Python of ``which python``.
 To use a different Python with |PSIfour| in the short term, just
 ``path/to/desired/python psi4`` on the command line to override the
 shebang line. To use a different Python with |PSIfour| in the long term,
@@ -1281,7 +1281,8 @@ documentation for appropriate setup.
 How to update and rebuild Psi4
 ------------------------------
 
-Obtain code updates as appropriate from LINKTOVARMODIES. Move into
+Obtain code updates as appropriate from :ref:`faq:binary`,
+:ref:`faq:clonepsi4public`, or :ref:`faq:forkpsi4public`.  Move into
 :samp:`{objdir}` and reissue ``make``, whereupon CMake may reconfigure but
 will only rebuild objects and libraries depending on changed files. It is
 scarcely ever necessary for the user to reinvoke ``cmake`` to update

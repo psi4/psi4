@@ -751,6 +751,7 @@ Vector3 OEProp::compute_center(const double *property) const
         x += xyz[0] * prop;
         y += xyz[1] * prop;
         z += xyz[2] * prop;
+        sum += prop;
     }
     x /= sum;
     y /= sum;
@@ -772,7 +773,7 @@ void OEProp::common_init()
 
         if(size == 1){
             double *property = new double[natoms];
-            std::string str = options["PROPERTIES_ORIGIN"].to_string();
+            std::string str = options["PROPERTIES_ORIGIN"][0].to_string();
             if(str == "COM"){
                 for(int atom = 0; atom < natoms; ++atom)
                     property[atom] = mol->mass(atom);

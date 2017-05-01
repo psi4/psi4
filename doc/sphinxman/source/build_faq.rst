@@ -43,8 +43,18 @@ Obtaining and Updating |PSIfour|
 #. :ref:`faq:psi3sourceforge`
 #. :ref:`faq:recompile`
 
-Configuring, Building, and Installing |PSIfour|
+Configuring and Installing |PSIfour| via Binary
 -----------------------------------------------
+
+#. :ref:`faq:psicodedownload`
+#. :ref:`sec:psi4conda`
+#. :ref:`faq:psi4pkg`
+#. :ref:`faq:updatepsi4`
+#. :ref:`faq:psi4deps`
+#. :ref:`sec:condadetails`
+
+Configuring, Building, and Installing |PSIfour| via Source
+----------------------------------------------------------
 
 #. :ref:`faq:cmakeviasetup`
 #. :ref:`faq:buildquick`
@@ -110,6 +120,7 @@ Running |PSIfour|
 #. :ref:`What command line options does Psi4 have <sec:commandLineOptions>`
 #. :ref:`What environment variables affect Psi4 <sec:environmentVariables>`
 #. :ref:`faq:runtimepython`
+#. :ref:`faq:psi4version`
 #. :ref:`faq:psi4PBS`
 #. :ref:`faq:psi4fileretention`
 

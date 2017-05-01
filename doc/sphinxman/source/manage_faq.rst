@@ -25,48 +25,22 @@
 .. # @END LICENSE
 .. #
 
-.. Psithon documentation master file, created by
-   sphinx-quickstart on Sun Feb 12 04:25:25 2012.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _`sec:managefaq`:
 
-==========================================
-|PSIfour|\ : Open-Source Quantum Chemistry
-==========================================
+Management FAQ
+==============
 
-.. toctree::
-   :maxdepth: 2
-   
-   introduction
-   external
-   index_tutorials
-   psithoninput
-   methods
-   interfacing
-   psithonfunc
-   customizing
+Interfacing with |PSIfour|
+--------------------------
 
-.. toctree::
-   :maxdepth: 3
+#. :ref:`faq:addonname`
+#. :ref:`faq:addoncmake`
 
-   appendices
+Versioning |PSIfour|
+--------------------
 
-===================
-Programmers' Manual
-===================
+#. :ref:`faq:versionbump`
+#. :ref:`faq:remotetag`
+#. :ref:`faq:githubworkflow`
+#. :ref:`faq:psi4version`
 
-.. toctree::
-   :maxdepth: 2
-
-   contributing
-   programming
-   manage_index
-   psi4api
-
-* Indices
-
- - :ref:`genindex`
- - :ref:`modindex`
- - :ref:`search`
-
-.. comment  autodoc_available_plugins
