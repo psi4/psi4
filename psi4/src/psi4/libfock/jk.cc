@@ -66,9 +66,9 @@ JK::JK( std::shared_ptr<BasisSet> primary) :
 JK::~JK()
 {
 }
-std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                                 Options& options, std::string jk_type)
-{
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary,
+                                 std::shared_ptr<BasisSet> auxiliary, Options& options,
+                                 std::string jk_type) {
     if (jk_type == "CD") {
 
         CDJK* jk = new CDJK(primary,options.get_double("CHOLESKY_TOLERANCE"));
@@ -170,8 +170,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-    }
-    else if (jk_type == "DIRECT") {
+    } else if (jk_type == "DIRECT") {
         DirectJK* jk = new DirectJK(primary);
 
         if (options["INTS_TOLERANCE"].has_changed())
@@ -187,50 +186,48 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
         return std::shared_ptr<JK>(jk);
 
-      } else if (jk_type == "INDEPENDENT") {
+    } else if (jk_type == "INDEPENDENT") {
 
-      // available types: right now:
-      // direct with screening (does either or both)
-      // LinK (only does K) - will need another with it
-      JK* jk;
+        // available types: right now:
+        // direct with screening (does either or both)
+        // LinK (only does K) - will need another with it
+        JK* jk;
 
-      std::string J_type = options.get_str("INDEPENDENT_J_TYPE");
+        std::string J_type = options.get_str("INDEPENDENT_J_TYPE");
 
-      std::string K_type = options.get_str("INDEPENDENT_K_TYPE");
+        std::string K_type = options.get_str("INDEPENDENT_K_TYPE");
 
-      if (J_type == "DIRECT_SCREENING" && K_type == "DIRECT_SCREENING") {
-          jk = new JKIndependent<DirectScreening, DirectScreening>(primary, false);
-      } else if (J_type == "DIRECT_SCREENING" && K_type == "LINK") {
-          jk = new JKIndependent<DirectScreening, LinK>(primary, true);
-      } else {
-          throw PSIEXCEPTION("Bad INDEPENDENT_J/K_TYPE pair.");
-      }
+        if (J_type == "DIRECT_SCREENING" && K_type == "DIRECT_SCREENING") {
+            jk = new JKIndependent<DirectScreening, DirectScreening>(primary, false);
+        } else if (J_type == "DIRECT_SCREENING" && K_type == "LINK") {
+            jk = new JKIndependent<DirectScreening, LinK>(primary, true);
+        } else {
+            throw PSIEXCEPTION("Bad INDEPENDENT_J/K_TYPE pair.");
+        }
 
-      if (options["INTS_TOLERANCE"].has_changed())
-        jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-      if (options["PRINT"].has_changed())
-        jk->set_print(options.get_int("PRINT"));
-      if (options["DEBUG"].has_changed())
-        jk->set_debug(options.get_int("DEBUG"));
-      if (options["BENCH"].has_changed())
-        jk->set_bench(options.get_int("BENCH"));
+        if (options["INTS_TOLERANCE"].has_changed())
+           jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+           jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+           jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+           jk->set_bench(options.get_int("BENCH"));
 
-      return std::shared_ptr<JK>(jk);
+        return std::shared_ptr<JK>(jk);
 
-    }else {
+    } else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
 }
-std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, Options& options)
-{
+std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary,
+                                 std::shared_ptr<BasisSet> auxiliary, Options& options) {
     return build_JK(primary, auxiliary, options, options.get_str("SCF_TYPE"));
 }
-SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/)
-{
+SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
-void JK::common_init()
-{
+void JK::common_init() {
     allow_desymmetrization_ = true;
     print_ = 1;
     debug_ = 0;
@@ -239,9 +236,9 @@ void JK::common_init()
     // 256 MB default
     memory_ = 32000000L;
     omp_nthread_ = 1;
-    #ifdef _OPENMP
+#ifdef _OPENMP
     omp_nthread_ = Process::environment.get_n_threads();
-    #endif
+#endif
     cutoff_ = 1.0E-12;
 
     do_J_ = true;
@@ -250,12 +247,12 @@ void JK::common_init()
     lr_symmetric_ = false;
     omega_ = 0.0;
 
-    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> integral(
+        new IntegralFactory(primary_, primary_, primary_, primary_));
     std::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = SharedMatrix(pet->aotoso());
 }
-unsigned long int JK::memory_overhead() const
-{
+unsigned long int JK::memory_overhead() const {
     unsigned long int mem = 0L;
 
     int JKwKD_factor = 1;
@@ -272,9 +269,10 @@ unsigned long int JK::memory_overhead() const
         for (int h = 0; h < C_left_[N]->nirrep(); h++) {
             int nbfl = C_left_[N]->rowspi()[h];
             int nbfr = C_right_[N]->rowspi()[h];
-            int nocc = C_left_[N]->colspi()[symml^h];
+            int nocc = C_left_[N]->colspi()[symml ^ h];
 
-            mem += C_factor * (unsigned long int) nocc * (nbfl + nbfr) / 2L + JKwKD_factor * (unsigned long int) nbfl * nbfr;
+            mem += C_factor * (unsigned long int)nocc * (nbfl + nbfr) / 2L +
+                   JKwKD_factor * (unsigned long int)nbfl * nbfr;
         }
     }
 
@@ -286,14 +284,14 @@ unsigned long int JK::memory_overhead() const
             for (int h = 0; h < C_left_[N]->nirrep(); h++) {
                 nocc += C_left_[N]->colspi()[h];
             }
-            mem += C_factor * (unsigned long int) nocc * nbf + JKwKD_factor * (unsigned long int) nbf * nbf;
+            mem += C_factor * (unsigned long int)nocc * nbf +
+                   JKwKD_factor * (unsigned long int)nbf * nbf;
         }
     }
 
     return mem;
 }
-void JK::compute_D()
-{
+void JK::compute_D() {
     /// Make sure the memory is there
     bool same = true;
     if (C_left_.size() != D_.size()) {
@@ -310,26 +308,28 @@ void JK::compute_D()
         for (size_t N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
             s << "D " << N << " (SO)";
-            D_.push_back(SharedMatrix(new Matrix(s.str(),C_left_[N]->nirrep(), C_left_[N]->rowspi(), C_right_[N]->rowspi(), C_left_[N]->symmetry() ^ C_right_[N]->symmetry())));
+            D_.push_back(SharedMatrix(new Matrix(
+                s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(), C_right_[N]->rowspi(),
+                C_left_[N]->symmetry() ^ C_right_[N]->symmetry())));
         }
     }
 
+    // Form the density, differs from dou
     for (size_t N = 0; N < D_.size(); ++N) {
         int symm = D_[N]->symmetry();
         D_[N]->zero();
         for (int h = 0; h < D_[N]->nirrep(); ++h) {
-
-            int nsol = C_left_[N]->rowspi()[h^C_left_[N]->symmetry()];
+            int nsol = C_left_[N]->rowspi()[h ^ C_left_[N]->symmetry()];
             int nocc = C_left_[N]->colspi()[h];
-            int nsor = C_right_[N]->rowspi()[h^symm];
+            int nsor = C_right_[N]->rowspi()[h ^ symm];
 
             if (!nsol || !nsor || !nocc) continue;
 
-            double** Dp = D_[N]->pointer(h^symm);
+            double** Dp = D_[N]->pointer(h ^ symm);
             double** Clp = C_left_[N]->pointer(h);
-            double** Crp = C_right_[N]->pointer(h^symm);
+            double** Crp = C_right_[N]->pointer(h ^ symm);
 
-            C_DGEMM('N','T', nsol, nsor, nocc, 1.0, Clp[0], nocc, Crp[0], nocc, 0.0, Dp[0], nsor);
+            C_DGEMM('N', 'T', nsol, nsor, nocc, 1.0, Clp[0], nocc, Crp[0], nocc, 0.0, Dp[0], nsor);
         }
     }
 }
@@ -379,7 +379,7 @@ void JK::USO2AO()
     allocate_JK();
 
     // If C1, C_ao and D_ao are equal to C and D
-    if (AO2USO_->nirrep() == 1 || !allow_desymmetrization_) {
+    if (AO2USO_->nirrep() == 1) {
         C_left_ao_ = C_left_;
         C_right_ao_ = C_right_;
         D_ao_ = D_;
@@ -398,22 +398,22 @@ void JK::USO2AO()
         for (size_t N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
             s << "J " << N << " (AO)";
-            J_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+            J_ao_.push_back(SharedMatrix(new Matrix(s.str(), nao, nao)));
         }
         for (size_t N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
             s << "K " << N << " (AO)";
-            K_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+            K_ao_.push_back(SharedMatrix(new Matrix(s.str(), nao, nao)));
         }
         for (size_t N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
             s << "wK " << N << " (AO)";
-            wK_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+            wK_ao_.push_back(SharedMatrix(new Matrix(s.str(), nao, nao)));
         }
         for (size_t N = 0; N < D_.size(); ++N) {
             std::stringstream s;
             s << "D " << N << " (AO)";
-            D_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+            D_ao_.push_back(SharedMatrix(new Matrix(s.str(), nao, nao)));
         }
     }
 
@@ -423,16 +423,14 @@ void JK::USO2AO()
     for (size_t N = 0; N < D_.size(); ++N) {
         std::stringstream s;
         s << "C Left " << N << " (AO)";
-        int ncol = 0;
-        for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
-        C_left_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
+        int ncol = C_left_[N]->colspi().sum();
+        C_left_ao_.push_back(SharedMatrix(new Matrix(s.str(), AO2USO_->rowspi()[0], ncol)));
     }
     for (size_t N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
         std::stringstream s;
         s << "C Right " << N << " (AO)";
-        int ncol = 0;
-        for (int h = 0; h < C_right_[N]->nirrep(); ++h) ncol += C_right_[N]->colspi()[h];
-        C_right_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
+        int ncol = C_right_[N]->colspi().sum();
+        C_right_ao_.push_back(SharedMatrix(new Matrix(s.str(), AO2USO_->rowspi()[0], ncol)));
     }
 
     // Alias pointers if lr_symmetric_
@@ -443,6 +441,12 @@ void JK::USO2AO()
     // Transform D
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
     for (size_t N = 0; N < D_.size(); ++N) {
+
+        // Input is already C1
+        if (!input_symmetry_cast_map_[N]) {
+            D_ao_[N]->copy(D_[N]);
+            continue;
+        }
 
         if (D_[N]->nirrep() != AO2USO_->nirrep()){
             throw PSIEXCEPTION("JK::AO2USO: Dimensions of C and D do not match AO2USO!\n");
@@ -464,8 +468,16 @@ void JK::USO2AO()
     }
     delete[] temp;
 
-    // Transform C
+    // Transform C_right
     for (size_t N = 0; N < D_.size(); ++N) {
+
+
+        // Input is already C1
+        if (!input_symmetry_cast_map_[N]) {
+            C_left_ao_[N]->copy(C_left_[N]);
+            continue;
+        }
+
         int offset = 0;
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {
             int nao = AO2USO_->rowspi()[0];
@@ -480,7 +492,16 @@ void JK::USO2AO()
             offset += ncolspi;
         }
     }
+
+    // Transform C_left
     for (size_t N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
+
+        // Input is already C1
+        if (!input_symmetry_cast_map_[N]) {
+            C_right_ao_[N]->copy(C_right_[N]);
+            continue;
+        }
+
         int offset = 0;
         int symm = D_[N]->symmetry();
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {
@@ -506,7 +527,7 @@ void JK::USO2AO()
 void JK::AO2USO()
 {
     // If already C1, J/K are J_ao/K_ao, pointers are already aliased
-    if (AO2USO_->nirrep() == 1 || !allow_desymmetrization_) {
+    if (AO2USO_->nirrep() == 1) {
         return;
     }
 
@@ -515,6 +536,21 @@ void JK::AO2USO()
     // Transform
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
     for (size_t N = 0; N < D_.size(); ++N) {
+
+        // Input was desymmetrized, return as same
+        if (!input_symmetry_cast_map_[N]) {
+            if (do_J_) {
+                J_[N]->copy(J_ao_[N]);
+            }
+            if (do_K_) {
+                K_[N]->copy(K_ao_[N]);
+            }
+            if (do_wK_) {
+                wK_[N]->copy(wK_ao_[N]);
+            }
+            continue;
+        }
+
         int symm = D_[N]->symmetry();
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {
             int nao = AO2USO_->rowspi()[0];
@@ -548,12 +584,10 @@ void JK::AO2USO()
     }
     delete[] temp;
 }
-void JK::initialize()
-{
-    preiterations();
-}
-void JK::compute()
-{
+void JK::initialize() { preiterations(); }
+void JK::compute() {
+
+    // Is this density symmetric?
     if (C_left_.size() && !C_right_.size()) {
         lr_symmetric_ = true;
         C_right_ = C_left_;
@@ -561,9 +595,44 @@ void JK::compute()
         lr_symmetric_ = false;
     }
 
+    // Figure out the symmetry and which codes will stay in C1 symmetry
+    input_symmetry_cast_map_.clear();
+    for (size_t i = 0; i < C_left_.size(); i++) {
+        // Make sure they have the same symmetry
+        if (C_left_[i]->nirrep() != C_right_[i]->nirrep()) {
+            throw PSIEXCEPTION("JK: C_left/C_right irrep mismatch!");
+        }
+
+        // Make sure they have the same zip index
+        if (C_left_[i]->colspi() != C_right_[i]->colspi()) {
+            throw PSIEXCEPTION("JK: C_left/C_right MO zip index size mismatch!");
+        }
+
+        // Figure out if w eneed to convert or not
+        if ((AO2USO_->nirrep() == 1) && (C_left_[i]->nirrep() == 1)) {
+            // Everything in C1, nothing to do
+            input_symmetry_cast_map_.push_back(false);
+        } else if (C_left_[i]->nirrep() == AO2USO_->nirrep()) {
+            // We match symmetry, does this code uses C1?
+            if (C1()){
+                input_symmetry_cast_map_.push_back(true);
+            } else {
+                input_symmetry_cast_map_.push_back(false);
+            }
+        } else if ((C_left_[i]->nirrep() == 1) && C1()) {
+            // Code uses C1, nothing to do
+            input_symmetry_cast_map_.push_back(false);
+        } else {
+            // No other cases, throw
+            throw PSIEXCEPTION("JK: Input orbital irrep mismatch!");
+        }
+    }
+
+    // Construct the densities
     timer_on("JK: D");
     compute_D();
     timer_off("JK: D");
+
     if (C1()) {
         timer_on("JK: USO2AO");
         USO2AO();
@@ -583,7 +652,7 @@ void JK::compute()
     }
 
     if (debug_ > 6) {
-        outfile->Printf( "   > JK <\n\n");
+        outfile->Printf("   > JK <\n\n");
         for (size_t N = 0; N < C_left_.size(); N++) {
             if (C1() && AO2USO_->nirrep() != 1) {
                 C_left_ao_[N]->print("outfile");
@@ -598,7 +667,6 @@ void JK::compute()
             J_[N]->print("outfile");
             K_[N]->print("outfile");
         }
-
     }
 
     if (lr_symmetric_) {

@@ -246,6 +246,7 @@ protected:
     double cutoff_;
     /// Whether to all desymmetrization, for cases when it's already been performed elsewhere
     bool allow_desymmetrization_;
+    std::vector<bool> input_symmetry_cast_map_;
 
     // => Tasks <= //
 
@@ -265,17 +266,17 @@ protected:
     // => Architecture-Level State Variables (Spatial Symmetry) <= //
 
     /// Pseudo-occupied C matrices, left side
-    std::vector<SharedMatrix > C_left_;
+    std::vector<SharedMatrix> C_left_;
     /// Pseudo-occupied C matrices, right side
-    std::vector<SharedMatrix > C_right_;
+    std::vector<SharedMatrix> C_right_;
     /// Pseudo-density matrices \f$D_{ls}=C_{li}^{left}C_{si}^{right}\f$
-    std::vector<SharedMatrix > D_;
+    std::vector<SharedMatrix> D_;
     /// J matrices: \f$J_{mn}=(mn|ls)C_{li}^{left}C_{si}^{right}\f$
-    std::vector<SharedMatrix > J_;
+    std::vector<SharedMatrix> J_;
     /// K matrices: \f$K_{mn}=(ml|ns)C_{li}^{left}C_{si}^{right}\f$
-    std::vector<SharedMatrix > K_;
+    std::vector<SharedMatrix> K_;
     /// wK matrices: \f$K_{mn}(\omega)=(ml|\omega|ns)C_{li}^{left}C_{si}^{right}\f$
-    std::vector<SharedMatrix > wK_;
+    std::vector<SharedMatrix> wK_;
 
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
@@ -284,17 +285,17 @@ protected:
     /// AO2USO transformation matrix
     SharedMatrix AO2USO_;
     /// Pseudo-occupied C matrices, left side
-    std::vector<SharedMatrix > C_left_ao_;
+    std::vector<SharedMatrix> C_left_ao_;
     /// Pseudo-occupied C matrices, right side
-    std::vector<SharedMatrix > C_right_ao_;
+    std::vector<SharedMatrix> C_right_ao_;
     /// Pseudo-density matrices
-    std::vector<SharedMatrix > D_ao_;
+    std::vector<SharedMatrix> D_ao_;
     /// J matrices: J_mn = (mn|ls) C_li^left C_si^right
-    std::vector<SharedMatrix > J_ao_;
+    std::vector<SharedMatrix> J_ao_;
     /// K matrices: K_mn = (ml|ns) C_li^left C_si^right
-    std::vector<SharedMatrix > K_ao_;
+    std::vector<SharedMatrix> K_ao_;
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
-    std::vector<SharedMatrix > wK_ao_;
+    std::vector<SharedMatrix> wK_ao_;
 
     // => Per-Iteration Setup/Finalize Routines <= //
 
@@ -732,7 +733,7 @@ class GTFockJK: public JK{
       ///The actual instance that does the implementing
       std::shared_ptr<MinimalInterface> Impl_;
       int NMats_ = 0;
-      
+
    protected:
       /// Do we need to backtransform to C1 under the hood?
       virtual bool C1() const { return true; }
