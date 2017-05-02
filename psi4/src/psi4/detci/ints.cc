@@ -409,7 +409,6 @@ void CIWavefunction::setup_mcscf_ints_ao()
         throw PSIEXCEPTION("AO_CASSCF does not work with your SCF_TYPE");
     }
     jk_->set_do_J(true);
-    jk_->set_allow_desymmetrization(true);
     jk_->set_do_K(true);
     jk_->set_memory(Process::environment.get_memory() * 0.8);
     jk_->initialize();
@@ -541,7 +540,6 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
         Cr.push_back(std::get<3>(D_vec[d]));
     }
 
-    jk_->set_allow_desymmetrization(false);
     jk_->set_do_K(false);
     ///Step 2:  Compute the Coulomb build using these density
     timer_on("CIWave: AO MCSCF Integral Transformation Fock build");
@@ -572,7 +570,6 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     Cl.clear();
     Cr.clear();
     jk_->set_do_K(true);
-    jk_->set_allow_desymmetrization(true);
 
     SharedMatrix actMO(new Matrix("ALL Active", nact * nact, nact * nact));
     timer_on("CIWave: Filling the (zu|xy) integrals");

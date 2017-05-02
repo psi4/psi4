@@ -37,11 +37,11 @@
 #include "psi4/libmints/sieve.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "jk.h"
-#include "jk_independent.h"
-#include "link.h"
-#include "direct_screening.h"
-#include "cubature.h"
-#include "points.h"
+//#include "jk_independent.h"
+//#include "link.h"
+//#include "direct_screening.h"
+//#include "cubature.h"
+//#include "points.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/cholesky.h"
@@ -111,37 +111,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary,
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "FAST_DF") {
-
-        FastDFJK* jk = new FastDFJK(primary,auxiliary);
-
-        if (options["INTS_TOLERANCE"].has_changed())
-            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["PRINT"].has_changed())
-            jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed())
-            jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed())
-            jk->set_bench(options.get_int("BENCH"));
-        if (options["DF_INTS_IO"].has_changed())
-            jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
-        if (options["DF_FITTING_CONDITION"].has_changed())
-            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
-        if (options["DF_INTS_NUM_THREADS"].has_changed())
-            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
-        if (options["DF_METRIC"].has_changed())
-            jk->set_df_metric(options.get_str("DF_METRIC"));
-        if (options["DF_THETA"].has_changed())
-            jk->set_df_theta(options.get_double("DF_THETA"));
-        if (options["DF_DOMAINS"].has_changed())
-            jk->set_df_domains(options.get_str("DF_DOMAINS"));
-        if (options["DF_BUMP_R0"].has_changed())
-            jk->set_df_bump_R0(options.get_double("DF_BUMP_R0"));
-        if (options["DF_BUMP_R1"].has_changed())
-            jk->set_df_bump_R1(options.get_double("DF_BUMP_R1"));
-
-        return std::shared_ptr<JK>(jk);
-
     } else if (jk_type == "PK") {
 
         PKJK* jk = new PKJK(primary, options);
@@ -186,36 +155,6 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary,
 
         return std::shared_ptr<JK>(jk);
 
-    } else if (jk_type == "INDEPENDENT") {
-
-        // available types: right now:
-        // direct with screening (does either or both)
-        // LinK (only does K) - will need another with it
-        JK* jk;
-
-        std::string J_type = options.get_str("INDEPENDENT_J_TYPE");
-
-        std::string K_type = options.get_str("INDEPENDENT_K_TYPE");
-
-        if (J_type == "DIRECT_SCREENING" && K_type == "DIRECT_SCREENING") {
-            jk = new JKIndependent<DirectScreening, DirectScreening>(primary, false);
-        } else if (J_type == "DIRECT_SCREENING" && K_type == "LINK") {
-            jk = new JKIndependent<DirectScreening, LinK>(primary, true);
-        } else {
-            throw PSIEXCEPTION("Bad INDEPENDENT_J/K_TYPE pair.");
-        }
-
-        if (options["INTS_TOLERANCE"].has_changed())
-           jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
-        if (options["PRINT"].has_changed())
-           jk->set_print(options.get_int("PRINT"));
-        if (options["DEBUG"].has_changed())
-           jk->set_debug(options.get_int("DEBUG"));
-        if (options["BENCH"].has_changed())
-           jk->set_bench(options.get_int("BENCH"));
-
-        return std::shared_ptr<JK>(jk);
-
     } else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
@@ -228,7 +167,6 @@ SharedVector JK::iaia(SharedMatrix /*Ci*/, SharedMatrix /*Ca*/) {
     throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
 }
 void JK::common_init() {
-    allow_desymmetrization_ = true;
     print_ = 1;
     debug_ = 0;
     bench_ = 0;

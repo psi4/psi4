@@ -1095,7 +1095,8 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
 
     if(ignore_symmetry){
         // This JK object uses no symmetry, so we can just pass it C1 quantities
-        jk->set_allow_desymmetrization(false);
+        // jk->set_allow_desymmetrization(false);
+        // DGAS: ACS - this is now auto detected.
     }else{
         C_so = Ca_subset("SO");
         Cocc_so = Ca_subset("SO", "OCC");
