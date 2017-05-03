@@ -10,18 +10,19 @@
 .. comment  * The copyrights for code used from other parties are included in
 .. comment  * the corresponding files.
 .. comment  *
-.. comment  * This program is free software; you can redistribute it and/or modify
-.. comment  * it under the terms of the GNU General Public License as published by
-.. comment  * the Free Software Foundation; either version 2 of the License, or
-.. comment  * (at your option) any later version.
+.. comment  * This file is part of Psi4.
 .. comment  *
-.. comment  * This program is distributed in the hope that it will be useful,
+.. comment  * Psi4 is free software; you can redistribute it and/or modify
+.. comment  * it under the terms of the GNU Lesser General Public License as published by
+.. comment  * the Free Software Foundation, version 3.
+.. comment  *
+.. comment  * Psi4 is distributed in the hope that it will be useful,
 .. comment  * but WITHOUT ANY WARRANTY; without even the implied warranty of
 .. comment  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.. comment  * GNU General Public License for more details.
+.. comment  * GNU Lesser General Public License for more details.
 .. comment  *
-.. comment  * You should have received a copy of the GNU General Public License along
-.. comment  * with this program; if not, write to the Free Software Foundation, Inc.,
+.. comment  * You should have received a copy of the GNU Lesser General Public License along
+.. comment  * with Psi4; if not, write to the Free Software Foundation, Inc.,
 .. comment  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 .. comment  *
 .. comment  * @END LICENSE
