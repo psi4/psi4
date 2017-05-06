@@ -947,6 +947,18 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
     int nact2 = nact_ * nact_;
     double* TPDMp = TPDM->pointer()[0];
 
+    // Check sizing
+    size_t mem_req = nmo_ * nact_ * nQ + nact2 * nQ;
+    if (mem_req > memory_){
+        std::stringstream error;
+        error.precision(2);
+        error << "DFSOMCSCF::compute_Q: Memory Error. Requires at least ";
+        error << (double)mem_req * 8.0 /1.e9;
+        error << " GB of memory.\n";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
+
+
     // Load aaQ
     std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
@@ -958,7 +970,7 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
     // d_vwxy I_xyQ -> d_vwQ (Qa^4)
     SharedMatrix vwQ(new Matrix("vwQ", nact_ * nact_, nQ));
     double* vwQp = vwQ->pointer()[0];
-    C_DGEMM('N','N',nact2,nQ,nact2,1.0,TPDMp,nact2,aaQp,nQ,0.0,vwQp,nQ);
+    C_DGEMM('N', 'N', nact2, nQ, nact2, 1.0, TPDMp, nact2, aaQp, nQ, 0.0, vwQp, nQ);
     aaQ.reset();
 
     // Load NaQ
@@ -966,13 +978,14 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
     SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
     FILE* NaQF = NaQT->file_pointer();
-    fseek(NaQF,0L,SEEK_SET);
+    fseek(NaQF, 0L, SEEK_SET);
     fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
 
     // d_vwQ I_NwQ -> Q_vN (NQa^2)
     SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
     double** denQp = denQ->pointer();
-    C_DGEMM('N','T',nact_,nmo_,nQ*nact_,1.0,vwQp,nQ*nact_,NaQp,nQ*nact_,0.0,denQp[0],nmo_);
+    C_DGEMM('N', 'T', nact_, nmo_, nQ * nact_, 1.0, vwQp, nQ * nact_, NaQp, nQ * nact_, 0.0,
+            denQp[0], nmo_);
     NaQ.reset();
 
     // Symmetry block Q
@@ -980,15 +993,15 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
 
     int offset_act = 0;
     int offset_nmo = 0;
-    for (int h=0; h<nirrep_; h++){
-        if (!nactpi_[h] || !nmopi_[h]){
+    for (int h = 0; h < nirrep_; h++) {
+        if (!nactpi_[h] || !nmopi_[h]) {
             offset_nmo += nmopi_[h];
             continue;
         }
 
         double* Qp = Q->pointer(h)[0];
-        for (int i=0, target=0; i<nactpi_[h]; i++){
-            for (int j=0; j<nmopi_[h]; j++){
+        for (int i = 0, target = 0; i < nactpi_[h]; i++) {
+            for (int j = 0; j < nmopi_[h]; j++) {
                 Qp[target++] = denQp[offset_act + i][offset_nmo + j];
             }
         }
@@ -1013,10 +1026,21 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     }
 
     int nQ = dferi_->size_Q();
-    int nact2 = nact_*nact_;
-    int nact3 = nact2*nact_;
+    int nact2 = nact_ * nact_;
+    int nact3 = nact2 * nact_;
     double* TPDMp = TPDM->pointer()[0];
     std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
+
+    // Check the buffer size
+    size_t mem_req = 2 * nmo_ * nQ + nmo_ * nact_ * nQ + nact2 * nQ;
+    if (mem_req > memory_){
+        std::stringstream error;
+        error.precision(2);
+        error << "DFSOMCSCF::compute_Qk: Memory Error. Requires at least ";
+        error << (double)mem_req * 8.0 / 1.e9;
+        error << " GB of memory.\n";
+        throw PSIEXCEPTION(error.str().c_str());
+    }
 
     // Read NaQ
     std::shared_ptr<Tensor> NaQT = dfints["RaQ"];
@@ -1055,28 +1079,27 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     SharedMatrix dQk(new Matrix("dQk", nact_, nmo_));
     double** dQkp = dQk->pointer();
 
-    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gnwxyp,nact3,0.0,dQkp[0],nmo_);
+    C_DGEMM('N', 'T', nact_, nmo_, nact3, 1.0, TPDMp, nact3, Gnwxyp, nact3, 0.0, dQkp[0], nmo_);
 
     // wo,onQ->wnQ (aU, NNQ) QN^2a^2 (rate determining)
     // Read and gemm in chunks, need to do blocking later
-    int chunk_size = 200;
+    size_t memory_avail = memory_ - nact_ * nmo_ * nQ;
+    size_t chunk_size = memory_avail / (nmo_ * nQ);
     std::shared_ptr<Tensor> NNQT = dfints["RRQ"];
 
-    SharedMatrix wnQ(new Matrix("nwQ", nact_*nmo_, nQ));
+    SharedMatrix wnQ(new Matrix("nwQ", nact_ * nmo_, nQ));
     double** wnQp = wnQ->pointer();
     SharedMatrix NNQ(new Matrix("RRQ", chunk_size * nmo_, nQ));
     double** NNQp = NNQ->pointer();
     FILE* NNQF = NNQT->file_pointer();
 
-    for (int start=0; start < nmo_; start += chunk_size){
+    for (int start = 0; start < nmo_; start += chunk_size) {
         int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
         size_t read_start = sizeof(double) * start * nmo_ * nQ;
-        fseek(NNQF,read_start,SEEK_SET);
+        fseek(NNQF, read_start, SEEK_SET);
         fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
-        C_DGEMM('N','N',nact_,nmo_*nQ,block,1.0,
-                dUactp[0]+start,nmo_,
-                NNQp[0],nmo_*nQ,
-                1.0,wnQp[0],nmo_*nQ);
+        C_DGEMM('N', 'N', nact_, nmo_ * nQ, block, 1.0, dUactp[0] + start, nmo_, NNQp[0], nmo_ * nQ,
+                1.0, wnQp[0], nmo_ * nQ);
     }
     NNQ.reset();
 
@@ -1089,7 +1112,7 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
 
     // wnQ,xyQ => tmp_wnxy (wNQ, aaQ) NQa^3
-    C_DGEMM('N','T',nmo_*nact_,nact2,nQ,1.0,wnQp[0],nQ,aaQp,nQ,0.0,Gnwxyp,nact2);
+    C_DGEMM('N', 'T', nmo_ * nact_, nact2, nQ, 1.0, wnQp[0], nQ, aaQp, nQ, 0.0, Gnwxyp, nact2);
     aaQ.reset();
 
     // Should probably figure out an inplace algorithm
@@ -1102,12 +1125,12 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     for (int w=0; w<nact_; w++){
     for (int x=0; x<nact_; x++){
     for (int y=0; y<nact_; y++){
-        Gleftp[target++] = Gnwxyp[w*nmo_*nact2 + n*nact2 + x*nact_ + y];
+        Gleftp[target++] = Gnwxyp[w * nmo_ * nact2 + n * nact2 + x * nact_ + y];
     }}}}
     Gnwxy.reset();
 
     // vwxy,nwxy => Qk_vm (TPDM, tmp_nwxy) Na^4
-    C_DGEMM('N','T',nact_,nmo_,nact3,1.0,TPDMp,nact3,Gleftp,nact3,1.0,dQkp[0],nmo_);
+    C_DGEMM('N', 'T', nact_, nmo_, nact3, 1.0, TPDMp, nact3, Gleftp, nact3, 1.0, dQkp[0], nmo_);
 
     // Symm block Qk
     SharedMatrix tQ = compute_Q(TPDM);
@@ -1116,14 +1139,14 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
 
     int offset_act = 0;
     int offset_nmo = 0;
-    for (int h=0; h<nirrep_; h++){
-        if (!nactpi_[h]){
+    for (int h = 0; h < nirrep_; h++) {
+        if (!nactpi_[h]) {
             offset_nmo += nmopi_[h];
             continue;
         }
         double** Qkp = Qk->pointer(h);
-        for (int a=0; a<nactpi_[h]; a++){
-            C_DAXPY(nmopi_[h], 1.0, dQkp[offset_act+a]+offset_nmo, 1, Qkp[a], 1);
+        for (int a = 0; a < nactpi_[h]; a++) {
+            C_DAXPY(nmopi_[h], 1.0, dQkp[offset_act + a] + offset_nmo, 1, Qkp[a], 1);
         }
         offset_act += nactpi_[h];
         offset_nmo += nmopi_[h];
