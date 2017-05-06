@@ -1,10 +1,10 @@
 # Compute the dipole, quadrupole, and traceless quadrupoles for water.
 
 molecule mol {
-O
-H   1   1.1
-H   1   1.1 2   104.5
-symmetry c1
+O   0.000000000000     0.000000000000    -0.075367841241
+H   0.000000000000    -0.869758531118     0.598071166797
+H   0.000000000000     0.869758531118     0.598071166797
+#symmetry c1
 }
 
 set basis aug-cc-pVDZ

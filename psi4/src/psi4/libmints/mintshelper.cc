@@ -1395,6 +1395,42 @@ std::vector <SharedMatrix> MintsHelper::ao_dipole()
     return dipole;
 }
 
+std::vector <SharedMatrix> MintsHelper::ao_quadrupole()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> quadrupole;
+
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_quadrupole());
+    ints->compute(quadrupole);
+
+    return quadrupole;
+}
+
+std::vector <SharedMatrix> MintsHelper::ao_traceless_quadrupole()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> quadrupole;
+
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_traceless_quadrupole());
+    ints->compute(quadrupole);
+
+    return quadrupole;
+}
+
 std::vector <SharedMatrix> MintsHelper::ao_nabla()
 {
     // Create a vector of matrices with the proper symmetry

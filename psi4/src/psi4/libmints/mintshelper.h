@@ -239,6 +239,10 @@ public:
     SharedMatrix so_dkh(int dkh_order = -1);
     /// Vector AO Dipole Integrals
     std::vector<SharedMatrix> ao_dipole();
+    /// Vector AO Quadrupole Integrals
+    std::vector<SharedMatrix > ao_quadrupole();
+    /// Vector AO Traceless Quadrupole Integrals
+    std::vector<SharedMatrix > ao_traceless_quadrupole();
     /// Vector AO Angular Momentum Integrals
     std::vector<SharedMatrix > ao_angular_momentum();
     /// Vector AO Nabla Integrals

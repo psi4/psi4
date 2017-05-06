@@ -32,23 +32,26 @@ import numpy as np
 
 dipole = {
     'name': 'Dipole polarizabilities',
-    'printout labels': ['X', 'Y', 'Z'],
-    'mints function': core.MintsHelper.ao_dipole,
+    'printout_labels': ['X', 'Y', 'Z'],
+    'mints_function': core.MintsHelper.ao_dipole,
     'vector names': ['AO Mux', 'AO Muy', 'AO Muz']
-    # 'vector names': ["SO Dipole x", "SO Dipole y", "SO Dipole z"]
 }
 
-quadrupole = {'name': 'Quadrupole polarizabilities', 'printout labels': ['XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'],
-              'mints function': core.MintsHelper.so_quadrupole,
-              'vector names': ['SO Quadrupole x2', 'SO Quadrupole xy', 'SO Quadrupole xz', 'SO Quadrupole y2',
-                               'SO Quadrupole yz', 'SO Quadrupole z2']}
+quadrupole = {
+    'name': 'Quadrupole polarizabilities',
+    'printout_labels': ['XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'],
+    'mints_function': core.MintsHelper.ao_quadrupole,
+}
+quadrupole['vector names'] = ["AO Quadrupole " + x for x in quadrupole["printout_labels"]]
 
-traceless_quadrupole = {'name': 'Traceless quadrupole polarizabilities',
-                        'printout labels': ['XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'],
-                        'mints function': core.MintsHelper.so_traceless_quadrupole,
-                        'vector names': ['SO Traceless Quadrupole x2', 'SO Traceless Quadrupole xy',
-                                         'SO Traceless Quadrupole xz', 'SO Traceless Quadrupole y2',
-                                         'SO Traceless Quadrupole yz', 'SO Traceless Quadrupole z2']}
+traceless_quadrupole = {
+    'name': 'Traceless quadrupole polarizabilities',
+    'printout_labels': ['XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'],
+    'mints_function': core.MintsHelper.ao_traceless_quadrupole,
+}
+traceless_quadrupole['vector names'] = [
+    "AO Traceless Quadrupole " + x for x in traceless_quadrupole["printout_labels"]
+]
 
 property_dicts = {'DIPOLE_POLARIZABILITIES': dipole, 'QUADRUPOLE_POLARIZABILITIES': quadrupole,
                   'TRACELESS_QUADRUPOLE_POLARIZABILITIES': traceless_quadrupole}
@@ -96,16 +99,23 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
         # the user passed a list of vectors. absorb them into a dictionary
         elif isinstance(arg, tuple) or isinstance(arg, list):
-            complete_dict.append(
-                {'name': 'User Vectors', 'length': len(arg), 'vectors': arg,
-                 'vector names': ['User Vector {}_{}'.format(n_user, i) for i in range(len(arg))]})
+            complete_dict.append({
+                'name': 'User Vectors',
+                'length': len(arg),
+                'vectors': arg,
+                'vector names': ['User Vector {}_{}'.format(n_user, i) for i in range(len(arg))]
+            })
             n_user += len(arg)
 
         # single vector passed. stored in a dictionary as a list of length 1 (can be handled as the case above that way)
         # note: the length is set to '0' to designate that it was not really passed as a list
         else:
-            complete_dict.append({'name': 'User Vector', 'length': 0, 'vectors': [arg],
-                                  'vector names': ['User Vector {}'.format(n_user)]})
+            complete_dict.append({
+                'name': 'User Vector',
+                'length': 0,
+                'vectors': [arg],
+                'vector names': ['User Vector {}'.format(n_user)]
+            })
             n_user += 1
 
     # vectors will be passed to the cphf solver, vector_names stores the corresponding names
@@ -120,9 +130,9 @@ def cpscf_linear_response(wfn, *args, **kwargs):
                 vector_names.append(name)
 
         else:
-            tmp_vectors = prop['mints function'](mints)
+            tmp_vectors = prop['mints_function'](mints)
             for tmp in tmp_vectors:
-                tmp.scale(-2.0)
+                tmp.scale(-2.0)    # RHF only
                 vectors.append(tmp)
                 vector_names.append(tmp.name)
 
@@ -147,13 +157,12 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
         if shape == (nbf, nbf):
             vectors[i] = core.Matrix.triplet(c_occ, vectors[i], c_vir, True, False, False)
-            print(vectors[i].shape)
 
         # verify that this vector already has the correct shape
         elif shape != (ndocc, nvirt):
-            raise ValidationError('ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})'.format(
-                vector_names[i], nbf, nbf, ndocc, nvirt
-            ))
+            raise ValidationError(
+                'ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})'.format(
+                    vector_names[i], nbf, nbf, ndocc, nvirt))
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
@@ -183,8 +192,6 @@ def cpscf_linear_response(wfn, *args, **kwargs):
             dim = len(names)
 
             buf = np.zeros((dim, dim))
-            print(list(responses))
-            print(list(vectors))
 
             for i, i_name in enumerate(names):
                 for j, j_name in enumerate(names):
@@ -237,7 +244,7 @@ def _print_output(complete_dict, output):
     for i, prop in enumerate(complete_dict):
         if not 'User' in prop['name']:
             core.print_out('\n    => {} <=\n\n'.format(prop['name']))
-            directions = prop['printout labels']
+            directions = prop['printout_labels']
             var_name = prop['name'].upper().replace("IES", "Y")
             _print_matrix(directions, output[i], var_name)
 
