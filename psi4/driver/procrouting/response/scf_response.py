@@ -30,8 +30,13 @@ from psi4.driver.p4util.exceptions import *
 
 import numpy as np
 
-dipole = {'name': 'Dipole polarizabilities', 'printout labels': ['X', 'Y', 'Z'],
-          'mints function': core.MintsHelper.so_dipole, 'vector names': ["SO Dipole x", "SO Dipole y", "SO Dipole z"]}
+dipole = {
+    'name': 'Dipole polarizabilities',
+    'printout labels': ['X', 'Y', 'Z'],
+    'mints function': core.MintsHelper.ao_dipole,
+    'vector names': ['AO Mux', 'AO Muy', 'AO Muz']
+    # 'vector names': ["SO Dipole x", "SO Dipole y", "SO Dipole z"]
+}
 
 quadrupole = {'name': 'Quadrupole polarizabilities', 'printout labels': ['XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'],
               'mints function': core.MintsHelper.so_quadrupole,
@@ -133,8 +138,8 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     ndocc = wfn.nalpha()
     nvirt = nbf - ndocc
 
-    c_occ = wfn.Ca_subset("SO", "OCC")
-    c_vir = wfn.Ca_subset("SO", "VIR")
+    c_occ = wfn.Ca_subset("AO", "OCC")
+    c_vir = wfn.Ca_subset("AO", "VIR")
 
     # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
     for i in range(len(vectors)):
@@ -142,6 +147,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
         if shape == (nbf, nbf):
             vectors[i] = core.Matrix.triplet(c_occ, vectors[i], c_vir, True, False, False)
+            print(vectors[i].shape)
 
         # verify that this vector already has the correct shape
         elif shape != (ndocc, nvirt):
@@ -177,6 +183,8 @@ def cpscf_linear_response(wfn, *args, **kwargs):
             dim = len(names)
 
             buf = np.zeros((dim, dim))
+            print(list(responses))
+            print(list(vectors))
 
             for i, i_name in enumerate(names):
                 for j, j_name in enumerate(names):

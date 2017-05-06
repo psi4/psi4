@@ -2447,7 +2447,7 @@ def run_dft_property(name, **kwargs):
         core.set_global_option("SAVE_JK", True)
 
         # Cannot handle non-totally symmetric quantities at the moment
-        kwargs["use_c1"] = True
+        # kwargs["use_c1"] = True
 
     # Compute the Wavefunction
     scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
@@ -2522,7 +2522,7 @@ def run_scf_property(name, **kwargs):
         core.set_global_option("SAVE_JK", True)
 
         # Cannot handle non-totally symmetric quantities at the moment
-        kwargs["use_c1"] = True
+        # kwargs["use_c1"] = True
 
     # Compute the Wavefunction
     scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
