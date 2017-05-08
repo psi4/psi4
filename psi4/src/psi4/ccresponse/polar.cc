@@ -110,6 +110,7 @@ void polar(void)
         if(alpha!=beta) {
           value = 0.5 * (tensor[i][alpha][beta] + tensor[i][beta][alpha]);
           tensor[i][alpha][beta] = value;
+          tensor[i][beta][alpha] = value;
         }
       }
 
