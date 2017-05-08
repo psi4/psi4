@@ -61,7 +61,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/v2rdm_casscf/badges/version.svg
      :target: https://anaconda.org/psi4/v2rdm_casscf
 
-* v2rdm_casscf is available as a conda package for Linux and macOS.
+* v2rdm_casscf is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, v2rdm_casscf has already been installed alongside.
 

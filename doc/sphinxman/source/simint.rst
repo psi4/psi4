@@ -65,7 +65,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/simint/badges/version.svg
      :target: https://anaconda.org/psi4/simint
 
-* SIMINT is available as a conda package for Linux and macOS.
+* SIMINT is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * The conda package is compiled to least-common-denominator, namely SSE instruction set.
 

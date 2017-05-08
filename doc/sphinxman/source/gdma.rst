@@ -61,7 +61,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/gdma/badges/version.svg
      :target: https://anaconda.org/psi4/gdma
 
-* GDMA is available as a conda package for Linux and macOS.
+* GDMA is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, gdma has already been installed alongside.
 

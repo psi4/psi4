@@ -269,7 +269,7 @@ What Psi4 version is running
         Psi4 started on: Friday, 28 April 2017 07:31PM
 
         Process ID:  95107
-        PSIDATADIR: /Users/loriab/linux/psihub/hrw-labfork/objdir8/stage/usr/local/psi4/share/psi4
+        PSIDATADIR: /Users/johndoe/psi4/objdir8/stage/usr/local/psi4/share/psi4
         Memory:     500.0 MiB
         Threads:    1
 

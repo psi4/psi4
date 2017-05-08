@@ -111,7 +111,7 @@ Creating a New Plugin Using a Conda Pre-compiled Binary
 -------------------------------------------------------
 
 |PSIfour| plugins can also be created using Conda for both |PSIfour|
-binary and development environment. On Linux, one can use the ``gcc``
+binary and development environment. On Linux (or Ubuntu shell on Windows), one can use the ``gcc``
 compiler installed alongside ``psi4`` itself in the Conda distribution
 or environment (below, ``$PSI4CONDA``). ::
 

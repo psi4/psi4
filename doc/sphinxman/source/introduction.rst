@@ -501,10 +501,12 @@ Supported Architectures
 
 The majority of |PSIfour| was developed on Mac and Linux machines; in
 principle, it should work on any Unix system. The latest version of the
-|PSIfour| program package may be obtained at `psicode.org
-<http://psicode.org>`_. The package is available as a binary for Linux,
-macOS, or Windows Subsystem for Linux (:ref:`Installing from Binary
-<sec:conda>`) or as source code (zipped archive or git repository from
+|PSIfour| program package may be obtained at `psicode.org <http://psicode.org>`_.
+The package is available as a binary (:ref:`Installing from Binary
+<sec:conda>`) for Linux, macOS, or Windows (via Windows Subsystem for
+Linux aka `Bash on Ubuntu on Windows
+<https://msdn.microsoft.com/commandline/wsl/about>`_)
+or as source code (zipped archive or git repository from
 `https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang

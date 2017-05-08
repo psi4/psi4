@@ -73,7 +73,7 @@ Installation
 * .. image:: https://img.shields.io/badge/Anaconda%20Cloud-1.7.1-5077AB.svg
      :target: https://anaconda.org/psi4/chemps2
 
-* CheMPS2 is available as a conda package for Linux and macOS.
+* CheMPS2 is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, CheMPS2 has already been installed alongside.
 

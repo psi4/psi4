@@ -542,7 +542,7 @@ use a staged installation directory, substitute
 
 .. code-block:: bash
 
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
     export PATH={prefix}/bin:$PATH
     export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
 
@@ -580,7 +580,7 @@ use a staged installation directory, substitute
 
 .. code-block:: bash
 
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
     export PYTHONPATH={prefix}/lib:$PYTHONPATH
     export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
 
@@ -638,7 +638,7 @@ below are redundant.
 
 .. code-block:: bash
 
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
     unset PSIDATADIR
     export PATH={prefix}/bin:$PATH
     export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
@@ -719,7 +719,7 @@ Or in the shell
 
 .. code-block:: bash
 
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
     export PSIDATADIR={top-level-psi4-dir}/psi4/share/psi4
 
 
@@ -1250,7 +1250,7 @@ commonly set up through the :envvar:`PSI_SCRATCH` environment variable:
 
 .. code-block:: bash
 
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
     export PSI_SCRATCH=/path/to/existing/writable/local-not-network/directory/for/scratch/files
 
 See also the more general :ref:`scratch documentation <sec:Scratch>`.

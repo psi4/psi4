@@ -64,7 +64,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/libefp/badges/version.svg
      :target: https://anaconda.org/psi4/libefp
 
-* libefp is available as a conda package for Linux and macOS.
+* libefp is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, libefp has already been installed alongside.
 

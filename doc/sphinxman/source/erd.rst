@@ -73,7 +73,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/erd/badges/version.svg
      :target: https://anaconda.org/psi4/erd
 
-* ERD is available as a conda package for Linux and macOS.
+* ERD is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 .. * If using the |PSIfour| binary, erd has already been installed alongside.
 

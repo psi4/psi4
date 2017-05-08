@@ -57,7 +57,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/dftd3/badges/version.svg
      :target: https://anaconda.org/psi4/dftd3
 
-* DFTD3 is available as a conda package for Linux and macOS.
+* DFTD3 is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, DFTD3 has already been installed alongside.
 
