@@ -324,12 +324,6 @@ double LHX1Y2(const char *pert_x, int irrep_x, double omega_x,
   global_dpd_->buf4_close(&Z1);
   global_dpd_->file2_close(&z);
 
-/*** marker ***/
-/*** I suspect a bug in this term.  H2O2/STO-3G or DZ yields different results
- * with symmetry on and off here.  The discrepancy disappears for larger
- * basis sets, however. Note also that a similar bug may exist in the X1 or
- * X2 code, based on comparisons with a spin-adapted toy code.
- * -TDC 5 May 2009 */
   sprintf(lbl, "Z_%s_AE", pert_x);
   global_dpd_->file2_init(&z, PSIF_CC_TMP0, irrep_x, 1, 1, lbl);
 
