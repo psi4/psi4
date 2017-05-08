@@ -178,7 +178,7 @@ void X2_build(const char *pert, int irrep, double omega)
       }
       nrows = moinfo.virtpi[Gf];
       ncols = moinfo.virtpi[Ge];
-      if(nrows & ncols)
+      if(nrows && ncols)
 	C_DGEMV('n',nrows,ncols,1,&X[W.col_offset[Gfe][Gf]],ncols,
 		X1.matrix[Gm][M],1,1,z.matrix[Gb][B],1);
     }

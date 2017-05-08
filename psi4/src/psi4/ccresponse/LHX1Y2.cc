@@ -363,7 +363,7 @@ double LHX1Y2(const char *pert_x, int irrep_x, double omega_x,
       }
       nrows = moinfo.virtpi[Gf];
       ncols = moinfo.virtpi[Ge];
-      if(nrows & ncols) {
+      if(nrows && ncols) {
 	C_DGEMV('n',nrows,ncols,1,&X[W.col_offset[Gfe][Gf]],ncols,
 		X1.matrix[Gm][M],1,1,z.matrix[Gb][B],1);
       }
