@@ -1,15 +1,15 @@
-find_package(libint CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
+find_package(Libint 1.2.0 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
-if(${libint_FOUND})
-    get_property(_loc TARGET libint::int PROPERTY LOCATION)
-    message(STATUS "${Cyan}Found libint ${libint_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${libint_VERSION})")
+if(${Libint_FOUND})
+    get_property(_loc TARGET Libint::int PROPERTY LOCATION)
+    message(STATUS "${Cyan}Found Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (found version ${Libint_VERSION})")
     add_library(libint_external INTERFACE)  # dummy
 else()
     include(ExternalProject)
-    message(STATUS "Suitable libint could not be located, ${Magenta}Building libint${ColourReset} instead.")
+    message(STATUS "Suitable Libint could not be located, ${Magenta}Building Libint${ColourReset} instead.")
     ExternalProject_Add(libint_external
-        GIT_REPOSITORY https://github.com/psi4/libint
-        #GIT_TAG v1.7.1  # TODO tag when stable
+        GIT_REPOSITORY https://github.com/evaleev/libint
+        GIT_TAG release-1-2-0
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -24,11 +24,12 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
+                   -DMERGE_LIBDERIV_INCLUDEDIR=ON
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
         DESTDIR=${CMAKE_BINARY_DIR}/stage)
 
-    set(libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/libint CACHE PATH "path to internally built libintConfig.cmake" FORCE)
+    set(Libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint CACHE PATH "path to internally built LibintConfig.cmake" FORCE)
 endif()
 

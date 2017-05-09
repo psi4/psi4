@@ -49,7 +49,7 @@ endif()
 
 # LAPACK & BLAS linking attached to modules in BIN/LIBLIST to maximally defer
 
-target_include_directories(core PRIVATE $<TARGET_PROPERTY:libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
+target_include_directories(core PRIVATE $<TARGET_PROPERTY:Libint::libint,INTERFACE_INCLUDE_DIRECTORIES>)  # comp def instead? only b/c boost export here not w/i mints
 target_include_directories(core INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 install(TARGETS core

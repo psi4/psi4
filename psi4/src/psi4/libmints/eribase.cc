@@ -1808,21 +1808,21 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory *integral, int deriv, bool 
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
-        outfile->Printf("ERROR: ERI - libint cannot handle angular momentum this high (%d).\n"
-                                "       Rebuild libint with MAX_AM_ERI at least %d.\n", max_am, max_am);
-        throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
-                                         "Rebuild libint with MAX_AM_ERI at least (actual).\n", LIBINT_MAX_AM - 1, max_am, __FILE__, __LINE__);
+        outfile->Printf("ERROR: ERI - Libint cannot handle angular momentum this high (%d).\n"
+                                "       Rebuild Libint with MAX_AM_ERI at least %d.\n", max_am, max_am);
+        throw LimitExceeded<int>("ERI - Libint cannot handle angular momentum this high.\n"
+                                         "Rebuild Libint with MAX_AM_ERI at least (actual).\n", LIBINT_MAX_AM - 1, max_am, __FILE__, __LINE__);
     } else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
-        outfile->Printf("ERROR: ERI - libint cannot handle angular momentum this high (%d) for first derivatives.\n"
-                                "     Rebuild libint with MAX_AM_ERI at least %d.\n", max_am, max_am + 1);
-        throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
-                                         "Rebuild libint with MAX_AM_ERI at least (actual + 1).\n",
+        outfile->Printf("ERROR: ERI - Libint cannot handle angular momentum this high (%d) for first derivatives.\n"
+                                "     Rebuild Libint with MAX_AM_ERI at least %d.\n", max_am, max_am + 1);
+        throw LimitExceeded<int>("ERI - Libint cannot handle angular momentum this high.\n"
+                                         "Rebuild Libint with MAX_AM_ERI at least (actual + 1).\n",
                                  LIBDERIV_MAX_AM1 - 1, max_am, __FILE__, __LINE__);
     } else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
-        outfile->Printf("ERROR: ERI - libint cannot handle angular momentum this high (%d) for second derivatives.\n"
-                                "       Reconfigure libint with MAX_AM_ERI at least %d\n", max_am, max_am + 2);
-        throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
-                                         "Rebuild libint with MAX_AM_ERI at least (actual + 2).\n",
+        outfile->Printf("ERROR: ERI - Libint cannot handle angular momentum this high (%d) for second derivatives.\n"
+                                "       Reconfigure Libint with MAX_AM_ERI at least %d\n", max_am, max_am + 2);
+        throw LimitExceeded<int>("ERI - Libint cannot handle angular momentum this high.\n"
+                                         "Rebuild Libint with MAX_AM_ERI at least (actual + 2).\n",
                                  LIBDERIV_MAX_AM12 - 1, max_am, __FILE__, __LINE__);
     } else if (deriv_ > 2) {
         outfile->Printf("ERROR: ERI - Cannot compute higher than second derivatives.");

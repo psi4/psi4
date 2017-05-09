@@ -54,7 +54,7 @@ Interface to ERD by N. Flocke and V. Lotrich
 These are the AcesIII electron repulsion integrals that have
 been partially interfaced into libmints. Enabling erd and adding
 ``set integral_package erd`` (do this in ``~/.psi4rc`` for universal
-effect) runs libderiv from libint for derivative integrals and erd for
+effect) runs libderiv from Libint for derivative integrals and erd for
 non-derivative integrals.
 
 .. warning:: The interface between erd and libderiv is not fully
