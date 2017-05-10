@@ -1842,6 +1842,9 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     if dovirtual is None:
         dovirt = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
 
+    else:
+        dovirt = dovirtual
+
     if density_a:
         nmopi = wfn.nmopi()
         nsopi = wfn.nsopi()
