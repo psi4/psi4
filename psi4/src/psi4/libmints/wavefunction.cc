@@ -213,6 +213,112 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     }
 }
 
+void Wavefunction::c1_deep_copy(SharedWavefunction other) {
+    c1_deep_copy(other.get());
+}
+
+void Wavefunction::c1_deep_copy(Wavefunction *other) {
+    if (!S_) {
+        throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
+    }
+
+    /// From typical constructor
+    /// Some member data is not clone-able so we will copy
+    name_ = other->name_;
+    molecule_ = std::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
+    molecule_->reset_point_group("c1");
+    molecule_->set_orientation_fixed(true);
+    molecule_->set_com_fixed(true);
+    molecule_->update_geometry();
+
+    basisset_ = basisset_;
+    basissets_ = other->basissets_; // Still cannot copy basissets
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+    factory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
+
+    Dimension c1_nsopi = Dimension(1);
+    c1_nsopi[0] = other->nsopi_.sum();
+    factory_->init_with(c1_nsopi, c1_nsopi);
+    //?AO2SO_ = other->AO2SO_->clone();
+    S_ = other->S_->clone();
+
+    psio_ = other->psio_; // We dont actually copy psio
+    memory_ = other->memory_;
+    nalpha_ = other->nalpha_;
+    nbeta_ = other->nbeta_;
+    nfrzc_ = other->nfrzc_;
+
+    print_ = other->print_;
+    debug_ = other->debug_;
+    density_fitted_ = other->density_fitted_;
+
+    energy_ = other->energy_;
+    efzc_ = other->efzc_;
+    variables_ = other->variables_;
+
+    // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
+
+    doccpi_.init(1, other->doccpi_.name());
+    doccpi_[0] = other->doccpi_.sum();
+    soccpi_.init(1, other->soccpi_.name());
+    soccpi_[0] = other->soccpi_.sum();
+    frzcpi_.init(1, other->frzcpi_.name());
+    frzcpi_[0] = other->frzcpi_.sum();
+    frzvpi_.init(1, other->frzvpi_.name());
+    frzvpi_[0] = other->frzvpi_.sum();
+    nalphapi_.init(1, other->nalphapi_.name());
+    nalphapi_[0] = other->nalphapi_.sum();
+    nbetapi_.init(1, other->nbetapi_.name());
+    nbetapi_[0] = other->nbetapi_.sum();
+    nsopi_.init(1, other->nsopi_.name());
+    nsopi_[0] = other->nsopi_.sum();
+    nmopi_.init(1, other->nmopi_.name());
+    nmopi_[0] = other->nmopi_.sum();
+
+    nso_ = other->nso_;
+    nmo_ = other->nmo_;
+    nirrep_ = 1;
+
+    same_a_b_dens_ = other->same_a_b_dens_;
+    same_a_b_orbs_ = other->same_a_b_orbs_;
+
+    /// Below is not set in the typical constructor
+    if (other->H_) H_ = other->H_->clone();
+//    if (other->Ca_) Ca_ = other->Ca_->clone();
+    if (other->Cb_) Cb_ = other->Cb_->clone();
+    if (other->Da_) Da_ = other->Da_->clone();
+    if (other->Db_) Db_ = other->Db_->clone();
+    if (other->Fa_) Fa_ = other->Fa_->clone();
+    if (other->Fb_) Fb_ = other->Fb_->clone();
+    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
+    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
+
+    SharedMatrix tmp = other->Ca_subset("AO", "ALL");
+    if (other->Ca_) Ca_ = tmp; //other->Ca_subset("AO", "ALL");
+    //if (other->Ca_) Ca_ = other->Ca_subset("AO", "ALL");
+//    SharedMatrix Cocc = Ca_subset("SO", "OCC");
+//    SharedMatrix Cvir = Ca_subset("SO", "VIR");
+//    Dimension virpi = Cvir->colspi();
+
+
+    if (other->gradient_) gradient_ = other->gradient_->clone();
+    if (other->hessian_) hessian_ = other->hessian_->clone();
+    if (other->tpdm_gradient_contribution_)
+        tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_->clone();
+
+// # Copy SCF quantities using built in functions to cast from SO (c2v symmetry) to AO (C1 symmetry).
+// nosym_wfn.Ca().np[:] = sym_wfn.Ca_subset("AO", "ALL")
+// nosym_wfn.Cb().np[:] = sym_wfn.Cb_subset("AO", "ALL")
+// 
+// nosym_wfn.epsilon_a().np[:] = sym_wfn.epsilon_a_subset("AO", "ALL")
+// nosym_wfn.epsilon_b().np[:] = sym_wfn.epsilon_b_subset("AO", "ALL")
+// 
+// # Zip up alpha/beta/nfzc/ndocc/etc, cant actually do this yet. Need Python setters.
+// nosym_wfn.ndocc()[0] = sym_wfn.ndocc().sum()
+
+}
+
 void Wavefunction::common_init() {
     Wavefunction::initialize_singletons();
     if (!basisset_) {

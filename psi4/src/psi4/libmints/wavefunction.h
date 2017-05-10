@@ -267,6 +267,16 @@ public:
     void deep_copy(SharedWavefunction other);
     void deep_copy(const Wavefunction* other);
 
+    /**
+    * TODOCopy the contents of another Wavefunction into this one.
+    * TODOUseful at the beginning of correlated wavefunction computations.
+    * TODO-Does not set options or callbacks
+    * TODO-reference_wavefunction_ is set to other
+    * TODO-Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are deep copied.
+    **/
+    void c1_deep_copy(SharedWavefunction other);
+    void c1_deep_copy(Wavefunction* other);
+
     virtual ~Wavefunction();
 
     /// Compute energy. Subclasses override this function to compute its energy.

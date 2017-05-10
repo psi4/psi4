@@ -1194,17 +1194,17 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.print_out('\n')
 
 
-    # If we force c1 copy the active molecule
-    if use_c1:
-        scf_molecule.update_geometry()
-        if scf_molecule.schoenflies_symbol() != 'c1':
-            core.print_out("""  A requested method does not make use of molecular symmetry: """
-                           """further calculations in C1 point group.\n""")
-            scf_molecule = scf_molecule.clone()
-            scf_molecule.reset_point_group('c1')
-            scf_molecule.fix_orientation(True)
-            scf_molecule.fix_com(True)
-            scf_molecule.update_geometry()
+#    # If we force c1 copy the active molecule
+#    if use_c1:
+#        scf_molecule.update_geometry()
+#        if scf_molecule.schoenflies_symbol() != 'c1':
+#            core.print_out("""  A requested method does not make use of molecular symmetry: """
+#                           """further calculations in C1 point group.\n""")
+#            scf_molecule = scf_molecule.clone()
+#            scf_molecule.reset_point_group('c1')
+#            scf_molecule.fix_orientation(True)
+#            scf_molecule.fix_com(True)
+#            scf_molecule.update_geometry()
 
     # If GUESS is auto guess what it should be
     if core.get_option('SCF', 'GUESS') == "AUTO":
@@ -1422,7 +1422,34 @@ def scf_helper(name, post_scf=True, **kwargs):
         core.tstop()
 
     optstash.restore()
-    return scf_wfn
+
+    if not use_c1:
+        return scf_wfn
+    else:
+        return scf_wfn.c1_deep_copy()
+#        # If we force c1 copy the active molecule
+#        scf_molecule.update_geometry()
+#        if scf_molecule.schoenflies_symbol() != 'c1':
+#            core.print_out("""  A requested method does not make use of molecular symmetry: """
+#                           """transforming Wavefunction so that further calculations in C1 point group.\n""")
+#            scf_molecule = scf_molecule.clone()
+#            scf_molecule.reset_point_group('c1')
+#            scf_molecule.fix_orientation(True)
+#            scf_molecule.fix_com(True)
+#            scf_molecule.update_geometry()
+
+## Not really needed, but we cannot set the orbitals explicitly-- need Python bindings
+#scf_e, nosym_wfn = psi4.energy("SCF", molecule=mol_nosym, return_wfn=True)
+#
+## Copy SCF quantities using built in functions to cast from SO (c2v symmetry) to AO (C1 symmetry).
+#nosym_wfn.Ca().np[:] = sym_wfn.Ca_subset("AO", "ALL")
+#nosym_wfn.Cb().np[:] = sym_wfn.Cb_subset("AO", "ALL")
+#
+#nosym_wfn.epsilon_a().np[:] = sym_wfn.epsilon_a_subset("AO", "ALL")
+#nosym_wfn.epsilon_b().np[:] = sym_wfn.epsilon_b_subset("AO", "ALL")
+#
+## Zip up alpha/beta/nfzc/ndocc/etc, cant actually do this yet. Need Python setters.
+#nosym_wfn.ndocc()[0] = sym_wfn.ndocc().sum()
 
 
 def run_dcft(name, **kwargs):
