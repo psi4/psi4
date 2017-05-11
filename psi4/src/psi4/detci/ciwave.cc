@@ -692,6 +692,30 @@ void CIWavefunction::print_vector(SharedCIVector vec, int root){
   free(mi_coeff);
 }
 
+void CIWavefunction::dump_vector(SharedCIVector vec, int root){
+  size_t ndets=CIblks_->vectlen;
+  int* mi_iac = init_int_array(ndets);
+  int* mi_ibc = init_int_array(ndets);
+  int* mi_iaidx = init_int_array(ndets);
+  int* mi_ibidx = init_int_array(ndets);
+  double* mi_coeff = init_array(ndets);
+
+  // Print largest CI coefs
+  vec->read(root, 0);
+  vec->copy(ndets, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff);
+
+  char fname[80];
+  sprintf(fname,"ciroot-%i.dat",root+1);
+  dump_vec(ndets, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, mi_coeff, fname);
+
+  free(mi_iac);
+  free(mi_ibc);
+  free(mi_iaidx);
+  free(mi_ibidx);
+  free(mi_coeff);
+}
+
+
 void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
                                                 SharedMatrix prop, SharedCIVector ret){
 

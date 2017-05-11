@@ -293,6 +293,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Number of important determinants to print -*/
     options.add_int("NUM_DETS_PRINT",20);
+    /*- Dump CI vectors on disk? -*/
+    options.add_bool("DUMP_VECTORS", false);
 
     /*- Do freeze core orbitals? -*/
     // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
