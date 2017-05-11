@@ -769,3 +769,25 @@ def test_grimme_3c():
     psi4.set_options({'scf_type': 'pk'})
     ene = psi4.energy('hf3c/', bsse_type='nocp')
     assert psi4.compare_values(-0.00240232, ene, 6, 'S22-16 HF-3c/minix')
+
+@using_dkh
+def test_dkh():
+    """dkh/molpro-2order"""
+
+    Ne = psi4.geometry("""
+    0 1
+    Ne
+    """)
+
+    psi4.set_options({
+        'reference': 'rhf',
+        'basis': 'cc-pvtz-dk',
+        'relativistic': 'dkh',
+        'dkh_order': 2,
+        'print': 2,
+        'scf_type': 'pk'})
+
+    e = psi4.energy('scf')
+
+    assert psi4.compare_values(-128.66891610, e, 6, '2nd order vs Molpro')
+
