@@ -1674,36 +1674,35 @@ void HF::iterations()
           SharedMatrix D_pcm(Da_->clone());
           if(same_a_b_orbs()) {
             D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
-          }
-          else {
+          } else {
             D_pcm->add(Db_);
           }
 
           // Compute the PCM charges and polarization energy
           double epcm = 0.0;
-          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL")
-          {
+          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
             epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
-          }
-          else
-          {
+          } else {
             epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
           }
           energies_["PCM Polarization"] = epcm;
           variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
           E_ += epcm;
 
           // Add the PCM potential to the Fock matrix
           SharedMatrix V_pcm;
           V_pcm = hf_pcm_->compute_V();
-          if(same_a_b_orbs()) Fa_->add(V_pcm);
-          else {
+          if (same_a_b_orbs()) {
+            Fa_->add(V_pcm);
+          } else {
             Fa_->add(V_pcm);
             Fb_->add(V_pcm);
           }
         } else {
           energies_["PCM Polarization"] = 0.0;
           variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
         }
 #endif
         std::string status = "";
