@@ -506,7 +506,7 @@ SharedMatrix MintsHelper::ao_overlap()
     one_body_ao_computer(ints_vec, overlap_mat, true);
 
     // Is this needed?
-    overlap_mat->save(psio_, PSIF_OEI);
+//    overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
 }
 
@@ -584,13 +584,14 @@ SharedMatrix MintsHelper::ao_pvp()
 SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 {
 #ifdef USING_dkh
-    SharedMatrix S = ao_overlap();
-    SharedMatrix T = ao_kinetic();
+    MintsHelper decon(rel_basisset_);
+    SharedMatrix S     = decon.ao_overlap();
+    SharedMatrix T     = decon.ao_kinetic();
     SharedMatrix Torig = T->clone();
-    SharedMatrix V = ao_potential();
+    SharedMatrix V     = decon.ao_potential();
     SharedMatrix Vorig = V->clone();
-    SharedMatrix pVp = ao_pvp();
-    SharedMatrix H_dk = T->clone();
+    SharedMatrix pVp   = decon.ao_pvp();
+    SharedMatrix H_dk  = T->clone();
     H_dk->zero();
 
     double *Sp   = S->pointer()[0];
@@ -605,10 +606,8 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 
     outfile->Printf("    Computing %d-order Douglas-Kroll-Hess integrals.\n", dkh_order);
 
-    int nbf = basisset_->nbf();
-
-//    V->print();
-//    T->print();
+    int nbf = rel_basisset_->nbf();
+//    rel_basisset_->print_detail();
 
     // Call DKH code from Markus Reiher
     F_DKH(Sp, Vp, Tp, pVpp, &nbf, &dkh_order);
@@ -619,9 +618,25 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order)
     H_dk->subtract(Torig);
 
     H_dk->set_name("AO-basis DKH Ints");
-    //H_dk->print();
+//    H_dk->print();
 
-    return H_dk;
+    // DKH is solved in the decontracted basis ... transform to the contracted.
+
+    SharedMatrix S_inv = S->clone();
+    S_inv->general_invert();
+
+    SharedMatrix S_cd = ao_overlap(basisset_, rel_basisset_);
+//    S_cd->print();
+
+    SharedMatrix D(new Matrix("D",nbf,basisset_->nbf()));
+    //  Form D = S_uu^{-1} S_uc.  Notice that we transpose S_cu
+    D->gemm(false,true,1.0,S_inv,S_cd,0.0);
+
+    SharedMatrix H_dk_cc = std::make_shared<Matrix>("AO-basis DKH Ints", basisset_->nbf(), basisset_->nbf());
+    H_dk_cc->transform(H_dk, D);
+//    H_dk_cc->print();
+
+    return H_dk_cc;
 #else
     UNUSED(dkh_order);
     outfile->Printf("    Douglas-Kroll-Hess integrals requested but are not available.\n");
