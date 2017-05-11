@@ -418,23 +418,23 @@ def test_pcmsolver():
     """)
 
     print('RHF-PCM, total algorithm')
-    energy_scf1 = psi4.energy('scf')
-    assert psi4.compare_values(NH3.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)")
-    assert psi4.compare_values(energy_scf1, totalenergy, 10, "Total energy (PCM, total algorithm)")
-    assert psi4.compare_values(psi4.get_variable("PCM POLARIZATION ENERGY"), polenergy, 6, "Polarization energy (PCM, total algorithm)")
+    energy_scf1, wfn1 = psi4.energy('scf', return_wfn=True)
+    assert psi4.compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
+    assert psi4.compare_values(totalenergy, energy_scf1, 10, "Total energy (PCM, total algorithm)") #TEST
+    assert psi4.compare_values(polenergy, wfn1.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
     psi4.set_options({'pcm_scf_type': 'separate'})
     print('RHF-PCM, separate algorithm')
     energy_scf2 = psi4.energy('scf')
-    assert psi4.compare_values(energy_scf2, totalenergy, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(psi4.get_variable("PCM POLARIZATION ENERGY"), polenergy, 6, "Polarization energy (PCM, separate algorithm)")
+    assert psi4.compare_values(totalenergy, energy_scf2, 10, "Total energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")
 
     # Now force use of UHF on NH3 to check sanity of the algorithm with PCM
     psi4.set_options({'pcm_scf_type': 'total', 'reference': 'uhf'})
     print('UHF-PCM, total algorithm')
     energy_scf3 = psi4.energy('scf')
-    assert psi4.compare_values(energy_scf3, totalenergy, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(psi4.get_variable("PCM POLARIZATION ENERGY"), polenergy, 6, "Polarization energy (PCM, separate algorithm)")
+    assert psi4.compare_values(totalenergy, energy_scf3, 10, "Total energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, psi4.get_variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, separate algorithm)")
 
 
 def _test_scf5():
