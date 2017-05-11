@@ -32,6 +32,7 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(@plugin@ CXX)
 
 find_package(psi4 1.0 REQUIRED)
+find_package(TargetLAPACK REQUIRED)
 find_package(ambit REQUIRED)
 
 add_psi4_plugin(@plugin@ @sources@)
