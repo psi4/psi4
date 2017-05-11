@@ -43,8 +43,8 @@
 //#endif
 
 #include <ambit/tensor.h>
-//#include <ambit/helpers/psi4/integrals.h>
-//#include <ambit/helpers/psi4/convert.h>
+#include "integrals.h"
+#include "convert.h"
 
 namespace psi{ namespace @plugin@ {
 
@@ -61,6 +61,8 @@ extern "C"
 SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
 {
     using namespace ambit;
+
+    ambit::initialize();
 
     if (ref_wfn->nirrep() != 1) {
         throw PSIEXCEPTION("\nThis plugin template requires C1 symmetry.\n");
@@ -99,9 +101,9 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
 
     // Ambit provides helpers for computing and storing integrals.
     // The OBI's are stored in shared_ptr's and Ambit expects a reference to OneBodyAOInt
-    //helpers::psi4::integrals(*sOBI.get(), &S);
-    //helpers::psi4::integrals(*tOBI.get(), &T);
-    //helpers::psi4::integrals(*vOBI.get(), &V);
+    helpers::psi4::integrals(*sOBI.get(), &S);
+    helpers::psi4::integrals(*tOBI.get(), &T);
+    helpers::psi4::integrals(*vOBI.get(), &V);
 
     S.print();
     T.print();
@@ -112,7 +114,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
     {
         TwoBodyAOInt* eri = integral->eri();
         g = Tensor::build(CoreTensor, "g", { nbf, nbf, nbf, nbf });
-        //helpers::psi4::integrals(*eri, &g);
+        helpers::psi4::integrals(*eri, &g);
         delete eri;
     }
     //g.print();
@@ -132,8 +134,8 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
 
          // Copy the data from the SharedMatrix to Tensor.
          // Ambit expects a reference to the underlying Matrix object and not a shared_ptr.
-         //helpers::psi4::convert(*occ.get(), &Cocc);
-         //helpers::psi4::convert(*vir.get(), &Cvir);
+         helpers::psi4::convert(*occ.get(), &Cocc);
+         helpers::psi4::convert(*vir.get(), &Cvir);
 
          occ->print();
          vir->print();
@@ -155,7 +157,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
             IntegralFactory dfFactory(auxBasis, zero, aoBasis, aoBasis);
             TwoBodyAOInt* eri = dfFactory.eri();
             A_rs = Tensor::build(CoreTensor, "A_rs", { aux_nbf, ao_nbf, ao_nbf });
-            //helpers::psi4::integrals(*eri, &A_rs);
+            helpers::psi4::integrals(*eri, &A_rs);
             delete eri;
         }
 
@@ -172,7 +174,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
             IntegralFactory dfFactory(auxBasis, zero, auxBasis, zero);
             TwoBodyAOInt* eri = dfFactory.eri();
             Tensor J = Tensor::build(CoreTensor, "J", { aux_nbf, aux_nbf });
-            //helpers::psi4::integrals(*eri, &J);
+            helpers::psi4::integrals(*eri, &J);
             Jinv = J.power(-0.5);
             delete eri;
         }
@@ -182,6 +184,8 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options &options)
         B("Cia") = Jinv("CA") * A("Aia");
     }
     //B.print();
+
+    ambit::finalize();
 
     return ref_wfn;
 }
