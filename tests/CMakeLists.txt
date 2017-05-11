@@ -162,7 +162,7 @@ endif()
 
 if(ENABLE_dkh)
     add_subdirectory(dkh)
-    #message(STATUS "Adding test cases: Psi4 + dkh")  # uncomment when there's a test to add
+    message(STATUS "Adding test cases: Psi4 + dkh")
 endif()
 
 # <<<  LIBEFP  >>>

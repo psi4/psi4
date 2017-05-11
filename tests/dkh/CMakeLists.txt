@@ -1,1 +1,1 @@
-#add_subdirectory(dkh1)
+add_subdirectory(molpro-2order)
