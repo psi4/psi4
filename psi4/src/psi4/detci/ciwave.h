@@ -247,6 +247,13 @@ public:
     void print_vector(SharedCIVector vec, int root);
 
     /**
+     * Dumps the CIVector to file
+     * @param vec  CIVector to print
+     * @param root Which root?
+     */
+    void dump_vector(SharedCIVector vec, int root);
+
+    /**
      * Compute the state-transfer operator. Currently in construction and not to be used.
      */
     void compute_state_transfer(SharedCIVector ref, int ref_vec,
@@ -459,8 +466,10 @@ private:
           int *Cnt[2], int **Ij[2], int **Oij[2], int **Ridx[2],
           signed char **Sgn[2], unsigned char **Toccs);
 
-    void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
+    void print_vec(size_t nprint, int *Ialist, int *Iblist,
           int *Iaidx, int *Ibidx, double *coeff);
+    void dump_vec(size_t ndets, int *Ialist, int *Iblist, int *Iaidx,
+		  int *Ibidx, double *coeff, const char *fname);
 
     /// => MCSCF helpers <= //
 

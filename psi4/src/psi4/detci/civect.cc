@@ -571,6 +571,7 @@ void CIvect::copy(SharedCIVector src, int tvec, int ovec) {
         write(tvec, buf);
     }
 }
+
 void CIvect::divide(SharedCIVector denom, double min_val, int tvec, int ovec) {
    for (int buf=0; buf<buf_per_vect_; buf++) {
       denom->read(ovec, buf);
@@ -806,6 +807,43 @@ void CIvect::max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
 
 }
 
+void CIvect::copy(size_t ndet, int *iac, int *ibc, int *iaidx, int *ibidx, double *coeff)
+{
+   int i,buf,irrep;
+   size_t offset(0);
+
+   if (icore_ == 1) {
+     for (i=0; i<num_blocks_; i++) {
+       blk_copy(i, 0, offset, iac, ibc, iaidx, ibidx, coeff);
+       if(offset > ndet)
+	 throw std::logic_error("Buffer overflow!\n");
+     } /* end case icore==1 */
+   }
+   if (icore_ == 2) { /* symmetry block at a time */
+     for (buf=0; buf<buf_per_vect_; buf++) {
+       if (!read(cur_vect_, buf)) continue;
+       irrep = buf2blk_[buf];
+       for (i=first_ablk_[irrep]; i<=last_ablk_[irrep]; i++) {
+	 blk_copy(i, buf_offdiag_[buf], offset, iac, ibc,
+		  iaidx, ibidx, coeff);
+	 if(offset > ndet)
+	   throw std::logic_error("Buffer overflow!\n");
+
+       }
+     }
+   } /* end case icore==2 */
+   if (icore_ == 0) { /* RAS block at a time */
+     for (buf=0; buf<buf_per_vect_; buf++) {
+       if (!read(cur_vect_, buf)) continue;
+       i = buf2blk_[buf];
+       blk_copy(i, buf_offdiag_[buf], offset, iac, ibc,
+		iaidx, ibidx, coeff);
+       if(offset > ndet)
+	 throw std::logic_error("Buffer overflow!\n");
+     }
+   } /* end case icore==0 */
+}
+
 
 double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
        int *ibc, int *iaidx, int *ibidx, double *coeff, double minval,
@@ -881,6 +919,53 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
    return(minval);
 }
 
+void CIvect::blk_copy(int i, int offdiag, size_t & offset, int *iac,
+		      int *ibc, int *iaidx, int *ibidx, double *coeff)
+{
+  int j, k, m, n;
+  int iacode, ibcode;
+
+  iacode = Ia_code_[i];
+  ibcode = Ib_code_[i];
+  for (j=0; j<Ia_size_[i]; j++) {
+    for (k=0; k<Ib_size_[i]; k++) {
+      coeff[offset] = blocks_[i][j][k];
+      iac[offset] = iacode;
+      ibc[offset] = ibcode;
+      iaidx[offset] = j;
+      ibidx[offset] = k;
+      offset++;
+    }
+  }
+
+  if (offdiag) {
+    if (CI_Params_->Ms0 && ((int) CI_Params_->S % 2)) {
+      for (j=0; j<Ia_size_[i]; j++) {
+	for (k=0; k<Ib_size_[i]; k++) {
+	  /* value switches sign */
+	  coeff[offset] = -blocks_[i][j][k];
+	  iac[offset] = iacode;
+	  ibc[offset] = ibcode;
+	  iaidx[offset] = k;
+	  ibidx[offset] = j;
+	  offset++;
+	}
+      }
+    } else {
+      for (j=0; j<Ia_size_[i]; j++) {
+	for (k=0; k<Ib_size_[i]; k++) {
+	  /* value doesn't switch sign */
+	  coeff[offset] = blocks_[i][j][k];
+	  iac[offset] = iacode;
+	  ibc[offset] = ibcode;
+	  iaidx[offset] = k;
+	  ibidx[offset] = j;
+	  offset++;
+	}
+      }
+    }
+  }
+}
 
 void CIvect::det2strings(BIGINT det, int *alp_code, int *alp_idx,
          int *bet_code, int *bet_idx)
