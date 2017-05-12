@@ -382,32 +382,33 @@ def compare_cubes(expected, computed, label):
     return True
 
 
-def compare_lists(expected, computed, digits, label):
-    """Function to compare two Python lists. Prints :py:func:`util.success`
-    when elements of vector *computed* match elements of vector *expected* to
-    number of *digits*. Performs a system exit on failure to match symmetry
-    structure, dimension, or element values. Used in input files in the test suite.
-
-    """
-    if len(expected) != len(computed):
-        message = ("\tThe reference has %d entries, but the computed vector has %d\n." % (len(expected), len(computed)))
-        raise TestComparisonError(message)
-    dim = len(expected)
-    failed = 0
-    for entry in range(dim):
-        if(abs(expected[entry] - computed[entry]) > 10 ** (-digits)):
-            print("\t%s: computed value (%s) does not match (%s)." % (label, computed[entry], expected[entry]))
-            failed = 1
-            break
-
-    if(failed):
-        core.print_out("The computed vector\n")
-        computed.print_out()
-        core.print_out("The reference vector\n")
-        expected.print_out()
-        message = ("\t%s: computed list does not match expected list." % (label, computed, expected))
-        raise TestComparisonError(message)
-    success(label)
+# Uncomment and use if compare_arrays above is inadequate
+#def compare_lists(expected, computed, digits, label):
+#    """Function to compare two Python lists. Prints :py:func:`util.success`
+#    when elements of vector *computed* match elements of vector *expected* to
+#    number of *digits*. Performs a system exit on failure to match symmetry
+#    structure, dimension, or element values. Used in input files in the test suite.
+#
+#    """
+#    if len(expected) != len(computed):
+#        message = ("\tThe reference has %d entries, but the computed vector has %d\n." % (len(expected), len(computed)))
+#        raise TestComparisonError(message)
+#    dim = len(expected)
+#    failed = 0
+#    for entry in range(dim):
+#        if(abs(expected[entry] - computed[entry]) > 10 ** (-digits)):
+#            print("\t%s: computed value (%s) does not match (%s)." % (label, computed[entry], expected[entry]))
+#            failed = 1
+#            break
+#
+#    if(failed):
+#        core.print_out("The computed vector\n")
+#        computed.print_out()
+#        core.print_out("The reference vector\n")
+#        expected.print_out()
+#        message = ("\t%s: computed list does not match expected list." % (label, computed, expected))
+#        raise TestComparisonError(message)
+#    success(label)
 
 
 def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
