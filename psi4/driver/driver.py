@@ -1842,6 +1842,9 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     if dovirtual is None:
         dovirt = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
 
+    else:
+        dovirt = dovirtual
+
     if density_a:
         nmopi = wfn.nmopi()
         nsopi = wfn.nsopi()
@@ -1854,8 +1857,8 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
 
         if density_b:
             NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
-            NO_occa = core.Vector(nmopi)
-            density_b.diagonalize(NO_Ra, NO_occa, core.DiagonalizeOrder.Descending)
+            NO_occb = core.Vector(nmopi)
+            density_b.diagonalize(NO_Rb, NO_occb, core.DiagonalizeOrder.Descending)
             NO_Cb = core.Matrix("Cb Natural Orbitals", nsopi, nmopi)
             NO_Cb.gemm(False, False, 1.0, wfn.Cb(), NO_Rb, 0)
 
