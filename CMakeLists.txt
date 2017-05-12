@@ -6,7 +6,7 @@ project(psi4
         LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")
 set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
-set(psi4_LICENSE "GNU General Public License, version 2")
+set(psi4_LICENSE "GNU Lesser General Public License, version 3 (LGPL-3.0)")
 set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
