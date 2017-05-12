@@ -1,5 +1,4 @@
 #! Tests RHF CCSD(T)gradients
-memory 256 mb
 
 molecule h2o {
 0 1

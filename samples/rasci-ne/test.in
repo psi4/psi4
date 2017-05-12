@@ -13,8 +13,6 @@
 #! if it is a single or double.
 #
 
-memory 250 mb
-
 # First, get the natural orbitals
 refnuc   =    0.0000000000    #TEST
 refscf   = -128.5434696591    #TEST

@@ -17,18 +17,15 @@ set {
    d_convergence 8
 }
 
-gradient('scf')
-analytic = get_gradient()
+analytic = gradient('scf')
 
 set findif points 3
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 compare_matrices(analytic, findif, 5, "RHF SCF finite-diff (3-pt) vs. analytic gradient to 10^-5") #TEST
 
 set findif points 5
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 compare_matrices(analytic, findif, 7, "RHF SCF finite-diff (5-pt) vs. analytic gradient to 10^-7") #TEST
 
@@ -47,18 +44,15 @@ set {
    basis cc-pvdz
 }
 
-gradient('scf')
-analytic = get_gradient()
+analytic = gradient('scf')
 
 set findif points 3
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 compare_matrices(analytic, findif, 5, "ROHF SCF finite-diff (3-pt) vs. analytic gradient to 10^-5") #TEST
 
 set findif points 5
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 compare_matrices(analytic, findif, 7, "ROHF SCF finite-diff (5-pt) vs. analytic gradient to 10^-7") #TEST
 
@@ -77,18 +71,15 @@ set {
    basis cc-pvdz
 }
 
-gradient('scf')
-analytic = get_gradient()
+analytic = gradient('scf')
 
 set findif points 3
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 compare_matrices(analytic, findif, 5, "UHF SCF finite-diff (3-pt) vs. analytic gradient to 10^-5") #TEST
 
 set findif points 5
-gradient('scf', dertype=0)
-findif = get_gradient()
+findif = gradient('scf', dertype=0)
 
 compare_matrices(analytic, findif, 7, "UHF SCF finite-diff (5-pt) vs. analytic gradient to 10^-7") #TEST
 

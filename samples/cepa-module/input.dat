@@ -2,8 +2,6 @@
 
 
 
-memory 256 mb
-
 molecule hf {
 H
 F 1 0.917

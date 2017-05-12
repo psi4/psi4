@@ -1,8 +1,6 @@
 #! Tests to determine full point group symmetry.  Currently, these only matter
 #! for the rotational symmetry number in thermodynamic computations.
 
-memory 250 mb
-
 molecule C2H2 {
   C 0 0  r1
   C 0 0 -r1

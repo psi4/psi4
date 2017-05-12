@@ -331,3 +331,18 @@ Use ``assign`` statements to actually request the basis set. (See
    [addl]
    ...
    }
+
+.. _`sec:basissets-ecps`:
+
+Inputting effective core potentials (ECPs)
+==========================================
+
+For ECP containing basis sets, all of the above mechanisms may still be used to
+input the basis set; simply place the ECP definitions (in G94 format) in the
+same file or input section as the orbital basis definition.  Because the ECP
+appears in the same section as the orbital basis, it will be parsed
+automatically and the number of core electrons the ECP represents will be
+detected, so no further input is required to use a core potential. See
+:ref:`sec:scf-ecps` for more information about using ECPs and the
+:source:`Def2-TZVP <psi4/share/psi4/basis/def2-tzvp.gbs>` basis set definition
+for an example of their input syntax.

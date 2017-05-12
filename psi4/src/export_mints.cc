@@ -210,6 +210,7 @@ void export_mints(py::module& m)
             // def("set_name", &Matrix::set_name, "docstring").
             // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
             def("print_out", &Matrix::print_out, "docstring").
+            def("print_atom_vector", &Matrix::print_atom_vector, py::arg("RMRoutfile") = "outfile", "Print the matrix with atom labels, assuming it is an natom X 3 tensor").
             def("rows", &Matrix::rowdim, "docstring").
             def("cols", &Matrix::coldim, "docstring").
             def("rowdim", matrix_ret_dimension(&Matrix::rowspi), py::return_value_policy::copy, "docstring").
@@ -425,8 +426,9 @@ void export_mints(py::module& m)
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "docstring").
             def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
-            def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
+            def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
             def(py::init<std::shared_ptr<BasisSet> >()).
+            def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >()).
             //def("shells_iterator", &IntegralFactory::shells_iterator_ptr, py::return_value_policy<manage_new_object>(), "docstring").
             def("shells_iterator", &IntegralFactory::shells_iterator_ptr, "docstring").
             def("eri", &IntegralFactory::eri, "docstring", py::arg("deriv") = 0, py::arg("use_shell_pairs") = true).
@@ -474,9 +476,11 @@ void export_mints(py::module& m)
 
     typedef SharedMatrix (MintsHelper::*oneelectron)();
     typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis_ecp)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
 
     py::class_<MintsHelper, std::shared_ptr<MintsHelper> >(m, "MintsHelper", "docstring").
             def(py::init<std::shared_ptr<BasisSet> >()).
+            def(py::init<std::shared_ptr<Wavefunction> >()).
 
             // Options and attributes
             def("nbf", &MintsHelper::nbf, "docstring").
@@ -508,6 +512,9 @@ void export_mints(py::module& m)
             def("so_potential", &MintsHelper::so_potential, "docstring").
 
             // One-electron properties and
+            def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.").
+            def("ao_ecp", oneelectron_mixed_basis_ecp(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.").
+            def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.").
             def("ao_pvp", &MintsHelper::ao_pvp, "docstring").
             def("ao_dkh", &MintsHelper::ao_dkh, "docstring").
             def("so_dkh", &MintsHelper::so_dkh, "docstring").
@@ -566,7 +573,9 @@ void export_mints(py::module& m)
             def("norm", &Vector3::norm, "Returns Euclidean norm of arg1").
             def("cross", &Vector3::cross, "Returns cross product of arg1 and arg2").
             def("__str__", &Vector3::to_string, "Returns a string representation of arg1, suitable for printing.").
-            def("__getitem__", &Vector3::get, "Returns the arg2-th element of arg1.");
+            def(float() * py::self). /* The __mult__ operator */
+            def("__getitem__", &Vector3::get, "Returns the arg2-th element of arg1.").
+            def("__setitem__", &Vector3::set, "Set the ar2-th element of to val.");
 
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
@@ -630,6 +639,8 @@ void export_mints(py::module& m)
             def("natom", &Molecule::natom, "Number of real atoms").
             def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
+            def("set_nuclear_charge", &Molecule::set_nuclear_charge, "Set the nuclear charge of the given atom to the value provided.").
+            def("basis_on_atom", &Molecule::basis_on_atom, py::return_value_policy::copy, "Gets the label of the orbital basis set on a given atom.").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
             def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule, "Gets a string reexpressing in input format the current states of the molecule").
             def("save_xyz_file", &Molecule::save_xyz_file, "Saves an XYZ file to arg2").
@@ -718,11 +729,12 @@ void export_mints(py::module& m)
     //class_<ShellInfoMapMap>("ShellInfoMapMap")
     //   .def(map_indexing_suite<ShellInfoMapMap>());
 
-
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
     typedef std::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const std::shared_ptr<BasisSet>&) const;
+    typedef int (BasisSet::*ncore_no_args)() const;
+    typedef int (BasisSet::*ncore_one_arg)(const std::string&) const;
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring").
             def(py::init<const std::string&, std::shared_ptr<Molecule>, std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>()).
             def("name", &BasisSet::name, "Callback handle, may represent string or function").
@@ -740,6 +752,8 @@ void export_mints(py::module& m)
             def("nshell", &BasisSet::nshell, "Returns number of shells").
             def("shell", no_center_version(&BasisSet::shell), py::return_value_policy::copy, "docstring").
             def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy, "docstring").
+            def("ncore", ncore_no_args(&BasisSet::ncore), "Returns the total number of core electrons for this ECP.").
+            def("ncore", ncore_one_arg(&BasisSet::ncore), "Returns the number of core electrons associated with the specified atom type for this ECP.").
             def("max_am", &BasisSet::max_am, "Returns maximum angular momentum used").
             def("has_puream", &BasisSet::has_puream, "Spherical harmonics?").
             def("shell_to_basis_function", &BasisSet::shell_to_basis_function, "docstring").
@@ -750,9 +764,11 @@ void export_mints(py::module& m)
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
 //            def("decontract", &BasisSet::decontract, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
+            def("move_atom", &BasisSet::move_atom, "Translate a given atom by a given amount.  Does not affect the underlying molecule object.").
             def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring").
             def("max_nprimitive", &BasisSet::max_nprimitive, "docstring").
-            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring");
+            def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring").
+            def_static("construct_ecp_from_pydict", &BasisSet::construct_ecp_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring").
             def("petite_list", &SOBasisSet::petite_list, "docstring");

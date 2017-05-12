@@ -1,10 +1,14 @@
 #! pcm
 
-memory 250 mb
+from functools import reduce
 
 nucenergy   =  12.0367196636183458 #TEST
 polenergy   =  -0.0053060443528559 #TEST
 totalenergy = -55.4559426361734040 #TEST
+
+import glob
+import os
+import shutil
 
 molecule NH3 {
 symmetry c1
@@ -45,6 +49,11 @@ energy_scf1 = energy('scf')
 compare_values(NH3.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
 compare_values(energy_scf1, totalenergy, 10, "Total energy (PCM, total algorithm)") #TEST
 compare_values(get_variable("PCM POLARIZATION ENERGY"), polenergy, 6, "Polarization energy (PCM, total algorithm)") #TEST
+
+pid = str(os.getpid())
+scratch_dir = os.path.join(core.IOManager.shared_object().get_default_path(), 'psi.' + pid + '.pcmsolver')
+pcm_save = reduce(lambda l1, l2 : l1 + l2, (glob.glob(t) for t in [scratch_dir + '*/' + x for x in ['cavity.off__' + pid, 'PEDRA.OUT__' + pid, 'cavity.npz']]))
+filter(lambda x : shutil.copy(x, psi4.extras.get_input_directory()), pcm_save)
 
 set pcm_scf_type separate
 print('RHF-PCM, separate algorithm')

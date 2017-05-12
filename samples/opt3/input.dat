@@ -1,8 +1,6 @@
 from __future__ import print_function
 #! SCF cc-pVDZ geometry optimzation, with Z-matrix input
 
-memory 250 mb
-
 # This value is from a tightly converged QChem run  
 
 molecule h2o {

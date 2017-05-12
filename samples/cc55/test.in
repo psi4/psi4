@@ -1,8 +1,6 @@
 #! EOM-CCSD/6-31g excited state transition data for water with
 #! two excited states per irrep
 
-memory 250 mb
-
 molecule h2o {
   O
   H 1 R

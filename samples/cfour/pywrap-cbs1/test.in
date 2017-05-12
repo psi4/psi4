@@ -1,7 +1,5 @@
 #! Various basis set extrapolation tests only in Cfour instead of Psi4
 
-memory 250 mb
-
 molecule {
 0 2
 Li

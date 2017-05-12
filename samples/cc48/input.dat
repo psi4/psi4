@@ -1,7 +1,5 @@
 #! reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
 
-memory 250 mb
-
 molecule h2o {
   0 1
   H

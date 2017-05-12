@@ -1,8 +1,6 @@
 #! DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals. 
 #! Only two-step algorithm is tested.
 
-memory 250 mb
-
 
 # DC-06
 

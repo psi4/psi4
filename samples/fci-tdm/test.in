@@ -1,7 +1,5 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
-memory 250 mb
-
 refnuc   =   0.705569611453  #TEST
 refscf   =  -4.816603103707  #TEST
 refci1   =  -4.883262085443  #TEST

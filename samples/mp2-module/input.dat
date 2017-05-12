@@ -2,8 +2,6 @@
 
 
 
-memory 256 mb
-
 molecule hf {
 H
 F 1 0.917
@@ -70,7 +68,8 @@ clean_variables()
 clean()
 
 set qc_module dfmp2
-rob = energy('mp2', molecule=hf)
+rob, robwfn = energy('mp2', molecule=hf, return_wfn=True)
+# test dfmp2 wfn, too
 clean_variables()
 clean()
 

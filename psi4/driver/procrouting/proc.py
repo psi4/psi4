@@ -1276,7 +1276,9 @@ def scf_helper(name, **kwargs):
             if ".gbs" in basis_name:
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
-            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            old_basis, old_ecp_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            if old_ecp_basis:
+                raise ValidationError('Projection not yet available with ECPs.')
             core.print_out("  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
 
             nalphapi = core.Dimension.from_list(data["nalphapi"])
@@ -1965,6 +1967,56 @@ def run_scf_gradient(name, **kwargs):
         ref_wfn.set_array("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
+
+    if ref_wfn.ecpbasisset():
+        core.print_out("\n\n  ==> Adding ECP gradient terms (computed numerically) <==\n")
+        # Build a map of atom->ECP number
+        old_print = ref_wfn.get_print()
+        ref_wfn.set_print(0)
+        delta = 0.0001
+        natom = ref_wfn.molecule().natom()
+        mints = core.MintsHelper(ref_wfn)
+        atom_to_ecp = [ -1 for i in range(natom) ]
+        count = 0
+        for atom in range(natom):
+            # A cheesy way to account for the fact that not all atoms have ECPs
+            if ref_wfn.ecpbasisset().ncore(ref_wfn.molecule().label(atom)):
+                atom_to_ecp[atom] = count
+                count += 1
+        ecpgradmat = core.Matrix("ECP Gradient", natom, 3)
+        ecpgradmat.zero()
+        ecpgrad = np.asarray(ecpgradmat)
+        Dmat = ref_wfn.Da_subset("AO")
+        Dmat.add(ref_wfn.Db_subset("AO"))
+        def displaced_energy(atom, displacement):
+            ecpid = atom_to_ecp[atom]
+            mints.basisset().move_atom(atom, displacement)
+            if ecpid != -1: ref_wfn.ecpbasisset().move_atom(ecpid, displacement)
+            E = Dmat.vector_dot(mints.ao_ecp())
+            mints.basisset().move_atom(atom, -1*displacement)
+            if ecpid != -1: ref_wfn.ecpbasisset().move_atom(ecpid, -1*displacement)
+            return E
+
+        for atom in range(natom):
+            for xyz in range(3):
+                transvec = core.Vector3(0.0)
+                transvec[xyz] += delta
+                # +1 displacement
+                Ep1 = displaced_energy(atom,  1*transvec)
+                # -1 displacement
+                Em1 = displaced_energy(atom, -1*transvec)
+                # +2 displacement
+                Ep2 = displaced_energy(atom,  2*transvec)
+                # -2 displacement
+                Em2 = displaced_energy(atom, -2*transvec)
+                # Evaluate
+                ecpgrad[atom, xyz] = (Em2 + 8*Ep1 - 8*Em1 - Ep2) / (12*delta)
+        ecpgradmat.symmetrize_gradient(ref_wfn.molecule())
+        ecpgradmat.print_atom_vector()
+        grad.add(ecpgradmat)
+        grad.print_atom_vector()
+        ref_wfn.set_print(old_print)
+
     ref_wfn.set_gradient(grad)
 
     optstash.restore()
@@ -2103,6 +2155,9 @@ def run_dfmp2_gradient(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    if ref_wfn.ecpbasisset():
+        raise ValidationError('DF-MP2 gradients with an ECP are not yet available.  Use dertype=0 to select numerical gradients.')
 
     core.print_out('\n')
     p4util.banner('DFMP2')
@@ -3508,8 +3563,10 @@ def run_fisapt(name, **kwargs):
                                      ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SAPT", sapt_basis)
 
-    minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
+    minao,ecpbasis = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
                                 core.get_global_option("MINAO_BASIS"))
+    if ecpbasis:
+        raise ValidationError("FISAPT does not yet work with ECPs.")
     ref_wfn.set_basisset("MINAO", minao)
 
 

@@ -733,6 +733,24 @@ Otherwise, if the solver is almost converged but reaches the maximum number of i
 |cphf__solver_maxiter|.
 
 
+.. _`sec:scf-ecps`:
+
+Effective core potentials (ECPs)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|PSIfour| supports the use of effective core potentials to describe the
+innermost electrons in heavy elements.  If a basis set is designed to use an
+effective core potential, the ECP definition should be simply placed alongside
+the orbital basis set definition, *c.f.* :ref:`sec:basissets-ecps`.  All
+information related to the definition and number of core electrons will
+automatically be detected and no further input is required to use the
+ECP-containing basis set.  See :srcsample:`scf-ecp` and :srcsample:`dfmp2-ecp`
+for examples of computations with ECP-containing basis sets.
+
+.. warning:: Analytic derivatives of ECPs are not yet available.  The HF and DFT derivatives are implemented in a semi-numerical scheme, where numerical ECP gradients are added to analytic SCF gradients.  Analytic gradients for (DF)MP2 are not yet available, but the standard numerical gradients will work correctly.  Fully analytic gradients will be implemented soon.
+
+.. warning:: ECPs have not been tested with projected basis set guesses or with FI-SAPT calculations.  If you require this functionality, please contact the developers on GitHub and/or the `forum <http://forum.psicode.org>`_.
+
 External potentials and QM/MM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

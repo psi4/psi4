@@ -1,8 +1,6 @@
 #! ROHF 6-31G** energy of the $^{3}B@@1$  state of CH2, with Z-matrix input. The occupations
 #! are specified explicitly.
 
-memory 250 mb
-
 nucenergy =   6.64841891890875  #TEST
 refenergy = -38.91136934915929  #TEST
 

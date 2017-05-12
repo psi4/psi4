@@ -1,8 +1,6 @@
 #! MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against 
 #! M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
-memory 250 mb
-
 # Test MP(10) at its equilibrium geometry
 refnuc      =   2.1101925597355 #TEST
 refscf      = -25.1262628711449 #TEST

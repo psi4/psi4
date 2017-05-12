@@ -1,8 +1,6 @@
 #! Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using
 #! the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
 
-memory 250 mb
-
 refnuc      =   68.712796104070 #TEST
 refscf      = -224.311492308024 #TEST
 refmkccsd_t = -224.660140784419 #TEST

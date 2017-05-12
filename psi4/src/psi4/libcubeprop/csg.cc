@@ -458,7 +458,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     // => Electronic Part <= //
 
-    std::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
     std::vector<std::shared_ptr<Matrix> > ZxyzT;
     std::vector<std::shared_ptr<Matrix> > VtempT;
     std::vector<std::shared_ptr<PotentialInt> > VintT;

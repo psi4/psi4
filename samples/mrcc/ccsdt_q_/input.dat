@@ -2,8 +2,6 @@
 #! This example builds up from CCSD. First CCSD, then CCSDT,
 #! finally CCSDT(Q).
 
-memory 500 mb
-
 molecule h2o {
     o
     h 1 1.0

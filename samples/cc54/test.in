@@ -1,7 +1,5 @@
 #! CCSD dipole with user-specified basis set
 
-memory 250 mb
-
 molecule h2o {
   0 1
   H

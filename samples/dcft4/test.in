@@ -5,8 +5,6 @@
 #! four-virtual case is avoided. 
 #! The computation is then repeated using the DC-12 functional with the same algorithms.
 
-memory 250 mb
-
 refscf      = -98.190834079292387  #TEST
 refmp2      = -98.202705508819363  #TEST
 refdcftscf  = -98.164839047679820  #TEST

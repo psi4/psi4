@@ -3,8 +3,6 @@
 refcc       = -76.23811132362982 #TEST
 refcc_t     = -76.24115214074588 #TEST
 
-memory 256 mb
-
 molecule h2o {
 0 1
 o

@@ -1,7 +1,5 @@
 #! RHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
 
-memory 250 mb
-
 
 molecule {
 units bohr

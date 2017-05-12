@@ -1,0 +1,34 @@
+memory 500 Mb
+
+set {
+    basis sto-3g
+    reference rohf
+    die_if_not_converged False
+    maxiter 500
+    e_convergence 10
+    d_convergence 10
+    r_convergence 10
+    scf_type pk
+    freeze_core True
+    docc [12, 4]
+    socc [1, 0]
+}
+
+molecule A_transC2H5O2 {
+0 2
+C -0.4956885719  0.5430564253  0.0000000000
+O  0.4858949109 -0.5108647141  0.0000000000
+O  1.7242024334  0.1244981797  0.0000000000
+H -0.3510151994  1.1579201425 -0.8912164899
+H -0.3510151994  1.1579201425  0.8912164899
+C -1.8420084989 -0.1447691015  0.0000000000
+H -1.9545447709 -0.7674520567 -0.8865786907
+H -1.9545447709 -0.7674520567  0.8865786907
+H -2.6301702073  0.6086421759  0.0000000000
+}
+
+energy('mrccsdt(q)')
+
+compare_values(-225.566203961615, get_variable("CCSDT TOTAL ENERGY"), 6, 'ccsdt') #TEST
+compare_values(-225.566377483810, get_variable("CCSDT(Q)/A TOTAL ENERGY"), 6, 'ccsdt(q)/a') #TEST
+compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'ccsdt(q)/b') #TEST

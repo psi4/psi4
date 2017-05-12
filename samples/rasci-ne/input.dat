@@ -13,8 +13,6 @@
 #! if it is a single or double.
 #
 
-memory 250 mb
-
 # First, get the natural orbitals
 
 molecule ne {

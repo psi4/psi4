@@ -46,7 +46,7 @@
 
 namespace psi {
 class PointGroup;
-
+class BasisSet;
 enum RotorType {RT_ASYMMETRIC_TOP, RT_SYMMETRIC_TOP, RT_SPHERICAL_TOP, RT_LINEAR, RT_ATOM};
 enum FullPointGroup {PG_ATOM, PG_Cinfv, PG_Dinfh, PG_C1, PG_Cs, PG_Ci, PG_Cn, PG_Cnv,
  PG_Cnh, PG_Sn, PG_Dn, PG_Dnd, PG_Dnh, PG_Td, PG_Oh, PG_Ih};
@@ -242,6 +242,8 @@ public:
 
     /// Get molecule name
     const std::string name() const {return name_; }
+    /// Returns the name of the basis set on the specified atom
+    const std::string& basis_on_atom(int atom) const;
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
@@ -274,6 +276,8 @@ public:
 
     /// Set the mass of a particular atom (good for isotopic substitutions)
     void set_mass(int atom, double mass) { full_atoms_[atom]->set_mass(mass); }
+    /// Set the nuclear charge of an atom (primarily used in ECP calculations).
+    void set_nuclear_charge(int atom, double newZ);
 
     /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
     std::string symbol(int atom) const;
@@ -302,7 +306,7 @@ public:
     void set_shell_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
-    int nfrozen_core(const std::string& depth = "");
+    int nfrozen_core(std::shared_ptr<BasisSet> ecpbasis, const std::string& depth = "");
 
     /// @{
     /// Tests to see of an atom is at the passed position with a given tolerance

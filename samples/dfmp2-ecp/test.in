@@ -1,0 +1,26 @@
+#! He-Ne dimer MP2 energies with ECP, Ne electrons correlated then frozen.
+
+refnuc =   45.86202474447                                                                #TEST
+refall = -457.47320868249                                                                #TEST
+reffzc = -457.47130951838                                                                #TEST
+
+molecule dimer {
+    Ne
+    Xe 1 3.0
+}
+
+set {
+    basis def2-svp
+    print 2
+}
+
+# All electrons on Ne correlated
+Eall = energy('mp2')
+compare_values(refnuc, dimer.nuclear_repulsion_energy(), 8, "Nuclear repulsion energy")  #TEST 
+compare_values(refall, Eall, 8, "All Ne electrons correlated MP2 energy with ECP")       #TEST
+
+set freeze_core true
+set guess read
+# 1s electrons on Ne frozen, but Xe should not be affected
+Efzc = energy('mp2')
+compare_values(reffzc, Efzc, 8, "Frozen core MP2 energy with ECP")                       #TEST

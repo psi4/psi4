@@ -3,8 +3,6 @@
 #! that are updated during the potential energy surface scan, and then the same procedure is performed
 #! using polar coordinates, converted to Cartesian coordinates.
 
-memory 250 mb
-
 refENuc = [ 9.785885838936569, 9.780670106434425, 8.807297255042920,     #TEST
             8.802603095790996, 8.006633868220828, 8.002366450719077 ]    #TEST
 

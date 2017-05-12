@@ -1,7 +1,5 @@
 #! pcm
 
-memory 250 mb
-
 nucenergy   =  12.0367196636183458 # TEST
 polenergy   =  -0.0060921680888660 # TEST
 totalenergy = -56.5572469753401847 # TEST

@@ -1,7 +1,5 @@
 #! 6-31G** H2O Test CISD Energy Point with subspace collapse
 
-memory 250 mb
-
 refnuc   =  8.804686618639053 #TEST
 refscf   = -76.01729655528302 #TEST
 refci    = -76.2198474493046 #TEST

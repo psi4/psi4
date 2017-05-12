@@ -1,8 +1,6 @@
 #! DF-OMP3 cc-pVDZ energy for the H2O+ cation
 
 
-memory 256 mb
-
 molecule h2o {
 1 2
 o

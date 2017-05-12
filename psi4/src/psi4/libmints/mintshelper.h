@@ -59,6 +59,7 @@ private:
     std::shared_ptr<IntegralFactory> integral_;
     std::shared_ptr<BasisSet> basisset_;
     std::shared_ptr<SOBasisSet> sobasis_;
+    std::shared_ptr<BasisSet> ecpbasis_;
     std::shared_ptr<TwoBodyAOInt> eriInts_;
     std::shared_ptr<BasisSet> rel_basisset_;
     int print_;
@@ -88,12 +89,12 @@ private:
 public:
 
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
-    void init_helper(std::shared_ptr<BasisSet> basis);
+    void init_helper(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> ecpbasis = nullptr);
 
     /// Constructor, using basisset
     MintsHelper(std::shared_ptr<BasisSet> basis,
                 Options& options = Process::environment.options,
-                int print = 0);
+                int print = 0,  std::shared_ptr<BasisSet> ecpbasis = nullptr);
 
     /// Constructor, using wavefunction
     MintsHelper(std::shared_ptr<Wavefunction> wavefunction);
@@ -126,6 +127,8 @@ public:
     std::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.
     std::shared_ptr<SOBasisSet> sobasisset() const;
+    /// ECP basis set being used.
+    std::shared_ptr<BasisSet> ecpbasisset() const;
     /// Matrix factory being used
     std::shared_ptr<MatrixFactory> factory() const;
     /// Integral factory being used
@@ -225,6 +228,9 @@ public:
     /// AO Potential Integrals
     SharedMatrix ao_potential();
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    /// AO ECP Integrals
+    SharedMatrix ao_ecp();
+    SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO pVp Integrals
     SharedMatrix ao_pvp();
     /// AO DKH Integrals
@@ -241,6 +247,8 @@ public:
     SharedMatrix so_overlap();
     /// SO Kinetic Integrals
     SharedMatrix so_kinetic();
+    /// SO ECP Integrals
+    SharedMatrix so_ecp();
     /// SO Potential Integrals
     SharedMatrix so_potential(bool include_perturbations = true);
     /// Vector SO Dipole Integrals

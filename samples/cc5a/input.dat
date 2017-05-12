@@ -1,7 +1,5 @@
 #! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
-memory 250 mb
-
 molecule C4NH4 {
   -1 1
   C         0.00000000     0.00000000     2.13868804

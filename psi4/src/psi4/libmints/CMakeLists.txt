@@ -66,6 +66,9 @@ set(sources_list local.cc
                  cdsalclist.cc
                  erd_eri.cc
                  angularmomentum.cc
+		 bessel.cc
+		 gaussquad.cc
+		 ecpint.cc
 )
 if(TARGET simint::simint)
     list(APPEND sources_list siminteri.cc)

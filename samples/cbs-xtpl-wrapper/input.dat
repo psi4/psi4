@@ -1,7 +1,6 @@
 #! RHF aug-cc-pVQZ energy for the BH molecule, with Cartesian input.
 #! Various gradients for a strained helium dimer and water molecule
 import numpy as np
-memory 500 mb
 
 # <<<  energies  >>>
 

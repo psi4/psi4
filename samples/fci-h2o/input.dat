@@ -1,7 +1,5 @@
 #! 6-31G H2O Test FCI Energy Point
 
-memory 250 mb
-
 
 molecule h2o {
    O       .0000000000         .0000000000        -.0742719254

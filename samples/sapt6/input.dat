@@ -5,6 +5,15 @@
 h2kc = psi_hartree2kcalmol
 digits = 3
 
+def_mem = get_memory()
+compare_integers(524288000, def_mem, 'Default mem set correctly')
+set_memory('600.0 MB')
+set_mem = get_memory()
+compare_integers(600000000, set_mem, 'Given MiB mem set correctly by fn')
+memory 600.0 mib
+set_mem2 = get_memory()
+compare_integers(629145600, set_mem2, 'Given MiB mem set correctly by parse')
+
 #set print 3  # shows psivars being computed
 
 molecule s222 {
