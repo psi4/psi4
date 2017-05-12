@@ -119,11 +119,47 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
     void CIWavefunction::dump_vec(size_t ndets, int *Ialist, int *Iblist,
 					  int *Iaidx, int *Ibidx, double *coeff, const char *fname)
     {
-      FILE *out=fopen(fname,"w");
-      fprintf(out,"%u %i %i %i\n",ndets,AlphaG_->num_orb,AlphaG_->num_el_expl,BetaG_->num_el_expl) ;
-      for (size_t i=0; i<ndets; i++) {
-	struct stringwr *stralp=alplist_[Ialist[i]] + Iaidx[i];
-	struct stringwr *strbet=betlist_[Iblist[i]] + Ibidx[i];
+      // detci's orbitals are blocked by symmetry, but we want the
+      // output to be in energy ordering so that the Aufbau
+      // determinant would be usually the first one.
+
+      // First, collect the indices of the orbitals into symmetry blocks
+      std::vector< std::vector<int> > symblocks(nirrep_);
+      for (int i = 0; i < (int) CalcInfo_->scfeigval.size(); i++) {
+	symblocks[CalcInfo_->orbsym[i]].push_back(i);
+      }
+
+      // Tuple holding the energy and the number of the active orbital
+      std::vector< std::tuple<double, int> > order;
+
+      // Loop over symmetry blocks
+      for (int h = 0; h < nirrep_; h++) {
+	// First active orbital
+	int actstart = CalcInfo_->dropped_docc[h];
+	// Active orbitals end at
+	int actend = nmopi_[h] - CalcInfo_->dropped_uocc[h];
+
+	// Loop over orbitals
+	for (int iact = actstart; iact < actend; iact++) {
+	  int n = (int) order.size();
+	  order.push_back(std::tuple<double, int>(CalcInfo_->scfeigval[symblocks[h][iact]],n));
+	}
+      }
+
+      // Sort orbitals in energy
+      std::sort(order.begin(), order.end(), std::less < std::tuple < double, int > > ());
+
+      // Mapping from the original to the energy order
+      std::vector<int> mapping(order.size());
+      for(int i = 0; i < (int) order.size(); i++) {
+	mapping[std::get<1>(order[i])] = i;
+      }
+
+      // Determinant strings in decreasing coeffient
+      std::vector< std::tuple<double, double, std::string> > dets(ndets);
+      for (size_t idet=0; idet<ndets; idet++) {
+	struct stringwr *stralp=alplist_[Ialist[idet]] + Iaidx[idet];
+	struct stringwr *strbet=betlist_[Iblist[idet]] + Ibidx[idet];
 	int num_alp_el=AlphaG_->num_el_expl;
 	int num_bet_el=BetaG_->num_el_expl;
 	int num_orb=AlphaG_->num_orb;
@@ -137,14 +173,23 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
 
 	// Fill the strings
 	for (int k=0; k<num_alp_el; k++) {
-	  sbstr[(stralp->occs)[k]]='u';
+	  fflush(stdout);
+	  sbstr[mapping[(stralp->occs)[k]]]='u';
 	}
 	for (int k=0; k<num_bet_el; k++) {
-	  sbstr[(strbet->occs)[k]]=(sbstr[(strbet->occs)[k]]=='u') ? '2' : 'd';
+	  fflush(stdout);
+	  sbstr[mapping[(strbet->occs)[k]]] = (sbstr[mapping[(strbet->occs)[k]]]=='u') ? '2' : 'd';
 	}
 
+	dets[idet]=std::tuple<double, double, std::string>(std::abs(coeff[idet]),coeff[idet],sbstr);
+      }
+      std::sort(dets.begin(), dets.end(), std::greater < std::tuple < double, double, std::string > > ());
+
+      FILE *out=fopen(fname,"w");
+      fprintf(out,"%u %i %i %i\n",ndets,AlphaG_->num_orb,AlphaG_->num_el_expl,BetaG_->num_el_expl) ;
+      for (size_t idet=0; idet<ndets; idet++) {
 	// Print out the entry
-	fprintf(out," % 16.12e %s\n", coeff[i], sbstr);
+	fprintf(out," % 16.12e %s\n", std::get<1>(dets[idet]), std::get<2>(dets[idet]).c_str());
       } /* end loop over important determinants */
       fclose(out);
 
