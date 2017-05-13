@@ -675,8 +675,6 @@ public:
     void update_geometry();
 };
 
-typedef std::shared_ptr<Molecule> SharedMolecule;
-
 }
 
 #endif

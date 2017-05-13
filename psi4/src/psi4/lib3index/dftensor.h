@@ -29,15 +29,17 @@
 #ifndef three_index_df_H
 #define three_index_df_H
 
+#include "psi4/libmints/typedefs.h"
+
+#include <string>
+
 namespace psi {
 
 class PSIO;
 class BasisSet;
-class Matrix;
-class Vector;
-class Molecule;
 class IntVector;
 class Vector3;
+class Options;
 
 class FittingMetric {
 

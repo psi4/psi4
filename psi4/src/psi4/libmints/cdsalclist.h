@@ -38,6 +38,7 @@
  PRAGMA_WARNING_POP
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
+#include "typedefs.h"
 
 namespace psi {
 

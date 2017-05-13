@@ -31,7 +31,7 @@
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
-#include "arrays.h"
+// #include "arrays.h"
 #include "tensors.h"
 
 using namespace std;
@@ -70,13 +70,13 @@ protected:
     void t1_1st_sc();
     void t2_1st_sc();
     void t2_1st_gen();
-    void t2_1st_scs_sc();
-    void t2_1st_scs_gen();
+    // void t2_1st_scs_sc();
+    // void t2_1st_scs_gen();
     void Fint_zero();
     void fock();
     void separable_tpdm();
     void sep_tpdm_cc();
-    void combine_ref_sep_tpdm();
+    // void combine_ref_sep_tpdm();
     void tpdm_tilde();
     void back_trans();
     void tpdm_tilde_cc();
@@ -120,7 +120,7 @@ protected:
     void prepare4grad();
     void z_vector();
     void z_vector_pcg();
-    void z_vector_cg();
+    // void z_vector_cg();
     void z_vector_solver();
     void pcg_solver_rhf();
     void pcg_solver_uhf();
@@ -331,7 +331,7 @@ protected:
     void tei_vovo_phys_ref_directAB(SharedTensor2d &K);
 
     // df
-    void df();
+    //void df();
     void df_corr();
     void df_ref();
     void trans_corr();

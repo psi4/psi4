@@ -34,6 +34,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/physconst.h"
+#include "typedefs.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 

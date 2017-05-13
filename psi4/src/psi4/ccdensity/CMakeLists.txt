@@ -42,13 +42,13 @@ set(sources_list sortI.cc
                  add_ref_UHF.cc 
                  G.cc 
                  x_Gijkl.cc 
-                 G_norm.cc 
+                 # G_norm.cc 
                  x_xi2_rhf.cc 
-                 resort_tei.cc 
+                 # resort_tei.cc 
                  sortone.cc 
                  oscillator_strength.cc 
                  Gijkl.cc 
-                 resort_gamma.cc 
+                 # resort_gamma.cc 
                  x_onepdm.cc 
                  Iai.cc 
                  x_Gijka_uhf.cc 
@@ -108,7 +108,7 @@ set(sources_list sortI.cc
                  build_Z.cc 
                  Iab.cc 
                  x_Gabcd.cc 
-                 add_core_UHF.cc 
+                 # add_core_UHF.cc 
                  norm.cc 
                  ex_oscillator_strength.cc 
                  x_Gijab_uhf.cc 
@@ -118,7 +118,7 @@ set(sources_list sortI.cc
                  x_onepdm_uhf.cc 
                  build_Z_RHF.cc 
                  deanti.cc 
-                 densgrid_RHF.cc 
+                 # densgrid_RHF.cc 
                  setup_LR.cc 
                  fold_RHF.cc 
                  add_ref_ROHF.cc 

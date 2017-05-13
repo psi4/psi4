@@ -46,9 +46,11 @@ namespace psi {
 class Matrix;
 class Vector;
 class Wavefunction;
+class Molecule;
 using SharedMatrix = std::shared_ptr<Matrix>;
 using SharedVector = std::shared_ptr<Vector>;
 using SharedWavefunction =  std::shared_ptr<Wavefunction>;
+using SharedMolecule =  std::shared_ptr<Molecule>;
 
 // Useful when working with SO-TEIs
 template<typename T>
