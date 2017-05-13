@@ -93,6 +93,19 @@ Overall |PSIfour| Package
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
 
+* "Psi4 1.1: An Open-Source Electronic Structure Program Emphasizing
+  Automation, Advanced Libraries, and Interoperability", R. M. Parrish, L.
+  A. Burns, D. G. A. Smith, A. C. Simmonett, A. E. DePrince III, E. G.
+  Hohenstein, U. Bozkaya, A. Yu. Sokolov, R. Di Remigio, R. M. Richard, J.
+  F. Gonthier, A. M. James, H. R. McAlexander, A. Kumar, M. Saitow, X. Wang,
+  B. P. Pritchard, P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King,
+  E. F. Valeev, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D.
+  Sherrill, *J. Chem. Theory Comput.*, *in press* (2017).
+  (doi: `10.1021/acs.jctc.7b00174
+  <http://dx.doi.org/10.1021/acs.jctc.7b00174>`_).
+
+The following citation covers |PSIfour| alpha and beta versions:
+
 * "Psi4: An open-source *ab initio* electronic structure program,"
   J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein, F.
   Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke, M. L.
@@ -516,6 +529,16 @@ For some architectures, a :ref:`precompiled binary
 <sec:conda>` is available. See :ref:`Compiling and Installing
 <sec:installFile>` for details.
 
+.. index:: license
+
+License
+=======
+
+|PSIfour| is distributed under the GNU Lesser General Public License
+version 3, `LGPL-3.0 <https://opensource.org/licenses/LGPL-3.0>`_.  Its
+required dependencies and add-ons have their own licenses, ranging from
+BSD-2-Clause to GPL-2.0+. It is possible to build |PSIfour| without any
+GPL dependencies.
 
 Capabilities
 ============

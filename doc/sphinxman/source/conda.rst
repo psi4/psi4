@@ -157,7 +157,7 @@ distribution.
 
     # Linux or Mac or Windows
     # substitute x.x by 2.7|3.5|3.6 for alternate python versions
-    >>> conda create -n p4env python=x.x psi4 psi4-deps -c psi4/label/devel -c psi4
+    >>> conda create -n p4env python=x.x psi4 psi4-deps -c psi4/label/dev -c psi4
 
 Activate environment and make the adjustments to :envvar:`PATH` and
 :envvar:`PSI_SCRATCH` that it suggests at the end. Test with ``psi4
@@ -200,10 +200,10 @@ latest development head (roughly nightly).
 
 .. code-block:: bash
 
-    >>> conda update psi4 -c psi4/label/devel
+    >>> conda update psi4 -c psi4/label/dev
 
     # if add-on updates required, try
-    >>> conda update psi4 -c psi4/label/devel -c psi4
+    >>> conda update psi4 -c psi4/label/dev -c psi4
 
 
 .. _`faq:psi4deps`:
