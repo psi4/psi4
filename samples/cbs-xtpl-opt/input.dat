@@ -1,5 +1,4 @@
 #! Various extrapolated optimization methods for the H2 molecule
-memory 500 mb
 
 molecule h2 {
     H

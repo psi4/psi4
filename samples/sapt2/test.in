@@ -4,8 +4,6 @@
 #! electrostatics and induction. This example uses frozen core as well as
 #! asyncronous I/O while forming the DF integrals and CPHF coefficients.
 
-memory 250 mb
-
 molecule benzene_methane {
      0 1
      C     1.3932178    0.0362913   -0.6332803

@@ -26,8 +26,6 @@ clean_variables()
 
 print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
 
-memory 200 mb
-
 molecule {
 O
 H 1 R

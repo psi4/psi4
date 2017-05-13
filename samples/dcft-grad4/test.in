@@ -7,8 +7,6 @@ ref_grads = [
 ref = psi4.Matrix(2, 3)
 ref.set(ref_grads)
 
-memory 512 mb
-
 molecule O2 {
 symmetry d2h
 0 3

@@ -3,8 +3,6 @@
 #! that are updated during the potential energy surface scan, and then the same procedure is performed
 #! using polar coordinates, converted to Cartesian coordinates.
 
-memory 250 mb
-
 
 
 # Define the points on the potential energy surface using standard Python list functions

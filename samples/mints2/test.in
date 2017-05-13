@@ -2,8 +2,6 @@
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
 
-memory 250 mb
-
 refnuc =  204.01995737868003 #TEST
 refscf = -228.95763005849557 #TEST
 
@@ -30,13 +28,7 @@ molecule bz {
 }
 
 # Here we specify some of the basis sets manually.  They could be written to one or more external
-# files and included with the command
-#
-# basis file relative/path/to/basis.file
-#
-# or
-#
-# basis file /absolute/path/to/basis.file
+# files and included by adding the directory to environment variable PSIPATH
 #
 # The format of these external files follows the same format as those below, where there's a [name]
 # tag before the standard G94 basis set specification:
@@ -58,11 +50,11 @@ molecule bz {
 # Any more atoms needed...
 # ****
 
-# The keywords cartesian or spherical are optional and provide default behavior if the 
-# puream keyword is not set.  Multiple basis sets can appear in the same file, as long 
-# as there is a [name] tag above the definition of each basis set. The basis sets specified 
-# using either "basis" or "basis file" keywords are utilized first (in the order specified 
-# in the input file).  Any remaining basis sets required are extracted from the built-in library, 
+# The keywords cartesian or spherical are optional and provide default behavior if the
+# puream keyword is not set. In basis strings, like below, multiple basis sets can appear, as long
+# as there is a [name] tag above the definition of each basis set. The basis sets specified
+# using either basis <opt_name> {...} are utilized first (in the order specified
+# in the input file). Any remaining basis sets required are extracted from the built-in library,
 # if they exist, or an error message is printed.
 basis  {
 #

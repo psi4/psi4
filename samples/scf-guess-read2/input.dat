@@ -1,7 +1,5 @@
 #! Test if the the guess read in the same basis converges. 
 
-memory 250 mb
-
 molecule oxygen {
     0 1
     O

@@ -3,8 +3,6 @@
 #! for SAPT. This example uses frozen core as well as MP2 natural orbital 
 #! approximations.
 
-memory 500 mb
-
 molecule formamide_dimer {
      0 1
      C  -2.018649   0.052883   0.000000

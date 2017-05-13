@@ -1,7 +1,5 @@
 #! File retention, docc, socc, and bond distances specified explicitly.
 
-memory 250 mb
-
 nucenergy =   6.648418918908746 #TEST
 refenergy = -38.91591819679808  #TEST
 

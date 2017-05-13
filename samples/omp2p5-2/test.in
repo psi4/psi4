@@ -4,8 +4,6 @@ refscf      = -129.25245637508348 #TEST
 refmp3      = -129.58077576726413 #TEST
 refomp3     = -129.58887635080728 #TEST
 
-memory 250 mb
-
 molecule {
 0 2
 n

@@ -11,8 +11,6 @@ ref_vals_aonone = [
 ref_aonone = psi4.Matrix(6, 3)                                                
 ref_aonone.set(ref_vals_aonone)                                               
 
-memory 512 Mb
-
 molecule c2h4{
 symmetry d2h
 0 1

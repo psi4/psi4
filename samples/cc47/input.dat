@@ -1,7 +1,5 @@
 #! EOM-CCSD/cc-pVDZ on H2O2 with two excited states in each irrep
 
-memory 250 mb
-
 molecule h2o2 {
   0 1
   O

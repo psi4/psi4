@@ -1,7 +1,5 @@
 #! OCEPA cc-pVDZ freqs for C2H2
 
-memory 250 mb
-
 molecule {
 0 1
 C            0.000000000000     0.000000000000     0.613925250708

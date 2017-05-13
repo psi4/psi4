@@ -10,7 +10,9 @@ molecule h2o {
   H 2 0.9 1 104.0
 }
 
-memory 2 mb
+# memory 2 mb
+# above will fail b/c below min mem. set core.set_memory(bytes) to bypass.
+set_memory_bytes(2000000)
 
 set {
   basis "aug-cc-pVTZ"

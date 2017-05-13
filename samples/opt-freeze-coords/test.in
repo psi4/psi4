@@ -1,5 +1,4 @@
 #! SCF/cc-pVDZ optimization example with frozen cartesian
-memory 500 MB
 
 molecule h2o {
 0 1

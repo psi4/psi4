@@ -1,8 +1,6 @@
 #! Sample UHF/cc-pVDZ H2O computation on a doublet cation, using 
 #! RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
 
-memory 250 mb
-
 molecule h2o {
   O 
   H 1 0.96

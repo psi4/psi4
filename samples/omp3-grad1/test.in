@@ -8,8 +8,6 @@ ref_vals = [                                                       #TEST
 ref = psi4.Matrix(3, 3)                                          #TEST
 ref.set(ref_vals)
 
-memory 250 mb
-
 molecule h2o {
 0 1
 o

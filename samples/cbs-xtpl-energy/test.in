@@ -1,6 +1,5 @@
 #! Extrapolated water energies
 import numpy as np
-memory 500 mb
 
 nucenergy_ref =   8.801465529972    #TEST
 scf_dz_ref    = -76.0213974638      #TEST

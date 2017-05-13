@@ -1,8 +1,6 @@
 #! Double-hybrid density functional B2PYLP. Reproduces portion of Table I
 #! in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
-memory 250 mb
-
 molecule h2o {
   0 1
   O

@@ -3,8 +3,6 @@
 #! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
 #! test is first performed in C2v symmetry, and then in C1.
 
-memory 250 mb
-
 mtol = 2
 molden_cas_ref = """ Occup=  0.0000
  Occup=  0.0000

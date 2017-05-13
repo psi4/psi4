@@ -1,7 +1,5 @@
 #! Test Gibbs free energies at 298 K of N2, H2O, and CH4.
 
-memory 500 mb
-
 N2_321G_RHF_G  = -108.313412 #TEST
 H2O_321G_RHF_G =  -75.581830 #TEST
 NH3_321G_RHF_G =  -55.854174 #TEST

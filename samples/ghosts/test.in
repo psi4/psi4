@@ -2,8 +2,6 @@
 #! using explicit specification of ghost atoms.  This is equivalent to the dfmp2_1 sample
 #! but uses both (equivalent) specifications of ghost atoms in a manual counterpoise correction.
 
-memory 250 mb
-
 Enuc = 235.946620315069168 #TEST
 Ecp  = -0.0224119246       #TEST
 

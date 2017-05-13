@@ -1,7 +1,5 @@
 #! pcm
 
-memory 250 mb
-
 nucenergy   =  12.0367196636183458 # TEST
 polenergy   =  -0.0060921680888660 # TEST
 totalenergy = -56.5572469753401847 # TEST
@@ -41,14 +39,14 @@ pcm = {
 }
 
 print('RKS-PCM B3LYP, total algorithm')
-energy_scf1 = energy('b3lyp')
+energy_scf1, wfn1 = energy('b3lyp', return_wfn=True)
 
 set pcm_scf_type separate
 print('RKS-PCM B3LYP, separate algorithm')
-energy_scf2 = energy('b3lyp')
+energy_scf2, wfn2 = energy('b3lyp', return_wfn=True)
 
 # Now force use of UKS on NH3 to check sanity of the algorithm with PCM
 set pcm_scf_type total
 set reference uks
 print('UKS-PCM B3LYP, total algorithm')
-energy_scf3 = energy('b3lyp')
+energy_scf3, wfn3 = energy('b3lyp', return_wfn=True)

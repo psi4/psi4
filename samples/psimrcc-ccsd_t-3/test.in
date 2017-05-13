@@ -1,8 +1,6 @@
 #! Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using
 #! the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
-memory 250 mb
-
 refnuc      =    5.912862514729  #TEST
 refscf      =  -38.911021663021  #TEST
 refmkccsd_t =  -39.037898229468  #TEST
