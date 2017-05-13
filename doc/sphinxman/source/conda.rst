@@ -75,7 +75,7 @@ For more flexibility and a detailed explanation, go to
 How to install a Psi4 binary with the Psi4conda installer, download site
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Download one of the six installers
+`Download one of the nine installers
 <http://psicode.org/develdownloads.html>`_ (Linux/Mac/Windows; Py27/35/36).
 ``bash`` it. Follow the prompts and *do* make the adjustments to
 :envvar:`PATH` and :envvar:`PSI_SCRATCH` that it suggests at the end. Test
@@ -140,6 +140,8 @@ following:
 All done!
 
 Configuration for this set-up is summarized at :ref:`faq:runfrombinary`.
+
+.. note:: |PSIfour| installs a Python distribution alongside, so you should choose an installer based on the Python version you *want*, irrespective of any Python version you may *have*.
 
 .. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
 
