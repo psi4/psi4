@@ -1,8 +1,6 @@
 #! SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the water
 #! dimer.
 
-memory 250 mb
-
 molecule water_dimer {
      0 1
      O  -1.551007  -0.114520   0.000000

@@ -1,9 +1,6 @@
 #! cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency
 #! analysis by finite-differences of gradients
 
-
-memory 250 mb
-
 molecule h2o {
   0 1
   O 

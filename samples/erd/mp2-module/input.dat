@@ -1,9 +1,6 @@
 #! OMP2 cc-pVDZ energy for the H2O molecule and using ERD integrals.
 
 
-
-memory 256 mb
-
 set integral_package ERD
 
 molecule hf {

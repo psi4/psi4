@@ -1,7 +1,5 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 
-memory 250 mb
-
 
 molecule h2o {
     O

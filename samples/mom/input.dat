@@ -6,8 +6,6 @@
 # The latter is somewhat dicey, you never know what 
 # you are going to find.
 
-memory 250 mb
-
 
 # Standard water molecule
 molecule water {

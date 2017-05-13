@@ -4,8 +4,6 @@
 # This will remove the 32 file in each iteration of the for loop 
 psi4_io.set_specific_retention(32,False)
 
-memory 250 mb
-
 
 molecule h2 {
    0 1

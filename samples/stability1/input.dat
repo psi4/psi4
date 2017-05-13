@@ -6,8 +6,6 @@
 
 
 
-memory 500 mb
-
 
 molecule bh {
     1  2

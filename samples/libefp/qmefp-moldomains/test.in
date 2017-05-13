@@ -1,8 +1,6 @@
 #! EFP on mixed QM and EFP systems, testing that right parts
 #! of molecule get activated.
 
-#memory 500 mb
-
 ref_qmefp_scf = -76.0139362744  #TEST
 ref_disp = -0.002198528427  #TEST
 ref_qmonly_scf = -76.0266518267  #TEST

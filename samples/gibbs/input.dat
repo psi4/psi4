@@ -1,7 +1,5 @@
 #! Test Gibbs free energies at 298 K of N2, H2O, and CH4.
 
-memory 500 mb
-
 
 molecule N2 {
   N

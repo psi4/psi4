@@ -44,8 +44,6 @@ molecule bz2 {
 
 }
 
-memory 500 mb
-
 set {
   basis cc-pVDZ
   guess sad

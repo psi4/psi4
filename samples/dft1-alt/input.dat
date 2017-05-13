@@ -1,7 +1,5 @@
 #! DFT Functional Test
 
-memory 250 mb
-
 
 molecule h2o {
 0 1

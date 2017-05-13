@@ -1,7 +1,5 @@
 #! Optimization followed by frequencies H2O HF/cc-pVDZ
 
-memory 250 mb
-
 molecule h2o {
   O 
   H 1 0.96

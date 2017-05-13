@@ -1,8 +1,6 @@
 #! DF-OMP2.5 cc-pVDZ energy for the H2O molecule.
 
 
-memory 256 mb
-
 molecule h2o {
 0 1
 o

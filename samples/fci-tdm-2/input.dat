@@ -1,7 +1,5 @@
 #! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
-memory 250 mb
-
 
 
 molecule bh_h2p {

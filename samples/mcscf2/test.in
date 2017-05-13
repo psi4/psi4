@@ -1,7 +1,5 @@
 #! TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
 
-memory 250 mb
-
 nucenergy =   68.2595076754  #TEST
 refenergy = -224.3593901378  #TEST
 

@@ -1,7 +1,5 @@
 #! conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
 
-memory 250 mb
-
 df_ref        =    -76.0167614256151865              #TEST
 df_mp2ss      =     -0.0527406422061238              #TEST
 df_mp2os      =     -0.1562926850310142              #TEST

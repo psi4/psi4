@@ -2,7 +2,6 @@
 #! Testing the in line -decontract option for basis sets
 
 
-memory 250 mb
 
 molecule {
 0 1

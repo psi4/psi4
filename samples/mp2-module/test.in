@@ -5,8 +5,6 @@ refscf      = -76.02674017978704 #TEST
 refomp2     = -76.22932767439706 #TEST
 
 
-memory 256 mb
-
 molecule hf {
 H
 F 1 0.917
@@ -89,11 +87,15 @@ clean_variables()
 clean()
 
 set qc_module dfmp2
-rob = energy('mp2', molecule=hf)
+rob, robwfn = energy('mp2', molecule=hf, return_wfn=True)
 compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
 compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
 compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
 compare_values(mp2tot, rob, 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
+# test dfmp2 wfn, too
+compare_values(scftot, robwfn.get_variable('scf total energy'), 6, 'mp2 rhf df: 2 dfmp2* wfn')  #TEST
+compare_values(mp2corl, robwfn.get_variable('mp2 correlation energy'), 6, 'mp2 rhf df: 2 dfmp2* wfn')  #TEST
+compare_values(mp2tot, robwfn.get_variable('mp2 total energy'), 6, 'mp2 rhf df: 2 dfmp2* wfn')  #TEST
 clean_variables()
 clean()
 

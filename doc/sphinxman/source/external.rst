@@ -74,7 +74,7 @@ or including them in the appropriate ``rc`` file.
 
 .. code-block:: bash
 
-    # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+    # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
     export PSI_SCRATCH=/path/to/existing/writable/local-not-network/disk/for/scratch/files
 
 |PSIfour| has a number of utilities that manage
@@ -224,7 +224,7 @@ explained below. Note that each deeper level trumps all previous levels.
 ..
 .. .. code-block:: bash
 ..
-..     # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+..     # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
 ..     export OMP_NUM_THREADS=4
 ..     export MKL_NUM_THREADS=4
 ..
@@ -533,7 +533,7 @@ These environment variables will influence |PSIfours| behavior.
 
    .. code-block:: bash
 
-       # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+       # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
        export PSI_SCRATCH=/scratch/user
 
 .. envvar:: PSIPATH
@@ -569,7 +569,7 @@ These environment variables will influence |PSIfours| behavior.
 
    .. code-block:: bash
 
-       # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+       # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
        export PSIPATH=/home/user/psiadditions:/home/user/gbs
 
 .. envvar:: PYTHONPATH
@@ -591,7 +591,7 @@ These environment variables will influence |PSIfours| behavior.
 
      .. code-block:: bash
 
-         # sh, bash: add to shell or ~/.bashrc (Linux) or ~/.bash_profile (Mac) file
+         # sh, bash: add to shell or ~/.bashrc (Linux/Windows) or ~/.bash_profile (Mac) file
          export PYTHONPATH=/home/user/psiadditions:$PYTHONPATH
 
    * Place the path in the |psirc| file so that it is available for 

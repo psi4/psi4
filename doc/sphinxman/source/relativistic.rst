@@ -64,13 +64,13 @@ The following is a simple input that will perform a Hartree--Fock calculation
 using the X2C Hamiltonian. ::
 
     molecule {
-    H
-    F 1 0.92
+      H
+      F 1 0.92
     }
 
     set {
         scf_type pk
-        basis cc-pvdz-decon
+        basis cc-pvdz
         relativistic x2c
     }
 
@@ -78,25 +78,25 @@ using the X2C Hamiltonian. ::
 
 This computation yields the following result::
 
-  @RHF Final Energy:  -100.10545426415609
+  @RHF Final Energy:  -100.10007984692388
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.1767335622934780
-    One-Electron Energy =                -150.7826788086396448
-    Two-Electron Energy =                  45.5004909821901009
-    Total Energy =                       -100.1054542641560516
+    One-Electron Energy =                -150.7611816259664579
+    Two-Electron Energy =                  45.4843682167491039
+    Total Energy =                       -100.1000798469238902
 
 while a non-relativistic calculation yields the following energy::
 
-  @RHF Final Energy:  -100.01041683847258
+  @RHF Final Energy:  -100.01928891411315
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              5.1767335622934780
-    One-Electron Energy =                -150.6714586298456027
-    Two-Electron Energy =                  45.4843082290795309
-    Total Energy =                       -100.0104168384725796
+    One-Electron Energy =                -150.6645256529074572
+    Two-Electron Energy =                  45.4685031765008461
+    Total Energy =                       -100.0192889141131474
 
 Basis sets options
 ^^^^^^^^^^^^^^^^^^

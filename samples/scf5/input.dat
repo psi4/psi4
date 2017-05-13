@@ -1,7 +1,5 @@
 #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
-memory 250 mb
-
 
 #Ensure that the checkpoint file is always nuked
 psi4_io.set_specific_retention(32,False)

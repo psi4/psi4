@@ -2,8 +2,6 @@
 
 ref.set(ref_vals)
 
-memory 250 mb
-
 molecule no {
 0 2
 n

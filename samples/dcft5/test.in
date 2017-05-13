@@ -2,8 +2,6 @@
 #! geometry optimization using two-step and simultaneous solution of the 
 #! response equations for the analytic gradient.
 
-memory 250 mb
-
 refnuc      =  27.478313787659303 #TEST
 refuhf      = -149.65205193206810  #TEST
 refmp2      = -150.010998656654920  #TEST

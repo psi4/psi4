@@ -1,8 +1,6 @@
 #! OCEPA cc-pVDZ energy for the H2O molecule.
 
 
-memory 250 mb
-
 molecule h2o {
 0 1
 o

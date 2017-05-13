@@ -4,8 +4,6 @@
 #! In the next computation ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
 
-memory 250 mb
-
 refscf      = -55.185167931335101  #TEST
 refmp2      = -55.231284743677058  #TEST
 

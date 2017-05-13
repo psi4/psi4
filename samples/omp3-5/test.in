@@ -4,8 +4,6 @@ refnuc      =  9.11294430202143 #TEST
 refscf      = -76.02611710513384 #TEST
 refsosomp3  = -76.22772062866821 #TEST
 
-memory 250 mb
-
 molecule h2o { 
 0 1
 o

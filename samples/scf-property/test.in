@@ -1,7 +1,5 @@
 #! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
 
-memory 500 mb
-
 molecule ch2 {
     0 3
     c

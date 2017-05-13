@@ -57,7 +57,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/gcp/badges/version.svg
      :target: https://anaconda.org/psi4/gcp
 
-* gCP is available as a conda package for Linux and macOS.
+* gCP is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, gCP has already been installed alongside.
 

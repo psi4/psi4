@@ -59,7 +59,7 @@ Installation
 * .. image:: https://anaconda.org/psi4/dkh/badges/version.svg
      :target: https://anaconda.org/psi4/dkh
 
-* DKH is available as a conda package for Linux and macOS.
+* DKH is available as a conda package for Linux and macOS (and Windows, through the Ubuntu shell).
 
 * If using the |PSIfour| binary, dkh has already been installed alongside.
 

@@ -3,7 +3,6 @@
 
 
 ref_energy = -460.08989223006836  #TEST
-memory 250 mb
 
 molecule {
 0 1

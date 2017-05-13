@@ -1,8 +1,6 @@
 #! Mk-MRPT2 single point. $^1A@@1$ F2 state described using
 #! the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
 
-memory 250 mb
-
 refnuc      =   30.357990246684  #TEST
 refscf      = -198.761465908975  #TEST
 refmkpt2    = -199.077889439219  #TEST

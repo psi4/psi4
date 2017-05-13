@@ -1,5 +1,3 @@
-memory 250 mb
-
 #! Test individual integral objects for correctness.
 print_stdout(' Case Study Test of Integrals')
 

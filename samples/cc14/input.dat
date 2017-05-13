@@ -1,7 +1,5 @@
 #! ROHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
 
-memory 250 mb
-
 molecule ch2 {
   0 3
   C
