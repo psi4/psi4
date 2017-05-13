@@ -223,6 +223,8 @@ endif()
 # <<<  Export Config  >>>
 
 if((DEFINED ENV{CONDA_BUILD}) AND (UNIX AND NOT APPLE))
+    # installed-alongside GCC compilers compatible with the Intel compilers used in
+    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-core/build.sh
     set(cache_CMAKE_C_COMPILER       "/opt/anaconda1anaconda2anaconda3/bin/gcc")
     set(cache_CMAKE_C_FLAGS          " -march=native -fopenmp")
     set(cache_CMAKE_CXX_COMPILER     "/opt/anaconda1anaconda2anaconda3/bin/g++")
@@ -230,8 +232,16 @@ if((DEFINED ENV{CONDA_BUILD}) AND (UNIX AND NOT APPLE))
     set(cache_CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran")
     set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
 elseif((DEFINED ENV{CONDA_BUILD}) AND (APPLE))
+    # for stdlib compatibility, must be consistent with Darwin section of
+    #   https://github.com/psi4/psi4meta/blob/master/conda-recipes/psi4-core/build.sh
+    set(cache_CMAKE_C_COMPILER       "clang")
+    set(cache_CMAKE_CXX_COMPILER     "clang++")
+    set(cache_CMAKE_CXX_FLAGS        " -stdlib=libc++")
+    set(cache_CMAKE_Fortran_COMPILER "/opt/anaconda1anaconda2anaconda3/bin/gfortran")
     set(cache_pybind11_DIR           "/opt/anaconda1anaconda2anaconda3/share/cmake/pybind11")
 else()
+    # normal plugin use. this initializes the plugin compilation from the
+    #   same-computer parent Psi4 compilation
     set(cache_CMAKE_C_COMPILER       "${CMAKE_C_COMPILER}")
     set(cache_CMAKE_C_FLAGS          "${CMAKE_C_FLAGS}")
     set(cache_CMAKE_CXX_COMPILER     "${CMAKE_CXX_COMPILER}")
