@@ -93,12 +93,6 @@ void export_fock(py::module &m) {
         .def("Imo", &DFTensor::Imo, "doctsring")
         .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
-    py::class_<DFChargeFitter, std::shared_ptr<DFChargeFitter>>(m, "DFChargeFitter", "docstring")
-        .def("setPrimary", &DFChargeFitter::setPrimary, "docstring")
-        .def("setAuxiliary", &DFChargeFitter::setAuxiliary, "docstring")
-        .def("setD", &DFChargeFitter::setD, "docstring")
-        .def("fit", &DFChargeFitter::fit, "docstring");
-
     py::class_<FittingMetric, std::shared_ptr<FittingMetric>>(m, "FittingMetric", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, bool>())
         .def("get_algorithm", &FittingMetric::get_algorithm, "docstring")
