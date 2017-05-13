@@ -36,8 +36,6 @@
 namespace psi {
 
 class BasisSet;
-class Matrix;
-class TwoBodyAOInt;
 class JK;
 class VBase;
 

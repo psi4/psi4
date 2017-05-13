@@ -40,13 +40,8 @@
 #include "psi4/libqt/qt.h"
 
 namespace psi {
-class Matrix;
 class Vector;
-class SimpleVector;
-class TwoBodySOInt;
 class JK;
-class MinimalInterface;
-class SOSCF;
 class PCM;
 class SuperFunctional;
 class VBase;

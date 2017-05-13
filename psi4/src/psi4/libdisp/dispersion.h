@@ -41,7 +41,6 @@
 namespace psi {
 
 class Molecule;
-class Matrix;
 
 class Dispersion {
 

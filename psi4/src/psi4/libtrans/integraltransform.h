@@ -42,7 +42,6 @@
 
 namespace psi{
 
-struct dpdfile4;
 struct dpdbuf4;
 class Matrix;
 class Dimension;

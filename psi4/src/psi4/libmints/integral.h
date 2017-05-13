@@ -72,13 +72,11 @@ class OneBodyAOInt;
 class OneBodySOInt;
 class TwoBodyAOInt;
 class ThreeCenterOverlapInt;
-class Symmetry;
 class CartesianIter;
 class RedundantCartesianIter;
 class RedundantCartesianSubIter;
 class ShellRotation;
 class SymmetryOperation;
-class SOTransform;
 class SOBasisSet;
 class CorrelationFactor;
 

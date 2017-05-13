@@ -43,9 +43,7 @@ namespace psi {
 
     class BasisSet;
     class GaussianShell;
-    class IntegralFactory;
     class SphericalTransform;
-    class SimpleMatrix;
 
 /*! \ingroup MINTS
  *  \class KineticInt

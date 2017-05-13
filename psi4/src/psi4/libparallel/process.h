@@ -43,7 +43,6 @@ namespace psi{
 class Molecule;
 class Wavefunction;
 class PointGroup;
-class ExternalPotential;
 class Matrix;
 class Vector;
 

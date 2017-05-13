@@ -35,11 +35,6 @@
 #include <string>
 
 namespace psi {
-class Chkpt;
-
-class Communicator;
-
-class PSIO;
 
 // Useful typedef's
 typedef SharedWavefunction (*plugin_t)(SharedWavefunction, Options&);

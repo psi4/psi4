@@ -42,7 +42,6 @@
 #include <PCMSolver/pcmsolver.h>
 
 namespace psi {
-class Matrix;
 class BasisSet;
 class Options;
 using SharedMatrix=std::shared_ptr<Matrix>;

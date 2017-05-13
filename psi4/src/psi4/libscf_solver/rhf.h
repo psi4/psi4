@@ -34,12 +34,6 @@
 
 namespace psi {
 
-class TwoBodySOInt;
-class PSIO;
-class Chkpt;
-class Matrix;
-class Vector;
-
 namespace scf {
 
 class RHF : public HF {

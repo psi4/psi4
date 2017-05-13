@@ -45,7 +45,6 @@ class AIOHandler;
 class ERISieve;
 class BasisSet;
 class GaussianShell;
-class AOShellCombinationsIterator;
 
 namespace pk {
 

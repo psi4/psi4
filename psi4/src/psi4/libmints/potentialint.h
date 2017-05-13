@@ -37,10 +37,7 @@
 namespace psi{
 
 class GaussianShell;
-class OneBodyAOInt;
-class IntegralFactory;
 class SphericalTransform;
-class Vector3;
 
 /**
  * This is a cheesy modification to PotentialInt, to allow the in-place handling of integrals to avoid storage

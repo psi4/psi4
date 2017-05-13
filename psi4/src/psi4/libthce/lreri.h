@@ -42,8 +42,6 @@ namespace psi {
 
 class Options;
 class Tensor;
-class CoreTensor;
-class DiskTensor;
 class BasisSet;
 class LRERI {
 

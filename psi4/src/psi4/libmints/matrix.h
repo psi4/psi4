@@ -48,8 +48,6 @@ struct dpdfile2;
 
 class PSIO;
 class Vector;
-class SimpleVector;
-class MatrixFactory;
 class SimpleMatrix;
 class Dimension;
 class Molecule;

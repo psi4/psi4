@@ -36,10 +36,8 @@
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class TwoBodyAOInt;
 class IntegralFactory;
-class SphericalTransform;
 class Fjt;
 class AOShellCombinationsIterator;
 class CorrelationFactor;

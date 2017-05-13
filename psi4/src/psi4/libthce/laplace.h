@@ -34,7 +34,6 @@
 namespace psi {
 
 class Tensor;
-class CoreTensor;
 
 /**
  * LaplaceDenom is the second-generation Laplace Denominator class,

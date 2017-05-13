@@ -33,7 +33,6 @@ namespace psi {
 
 class BasisSet;
 class Molecule;
-class Matrix;
 
 namespace scf {
 

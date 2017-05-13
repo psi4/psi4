@@ -33,8 +33,6 @@
 #include "hf.h"
 
 namespace psi {
-class Matrix;
-class Vector;
 namespace scf {
 
 class UHF : public HF {
