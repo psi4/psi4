@@ -1001,6 +1001,68 @@ void Matrix::symmetrize_gradient(std::shared_ptr <Molecule> molecule)
     copy(ret);
     ret.reset();
 }
+void Matrix::symmetrize_hessian(SharedMolecule molecule){
+    if ((nirrep() > 1) || (rowdim() != coldim()) || (rowdim() != 3 * molecule->natom())) {
+        throw PSIEXCEPTION("Matrix::symmetrize_hessian: Matrix cannot be symmetrized.");
+    }
+
+    CharacterTable ct = molecule->point_group()->char_table();
+
+    int **atom_map = compute_atom_map(molecule);
+
+    SharedMatrix symm(new Matrix(clone()));
+    symm->zero();
+    double **pH = pointer();
+    double **pS = symm->pointer();
+
+    // Symmetrize the Hessian's columns to remove any noise
+    int dim = 3 * molecule->natom();
+    for (int n = 0; n < dim; ++n) {
+        for (int atom = 0; atom < molecule->natom(); ++atom) {
+            for (int g = 0; g < ct.order(); ++g) {
+                int Gatom = atom_map[atom][g];
+
+                SymmetryOperation so = ct.symm_operation(g);
+
+                pS[n][3 * atom + 0] += so(0, 0) * pH[n][3 * Gatom + 0] / ct.order();
+                pS[n][3 * atom + 0] += so(0, 1) * pH[n][3 * Gatom + 1] / ct.order();
+                pS[n][3 * atom + 0] += so(0, 2) * pH[n][3 * Gatom + 2] / ct.order();
+
+                pS[n][3 * atom + 1] += so(1, 0) * pH[n][3 * Gatom + 0] / ct.order();
+                pS[n][3 * atom + 1] += so(1, 1) * pH[n][3 * Gatom + 1] / ct.order();
+                pS[n][3 * atom + 1] += so(1, 2) * pH[n][3 * Gatom + 2] / ct.order();
+
+                pS[n][3 * atom + 2] += so(2, 0) * pH[n][3 * Gatom + 0] / ct.order();
+                pS[n][3 * atom + 2] += so(2, 1) * pH[n][3 * Gatom + 1] / ct.order();
+                pS[n][3 * atom + 2] += so(2, 2) * pH[n][3 * Gatom + 2] / ct.order();
+            }
+        }
+    }
+    zero();
+    // Symmetrize the Hessian's rows to remove any noise
+    for (int n = 0; n < dim; ++n) {
+        for (int atom = 0; atom < molecule->natom(); ++atom) {
+            for (int g = 0; g < ct.order(); ++g) {
+                int Gatom = atom_map[atom][g];
+
+                SymmetryOperation so = ct.symm_operation(g);
+
+                pH[3 * atom + 0][n] += so(0, 0) * pS[3 * Gatom + 0][n] / ct.order();
+                pH[3 * atom + 0][n] += so(0, 1) * pS[3 * Gatom + 1][n] / ct.order();
+                pH[3 * atom + 0][n] += so(0, 2) * pS[3 * Gatom + 2][n] / ct.order();
+
+                pH[3 * atom + 1][n] += so(1, 0) * pS[3 * Gatom + 0][n] / ct.order();
+                pH[3 * atom + 1][n] += so(1, 1) * pS[3 * Gatom + 1][n] / ct.order();
+                pH[3 * atom + 1][n] += so(1, 2) * pS[3 * Gatom + 2][n] / ct.order();
+
+                pH[3 * atom + 2][n] += so(2, 0) * pS[3 * Gatom + 0][n] / ct.order();
+                pH[3 * atom + 2][n] += so(2, 1) * pS[3 * Gatom + 1][n] / ct.order();
+                pH[3 * atom + 2][n] += so(2, 2) * pS[3 * Gatom + 2][n] / ct.order();
+            }
+        }
+    }
+    delete_atom_map(atom_map, molecule);
+}
 
 void Matrix::identity()
 {
@@ -2280,7 +2342,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
         }
         sigpi[h] = nQ;
 
-	delete [] Dp;
+    delete [] Dp;
     }
 
     // Copy out to properly sized array
@@ -2653,7 +2715,7 @@ void Matrix::zero_lower()
     }
 
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for schedule(dynamic) 
+#pragma omp parallel for schedule(dynamic)
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < m; ++n) {
                 matrix_[h][m][n] = 0.0;
@@ -2670,7 +2732,7 @@ void Matrix::zero_upper()
     }
 
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for schedule(dynamic) 
+#pragma omp parallel for schedule(dynamic)
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < m; ++n) {
                 matrix_[h][n][m] = 0.0;

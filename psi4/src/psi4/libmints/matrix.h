@@ -660,6 +660,12 @@ public:
      */
     void symmetrize_gradient(std::shared_ptr<Molecule> mol);
 
+    /**
+     * Symmetrizes the a Hessian like matrix (3 * N, 3 * N) using information
+     * from the given Molecule.
+     */
+    void symmetrize_hessian(std::shared_ptr<Molecule> mol);
+
     /// Set this to identity
     void identity();
     /// Zeros this out
