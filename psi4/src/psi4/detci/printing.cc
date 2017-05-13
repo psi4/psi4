@@ -119,9 +119,9 @@ namespace psi { namespace detci {
     void CIWavefunction::dump_vec(size_t ndets, int *Ialist, int *Iblist,
 					  int *Iaidx, int *Ibidx, double *coeff, const char *fname)
     {
-      // detci's orbitals are blocked by symmetry, but we want the
-      // output to be in energy ordering so that the Aufbau
-      // determinant would be usually the first one.
+      // The bitstrings are in CI order, which is first translated
+      // into Pitzer order (symmetry blocks), and then into energy
+      // order for the output.
 
       // First, collect the indices of the orbitals into symmetry blocks
       std::vector< std::vector<int> > symblocks(nirrep_);
@@ -129,8 +129,8 @@ namespace psi { namespace detci {
 	symblocks[CalcInfo_->orbsym[i]].push_back(i);
       }
 
-      // Tuple holding the energy and the number of the active orbital
-      std::vector< std::tuple<double, int> > order;
+      // Tuple holding the energy, the number of the active orbital, and the symmetry block
+      std::vector< std::tuple<double, int> > Eorder;
 
       // Loop over symmetry blocks
       for (int h = 0; h < nirrep_; h++) {
@@ -141,18 +141,18 @@ namespace psi { namespace detci {
 
 	// Loop over orbitals
 	for (int iact = actstart; iact < actend; iact++) {
-	  int n = (int) order.size();
-	  order.push_back(std::tuple<double, int>(CalcInfo_->scfeigval[symblocks[h][iact]],n));
+	  int n = (int) Eorder.size();
+	  Eorder.push_back(std::tuple<double, int>(CalcInfo_->scfeigval[symblocks[h][iact]], n));
 	}
       }
 
       // Sort orbitals in energy
-      std::sort(order.begin(), order.end(), std::less < std::tuple < double, int > > ());
+      std::sort(Eorder.begin(), Eorder.end(), std::less < std::tuple < double, int > > ());
 
       // Mapping from the original to the energy order
-      std::vector<int> mapping(order.size());
-      for(int i = 0; i < (int) order.size(); i++) {
-	mapping[std::get<1>(order[i])] = i;
+      std::vector<int> mapping(Eorder.size());
+      for(int i = 0; i < (int) Eorder.size(); i++) {
+	mapping[std::get<1>(Eorder[i])] = i;
       }
 
       // Determinant strings in decreasing coeffient
@@ -160,6 +160,7 @@ namespace psi { namespace detci {
       for (size_t idet=0; idet<ndets; idet++) {
 	struct stringwr *stralp=alplist_[Ialist[idet]] + Iaidx[idet];
 	struct stringwr *strbet=betlist_[Iblist[idet]] + Ibidx[idet];
+	const std::vector<int> & porder=CalcInfo_->act_order;
 	int num_alp_el=AlphaG_->num_el_expl;
 	int num_bet_el=BetaG_->num_el_expl;
 	int num_orb=AlphaG_->num_orb;
@@ -173,12 +174,36 @@ namespace psi { namespace detci {
 
 	// Fill the strings
 	for (int k=0; k<num_alp_el; k++) {
-	  fflush(stdout);
-	  sbstr[mapping[(stralp->occs)[k]]]='u';
+	  // Orbital number in CI ordering
+	  int io=stralp->occs[k];
+	  // Translated back into Pitzer order this is
+	  io=porder[io];
+	  // which can finally be put into energy order as
+	  io=mapping[io];
+
+	  if(io<0) {
+	    outfile->Printf( "(dump_vec): io<0\n");
+	  }
+	  if(io>=num_orb) {
+	    outfile->Printf( "(dump_vec): io>=num_orb\n");
+	  }
+	  sbstr[io]='u';
 	}
 	for (int k=0; k<num_bet_el; k++) {
-	  fflush(stdout);
-	  sbstr[mapping[(strbet->occs)[k]]] = (sbstr[mapping[(strbet->occs)[k]]]=='u') ? '2' : 'd';
+	  // Orbital number in CI ordering
+	  int io=strbet->occs[k];
+	  // Translated back into Pitzer order this is
+	  io=porder[io];
+	  // which can finally be put into energy order as
+	  io=mapping[io];
+
+	  if(io<0) {
+	    outfile->Printf( "(dump_vec): io<0\n");
+	  }
+	  if(io>=num_orb) {
+	    outfile->Printf( "(dump_vec): io>=num_orb\n");
+	  }
+	  sbstr[io] = (sbstr[io]=='u') ? '2' : 'd';
 	}
 
 	dets[idet]=std::tuple<double, double, std::string>(std::abs(coeff[idet]),coeff[idet],sbstr);
