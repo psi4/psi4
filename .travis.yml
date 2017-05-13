@@ -150,7 +150,7 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n p4env python=$PYTHON_VER numpy cmake dftd3 libint=1.1.6 libxc gdma libefp -c psi4 -c psi4/label/dev -c psi4/label/test
+- conda create -q -n p4env python=$PYTHON_VER numpy cmake dftd3 libint=1.2.0 libxc gdma libefp -c psi4 -c psi4/label/dev -c psi4/label/test
 - source activate p4env
 - conda list
 before_script:
