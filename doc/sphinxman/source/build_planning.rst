@@ -179,7 +179,7 @@ What are the tools and dependencies strictly required for building Psi4
 -----------------------------------------------------------------------
 
 The core |PSIfour| build requires the software below. Note that Python,
-CMake, NumPy, and libint (and even C++ compilers on Linux) can be
+CMake, NumPy, and Libint (and even C++ compilers on Linux) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
@@ -199,7 +199,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
 
-* :ref:`libint <cmake:libint>` |w---w| :ref:`[what is this?] <sec:libint>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
+* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is this?] <sec:libint>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
 
 * pybind11 |w---w| `[what is this?] <https://pybind11.readthedocs.io/en/master/>`_ `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
 
@@ -269,7 +269,7 @@ Additionally, there are runtime-only capabilities:
 How to configure code to use high angular momentum basis sets
 -------------------------------------------------------------
 
-The :ref:`libint <addon:libint>` integral code handles arbitrary order
+The :ref:`Libint <addon:libint>` integral code handles arbitrary order
 angular momentum, but compiling that is prohibitive. The default of ``5``
 is generally good. ``6`` has met all of a research group's needs for
 years. ``4`` is handy for quickly testing other parts of the build.
@@ -294,7 +294,7 @@ years. ``4`` is handy for quickly testing other parts of the build.
                        # cc-pVQZ for energies, cc-pVTZ for gradients, cc-pVDZ
                        # for frequencies. [default: 5]
 
-Note that since |PSIfour| 1.1, it is possible to build libint
+Note that since |PSIfour| 1.1, it is possible to build Libint
 independently (or install just the libint conda package), then have
 any/all |PSIfour| builds detect that installation at compile-time.
 
@@ -428,7 +428,7 @@ are detected pre-built rather than built.
 How to fix error "``RuntimeError: value for ERI``"
 --------------------------------------------------
 
-You will need to rebuild libint. Reissue ``cmake`` or edit
+You will need to rebuild Libint. Reissue ``cmake`` or edit
 ``CMakeCache.txt`` with larger ``MAX_AM_ERI`` and rebuilt.
 
 * :ref:`faq:setupmaxameri`

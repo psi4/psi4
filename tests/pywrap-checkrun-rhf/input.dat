@@ -18,6 +18,10 @@ set reference rhf
 print('  Checking gradient methods (ground state) ...')
 
 set basis sto-3g
+# three keywords below are so test can pass with default max_am_eri=5
+set df_basis_scf cc-pvdz-jkfit
+set df_basis_mp2 cc-pvdz-ri
+set df_basis_cc cc-pvdz-ri
 
 Earray = [
   'SCF',

@@ -28,11 +28,11 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. index:: LIBINT, integrals
+.. index:: Libint, integrals
 
 .. _`sec:libint`:
 
-Interface to LIBINT by E. Valeev
+Interface to Libint by E. Valeev
 ================================
 
 .. codeauthor:: Edward F. Valeev and Justin T. Fermann
@@ -41,7 +41,7 @@ Interface to LIBINT by E. Valeev
 .. *Module:* :ref:`Keywords <apdx:efp>`, :ref:`PSI Variables <apdx:efp_psivar>`, :source:`LIBEFP <src/lib/libefp_solver>`
 
 .. image:: https://img.shields.io/badge/home-libint-5077AB.svg
-   :target: https://github.com/psi4/libint
+   :target: https://github.com/evaleev/libint
 
 .. raw:: html
 
@@ -50,10 +50,10 @@ Interface to LIBINT by E. Valeev
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
    :target: http://evaleev.github.io/libint/
 
-|PSIfour|, particularly libmints utterly relies upon the LIBINT library
+|PSIfour|, particularly libmints utterly relies upon the Libint library
 developed by E. Valeev from early roots by J. Fermann. Libint requires no
 additional licence, downloads, or configuration. Conversely, |Psifour|
-cannot build *without* libint.
+cannot build *without* Libint.
 
 Installation
 ~~~~~~~~~~~~
@@ -63,47 +63,47 @@ Installation
 * .. image:: https://anaconda.org/psi4/libint/badges/version.svg
      :target: https://anaconda.org/psi4/libint
 
-* libint is available as a conda package for Linux and macOS.
+* Libint is available as a conda package for Linux and macOS.
 
-* If using the |PSIfour| binary, libint has already been installed alongside.
+* If using the |PSIfour| binary, Libint has already been installed alongside.
 
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
-  libint can be obtained through ``conda install libint``.
+  Libint can be obtained through ``conda install libint``.
   Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
-  and rebuild |PSIfour| to detect libint and activate dependent code.
+  and rebuild |PSIfour| to detect Libint and activate dependent code.
 
 * To remove a conda installation, ``conda remove libint``.
 
 **Source**
 
-* .. image:: https://img.shields.io/github/tag/psi4/libint.svg?maxAge=2592000
-     :target: https://github.com/psi4/libint
+* .. image:: https://img.shields.io/github/tag/evaleev/libint.svg?maxAge=2592000
+     :target: https://github.com/evaleev/libint/tree/v1
 
-* If using |PSIfour| built from source and you want libint built from
+* If using |PSIfour| built from source and you want Libint built from
   from source also,
   let the build system fetch and build it and activate dependent code.
 
 
 .. _`cmake:libint`:
 
-How to configure libint for building Psi4
+How to configure Libint for building Psi4
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Role and Dependencies**
 
-* Role |w---w| In |PSIfour|, libint is a library that provides essential
+* Role |w---w| In |PSIfour|, Libint is a library that provides essential
   two-body molecular integrals over Gaussian functions.
 
-* Downstream Dependencies |w---w| |PSIfour| |dr| libint
+* Downstream Dependencies |w---w| |PSIfour| |dr| Libint
 
-* Upstream Dependencies |w---w| libint |dr| None
+* Upstream Dependencies |w---w| Libint |dr| None
 
 **CMake Variables**
 
-* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For libint, set to an installation directory containing ``include/libint/libint.h``
-* :makevar:`libint_DIR` |w---w| CMake variable to specify where pre-built libint can be found. Set to installation directory containing ``share/cmake/libint/libintConfig.cmake``
-* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_libint` |w---w| CMake variable to force internal build of libint instead of detecting pre-built
+* :makevar:`CMAKE_PREFIX_PATH` |w---w| CMake list variable to specify where pre-built dependencies can be found. For Libint, set to an installation directory containing ``include/libint/libint.h``
+* :makevar:`Libint_DIR` |w---w| CMake variable to specify where pre-built Libint can be found. Set to installation directory containing ``share/cmake/Libint/LibintConfig.cmake``
+* :makevar:`CMAKE_DISABLE_FIND_PACKAGE_Libint` |w---w| CMake variable to force internal build of Libint instead of detecting pre-built
 
 **Examples**
 
@@ -121,11 +121,11 @@ B. Link against pre-built
 
   .. code-block:: bash
 
-    >>> cmake -Dlibint_DIR=/path/to/libint/configdir
+    >>> cmake -DLibint_DIR=/path/to/libint/configdir
 
 C. Build bundled despite pre-built being detectable
 
   .. code-block:: bash
 
-    >>> cmake -DCMAKE_PREFIX_PATH=/path/to/unwanted/libint/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_libint=ON
+    >>> cmake -DCMAKE_PREFIX_PATH=/path/to/unwanted/libint/root/and/wanted/other/dependencies/root -DCMAKE_DISABLE_FIND_PACKAGE_Libint=ON
 

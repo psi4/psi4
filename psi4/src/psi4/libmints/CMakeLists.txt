@@ -73,7 +73,7 @@ if(TARGET simint::simint)
 endif()
 psi4_add_module(lib mints sources_list iwl options psi4util trans efp_solver)
 
-target_link_libraries(mints PRIVATE libint::libint)
+target_link_libraries(mints PRIVATE Libint::libint)
 if(TARGET dkh::dkh)
     target_link_libraries(mints PRIVATE dkh::dkh)
 endif()

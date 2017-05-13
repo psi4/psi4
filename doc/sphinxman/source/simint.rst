@@ -54,7 +54,7 @@ These are the vectorized implementation of the Obara-Saika (OS) method of
 calculating electron repulsion integrals developed by B. Pritchard and
 interfaced into libmints. Enabling simint and adding ``set
 integral_package simint`` (do this in ``~/.psi4rc`` for universal effect)
-runs libderiv from libint for derivative integrals and simint for
+runs libderiv from Libint for derivative integrals and simint for
 non-derivative integrals. Note that present AM maximum is ``$$(gg|gg)$$``
 
 Installation

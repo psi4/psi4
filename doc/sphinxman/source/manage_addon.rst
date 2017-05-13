@@ -97,7 +97,7 @@ How to integrate an Add-On into build, testing, and docs
 
 * :source:`psi4/CMakeLists.txt`
 
-  * Add a block imitating libint if Add-On required or CheMPS2 if not
+  * Add a block imitating Libint if Add-On required or CheMPS2 if not
     required
 
   * If there are shared resources to the external that need

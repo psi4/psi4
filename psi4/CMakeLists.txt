@@ -108,10 +108,10 @@ else()
     message(STATUS "Disabled gdma")
 endif()
 
-find_package(libint CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
-get_property(_loc TARGET libint::int PROPERTY LOCATION)
+find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
+get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
-message(STATUS "${Cyan}Using libint ${libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${libint_VERSION})")
+message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 
 if(${ENABLE_PCMSolver})
     find_package(PCMSolver 1.1.10 CONFIG REQUIRED)
