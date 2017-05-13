@@ -34,9 +34,8 @@
 
 using namespace psi;
 
-void export_cubeprop(py::module& m)
-{
-    py::class_<CubeProperties, std::shared_ptr<CubeProperties> >(m, "CubeProperties", "docstring")
+void export_cubeprop(py::module& m) {
+    py::class_<CubeProperties, std::shared_ptr<CubeProperties>>(m, "CubeProperties", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("compute_properties", &CubeProperties::compute_properties, "docstring");
 }

@@ -44,8 +44,7 @@
 
 using namespace psi;
 
-void export_functional(py::module &m)
-{
+void export_functional(py::module &m) {
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring")
 
         .def(py::init<>())
@@ -103,8 +102,10 @@ void export_functional(py::module &m)
              "Sets the range-seperation correlation parameter.")
         .def("set_x_alpha", &SuperFunctional::set_x_alpha, "Sets the amount of exact HF exchange.")
         .def("set_c_alpha", &SuperFunctional::set_c_alpha, "Sets the amount of MP2 correlation.")
-        .def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "Sets the amount of SS MP2 correlation.")
-        .def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "Sets the amount of OS MP2 correlation.")
+        .def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha,
+             "Sets the amount of SS MP2 correlation.")
+        .def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha,
+             "Sets the amount of OS MP2 correlation.")
         .def("set_vv10_b", &SuperFunctional::set_vv10_b, "Sets the VV10 b parameter.")
         .def("set_vv10_c", &SuperFunctional::set_vv10_c, "Sets the VV10 c parameter.")
         .def("set_grac_shift", &SuperFunctional::set_grac_shift, "Sets the GRAC bulk shift value.")
@@ -182,8 +183,6 @@ void export_functional(py::module &m)
         .def("finalize", &VBase::finalize, "Finalizes the V object.")
         .def("print_header", &VBase::print_header, "Prints the objects header.");
 
-
-
     py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>())
         .def("max_functions", &BasisFunctions::max_functions, "docstring")
@@ -208,13 +207,11 @@ void export_functional(py::module &m)
         .def("point_values", &PointFunctions::point_values, "docstring")
         .def("orbital_values", &PointFunctions::orbital_values, "docstring");
 
-    py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions",
-                                                                                "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, int, int>());
+    py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(
+        m, "RKSFunctions", "docstring").def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
-    py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(m, "UKSFunctions",
-                                                                                "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, int, int>());
+    py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(
+        m, "UKSFunctions", "docstring").def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
     py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
         .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector,
@@ -262,20 +259,20 @@ void export_functional(py::module &m)
         .def("print", &MolecularGrid::print, "Prints grid information.")
         .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
         .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
-        .def("max_points", &MolecularGrid::max_points, "Returns the maximum number of points in a block.")
+        .def("max_points", &MolecularGrid::max_points,
+             "Returns the maximum number of points in a block.")
         .def("max_functions", &MolecularGrid::max_functions,
              "Returns the maximum number of functions in a block.")
         .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
 
     py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
-        .def_static("build",
-                     [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
-                         return DFTGrid(mol, basis, Process::environment.options);
-                     });
+        .def_static("build", [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
+            return DFTGrid(mol, basis, Process::environment.options);
+        });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
         .def_static("build", &Dispersion::build, py::arg("type"), py::arg("s6") = 0.0,
-                   py::arg("p1") = 0.0, py::arg("p2") = 0.0, py::arg("p3") = 0.0, "docstring")
+                    py::arg("p1") = 0.0, py::arg("p2") = 0.0, py::arg("p3") = 0.0, "docstring")
         .def("name", &Dispersion::name, "docstring")
         .def("description", &Dispersion::description, "docstring")
         .def("citation", &Dispersion::citation, "docstring")

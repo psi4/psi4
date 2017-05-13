@@ -63,7 +63,11 @@ void export_fock(py::module &m) {
                  jk.C_left().clear();
                  jk.C_right().clear();
              })
-        .def("C_add", [](JK &jk, SharedMatrix Cl) { jk.C_left().push_back(Cl); jk.C_right().push_back(Cl); })
+        .def("C_add",
+             [](JK &jk, SharedMatrix Cl) {
+                 jk.C_left().push_back(Cl);
+                 jk.C_right().push_back(Cl);
+             })
         .def("C_left_add", [](JK &jk, SharedMatrix Cl) { jk.C_left().push_back(Cl); })
         .def("C_right_add", [](JK &jk, SharedMatrix Cr) { jk.C_right().push_back(Cr); })
         .def("J", &JK::J, py::return_value_policy::reference_internal)
@@ -89,25 +93,25 @@ void export_fock(py::module &m) {
         .def("Imo", &DFTensor::Imo, "doctsring")
         .def("Idfmo", &DFTensor::Idfmo, "doctsring");
 
-    py::class_<DFChargeFitter, std::shared_ptr<DFChargeFitter>>(m, "DFChargeFitter", "docstring").
-            def("setPrimary", &DFChargeFitter::setPrimary, "docstring").
-            def("setAuxiliary", &DFChargeFitter::setAuxiliary, "docstring").
-            def("setD", &DFChargeFitter::setD, "docstring").
-            def("fit", &DFChargeFitter::fit, "docstring");
+    py::class_<DFChargeFitter, std::shared_ptr<DFChargeFitter>>(m, "DFChargeFitter", "docstring")
+        .def("setPrimary", &DFChargeFitter::setPrimary, "docstring")
+        .def("setAuxiliary", &DFChargeFitter::setAuxiliary, "docstring")
+        .def("setD", &DFChargeFitter::setD, "docstring")
+        .def("fit", &DFChargeFitter::fit, "docstring");
 
-    py::class_<FittingMetric, std::shared_ptr<FittingMetric> >(m, "FittingMetric", "docstring").
-            def(py::init<std::shared_ptr<BasisSet>, bool>()).
-            def("get_algorithm", &FittingMetric::get_algorithm, "docstring").
-            def("is_poisson", &FittingMetric::is_poisson, "docstring").
-            def("is_inverted", &FittingMetric::is_inverted, "docstring").
-            def("get_metric", &FittingMetric::get_metric, "docstring").
-            def("get_pivots", &FittingMetric::get_pivots, "docstring").
-            def("get_reverse_pivots", &FittingMetric::get_reverse_pivots, "docstring").
-            def("form_fitting_metric", &FittingMetric::form_fitting_metric, "docstring").
-            def("form_cholesky_inverse", &FittingMetric::form_cholesky_inverse, "docstring").
-            def("form_QR_inverse", &FittingMetric::form_QR_inverse, "docstring").
-            def("form_eig_inverse", &FittingMetric::form_eig_inverse, "docstring").
-            def("form_full_inverse", &FittingMetric::form_full_inverse, "docstring");
+    py::class_<FittingMetric, std::shared_ptr<FittingMetric>>(m, "FittingMetric", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, bool>())
+        .def("get_algorithm", &FittingMetric::get_algorithm, "docstring")
+        .def("is_poisson", &FittingMetric::is_poisson, "docstring")
+        .def("is_inverted", &FittingMetric::is_inverted, "docstring")
+        .def("get_metric", &FittingMetric::get_metric, "docstring")
+        .def("get_pivots", &FittingMetric::get_pivots, "docstring")
+        .def("get_reverse_pivots", &FittingMetric::get_reverse_pivots, "docstring")
+        .def("form_fitting_metric", &FittingMetric::form_fitting_metric, "docstring")
+        .def("form_cholesky_inverse", &FittingMetric::form_cholesky_inverse, "docstring")
+        .def("form_QR_inverse", &FittingMetric::form_QR_inverse, "docstring")
+        .def("form_eig_inverse", &FittingMetric::form_eig_inverse, "docstring")
+        .def("form_full_inverse", &FittingMetric::form_full_inverse, "docstring");
 
     py::class_<SOMCSCF, std::shared_ptr<SOMCSCF>>(m, "SOMCSCF", "docstring")
         // .def(init<std::shared_ptr<JK>, SharedMatrix, SharedMatrix >())
@@ -137,8 +141,9 @@ void export_fock(py::module &m) {
 
     // DF Helper
     typedef SharedMatrix (df_helper::DF_Helper::*take_string)(std::string);
-    typedef SharedMatrix (df_helper::DF_Helper::*tensor_access3)(std::string,
-        std::pair<size_t, size_t>, std::pair<size_t, size_t>, std::pair<size_t, size_t>);
+    typedef SharedMatrix (df_helper::DF_Helper::*tensor_access3)(
+        std::string, std::pair<size_t, size_t>, std::pair<size_t, size_t>,
+        std::pair<size_t, size_t>);
 
     py::class_<df_helper::DF_Helper, std::shared_ptr<df_helper::DF_Helper>>(m, "DF_Helper",
                                                                             "docstring")

@@ -109,10 +109,7 @@ void export_mints(py::module& m)
              // make_function(&Dimension::name, return_value_policy<copy_const_reference>()),
              py::cpp_function(&Dimension::name), py::cpp_function(&Dimension::set_name),
              "The name of the dimension. Used in printing.")
-        .
-        // def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(),
-        // "docstring").
-        def("__getitem__", &Dimension::get, py::return_value_policy::copy, "docstring")
+        .def("__getitem__", &Dimension::get, py::return_value_policy::copy, "docstring")
         .def("__setitem__", &Dimension::set, "docstring");
 
     py::class_<Vector, std::shared_ptr<Vector>>(m, "Vector", "docstring", py::dynamic_attr())
@@ -206,6 +203,8 @@ void export_mints(py::module& m)
         // def("set_name", &Matrix::set_name, "docstring").
         // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
         .def("print_out", &Matrix::print_out, "docstring")
+        .def("print_atom_vector", &Matrix::print_atom_vector, py::arg("RMRoutfile") = "outfile",
+             "Print the matrix with atom labels, assuming it is an natom X 3 tensor")
         .def("rows", &Matrix::rowdim, "docstring")
         .def("cols", &Matrix::coldim, "docstring")
         .def("rowdim", matrix_ret_dimension(&Matrix::rowspi), py::return_value_policy::copy,
@@ -865,15 +864,6 @@ void export_mints(py::module& m)
     py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, BasisSetParser>(
         m, "Gaussian94BasisSetParser", "docstring");
 
-    // py::bind_map<std::string, std::vector>(m, "ShellInfo");
-
-    // class_<ShellInfoMap>("ShellInfoMap")
-    //   .def(map_indexing_suite<ShellInfoMap>());
-
-    // using ShellInfoMapMap = std::map<std::string,ShellInfoMap>;
-    // class_<ShellInfoMapMap>("ShellInfoMapMap")
-    //   .def(map_indexing_suite<ShellInfoMapMap>());
-
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
@@ -953,45 +943,49 @@ void export_mints(py::module& m)
                                                                          "docstring");
     py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer", "docstring");
 
-    py::class_<FCHKWriter, std::shared_ptr<FCHKWriter> >(m, "FCHKWriter", "docstring").
-            def(py::init<std::shared_ptr<Wavefunction> >()).
-            def("write", &FCHKWriter::write, "docstring");
+    py::class_<FCHKWriter, std::shared_ptr<FCHKWriter>>(m, "FCHKWriter", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("write", &FCHKWriter::write, "docstring");
 
-    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter> >(m, "MoldenWriter", "docstring").
-            def(py::init<std::shared_ptr<Wavefunction> >()).
-            def("write", &MoldenWriter::write, "docstring");
+    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("write", &MoldenWriter::write, "docstring");
 
-    py::class_<NBOWriter, std::shared_ptr<NBOWriter> >(m, "NBOWriter", "docstring").
-            def(py::init<std::shared_ptr<Wavefunction> >()).
-            def("write", &NBOWriter::write, "docstring");
+    py::class_<NBOWriter, std::shared_ptr<NBOWriter>>(m, "NBOWriter", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("write", &NBOWriter::write, "docstring");
 
-    py::class_<MOWriter, std::shared_ptr<MOWriter> >(m, "MOWriter", "docstring").
-            def(py::init<std::shared_ptr<Wavefunction> >()).
-            def("write", &MOWriter::write, "docstring");
+    py::class_<MOWriter, std::shared_ptr<MOWriter>>(m, "MOWriter", "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("write", &MOWriter::write, "docstring");
 
-    py::class_<OperatorSymmetry, std::shared_ptr<OperatorSymmetry> >(m, "MultipoleSymmetry", "docstring").
-            def(py::init<int, const std::shared_ptr<Molecule>&,
-                const std::shared_ptr<IntegralFactory>&,
-                const std::shared_ptr<MatrixFactory>&>()).
-            def("create_matrices", &OperatorSymmetry::create_matrices, "docstring");
+    py::class_<OperatorSymmetry, std::shared_ptr<OperatorSymmetry>>(m, "MultipoleSymmetry",
+                                                                    "docstring")
+        .def(py::init<int, const std::shared_ptr<Molecule>&,
+                      const std::shared_ptr<IntegralFactory>&,
+                      const std::shared_ptr<MatrixFactory>&>())
+        .def("create_matrices", &OperatorSymmetry::create_matrices, "docstring");
 
-    py::class_<CorrelationFactor, std::shared_ptr<CorrelationFactor>>(m, "CorrelationFactor", "docstring").
-            def(py::init<unsigned int>()).
-            def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector> >()).
-            def("set_params", &CorrelationFactor::set_params, "docstring");
+    py::class_<CorrelationFactor, std::shared_ptr<CorrelationFactor>>(m, "CorrelationFactor",
+                                                                      "docstring")
+        .def(py::init<unsigned int>())
+        .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>>())
+        .def("set_params", &CorrelationFactor::set_params, "docstring");
 
-    py::class_<FittedSlaterCorrelationFactor, CorrelationFactor>(m, "FittedSlaterCorrelationFactor", "docstring").
-            def(py::init<double>()).
-            def("exponent", &FittedSlaterCorrelationFactor::exponent);
+    py::class_<FittedSlaterCorrelationFactor, CorrelationFactor>(m, "FittedSlaterCorrelationFactor",
+                                                                 "docstring")
+        .def(py::init<double>())
+        .def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
-    py::class_<CorrelationTable, std::shared_ptr<CorrelationTable>>(m, "CorrelationTable", "docstring").
-            def(py::init<std::shared_ptr<PointGroup>, std::shared_ptr<PointGroup>>()).
-            def("group", &CorrelationTable::group, "docstring").
-            def("subgroup", &CorrelationTable::subgroup, "docstring").
-            def("n", &CorrelationTable::n, "docstring").
-            def("subn", &CorrelationTable::subn, "docstring").
-            def("degen", &CorrelationTable::degen, "docstring").
-            def("subdegen", &CorrelationTable::subdegen, "docstring").
-            def("ngamma", &CorrelationTable::ngamma, "docstring").
-            def("group", &CorrelationTable::gamma, "docstring");
+    py::class_<CorrelationTable, std::shared_ptr<CorrelationTable>>(m, "CorrelationTable",
+                                                                    "docstring")
+        .def(py::init<std::shared_ptr<PointGroup>, std::shared_ptr<PointGroup>>())
+        .def("group", &CorrelationTable::group, "docstring")
+        .def("subgroup", &CorrelationTable::subgroup, "docstring")
+        .def("n", &CorrelationTable::n, "docstring")
+        .def("subn", &CorrelationTable::subn, "docstring")
+        .def("degen", &CorrelationTable::degen, "docstring")
+        .def("subdegen", &CorrelationTable::subdegen, "docstring")
+        .def("ngamma", &CorrelationTable::ngamma, "docstring")
+        .def("group", &CorrelationTable::gamma, "docstring");
 }

@@ -29,12 +29,11 @@
 #include "psi4/libmints/benchmark.h"
 #include "psi4/pybind11.h"
 
-void export_benchmarks(py::module& m)
-{
-    m.def("benchmark_blas1",     &psi::benchmark_blas1, "docstring");
-    m.def("benchmark_blas2",     &psi::benchmark_blas2, "docstring");
-    m.def("benchmark_blas3",     &psi::benchmark_blas3, "docstring");
-    m.def("benchmark_disk",      &psi::benchmark_disk, "docstring");
-    m.def("benchmark_math",      &psi::benchmark_math, "docstring");
+void export_benchmarks(py::module& m) {
+    m.def("benchmark_blas1", &psi::benchmark_blas1, "docstring");
+    m.def("benchmark_blas2", &psi::benchmark_blas2, "docstring");
+    m.def("benchmark_blas3", &psi::benchmark_blas3, "docstring");
+    m.def("benchmark_disk", &psi::benchmark_disk, "docstring");
+    m.def("benchmark_math", &psi::benchmark_math, "docstring");
     m.def("benchmark_integrals", &psi::benchmark_integrals, "docstring");
 }
