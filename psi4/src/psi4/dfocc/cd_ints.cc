@@ -35,6 +35,7 @@
 #include "psi4/lib3index/cholesky.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "defines.h"

@@ -33,7 +33,6 @@
 #include "psi4/lib3index/denominator.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/lib3index/df_helper.h"
-#include "psi4/lib3index/fitter.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"

@@ -31,7 +31,6 @@
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
-// #include "arrays.h"
 #include "tensors.h"
 
 using namespace std;

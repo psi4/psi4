@@ -36,6 +36,7 @@
 #include "psi4/libmints/sieve.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsio/psio.hpp"
 
 #include "defines.h"
 #include "dfocc.h"

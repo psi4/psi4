@@ -29,7 +29,7 @@
 #ifndef _dfocc_tensors_h_
 #define _dfocc_tensors_h_
 
-#include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsio/psio.h"
 
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define index4(i,j,k,l) index2(index2(i,j),index2(k,l))
@@ -41,7 +41,11 @@
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace dfoccwave{
+namespace psi{
+
+using ULI = unsigned long int;
+
+namespace dfoccwave{
 
 class Tensor1d;
 class Tensor2d;
