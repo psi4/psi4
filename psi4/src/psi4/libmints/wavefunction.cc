@@ -40,6 +40,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/integral.h"
@@ -140,8 +141,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
     nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
 
-    oeprop_ = other->oeprop_;
-
     same_a_b_dens_ = other->same_a_b_dens_;
     same_a_b_orbs_ = other->same_a_b_orbs_;
 
@@ -202,8 +201,6 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     energy_ = other->energy_;
     efzc_ = other->efzc_;
     variables_ = other->variables_;
-
-    // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
@@ -480,6 +477,12 @@ std::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const
 void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn)
 {
     reference_wavefunction_ = wfn;
+}
+
+void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
+    for (int h = 0; h < nirrep_; h++) {
+        frzvpi_[h] = frzvpi[h];
+    }
 }
 
 SharedMatrix Wavefunction::Ca() const

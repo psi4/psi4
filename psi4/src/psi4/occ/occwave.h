@@ -34,8 +34,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "arrays.h"
 
-using namespace std;
-
 namespace psi{
 
 class IntegralTransform;
@@ -360,44 +358,44 @@ protected:
      double cepa_sos_scale_;
      double sos_scale_ocepa;
 
-     string wfn;
-     string reference;
-     string reference_;
-     string jobtype;
-     string dertype;
-     string basis;
-     string level_shift;
-     string lineq;
-     string orth_type;
-     string natorb;
-     string semicanonic;
-     string opt_method;
-     string hess_type;
-     string occ_orb_energy;
-     string do_scs;		// Spin-Component-Scaling
-     string do_sos;		// Spin-Opposite-Scaling
-     string write_mo_coeff;	// Write CmoA to CmoA.psi and CmoB to CmoB.psi
-     string read_mo_coeff;	// Read CmoA from CmoA.psi and CmoB from CmoB.psi
-     string scs_type_;
-     string sos_type_;
-     string pcg_beta_type_;
-     string compute_mp3l;	// Do compute mp3l energy during iterations?
-     string compute_cepal;	// Do compute cepal energy during iterations?
-     string twopdm_abcd_type;	// How to handle G_abcd
-     string wfn_type_;
-     string compute_ccl;
-     string orb_resp_solver_;
-     string ip_poles;
-     string ea_poles;
-     string ep_ip_poles;
-     string ep_ea_poles;
-     string ekt_ip_;
-     string ekt_ea_;
-     string orb_opt_;
-     string relaxed_;
-     string sym_gfm_;
-     string oeprop_;
-     string comput_s2_;
+     std::string wfn;
+     std::string reference;
+     std::string reference_;
+     std::string jobtype;
+     std::string dertype;
+     std::string basis;
+     std::string level_shift;
+     std::string lineq;
+     std::string orth_type;
+     std::string natorb;
+     std::string semicanonic;
+     std::string opt_method;
+     std::string hess_type;
+     std::string occ_orb_energy;
+     std::string do_scs;		// Spin-Component-Scaling
+     std::string do_sos;		// Spin-Opposite-Scaling
+     std::string write_mo_coeff;	// Write CmoA to CmoA.psi and CmoB to CmoB.psi
+     std::string read_mo_coeff;	// Read CmoA from CmoA.psi and CmoB from CmoB.psi
+     std::string scs_type_;
+     std::string sos_type_;
+     std::string pcg_beta_type_;
+     std::string compute_mp3l;	// Do compute mp3l energy during iterations?
+     std::string compute_cepal;	// Do compute cepal energy during iterations?
+     std::string twopdm_abcd_type;	// How to handle G_abcd
+     std::string wfn_type_;
+     std::string compute_ccl;
+     std::string orb_resp_solver_;
+     std::string ip_poles;
+     std::string ea_poles;
+     std::string ep_ip_poles;
+     std::string ep_ea_poles;
+     std::string ekt_ip_;
+     std::string ekt_ea_;
+     std::string orb_opt_;
+     std::string relaxed_;
+     std::string sym_gfm_;
+     std::string oeprop_;
+     std::string comput_s2_;
 
 
      int *mopi; 		/* number of all MOs per irrep */

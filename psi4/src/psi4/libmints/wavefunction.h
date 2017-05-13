@@ -75,9 +75,7 @@ class MatrixFactory;
 class Options;
 class SOBasisSet;
 class PSIO;
-class Chkpt;
 class OrbitalSpace;
-class OEProp;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -120,8 +118,6 @@ protected:
     std::shared_ptr<MatrixFactory> factory_;
 
     std::shared_ptr<Wavefunction> reference_wavefunction_;
-
-    std::shared_ptr<OEProp> oeprop_;
 
     /// How much memory you have access to.
     long int memory_;
@@ -355,7 +351,7 @@ public:
     void set_soccpi(const Dimension& soccpi);
 
     /// Sets the frozen virtual orbitals per irrep array.
-    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[h]; }
+    void set_frzvpi(const Dimension& frzvpi);
 
     /// Return the number of frozen core orbitals
     int nfrzc() const { return nfrzc_; }
@@ -400,9 +396,6 @@ public:
     virtual std::shared_ptr<Matrix> tpdm_gradient_contribution() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
-
-    std::shared_ptr<OEProp> get_oeprop() const { return oeprop_; }
-    void set_oeprop( std::shared_ptr<OEProp> oeprop ) { oeprop_ = oeprop; }
 
     /// Returns the alpha OPDM for the wavefunction
     const SharedMatrix Da() const;

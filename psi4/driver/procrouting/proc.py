@@ -2455,7 +2455,7 @@ def run_dft_property(name, **kwargs):
     for prop in oe_properties:
         oe.add(prop.upper())
     oe.compute()
-    scf_wfn.set_oeprop(oe)
+    scf_wfn.oeprop = oe
 
     # Run Linear Respsonse
     if len(linear_response):
@@ -2527,7 +2527,7 @@ def run_scf_property(name, **kwargs):
     for prop in oe_properties:
         oe.add(prop.upper())
     oe.compute()
-    scf_wfn.set_oeprop(oe)
+    scf_wfn.oeprop = oe
 
     # Run Linear Respsonse
     if len(linear_response):
@@ -2727,7 +2727,7 @@ def run_dfmp2_property(name, **kwargs):
     for prop in properties:
         oe.add(prop.upper())
     oe.compute()
-    dfmp2_wfn.set_oeprop(oe)
+    dfmp2_wfn.oeprop = oe
 
     optstash.restore()
     return dfmp2_wfn
@@ -2785,7 +2785,7 @@ def run_detci_property(name, **kwargs):
 
     # Compute "the" CI density
     oe.compute()
-    ciwfn.set_oeprop(oe)
+    ciwfn.oeprop = oe
 
     # If we have more than one root, compute all data
     if nroots > 1:
@@ -3136,7 +3136,7 @@ def run_detci(name, **kwargs):
         oeprop.set_title(name.upper())
         oeprop.add("DIPOLE")
         oeprop.compute()
-        ciwfn.set_oeprop(oeprop)
+        ciwfn.oeprop = oeprop
         core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
         core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
         core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
@@ -4344,7 +4344,7 @@ def run_detcas(name, **kwargs):
     oeprop.set_title(name.upper())
     oeprop.add("DIPOLE")
     oeprop.compute()
-    ciwfn.set_oeprop(oeprop)
+    ciwfn.oeprop = oeprop
     core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
     core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
     core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
