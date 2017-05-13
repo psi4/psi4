@@ -33,7 +33,6 @@
 namespace psi {
 
 // Forward declare
-class Options;
 class DFERI;
 
 namespace dfep2 {

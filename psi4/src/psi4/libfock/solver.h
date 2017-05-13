@@ -31,9 +31,7 @@
 
 namespace psi {
 
-class Matrix;
 class Vector;
-class Hamiltonian;
 class RHamiltonian;
 class UHamiltonian;
 

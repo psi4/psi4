@@ -41,7 +41,6 @@ namespace psi {
 
 class BasisSet;
 class GaussianShell;
-class IntegralFactory;
 class SphericalTransform;
 
 /*! \ingroup MINTS

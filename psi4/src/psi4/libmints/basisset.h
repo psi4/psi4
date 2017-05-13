@@ -49,14 +49,7 @@ namespace psi {
 class Molecule;
 class GaussianShell;
 
-class Chkpt;
 class BasisSetParser;
-class DealiasBasisSet;
-class SOTransformShell;
-class SphericalTransform;
-class SOTransform;
-class Matrix;
-class Vector3;
 class SOBasisSet;
 class IntegralFactory;
 

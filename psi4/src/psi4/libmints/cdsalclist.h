@@ -41,8 +41,6 @@
 
 namespace psi {
 
-class Molecule;
-class Matrix;
 class MatrixFactory;
 
 class CdSalc {
@@ -124,7 +122,7 @@ public:
 
 class CdSalcList
 {
-    std::shared_ptr<Molecule> molecule_;
+    SharedMolecule molecule_;
     std::shared_ptr<MatrixFactory> factory_;
 
     char needed_irreps_;
@@ -155,7 +153,7 @@ public:
      *  \param project_out_translations Project out translational SALCs
      *  \param project_out_rotations Project out rotational SALCs
      */
-    CdSalcList(std::shared_ptr<Molecule> mol,
+    CdSalcList(SharedMolecule mol,
                std::shared_ptr<MatrixFactory> fact,
                int needed_irreps=0xFF,
                bool project_out_translations=true,

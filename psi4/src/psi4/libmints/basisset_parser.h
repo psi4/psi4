@@ -37,8 +37,6 @@
 
 namespace psi {
 
-class BasisSet;
-
 class BasisSetFileNotFound : public PsiException {
 public:
     /**

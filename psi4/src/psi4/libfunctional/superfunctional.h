@@ -36,7 +36,6 @@
 #include <string>
 namespace psi {
 
-class Options;
 class Functional;
 class BlockOPoints;
 

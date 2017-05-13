@@ -35,12 +35,6 @@
 
 namespace psi {
 
-class PSIO;
-class BasisSet;
-class Matrix;
-class Vector;
-class IntVector;
-class Vector3;
 class BasisExtents;
 class BlockOPoints;
 

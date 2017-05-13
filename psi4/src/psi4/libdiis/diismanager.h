@@ -36,7 +36,6 @@
 
 namespace psi{
 
-class DIISEntry;
 class PSIO;
 
 /**

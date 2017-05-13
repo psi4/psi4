@@ -35,14 +35,12 @@
 
 namespace psi {
 
-class Options;
 class CdSalcList;
 class CorrelationFactor;
 class TwoBodyAOInt;
 class PetiteList;
 class ThreeCenterOverlapInt;
 class OneBodyAOInt;
-class OneBodySOInt;
 
 /**
 * The MintsHelper object, places molecular integrals

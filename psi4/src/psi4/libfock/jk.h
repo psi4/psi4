@@ -40,14 +40,11 @@
 
 namespace psi {
 class MinimalInterface;
-class GPUDFJKHelper;
 class BasisSet;
 class Matrix;
-class IntegralFactory;
 class ERISieve;
 class TwoBodyAOInt;
 class Options;
-class FittingMetric;
 class PSIO;
 
 namespace pk {

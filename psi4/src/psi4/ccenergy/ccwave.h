@@ -35,7 +35,6 @@
 #include "Local.h"
 
 namespace psi {
-class Wavefunction;
 class Options;
 struct dpd_file4_cache_entry;
 struct dpdfile2;

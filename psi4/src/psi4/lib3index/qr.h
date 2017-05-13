@@ -35,9 +35,6 @@
 
 namespace psi {
 
-class Matrix;
-class Vector;
-
 /*!
  * First pass of QR decompostion for rank compression
  * Hermitian only, wastes some memory
