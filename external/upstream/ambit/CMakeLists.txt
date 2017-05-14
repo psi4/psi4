@@ -5,6 +5,9 @@ if(${ENABLE_ambit})
         get_property(_loc TARGET ambit::ambit PROPERTY LOCATION)
         message(STATUS "${Cyan}Found ambit${ColourReset}: ${_loc} (found version ${ambit_VERSION})")
         add_library(ambit_external INTERFACE)  # dummy
+
+        # reset below necessary as find_package clears it. better solution sought
+        set(TargetHDF5_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5 CACHE PATH "path to externally detected ambitConfig.cmake" FORCE)
     else()
         include(ExternalProject)
         message(STATUS "Suitable ambit could not be located, ${Magenta}Building ambit${ColourReset} instead.")
@@ -21,7 +24,7 @@ if(${ENABLE_ambit})
             DEPENDS lapack_external
                     hdf5_external
             GIT_REPOSITORY https://github.com/jturney/ambit
-            GIT_TAG 5f93e78
+            GIT_TAG bd8cf73  # cmakelab3 branch
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -32,22 +35,26 @@ if(${ENABLE_ambit})
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                        -DSTATIC_ONLY=${_a_only}
                        -DSHARED_ONLY=${_so_only}
-                       -DENABLE_OMP=${ENABLE_OPENMP}
+                       -DENABLE_OPENMP=${ENABLE_OPENMP}  # relevant
                        #-DENABLE_VECTORIZATION=${ENABLE_VECTORIZATION}
                        #-DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
                        -DEXTRA_C_FLAGS=${CMAKE_C_FLAGS}
                        -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                       #-DBOOST_ROOT=${BOOST_ROOT}
                        -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
                        -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
                        -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
                        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-                       -DENABLE_STATIC=${ENABLE_STATIC}
-                       -DENABLE_PSI4=ON
-                       -DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}/psi4
-                       -DPSI4_BINARY_DIR=${CMAKE_BINARY_DIR}
-                       -DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
-                       -DENABLE_CXX11_SUPPORT=ON
+                       -DENABLE_XHOST=${ENABLE_XHOST}
+                       -DBUILD_FPIC=${BUILD_FPIC}
+                       -DENABLE_GENERIC=${ENABLE_GENERIC}
+                       -DLIBC_INTERJECT=${LIBC_INTERJECT}
+                       -DENABLE_TESTS=OFF
+                       #-DENABLE_STATIC=${ENABLE_STATIC}
+                       #-DENABLE_PSI4=ON
+                       #-DPSI4_SOURCE_DIR=${PROJECT_SOURCE_DIR}/psi4
+                       #-DPSI4_BINARY_DIR=${CMAKE_BINARY_DIR}
+                       #-DPSI4_INCLUDE_DIRS=${PYTHON_INCLUDE_DIR}
+                       #-DENABLE_CXX11_SUPPORT=ON
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
