@@ -704,8 +704,10 @@ void export_mints(py::module& m)
                                                     "multiplicity, etc. of a molecule.")
         .def("set_geometry", matrix_set_geometry(&Molecule::set_geometry),
              "Sets the geometry, given a (Natom X 3) matrix arg2 of coordinates (in Bohr)")
-        def("nuclear_dipole", nuclear_dipole1(&Molecule::nuclear_dipole), "Gets the nuclear contribution to the dipole, withe respect to a specified origin").
-        def("nuclear_dipole", nuclear_dipole2(&Molecule::nuclear_dipole), "Gets the nuclear contribution to the dipole, withe respect to the origin").
+        .def("nuclear_dipole", nuclear_dipole1(&Molecule::nuclear_dipole),
+             "Gets the nuclear contribution to the dipole, withe respect to a specified origin")
+        .def("nuclear_dipole", nuclear_dipole2(&Molecule::nuclear_dipole),
+             "Gets the nuclear contribution to the dipole, withe respect to the origin")
         .def("set_name", &Molecule::set_name, "Sets molecule name")
         .def("name", &Molecule::name, "Gets molecule name")
         .def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry,
@@ -719,11 +721,13 @@ void export_mints(py::module& m)
              "(arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and "
              "lineno arg9 (optional)")
         .def("natom", &Molecule::natom, "Number of real atoms")
-       def("nallatom", &Molecule::nallatom, "Number of real and dummy atoms").
+        .def("nallatom", &Molecule::nallatom, "Number of real and dummy atoms")
         .def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)")
         .def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule")
-        .def("set_nuclear_charge", &Molecule::set_nuclear_charge, "Set the nuclear charge of the given atom to the value provided.")
-        .def("basis_on_atom", &Molecule::basis_on_atom, py::return_value_policy::copy, "Gets the label of the orbital basis set on a given atom.")
+        .def("set_nuclear_charge", &Molecule::set_nuclear_charge,
+             "Set the nuclear charge of the given atom to the value provided.")
+        .def("basis_on_atom", &Molecule::basis_on_atom, py::return_value_policy::copy,
+             "Gets the label of the orbital basis set on a given atom.")
         .def("print_in_input_format", &Molecule::print_in_input_format,
              "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.")
         .def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule,
@@ -736,13 +740,13 @@ void export_mints(py::module& m)
         .def("x", &Molecule::x, "x position of atom")
         .def("y", &Molecule::y, "y position of atom")
         .def("z", &Molecule::z, "z position of atom")
-            def("fZ", &Molecule::Z, py::return_value_policy::copy, "Nuclear charge of atom arg1 (0-indexed including dummies)").
-            def("fx", &Molecule::x, "x position of atom arg1 (0-indexed including dummies in Bohr)").
-            def("fy", &Molecule::y, "y position of atom arg1 (0-indexed including dummies in Bohr)").
-            def("fz", &Molecule::z, "z position of atom arg1 (0-indexed including dummies in Bohr)").
-        .
-        def("center_of_mass", &Molecule::center_of_mass,
-            "Computes center of mass of molecule (does not translate molecule)")
+        .def("fZ", &Molecule::Z, py::return_value_policy::copy,
+             "Nuclear charge of atom arg1 (0-indexed including dummies)")
+        .def("fx", &Molecule::x, "x position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fy", &Molecule::y, "y position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("fz", &Molecule::z, "z position of atom arg1 (0-indexed including dummies in Bohr)")
+        .def("center_of_mass", &Molecule::center_of_mass,
+             "Computes center of mass of molecule (does not translate molecule)")
         .def("translate", &Molecule::translate, "Translates molecule by arg2")
         .def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass")
         .def("mass", &Molecule::mass, "Gets mass of atom arg2")
@@ -830,24 +834,24 @@ void export_mints(py::module& m)
              "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2")
         .def("set_basis_by_label", &Molecule::set_basis_by_label,
              "Sets basis set arg3 to all atoms with label (e.g., H4) arg2")
-            def("distance_matrix", &Molecule::distance_matrix, "Returns Matrix of interatom distances").
-            def("print_distances", &Molecule::print_distances, "Print the interatomic distance geometrical parameters").
-            def("print_bond_angles", &Molecule::print_bond_angles, "Print the bond angle geometrical parameters").
-            def("print_out_of_planes", &Molecule::print_out_of_planes, "Print the out-of-plane angle geometrical parameters").
-        .
-        // def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom
-        // number (1-indexed, incl. dummies) arg2").  // dangerous for user use
-        def("irrep_labels",
-            [](Molecule& mol) {
-                std::vector<std::string> ret;
-                char** labels = mol.irrep_labels();
-                int nirrep = mol.point_group()->char_table().nirrep();
-                for (size_t h = 0; h < nirrep; h++) {
-                    std::string lh(labels[h]);
-                    ret.push_back(lh);
-                }
-                return ret;
-            })
+        .def("distance_matrix", &Molecule::distance_matrix, "Returns Matrix of interatom distances")
+        .def("print_distances", &Molecule::print_distances,
+             "Print the interatomic distance geometrical parameters")
+        .def("print_bond_angles", &Molecule::print_bond_angles,
+             "Print the bond angle geometrical parameters")
+        .def("print_out_of_planes", &Molecule::print_out_of_planes,
+             "Print the out-of-plane angle geometrical parameters")
+        .def("irrep_labels",
+             [](Molecule& mol) {
+                 std::vector<std::string> ret;
+                 char** labels = mol.irrep_labels();
+                 int nirrep = mol.point_group()->char_table().nirrep();
+                 for (size_t h = 0; h < nirrep; h++) {
+                     std::string lh(labels[h]);
+                     ret.push_back(lh);
+                 }
+                 return ret;
+             })
         .def_property("units", py::cpp_function(&Molecule::units),
                       py::cpp_function(&Molecule::set_units),
                       "Units (Angstrom or Bohr) used to define the geometry")
@@ -871,6 +875,7 @@ void export_mints(py::module& m)
         const;
     typedef int (BasisSet::*ncore_no_args)() const;
     typedef int (BasisSet::*ncore_one_arg)(const std::string&) const;
+
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring")
         .def(py::init<const std::string&, std::shared_ptr<Molecule>,
                       std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>())
