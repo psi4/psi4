@@ -123,7 +123,7 @@ else()
 endif ()
 
 if(${ENABLE_simint})
-    find_package(simint CONFIG REQUIRED COMPONENTS am${MAX_AM_ERI} der0)
+    find_package(simint 0.7 CONFIG REQUIRED COMPONENTS am${MAX_AM_ERI} der0)
     get_property(_loc TARGET simint::simint PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using simint ${simint_MAXAM}${ColourReset}: ${_loc} (version ${simint_VERSION}; vectorization ${simint_VECTOR})")
