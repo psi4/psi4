@@ -33,6 +33,7 @@ import sys
 import os
 import math
 import numpy as np
+from operator import itemgetter
 from .exceptions import *
 
 
@@ -379,6 +380,57 @@ def compare_cubes(expected, computed, label):
         message = ("\t%s: computed cube file does not match expected cube file." % (label, computed, expected))
         raise TestComparisonError(message)
     success(label)
+    return True
+
+def compare_cidumps(expected, computed, label):
+    """Function to compare two CI vector dump files. Prints :py:func:`util.success`
+    when value *computed* matches value *expected*.
+    Performs a system exit on failure. Used in input files in the test suite.
+
+    """
+    # Split dumps into lines
+    exlines = expected.split("\n");
+    colines = computed.split("\n");
+    # Lengths must match
+    if len(exlines) != len(colines):
+        message = ("\t%s: computed dump does not match expected dump." % (label, computed, expected))
+        raise TestComparisonError(message)
+
+    # First line of both files should match exactly, because they contain the system info
+    if(exlines[0] != colines[0]):
+        message = ("\t%s: computed dump does not match expected dump." % (label, computed, expected))
+        raise TestComparisonError(message)
+
+    # The next lines contain the configurations in decreasing absolute
+    # coefficient.
+    extuples = [tuple(exlines[k].strip().split(" ")) for k in range(1,len(exlines)-1)]
+    cotuples = [tuple(colines[k].strip().split(" ")) for k in range(1,len(colines)-1)]
+
+    # Convert the coefficient to a float
+    extuples = [(float(extuples[k][0]), extuples[k][1]) for k in range(len(extuples))]
+    cotuples = [(float(cotuples[k][0]), cotuples[k][1]) for k in range(len(cotuples))]
+
+    # Make sure the overall sign is the same in both vectors
+    if extuples[0][1] != cotuples[0][1]:
+        message = ("\t%s: most important configuration in computed dump does not match that in expected dump." % (label, computed, expected))
+        raise TestComparisonError(message)
+    if extuples[0][0] < 0.0:
+        extuples = [(-extuples[k][0], extuples[k][1]) for k in range(len(extuples))]
+    if cotuples[0][0] < 0.0:
+        cotuples = [(-cotuples[k][0], cotuples[k][1]) for k in range(len(cotuples))]
+
+    # To ease the comparison, we sort them in configuration order so
+    # that the coefficients can be compared directly.
+    extuples = sorted(extuples, key=itemgetter(1))
+    cotuples = sorted(cotuples, key=itemgetter(1))
+
+    # Check the coefficients of the configurations. Allow differences of
+    thr = 1e-4
+    for k in range(len(extuples)):
+        if (math.fabs(float(extuples[k][0])-float(cotuples[k][0])) > thr):
+            message = ("\t%s: computed dump does not match expected dump file.\n\tFound difference %e for configuration %s." % (label,float(extuples[k][0])-float(cotuples[k][0]),extuples[k][1]))
+            raise TestComparisonError(message)
+
     return True
 
 
