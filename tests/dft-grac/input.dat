@@ -1,7 +1,5 @@
 #! Gradient regularized asymptotic correction (GRAC) test.
 
-memory 250 mb
-
 molecule ne {
   0 1
   Ne

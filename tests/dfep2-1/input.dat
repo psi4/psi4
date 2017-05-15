@@ -1,4 +1,4 @@
-# Compute three IP and 2 EA's for the PH3 molecule
+#! Compute three IP and 2 EA's for the PH3 molecule
 
 molecule mol {
   P    0.0000000000    0.0000000000    0.0000000000

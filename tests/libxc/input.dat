@@ -1,3 +1,5 @@
+#! compare libxc functionals against q-chem
+
 import psi4
 
 raw_data = """

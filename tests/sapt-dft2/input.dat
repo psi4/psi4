@@ -1,7 +1,5 @@
 #! SAPT(DFT) aug-cc-pVDZ computation for the water dimer interaction energy.
 
-memory 250 mb
-
 Eref = {"SAPT ELST ENERGY":  -12.86731900, # TEST
         "SAPT EXCH ENERGY":   12.77393901, # TEST
         "SAPT IND ENERGY":    -3.53895378, # TEST 

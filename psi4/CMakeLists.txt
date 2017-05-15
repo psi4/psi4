@@ -90,10 +90,6 @@ else()
     message(STATUS "Disabled libefp")
 endif()
 
-find_package(Libxc CONFIG REQUIRED)
-get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
-message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
-
 if(${ENABLE_erd})
     find_package(erd 3.0.6 CONFIG REQUIRED)
     get_property(_loc TARGET erd::erd PROPERTY LOCATION)
@@ -134,6 +130,11 @@ if(${ENABLE_simint})
 else()
     message(STATUS "Disabled simint")
 endif()
+
+find_package(Libxc CONFIG REQUIRED)
+get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
 
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)

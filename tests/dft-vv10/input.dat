@@ -4,8 +4,6 @@ bench = {"DFT VV10 ENERGY": 0.0187972621212943, # TEST
          "DFT XC ENERGY": -2.1610011925928672,  # TEST
          "CURRENT ENERGY": -5.8199576848715910} # TEST
 
-memory 250 mb
-
 molecule ne {
   0 1
   He 0 0 -2.0
