@@ -24,7 +24,7 @@ if(${ENABLE_ambit})
             DEPENDS lapack_external
                     hdf5_external
             GIT_REPOSITORY https://github.com/jturney/ambit
-            GIT_TAG bd8cf73  # cmakelab3 branch
+            GIT_TAG 324e049
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
