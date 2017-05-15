@@ -1,35 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.190 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {test_ref_refresh} 9b1b239 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Apr  4 10:18:52 2016
+    Psi4 started on: Monday, 15 May 2017 03:34PM
 
-    Process ID:   4263
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  12521
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Single point energies of multiple excited states with EOM-CCSD
-
-memory 250 mb
 
 molecule ch2 {
   0 3
@@ -60,17 +59,23 @@ for root in range(1,9):                                                        #
     compare_values(ref, val, 7, "EOM-CCSD root %d" % root)                     #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:34:15 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:18:52 2016
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -104,7 +109,7 @@ for root in range(1,9):                                                        #
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
@@ -112,6 +117,7 @@ for root in range(1,9):                                                        #
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
@@ -133,43 +139,58 @@ for root in range(1,9):                                                        #
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     107] index = [             0,5778]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.9429630952E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -35.12226710194872   -3.51223e+01   1.53027e-01 
-   @UHF iter   2:   -38.07619874146290   -2.95393e+00   7.06360e-02 DIIS
-   @UHF iter   3:   -38.90113807687992   -8.24939e-01   9.80944e-03 DIIS
-   @UHF iter   4:   -38.91579874172631   -1.46607e-02   2.34792e-03 DIIS
-   @UHF iter   5:   -38.91721660276713   -1.41786e-03   6.39806e-04 DIIS
-   @UHF iter   6:   -38.91736784949018   -1.51247e-04   1.80989e-04 DIIS
-   @UHF iter   7:   -38.91737833035364   -1.04809e-05   3.43871e-05 DIIS
-   @UHF iter   8:   -38.91737865537386   -3.25020e-07   9.40174e-06 DIIS
-   @UHF iter   9:   -38.91737868524731   -2.98735e-08   3.73506e-06 DIIS
-   @UHF iter  10:   -38.91737869162038   -6.37306e-09   1.19057e-06 DIIS
-   @UHF iter  11:   -38.91737869222852   -6.08139e-10   2.64912e-07 DIIS
-   @UHF iter  12:   -38.91737869225134   -2.28226e-11   4.91620e-08 DIIS
-   @UHF iter  13:   -38.91737869225201   -6.67910e-13   1.04497e-08 DIIS
-   @UHF iter  14:   -38.91737869225206   -5.68434e-14   1.43108e-09 DIIS
+   @UHF iter   1:   -38.31961105999222   -3.83196e+01   7.93567e-02 
+   @UHF iter   2:   -38.88101600456738   -5.61405e-01   1.58957e-02 DIIS
+   @UHF iter   3:   -38.91270296738569   -3.16870e-02   3.91910e-03 DIIS
+   @UHF iter   4:   -38.91662354907332   -3.92058e-03   1.48823e-03 DIIS
+   @UHF iter   5:   -38.91730228395674   -6.78735e-04   4.44253e-04 DIIS
+   @UHF iter   6:   -38.91737258063893   -7.02967e-05   1.17907e-04 DIIS
+   @UHF iter   7:   -38.91737754549431   -4.96486e-06   4.91546e-05 DIIS
+   @UHF iter   8:   -38.91737856026896   -1.01477e-06   1.75671e-05 DIIS
+   @UHF iter   9:   -38.91737868936091   -1.29092e-07   2.94888e-06 DIIS
+   @UHF iter  10:   -38.91737869216925   -2.80834e-09   5.22485e-07 DIIS
+   @UHF iter  11:   -38.91737869225074   -8.14921e-11   6.46134e-08 DIIS
+   @UHF iter  12:   -38.91737869225197   -1.22924e-12   1.63998e-08 DIIS
+   @UHF iter  13:   -38.91737869225208   -1.06581e-13   2.84225e-09 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.210199518E-02
+   @Spin Contamination Metric:   1.210199601E-02
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.012101995E+00
+   @S^2 Observed:                2.012101996E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -200,7 +221,7 @@ for root in range(1,9):                                                        #
        3A1     0.105281     1B1     0.159004     4A1     0.221021  
        2B2     0.285269     3B2     0.620941     5A1     0.737973  
        2B1     0.822031     6A1     0.832333     4B2     0.906448  
-       7A1     1.062089     1A2     1.257736     8A1     1.303650  
+       7A1     1.062088     1A2     1.257736     8A1     1.303650  
        3B1     1.383571     5B2     1.732543     9A1     1.810140  
        6B2     1.988311     4B1     2.039560     2A2     2.087798  
       10A1     2.350790    11A1     2.720420     7B2     2.769588  
@@ -212,24 +233,32 @@ for root in range(1,9):                                                        #
 
   Energy converged.
 
-  @UHF Final Energy:   -38.91737869225206
+  @UHF Final Energy:   -38.91737869225208
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              6.0682980055682290
-    One-Electron Energy =                 -63.7147359519682652
-    Two-Electron Energy =                  18.7290592541479768
+    One-Electron Energy =                 -63.7147359432526912
+    Two-Electron Energy =                  18.7290592454323814
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -38.9173786922520577
+    Total Energy =                        -38.9173786922520790
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    2 A1 1.9967234
+  HONO-1 :    3 A1 1.0000000
+  HONO-0 :    1 B1 1.0000000
+  LUNO+0 :    4 A1 0.0032766
+  LUNO+1 :    2 B2 0.0027828
+  LUNO+2 :    5 A1 0.0000008
+  LUNO+3 :    2 B1 0.0000000
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -246,30 +275,41 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.6386     Total:     0.6386
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    2 A1 1.9967234
-  HONO-1 :    1 B1 1.0000000
-  HONO-0 :    3 A1 1.0000000
-  LUNO+0 :    4 A1 0.0032766
-  LUNO+1 :    2 B2 0.0027828
-  LUNO+2 :    5 A1 0.0000008
-  LUNO+3 :    6 A1 0.0000000
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:52 2016
+*** tstop() called on psinet at Mon May 15 15:34:15 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:18:52 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  11    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11581 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:15 2017
 
 
 	Wfn Parameters:
@@ -405,26 +445,26 @@ Total time:
 	Total:                                     0.002 (MW) /      0.014 (MB)
 
 	Nuclear Rep. energy          =      6.06829800556823
-	SCF energy                   =    -38.91737869225206
-	One-electron energy          =    -63.71473595425593
-	Two-electron (AA) energy     =      5.37013793603621
-	Two-electron (BB) energy     =      1.64169186741460
-	Two-electron (AB) energy     =     11.71722945298485
-	Two-electron energy          =     18.72905925643565
-	Reference energy             =    -38.91737869225205
+	SCF energy                   =    -38.91737869225208
+	One-electron energy          =    -63.71473595479578
+	Two-electron (AA) energy     =      5.37013793621956
+	Two-electron (BB) energy     =      1.64169186800055
+	Two-electron (AB) energy     =     11.71722945275536
+	Two-electron energy          =     18.72905925697547
+	Reference energy             =    -38.91737869225208
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:52 2016
+*** tstop() called on psinet at Mon May 15 15:34:15 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:18:52 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:15 2017
 
             **************************
             *                        *
@@ -433,15 +473,15 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =    6.068298005568229
-    SCF energy          (wfn)     =  -38.917378692252065
-    Reference energy    (file100) =  -38.917378692252051
+    SCF energy          (wfn)     =  -38.917378692252079
+    Reference energy    (file100) =  -38.917378692252079
 
     Input parameters:
     -----------------
     Wave function   =     CCSD
     Reference wfn   =     UHF
     Brueckner       =     No
-    Memory (Mbytes) =     250.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-06
@@ -462,114 +502,114 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.0953539828073438
+MP2 correlation energy -0.0953539827620370
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.095353982807344    0.000e+00    0.000000    0.000000    0.000000    0.000000
-     1        -0.110266544138263    3.737e-02    0.005013    0.000000    0.000000    0.000000
-     2        -0.114891353683759    1.453e-02    0.008836    0.000000    0.000000    0.000000
-     3        -0.115324840904837    5.355e-03    0.010951    0.000000    0.000000    0.000000
-     4        -0.115365474167121    1.590e-03    0.011467    0.000000    0.000000    0.000000
-     5        -0.115363322035961    4.133e-04    0.011469    0.000000    0.000000    0.000000
-     6        -0.115368451824724    1.485e-04    0.011447    0.000000    0.000000    0.000000
-     7        -0.115368914880872    5.418e-05    0.011431    0.000000    0.000000    0.000000
-     8        -0.115368689969251    1.449e-05    0.011427    0.000000    0.000000    0.000000
-     9        -0.115368894370218    3.829e-06    0.011426    0.000000    0.000000    0.000000
-    10        -0.115368896286384    1.230e-06    0.011426    0.000000    0.000000    0.000000
-    11        -0.115368878207890    2.944e-07    0.011426    0.000000    0.000000    0.000000
-    12        -0.115368880868380    7.396e-08    0.011426    0.000000    0.000000    0.000000
+     0        -0.095353982762037    0.000e+00    0.000000    0.000000    0.000000    0.000000
+     1        -0.110266543973313    3.737e-02    0.005013    0.000000    0.000000    0.000000
+     2        -0.114891353194010    1.453e-02    0.008836    0.000000    0.000000    0.000000
+     3        -0.115324840326396    5.355e-03    0.010951    0.000000    0.000000    0.000000
+     4        -0.115365473610362    1.590e-03    0.011467    0.000000    0.000000    0.000000
+     5        -0.115363321481896    4.133e-04    0.011469    0.000000    0.000000    0.000000
+     6        -0.115368451269937    1.485e-04    0.011447    0.000000    0.000000    0.000000
+     7        -0.115368914325626    5.418e-05    0.011431    0.000000    0.000000    0.000000
+     8        -0.115368689413904    1.449e-05    0.011427    0.000000    0.000000    0.000000
+     9        -0.115368893814819    3.829e-06    0.011426    0.000000    0.000000    0.000000
+    10        -0.115368895730993    1.230e-06    0.011426    0.000000    0.000000    0.000000
+    11        -0.115368877652505    2.944e-07    0.011426    0.000000    0.000000    0.000000
+    12        -0.115368880312994    7.396e-08    0.011426    0.000000    0.000000    0.000000
 
     Iterations converged.
 
 
     Largest TIA Amplitudes:
-              1   0        -0.0061202762
-              4  13        -0.0055757629
-              1   2        -0.0053728917
-              1   1         0.0045269876
-              3  10        -0.0044643136
-              4  17         0.0042945236
-              3  11        -0.0042615585
-              4  14         0.0041869508
-              2   1        -0.0034574959
-              2   4        -0.0033930100
+              1   0        -0.0061202810
+              4  13        -0.0055757554
+              1   2        -0.0053728888
+              1   1         0.0045269836
+              3  10        -0.0044643475
+              4  17         0.0042945261
+              3  11        -0.0042615603
+              4  14         0.0041869329
+              2   1        -0.0034574791
+              2   4        -0.0033930086
 
     Largest Tia Amplitudes:
-              1   0         0.0201527802
-              1   2         0.0108376351
-              2  17         0.0099808181
-              2  15         0.0066459917
-              2  19         0.0061259558
-              1   6        -0.0055673799
-              1   4        -0.0049145432
-              1   5        -0.0037649770
-              2  20         0.0032881321
-              1   1         0.0032013140
+              1   0         0.0201527600
+              1   2         0.0108376266
+              2  17         0.0099808157
+              2  15         0.0066459910
+              2  19         0.0061259548
+              1   6        -0.0055673816
+              1   4        -0.0049145442
+              1   5        -0.0037649771
+              2  20         0.0032881320
+              1   1         0.0032013180
 
     Largest TIJAB Amplitudes:
-      3   2  10   1        -0.0308037369
-      4   3   8   2         0.0236253258
-      3   2  11   4        -0.0219460049
-      4   3  15  10        -0.0209042525
-      4   3  13  10        -0.0206618944
-      4   2  13   1        -0.0197290058
-      4   2  15   1        -0.0196745292
-      3   2  10   2        -0.0173927193
-      4   2  14   4         0.0154691817
-      4   2  14   2        -0.0154634274
+      3   2  10   1        -0.0308037376
+      4   3   8   2         0.0236253263
+      3   2  11   4        -0.0219460053
+      4   3  15  10        -0.0209042529
+      4   3  13  10        -0.0206618946
+      4   2  13   1        -0.0197290054
+      4   2  15   1        -0.0196745294
+      3   2  10   2        -0.0173927194
+      4   2  14   4         0.0154691821
+      4   2  14   2        -0.0154634278
 
     Largest Tijab Amplitudes:
-      2   1  11   9        -0.0103227607
-      2   1  16   1        -0.0077371148
-      2   1  16   0         0.0077090185
+      2   1  11   9        -0.0103227604
+      2   1  16   1        -0.0077371145
+      2   1  16   0         0.0077090178
       2   1  16   3        -0.0072993206
-      2   1  15   0        -0.0068600091
-      2   1  17   0        -0.0067733796
+      2   1  15   0        -0.0068600087
+      2   1  17   0        -0.0067733794
       2   1  15   1        -0.0066037841
-      2   1  17   4         0.0063165634
-      2   1  15   4         0.0061108819
-      2   1  12   9        -0.0045929583
+      2   1  17   4         0.0063165633
+      2   1  15   4         0.0061108818
+      2   1  12   9        -0.0045929582
 
     Largest TIjAb Amplitudes:
-      4   2  15  17        -0.0339373938
-      4   2  13  15        -0.0325022872
-      3   1   2  11        -0.0318051314
-      4   2  13  17        -0.0297797882
-      4   2   2   2        -0.0291206478
-      4   2  14  16        -0.0279412315
-      3   2  10  17        -0.0258275153
-      2   1   4   0        -0.0257444556
+      4   2  15  17        -0.0339373940
+      4   2  13  15        -0.0325022870
+      3   1   2  11        -0.0318051316
+      4   2  13  17        -0.0297797883
+      4   2   2   2        -0.0291206477
+      4   2  14  16        -0.0279412314
+      3   2  10  17        -0.0258275154
+      2   1   4   0        -0.0257444543
       4   2  15  15        -0.0257199817
-      3   2  10  15        -0.0255216159
+      3   2  10  15        -0.0255216164
 
-    SCF energy       (wfn)                    =  -38.917378692252065
-    Reference energy (file100)                =  -38.917378692252051
+    SCF energy       (wfn)                    =  -38.917378692252079
+    Reference energy (file100)                =  -38.917378692252079
 
-    Opposite-spin MP2 correlation energy      =   -0.073704211096426
-    Same-spin MP2 correlation energy          =   -0.021649771710917
-    MP2 correlation energy                    =   -0.095353982807344
-      * MP2 total energy                      =  -39.012732675059397
+    Opposite-spin MP2 correlation energy      =   -0.073704210981818
+    Same-spin MP2 correlation energy          =   -0.021649771780218
+    MP2 correlation energy                    =   -0.095353982762037
+      * MP2 total energy                      =  -39.012732675014114
 
-    Opposite-spin CCSD correlation energy     =   -0.092056135127162
-    Same-spin CCSD correlation energy         =   -0.023312745641855
-    CCSD correlation energy                   =   -0.115368880868380
-      * CCSD total energy                     =  -39.032747573120432
+    Opposite-spin CCSD correlation energy     =   -0.092056134520519
+    Same-spin CCSD correlation energy         =   -0.023312745904051
+    CCSD correlation energy                   =   -0.115368880312994
+      * CCSD total energy                     =  -39.032747572565071
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:53 2016
+*** tstop() called on psinet at Mon May 15 15:34:16 2017
 Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.26 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.22 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.35 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:18:53 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:16 2017
 
 
 			**************************
@@ -579,18 +619,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:53 2016
+*** tstop() called on psinet at Mon May 15 15:34:16 2017
 Module time:
-	user time   =      -0.00 seconds =      -0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.24 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.39 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:18:53 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:16 2017
 
 
 	**********************************************************
@@ -598,15 +638,15 @@ Total time:
 	**********************************************************
 
 	Nuclear Rep. energy (wfn)     =    6.068298005568229
-	SCF energy          (wfn)     =  -38.917378692252065
-	Reference energy    (file100) =  -38.917378692252051
-	CCSD energy         (file100) =   -0.115368880868380
+	SCF energy          (wfn)     =  -38.917378692252079
+	Reference energy    (file100) =  -38.917378692252079
+	CCSD energy         (file100) =   -0.115368880312994
 
 	Input parameters:
 	-----------------
 	Reference wfn   =     UHF
 	Reference EOM wfn=     UHF
-	Memory (Mbytes) =  250.0
+	Memory (Mbytes) =  524.3
 	ABCD            =     NEW
 	Cache Level     =    2
 	Cache Type      =     LRU
@@ -639,582 +679,582 @@ Symmetry of right eigenvector: A1
 Obtaining initial guess from singles-singles block of Hbar...Done.
 
 Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.4350097451   4.35e-01    2.93e-01      N
-                     2   0.4934922837   4.93e-01    3.01e-01      N
+                     1   0.4350097566   4.35e-01    2.93e-01      N
+                     2   0.4934922877   4.93e-01    3.01e-01      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3738719015  -6.11e-02    7.67e-02      N
-                     2   0.4424785870  -5.10e-02    6.73e-02      N
+                     1   0.3738719143  -6.11e-02    7.67e-02      N
+                     2   0.4424785918  -5.10e-02    6.73e-02      N
 Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3685281338  -5.34e-03    4.64e-02      N
-                     2   0.4372887615  -5.19e-03    5.77e-02      N
+                     1   0.3685281474  -5.34e-03    4.64e-02      N
+                     2   0.4372887664  -5.19e-03    5.77e-02      N
 Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3670630435  -1.47e-03    2.52e-02      N
-                     2   0.4332428863  -4.05e-03    4.87e-02      N
+                     1   0.3670630576  -1.47e-03    2.52e-02      N
+                     2   0.4332428919  -4.05e-03    4.87e-02      N
 Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3666073225  -4.56e-04    1.57e-02      N
-                     2   0.4313400204  -1.90e-03    2.78e-02      N
+                     1   0.3666073368  -4.56e-04    1.57e-02      N
+                     2   0.4313400266  -1.90e-03    2.78e-02      N
 Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3664110649  -1.96e-04    1.41e-02      N
-                     2   0.4304721285  -8.68e-04    3.14e-02      N
+                     1   0.3664110793  -1.96e-04    1.41e-02      N
+                     2   0.4304721355  -8.68e-04    3.14e-02      N
 Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3663153399  -9.57e-05    7.19e-03      N
-                     2   0.4297289220  -7.43e-04    2.21e-02      N
+                     1   0.3663153543  -9.57e-05    7.19e-03      N
+                     2   0.4297289295  -7.43e-04    2.21e-02      N
 Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662955194  -1.98e-05    3.03e-03      N
-                     2   0.4295252758  -2.04e-04    1.18e-02      N
+                     1   0.3662955339  -1.98e-05    3.03e-03      N
+                     2   0.4295252834  -2.04e-04    1.18e-02      N
 Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662892829  -6.24e-06    1.43e-03      N
-                     2   0.4294705223  -5.48e-05    6.60e-03      N
+                     1   0.3662892973  -6.24e-06    1.43e-03      N
+                     2   0.4294705300  -5.48e-05    6.60e-03      N
 Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662873623  -1.92e-06    7.11e-04      N
-                     2   0.4294589948  -1.15e-05    3.69e-03      N
+                     1   0.3662873768  -1.92e-06    7.11e-04      N
+                     2   0.4294590025  -1.15e-05    3.69e-03      N
 Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662872681  -9.42e-08    2.89e-04      N
-                     2   0.4294581771  -8.18e-07    1.69e-03      N
+                     1   0.3662872825  -9.42e-08    2.89e-04      N
+                     2   0.4294581848  -8.18e-07    1.69e-03      N
 Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870515  -2.17e-07    1.09e-04      N
-                     2   0.4294566082  -1.57e-06    7.15e-04      N
+                     1   0.3662870659  -2.17e-07    1.09e-04      N
+                     2   0.4294566159  -1.57e-06    7.15e-04      N
 Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870515   1.22e-15    1.09e-04      N
-                     2   0.4294566082  -9.99e-16    7.15e-04      N
+                     1   0.3662870659   1.11e-15    1.09e-04      N
+                     2   0.4294566159  -1.28e-15    7.15e-04      N
 Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662871138   6.23e-08    4.03e-05      N
-                     2   0.4294570895   4.81e-07    3.02e-04      N
+                     1   0.3662871282   6.23e-08    4.03e-05      N
+                     2   0.4294570971   4.81e-07    3.02e-04      N
 Iter=15   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662871169   3.09e-09    1.27e-05      N
-                     2   0.4294574388   3.49e-07    1.10e-04      N
+                     1   0.3662871313   3.09e-09    1.27e-05      N
+                     2   0.4294574464   3.49e-07    1.10e-04      N
 Iter=16   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662871043  -1.26e-08    4.27e-06      N
-                     2   0.4294573785  -6.02e-08    4.04e-05      N
+                     1   0.3662871187  -1.26e-08    4.27e-06      N
+                     2   0.4294573862  -6.02e-08    4.04e-05      N
 Iter=17   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662871003  -4.04e-09    1.53e-06      N
-                     2   0.4294573974   1.88e-08    1.52e-05      N
+                     1   0.3662871147  -4.04e-09    1.53e-06      N
+                     2   0.4294574050   1.88e-08    1.52e-05      N
 Iter=18   L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870981  -2.17e-09    5.66e-07      Y
-                     2   0.4294573963  -1.08e-09    6.47e-06      N
+                     1   0.3662871125  -2.17e-09    5.66e-07      Y
+                     2   0.4294574040  -1.08e-09    6.47e-06      N
 Iter=19   L=15    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870979  -2.23e-10    2.68e-07      Y
-                     2   0.4294573989   2.61e-09    3.44e-06      N
+                     1   0.3662871123  -2.23e-10    2.68e-07      Y
+                     2   0.4294574066   2.61e-09    3.44e-06      N
 Iter=20   L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870979   8.29e-12    2.11e-07      Y
-                     2   0.4294574008   1.91e-09    2.11e-06      N
+                     1   0.3662871123   8.29e-12    2.11e-07      Y
+                     2   0.4294574085   1.91e-09    2.11e-06      N
 Iter=21   L=17    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870979   1.20e-11    2.19e-07      Y
-                     2   0.4294573998  -1.00e-09    1.81e-06      N
+                     1   0.3662871123   1.20e-11    2.19e-07      Y
+                     2   0.4294574075  -1.00e-09    1.81e-06      N
 Iter=22   L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870979  -3.59e-11    2.04e-07      Y
-                     2   0.4294573989  -9.21e-10    1.52e-06      N
+                     1   0.3662871123  -3.59e-11    2.04e-07      Y
+                     2   0.4294574066  -9.21e-10    1.52e-06      N
 Iter=23   L=19    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870979  -1.65e-11    1.90e-07      Y
-                     2   0.4294573962  -2.66e-09    1.12e-06      N
+                     1   0.3662871123  -1.65e-11    1.90e-07      Y
+                     2   0.4294574039  -2.66e-09    1.12e-06      N
 Iter=24   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3662870979   8.92e-12    1.88e-07      Y
-                     2   0.4294573941  -2.13e-09    6.98e-07      Y
+                     1   0.3662871123   8.93e-12    1.88e-07      Y
+                     2   0.4294574018  -2.13e-09    6.98e-07      Y
 Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
-<R|R> =   1.0000000000000004
-EOM CCSD R0 for root 0 =   0.00267449017
-<R|R> =   0.9999999999999999
-EOM CCSD R0 for root 1 =   0.03155819258
+<R|R> =   0.9999999999999998
+EOM CCSD R0 for root 0 =  -0.00267446344
+<R|R> =   0.9999999999999998
+EOM CCSD R0 for root 1 =   0.03155817485
 
 Final Energetic Summary for Converged Roots of Irrep B1
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 1      9.967    80390.7   0.3662870979   -38.666460475249
+EOM State 1      9.967    80390.7   0.3662871123   -38.666460460276
 
 Largest components of excited wave function #1:
  RIA (libdpd indices) : (cscf notation)
-         2 >   0      :       3a1 >    4a1 :    0.9425966813
-         2 >   3      :       3a1 >    7a1 :   -0.0925607861
-         2 >   2      :       3a1 >    6a1 :    0.0899831629
-         0 >   0      :       1b2 >    2b2 :    0.0429588550
-         0 >   0      :       1b1 >    2b1 :   -0.0253285229
+         2 >   0      :       3a1 >    4a1 :   -0.9425966848
+         2 >   3      :       3a1 >    7a1 :    0.0925607854
+         2 >   2      :       3a1 >    6a1 :   -0.0899831627
+         0 >   0      :       1b2 >    2b2 :   -0.0429588605
+         0 >   0      :       1b1 >    2b1 :    0.0253285243
  Ria (libdpd indices) : (cscf notation)
-         0 >   0      :       1b2 >    2b2 :   -0.0944759681
-         1 >   1      :       2a1 >    4a1 :   -0.0507113284
-         1 >   0      :       2a1 >    3a1 :   -0.0484833843
-         0 >   2      :       1b2 >    4b2 :   -0.0304947062
-         1 >   3      :       2a1 >    6a1 :   -0.0235049103
+         0 >   0      :       1b2 >    2b2 :    0.0944759715
+         1 >   1      :       2a1 >    4a1 :    0.0507113362
+         1 >   0      :       2a1 >    3a1 :    0.0484833535
+         0 >   2      :       1b2 >    4b2 :    0.0304947081
+         1 >   3      :       2a1 >    6a1 :    0.0235049171
  RIjAb (libdpd indices)     : (cscf notation)
-        2   1 >   0   0     :    3a1    2a1 >    4a1    3a1 :    0.1272600568
-        2   0 >   0   0     :    3a1    1b2 >    4a1    2b2 :    0.0805671323
-        1   1 >   0   0     :    2a1    2a1 >    4a1    3a1 :   -0.0780327636
-        2   0 >   0   0     :    3a1    1b2 >    2b2    3a1 :    0.0696468213
-        0   0 >   0   0     :    1b2    1b2 >    4a1    3a1 :   -0.0601536239
+        2   1 >   0   0     :    3a1    2a1 >    4a1    3a1 :   -0.1272600478
+        2   0 >   0   0     :    3a1    1b2 >    4a1    2b2 :   -0.0805671347
+        1   1 >   0   0     :    2a1    2a1 >    4a1    3a1 :    0.0780327584
+        2   0 >   0   0     :    3a1    1b2 >    2b2    3a1 :   -0.0696468079
+        0   0 >   0   0     :    1b2    1b2 >    4a1    3a1 :    0.0601536244
  RIJAB (libdpd indices)     : (cscf notation)
-        0   2 >   0   0     :    1b1    3a1 >    2b1    4a1 :    0.0632913419
-        0   2 >   0   0     :    1b2    3a1 >    2b2    4a1 :    0.0408683640
-        0   2 >   2   0     :    1b2    3a1 >    4b2    4a1 :    0.0388942069
-        2   1 >   3   0     :    3a1    2a1 >    7a1    4a1 :    0.0318221254
-        0   2 >   0   2     :    1b2    3a1 >    2b2    6a1 :   -0.0211331708
+        0   2 >   0   0     :    1b1    3a1 >    2b1    4a1 :   -0.0632913466
+        0   2 >   0   0     :    1b2    3a1 >    2b2    4a1 :   -0.0408683654
+        0   2 >   2   0     :    1b2    3a1 >    4b2    4a1 :   -0.0388942087
+        2   1 >   3   0     :    3a1    2a1 >    7a1    4a1 :   -0.0318221258
+        0   2 >   0   2     :    1b2    3a1 >    2b2    6a1 :    0.0211331704
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   0   1     :    1b2    2a1 >    2b2    4a1 :   -0.0048231700
-        0   1 >   0   0     :    1b2    2a1 >    2b2    3a1 :   -0.0038988210
-        0   1 >   0   3     :    1b2    2a1 >    2b2    6a1 :   -0.0021698131
-        0   1 >   2   0     :    1b2    2a1 >    4b2    3a1 :   -0.0016861417
-        0   1 >   0   4     :    1b2    2a1 >    2b2    7a1 :    0.0015081548
-EOM State 2     11.686    94255.0   0.4294573941   -38.603290179021
+        0   1 >   0   1     :    1b2    2a1 >    2b2    4a1 :    0.0048231702
+        0   1 >   0   0     :    1b2    2a1 >    2b2    3a1 :    0.0038988213
+        0   1 >   0   3     :    1b2    2a1 >    2b2    6a1 :    0.0021698130
+        0   1 >   2   0     :    1b2    2a1 >    4b2    3a1 :    0.0016861419
+        0   1 >   0   4     :    1b2    2a1 >    2b2    7a1 :   -0.0015081549
+EOM State 2     11.686    94255.0   0.4294574018   -38.603290170795
 
 Largest components of excited wave function #2:
  RIA (libdpd indices) : (cscf notation)
-         0 >   0      :       1b2 >    2b2 :    0.3215843009
-         0 >   2      :       1b2 >    4b2 :    0.1044477718
-         0 >   1      :       1b2 >    3b2 :   -0.0880744523
-         2 >   0      :       3a1 >    4a1 :   -0.0864394216
-         2 >   4      :       3a1 >    8a1 :    0.0494839897
+         0 >   0      :       1b2 >    2b2 :    0.3215844213
+         0 >   2      :       1b2 >    4b2 :    0.1044477951
+         0 >   1      :       1b2 >    3b2 :   -0.0880744552
+         2 >   0      :       3a1 >    4a1 :   -0.0864393906
+         2 >   4      :       3a1 >    8a1 :    0.0494839844
  Ria (libdpd indices) : (cscf notation)
-         1 >   0      :       2a1 >    3a1 :   -0.8384720437
-         0 >   0      :       1b2 >    2b2 :   -0.2567026025
-         1 >   2      :       2a1 >    5a1 :   -0.0918535969
-         1 >   3      :       2a1 >    6a1 :    0.0897411847
-         0 >   2      :       1b2 >    4b2 :   -0.0741612990
+         1 >   0      :       2a1 >    3a1 :   -0.8384719742
+         0 >   0      :       1b2 >    2b2 :   -0.2567027085
+         1 >   2      :       2a1 >    5a1 :   -0.0918535958
+         1 >   3      :       2a1 >    6a1 :    0.0897411611
+         0 >   2      :       1b2 >    4b2 :   -0.0741613307
  RIjAb (libdpd indices)     : (cscf notation)
-        0   0 >   2   0     :    1b2    1b2 >    6a1    3a1 :    0.0840104461
-        2   0 >   1   0     :    3a1    1b2 >    3b2    3a1 :   -0.0659219275
-        2   1 >   4   0     :    3a1    2a1 >    8a1    3a1 :    0.0657149524
-        2   0 >   0   0     :    3a1    1b2 >    2b2    3a1 :    0.0648388752
-        0   1 >   1   0     :    1b1    2a1 >    3b1    3a1 :    0.0574634993
+        0   0 >   2   0     :    1b2    1b2 >    6a1    3a1 :    0.0840104401
+        2   0 >   1   0     :    3a1    1b2 >    3b2    3a1 :   -0.0659219130
+        2   1 >   4   0     :    3a1    2a1 >    8a1    3a1 :    0.0657149472
+        2   0 >   0   0     :    3a1    1b2 >    2b2    3a1 :    0.0648387972
+        0   1 >   1   0     :    1b1    2a1 >    3b1    3a1 :    0.0574634961
  RIJAB (libdpd indices)     : (cscf notation)
-        0   0 >   0   0     :    1b2    1b1 >    2b2    2b1 :    0.0137632995
-        0   1 >   0   0     :    1b2    2a1 >    2b2    4a1 :    0.0136218486
-        0   1 >   0   2     :    1b2    2a1 >    2b2    6a1 :    0.0111631473
-        0   1 >   0   0     :    1b1    2a1 >    2b2    1a2 :    0.0095167912
-        0   2 >   2   1     :    1b2    3a1 >    4b2    5a1 :   -0.0085454757
+        0   0 >   0   0     :    1b2    1b1 >    2b2    2b1 :    0.0137633057
+        0   1 >   0   0     :    1b2    2a1 >    2b2    4a1 :    0.0136218526
+        0   1 >   0   2     :    1b2    2a1 >    2b2    6a1 :    0.0111631499
+        0   1 >   0   0     :    1b1    2a1 >    2b2    1a2 :    0.0095167949
+        0   2 >   2   1     :    1b2    3a1 >    4b2    5a1 :   -0.0085454779
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   1   0     :    1b2    2a1 >    3b2    3a1 :   -0.0194740672
-        0   1 >   0   0     :    1b2    2a1 >    2b2    3a1 :    0.0155446738
-        0   1 >   2   0     :    1b2    2a1 >    4b2    3a1 :    0.0129019811
-        0   1 >   0   3     :    1b2    2a1 >    2b2    6a1 :   -0.0128964541
-        0   1 >   2   2     :    1b2    2a1 >    4b2    5a1 :    0.0125924196
+        0   1 >   1   0     :    1b2    2a1 >    3b2    3a1 :   -0.0194740667
+        0   1 >   0   0     :    1b2    2a1 >    2b2    3a1 :    0.0155446721
+        0   1 >   2   0     :    1b2    2a1 >    4b2    3a1 :    0.0129019814
+        0   1 >   0   3     :    1b2    2a1 >    2b2    6a1 :   -0.0128964558
+        0   1 >   2   2     :    1b2    2a1 >    4b2    5a1 :    0.0125924181
 
 Symmetry of excited state: B2
 Symmetry of right eigenvector: A2
 Obtaining initial guess from singles-singles block of Hbar...Done.
 
 Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3419798584   3.42e-01    3.71e-01      N
-                     2   0.3980134764   3.98e-01    3.16e-01      N
+                     1   0.3419798651   3.42e-01    3.71e-01      N
+                     2   0.3980134634   3.98e-01    3.16e-01      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2667551615  -7.52e-02    7.78e-02      N
-                     2   0.3376517096  -6.04e-02    6.72e-02      N
+                     1   0.2667551683  -7.52e-02    7.78e-02      N
+                     2   0.3376516973  -6.04e-02    6.72e-02      N
 Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2628427558  -3.91e-03    2.47e-02      N
-                     2   0.3344499451  -3.20e-03    2.63e-02      N
+                     1   0.2628427627  -3.91e-03    2.47e-02      N
+                     2   0.3344499332  -3.20e-03    2.63e-02      N
 Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2625053734  -3.37e-04    6.74e-03      N
-                     2   0.3340304574  -4.19e-04    1.42e-02      N
+                     1   0.2625053803  -3.37e-04    6.74e-03      N
+                     2   0.3340304458  -4.19e-04    1.42e-02      N
 Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624787000  -2.67e-05    2.26e-03      N
-                     2   0.3338640412  -1.66e-04    8.74e-03      N
+                     1   0.2624787069  -2.67e-05    2.26e-03      N
+                     2   0.3338640297  -1.66e-04    8.74e-03      N
 Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624770437  -1.66e-06    7.68e-04      N
-                     2   0.3338488529  -1.52e-05    3.81e-03      N
+                     1   0.2624770506  -1.66e-06    7.68e-04      N
+                     2   0.3338488413  -1.52e-05    3.81e-03      N
 Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764025  -6.41e-07    2.18e-04      N
-                     2   0.3338467503  -2.10e-06    1.12e-03      N
+                     1   0.2624764094  -6.41e-07    2.18e-04      N
+                     2   0.3338467387  -2.10e-06    1.12e-03      N
 Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624763711  -3.14e-08    6.59e-05      N
-                     2   0.3338463462  -4.04e-07    3.43e-04      N
+                     1   0.2624763780  -3.14e-08    6.59e-05      N
+                     2   0.3338463345  -4.04e-07    3.43e-04      N
 Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764273   5.62e-08    2.35e-05      N
-                     2   0.3338463565   1.03e-08    9.76e-05      N
+                     1   0.2624764342   5.62e-08    2.35e-05      N
+                     2   0.3338463449   1.03e-08    9.76e-05      N
 Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764425   1.52e-08    8.00e-06      N
-                     2   0.3338463709   1.44e-08    3.09e-05      N
+                     1   0.2624764494   1.52e-08    8.00e-06      N
+                     2   0.3338463593   1.44e-08    3.09e-05      N
 Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764437   1.23e-09    2.33e-06      N
-                     2   0.3338463943   2.34e-08    1.07e-05      N
+                     1   0.2624764506   1.23e-09    2.33e-06      N
+                     2   0.3338463827   2.34e-08    1.07e-05      N
 Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764432  -5.66e-10    5.54e-07      Y
-                     2   0.3338463827  -1.16e-08    3.28e-06      N
+                     1   0.2624764501  -5.66e-10    5.54e-07      Y
+                     2   0.3338463711  -1.16e-08    3.28e-06      N
 Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764432   1.15e-14    5.54e-07      Y
-                     2   0.3338463827   6.17e-14    3.28e-06      N
+                     1   0.2624764501  -2.15e-14    5.54e-07      Y
+                     2   0.3338463711  -5.75e-14    3.28e-06      N
 Iter=14   L=5     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764431  -4.49e-11    5.39e-07      Y
-                     2   0.3338463822  -5.30e-10    1.03e-06      N
+                     1   0.2624764500  -4.49e-11    5.39e-07      Y
+                     2   0.3338463706  -5.30e-10    1.03e-06      N
 Iter=15   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2624764431   7.40e-12    5.43e-07      Y
-                     2   0.3338463831   9.84e-10    2.85e-07      Y
+                     1   0.2624764500   7.40e-12    5.43e-07      Y
+                     2   0.3338463715   9.84e-10    2.85e-07      Y
 Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
-Energy written to CC_INFO:Etot  -38.6989011900
+Energy written to CC_INFO:Etot  -38.6989012010
 States per irrep written to CC_INFO.
-<R|R> =   1.0000000000000002
+<R|R> =   1.0000000000000004
 EOM CCSD R0 for root 0 =   0.00000000000
-<R|R> =   1.0000000000000000
+<R|R> =   1.0000000000000002
 EOM CCSD R0 for root 1 =   0.00000000000
 
 Final Energetic Summary for Converged Roots of Irrep B2
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 3      7.142    57606.9   0.2624764431   -38.770271130007
+EOM State 3      7.142    57606.9   0.2624764500   -38.770271122523
 
 Largest components of excited wave function #3:
  RIA (libdpd indices) : (cscf notation)
-         0 >   0      :       1b1 >    2b2 :    0.1255155250
-         0 >   2      :       1b1 >    4b2 :    0.0322765634
-         0 >   1      :       1b1 >    3b2 :   -0.0244052744
-         1 >   0      :       2a1 >    1a2 :   -0.0208647537
-         2 >   1      :       3a1 >    2a2 :    0.0100491580
+         0 >   0      :       1b1 >    2b2 :    0.1255155556
+         0 >   2      :       1b1 >    4b2 :    0.0322765678
+         0 >   1      :       1b1 >    3b2 :   -0.0244052771
+         1 >   0      :       2a1 >    1a2 :   -0.0208647538
+         2 >   1      :       3a1 >    2a2 :    0.0100491576
  Ria (libdpd indices) : (cscf notation)
-         0 >   0      :       1b2 >    1b1 :   -0.9495539069
-         0 >   1      :       1b2 >    2b1 :   -0.1788797477
-         1 >   0      :       2a1 >    1a2 :    0.0265218464
+         0 >   0      :       1b2 >    1b1 :   -0.9495539008
+         0 >   1      :       1b2 >    2b1 :   -0.1788797537
+         1 >   0      :       2a1 >    1a2 :    0.0265218468
          0 >   3      :       1b2 >    4b1 :   -0.0062522520
-         1 >   1      :       2a1 >    2a2 :    0.0054746358
+         1 >   1      :       2a1 >    2a2 :    0.0054746360
  RIjAb (libdpd indices)     : (cscf notation)
-        0   0 >   0   1     :    1b1    1b2 >    2b1    2b1 :    0.0656336431
-        0   1 >   2   0     :    1b2    2a1 >    6a1    1b1 :    0.0538953712
-        2   1 >   1   0     :    3a1    2a1 >    3b2    1b1 :   -0.0470659885
-        0   0 >   1   0     :    1b2    1b2 >    3b2    1b1 :   -0.0468318300
-        0   1 >   0   0     :    1b1    2a1 >    1a2    1b1 :    0.0455415691
+        0   0 >   0   1     :    1b1    1b2 >    2b1    2b1 :    0.0656336434
+        0   1 >   2   0     :    1b2    2a1 >    6a1    1b1 :    0.0538953722
+        2   1 >   1   0     :    3a1    2a1 >    3b2    1b1 :   -0.0470659880
+        0   0 >   1   0     :    1b2    1b2 >    3b2    1b1 :   -0.0468318313
+        0   1 >   0   0     :    1b1    2a1 >    1a2    1b1 :    0.0455415697
  RIJAB (libdpd indices)     : (cscf notation)
-        0   0 >   2   0     :    1b2    1b1 >    4b2    2b2 :    0.0051120488
-        0   2 >   2   1     :    1b1    3a1 >    4b2    5a1 :   -0.0036024530
-        0   2 >   0   2     :    1b1    3a1 >    2b2    6a1 :    0.0035357973
-        0   2 >   0   1     :    1b1    3a1 >    2b2    5a1 :    0.0032080896
-        0   0 >   5   2     :    1b2    1b1 >    9a1    6a1 :   -0.0028604174
+        0   0 >   2   0     :    1b2    1b1 >    4b2    2b2 :    0.0051120501
+        0   2 >   2   1     :    1b1    3a1 >    4b2    5a1 :   -0.0036024537
+        0   2 >   0   2     :    1b1    3a1 >    2b2    6a1 :    0.0035357978
+        0   2 >   0   1     :    1b1    3a1 >    2b2    5a1 :    0.0032080906
+        0   0 >   5   2     :    1b2    1b1 >    9a1    6a1 :   -0.0028604177
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   0   2     :    1b2    2a1 >    1b1    5a1 :   -0.0306516244
+        0   1 >   0   2     :    1b2    2a1 >    1b1    5a1 :   -0.0306516241
         0   1 >   0   3     :    1b2    2a1 >    1b1    6a1 :   -0.0244203363
-        0   1 >   0   1     :    1b2    2a1 >    1b1    4a1 :   -0.0171231337
-        0   1 >   2   0     :    1b2    2a1 >    3b1    3a1 :    0.0136651617
-        0   1 >   1   4     :    1b2    2a1 >    2b1    7a1 :   -0.0128181306
-EOM State 4      9.084    73270.8   0.3338463831   -38.698901189979
+        0   1 >   0   1     :    1b2    2a1 >    1b1    4a1 :   -0.0171231334
+        0   1 >   2   0     :    1b2    2a1 >    3b1    3a1 :    0.0136651612
+        0   1 >   1   4     :    1b2    2a1 >    2b1    7a1 :   -0.0128181304
+EOM State 4      9.084    73270.8   0.3338463715   -38.698901201029
 
 Largest components of excited wave function #4:
  RIA (libdpd indices) : (cscf notation)
-         0 >   0      :       1b1 >    2b2 :   -0.9491250991
-         0 >   2      :       1b1 >    4b2 :   -0.1641926602
-         0 >   1      :       1b1 >    3b2 :    0.0544498508
-         0 >   5      :       1b1 >    7b2 :   -0.0091584798
-         1 >   1      :       2a1 >    2a2 :    0.0088399562
+         0 >   0      :       1b1 >    2b2 :   -0.9491250975
+         0 >   2      :       1b1 >    4b2 :   -0.1641926549
+         0 >   1      :       1b1 >    3b2 :    0.0544498488
+         0 >   5      :       1b1 >    7b2 :   -0.0091584784
+         1 >   1      :       2a1 >    2a2 :    0.0088399561
  Ria (libdpd indices) : (cscf notation)
-         0 >   0      :       1b2 >    1b1 :   -0.1340790660
-         0 >   1      :       1b2 >    2b1 :   -0.0121828441
-         1 >   1      :       2a1 >    2a2 :   -0.0058899751
-         1 >   0      :       2a1 >    1a2 :   -0.0052000339
-         0 >   2      :       1b2 >    3b1 :    0.0031128148
+         0 >   0      :       1b2 >    1b1 :   -0.1340790983
+         0 >   1      :       1b2 >    2b1 :   -0.0121828520
+         1 >   1      :       2a1 >    2a2 :   -0.0058899746
+         1 >   0      :       2a1 >    1a2 :   -0.0052000322
+         0 >   2      :       1b2 >    3b1 :    0.0031128150
  RIjAb (libdpd indices)     : (cscf notation)
-        0   0 >   0   0     :    1b1    1b2 >    2b2    2b2 :   -0.0711589508
-        0   0 >   0   0     :    1b1    1b2 >    4a1    3a1 :   -0.0668599717
-        1   1 >   0   0     :    2a1    2a1 >    2b2    1b1 :   -0.0663815007
-        0   1 >   0   0     :    1b1    2a1 >    2b2    3a1 :   -0.0612059141
-        0   1 >   0   1     :    1b1    2a1 >    2b2    4a1 :   -0.0576082237
+        0   0 >   0   0     :    1b1    1b2 >    2b2    2b2 :   -0.0711589485
+        0   0 >   0   0     :    1b1    1b2 >    4a1    3a1 :   -0.0668599624
+        1   1 >   0   0     :    2a1    2a1 >    2b2    1b1 :   -0.0663814985
+        0   1 >   0   0     :    1b1    2a1 >    2b2    3a1 :   -0.0612059116
+        0   1 >   0   1     :    1b1    2a1 >    2b2    4a1 :   -0.0576082221
  RIJAB (libdpd indices)     : (cscf notation)
-        0   0 >   2   0     :    1b2    1b1 >    4b2    2b2 :   -0.0448324432
-        0   2 >   0   1     :    1b1    3a1 >    2b2    5a1 :   -0.0387837662
-        0   1 >   0   3     :    1b1    2a1 >    2b2    7a1 :    0.0259245284
-        0   2 >   0   2     :    1b1    3a1 >    2b2    6a1 :   -0.0252450833
-        0   1 >   0   0     :    1b1    2a1 >    2b2    4a1 :   -0.0233872894
+        0   0 >   2   0     :    1b2    1b1 >    4b2    2b2 :   -0.0448324424
+        0   2 >   0   1     :    1b1    3a1 >    2b2    5a1 :   -0.0387837646
+        0   1 >   0   3     :    1b1    2a1 >    2b2    7a1 :    0.0259245283
+        0   2 >   0   2     :    1b1    3a1 >    2b2    6a1 :   -0.0252450816
+        0   1 >   0   0     :    1b1    2a1 >    2b2    4a1 :   -0.0233872888
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   0   2     :    1b2    2a1 >    1b1    5a1 :   -0.0055081930
-        0   1 >   0   0     :    1b2    2a1 >    1b1    3a1 :   -0.0052466199
-        0   1 >   0   1     :    1b2    2a1 >    1b1    4a1 :   -0.0034860888
-        0   1 >   0   3     :    1b2    2a1 >    1b1    6a1 :   -0.0033686566
-        0   1 >   2   0     :    1b2    2a1 >    3b1    3a1 :    0.0025005023
+        0   1 >   0   2     :    1b2    2a1 >    1b1    5a1 :   -0.0055081940
+        0   1 >   0   0     :    1b2    2a1 >    1b1    3a1 :   -0.0052466192
+        0   1 >   0   1     :    1b2    2a1 >    1b1    4a1 :   -0.0034860894
+        0   1 >   0   3     :    1b2    2a1 >    1b1    6a1 :   -0.0033686577
+        0   1 >   2   0     :    1b2    2a1 >    3b1    3a1 :    0.0025005026
 
 	Putting into environment energy for root of R irrep 2 and root 2.
-	Putting into environment CURRENT ENERGY:              -38.6989011900
+	Putting into environment CURRENT ENERGY:              -38.6989012010
 
 Symmetry of excited state: A1
 Symmetry of right eigenvector: B1
 Obtaining initial guess from singles-singles block of Hbar...Done.
 
 Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.3563872354   3.56e-01    3.07e-01      N
-                     2   0.5792368107   5.79e-01    3.68e-01      N
+                     1   0.3563872218   3.56e-01    3.07e-01      N
+                     2   0.5792368150   5.79e-01    3.68e-01      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2910147046  -6.54e-02    7.13e-02      N
-                     2   0.4989453504  -8.03e-02    9.42e-02      N
+                     1   0.2910146920  -6.54e-02    7.13e-02      N
+                     2   0.4989453546  -8.03e-02    9.42e-02      N
 Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2874134717  -3.60e-03    2.80e-02      N
-                     2   0.4921689925  -6.78e-03    4.07e-02      N
+                     1   0.2874134596  -3.60e-03    2.80e-02      N
+                     2   0.4921689968  -6.78e-03    4.07e-02      N
 Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2869813491  -4.32e-04    1.30e-02      N
-                     2   0.4909521147  -1.22e-03    2.54e-02      N
+                     1   0.2869813373  -4.32e-04    1.30e-02      N
+                     2   0.4909521193  -1.22e-03    2.54e-02      N
 Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868900591  -9.13e-05    5.40e-03      N
-                     2   0.4904818527  -4.70e-04    1.64e-02      N
+                     1   0.2868900475  -9.13e-05    5.40e-03      N
+                     2   0.4904818574  -4.70e-04    1.64e-02      N
 Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868890998  -9.59e-07    2.21e-03      N
-                     2   0.4903323826  -1.49e-04    9.28e-03      N
+                     1   0.2868890881  -9.59e-07    2.21e-03      N
+                     2   0.4903323874  -1.49e-04    9.28e-03      N
 Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868883681  -7.32e-07    7.49e-04      N
-                     2   0.4902724266  -6.00e-05    4.86e-03      N
+                     1   0.2868883564  -7.32e-07    7.49e-04      N
+                     2   0.4902724314  -6.00e-05    4.86e-03      N
 Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868883774   9.40e-09    2.19e-04      N
-                     2   0.4902569763  -1.55e-05    2.21e-03      N
+                     1   0.2868883658   9.39e-09    2.19e-04      N
+                     2   0.4902569811  -1.55e-05    2.21e-03      N
 Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868884865   1.09e-07    6.22e-05      N
-                     2   0.4902541314  -2.84e-06    8.95e-04      N
+                     1   0.2868884748   1.09e-07    6.22e-05      N
+                     2   0.4902541362  -2.84e-06    8.95e-04      N
 Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885349   4.83e-08    1.89e-05      N
-                     2   0.4902535215  -6.10e-07    3.12e-04      N
+                     1   0.2868885232   4.83e-08    1.89e-05      N
+                     2   0.4902535264  -6.10e-07    3.12e-04      N
 Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885489   1.40e-08    5.78e-06      N
-                     2   0.4902534850  -3.66e-08    1.06e-04      N
+                     1   0.2868885372   1.40e-08    5.78e-06      N
+                     2   0.4902534898  -3.66e-08    1.06e-04      N
 Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885465  -2.34e-09    1.39e-06      N
-                     2   0.4902534876   2.64e-09    3.34e-05      N
+                     1   0.2868885349  -2.34e-09    1.39e-06      N
+                     2   0.4902534924   2.64e-09    3.34e-05      N
 Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885465  -1.72e-15    1.39e-06      N
-                     2   0.4902534876   7.72e-15    3.34e-05      N
+                     1   0.2868885349  -2.05e-15    1.39e-06      N
+                     2   0.4902534924  -1.22e-15    3.34e-05      N
 Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885466   9.41e-11    3.67e-07      Y
-                     2   0.4902534762  -1.14e-08    1.42e-05      N
+                     1   0.2868885350   9.41e-11    3.67e-07      Y
+                     2   0.4902534810  -1.14e-08    1.42e-05      N
 Iter=15   L=7     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885465  -1.74e-10    2.93e-07      Y
-                     2   0.4902534730  -3.28e-09    5.36e-06      N
+                     1   0.2868885348  -1.74e-10    2.93e-07      Y
+                     2   0.4902534778  -3.28e-09    5.36e-06      N
 Iter=16   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885466   1.58e-10    2.94e-07      Y
-                     2   0.4902534755   2.52e-09    2.01e-06      N
+                     1   0.2868885349   1.58e-10    2.94e-07      Y
+                     2   0.4902534803   2.52e-09    2.01e-06      N
 Iter=17   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2868885466   1.10e-11    2.88e-07      Y
-                     2   0.4902534742  -1.26e-09    7.60e-07      Y
+                     1   0.2868885349   1.10e-11    2.88e-07      Y
+                     2   0.4902534790  -1.26e-09    7.60e-07      Y
 Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
-<R|R> =   1.0000000000000002
-EOM CCSD R0 for root 0 =   0.00000000000
 <R|R> =   1.0000000000000000
+EOM CCSD R0 for root 0 =   0.00000000000
+<R|R> =   1.0000000000000002
 EOM CCSD R0 for root 1 =   0.00000000000
 
 Final Energetic Summary for Converged Roots of Irrep A1
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 5      7.807    62964.7   0.2868885466   -38.745859026484
+EOM State 5      7.807    62964.7   0.2868885349   -38.745859037619
 
 Largest components of excited wave function #5:
  RIA (libdpd indices) : (cscf notation)
-         0 >   0      :       1b1 >    4a1 :   -0.9548481842
-         0 >   2      :       1b1 >    6a1 :   -0.0991185838
-         0 >   3      :       1b1 >    7a1 :    0.0958188591
-         0 >   1      :       1b1 >    5a1 :   -0.0183798044
-         1 >   0      :       2a1 >    2b1 :   -0.0156470056
+         0 >   0      :       1b1 >    4a1 :   -0.9548481879
+         0 >   2      :       1b1 >    6a1 :   -0.0991185800
+         0 >   3      :       1b1 >    7a1 :    0.0958188555
+         0 >   1      :       1b1 >    5a1 :   -0.0183798083
+         1 >   0      :       2a1 >    2b1 :   -0.0156470053
  Ria (libdpd indices) : (cscf notation)
-         1 >   0      :       2a1 >    1b1 :    0.0978484895
-         1 >   1      :       2a1 >    2b1 :    0.0386607843
-         0 >   0      :       1b2 >    1a2 :   -0.0128543951
-         0 >   1      :       1b2 >    2a2 :   -0.0061981240
-         1 >   3      :       2a1 >    4b1 :    0.0059846434
+         1 >   0      :       2a1 >    1b1 :    0.0978484788
+         1 >   1      :       2a1 >    2b1 :    0.0386607819
+         0 >   0      :       1b2 >    1a2 :   -0.0128543943
+         0 >   1      :       1b2 >    2a2 :   -0.0061981238
+         1 >   3      :       2a1 >    4b1 :    0.0059846432
  RIjAb (libdpd indices)     : (cscf notation)
-        0   1 >   0   0     :    1b1    2a1 >    4a1    3a1 :   -0.0885803625
-        0   0 >   0   0     :    1b1    1b2 >    4a1    2b2 :   -0.0865304005
-        1   1 >   0   0     :    2a1    2a1 >    4a1    1b1 :   -0.0633762133
-        0   0 >   0   2     :    1b1    1b2 >    4a1    4b2 :   -0.0579813992
-        0   0 >   0   0     :    1b1    1b2 >    2b2    3a1 :   -0.0537343268
+        0   1 >   0   0     :    1b1    2a1 >    4a1    3a1 :   -0.0885803591
+        0   0 >   0   0     :    1b1    1b2 >    4a1    2b2 :   -0.0865303984
+        1   1 >   0   0     :    2a1    2a1 >    4a1    1b1 :   -0.0633762114
+        0   0 >   0   2     :    1b1    1b2 >    4a1    4b2 :   -0.0579813972
+        0   0 >   0   0     :    1b1    1b2 >    2b2    3a1 :   -0.0537343222
  RIJAB (libdpd indices)     : (cscf notation)
-        0   2 >   1   0     :    1b1    3a1 >    5a1    4a1 :    0.0471347207
-        0   0 >   2   0     :    1b2    1b1 >    4b2    4a1 :   -0.0355791441
-        0   0 >   0   0     :    1b2    1b1 >    2b2    4a1 :   -0.0341496050
-        0   1 >   3   0     :    1b1    2a1 >    7a1    4a1 :   -0.0328298498
-        0   2 >   2   0     :    1b1    3a1 >    6a1    4a1 :    0.0326945665
+        0   2 >   1   0     :    1b1    3a1 >    5a1    4a1 :    0.0471347196
+        0   0 >   2   0     :    1b2    1b1 >    4b2    4a1 :   -0.0355791434
+        0   0 >   0   0     :    1b2    1b1 >    2b2    4a1 :   -0.0341496034
+        0   1 >   3   0     :    1b1    2a1 >    7a1    4a1 :   -0.0328298501
+        0   2 >   2   0     :    1b1    3a1 >    6a1    4a1 :    0.0326945649
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   0   2     :    1b2    2a1 >    1a2    5a1 :    0.0020879787
-        0   1 >   2   1     :    1b2    2a1 >    4b2    2b1 :   -0.0014525345
-        0   1 >   0   6     :    1b2    2a1 >    1a2    9a1 :   -0.0012852071
-        0   1 >   0   3     :    1b2    2a1 >    1a2    6a1 :    0.0011579808
-        0   1 >   1   2     :    1b2    2a1 >    3b2    3b1 :    0.0010960821
-EOM State 6     13.340   107598.2   0.4902534742   -38.542494098903
+        0   1 >   0   2     :    1b2    2a1 >    1a2    5a1 :    0.0020879784
+        0   1 >   2   1     :    1b2    2a1 >    4b2    2b1 :   -0.0014525343
+        0   1 >   0   6     :    1b2    2a1 >    1a2    9a1 :   -0.0012852070
+        0   1 >   0   3     :    1b2    2a1 >    1a2    6a1 :    0.0011579807
+        0   1 >   1   2     :    1b2    2a1 >    3b2    3b1 :    0.0010960820
+EOM State 6     13.340   107598.2   0.4902534790   -38.542494093545
 
 Largest components of excited wave function #6:
  RIA (libdpd indices) : (cscf notation)
-         0 >   2      :       1b1 >    6a1 :   -0.1333339775
-         0 >   0      :       1b1 >    4a1 :    0.1055910817
-         0 >   1      :       1b1 >    5a1 :    0.0982942117
-         2 >   1      :       3a1 >    3b1 :    0.0566089321
-         0 >   0      :       1b2 >    1a2 :    0.0527947718
+         0 >   2      :       1b1 >    6a1 :   -0.1333339907
+         0 >   0      :       1b1 >    4a1 :    0.1055910742
+         0 >   1      :       1b1 >    5a1 :    0.0982942107
+         2 >   1      :       3a1 >    3b1 :    0.0566089319
+         0 >   0      :       1b2 >    1a2 :    0.0527947723
  Ria (libdpd indices) : (cscf notation)
-         1 >   0      :       2a1 >    1b1 :    0.9146434618
-         1 >   1      :       2a1 >    2b1 :    0.1699579423
-         0 >   0      :       1b2 >    1a2 :   -0.0146526465
-         1 >   3      :       2a1 >    4b1 :    0.0067447470
-         0 >   1      :       1b2 >    2a2 :   -0.0025301220
+         1 >   0      :       2a1 >    1b1 :    0.9146434632
+         1 >   1      :       2a1 >    2b1 :    0.1699579494
+         0 >   0      :       1b2 >    1a2 :   -0.0146526483
+         1 >   3      :       2a1 >    4b1 :    0.0067447471
+         0 >   1      :       1b2 >    2a2 :   -0.0025301226
  RIjAb (libdpd indices)     : (cscf notation)
-        2   0 >   0   0     :    3a1    1b2 >    2b2    1b1 :   -0.1405966841
-        0   0 >   2   0     :    1b2    1b2 >    6a1    1b1 :   -0.0884482140
-        2   0 >   1   0     :    3a1    1b2 >    3b2    1b1 :    0.0878997197
-        2   0 >   2   0     :    3a1    1b2 >    4b2    1b1 :   -0.0735319099
-        0   0 >   0   0     :    1b1    1b2 >    1a2    1b1 :   -0.0609654651
+        2   0 >   0   0     :    3a1    1b2 >    2b2    1b1 :   -0.1405966670
+        0   0 >   2   0     :    1b2    1b2 >    6a1    1b1 :   -0.0884482166
+        2   0 >   1   0     :    3a1    1b2 >    3b2    1b1 :    0.0878997177
+        2   0 >   2   0     :    3a1    1b2 >    4b2    1b1 :   -0.0735319039
+        0   0 >   0   0     :    1b1    1b2 >    1a2    1b1 :   -0.0609654665
  RIJAB (libdpd indices)     : (cscf notation)
-        0   0 >   0   0     :    1b2    1b1 >    2b2    4a1 :    0.0114624008
-        0   0 >   2   0     :    1b2    1b1 >    4b2    4a1 :    0.0104189526
+        0   0 >   0   0     :    1b2    1b1 >    2b2    4a1 :    0.0114624014
+        0   0 >   2   0     :    1b2    1b1 >    4b2    4a1 :    0.0104189529
         0   2 >   1   0     :    1b1    3a1 >    5a1    4a1 :   -0.0095851384
-        0   2 >   2   0     :    1b1    3a1 >    6a1    4a1 :   -0.0092236463
-        0   2 >   1   0     :    1b1    3a1 >    3b2    2b2 :    0.0057541072
+        0   2 >   2   0     :    1b1    3a1 >    6a1    4a1 :   -0.0092236459
+        0   2 >   1   0     :    1b1    3a1 >    3b2    2b2 :    0.0057541070
  Rijab (libdpd indices)     : (cscf notation)
         0   1 >   0   2     :    1b2    2a1 >    1a2    5a1 :    0.0199550222
-        0   1 >   0   1     :    1b2    2a1 >    2b2    2b1 :   -0.0184507638
-        0   1 >   2   1     :    1b2    2a1 >    4b2    2b1 :   -0.0153432908
-        0   1 >   0   3     :    1b2    2a1 >    1a2    6a1 :    0.0121714309
-        0   1 >   0   0     :    1b2    2a1 >    2b2    1b1 :   -0.0104801048
+        0   1 >   0   1     :    1b2    2a1 >    2b2    2b1 :   -0.0184507639
+        0   1 >   2   1     :    1b2    2a1 >    4b2    2b1 :   -0.0153432909
+        0   1 >   0   3     :    1b2    2a1 >    1a2    6a1 :    0.0121714310
+        0   1 >   0   0     :    1b2    2a1 >    2b2    1b1 :   -0.0104801051
 
 Symmetry of excited state: A2
 Symmetry of right eigenvector: B2
 Obtaining initial guess from singles-singles block of Hbar...Done.
 
 Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2999912772   3.00e-01    3.91e-01      N
-                     2   0.4607903919   4.61e-01    2.72e-01      N
+                     1   0.2999912887   3.00e-01    3.91e-01      N
+                     2   0.4607903979   4.61e-01    2.72e-01      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2162921537  -8.37e-02    8.81e-02      N
-                     2   0.4153372052  -4.55e-02    5.87e-02      N
+                     1   0.2162921662  -8.37e-02    8.81e-02      N
+                     2   0.4153372135  -4.55e-02    5.87e-02      N
 Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2110767264  -5.22e-03    3.24e-02      N
-                     2   0.4120151677  -3.32e-03    3.73e-02      N
+                     1   0.2110767394  -5.22e-03    3.24e-02      N
+                     2   0.4120151763  -3.32e-03    3.73e-02      N
 Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2104457215  -6.31e-04    1.09e-02      N
-                     2   0.4104979888  -1.52e-03    2.69e-02      N
+                     1   0.2104457347  -6.31e-04    1.09e-02      N
+                     2   0.4104979974  -1.52e-03    2.69e-02      N
 Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103321162  -1.14e-04    5.83e-03      N
-                     2   0.4097979735  -7.00e-04    1.50e-02      N
+                     1   0.2103321295  -1.14e-04    5.83e-03      N
+                     2   0.4097979819  -7.00e-04    1.50e-02      N
 Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103122638  -1.99e-05    2.66e-03      N
-                     2   0.4096214421  -1.77e-04    8.90e-03      N
+                     1   0.2103122771  -1.99e-05    2.66e-03      N
+                     2   0.4096214504  -1.77e-04    8.90e-03      N
 Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103094872  -2.78e-06    9.22e-04      N
-                     2   0.4095715445  -4.99e-05    4.63e-03      N
+                     1   0.2103095005  -2.78e-06    9.22e-04      N
+                     2   0.4095715528  -4.99e-05    4.63e-03      N
 Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103099947   5.08e-07    3.34e-04      N
-                     2   0.4095572545  -1.43e-05    2.90e-03      N
+                     1   0.2103100081   5.08e-07    3.34e-04      N
+                     2   0.4095572628  -1.43e-05    2.90e-03      N
 Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100535   5.88e-08    1.33e-04      N
-                     2   0.4095526145  -4.64e-06    1.97e-03      N
+                     1   0.2103100668   5.88e-08    1.33e-04      N
+                     2   0.4095526229  -4.64e-06    1.97e-03      N
 Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100716   1.81e-08    5.00e-05      N
-                     2   0.4095492597  -3.35e-06    1.31e-03      N
+                     1   0.2103100849   1.81e-08    5.00e-05      N
+                     2   0.4095492681  -3.35e-06    1.31e-03      N
 Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100693  -2.23e-09    1.66e-05      N
-                     2   0.4095462589  -3.00e-06    8.38e-04      N
+                     1   0.2103100827  -2.23e-09    1.66e-05      N
+                     2   0.4095462673  -3.00e-06    8.38e-04      N
 Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100646  -4.71e-09    5.05e-06      N
-                     2   0.4095442039  -2.05e-06    3.88e-04      N
+                     1   0.2103100780  -4.71e-09    5.05e-06      N
+                     2   0.4095442123  -2.05e-06    3.88e-04      N
 Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100646  -3.89e-16    5.05e-06      N
-                     2   0.4095442039  -7.77e-16    3.88e-04      N
+                     1   0.2103100780  -9.99e-16    5.05e-06      N
+                     2   0.4095442123  -3.00e-15    3.88e-04      N
 Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100655   9.27e-10    1.53e-06      N
-                     2   0.4095439052  -2.99e-07    1.48e-04      N
+                     1   0.2103100789   9.27e-10    1.53e-06      N
+                     2   0.4095439137  -2.99e-07    1.48e-04      N
 Iter=15   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100670   1.41e-09    4.66e-07      Y
-                     2   0.4095439608   5.56e-08    6.39e-05      N
+                     1   0.2103100803   1.41e-09    4.66e-07      Y
+                     2   0.4095439692   5.56e-08    6.39e-05      N
 Iter=16   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100674   4.54e-10    3.88e-07      Y
-                     2   0.4095439333  -2.75e-08    2.83e-05      N
+                     1   0.2103100808   4.54e-10    3.88e-07      Y
+                     2   0.4095439417  -2.75e-08    2.83e-05      N
 Iter=17   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100674  -4.70e-11    3.70e-07      Y
-                     2   0.4095439614   2.81e-08    1.82e-05      N
+                     1   0.2103100807  -4.70e-11    3.70e-07      Y
+                     2   0.4095439698   2.81e-08    1.82e-05      N
 Iter=18   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100672  -1.95e-10    3.38e-07      Y
-                     2   0.4095439616   2.69e-10    1.35e-05      N
+                     1   0.2103100805  -1.95e-10    3.38e-07      Y
+                     2   0.4095439701   2.69e-10    1.35e-05      N
 Iter=19   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100672   4.61e-11    3.07e-07      Y
-                     2   0.4095439516  -1.00e-08    1.04e-05      N
+                     1   0.2103100806   4.61e-11    3.07e-07      Y
+                     2   0.4095439601  -1.00e-08    1.04e-05      N
 Iter=20   L=13    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100672   2.70e-11    3.01e-07      Y
-                     2   0.4095439425  -9.10e-09    5.59e-06      N
+                     1   0.2103100806   2.70e-11    3.01e-07      Y
+                     2   0.4095439510  -9.10e-09    5.59e-06      N
 Iter=21   L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100672  -2.84e-12    3.05e-07      Y
-                     2   0.4095439329  -9.57e-09    3.47e-06      N
+                     1   0.2103100806  -2.84e-12    3.05e-07      Y
+                     2   0.4095439414  -9.57e-09    3.47e-06      N
 Iter=22   L=15    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100671  -1.36e-10    2.85e-07      Y
-                     2   0.4095439356   2.66e-09    1.74e-06      N
+                     1   0.2103100805  -1.36e-10    2.85e-07      Y
+                     2   0.4095439441   2.66e-09    1.74e-06      N
 Iter=23   L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2103100671  -4.77e-12    2.85e-07      Y
-                     2   0.4095439375   1.93e-09    7.57e-07      Y
+                     1   0.2103100804  -4.77e-12    2.85e-07      Y
+                     2   0.4095439460   1.93e-09    7.57e-07      Y
 Collapsing to only 2 vector(s).
 
 Procedure converged for 2 root(s).
 <R|R> =   1.0000000000000000
 EOM CCSD R0 for root 0 =   0.00000000000
-<R|R> =   1.0000000000000002
+<R|R> =   1.0000000000000000
 EOM CCSD R0 for root 1 =   0.00000000000
 
 Final Energetic Summary for Converged Roots of Irrep A2
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 7      5.723    46157.7   0.2103100671   -38.822437506025
+EOM State 7      5.723    46157.7   0.2103100804   -38.822437492117
 
 Largest components of excited wave function #7:
  RIA (libdpd indices) : (cscf notation)
-         1 >   0      :       2a1 >    2b2 :    0.0270497908
-         2 >   0      :       3a1 >    2b2 :   -0.0258980681
-         0 >   0      :       1b2 >    4a1 :    0.0252679287
-         1 >   2      :       2a1 >    4b2 :    0.0231290008
-         1 >   1      :       2a1 >    3b2 :   -0.0215582924
+         1 >   0      :       2a1 >    2b2 :   -0.0270497928
+         2 >   0      :       3a1 >    2b2 :    0.0258980720
+         0 >   0      :       1b2 >    4a1 :   -0.0252679355
+         1 >   2      :       2a1 >    4b2 :   -0.0231290017
+         1 >   1      :       2a1 >    3b2 :    0.0215582925
  Ria (libdpd indices) : (cscf notation)
-         0 >   0      :       1b2 >    3a1 :   -0.9522501314
-         0 >   3      :       1b2 >    6a1 :    0.1210429055
-         0 >   2      :       1b2 >    5a1 :   -0.0929279658
-         0 >   1      :       1b2 >    4a1 :    0.0786138620
-         0 >   4      :       1b2 >    7a1 :    0.0362270465
+         0 >   0      :       1b2 >    3a1 :    0.9522501321
+         0 >   3      :       1b2 >    6a1 :   -0.1210428990
+         0 >   2      :       1b2 >    5a1 :    0.0929279690
+         0 >   1      :       1b2 >    4a1 :   -0.0786138570
+         0 >   4      :       1b2 >    7a1 :   -0.0362270477
  RIjAb (libdpd indices)     : (cscf notation)
-        2   0 >   4   0     :    3a1    1b2 >    8a1    3a1 :    0.0585708448
-        0   0 >   1   0     :    1b2    1b2 >    3b2    3a1 :   -0.0577149277
-        0   1 >   2   0     :    1b2    2a1 >    6a1    3a1 :    0.0573874301
-        0   0 >   1   0     :    1b1    1b2 >    3b1    3a1 :    0.0547692258
-        2   1 >   1   0     :    3a1    2a1 >    3b2    3a1 :   -0.0466154693
+        2   0 >   4   0     :    3a1    1b2 >    8a1    3a1 :   -0.0585708467
+        0   0 >   1   0     :    1b2    1b2 >    3b2    3a1 :    0.0577149312
+        0   1 >   2   0     :    1b2    2a1 >    6a1    3a1 :   -0.0573874318
+        0   0 >   1   0     :    1b1    1b2 >    3b1    3a1 :   -0.0547692276
+        2   1 >   1   0     :    3a1    2a1 >    3b2    3a1 :    0.0466154692
  RIJAB (libdpd indices)     : (cscf notation)
-        0   2 >   2   0     :    1b1    3a1 >    4b2    2b1 :   -0.0013613571
-        0   2 >   2   1     :    1b2    3a1 >    4b2    3b2 :   -0.0012018001
-        2   1 >   2   0     :    3a1    2a1 >    4b2    4a1 :    0.0011935951
-        0   2 >   4   2     :    1b2    3a1 >    6b2    4b2 :   -0.0011881424
-        2   1 >   2   1     :    3a1    2a1 >    4b2    5a1 :    0.0011719228
+        0   2 >   2   0     :    1b1    3a1 >    4b2    2b1 :    0.0013613572
+        0   2 >   2   1     :    1b2    3a1 >    4b2    3b2 :    0.0012018001
+        2   1 >   2   0     :    3a1    2a1 >    4b2    4a1 :   -0.0011935949
+        0   2 >   4   2     :    1b2    3a1 >    6b2    4b2 :    0.0011881424
+        2   1 >   2   1     :    3a1    2a1 >    4b2    5a1 :   -0.0011719228
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   5   0     :    1b2    2a1 >    8a1    3a1 :   -0.0250649413
-        0   1 >   2   0     :    1b2    2a1 >    5a1    3a1 :    0.0214818268
-        0   1 >   3   0     :    1b2    2a1 >    6a1    3a1 :    0.0184735328
-        0   1 >   1   0     :    1b2    2a1 >    4a1    3a1 :    0.0143986093
-        0   1 >   2   0     :    1b2    2a1 >    3b1    1b1 :    0.0124644976
-EOM State 8     11.144    89884.5   0.4095439375   -38.623203635580
+        0   1 >   5   0     :    1b2    2a1 >    8a1    3a1 :    0.0250649410
+        0   1 >   2   0     :    1b2    2a1 >    5a1    3a1 :   -0.0214818268
+        0   1 >   3   0     :    1b2    2a1 >    6a1    3a1 :   -0.0184735330
+        0   1 >   1   0     :    1b2    2a1 >    4a1    3a1 :   -0.0143986092
+        0   1 >   2   0     :    1b2    2a1 >    3b1    1b1 :   -0.0124644975
+EOM State 8     11.144    89884.5   0.4095439460   -38.623203626572
 
 Largest components of excited wave function #8:
  RIA (libdpd indices) : (cscf notation)
-         2 >   0      :       3a1 >    2b2 :   -0.6886062618
-         0 >   0      :       1b2 >    4a1 :   -0.3662960314
-         2 >   2      :       3a1 >    4b2 :   -0.1152413927
-         0 >   3      :       1b2 >    7a1 :    0.0507556584
-         1 >   0      :       2a1 >    2b2 :   -0.0447433627
+         2 >   0      :       3a1 >    2b2 :    0.6886059811
+         0 >   0      :       1b2 >    4a1 :    0.3662962638
+         2 >   2      :       3a1 >    4b2 :    0.1152413503
+         0 >   3      :       1b2 >    7a1 :   -0.0507556834
+         1 >   0      :       2a1 >    2b2 :    0.0447434118
  Ria (libdpd indices) : (cscf notation)
-         0 >   1      :       1b2 >    4a1 :    0.5368554206
-         0 >   3      :       1b2 >    6a1 :    0.1030590768
-         1 >   0      :       2a1 >    2b2 :    0.0641013487
-         0 >   0      :       1b2 >    3a1 :    0.0574243212
-         0 >   4      :       1b2 >    7a1 :   -0.0571511863
+         0 >   1      :       1b2 >    4a1 :   -0.5368555769
+         0 >   3      :       1b2 >    6a1 :   -0.1030590973
+         1 >   0      :       2a1 >    2b2 :   -0.0641013844
+         0 >   0      :       1b2 >    3a1 :   -0.0574243198
+         0 >   4      :       1b2 >    7a1 :    0.0571512067
  RIjAb (libdpd indices)     : (cscf notation)
-        0   0 >   0   0     :    1b1    1b2 >    4a1    1b1 :   -0.1122338167
-        2   0 >   0   0     :    3a1    1b2 >    4a1    3a1 :    0.0697828596
-        2   1 >   0   1     :    3a1    2a1 >    2b2    4a1 :   -0.0508124214
-        0   0 >   0   0     :    1b2    1b2 >    2b2    3a1 :    0.0458478664
-        1   1 >   0   0     :    2a1    2a1 >    2b2    3a1 :    0.0433390128
+        0   0 >   0   0     :    1b1    1b2 >    4a1    1b1 :    0.1122339198
+        2   0 >   0   0     :    3a1    1b2 >    4a1    3a1 :   -0.0697829843
+        2   1 >   0   1     :    3a1    2a1 >    2b2    4a1 :    0.0508124206
+        0   0 >   0   0     :    1b2    1b2 >    2b2    3a1 :   -0.0458478468
+        1   1 >   0   0     :    2a1    2a1 >    2b2    3a1 :   -0.0433389834
  RIJAB (libdpd indices)     : (cscf notation)
-        0   2 >   0   0     :    1b1    3a1 >    2b2    2b1 :    0.0393495344
-        0   2 >   2   0     :    1b2    3a1 >    4b2    2b2 :   -0.0337922256
-        0   0 >   0   0     :    1b2    1b1 >    2b1    4a1 :    0.0225448381
-        0   2 >   1   0     :    1b2    3a1 >    5a1    4a1 :    0.0217370265
-        2   1 >   2   0     :    3a1    2a1 >    4b2    4a1 :    0.0181951609
+        0   2 >   0   0     :    1b1    3a1 >    2b2    2b1 :   -0.0393495216
+        0   2 >   2   0     :    1b2    3a1 >    4b2    2b2 :    0.0337922113
+        0   0 >   0   0     :    1b2    1b1 >    2b1    4a1 :   -0.0225448526
+        0   2 >   1   0     :    1b2    3a1 >    5a1    4a1 :   -0.0217370336
+        2   1 >   2   0     :    3a1    2a1 >    4b2    4a1 :   -0.0181951623
  Rijab (libdpd indices)     : (cscf notation)
-        0   1 >   3   1     :    1b2    2a1 >    6a1    4a1 :   -0.0168912784
-        0   1 >   4   1     :    1b2    2a1 >    7a1    4a1 :    0.0111351915
-        0   1 >   2   1     :    1b2    2a1 >    5a1    4a1 :   -0.0108644298
-        0   1 >   1   0     :    1b2    2a1 >    2b1    1b1 :   -0.0079983058
-        0   1 >   3   0     :    1b2    2a1 >    6a1    3a1 :    0.0071044344
+        0   1 >   3   1     :    1b2    2a1 >    6a1    4a1 :    0.0168912836
+        0   1 >   4   1     :    1b2    2a1 >    7a1    4a1 :   -0.0111351945
+        0   1 >   2   1     :    1b2    2a1 >    5a1    4a1 :    0.0108644328
+        0   1 >   1   0     :    1b2    2a1 >    2b1    1b1 :    0.0079983089
+        0   1 >   3   0     :    1b2    2a1 >    6a1    3a1 :   -0.0071044374
 
 	Total # of sigma evaluations: 131
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:18:54 2016
+*** tstop() called on psinet at Mon May 15 15:34:18 2017
 Module time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.67 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       0.95 seconds =       0.02 minutes
-	system time =       0.91 seconds =       0.02 minutes
+	user time   =       1.19 seconds =       0.02 minutes
+	system time =       1.04 seconds =       0.02 minutes
 	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.64 seconds =       0.03 minutes
+	system time =       1.43 seconds =       0.02 minutes
+	total time  =          3 seconds =       0.05 minutes
 	SCF energy........................................................PASSED
 	CCSD energy.......................................................PASSED
 	EOM-CCSD root 1...................................................PASSED
@@ -1226,4 +1266,4 @@ Total time:
 	EOM-CCSD root 7...................................................PASSED
 	EOM-CCSD root 8...................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

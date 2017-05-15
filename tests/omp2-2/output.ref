@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:14:03 2016
+    Psi4 started on: Monday, 15 May 2017 03:37PM
 
-    Process ID:   9187
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  14774
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -31,15 +34,13 @@ refnuc      =   25.59060766929188  #TEST
 refscf      = -129.25292774600072 #TEST
 refomp2     = -129.66800278355504 #TEST
 
-memory 250 mb
-
 molecule no {
 0 2
 n
 o 1 1.158
 }
 
-set global {
+set {
   basis cc-pcvdz
   reference rohf
   guess gwh
@@ -52,17 +53,23 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)")
 compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy (a.u.)");                   #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:37:35 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:14:03 2016
+   => Loading Basis Set <=
+
+    Name: CC-PCVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry N          line   195 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pcvdz.gbs 
+    atoms 2 entry O          line   229 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pcvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -81,7 +88,7 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
 
   Rotational constants: A = ************  B =      1.68371  C =      1.68371 [cm^-1]
   Rotational constants: A = ************  B =  50476.22913  C =  50476.22913 [MHz]
-  Nuclear repulsion =   25.590607669291888
+  Nuclear repulsion =   25.590607669291881
 
   Charge       = 0
   Multiplicity = 2
@@ -103,6 +110,7 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
   ==> Primary Basis <==
 
   Basis Set: CC-PCVDZ
+    Blend: CC-PCVDZ
     Number of shells: 16
     Number of basis function: 36
     Number of Cartesian functions: 38
@@ -124,37 +132,53 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     246] index = [             0,30381]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              16
+      Number of primitives:             48
+      Number of atomic orbitals:        38
+      Number of basis functions:        36
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 444222 doubles for integral storage.
+  We computed 9125 shell quartets total.
+  Whereas there are 9316 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 1.4366348670E-02.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -119.21648665423420   -1.19216e+02   6.50927e-01 
-   @ROHF iter   2:  -128.35518646196829   -9.13870e+00   5.67581e-02 DIIS
-   @ROHF iter   3:  -128.32119247508069    3.39940e-02   5.68199e-02 DIIS
-   @ROHF iter   4:  -129.24812668041858   -9.26934e-01   2.95049e-03 DIIS
-   @ROHF iter   5:  -129.25163386636615   -3.50719e-03   1.07262e-03 DIIS
-   @ROHF iter   6:  -129.25239145881781   -7.57592e-04   5.73110e-04 DIIS
-   @ROHF iter   7:  -129.25273438765282   -3.42929e-04   2.70042e-04 DIIS
-   @ROHF iter   8:  -129.25288958396726   -1.55196e-04   1.13081e-04 DIIS
-   @ROHF iter   9:  -129.25292539355658   -3.58096e-05   5.02793e-05 DIIS
-   @ROHF iter  10:  -129.25292767786712   -2.28431e-06   7.10816e-06 DIIS
-   @ROHF iter  11:  -129.25292774531397   -6.74468e-08   7.84443e-07 DIIS
-   @ROHF iter  12:  -129.25292774595016   -6.36192e-10   2.04890e-07 DIIS
-   @ROHF iter  13:  -129.25292774600194   -5.17844e-11   2.33288e-08 DIIS
-   @ROHF iter  14:  -129.25292774600248   -5.40012e-13   6.81270e-09 DIIS
+   @ROHF iter   1:  -119.21648665423426   -1.19216e+02   6.50927e-01 
+   @ROHF iter   2:  -128.35518646196820   -9.13870e+00   5.67581e-02 DIIS
+   @ROHF iter   3:  -128.32119247508078    3.39940e-02   5.68199e-02 DIIS
+   @ROHF iter   4:  -129.24812668041866   -9.26934e-01   2.95049e-03 DIIS
+   @ROHF iter   5:  -129.25163386636623   -3.50719e-03   1.07262e-03 DIIS
+   @ROHF iter   6:  -129.25239145881784   -7.57592e-04   5.73110e-04 DIIS
+   @ROHF iter   7:  -129.25273438765296   -3.42929e-04   2.70042e-04 DIIS
+   @ROHF iter   8:  -129.25288958396729   -1.55196e-04   1.13081e-04 DIIS
+   @ROHF iter   9:  -129.25292539355675   -3.58096e-05   5.02793e-05 DIIS
+   @ROHF iter  10:  -129.25292767786729   -2.28431e-06   7.10816e-06 DIIS
+   @ROHF iter  11:  -129.25292774531400   -6.74467e-08   7.84443e-07 DIIS
+   @ROHF iter  12:  -129.25292774595025   -6.36248e-10   2.04890e-07 DIIS
+   @ROHF iter  13:  -129.25292774600209   -5.18412e-11   2.33288e-08 DIIS
+   @ROHF iter  14:  -129.25292774600243   -3.41061e-13   6.81270e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -164,51 +188,49 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
     Doubly Occupied:                                                      
 
        1A1   -20.692458     2A1   -15.723703     3A1    -1.589190  
-       4A1    -0.923210     1B2    -0.685673     5A1    -0.672465  
-       1B1    -0.641597  
+       4A1    -0.923210     1B1    -0.685673     5A1    -0.672465  
+       1B2    -0.641597  
 
     Singly Occupied:                                                      
 
-       2B2    -0.118984  
+       2B1    -0.118984  
 
     Virtual:                                                              
 
-       2B1     0.105599     6A1     0.515999     3B2     0.913058  
-       3B1     0.928926     7A1     0.951819     8A1     0.972228  
-       9A1     1.120578     4B2     1.197561     4B1     1.212811  
+       2B2     0.105599     6A1     0.515999     3B1     0.913058  
+       3B2     0.928926     7A1     0.951819     8A1     0.972228  
+       9A1     1.120578     4B1     1.197561     4B2     1.212811  
       10A1     1.866186     1A2     1.940385    11A1     1.940529  
-       5B1     1.971229     5B2     1.973659    12A1     2.815202  
-       2A2     2.924462    13A1     2.924473     6B1     3.496840  
-       6B2     3.507097    14A1     3.858164    15A1    26.123746  
-       7B1    30.336007     7B2    30.343090    16A1    30.945873  
-      17A1    34.360222     8B1    39.092313     8B2    39.098440  
+       5B2     1.971229     5B1     1.973659    12A1     2.815202  
+       2A2     2.924462    13A1     2.924473     6B2     3.496840  
+       6B1     3.507097    14A1     3.858164    15A1    26.123746  
+       7B2    30.336007     7B1    30.343090    16A1    30.945873  
+      17A1    34.360222     8B2    39.092313     8B1    39.098440  
       18A1    39.701528  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
     DOCC [     5,    0,    1,    1 ]
-    SOCC [     0,    0,    0,    1 ]
+    SOCC [     0,    0,    1,    0 ]
 
   Energy converged.
 
-  @ROHF Final Energy:  -129.25292774600248
+  @ROHF Final Energy:  -129.25292774600243
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             25.5906076692918880
-    One-Electron Energy =                -227.4114179436444942
-    Two-Electron Energy =                  72.5678825283501112
+    Nuclear Repulsion Energy =             25.5906076692918809
+    One-Electron Energy =                -227.4114179436442669
+    Two-Electron Energy =                  72.5678825283499549
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -129.2529277460024844
+    Total Energy =                       -129.2529277460024559
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -225,20 +247,151 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.3789     Total:     0.3789
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:14:03 2016
+*** tstop() called on psinet at Mon May 15 15:37:35 2017
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:14:03 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   2
+      Number of AO shells:              16
+      Number of SO shells:              16
+      Number of primitives:             48
+      Number of atomic orbitals:        38
+      Number of basis functions:        36
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  18    2    8    8 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 57271 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:37:35 2017
+
+
+
+  Options:
+  ----------------------------------------------------------------------------
+  ACTIVE                      => [  ]             
+  BASIS_RELATIVISTIC          => (empty)          
+  BENCH                       => 0                
+  CACHELEVEL                  => 2                
+  CCL_ENERGY                  => FALSE            
+  CC_DIIS_MAX_VECS            => 6                
+  CC_DIIS_MIN_VECS            => 2                
+  CC_MAXITER                  => 50               
+  CC_TYPE                     => CONV             
+  CEPA_OS_SCALE               => 1.27             
+  CEPA_SOS_SCALE              => 1.3              
+  CEPA_SS_SCALE               => 1.13             
+  CEPA_TYPE                   => CEPA0            
+  CI_TYPE                     => CONV             
+  CUBEPROP_BASIS_FUNCTIONS    => [  ]             
+  CUBEPROP_FILEPATH           => .                
+  CUBEPROP_ORBITALS           => [  ]             
+  CUBEPROP_TASKS              => [  ]             
+  CUBIC_BASIS_TOLERANCE       => 1e-12            
+  CUBIC_BLOCK_MAX_POINTS      => 1000             
+  CUBIC_GRID_OVERAGE          => [  ]             
+  CUBIC_GRID_SPACING          => [  ]             
+  CUTOFF                      => 14               
+  DEBUG                       => 0                
+  DERTYPE                     => NONE             
+  DF_BASIS_CC                 => (empty)          
+  DIE_IF_NOT_CONVERGED        => TRUE             
+  DKH_ORDER                   => 2                
+  DOCC                        => [  ]             
+  DO_DIIS                     => TRUE             
+  DO_LEVEL_SHIFT              => TRUE             
+  DO_SCS                      => FALSE           !
+  DO_SOS                      => FALSE           !
+  E3_SCALE                    => 0.25             
+  EA_POLES                    => FALSE            
+  EKT_EA                      => FALSE            
+  EKT_IP                      => FALSE            
+  EP_EA_POLES                 => FALSE            
+  EP_IP_POLES                 => FALSE            
+  EP_MAXITER                  => 30               
+  EXTERNAL_POTENTIAL_SYMMETRY => FALSE            
+  E_CONVERGENCE               => 1e-06           !
+  FREEZE_CORE                 => FALSE            
+  FROZEN_DOCC                 => [  ]             
+  FROZEN_UOCC                 => [  ]             
+  INTEGRAL_PACKAGE            => LIBINT           
+  IP_POLES                    => FALSE            
+  LEVEL_SHIFT                 => 0.02             
+  LINEQ_SOLVER                => CDGESV           
+  LITERAL_CFOUR               => (empty)          
+  MAT_NUM_COLUMN_PRINT        => 5                
+  MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MOGRAD_DAMPING              => 1                
+  MOLDEN_WITH_VIRTUAL         => TRUE             
+  MO_DIIS_NUM_VECS            => 6                
+  MO_MAXITER                  => 50               
+  MO_READ                     => FALSE            
+  MO_STEP_MAX                 => 0.5              
+  MO_WRITE                    => FALSE            
+  MP2_OS_SCALE                => 1.2              
+  MP2_SOS_SCALE               => 1.3              
+  MP2_SOS_SCALE2              => 1.2              
+  MP2_SS_SCALE                => 0.333333         
+  MP2_TYPE                    => CONV            !
+  MP_TYPE                     => CONV             
+  NAT_ORBS                    => FALSE            
+  NUM_FROZEN_DOCC             => 0                
+  NUM_FROZEN_UOCC             => 0                
+  OCC_ORBS_PRINT              => FALSE            
+  OEPROP                      => FALSE            
+  OPT_METHOD                  => ORB_RESP         
+  ORB_OPT                     => TRUE            !
+  ORB_RESP_SOLVER             => PCG              
+  ORTH_TYPE                   => MGS              
+  PCG_BETA_TYPE               => FLETCHER_REEVES  
+  PCG_CONVERGENCE             => 1e-06            
+  PCG_MAXITER                 => 30               
+  PCM                         => FALSE            
+  PCM_CC_TYPE                 => PTE              
+  PCM_SCF_TYPE                => TOTAL            
+  PRINT                       => 1                
+  PRINT_NOONS                 => 3                
+  PROPERTIES                  => [  ]             
+  PROPERTIES_ORIGIN           => [  ]             
+  PUREAM                      => TRUE             
+  QC_MODULE                   => (empty)          
+  RAS1                        => [  ]             
+  RAS2                        => [  ]             
+  RAS3                        => [  ]             
+  RAS4                        => [  ]             
+  RELATIVISTIC                => NO               
+  RELAXED                     => TRUE             
+  RESTRICTED_DOCC             => [  ]             
+  RESTRICTED_UOCC             => [  ]             
+  RMS_MOGRAD_CONVERGENCE      => 1e-06            
+  R_CONVERGENCE               => 1e-05            
+  SCS_TYPE                    => SCS              
+  SOCC                        => [  ]             
+  SOS_TYPE                    => SOS              
+  SYMMETRIZE                  => TRUE             
+  TPDM_ABCD_TYPE              => DIRECT           
+  UNITS                       => ANGSTROMS        
+  WFN                         => SCF              
+  WFN_TYPE                    => OMP2            !
+  WRITER_FILE_LABEL           => (empty)          
 
 
  ============================================================================== 
@@ -261,27 +414,27 @@ Total time:
 	==========================================
 	  A1     0     5     5    13     13     0
 	  A2     0     0     0     2      2     0
-	  B1     0     1     1     7      7     0
-	  B2     0     2     1     6      7     0
+	  B1     0     2     1     6      7     0
+	  B2     0     1     1     7      7     0
 	==========================================
 
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
-	SCF Energy (a.u.)                  :  -129.25292774600248
-	REF Energy (a.u.)                  :  -129.25292774600243
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600243
+	REF Energy (a.u.)                  :  -129.25292774600260
 	Alpha-Alpha Contribution (a.u.)    :    -0.04689643198458
 	Alpha-Beta Contribution (a.u.)     :    -0.30742330853321
 	Beta-Beta Contribution (a.u.)      :    -0.05020849345814
 	Scaled_SS Correlation Energy (a.u.):    -0.03236830848091
 	Scaled_OS Correlation Energy (a.u.):    -0.36890797023986
-	SCS-MP2 Total Energy (a.u.)        :  -129.65420402472319
-	SOS-MP2 Total Energy (a.u.)        :  -129.65257804709560
-	SCSN-MP2 Total Energy (a.u.)       :  -129.42383241478163
-	SCS-MP2-VDW Total Energy (a.u.)    :  -129.69498204364629
-	SOS-PI-MP2 Total Energy (a.u.)     :  -129.68332037794892
+	SCS-MP2 Total Energy (a.u.)        :  -129.65420402472336
+	SOS-MP2 Total Energy (a.u.)        :  -129.65257804709577
+	SCSN-MP2 Total Energy (a.u.)       :  -129.42383241478180
+	SCS-MP2-VDW Total Energy (a.u.)    :  -129.69498204364646
+	SOS-PI-MP2 Total Energy (a.u.)     :  -129.68332037794909
 	MP2 Correlation Energy (a.u.)      :    -0.40452823397593
-	MP2 Total Energy (a.u.)            :  -129.65745597997835
+	MP2 Total Energy (a.u.)            :  -129.65745597997852
 	============================================================================== 
 
 	Number of alpha independent-pairs: 84
@@ -310,51 +463,51 @@ Total time:
 
 	Computing MP2 energy using optimized MOs... 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
-	SCF Energy (a.u.)                  :  -129.25292774600248
-	REF Energy (a.u.)                  :  -129.24980532952117
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600243
+	REF Energy (a.u.)                  :  -129.24980532952131
 	Alpha-Alpha Contribution (a.u.)    :    -0.04832758675624
 	Alpha-Beta Contribution (a.u.)     :    -0.31658917812246
 	Beta-Beta Contribution (a.u.)      :    -0.05328042610743
 	Scaled_SS Correlation Energy (a.u.):    -0.03386933762122
 	Scaled_OS Correlation Energy (a.u.):    -0.37990701374695
-	SCS-MP2 Total Energy (a.u.)        :  -129.66358168088937
-	SOS-MP2 Total Energy (a.u.)        :  -129.62971234326812
-	SCSN-MP2 Total Energy (a.u.)       :  -129.42863543216123
-	SCS-MP2-VDW Total Energy (a.u.)    :  -129.70584348394974
-	SOS-PI-MP2 Total Energy (a.u.)     :  -129.69303017889260
+	SCS-MP2 Total Energy (a.u.)        :  -129.66358168088948
+	SOS-MP2 Total Energy (a.u.)        :  -129.62971234326827
+	SCSN-MP2 Total Energy (a.u.)       :  -129.42863543216137
+	SCS-MP2-VDW Total Energy (a.u.)    :  -129.70584348394988
+	SOS-PI-MP2 Total Energy (a.u.)     :  -129.69303017889274
 	MP2 Correlation Energy (a.u.)      :    -0.41819719098613
-	MP2 Total Energy (a.u.)            :  -129.66800252050729
+	MP2 Total Energy (a.u.)            :  -129.66800252050743
 	============================================================================== 
 
 	============================================================================== 
 	================ OMP2 FINAL RESULTS ========================================== 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    :    25.59060766929189
-	SCF Energy (a.u.)                  :  -129.25292774600248
-	REF Energy (a.u.)                  :  -129.24980532952117
-	SCS-OMP2 Total Energy (a.u.)       :  -129.66358168088937
-	SOS-OMP2 Total Energy (a.u.)       :  -129.62971234326812
-	SCSN-OMP2 Total Energy (a.u.)      :  -129.42863543216123
-	SCS-OMP2-VDW Total Energy (a.u.)   :  -129.70584348394974
-	SOS-PI-OMP2 Total Energy (a.u.)    :  -129.69303017889260
-	OMP2 Correlation Energy (a.u.)     :    -0.41507483837148
-	Eomp2 - Eref (a.u.)                :    -0.41819725485280
-	OMP2 Total Energy (a.u.)           :  -129.66800258437397
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600243
+	REF Energy (a.u.)                  :  -129.24980532952131
+	SCS-OMP2 Total Energy (a.u.)       :  -129.66358168088948
+	SOS-OMP2 Total Energy (a.u.)       :  -129.62971234326827
+	SCSN-OMP2 Total Energy (a.u.)      :  -129.42863543216137
+	SCS-OMP2-VDW Total Energy (a.u.)   :  -129.70584348394988
+	SOS-PI-OMP2 Total Energy (a.u.)    :  -129.69303017889274
+	OMP2 Correlation Energy (a.u.)     :    -0.41507483837162
+	Eomp2 - Eref (a.u.)                :    -0.41819725485274
+	OMP2 Total Energy (a.u.)           :  -129.66800258437405
 	============================================================================== 
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:14:04 2016
+*** tstop() called on psinet at Mon May 15 15:37:37 2017
 Module time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.17 seconds =       0.02 minutes
+	system time =       0.55 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.53 seconds =       0.03 minutes
+	system time =       0.58 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 	Nuclear Repulsion Energy (a.u.)...................................PASSED
 	SCF Energy (a.u.).................................................PASSED
 	OMP2 Total Energy (a.u.)..........................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

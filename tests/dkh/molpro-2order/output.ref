@@ -1,0 +1,288 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.1rc3.dev5 
+
+                         Git: Rev {master} 3fbd859 
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 15 May 2017 03:33PM
+
+    Process ID:  12101
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DKH comparison Psi4 vs. Molpro from http://forum.psicode.org/t/problems-enabling-dkh/388/3
+
+memory 450 mb
+
+molecule Ne {
+0 1
+Ne
+}
+
+set {
+reference rhf
+basis cc-pvtz-dk
+#rel_basis cc-pvtz-dk-decon
+relativistic dkh
+dkh_order 2
+print 2
+scf_type pk
+}
+
+e = energy('scf')
+
+print_variables()
+compare_values(-128.66891610, e, 6, '2nd order vs Molpro')  #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 429.153 MiB by Python driver.
+
+*** tstart() called on psinet
+*** at Mon May 15 15:33:56 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ-DK
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry NE         line   330 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz-dk.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    429 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          NE          0.000000000000     0.000000000000     0.000000000000    19.992440175420
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = CC-PVTZ-DK
+    Blend                  = CC-PVTZ-DK
+    Total number of shells = 10
+    Number of primitives   = 26
+    Number of AO           = 35
+    Number of SO           = 30
+    Maximum AM             = 3
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1    NE     18s 5p 2d 1f // 4s 3p 2d 1f 
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVTZ-DK AUX)
+    Role: DECON
+    Keyword: BASIS_RELATIVISTIC
+    atoms 1 entry NE         line   330 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz-dk.gbs func decontract
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         8       8       0       0       0       0
+     B1g        2       2       0       0       0       0
+     B2g        2       2       0       0       0       0
+     B3g        2       2       0       0       0       0
+     Au         1       1       0       0       0       0
+     B1u        5       5       0       0       0       0
+     B2u        5       5       0       0       0       0
+     B3u        5       5       0       0       0       0
+   -------------------------------------------------------
+    Total      30      30       5       5       5       0
+   -------------------------------------------------------
+
+    Computing 2-order Douglas-Kroll-Hess integrals.
+    Adding Douglas-Kroll-Hess corrections to the potential integrals.
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:              10
+      Number of primitives:             26
+      Number of atomic orbitals:        35
+      Number of basis functions:        30
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 216690 doubles for integral storage.
+  We computed 1540 shell quartets total.
+  Whereas there are 1540 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               321
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 4.2626563025E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:  -114.02034938148819   -1.14020e+02   7.80919e-01 
+   @RHF iter   2:  -122.07275490713644   -8.05241e+00   3.57565e-01 DIIS
+   @RHF iter   3:  -128.22965283672005   -6.15690e+00   1.32349e-01 DIIS
+   @RHF iter   4:  -128.65602730508036   -4.26374e-01   2.05307e-02 DIIS
+   @RHF iter   5:  -128.66888240716315   -1.28551e-02   9.32166e-04 DIIS
+   @RHF iter   6:  -128.66891602168118   -3.36145e-05   6.30124e-05 DIIS
+   @RHF iter   7:  -128.66891612254190   -1.00861e-07   5.86209e-06 DIIS
+   @RHF iter   8:  -128.66891612369852   -1.15662e-09   2.06597e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -32.808443     2Ag    -1.932284     1B2u   -0.844763  
+       1B3u   -0.844763     1B1u   -0.844763  
+
+    Virtual:                                                              
+
+       2B2u    1.098779     2B3u    1.098779     2B1u    1.098779  
+       3Ag     1.413309     4Ag     2.814649     1B2g    2.814649  
+       1B1g    2.814649     5Ag     2.814649     1B3g    2.814649  
+       3B3u    6.151824     3B1u    6.151824     3B2u    6.151824  
+       4B3u    9.645105     4B1u    9.645105     4B2u    9.645105  
+       5B2u    9.645105     1Au     9.645105     5B1u    9.645105  
+       5B3u    9.645105     6Ag    11.222583     2B2g   11.222583  
+       7Ag    11.222583     2B1g   11.222583     2B3g   11.222583  
+       8Ag    11.684424  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:  -128.66891612369852
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -182.7878088055557839
+    Two-Electron Energy =                  54.1188926818572469
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -128.6689161236985228
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon May 15 15:33:56 2017
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT DIPOLE X"         =>       0.000000000000
+  "CURRENT DIPOLE Y"         =>       0.000000000000
+  "CURRENT DIPOLE Z"         =>       0.000000000000
+  "CURRENT ENERGY"           =>    -128.668916123699
+  "CURRENT REFERENCE ENERGY" =>    -128.668916123699
+  "HF TOTAL ENERGY"          =>    -128.668916123699
+  "NUCLEAR REPULSION ENERGY" =>       0.000000000000
+  "ONE-ELECTRON ENERGY"      =>    -182.787808805556
+  "PCM POLARIZATION ENERGY"  =>       0.000000000000
+  "SCF DIPOLE X"             =>       0.000000000000
+  "SCF DIPOLE Y"             =>       0.000000000000
+  "SCF DIPOLE Z"             =>       0.000000000000
+  "SCF ITERATION ENERGY"     =>    -128.668916123699
+  "SCF ITERATIONS"           =>       8.000000000000
+  "SCF TOTAL ENERGY"         =>    -128.668916123699
+  "TWO-ELECTRON ENERGY"      =>      54.118892681857
+
+
+	2nd order vs Molpro...............................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

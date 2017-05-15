@@ -1,29 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.190 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {test_ref_refresh} 9b1b239 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Apr  4 10:22:22 2016
+    Psi4 started on: Monday, 15 May 2017 03:34PM
 
-    Process ID:   4563
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13032
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -57,15 +58,23 @@ compare_values(eccsd_at, get_variable("CCSD(AT) TOTAL ENERGY"), 7, "a-CCSD(T) en
 
 --------------------------------------------------------------------------
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:23 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:52 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -99,7 +108,7 @@ compare_values(eccsd_at, get_variable("CCSD(AT) TOTAL ENERGY"), 7, "a-CCSD(T) en
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-13
   Density threshold  = 1.00e-13
   Integral threshold = 0.00e+00
@@ -107,6 +116,7 @@ compare_values(eccsd_at, get_variable("CCSD(AT) TOTAL ENERGY"), 7, "a-CCSD(T) en
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
@@ -128,49 +138,56 @@ compare_values(eccsd_at, get_variable("CCSD(AT) TOTAL ENERGY"), 7, "a-CCSD(T) en
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     107] index = [             0,5778]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 6.1686778096E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    2 ]
-
-   @RHF iter   1:   -68.96267512263196   -6.89627e+01   1.93326e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -69.48445117739062   -5.21776e-01   1.85491e-01 DIIS
-   @RHF iter   3:   -75.76043819274933   -6.27599e+00   4.52121e-02 DIIS
-   @RHF iter   4:   -75.91485940499658   -1.54421e-01   1.15381e-02 DIIS
-   @RHF iter   5:   -75.93022180903013   -1.53624e-02   1.93134e-03 DIIS
-   @RHF iter   6:   -75.93066607786712   -4.44269e-04   1.29010e-03 DIIS
-   @RHF iter   7:   -75.93080762592515   -1.41548e-04   1.22660e-04 DIIS
-   @RHF iter   8:   -75.93081049517528   -2.86925e-06   6.01095e-05 DIIS
-   @RHF iter   9:   -75.93081077947122   -2.84296e-07   5.18835e-06 DIIS
-   @RHF iter  10:   -75.93081078972628   -1.02551e-08   2.82605e-06 DIIS
-   @RHF iter  11:   -75.93081079104006   -1.31378e-09   4.12941e-07 DIIS
-   @RHF iter  12:   -75.93081079106031   -2.02505e-11   2.54499e-08 DIIS
-   @RHF iter  13:   -75.93081079106038   -7.10543e-14   1.99408e-09 DIIS
-   @RHF iter  14:   -75.93081079106035    2.84217e-14   2.53392e-10 DIIS
-   @RHF iter  15:   -75.93081079106038   -2.84217e-14   1.86859e-11 DIIS
-   @RHF iter  16:   -75.93081079106040   -1.42109e-14   1.96449e-12 DIIS
-   @RHF iter  17:   -75.93081079106042   -2.84217e-14   2.15620e-13 DIIS
-   @RHF iter  18:   -75.93081079106037    5.68434e-14   6.37349e-14 DIIS
+   @RHF iter   0:   -75.51732888975961   -7.55173e+01   7.06923e-02 
+   @RHF iter   1:   -75.88049641541321   -3.63168e-01   2.14080e-02 
+   @RHF iter   2:   -75.91272847552261   -3.22321e-02   1.53513e-02 DIIS
+   @RHF iter   3:   -75.92913676165325   -1.64083e-02   2.16129e-03 DIIS
+   @RHF iter   4:   -75.93051622170142   -1.37946e-03   9.29589e-04 DIIS
+   @RHF iter   5:   -75.93078647108150   -2.70249e-04   2.30749e-04 DIIS
+   @RHF iter   6:   -75.93080959062193   -2.31195e-05   5.45944e-05 DIIS
+   @RHF iter   7:   -75.93081077354539   -1.18292e-06   8.68356e-06 DIIS
+   @RHF iter   8:   -75.93081079088958   -1.73442e-08   1.03872e-06 DIIS
+   @RHF iter   9:   -75.93081079105967   -1.70090e-10   7.41278e-08 DIIS
+   @RHF iter  10:   -75.93081079106044   -7.67386e-13   1.36812e-08 DIIS
+   @RHF iter  11:   -75.93081079106042    1.42109e-14   9.61907e-10 DIIS
+   @RHF iter  12:   -75.93081079106045   -2.84217e-14   5.03889e-11 DIIS
+   @RHF iter  13:   -75.93081079106041    4.26326e-14   9.32210e-12 DIIS
+   @RHF iter  14:   -75.93081079106049   -8.52651e-14   9.33084e-13 DIIS
+   @RHF iter  15:   -75.93081079106040    9.94760e-14   3.43298e-13 DIIS
+   @RHF iter  16:   -75.93081079106032    7.10543e-14   9.27127e-14 DIIS
 
   ==> Post-Iterations <==
 
@@ -198,24 +215,22 @@ compare_values(eccsd_at, get_variable("CCSD(AT) TOTAL ENERGY"), 7, "a-CCSD(T) en
 
   Energy converged.
 
-  @RHF Final Energy:   -75.93081079106037
+  @RHF Final Energy:   -75.93081079106032
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              7.2074801209607688
-    One-Electron Energy =                -119.4536790655810989
-    Two-Electron Energy =                  36.3153881535599368
+    One-Electron Energy =                -119.4536790655767931
+    Two-Electron Energy =                  36.3153881535556877
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.9308107910603951
+    Total Energy =                        -75.9308107910603383
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -232,20 +247,41 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.1057     Total:     2.1057
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:23 2016
+*** tstop() called on psinet at Mon May 15 15:34:53 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:23 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  11    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11603 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:53 2017
 
 
 	Wfn Parameters:
@@ -327,23 +363,23 @@ Total time:
 	Total:                                     0.002 (MW) /      0.020 (MB)
 
 	Nuclear Rep. energy          =      7.20748012096077
-	SCF energy                   =    -75.93081079106037
-	One-electron energy          =   -119.45367906558208
-	Two-electron energy          =     36.31538815356089
-	Reference energy             =    -75.93081079106042
+	SCF energy                   =    -75.93081079106032
+	One-electron energy          =   -119.45367906558322
+	Two-electron energy          =     36.31538815356202
+	Reference energy             =    -75.93081079106044
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:23 2016
+*** tstop() called on psinet at Mon May 15 15:34:53 2017
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:23 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:53 2017
 
             **************************
             *                        *
@@ -352,15 +388,15 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =    7.207480120960769
-    SCF energy          (wfn)     =  -75.930810791060367
-    Reference energy    (file100) =  -75.930810791060424
+    SCF energy          (wfn)     =  -75.930810791060324
+    Reference energy    (file100) =  -75.930810791060438
 
     Input parameters:
     -----------------
-    Wave function   =   CCSD_AT
+    Wave function   =     CCSD_AT
     Reference wfn   =     RHF
     Brueckner       =     No
-    Memory (Mbytes) =     256.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-13
     E_Convergence   =     1.0e-13
@@ -381,35 +417,35 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.2229309203586441
+MP2 correlation energy -0.2229309203586307
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.222930920358644    0.000e+00    0.000000    0.000000    0.000000    0.137904
-     1        -0.224285392081156    4.205e-02    0.007270    0.016541    0.016541    0.148163
-     2        -0.231641047854874    1.956e-02    0.008905    0.021286    0.021286    0.160232
-     3        -0.233254767002219    7.503e-03    0.010706    0.026951    0.026951    0.165566
+     0        -0.222930920358631    0.000e+00    0.000000    0.000000    0.000000    0.137904
+     1        -0.224285392081155    4.205e-02    0.007270    0.016541    0.016541    0.148163
+     2        -0.231641047854875    1.956e-02    0.008905    0.021286    0.021286    0.160232
+     3        -0.233254767002216    7.503e-03    0.010706    0.026951    0.026951    0.165566
      4        -0.233315400258242    2.093e-03    0.011078    0.028483    0.028483    0.166231
-     5        -0.233365405029184    9.042e-04    0.011351    0.029573    0.029573    0.166318
-     6        -0.233349291020954    2.948e-04    0.011441    0.029923    0.029923    0.166198
-     7        -0.233348993309151    5.994e-05    0.011458    0.029988    0.029988    0.166182
-     8        -0.233348418175166    1.707e-05    0.011462    0.030001    0.030001    0.166180
-     9        -0.233347888403505    5.756e-06    0.011463    0.030004    0.030004    0.166179
-    10        -0.233348017012086    1.609e-06    0.011463    0.030005    0.030005    0.166179
-    11        -0.233347970739681    3.212e-07    0.011463    0.030005    0.030005    0.166179
+     5        -0.233365405029183    9.042e-04    0.011351    0.029573    0.029573    0.166318
+     6        -0.233349291020953    2.948e-04    0.011441    0.029923    0.029923    0.166198
+     7        -0.233348993309150    5.994e-05    0.011458    0.029988    0.029988    0.166182
+     8        -0.233348418175165    1.707e-05    0.011462    0.030001    0.030001    0.166180
+     9        -0.233347888403504    5.756e-06    0.011463    0.030004    0.030004    0.166179
+    10        -0.233348017012085    1.609e-06    0.011463    0.030005    0.030005    0.166179
+    11        -0.233347970739680    3.212e-07    0.011463    0.030005    0.030005    0.166179
     12        -0.233347977307542    7.399e-08    0.011463    0.030005    0.030005    0.166179
-    13        -0.233347974611528    2.236e-08    0.011463    0.030005    0.030005    0.166179
-    14        -0.233347974974905    6.253e-09    0.011463    0.030005    0.030005    0.166179
-    15        -0.233347975062710    1.891e-09    0.011463    0.030005    0.030005    0.166179
-    16        -0.233347975039283    4.851e-10    0.011463    0.030005    0.030005    0.166179
-    17        -0.233347975041866    1.249e-10    0.011463    0.030005    0.030005    0.166179
-    18        -0.233347975042293    2.825e-11    0.011463    0.030005    0.030005    0.166179
+    13        -0.233347974611527    2.236e-08    0.011463    0.030005    0.030005    0.166179
+    14        -0.233347974974904    6.253e-09    0.011463    0.030005    0.030005    0.166179
+    15        -0.233347975062709    1.891e-09    0.011463    0.030005    0.030005    0.166179
+    16        -0.233347975039282    4.851e-10    0.011463    0.030005    0.030005    0.166179
+    17        -0.233347975041865    1.249e-10    0.011463    0.030005    0.030005    0.166179
+    18        -0.233347975042292    2.825e-11    0.011463    0.030005    0.030005    0.166179
     19        -0.233347975042347    9.849e-12    0.011463    0.030005    0.030005    0.166179
-    20        -0.233347975042582    3.393e-12    0.011463    0.030005    0.030005    0.166179
-    21        -0.233347975042483    7.487e-13    0.011463    0.030005    0.030005    0.166179
-    22        -0.233347975042470    2.155e-13    0.011463    0.030005    0.030005    0.166179
-    23        -0.233347975042460    6.868e-14    0.011463    0.030005    0.030005    0.166179
+    20        -0.233347975042581    3.393e-12    0.011463    0.030005    0.030005    0.166179
+    21        -0.233347975042482    7.487e-13    0.011463    0.030005    0.030005    0.166179
+    22        -0.233347975042469    2.154e-13    0.011463    0.030005    0.030005    0.166179
+    23        -0.233347975042459    6.871e-14    0.011463    0.030005    0.030005    0.166179
 
     Iterations converged.
 
@@ -438,32 +474,32 @@ MP2 correlation energy -0.2229309203586441
       2   2   2   2        -0.0342249133
       4   4  14  14        -0.0341778014
 
-    SCF energy       (wfn)                    =  -75.930810791060367
-    Reference energy (file100)                =  -75.930810791060424
+    SCF energy       (wfn)                    =  -75.930810791060324
+    Reference energy (file100)                =  -75.930810791060438
 
-    Opposite-spin MP2 correlation energy      =   -0.168816818183423
-    Same-spin MP2 correlation energy          =   -0.054114102175221
-    MP2 correlation energy                    =   -0.222930920358644
+    Opposite-spin MP2 correlation energy      =   -0.168816818183416
+    Same-spin MP2 correlation energy          =   -0.054114102175215
+    MP2 correlation energy                    =   -0.222930920358631
       * MP2 total energy                      =  -76.153741711419073
 
-    Opposite-spin CCSD correlation energy     =   -0.188325093929757
+    Opposite-spin CCSD correlation energy     =   -0.188325093929754
     Same-spin CCSD correlation energy         =   -0.045022881112700
-    CCSD correlation energy                   =   -0.233347975042460
-      * CCSD total energy                     =  -76.164158766102886
+    CCSD correlation energy                   =   -0.233347975042459
+      * CCSD total energy                     =  -76.164158766102901
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:23 2016
+*** tstop() called on psinet at Mon May 15 15:34:53 2017
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.25 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.35 seconds =       0.01 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.42 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:23 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:53 2017
 
 
 			**************************
@@ -473,18 +509,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:23 2016
+*** tstop() called on psinet at Mon May 15 15:34:53 2017
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.43 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:23 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:53 2017
 
 
 			**************************
@@ -494,8 +530,8 @@ Total time:
 
 	Nuclear Rep. energy (wfn)     =    7.207480120960769
 	Reference           (wfn)     =                    0
-	SCF energy          (wfn)     =  -75.930810791060367
-	Reference energy    (CC_INFO) =  -75.930810791060424
+	SCF energy          (wfn)     =  -75.930810791060324
+	Reference energy    (CC_INFO) =  -75.930810791060438
 
 	Input parameters:
 	-----------------
@@ -521,30 +557,30 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.233410363216252    0.000e+00
-	   1        -0.228378264434585    8.770e-03
-	   2        -0.227667780705237    2.435e-03
-	   3        -0.227505594484303    1.020e-03
-	   4        -0.227489213387133    3.971e-04
-	   5        -0.227491266354503    1.700e-04
-	   6        -0.227489679194141    4.720e-05
-	   7        -0.227490999303683    1.258e-05
-	   8        -0.227491011773904    2.486e-06
-	   9        -0.227491006507862    5.885e-07
-	  10        -0.227491002665684    1.724e-07
-	  11        -0.227491001072126    4.348e-08
-	  12        -0.227491001553861    1.011e-08
-	  13        -0.227491001653413    3.034e-09
-	  14        -0.227491001760704    8.561e-10
-	  15        -0.227491001772818    3.084e-10
-	  16        -0.227491001780932    1.536e-10
-	  17        -0.227491001781039    6.255e-11
-	  18        -0.227491001781325    1.732e-11
-	  19        -0.227491001781319    6.304e-12
-	  20        -0.227491001781385    1.837e-12
-	  21        -0.227491001781422    4.952e-13
-	  22        -0.227491001781420    1.034e-13
-	  23        -0.227491001781419    3.614e-14
+	   0        -0.233410363216248    0.000e+00
+	   1        -0.228378264434581    8.770e-03
+	   2        -0.227667780705234    2.435e-03
+	   3        -0.227505594484300    1.020e-03
+	   4        -0.227489213387130    3.971e-04
+	   5        -0.227491266354500    1.700e-04
+	   6        -0.227489679194138    4.720e-05
+	   7        -0.227490999303681    1.258e-05
+	   8        -0.227491011773901    2.486e-06
+	   9        -0.227491006507859    5.885e-07
+	  10        -0.227491002665681    1.724e-07
+	  11        -0.227491001072123    4.348e-08
+	  12        -0.227491001553859    1.011e-08
+	  13        -0.227491001653410    3.034e-09
+	  14        -0.227491001760701    8.561e-10
+	  15        -0.227491001772815    3.084e-10
+	  16        -0.227491001780929    1.536e-10
+	  17        -0.227491001781036    6.255e-11
+	  18        -0.227491001781322    1.732e-11
+	  19        -0.227491001781317    6.304e-12
+	  20        -0.227491001781382    1.837e-12
+	  21        -0.227491001781419    4.952e-13
+	  22        -0.227491001781417    1.034e-13
+	  23        -0.227491001781416    3.610e-14
 
 	Largest LIA Amplitudes:
 	          2   0        -0.0205747924
@@ -574,18 +610,18 @@ Total time:
 
 	Overlap <L|e^T> =        0.91702732371
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:23 2016
+*** tstop() called on psinet at Mon May 15 15:34:53 2017
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.34 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.47 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:23 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:53 2017
 
             **************************
             *                        *
@@ -598,27 +634,27 @@ Total time:
     Reference wfn   =      RHF
 
     Nuclear Rep. energy (wfn)                =    7.207480120960769
-    SCF energy          (wfn)                =  -75.930810791060367
-    Reference energy    (file100)            =  -75.930810791060424
-    CCSD energy         (file100)            =   -0.233347975042460
-    Total CCSD energy   (file100)            =  -76.164158766102886
+    SCF energy          (wfn)                =  -75.930810791060324
+    Reference energy    (file100)            =  -75.930810791060438
+    CCSD energy         (file100)            =   -0.233347975042459
+    Total CCSD energy   (file100)            =  -76.164158766102901
 
     Number of ijk index combinations:               35
-    (aT) energy                                =   -0.004719400975384
-      * CCSD(aT) total energy                  =  -76.168878167078262
+    (aT) energy                                =   -0.004719400975382
+      * CCSD(aT) total energy                  =  -76.168878167078276
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:23 2016
+*** tstop() called on psinet at Mon May 15 15:34:53 2017
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 	SCF energy........................................................PASSED
 	CCSD energy.......................................................PASSED
 	a-CCSD(T) energy..................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

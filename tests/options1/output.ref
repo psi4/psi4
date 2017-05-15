@@ -1,161 +1,230 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.898 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {CMakeRewrite-KillTheBoost} 6f808ac dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Sep  9 15:13:59 2016
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:  22642
-    PSI4DATADIR: stage/theoryfs2/ds/cdsgroup/psi4-compile/psi4jturney/install-psi4/share/psi4/
-    Memory level set to 256.000 MB
-
+    Process ID:  20573
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! check all variety of options parsing
 
 var = 'E_CONVERGENCE'
 descrip = 'global conv double kw '
 
 set E_CONVERGENCE 5.5e-4
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as sci float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as sci float')  #TEST
 set E_CONVERGENCE .00055
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')  #TEST
 set E_CONVERGENCE 0.00055
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')  #TEST
 set E_CONVERGENCE 5e-4
-compare_values(get_option('SCF', var), 0.000500, 6, descrip + 'set as sci int')
+compare_values(get_option('SCF', var), 0.000500, 6, descrip + 'set as sci int')  #TEST
 set E_CONVERGENCE 4
-compare_values(get_option('SCF', var), 0.000100, 6, descrip + 'set as exponent int')
+compare_values(get_option('SCF', var), 0.000100, 6, descrip + 'set as exponent int')  #TEST
 set E_CONVERGENCE 1
-compare_values(get_option('SCF', var), 0.100000, 6, descrip + 'set as exponent int')
+compare_values(get_option('SCF', var), 0.100000, 6, descrip + 'set as exponent int')  #TEST
 set E_CONVERGENCE 0
-compare_values(get_option('SCF', var), 1.000000, 6, descrip + 'set as zero int')
+compare_values(get_option('SCF', var), 1.000000, 6, descrip + 'set as zero int')  #TEST
 set E_CONVERGENCE 0.0
-compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero float')
+compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero float')  #TEST
 
 
 var = 'CHOLESKY_TOLERANCE'
 descrip = 'local conv double kw '
 
 set scf CHOLESKY_TOLERANCE 5.5e-4
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as sci float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as sci float')  #TEST
 set scf CHOLESKY_TOLERANCE .00055
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')  #TEST
 set scf CHOLESKY_TOLERANCE 0.00055
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')  #TEST
 set scf CHOLESKY_TOLERANCE 5e-4
-compare_values(get_option('SCF', var), 0.000500, 6, descrip + 'set as sci int')
+compare_values(get_option('SCF', var), 0.000500, 6, descrip + 'set as sci int')  #TEST
 set scf CHOLESKY_TOLERANCE 4
-compare_values(get_option('SCF', var), 0.000100, 6, descrip + 'set as exponent int')
+compare_values(get_option('SCF', var), 0.000100, 6, descrip + 'set as exponent int')  #TEST
 set scf CHOLESKY_TOLERANCE 1
-compare_values(get_option('SCF', var), 0.100000, 6, descrip + 'set as exponent int')
+compare_values(get_option('SCF', var), 0.100000, 6, descrip + 'set as exponent int')  #TEST
 set scf CHOLESKY_TOLERANCE 0
-compare_values(get_option('SCF', var), 1.000000, 6, descrip + 'set as zero int')
+compare_values(get_option('SCF', var), 1.000000, 6, descrip + 'set as zero int')  #TEST
 set scf CHOLESKY_TOLERANCE 0.0
-compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero float')
+compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero float')  #TEST
 
 
 var = 'SCF_MEM_SAFETY_FACTOR'
 descrip = 'global double kw '
 
 set SCF_MEM_SAFETY_FACTOR 5.5e-4
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as sci float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as sci float')  #TEST
 set SCF_MEM_SAFETY_FACTOR .00055
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')  #TEST
 set SCF_MEM_SAFETY_FACTOR 0.00055
-compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')
+compare_values(get_option('SCF', var), 0.000550, 6, descrip + 'set as float')  #TEST
 set SCF_MEM_SAFETY_FACTOR 5e-4
-compare_values(get_option('SCF', var), 0.000500, 6, descrip + 'set as sci int')
+compare_values(get_option('SCF', var), 0.000500, 6, descrip + 'set as sci int')  #TEST
 set SCF_MEM_SAFETY_FACTOR 4
-compare_values(get_option('SCF', var), 4.000000, 6, descrip + 'set as int')
+compare_values(get_option('SCF', var), 4.000000, 6, descrip + 'set as int')  #TEST
 set SCF_MEM_SAFETY_FACTOR 0
-compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero int')
+compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero int')  #TEST
 set SCF_MEM_SAFETY_FACTOR 0.0
-compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero float')
+compare_values(get_option('SCF', var), 0.000000, 6, descrip + 'set as zero float')  #TEST
 
 
 var = 'DIIS_MAX_VECS'
 descrip = 'global int kw '
 
 set DIIS_MAX_VECS 4
-compare_integers(get_option('SCF', var), 4, descrip + 'set as pos float')
+compare_integers(get_option('SCF', var), 4, descrip + 'set as pos float')  #TEST
 set DIIS_MAX_VECS 0
-compare_integers(get_option('SCF', var), 0, descrip + 'set as zero float')
+compare_integers(get_option('SCF', var), 0, descrip + 'set as zero float')  #TEST
 set DIIS_MAX_VECS -2
-compare_integers(get_option('SCF', var), -2, descrip + 'set as neg float')
+compare_integers(get_option('SCF', var), -2, descrip + 'set as neg float')  #TEST
 set DIIS_MAX_VECS 4.0
-compare_integers(get_option('SCF', var), 4, descrip + 'set as pos int')
+compare_integers(get_option('SCF', var), 4, descrip + 'set as pos int')  #TEST
 set DIIS_MAX_VECS 0.0
-compare_integers(get_option('SCF', var), 0, descrip + 'set as zero int')
+compare_integers(get_option('SCF', var), 0, descrip + 'set as zero int')  #TEST
 set DIIS_MAX_VECS -2.0
-compare_integers(get_option('SCF', var), -2, descrip + 'set as neg int')
+compare_integers(get_option('SCF', var), -2, descrip + 'set as neg int')  #TEST
 
 
 var = 'GUESS'
 descrip = 'global string kw '
 
 set GUESS AUTO
-compare_strings('AUTO', get_option('SCF', var), descrip + 'set as def str')
+compare_strings('AUTO', get_option('SCF', var), descrip + 'set as def str')  #TEST
 set guess gwh
-compare_strings('GWH', get_option('SCF', var), descrip + 'set as nondef str')
+compare_strings('GWH', get_option('SCF', var), descrip + 'set as nondef str')  #TEST
 
 var = 'SOSCF'
 descrip = 'global bool kw '
 
 set soscf true
-compare_integers(1, get_option('SCF', var), descrip + 'set as true')
+compare_integers(1, get_option('SCF', var), descrip + 'set as true')  #TEST
 set soscf True
-compare_integers(1, get_option('SCF', var), descrip + 'set as True')
+compare_integers(1, get_option('SCF', var), descrip + 'set as True')  #TEST
 set soscf 1
-compare_integers(1, get_option('SCF', var), descrip + 'set as 1')
+compare_integers(1, get_option('SCF', var), descrip + 'set as 1')  #TEST
 set soscf yes
-compare_integers(1, get_option('SCF', var), descrip + 'set as yes')
+compare_integers(1, get_option('SCF', var), descrip + 'set as yes')  #TEST
 set soscf ON
-compare_integers(1, get_option('SCF', var), descrip + 'set as ON')
+compare_integers(1, get_option('SCF', var), descrip + 'set as ON')  #TEST
 set soscf false
-compare_integers(0, get_option('SCF', var), descrip + 'set as false')
+compare_integers(0, get_option('SCF', var), descrip + 'set as false')  #TEST
 set soscf False
-compare_integers(0, get_option('SCF', var), descrip + 'set as False')
+compare_integers(0, get_option('SCF', var), descrip + 'set as False')  #TEST
 set soscf 0
-compare_integers(0, get_option('SCF', var), descrip + 'set as 0')
+compare_integers(0, get_option('SCF', var), descrip + 'set as 0')  #TEST
 set soscf NO
-compare_integers(0, get_option('SCF', var), descrip + 'set as NO')
+compare_integers(0, get_option('SCF', var), descrip + 'set as NO')  #TEST
 set soscf off
-compare_integers(0, get_option('SCF', var), descrip + 'set as off')
+compare_integers(0, get_option('SCF', var), descrip + 'set as off')  #TEST
 
 
 var = 'MOM_OCC'
-descrip = 'global array kw '
+descrip = 'global single array kw '
+
+set mom_occ [1, 2.0, 'cat', dog, 5e-2]
+asdf = get_option('SCF', var)
+compare_integers(1, asdf[0], descrip + 'int element')  #TEST
+compare_values(2.0, asdf[1], 6, descrip + 'float element')  #TEST
+compare_strings('CAT', asdf[2], descrip + 'string element')  #TEST
+compare_strings('DOG', asdf[3], descrip + 'unquoted string element')  #TEST
+compare_values(0.05, asdf[4], 6, descrip + 'sci float element')  #TEST
+print(asdf, type(asdf), [type(v) for v in asdf])
+
+
+var = 'MOM_OCC'
+descrip = 'global nested array kw '
 
 set mom_occ [[1, 2.0, 'cat', dog, 5e-2], [1, 2, 7, 8]]
 asdf = get_option('SCF', var)
-compare_integers(1, asdf[0][0], descrip + 'int element')
-compare_values(2.0, asdf[0][1], 6, descrip + 'float element')
-compare_strings('CAT', asdf[0][2], descrip + 'string element')
-compare_strings('DOG', asdf[0][3], descrip + 'unquoted string element')
-compare_values(0.05, asdf[0][4], 6, descrip + 'sci float element')
-print asdf, type(asdf), [type(v) for v in asdf[0]]
+compare_integers(1, asdf[0][0], descrip + 'int element')  #TEST
+compare_values(2.0, asdf[0][1], 6, descrip + 'float element')  #TEST
+compare_strings('CAT', asdf[0][2], descrip + 'string element')  #TEST
+compare_strings('DOG', asdf[0][3], descrip + 'unquoted string element')  #TEST
+compare_values(0.05, asdf[0][4], 6, descrip + 'sci float element')  #TEST
+print(asdf, type(asdf), [type(v) for v in asdf[0]])
 
-# Boost:  [[1L, 2.0, u'CAT', u'DOG', 0.05], [1L, 2L, 7L, 8L]] <type 'list'> [<type 'long'>, <type 'float'>, <type 'unicode'>, <type 'unicode'>, <type 'float'>]
-# Pybind: [[1, 2.0, 'CAT', 'DOG', 0.05], [1, 2, 7, 8]]        <type 'list'> [<type 'int'>,  <type 'float'>, <type 'str'>,     <type 'str'>,     <type 'float'>]
+# Boost:  [[1, 2.0, 'CAT', 'DOG', 0.05], [1, 2, 7, 8]]        <type 'list'> [<type 'int'>,  <type 'float'>, <type 'str'>,     <type 'str'>,     <type 'float'>]
+# Pybind: [[1L, 2.0, u'CAT', u'DOG', 0.05], [1L, 2L, 7L, 8L]] <type 'list'> [<type 'long'>, <type 'float'>, <type 'unicode'>, <type 'unicode'>, <type 'float'>]
 
+# check clean_options() is doing its job
+compare_strings('', get_global_option('BASIS'), 'glob opt empty')  #TEST
+compare_integers(0, has_global_option_changed('BASIS'), 'glob opt empty hc')  #TEST
+compare_strings('PK', get_option('SCF', 'SCF_TYPE'), 'loc opt empty')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SCF_TYPE'), 'loc opt empty hc')  #TEST
+compare_integers(5, get_option('SCF', 'SOSCF_MAX_ITER'), 'lloc opt empty')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SOSCF_MAX_ITER'), 'lloc opt empty hc')  #TEST
+compare_integers(5, get_local_option('SCF', 'SOSCF_MAX_ITER'), 'llloc opt empty')  #TEST
+compare_integers(0, has_local_option_changed('SCF', 'SOSCF_MAX_ITER'), 'llloc opt empty hc')  #TEST
 
+set basis cc-pvtz
+set scf_type df
+set scf soscf_max_iter 8
+compare_strings('CC-PVTZ', get_global_option('BASIS'), 'glob opt filled')  #TEST
+compare_integers(1, has_global_option_changed('BASIS'), 'glob opt filled hc')  #TEST
+compare_strings('DF', get_option('SCF', 'SCF_TYPE'), 'loc opt filled')  #TEST
+compare_integers(1, has_option_changed('SCF', 'SCF_TYPE'), 'loc opt filled hc')  #TEST
+compare_integers(8, get_option('SCF', 'SOSCF_MAX_ITER'), 'lloc opt filled')  #TEST
+compare_integers(1, has_option_changed('SCF', 'SOSCF_MAX_ITER'), 'lloc opt filled hc')  #TEST
+compare_integers(8, get_local_option('SCF', 'SOSCF_MAX_ITER'), 'llloc opt filled')  #TEST
+compare_integers(1, has_local_option_changed('SCF', 'SOSCF_MAX_ITER'), 'llloc opt filled hc')  #TEST
 
+clean_options()
+compare_strings('', get_global_option('BASIS'), 'glob opt reset')  #TEST
+compare_integers(0, has_global_option_changed('BASIS'), 'glob opt reset hc')  #TEST
+compare_strings('PK', get_option('SCF', 'SCF_TYPE'), 'loc opt reset')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SCF_TYPE'), 'loc opt hc')  #TEST
+compare_integers(5, get_option('SCF', 'SOSCF_MAX_ITER'), 'lloc opt reset')  #TEST
+compare_integers(0, has_option_changed('SCF', 'SOSCF_MAX_ITER'), 'lloc opt reset hc')  #TEST
+compare_integers(5, get_local_option('SCF', 'SOSCF_MAX_ITER'), 'llloc opt reset')  #TEST
+compare_integers(0, has_local_option_changed('SCF', 'SOSCF_MAX_ITER'), 'llloc opt reset hc')  #TEST
+
+# check set_memory() wrapper
+testm = {800000000: 800000000,
+         2004088624.9: 2004088624,
+         1.0e9: 1000000000,
+         '600 mb': 600000000,
+         '600.0 MiB': 629145600,
+         '.6 Gb': 600000000,
+         ' 100000000kB ': 100000000000,
+         '2 eb': 2000000000000000000}
+for t in testm:
+    fn_says = set_memory(t)
+    p4_says = get_memory()
+    compare_integers(testm[t], fn_says, '{}: {} == set == ret'.format(t, testm[t]))
+    compare_integers(testm[t], p4_says, '{}: {} == set == get'.format(t, testm[t]))
+
+teste = [{}, [], "50 dogs", "4 giib", "1e5 gb", "5e5", 2000, "-4 GB", -5e5, '', '21986']
+for t in teste:
+    works = 1
+    try:
+        fn_says = set_memory(t)
+    except ValidationError as e:
+        print(str(e))
+        works = 0
+    compare_integers(0, works, '{} no good as mem setting'.format(t))
 --------------------------------------------------------------------------
 	global conv double kw set as sci float............................PASSED
 	global conv double kw set as float................................PASSED
@@ -198,10 +267,82 @@ print asdf, type(asdf), [type(v) for v in asdf[0]]
 	global bool kw set as 0...........................................PASSED
 	global bool kw set as NO..........................................PASSED
 	global bool kw set as off.........................................PASSED
-	global array kw int element.......................................PASSED
-	global array kw float element.....................................PASSED
-	global array kw string element....................................PASSED
-	global array kw unquoted string element...........................PASSED
-	global array kw sci float element.................................PASSED
+	global single array kw int element................................PASSED
+	global single array kw float element..............................PASSED
+	global single array kw string element.............................PASSED
+	global single array kw unquoted string element....................PASSED
+	global single array kw sci float element..........................PASSED
+	global nested array kw int element................................PASSED
+	global nested array kw float element..............................PASSED
+	global nested array kw string element.............................PASSED
+	global nested array kw unquoted string element....................PASSED
+	global nested array kw sci float element..........................PASSED
+	glob opt empty....................................................PASSED
+	glob opt empty hc.................................................PASSED
+	loc opt empty.....................................................PASSED
+	loc opt empty hc..................................................PASSED
+	lloc opt empty....................................................PASSED
+	lloc opt empty hc.................................................PASSED
+	llloc opt empty...................................................PASSED
+	llloc opt empty hc................................................PASSED
+	glob opt filled...................................................PASSED
+	glob opt filled hc................................................PASSED
+	loc opt filled....................................................PASSED
+	loc opt filled hc.................................................PASSED
+	lloc opt filled...................................................PASSED
+	lloc opt filled hc................................................PASSED
+	llloc opt filled..................................................PASSED
+	llloc opt filled hc...............................................PASSED
+	glob opt reset....................................................PASSED
+	glob opt reset hc.................................................PASSED
+	loc opt reset.....................................................PASSED
+	loc opt hc........................................................PASSED
+	lloc opt reset....................................................PASSED
+	lloc opt reset hc.................................................PASSED
+	llloc opt reset...................................................PASSED
+	llloc opt reset hc................................................PASSED
+
+  Memory set to 762.939 MiB by Python driver.
+	800000000: 800000000 == set == ret................................PASSED
+	800000000: 800000000 == set == get................................PASSED
+
+  Memory set to   1.866 GiB by Python driver.
+	2004088624.9: 2004088624 == set == ret............................PASSED
+	2004088624.9: 2004088624 == set == get............................PASSED
+
+  Memory set to  93.132 GiB by Python driver.
+	 100000000kB : 100000000000 == set == ret.........................PASSED
+	 100000000kB : 100000000000 == set == get.........................PASSED
+
+  Memory set to 572.205 MiB by Python driver.
+	600 mb: 600000000 == set == ret...................................PASSED
+	600 mb: 600000000 == set == get...................................PASSED
+
+  Memory set to 953.674 MiB by Python driver.
+	1000000000.0: 1000000000 == set == ret............................PASSED
+	1000000000.0: 1000000000 == set == get............................PASSED
+
+  Memory set to 1862645149.231 GiB by Python driver.
+	2 eb: 2000000000000000000 == set == ret...........................PASSED
+	2 eb: 2000000000000000000 == set == get...........................PASSED
+
+  Memory set to 572.205 MiB by Python driver.
+	.6 Gb: 600000000 == set == ret....................................PASSED
+	.6 Gb: 600000000 == set == get....................................PASSED
+
+  Memory set to 600.000 MiB by Python driver.
+	600.0 MiB: 629145600 == set == ret................................PASSED
+	600.0 MiB: 629145600 == set == get................................PASSED
+	{} no good as mem setting.........................................PASSED
+	[] no good as mem setting.........................................PASSED
+	50 dogs no good as mem setting....................................PASSED
+	4 giib no good as mem setting.....................................PASSED
+	1e5 gb no good as mem setting.....................................PASSED
+	5e5 no good as mem setting........................................PASSED
+	2000 no good as mem setting.......................................PASSED
+	-4 GB no good as mem setting......................................PASSED
+	-500000.0 no good as mem setting..................................PASSED
+	 no good as mem setting...........................................PASSED
+	21986 no good as mem setting......................................PASSED
 
 *** Psi4 exiting successfully. Buy a developer a beer!

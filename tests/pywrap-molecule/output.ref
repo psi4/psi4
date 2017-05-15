@@ -1,34 +1,37 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:18:11 2016
+    Psi4 started on: Monday, 15 May 2017 03:39PM
 
-    Process ID:  11283
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  15385
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Check that C++ Molecule class and qcdb molecule class
 #! are reading molecule input strings identically
 
-import qcdb
+from psi4.driver import qcdb
 
 mol1 = """
     0 3
@@ -107,29 +110,29 @@ no_com
 no_reorient
 """
 
-def test_qcdb():
-    print_out("%s\n" % ans[0])
-    print_out(origfrag.create_psi4_string_from_molecule())
-    gorig = origfrag.geometry()
-    frag = qcdb.Molecule(origfrag.create_psi4_string_from_molecule())
-    frag.update_geometry()
-    gnew = frag.geometry()
-    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "QCDB %s: NRE" % ans[0])
-    compare_integers(ans[2], frag.molecular_charge(), "QCDB %s: charge" % ans[0])
-    compare_integers(ans[3], frag.multiplicity(), "QCDB %s: multiplicity" % ans[0])
-    qcdb.compare_matrices(gorig, gnew, 5, "QCDB %s: string recreates geometry" % ans[0])
+def test_qcdb():  #TEST
+    print_out("%s\n" % ans[0])  #TEST
+    print_out(origfrag.create_psi4_string_from_molecule())  #TEST
+    gorig = origfrag.geometry()  #TEST
+    frag = qcdb.Molecule(origfrag.create_psi4_string_from_molecule())  #TEST
+    frag.update_geometry()  #TEST
+    gnew = frag.geometry()  #TEST
+    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "QCDB %s: NRE" % ans[0])  #TEST
+    compare_integers(ans[2], frag.molecular_charge(), "QCDB %s: charge" % ans[0])  #TEST
+    compare_integers(ans[3], frag.multiplicity(), "QCDB %s: multiplicity" % ans[0])  #TEST
+    qcdb.compare_matrices(gorig, gnew, 5, "QCDB %s: string recreates geometry" % ans[0])  #TEST
 
-def test_libmints():
-    print_out("%s\n" % ans[0])
-    print_out(origfrag.create_psi4_string_from_molecule())
-    gorig = origfrag.geometry()
-    frag = geometry(origfrag.create_psi4_string_from_molecule())
-    frag.update_geometry()
-    gnew = frag.geometry()
-    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "Libmints %s: NRE" % ans[0])
-    compare_integers(ans[2], frag.molecular_charge(), "Libmints %s: charge" % ans[0])
-    compare_integers(ans[3], frag.multiplicity(), "Libmints %s: multiplicity" % ans[0])
-    compare_matrices(gorig, gnew, 5, "Libmints %s: string recreates geometry" % ans[0])
+def test_libmints():  #TEST
+    print_out("%s\n" % ans[0])  #TEST
+    print_out(origfrag.create_psi4_string_from_molecule())  #TEST
+    gorig = origfrag.geometry()  #TEST
+    frag = geometry(origfrag.create_psi4_string_from_molecule())  #TEST
+    frag.update_geometry()  #TEST
+    gnew = frag.geometry()  #TEST
+    compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "Libmints %s: NRE" % ans[0])  #TEST
+    compare_integers(ans[2], frag.molecular_charge(), "Libmints %s: charge" % ans[0])  #TEST
+    compare_integers(ans[3], frag.multiplicity(), "Libmints %s: multiplicity" % ans[0])  #TEST
+    compare_matrices(gorig, gnew, 5, "Libmints %s: string recreates geometry" % ans[0])  #TEST
 
 mol = qcdb.Molecule(mol1)
 mol.update_geometry()
@@ -195,13 +198,13 @@ mol = geometry(mol3)
 mol.update_geometry()
 ans = ["Mol3 Dimer", 27.4057052589, 0, 2]
 origfrag = mol
-test_libmints()
+test_libmints()  #TEST
 ans = ["Mol3 MonoA CP", 5.11387151899, 0, 1]
 origfrag = mol.extract_subsets(1,2)
-test_libmints()
+test_libmints()  #TEST
 ans = ["Mol3 MonoB UNCP", 4.34190449534, 0, 2]
 origfrag = mol.extract_subsets(2)
-test_libmints()
+test_libmints()  #TEST
 
 --------------------------------------------------------------------------
 Mol1 Dimer
@@ -506,4 +509,4 @@ Mol3 MonoB UNCP
 	Libmints Mol3 MonoB UNCP: multiplicity............................PASSED
 	Libmints Mol3 MonoB UNCP: string recreates geometry...............PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

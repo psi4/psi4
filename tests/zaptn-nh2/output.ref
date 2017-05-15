@@ -1,33 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:31:46 2016
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:  13632
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  20492
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
-
-memory 250 mb
 
 # The following values are taken from PSI3 #TEST
 refnuc   =   7.6466914045240 #TEST
@@ -42,7 +43,7 @@ molecule nh2 {
     H 1 1.013 2 103.2
 }
 
-set globals {
+set {
   reference rohf
   basis 6-31G
   frozen_docc [1, 0, 0, 0]
@@ -60,17 +61,23 @@ compare_values(refci, thisenergy,                      7, "ZAPT(25) energy") #TE
 compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25) correlation energy") #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:40:16 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:31:46 2016
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    97 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 2-3 entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -90,7 +97,7 @@ compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25)
 
   Rotational constants: A =     24.16446  B =     13.26997  C =      8.56596 [cm^-1]
   Rotational constants: A = 724432.34024  B = 397823.76796  C = 256800.92193 [MHz]
-  Nuclear repulsion =    7.646691404523985
+  Nuclear repulsion =    7.646691404523983
 
   Charge       = 0
   Multiplicity = 2
@@ -104,7 +111,7 @@ compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25)
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
@@ -112,6 +119,7 @@ compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25)
   ==> Primary Basis <==
 
   Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 9
     Number of basis function: 13
     Number of Cartesian functions: 13
@@ -133,35 +141,50 @@ compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25)
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,      41] index = [             0,861]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               9
+      Number of primitives:             22
+      Number of atomic orbitals:        13
+      Number of basis functions:        13
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 8372 doubles for integral storage.
+  We computed 1035 shell quartets total.
+  Whereas there are 1035 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 4.8140998283E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:   -50.90921379051787   -5.09092e+01   1.79884e-01 
-   @ROHF iter   2:   -52.92626313921752   -2.01705e+00   1.50091e-01 DIIS
-   @ROHF iter   3:   -55.49586344322190   -2.56960e+00   1.91517e-02 DIIS
-   @ROHF iter   4:   -55.52728036323231   -3.14169e-02   5.04823e-03 DIIS
-   @ROHF iter   5:   -55.53011145643477   -2.83109e-03   5.23988e-04 DIIS
-   @ROHF iter   6:   -55.53017089621471   -5.94398e-05   1.46995e-04 DIIS
-   @ROHF iter   7:   -55.53017667643860   -5.78022e-06   4.49377e-05 DIIS
-   @ROHF iter   8:   -55.53017688190592   -2.05467e-07   8.87947e-06 DIIS
-   @ROHF iter   9:   -55.53017688810755   -6.20163e-09   9.16220e-07 DIIS
-   @ROHF iter  10:   -55.53017688815408   -4.65263e-11   9.66254e-08 DIIS
-   @ROHF iter  11:   -55.53017688815498   -8.95284e-13   1.07397e-08 DIIS
-   @ROHF iter  12:   -55.53017688815499   -1.42109e-14   6.75900e-10 DIIS
+   @ROHF iter   1:   -54.77259329110814   -5.47726e+01   9.54624e-02 
+   @ROHF iter   2:   -55.39370192261914   -6.21109e-01   5.05005e-02 DIIS
+   @ROHF iter   3:   -55.52581440258384   -1.32112e-01   5.67794e-03 DIIS
+   @ROHF iter   4:   -55.52985142888279   -4.03703e-03   1.68895e-03 DIIS
+   @ROHF iter   5:   -55.53017407599121   -3.22647e-04   1.66959e-04 DIIS
+   @ROHF iter   6:   -55.53017685889272   -2.78290e-06   1.41067e-05 DIIS
+   @ROHF iter   7:   -55.53017688750248   -2.86098e-08   2.03063e-06 DIIS
+   @ROHF iter   8:   -55.53017688814497   -6.42487e-10   2.23785e-07 DIIS
+   @ROHF iter   9:   -55.53017688815439   -9.41469e-12   4.54869e-08 DIIS
+   @ROHF iter  10:   -55.53017688815490   -5.11591e-13   1.22533e-08 DIIS
+   @ROHF iter  11:   -55.53017688815495   -4.97380e-14   8.93378e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -190,24 +213,22 @@ compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25)
 
   Energy converged.
 
-  @ROHF Final Energy:   -55.53017688815499
+  @ROHF Final Energy:   -55.53017688815495
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              7.6466914045239847
-    One-Electron Energy =                 -90.2325847239200840
-    Two-Electron Energy =                  27.0557164312411089
+    Nuclear Repulsion Energy =              7.6466914045239829
+    One-Electron Energy =                 -90.2325847177802984
+    Two-Electron Energy =                  27.0557164251013731
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.5301768881549833
+    Total Energy =                        -55.5301768881549478
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -224,90 +245,99 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.4733     Total:     2.4733
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:46 2016
+*** tstop() called on psinet at Mon May 15 15:40:16 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:               9
+      Number of SO shells:               7
+      Number of primitives:             22
+      Number of atomic orbitals:        13
+      Number of basis functions:        13
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   7    0    2    4 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 1270 non-zero two-electron integrals.
+        Stored in file 33.
+
 
          ---------------------------------------------------------
-                                 D E T C I  
+                          Configuration Interaction
+                            (a 'D E T C I' module)
 
-                             C. David Sherrill
-                             Matt L. Leininger
-                               18 June 1999
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
          ---------------------------------------------------------
 
 Warning: iopen=0,opentype!=closed. Making iopen=1
 
-DETCI PARAMETERS: 
-   EX LEVEL      =        7      H0 BLOCKSIZE =        1
-   VAL EX LEVEL  =        0      H0 GUESS SIZE=        1
-   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   MAXITER       =       12      NUM PRINT    =       20
-   NUM ROOTS     =        1      ICORE        =        1
-   PRINT         =        1      FCI          =      yes
-   R CONV        = 1.00e-04      MIXED        =      yes
-   E CONV        = 1.00e-06      MIXED4       =      yes
-   OEI FILE      =       35      R4S          =       no
-   REPL OTF      =       no
-   TEI FILE      =       72      DIAG METHOD  =      SEM
-   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
-   S             =   0.5000      Ms0          =       no
-   MAX NUM VECS  =       13
-   RESTART       =       no
-   GUESS VECTOR  =     UNIT      OPENTYPE     = HIGHSPIN
-   REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVG       = ORB_ENER
-   LSE           =       no      LSE ITER     =        0
-   HD OTF        =      yes      NO DFILE     =      yes
-   MPN           =      yes      MPN SCHMIDT  =       no
-   ZAPTN         =      yes      MPN WIGNER   =      yes
-   PERT Z        =   1.0000      FOLLOW ROOT  =        0
-   NUM THREADS   =        1
-   VECS WRITE    =       no      NUM VECS WRITE =      0
-   FILTER GUESS  =       no      SF RESTRICT  =       no
-   OPDM          =       no      TRANS DENSITY=       no
+   ==> Parameters <==
 
-   FILES         =  50 51 52 53
+    EX LEVEL       =        7      H0 BLOCKSIZE  =        1
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =        1
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.5000      Ms0           =       NO
+    GUESS VECTOR   =     UNIT      OPENTYPE      = HIGHSPIN
+    COLLAPSE SIZE  =        1      HD AVG        = ORB_ENER
+MPN options:
+    MPN            =      YES      MPN SCHMIDT   =       NO
+    ZAPTN          =      YES      MPN WIGNER    =      YES
+    PERT Z         =   1.0000
+    MAX NUM VECS   =       13      REF SYM       =     AUTO
+    IOPEN        =      YES
 
-   EX ALLOW      =  1  1  1  1  1  1  1 
-   STATE AVERAGE =  1(1.00) 
+    EX ALLOW       =  1  1  1  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
 
-ORBITALS:
-   NMO          =       13
-   FROZEN CORE  =        1      RESTR CORE   =        0
-   FROZEN VIRT  =        0      RESTR VIRT   =        0
-   DROPPED CORE =        1      DROPPED VIRT =        0
-   EXPLICIT CORE=        0      ORBS IN CI   =       12
-   NUM ALP      =        5      NUM BET      =        4
-   NUM ALP EXPL =        4      NUM BET EXPL =        3
-   IOPEN        =      yes
+   ==> CI Orbital and Space information <==
 
-   DOCC            =   3   0   0   1 
-   SOCC            =   0   0   1   0 
-
-   FROZEN DOCC     =   1   0   0   0 
-   RESTRICTED DOCC =   0   0   0   0 
-   ACTIVE          =   6   0   2   4 
-   RESTRICTED UOCC =   0   0   0   0 
-   FROZEN UOCC     =   0   0   0   0 
-         ---------------------------------------------------------
-
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       13     7     0     2     4
+                 Nmo       13     7     0     2     4
+               Ndocc        4     3     0     0     1
+               Nsocc        1     0     0     1     0
+   ------------------------------------------------------
+                       CI Spaces
+   ------------------------------------------------------
+        Dropped DOCC        1     1     0     0     0
+              Active       12     6     0     2     4
+        Dropped UOCC        0     0     0     0     0
+   ------------------------------------------------------
 
    ==> Setting up CI strings <==
 
-   There are 495 alpha and 220 beta strings
-   The CI space requires 27126 (2.71E+04) determinants and 64 blocks
-
+    There are 495 alpha and 220 beta strings
+    The CI space requires 27126 (2.71E+04) determinants and 64 blocks
 
    ==> Transforming CI integrals <==
+
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
@@ -316,45 +346,54 @@ ORBITALS:
 	First half integral transformation complete.
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
+
+   ==> Starting MPn CI Computation <==
+
  orb_energy[0] = -15.582026
-   CalcInfo_->escf =       -55.530176888154990
-   CalcInfo_->e0   =       -36.121151864627137
-   CalcInfo_->enuc =         7.646691404523985
-   CalcInfo_->e1   =       -27.055716428051838
+   CalcInfo_->escf =       -55.530176888154948
+   CalcInfo_->e0   =       -36.121151865109383
+   CalcInfo_->enuc =         7.646691404523983
+   CalcInfo_->e1   =       -27.055716427569550
 
    n         Corr. Energy                  E(ZAPTn)             n         Corr. Energy                  E(ZAPTn)
 
-   0          0.000000000000000       -28.474460460103153
-   1        -27.055716428051838       -55.530176888154990
-   1        -27.055716428051824       -55.530176888154976
-   2         -0.086734353270391       -55.616911241425385       2        -0.086734353270391       -55.616911241425385
-                                                                3        -0.010596148873749       -55.627507390299137
-   3         -0.010596148873749       -55.627507390299137       4        -0.003721979668978       -55.631229369968118
-                                                                5        -0.001211239333684       -55.632440609301803
-   4         -0.003721979668978       -55.631229369968118       6        -0.000451781068986       -55.632892390370792
-                                                                7        -0.000183906487159       -55.633076296857951
-   5         -0.001211239333684       -55.632440609301803       8        -0.000086106990291       -55.633162403848239
-                                                                9        -0.000042708258048       -55.633205112106289
-   6         -0.000451781068986       -55.632892390370792      10        -0.000023287886516       -55.633228399992802
-                                                               11        -0.000013345752361       -55.633241745745160
-   7         -0.000183906487159       -55.633076296857951      12        -0.000008063431680       -55.633249809176839
-                                                               13        -0.000005011086160       -55.633254820262998
-   8         -0.000086106990291       -55.633162403848239      14        -0.000003193298492       -55.633258013561488
-                                                               15        -0.000002063431454       -55.633260076992940
-   9         -0.000042708258048       -55.633205112106289      16        -0.000001349356226       -55.633261426349165
-                                                               17        -0.000000889105945       -55.633262315455113
-  10         -0.000023287886516       -55.633228399992802      18        -0.000000589818468       -55.633262905273583
-                                                               19        -0.000000393312672       -55.633263298586257
-  11         -0.000013345752361       -55.633241745745160      20        -0.000000263572488       -55.633263562158746
-                                                               21        -0.000000177413269       -55.633263739572016
-  12         -0.000008063431680       -55.633249809176839      22        -0.000000119945858       -55.633263859517875
-                                                               23        -0.000000081442812       -55.633263940960688
-  13         -0.000005011086160       -55.633254820262998      24        -0.000000055541384       -55.633263996502073
-                                                               25        -0.000000038044449       -55.633264034546521
+   0          0.000000000000000       -28.474460460585398
+   1        -27.055716427569550       -55.530176888154948
+   1        -27.055716427569578       -55.530176888154976
+   2         -0.086734353287349       -55.616911241442295       2        -0.086734353287349       -55.616911241442295
+                                                                3        -0.010596148860098       -55.627507390302391
+   3         -0.010596148860098       -55.627507390302391       4        -0.003721979666250       -55.631229369968644
+                                                                5        -0.001211239333582       -55.632440609302222
+   4         -0.003721979666250       -55.631229369968644       6        -0.000451781068732       -55.632892390370955
+                                                                7        -0.000183906487079       -55.633076296858036
+   5         -0.001211239333582       -55.632440609302222       8        -0.000086106990232       -55.633162403848267
+                                                                9        -0.000042708258019       -55.633205112106289
+   6         -0.000451781068732       -55.632892390370955      10        -0.000023287886500       -55.633228399992788
+                                                               11        -0.000013345752352       -55.633241745745138
+   7         -0.000183906487079       -55.633076296858036      12        -0.000008063431675       -55.633249809176817
+                                                               13        -0.000005011086157       -55.633254820262977
+   8         -0.000086106990232       -55.633162403848267      14        -0.000003193298490       -55.633258013561466
+                                                               15        -0.000002063431452       -55.633260076992919
+   9         -0.000042708258019       -55.633205112106289      16        -0.000001349356225       -55.633261426349144
+                                                               17        -0.000000889105944       -55.633262315455084
+  10         -0.000023287886500       -55.633228399992788      18        -0.000000589818468       -55.633262905273554
+                                                               19        -0.000000393312671       -55.633263298586229
+  11         -0.000013345752352       -55.633241745745138      20        -0.000000263572487       -55.633263562158717
+                                                               21        -0.000000177413269       -55.633263739571987
+  12         -0.000008063431675       -55.633249809176817      22        -0.000000119945857       -55.633263859517847
+                                                               23        -0.000000081442812       -55.633263940960660
+  13         -0.000005011086157       -55.633254820262977      24        -0.000000055541384       -55.633263996502045
+                                                               25        -0.000000038044449       -55.633264034546492
 
-ZAPT25 energy saved
+    ZAPT25 energy saved
 
-EZAPTn = -55.6332640345465
+    EZAPTn = -55.6332640345465
+
+
+   ==> Energetics <==
+
+    SCF energy =          -55.530176888154948
+    Total ZAPT energy =   -55.633264034546492
 
 		 "A good bug is a dead bug" 
 
@@ -363,10 +402,9 @@ EZAPTn = -55.6332640345465
 		 "I didn't write FORTRAN.  That's the problem."
 
 			 - Edward Valeev
-
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED
 	ZAPT(25) energy...................................................PASSED
 	ZAPT(25) correlation energy.......................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

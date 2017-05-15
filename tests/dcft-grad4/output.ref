@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:21:23 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:  11563
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13448
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -34,8 +37,6 @@ ref_grads = [
 ref = psi4.Matrix(2, 3)
 ref.set(ref_grads)
 
-memory 512 mb
-
 molecule O2 {
 symmetry d2h
 0 3
@@ -45,7 +46,7 @@ O 1 R
 R = 1.230
 }
 
-set globals {
+set {
     e_convergence            8
     r_convergence            8
     basis                    cc-pvtz
@@ -59,22 +60,27 @@ set globals {
 }
 
 grad = gradient('dcft')
-compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")
+compare_matrices(ref, grad, 8, "DF-UODC-12 analytic gradient (ao_basis=none)")  #TEST
 clean()
 --------------------------------------------------------------------------
-
-  Memory set to 512.000 MiB by Python script.
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:21:24 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:16 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   247 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    512 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -107,7 +113,7 @@ gradient() will perform analytic gradient computation.
   DIIS disabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
@@ -115,11 +121,19 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVTZ
+    Blend: CC-PVTZ
     Number of shells: 20
     Number of basis function: 60
     Number of Cartesian functions: 70
     Spherical Harmonics?: true
     Max angular momentum: 3
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry O          line   228 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -147,7 +161,7 @@ gradient() will perform analytic gradient computation.
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               366
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -156,6 +170,7 @@ gradient() will perform analytic gradient computation.
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVTZ-JKFIT
+    Blend: CC-PVTZ-JKFIT
     Number of shells: 50
     Number of basis function: 158
     Number of Cartesian functions: 192
@@ -164,50 +179,42 @@ gradient() will perform analytic gradient computation.
 
   Minimum eigenvalue in the overlap matrix is 4.8715939812E-03.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
-    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
-    SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
-
-   @DF-UHF iter   1:  -131.91232606436392   -1.31912e+02   3.46996e-01 
-   @DF-UHF iter   2:  -141.64759117840282   -9.73527e+00   1.70378e-01 
-   @DF-UHF iter   3:  -148.16271748744236   -6.51513e+00   1.02910e-01 
-   @DF-UHF iter   4:  -149.43996086359999   -1.27724e+00   3.62909e-02 
-   @DF-UHF iter   5:  -149.64248208047695   -2.02521e-01   1.35395e-02 
-   @DF-UHF iter   6:  -149.66715893255002   -2.46769e-02   4.47583e-03 
-   @DF-UHF iter   7:  -149.67005896276220   -2.90003e-03   1.51728e-03 
-   @DF-UHF iter   8:  -149.67040534833490   -3.46386e-04   5.19575e-04 
-   @DF-UHF iter   9:  -149.67044952179361   -4.41735e-05   1.78736e-04 
-   @DF-UHF iter  10:  -149.67045580100154   -6.27921e-06   6.63871e-05 
-   @DF-UHF iter  11:  -149.67045683222875   -1.03123e-06   2.51995e-05 
-   @DF-UHF iter  12:  -149.67045702763431   -1.95406e-07   1.10195e-05 
-   @DF-UHF iter  13:  -149.67045706891616   -4.12819e-08   4.85551e-06 
-   @DF-UHF iter  14:  -149.67045707823758   -9.32141e-09   2.34163e-06 
-   @DF-UHF iter  15:  -149.67045708041843   -2.18085e-09   1.11386e-06 
-   @DF-UHF iter  16:  -149.67045708093775   -5.19321e-10   5.47873e-07 
-   @DF-UHF iter  17:  -149.67045708106235   -1.24601e-10   2.66739e-07 
-   @DF-UHF iter  18:  -149.67045708109242   -3.00702e-11   1.31413e-07 
-   @DF-UHF iter  19:  -149.67045708109964   -7.21911e-12   6.44038e-08 
-   @DF-UHF iter  20:  -149.67045708110140   -1.76215e-12   3.17075e-08 
-   @DF-UHF iter  21:  -149.67045708110180   -3.97904e-13   1.55717e-08 
-   @DF-UHF iter  22:  -149.67045708110197   -1.70530e-13   7.66191e-09 
-   @DF-UHF iter  23:  -149.67045708110197    0.00000e+00   3.76568e-09 
-   @DF-UHF iter  24:  -149.67045708110203   -5.68434e-14   1.85232e-09 
-   @DF-UHF iter  25:  -149.67045708110192    1.13687e-13   9.10678e-10 
-   @DF-UHF iter  26:  -149.67045708110197   -5.68434e-14   4.47903e-10 
-   @DF-UHF iter  27:  -149.67045708110203   -5.68434e-14   2.20245e-10 
-   @DF-UHF iter  28:  -149.67045708110197    5.68434e-14   1.08321e-10 
-   @DF-UHF iter  29:  -149.67045708110203   -5.68434e-14   5.32698e-11 
+   @DF-UHF iter   1:  -145.24506723057672   -1.45245e+02   2.36021e-01 
+   @DF-UHF iter   2:  -149.32999853548952   -4.08493e+00   4.49774e-02 
+   @DF-UHF iter   3:  -149.63056070392980   -3.00562e-01   1.64106e-02 
+   @DF-UHF iter   4:  -149.66597172103008   -3.54110e-02   5.28188e-03 
+   @DF-UHF iter   5:  -149.66995712568917   -3.98540e-03   1.79496e-03 
+   @DF-UHF iter   6:  -149.67040091399997   -4.43788e-04   5.96856e-04 
+   @DF-UHF iter   7:  -149.67045063903450   -4.97250e-05   1.98344e-04 
+   @DF-UHF iter   8:  -149.67045631034782   -5.67131e-06   6.74940e-05 
+   @DF-UHF iter   9:  -149.67045698151287   -6.71165e-07   2.26501e-05 
+   @DF-UHF iter  10:  -149.67045706658826   -8.50754e-08   8.07133e-06 
+   @DF-UHF iter  11:  -149.67045707864693   -1.20587e-08   2.91164e-06 
+   @DF-UHF iter  12:  -149.67045708062537   -1.97844e-09   1.15975e-06 
+   @DF-UHF iter  13:  -149.67045708100108   -3.75707e-10   4.90710e-07 
+   @DF-UHF iter  14:  -149.67045708108074   -7.96661e-11   2.23165e-07 
+   @DF-UHF iter  15:  -149.67045708109873   -1.79909e-11   1.05618e-07 
+   @DF-UHF iter  16:  -149.67045708110311   -4.37694e-12   5.10375e-08 
+   @DF-UHF iter  17:  -149.67045708110408   -9.66338e-13   2.49594e-08 
+   @DF-UHF iter  18:  -149.67045708110427   -1.98952e-13   1.22554e-08 
+   @DF-UHF iter  19:  -149.67045708110444   -1.70530e-13   6.03544e-09 
+   @DF-UHF iter  20:  -149.67045708110442    2.84217e-14   2.97413e-09 
+   @DF-UHF iter  21:  -149.67045708110436    5.68434e-14   1.46674e-09 
+   @DF-UHF iter  22:  -149.67045708110447   -1.13687e-13   7.23378e-10 
+   @DF-UHF iter  23:  -149.67045708110442    5.68434e-14   3.56857e-10 
+   @DF-UHF iter  24:  -149.67045708110447   -5.68434e-14   1.76043e-10 
+   @DF-UHF iter  25:  -149.67045708110442    5.68434e-14   8.68555e-11 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   4.451685107E-02
+   @Spin Contamination Metric:   4.451685144E-02
    @S^2 Expected:                2.000000000E+00
    @S^2 Observed:                2.044516851E+00
    @S   Expected:                1.000000000E+00
@@ -219,21 +226,21 @@ gradient() will perform analytic gradient computation.
     Alpha Occupied:                                                       
 
        1Ag   -20.756902     1B1u  -20.756304     2Ag    -1.696315  
-       2B1u   -1.212296     1B2u   -0.833318     1B3u   -0.833318  
-       3Ag    -0.755176     1B3g   -0.563357     1B2g   -0.563357  
+       2B1u   -1.212296     1B3u   -0.833318     1B2u   -0.833318  
+       3Ag    -0.755176     1B2g   -0.563357     1B3g   -0.563357  
 
     Alpha Virtual:                                                        
 
        3B1u    0.357250     2B2u    0.682584     2B3u    0.682584  
-       4B1u    0.718045     4Ag     0.733879     2B3g    0.790910  
-       2B2g    0.790910     5Ag     0.880521     5B1u    1.431286  
-       6Ag     1.454130     1B1g    1.454130     3B3u    1.526325  
-       3B2u    1.526325     6B1u    1.850100     1Au     1.850100  
+       4B1u    0.718045     4Ag     0.733879     2B2g    0.790910  
+       2B3g    0.790910     5Ag     0.880521     5B1u    1.431286  
+       1B1g    1.454130     6Ag     1.454130     3B2u    1.526325  
+       3B3u    1.526325     6B1u    1.850100     1Au     1.850100  
        7Ag     2.354448     3B2g    2.438856     3B3g    2.438856  
-       7B1u    2.449171     4B3u    3.844193     4B2u    3.844193  
-       8Ag     4.047780     4B2g    4.123711     4B3g    4.123711  
-       9Ag     4.999035     2B1g    4.999035     5B2u    5.052027  
-       5B3u    5.052027     8B1u    5.163586    10Ag     5.285865  
+       7B1u    2.449171     4B2u    3.844193     4B3u    3.844193  
+       8Ag     4.047780     4B3g    4.123711     4B2g    4.123711  
+       9Ag     4.999035     2B1g    4.999035     5B3u    5.052027  
+       5B2u    5.052027     8B1u    5.163586    10Ag     5.285865  
        6B3u    5.330116     6B2u    5.330116     5B2g    5.552545  
        5B3g    5.552545     9B1u    6.074702     2Au     6.074702  
       10B1u    6.319406    11Ag     6.495441     3B1g    6.495441  
@@ -251,21 +258,21 @@ gradient() will perform analytic gradient computation.
     Beta Virtual:                                                         
 
        1B2g    0.100223     1B3g    0.100223     3B1u    0.415851  
-       4Ag     0.745071     2B3u    0.753845     2B2u    0.753845  
-       4B1u    0.757937     2B3g    0.882544     2B2g    0.882544  
-       5Ag     0.897337     5B1u    1.472565     6Ag     1.507643  
-       1B1g    1.507643     3B3u    1.582507     3B2u    1.582507  
+       4Ag     0.745071     2B2u    0.753845     2B3u    0.753845  
+       4B1u    0.757937     2B2g    0.882544     2B3g    0.882544  
+       5Ag     0.897337     5B1u    1.472565     1B1g    1.507643  
+       6Ag     1.507643     3B2u    1.582507     3B3u    1.582507  
        6B1u    1.945969     1Au     1.945969     7Ag     2.404587  
        7B1u    2.472997     3B2g    2.488215     3B3g    2.488215  
-       4B3u    3.961542     4B2u    3.961542     8Ag     4.071802  
-       4B2g    4.234636     4B3g    4.234636     9Ag     5.036575  
-       2B1g    5.036575     5B2u    5.083743     5B3u    5.083743  
+       4B2u    3.961542     4B3u    3.961542     8Ag     4.071802  
+       4B3g    4.234636     4B2g    4.234636     9Ag     5.036575  
+       2B1g    5.036575     5B3u    5.083743     5B2u    5.083743  
        8B1u    5.197430    10Ag     5.322058     6B3u    5.391603  
        6B2u    5.391603     5B2g    5.619344     5B3g    5.619344  
        9B1u    6.126752     2Au     6.126752    10B1u    6.364177  
       11Ag     6.621253     3B1g    6.621253     6B3g    6.809981  
        6B2g    6.809981    11B1u    6.821591     3Au     6.821591  
-       7B3u    6.915519     7B2u    6.915519    12B1u    7.130046  
+       7B2u    6.915519     7B3u    6.915519    12B1u    7.130046  
       12Ag     7.493114     7B2g    7.621948     7B3g    7.621948  
       13Ag     8.132712    13B1u   12.394800  
 
@@ -276,24 +283,32 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-UHF Final Energy:  -149.67045708110203
+  @DF-UHF Final Energy:  -149.67045708110442
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             27.5344238615935097
-    One-Electron Energy =                -260.6468820920976555
-    Two-Electron Energy =                  83.4420011494021310
+    One-Electron Energy =                -260.6468820925446153
+    Two-Electron Energy =                  83.4420011498466891
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -149.6704570811020290
+    Total Energy =                       -149.6704570811044164
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    1B3u 1.9911913
+  HONO-1 :    1B2g 1.0000000
+  HONO-0 :    1B3g 1.0000000
+  LUNO+0 :    2B2u 0.0088087
+  LUNO+1 :    2B3u 0.0088087
+  LUNO+2 :    3B1u 0.0034996
+  LUNO+3 :    4 Ag 0.0010972
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -310,30 +325,55 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    1B2u 1.9911913
-  HONO-1 :    1B2g 1.0000000
-  HONO-0 :    1B3g 1.0000000
-  LUNO+0 :    2B2u 0.0088087
-  LUNO+1 :    2B3u 0.0088087
-  LUNO+2 :    3B1u 0.0034996
-  LUNO+3 :    4 Ag 0.0010972
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:24 2016
+*** tstop() called on psinet at Mon May 15 15:35:16 2017
 Module time:
-	user time   =       0.30 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.30 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:21:24 2016
+    Name: CC-PVTZ-RI
+    Role: RIFIT
+    Keyword: DF_BASIS_DCFT
+    atoms 1-2 entry O          line   304 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz-ri.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry O          line   228 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz-jkfit.gbs 
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   2
+      Number of AO shells:              20
+      Number of SO shells:              10
+      Number of primitives:             52
+      Number of atomic orbitals:        70
+      Number of basis functions:        60
+
+      Number of irreps:                  8
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  13    3    7    7    3   13    7    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 217149 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:17 2017
 
 
 
@@ -350,7 +390,7 @@ Total time:
 
 	 => Sizing <=
 
-	  Memory   =         488 MB
+	  Memory   =         500 MB
 	  Threads  =           1
 	  nn       =          60
 	  nQ       =         162
@@ -358,6 +398,7 @@ Total time:
 	 => Primary Basis <=
 
   Basis Set: CC-PVTZ
+    Blend: CC-PVTZ
     Number of shells: 20
     Number of basis function: 60
     Number of Cartesian functions: 70
@@ -367,6 +408,7 @@ Total time:
 	 => Auxiliary Basis <=
 
   Basis Set: CC-PVTZ-RI
+    Blend: CC-PVTZ-RI
     Number of shells: 46
     Number of basis function: 162
     Number of Cartesian functions: 202
@@ -376,19 +418,19 @@ Total time:
 	 => Memory Requirement <=
 
 	Minimum Memory required                 :     26.92 MB 
-	Memory available                        :    488.28 MB 
+	Memory available                        :    500.00 MB 
 
 
 
 	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        = -149.670457081102029
-	 Alpha - Alpha MP2 energy         =   -0.062831777352406
-	 Alpha - Beta  MP2 energy         =   -0.330623667330172
-	 Beta  - Beta  MP2 energy         =   -0.070575343579097
-	 Total MP2 correlation energy     =   -0.464030788261676
-	*Total MP2 energy                 = -150.134487869363710
+	*Total Hartree-Fock energy        = -149.670457081104416
+	 Alpha - Alpha MP2 energy         =   -0.062831777344233
+	 Alpha - Beta  MP2 energy         =   -0.330623667249741
+	 Beta  - Beta  MP2 energy         =   -0.070575343549055
+	 Total MP2 correlation energy     =   -0.464030788143029
+	*Total MP2 energy                 = -150.134487869247437
 
 	DCFT Functional:    		 ODC-12
 	DCFT Type:          		 DF
@@ -398,31 +440,31 @@ Total time:
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        6.952e-02         1.424e-03      3.181e-02   -150.102678459318582  S   *
-	* 2        1.884e-02         4.250e-04     -7.441e-02   -150.177088607427322  S/E *
-	* 3        7.577e-03         1.701e-04      4.134e-02   -150.135747544240616  S/E *
-	* 4        1.949e-03         6.247e-05     -1.143e-02   -150.147172888065995  S/E *
-	* 5        5.805e-04         2.169e-05      4.936e-03   -150.142236915609203  S/E *
-	* 6        1.791e-04         1.011e-05     -1.000e-03   -150.143237211376118  S/E *
-	* 7        4.763e-05         4.429e-06      1.251e-04   -150.143112119887462  S/E *
-	* 8        1.968e-05         1.664e-06      5.500e-06   -150.143106619827137  S/E *
-	* 9        6.582e-06         3.101e-07      3.316e-05   -150.143073462043475  S/E *
-	* 10       1.696e-06         1.166e-07     -1.005e-05   -150.143083509287948  S/E *
-	* 11       3.616e-07         4.004e-08      1.727e-06   -150.143081782588013  S/E *
-	* 12       1.037e-07         1.154e-08     -1.426e-06   -150.143083208408200  S/E *
-	* 13       4.193e-08         4.709e-09      4.924e-07   -150.143082715974231  S/E *
-	* 14       1.443e-08         1.968e-09     -1.046e-07   -150.143082820535653  S/E *
-	* 15       6.500e-09         5.109e-10      9.765e-10   -150.143082819559140  S/E *
+	* 1        6.952e-02         1.424e-03      3.181e-02   -150.102678459351949  S   *
+	* 2        1.884e-02         4.250e-04     -7.441e-02   -150.177088607407427  S/E *
+	* 3        7.577e-03         1.701e-04      4.134e-02   -150.135747544194260  S/E *
+	* 4        1.949e-03         6.247e-05     -1.143e-02   -150.147172888073413  S/E *
+	* 5        5.805e-04         2.169e-05      4.936e-03   -150.142236915608919  S/E *
+	* 6        1.791e-04         1.011e-05     -1.000e-03   -150.143237211379272  S/E *
+	* 7        4.763e-05         4.429e-06      1.251e-04   -150.143112119890247  S/E *
+	* 8        1.968e-05         1.664e-06      5.500e-06   -150.143106619829780  S/E *
+	* 9        6.582e-06         3.101e-07      3.316e-05   -150.143073462046004  S/E *
+	* 10       1.696e-06         1.166e-07     -1.005e-05   -150.143083509290449  S/E *
+	* 11       3.616e-07         4.004e-08      1.727e-06   -150.143081782590514  S/E *
+	* 12       1.037e-07         1.154e-08     -1.426e-06   -150.143083208410701  S/E *
+	* 13       4.193e-08         4.709e-09      4.924e-07   -150.143082715976732  S/E *
+	* 14       1.443e-08         1.968e-09     -1.046e-07   -150.143082820538183  S/E *
+	* 15       6.500e-09         5.109e-10      9.765e-10   -150.143082819561670  S/E *
 	*=================================================================================*
 
-	*DF-ODC-12 SCF Energy                                 =    -149.173688156881951
-	*DF-ODC-12 Lambda Energy                              =      -0.969394662677178
-	*DF-ODC-12 Total Energy                               =    -150.143082819559140
+	*DF-ODC-12 SCF Energy                                 =    -149.173688156884538
+	*DF-ODC-12 Lambda Energy                              =      -0.969394662677125
+	*DF-ODC-12 Total Energy                               =    -150.143082819561670
 
 	Orbital occupations:
 		Alpha occupied orbitals
 		   1Ag       0.9998     1B1u      0.9998     2Ag       0.9935     2B1u      0.9904  
-		   1B3u      0.9876     1B2u      0.9876     1B2g      0.9835     1B3g      0.9835  
+		   1B2u      0.9876     1B3u      0.9876     1B2g      0.9835     1B3g      0.9835  
 		   3Ag       0.9714  
 
 		Beta occupied orbitals
@@ -431,32 +473,32 @@ Total time:
 
 		Alpha virtual orbitals
 		   3B1u      0.0269     2B2u      0.0089     2B3u      0.0089     4Ag       0.0056  
-		   2B3g      0.0055     2B2g      0.0055     4B1u      0.0041     5Ag       0.0039  
-		   1B1g      0.0039     3B3u      0.0035     3B2u      0.0035     5B1u      0.0033  
+		   2B2g      0.0055     2B3g      0.0055     4B1u      0.0041     1B1g      0.0039  
+		   5Ag       0.0039     3B2u      0.0035     3B3u      0.0035     5B1u      0.0033  
 		   1Au       0.0033     6Ag       0.0032     6B1u      0.0016     3B2g      0.0014  
-		   3B3g      0.0014     7Ag       0.0013     4B3u      0.0005     4B2u      0.0005  
-		   4B3g      0.0004     4B2g      0.0004     8Ag       0.0003     2B1g      0.0003  
+		   3B3g      0.0014     7Ag       0.0013     4B2u      0.0005     4B3u      0.0005  
+		   4B2g      0.0004     4B3g      0.0004     8Ag       0.0003     2B1g      0.0003  
 		   5B3u      0.0003     5B2u      0.0003     7B1u      0.0003     9Ag       0.0003  
 		   6B3u      0.0002     6B2u      0.0002    10Ag       0.0002     5B2g      0.0002  
-		   5B3g      0.0002     8B1u      0.0002     9B1u      0.0002     2Au       0.0002  
+		   5B3g      0.0002     8B1u      0.0002     2Au       0.0002     9B1u      0.0002  
 		  11Ag       0.0002    12Ag       0.0002     3B1g      0.0002     7B2u      0.0001  
-		   7B3u      0.0001     6B3g      0.0001     6B2g      0.0001    10B1u      0.0001  
+		   7B3u      0.0001     6B2g      0.0001     6B3g      0.0001    10B1u      0.0001  
 		  11B1u      0.0001     3Au       0.0001    12B1u      0.0001     7B2g      0.0001  
 		   7B3g      0.0001    13Ag       0.0000    13B1u      0.0000  
 
 		Beta virtual orbitals
 		   1B2g      0.0370     1B3g      0.0370     3B1u      0.0213     4Ag       0.0054  
 		   2B2u      0.0040     2B3u      0.0040     4B1u      0.0040     5Ag       0.0032  
-		   3B3u      0.0028     3B2u      0.0028     6Ag       0.0025     1B1g      0.0025  
-		   2B3g      0.0014     2B2g      0.0014     5B1u      0.0012     6B1u      0.0011  
+		   3B2u      0.0028     3B3u      0.0028     1B1g      0.0025     6Ag       0.0025  
+		   2B2g      0.0014     2B3g      0.0014     5B1u      0.0012     6B1u      0.0011  
 		   1Au       0.0011     7Ag       0.0011     3B2g      0.0007     3B3g      0.0007  
-		   4B3u      0.0003     4B2u      0.0003     8Ag       0.0002     9Ag       0.0002  
-		   2B1g      0.0002     7B1u      0.0002    10Ag       0.0002     5B3u      0.0002  
-		   5B2u      0.0002     8B1u      0.0002    11Ag       0.0002     4B2g      0.0001  
-		   4B3g      0.0001     6B3u      0.0001     6B2u      0.0001    12Ag       0.0001  
-		   3B1g      0.0001     9B1u      0.0001     5B3g      0.0001     5B2g      0.0001  
-		  10B1u      0.0001     2Au       0.0001     7B3u      0.0001     7B2u      0.0001  
-		   6B3g      0.0001     6B2g      0.0001    11B1u      0.0001     3Au       0.0001  
+		   4B2u      0.0003     4B3u      0.0003     8Ag       0.0002     9Ag       0.0002  
+		   2B1g      0.0002     7B1u      0.0002    10Ag       0.0002     5B2u      0.0002  
+		   5B3u      0.0002     8B1u      0.0002    11Ag       0.0002     4B3g      0.0001  
+		   4B2g      0.0001     6B3u      0.0001     6B2u      0.0001    12Ag       0.0001  
+		   3B1g      0.0001     9B1u      0.0001     5B2g      0.0001     5B3g      0.0001  
+		  10B1u      0.0001     2Au       0.0001     7B2u      0.0001     7B3u      0.0001  
+		   6B2g      0.0001     6B3g      0.0001    11B1u      0.0001     3Au       0.0001  
 		  12B1u      0.0001    13Ag       0.0000     7B2g      0.0000     7B3g      0.0000  
 		  13B1u      0.0000  
 
@@ -479,18 +521,18 @@ Properties computed using the ODC-12 density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:30 2016
+*** tstop() called on psinet at Mon May 15 15:35:25 2017
 Module time:
-	user time   =       5.21 seconds =       0.09 minutes
-	system time =       0.78 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       7.33 seconds =       0.12 minutes
+	system time =       1.23 seconds =       0.02 minutes
+	total time  =          8 seconds =       0.13 minutes
 Total time:
-	user time   =       5.51 seconds =       0.09 minutes
-	system time =       0.79 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       8.20 seconds =       0.14 minutes
+	system time =       1.25 seconds =       0.02 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:21:30 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:25 2017
 
 
 
@@ -503,22 +545,15 @@ Total time:
 	 OPDM trace: 	 15.997730		Deviation: 	2.2700e-03
 	 TPDM trace: 	239.929635		Deviation: 	7.0365e-02
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:33 2016
+*** tstop() called on psinet at Mon May 15 15:35:29 2017
 Module time:
-	user time   =       2.71 seconds =       0.05 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.91 seconds =       0.07 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       8.22 seconds =       0.14 minutes
-	system time =       0.90 seconds =       0.01 minutes
-	total time  =          9 seconds =       0.15 minutes
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:21:33 2016
-
- DERIV: Derivative code.
-   by Justin Turney
-
+	user time   =      12.11 seconds =       0.20 minutes
+	system time =       1.40 seconds =       0.02 minutes
+	total time  =         13 seconds =       0.22 minutes
   Cartesian Displacement SALCs
   By SALC:
   Number of SALCs: 1, nirreps: 1
@@ -570,8 +605,8 @@ Total time:
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000   -24.823372160020
-       2        0.000000000000     0.000000000000    24.823372160020
+       1        0.000000000000     0.000000000000   -24.823372160023
+       2        0.000000000000     0.000000000000    24.823372160023
 
 
   -Lagrangian contribution to gradient:
@@ -584,8 +619,8 @@ Total time:
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    12.352737025959
-       2        0.000000000000     0.000000000000   -12.352737025959
+       1        0.000000000000     0.000000000000    12.352737025963
+       2        0.000000000000     0.000000000000   -12.352737025963
 
 
   -Total gradient:
@@ -594,16 +629,6 @@ Total time:
        1        0.000000000000     0.000000000000    -0.037277060709
        2        0.000000000000     0.000000000000     0.037277060709
 
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:21:34 2016
-Module time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       9.37 seconds =       0.16 minutes
-	system time =       0.96 seconds =       0.02 minutes
-	total time  =         10 seconds =       0.17 minutes
 	DF-UODC-12 analytic gradient (ao_basis=none)......................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

@@ -1,35 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.190 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {test_ref_refresh} 9b1b239 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Apr  4 10:17:19 2016
+    Psi4 started on: Monday, 15 May 2017 03:34PM
 
-    Process ID:   4231
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  12354
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO algorithm
-
-memory 250 mb
 
 molecule cn {
   0 2
@@ -43,6 +42,7 @@ set {
   freeze_core true
   ao_basis disk
   delete_tei false
+  guess core
   print 2
   basis = "cc-pVDZ"
 }
@@ -50,25 +50,23 @@ set {
 energy('ccsd')
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:34:07 2017
+
    => Loading Basis Set <=
 
-    Role: BASIS
-    Keyword: BASIS
     Name: CC-PVDZ
-    atoms 1 entry C          line   130 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-    atoms 2 entry N          line   160 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:17:19 2016
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry N          line   160 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -87,7 +85,7 @@ energy('ccsd')
 
   Rotational constants: A = ************  B =      1.88947  C =      1.88947 [cm^-1]
   Rotational constants: A = ************  B =  56644.99264  C =  56644.99264 [MHz]
-  Nuclear repulsion =   18.915270434706397
+  Nuclear repulsion =   18.915270434706379
 
   Charge       = 0
   Multiplicity = 2
@@ -110,6 +108,7 @@ energy('ccsd')
 
   -AO BASIS SET INFORMATION:
     Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
     Total number of shells = 12
     Number of primitives   = 44
     Number of AO           = 30
@@ -138,40 +137,56 @@ energy('ccsd')
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     150] index = [             0,11325]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              12
+      Number of primitives:             44
+      Number of atomic orbitals:        30
+      Number of basis functions:        28
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 165242 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 1.0795200227E-02.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Core (One-Electron) Hamiltonian.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:   -83.19841367423675   -8.31984e+01   1.36243e-01 
-   @ROHF iter   2:   -84.13066745073218   -9.32254e-01   1.22587e-01 DIIS
-   @ROHF iter   3:   -91.56994102487485   -7.43927e+00   4.70362e-02 DIIS
-   @ROHF iter   4:   -92.11548468951906   -5.45544e-01   1.78041e-02 DIIS
+   @ROHF iter   1:   -83.19841367423672   -8.31984e+01   1.36243e-01 
+   @ROHF iter   2:   -84.13066745073203   -9.32254e-01   1.22587e-01 DIIS
+   @ROHF iter   3:   -91.56994102487474   -7.43927e+00   4.70362e-02 DIIS
+   @ROHF iter   4:   -92.11548468951898   -5.45544e-01   1.78041e-02 DIIS
    @ROHF iter   5:   -92.17531716254766   -5.98325e-02   4.68871e-03 DIIS
-   @ROHF iter   6:   -92.18489693171706   -9.57977e-03   1.97972e-03 DIIS
-   @ROHF iter   7:   -92.18849213633597   -3.59520e-03   2.60041e-03 DIIS
-   @ROHF iter   8:   -92.19473815552833   -6.24602e-03   8.77748e-04 DIIS
-   @ROHF iter   9:   -92.19547838920772   -7.40234e-04   4.93687e-04 DIIS
-   @ROHF iter  10:   -92.19552604195404   -4.76527e-05   2.46913e-04 DIIS
-   @ROHF iter  11:   -92.19549304134893    3.30006e-05   2.65380e-04 DIIS
-   @ROHF iter  12:   -92.19555559553604   -6.25542e-05   2.76122e-05 DIIS
-   @ROHF iter  13:   -92.19555658870790   -9.93172e-07   5.25184e-06 DIIS
-   @ROHF iter  14:   -92.19555660604074   -1.73328e-08   4.11111e-07 DIIS
-   @ROHF iter  15:   -92.19555660616750   -1.26761e-10   4.25812e-08 DIIS
-   @ROHF iter  16:   -92.19555660616851   -1.00897e-12   1.47859e-08 DIIS
-   @ROHF iter  17:   -92.19555660616868   -1.70530e-13   1.94133e-09 DIIS
+   @ROHF iter   6:   -92.18489693171705   -9.57977e-03   1.97972e-03 DIIS
+   @ROHF iter   7:   -92.18849213633595   -3.59520e-03   2.60041e-03 DIIS
+   @ROHF iter   8:   -92.19473815552820   -6.24602e-03   8.77748e-04 DIIS
+   @ROHF iter   9:   -92.19547838920766   -7.40234e-04   4.93687e-04 DIIS
+   @ROHF iter  10:   -92.19552604195411   -4.76527e-05   2.46913e-04 DIIS
+   @ROHF iter  11:   -92.19549304134887    3.30006e-05   2.65380e-04 DIIS
+   @ROHF iter  12:   -92.19555559553606   -6.25542e-05   2.76122e-05 DIIS
+   @ROHF iter  13:   -92.19555658870789   -9.93172e-07   5.25184e-06 DIIS
+   @ROHF iter  14:   -92.19555660604067   -1.73328e-08   4.11111e-07 DIIS
+   @ROHF iter  15:   -92.19555660616743   -1.26761e-10   4.25812e-08 DIIS
+   @ROHF iter  16:   -92.19555660616857   -1.13687e-12   1.47859e-08 DIIS
+   @ROHF iter  17:   -92.19555660616874   -1.70530e-13   1.94133e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -191,11 +206,11 @@ energy('ccsd')
 
        2B2     0.177180     2B1     0.177180     6A1     0.384745  
        3B2     0.655939     3B1     0.655939     7A1     0.699522  
-       8A1     0.869525     4B1     1.036480     4B2     1.036480  
-       9A1     1.044978     1A2     1.314443    10A1     1.314443  
-       5B1     1.503400     5B2     1.503400    11A1     1.564388  
+       8A1     0.869525     4B2     1.036480     4B1     1.036480  
+       9A1     1.044978    10A1     1.314443     1A2     1.314443  
+       5B2     1.503400     5B1     1.503400    11A1     1.564388  
        2A2     2.160944    12A1     2.160944    13A1     2.254479  
-       6B1     2.677031     6B2     2.677031    14A1     3.095851  
+       6B2     2.677031     6B1     2.677031    14A1     3.095851  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -204,24 +219,22 @@ energy('ccsd')
 
   Energy converged.
 
-  @ROHF Final Energy:   -92.19555660616868
+  @ROHF Final Energy:   -92.19555660616874
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             18.9152704347063967
-    One-Electron Energy =                -161.7960330478499031
-    Two-Electron Energy =                  50.6852060069748163
+    Nuclear Repulsion Energy =             18.9152704347063789
+    One-Electron Energy =                -161.7960330478498747
+    Two-Electron Energy =                  50.6852060069747736
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1955566061686795
+    Total Energy =                        -92.1955566061687364
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -237,36 +250,42 @@ Properties computed using the SCF density matrix
   Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:    -2.1723     Total:     2.1723
 
-  Quadrupole Moment: (Debye Ang)
-    XX:   -11.0299     YY:   -11.0299     ZZ:   -10.1016
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
-  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.3094     YY:    -0.3094     ZZ:     0.6189
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1     C     3.39827  2.47928  0.91899  0.12245
-       2     N     3.60173  3.52072  0.08101 -0.12245
-
-   Total alpha =  7.00000, Total beta =  6.00000, Total charge = -0.00000
-
-
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:17:19 2016
+*** tstop() called on psinet at Mon May 15 15:34:08 2017
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:17:19 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   2
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             44
+      Number of atomic orbitals:        30
+      Number of basis functions:        28
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  14    2    6    6 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 21245 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:08 2017
 
 
 	Wfn Parameters:
@@ -293,233 +312,233 @@ Total time:
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
-	h = 0; memfree         = 31249717
+	h = 0; memfree         = 65535717
 	h = 0; rows_per_bucket = 150
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249870
+	h = 1; memfree         = 65535870
 	h = 1; rows_per_bucket = 64
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249802
+	h = 2; memfree         = 65535802
 	h = 2; rows_per_bucket = 96
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249802
+	h = 3; memfree         = 65535802
 	h = 3; rows_per_bucket = 96
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
 	Starting second half-transformation.
-	h = 0; memfree         = 31249717
+	h = 0; memfree         = 65535717
 	h = 0; rows_per_bucket = 8
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249870
+	h = 1; memfree         = 65535870
 	h = 1; rows_per_bucket = 1
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249802
+	h = 2; memfree         = 65535802
 	h = 2; rows_per_bucket = 3
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249802
+	h = 3; memfree         = 65535802
 	h = 3; rows_per_bucket = 3
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(OO|OV)...
 	Starting second half-transformation.
-	h = 0; memfree         = 31249688
+	h = 0; memfree         = 65535688
 	h = 0; rows_per_bucket = 8
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249856
+	h = 1; memfree         = 65535856
 	h = 1; rows_per_bucket = 1
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249781
+	h = 2; memfree         = 65535781
 	h = 2; rows_per_bucket = 3
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249781
+	h = 3; memfree         = 65535781
 	h = 3; rows_per_bucket = 3
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(OO|VV)...
 	Starting second half-transformation.
-	h = 0; memfree         = 31249574
+	h = 0; memfree         = 65535574
 	h = 0; rows_per_bucket = 8
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249782
+	h = 1; memfree         = 65535782
 	h = 1; rows_per_bucket = 1
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249688
+	h = 2; memfree         = 65535688
 	h = 2; rows_per_bucket = 3
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249688
+	h = 3; memfree         = 65535688
 	h = 3; rows_per_bucket = 3
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(OV|OO)...
 	Starting first half-transformation.
-	h = 0; memfree         = 31249688
+	h = 0; memfree         = 65535688
 	h = 0; rows_per_bucket = 150
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249856
+	h = 1; memfree         = 65535856
 	h = 1; rows_per_bucket = 64
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249781
+	h = 2; memfree         = 65535781
 	h = 2; rows_per_bucket = 96
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249781
+	h = 3; memfree         = 65535781
 	h = 3; rows_per_bucket = 96
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
 	Starting second half-transformation.
-	h = 0; memfree         = 31249717
+	h = 0; memfree         = 65535717
 	h = 0; rows_per_bucket = 40
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249870
+	h = 1; memfree         = 65535870
 	h = 1; rows_per_bucket = 16
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249802
+	h = 2; memfree         = 65535802
 	h = 2; rows_per_bucket = 27
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249802
+	h = 3; memfree         = 65535802
 	h = 3; rows_per_bucket = 27
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(OV|OV)...
 	Starting second half-transformation.
-	h = 0; memfree         = 31249688
+	h = 0; memfree         = 65535688
 	h = 0; rows_per_bucket = 40
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249856
+	h = 1; memfree         = 65535856
 	h = 1; rows_per_bucket = 16
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249781
+	h = 2; memfree         = 65535781
 	h = 2; rows_per_bucket = 27
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249781
+	h = 3; memfree         = 65535781
 	h = 3; rows_per_bucket = 27
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(OV|VV)...
 	Starting second half-transformation.
-	h = 0; memfree         = 31249574
+	h = 0; memfree         = 65535574
 	h = 0; rows_per_bucket = 40
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249782
+	h = 1; memfree         = 65535782
 	h = 1; rows_per_bucket = 16
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249688
+	h = 2; memfree         = 65535688
 	h = 2; rows_per_bucket = 27
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249688
+	h = 3; memfree         = 65535688
 	h = 3; rows_per_bucket = 27
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(VV|OO)...
 	Starting first half-transformation.
-	h = 0; memfree         = 31249574
+	h = 0; memfree         = 65535574
 	h = 0; rows_per_bucket = 150
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249782
+	h = 1; memfree         = 65535782
 	h = 1; rows_per_bucket = 64
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249688
+	h = 2; memfree         = 65535688
 	h = 2; rows_per_bucket = 96
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249688
+	h = 3; memfree         = 65535688
 	h = 3; rows_per_bucket = 96
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
 	Starting second half-transformation.
-	h = 0; memfree         = 31249717
+	h = 0; memfree         = 65535717
 	h = 0; rows_per_bucket = 88
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249870
+	h = 1; memfree         = 65535870
 	h = 1; rows_per_bucket = 45
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249802
+	h = 2; memfree         = 65535802
 	h = 2; rows_per_bucket = 60
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249802
+	h = 3; memfree         = 65535802
 	h = 3; rows_per_bucket = 60
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(VV|OV)...
 	Starting second half-transformation.
-	h = 0; memfree         = 31249688
+	h = 0; memfree         = 65535688
 	h = 0; rows_per_bucket = 88
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249856
+	h = 1; memfree         = 65535856
 	h = 1; rows_per_bucket = 45
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249781
+	h = 2; memfree         = 65535781
 	h = 2; rows_per_bucket = 60
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249781
+	h = 3; memfree         = 65535781
 	h = 3; rows_per_bucket = 60
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 	(VV|VV)...
 	Starting second half-transformation.
-	h = 0; memfree         = 31249574
+	h = 0; memfree         = 65535574
 	h = 0; rows_per_bucket = 88
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31249782
+	h = 1; memfree         = 65535782
 	h = 1; rows_per_bucket = 45
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31249688
+	h = 2; memfree         = 65535688
 	h = 2; rows_per_bucket = 60
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31249688
+	h = 3; memfree         = 65535688
 	h = 3; rows_per_bucket = 60
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
-	Frozen core energy     =    -86.99980355850424
+	Frozen core energy     =    -86.99980355850415
 
 	Size of irrep 0 of <ab|cd> integrals:      0.024 (MW) /      0.190 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.008 (MW) /      0.065 (MB)
@@ -539,27 +558,27 @@ Total time:
 	Size of irrep 3 of tIjAb amplitudes:       0.001 (MW) /      0.006 (MB)
 	Total:                                     0.003 (MW) /      0.027 (MB)
 
-	Nuclear Rep. energy          =     18.91527043470640
-	SCF energy                   =    -92.19555660616868
+	Nuclear Rep. energy          =     18.91527043470638
+	SCF energy                   =    -92.19555660616874
 	One-electron energy          =    -41.78838189026769
 	Two-electron (AA) energy     =      4.35444610145822
-	Two-electron (BB) energy     =      2.81993504234643
-	Two-electron (AB) energy     =     10.50297726409216
-	Two-electron energy          =    -24.11102348237089
-	Reference energy             =    -92.19555660616872
+	Two-electron (BB) energy     =      2.81993504234642
+	Two-electron (AB) energy     =     10.50297726409215
+	Two-electron energy          =    -24.11102348237090
+	Reference energy             =    -92.19555660616867
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:17:19 2016
+*** tstop() called on psinet at Mon May 15 15:34:08 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:17:19 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:34:08 2017
 
             **************************
             *                        *
@@ -567,16 +586,16 @@ Total time:
             *                        *
             **************************
 
-    Nuclear Rep. energy (wfn)     =   18.915270434706397
-    SCF energy          (wfn)     =  -92.195556606168680
-    Reference energy    (file100) =  -92.195556606168722
+    Nuclear Rep. energy (wfn)     =   18.915270434706379
+    SCF energy          (wfn)     =  -92.195556606168736
+    Reference energy    (file100) =  -92.195556606168665
 
     Input parameters:
     -----------------
     Wave function   =     CCSD
     Reference wfn   =     ROHF
     Brueckner       =     No
-    Memory (Mbytes) =     250.0
+    Memory (Mbytes) =     524.3
     Maxiter         =     50
     R_Convergence   =     1.0e-07
     E_Convergence   =     1.0e-06
@@ -601,7 +620,7 @@ Total time:
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.269179851004608    0.000e+00    0.000149    0.000285    0.000285    0.000000
+     0        -0.269179851004609    0.000e+00    0.000149    0.000285    0.000285    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -620,7 +639,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     1        -0.260049743208069    1.126e-01    0.021322    0.036268    0.051291    0.000000
+     1        -0.260049743208066    1.126e-01    0.021322    0.036268    0.051291    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -639,7 +658,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     2        -0.273471781003962    4.425e-02    0.022424    0.039312    0.055595    0.000000
+     2        -0.273471781003956    4.425e-02    0.022424    0.039312    0.055595    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -658,7 +677,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     3        -0.278680944482374    3.740e-02    0.031307    0.059226    0.083759    0.000000
+     3        -0.278680944482367    3.740e-02    0.031307    0.059226    0.083759    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -677,7 +696,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     4        -0.280246896771355    2.028e-02    0.039560    0.077598    0.109741    0.000000
+     4        -0.280246896771345    2.028e-02    0.039560    0.077598    0.109741    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -696,7 +715,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     5        -0.281100423809027    1.327e-02    0.047113    0.094888    0.134192    0.000000
+     5        -0.281100423809015    1.327e-02    0.047113    0.094888    0.134192    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -715,7 +734,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     6        -0.281191506371723    6.489e-03    0.051599    0.104860    0.148295    0.000000
+     6        -0.281191506371711    6.489e-03    0.051599    0.104860    0.148295    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -734,7 +753,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     7        -0.281353642911634    2.263e-03    0.053025    0.107956    0.152672    0.000000
+     7        -0.281353642911622    2.263e-03    0.053025    0.107956    0.152672    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -753,7 +772,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     8        -0.281350107254424    9.333e-04    0.053545    0.109088    0.154274    0.000000
+     8        -0.281350107254411    9.333e-04    0.053545    0.109088    0.154274    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -772,7 +791,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     9        -0.281340552298420    3.892e-04    0.053573    0.109147    0.154358    0.000000
+     9        -0.281340552298407    3.892e-04    0.053573    0.109147    0.154358    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -791,7 +810,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    10        -0.281347751505731    2.020e-04    0.053607    0.109226    0.154469    0.000000
+    10        -0.281347751505718    2.020e-04    0.053607    0.109226    0.154469    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -810,7 +829,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    11        -0.281348399095069    1.081e-04    0.053656    0.109332    0.154618    0.000000
+    11        -0.281348399095056    1.081e-04    0.053656    0.109332    0.154618    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -829,7 +848,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    12        -0.281347849959516    5.799e-05    0.053635    0.109285    0.154553    0.000000
+    12        -0.281347849959504    5.799e-05    0.053635    0.109285    0.154553    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -848,7 +867,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    13        -0.281346948512436    1.696e-05    0.053640    0.109298    0.154571    0.000000
+    13        -0.281346948512423    1.696e-05    0.053640    0.109298    0.154571    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -867,7 +886,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    14        -0.281345947608330    4.184e-06    0.053641    0.109299    0.154572    0.000000
+    14        -0.281345947608317    4.184e-06    0.053641    0.109299    0.154572    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -886,7 +905,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    15        -0.281346156964864    1.689e-06    0.053642    0.109301    0.154575    0.000000
+    15        -0.281346156964851    1.689e-06    0.053642    0.109301    0.154575    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -905,7 +924,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    16        -0.281346213542972    6.292e-07    0.053642    0.109301    0.154575    0.000000
+    16        -0.281346213542959    6.292e-07    0.053642    0.109301    0.154575    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -924,7 +943,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    17        -0.281346233951470    1.348e-07    0.053642    0.109301    0.154575    0.000000
+    17        -0.281346233951457    1.348e-07    0.053642    0.109301    0.154575    0.000000
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -943,7 +962,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    18        -0.281346230592191    4.566e-08    0.053642    0.109301    0.154575    0.000000
+    18        -0.281346230592179    4.566e-08    0.053642    0.109301    0.154575    0.000000
 
     Iterations converged.
 
@@ -1008,23 +1027,23 @@ Total time:
       1   1  12  12        -0.0410871705
       1   1  17  17        -0.0410871705
 
-    SCF energy       (wfn)                    =  -92.195556606168680
-    Reference energy (file100)                =  -92.195556606168722
+    SCF energy       (wfn)                    =  -92.195556606168736
+    Reference energy (file100)                =  -92.195556606168665
 
-    Opposite-spin CCSD correlation energy     =   -0.218409658997231
-    Same-spin CCSD correlation energy         =   -0.059007712605550
-    CCSD correlation energy                   =   -0.281346230592191
-      * CCSD total energy                     =  -92.476902836760914
+    Opposite-spin CCSD correlation energy     =   -0.218409658997227
+    Same-spin CCSD correlation energy         =   -0.059007712605548
+    CCSD correlation energy                   =   -0.281346230592179
+      * CCSD total energy                     =  -92.476902836760843
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:17:20 2016
+*** tstop() called on psinet at Mon May 15 15:34:09 2017
 Module time:
-	user time   =       0.33 seconds =       0.01 minutes
-	system time =       0.25 seconds =       0.00 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.46 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.03 seconds =       0.02 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

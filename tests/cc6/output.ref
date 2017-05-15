@@ -1,29 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.190 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {test_ref_refresh} 9b1b239 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Apr  4 10:22:36 2016
+    Psi4 started on: Monday, 15 May 2017 03:34PM
 
-    Process ID:   4628
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13104
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -68,26 +69,26 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
 
 --------------------------------------------------------------------------
 
-  Memory set to 1000.000 MiB by Python script.
+  Memory set to 953.674 MiB by Python driver.
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:54 2017
+
    => Loading Basis Set <=
 
-    Role: BASIS
-    Keyword: BASIS
     Name: CC-PVDZ
-    atoms 1, 3-5 entry C          line   130 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-    atoms 2      entry N          line   160 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-    atoms 6-9    entry H          line    20 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:36 2016
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3-5 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2      entry N          line   160 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 6-9    entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -127,7 +128,7 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
@@ -136,6 +137,7 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
 
   -AO BASIS SET INFORMATION:
     Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
     Total number of shells = 42
     Number of primitives   = 130
     Number of AO           = 95
@@ -171,7 +173,21 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,    1215] index = [             0,738720]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   9
+      Number of AO shells:              42
+      Number of primitives:            130
+      Number of atomic orbitals:        95
+      Number of basis functions:        90
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 16773120 doubles for integral storage.
+  We computed 394167 shell quartets total.
+  Whereas there are 408156 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
@@ -180,30 +196,31 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
     Memory (MB):               715
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 1.0784772041E-03.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   1:  -173.02990812614840   -1.73030e+02   1.00706e-01 
-   @RHF iter   2:  -184.45862431301040   -1.14287e+01   8.77807e-02 DIIS
-   @RHF iter   3:  -207.61075494413669   -2.31521e+01   1.95292e-02 DIIS
-   @RHF iter   4:  -208.01209990130528   -4.01345e-01   9.83726e-03 DIIS
-   @RHF iter   5:  -208.14091592800102   -1.28816e-01   2.44411e-03 DIIS
-   @RHF iter   6:  -208.15252460254962   -1.16087e-02   7.33817e-04 DIIS
-   @RHF iter   7:  -208.15352242775762   -9.97825e-04   2.74645e-04 DIIS
-   @RHF iter   8:  -208.15367779289855   -1.55365e-04   7.10104e-05 DIIS
-   @RHF iter   9:  -208.15369502305478   -1.72302e-05   2.00378e-05 DIIS
-   @RHF iter  10:  -208.15369704727479   -2.02422e-06   7.32708e-06 DIIS
-   @RHF iter  11:  -208.15369744683099   -3.99556e-07   3.51798e-06 DIIS
-   @RHF iter  12:  -208.15369755057733   -1.03746e-07   1.06484e-06 DIIS
-   @RHF iter  13:  -208.15369755494575   -4.36842e-09   2.86495e-07 DIIS
-   @RHF iter  14:  -208.15369755515209   -2.06342e-10   5.36797e-08 DIIS
-   @RHF iter  15:  -208.15369755516448   -1.23919e-11   1.20498e-08 DIIS
-   @RHF iter  16:  -208.15369755516488   -3.97904e-13   2.76690e-09 DIIS
+   @RHF iter   0:  -214.06199838042068   -2.14062e+02   8.18096e-02 
+   @RHF iter   1:  -207.92891986379934    6.13308e+00   1.10959e-02 
+   @RHF iter   2:  -208.03999569152973   -1.11076e-01   9.84503e-03 DIIS
+   @RHF iter   3:  -208.14350527089672   -1.03510e-01   1.77923e-03 DIIS
+   @RHF iter   4:  -208.15101221367416   -7.50694e-03   7.96843e-04 DIIS
+   @RHF iter   5:  -208.15306270921110   -2.05050e-03   2.80636e-04 DIIS
+   @RHF iter   6:  -208.15354702360196   -4.84314e-04   1.43201e-04 DIIS
+   @RHF iter   7:  -208.15366399292105   -1.16969e-04   5.91854e-05 DIIS
+   @RHF iter   8:  -208.15369517315648   -3.11802e-05   2.02541e-05 DIIS
+   @RHF iter   9:  -208.15369741487007   -2.24171e-06   6.33340e-06 DIIS
+   @RHF iter  10:  -208.15369754120809   -1.26338e-07   1.95310e-06 DIIS
+   @RHF iter  11:  -208.15369755464201   -1.34339e-08   3.13347e-07 DIIS
+   @RHF iter  12:  -208.15369755513956   -4.97550e-10   6.64573e-08 DIIS
+   @RHF iter  13:  -208.15369755515951   -1.99520e-11   1.38045e-08 DIIS
+   @RHF iter  14:  -208.15369755516025   -7.38964e-13   5.12330e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -213,8 +230,8 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
     Doubly Occupied:                                                      
 
        1A1   -15.320904     2A1   -11.070098     1B1   -11.069592  
-       3A1   -11.066982     4A1   -11.001102     5A1    -0.955126  
-       6A1    -0.921297     7A1    -0.667532     2B1    -0.638626  
+       3A1   -11.066983     4A1   -11.001102     5A1    -0.955126  
+       6A1    -0.921297     7A1    -0.667533     2B1    -0.638626  
        8A1    -0.492937     1B2    -0.448627     1A2    -0.331036  
        9A1    -0.323566     3B1    -0.289294     2B2    -0.261084  
       10A1    -0.241617     4B1    -0.182464     3B2    -0.055447  
@@ -252,24 +269,22 @@ compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
 
   Energy converged.
 
-  @RHF Final Energy:  -208.15369755516488
+  @RHF Final Energy:  -208.15369755516025
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            135.0921284884196041
-    One-Electron Energy =                -555.8169822422603374
-    Two-Electron Energy =                 212.5711561986758227
+    One-Electron Energy =                -555.8169822095023846
+    Two-Electron Energy =                 212.5711561659225595
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -208.1536975551649391
+    Total Energy =                       -208.1536975551602495
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -285,43 +300,42 @@ Properties computed using the SCF density matrix
   Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:    -4.4091     Total:     4.4091
 
-  Quadrupole Moment: (Debye Ang)
-    XX:   -34.2053     YY:   -33.8470     ZZ:   -53.7628
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
-  Traceless Quadrupole Moment: (Debye Ang)
-    XX:     6.3997     YY:     6.7580     ZZ:   -13.1578
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1     C     3.07730  3.07730  0.00000 -0.15459
-       2     N     3.70581  3.70581  0.00000 -0.41161
-       3     C     3.14139  3.14139  0.00000 -0.28277
-       4     C     3.01591  3.01591  0.00000 -0.03182
-       5     C     3.01591  3.01591  0.00000 -0.03182
-       6     H     0.51092  0.51092  0.00000 -0.02185
-       7     H     0.51092  0.51092  0.00000 -0.02185
-       8     H     0.51092  0.51092  0.00000 -0.02185
-       9     H     0.51092  0.51092  0.00000 -0.02185
-
-   Total alpha = 18.00000, Total beta = 18.00000, Total charge = -1.00000
-
-
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:38 2016
+*** tstop() called on psinet at Mon May 15 15:34:59 2017
 Module time:
-	user time   =       1.34 seconds =       0.02 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       4.85 seconds =       0.08 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       1.34 seconds =       0.02 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       4.85 seconds =       0.08 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:38 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   9
+      Number of AO shells:              42
+      Number of SO shells:              27
+      Number of primitives:            130
+      Number of atomic orbitals:        95
+      Number of basis functions:        90
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  36   12   24   18 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 2130802 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:01 2017
 
 
 	Wfn Parameters:
@@ -574,7 +588,7 @@ Total time:
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
-	Frozen core energy     =   -240.51542960393812
+	Frozen core energy     =   -240.51542960418593
 
 	Size of irrep 0 of <ab|cd> integrals:      2.022 (MW) /     16.177 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      1.374 (MW) /     10.989 (MB)
@@ -595,23 +609,23 @@ Total time:
 	Total:                                     0.222 (MW) /      1.777 (MB)
 
 	Nuclear Rep. energy          =    135.09212848841960
-	SCF energy                   =   -208.15369755516488
-	One-electron energy          =   -193.84348289067509
-	Two-electron energy          =     91.11308645102879
-	Reference energy             =   -208.15369755516480
+	SCF energy                   =   -208.15369755516025
+	One-electron energy          =   -193.84348298390418
+	Two-electron energy          =     91.11308654450542
+	Reference energy             =   -208.15369755516508
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:39 2016
+*** tstop() called on psinet at Mon May 15 15:35:03 2017
 Module time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.10 seconds =       0.04 minutes
-	system time =       0.52 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       7.65 seconds =       0.13 minutes
+	system time =       0.53 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:39 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:03 2017
 
             **************************
             *                        *
@@ -620,12 +634,12 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =  135.092128488419604
-    SCF energy          (wfn)     = -208.153697555164882
-    Reference energy    (file100) = -208.153697555164797
+    SCF energy          (wfn)     = -208.153697555160250
+    Reference energy    (file100) = -208.153697555165081
 
     Input parameters:
     -----------------
-    Wave function   =   CCSD_T
+    Wave function   =     CCSD_T
     Reference wfn   =     RHF
     Brueckner       =     No
     Memory (Mbytes) =     1000.0
@@ -649,12 +663,12 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.7033782483184526
+MP2 correlation energy -0.7033782473900135
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.703378248318450    0.000e+00    0.000000    0.000000    0.000000    0.164737
+     0        -0.703378247390004    0.000e+00    0.000000    0.000000    0.000000    0.164737
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -663,7 +677,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -671,7 +685,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     1        -0.704046235869361    9.110e-02    0.011623    0.039146    0.039146    0.159369
+     1        -0.704046235240838    9.110e-02    0.011623    0.039146    0.039146    0.159369
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -680,7 +694,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -688,7 +702,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     2        -0.725379183535498    3.418e-02    0.011502    0.037926    0.037926    0.171892
+     2        -0.725379182253186    3.418e-02    0.011502    0.037926    0.037926    0.171892
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -697,7 +711,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -705,7 +719,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     3        -0.731249937861891    1.464e-02    0.013768    0.047460    0.047460    0.177183
+     3        -0.731249936515849    1.464e-02    0.013768    0.047460    0.047460    0.177183
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -714,7 +728,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -722,7 +736,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     4        -0.731241876308205    4.304e-03    0.014218    0.049385    0.049385    0.178668
+     4        -0.731241874622840    4.304e-03    0.014218    0.049385    0.049385    0.178668
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -731,7 +745,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -739,7 +753,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     5        -0.731400658289735    2.091e-03    0.014546    0.051114    0.051114    0.179524
+     5        -0.731400656737134    2.091e-03    0.014546    0.051114    0.051114    0.179524
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -748,7 +762,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -756,7 +770,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     6        -0.731409598005417    7.122e-04    0.014645    0.051663    0.051663    0.179592
+     6        -0.731409596455200    7.122e-04    0.014645    0.051663    0.051663    0.179592
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -765,7 +779,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -773,7 +787,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     7        -0.731391933959297    3.585e-04    0.014688    0.051896    0.051896    0.179553
+     7        -0.731391932392834    3.585e-04    0.014688    0.051896    0.051896    0.179553
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -782,7 +796,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -790,7 +804,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     8        -0.731388540019718    1.311e-04    0.014704    0.051984    0.051984    0.179520
+     8        -0.731388538449908    1.311e-04    0.014704    0.051984    0.051984    0.179520
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -799,7 +813,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -807,7 +821,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     9        -0.731391056614036    4.962e-05    0.014708    0.052005    0.052005    0.179508
+     9        -0.731391055041500    4.962e-05    0.014708    0.052005    0.052005    0.179508
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -816,7 +830,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -824,7 +838,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    10        -0.731387681905587    1.935e-05    0.014710    0.052012    0.052012    0.179501
+    10        -0.731387680332924    1.935e-05    0.014710    0.052012    0.052012    0.179501
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -833,7 +847,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -841,7 +855,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    11        -0.731388379690125    5.875e-06    0.014709    0.052010    0.052010    0.179501
+    11        -0.731388378116882    5.875e-06    0.014709    0.052010    0.052010    0.179501
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -850,7 +864,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -858,7 +872,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    12        -0.731388064252809    2.463e-06    0.014709    0.052010    0.052010    0.179501
+    12        -0.731388062679505    2.463e-06    0.014709    0.052010    0.052010    0.179501
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -867,7 +881,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -875,7 +889,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    13        -0.731388074593999    8.135e-07    0.014709    0.052010    0.052010    0.179501
+    13        -0.731388073020547    8.135e-07    0.014709    0.052010    0.052010    0.179501
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -884,7 +898,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -892,7 +906,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    14        -0.731388089367086    2.841e-07    0.014709    0.052010    0.052010    0.179501
+    14        -0.731388087793628    2.841e-07    0.014709    0.052010    0.052010    0.179501
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -901,7 +915,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -909,7 +923,7 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    15        -0.731388087437192    1.219e-07    0.014709    0.052010    0.052010    0.179501
+    15        -0.731388085863741    1.219e-07    0.014709    0.052009    0.052009    0.179501
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -918,7 +932,7 @@ MP2 correlation energy -0.7033782483184526
      <ij||ab> -> T2 ...complete
      F -> T2        ...complete
      Wmnij -> T2    ...complete
-     *** Processed 2130602 SO integrals for <ab||cd> --> T2
+     *** Processed 2130802 SO integrals for <ab||cd> --> T2
      <ab||cd> -> T2 ...complete
      Z -> T2        ...complete
      <ia||bc> -> T2 ...complete
@@ -926,61 +940,61 @@ MP2 correlation energy -0.7033782483184526
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    16        -0.731388087863927    4.555e-08    0.014709    0.052009    0.052009    0.179501
+    16        -0.731388086290479    4.555e-08    0.014709    0.052009    0.052009    0.179501
 
     Iterations converged.
 
 
     Largest TIA Amplitudes:
-             11  58         0.0378366778
-             12  57        -0.0310501169
-             11  57         0.0188491525
-             11  60         0.0147727496
-              9  43         0.0118923725
-              9  45         0.0113062614
-              8  38         0.0109832398
-              4   3         0.0108100637
-             12  61        -0.0096911443
-              9  42         0.0092807996
+             11  58         0.0378366403
+             12  57        -0.0310501653
+             11  57         0.0188491142
+             11  60         0.0147727396
+              9  43         0.0118923758
+              9  45         0.0113062566
+              8  38         0.0109832693
+              4   3         0.0108100643
+             12  61        -0.0096911537
+              9  42         0.0092807918
 
     Largest TIjAb Amplitudes:
-     12  12  58  58        -0.0542254400
-      9   9  38  38        -0.0531091091
-     11  11  58  58        -0.0461025002
-      8   8  38  38        -0.0323997294
-      5   5  39  39        -0.0317585519
-      9   9  37  38        -0.0313061377
-      9   9  38  37        -0.0313061377
+     12  12  58  58        -0.0542254337
+      9   9  38  38        -0.0531091081
+     11  11  58  58        -0.0461025016
+      8   8  38  38        -0.0323997292
+      5   5  39  39        -0.0317585506
+      9   9  37  38        -0.0313061402
+      9   9  38  37        -0.0313061402
       9  12  38  58         0.0243891135
      12   9  58  38         0.0243891135
-      5   5  38  39         0.0236892504
+      5   5  38  39         0.0236892493
 
-    SCF energy       (wfn)                    = -208.153697555164882
-    Reference energy (file100)                = -208.153697555164797
+    SCF energy       (wfn)                    = -208.153697555160250
+    Reference energy (file100)                = -208.153697555165081
 
-    Opposite-spin MP2 correlation energy      =   -0.519297795287860
-    Same-spin MP2 correlation energy          =   -0.184080453030590
-    MP2 correlation energy                    =   -0.703378248318453
-      * MP2 total energy                      = -208.857075803483241
+    Opposite-spin MP2 correlation energy      =   -0.519297795251860
+    Same-spin MP2 correlation energy          =   -0.184080452138144
+    MP2 correlation energy                    =   -0.703378247390014
+      * MP2 total energy                      = -208.857075802555102
 
-    Opposite-spin CCSD correlation energy     =   -0.570648785887867
-    Same-spin CCSD correlation energy         =   -0.160739301140811
-    CCSD correlation energy                   =   -0.731388087863927
-      * CCSD total energy                     = -208.885085643028731
+    Opposite-spin CCSD correlation energy     =   -0.570648785678526
+    Same-spin CCSD correlation energy         =   -0.160739300187693
+    CCSD correlation energy                   =   -0.731388086290479
+      * CCSD total energy                     = -208.885085641455561
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:50 2016
+*** tstop() called on psinet at Mon May 15 15:35:22 2017
 Module time:
-	user time   =       9.78 seconds =       0.16 minutes
-	system time =       0.95 seconds =       0.02 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =      14.78 seconds =       0.25 minutes
+	system time =       1.36 seconds =       0.02 minutes
+	total time  =         19 seconds =       0.32 minutes
 Total time:
-	user time   =      11.88 seconds =       0.20 minutes
-	system time =       1.47 seconds =       0.02 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =      22.43 seconds =       0.37 minutes
+	system time =       1.89 seconds =       0.03 minutes
+	total time  =         28 seconds =       0.47 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Apr  4 10:22:50 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:22 2017
 
             **************************
             *                        *
@@ -993,32 +1007,34 @@ Total time:
     Reference wfn   =      RHF
 
     Nuclear Rep. energy (wfn)                =  135.092128488419604
-    SCF energy          (wfn)                = -208.153697555164882
-    Reference energy    (file100)            = -208.153697555164797
-    CCSD energy         (file100)            =   -0.731388087863927
-    Total CCSD energy   (file100)            = -208.885085643028731
+    SCF energy          (wfn)                = -208.153697555160250
+    Reference energy    (file100)            = -208.153697555165081
+    CCSD energy         (file100)            =   -0.731388086290479
+    Total CCSD energy   (file100)            = -208.885085641455561
 
     Number of ijk index combinations:              455
     Memory available in words        :       125000000
     ~Words needed per explicit thread:           70304
     Number of threads for explicit ijk threading:    1
 
-    (T) energy                                =   -0.030675386644020
-      * CCSD(T) total energy                  = -208.915761029672751
+    MKL num_threads set to 1 for explicit threading.
+
+    (T) energy                                =   -0.030675386360442
+      * CCSD(T) total energy                  = -208.915761027815989
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Apr  4 10:22:53 2016
+*** tstop() called on psinet at Mon May 15 15:35:27 2017
 Module time:
-	user time   =      14.99 seconds =       0.25 minutes
-	system time =       0.75 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.81 seconds =       0.06 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =      26.87 seconds =       0.45 minutes
-	system time =       2.22 seconds =       0.04 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =      26.24 seconds =       0.44 minutes
+	system time =       2.25 seconds =       0.04 minutes
+	total time  =         33 seconds =       0.55 minutes
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED
 	CCSD energy.......................................................PASSED
 	CCSD(T) energy....................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

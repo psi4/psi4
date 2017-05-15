@@ -1,29 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.1066 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {cbs_wrapper} 0aa77d4 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wed Apr 20 18:43:01 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:  11257
-    PSI4DATADIR: /home/dsmith/Gits/psi4cbs/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13398
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -47,9 +48,13 @@ set {
     active              [3, 0, 2, 3] 
     mcscf_diis_start    7
     mcscf_diis_max_vecs 4
-    avg_states          [1, 2]
+    avg_states          [0, 1]
     num_roots           2
     mcscf_type          df
+    mcscf_r_convergence 1.e-4
+    mcscf_e_convergence 1.e-5
+    ci_maxiter          24
+    h0_blocksize        1000
 }
 
 no3.update_geometry()
@@ -63,6 +68,7 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE']
 
 fci_energy = prop('FCI', properties=props)
+
 compare_values(fci_energy, -278.7924561878957, 6, 'FCI Energy')    #TEST
 compare_values(psi4.get_variable('CI DIPOLE Y'), 0.000000000000, 4, "FCI DIPOLE Y")    #TEST
 compare_values(psi4.get_variable('CI DIPOLE Z'), 1.908946764853, 4, "FCI DIPOLE Z")    #TEST
@@ -70,40 +76,41 @@ compare_values(psi4.get_variable('CI QUADRUPOLE XX'), -22.395945512510, 4, "FCI 
 compare_values(psi4.get_variable('CI QUADRUPOLE YY'), -27.774201286760, 4, "FCI QUADRUPOLE YY")    #TEST
 compare_values(psi4.get_variable('CI QUADRUPOLE ZZ'), -29.166055634625, 4, "FCI QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CI QUADRUPOLE YZ'), 0.000000000000, 4, "FCI QUADRUPOLE YZ")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 DIPOLE Y'), 0.000000000000, 4, "CI ROOT 0 DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 DIPOLE Z'), -0.483503167660, 4, "CI ROOT 0 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE XX'), -22.419106552690, 4, "CI ROOT 0 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE YY'), -26.694665553619, 4, "CI ROOT 0 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE ZZ'), -30.482314878839, 4, "CI ROOT 0 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CI ROOT 0 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 0 QUADRUPOLE YZ")    #TEST
 compare_values(psi4.get_variable('CI ROOT 1 DIPOLE Y'), 0.000000000000, 4, "CI ROOT 1 DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 DIPOLE Z'), -0.483503167660, 4, "CI ROOT 1 DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE XX'), -22.419106552690, 4, "CI ROOT 1 QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE YY'), -26.694665553619, 4, "CI ROOT 1 QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE ZZ'), -30.482314878839, 4, "CI ROOT 1 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 DIPOLE Z'), 4.301396697365, 4, "CI ROOT 1 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE XX'), -22.372784472330, 4, "CI ROOT 1 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE YY'), -28.853737019899, 4, "CI ROOT 1 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE ZZ'), -27.849796390412, 4, "CI ROOT 1 QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CI ROOT 1 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 1 QUADRUPOLE YZ")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 DIPOLE Y'), 0.000000000000, 4, "CI ROOT 2 DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 DIPOLE Z'), 4.301396697365, 4, "CI ROOT 2 DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE XX'), -22.372784472330, 4, "CI ROOT 2 QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE YY'), -28.853737019899, 4, "CI ROOT 2 QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE ZZ'), -27.849796390412, 4, "CI ROOT 2 QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('CI ROOT 2 QUADRUPOLE YZ'), 0.000000000000, 4, "CI ROOT 2 QUADRUPOLE YZ")    #TEST
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Y")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 1 -> ROOT 2 DIPOLE Z")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE XX")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YY")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ")
-compare_values(abs(psi4.get_variable('CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ")
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 DIPOLE Y')), 0.000000000000, 4, "CI ROOT 0 -> ROOT 1 DIPOLE Y")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 DIPOLE Z')), 0.425513677544, 4, "CI ROOT 0 -> ROOT 1 DIPOLE Z")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE XX')), 0.016387859082, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE XX")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE YY')), 0.573374390021, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE YY")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE ZZ')), 0.677526505530, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE ZZ")  #TEST
+compare_values(abs(psi4.get_variable('CI ROOT 0 -> ROOT 1 QUADRUPOLE YZ')), 0.000000000000, 4, "CI ROOT 0 -> ROOT 1 QUADRUPOLE YZ")  #TEST
 
-fci_energy = prop('CASSCF', properties=props)    #TEST
-compare_values(psi4.get_variable('CASSCF DIPOLE Y'), 0.000000000000, 4, "CASSCF DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CASSCF DIPOLE Z'), 1.994979146421, 4, "CASSCF DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CASSCF QUADRUPOLE XX'), -22.404898239966, 4, "CASSCF QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CASSCF QUADRUPOLE YY'), -27.936106983618, 4, "CASSCF QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CASSCF QUADRUPOLE ZZ'), -28.338138881214, 4, "CASSCF QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('CASSCF QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF QUADRUPOLE YZ")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 DIPOLE Y'), 0.000000000000, 4, "CASSCF ROOT 2 DIPOLE Y")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 DIPOLE Z'), 4.462471853374, 4, "CASSCF ROOT 2 DIPOLE Z")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE XX'), -22.295623175859, 4, "CASSCF ROOT 2 QUADRUPOLE XX")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YY'), -29.286904330283, 4, "CASSCF ROOT 2 QUADRUPOLE YY")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE ZZ'), -27.288580048926, 4, "CASSCF ROOT 2 QUADRUPOLE ZZ")    #TEST
-compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF ROOT 2 QUADRUPOLE YZ")    #TEST
+cas_energy = prop('CASSCF', properties=props)    #TEST
+compare_values(-278.778339189657800, cas_energy, 6, 'CASSCF Energy')    #TEST
+compare_values(psi4.get_variable('CASSCF DIPOLE Y'), 0.000000000000, 2, "CASSCF DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CASSCF DIPOLE Z'), 1.994979146421, 2, "CASSCF DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE XX'), -22.404898239966, 2, "CASSCF QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE YY'), -27.936106983618, 2, "CASSCF QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE ZZ'), -28.338138881212, 2, "CASSCF QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE YZ'), 0.000000000000, 2, "CASSCF QUADRUPOLE YZ")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 DIPOLE Y'), 0.000000000000, 2, "CASSCF ROOT 1 DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 DIPOLE Z'), 4.462471853372, 2, "CASSCF ROOT 1 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE XX'), -22.295623175859, 2, "CASSCF ROOT 1 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YY'), -29.286904330283, 2, "CASSCF ROOT 1 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE ZZ'), -27.288580048926, 2, "CASSCF ROOT 1 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF ROOT 1 QUADRUPOLE YZ")    #TEST
 
-#name = 'CI ROOT 1 -> ROOT 2'    #TEST
+#name = 'CASSCF'    #TEST
 #prop_list = []    #TEST
 #for dip in ['Y', 'Z']:    #TEST
 #    prop_list.append(name + ' DIPOLE ' + dip)    #TEST
@@ -133,15 +140,23 @@ compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000,
 
 	Nuclear repulsion energy..........................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Wed Apr 20 18:43:01 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:14 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3-4 entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2      entry N          line   119 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -176,7 +191,7 @@ compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000,
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
@@ -184,6 +199,7 @@ compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000,
   ==> Primary Basis <==
 
   Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 24
     Number of basis function: 60
     Number of Cartesian functions: 60
@@ -205,53 +221,59 @@ compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000,
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     607] index = [             0,184528]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:              24
+      Number of primitives:             60
+      Number of atomic orbitals:        60
+      Number of basis functions:        60
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 3350730 doubles for integral storage.
+  We computed 44121 shell quartets total.
+  Whereas there are 45150 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.6436246723E-03.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     8,    1,    2,    4 ]
-    SOCC [     1,    0,    0,    1 ]
-
-   @ROHF iter   1:  -255.53856376543797   -2.55539e+02   1.15869e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     8,    1,    2,    4 ]
-    SOCC [     0,    0,    1,    1 ]
-
-   @ROHF iter   2:  -262.81484157060055   -7.27628e+00   1.20107e-01 DIIS
-   @ROHF iter   3:  -277.77547923236858   -1.49606e+01   3.23115e-02 DIIS
-   @ROHF iter   4:  -277.79315753545586   -1.76783e-02   3.41591e-02 DIIS
-   @ROHF iter   5:  -278.68601002424748   -8.92852e-01   9.20558e-03 DIIS
-   @ROHF iter   6:  -278.76447010496599   -7.84601e-02   1.96951e-03 DIIS
-   @ROHF iter   7:  -278.76850702977765   -4.03692e-03   9.25505e-04 DIIS
-   @ROHF iter   8:  -278.76918927094800   -6.82241e-04   3.14471e-04 DIIS
-   @ROHF iter   9:  -278.76929077927912   -1.01508e-04   5.75990e-05 DIIS
-   @ROHF iter  10:  -278.76929966597754   -8.88670e-06   2.68301e-05 DIIS
-   @ROHF iter  11:  -278.76930205291080   -2.38693e-06   7.25667e-06 DIIS
-   @ROHF iter  12:  -278.76930226414737   -2.11237e-07   1.98783e-06 DIIS
-   @ROHF iter  13:  -278.76930227244560   -8.29823e-09   3.14515e-07 DIIS
-   @ROHF iter  14:  -278.76930227271458   -2.68983e-10   7.83806e-08 DIIS
-   @ROHF iter  15:  -278.76930227272953   -1.49498e-11   1.60993e-08 DIIS
-   @ROHF iter  16:  -278.76930227273016   -6.25278e-13   3.86968e-09 DIIS
-   @ROHF iter  17:  -278.76930227272987    2.84217e-13   1.29211e-09 DIIS
-   @ROHF iter  18:  -278.76930227272987    0.00000e+00   5.07048e-10 DIIS
-   @ROHF iter  19:  -278.76930227273004   -1.70530e-13   1.50934e-10 DIIS
-   @ROHF iter  20:  -278.76930227273027   -2.27374e-13   5.11793e-11 DIIS
+   @ROHF iter   1:  -263.04220302768942   -2.63042e+02   1.00352e-01 
+   @ROHF iter   2:  -276.73394138402728   -1.36917e+01   4.75424e-02 DIIS
+   @ROHF iter   3:  -277.89031935872481   -1.15638e+00   3.35306e-02 DIIS
+   @ROHF iter   4:  -278.50018439421143   -6.09865e-01   1.70611e-02 DIIS
+   @ROHF iter   5:  -278.65718857151512   -1.57004e-01   1.10656e-02 DIIS
+   @ROHF iter   6:  -278.74395220838937   -8.67636e-02   5.04183e-03 DIIS
+   @ROHF iter   7:  -278.76653130056900   -2.25791e-02   1.59779e-03 DIIS
+   @ROHF iter   8:  -278.76915067374682   -2.61937e-03   3.25128e-04 DIIS
+   @ROHF iter   9:  -278.76928732550414   -1.36652e-04   9.32036e-05 DIIS
+   @ROHF iter  10:  -278.76930158458475   -1.42591e-05   1.35151e-05 DIIS
+   @ROHF iter  11:  -278.76930220791633   -6.23332e-07   3.87891e-06 DIIS
+   @ROHF iter  12:  -278.76930226567561   -5.77593e-08   1.44029e-06 DIIS
+   @ROHF iter  13:  -278.76930227203570   -6.36010e-09   5.89456e-07 DIIS
+   @ROHF iter  14:  -278.76930227271140   -6.75698e-10   7.59052e-08 DIIS
+   @ROHF iter  15:  -278.76930227272692   -1.55183e-11   1.58139e-08 DIIS
+   @ROHF iter  16:  -278.76930227272783   -9.09495e-13   5.20064e-09 DIIS
+   @ROHF iter  17:  -278.76930227272760    2.27374e-13   1.92695e-09 DIIS
+   @ROHF iter  18:  -278.76930227272800   -3.97904e-13   5.67864e-10 DIIS
+   @ROHF iter  19:  -278.76930227272783    1.70530e-13   1.46075e-10 DIIS
+   @ROHF iter  20:  -278.76930227272783    0.00000e+00   4.66038e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -295,31 +317,19 @@ compare_values(psi4.get_variable('CASSCF ROOT 2 QUADRUPOLE YZ'), 0.000000000000,
 
   Energy converged.
 
-  @ROHF Final Energy:  -278.76930227273027
+  @ROHF Final Energy:  -278.76930227272783
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            115.5036323901425703
-    One-Electron Energy =                -621.9610038665250613
-    Two-Electron Energy =                 227.6880692036522476
+    One-Electron Energy =                -621.9610038706193791
+    Two-Electron Energy =                 227.6880692077490096
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -278.7693022727302150
+    Total Energy =                       -278.7693022727278276
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Wed Apr 20 18:43:02 2016
-Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -339,76 +349,92 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.6619     Total:     0.6619
 
 
-         ---------------------------------------------------------
-                                 D E T C I  
+*** tstop() called on psinet at Mon May 15 15:35:14 2017
+Module time:
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-                             C. David Sherrill
-                             Matt L. Leininger
-                               18 June 1999
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:              24
+      Number of SO shells:              18
+      Number of primitives:             60
+      Number of atomic orbitals:        60
+      Number of basis functions:        60
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  27    6   10   17 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 441098 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
          ---------------------------------------------------------
 
 Warning: iopen=0,opentype!=closed. Making iopen=1
 
-DETCI PARAMETERS: 
-   EX LEVEL      =        8      H0 BLOCKSIZE =      400
-   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
-   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   MAXITER       =       12      NUM PRINT    =       20
-   NUM ROOTS     =        2      ICORE        =        1
-   PRINT         =        1      FCI          =      yes
-   R CONV        = 1.00e-04      MIXED        =      yes
-   E CONV        = 1.00e-10      MIXED4       =      yes
-   OEI FILE      =       35      R4S          =       no
-   REPL OTF      =       no
-   TEI FILE      =       72      DIAG METHOD  =      SEM
-   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
-   S             =   1.0000      Ms0          =       no
-   MAX NUM VECS  =       26
-   RESTART       =       no
-   GUESS VECTOR  =  H0BLOCK      OPENTYPE     = HIGHSPIN
-   REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
-   LSE           =       no      LSE ITER     =        0
-   HD OTF        =      yes      NO DFILE     =       no
-   MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      MPN WIGNER   =       no
-   PERT Z        =   1.0000      FOLLOW ROOT  =        0
-   NUM THREADS   =        1
-   VECS WRITE    =       no      NUM VECS WRITE =      0
-   FILTER GUESS  =       no      SF RESTRICT  =       no
-   OPDM          =      yes      TRANS DENSITY=      yes
+   ==> Parameters <==
 
-   FILES         =  50 51 52 53
+    EX LEVEL       =        8      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        2      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-10      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   1.0000      Ms0           =       NO
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      = HIGHSPIN
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       50      REF SYM       =     AUTO
+    IOPEN        =      YES
 
-   EX ALLOW      =  1  1  1  1  1  1  1  1 
-   STATE AVERAGE =  1(0.50)  2(0.50) 
+    EX ALLOW       =  1  1  1  1  1  1  1  1 
+    STATE AVERAGE  =  0(0.50)  1(0.50) 
 
-ORBITALS:
-   NMO          =       60
-   FROZEN CORE  =        5      RESTR CORE   =        7
-   FROZEN VIRT  =       40      RESTR VIRT   =        0
-   DROPPED CORE =       12      DROPPED VIRT =       40
-   EXPLICIT CORE=        0      ORBS IN CI   =        8
-   NUM ALP      =       17      NUM BET      =       15
-   NUM ALP EXPL =        5      NUM BET EXPL =        3
-   IOPEN        =      yes
+   ==> CI Orbital and Space information <==
 
-   DOCC            =   8   1   2   4 
-   SOCC            =   0   0   1   1 
-
-   FROZEN DOCC     =   3   0   0   2 
-   RESTRICTED DOCC =   4   1   1   1 
-   ACTIVE          =   3   0   2   3 
-   RESTRICTED UOCC =   0   0   0   0 
-   FROZEN UOCC     =  17   5   7  11 
-         ---------------------------------------------------------
-
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       60    27     6    10    17
+                 Nmo       60    27     6    10    17
+               Ndocc       15     8     1     2     4
+               Nsocc        2     0     0     1     1
+   ------------------------------------------------------
+                       CI Spaces
+   ------------------------------------------------------
+        Dropped DOCC       12     7     1     1     3
+              Active        8     3     0     2     3
+        Dropped UOCC       40    17     5     7    11
+   ------------------------------------------------------
 
    ==> Setting up CI strings <==
 
-   There are 56 alpha and 56 beta strings
-   The CI space requires 780 (7.80E+02) determinants and 4 blocks
-
+    There are 56 alpha and 56 beta strings
+    The CI space requires 780 (7.80E+02) determinants and 4 blocks
 
    ==> Transforming CI integrals <==
 
@@ -421,89 +447,83 @@ ORBITALS:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** H0 Block Eigenvalue = -278.79238891
+   ==> Starting CI iterations <==
 
-Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
-Using 2 initial trial vectors
-Iter  0  Root  1 = -278.792388906   Delta_E -1.247E+01   Delta_C  1.292E-02  
-Iter  0  Root  2 = -278.641688193   Delta_E -1.232E+01   Delta_C  9.794E-03  
+    H0 Block Eigenvalue = -278.79245619
 
-Iter  1  Root  1 = -278.792454818   Delta_E -6.591E-05   Delta_C  1.733E-03  
-Iter  1  Root  2 = -278.641727998   Delta_E -3.980E-05   Delta_C  1.965E-03  
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 2 initial trial vectors
 
-Iter  2  Root  1 = -278.792455979   Delta_E -1.161E-06   Delta_C  5.725E-04  
-Iter  2  Root  2 = -278.641729564   Delta_E -1.566E-06   Delta_C  4.442E-04  
+     Iter   Root       Total Energy       Delta E      C RMS
 
-Iter  3  Root  1 = -278.792456171   Delta_E -1.921E-07   Delta_C  1.749E-04  
-Iter  3  Root  2 = -278.641729653   Delta_E -8.880E-08   Delta_C  1.616E-04  
+   @CI  0:     0   -278.792456188232   -1.2469E+01   5.8203E-13  
+   @CI  0:     1   -278.641729671449   -1.2318E+01   6.6545E-13  
 
-Iter  4  Root  1 = -278.792456187   Delta_E -1.620E-08   Delta_C  4.267E-05  
-Iter  4  Root  2 = -278.641729669   Delta_E -1.595E-08   Delta_C  6.547E-05  
-
-Iter  5  Root  1 = -278.792456188   Delta_E -9.643E-10   Delta_C  1.217E-05  
-Iter  5  Root  2 = -278.641729671   Delta_E -2.528E-09   Delta_C  2.290E-05  
-
-Iter  6  Root  1 = -278.792456188   Delta_E -8.052E-11   Delta_C  3.566E-06 c
-Iter  6  Root  2 = -278.641729671   Delta_E -2.361E-10   Delta_C  8.259E-06  
-
-Iter  7  Root  1 = -278.792456188   Delta_E -2.476E-12   Delta_C  2.877E-06 c
-Iter  7  Root  2 = -278.641729671   Delta_E -3.550E-11   Delta_C  2.680E-06 c
+    Warning: Norm of correction (root 0) is < 1.0E-13
+    Warning: Norm of correction (root 1) is < 1.0E-13
+   @CI  1:     0   -278.792456188232   0.0000E+00   2.7954E-13 c
+   @CI  1:     1   -278.641729671449   7.1054E-15   4.4222E-13 c
 
 
-* ROOT 1 CI total energy = -278.7924561882327  (0.0000 eV,      0.00 1/cm)
+   ==> Energetics <==
+
+    SCF energy =         -278.769302272727828
+    Total CI energy =    -278.792456188231540
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =  -278.792456188231540
+
+   The 20 most important determinants:
+
+    *   1    0.985883  (    2,   13)  8A1X 2B1X 3B1A 4B2X 5B2A 
+    *   2   -0.056779  (   46,   37)  8A1A 9A1A 2B1X 3B1A 4B2B 5B2X 
+    *   3    0.056640  (    2,   20)  8A1A 9A1B 2B1X 3B1A 4B2A 5B2X 
+    *   4    0.052077  (   55,   37)  2B1X 3B1A 4B2X 5B2X 6B2A 
+    *   5    0.050927  (   44,   37)  8A1A 10A1A 2B1X 3B1A 4B2X 5B2B 
+    *   6   -0.047800  (    2,   19)  8A1X 2B1X 3B1A 4B2A 5B2X 
+    *   7    0.040588  (   10,   16)  8A1X 2B1A 3B1X 4B2B 5B2A 6B2A 
+    *   8   -0.039932  (    2,   15)  8A1A 10A1B 2B1X 3B1A 4B2X 5B2A 
+    *   9   -0.038195  (    2,   28)  8A1X 2B1A 3B1X 4B2A 5B2A 6B2B 
+    *  10    0.027991  (   10,   25)  8A1X 2B1X 3B1A 5B2A 6B2X 
+    *  11   -0.027751  (    2,   22)  8A1X 2B1A 3B1X 4B2A 5B2X 
+    *  12    0.025184  (    2,   17)  8A1A 9A1B 2B1A 3B1X 4B2X 5B2A 
+    *  13    0.023293  (    3,   16)  8A1B 9A1A 2B1A 3B1X 4B2X 5B2A 
+    *  14    0.021223  (    6,   13)  8A1X 2B1X 3B1A 4B2X 6B2A 
+    *  15   -0.019614  (    2,   25)  8A1X 2B1X 3B1A 4B2A 5B2A 6B2B 
+    *  16   -0.019339  (   43,   37)  8A1A 9A1A 2B1X 3B1A 4B2X 5B2B 
+    *  17   -0.019223  (    3,   14)  9A1X 2B1X 3B1A 4B2X 5B2A 
+    *  18    0.018275  (    2,   18)  8A1A 10A1B 2B1A 3B1X 4B2X 5B2A 
+    *  19    0.018144  (   10,   13)  8A1X 2B1X 3B1A 4B2B 5B2A 6B2A 
+    *  20   -0.017630  (   10,   14)  8A1A 9A1B 2B1X 3B1A 4B2B 5B2A 6B2A 
 
 
-The 20 most important determinants
+   ==> FCI root 1 information <==
 
-    1   -0.985883  (    2,   13)  8A1X  2B1X  3B1A  4B2X  5B2A  
-    2    0.056779  (   46,   37)  8A1A  9A1A  2B1X  3B1A  4B2B  5B2X  
-    3   -0.056640  (    2,   20)  8A1A  9A1B  2B1X  3B1A  4B2A  5B2X  
-    4   -0.052077  (   55,   37)  2B1X  3B1A  4B2X  5B2X  6B2A  
-    5   -0.050927  (   44,   37)  8A1A  10A1A  2B1X  3B1A  4B2X  5B2B  
-    6    0.047800  (    2,   19)  8A1X  2B1X  3B1A  4B2A  5B2X  
-    7   -0.040588  (   10,   16)  8A1X  2B1A  3B1X  4B2B  5B2A  6B2A  
-    8    0.039932  (    2,   15)  8A1A  10A1B  2B1X  3B1A  4B2X  5B2A  
-    9    0.038195  (    2,   28)  8A1X  2B1A  3B1X  4B2A  5B2A  6B2B  
-   10   -0.027992  (   10,   25)  8A1X  2B1X  3B1A  5B2A  6B2X  
-   11    0.027751  (    2,   22)  8A1X  2B1A  3B1X  4B2A  5B2X  
-   12   -0.025184  (    2,   17)  8A1A  9A1B  2B1A  3B1X  4B2X  5B2A  
-   13   -0.023293  (    3,   16)  8A1B  9A1A  2B1A  3B1X  4B2X  5B2A  
-   14   -0.021223  (    6,   13)  8A1X  2B1X  3B1A  4B2X  6B2A  
-   15    0.019614  (    2,   25)  8A1X  2B1X  3B1A  4B2A  5B2A  6B2B  
-   16    0.019339  (   43,   37)  8A1A  9A1A  2B1X  3B1A  4B2X  5B2B  
-   17    0.019223  (    3,   14)  9A1X  2B1X  3B1A  4B2X  5B2A  
-   18   -0.018275  (    2,   18)  8A1A  10A1B  2B1A  3B1X  4B2X  5B2A  
-   19   -0.018144  (   10,   13)  8A1X  2B1X  3B1A  4B2B  5B2A  6B2A  
-   20    0.017630  (   10,   14)  8A1A  9A1B  2B1X  3B1A  4B2B  5B2A  6B2A  
+    FCI Root 1 energy =  -278.641729671449298
 
+   The 20 most important determinants:
 
-
-* ROOT 2 CI total energy = -278.6417296714355  (4.1015 eV,  33080.64 1/cm)
-
-
-The 20 most important determinants
-
-    1   -0.931081  (    2,   19)  8A1X  2B1X  3B1A  4B2A  5B2X  
-    2   -0.265877  (    2,   22)  8A1X  2B1A  3B1X  4B2A  5B2X  
-    3    0.128854  (    3,   19)  8A1B  9A1A  2B1X  3B1A  4B2A  5B2X  
-    4    0.115497  (    2,   20)  8A1A  9A1B  2B1X  3B1A  4B2A  5B2X  
-    5    0.113209  (   10,   19)  8A1X  2B1X  3B1A  5B2X  6B2A  
-    6    0.061381  (    4,   19)  8A1B  10A1A  2B1X  3B1A  4B2A  5B2X  
-    7   -0.060577  (    2,   13)  8A1X  2B1X  3B1A  4B2X  5B2A  
-    8    0.060355  (    2,   21)  8A1A  10A1B  2B1X  3B1A  4B2A  5B2X  
-    9    0.043993  (    2,   16)  8A1X  2B1A  3B1X  4B2X  5B2A  
-   10   -0.031557  (    6,   19)  8A1X  2B1X  3B1A  4B2A  5B2B  6B2A  
-   11    0.019459  (   10,   22)  8A1X  2B1A  3B1X  5B2X  6B2A  
-   12   -0.019013  (    2,   25)  8A1X  2B1X  3B1A  4B2A  5B2A  6B2B  
-   13    0.017108  (   44,   32)  8A1X  10A1X  2B1X  3B1A  4B2A  
-   14    0.014942  (   43,   37)  8A1A  9A1A  2B1X  3B1A  4B2X  5B2B  
-   15   -0.014486  (    2,   14)  8A1A  9A1B  2B1X  3B1A  4B2X  5B2A  
-   16    0.014185  (   55,   41)  2B1X  3B1A  4B2A  5B2X  6B2X  
-   17   -0.014104  (   10,   13)  8A1X  2B1X  3B1A  4B2B  5B2A  6B2A  
-   18    0.013634  (    2,   23)  8A1A  9A1B  2B1A  3B1X  4B2A  5B2X  
-   19    0.013447  (   43,   31)  8A1X  9A1X  2B1X  3B1A  4B2A  
-   20   -0.012521  (    2,   15)  8A1A  10A1B  2B1X  3B1A  4B2X  5B2A  
-
+    *   1   -0.931081  (    2,   19)  8A1X 2B1X 3B1A 4B2A 5B2X 
+    *   2   -0.265877  (    2,   22)  8A1X 2B1A 3B1X 4B2A 5B2X 
+    *   3    0.128855  (    3,   19)  8A1B 9A1A 2B1X 3B1A 4B2A 5B2X 
+    *   4    0.115498  (    2,   20)  8A1A 9A1B 2B1X 3B1A 4B2A 5B2X 
+    *   5    0.113209  (   10,   19)  8A1X 2B1X 3B1A 5B2X 6B2A 
+    *   6    0.061381  (    4,   19)  8A1B 10A1A 2B1X 3B1A 4B2A 5B2X 
+    *   7   -0.060577  (    2,   13)  8A1X 2B1X 3B1A 4B2X 5B2A 
+    *   8    0.060354  (    2,   21)  8A1A 10A1B 2B1X 3B1A 4B2A 5B2X 
+    *   9    0.043993  (    2,   16)  8A1X 2B1A 3B1X 4B2X 5B2A 
+    *  10   -0.031558  (    6,   19)  8A1X 2B1X 3B1A 4B2A 5B2B 6B2A 
+    *  11    0.019459  (   10,   22)  8A1X 2B1A 3B1X 5B2X 6B2A 
+    *  12   -0.019013  (    2,   25)  8A1X 2B1X 3B1A 4B2A 5B2A 6B2B 
+    *  13    0.017108  (   44,   32)  8A1X 10A1X 2B1X 3B1A 4B2A 
+    *  14    0.014943  (   43,   37)  8A1A 9A1A 2B1X 3B1A 4B2X 5B2B 
+    *  15   -0.014487  (    2,   14)  8A1A 9A1B 2B1X 3B1A 4B2X 5B2A 
+    *  16    0.014185  (   55,   41)  2B1X 3B1A 4B2A 5B2X 6B2X 
+    *  17   -0.014104  (   10,   13)  8A1X 2B1X 3B1A 4B2B 5B2A 6B2A 
+    *  18    0.013634  (    2,   23)  8A1A 9A1B 2B1A 3B1X 4B2A 5B2X 
+    *  19    0.013447  (   43,   31)  8A1X 9A1X 2B1X 3B1A 4B2A 
+    *  20   -0.012521  (    2,   15)  8A1A 10A1B 2B1X 3B1A 4B2X 5B2A 
 
 		 "A good bug is a dead bug" 
 
@@ -512,7 +532,6 @@ The 20 most important determinants
 		 "I didn't write FORTRAN.  That's the problem."
 
 			 - Edward Valeev
-
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -529,27 +548,27 @@ Properties computed using the CI density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.7517460           -0.0007085            0.7510375
+ Dipole Z            :          0.7517449           -0.0007085            0.7510364
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :        -16.6508375            0.0000000          -16.6508375
+ Quadrupole XX       :        -16.6508376            0.0000000          -16.6508376
  Quadrupole XY       :          0.0000000           -0.0000000           -0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -78.5680722           57.9186331          -20.6494391
+ Quadrupole YY       :        -78.5680707           57.9186331          -20.6494376
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :       -103.8552337           82.1709850          -21.6842488
+ Quadrupole ZZ       :       -103.8552354           82.1709850          -21.6842504
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
  Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
- Octupole XXZ        :          0.0592371           -0.0000000            0.0592371
+ Octupole XXZ        :          0.0592367           -0.0000000            0.0592367
  Octupole XYY        :          0.0000000           -0.0000000           -0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000           -0.0000000           -0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         85.1945049          -78.8147307            6.3797741
+ Octupole YYZ        :         85.1945017          -78.8147307            6.3797709
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :        -98.2769113           93.4345542           -4.8423571
+ Octupole ZZZ        :        -98.2769268           93.4345542           -4.8423726
 
  --------------------------------------------------------------------------------
 
@@ -557,10 +576,10 @@ Properties computed using the CI density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  O           -22.339651859986
-    2  N           -18.357822431934
-    3  O           -22.638966246311
-    4  O           -22.638966246311
+    1  O           -22.339652078375
+    2  N           -18.357822478667
+    3  O           -22.638966100222
+    4  O           -22.638966100222
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0007
@@ -589,62 +608,62 @@ Properties computed using the CI density matrix
        1 A1  0   0.0177526219   3.6370541824   1.8691499892   5.5239567936
        2 A1  1   0.0177571150   0.0177580929   6.5533995632   6.5889147711
        3 A1  2   0.0235092053   0.0235080616   0.0589438856   0.1059611525
-       4 A1  3   0.5136550718   1.5585062189   1.6516707394   3.7238320302
-       5 A1  4   0.4740881947   1.0910484852   4.0210437354   5.5861804153
-       6 B2  1   0.4906676506   3.5596612507   1.6318646675   5.6821935688
-       7 A1  5   0.5170521503   3.4954476157   4.4060968005   8.4185965665
-       8 B1  0   1.3878693280   2.0887642002   2.2612806616   5.7379141897
-       9 B2  2   0.4186360938   3.6466427816   3.0918886895   7.1571675649
-      10 A1  6   0.4242776095   2.0907112359   5.7329096573   8.2478985028
-      11 A2  0   1.1982267078   4.0790397658   2.1711174652   7.4483839389
-      12 A1  7   0.4354720168   3.5861187046   3.5070563840   7.5286471053
-      13 B1  1   1.2587321167   1.5780005809   5.1320982421   7.9688309397
-      14 B2  3   0.4077407939   1.8070623736   6.1643405921   8.3791437597
-      15 B2  4   0.3621406008   4.7186573739   2.3968877345   7.4776857092
-      16 B1  2   1.0738698201   1.1482035429   2.3690845103   4.5911578733
-      17 A1  8   1.0234007186   2.6467056809   3.8067849732   7.4768913728
-      18 B2  5   0.6052804234   3.0280534106   3.1140850953   6.7474189293
-      19 A1  9   1.0019356582   3.3047688762   5.2712346218   9.5779391561
-      20 A1 10   2.1854125286   3.2491253362   2.8158594261   8.2503972909
-      21 A1 11   1.6092094791   2.5990761655   4.0964765796   8.3047622242
-      22 B2  6   1.3935314466   5.1170458879   2.2928068810   8.8033842155
-      23 B1  3   3.6507891120   1.1941869381   1.1684674799   6.0134435301
-      24 A1 12   1.0848375354   3.1362627092  10.0824496409  14.3035498855
-      25 B2  7   0.9617019807   6.7047850081   4.7920671213  12.4585541101
-      26 A1 13   0.8202440098   4.6657831731   5.0220018989  10.5080290818
-      27 B1  4   2.5239047865   3.7289048813   4.2163040974  10.4691137652
-      28 A1 14   1.4083907635   3.4310581755   5.3677667853  10.2072157243
-      29 A2  1   2.4992331057   5.1710775459   2.6895074393  10.3598180909
-      30 B2  8   0.9838575916   3.6999285789   7.4689052061  12.1526913767
-      31 B1  5   2.6100413158   1.8521332646   7.7560006070  12.2181751875
-      32 B2  9   0.8604183106   5.6786466122   5.2434328131  11.7824977359
-      33 A1 15   1.6573132444   4.2086803178   2.5170885622   8.3830821244
-      34 B1  6   0.9508009750   1.7317108243   2.7610316617   5.4435434610
-      35 A2  2   0.9559290585   2.3056833162   1.7219264160   4.9835387907
-      36 B2 10   1.9549819213   3.8277438721   3.5482162506   9.3309420439
-      37 A1 16   1.4617905160   2.4719463611   5.2588063781   9.1925432553
-      38 A1 17   1.1708666242   2.8142441755   3.7144167730   7.6995275727
-      39 B1  7   0.9521962911   3.7591632169   2.9476247971   7.6589843051
-      40 A2  3   0.9403894584   1.5794935342   5.9859312018   8.5058141944
-      41 A1 18   1.5002201593   1.8287544284   4.9488436811   8.2778182688
+       4 A1  3   0.5136550718   1.5585062195   1.6516707388   3.7238320301
+       5 A1  4   0.4740881947   1.0910484848   4.0210437356   5.5861804151
+       6 B2  1   0.4906676506   3.5596612512   1.6318646678   5.6821935696
+       7 A1  5   0.5170521503   3.4954476149   4.4060968009   8.4185965661
+       8 B1  0   1.3878693280   2.0887642008   2.2612806616   5.7379141904
+       9 B2  2   0.4186360939   3.6466427797   3.0918886901   7.1571675637
+      10 A1  6   0.4242776095   2.0907112360   5.7329096575   8.2478985030
+      11 A2  0   1.1982267079   4.0790397660   2.1711174652   7.4483839390
+      12 A1  7   0.4354720167   3.5861187045   3.5070563840   7.5286471052
+      13 B1  1   1.2587321167   1.5780005814   5.1320982406   7.9688309388
+      14 B2  3   0.4077407940   1.8070623731   6.1643405929   8.3791437601
+      15 B2  4   0.3621406008   4.7186573759   2.3968877324   7.4776857091
+      16 B1  2   1.0738698200   1.1482035418   2.3690845114   4.5911578732
+      17 A1  8   1.0234007187   2.6467056824   3.8067849722   7.4768913733
+      18 B2  5   0.6052804235   3.0280534110   3.1140850962   6.7474189307
+      19 A1  9   1.0019356583   3.3047688759   5.2712346225   9.5779391567
+      20 A1 10   2.1854125288   3.2491253371   2.8158594257   8.2503972916
+      21 A1 11   1.6092094788   2.5990761646   4.0964765792   8.3047622227
+      22 B2  6   1.3935314465   5.1170458886   2.2928068807   8.8033842158
+      23 B1  3   3.6507891123   1.1941869381   1.1684674797   6.0134435301
+      24 A1 12   1.0848375355   3.1362627088  10.0824496405  14.3035498848
+      25 B2  7   0.9617019807   6.7047850080   4.7920671202  12.4585541089
+      26 A1 13   0.8202440094   4.6657831769   5.0220018961  10.5080290824
+      27 B1  4   2.5239047866   3.7289048823   4.2163040962  10.4691137652
+      28 A1 14   1.4083907639   3.4310581721   5.3677667890  10.2072157250
+      29 A2  1   2.4992331056   5.1710775459   2.6895074393  10.3598180908
+      30 B2  8   0.9838575916   3.6999285830   7.4689052015  12.1526913761
+      31 B1  5   2.6100413156   1.8521332636   7.7560006085  12.2181751878
+      32 B2  9   0.8604183105   5.6786466074   5.2434328182  11.7824977360
+      33 A1 15   1.6573132443   4.2086803172   2.5170885626   8.3830821241
+      34 B1  6   0.9508009750   1.7317108244   2.7610316615   5.4435434609
+      35 A2  2   0.9559290585   2.3056833163   1.7219264159   4.9835387906
+      36 B2 10   1.9549819213   3.8277438720   3.5482162507   9.3309420440
+      37 A1 16   1.4617905160   2.4719463612   5.2588063780   9.1925432551
+      38 A1 17   1.1708666244   2.8142441758   3.7144167725   7.6995275728
+      39 B1  7   0.9521962911   3.7591632168   2.9476247971   7.6589843050
+      40 A2  3   0.9403894584   1.5794935353   5.9859312004   8.5058141941
+      41 A1 18   1.5002201592   1.8287544282   4.9488436812   8.2778182686
       42 B2 11   0.6140788959   4.0847987986   3.1259105877   7.8247882821
-      43 A2  4   0.9645060065   3.9235466535   2.8089949521   7.6970476122
-      44 B2 12   0.5902078051   2.1168805933   4.1340585858   6.8411469843
-      45 A1 19   1.3951930797   3.0287073298   3.1126229824   7.5365233919
-      46 B1  8   1.3621442478   2.4892301721   4.1168456765   7.9682200964
-      47 A1 20   1.0707074163   1.6254517805   2.1203032378   4.8164624347
-      48 B2 13   0.6265757268   3.7890993607   2.7776779430   7.1933530304
-      49 A2  5   1.0324111727   2.7554970060   2.0460529677   5.8339611464
-      50 B1  9   1.0284945458   1.4204073796   3.7171363238   6.1660382492
-      51 A1 21   0.7678880635   3.9386654256   3.0721630844   7.7787165735
-      52 B2 14   0.7090364438   3.8657536611   3.6789460653   8.2537361703
-      53 A1 22   0.8140034575   1.7582114045   6.6660082371   9.2382230991
-      54 A1 23   0.5262744850   2.1548159075   3.4709012556   6.1519916481
-      55 B2 15   0.3803170711   2.6086931385   3.6476616293   6.6366718389
-      56 A1 24   0.9845741595   3.3089467847   2.8333596388   7.1268805829
+      43 A2  4   0.9645060066   3.9235466523   2.8089949536   7.6970476125
+      44 B2 12   0.5902078051   2.1168805933   4.1340585858   6.8411469842
+      45 A1 19   1.3951930796   3.0287073296   3.1126229829   7.5365233921
+      46 B1  8   1.3621442478   2.4892301721   4.1168456764   7.9682200964
+      47 A1 20   1.0707074163   1.6254517806   2.1203032381   4.8164624349
+      48 B2 13   0.6265757268   3.7890993605   2.7776779430   7.1933530303
+      49 A2  5   1.0324111727   2.7554970060   2.0460529678   5.8339611464
+      50 B1  9   1.0284945458   1.4204073794   3.7171363242   6.1660382495
+      51 A1 21   0.7678880637   3.9386654262   3.0721630833   7.7787165732
+      52 B2 14   0.7090364438   3.8657536615   3.6789460653   8.2537361707
+      53 A1 22   0.8140034573   1.7582114049   6.6660082358   9.2382230979
+      54 A1 23   0.5262744851   2.1548159064   3.4709012580   6.1519916495
+      55 B2 15   0.3803170711   2.6086931381   3.6476616296   6.6366718388
+      56 A1 24   0.9845741595   3.3089467848   2.8333596387   7.1268805829
       57 B2 16   1.6446952324   4.7763958275   3.0962546387   9.5173456986
-      58 A1 25   1.2525765523   2.3358694654   4.9947557572   8.5832017748
-      59 A1 26   1.1241087067   1.8908070682   5.1192890806   8.1342048554
+      58 A1 25   1.2525765520   2.3358694657   4.9947557542   8.5832017720
+      59 A1 26   1.1241087068   1.8908070676   5.1192890837   8.1342048581
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -658,7 +677,7 @@ Properties computed using the CI density matrix
   Lowdin Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     4.41863  3.86795  0.55068 -0.28658
-       2     N     3.66741  3.00469  0.66272  0.32789
+       2     N     3.66741  3.00470  0.66272  0.32789
        3     O     4.45698  4.06368  0.39330 -0.52066
        4     O     4.45698  4.06368  0.39330 -0.52066
 
@@ -672,10 +691,10 @@ Properties computed using the CI density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.10776688151871     0.01840140156860     0.01840140156860
-    2     1.10776688151871     0.00000000000000     1.11928175827910     1.11928175827910
-    3     0.01840140156860     1.11928175827910     0.00000000000000     0.07298631968119
-    4     0.01840140156860     1.11928175827910     0.07298631968119     0.00000000000000
+    1     0.00000000000000     1.10776662056795     0.01840143482117     0.01840143482117
+    2     1.10776662056795     0.00000000000000     1.11928191773560     1.11928191773560
+    3     0.01840143482117     1.11928191773560     0.00000000000000     0.07298639167083
+    4     0.01840143482117     1.11928191773560     0.07298639167083     0.00000000000000
 
 
 
@@ -684,10 +703,10 @@ Properties computed using the CI density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.46008262464618     0.00283326107697     0.00283326107697
-    2     0.46008262464618     0.00000000000000     0.48671388017424     0.48671388017424
-    3     0.00283326107697     0.48671388017424     0.00000000000000    -0.00368047279433
-    4     0.00283326107697     0.48671388017424    -0.00368047279433     0.00000000000000
+    1     0.00000000000000     0.46008230914788     0.00283326808341     0.00283326808341
+    2     0.46008230914788     0.00000000000000     0.48671409966347     0.48671409966347
+    3     0.00283326808341     0.48671409966347     0.00000000000000    -0.00368044417794
+    4     0.00283326808341     0.48671409966347    -0.00368044417794     0.00000000000000
 
 
 
@@ -696,10 +715,10 @@ Properties computed using the CI density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.64768425687253     0.01556814049162     0.01556814049162
-    2     0.64768425687253     0.00000000000000     0.63256787810486     0.63256787810486
-    3     0.01556814049162     0.63256787810486     0.00000000000000     0.07666679247552
-    4     0.01556814049162     0.63256787810486     0.07666679247552     0.00000000000000
+    1     0.00000000000000     0.64768431142007     0.01556816673776     0.01556816673776
+    2     0.64768431142007     0.00000000000000     0.63256781807213     0.63256781807213
+    3     0.01556816673776     0.63256781807213     0.00000000000000     0.07666683584877
+    4     0.01556816673776     0.63256781807213     0.07666683584877     0.00000000000000
 
 
 
@@ -707,10 +726,10 @@ Properties computed using the CI density matrix
 
  #  #
  Irrep: 1
-      1:  1.1445697
-      2:  3.3463304
-      3:  1.2106695
-      4:  1.2106695
+      1:  1.1445695
+      2:  3.3463305
+      3:  1.2106697
+      4:  1.2106697
 
 
 
@@ -721,10 +740,10 @@ Properties computed using the CI density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.51918125719886     0.10570738463693     0.10570738463694
-    2     1.51918125719886     0.00000000000000     1.42795546505516     1.42795546505516
-    3     0.10570738463693     1.42795546505516     0.00000000000000     0.20720455042369
-    4     0.10570738463694     1.42795546505516     0.20720455042369     0.00000000000000
+    1     0.00000000000000     1.51918127393133     0.10570744963499     0.10570744963499
+    2     1.51918127393133     0.00000000000000     1.42795551757757     1.42795551757757
+    3     0.10570744963499     1.42795551757757     0.00000000000000     0.20720449221752
+    4     0.10570744963499     1.42795551757757     0.20720449221752     0.00000000000000
 
 
 
@@ -733,10 +752,10 @@ Properties computed using the CI density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.71928290984175     0.04237024562648     0.04237024562648
-    2     0.71928290984175     0.00000000000000     0.67796686242820     0.67796686242820
-    3     0.04237024562648     0.67796686242820     0.00000000000000     0.06675588081198
-    4     0.04237024562648     0.67796686242820     0.06675588081198     0.00000000000000
+    1     0.00000000000000     0.71928280482330     0.04237027960595     0.04237027960595
+    2     0.71928280482330     0.00000000000000     0.67796697641896     0.67796697641896
+    3     0.04237027960595     0.67796697641896     0.00000000000000     0.06675584177883
+    4     0.04237027960595     0.67796697641896     0.06675584177883     0.00000000000000
 
 
 
@@ -745,10 +764,10 @@ Properties computed using the CI density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.79989834735711     0.06333713901045     0.06333713901045
-    2     0.79989834735711     0.00000000000000     0.74998860262696     0.74998860262696
-    3     0.06333713901045     0.74998860262696     0.00000000000000     0.14044866961170
-    4     0.06333713901045     0.74998860262696     0.14044866961170     0.00000000000000
+    1     0.00000000000000     0.79989846910803     0.06333717002904     0.06333717002904
+    2     0.79989846910803     0.00000000000000     0.74998854115861     0.74998854115861
+    3     0.06333717002904     0.74998854115861     0.00000000000000     0.14044865043869
+    4     0.06333717002904     0.74998854115861     0.14044865043869     0.00000000000000
 
 
 
@@ -756,10 +775,10 @@ Properties computed using the CI density matrix
 
  #  #
  Irrep: 1
-      1:  1.7305960
-      2:  4.3750922
-      3:  1.7408674
-      4:  1.7408674
+      1:  1.7305962
+      2:  4.3750923
+      3:  1.7408675
+      4:  1.7408675
 
   Natural Orbital Occupations:
 
@@ -798,7 +817,7 @@ Properties computed using the CI density matrix
    ===> CI properties for all CI roots <=== 
 
 
-Properties computed using the CI ROOT 1 density matrix
+Properties computed using the CI ROOT 0 density matrix
 
 
  Multipole Moments:
@@ -810,27 +829,27 @@ Properties computed using the CI ROOT 1 density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.1895163           -0.0007085           -0.1902248
+ Dipole Z            :         -0.1895172           -0.0007085           -0.1902257
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :        -16.6680572            0.0000000          -16.6680572
+ Quadrupole XX       :        -16.6680571            0.0000000          -16.6680571
  Quadrupole XY       :          0.0000000           -0.0000000           -0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -77.7654638           57.9186331          -19.8468307
+ Quadrupole YY       :        -77.7654623           57.9186331          -19.8468292
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :       -104.8338403           82.1709850          -22.6628553
+ Quadrupole ZZ       :       -104.8338417           82.1709850          -22.6628567
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
  Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
- Octupole XXZ        :         -0.0521507           -0.0000000           -0.0521507
+ Octupole XXZ        :         -0.0521504           -0.0000000           -0.0521504
  Octupole XYY        :          0.0000000           -0.0000000           -0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000           -0.0000000           -0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         83.5332373          -78.8147307            4.7185065
+ Octupole YYZ        :         83.5332329          -78.8147307            4.7185022
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :       -102.5052930           93.4345542           -9.0707388
+ Octupole ZZZ        :       -102.5053073           93.4345542           -9.0707531
 
  --------------------------------------------------------------------------------
 
@@ -838,10 +857,10 @@ Properties computed using the CI ROOT 1 density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  O           -22.549346284014
-    2  N           -18.369460764002
-    3  O           -22.511359542054
-    4  O           -22.511359542054
+    1  O           -22.549346449958
+    2  N           -18.369460847230
+    3  O           -22.511359425908
+    4  O           -22.511359425908
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0007
@@ -870,62 +889,62 @@ Properties computed using the CI ROOT 1 density matrix
        1 A1  0   0.0177526219   3.6370541824   1.8691499892   5.5239567936
        2 A1  1   0.0177571150   0.0177580929   6.5533995632   6.5889147711
        3 A1  2   0.0235092053   0.0235080616   0.0589438856   0.1059611525
-       4 A1  3   0.5136550718   1.5585062189   1.6516707394   3.7238320302
-       5 A1  4   0.4740881947   1.0910484852   4.0210437354   5.5861804153
-       6 B2  1   0.4906676506   3.5596612507   1.6318646675   5.6821935688
-       7 A1  5   0.5170521503   3.4954476157   4.4060968005   8.4185965665
-       8 B1  0   1.3878693280   2.0887642002   2.2612806616   5.7379141897
-       9 B2  2   0.4186360938   3.6466427816   3.0918886895   7.1571675649
-      10 A1  6   0.4242776095   2.0907112359   5.7329096573   8.2478985028
-      11 A2  0   1.1982267078   4.0790397658   2.1711174652   7.4483839389
-      12 A1  7   0.4354720168   3.5861187046   3.5070563840   7.5286471053
-      13 B1  1   1.2587321167   1.5780005809   5.1320982421   7.9688309397
-      14 B2  3   0.4077407939   1.8070623736   6.1643405921   8.3791437597
-      15 B2  4   0.3621406008   4.7186573739   2.3968877345   7.4776857092
-      16 B1  2   1.0738698201   1.1482035429   2.3690845103   4.5911578733
-      17 A1  8   1.0234007186   2.6467056809   3.8067849732   7.4768913728
-      18 B2  5   0.6052804234   3.0280534106   3.1140850953   6.7474189293
-      19 A1  9   1.0019356582   3.3047688762   5.2712346218   9.5779391561
-      20 A1 10   2.1854125286   3.2491253362   2.8158594261   8.2503972909
-      21 A1 11   1.6092094791   2.5990761655   4.0964765796   8.3047622242
-      22 B2  6   1.3935314466   5.1170458879   2.2928068810   8.8033842155
-      23 B1  3   3.6507891120   1.1941869381   1.1684674799   6.0134435301
-      24 A1 12   1.0848375354   3.1362627092  10.0824496409  14.3035498855
-      25 B2  7   0.9617019807   6.7047850081   4.7920671213  12.4585541101
-      26 A1 13   0.8202440098   4.6657831731   5.0220018989  10.5080290818
-      27 B1  4   2.5239047865   3.7289048813   4.2163040974  10.4691137652
-      28 A1 14   1.4083907635   3.4310581755   5.3677667853  10.2072157243
-      29 A2  1   2.4992331057   5.1710775459   2.6895074393  10.3598180909
-      30 B2  8   0.9838575916   3.6999285789   7.4689052061  12.1526913767
-      31 B1  5   2.6100413158   1.8521332646   7.7560006070  12.2181751875
-      32 B2  9   0.8604183106   5.6786466122   5.2434328131  11.7824977359
-      33 A1 15   1.6573132444   4.2086803178   2.5170885622   8.3830821244
-      34 B1  6   0.9508009750   1.7317108243   2.7610316617   5.4435434610
-      35 A2  2   0.9559290585   2.3056833162   1.7219264160   4.9835387907
-      36 B2 10   1.9549819213   3.8277438721   3.5482162506   9.3309420439
-      37 A1 16   1.4617905160   2.4719463611   5.2588063781   9.1925432553
-      38 A1 17   1.1708666242   2.8142441755   3.7144167730   7.6995275727
-      39 B1  7   0.9521962911   3.7591632169   2.9476247971   7.6589843051
-      40 A2  3   0.9403894584   1.5794935342   5.9859312018   8.5058141944
-      41 A1 18   1.5002201593   1.8287544284   4.9488436811   8.2778182688
+       4 A1  3   0.5136550718   1.5585062195   1.6516707388   3.7238320301
+       5 A1  4   0.4740881947   1.0910484848   4.0210437356   5.5861804151
+       6 B2  1   0.4906676506   3.5596612512   1.6318646678   5.6821935696
+       7 A1  5   0.5170521503   3.4954476149   4.4060968009   8.4185965661
+       8 B1  0   1.3878693280   2.0887642008   2.2612806616   5.7379141904
+       9 B2  2   0.4186360939   3.6466427797   3.0918886901   7.1571675637
+      10 A1  6   0.4242776095   2.0907112360   5.7329096575   8.2478985030
+      11 A2  0   1.1982267079   4.0790397660   2.1711174652   7.4483839390
+      12 A1  7   0.4354720167   3.5861187045   3.5070563840   7.5286471052
+      13 B1  1   1.2587321167   1.5780005814   5.1320982406   7.9688309388
+      14 B2  3   0.4077407940   1.8070623731   6.1643405929   8.3791437601
+      15 B2  4   0.3621406008   4.7186573759   2.3968877324   7.4776857091
+      16 B1  2   1.0738698200   1.1482035418   2.3690845114   4.5911578732
+      17 A1  8   1.0234007187   2.6467056824   3.8067849722   7.4768913733
+      18 B2  5   0.6052804235   3.0280534110   3.1140850962   6.7474189307
+      19 A1  9   1.0019356583   3.3047688759   5.2712346225   9.5779391567
+      20 A1 10   2.1854125288   3.2491253371   2.8158594257   8.2503972916
+      21 A1 11   1.6092094788   2.5990761646   4.0964765792   8.3047622227
+      22 B2  6   1.3935314465   5.1170458886   2.2928068807   8.8033842158
+      23 B1  3   3.6507891123   1.1941869381   1.1684674797   6.0134435301
+      24 A1 12   1.0848375355   3.1362627088  10.0824496405  14.3035498848
+      25 B2  7   0.9617019807   6.7047850080   4.7920671202  12.4585541089
+      26 A1 13   0.8202440094   4.6657831769   5.0220018961  10.5080290824
+      27 B1  4   2.5239047866   3.7289048823   4.2163040962  10.4691137652
+      28 A1 14   1.4083907639   3.4310581721   5.3677667890  10.2072157250
+      29 A2  1   2.4992331056   5.1710775459   2.6895074393  10.3598180908
+      30 B2  8   0.9838575916   3.6999285830   7.4689052015  12.1526913761
+      31 B1  5   2.6100413156   1.8521332636   7.7560006085  12.2181751878
+      32 B2  9   0.8604183105   5.6786466074   5.2434328182  11.7824977360
+      33 A1 15   1.6573132443   4.2086803172   2.5170885626   8.3830821241
+      34 B1  6   0.9508009750   1.7317108244   2.7610316615   5.4435434609
+      35 A2  2   0.9559290585   2.3056833163   1.7219264159   4.9835387906
+      36 B2 10   1.9549819213   3.8277438720   3.5482162507   9.3309420440
+      37 A1 16   1.4617905160   2.4719463612   5.2588063780   9.1925432551
+      38 A1 17   1.1708666244   2.8142441758   3.7144167725   7.6995275728
+      39 B1  7   0.9521962911   3.7591632168   2.9476247971   7.6589843050
+      40 A2  3   0.9403894584   1.5794935353   5.9859312004   8.5058141941
+      41 A1 18   1.5002201592   1.8287544282   4.9488436812   8.2778182686
       42 B2 11   0.6140788959   4.0847987986   3.1259105877   7.8247882821
-      43 A2  4   0.9645060065   3.9235466535   2.8089949521   7.6970476122
-      44 B2 12   0.5902078051   2.1168805933   4.1340585858   6.8411469843
-      45 A1 19   1.3951930797   3.0287073298   3.1126229824   7.5365233919
-      46 B1  8   1.3621442478   2.4892301721   4.1168456765   7.9682200964
-      47 A1 20   1.0707074163   1.6254517805   2.1203032378   4.8164624347
-      48 B2 13   0.6265757268   3.7890993607   2.7776779430   7.1933530304
-      49 A2  5   1.0324111727   2.7554970060   2.0460529677   5.8339611464
-      50 B1  9   1.0284945458   1.4204073796   3.7171363238   6.1660382492
-      51 A1 21   0.7678880635   3.9386654256   3.0721630844   7.7787165735
-      52 B2 14   0.7090364438   3.8657536611   3.6789460653   8.2537361703
-      53 A1 22   0.8140034575   1.7582114045   6.6660082371   9.2382230991
-      54 A1 23   0.5262744850   2.1548159075   3.4709012556   6.1519916481
-      55 B2 15   0.3803170711   2.6086931385   3.6476616293   6.6366718389
-      56 A1 24   0.9845741595   3.3089467847   2.8333596388   7.1268805829
+      43 A2  4   0.9645060066   3.9235466523   2.8089949536   7.6970476125
+      44 B2 12   0.5902078051   2.1168805933   4.1340585858   6.8411469842
+      45 A1 19   1.3951930796   3.0287073296   3.1126229829   7.5365233921
+      46 B1  8   1.3621442478   2.4892301721   4.1168456764   7.9682200964
+      47 A1 20   1.0707074163   1.6254517806   2.1203032381   4.8164624349
+      48 B2 13   0.6265757268   3.7890993605   2.7776779430   7.1933530303
+      49 A2  5   1.0324111727   2.7554970060   2.0460529678   5.8339611464
+      50 B1  9   1.0284945458   1.4204073794   3.7171363242   6.1660382495
+      51 A1 21   0.7678880637   3.9386654262   3.0721630833   7.7787165732
+      52 B2 14   0.7090364438   3.8657536615   3.6789460653   8.2537361707
+      53 A1 22   0.8140034573   1.7582114049   6.6660082358   9.2382230979
+      54 A1 23   0.5262744851   2.1548159064   3.4709012580   6.1519916495
+      55 B2 15   0.3803170711   2.6086931381   3.6476616296   6.6366718388
+      56 A1 24   0.9845741595   3.3089467848   2.8333596387   7.1268805829
       57 B2 16   1.6446952324   4.7763958275   3.0962546387   9.5173456986
-      58 A1 25   1.2525765523   2.3358694654   4.9947557572   8.5832017748
-      59 A1 26   1.1241087067   1.8908070682   5.1192890806   8.1342048554
+      58 A1 25   1.2525765520   2.3358694657   4.9947557542   8.5832017720
+      59 A1 26   1.1241087068   1.8908070676   5.1192890837   8.1342048581
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -938,7 +957,7 @@ Properties computed using the CI ROOT 1 density matrix
 
   Lowdin Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.37456  4.16246  0.21210 -0.53702
+       1     O     4.37456  4.16246  0.21210 -0.53703
        2     N     3.66230  3.02710  0.63520  0.31060
        3     O     4.48157  3.90522  0.57635 -0.38679
        4     O     4.48157  3.90522  0.57635 -0.38679
@@ -953,10 +972,10 @@ Properties computed using the CI ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.35592080449639     0.03783889075393     0.03783889075393
-    2     1.35592080449639     0.00000000000000     1.02537663056822     1.02537663056822
-    3     0.03783889075393     1.02537663056822     0.00000000000000     0.36490456217685
-    4     0.03783889075393     1.02537663056822     0.36490456217685     0.00000000000000
+    1     0.00000000000000     1.35592053081282     0.03783889257600     0.03783889257600
+    2     1.35592053081282     0.00000000000000     1.02537676872608     1.02537676872608
+    3     0.03783889257600     1.02537676872608     0.00000000000000     0.36490473293040
+    4     0.03783889257600     1.02537676872608     0.36490473293040     0.00000000000000
 
 
 
@@ -965,10 +984,10 @@ Properties computed using the CI ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.54043909912351     0.00653747340965     0.00653747340965
-    2     0.54043909912351     0.00000000000000     0.44191125260216     0.44191125260216
-    3     0.00653747340965     0.44191125260216     0.00000000000000     0.00119063749664
-    4     0.00653747340965     0.44191125260216     0.00119063749664     0.00000000000000
+    1     0.00000000000000     0.54043859300158     0.00653747471079     0.00653747471079
+    2     0.54043859300158     0.00000000000000     0.44191142698106     0.44191142698106
+    3     0.00653747471079     0.44191142698106     0.00000000000000     0.00119068321340
+    4     0.00653747471079     0.44191142698106     0.00119068321340     0.00000000000000
 
 
 
@@ -977,10 +996,10 @@ Properties computed using the CI ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.81548170537288     0.03130141734428     0.03130141734428
-    2     0.81548170537288     0.00000000000000     0.58346537796605     0.58346537796605
-    3     0.03130141734428     0.58346537796605     0.00000000000000     0.36371392468021
-    4     0.03130141734428     0.58346537796605     0.36371392468021     0.00000000000000
+    1     0.00000000000000     0.81548193781124     0.03130141786521     0.03130141786521
+    2     0.81548193781124     0.00000000000000     0.58346534174503     0.58346534174503
+    3     0.03130141786521     0.58346534174503     0.00000000000000     0.36371404971699
+    4     0.03130141786521     0.58346534174503     0.36371404971699     0.00000000000000
 
 
 
@@ -988,10 +1007,10 @@ Properties computed using the CI ROOT 1 density matrix
 
  #  #
  Irrep: 1
-      1:  1.4315986
+      1:  1.4315983
       2:  3.4066741
-      3:  1.4281201
-      4:  1.4281201
+      3:  1.4281204
+      4:  1.4281204
 
 
 
@@ -1002,10 +1021,10 @@ Properties computed using the CI ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.70111852685409     0.12626365470444     0.12626365470445
-    2     1.70111852685409     0.00000000000000     1.37686690527829     1.37686690527829
-    3     0.12626365470444     1.37686690527829     0.00000000000000     0.47987178140508
-    4     0.12626365470445     1.37686690527829     0.47987178140508     0.00000000000000
+    1     0.00000000000000     1.70111862572471     0.12626365991423     0.12626365991424
+    2     1.70111862572471     0.00000000000000     1.37686693714568     1.37686693714568
+    3     0.12626365991423     1.37686693714568     0.00000000000000     0.47987179232212
+    4     0.12626365991424     1.37686693714568     0.47987179232212     0.00000000000000
 
 
 
@@ -1014,10 +1033,10 @@ Properties computed using the CI ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.75607550805461     0.04395317153093     0.04395317153093
-    2     0.75607550805461     0.00000000000000     0.65902790308786     0.65902790308786
-    3     0.04395317153093     0.65902790308786     0.00000000000000     0.07100993358833
-    4     0.04395317153093     0.65902790308786     0.07100993358833     0.00000000000000
+    1     0.00000000000000     0.75607529850299     0.04395314933781     0.04395314933781
+    2     0.75607529850299     0.00000000000000     0.65902802821706     0.65902802821706
+    3     0.04395314933781     0.65902802821706     0.00000000000000     0.07100986511640
+    4     0.04395314933781     0.65902802821706     0.07100986511640     0.00000000000000
 
 
 
@@ -1026,10 +1045,10 @@ Properties computed using the CI ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.94504301879949     0.08231048317351     0.08231048317351
-    2     0.94504301879949     0.00000000000000     0.71783900219043     0.71783900219043
-    3     0.08231048317351     0.71783900219043     0.00000000000000     0.40886184781675
-    4     0.08231048317351     0.71783900219043     0.40886184781675     0.00000000000000
+    1     0.00000000000000     0.94504332722172     0.08231051057642     0.08231051057642
+    2     0.94504332722172     0.00000000000000     0.71783890892862     0.71783890892862
+    3     0.08231051057642     0.71783890892862     0.00000000000000     0.40886192720573
+    4     0.08231051057642     0.71783890892862     0.40886192720573     0.00000000000000
 
 
 
@@ -1037,10 +1056,10 @@ Properties computed using the CI ROOT 1 density matrix
 
  #  #
  Irrep: 1
-      1:  1.9536458
-      2:  4.4548523
-      3:  1.9830023
-      4:  1.9830023
+      1:  1.9536459
+      2:  4.4548525
+      3:  1.9830024
+      4:  1.9830024
 
   Natural Orbital Occupations:
 
@@ -1051,7 +1070,7 @@ Properties computed using the CI ROOT 1 density matrix
   LUNO+0 :    6 B2    0.007
   LUNO+1 :    9 A1    0.006
   LUNO+2 :   10 A1    0.004
-  LUNO+3 :   11 A1    0.000
+  LUNO+3 :    4 B1    0.000
 
   Beta Occupations:
   HONO-2 :    2 B1    0.994
@@ -1076,7 +1095,7 @@ Properties computed using the CI ROOT 1 density matrix
 
  Electrostatic potential computed on the grid and written to grid_esp.dat
 
-Properties computed using the CI ROOT 2 density matrix
+Properties computed using the CI ROOT 1 density matrix
 
 
  Multipole Moments:
@@ -1088,27 +1107,27 @@ Properties computed using the CI ROOT 2 density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.6930083           -0.0007085            1.6922998
+ Dipole Z            :          1.6930070           -0.0007085            1.6922985
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :        -16.6336179            0.0000000          -16.6336179
+ Quadrupole XX       :        -16.6336182            0.0000000          -16.6336182
  Quadrupole XY       :          0.0000000           -0.0000000           -0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -79.3706806           57.9186331          -21.4520475
+ Quadrupole YY       :        -79.3706791           57.9186331          -21.4520460
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :       -102.8766272           82.1709850          -20.7056422
+ Quadrupole ZZ       :       -102.8766291           82.1709850          -20.7056441
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
  Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
- Octupole XXZ        :          0.1706249           -0.0000000            0.1706249
+ Octupole XXZ        :          0.1706238           -0.0000000            0.1706238
  Octupole XYY        :          0.0000000           -0.0000000           -0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000           -0.0000000           -0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         86.8557724          -78.8147307            8.0410417
+ Octupole YYZ        :         86.8557704          -78.8147307            8.0410396
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :        -94.0485296           93.4345542           -0.6139754
+ Octupole ZZZ        :        -94.0485463           93.4345542           -0.6139921
 
  --------------------------------------------------------------------------------
 
@@ -1116,10 +1135,10 @@ Properties computed using the CI ROOT 2 density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  O           -22.129957435958
-    2  N           -18.346184099865
-    3  O           -22.766572950568
-    4  O           -22.766572950568
+    1  O           -22.129957706792
+    2  N           -18.346184110105
+    3  O           -22.766572774537
+    4  O           -22.766572774537
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0007
@@ -1148,62 +1167,62 @@ Properties computed using the CI ROOT 2 density matrix
        1 A1  0   0.0177526219   3.6370541824   1.8691499892   5.5239567936
        2 A1  1   0.0177571150   0.0177580929   6.5533995632   6.5889147711
        3 A1  2   0.0235092053   0.0235080616   0.0589438856   0.1059611525
-       4 A1  3   0.5136550718   1.5585062189   1.6516707394   3.7238320302
-       5 A1  4   0.4740881947   1.0910484852   4.0210437354   5.5861804153
-       6 B2  1   0.4906676506   3.5596612507   1.6318646675   5.6821935688
-       7 A1  5   0.5170521503   3.4954476157   4.4060968005   8.4185965665
-       8 B1  0   1.3878693280   2.0887642002   2.2612806616   5.7379141897
-       9 B2  2   0.4186360938   3.6466427816   3.0918886895   7.1571675649
-      10 A1  6   0.4242776095   2.0907112359   5.7329096573   8.2478985028
-      11 A2  0   1.1982267078   4.0790397658   2.1711174652   7.4483839389
-      12 A1  7   0.4354720168   3.5861187046   3.5070563840   7.5286471053
-      13 B1  1   1.2587321167   1.5780005809   5.1320982421   7.9688309397
-      14 B2  3   0.4077407939   1.8070623736   6.1643405921   8.3791437597
-      15 B2  4   0.3621406008   4.7186573739   2.3968877345   7.4776857092
-      16 B1  2   1.0738698201   1.1482035429   2.3690845103   4.5911578733
-      17 A1  8   1.0234007186   2.6467056809   3.8067849732   7.4768913728
-      18 B2  5   0.6052804234   3.0280534106   3.1140850953   6.7474189293
-      19 A1  9   1.0019356582   3.3047688762   5.2712346218   9.5779391561
-      20 A1 10   2.1854125286   3.2491253362   2.8158594261   8.2503972909
-      21 A1 11   1.6092094791   2.5990761655   4.0964765796   8.3047622242
-      22 B2  6   1.3935314466   5.1170458879   2.2928068810   8.8033842155
-      23 B1  3   3.6507891120   1.1941869381   1.1684674799   6.0134435301
-      24 A1 12   1.0848375354   3.1362627092  10.0824496409  14.3035498855
-      25 B2  7   0.9617019807   6.7047850081   4.7920671213  12.4585541101
-      26 A1 13   0.8202440098   4.6657831731   5.0220018989  10.5080290818
-      27 B1  4   2.5239047865   3.7289048813   4.2163040974  10.4691137652
-      28 A1 14   1.4083907635   3.4310581755   5.3677667853  10.2072157243
-      29 A2  1   2.4992331057   5.1710775459   2.6895074393  10.3598180909
-      30 B2  8   0.9838575916   3.6999285789   7.4689052061  12.1526913767
-      31 B1  5   2.6100413158   1.8521332646   7.7560006070  12.2181751875
-      32 B2  9   0.8604183106   5.6786466122   5.2434328131  11.7824977359
-      33 A1 15   1.6573132444   4.2086803178   2.5170885622   8.3830821244
-      34 B1  6   0.9508009750   1.7317108243   2.7610316617   5.4435434610
-      35 A2  2   0.9559290585   2.3056833162   1.7219264160   4.9835387907
-      36 B2 10   1.9549819213   3.8277438721   3.5482162506   9.3309420439
-      37 A1 16   1.4617905160   2.4719463611   5.2588063781   9.1925432553
-      38 A1 17   1.1708666242   2.8142441755   3.7144167730   7.6995275727
-      39 B1  7   0.9521962911   3.7591632169   2.9476247971   7.6589843051
-      40 A2  3   0.9403894584   1.5794935342   5.9859312018   8.5058141944
-      41 A1 18   1.5002201593   1.8287544284   4.9488436811   8.2778182688
+       4 A1  3   0.5136550718   1.5585062195   1.6516707388   3.7238320301
+       5 A1  4   0.4740881947   1.0910484848   4.0210437356   5.5861804151
+       6 B2  1   0.4906676506   3.5596612512   1.6318646678   5.6821935696
+       7 A1  5   0.5170521503   3.4954476149   4.4060968009   8.4185965661
+       8 B1  0   1.3878693280   2.0887642008   2.2612806616   5.7379141904
+       9 B2  2   0.4186360939   3.6466427797   3.0918886901   7.1571675637
+      10 A1  6   0.4242776095   2.0907112360   5.7329096575   8.2478985030
+      11 A2  0   1.1982267079   4.0790397660   2.1711174652   7.4483839390
+      12 A1  7   0.4354720167   3.5861187045   3.5070563840   7.5286471052
+      13 B1  1   1.2587321167   1.5780005814   5.1320982406   7.9688309388
+      14 B2  3   0.4077407940   1.8070623731   6.1643405929   8.3791437601
+      15 B2  4   0.3621406008   4.7186573759   2.3968877324   7.4776857091
+      16 B1  2   1.0738698200   1.1482035418   2.3690845114   4.5911578732
+      17 A1  8   1.0234007187   2.6467056824   3.8067849722   7.4768913733
+      18 B2  5   0.6052804235   3.0280534110   3.1140850962   6.7474189307
+      19 A1  9   1.0019356583   3.3047688759   5.2712346225   9.5779391567
+      20 A1 10   2.1854125288   3.2491253371   2.8158594257   8.2503972916
+      21 A1 11   1.6092094788   2.5990761646   4.0964765792   8.3047622227
+      22 B2  6   1.3935314465   5.1170458886   2.2928068807   8.8033842158
+      23 B1  3   3.6507891123   1.1941869381   1.1684674797   6.0134435301
+      24 A1 12   1.0848375355   3.1362627088  10.0824496405  14.3035498848
+      25 B2  7   0.9617019807   6.7047850080   4.7920671202  12.4585541089
+      26 A1 13   0.8202440094   4.6657831769   5.0220018961  10.5080290824
+      27 B1  4   2.5239047866   3.7289048823   4.2163040962  10.4691137652
+      28 A1 14   1.4083907639   3.4310581721   5.3677667890  10.2072157250
+      29 A2  1   2.4992331056   5.1710775459   2.6895074393  10.3598180908
+      30 B2  8   0.9838575916   3.6999285830   7.4689052015  12.1526913761
+      31 B1  5   2.6100413156   1.8521332636   7.7560006085  12.2181751878
+      32 B2  9   0.8604183105   5.6786466074   5.2434328182  11.7824977360
+      33 A1 15   1.6573132443   4.2086803172   2.5170885626   8.3830821241
+      34 B1  6   0.9508009750   1.7317108244   2.7610316615   5.4435434609
+      35 A2  2   0.9559290585   2.3056833163   1.7219264159   4.9835387906
+      36 B2 10   1.9549819213   3.8277438720   3.5482162507   9.3309420440
+      37 A1 16   1.4617905160   2.4719463612   5.2588063780   9.1925432551
+      38 A1 17   1.1708666244   2.8142441758   3.7144167725   7.6995275728
+      39 B1  7   0.9521962911   3.7591632168   2.9476247971   7.6589843050
+      40 A2  3   0.9403894584   1.5794935353   5.9859312004   8.5058141941
+      41 A1 18   1.5002201592   1.8287544282   4.9488436812   8.2778182686
       42 B2 11   0.6140788959   4.0847987986   3.1259105877   7.8247882821
-      43 A2  4   0.9645060065   3.9235466535   2.8089949521   7.6970476122
-      44 B2 12   0.5902078051   2.1168805933   4.1340585858   6.8411469843
-      45 A1 19   1.3951930797   3.0287073298   3.1126229824   7.5365233919
-      46 B1  8   1.3621442478   2.4892301721   4.1168456765   7.9682200964
-      47 A1 20   1.0707074163   1.6254517805   2.1203032378   4.8164624347
-      48 B2 13   0.6265757268   3.7890993607   2.7776779430   7.1933530304
-      49 A2  5   1.0324111727   2.7554970060   2.0460529677   5.8339611464
-      50 B1  9   1.0284945458   1.4204073796   3.7171363238   6.1660382492
-      51 A1 21   0.7678880635   3.9386654256   3.0721630844   7.7787165735
-      52 B2 14   0.7090364438   3.8657536611   3.6789460653   8.2537361703
-      53 A1 22   0.8140034575   1.7582114045   6.6660082371   9.2382230991
-      54 A1 23   0.5262744850   2.1548159075   3.4709012556   6.1519916481
-      55 B2 15   0.3803170711   2.6086931385   3.6476616293   6.6366718389
-      56 A1 24   0.9845741595   3.3089467847   2.8333596388   7.1268805829
+      43 A2  4   0.9645060066   3.9235466523   2.8089949536   7.6970476125
+      44 B2 12   0.5902078051   2.1168805933   4.1340585858   6.8411469842
+      45 A1 19   1.3951930796   3.0287073296   3.1126229829   7.5365233921
+      46 B1  8   1.3621442478   2.4892301721   4.1168456764   7.9682200964
+      47 A1 20   1.0707074163   1.6254517806   2.1203032381   4.8164624349
+      48 B2 13   0.6265757268   3.7890993605   2.7776779430   7.1933530303
+      49 A2  5   1.0324111727   2.7554970060   2.0460529678   5.8339611464
+      50 B1  9   1.0284945458   1.4204073794   3.7171363242   6.1660382495
+      51 A1 21   0.7678880637   3.9386654262   3.0721630833   7.7787165732
+      52 B2 14   0.7090364438   3.8657536615   3.6789460653   8.2537361707
+      53 A1 22   0.8140034573   1.7582114049   6.6660082358   9.2382230979
+      54 A1 23   0.5262744851   2.1548159064   3.4709012580   6.1519916495
+      55 B2 15   0.3803170711   2.6086931381   3.6476616296   6.6366718388
+      56 A1 24   0.9845741595   3.3089467848   2.8333596387   7.1268805829
       57 B2 16   1.6446952324   4.7763958275   3.0962546387   9.5173456986
-      58 A1 25   1.2525765523   2.3358694654   4.9947557572   8.5832017748
-      59 A1 26   1.1241087067   1.8908070682   5.1192890806   8.1342048554
+      58 A1 25   1.2525765520   2.3358694657   4.9947557542   8.5832017720
+      59 A1 26   1.1241087068   1.8908070676   5.1192890837   8.1342048581
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1231,10 +1250,10 @@ Properties computed using the CI ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.93958355977610     0.07698137007205     0.07698137007205
-    2     0.93958355977610     0.00000000000000     1.23563277852981     1.23563277852981
-    3     0.07698137007205     1.23563277852981     0.00000000000000     0.01681695467289
-    4     0.07698137007205     1.23563277852981     0.01681695467289     0.00000000000000
+    1     0.00000000000000     0.93958332001056     0.07698138036930     0.07698138036930
+    2     0.93958332001056     0.00000000000000     1.23563298939426     1.23563298939426
+    3     0.07698138036930     1.23563298939426     0.00000000000000     0.01681698752254
+    4     0.07698138036930     1.23563298939426     0.01681698752254     0.00000000000000
 
 
 
@@ -1243,10 +1262,10 @@ Properties computed using the CI ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.38982687238038     0.00041874464585     0.00041874464585
-    2     0.38982687238038     0.00000000000000     0.53653410244288     0.53653410244288
-    3     0.00041874464585     0.53653410244288     0.00000000000000    -0.00699510153041
-    4     0.00041874464585     0.53653410244288    -0.00699510153041     0.00000000000000
+    1     0.00000000000000     0.38982670019180     0.00041874916232     0.00041874916232
+    2     0.38982670019180     0.00000000000000     0.53653437380668     0.53653437380668
+    3     0.00041874916232     0.53653437380668     0.00000000000000    -0.00699508675539
+    4     0.00041874916232     0.53653437380668    -0.00699508675539     0.00000000000000
 
 
 
@@ -1255,10 +1274,10 @@ Properties computed using the CI ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.54975668739572     0.07656262542619     0.07656262542619
-    2     0.54975668739572     0.00000000000000     0.69909867608693     0.69909867608693
-    3     0.07656262542619     0.69909867608693     0.00000000000000     0.02381205620330
-    4     0.07656262542619     0.69909867608693     0.02381205620330     0.00000000000000
+    1     0.00000000000000     0.54975661981877     0.07656263120699     0.07656263120699
+    2     0.54975661981877     0.00000000000000     0.69909861558758     0.69909861558758
+    3     0.07656263120699     0.69909861558758     0.00000000000000     0.02381207427793
+    4     0.07656263120699     0.69909861558758     0.02381207427793     0.00000000000000
 
 
 
@@ -1266,10 +1285,10 @@ Properties computed using the CI ROOT 2 density matrix
 
  #  #
  Irrep: 1
-      1:  1.0935463
-      2:  3.4108491
-      3:  1.3294311
-      4:  1.3294311
+      1:  1.0935461
+      2:  3.4108493
+      3:  1.3294314
+      4:  1.3294314
 
 
 
@@ -1280,10 +1299,10 @@ Properties computed using the CI ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.41959085694247     0.17056567081333     0.17056567081333
-    2     1.41959085694247     0.00000000000000     1.50023286954729     1.50023286954729
-    3     0.17056567081333     1.50023286954729     0.00000000000000     0.16578769295381
-    4     0.17056567081333     1.50023286954729     0.16578769295381     0.00000000000000
+    1     0.00000000000000     1.41959081915926     0.17056573688501     0.17056573688501
+    2     1.41959081915926     0.00000000000000     1.50023297292389     1.50023297292389
+    3     0.17056573688501     1.50023297292389     0.00000000000000     0.16578764856339
+    4     0.17056573688501     1.50023297292389     0.16578764856339     0.00000000000000
 
 
 
@@ -1292,10 +1311,10 @@ Properties computed using the CI ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.69057673410079     0.04562895905897     0.04562895905897
-    2     0.69057673410079     0.00000000000000     0.70046342668555     0.70046342668555
-    3     0.04562895905897     0.70046342668555     0.00000000000000     0.06374175085967
-    4     0.04562895905897     0.70046342668555     0.06374175085967     0.00000000000000
+    1     0.00000000000000     0.69057668337475     0.04562903951872     0.04562903951872
+    2     0.69057668337475     0.00000000000000     0.70046353801434     0.70046353801434
+    3     0.04562903951872     0.70046353801434     0.00000000000000     0.06374173818369
+    4     0.04562903951872     0.70046353801434     0.06374173818369     0.00000000000000
 
 
 
@@ -1304,10 +1323,10 @@ Properties computed using the CI ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.72901412284168     0.12493671175436     0.12493671175436
-    2     0.72901412284168     0.00000000000000     0.79976944286174     0.79976944286174
-    3     0.12493671175436     0.79976944286174     0.00000000000000     0.10204594209414
-    4     0.12493671175436     0.79976944286174     0.10204594209414     0.00000000000000
+    1     0.00000000000000     0.72901413578452     0.12493669736629     0.12493669736629
+    2     0.72901413578452     0.00000000000000     0.79976943490955     0.79976943490955
+    3     0.12493669736629     0.79976943490955     0.00000000000000     0.10204591037970
+    4     0.12493669736629     0.79976943490955     0.10204591037970     0.00000000000000
 
 
 
@@ -1315,10 +1334,10 @@ Properties computed using the CI ROOT 2 density matrix
 
  #  #
  Irrep: 1
-      1:  1.7607222
-      2:  4.4200566
-      3:  1.8365862
-      4:  1.8365862
+      1:  1.7607223
+      2:  4.4200568
+      3:  1.8365864
+      4:  1.8365864
 
   Natural Orbital Occupations:
 
@@ -1329,7 +1348,7 @@ Properties computed using the CI ROOT 2 density matrix
   LUNO+0 :    9 A1    0.004
   LUNO+1 :    6 B2    0.002
   LUNO+2 :   10 A1    0.001
-  LUNO+3 :   11 A1    0.000
+  LUNO+3 :    7 B2    0.000
 
   Beta Occupations:
   HONO-2 :    8 A1    0.996
@@ -1357,20 +1376,20 @@ Properties computed using the CI ROOT 2 density matrix
    ===> CI properties for all CI transition density matrices <=== 
 
 
-Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
+Properties computed using the CI ROOT 0 -> ROOT 1 density matrix
 
   Transition Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1674     Total:     0.1674
+     X:     0.0000      Y:     0.0000      Z:     0.1674     Total:     0.1674
 
   Transition Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -0.4255     Total:     0.4255
+     X:     0.0000      Y:     0.0000      Z:     0.4255     Total:     0.4255
 
   Transition Quadrupole Moment: (Debye Ang)
-    XX:     0.0164     YY:     0.5734     ZZ:    -0.6775
+    XX:    -0.0164     YY:    -0.5734     ZZ:     0.6775
     XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Transition Quadrupole Moment: (Debye Ang)
-    XX:     0.0456     YY:     0.6026     ZZ:    -0.6483
+    XX:    -0.0456     YY:    -0.6026     ZZ:     0.6483
     XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
 	FCI Energy........................................................PASSED
@@ -1380,34 +1399,42 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
 	FCI QUADRUPOLE YY.................................................PASSED
 	FCI QUADRUPOLE ZZ.................................................PASSED
 	FCI QUADRUPOLE YZ.................................................PASSED
+	CI ROOT 0 DIPOLE Y................................................PASSED
+	CI ROOT 0 DIPOLE Z................................................PASSED
+	CI ROOT 0 QUADRUPOLE XX...........................................PASSED
+	CI ROOT 0 QUADRUPOLE YY...........................................PASSED
+	CI ROOT 0 QUADRUPOLE ZZ...........................................PASSED
+	CI ROOT 0 QUADRUPOLE YZ...........................................PASSED
 	CI ROOT 1 DIPOLE Y................................................PASSED
 	CI ROOT 1 DIPOLE Z................................................PASSED
 	CI ROOT 1 QUADRUPOLE XX...........................................PASSED
 	CI ROOT 1 QUADRUPOLE YY...........................................PASSED
 	CI ROOT 1 QUADRUPOLE ZZ...........................................PASSED
 	CI ROOT 1 QUADRUPOLE YZ...........................................PASSED
-	CI ROOT 2 DIPOLE Y................................................PASSED
-	CI ROOT 2 DIPOLE Z................................................PASSED
-	CI ROOT 2 QUADRUPOLE XX...........................................PASSED
-	CI ROOT 2 QUADRUPOLE YY...........................................PASSED
-	CI ROOT 2 QUADRUPOLE ZZ...........................................PASSED
-	CI ROOT 2 QUADRUPOLE YZ...........................................PASSED
-	CI ROOT 1 -> ROOT 2 DIPOLE Y......................................PASSED
-	CI ROOT 1 -> ROOT 2 DIPOLE Z......................................PASSED
-	CI ROOT 1 -> ROOT 2 QUADRUPOLE XX.................................PASSED
-	CI ROOT 1 -> ROOT 2 QUADRUPOLE YY.................................PASSED
-	CI ROOT 1 -> ROOT 2 QUADRUPOLE ZZ.................................PASSED
-	CI ROOT 1 -> ROOT 2 QUADRUPOLE YZ.................................PASSED
+	CI ROOT 0 -> ROOT 1 DIPOLE Y......................................PASSED
+	CI ROOT 0 -> ROOT 1 DIPOLE Z......................................PASSED
+	CI ROOT 0 -> ROOT 1 QUADRUPOLE XX.................................PASSED
+	CI ROOT 0 -> ROOT 1 QUADRUPOLE YY.................................PASSED
+	CI ROOT 0 -> ROOT 1 QUADRUPOLE ZZ.................................PASSED
+	CI ROOT 0 -> ROOT 1 QUADRUPOLE YZ.................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Wed Apr 20 18:43:02 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:15 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 3-4 entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2      entry N          line   119 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1438,11 +1465,11 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is PK.
+  SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
@@ -1450,11 +1477,20 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
   ==> Primary Basis <==
 
   Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 24
     Number of basis function: 60
     Number of Cartesian functions: 60
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 3-4 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2      entry N          line   170 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1471,53 +1507,58 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     607] index = [             0,184528]
-  ==> DiskJK: Disk-Based J/K Matrices <==
+  ==> DFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 96
+    Number of basis function: 324
+    Number of Cartesian functions: 324
+    Spherical Harmonics?: false
+    Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 3.6436246723E-03.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     RMS |[F,P]|
+                           Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     8,    1,    2,    4 ]
-    SOCC [     1,    0,    0,    1 ]
-
-   @ROHF iter   1:  -255.53856376543797   -2.55539e+02   1.15869e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     8,    1,    2,    4 ]
-    SOCC [     0,    0,    1,    1 ]
-
-   @ROHF iter   2:  -262.81484157060055   -7.27628e+00   1.20107e-01 DIIS
-   @ROHF iter   3:  -277.77547923236858   -1.49606e+01   3.23115e-02 DIIS
-   @ROHF iter   4:  -277.79315753545586   -1.76783e-02   3.41591e-02 DIIS
-   @ROHF iter   5:  -278.68601002424748   -8.92852e-01   9.20558e-03 DIIS
-   @ROHF iter   6:  -278.76447010496599   -7.84601e-02   1.96951e-03 DIIS
-   @ROHF iter   7:  -278.76850702977765   -4.03692e-03   9.25505e-04 DIIS
-   @ROHF iter   8:  -278.76918927094800   -6.82241e-04   3.14471e-04 DIIS
-   @ROHF iter   9:  -278.76929077927912   -1.01508e-04   5.75990e-05 DIIS
-   @ROHF iter  10:  -278.76929966597754   -8.88670e-06   2.68301e-05 DIIS
-   @ROHF iter  11:  -278.76930205291080   -2.38693e-06   7.25667e-06 DIIS
-   @ROHF iter  12:  -278.76930226414737   -2.11237e-07   1.98783e-06 DIIS
-   @ROHF iter  13:  -278.76930227244560   -8.29823e-09   3.14515e-07 DIIS
-   @ROHF iter  14:  -278.76930227271458   -2.68983e-10   7.83806e-08 DIIS
-   @ROHF iter  15:  -278.76930227272953   -1.49498e-11   1.60993e-08 DIIS
-   @ROHF iter  16:  -278.76930227273016   -6.25278e-13   3.86968e-09 DIIS
-   @ROHF iter  17:  -278.76930227272987    2.84217e-13   1.29211e-09 DIIS
-   @ROHF iter  18:  -278.76930227272987    0.00000e+00   5.07048e-10 DIIS
-   @ROHF iter  19:  -278.76930227273004   -1.70530e-13   1.50934e-10 DIIS
-   @ROHF iter  20:  -278.76930227273027   -2.27374e-13   5.11793e-11 DIIS
+   @DF-ROHF iter   1:  -263.02734315116351   -2.63027e+02   1.00507e-01 
+   @DF-ROHF iter   2:  -276.73243568980877   -1.37051e+01   4.75684e-02 DIIS
+   @DF-ROHF iter   3:  -277.88909464368891   -1.15666e+00   3.35391e-02 DIIS
+   @DF-ROHF iter   4:  -278.49948344592821   -6.10389e-01   1.70575e-02 DIIS
+   @DF-ROHF iter   5:  -278.65651259934168   -1.57029e-01   1.10624e-02 DIIS
+   @DF-ROHF iter   6:  -278.74322598297653   -8.67134e-02   5.03974e-03 DIIS
+   @DF-ROHF iter   7:  -278.76578937279652   -2.25634e-02   1.59602e-03 DIIS
+   @DF-ROHF iter   8:  -278.76840420850442   -2.61484e-03   3.24019e-04 DIIS
+   @DF-ROHF iter   9:  -278.76854007433701   -1.35866e-04   9.28482e-05 DIIS
+   @DF-ROHF iter  10:  -278.76855425811971   -1.41838e-05   1.35089e-05 DIIS
+   @DF-ROHF iter  11:  -278.76855488214801   -6.24028e-07   3.88444e-06 DIIS
+   @DF-ROHF iter  12:  -278.76855494005542   -5.79074e-08   1.44406e-06 DIIS
+   @DF-ROHF iter  13:  -278.76855494643667   -6.38124e-09   5.90831e-07 DIIS
+   @DF-ROHF iter  14:  -278.76855494711657   -6.79904e-10   7.67486e-08 DIIS
+   @DF-ROHF iter  15:  -278.76855494713254   -1.59730e-11   1.58988e-08 DIIS
+   @DF-ROHF iter  16:  -278.76855494713323   -6.82121e-13   5.23519e-09 DIIS
+   @DF-ROHF iter  17:  -278.76855494713334   -1.13687e-13   1.94633e-09 DIIS
+   @DF-ROHF iter  18:  -278.76855494713328    5.68434e-14   5.72752e-10 DIIS
+   @DF-ROHF iter  19:  -278.76855494713323    5.68434e-14   1.53414e-10 DIIS
+   @DF-ROHF iter  20:  -278.76855494713317    5.68434e-14   4.80169e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1526,33 +1567,33 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
 
     Doubly Occupied:                                                      
 
-       1B2   -20.381078     1A1   -20.381074     2A1   -20.307354  
-       3A1   -15.526075     4A1    -1.327955     5A1    -1.111591  
-       2B2    -1.070718     6A1    -0.620783     1B1    -0.468797  
-       3B2    -0.467831     7A1    -0.447834     1A2    -0.272274  
-       8A1    -0.255625     2B1    -0.247570     4B2    -0.219852  
+       1B2   -20.381113     1A1   -20.381108     2A1   -20.307419  
+       3A1   -15.526335     4A1    -1.328068     5A1    -1.111665  
+       2B2    -1.070780     6A1    -0.620820     1B1    -0.468742  
+       3B2    -0.467837     7A1    -0.447834     1A2    -0.272259  
+       8A1    -0.255621     2B1    -0.247546     4B2    -0.219859  
 
     Singly Occupied:                                                      
 
-       5B2     0.000807     3B1     0.187127  
+       5B2     0.000833     3B1     0.187038  
 
     Virtual:                                                              
 
-       9A1     0.626983     6B2     0.739383    10A1     0.866832  
-      11A1     1.074087    12A1     1.141192     7B2     1.143460  
-       4B1     1.164150    13A1     1.317445     8B2     1.337622  
-      14A1     1.409699     5B1     1.425538    15A1     1.430734  
-       2A2     1.444151     9B2     1.515112     6B1     1.530326  
-      10B2     1.568172    16A1     1.597965     7B1     1.880040  
-       3A2     1.892209    11B2     1.942807    17A1     1.997877  
-      18A1     2.198885     8B1     2.285306     4A2     2.355176  
-      19A1     2.370834    12B2     2.374530     5A2     2.400723  
-      13B2     2.471358    20A1     2.539571     9B1     2.721468  
-      21A1     2.814847    14B2     2.864221     6A2     3.096354  
-      10B1     3.299890    22A1     3.347588    15B2     3.366851  
-      23A1     3.469247    24A1     3.526416    16B2     3.615482  
-      25A1     3.996094    17B2     4.382377    26A1     4.407404  
-      27A1     4.518234  
+       9A1     0.626938     6B2     0.739453    10A1     0.866977  
+      11A1     1.074243    12A1     1.141481     7B2     1.143664  
+       4B1     1.164224    13A1     1.317713     8B2     1.337779  
+      14A1     1.409917     5B1     1.425633    15A1     1.431097  
+       2A2     1.444236     9B2     1.515379     6B1     1.530419  
+      10B2     1.568337    16A1     1.598253     7B1     1.882094  
+       3A2     1.894281    11B2     1.943110    17A1     1.998052  
+      18A1     2.200181     8B1     2.286371     4A2     2.356301  
+      19A1     2.371746    12B2     2.375589     5A2     2.401842  
+      13B2     2.472643    20A1     2.540978     9B1     2.723121  
+      21A1     2.815310    14B2     2.865970     6A2     3.098637  
+      10B1     3.302434    22A1     3.348300    15B2     3.367584  
+      23A1     3.470376    24A1     3.528814    16B2     3.618065  
+      25A1     3.996357    17B2     4.382761    26A1     4.408106  
+      27A1     4.519294  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -1561,31 +1602,19 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
 
   Energy converged.
 
-  @ROHF Final Energy:  -278.76930227273027
+  @DF-ROHF Final Energy:  -278.76855494713317
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            115.5036323901425703
-    One-Electron Energy =                -621.9610038665250613
-    Two-Electron Energy =                 227.6880692036522476
+    One-Electron Energy =                -621.9582924294837767
+    Two-Electron Energy =                 227.6861050922080949
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -278.7693022727302150
+    Total Energy =                       -278.7685549471331115
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Wed Apr 20 18:43:02 2016
-Module time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -1596,87 +1625,113 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.0007
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.2597
+     X:     0.0000      Y:     0.0000      Z:    -0.2598
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.2604     Total:     0.2604
+     X:     0.0000      Y:     0.0000      Z:    -0.2605     Total:     0.2605
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -0.6619     Total:     0.6619
+     X:     0.0000      Y:     0.0000      Z:    -0.6620     Total:     0.6620
+
+
+*** tstop() called on psinet at Mon May 15 15:35:16 2017
+Module time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.08 seconds =       0.03 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 3-4 entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2      entry N          line   170 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
 
          ---------------------------------------------------------
-                                 D E T C I  
+                Multi-Configurational Self-Consistent Field
+                            (a 'D E T C I' module)
 
-                             C. David Sherrill
-                             Matt L. Leininger
-                               18 June 1999
+                 Daniel G. A. Smith, C. David Sherrill, and
+                              Matt L. Leininger
          ---------------------------------------------------------
 
 Warning: iopen=0,opentype!=closed. Making iopen=1
 
-DETCI PARAMETERS: 
-   EX LEVEL      =        8      H0 BLOCKSIZE =      400
-   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
-   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   MAXITER       =       12      NUM PRINT    =       20
-   NUM ROOTS     =        2      ICORE        =        1
-   PRINT         =        1      FCI          =      yes
-   R CONV        = 1.00e-07      MIXED        =      yes
-   E CONV        = 1.00e-10      MIXED4       =      yes
-   OEI FILE      =       35      R4S          =       no
-   REPL OTF      =       no
-   TEI FILE      =       72      DIAG METHOD  =      SEM
-   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
-   S             =   1.0000      Ms0          =       no
-   MAX NUM VECS  =       26
-   RESTART       =       no
-   GUESS VECTOR  =   D FILE      OPENTYPE     = HIGHSPIN
-   REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
-   LSE           =       no      LSE ITER     =        0
-   HD OTF        =      yes      NO DFILE     =       no
-   MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      MPN WIGNER   =       no
-   PERT Z        =   1.0000      FOLLOW ROOT  =        0
-   NUM THREADS   =        1
-   VECS WRITE    =       no      NUM VECS WRITE =      0
-   FILTER GUESS  =       no      SF RESTRICT  =       no
-   OPDM          =      yes      TRANS DENSITY=      yes
+   ==> Parameters <==
 
-   FILES         =  50 51 52 53
+    EX LEVEL       =        8      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        2      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-07      MIXED         =      YES
+    E CONV         = 1.00e-10      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   1.0000      Ms0           =       NO
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      = HIGHSPIN
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       50      REF SYM       =     AUTO
+    IOPEN        =      YES
 
-   EX ALLOW      =  1  1  1  1  1  1  1  1 
-   STATE AVERAGE =  1(0.50)  2(0.50) 
+    EX ALLOW       =  1  1  1  1  1  1  1  1 
+    STATE AVERAGE  =  0(0.50)  1(0.50) 
 
-ORBITALS:
-   NMO          =       60
-   FROZEN CORE  =        5      RESTR CORE   =        7
-   FROZEN VIRT  =        0      RESTR VIRT   =       40
-   DROPPED CORE =       12      DROPPED VIRT =       40
-   EXPLICIT CORE=        0      ORBS IN CI   =        8
-   NUM ALP      =       17      NUM BET      =       15
-   NUM ALP EXPL =        5      NUM BET EXPL =        3
-   IOPEN        =      yes
+   ==> CI Orbital and Space information <==
 
-   DOCC            =   8   1   2   4 
-   SOCC            =   0   0   1   1 
-
-   FROZEN DOCC     =   3   0   0   2 
-   RESTRICTED DOCC =   4   1   1   1 
-   ACTIVE          =   3   0   2   3 
-   RESTRICTED UOCC =  17   5   7  11 
-   FROZEN UOCC     =   0   0   0   0 
-         ---------------------------------------------------------
-
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       60    27     6    10    17
+                 Nmo       60    27     6    10    17
+               Ndocc       15     8     1     2     4
+               Nsocc        2     0     0     1     1
+   ------------------------------------------------------
+                        MCSCF Spaces
+   ------------------------------------------------------
+         Frozen DOCC        5     3     0     0     2
+     Restricted DOCC        7     4     1     1     1
+              Active        8     3     0     2     3
+     Restricted UOCC       40    17     5     7    11
+         Frozen UOCC        0     0     0     0     0
+   ------------------------------------------------------
 
    ==> Setting up CI strings <==
 
-   There are 56 alpha and 56 beta strings
-   The CI space requires 780 (7.80E+02) determinants and 4 blocks
-
+    There are 56 alpha and 56 beta strings
+    The CI space requires 780 (7.80E+02) determinants and 4 blocks
 
    ==> Setting up DF-MCSCF integrals <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):              3200
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 96
+    Number of basis function: 324
+    Number of Cartesian functions: 324
+    Spherical Harmonics?: false
+    Max angular momentum: 3
 
   ==> DFERI: Density Fitted 3-Index Tensors <==
 
@@ -1686,7 +1741,8 @@ ORBITALS:
 
    => Auxiliary Basis <=
 
-  Basis Set: 
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 96
     Number of basis function: 324
     Number of Cartesian functions: 324
@@ -1696,102 +1752,117 @@ ORBITALS:
 
    ==> Starting DF-MCSCF iterations <==
 
-                           Total Energy        Delta E      RMS Grad   NCI
+           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
+   @DF-MCSCF  1:   -278.716341557828    5.2213e-02  3.58e-02  2.56e-13    1    1  Initial CI
+   @DF-MCSCF  2:   -278.756557070568   -4.0216e-02  1.84e-02  2.54e-05    7    1  TS
+   @DF-MCSCF  3:   -278.766961887993   -1.0405e-02  6.31e-03  1.56e-05    8    1  TS
+   @DF-MCSCF  4:   -278.769340963012   -2.3791e-03  3.44e-03  3.19e-06    8    1  TS
+   @DF-MCSCF  5:   -278.770845615571   -1.5047e-03  3.39e-03  2.38e-06    9    1  TS
+   @DF-MCSCF  6:   -278.772098142526   -1.2525e-03  2.10e-03  1.28e-06    9    1  TS
+   @DF-MCSCF  7:   -278.773273182390   -1.1750e-03  2.73e-03  1.28e-06   10    1  TS
+   @DF-MCSCF  8:   -278.774387038902   -1.1139e-03  1.87e-03  1.65e-06   10    1  TS, DIIS
+   @DF-MCSCF  9:   -278.775414199358   -1.0272e-03  2.37e-03  1.26e-06   10    1  TS, DIIS
+   @DF-MCSCF 10:   -278.775987690983   -5.7349e-04  1.89e-03  1.05e-06   10    1  TS, DIIS
+   @DF-MCSCF 11:   -278.777998089528   -2.0104e-03  2.96e-03  8.52e-07   11    1  TS, DIIS
+   @DF-MCSCF 12:   -278.777667562339    3.3053e-04  1.36e-03  1.51e-06   10    1  TS, DIIS
+   @DF-MCSCF 13:   -278.778280744923   -6.1318e-04  1.19e-03  3.96e-07   11    1  TS, DIIS
+   @DF-MCSCF 14:   -278.778321572760   -4.0828e-05  4.45e-04  9.50e-07    9    1  TS, DIIS
+   @DF-MCSCF 15:   -278.778330150719   -8.5780e-06  2.59e-04  1.70e-07   10    1  TS, DIIS
+   @DF-MCSCF 16:   -278.778339220593   -9.0699e-06  8.31e-05  1.12e-07   10    1  TS, DIIS
 
-   @DF-MCSCF Iter   1:  -278.71633183363281    5.2970e-02   3.5808e-02   8   Initial CI
-   @DF-MCSCF Iter   2:  -278.75657694707797   -4.0245e-02   1.8319e-02  12   APPROX
-   @DF-MCSCF Iter   3:  -278.76694108684421   -1.0364e-02   6.4238e-03  12   APPROX
-   @DF-MCSCF Iter   4:  -278.76924665043555   -2.3056e-03   3.4690e-03  11   APPROX
-   @DF-MCSCF Iter   5:  -278.77067835459104   -1.4317e-03   3.2805e-03  12   APPROX
-   @DF-MCSCF Iter   6:  -278.77181765513052   -1.1393e-03   2.3507e-03  11   APPROX
-   @DF-MCSCF Iter   7:  -278.77286559724178   -1.0479e-03   2.8683e-03  12   APPROX
-   @DF-MCSCF Iter   8:  -278.77385532015614   -9.8972e-04   2.2817e-03  12   APPROX
-   @DF-MCSCF Iter   9:  -278.77479037865805   -9.3506e-04   2.6527e-03  12   APPROX, DIIS
-   @DF-MCSCF Iter  10:  -278.77627817706912   -1.4878e-03   2.1832e-03  12   APPROX, DIIS
-   @DF-MCSCF Iter  11:  -278.77703243977828   -7.5426e-04   3.1151e-03  12   APPROX, DIIS
-   @DF-MCSCF Iter  12:  -278.77715207122918   -1.1963e-04   1.3891e-03  12   APPROX, DIIS
-   @DF-MCSCF Iter  13:  -278.77793927600760   -7.8720e-04   9.5221e-04  12   APPROX, DIIS
-   @DF-MCSCF Iter  14:  -278.77824107440415   -3.0180e-04   7.7287e-04  12   APPROX, DIIS
-   @DF-MCSCF Iter  15:  -278.77832154582302   -8.0471e-05   4.5085e-04  12   APPROX, DIIS
-   @DF-MCSCF Iter  16:  -278.77833155981114   -1.0014e-05   3.5368e-04  10   APPROX, DIIS
-   @DF-MCSCF Iter  17:  -278.77833519917380   -3.6394e-06   2.3847e-04  10   APPROX, DIIS
-   @DF-MCSCF Iter  18:  -278.77833845133171   -3.2522e-06   1.5874e-04  10   APPROX, DIIS
-   @DF-MCSCF Iter  19:  -278.77834222100432   -3.7697e-06   1.4711e-04  11   APPROX, DIIS
-   @DF-MCSCF Iter  20:  -278.77834321807711   -9.9707e-07   1.4872e-04  10   APPROX, DIIS
-   @DF-MCSCF Iter  21:  -278.77834422909109   -1.0110e-06   1.0207e-04   9   APPROX, DIIS
-   @DF-MCSCF Iter  22:  -278.77834469998834   -4.7090e-07   6.5292e-05  10   APPROX, DIIS
-   @DF-MCSCF Iter  23:  -278.77834512254231   -4.2255e-07   4.6936e-05  10   APPROX, DIIS
-   @DF-MCSCF Iter  24:  -278.77834529002553   -1.6748e-07   5.8892e-05  10   APPROX, DIIS
-   @DF-MCSCF Iter  25:  -278.77834547224484   -1.8222e-07   5.6816e-05   8   APPROX, DIIS
-   @DF-MCSCF Iter  26:  -278.77834563734359   -1.6510e-07   4.3397e-05   9   APPROX, DIIS
-   @DF-MCSCF Iter  27:  -278.77834578088880   -1.4355e-07   2.7411e-05   9   APPROX, DIIS
-   @DF-MCSCF Iter  28:  -278.77834590008302   -1.1919e-07   1.6806e-05   9   APPROX, DIIS
-   @DF-MCSCF Iter  29:  -278.77834596906149   -6.8978e-08   1.6158e-05   9   APPROX, DIIS
+          @DF-MCSCF has converged!
 
-       MCSCF has converged!
+   @DF-MCSCF Final Energy: -278.778339220593239
 
-   @DF-MCSCF Final Energy:  -278.778345969061490
+   ==> Energetics <==
 
+    SCF energy =         -278.768554947133111
+    Total MCSCF energy = -278.778339220593239
 
-   => Energetics <=
+   ==> MCSCF root 0 information <==
 
-   SCF energy =             -278.769302272730272
-   Total CI energy =        -278.778345969061490
+    MCSCF Root 0 energy =  -278.817714736652988
 
+   Active Space Natural occupation numbers:
 
-   CI Root  1 energy =      -278.817677568890133
+        B1   1.983507        B2   1.975704        A1   1.972130
+        B1   1.015607        B2   1.003686        A1   0.028623
+        B2   0.019188        A1   0.001557
 
+   The 20 most important determinants:
 
-The 20 most important determinants
-
-    1    0.970435  (    2,   13)  8A1X  2B1X  3B1A  4B2X  5B2A  
-    2   -0.104662  (    2,   19)  8A1X  2B1X  3B1A  4B2A  5B2X  
-    3   -0.093688  (    2,   16)  8A1X  2B1A  3B1X  4B2X  5B2A  
-    4    0.058333  (   10,   25)  8A1X  2B1X  3B1A  5B2A  6B2X  
-    5    0.056429  (    3,   16)  8A1B  9A1A  2B1A  3B1X  4B2X  5B2A  
-    6    0.048607  (   10,   16)  8A1X  2B1A  3B1X  4B2B  5B2A  6B2A  
-    7    0.045928  (    2,   17)  8A1A  9A1B  2B1A  3B1X  4B2X  5B2A  
-    8    0.043319  (    4,   16)  8A1B  10A1A  2B1A  3B1X  4B2X  5B2A  
-    9   -0.042469  (    2,   28)  8A1X  2B1A  3B1X  4B2A  5B2A  6B2B  
-   10   -0.042239  (    3,   14)  9A1X  2B1X  3B1A  4B2X  5B2A  
-   11   -0.042009  (    2,   22)  8A1X  2B1A  3B1X  4B2A  5B2X  
-   12   -0.041615  (    2,   14)  8A1A  9A1B  2B1X  3B1A  4B2X  5B2A  
-   13   -0.036586  (    4,   14)  9A1B  10A1A  2B1X  3B1A  4B2X  5B2A  
-   14    0.036446  (    2,   18)  8A1A  10A1B  2B1A  3B1X  4B2X  5B2A  
-   15   -0.036284  (    4,   15)  10A1X  2B1X  3B1A  4B2X  5B2A  
-   16   -0.035575  (    3,   15)  9A1A  10A1B  2B1X  3B1A  4B2X  5B2A  
-   17   -0.034216  (   10,   14)  8A1A  9A1B  2B1X  3B1A  4B2B  5B2A  6B2A  
-   18    0.033066  (    3,   25)  8A1B  9A1A  2B1X  3B1A  4B2A  5B2A  6B2B  
-   19   -0.028944  (    3,   13)  8A1B  9A1A  2B1X  3B1A  4B2X  5B2A  
-   20    0.027207  (   10,   19)  8A1X  2B1X  3B1A  5B2X  6B2A  
+    *   1    0.972130  (    2,   13)  8A1X 2B1X 3B1A 4B2X 5B2A 
+    *   2   -0.104659  (    2,   19)  8A1X 2B1X 3B1A 4B2A 5B2X 
+    *   3   -0.090920  (    2,   16)  8A1X 2B1A 3B1X 4B2X 5B2A 
+    *   4    0.058078  (   10,   25)  8A1X 2B1X 3B1A 5B2A 6B2X 
+    *   5    0.058031  (    3,   16)  8A1B 9A1A 2B1A 3B1X 4B2X 5B2A 
+    *   6   -0.050577  (    3,   14)  9A1X 2B1X 3B1A 4B2X 5B2A 
+    *   7    0.048282  (   10,   16)  8A1X 2B1A 3B1X 4B2B 5B2A 6B2A 
+    *   8    0.046757  (    2,   17)  8A1A 9A1B 2B1A 3B1X 4B2X 5B2A 
+    *   9   -0.043013  (    2,   22)  8A1X 2B1A 3B1X 4B2A 5B2X 
+    *  10   -0.042078  (    2,   28)  8A1X 2B1A 3B1X 4B2A 5B2A 6B2B 
+    *  11    0.036697  (    4,   16)  8A1B 10A1A 2B1A 3B1X 4B2X 5B2A 
+    *  12   -0.036068  (   10,   14)  8A1A 9A1B 2B1X 3B1A 4B2B 5B2A 6B2A 
+    *  13   -0.035332  (    4,   14)  9A1B 10A1A 2B1X 3B1A 4B2X 5B2A 
+    *  14   -0.034674  (    3,   15)  9A1A 10A1B 2B1X 3B1A 4B2X 5B2A 
+    *  15    0.034573  (    3,   25)  8A1B 9A1A 2B1X 3B1A 4B2A 5B2A 6B2B 
+    *  16   -0.034400  (    2,   25)  8A1X 2B1X 3B1A 4B2A 5B2A 6B2B 
+    *  17    0.030844  (    2,   18)  8A1A 10A1B 2B1A 3B1X 4B2X 5B2A 
+    *  18   -0.029484  (    4,   15)  10A1X 2B1X 3B1A 4B2X 5B2A 
+    *  19    0.027843  (   10,   13)  8A1X 2B1X 3B1A 4B2B 5B2A 6B2A 
+    *  20    0.027027  (    2,   26)  8A1A 9A1B 2B1X 3B1A 4B2A 5B2A 6B2B 
 
 
-   CI Root  2 energy =      -278.739014369232848
+   ==> MCSCF root 1 information <==
+
+    MCSCF Root 1 energy =  -278.738963704533546
+
+   Active Space Natural occupation numbers:
+
+        B1   1.988653        B2   1.984319        A1   1.975291
+        B1   1.010438        B2   1.004524        A1   0.024754
+        B2   0.006381        A1   0.005641
+
+   The 20 most important determinants:
+
+    *   1   -0.945299  (    2,   19)  8A1X 2B1X 3B1A 4B2A 5B2X 
+    *   2   -0.197317  (    2,   22)  8A1X 2B1A 3B1X 4B2A 5B2X 
+    *   3    0.116750  (   10,   19)  8A1X 2B1X 3B1A 5B2X 6B2A 
+    *   4   -0.109853  (    2,   13)  8A1X 2B1X 3B1A 4B2X 5B2A 
+    *   5    0.097548  (    2,   20)  8A1A 9A1B 2B1X 3B1A 4B2A 5B2X 
+    *   6    0.093509  (    3,   19)  8A1B 9A1A 2B1X 3B1A 4B2A 5B2X 
+    *   7    0.059872  (    2,   16)  8A1X 2B1A 3B1X 4B2X 5B2A 
+    *   8    0.045576  (    3,   20)  9A1X 2B1X 3B1A 4B2A 5B2X 
+    *   9    0.042746  (    4,   19)  8A1B 10A1A 2B1X 3B1A 4B2A 5B2X 
+    *  10    0.039469  (    2,   21)  8A1A 10A1B 2B1X 3B1A 4B2A 5B2X 
+    *  11    0.036788  (    3,   21)  9A1A 10A1B 2B1X 3B1A 4B2A 5B2X 
+    *  12    0.035508  (    4,   20)  9A1B 10A1A 2B1X 3B1A 4B2A 5B2X 
+    *  13    0.034118  (   44,   32)  8A1X 10A1X 2B1X 3B1A 4B2A 
+    *  14    0.030537  (    4,   21)  10A1X 2B1X 3B1A 4B2A 5B2X 
+    *  15   -0.029979  (    6,   19)  8A1X 2B1X 3B1A 4B2A 5B2B 6B2A 
+    *  16    0.023200  (   25,   50)  8A1A 9A1A 2B1X 3B1B 4B2A 5B2X 
+    *  17   -0.021181  (   43,   32)  8A1X 9A1A 10A1B 2B1X 3B1A 4B2A 
+    *  18   -0.020720  (   10,   13)  8A1X 2B1X 3B1A 4B2B 5B2A 6B2A 
+    *  19   -0.019549  (   44,   31)  8A1X 9A1B 10A1A 2B1X 3B1A 4B2A 
+    *  20    0.019161  (   46,   37)  8A1A 9A1A 2B1X 3B1A 4B2B 5B2X 
 
 
-The 20 most important determinants
 
-    1   -0.939711  (    2,   19)  8A1X  2B1X  3B1A  4B2A  5B2X  
-    2   -0.191562  (    2,   22)  8A1X  2B1A  3B1X  4B2A  5B2X  
-    3    0.123230  (   10,   19)  8A1X  2B1X  3B1A  5B2X  6B2A  
-    4    0.117548  (    2,   20)  8A1A  9A1B  2B1X  3B1A  4B2A  5B2X  
-    5    0.113131  (    3,   19)  8A1B  9A1A  2B1X  3B1A  4B2A  5B2X  
-    6   -0.110923  (    2,   13)  8A1X  2B1X  3B1A  4B2X  5B2A  
-    7    0.061199  (    4,   19)  8A1B  10A1A  2B1X  3B1A  4B2A  5B2X  
-    8    0.059392  (    2,   16)  8A1X  2B1A  3B1X  4B2X  5B2A  
-    9    0.058603  (    2,   21)  8A1A  10A1B  2B1X  3B1A  4B2A  5B2X  
-   10    0.036754  (    4,   21)  10A1X  2B1X  3B1A  4B2A  5B2X  
-   11    0.035427  (    3,   21)  9A1A  10A1B  2B1X  3B1A  4B2A  5B2X  
-   12    0.034082  (    4,   20)  9A1B  10A1A  2B1X  3B1A  4B2A  5B2X  
-   13    0.033247  (    3,   20)  9A1X  2B1X  3B1A  4B2A  5B2X  
-   14   -0.030652  (    6,   19)  8A1X  2B1X  3B1A  4B2A  5B2B  6B2A  
-   15    0.030028  (   44,   32)  8A1X  10A1X  2B1X  3B1A  4B2A  
-   16   -0.022719  (   43,   32)  8A1X  9A1A  10A1B  2B1X  3B1A  4B2A  
-   17    0.022020  (   25,   50)  8A1A  9A1A  2B1X  3B1B  4B2A  5B2X  
-   18   -0.021100  (   44,   31)  8A1X  9A1B  10A1A  2B1X  3B1A  4B2A  
-   19   -0.019636  (   10,   13)  8A1X  2B1X  3B1A  4B2B  5B2A  6B2A  
-   20    0.019135  (   43,   31)  8A1X  9A1X  2B1X  3B1A  4B2A  
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
+Properties computed using the CASSCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0007
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.7863
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.7856     Total:     0.7856
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.9967     Total:     1.9967
 
 
 
@@ -1809,27 +1880,27 @@ Properties computed using the CASSCF density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          0.7855938           -0.0007085            0.7848853
+ Dipole Z            :          0.7862695           -0.0007085            0.7855610
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :        -16.6574937            0.0000000          -16.6574937
+ Quadrupole XX       :        -16.6576633            0.0000000          -16.6576633
  Quadrupole XY       :          0.0000000           -0.0000000           -0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -78.6884451           57.9186331          -20.7698120
+ Quadrupole YY       :        -78.6878967           57.9186331          -20.7692636
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :       -103.2396979           82.1709850          -21.0687129
+ Quadrupole ZZ       :       -103.2388270           82.1709850          -21.0678420
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
- Octupole XXY        :          0.0000000            0.0000000            0.0000000
- Octupole XXZ        :          1.0057152           -0.0000000            1.0057152
- Octupole XYY        :          0.0000000            0.0000000            0.0000000
+ Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
+ Octupole XXZ        :          1.0071689           -0.0000000            1.0071689
+ Octupole XYY        :          0.0000000           -0.0000000           -0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000           -0.0000000           -0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         85.6647391          -78.8147307            6.8500083
+ Octupole YYZ        :         85.6671712          -78.8147307            6.8524405
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :        -95.1071914           93.4345542           -1.6726373
+ Octupole ZZZ        :        -95.0984865           93.4345542           -1.6639324
 
  --------------------------------------------------------------------------------
 
@@ -1837,110 +1908,110 @@ Properties computed using the CASSCF density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  O           -22.474752029678
-    2  N           -18.387035979742
-    3  O           -22.577436116415
-    4  O           -22.577436116415
+    1  O           -22.474757882782
+    2  N           -18.387120584522
+    3  O           -22.577424594875
+    4  O           -22.577424594875
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0007
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7856
+     X:     0.0000      Y:     0.0000      Z:     0.7863
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7849     Total:     0.7849
+     X:     0.0000      Y:     0.0000      Z:     0.7856     Total:     0.7856
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.9950     Total:     1.9950
+     X:     0.0000      Y:     0.0000      Z:     1.9967     Total:     1.9967
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -22.4049     YY:   -27.9361     ZZ:   -28.3381
+    XX:   -22.4051     YY:   -27.9354     ZZ:   -28.3370
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     3.8215     YY:    -1.7097     ZZ:    -2.1118
+    XX:     3.8207     YY:    -1.7095     ZZ:    -2.1111
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 
   Orbital extents (a.u.):
             MO          <x^2>          <y^2>          <z^2>          <r^2>
-       0 B2  0   0.0177547207   3.6370466484   1.8691095193   5.5239108884
-       1 A1  0   0.0177526219   3.6370541824   1.8691499892   5.5239567936
-       2 A1  1   0.0177571150   0.0177580929   6.5533995632   6.5889147711
-       3 A1  2   0.0235092053   0.0235080616   0.0589438856   0.1059611525
-       4 A1  3   0.5117688312   1.9426723014   1.5824930715   4.0369342041
-       5 A1  4   0.5263969129   1.3917725150   6.3060436687   8.2242130967
-       6 B2  1   0.4906676506   3.5596612507   1.6318646675   5.6821935688
-       7 A1  5   0.5158621710   3.4868429443   4.2151972860   8.2179024013
-       8 B1  0   1.4036220810   2.4563619137   1.7395037781   5.5994877728
-       9 B2  2   0.4273262692   3.6108154499   2.9416116977   6.9797534169
-      10 A1  6   0.4641431197   4.2500007735   3.0888153643   7.8029592575
-      11 A2  0   1.2311265723   4.0993363321   2.1749908416   7.5054537460
-      12 A1  7   0.3550338283   0.7372442221   3.9805193337   5.0727973841
-      13 B1  1   1.2295040631   1.0694741287   5.4695400391   7.7685182308
-      14 B2  3   0.4059480805   1.6890744543   6.2579025156   8.3529250504
-      15 B2  4   0.3799494312   4.8904819115   2.3377017055   7.6081330482
-      16 B1  2   1.0744234836   1.2785929398   2.6035485607   4.9565649841
-      17 A1  8   0.4734978644   1.6264687660   3.3333623861   5.4333290164
-      18 B2  5   0.5829461814   2.1301935767   4.1662975718   6.8794373299
-      19 A1  9   0.3563211171   1.5982590565   2.8840808066   4.8386609802
-      20 A1 10   2.5165475252   3.3813971460   2.6990788985   8.5970235697
-      21 A1 11   1.9640619261   3.2202905510   4.5860599314   9.7704124085
-      22 B2  6   1.1675903394   4.5959918291   1.9009452207   7.6645273892
-      23 B1  3   3.6202347194   1.1903358444   1.1387146697   5.9492852335
-      24 A1 12   1.1286266174   3.2086946128  11.9219795267  16.2593007568
-      25 B2  7   0.9750592127   7.8588495638   5.4287030174  14.2626117939
-      26 A1 13   1.1119006883   5.7898843836   3.8554998343  10.7572849063
-      27 B1  4   2.5188743099   3.7193649873   4.1969908306  10.4352301278
-      28 A1 14   1.3374663272   3.7905549867   6.8930706419  12.0210919558
-      29 A2  1   2.4653416643   5.1471510008   2.6790588542  10.2915515193
-      30 B2  8   1.1564169394   3.5161113782   7.3138267562  11.9863550737
-      31 B1  5   2.6549263086   1.8702617018   7.8188259597  12.3440139701
-      32 B2  9   0.7904003036   5.8133783619   4.4972822072  11.1010608727
-      33 A1 15   1.8065789639   4.4616131578   2.6482735995   8.9164657213
-      34 B1  6   0.9508610818   1.7512080055   2.7072313300   5.4093004174
-      35 A2  2   0.9564747155   2.3117174560   1.7278905311   4.9960827025
-      36 B2 10   1.9643352705   3.8540227809   3.5718022629   9.3901603143
-      37 A1 16   1.5832941435   2.7487103119   5.7132357413  10.0452401966
-      38 A1 17   1.1391363454   2.8346915854   3.6622066598   7.6360345905
-      39 B1  7   0.9520426065   3.7522090098   2.9475017950   7.6517534113
-      40 A2  3   0.9403413009   1.5793238550   5.9865418278   8.5062069838
-      41 A1 18   1.4855353167   1.8102409360   4.9390669276   8.2348431803
-      42 B2 11   0.6129064045   4.0752529034   3.1342005830   7.8223598909
-      43 A2  4   0.9646639632   3.9219736355   2.8097088315   7.6963464302
-      44 B2 12   0.6647076380   2.4131678734   3.8320792192   6.9099547306
-      45 A1 19   1.3869485140   3.0330722861   3.0600909123   7.4801117125
-      46 B1  8   1.3660234150   2.4860311226   4.1019647526   7.9540192903
-      47 A1 20   1.0766293495   1.5597205957   2.0607754191   4.6971253643
-      48 B2 13   0.6453573597   3.7875231298   2.7369400587   7.1698205481
-      49 A2  5   1.0327472933   2.7548355425   2.0453395557   5.8329223915
-      50 B1  9   1.0283304700   1.4168653471   3.7220523420   6.1672481591
-      51 A1 21   0.7706046074   3.9394926749   3.0371785074   7.7472757897
-      52 B2 14   0.7149562620   3.8552731333   3.6552669455   8.2254963408
-      53 A1 22   0.8097198166   1.7587219812   6.6987348634   9.2671766612
-      54 A1 23   0.5263689776   2.1287441389   3.5140786368   6.1691917533
-      55 B2 15   0.3815257342   2.6037458297   3.7040054712   6.6892770351
-      56 A1 24   0.9953387717   3.2941056338   2.8309764571   7.1204208626
-      57 B2 16   1.6437749115   4.7763051029   3.0945746006   9.5146546150
-      58 A1 25   1.2560589607   2.3366694601   4.9840060882   8.5767345091
-      59 A1 26   1.1256515051   1.8898478050   5.1150853483   8.1305846584
+       0 B2  0   0.0177547273   3.6370461313   1.8691092471   5.5239101056
+       1 A1  0   0.0177526276   3.6370536970   1.8691497126   5.5239560372
+       2 A1  1   0.0177571143   0.0177580922   6.5533986552   6.5889138617
+       3 A1  2   0.0235091888   0.0235080454   0.0589438545   0.1059610887
+       4 A1  3   0.5093297596   1.7549576457   1.5661688517   3.8304562570
+       5 A1  4   0.5273755117   1.5464263773   6.1850646067   8.2588664957
+       6 B2  1   0.4906808951   3.5593513903   1.6317275511   5.6817598365
+       7 A1  5   0.5139069951   3.7179724299   4.0327206782   8.2646001032
+       8 B1  0   1.4037343713   2.4553870252   1.7384943088   5.5976157053
+       9 B2  2   0.4273571935   3.6102109033   2.9426351732   6.9802032700
+      10 A1  6   0.4676793341   4.0529745222   3.4243748244   7.9450286808
+      11 A2  0   1.2311947335   4.0993528098   2.1749963922   7.5055439355
+      12 A1  7   0.3487708044   0.7118148168   4.0669111413   5.1274967624
+      13 B1  1   1.2301098291   1.0800967461   5.4382714118   7.7484779870
+      14 B2  3   0.4028358179   1.6760864834   6.2669646145   8.3458869158
+      15 B2  4   0.3800527350   4.8909790129   2.3382320039   7.6092637518
+      16 B1  2   1.0738193288   1.2689742314   2.6358818964   4.9786754567
+      17 A1  8   0.4469197554   1.3956380911   3.3680476754   5.2106055218
+      18 B2  5   0.5857702183   2.1444468252   4.1522511460   6.8824681895
+      19 A1  9   0.3760658512   1.7631516972   2.6869129986   4.8261305470
+      20 A1 10   2.4701431096   3.5122919306   2.5042929229   8.4867279631
+      21 A1 11   1.8840828699   3.1549644470   4.1152164722   9.1542637891
+      22 B2  6   1.1714388414   4.5953185118   1.9614948105   7.7282521637
+      23 B1  3   3.6198893322   1.1902888051   1.1384650647   5.9486432020
+      24 A1 12   1.1580370839   2.8891084730  12.7038130521  16.7509586089
+      25 B2  7   0.9671162074   7.8905903099   5.3005504429  14.1582569602
+      26 A1 13   1.1033697531   5.8929699526   3.9220030082  10.9183427139
+      27 B1  4   2.5187031125   3.7185185232   4.1969414531  10.4341630888
+      28 A1 14   1.3653501814   3.9481348095   7.0875058291  12.4009908201
+      29 A2  1   2.4652476679   5.1466062300   2.6788028814  10.2906567793
+      30 B2  8   1.1563309548   3.4527128679   7.3375438677  11.9465876905
+      31 B1  5   2.6549093249   1.8714343604   7.8177175863  12.3440612716
+      32 B2  9   0.7954970976   5.8576486413   4.5092525323  11.1623982712
+      33 A1 15   1.8684831818   4.4887076789   2.5964623932   8.9536532540
+      34 B1  6   0.9510326250   1.7532642037   2.7110198010   5.4153166297
+      35 A2  2   0.9565569677   2.3138214060   1.7306857822   5.0010641559
+      36 B2 10   1.9647438277   3.8604469887   3.6125917825   9.4377825989
+      37 A1 16   1.5753647777   2.7086010489   5.4799502313   9.7639160580
+      38 A1 17   1.1486681601   2.8307677162   3.6557665187   7.6352023950
+      39 B1  7   0.9519735901   3.7517987350   2.9475264899   7.6512988149
+      40 A2  3   0.9403033370   1.5811399502   5.9842971441   8.5057404312
+      41 A1 18   1.4777024710   1.7977163119   4.9381344070   8.2135531899
+      42 B2 11   0.6130610817   4.0751550095   3.1349933215   7.8232094126
+      43 A2  4   0.9645745572   3.9198824232   2.8119950678   7.6964520482
+      44 B2 12   0.6609183316   2.3966733421   3.8313178065   6.8889094803
+      45 A1 19   1.4071759963   3.0903447189   3.0479902937   7.5455110089
+      46 B1  8   1.3662554724   2.4852850712   4.1026383597   7.9541789034
+      47 A1 20   1.0761338545   1.5586253124   2.0555524920   4.6903116588
+      48 B2 13   0.6460255786   3.7837551689   2.7343904900   7.1641712375
+      49 A2  5   1.0328182462   2.7535350025   2.0427531745   5.8291064232
+      50 B1  9   1.0284155526   1.4156572995   3.7189176856   6.1629905377
+      51 A1 21   0.7729568625   3.9456068279   3.0544213813   7.7729850716
+      52 B2 14   0.7155587235   3.8545761723   3.6605583910   8.2306932867
+      53 A1 22   0.8171853571   1.7514828721   6.7340178166   9.3026860458
+      54 A1 23   0.5299217377   2.1780876301   3.4441065846   6.1521159523
+      55 B2 15   0.3818494795   2.6063716623   3.6954093124   6.6836304542
+      56 A1 24   0.9981744143   3.3013286976   2.8357583867   7.1352614986
+      57 B2 16   1.6446309984   4.7755257566   3.0950915271   9.5152482821
+      58 A1 25   1.2580074295   2.3292696336   5.0138054673   8.6010825304
+      59 A1 26   1.1226869603   1.8987696867   5.0909130935   8.1123697405
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.52954  3.89746  0.63208 -0.42700
-       2     N     3.49106  2.86510  0.62596  0.64385
-       3     O     4.48970  4.11872  0.37098 -0.60842
-       4     O     4.48970  4.11872  0.37098 -0.60842
+       1     O     4.52945  3.89706  0.63239 -0.42652
+       2     N     3.49107  2.86567  0.62540  0.64326
+       3     O     4.48974  4.11863  0.37110 -0.60837
+       4     O     4.48974  4.11863  0.37110 -0.60837
 
    Total alpha = 17.00000, Total beta = 15.00000, Total charge = -1.00000
 
   Lowdin Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.44829  3.81314  0.63516 -0.26143
-       2     N     3.66133  3.05526  0.60607  0.28340
-       3     O     4.44519  4.06580  0.37939 -0.51098
-       4     O     4.44519  4.06580  0.37939 -0.51098
+       1     O     4.44829  3.81290  0.63539 -0.26119
+       2     N     3.66122  3.05559  0.60563  0.28319
+       3     O     4.44525  4.06576  0.37949 -0.51100
+       4     O     4.44525  4.06576  0.37949 -0.51100
 
   Total alpha = 17.00000, Total beta = 15.00000, Total charge = -1.00000
 
@@ -1952,10 +2023,10 @@ Properties computed using the CASSCF density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.11761619818996     0.03331422885115     0.03331422885115
-    2     1.11761619818996     0.00000000000000     1.07005543734682     1.07005543734682
-    3     0.03331422885115     1.07005543734682     0.00000000000000     0.06740276412361
-    4     0.03331422885115     1.07005543734682     0.06740276412361     0.00000000000000
+    1     0.00000000000000     1.11783057065374     0.03339714630877     0.03339714630877
+    2     1.11783057065374     0.00000000000000     1.07005238955812     1.07005238955812
+    3     0.03339714630877     1.07005238955812     0.00000000000000     0.06732504153841
+    4     0.03339714630877     1.07005238955812     0.06732504153841     0.00000000000000
 
 
 
@@ -1964,10 +2035,10 @@ Properties computed using the CASSCF density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.45566260026230     0.00773454440659     0.00773454440659
-    2     0.45566260026230     0.00000000000000     0.47512025272349     0.47512025272349
-    3     0.00773454440659     0.47512025272349     0.00000000000000    -0.01928952152742
-    4     0.00773454440659     0.47512025272349    -0.01928952152742     0.00000000000000
+    1     0.00000000000000     0.45576076594378     0.00776128489136     0.00776128489136
+    2     0.45576076594378     0.00000000000000     0.47507592168458     0.47507592168458
+    3     0.00776128489136     0.47507592168458     0.00000000000000    -0.01933344497539
+    4     0.00776128489136     0.47507592168458    -0.01933344497539     0.00000000000000
 
 
 
@@ -1976,10 +2047,10 @@ Properties computed using the CASSCF density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.66195359792765     0.02557968444456     0.02557968444456
-    2     0.66195359792765     0.00000000000000     0.59493518462333     0.59493518462333
-    3     0.02557968444456     0.59493518462333     0.00000000000000     0.08669228565103
-    4     0.02557968444456     0.59493518462333     0.08669228565103     0.00000000000000
+    1     0.00000000000000     0.66206980470996     0.02563586141741     0.02563586141741
+    2     0.66206980470996     0.00000000000000     0.59497646787354     0.59497646787354
+    3     0.02563586141741     0.59497646787354     0.00000000000000     0.08665848651379
+    4     0.02563586141741     0.59497646787354     0.08665848651379     0.00000000000000
 
 
 
@@ -1987,10 +2058,10 @@ Properties computed using the CASSCF density matrix
 
  #  #
  Irrep: 1
-      1:  1.1842447
-      2:  3.2577271
-      3:  1.1707724
-      4:  1.1707724
+      1:  1.1846249
+      2:  3.2579353
+      3:  1.1707746
+      4:  1.1707746
 
 
 
@@ -2001,10 +2072,10 @@ Properties computed using the CASSCF density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.52839386137303     0.11141105332965     0.11141105332965
-    2     1.52839386137303     0.00000000000000     1.41004468653648     1.41004468653649
-    3     0.11141105332965     1.41004468653648     0.00000000000000     0.20563747254827
-    4     0.11141105332965     1.41004468653649     0.20563747254827     0.00000000000000
+    1     0.00000000000000     1.52832422294038     0.11145794909420     0.11145794909420
+    2     1.52832422294038     0.00000000000000     1.41000076638817     1.41000076638817
+    3     0.11145794909420     1.41000076638817     0.00000000000000     0.20566179983573
+    4     0.11145794909420     1.41000076638817     0.20566179983573     0.00000000000000
 
 
 
@@ -2013,10 +2084,10 @@ Properties computed using the CASSCF density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.70666256271406     0.04509838006340     0.04509838006340
-    2     0.70666256271406     0.00000000000000     0.67531264370209     0.67531264370209
-    3     0.04509838006340     0.67531264370209     0.00000000000000     0.06035241417692
-    4     0.04509838006340     0.67531264370209     0.06035241417692     0.00000000000000
+    1     0.00000000000000     0.70662511487693     0.04511313468265     0.04511313468265
+    2     0.70662511487693     0.00000000000000     0.67526323043600     0.67526323043600
+    3     0.04511313468265     0.67526323043600     0.00000000000000     0.06035567876875
+    4     0.04511313468265     0.67526323043600     0.06035567876875     0.00000000000000
 
 
 
@@ -2025,10 +2096,10 @@ Properties computed using the CASSCF density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.82173129865897     0.06631267326625     0.06631267326626
-    2     0.82173129865897     0.00000000000000     0.73473204283440     0.73473204283440
-    3     0.06631267326625     0.73473204283440     0.00000000000000     0.14528505837134
-    4     0.06631267326626     0.73473204283440     0.14528505837134     0.00000000000000
+    1     0.00000000000000     0.82169910806345     0.06634481441155     0.06634481441155
+    2     0.82169910806345     0.00000000000000     0.73473753595217     0.73473753595217
+    3     0.06634481441155     0.73473753595217     0.00000000000000     0.14530612106698
+    4     0.06634481441155     0.73473753595217     0.14530612106698     0.00000000000000
 
 
 
@@ -2036,10 +2107,10 @@ Properties computed using the CASSCF density matrix
 
  #  #
  Irrep: 1
-      1:  1.7512160
-      2:  4.3484832
-      3:  1.7270932
-      4:  1.7270932
+      1:  1.7512401
+      2:  4.3483258
+      3:  1.7271205
+      4:  1.7271205
 
   Natural Orbital Occupations:
 
@@ -2050,7 +2121,7 @@ Properties computed using the CASSCF density matrix
   LUNO+0 :    9 A1    0.016
   LUNO+1 :    6 B2    0.012
   LUNO+2 :   10 A1    0.002
-  LUNO+3 :   11 A1    0.000
+  LUNO+3 :    4 B1    0.000
 
   Beta Occupations:
   HONO-2 :    8 A1    0.986
@@ -2078,7 +2149,7 @@ Properties computed using the CASSCF density matrix
    ===> CASSCF properties for all CI roots <=== 
 
 
-Properties computed using the CASSCF ROOT 1 density matrix
+Properties computed using the CASSCF ROOT 0 density matrix
 
 
  Multipole Moments:
@@ -2090,27 +2161,27 @@ Properties computed using the CASSCF ROOT 1 density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.1851927           -0.0007085           -0.1859012
+ Dipole Z            :         -0.1834067           -0.0007085           -0.1841153
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :        -16.7387370            0.0000000          -16.7387370
+ Quadrupole XX       :        -16.7389704            0.0000000          -16.7389704
  Quadrupole XY       :          0.0000000           -0.0000000           -0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -77.6841603           57.9186331          -19.7655273
+ Quadrupole YY       :        -77.6842206           57.9186331          -19.7655875
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :       -104.0200192           82.1709850          -21.8490342
+ Quadrupole ZZ       :       -104.0194340           82.1709850          -21.8484490
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
- Octupole XXY        :          0.0000000            0.0000000            0.0000000
- Octupole XXZ        :          0.6937114           -0.0000000            0.6937114
- Octupole XYY        :          0.0000000            0.0000000            0.0000000
+ Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
+ Octupole XXZ        :          0.6960077           -0.0000000            0.6960077
+ Octupole XYY        :          0.0000000           -0.0000000           -0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000           -0.0000000           -0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         83.1037921          -78.8147307            4.2890613
+ Octupole YYZ        :         83.1091452          -78.8147307            4.2944145
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :       -100.4924782           93.4345542           -7.0579240
+ Octupole ZZZ        :       -100.4753097           93.4345542           -7.0407555
 
  --------------------------------------------------------------------------------
 
@@ -2118,110 +2189,110 @@ Properties computed using the CASSCF ROOT 1 density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  O           -22.595384436461
-    2  N           -18.459838678432
-    3  O           -22.448100155389
-    4  O           -22.448100155389
+    1  O           -22.595249435525
+    2  N           -18.459605569572
+    3  O           -22.448325013576
+    4  O           -22.448325013576
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0007
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1852
+     X:     0.0000      Y:     0.0000      Z:    -0.1834
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1859     Total:     0.1859
+     X:     0.0000      Y:     0.0000      Z:    -0.1841     Total:     0.1841
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -0.4725     Total:     0.4725
+     X:     0.0000      Y:     0.0000      Z:    -0.4680     Total:     0.4680
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -22.5142     YY:   -26.5853     ZZ:   -29.3877
+    XX:   -22.5145     YY:   -26.5854     ZZ:   -29.3869
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     3.6482     YY:    -0.4229     ZZ:    -3.2253
+    XX:     3.6478     YY:    -0.4231     ZZ:    -3.2246
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 
   Orbital extents (a.u.):
             MO          <x^2>          <y^2>          <z^2>          <r^2>
-       0 B2  0   0.0177547207   3.6370466484   1.8691095193   5.5239108884
-       1 A1  0   0.0177526219   3.6370541824   1.8691499892   5.5239567936
-       2 A1  1   0.0177571150   0.0177580929   6.5533995632   6.5889147711
-       3 A1  2   0.0235092053   0.0235080616   0.0589438856   0.1059611525
-       4 A1  3   0.5117688312   1.9426723014   1.5824930715   4.0369342041
-       5 A1  4   0.5263969129   1.3917725150   6.3060436687   8.2242130967
-       6 B2  1   0.4906676506   3.5596612507   1.6318646675   5.6821935688
-       7 A1  5   0.5158621710   3.4868429443   4.2151972860   8.2179024013
-       8 B1  0   1.4036220810   2.4563619137   1.7395037781   5.5994877728
-       9 B2  2   0.4273262692   3.6108154499   2.9416116977   6.9797534169
-      10 A1  6   0.4641431197   4.2500007735   3.0888153643   7.8029592575
-      11 A2  0   1.2311265723   4.0993363321   2.1749908416   7.5054537460
-      12 A1  7   0.3550338283   0.7372442221   3.9805193337   5.0727973841
-      13 B1  1   1.2295040631   1.0694741287   5.4695400391   7.7685182308
-      14 B2  3   0.4059480805   1.6890744543   6.2579025156   8.3529250504
-      15 B2  4   0.3799494312   4.8904819115   2.3377017055   7.6081330482
-      16 B1  2   1.0744234836   1.2785929398   2.6035485607   4.9565649841
-      17 A1  8   0.4734978644   1.6264687660   3.3333623861   5.4333290164
-      18 B2  5   0.5829461814   2.1301935767   4.1662975718   6.8794373299
-      19 A1  9   0.3563211171   1.5982590565   2.8840808066   4.8386609802
-      20 A1 10   2.5165475252   3.3813971460   2.6990788985   8.5970235697
-      21 A1 11   1.9640619261   3.2202905510   4.5860599314   9.7704124085
-      22 B2  6   1.1675903394   4.5959918291   1.9009452207   7.6645273892
-      23 B1  3   3.6202347194   1.1903358444   1.1387146697   5.9492852335
-      24 A1 12   1.1286266174   3.2086946128  11.9219795267  16.2593007568
-      25 B2  7   0.9750592127   7.8588495638   5.4287030174  14.2626117939
-      26 A1 13   1.1119006883   5.7898843836   3.8554998343  10.7572849063
-      27 B1  4   2.5188743099   3.7193649873   4.1969908306  10.4352301278
-      28 A1 14   1.3374663272   3.7905549867   6.8930706419  12.0210919558
-      29 A2  1   2.4653416643   5.1471510008   2.6790588542  10.2915515193
-      30 B2  8   1.1564169394   3.5161113782   7.3138267562  11.9863550737
-      31 B1  5   2.6549263086   1.8702617018   7.8188259597  12.3440139701
-      32 B2  9   0.7904003036   5.8133783619   4.4972822072  11.1010608727
-      33 A1 15   1.8065789639   4.4616131578   2.6482735995   8.9164657213
-      34 B1  6   0.9508610818   1.7512080055   2.7072313300   5.4093004174
-      35 A2  2   0.9564747155   2.3117174560   1.7278905311   4.9960827025
-      36 B2 10   1.9643352705   3.8540227809   3.5718022629   9.3901603143
-      37 A1 16   1.5832941435   2.7487103119   5.7132357413  10.0452401966
-      38 A1 17   1.1391363454   2.8346915854   3.6622066598   7.6360345905
-      39 B1  7   0.9520426065   3.7522090098   2.9475017950   7.6517534113
-      40 A2  3   0.9403413009   1.5793238550   5.9865418278   8.5062069838
-      41 A1 18   1.4855353167   1.8102409360   4.9390669276   8.2348431803
-      42 B2 11   0.6129064045   4.0752529034   3.1342005830   7.8223598909
-      43 A2  4   0.9646639632   3.9219736355   2.8097088315   7.6963464302
-      44 B2 12   0.6647076380   2.4131678734   3.8320792192   6.9099547306
-      45 A1 19   1.3869485140   3.0330722861   3.0600909123   7.4801117125
-      46 B1  8   1.3660234150   2.4860311226   4.1019647526   7.9540192903
-      47 A1 20   1.0766293495   1.5597205957   2.0607754191   4.6971253643
-      48 B2 13   0.6453573597   3.7875231298   2.7369400587   7.1698205481
-      49 A2  5   1.0327472933   2.7548355425   2.0453395557   5.8329223915
-      50 B1  9   1.0283304700   1.4168653471   3.7220523420   6.1672481591
-      51 A1 21   0.7706046074   3.9394926749   3.0371785074   7.7472757897
-      52 B2 14   0.7149562620   3.8552731333   3.6552669455   8.2254963408
-      53 A1 22   0.8097198166   1.7587219812   6.6987348634   9.2671766612
-      54 A1 23   0.5263689776   2.1287441389   3.5140786368   6.1691917533
-      55 B2 15   0.3815257342   2.6037458297   3.7040054712   6.6892770351
-      56 A1 24   0.9953387717   3.2941056338   2.8309764571   7.1204208626
-      57 B2 16   1.6437749115   4.7763051029   3.0945746006   9.5146546150
-      58 A1 25   1.2560589607   2.3366694601   4.9840060882   8.5767345091
-      59 A1 26   1.1256515051   1.8898478050   5.1150853483   8.1305846584
+       0 B2  0   0.0177547273   3.6370461313   1.8691092471   5.5239101056
+       1 A1  0   0.0177526276   3.6370536970   1.8691497126   5.5239560372
+       2 A1  1   0.0177571143   0.0177580922   6.5533986552   6.5889138617
+       3 A1  2   0.0235091888   0.0235080454   0.0589438545   0.1059610887
+       4 A1  3   0.5093297596   1.7549576457   1.5661688517   3.8304562570
+       5 A1  4   0.5273755117   1.5464263773   6.1850646067   8.2588664957
+       6 B2  1   0.4906808951   3.5593513903   1.6317275511   5.6817598365
+       7 A1  5   0.5139069951   3.7179724299   4.0327206782   8.2646001032
+       8 B1  0   1.4037343713   2.4553870252   1.7384943088   5.5976157053
+       9 B2  2   0.4273571935   3.6102109033   2.9426351732   6.9802032700
+      10 A1  6   0.4676793341   4.0529745222   3.4243748244   7.9450286808
+      11 A2  0   1.2311947335   4.0993528098   2.1749963922   7.5055439355
+      12 A1  7   0.3487708044   0.7118148168   4.0669111413   5.1274967624
+      13 B1  1   1.2301098291   1.0800967461   5.4382714118   7.7484779870
+      14 B2  3   0.4028358179   1.6760864834   6.2669646145   8.3458869158
+      15 B2  4   0.3800527350   4.8909790129   2.3382320039   7.6092637518
+      16 B1  2   1.0738193288   1.2689742314   2.6358818964   4.9786754567
+      17 A1  8   0.4469197554   1.3956380911   3.3680476754   5.2106055218
+      18 B2  5   0.5857702183   2.1444468252   4.1522511460   6.8824681895
+      19 A1  9   0.3760658512   1.7631516972   2.6869129986   4.8261305470
+      20 A1 10   2.4701431096   3.5122919306   2.5042929229   8.4867279631
+      21 A1 11   1.8840828699   3.1549644470   4.1152164722   9.1542637891
+      22 B2  6   1.1714388414   4.5953185118   1.9614948105   7.7282521637
+      23 B1  3   3.6198893322   1.1902888051   1.1384650647   5.9486432020
+      24 A1 12   1.1580370839   2.8891084730  12.7038130521  16.7509586089
+      25 B2  7   0.9671162074   7.8905903099   5.3005504429  14.1582569602
+      26 A1 13   1.1033697531   5.8929699526   3.9220030082  10.9183427139
+      27 B1  4   2.5187031125   3.7185185232   4.1969414531  10.4341630888
+      28 A1 14   1.3653501814   3.9481348095   7.0875058291  12.4009908201
+      29 A2  1   2.4652476679   5.1466062300   2.6788028814  10.2906567793
+      30 B2  8   1.1563309548   3.4527128679   7.3375438677  11.9465876905
+      31 B1  5   2.6549093249   1.8714343604   7.8177175863  12.3440612716
+      32 B2  9   0.7954970976   5.8576486413   4.5092525323  11.1623982712
+      33 A1 15   1.8684831818   4.4887076789   2.5964623932   8.9536532540
+      34 B1  6   0.9510326250   1.7532642037   2.7110198010   5.4153166297
+      35 A2  2   0.9565569677   2.3138214060   1.7306857822   5.0010641559
+      36 B2 10   1.9647438277   3.8604469887   3.6125917825   9.4377825989
+      37 A1 16   1.5753647777   2.7086010489   5.4799502313   9.7639160580
+      38 A1 17   1.1486681601   2.8307677162   3.6557665187   7.6352023950
+      39 B1  7   0.9519735901   3.7517987350   2.9475264899   7.6512988149
+      40 A2  3   0.9403033370   1.5811399502   5.9842971441   8.5057404312
+      41 A1 18   1.4777024710   1.7977163119   4.9381344070   8.2135531899
+      42 B2 11   0.6130610817   4.0751550095   3.1349933215   7.8232094126
+      43 A2  4   0.9645745572   3.9198824232   2.8119950678   7.6964520482
+      44 B2 12   0.6609183316   2.3966733421   3.8313178065   6.8889094803
+      45 A1 19   1.4071759963   3.0903447189   3.0479902937   7.5455110089
+      46 B1  8   1.3662554724   2.4852850712   4.1026383597   7.9541789034
+      47 A1 20   1.0761338545   1.5586253124   2.0555524920   4.6903116588
+      48 B2 13   0.6460255786   3.7837551689   2.7343904900   7.1641712375
+      49 A2  5   1.0328182462   2.7535350025   2.0427531745   5.8291064232
+      50 B1  9   1.0284155526   1.4156572995   3.7189176856   6.1629905377
+      51 A1 21   0.7729568625   3.9456068279   3.0544213813   7.7729850716
+      52 B2 14   0.7155587235   3.8545761723   3.6605583910   8.2306932867
+      53 A1 22   0.8171853571   1.7514828721   6.7340178166   9.3026860458
+      54 A1 23   0.5299217377   2.1780876301   3.4441065846   6.1521159523
+      55 B2 15   0.3818494795   2.6063716623   3.6954093124   6.6836304542
+      56 A1 24   0.9981744143   3.3013286976   2.8357583867   7.1352614986
+      57 B2 16   1.6446309984   4.7755257566   3.0950915271   9.5152482821
+      58 A1 25   1.2580074295   2.3292696336   5.0138054673   8.6010825304
+      59 A1 26   1.1226869603   1.8987696867   5.0909130935   8.1123697405
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46367  4.14891  0.31476 -0.61257
-       2     N     3.53365  2.95632  0.57733  0.51002
-       3     O     4.50134  3.94738  0.55396 -0.44873
-       4     O     4.50134  3.94738  0.55396 -0.44873
+       1     O     4.46357  4.14839  0.31519 -0.61196
+       2     N     3.53353  2.95669  0.57684  0.50978
+       3     O     4.50145  3.94746  0.55399 -0.44891
+       4     O     4.50145  3.94746  0.55399 -0.44891
 
    Total alpha = 17.00000, Total beta = 15.00000, Total charge = -1.00000
 
   Lowdin Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.39744  4.07346  0.32398 -0.47090
-       2     N     3.68767  3.13228  0.55539  0.18005
-       3     O     4.45744  3.89713  0.56031 -0.35458
-       4     O     4.45744  3.89713  0.56031 -0.35458
+       1     O     4.39742  4.07309  0.32433 -0.47051
+       2     N     3.68743  3.13241  0.55502  0.18016
+       3     O     4.45758  3.89725  0.56032 -0.35483
+       4     O     4.45758  3.89725  0.56032 -0.35483
 
   Total alpha = 17.00000, Total beta = 15.00000, Total charge = -1.00000
 
@@ -2233,10 +2304,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.33079810265367     0.07768350062851     0.07768350062851
-    2     1.33079810265367     0.00000000000000     1.02290337908449     1.02290337908449
-    3     0.07768350062851     1.02290337908449     0.00000000000000     0.37275587081343
-    4     0.07768350062851     1.02290337908449     0.37275587081343     0.00000000000000
+    1     0.00000000000000     1.33098005768808     0.07794522560353     0.07794522560353
+    2     1.33098005768808     0.00000000000000     1.02281247584588     1.02281247584588
+    3     0.07794522560353     1.02281247584588     0.00000000000000     0.37252239564157
+    4     0.07794522560353     1.02281247584588     0.37252239564157     0.00000000000000
 
 
 
@@ -2245,10 +2316,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.50251856073737     0.00982312933592     0.00982312933592
-    2     0.50251856073737     0.00000000000000     0.46400390377617     0.46400390377617
-    3     0.00982312933592     0.46400390377617     0.00000000000000    -0.01840725956407
-    4     0.00982312933592     0.46400390377617    -0.01840725956407     0.00000000000000
+    1     0.00000000000000     0.50262999949793     0.00989348289589     0.00989348289589
+    2     0.50262999949793     0.00000000000000     0.46392547738177     0.46392547738177
+    3     0.00989348289589     0.46392547738177     0.00000000000000    -0.01846096824775
+    4     0.00989348289589     0.46392547738177    -0.01846096824775     0.00000000000000
 
 
 
@@ -2257,10 +2328,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.82827954191630     0.06786037129259     0.06786037129259
-    2     0.82827954191630     0.00000000000000     0.55889947530832     0.55889947530832
-    3     0.06786037129259     0.55889947530832     0.00000000000000     0.39116313037750
-    4     0.06786037129259     0.55889947530832     0.39116313037750     0.00000000000000
+    1     0.00000000000000     0.82835005819015     0.06805174270764     0.06805174270764
+    2     0.82835005819015     0.00000000000000     0.55888699846412     0.55888699846412
+    3     0.06805174270764     0.55888699846412     0.00000000000000     0.39098336388931
+    4     0.06805174270764     0.55888699846412     0.39098336388931     0.00000000000000
 
 
 
@@ -2268,10 +2339,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
  #  #
  Irrep: 1
-      1:  1.4861651
-      2:  3.3766049
-      3:  1.4733428
-      4:  1.4733428
+      1:  1.4868705
+      2:  3.3766050
+      3:  1.4732801
+      4:  1.4732801
 
 
 
@@ -2282,10 +2353,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.70847508025880     0.16195965236745     0.16195965236745
-    2     1.70847508025880     0.00000000000000     1.37919298252639     1.37919298252639
-    3     0.16195965236745     1.37919298252639     0.00000000000000     0.48507248721407
-    4     0.16195965236745     1.37919298252639     0.48507248721407     0.00000000000000
+    1     0.00000000000000     1.70821958169496     0.16219523872311     0.16219523872311
+    2     1.70821958169496     0.00000000000000     1.37911777814563     1.37911777814563
+    3     0.16219523872311     1.37911777814563     0.00000000000000     0.48493147469738
+    4     0.16219523872311     1.37911777814563     0.48493147469738     0.00000000000000
 
 
 
@@ -2294,10 +2365,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.73513816819032     0.04944348939548     0.04944348939549
-    2     0.73513816819032     0.00000000000000     0.66929938856254     0.66929938856254
-    3     0.04944348939548     0.66929938856254     0.00000000000000     0.06098775880522
-    4     0.04944348939549     0.66929938856254     0.06098775880522     0.00000000000000
+    1     0.00000000000000     0.73502538867752     0.04951251369040     0.04951251369040
+    2     0.73502538867752     0.00000000000000     0.66924601724953     0.66924601724953
+    3     0.04951251369040     0.66924601724953     0.00000000000000     0.06097468558123
+    4     0.04951251369040     0.66924601724953     0.06097468558123     0.00000000000000
 
 
 
@@ -2306,10 +2377,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.97333691206847     0.11251616297196     0.11251616297196
-    2     0.97333691206847     0.00000000000000     0.70989359396385     0.70989359396385
-    3     0.11251616297196     0.70989359396385     0.00000000000000     0.42408472840886
-    4     0.11251616297196     0.70989359396385     0.42408472840886     0.00000000000000
+    1     0.00000000000000     0.97319419301743     0.11268272503271     0.11268272503271
+    2     0.97319419301743     0.00000000000000     0.70987176089610     0.70987176089610
+    3     0.11268272503271     0.70987176089610     0.00000000000000     0.42395678911614
+    4     0.11268272503271     0.70987176089610     0.42395678911614     0.00000000000000
 
 
 
@@ -2317,10 +2388,10 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
  #  #
  Irrep: 1
-      1:  2.0323944
-      2:  4.4668610
-      3:  2.0262251
-      4:  2.0262251
+      1:  2.0326101
+      2:  4.4664551
+      3:  2.0262445
+      4:  2.0262445
 
   Natural Orbital Occupations:
 
@@ -2331,7 +2402,7 @@ Properties computed using the CASSCF ROOT 1 density matrix
   LUNO+0 :    9 A1    0.015
   LUNO+1 :    6 B2    0.010
   LUNO+2 :   10 A1    0.001
-  LUNO+3 :   11 A1    0.000
+  LUNO+3 :    7 B2    0.000
 
   Beta Occupations:
   HONO-2 :    8 A1    0.987
@@ -2356,7 +2427,7 @@ Properties computed using the CASSCF ROOT 1 density matrix
 
  Electrostatic potential computed on the grid and written to grid_esp.dat
 
-Properties computed using the CASSCF ROOT 2 density matrix
+Properties computed using the CASSCF ROOT 1 density matrix
 
 
  Multipole Moments:
@@ -2368,27 +2439,27 @@ Properties computed using the CASSCF ROOT 2 density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :          1.7563802           -0.0007085            1.7556717
+ Dipole Z            :          1.7559458           -0.0007085            1.7552373
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :        -16.5762503            0.0000000          -16.5762503
+ Quadrupole XX       :        -16.5763562            0.0000000          -16.5763562
  Quadrupole XY       :          0.0000000           -0.0000000           -0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -79.6927299           57.9186331          -21.7740968
+ Quadrupole YY       :        -79.6915729           57.9186331          -21.7729398
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :       -102.4593766           82.1709850          -20.2883916
+ Quadrupole ZZ       :       -102.4582201           82.1709850          -20.2872351
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
- Octupole XXY        :          0.0000000            0.0000000            0.0000000
- Octupole XXZ        :          1.3177191           -0.0000000            1.3177191
- Octupole XYY        :          0.0000000            0.0000000            0.0000000
+ Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
+ Octupole XXZ        :          1.3183300           -0.0000000            1.3183300
+ Octupole XYY        :          0.0000000           -0.0000000           -0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000           -0.0000000           -0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         88.2256860          -78.8147307            9.4109553
+ Octupole YYZ        :         88.2251973          -78.8147307            9.4104665
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :        -89.7219047           93.4345542            3.7126495
+ Octupole ZZZ        :        -89.7216634           93.4345542            3.7128908
 
  --------------------------------------------------------------------------------
 
@@ -2396,110 +2467,110 @@ Properties computed using the CASSCF ROOT 2 density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  O           -22.354119622894
-    2  N           -18.314233281052
-    3  O           -22.706772077440
-    4  O           -22.706772077440
+    1  O           -22.354266330040
+    2  N           -18.314635599471
+    3  O           -22.706524176174
+    4  O           -22.706524176174
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0007
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.7564
+     X:     0.0000      Y:     0.0000      Z:     1.7559
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.7557     Total:     1.7557
+     X:     0.0000      Y:     0.0000      Z:     1.7552     Total:     1.7552
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     4.4625     Total:     4.4625
+     X:     0.0000      Y:     0.0000      Z:     4.4614     Total:     4.4614
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -22.2956     YY:   -29.2869     ZZ:   -27.2886
+    XX:   -22.2958     YY:   -29.2853     ZZ:   -27.2870
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     3.9947     YY:    -2.9965     ZZ:    -0.9982
+    XX:     3.9936     YY:    -2.9960     ZZ:    -0.9976
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 
   Orbital extents (a.u.):
             MO          <x^2>          <y^2>          <z^2>          <r^2>
-       0 B2  0   0.0177547207   3.6370466484   1.8691095193   5.5239108884
-       1 A1  0   0.0177526219   3.6370541824   1.8691499892   5.5239567936
-       2 A1  1   0.0177571150   0.0177580929   6.5533995632   6.5889147711
-       3 A1  2   0.0235092053   0.0235080616   0.0589438856   0.1059611525
-       4 A1  3   0.5117688312   1.9426723014   1.5824930715   4.0369342041
-       5 A1  4   0.5263969129   1.3917725150   6.3060436687   8.2242130967
-       6 B2  1   0.4906676506   3.5596612507   1.6318646675   5.6821935688
-       7 A1  5   0.5158621710   3.4868429443   4.2151972860   8.2179024013
-       8 B1  0   1.4036220810   2.4563619137   1.7395037781   5.5994877728
-       9 B2  2   0.4273262692   3.6108154499   2.9416116977   6.9797534169
-      10 A1  6   0.4641431197   4.2500007735   3.0888153643   7.8029592575
-      11 A2  0   1.2311265723   4.0993363321   2.1749908416   7.5054537460
-      12 A1  7   0.3550338283   0.7372442221   3.9805193337   5.0727973841
-      13 B1  1   1.2295040631   1.0694741287   5.4695400391   7.7685182308
-      14 B2  3   0.4059480805   1.6890744543   6.2579025156   8.3529250504
-      15 B2  4   0.3799494312   4.8904819115   2.3377017055   7.6081330482
-      16 B1  2   1.0744234836   1.2785929398   2.6035485607   4.9565649841
-      17 A1  8   0.4734978644   1.6264687660   3.3333623861   5.4333290164
-      18 B2  5   0.5829461814   2.1301935767   4.1662975718   6.8794373299
-      19 A1  9   0.3563211171   1.5982590565   2.8840808066   4.8386609802
-      20 A1 10   2.5165475252   3.3813971460   2.6990788985   8.5970235697
-      21 A1 11   1.9640619261   3.2202905510   4.5860599314   9.7704124085
-      22 B2  6   1.1675903394   4.5959918291   1.9009452207   7.6645273892
-      23 B1  3   3.6202347194   1.1903358444   1.1387146697   5.9492852335
-      24 A1 12   1.1286266174   3.2086946128  11.9219795267  16.2593007568
-      25 B2  7   0.9750592127   7.8588495638   5.4287030174  14.2626117939
-      26 A1 13   1.1119006883   5.7898843836   3.8554998343  10.7572849063
-      27 B1  4   2.5188743099   3.7193649873   4.1969908306  10.4352301278
-      28 A1 14   1.3374663272   3.7905549867   6.8930706419  12.0210919558
-      29 A2  1   2.4653416643   5.1471510008   2.6790588542  10.2915515193
-      30 B2  8   1.1564169394   3.5161113782   7.3138267562  11.9863550737
-      31 B1  5   2.6549263086   1.8702617018   7.8188259597  12.3440139701
-      32 B2  9   0.7904003036   5.8133783619   4.4972822072  11.1010608727
-      33 A1 15   1.8065789639   4.4616131578   2.6482735995   8.9164657213
-      34 B1  6   0.9508610818   1.7512080055   2.7072313300   5.4093004174
-      35 A2  2   0.9564747155   2.3117174560   1.7278905311   4.9960827025
-      36 B2 10   1.9643352705   3.8540227809   3.5718022629   9.3901603143
-      37 A1 16   1.5832941435   2.7487103119   5.7132357413  10.0452401966
-      38 A1 17   1.1391363454   2.8346915854   3.6622066598   7.6360345905
-      39 B1  7   0.9520426065   3.7522090098   2.9475017950   7.6517534113
-      40 A2  3   0.9403413009   1.5793238550   5.9865418278   8.5062069838
-      41 A1 18   1.4855353167   1.8102409360   4.9390669276   8.2348431803
-      42 B2 11   0.6129064045   4.0752529034   3.1342005830   7.8223598909
-      43 A2  4   0.9646639632   3.9219736355   2.8097088315   7.6963464302
-      44 B2 12   0.6647076380   2.4131678734   3.8320792192   6.9099547306
-      45 A1 19   1.3869485140   3.0330722861   3.0600909123   7.4801117125
-      46 B1  8   1.3660234150   2.4860311226   4.1019647526   7.9540192903
-      47 A1 20   1.0766293495   1.5597205957   2.0607754191   4.6971253643
-      48 B2 13   0.6453573597   3.7875231298   2.7369400587   7.1698205481
-      49 A2  5   1.0327472933   2.7548355425   2.0453395557   5.8329223915
-      50 B1  9   1.0283304700   1.4168653471   3.7220523420   6.1672481591
-      51 A1 21   0.7706046074   3.9394926749   3.0371785074   7.7472757897
-      52 B2 14   0.7149562620   3.8552731333   3.6552669455   8.2254963408
-      53 A1 22   0.8097198166   1.7587219812   6.6987348634   9.2671766612
-      54 A1 23   0.5263689776   2.1287441389   3.5140786368   6.1691917533
-      55 B2 15   0.3815257342   2.6037458297   3.7040054712   6.6892770351
-      56 A1 24   0.9953387717   3.2941056338   2.8309764571   7.1204208626
-      57 B2 16   1.6437749115   4.7763051029   3.0945746006   9.5146546150
-      58 A1 25   1.2560589607   2.3366694601   4.9840060882   8.5767345091
-      59 A1 26   1.1256515051   1.8898478050   5.1150853483   8.1305846584
+       0 B2  0   0.0177547273   3.6370461313   1.8691092471   5.5239101056
+       1 A1  0   0.0177526276   3.6370536970   1.8691497126   5.5239560372
+       2 A1  1   0.0177571143   0.0177580922   6.5533986552   6.5889138617
+       3 A1  2   0.0235091888   0.0235080454   0.0589438545   0.1059610887
+       4 A1  3   0.5093297596   1.7549576457   1.5661688517   3.8304562570
+       5 A1  4   0.5273755117   1.5464263773   6.1850646067   8.2588664957
+       6 B2  1   0.4906808951   3.5593513903   1.6317275511   5.6817598365
+       7 A1  5   0.5139069951   3.7179724299   4.0327206782   8.2646001032
+       8 B1  0   1.4037343713   2.4553870252   1.7384943088   5.5976157053
+       9 B2  2   0.4273571935   3.6102109033   2.9426351732   6.9802032700
+      10 A1  6   0.4676793341   4.0529745222   3.4243748244   7.9450286808
+      11 A2  0   1.2311947335   4.0993528098   2.1749963922   7.5055439355
+      12 A1  7   0.3487708044   0.7118148168   4.0669111413   5.1274967624
+      13 B1  1   1.2301098291   1.0800967461   5.4382714118   7.7484779870
+      14 B2  3   0.4028358179   1.6760864834   6.2669646145   8.3458869158
+      15 B2  4   0.3800527350   4.8909790129   2.3382320039   7.6092637518
+      16 B1  2   1.0738193288   1.2689742314   2.6358818964   4.9786754567
+      17 A1  8   0.4469197554   1.3956380911   3.3680476754   5.2106055218
+      18 B2  5   0.5857702183   2.1444468252   4.1522511460   6.8824681895
+      19 A1  9   0.3760658512   1.7631516972   2.6869129986   4.8261305470
+      20 A1 10   2.4701431096   3.5122919306   2.5042929229   8.4867279631
+      21 A1 11   1.8840828699   3.1549644470   4.1152164722   9.1542637891
+      22 B2  6   1.1714388414   4.5953185118   1.9614948105   7.7282521637
+      23 B1  3   3.6198893322   1.1902888051   1.1384650647   5.9486432020
+      24 A1 12   1.1580370839   2.8891084730  12.7038130521  16.7509586089
+      25 B2  7   0.9671162074   7.8905903099   5.3005504429  14.1582569602
+      26 A1 13   1.1033697531   5.8929699526   3.9220030082  10.9183427139
+      27 B1  4   2.5187031125   3.7185185232   4.1969414531  10.4341630888
+      28 A1 14   1.3653501814   3.9481348095   7.0875058291  12.4009908201
+      29 A2  1   2.4652476679   5.1466062300   2.6788028814  10.2906567793
+      30 B2  8   1.1563309548   3.4527128679   7.3375438677  11.9465876905
+      31 B1  5   2.6549093249   1.8714343604   7.8177175863  12.3440612716
+      32 B2  9   0.7954970976   5.8576486413   4.5092525323  11.1623982712
+      33 A1 15   1.8684831818   4.4887076789   2.5964623932   8.9536532540
+      34 B1  6   0.9510326250   1.7532642037   2.7110198010   5.4153166297
+      35 A2  2   0.9565569677   2.3138214060   1.7306857822   5.0010641559
+      36 B2 10   1.9647438277   3.8604469887   3.6125917825   9.4377825989
+      37 A1 16   1.5753647777   2.7086010489   5.4799502313   9.7639160580
+      38 A1 17   1.1486681601   2.8307677162   3.6557665187   7.6352023950
+      39 B1  7   0.9519735901   3.7517987350   2.9475264899   7.6512988149
+      40 A2  3   0.9403033370   1.5811399502   5.9842971441   8.5057404312
+      41 A1 18   1.4777024710   1.7977163119   4.9381344070   8.2135531899
+      42 B2 11   0.6130610817   4.0751550095   3.1349933215   7.8232094126
+      43 A2  4   0.9645745572   3.9198824232   2.8119950678   7.6964520482
+      44 B2 12   0.6609183316   2.3966733421   3.8313178065   6.8889094803
+      45 A1 19   1.4071759963   3.0903447189   3.0479902937   7.5455110089
+      46 B1  8   1.3662554724   2.4852850712   4.1026383597   7.9541789034
+      47 A1 20   1.0761338545   1.5586253124   2.0555524920   4.6903116588
+      48 B2 13   0.6460255786   3.7837551689   2.7343904900   7.1641712375
+      49 A2  5   1.0328182462   2.7535350025   2.0427531745   5.8291064232
+      50 B1  9   1.0284155526   1.4156572995   3.7189176856   6.1629905377
+      51 A1 21   0.7729568625   3.9456068279   3.0544213813   7.7729850716
+      52 B2 14   0.7155587235   3.8545761723   3.6605583910   8.2306932867
+      53 A1 22   0.8171853571   1.7514828721   6.7340178166   9.3026860458
+      54 A1 23   0.5299217377   2.1780876301   3.4441065846   6.1521159523
+      55 B2 15   0.3818494795   2.6063716623   3.6954093124   6.6836304542
+      56 A1 24   0.9981744143   3.3013286976   2.8357583867   7.1352614986
+      57 B2 16   1.6446309984   4.7755257566   3.0950915271   9.5152482821
+      58 A1 25   1.2580074295   2.3292696336   5.0138054673   8.6010825304
+      59 A1 26   1.1226869603   1.8987696867   5.0909130935   8.1123697405
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.59542  3.64602  0.94940 -0.24143
-       2     N     3.44847  2.77387  0.67460  0.77767
-       3     O     4.47806  4.29006  0.18800 -0.76812
-       4     O     4.47806  4.29006  0.18800 -0.76812
+       1     O     4.59534  3.64573  0.94960 -0.24107
+       2     N     3.44861  2.77465  0.67396  0.77673
+       3     O     4.47802  4.28981  0.18822 -0.76783
+       4     O     4.47802  4.28981  0.18822 -0.76783
 
    Total alpha = 17.00000, Total beta = 15.00000, Total charge = -1.00000
 
   Lowdin Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.49915  3.55282  0.94633 -0.05197
-       2     N     3.63500  2.97825  0.65674  0.38675
-       3     O     4.43293  4.23447  0.19846 -0.66739
-       4     O     4.43293  4.23447  0.19846 -0.66739
+       1     O     4.49917  3.55271  0.94646 -0.05188
+       2     N     3.63500  2.97877  0.65623  0.38623
+       3     O     4.43291  4.23426  0.19865 -0.66718
+       4     O     4.43291  4.23426  0.19865 -0.66718
 
   Total alpha = 17.00000, Total beta = 15.00000, Total charge = -1.00000
 
@@ -2511,10 +2582,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.96793417856365     0.08094032309294     0.08094032309294
-    2     0.96793417856365     0.00000000000000     1.13305080520109     1.13305080520109
-    3     0.08094032309294     1.13305080520109     0.00000000000000    -0.01851452932457
-    4     0.08094032309294     1.13305080520109    -0.01851452932457     0.00000000000000
+    1     0.00000000000000     0.96824227702201     0.08089903292612     0.08089903292612
+    2     0.96824227702201     0.00000000000000     1.13319178142097     1.13319178142097
+    3     0.08089903292612     1.13319178142097     0.00000000000000    -0.01853629048166
+    4     0.08089903292612     1.13319178142097    -0.01853629048166     0.00000000000000
 
 
 
@@ -2523,10 +2594,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.41249046487273     0.00653580769220     0.00653580769220
-    2     0.41249046487273     0.00000000000000     0.48730636737490     0.48730636737490
-    3     0.00653580769220     0.48730636737490     0.00000000000000    -0.02001685060053
-    4     0.00653580769220     0.48730636737490    -0.02001685060053     0.00000000000000
+    1     0.00000000000000     0.41259762533431     0.00652106099083     0.00652106099083
+    2     0.41259762533431     0.00000000000000     0.48730766084140     0.48730766084140
+    3     0.00652106099083     0.48730766084140     0.00000000000000    -0.02005312414444
+    4     0.00652106099083     0.48730766084140    -0.02005312414444     0.00000000000000
 
 
 
@@ -2535,10 +2606,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.55544371369092     0.07440451540073     0.07440451540073
-    2     0.55544371369092     0.00000000000000     0.64574443782619     0.64574443782619
-    3     0.07440451540073     0.64574443782619     0.00000000000000     0.00150232127597
-    4     0.07440451540073     0.64574443782619     0.00150232127597     0.00000000000000
+    1     0.00000000000000     0.55564465168770     0.07437797193529     0.07437797193529
+    2     0.55564465168770     0.00000000000000     0.64588412057957     0.64588412057957
+    3     0.07437797193529     0.64588412057957     0.00000000000000     0.00151683366278
+    4     0.07437797193529     0.64588412057957     0.00151683366278     0.00000000000000
 
 
 
@@ -2546,10 +2617,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
  #  #
  Irrep: 1
-      1:  1.1298148
-      2:  3.2340358
-      3:  1.1954766
-      4:  1.1954766
+      1:  1.1300403
+      2:  3.2346258
+      3:  1.1955545
+      4:  1.1955545
 
 
 
@@ -2560,10 +2631,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     1.42299401833164     0.15626500067938     0.15626500067938
-    2     1.42299401833164     0.00000000000000     1.45749519681993     1.45749519681993
-    3     0.15626500067938     1.45749519681993     0.00000000000000     0.14384620298979
-    4     0.15626500067938     1.45749519681993     0.14384620298979     0.00000000000000
+    1     0.00000000000000     1.42311896256259     0.15618745508777     0.15618745508777
+    2     1.42311896256259     0.00000000000000     1.45753542824542     1.45753542824542
+    3     0.15618745508777     1.45753542824542     0.00000000000000     0.14392967605638
+    4     0.15618745508777     1.45753542824542     0.14392967605638     0.00000000000000
 
 
 
@@ -2572,10 +2643,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.68274780762391     0.04257458380779     0.04257458380779
-    2     0.68274780762391     0.00000000000000     0.68214564113084     0.68214564113084
-    3     0.04257458380779     0.68214564113084     0.00000000000000     0.05989961016562
-    4     0.04257458380779     0.68214564113084     0.05989961016562     0.00000000000000
+    1     0.00000000000000     0.68279400707477     0.04254142466108     0.04254142466108
+    2     0.68279400707477     0.00000000000000     0.68210936651254     0.68210936651254
+    3     0.04254142466108     0.68210936651254     0.00000000000000     0.05991642147099
+    4     0.04254142466108     0.68210936651254     0.05991642147099     0.00000000000000
 
 
 
@@ -2584,10 +2655,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
                  1                   2                   3                   4
 
-    1     0.00000000000000     0.74024621070774     0.11369041687159     0.11369041687159
-    2     0.74024621070774     0.00000000000000     0.77534955568909     0.77534955568910
-    3     0.11369041687159     0.77534955568909     0.00000000000000     0.08394659282417
-    4     0.11369041687159     0.77534955568910     0.08394659282417     0.00000000000000
+    1     0.00000000000000     0.74032495548782     0.11364603042669     0.11364603042669
+    2     0.74032495548782     0.00000000000000     0.77542606173288     0.77542606173288
+    3     0.11364603042669     0.77542606173288     0.00000000000000     0.08401325458539
+    4     0.11364603042669     0.77542606173288     0.08401325458539     0.00000000000000
 
 
 
@@ -2595,10 +2666,10 @@ Properties computed using the CASSCF ROOT 2 density matrix
 
  #  #
  Irrep: 1
-      1:  1.7355240
-      2:  4.3379844
-      3:  1.7576064
-      4:  1.7576064
+      1:  1.7354939
+      2:  4.3381898
+      3:  1.7576526
+      4:  1.7576526
 
   Natural Orbital Occupations:
 
@@ -2637,7 +2708,7 @@ Properties computed using the CASSCF ROOT 2 density matrix
    ===> CASSCF properties for all CI transition density matrices <=== 
 
 
-Properties computed using the CASSCF ROOT 1 -> ROOT 2 density matrix
+Properties computed using the CASSCF ROOT 0 -> ROOT 1 density matrix
 
   Transition Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.3398     Total:     0.3398
@@ -2646,24 +2717,25 @@ Properties computed using the CASSCF ROOT 1 -> ROOT 2 density matrix
      X:     0.0000      Y:     0.0000      Z:     0.8636     Total:     0.8636
 
   Transition Quadrupole Moment: (Debye Ang)
-    XX:     0.0225     YY:    -0.8277     ZZ:     0.7083
+    XX:     0.0225     YY:    -0.8276     ZZ:     0.7085
     XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Transition Quadrupole Moment: (Debye Ang)
-    XX:     0.0548     YY:    -0.7954     ZZ:     0.7406
+    XX:     0.0547     YY:    -0.7954     ZZ:     0.7407
     XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
+	CASSCF Energy.....................................................PASSED
 	CASSCF DIPOLE Y...................................................PASSED
 	CASSCF DIPOLE Z...................................................PASSED
 	CASSCF QUADRUPOLE XX..............................................PASSED
 	CASSCF QUADRUPOLE YY..............................................PASSED
 	CASSCF QUADRUPOLE ZZ..............................................PASSED
 	CASSCF QUADRUPOLE YZ..............................................PASSED
-	CASSCF ROOT 2 DIPOLE Y............................................PASSED
-	CASSCF ROOT 2 DIPOLE Z............................................PASSED
-	CASSCF ROOT 2 QUADRUPOLE XX.......................................PASSED
-	CASSCF ROOT 2 QUADRUPOLE YY.......................................PASSED
-	CASSCF ROOT 2 QUADRUPOLE ZZ.......................................PASSED
-	CASSCF ROOT 2 QUADRUPOLE YZ.......................................PASSED
+	CASSCF ROOT 1 DIPOLE Y............................................PASSED
+	CASSCF ROOT 1 DIPOLE Z............................................PASSED
+	CASSCF ROOT 1 QUADRUPOLE XX.......................................PASSED
+	CASSCF ROOT 1 QUADRUPOLE YY.......................................PASSED
+	CASSCF ROOT 1 QUADRUPOLE ZZ.......................................PASSED
+	CASSCF ROOT 1 QUADRUPOLE YZ.......................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

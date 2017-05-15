@@ -1,35 +1,36 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:43:17 2016
+    Psi4 started on: Monday, 15 May 2017 03:37PM
 
-    Process ID:  14858
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  14524
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating
 #! matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition.
 #! These operations are performed on vectors and matrices provided from the Psi library.
-
-memory 250 mb
 
 # Example of matrix multiplication
 print_out('\n  ==> Matrix Multiplication <== \n\n')
@@ -38,9 +39,9 @@ n = 3
 A = psi4.Matrix(n, n)
 B = psi4.Matrix(n, n)
 C = psi4.Matrix(n, n)
-A.set_name('A')
-B.set_name('B')
-C.set_name('C')
+A.name = 'A'
+B.name = 'B'
+C.name = 'C'
 
 # The matrix set method takes 4 arguments: irrep, row, col, value
 # Values are initialized to 0 by default
@@ -59,7 +60,7 @@ psi4.DGEMM(0, 'N', 'N', n, n, n, 1.0, A, n, B, n, 0.0, C, n)
 C.print_out()
 
 mmultRef = psi4.Matrix(n, n)                                                                         #TEST
-mmultRef.set_name("Matrix-Matrix Multiplication Reference")                                            #TEST
+mmultRef.name = "Matrix-Matrix Multiplication Reference"                                            #TEST
 mmultRef.set(0, 0, 0, 0.0000000); mmultRef.set(0, 0, 1, 2.0000000); mmultRef.set(0, 0, 2, 0.0000000)   #TEST
 mmultRef.set(0, 1, 0, 4.0000000); mmultRef.set(0, 1, 1, 0.0000000); mmultRef.set(0, 1, 2, 0.0000000)   #TEST
 mmultRef.set(0, 2, 0, 6.0000000); mmultRef.set(0, 2, 1, 0.0000000); mmultRef.set(0, 2, 2, 0.0000000)   #TEST
@@ -72,7 +73,7 @@ A = psi4.Matrix(n,n)
 for i in range(1,n+1):
     for j in range(1,n+1):
         A.set(0, i-1, j-1, 1.0/(i + j - 1))
-A.set_name('Hilbert Matrix')
+A.name = 'Hilbert Matrix'
 A.print_out();
 
 # Allocate a work array and some storage for the eigenvalues
@@ -80,13 +81,13 @@ W = psi4.Vector(4*n);
 D = psi4.Vector(n);
 # On input, A is the matrix and on output it contains the eigenvectors
 info = psi4.DSYEV(0, 'V','U', n, A, n, D, W, 4*n)
-A.set_name("Eigenvectors")
+A.name = "Eigenvectors"
 
 # Make first element of eigenvector positive if desired
 for i in range(1,n):
     if A.get(i,0) < 0 :
         A.scale_row(0, i, -1)
-evecRef = psi4.Matrix(n,n)                                       #TEST
+evecRef = psi4.Matrix(n,n)                                         #TEST
 evecRef.set(0, 0, 0,  0.0291933); evecRef.set(0, 0, 1, -0.3287121) #TEST
 evecRef.set(0, 0, 2,  0.7914111); evecRef.set(0, 0, 3, -0.5145527) #TEST
 evecRef.set(0, 1, 0,  0.1791863); evecRef.set(0, 1, 1, -0.7419178) #TEST
@@ -95,9 +96,9 @@ evecRef.set(0, 2, 0,  0.5820757); evecRef.set(0, 2, 1, -0.3705022) #TEST
 evecRef.set(0, 2, 2, -0.5095786); evecRef.set(0, 2, 3, -0.5140483) #TEST
 evecRef.set(0, 3, 0,  0.7926083); evecRef.set(0, 3, 1,  0.4519231) #TEST
 evecRef.set(0, 3, 2,  0.3224164); evecRef.set(0, 3, 3,  0.2521612) #TEST
-evecRef.set_name("Reference Eigenvectors");                        #TEST
+evecRef.name = "Reference Eigenvectors"                            #TEST
 compare_matrices(evecRef, A, 6, "Eigenvectors")                    #TEST
-evalRef = psi4.Vector(n)                                         #TEST
+evalRef = psi4.Vector(n)                                           #TEST
 evalRef.set(0, 0, 0.0000967); evalRef.set(0, 1, 0.0067383)         #TEST
 evalRef.set(0, 2, 0.1691412); evalRef.set(0, 3, 1.5002143)         #TEST
 compare_vectors(evalRef, D, 6, "Eigenvalues")                      #TEST
@@ -109,21 +110,21 @@ A.print_out()
 
 print_out('\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n')
 
-n = 4;
+n = 4
 A = psi4.Matrix(n,n)
 for i in range(1,n+1):
     for j in range(1,n+1):
         A.set(0, i-1, j-1, 1.0/(i + j - 1))
 
-A.set_name('Hilbert Matrix')
-A.print_out();
+A.name = 'Hilbert Matrix'
+A.print_out()
 
 info = psi4.DPOTRF(0, 'U', n, A, n)
 for i in range(0,n):
     for j in range(i+1,n):
         A.set(0, i, j, 0.0)
 
-cholRef = psi4.Matrix(n, n)                                     #TEST
+cholRef = psi4.Matrix(n, n)                                       #TEST
 cholRef.set(0, 0, 0, 1.0000000); cholRef.set(0, 0, 1, 0.0000000); #TEST
 cholRef.set(0, 0, 2, 0.0000000); cholRef.set(0, 0, 3, 0.0000000); #TEST
 cholRef.set(0, 1, 0, 0.5000000); cholRef.set(0, 1, 1, 0.2886751); #TEST
@@ -132,10 +133,10 @@ cholRef.set(0, 2, 0, 0.3333333); cholRef.set(0, 2, 1, 0.2886751); #TEST
 cholRef.set(0, 2, 2, 0.0745356); cholRef.set(0, 2, 3, 0.0000000); #TEST
 cholRef.set(0, 3, 0, 0.2500000); cholRef.set(0, 3, 1, 0.2598076); #TEST
 cholRef.set(0, 3, 2, 0.1118034); cholRef.set(0, 3, 3, 0.0188982); #TEST
-cholRef.set_name("Cholesky Decomposition Reference");             #TEST
+cholRef.name = "Cholesky Decomposition Reference"                 #TEST
 compare_matrices(cholRef, A, 6, "Cholesky Decomposition")         #TEST
 
-A.set_name('Hilbert Matrix Cholesky Decomposition (T)')
+A.name = 'Hilbert Matrix Cholesky Decomposition (T)'
 A.print_out()
 
 
@@ -148,7 +149,7 @@ for i in range(1,n+1):
     for j in range(1,n+1):
         A.set(0, i-1, j-1, 1.0/(i + j - 1))
 
-A.set_name('Hilbert Matrix')
+A.name = 'Hilbert Matrix'
 A.print_out();
 
 info = psi4.DGETRF(0, n, n, A, n, piv)
@@ -162,14 +163,12 @@ luRef.set(0, 2, 0,  0.3333333); luRef.set(0, 2, 1,  0.0888889); #TEST
 luRef.set(0, 2, 2, -0.0055556); luRef.set(0, 2, 3, -0.6000000); #TEST
 luRef.set(0, 3, 0,  0.2500000); luRef.set(0, 3, 1,  0.0833333); #TEST
 luRef.set(0, 3, 2, -0.0083333); luRef.set(0, 3, 3,  0.0003571); #TEST
-luRef.set_name("LU Decomposition Reference");                   #TEST
+luRef.name = "LU Decomposition Reference"                       #TEST
 compare_matrices(luRef, A, 6, "LU Decomposition")               #TEST
 
-A.set_name('Hilbert Matrix LU Decomposition (T)')
+A.name = 'Hilbert Matrix LU Decomposition (T)'
 A.print_out()
 --------------------------------------------------------------------------
-
-  Memory set to 250.000 MiB by Python script.
 
   ==> Matrix Multiplication <== 
 
@@ -301,4 +300,4 @@ A.print_out()
 
 
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

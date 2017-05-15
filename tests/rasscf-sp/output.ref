@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:13:47 2016
+    Psi4 started on: Monday, 15 May 2017 03:39PM
 
-    Process ID:   9167
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  15554
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -30,14 +33,13 @@
 
 set {
   reference = rhf
-
   restricted_docc      [1, 0, 0, 0]
   ras1                 [2, 0, 1, 1]
   ras3                 [1, 0, 0, 1]
   restricted_uocc      [8, 2, 3, 5]
   mcscf_maxiter        80
   mcscf_r_convergence  5.e-6
-  basis = 6-31G**
+  basis                6-31G**
 }
 
 
@@ -51,22 +53,30 @@ molecule mol {
 
 rasscf_energy = energy('RASSCF')
 
-
+compare_values(-76.017259983350, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
 compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 --------------------------------------------------------------------------
+
+*** tstart() called on psinet
+*** at Mon May 15 15:39:21 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G**
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   140 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:47 2016
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -86,7 +96,7 @@ compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
   Rotational constants: A =     24.35462  B =     13.63610  C =      8.74166 [cm^-1]
   Rotational constants: A = 730133.20983  B = 408800.03934  C = 262068.46197 [MHz]
-  Nuclear repulsion =    8.804686618639057
+  Nuclear repulsion =    8.804686618639055
 
   Charge       = 0
   Multiplicity = 1
@@ -96,11 +106,11 @@ compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is PK.
+  SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
@@ -108,11 +118,20 @@ compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
   ==> Primary Basis <==
 
   Basis Set: 6-31G**
+    Blend: 6-31G**
     Number of shells: 12
     Number of basis function: 25
     Number of Cartesian functions: 25
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G** AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -129,43 +148,49 @@ compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     119] index = [             0,7140]
-  ==> DiskJK: Disk-Based J/K Matrices <==
+  ==> DFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G** AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis function: 131
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: false
+    Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 2.3361254517E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     RMS |[F,P]|
+                           Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    0,    1 ]
-
-   @RHF iter   1:   -68.35488457246672   -6.83549e+01   2.48278e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -71.39794022308776   -3.04306e+00   1.69239e-01 DIIS
-   @RHF iter   3:   -75.77170401393609   -4.37376e+00   5.54856e-02 DIIS
-   @RHF iter   4:   -76.00006701597424   -2.28363e-01   1.31202e-02 DIIS
-   @RHF iter   5:   -76.01682090954418   -1.67539e-02   2.09674e-03 DIIS
-   @RHF iter   6:   -76.01724892558674   -4.28016e-04   5.46825e-04 DIIS
-   @RHF iter   7:   -76.01729488133482   -4.59557e-05   9.91002e-05 DIIS
-   @RHF iter   8:   -76.01729645124914   -1.56991e-06   2.21001e-05 DIIS
-   @RHF iter   9:   -76.01729655271555   -1.01466e-07   4.42514e-06 DIIS
-   @RHF iter  10:   -76.01729655526390   -2.54835e-09   2.88963e-07 DIIS
-   @RHF iter  11:   -76.01729655528261   -1.87157e-11   5.49384e-08 DIIS
-   @RHF iter  12:   -76.01729655528317   -5.54223e-13   7.01071e-09 DIIS
+   @DF-RHF iter   0:   -75.92410988811301   -7.59241e+01   1.07940e-01 
+   @DF-RHF iter   1:   -75.97897018525356   -5.48603e-02   1.96991e-02 
+   @DF-RHF iter   2:   -76.00832996890546   -2.93598e-02   1.05049e-02 DIIS
+   @DF-RHF iter   3:   -76.01656182645057   -8.23186e-03   1.70357e-03 DIIS
+   @DF-RHF iter   4:   -76.01717477420485   -6.12948e-04   5.42585e-04 DIIS
+   @DF-RHF iter   5:   -76.01725612801941   -8.13538e-05   1.06564e-04 DIIS
+   @DF-RHF iter   6:   -76.01725989624983   -3.76823e-06   1.66204e-05 DIIS
+   @DF-RHF iter   7:   -76.01725998148453   -8.52347e-08   2.73797e-06 DIIS
+   @DF-RHF iter   8:   -76.01725998333121   -1.84669e-09   3.49212e-07 DIIS
+   @DF-RHF iter   9:   -76.01725998335534   -2.41300e-11   3.01381e-08 DIIS
+   @DF-RHF iter  10:   -76.01725998335550   -1.56319e-13   3.47380e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -174,18 +199,18 @@ compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
     Doubly Occupied:                                                      
 
-       1A1   -20.569000     2A1    -1.320609     1B2    -0.678724  
-       3A1    -0.563930     1B1    -0.495004  
+       1A1   -20.569001     2A1    -1.320617     1B2    -0.678724  
+       3A1    -0.563921     1B1    -0.494994  
 
     Virtual:                                                              
 
-       4A1     0.202466     2B2     0.292719     3B2     0.981164  
-       5A1     1.056318     6A1     1.129179     2B1     1.168639  
-       4B2     1.294985     7A1     1.413596     1A2     1.802875  
-       8A1     1.806916     3B1     1.918871     9A1     2.513248  
-       5B2     2.537822     6B2     2.713577     2A2     2.921065  
-       4B1     2.947486    10A1     3.291755    11A1     3.620730  
-       7B2     3.874917    12A1     4.077740  
+       4A1     0.202464     2B2     0.292735     3B2     0.981214  
+       5A1     1.056373     6A1     1.129238     2B1     1.168666  
+       4B2     1.295134     7A1     1.413717     1A2     1.803418  
+       8A1     1.807591     3B1     1.919544     9A1     2.513656  
+       5B2     2.538563     6B2     2.713724     2A2     2.921723  
+       4B1     2.948260    10A1     3.292263    11A1     3.621690  
+       7B2     3.876039    12A1     4.078097  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -193,24 +218,22 @@ compare_values(-76.073064815921, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01729655528317
+  @DF-RHF Final Energy:   -76.01725998335550
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8046866186390567
-    One-Electron Energy =                -122.3894311909410249
-    Two-Electron Energy =                  37.5674480170188119
+    Nuclear Repulsion Energy =              8.8046866186390549
+    One-Electron Energy =                -122.3893793598502810
+    Two-Electron Energy =                  37.5674327578557126
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0172965552831670
+    Total Energy =                        -76.0172599833555154
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -218,195 +241,274 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1532
+     X:     0.0000      Y:     0.0000      Z:    -0.1531
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8819     Total:     0.8819
+     X:     0.0000      Y:    -0.0000      Z:     0.8820     Total:     0.8820
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.2414     Total:     2.2414
+     X:     0.0000      Y:    -0.0000      Z:     2.2417     Total:     2.2417
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:47 2016
+*** tstop() called on psinet at Mon May 15 15:39:22 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Integral cutoff                 1.00e-12
+      Number of functions per irrep: [  12    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  12    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13773 non-zero two-electron integrals.
+        Stored in file 33.
+
 
          ---------------------------------------------------------
-                                 D E T C I  
+                Multi-Configurational Self-Consistent Field
+                            (a 'D E T C I' module)
 
-                             C. David Sherrill
-                             Matt L. Leininger
-                               18 June 1999
+                 Daniel G. A. Smith, C. David Sherrill, and
+                              Matt L. Leininger
          ---------------------------------------------------------
 
 
-DETCI PARAMETERS: 
-   EX LEVEL      =        2      H0 BLOCKSIZE =      400
-   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
-   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   MAXITER       =       12      NUM PRINT    =       20
-   NUM ROOTS     =        1      ICORE        =        1
-   PRINT         =        1      FCI          =       no
-   R CONV        = 1.00e-07      MIXED        =      yes
-   E CONV        = 1.00e-06      MIXED4       =      yes
-   OEI FILE      =       35      R4S          =       no
-   REPL OTF      =       no
-   TEI FILE      =       72      DIAG METHOD  =      SEM
-   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
-   S             =   0.0000      Ms0          =      yes
-   MAX NUM VECS  =       13
-   RESTART       =       no
-   GUESS VECTOR  =   D FILE      OPENTYPE     =     NONE
-   REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
-   LSE           =       no      LSE ITER     =        0
-   HD OTF        =      yes      NO DFILE     =       no
-   MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      MPN WIGNER   =       no
-   PERT Z        =   1.0000      FOLLOW ROOT  =        0
-   NUM THREADS   =        1
-   VECS WRITE    =       no      NUM VECS WRITE =      0
-   FILTER GUESS  =       no      SF RESTRICT  =       no
-   OPDM          =      yes      TRANS DENSITY=       no
+   ==> Parameters <==
 
-   FILES         =  50 51 52 53
+    EX LEVEL       =        2      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       12      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =       NO
+    R CONV         = 1.00e-07      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       13      REF SYM       =     AUTO
+    IOPEN        =       NO
 
-   EX ALLOW      =  1  1 
-   STATE AVERAGE =  1(1.00) 
+    EX ALLOW       =  1  1 
+    STATE AVERAGE  =  0(1.00) 
 
-ORBITALS:
-   NMO          =       25
-   FROZEN CORE  =        0      RESTR CORE   =        1
-   FROZEN VIRT  =        0      RESTR VIRT   =       18
-   DROPPED CORE =        1      DROPPED VIRT =       18
-   EXPLICIT CORE=        0      ORBS IN CI   =        6
-   NUM ALP      =        5      NUM BET      =        5
-   NUM ALP EXPL =        4      NUM BET EXPL =        4
-   IOPEN        =       no
-   RAS1 LVL     =        3      A RAS3 MAX   =        2
-   RAS1 MIN     =        6      B RAS3 MAX   =        2
-   A RAS1 LVL   =        3      RAS4 LVL     =        6
-   A RAS1 MIN   =        2      A RAS4 MAX   =        0
-   A RAS1 MAX   =        4      B RAS4 MAX   =        0
-   B RAS1 LVL   =        3      RAS4 MAX     =        0
-   B RAS1 MIN   =        2      A RAS34 MAX  =        2
-   B RAS1 MAX   =        4      B RAS34 MAX  =        2
-   RAS3 LVL     =        4      RAS34 MAX    =        2
-   RAS3 MAX     =        2
+   ==> CI Orbital and Space information <==
 
-   DOCC            =   3   0   1   1 
-   SOCC            =   0   0   0   0 
-
-   FROZEN DOCC     =   0   0   0   0 
-   RESTRICTED DOCC =   1   0   0   0 
-   RAS 1           =   2   0   1   1 
-   RAS 2           =   0   0   0   0 
-   RAS 3           =   1   0   0   1 
-   RAS 4           =   0   0   0   0 
-   RESTRICTED UOCC =   8   2   3   5 
-   FROZEN UOCC     =   0   0   0   0 
-         ---------------------------------------------------------
-
+    RAS1 LVL      =        3      A RAS3 MAX    =        2
+    RAS1 MIN      =        6      B RAS3 MAX    =        2
+    A RAS1 LVL    =        3      RAS4 LVL      =        6
+    A RAS1 MIN    =        2      A RAS4 MAX    =        0
+    A RAS1 MAX    =        4      B RAS4 MAX    =        0
+    B RAS1 LVL    =        3      RAS4 MAX      =        0
+    B RAS1 MIN    =        2      A RAS34 MAX   =        2
+    B RAS1 MAX    =        4      B RAS34 MAX   =        2
+    RAS3 LVL      =        4      RAS34 MAX     =        2
+    RAS3 MAX      =        2
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       25    12     2     4     7
+                 Nmo       25    12     2     4     7
+               Ndocc        5     3     0     1     1
+               Nsocc        0     0     0     0     0
+   ------------------------------------------------------
+                        MCSCF Spaces
+   ------------------------------------------------------
+         Frozen DOCC        0     0     0     0     0
+     Restricted DOCC        1     1     0     0     0
+                RAS1        4     2     0     1     1
+                RAS2        0     0     0     0     0
+                RAS3        2     1     0     0     1
+                RAS4        0     0     0     0     0
+      Active (total)        6     3     0     1     2
+     Restricted UOCC       18     8     2     3     5
+         Frozen UOCC        0     0     0     0     0
+   ------------------------------------------------------
 
    ==> Setting up CI strings <==
 
-   There are 15 alpha and 15 beta strings
-   The CI space requires 31 (3.10E+01) determinants and 9 blocks
-
+    There are 15 alpha and 15 beta strings
+    The CI space requires 31 (3.10E+01) determinants and 9 blocks
 
    ==> Setting up MCSCF integrals <==
 
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 105950 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):              3200
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
 
    ==> Starting MCSCF iterations <==
 
-                        Total Energy        Delta E      RMS Grad   NCI
+        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
+   @MCSCF  1:    -76.029684988328   -1.2425e-02  9.16e-03  1.31e-13    1    1  Initial CI
+      Warning! Maxstep = 0.56, scaling to 0.50
+   @MCSCF  2:    -76.068100168606   -3.8415e-02  1.22e-02  7.11e-06    5    1  TS
+   @MCSCF  3:    -76.072199702344   -4.0995e-03  4.00e-03  8.55e-06    4    1  TS
+   @MCSCF  4:    -76.072793099717   -5.9340e-04  1.69e-03  8.17e-07    5    1  TS, DIIS
+   @MCSCF  5:    -76.072918864925   -1.2577e-04  1.08e-03  5.08e-07    5    1  TS, DIIS
+   @MCSCF  6:    -76.072978241092   -5.9376e-05  8.28e-04  6.51e-07    5    1  TS, DIIS
+   @MCSCF  7:    -76.072994773182   -1.6532e-05  6.77e-04  3.50e-07    5    1  TS, DIIS
+   @MCSCF  8:    -76.073007283182   -1.2510e-05  5.85e-04  2.11e-07    5    1  TS, DIIS
+   @MCSCF  9:    -76.073029162619   -2.1879e-05  4.57e-04  5.04e-08    6    1  TS, DIIS
+   @MCSCF 10:    -76.073049906044   -2.0743e-05  2.46e-04  1.11e-07    6    1  TS, DIIS
+   @MCSCF 11:    -76.073050631531   -7.2549e-07  1.85e-04  1.98e-07    5    1  TS, DIIS
+   @MCSCF 12:    -76.073051095553   -4.6402e-07  1.27e-04  4.17e-08    6    1  TS, DIIS
+   @MCSCF 13:    -76.073051252630   -1.5708e-07  8.67e-05  6.97e-08    5    1  TS, DIIS
+   @MCSCF 14:    -76.073051589803   -3.3717e-07  6.42e-05  7.79e-08    5    1  TS, DIIS
+   @MCSCF 15:    -76.073051982456   -3.9265e-07  5.64e-05  1.36e-08    6    1  TS, DIIS
+   @MCSCF 16:    -76.073052246188   -2.6373e-07  5.01e-05  1.42e-08    6    1  TS, DIIS
+   @MCSCF 17:    -76.073052416407   -1.7022e-07  4.87e-05  1.30e-08    6    1  TS, DIIS
+   @MCSCF 18:    -76.073052696863   -2.8046e-07  4.56e-05  3.00e-08    6    1  TS, DIIS
+   @MCSCF 19:    -76.073052730172   -3.3309e-08  4.54e-05  5.94e-09    6    1  TS, DIIS
+   @MCSCF 20:    -76.073052749069   -1.8897e-08  4.54e-05  3.11e-08    5    1  TS, DIIS
+   @MCSCF 21:    -76.073052837687   -8.8618e-08  4.49e-05  1.20e-08    6    1  TS, DIIS
+   @MCSCF 22:    -76.073052980241   -1.4255e-07  4.45e-05  1.98e-08    6    1  TS, DIIS
+   @MCSCF 23:    -76.073053227090   -2.4685e-07  4.38e-05  2.80e-08    6    1  TS, DIIS
+   @MCSCF 24:    -76.073054231700   -1.0046e-06  4.13e-05  1.73e-08    7    1  TS, DIIS
+   @MCSCF 25:    -76.073059913969   -5.6823e-06  2.79e-05  2.15e-08    8    1  TS, DIIS
+   @MCSCF 26:    -76.073061055894   -1.1419e-06  2.62e-05  7.10e-09    8    1  TS, DIIS
+   @MCSCF 27:    -76.073061497191   -4.4130e-07  2.53e-05  2.58e-08    7    1  TS, DIIS
+   @MCSCF 28:    -76.073061820302   -3.2311e-07  2.50e-05  2.00e-08    7    1  TS, DIIS
+   @MCSCF 29:    -76.073062361443   -5.4114e-07  2.40e-05  4.94e-09    8    1  TS, DIIS
+   @MCSCF 30:    -76.073062398379   -3.6936e-08  2.16e-05  1.81e-08    6    1  TS, DIIS
+   @MCSCF 31:    -76.073064176615   -1.7782e-06  2.79e-05  1.87e-09    9    1  TS, DIIS
+   @MCSCF 32:    -76.073064530531   -3.5392e-07  2.95e-05  9.21e-09    8    1  TS, DIIS
+   @MCSCF 33:    -76.073064537363   -6.8317e-09  2.89e-05  1.05e-08    6    1  TS, DIIS
+   @MCSCF 34:    -76.073064762671   -2.2531e-07  1.99e-05  7.08e-09    8    1  TS, DIIS
+   @MCSCF 35:    -76.073064898676   -1.3601e-07  1.85e-05  7.54e-09    8    1  TS, DIIS
+   @MCSCF 36:    -76.073064937959   -3.9283e-08  1.21e-05  4.16e-09    8    1  TS, DIIS
+   @MCSCF 37:    -76.073064942202   -4.2433e-09  1.20e-05  2.87e-09    7    1  TS, DIIS
+   @MCSCF 38:    -76.073064938752    3.4505e-09  8.83e-06  3.13e-09    8    1  TS, DIIS
+   @MCSCF 39:    -76.073064954923   -1.6171e-08  7.35e-06  4.21e-09    8    1  TS, DIIS
+   @MCSCF 40:    -76.073064952483    2.4402e-09  5.10e-06  1.51e-09    8    1  TS, DIIS
+   @MCSCF 41:    -76.073064955420   -2.9370e-09  6.29e-06  2.75e-09    7    1  TS, DIIS
+   @MCSCF 42:    -76.073064957248   -1.8283e-09  3.24e-06  4.33e-09    7    1  TS, DIIS
 
-   @MCSCF Iter   1:  -76.02968301253907   -1.2386e-02   9.1644e-03   1   Initial CI
-   @MCSCF Iter   2:  -76.06816719065516   -3.8484e-02   1.2179e-02   8   APPROX
-   @MCSCF Iter   3:  -76.07219225954346   -4.0251e-03   4.1025e-03   7   APPROX
-   @MCSCF Iter   4:  -76.07277620374651   -5.8394e-04   1.7537e-03   6   APPROX
-   @MCSCF Iter   5:  -76.07290359994485   -1.2740e-04   1.2811e-03   6   APPROX, DIIS
-   @MCSCF Iter   6:  -76.07296868331761   -6.5083e-05   1.0787e-03   6   APPROX, DIIS
-   @MCSCF Iter   7:  -76.07298042864304   -1.1745e-05   9.4564e-04   6   APPROX, DIIS
-   @MCSCF Iter   8:  -76.07300703947202   -2.6611e-05   6.7709e-04   6   APPROX, DIIS
-   @MCSCF Iter   9:  -76.07304176681343   -3.4727e-05   3.7553e-04   6   APPROX, DIIS
-   @MCSCF Iter  10:  -76.07305094087187   -9.1741e-06   1.7343e-04   6   APPROX, DIIS
-   @MCSCF Iter  11:  -76.07305167060321   -7.2973e-07   1.2605e-04   6   APPROX, DIIS
-   @MCSCF Iter  12:  -76.07305205292214   -3.8232e-07   1.0155e-04   6   APPROX, DIIS
-   @MCSCF Iter  13:  -76.07305219006956   -1.3715e-07   8.9968e-05   5   APPROX, DIIS
-   @MCSCF Iter  14:  -76.07305254112211   -3.5105e-07   7.3773e-05   6   APPROX, DIIS
-   @MCSCF Iter  15:  -76.07305278090743   -2.3979e-07   6.4471e-05   6   APPROX, DIIS
-   @MCSCF Iter  16:  -76.07305283997597   -5.9069e-08   5.9285e-05   5   APPROX, DIIS
-   @MCSCF Iter  17:  -76.07305288804912   -4.8073e-08   5.4933e-05   5   APPROX, DIIS
-   @MCSCF Iter  18:  -76.07305297409562   -8.6046e-08   5.4441e-05   5   APPROX, DIIS
-   @MCSCF Iter  19:  -76.07305315332563   -1.7923e-07   5.3839e-05   6   APPROX, DIIS
-   @MCSCF Iter  20:  -76.07305341973893   -2.6641e-07   5.2374e-05   6   APPROX, DIIS
-   @MCSCF Iter  21:  -76.07305390051462   -4.8078e-07   5.0173e-05   6   APPROX, DIIS
-   @MCSCF Iter  22:  -76.07305490649716   -1.0060e-06   4.6406e-05   7   APPROX, DIIS
-   @MCSCF Iter  23:  -76.07305556052214   -6.5402e-07   4.4653e-05   7   APPROX, DIIS
-   @MCSCF Iter  24:  -76.07305609653224   -5.3601e-07   4.3501e-05   6   APPROX, DIIS
-   @MCSCF Iter  25:  -76.07305657908394   -4.8255e-07   4.4585e-05   6   APPROX, DIIS
-   @MCSCF Iter  26:  -76.07305804003326   -1.4609e-06   5.5501e-05   7   APPROX, DIIS
-   @MCSCF Iter  27:  -76.07306036401800   -2.3240e-06   3.8859e-05   7   APPROX, DIIS
-   @MCSCF Iter  28:  -76.07306325227401   -2.8883e-06   5.2036e-05   8   APPROX, DIIS
-   @MCSCF Iter  29:  -76.07306292838831    3.2389e-07   4.4806e-05   7   APPROX, DIIS
-   @MCSCF Iter  30:  -76.07306312037237   -1.9198e-07   3.8421e-05   6   APPROX, DIIS
-   @MCSCF Iter  31:  -76.07306314420589   -2.3834e-08   3.9940e-05   6   APPROX, DIIS
-   @MCSCF Iter  32:  -76.07306379211586   -6.4791e-07   4.1384e-05   7   APPROX, DIIS
-   @MCSCF Iter  33:  -76.07306374381729    4.8299e-08   4.5841e-05   6   APPROX, DIIS
-   @MCSCF Iter  34:  -76.07306434734762   -6.0353e-07   2.4280e-05   7   APPROX, DIIS
-   @MCSCF Iter  35:  -76.07306386098335    4.8636e-07   1.6949e-05   7   APPROX, DIIS
-   @MCSCF Iter  36:  -76.07306488620870   -1.0252e-06   1.0423e-05   8   APPROX, DIIS
-   @MCSCF Iter  37:  -76.07306485810601    2.8103e-08   1.1942e-05   6   APPROX, DIIS
-   @MCSCF Iter  38:  -76.07306482486729    3.3239e-08   8.9262e-06   6   APPROX, DIIS
-   @MCSCF Iter  39:  -76.07306481589877    8.9685e-09   4.7882e-06   6   APPROX, DIIS
+          @MCSCF has converged!
 
-       MCSCF has converged!
+   @MCSCF Final Energy:  -76.073064957247951
 
-   @MCSCF Final Energy:   -76.073064815898775
+   ==> Energetics <==
+
+    SCF energy =          -76.017259983355515
+    Total MCSCF energy =  -76.073064957247951
+
+   ==> MCSCF root 0 information <==
+
+    MCSCF Root 0 energy =   -76.073064957247951
+
+   Active Space Natural occupation numbers:
+
+        B1   1.999408        A1   1.998835        A1   1.977250
+        B2   1.975132        B2   0.025382        A1   0.023994
+
+   The 20 most important determinants:
+
+    *   1    0.980625  (    3,    3)  2A1X 3A1X 1B1X 1B2X 
+    *   2   -0.074730  (    6,    6)  2A1X 3A1X 1B1X 2B2X 
+    *   3    0.064528  (    3,    6)  2A1X 3A1X 1B1X 1B2A 2B2B 
+    *   4    0.064528  (    6,    3)  2A1X 3A1X 1B1X 1B2B 2B2A 
+    *   5    0.053205  (    4,    6)  2A1X 3A1B 1B1X 1B2A 4A1A 2B2B 
+    *   6    0.053205  (    6,    4)  2A1X 3A1A 1B1X 1B2B 4A1B 2B2A 
+    *   7   -0.049766  (    4,    4)  2A1X 1B1X 1B2X 4A1X 
+    *   8    0.043143  (    3,    4)  2A1X 3A1A 1B1X 1B2X 4A1B 
+    *   9    0.043143  (    4,    3)  2A1X 3A1B 1B1X 1B2X 4A1A 
+    *  10    0.032587  (    5,    6)  2A1B 3A1X 1B1X 1B2A 4A1A 2B2B 
+    *  11    0.032587  (    6,    5)  2A1A 3A1X 1B1X 1B2B 4A1B 2B2A 
+    *  12   -0.030629  (    4,    5)  2A1A 3A1B 1B1X 1B2X 4A1X 
+    *  13   -0.030629  (    5,    4)  2A1B 3A1A 1B1X 1B2X 4A1X 
+    *  14   -0.030547  (    9,    9)  2A1X 3A1X 1B1X 4A1X 
+    *  15   -0.028950  (    5,    5)  3A1X 1B1X 1B2X 4A1X 
+    *  16   -0.028342  (   10,   10)  2A1X 1B1X 1B2X 2B2X 
+    *  17    0.027210  (    3,    5)  2A1A 3A1X 1B1X 1B2X 4A1B 
+    *  18    0.027210  (    5,    3)  2A1B 3A1X 1B1X 1B2X 4A1A 
+    *  19   -0.027199  (    3,    7)  2A1X 3A1A 1B1X 1B2A 4A1B 2B2B 
+    *  20   -0.027199  (    7,    3)  2A1X 3A1B 1B1X 1B2B 4A1A 2B2A 
 
 
-   => Energetics <=
 
-   SCF energy =              -76.017296555283167
-   Total CI energy =         -76.073064815898775
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
+Properties computed using the RASSCF density matrix
 
-   CI Root  1 energy =       -76.073064815898775
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.0351
 
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2178
 
-The 20 most important determinants
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.8173     Total:     0.8173
 
-    1   -0.981934  (    3,    3)  2A1X  3A1X  1B1X  1B2X  
-    2    0.075490  (    6,    6)  2A1X  3A1X  1B1X  2B2X  
-    3   -0.058626  (    3,    6)  2A1X  3A1X  1B1X  1B2A  2B2B  
-    4   -0.058626  (    6,    3)  2A1X  3A1X  1B1X  1B2B  2B2A  
-    5   -0.052656  (    4,    6)  2A1X  3A1B  1B1X  1B2A  4A1A  2B2B  
-    6   -0.052656  (    6,    4)  2A1X  3A1A  1B1X  1B2B  4A1B  2B2A  
-    7    0.050165  (    4,    4)  2A1X  1B1X  1B2X  4A1X  
-    8   -0.038595  (    3,    4)  2A1X  3A1A  1B1X  1B2X  4A1B  
-    9   -0.038595  (    4,    3)  2A1X  3A1B  1B1X  1B2X  4A1A  
-   10   -0.032213  (    5,    6)  2A1B  3A1X  1B1X  1B2A  4A1A  2B2B  
-   11   -0.032213  (    6,    5)  2A1A  3A1X  1B1X  1B2B  4A1B  2B2A  
-   12    0.030874  (    4,    5)  2A1A  3A1B  1B1X  1B2X  4A1X  
-   13    0.030874  (    5,    4)  2A1B  3A1A  1B1X  1B2X  4A1X  
-   14    0.030521  (    9,    9)  2A1X  3A1X  1B1X  4A1X  
-   15    0.029134  (    5,    5)  3A1X  1B1X  1B2X  4A1X  
-   16    0.028365  (   10,   10)  2A1X  1B1X  1B2X  2B2X  
-   17    0.026650  (    3,    7)  2A1X  3A1A  1B1X  1B2A  4A1B  2B2B  
-   18    0.026650  (    7,    3)  2A1X  3A1B  1B1X  1B2B  4A1A  2B2A  
-   19   -0.026006  (    9,   10)  2A1X  3A1A  1B1X  1B2B  4A1A  2B2B  
-   20   -0.026006  (   10,    9)  2A1X  3A1B  1B1X  1B2A  4A1B  2B2A  
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     2.0774     Total:     2.0774
 
-
+	SCF Energy........................................................PASSED
 	RASSCF Energy.....................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

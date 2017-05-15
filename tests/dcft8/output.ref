@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:24:24 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:  11610
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13560
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -30,8 +33,6 @@
 #! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
 #! In the next computation ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
-
-memory 250 mb
 
 refscf      = -55.185167931335101  #TEST
 refmp2      = -55.231284743677058  #TEST
@@ -59,7 +60,7 @@ H 1 r 2 TDA 4 120
 r = 1.09
 }
 
-set globals {
+set {
     r_convergence 12
     d_convergence 12
     ao_basis    disk
@@ -132,17 +133,23 @@ compare_values(refodc13_lambda_3, get_variable("DCFT THREE-PARTICLE ENERGY"), 10
 compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:35:23 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:24 2016
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    70 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -163,7 +170,7 @@ compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total
 
   Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
   Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
-  Nuclear repulsion =   11.087047696153101
+  Nuclear repulsion =   11.087047696153100
 
   Charge       = 1
   Multiplicity = 2
@@ -177,7 +184,7 @@ compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-12
   Integral threshold = 0.00e+00
@@ -185,6 +192,7 @@ compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
@@ -204,36 +212,58 @@ compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,      24] index = [             0,300]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1332 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -53.27594853162467   -5.32759e+01   1.73080e-01 
-   @UHF iter   2:   -55.15151993103486   -1.87557e+00   3.54518e-02 DIIS
-   @UHF iter   3:   -55.18383682116791   -3.23169e-02   4.57083e-03 DIIS
-   @UHF iter   4:   -55.18500083557219   -1.16401e-03   1.51013e-03 DIIS
-   @UHF iter   5:   -55.18514170729539   -1.40872e-04   5.45609e-04 DIIS
-   @UHF iter   6:   -55.18516187848832   -2.01712e-05   2.46844e-04 DIIS
-   @UHF iter   7:   -55.18516702001163   -5.14152e-06   9.82434e-05 DIIS
-   @UHF iter   8:   -55.18516793023388   -9.10222e-07   4.52005e-06 DIIS
-   @UHF iter   9:   -55.18516793133180   -1.09792e-09   3.36005e-07 DIIS
-   @UHF iter  10:   -55.18516793133499   -3.19744e-12   1.71604e-08 DIIS
-   @UHF iter  11:   -55.18516793133505   -5.68434e-14   2.00183e-09 DIIS
-   @UHF iter  12:   -55.18516793133504    1.42109e-14   3.15982e-11 DIIS
-   @UHF iter  13:   -55.18516793133504    0.00000e+00   3.46916e-13 DIIS
+   @UHF iter   1:   -55.04233232032251   -5.50423e+01   7.76631e-02 
+   @UHF iter   2:   -55.17499565049719   -1.32663e-01   1.67353e-02 DIIS
+   @UHF iter   3:   -55.18462879377267   -9.63314e-03   3.12199e-03 DIIS
+   @UHF iter   4:   -55.18507905750489   -4.50264e-04   9.77605e-04 DIIS
+   @UHF iter   5:   -55.18513606996277   -5.70125e-05   5.61453e-04 DIIS
+   @UHF iter   6:   -55.18516555704235   -2.94871e-05   1.62150e-04 DIIS
+   @UHF iter   7:   -55.18516792998972   -2.37295e-06   4.23482e-06 DIIS
+   @UHF iter   8:   -55.18516793101176   -1.02204e-09   1.91541e-06 DIIS
+   @UHF iter   9:   -55.18516793131039   -2.98627e-10   5.15758e-07 DIIS
+   @UHF iter  10:   -55.18516793133401   -2.36184e-11   1.16656e-07 DIIS
+   @UHF iter  11:   -55.18516793133512   -1.10845e-12   1.80387e-08 DIIS
+   @UHF iter  12:   -55.18516793133512   -7.10543e-15   6.42509e-09 DIIS
+   @UHF iter  13:   -55.18516793133512    7.10543e-15   3.57854e-09 DIIS
+   @UHF iter  14:   -55.18516793133514   -2.84217e-14   3.44178e-10 DIIS
+   @UHF iter  15:   -55.18516793133511    3.55271e-14   9.06912e-11 DIIS
+   @UHF iter  16:   -55.18516793133511    0.00000e+00   2.38470e-11 DIIS
+   @UHF iter  17:   -55.18516793133514   -3.55271e-14   2.67918e-12 DIIS
+   @UHF iter  18:   -55.18516793133512    2.84217e-14   1.46532e-12 DIIS
+   @UHF iter  19:   -55.18516793133512    0.00000e+00   6.70718e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -248,12 +278,12 @@ compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total
 
     Alpha Occupied:                                                       
 
-       1Ap   -15.918391     2Ap    -1.562330     3Ap    -1.011156  
-       1App   -1.011156     4Ap    -0.945772  
+       1Ap   -15.918391     2Ap    -1.562330     1App   -1.011156  
+       3Ap    -1.011156     4Ap    -0.945772  
 
     Alpha Virtual:                                                        
 
-       5Ap     0.134344     6Ap     0.203343     2App    0.203343  
+       5Ap     0.134344     2App    0.203343     6Ap     0.203343  
 
     Beta Occupied:                                                        
 
@@ -272,41 +302,19 @@ compare_values(refodc13_total, get_variable("CURRENT ENERGY"), 10, "ODC-13 Total
 
   Energy converged.
 
-  @UHF Final Energy:   -55.18516793133504
+  @UHF Final Energy:   -55.18516793133512
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             11.0870476961531015
-    One-Electron Energy =                 -92.8389235247138629
-    Two-Electron Energy =                  26.5667078972257258
+    Nuclear Repulsion Energy =             11.0870476961530997
+    One-Electron Energy =                 -92.8389235247183677
+    Two-Electron Energy =                  26.5667078972301454
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.1851679313350303
+    Total Energy =                        -55.1851679313351156
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.2866      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
-
-
-  Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
   HONO-2 :    3 Ap 1.9980250
@@ -317,18 +325,59 @@ Properties computed using the SCF density matrix
   LUNO+2 :    6 Ap 0.0012735
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:24 2016
-Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:24 2016
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.2866      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
+
+
+*** tstop() called on psinet at Mon May 15 15:35:24 2017
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of SO shells:               5
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6    2 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 346 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:24 2017
 
 
 
@@ -341,12 +390,12 @@ Total time:
 	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        =  -55.185167931335037
-	 Alpha - Alpha MP2 energy         =   -0.001575783744851
-	 Alpha - Beta  MP2 energy         =   -0.042670073711189
-	 Beta  - Beta  MP2 energy         =   -0.001870954885902
-	 Total MP2 correlation energy     =   -0.046116812341942
-	*Total MP2 energy                 =  -55.231284743676980
+	*Total Hartree-Fock energy        =  -55.185167931335116
+	 Alpha - Alpha MP2 energy         =   -0.001575783744858
+	 Alpha - Beta  MP2 energy         =   -0.042670073711247
+	 Beta  - Beta  MP2 energy         =   -0.001870954885896
+	 Total MP2 correlation energy     =   -0.046116812342001
+	*Total MP2 energy                 =  -55.231284743677115
 
 	DCFT Functional:    		 ODC-12
 	DCFT Type:          		 CONV
@@ -356,34 +405,34 @@ Total time:
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        2.359e-02         7.902e-03     -3.995e-02    -55.271239108210793      *
-	* 2        6.945e-03         3.313e-03      1.184e-02    -55.259396167525843      *
-	* 3        3.915e-03         1.657e-03      5.053e-03    -55.254342890830806      *
-	* 4        2.214e-03         9.900e-04      1.727e-03    -55.252616306894808      *
-	* 5        1.593e-03         6.391e-04      7.988e-04    -55.251817542314647      *
-	* 6        1.071e-03         4.280e-04      3.906e-04    -55.251426988115810      *
-	* 7        7.347e-04         2.908e-04      2.199e-04    -55.251207125878622  S   *
-	* 8        5.024e-04         1.989e-04      1.329e-04    -55.251074222953683  S   *
-	* 9        3.467e-04         1.364e-04      8.508e-05    -55.250989142619595  S   *
-	* 10       2.401e-04         9.362e-05      5.619e-05    -55.250932957365720  S/E *
-	* 11       1.375e-06         4.544e-07      1.193e-04    -55.250813669940705  S/E *
-	* 12       4.049e-07         1.716e-07      3.368e-07    -55.250813333125834  S/E *
-	* 13       1.597e-07         8.419e-08     -1.183e-07    -55.250813451377589  S/E *
-	* 14       2.044e-08         1.024e-08     -1.234e-07    -55.250813574740853  S/E *
-	* 15       1.298e-08         3.994e-09     -1.372e-08    -55.250813588456396  S/E *
-	* 16       2.323e-09         9.404e-10     -1.020e-09    -55.250813589476614  S/E *
-	* 17       6.281e-10         1.709e-10      7.432e-10    -55.250813588733429  S/E *
-	* 18       3.554e-10         8.222e-11      1.723e-10    -55.250813588561158  S/E *
-	* 19       6.328e-11         1.537e-11      1.250e-10    -55.250813588436202  S/E *
-	* 20       1.844e-11         6.127e-12      9.379e-13    -55.250813588435264  S/E *
-	* 21       9.805e-12         1.980e-12     -4.526e-12    -55.250813588439790  S/E *
-	* 22       4.853e-12         1.114e-12     -5.755e-13    -55.250813588440366  S/E *
-	* 23       1.783e-13         2.342e-13     -2.203e-13    -55.250813588440586  S/E *
+	* 1        2.359e-02         7.902e-03     -3.995e-02    -55.271239108211006      *
+	* 2        6.945e-03         3.313e-03      1.184e-02    -55.259396167526006      *
+	* 3        3.915e-03         1.657e-03      5.053e-03    -55.254342890830934      *
+	* 4        2.214e-03         9.900e-04      1.727e-03    -55.252616306894929      *
+	* 5        1.593e-03         6.391e-04      7.988e-04    -55.251817542314761      *
+	* 6        1.071e-03         4.280e-04      3.906e-04    -55.251426988115931      *
+	* 7        7.347e-04         2.908e-04      2.199e-04    -55.251207125878707  S   *
+	* 8        5.024e-04         1.989e-04      1.329e-04    -55.251074222953790  S   *
+	* 9        3.467e-04         1.364e-04      8.508e-05    -55.250989142619737  S   *
+	* 10       2.401e-04         9.362e-05      5.619e-05    -55.250932957365862  S/E *
+	* 11       1.375e-06         4.544e-07      1.193e-04    -55.250813669940840  S/E *
+	* 12       4.049e-07         1.716e-07      3.368e-07    -55.250813333125947  S/E *
+	* 13       1.597e-07         8.419e-08     -1.183e-07    -55.250813451377702  S/E *
+	* 14       2.044e-08         1.024e-08     -1.234e-07    -55.250813574740967  S/E *
+	* 15       1.298e-08         3.994e-09     -1.372e-08    -55.250813588456516  S/E *
+	* 16       2.323e-09         9.404e-10     -1.020e-09    -55.250813589476735  S/E *
+	* 17       6.281e-10         1.709e-10      7.432e-10    -55.250813588733557  S/E *
+	* 18       3.554e-10         8.222e-11      1.723e-10    -55.250813588561279  S/E *
+	* 19       6.328e-11         1.537e-11      1.250e-10    -55.250813588436309  S/E *
+	* 20       1.844e-11         6.127e-12      9.592e-13    -55.250813588435349  S/E *
+	* 21       9.806e-12         1.981e-12     -4.555e-12    -55.250813588439904  S/E *
+	* 22       4.854e-12         1.114e-12     -5.613e-13    -55.250813588440465  S/E *
+	* 23       1.795e-13         2.341e-13     -2.416e-13    -55.250813588440707  S/E *
 	*=================================================================================*
 
-	*   ODC-12 SCF Energy                                 =     -55.086226756311994
-	*   ODC-12 Lambda Energy                              =      -0.164586832128595
-	*   ODC-12 Total Energy                               =     -55.250813588440586
+	*   ODC-12 SCF Energy                                 =     -55.086226756312115
+	*   ODC-12 Lambda Energy                              =      -0.164586832128594
+	*   ODC-12 Total Energy                               =     -55.250813588440707
 
 	Evaluating three-particle DCFT energy correction...
 
@@ -397,323 +446,7 @@ Total time:
 	*Lambda_3 Energy (BBB)                             =   -0.000000286943048
 
 	*DCFT Three-particle Energy                        =   -0.000258824537997
-	*DCFT Total Energy                                 =  -55.251072412978580
-
-	Orbital occupations:
-		Alpha occupied orbitals
-		   1Ap       1.0000     2Ap       0.9957     3Ap       0.9916     4Ap       0.9866  
-		   1App      0.9866  
-
-		Beta occupied orbitals
-		   1Ap       1.0000     2Ap       0.9910     1App      0.9845     3Ap       0.9845  
-		
-
-		Alpha virtual orbitals
-		   5Ap       0.0142     2App      0.0142     6Ap       0.0112  
-
-		Beta virtual orbitals
-		   4Ap       0.0119     2App      0.0119     5Ap       0.0099     6Ap       0.0061  
-		
-
-
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the ODC-12 density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.3285      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5120      Z:     0.0000     Total:     0.5120
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.3015      Z:     0.0000     Total:     1.3015
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:25 2016
-Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-	SCF Energy........................................................PASSED
-	MP2 Energy........................................................PASSED
-	ODC-12 SCF Energy (simultaneous, ao_basis=none)...................PASSED
-	ODC-12 Energy (simultaneous, ao_basis=none).......................PASSED
-	ODC-12 Lambda_3 Energy (simultaneous, ao_basis=none)..............PASSED
-	ODC-12 Total Energy (simultaneous, ao_basis=none).................PASSED
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:25 2016
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              UHF Reference
-                        1 Threads,    250 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: cs
-    Full point group: C3v
-
-    Geometry (in Angstrom), charge = 1, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           N          0.000000000000     0.064518610227     0.000000000000    14.003074004780
-           H         -0.513830927662    -0.298814723106     0.889981273211     1.007825032070
-           H         -0.513830927662    -0.298814723106    -0.889981273211     1.007825032070
-           H          1.027661855324    -0.298814723106     0.000000000000     1.007825032070
-
-  Running in cs symmetry.
-
-  Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
-  Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
-  Nuclear repulsion =   11.087047696153101
-
-  Charge       = 1
-  Multiplicity = 2
-  Electrons    = 9
-  Nalpha       = 5
-  Nbeta        = 4
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is CORE.
-  Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-12
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: STO-3G
-    Number of shells: 6
-    Number of basis function: 8
-    Number of Cartesian functions: 8
-    Spherical Harmonics?: true
-    Max angular momentum: 1
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'         6       6       0       0       0       0
-     A"         2       2       0       0       0       0
-   -------------------------------------------------------
-    Total       8       8       5       4       4       1
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-	Batch   1 pq = [       0,      24] index = [             0,300]
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               178
-    Schwarz Cutoff:          1E-12
-
-  Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @UHF iter   1:   -53.27594853162467   -5.32759e+01   1.73080e-01 
-   @UHF iter   2:   -55.15151993103485   -1.87557e+00   3.54518e-02 DIIS
-   @UHF iter   3:   -55.18383682116791   -3.23169e-02   4.57083e-03 DIIS
-   @UHF iter   4:   -55.18500083557219   -1.16401e-03   1.51013e-03 DIIS
-   @UHF iter   5:   -55.18514170729539   -1.40872e-04   5.45609e-04 DIIS
-   @UHF iter   6:   -55.18516187848834   -2.01712e-05   2.46844e-04 DIIS
-   @UHF iter   7:   -55.18516702001163   -5.14152e-06   9.82434e-05 DIIS
-   @UHF iter   8:   -55.18516793023388   -9.10222e-07   4.52005e-06 DIIS
-   @UHF iter   9:   -55.18516793133178   -1.09790e-09   3.36005e-07 DIIS
-   @UHF iter  10:   -55.18516793133502   -3.24007e-12   1.71604e-08 DIIS
-   @UHF iter  11:   -55.18516793133504   -1.42109e-14   2.00183e-09 DIIS
-   @UHF iter  12:   -55.18516793133502    1.42109e-14   3.15980e-11 DIIS
-   @UHF iter  13:   -55.18516793133502    0.00000e+00   3.47120e-13 DIIS
-
-  ==> Post-Iterations <==
-
-   @Spin Contamination Metric:   1.043752011E-02
-   @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.604375201E-01
-   @S   Expected:                5.000000000E-01
-   @S   Observed:                5.000000000E-01
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Alpha Occupied:                                                       
-
-       1Ap   -15.918391     2Ap    -1.562330     3Ap    -1.011156  
-       1App   -1.011156     4Ap    -0.945772  
-
-    Alpha Virtual:                                                        
-
-       5Ap     0.134344     6Ap     0.203343     2App    0.203343  
-
-    Beta Occupied:                                                        
-
-       1Ap   -15.886508     2Ap    -1.428101     3Ap    -0.971048  
-       1App   -0.971048  
-
-    Beta Virtual:                                                         
-
-       4Ap    -0.181875     5Ap     0.167535     6Ap     0.238002  
-       2App    0.238002  
-
-    Final Occupation by Irrep:
-             Ap   App 
-    DOCC [     3,    1 ]
-    SOCC [     1,    0 ]
-
-  Energy converged.
-
-  @UHF Final Energy:   -55.18516793133502
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             11.0870476961531015
-    One-Electron Energy =                 -92.8389235247138345
-    Two-Electron Energy =                  26.5667078972257045
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.1851679313350232
-
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.2866      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
-
-
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    3 Ap 1.9980250
-  HONO-1 :    1App 1.9980250
-  HONO-0 :    4 Ap 1.0000000
-  LUNO+0 :    5 Ap 0.0019750
-  LUNO+1 :    2App 0.0019750
-  LUNO+2 :    6 Ap 0.0012735
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:25 2016
-Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.40 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:25 2016
-
-
-
-	***********************************************************************************
-	*                        Density Cumulant Functional Theory                       *
-	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
-	***********************************************************************************
-
-
-	Transforming two-electron integrals (transformation type: unrestricted)...
-	Computing MP2 amplitude guess...
-
-	*Total Hartree-Fock energy        =  -55.185167931335023
-	 Alpha - Alpha MP2 energy         =   -0.001541722101432
-	 Alpha - Beta  MP2 energy         =   -0.041619189769289
-	 Beta  - Beta  MP2 energy         =   -0.001824265537367
-	 Total MP2 correlation energy     =   -0.044985177408088
-	*Total MP2 energy                 =  -55.230153108743110
-
-	DCFT Functional:    		 ODC-12
-	DCFT Type:          		 CONV
-	Algorithm:          		 SIMULTANEOUS
-	AO-Basis Integrals: 		 DISK
-
-	*=================================================================================*
-	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
-	*---------------------------------------------------------------------------------*
-	* 1        2.333e-02         8.315e-03     -4.155e-02    -55.271705204791914      *
-	* 2        6.761e-03         3.524e-03      1.150e-02    -55.260202353841009      *
-	* 3        3.893e-03         1.726e-03      5.607e-03    -55.254595721865137      *
-	* 4        2.230e-03         1.019e-03      1.888e-03    -55.252707286507388      *
-	* 5        1.607e-03         6.543e-04      8.507e-04    -55.251856537984025      *
-	* 6        1.084e-03         4.372e-04      4.107e-04    -55.251445855907022      *
-	* 7        7.444e-04         2.968e-04      2.285e-04    -55.251217364427930  S   *
-	* 8        5.096e-04         2.029e-04      1.371e-04    -55.251080267938946  S   *
-	* 9        3.510e-04         1.391e-04      8.734e-05    -55.250992931866904  S   *
-	* 10       2.433e-04         9.546e-05      5.751e-05    -55.250935423084726  S/E *
-	* 11       1.409e-06         4.579e-07      1.218e-04    -55.250813624847083  S/E *
-	* 12       4.179e-07         1.841e-07      3.086e-07    -55.250813316224395  S/E *
-	* 13       1.672e-07         8.933e-08     -1.322e-07    -55.250813448462345  S/E *
-	* 14       1.960e-08         1.291e-08     -1.195e-07    -55.250813567938131  S/E *
-	* 15       1.344e-08         4.182e-09     -2.050e-08    -55.250813588436586  S/E *
-	* 16       2.683e-09         1.092e-09     -1.453e-09    -55.250813589890022  S/E *
-	* 17       6.407e-10         1.696e-10      1.184e-09    -55.250813588706308  S/E *
-	* 18       3.641e-10         8.654e-11      1.568e-10    -55.250813588549555  S/E *
-	* 19       5.843e-11         1.479e-11      1.035e-10    -55.250813588446100  S/E *
-	* 20       1.902e-11         6.214e-12      5.095e-12    -55.250813588441005  S/E *
-	* 21       1.043e-11         2.135e-12      2.487e-13    -55.250813588440757  S/E *
-	* 22       4.867e-12         1.064e-12      1.421e-13    -55.250813588440614  S/E *
-	* 23       1.649e-13         2.340e-13      1.563e-13    -55.250813588440458  S/E *
-	*=================================================================================*
-
-	*   ODC-12 SCF Energy                                 =     -55.086226756311753
-	*   ODC-12 Lambda Energy                              =      -0.164586832128707
-	*   ODC-12 Total Energy                               =     -55.250813588440458
-
-	Evaluating three-particle DCFT energy correction...
-
-	Semicanonicalizing OVVV integrals ... 			DONE
-	Semicanonicalizing OOOV integrals ... 			DONE
-	Semicanonicalizing density cumulant ...			DONE
-
-	*Lambda_3 Energy (AAA)                             =   -0.000000259395284
-	*Lambda_3 Energy (AAB)                             =   -0.000124721011601
-	*Lambda_3 Energy (ABB)                             =   -0.000133557188064
-	*Lambda_3 Energy (BBB)                             =   -0.000000286943048
-
-	*DCFT Three-particle Energy                        =   -0.000258824537997
-	*DCFT Total Energy                                 =  -55.251072412978452
+	*DCFT Total Energy                                 =  -55.251072412978701
 
 	Orbital occupations:
 		Alpha occupied orbitals
@@ -750,29 +483,39 @@ Properties computed using the ODC-12 density matrix
      X:     0.0000      Y:    -1.3015      Z:     0.0000     Total:     1.3015
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:26 2016
+*** tstop() called on psinet at Mon May 15 15:35:25 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.64 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.83 seconds =       0.01 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.65 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
-	ODC-12 SCF Energy (simultaneous, ao_basis=disk)...................PASSED
-	ODC-12 Energy (simultaneous, ao_basis=disk).......................PASSED
-	ODC-12 Lambda_3 Energy (simultaneous, ao_basis=disk)..............PASSED
-	ODC-12 Total Energy (simultaneous, ao_basis=disk).................PASSED
+	SCF Energy........................................................PASSED
+	MP2 Energy........................................................PASSED
+	ODC-12 SCF Energy (simultaneous, ao_basis=none)...................PASSED
+	ODC-12 Energy (simultaneous, ao_basis=none).......................PASSED
+	ODC-12 Lambda_3 Energy (simultaneous, ao_basis=none)..............PASSED
+	ODC-12 Total Energy (simultaneous, ao_basis=none).................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:26 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:25 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    70 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -793,7 +536,7 @@ Total time:
 
   Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
   Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
-  Nuclear repulsion =   11.087047696153101
+  Nuclear repulsion =   11.087047696153100
 
   Charge       = 1
   Multiplicity = 2
@@ -807,7 +550,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-12
   Integral threshold = 0.00e+00
@@ -815,6 +558,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
@@ -834,36 +578,58 @@ Total time:
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,      24] index = [             0,300]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1332 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -53.27594853162467   -5.32759e+01   1.73080e-01 
-   @UHF iter   2:   -55.15151993103483   -1.87557e+00   3.54518e-02 DIIS
-   @UHF iter   3:   -55.18383682116791   -3.23169e-02   4.57083e-03 DIIS
-   @UHF iter   4:   -55.18500083557218   -1.16401e-03   1.51013e-03 DIIS
-   @UHF iter   5:   -55.18514170729539   -1.40872e-04   5.45609e-04 DIIS
-   @UHF iter   6:   -55.18516187848832   -2.01712e-05   2.46844e-04 DIIS
-   @UHF iter   7:   -55.18516702001163   -5.14152e-06   9.82434e-05 DIIS
-   @UHF iter   8:   -55.18516793023388   -9.10222e-07   4.52005e-06 DIIS
-   @UHF iter   9:   -55.18516793133178   -1.09790e-09   3.36005e-07 DIIS
-   @UHF iter  10:   -55.18516793133504   -3.25429e-12   1.71604e-08 DIIS
-   @UHF iter  11:   -55.18516793133504    0.00000e+00   2.00183e-09 DIIS
-   @UHF iter  12:   -55.18516793133502    1.42109e-14   3.15983e-11 DIIS
-   @UHF iter  13:   -55.18516793133504   -1.42109e-14   3.46777e-13 DIIS
+   @UHF iter   1:   -55.04233232032252   -5.50423e+01   7.76631e-02 
+   @UHF iter   2:   -55.17499565049718   -1.32663e-01   1.67353e-02 DIIS
+   @UHF iter   3:   -55.18462879377265   -9.63314e-03   3.12199e-03 DIIS
+   @UHF iter   4:   -55.18507905750486   -4.50264e-04   9.77605e-04 DIIS
+   @UHF iter   5:   -55.18513606996276   -5.70125e-05   5.61453e-04 DIIS
+   @UHF iter   6:   -55.18516555704234   -2.94871e-05   1.62150e-04 DIIS
+   @UHF iter   7:   -55.18516792998972   -2.37295e-06   4.23482e-06 DIIS
+   @UHF iter   8:   -55.18516793101177   -1.02205e-09   1.91541e-06 DIIS
+   @UHF iter   9:   -55.18516793131033   -2.98563e-10   5.15758e-07 DIIS
+   @UHF iter  10:   -55.18516793133401   -2.36753e-11   1.16656e-07 DIIS
+   @UHF iter  11:   -55.18516793133512   -1.10845e-12   1.80387e-08 DIIS
+   @UHF iter  12:   -55.18516793133512    0.00000e+00   6.42509e-09 DIIS
+   @UHF iter  13:   -55.18516793133511    7.10543e-15   3.57854e-09 DIIS
+   @UHF iter  14:   -55.18516793133512   -1.42109e-14   3.44178e-10 DIIS
+   @UHF iter  15:   -55.18516793133514   -2.13163e-14   9.06911e-11 DIIS
+   @UHF iter  16:   -55.18516793133512    2.13163e-14   2.38470e-11 DIIS
+   @UHF iter  17:   -55.18516793133514   -1.42109e-14   2.67972e-12 DIIS
+   @UHF iter  18:   -55.18516793133514    0.00000e+00   1.46555e-12 DIIS
+   @UHF iter  19:   -55.18516793133514    0.00000e+00   6.70943e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -878,12 +644,12 @@ Total time:
 
     Alpha Occupied:                                                       
 
-       1Ap   -15.918391     2Ap    -1.562330     3Ap    -1.011156  
-       1App   -1.011156     4Ap    -0.945772  
+       1Ap   -15.918391     2Ap    -1.562330     1App   -1.011156  
+       3Ap    -1.011156     4Ap    -0.945772  
 
     Alpha Virtual:                                                        
 
-       5Ap     0.134344     6Ap     0.203343     2App    0.203343  
+       5Ap     0.134344     2App    0.203343     6Ap     0.203343  
 
     Beta Occupied:                                                        
 
@@ -902,41 +668,19 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -55.18516793133504
+  @UHF Final Energy:   -55.18516793133514
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             11.0870476961531015
-    One-Electron Energy =                 -92.8389235247138629
-    Two-Electron Energy =                  26.5667078972257258
+    Nuclear Repulsion Energy =             11.0870476961530997
+    One-Electron Energy =                 -92.8389235247184388
+    Two-Electron Energy =                  26.5667078972302093
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.1851679313350303
+    Total Energy =                        -55.1851679313351369
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.2866      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
-
-
-  Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
   HONO-2 :    3 Ap 1.9980250
@@ -947,18 +691,59 @@ Properties computed using the SCF density matrix
   LUNO+2 :    6 Ap 0.0012735
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:26 2016
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.2866      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
+
+
+*** tstop() called on psinet at Mon May 15 15:35:25 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.84 seconds =       0.01 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.66 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:26 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of SO shells:               5
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6    2 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 346 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:25 2017
 
 
 
@@ -971,45 +756,49 @@ Total time:
 	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        =  -55.185167931335037
-	 Alpha - Alpha MP2 energy         =   -0.001541722101432
-	 Alpha - Beta  MP2 energy         =   -0.041619189769286
-	 Beta  - Beta  MP2 energy         =   -0.001824265537367
-	 Total MP2 correlation energy     =   -0.044985177408085
-	*Total MP2 energy                 =  -55.230153108743124
+	*Total Hartree-Fock energy        =  -55.185167931335137
+	 Alpha - Alpha MP2 energy         =   -0.001541722101440
+	 Alpha - Beta  MP2 energy         =   -0.041619189769345
+	 Beta  - Beta  MP2 energy         =   -0.001824265537361
+	 Total MP2 correlation energy     =   -0.044985177408146
+	*Total MP2 energy                 =  -55.230153108743281
 
 	DCFT Functional:    		 ODC-12
 	DCFT Type:          		 CONV
-	Algorithm:          		 QC
-	AO-Basis Integrals: 		 NONE
-	QC type:            		 SIMULTANEOUS
-	QC coupling:        		 FALSE
+	Algorithm:          		 SIMULTANEOUS
+	AO-Basis Integrals: 		 DISK
 
-	*==========================================================================================*
-	* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(NR)  DIIS *
-	*------------------------------------------------------------------------------------------*
-About to Copied C matrices
-Copied C matrices
-Compute scf_error_vector
-	* 1        4.879e-03         3.091e-02     -1.262e-02    -55.242768911834432    16        *
-	* 2        2.793e-03         1.536e-03     -7.962e-03    -55.250730925518511    14        *
-	* 3        5.417e-04         6.645e-04     -7.878e-05    -55.250809707169715    14    S   *
-	* 4        2.117e-04         1.266e-04     -3.581e-06    -55.250813288217508    13    S   *
-	* 5        5.486e-05         5.337e-05     -2.724e-07    -55.250813560596519    12    S   *
-	* 6        2.059e-05         1.271e-05     -2.506e-08    -55.250813585653198    12    S/E *
-	* 7        2.744e-07         3.528e-07     -2.786e-09    -55.250813588439101     8    S/E *
-	* 8        1.467e-07         3.505e-08     -1.592e-12    -55.250813588440693     7    S/E *
-	* 9        3.441e-09         3.362e-09     -1.279e-13    -55.250813588440820     5    S/E *
-	* 10       5.717e-10         2.949e-10      7.105e-15    -55.250813588440813     4    S/E *
-	* 11       1.094e-10         7.619e-11      0.000e+00    -55.250813588440813     3    S/E *
-	* 12       9.678e-12         4.673e-12      7.105e-15    -55.250813588440806     1    S/E *
-	* 13       2.685e-12         1.070e-12     -7.105e-15    -55.250813588440813     1    S/E *
-	* 14       2.535e-13         1.991e-13      0.000e+00    -55.250813588440813     1    S/E *
-	*==========================================================================================*
+	*=================================================================================*
+	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
+	*---------------------------------------------------------------------------------*
+	* 1        2.333e-02         8.315e-03     -4.155e-02    -55.271705204792120      *
+	* 2        6.761e-03         3.524e-03      1.150e-02    -55.260202353841166      *
+	* 3        3.893e-03         1.726e-03      5.607e-03    -55.254595721865279      *
+	* 4        2.230e-03         1.019e-03      1.888e-03    -55.252707286507501      *
+	* 5        1.607e-03         6.543e-04      8.507e-04    -55.251856537984153      *
+	* 6        1.084e-03         4.372e-04      4.107e-04    -55.251445855907157      *
+	* 7        7.444e-04         2.968e-04      2.285e-04    -55.251217364428030  S   *
+	* 8        5.096e-04         2.029e-04      1.371e-04    -55.251080267939059  S   *
+	* 9        3.510e-04         1.391e-04      8.734e-05    -55.250992931867032  S   *
+	* 10       2.433e-04         9.546e-05      5.751e-05    -55.250935423084861  S/E *
+	* 11       1.409e-06         4.579e-07      1.218e-04    -55.250813624847225  S/E *
+	* 12       4.179e-07         1.841e-07      3.086e-07    -55.250813316224495  S/E *
+	* 13       1.672e-07         8.933e-08     -1.322e-07    -55.250813448462480  S/E *
+	* 14       1.960e-08         1.291e-08     -1.195e-07    -55.250813567938252  S/E *
+	* 15       1.344e-08         4.182e-09     -2.050e-08    -55.250813588436721  S/E *
+	* 16       2.683e-09         1.092e-09     -1.453e-09    -55.250813589890157  S/E *
+	* 17       6.407e-10         1.696e-10      1.184e-09    -55.250813588706436  S/E *
+	* 18       3.641e-10         8.654e-11      1.567e-10    -55.250813588549690  S/E *
+	* 19       5.843e-11         1.479e-11      1.035e-10    -55.250813588446221  S/E *
+	* 20       1.902e-11         6.214e-12      5.073e-12    -55.250813588441147  S/E *
+	* 21       1.043e-11         2.135e-12      2.345e-13    -55.250813588440913  S/E *
+	* 22       4.865e-12         1.064e-12      1.705e-13    -55.250813588440742  S/E *
+	* 23       1.597e-13         2.340e-13      1.634e-13    -55.250813588440579  S/E *
+	*=================================================================================*
 
-	*   ODC-12 SCF Energy                                 =     -55.086226756312975
-	*   ODC-12 Lambda Energy                              =      -0.164586832127841
-	*   ODC-12 Total Energy                               =     -55.250813588440813
+	*   ODC-12 SCF Energy                                 =     -55.086226756311873
+	*   ODC-12 Lambda Energy                              =      -0.164586832128709
+	*   ODC-12 Total Energy                               =     -55.250813588440579
 
 	Evaluating three-particle DCFT energy correction...
 
@@ -1022,8 +811,8 @@ Compute scf_error_vector
 	*Lambda_3 Energy (ABB)                             =   -0.000133557188064
 	*Lambda_3 Energy (BBB)                             =   -0.000000286943048
 
-	*DCFT Three-particle Energy                        =   -0.000258824537996
-	*DCFT Total Energy                                 =  -55.251072412978807
+	*DCFT Three-particle Energy                        =   -0.000258824537997
+	*DCFT Total Energy                                 =  -55.251072412978573
 
 	Orbital occupations:
 		Alpha occupied orbitals
@@ -1031,11 +820,11 @@ Compute scf_error_vector
 		   1App      0.9866  
 
 		Beta occupied orbitals
-		   1Ap       1.0000     2Ap       0.9910     3Ap       0.9845     1App      0.9845  
+		   1Ap       1.0000     2Ap       0.9910     1App      0.9845     3Ap       0.9845  
 		
 
 		Alpha virtual orbitals
-		   2App      0.0142     5Ap       0.0142     6Ap       0.0112  
+		   5Ap       0.0142     2App      0.0142     6Ap       0.0112  
 
 		Beta virtual orbitals
 		   4Ap       0.0119     2App      0.0119     5Ap       0.0099     6Ap       0.0061  
@@ -1060,29 +849,37 @@ Properties computed using the ODC-12 density matrix
      X:     0.0000      Y:    -1.3015      Z:     0.0000     Total:     1.3015
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:27 2016
+*** tstop() called on psinet at Mon May 15 15:35:26 2017
 Module time:
 	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	system time =       0.62 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.83 seconds =       0.01 minutes
-	system time =       1.27 seconds =       0.02 minutes
+	user time   =       0.85 seconds =       0.01 minutes
+	system time =       1.28 seconds =       0.02 minutes
 	total time  =          3 seconds =       0.05 minutes
-	ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none).......PASSED
-	ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)...........PASSED
-	ODC-12 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)..PASSED
-	ODC-12 Total Energy (qc, qc_type=simultaneous, ao_basis=none).....PASSED
+	ODC-12 SCF Energy (simultaneous, ao_basis=disk)...................PASSED
+	ODC-12 Energy (simultaneous, ao_basis=disk).......................PASSED
+	ODC-12 Lambda_3 Energy (simultaneous, ao_basis=disk)..............PASSED
+	ODC-12 Total Energy (simultaneous, ao_basis=disk).................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:27 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:26 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    70 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1103,7 +900,7 @@ Total time:
 
   Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
   Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
-  Nuclear repulsion =   11.087047696153101
+  Nuclear repulsion =   11.087047696153100
 
   Charge       = 1
   Multiplicity = 2
@@ -1117,7 +914,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-12
   Integral threshold = 0.00e+00
@@ -1125,6 +922,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
@@ -1144,36 +942,58 @@ Total time:
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,      24] index = [             0,300]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1332 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -53.27594853162467   -5.32759e+01   1.73080e-01 
-   @UHF iter   2:   -55.15151993103486   -1.87557e+00   3.54518e-02 DIIS
-   @UHF iter   3:   -55.18383682116791   -3.23169e-02   4.57083e-03 DIIS
-   @UHF iter   4:   -55.18500083557219   -1.16401e-03   1.51013e-03 DIIS
-   @UHF iter   5:   -55.18514170729537   -1.40872e-04   5.45609e-04 DIIS
-   @UHF iter   6:   -55.18516187848835   -2.01712e-05   2.46844e-04 DIIS
-   @UHF iter   7:   -55.18516702001164   -5.14152e-06   9.82434e-05 DIIS
-   @UHF iter   8:   -55.18516793023390   -9.10222e-07   4.52005e-06 DIIS
-   @UHF iter   9:   -55.18516793133180   -1.09790e-09   3.36005e-07 DIIS
-   @UHF iter  10:   -55.18516793133501   -3.21165e-12   1.71604e-08 DIIS
-   @UHF iter  11:   -55.18516793133502   -1.42109e-14   2.00183e-09 DIIS
-   @UHF iter  12:   -55.18516793133502    0.00000e+00   3.15986e-11 DIIS
-   @UHF iter  13:   -55.18516793133504   -1.42109e-14   3.46649e-13 DIIS
+   @UHF iter   1:   -55.04233232032252   -5.50423e+01   7.76631e-02 
+   @UHF iter   2:   -55.17499565049721   -1.32663e-01   1.67353e-02 DIIS
+   @UHF iter   3:   -55.18462879377266   -9.63314e-03   3.12199e-03 DIIS
+   @UHF iter   4:   -55.18507905750489   -4.50264e-04   9.77605e-04 DIIS
+   @UHF iter   5:   -55.18513606996278   -5.70125e-05   5.61453e-04 DIIS
+   @UHF iter   6:   -55.18516555704232   -2.94871e-05   1.62150e-04 DIIS
+   @UHF iter   7:   -55.18516792998973   -2.37295e-06   4.23482e-06 DIIS
+   @UHF iter   8:   -55.18516793101178   -1.02204e-09   1.91541e-06 DIIS
+   @UHF iter   9:   -55.18516793131036   -2.98584e-10   5.15758e-07 DIIS
+   @UHF iter  10:   -55.18516793133399   -2.36327e-11   1.16656e-07 DIIS
+   @UHF iter  11:   -55.18516793133509   -1.09424e-12   1.80387e-08 DIIS
+   @UHF iter  12:   -55.18516793133512   -2.84217e-14   6.42509e-09 DIIS
+   @UHF iter  13:   -55.18516793133512   -7.10543e-15   3.57854e-09 DIIS
+   @UHF iter  14:   -55.18516793133511    1.42109e-14   3.44178e-10 DIIS
+   @UHF iter  15:   -55.18516793133514   -3.55271e-14   9.06910e-11 DIIS
+   @UHF iter  16:   -55.18516793133512    2.13163e-14   2.38470e-11 DIIS
+   @UHF iter  17:   -55.18516793133513   -7.10543e-15   2.67970e-12 DIIS
+   @UHF iter  18:   -55.18516793133510    2.84217e-14   1.46538e-12 DIIS
+   @UHF iter  19:   -55.18516793133513   -2.84217e-14   6.71222e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -1188,12 +1008,12 @@ Total time:
 
     Alpha Occupied:                                                       
 
-       1Ap   -15.918391     2Ap    -1.562330     3Ap    -1.011156  
-       1App   -1.011156     4Ap    -0.945772  
+       1Ap   -15.918391     2Ap    -1.562330     1App   -1.011156  
+       3Ap    -1.011156     4Ap    -0.945772  
 
     Alpha Virtual:                                                        
 
-       5Ap     0.134344     6Ap     0.203343     2App    0.203343  
+       5Ap     0.134344     2App    0.203343     6Ap     0.203343  
 
     Beta Occupied:                                                        
 
@@ -1212,41 +1032,19 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -55.18516793133504
+  @UHF Final Energy:   -55.18516793133513
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             11.0870476961531015
-    One-Electron Energy =                 -92.8389235247138487
-    Two-Electron Energy =                  26.5667078972257116
+    Nuclear Repulsion Energy =             11.0870476961530997
+    One-Electron Energy =                 -92.8389235247183819
+    Two-Electron Energy =                  26.5667078972301596
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.1851679313350303
+    Total Energy =                        -55.1851679313351298
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.2866      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
-
-
-  Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
   HONO-2 :    3 Ap 1.9980250
@@ -1257,18 +1055,59 @@ Properties computed using the SCF density matrix
   LUNO+2 :    6 Ap 0.0012735
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:27 2016
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.2866      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
+
+
+*** tstop() called on psinet at Mon May 15 15:35:26 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.89 seconds =       0.01 minutes
-	system time =       1.28 seconds =       0.02 minutes
+	user time   =       0.99 seconds =       0.02 minutes
+	system time =       1.31 seconds =       0.02 minutes
 	total time  =          3 seconds =       0.05 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:27 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of SO shells:               5
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6    2 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 346 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:26 2017
 
 
 
@@ -1281,12 +1120,372 @@ Total time:
 	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        =  -55.185167931335037
-	 Alpha - Alpha MP2 energy         =   -0.001541722101432
-	 Alpha - Beta  MP2 energy         =   -0.041619189769297
-	 Beta  - Beta  MP2 energy         =   -0.001824265537367
-	 Total MP2 correlation energy     =   -0.044985177408096
-	*Total MP2 energy                 =  -55.230153108743131
+	*Total Hartree-Fock energy        =  -55.185167931335130
+	 Alpha - Alpha MP2 energy         =   -0.001541722101439
+	 Alpha - Beta  MP2 energy         =   -0.041619189769342
+	 Beta  - Beta  MP2 energy         =   -0.001824265537361
+	 Total MP2 correlation energy     =   -0.044985177408143
+	*Total MP2 energy                 =  -55.230153108743274
+
+	DCFT Functional:    		 ODC-12
+	DCFT Type:          		 CONV
+	Algorithm:          		 QC
+	AO-Basis Integrals: 		 NONE
+	QC type:            		 SIMULTANEOUS
+	QC coupling:        		 FALSE
+
+	*==========================================================================================*
+	* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(NR)  DIIS *
+	*------------------------------------------------------------------------------------------*
+About to Copied C matrices
+Copied C matrices
+Compute scf_error_vector
+	* 1        3.925e-03         2.989e-02     -1.262e-02    -55.242768911834624    16        *
+	* 2        2.476e-03         1.462e-03     -7.962e-03    -55.250730925518596    14        *
+	* 3        4.492e-04         6.616e-04     -7.878e-05    -55.250809707169815    14    S   *
+	* 4        1.948e-04         1.266e-04     -3.581e-06    -55.250813288217607    13    S   *
+	* 5        4.698e-05         5.337e-05     -2.724e-07    -55.250813560596633    12    S   *
+	* 6        1.894e-05         1.271e-05     -2.506e-08    -55.250813585653312    12    S/E *
+	* 7        2.275e-07         3.528e-07     -2.786e-09    -55.250813588439208     8    S/E *
+	* 8        1.405e-07         3.505e-08     -1.592e-12    -55.250813588440799     7    S/E *
+	* 9        2.947e-09         3.362e-09     -1.066e-13    -55.250813588440906     5    S/E *
+	* 10       5.068e-10         2.949e-10     -1.421e-14    -55.250813588440920     4    S/E *
+	* 11       9.069e-11         7.619e-11      7.105e-15    -55.250813588440913     3    S/E *
+	* 12       8.578e-12         4.693e-12      0.000e+00    -55.250813588440913     1    S/E *
+	* 13       2.469e-12         1.070e-12     -1.421e-14    -55.250813588440927     1    S/E *
+	* 14       1.950e-13         1.991e-13      7.105e-15    -55.250813588440920     1    S/E *
+	*==========================================================================================*
+
+	*   ODC-12 SCF Energy                                 =     -55.086226756313081
+	*   ODC-12 Lambda Energy                              =      -0.164586832127842
+	*   ODC-12 Total Energy                               =     -55.250813588440920
+
+	Evaluating three-particle DCFT energy correction...
+
+	Semicanonicalizing OVVV integrals ... 			DONE
+	Semicanonicalizing OOOV integrals ... 			DONE
+	Semicanonicalizing density cumulant ...			DONE
+
+	*Lambda_3 Energy (AAA)                             =   -0.000000259395284
+	*Lambda_3 Energy (AAB)                             =   -0.000124721011601
+	*Lambda_3 Energy (ABB)                             =   -0.000133557188064
+	*Lambda_3 Energy (BBB)                             =   -0.000000286943048
+
+	*DCFT Three-particle Energy                        =   -0.000258824537996
+	*DCFT Total Energy                                 =  -55.251072412978914
+
+	Orbital occupations:
+		Alpha occupied orbitals
+		   1Ap       1.0000     2Ap       0.9957     3Ap       0.9916     1App      0.9866  
+		   4Ap       0.9866  
+
+		Beta occupied orbitals
+		   1Ap       1.0000     2Ap       0.9910     1App      0.9845     3Ap       0.9845  
+		
+
+		Alpha virtual orbitals
+		   2App      0.0142     5Ap       0.0142     6Ap       0.0112  
+
+		Beta virtual orbitals
+		   2App      0.0119     4Ap       0.0119     5Ap       0.0099     6Ap       0.0061  
+		
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the ODC-12 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.3285      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.5120      Z:     0.0000     Total:     0.5120
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -1.3015      Z:     0.0000     Total:     1.3015
+
+
+*** tstop() called on psinet at Mon May 15 15:35:27 2017
+Module time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.27 seconds =       0.02 minutes
+	system time =       1.80 seconds =       0.03 minutes
+	total time  =          4 seconds =       0.07 minutes
+	ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none).......PASSED
+	ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)...........PASSED
+	ODC-12 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)..PASSED
+	ODC-12 Total Energy (qc, qc_type=simultaneous, ao_basis=none).....PASSED
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:27 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    70 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: C3v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           N          0.000000000000     0.064518610227     0.000000000000    14.003074004780
+           H         -0.513830927662    -0.298814723106     0.889981273211     1.007825032070
+           H         -0.513830927662    -0.298814723106    -0.889981273211     1.007825032070
+           H          1.027661855324    -0.298814723106     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
+  Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
+  Nuclear repulsion =   11.087047696153100
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 6
+    Number of basis function: 8
+    Number of Cartesian functions: 8
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         6       6       0       0       0       0
+     A"         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       8       8       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1332 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter   1:   -55.04233232032252   -5.50423e+01   7.76631e-02 
+   @UHF iter   2:   -55.17499565049718   -1.32663e-01   1.67353e-02 DIIS
+   @UHF iter   3:   -55.18462879377269   -9.63314e-03   3.12199e-03 DIIS
+   @UHF iter   4:   -55.18507905750489   -4.50264e-04   9.77605e-04 DIIS
+   @UHF iter   5:   -55.18513606996279   -5.70125e-05   5.61453e-04 DIIS
+   @UHF iter   6:   -55.18516555704234   -2.94871e-05   1.62150e-04 DIIS
+   @UHF iter   7:   -55.18516792998972   -2.37295e-06   4.23482e-06 DIIS
+   @UHF iter   8:   -55.18516793101178   -1.02206e-09   1.91541e-06 DIIS
+   @UHF iter   9:   -55.18516793131035   -2.98563e-10   5.15758e-07 DIIS
+   @UHF iter  10:   -55.18516793133399   -2.36398e-11   1.16656e-07 DIIS
+   @UHF iter  11:   -55.18516793133510   -1.11555e-12   1.80387e-08 DIIS
+   @UHF iter  12:   -55.18516793133512   -2.13163e-14   6.42509e-09 DIIS
+   @UHF iter  13:   -55.18516793133512    7.10543e-15   3.57854e-09 DIIS
+   @UHF iter  14:   -55.18516793133512   -7.10543e-15   3.44178e-10 DIIS
+   @UHF iter  15:   -55.18516793133512    0.00000e+00   9.06910e-11 DIIS
+   @UHF iter  16:   -55.18516793133512    0.00000e+00   2.38470e-11 DIIS
+   @UHF iter  17:   -55.18516793133516   -3.55271e-14   2.67966e-12 DIIS
+   @UHF iter  18:   -55.18516793133511    4.97380e-14   1.46552e-12 DIIS
+   @UHF iter  19:   -55.18516793133511    0.00000e+00   6.70574e-13 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.043752011E-02
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.604375201E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -15.918391     2Ap    -1.562330     1App   -1.011156  
+       3Ap    -1.011156     4Ap    -0.945772  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.134344     2App    0.203343     6Ap     0.203343  
+
+    Beta Occupied:                                                        
+
+       1Ap   -15.886508     2Ap    -1.428101     3Ap    -0.971048  
+       1App   -0.971048  
+
+    Beta Virtual:                                                         
+
+       4Ap    -0.181875     5Ap     0.167535     6Ap     0.238002  
+       2App    0.238002  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     3,    1 ]
+    SOCC [     1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -55.18516793133511
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             11.0870476961530997
+    One-Electron Energy =                 -92.8389235247183819
+    Two-Electron Energy =                  26.5667078972301809
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -55.1851679313351084
+
+
+  UHF NO Occupations:
+  HONO-2 :    3 Ap 1.9980250
+  HONO-1 :    1App 1.9980250
+  HONO-0 :    4 Ap 1.0000000
+  LUNO+0 :    2App 0.0019750
+  LUNO+1 :    5 Ap 0.0019750
+  LUNO+2 :    6 Ap 0.0012735
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.2866      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
+
+
+*** tstop() called on psinet at Mon May 15 15:35:27 2017
+Module time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.39 seconds =       0.02 minutes
+	system time =       1.81 seconds =       0.03 minutes
+	total time  =          4 seconds =       0.07 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of SO shells:               5
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6    2 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 346 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:27 2017
+
+
+
+	***********************************************************************************
+	*                        Density Cumulant Functional Theory                       *
+	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
+	***********************************************************************************
+
+
+	Transforming two-electron integrals (transformation type: unrestricted)...
+	Computing MP2 amplitude guess...
+
+	*Total Hartree-Fock energy        =  -55.185167931335108
+	 Alpha - Alpha MP2 energy         =   -0.001541722101440
+	 Alpha - Beta  MP2 energy         =   -0.041619189769353
+	 Beta  - Beta  MP2 energy         =   -0.001824265537362
+	 Total MP2 correlation energy     =   -0.044985177408155
+	*Total MP2 energy                 =  -55.230153108743266
 
 	DCFT Functional:    		 ODC-13
 	DCFT Type:          		 CONV
@@ -1296,35 +1495,35 @@ Total time:
 	*=================================================================================*
 	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
 	*---------------------------------------------------------------------------------*
-	* 1        2.262e-02         8.386e-03     -5.666e-02    -55.286813388018160      *
-	* 2        6.006e-03         3.719e-03      3.487e-02    -55.251946143695491      *
-	* 3        4.330e-03         1.908e-03     -1.983e-04    -55.252144467476789      *
-	* 4        2.528e-03         1.155e-03      1.871e-04    -55.251957346298802      *
-	* 5        1.797e-03         7.597e-04      1.747e-04    -55.251782627972354      *
-	* 6        1.217e-03         5.229e-04      1.255e-04    -55.251657121766492      *
-	* 7        8.453e-04         3.679e-04      9.064e-05    -55.251566478785684  S   *
-	* 8        5.895e-04         2.617e-04      6.607e-05    -55.251500413126834  S   *
-	* 9        4.147e-04         1.872e-04      4.858e-05    -55.251451829887387  S   *
-	* 10       2.933e-04         1.343e-04      3.578e-05    -55.251416051602995  S/E *
-	* 11       1.741e-06         7.428e-07      3.270e-04    -55.251089069569275  S/E *
-	* 12       6.542e-07         2.002e-07     -2.288e-04    -55.251317890898299  S/E *
-	* 13       2.167e-07         8.459e-08     -1.317e-06    -55.251319207548811  S/E *
-	* 14       3.001e-08         1.606e-08      2.765e-07    -55.251318931006480  S/E *
-	* 15       1.303e-08         5.071e-09     -1.664e-07    -55.251319097416591  S/E *
-	* 16       3.000e-09         1.120e-09      1.936e-08    -55.251319078059389  S/E *
-	* 17       8.942e-10         3.886e-10     -3.969e-09    -55.251319082028310  S/E *
-	* 18       2.474e-10         1.487e-10     -3.268e-11    -55.251319082060995  S/E *
-	* 19       7.822e-11         5.174e-11     -1.154e-10    -55.251319082176444  S/E *
-	* 20       1.982e-11         5.925e-12     -1.668e-10    -55.251319082343279  S/E *
-	* 21       6.945e-12         2.949e-12     -2.409e-12    -55.251319082345688  S/E *
-	* 22       2.274e-12         1.257e-12      4.732e-12    -55.251319082340956  S/E *
-	* 23       1.126e-12         8.056e-13      5.826e-13    -55.251319082340373  S/E *
-	* 24       6.533e-13         4.303e-13      1.371e-12    -55.251319082339002  S/E *
+	* 1        2.262e-02         8.386e-03     -5.666e-02    -55.286813388018338      *
+	* 2        6.006e-03         3.719e-03      3.487e-02    -55.251946143695641      *
+	* 3        4.330e-03         1.908e-03     -1.983e-04    -55.252144467476903      *
+	* 4        2.528e-03         1.155e-03      1.871e-04    -55.251957346298909      *
+	* 5        1.797e-03         7.597e-04      1.747e-04    -55.251782627972453      *
+	* 6        1.217e-03         5.229e-04      1.255e-04    -55.251657121766570      *
+	* 7        8.453e-04         3.679e-04      9.064e-05    -55.251566478785776  S   *
+	* 8        5.895e-04         2.617e-04      6.607e-05    -55.251500413126948  S   *
+	* 9        4.147e-04         1.872e-04      4.858e-05    -55.251451829887515  S   *
+	* 10       2.933e-04         1.343e-04      3.578e-05    -55.251416051603101  S/E *
+	* 11       1.741e-06         7.428e-07      3.270e-04    -55.251089069569396  S/E *
+	* 12       6.542e-07         2.002e-07     -2.288e-04    -55.251317890898413  S/E *
+	* 13       2.167e-07         8.459e-08     -1.317e-06    -55.251319207548917  S/E *
+	* 14       3.001e-08         1.606e-08      2.765e-07    -55.251318931006608  S/E *
+	* 15       1.303e-08         5.071e-09     -1.664e-07    -55.251319097416690  S/E *
+	* 16       3.000e-09         1.120e-09      1.936e-08    -55.251319078059510  S/E *
+	* 17       8.942e-10         3.886e-10     -3.969e-09    -55.251319082028424  S/E *
+	* 18       2.474e-10         1.487e-10     -3.267e-11    -55.251319082061094  S/E *
+	* 19       7.822e-11         5.174e-11     -1.155e-10    -55.251319082176558  S/E *
+	* 20       1.982e-11         5.925e-12     -1.668e-10    -55.251319082343379  S/E *
+	* 21       6.943e-12         2.949e-12     -2.402e-12    -55.251319082345780  S/E *
+	* 22       2.275e-12         1.257e-12      4.718e-12    -55.251319082341062  S/E *
+	* 23       1.126e-12         8.054e-13      5.969e-13    -55.251319082340466  S/E *
+	* 24       6.530e-13         4.302e-13      1.364e-12    -55.251319082339101  S/E *
 	*=================================================================================*
 
-	*   ODC-13 SCF Energy                                 =     -55.082458005629164
-	*   ODC-13 Lambda Energy                              =      -0.168861076709837
-	*   ODC-13 Total Energy                               =     -55.251319082339002
+	*   ODC-13 SCF Energy                                 =     -55.082458005629263
+	*   ODC-13 Lambda Energy                              =      -0.168861076709838
+	*   ODC-13 Total Energy                               =     -55.251319082339101
 
 	Evaluating three-particle DCFT energy correction...
 
@@ -1338,7 +1537,7 @@ Total time:
 	*Lambda_3 Energy (BBB)                             =   -0.000000295741641
 
 	*DCFT Three-particle Energy                        =   -0.000268406291002
-	*DCFT Total Energy                                 =  -55.251587488630001
+	*DCFT Total Energy                                 =  -55.251587488630101
 
 	Orbital occupations:
 		Alpha occupied orbitals
@@ -1346,11 +1545,376 @@ Total time:
 		   4Ap       0.9862  
 
 		Beta occupied orbitals
-		   1Ap       1.0000     2Ap       0.9907     3Ap       0.9839     1App      0.9839  
+		   1Ap       1.0000     2Ap       0.9907     1App      0.9839     3Ap       0.9839  
 		
 
 		Alpha virtual orbitals
 		   2App      0.0148     5Ap       0.0148     6Ap       0.0115  
+
+		Beta virtual orbitals
+		   2App      0.0123     4Ap       0.0123     5Ap       0.0102     6Ap       0.0065  
+		
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the ODC-13 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.3298      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.5108      Z:     0.0000     Total:     0.5108
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -1.2983      Z:     0.0000     Total:     1.2983
+
+
+*** tstop() called on psinet at Mon May 15 15:35:28 2017
+Module time:
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.90 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.91 seconds =       0.03 minutes
+	system time =       2.71 seconds =       0.05 minutes
+	total time  =          5 seconds =       0.08 minutes
+	ODC-13 SCF Energy (simultaneous, ao_basis=none)...................PASSED
+	ODC-13 Energy (simultaneous, ao_basis=none).......................PASSED
+	ODC-13 Lambda_3 Energy (simultaneous, ao_basis=none)..............PASSED
+	ODC-13 Total Energy (simultaneous, ao_basis=none).................PASSED
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:28 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    70 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: C3v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           N          0.000000000000     0.064518610227     0.000000000000    14.003074004780
+           H         -0.513830927662    -0.298814723106     0.889981273211     1.007825032070
+           H         -0.513830927662    -0.298814723106    -0.889981273211     1.007825032070
+           H          1.027661855324    -0.298814723106     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
+  Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
+  Nuclear repulsion =   11.087047696153100
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 6
+    Number of basis function: 8
+    Number of Cartesian functions: 8
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         6       6       0       0       0       0
+     A"         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       8       8       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1332 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter   1:   -55.04233232032251   -5.50423e+01   7.76631e-02 
+   @UHF iter   2:   -55.17499565049720   -1.32663e-01   1.67353e-02 DIIS
+   @UHF iter   3:   -55.18462879377266   -9.63314e-03   3.12199e-03 DIIS
+   @UHF iter   4:   -55.18507905750487   -4.50264e-04   9.77605e-04 DIIS
+   @UHF iter   5:   -55.18513606996277   -5.70125e-05   5.61453e-04 DIIS
+   @UHF iter   6:   -55.18516555704235   -2.94871e-05   1.62150e-04 DIIS
+   @UHF iter   7:   -55.18516792998977   -2.37295e-06   4.23482e-06 DIIS
+   @UHF iter   8:   -55.18516793101176   -1.02199e-09   1.91541e-06 DIIS
+   @UHF iter   9:   -55.18516793131036   -2.98598e-10   5.15758e-07 DIIS
+   @UHF iter  10:   -55.18516793133401   -2.36469e-11   1.16656e-07 DIIS
+   @UHF iter  11:   -55.18516793133510   -1.09424e-12   1.80387e-08 DIIS
+   @UHF iter  12:   -55.18516793133510    0.00000e+00   6.42509e-09 DIIS
+   @UHF iter  13:   -55.18516793133512   -1.42109e-14   3.57854e-09 DIIS
+   @UHF iter  14:   -55.18516793133514   -2.84217e-14   3.44178e-10 DIIS
+   @UHF iter  15:   -55.18516793133514    0.00000e+00   9.06910e-11 DIIS
+   @UHF iter  16:   -55.18516793133512    2.84217e-14   2.38469e-11 DIIS
+   @UHF iter  17:   -55.18516793133513   -1.42109e-14   2.67971e-12 DIIS
+   @UHF iter  18:   -55.18516793133514   -1.42109e-14   1.46529e-12 DIIS
+   @UHF iter  19:   -55.18516793133513    1.42109e-14   6.70815e-13 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.043752011E-02
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                7.604375201E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -15.918391     2Ap    -1.562330     1App   -1.011156  
+       3Ap    -1.011156     4Ap    -0.945772  
+
+    Alpha Virtual:                                                        
+
+       5Ap     0.134344     2App    0.203343     6Ap     0.203343  
+
+    Beta Occupied:                                                        
+
+       1Ap   -15.886508     2Ap    -1.428101     3Ap    -0.971048  
+       1App   -0.971048  
+
+    Beta Virtual:                                                         
+
+       4Ap    -0.181875     5Ap     0.167535     6Ap     0.238002  
+       2App    0.238002  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     3,    1 ]
+    SOCC [     1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -55.18516793133513
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             11.0870476961530997
+    One-Electron Energy =                 -92.8389235247184104
+    Two-Electron Energy =                  26.5667078972301844
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -55.1851679313351298
+
+
+  UHF NO Occupations:
+  HONO-2 :    3 Ap 1.9980250
+  HONO-1 :    1App 1.9980250
+  HONO-0 :    4 Ap 1.0000000
+  LUNO+0 :    2App 0.0019750
+  LUNO+1 :    5 Ap 0.0019750
+  LUNO+2 :    6 Ap 0.0012735
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.2866      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
+
+
+*** tstop() called on psinet at Mon May 15 15:35:29 2017
+Module time:
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.04 seconds =       0.03 minutes
+	system time =       2.72 seconds =       0.05 minutes
+	total time  =          6 seconds =       0.10 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of SO shells:               5
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6    2 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 346 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:29 2017
+
+
+
+	***********************************************************************************
+	*                        Density Cumulant Functional Theory                       *
+	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
+	***********************************************************************************
+
+
+	Transforming two-electron integrals (transformation type: unrestricted)...
+	Computing MP2 amplitude guess...
+
+	*Total Hartree-Fock energy        =  -55.185167931335130
+	 Alpha - Alpha MP2 energy         =   -0.001540484296773
+	 Alpha - Beta  MP2 energy         =   -0.041579861671247
+	 Beta  - Beta  MP2 energy         =   -0.001822521524684
+	 Total MP2 correlation energy     =   -0.044942867492705
+	*Total MP2 energy                 =  -55.230110798827837
+
+	DCFT Functional:    		 ODC-13
+	DCFT Type:          		 CONV
+	Algorithm:          		 SIMULTANEOUS
+	AO-Basis Integrals: 		 DISK
+
+	*=================================================================================*
+	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
+	*---------------------------------------------------------------------------------*
+	* 1        2.261e-02         8.401e-03     -5.876e-02    -55.288875057513735      *
+	* 2        6.000e-03         3.727e-03      3.693e-02    -55.251943549848328      *
+	* 3        4.330e-03         1.911e-03     -2.016e-04    -55.252145165835088      *
+	* 4        2.529e-03         1.157e-03      1.872e-04    -55.251957990896592      *
+	* 5        1.798e-03         7.605e-04      1.749e-04    -55.251783060828636      *
+	* 6        1.218e-03         5.234e-04      1.257e-04    -55.251657409023053      *
+	* 7        8.458e-04         3.682e-04      9.073e-05    -55.251566676509803  S   *
+	* 8        5.899e-04         2.619e-04      6.612e-05    -55.251500553246665  S   *
+	* 9        4.149e-04         1.873e-04      4.862e-05    -55.251451930861492  S   *
+	* 10       2.934e-04         1.344e-04      3.581e-05    -55.251416124906797  S/E *
+	* 11       1.738e-06         7.417e-07      3.273e-04    -55.251088874189271  S/E *
+	* 12       6.549e-07         1.998e-07     -2.290e-04    -55.251317894844767  S/E *
+	* 13       2.180e-07         8.475e-08     -1.313e-06    -55.251319207809452  S/E *
+	* 14       2.999e-08         1.610e-08      2.771e-07    -55.251318930728814  S/E *
+	* 15       1.302e-08         5.073e-09     -1.667e-07    -55.251319097425892  S/E *
+	* 16       3.007e-09         1.122e-09      1.935e-08    -55.251319078078097  S/E *
+	* 17       8.967e-10         3.892e-10     -3.945e-09    -55.251319082023002  S/E *
+	* 18       2.489e-10         1.495e-10     -3.782e-11    -55.251319082060824  S/E *
+	* 19       7.830e-11         5.183e-11     -1.145e-10    -55.251319082175279  S/E *
+	* 20       1.989e-11         5.961e-12     -1.680e-10    -55.251319082343308  S/E *
+	* 21       6.970e-12         2.954e-12     -2.508e-12    -55.251319082345816  S/E *
+	* 22       2.285e-12         1.256e-12      4.761e-12    -55.251319082341055  S/E *
+	* 23       1.133e-12         8.036e-13      5.826e-13    -55.251319082340473  S/E *
+	* 24       6.579e-13         4.293e-13      1.378e-12    -55.251319082339094  S/E *
+	*=================================================================================*
+
+	*   ODC-13 SCF Energy                                 =     -55.082458005629242
+	*   ODC-13 Lambda Energy                              =      -0.168861076709849
+	*   ODC-13 Total Energy                               =     -55.251319082339094
+
+	Evaluating three-particle DCFT energy correction...
+
+	Semicanonicalizing OVVV integrals ... 			DONE
+	Semicanonicalizing OOOV integrals ... 			DONE
+	Semicanonicalizing density cumulant ...			DONE
+
+	*Lambda_3 Energy (AAA)                             =   -0.000000262628458
+	*Lambda_3 Energy (AAB)                             =   -0.000129234057059
+	*Lambda_3 Energy (ABB)                             =   -0.000138613863844
+	*Lambda_3 Energy (BBB)                             =   -0.000000295741641
+
+	*DCFT Three-particle Energy                        =   -0.000268406291002
+	*DCFT Total Energy                                 =  -55.251587488630094
+
+	Orbital occupations:
+		Alpha occupied orbitals
+		   1Ap       1.0000     2Ap       0.9954     3Ap       0.9912     4Ap       0.9862  
+		   1App      0.9862  
+
+		Beta occupied orbitals
+		   1Ap       1.0000     2Ap       0.9907     1App      0.9839     3Ap       0.9839  
+		
+
+		Alpha virtual orbitals
+		   5Ap       0.0148     2App      0.0148     6Ap       0.0115  
 
 		Beta virtual orbitals
 		   4Ap       0.0123     2App      0.0123     5Ap       0.0102     6Ap       0.0065  
@@ -1375,29 +1939,37 @@ Properties computed using the ODC-13 density matrix
      X:     0.0000      Y:    -1.2983      Z:     0.0000     Total:     1.2983
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:28 2016
+*** tstop() called on psinet at Mon May 15 15:35:30 2017
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.80 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.83 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.35 seconds =       0.02 minutes
-	system time =       2.08 seconds =       0.03 minutes
-	total time  =          4 seconds =       0.07 minutes
-	ODC-13 SCF Energy (simultaneous, ao_basis=none)...................PASSED
-	ODC-13 Energy (simultaneous, ao_basis=none).......................PASSED
-	ODC-13 Lambda_3 Energy (simultaneous, ao_basis=none)..............PASSED
-	ODC-13 Total Energy (simultaneous, ao_basis=none).................PASSED
+	user time   =       2.54 seconds =       0.04 minutes
+	system time =       3.55 seconds =       0.06 minutes
+	total time  =          7 seconds =       0.12 minutes
+	ODC-13 SCF Energy (simultaneous, ao_basis=disk)...................PASSED
+	ODC-13 Energy (simultaneous, ao_basis=disk).......................PASSED
+	ODC-13 Lambda_3 Energy (simultaneous, ao_basis=disk)..............PASSED
+	ODC-13 Total Energy (simultaneous, ao_basis=disk).................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:28 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:30 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry N          line    70 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1418,7 +1990,7 @@ Total time:
 
   Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
   Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
-  Nuclear repulsion =   11.087047696153101
+  Nuclear repulsion =   11.087047696153100
 
   Charge       = 1
   Multiplicity = 2
@@ -1432,7 +2004,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-12
   Integral threshold = 0.00e+00
@@ -1440,6 +2012,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
@@ -1459,36 +2032,58 @@ Total time:
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,      24] index = [             0,300]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1332 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -53.27594853162467   -5.32759e+01   1.73080e-01 
-   @UHF iter   2:   -55.15151993103485   -1.87557e+00   3.54518e-02 DIIS
-   @UHF iter   3:   -55.18383682116791   -3.23169e-02   4.57083e-03 DIIS
-   @UHF iter   4:   -55.18500083557219   -1.16401e-03   1.51013e-03 DIIS
-   @UHF iter   5:   -55.18514170729539   -1.40872e-04   5.45609e-04 DIIS
-   @UHF iter   6:   -55.18516187848834   -2.01712e-05   2.46844e-04 DIIS
-   @UHF iter   7:   -55.18516702001164   -5.14152e-06   9.82434e-05 DIIS
-   @UHF iter   8:   -55.18516793023388   -9.10222e-07   4.52005e-06 DIIS
-   @UHF iter   9:   -55.18516793133178   -1.09790e-09   3.36005e-07 DIIS
-   @UHF iter  10:   -55.18516793133502   -3.24007e-12   1.71604e-08 DIIS
-   @UHF iter  11:   -55.18516793133502    0.00000e+00   2.00183e-09 DIIS
-   @UHF iter  12:   -55.18516793133502    0.00000e+00   3.15987e-11 DIIS
-   @UHF iter  13:   -55.18516793133502    0.00000e+00   3.46458e-13 DIIS
+   @UHF iter   1:   -55.04233232032251   -5.50423e+01   7.76631e-02 
+   @UHF iter   2:   -55.17499565049720   -1.32663e-01   1.67353e-02 DIIS
+   @UHF iter   3:   -55.18462879377267   -9.63314e-03   3.12199e-03 DIIS
+   @UHF iter   4:   -55.18507905750488   -4.50264e-04   9.77605e-04 DIIS
+   @UHF iter   5:   -55.18513606996279   -5.70125e-05   5.61453e-04 DIIS
+   @UHF iter   6:   -55.18516555704236   -2.94871e-05   1.62150e-04 DIIS
+   @UHF iter   7:   -55.18516792998973   -2.37295e-06   4.23482e-06 DIIS
+   @UHF iter   8:   -55.18516793101176   -1.02203e-09   1.91541e-06 DIIS
+   @UHF iter   9:   -55.18516793131033   -2.98570e-10   5.15758e-07 DIIS
+   @UHF iter  10:   -55.18516793133398   -2.36469e-11   1.16656e-07 DIIS
+   @UHF iter  11:   -55.18516793133508   -1.10134e-12   1.80387e-08 DIIS
+   @UHF iter  12:   -55.18516793133513   -4.97380e-14   6.42509e-09 DIIS
+   @UHF iter  13:   -55.18516793133515   -2.13163e-14   3.57854e-09 DIIS
+   @UHF iter  14:   -55.18516793133514    7.10543e-15   3.44178e-10 DIIS
+   @UHF iter  15:   -55.18516793133513    1.42109e-14   9.06912e-11 DIIS
+   @UHF iter  16:   -55.18516793133512    7.10543e-15   2.38470e-11 DIIS
+   @UHF iter  17:   -55.18516793133511    1.42109e-14   2.67971e-12 DIIS
+   @UHF iter  18:   -55.18516793133513   -2.13163e-14   1.46550e-12 DIIS
+   @UHF iter  19:   -55.18516793133510    2.84217e-14   6.70829e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -1503,12 +2098,12 @@ Total time:
 
     Alpha Occupied:                                                       
 
-       1Ap   -15.918391     2Ap    -1.562330     3Ap    -1.011156  
-       1App   -1.011156     4Ap    -0.945772  
+       1Ap   -15.918391     2Ap    -1.562330     1App   -1.011156  
+       3Ap    -1.011156     4Ap    -0.945772  
 
     Alpha Virtual:                                                        
 
-       5Ap     0.134344     6Ap     0.203343     2App    0.203343  
+       5Ap     0.134344     2App    0.203343     6Ap     0.203343  
 
     Beta Occupied:                                                        
 
@@ -1527,356 +2122,19 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -55.18516793133502
+  @UHF Final Energy:   -55.18516793133510
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             11.0870476961531015
-    One-Electron Energy =                 -92.8389235247138345
-    Two-Electron Energy =                  26.5667078972257116
+    Nuclear Repulsion Energy =             11.0870476961530997
+    One-Electron Energy =                 -92.8389235247183819
+    Two-Electron Energy =                  26.5667078972301880
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.1851679313350161
+    Total Energy =                        -55.1851679313351013
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.2866      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
-
-
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    1App 1.9980250
-  HONO-1 :    3 Ap 1.9980250
-  HONO-0 :    4 Ap 1.0000000
-  LUNO+0 :    5 Ap 0.0019750
-  LUNO+1 :    2App 0.0019750
-  LUNO+2 :    6 Ap 0.0012735
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:28 2016
-Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.39 seconds =       0.02 minutes
-	system time =       2.09 seconds =       0.03 minutes
-	total time  =          4 seconds =       0.07 minutes
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:28 2016
-
-
-
-	***********************************************************************************
-	*                        Density Cumulant Functional Theory                       *
-	*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *
-	***********************************************************************************
-
-
-	Transforming two-electron integrals (transformation type: unrestricted)...
-	Computing MP2 amplitude guess...
-
-	*Total Hartree-Fock energy        =  -55.185167931335023
-	 Alpha - Alpha MP2 energy         =   -0.001540484296766
-	 Alpha - Beta  MP2 energy         =   -0.041579861671191
-	 Beta  - Beta  MP2 energy         =   -0.001822521524690
-	 Total MP2 correlation energy     =   -0.044942867492647
-	*Total MP2 energy                 =  -55.230110798827667
-
-	DCFT Functional:    		 ODC-13
-	DCFT Type:          		 CONV
-	Algorithm:          		 SIMULTANEOUS
-	AO-Basis Integrals: 		 DISK
-
-	*=================================================================================*
-	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
-	*---------------------------------------------------------------------------------*
-	* 1        2.261e-02         8.401e-03     -5.876e-02    -55.288875057513586      *
-	* 2        6.000e-03         3.727e-03      3.693e-02    -55.251943549848157      *
-	* 3        4.330e-03         1.911e-03     -2.016e-04    -55.252145165834946      *
-	* 4        2.529e-03         1.157e-03      1.872e-04    -55.251957990896450      *
-	* 5        1.798e-03         7.605e-04      1.749e-04    -55.251783060828522      *
-	* 6        1.218e-03         5.234e-04      1.257e-04    -55.251657409022933      *
-	* 7        8.458e-04         3.682e-04      9.073e-05    -55.251566676509668  S   *
-	* 8        5.899e-04         2.619e-04      6.612e-05    -55.251500553246544  S   *
-	* 9        4.149e-04         1.873e-04      4.862e-05    -55.251451930861364  S   *
-	* 10       2.934e-04         1.344e-04      3.581e-05    -55.251416124906704  S/E *
-	* 11       1.738e-06         7.417e-07      3.273e-04    -55.251088874189143  S/E *
-	* 12       6.549e-07         1.998e-07     -2.290e-04    -55.251317894844654  S/E *
-	* 13       2.180e-07         8.475e-08     -1.313e-06    -55.251319207809317  S/E *
-	* 14       2.999e-08         1.610e-08      2.771e-07    -55.251318930728708  S/E *
-	* 15       1.302e-08         5.073e-09     -1.667e-07    -55.251319097425771  S/E *
-	* 16       3.007e-09         1.122e-09      1.935e-08    -55.251319078077977  S/E *
-	* 17       8.967e-10         3.892e-10     -3.945e-09    -55.251319082022889  S/E *
-	* 18       2.489e-10         1.495e-10     -3.784e-11    -55.251319082060725  S/E *
-	* 19       7.830e-11         5.183e-11     -1.144e-10    -55.251319082175172  S/E *
-	* 20       1.990e-11         5.962e-12     -1.680e-10    -55.251319082343194  S/E *
-	* 21       6.972e-12         2.954e-12     -2.522e-12    -55.251319082345717  S/E *
-	* 22       2.287e-12         1.256e-12      4.775e-12    -55.251319082340942  S/E *
-	* 23       1.131e-12         8.037e-13      5.755e-13    -55.251319082340366  S/E *
-	* 24       6.584e-13         4.294e-13      1.371e-12    -55.251319082338995  S/E *
-	*=================================================================================*
-
-	*   ODC-13 SCF Energy                                 =     -55.082458005629150
-	*   ODC-13 Lambda Energy                              =      -0.168861076709847
-	*   ODC-13 Total Energy                               =     -55.251319082338995
-
-	Evaluating three-particle DCFT energy correction...
-
-	Semicanonicalizing OVVV integrals ... 			DONE
-	Semicanonicalizing OOOV integrals ... 			DONE
-	Semicanonicalizing density cumulant ...			DONE
-
-	*Lambda_3 Energy (AAA)                             =   -0.000000262628458
-	*Lambda_3 Energy (AAB)                             =   -0.000129234057059
-	*Lambda_3 Energy (ABB)                             =   -0.000138613863844
-	*Lambda_3 Energy (BBB)                             =   -0.000000295741641
-
-	*DCFT Three-particle Energy                        =   -0.000268406291002
-	*DCFT Total Energy                                 =  -55.251587488629994
-
-	Orbital occupations:
-		Alpha occupied orbitals
-		   1Ap       1.0000     2Ap       0.9954     3Ap       0.9912     4Ap       0.9862  
-		   1App      0.9862  
-
-		Beta occupied orbitals
-		   1Ap       1.0000     2Ap       0.9907     3Ap       0.9839     1App      0.9839  
-		
-
-		Alpha virtual orbitals
-		   2App      0.0148     5Ap       0.0148     6Ap       0.0115  
-
-		Beta virtual orbitals
-		   2App      0.0123     4Ap       0.0123     5Ap       0.0102     6Ap       0.0065  
-		
-
-
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the ODC-13 density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.3298      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5108      Z:     0.0000     Total:     0.5108
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.2983      Z:     0.0000     Total:     1.2983
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:29 2016
-Module time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.50 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       1.77 seconds =       0.03 minutes
-	system time =       2.59 seconds =       0.04 minutes
-	total time  =          5 seconds =       0.08 minutes
-	ODC-13 SCF Energy (simultaneous, ao_basis=disk)...................PASSED
-	ODC-13 Energy (simultaneous, ao_basis=disk).......................PASSED
-	ODC-13 Lambda_3 Energy (simultaneous, ao_basis=disk)..............PASSED
-	ODC-13 Total Energy (simultaneous, ao_basis=disk).................PASSED
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:29 2016
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              UHF Reference
-                        1 Threads,    250 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: cs
-    Full point group: C3v
-
-    Geometry (in Angstrom), charge = 1, multiplicity = 2:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           N          0.000000000000     0.064518610227     0.000000000000    14.003074004780
-           H         -0.513830927662    -0.298814723106     0.889981273211     1.007825032070
-           H         -0.513830927662    -0.298814723106    -0.889981273211     1.007825032070
-           H          1.027661855324    -0.298814723106     0.000000000000     1.007825032070
-
-  Running in cs symmetry.
-
-  Rotational constants: A =      8.75818  B =      8.75818  C =      5.27946 [cm^-1]
-  Rotational constants: A = 262563.74356  B = 262563.74356  C = 158274.27281 [MHz]
-  Nuclear repulsion =   11.087047696153101
-
-  Charge       = 1
-  Multiplicity = 2
-  Electrons    = 9
-  Nalpha       = 5
-  Nbeta        = 4
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is CORE.
-  Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-12
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: STO-3G
-    Number of shells: 6
-    Number of basis function: 8
-    Number of Cartesian functions: 8
-    Spherical Harmonics?: true
-    Max angular momentum: 1
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'         6       6       0       0       0       0
-     A"         2       2       0       0       0       0
-   -------------------------------------------------------
-    Total       8       8       5       4       4       1
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-	Batch   1 pq = [       0,      24] index = [             0,300]
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               178
-    Schwarz Cutoff:          1E-12
-
-  Minimum eigenvalue in the overlap matrix is 3.1845019414E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @UHF iter   1:   -53.27594853162467   -5.32759e+01   1.73080e-01 
-   @UHF iter   2:   -55.15151993103485   -1.87557e+00   3.54518e-02 DIIS
-   @UHF iter   3:   -55.18383682116792   -3.23169e-02   4.57083e-03 DIIS
-   @UHF iter   4:   -55.18500083557218   -1.16401e-03   1.51013e-03 DIIS
-   @UHF iter   5:   -55.18514170729538   -1.40872e-04   5.45609e-04 DIIS
-   @UHF iter   6:   -55.18516187848834   -2.01712e-05   2.46844e-04 DIIS
-   @UHF iter   7:   -55.18516702001163   -5.14152e-06   9.82434e-05 DIIS
-   @UHF iter   8:   -55.18516793023391   -9.10222e-07   4.52005e-06 DIIS
-   @UHF iter   9:   -55.18516793133178   -1.09787e-09   3.36005e-07 DIIS
-   @UHF iter  10:   -55.18516793133501   -3.22586e-12   1.71604e-08 DIIS
-   @UHF iter  11:   -55.18516793133504   -2.84217e-14   2.00183e-09 DIIS
-   @UHF iter  12:   -55.18516793133502    1.42109e-14   3.15982e-11 DIIS
-   @UHF iter  13:   -55.18516793133502    0.00000e+00   3.46931e-13 DIIS
-
-  ==> Post-Iterations <==
-
-   @Spin Contamination Metric:   1.043752011E-02
-   @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.604375201E-01
-   @S   Expected:                5.000000000E-01
-   @S   Observed:                5.000000000E-01
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Alpha Occupied:                                                       
-
-       1Ap   -15.918391     2Ap    -1.562330     3Ap    -1.011156  
-       1App   -1.011156     4Ap    -0.945772  
-
-    Alpha Virtual:                                                        
-
-       5Ap     0.134344     6Ap     0.203343     2App    0.203343  
-
-    Beta Occupied:                                                        
-
-       1Ap   -15.886508     2Ap    -1.428101     1App   -0.971048  
-       3Ap    -0.971048  
-
-    Beta Virtual:                                                         
-
-       4Ap    -0.181875     5Ap     0.167535     6Ap     0.238002  
-       2App    0.238002  
-
-    Final Occupation by Irrep:
-             Ap   App 
-    DOCC [     3,    1 ]
-    SOCC [     1,    0 ]
-
-  Energy converged.
-
-  @UHF Final Energy:   -55.18516793133502
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             11.0870476961531015
-    One-Electron Energy =                 -92.8389235247138345
-    Two-Electron Energy =                  26.5667078972257151
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -55.1851679313350161
-
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.8406      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.2866      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
-
-
-  Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
   HONO-2 :    3 Ap 1.9980250
@@ -1887,18 +2145,59 @@ Properties computed using the SCF density matrix
   LUNO+2 :    6 Ap 0.0012735
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:29 2016
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.8406      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.2866      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.5540      Z:     0.0000     Total:     0.5540
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -1.4081      Z:     0.0000     Total:     1.4081
+
+
+*** tstop() called on psinet at Mon May 15 15:35:30 2017
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.82 seconds =       0.03 minutes
-	system time =       2.60 seconds =       0.04 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.67 seconds =       0.04 minutes
+	system time =       3.56 seconds =       0.06 minutes
+	total time  =          7 seconds =       0.12 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:24:29 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:               6
+      Number of SO shells:               5
+      Number of primitives:             18
+      Number of atomic orbitals:         8
+      Number of basis functions:         8
+
+      Number of irreps:                  2
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [   6    2 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 346 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:30 2017
 
 
 
@@ -1911,12 +2210,12 @@ Total time:
 	Transforming two-electron integrals (transformation type: unrestricted)...
 	Computing MP2 amplitude guess...
 
-	*Total Hartree-Fock energy        =  -55.185167931335023
-	 Alpha - Alpha MP2 energy         =   -0.001540484296766
-	 Alpha - Beta  MP2 energy         =   -0.041579861671191
-	 Beta  - Beta  MP2 energy         =   -0.001822521524690
-	 Total MP2 correlation energy     =   -0.044942867492647
-	*Total MP2 energy                 =  -55.230110798827667
+	*Total Hartree-Fock energy        =  -55.185167931335101
+	 Alpha - Alpha MP2 energy         =   -0.001540484296773
+	 Alpha - Beta  MP2 energy         =   -0.041579861671247
+	 Beta  - Beta  MP2 energy         =   -0.001822521524684
+	 Total MP2 correlation energy     =   -0.044942867492705
+	*Total MP2 energy                 =  -55.230110798827809
 
 	DCFT Functional:    		 ODC-13
 	DCFT Type:          		 CONV
@@ -1931,25 +2230,25 @@ Total time:
 About to Copied C matrices
 Copied C matrices
 Compute scf_error_vector
-	* 1        4.864e-03         3.102e-02     -1.278e-02    -55.242894659994661    16        *
-	* 2        2.715e-03         7.872e-04     -7.929e-03    -55.250824000059588    14        *
-	* 3        2.980e-04         5.434e-04     -4.829e-04    -55.251306916071478    14    S   *
-	* 4        1.579e-04         1.742e-05     -7.124e-06    -55.251314040445799    12    S   *
-	* 5        2.591e-05         3.696e-05     -5.020e-06    -55.251319060579590    12    S   *
-	* 6        1.332e-05         2.607e-06      1.731e-07    -55.251318887519510    11    S/E *
-	* 7        3.168e-07         5.778e-07     -1.918e-07    -55.251319079340682     8    S/E *
-	* 8        1.102e-07         2.252e-08     -5.156e-09    -55.251319084496735     7    S/E *
-	* 9        7.048e-09         6.493e-09      2.253e-09    -55.251319082244009     6    S/E *
-	* 10       8.945e-10         5.467e-10     -1.009e-10    -55.251319082344885     4    S/E *
-	* 11       1.161e-10         1.182e-10      8.896e-12    -55.251319082335989     3    S/E *
-	* 12       1.317e-11         5.234e-12     -2.515e-12    -55.251319082338505     1    S/E *
-	* 13       1.989e-12         1.832e-12     -6.111e-13    -55.251319082339116     1    S/E *
-	* 14       7.007e-13         6.762e-13     -2.132e-14    -55.251319082339137     1    S/E *
+	* 1        3.913e-03         2.987e-02     -1.278e-02    -55.242894659994811    16        *
+	* 2        2.407e-03         7.521e-04     -7.929e-03    -55.250824000059673    14        *
+	* 3        2.471e-04         5.410e-04     -4.829e-04    -55.251306916071577    14    S   *
+	* 4        1.453e-04         1.742e-05     -7.124e-06    -55.251314040445898    12    S   *
+	* 5        2.218e-05         3.696e-05     -5.020e-06    -55.251319060579661    12    S   *
+	* 6        1.225e-05         2.607e-06      1.731e-07    -55.251318887519595    11    S/E *
+	* 7        2.626e-07         5.778e-07     -1.918e-07    -55.251319079340774     8    S/E *
+	* 8        1.013e-07         2.252e-08     -5.156e-09    -55.251319084496814     7    S/E *
+	* 9        5.843e-09         6.493e-09      2.253e-09    -55.251319082244102     6    S/E *
+	* 10       7.417e-10         5.467e-10     -1.009e-10    -55.251319082344978     4    S/E *
+	* 11       1.112e-10         1.182e-10      8.910e-12    -55.251319082336067     3    S/E *
+	* 12       1.092e-11         5.234e-12     -2.501e-12    -55.251319082338568     1    S/E *
+	* 13       1.830e-12         1.832e-12     -6.324e-13    -55.251319082339201     1    S/E *
+	* 14       6.448e-13         6.764e-13     -4.263e-14    -55.251319082339243     1    S/E *
 	*==========================================================================================*
 
-	*   ODC-13 SCF Energy                                 =     -55.082458005627124
-	*   ODC-13 Lambda Energy                              =      -0.168861076712013
-	*   ODC-13 Total Energy                               =     -55.251319082339137
+	*   ODC-13 SCF Energy                                 =     -55.082458005627231
+	*   ODC-13 Lambda Energy                              =      -0.168861076712014
+	*   ODC-13 Total Energy                               =     -55.251319082339243
 
 	Evaluating three-particle DCFT energy correction...
 
@@ -1963,7 +2262,7 @@ Compute scf_error_vector
 	*Lambda_3 Energy (BBB)                             =   -0.000000295741641
 
 	*DCFT Three-particle Energy                        =   -0.000268406291004
-	*DCFT Total Energy                                 =  -55.251587488630143
+	*DCFT Total Energy                                 =  -55.251587488630250
 
 	Orbital occupations:
 		Alpha occupied orbitals
@@ -2000,18 +2299,18 @@ Properties computed using the ODC-13 density matrix
      X:     0.0000      Y:    -1.2983      Z:     0.0000     Total:     1.2983
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:24:30 2016
+*** tstop() called on psinet at Mon May 15 15:35:31 2017
 Module time:
-	user time   =       0.30 seconds =       0.00 minutes
-	system time =       0.38 seconds =       0.01 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.60 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.12 seconds =       0.04 minutes
-	system time =       2.98 seconds =       0.05 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       3.07 seconds =       0.05 minutes
+	system time =       4.16 seconds =       0.07 minutes
+	total time  =          8 seconds =       0.13 minutes
 	ODC-13 SCF Energy (qc, qc_type=simultaneous, ao_basis=none).......PASSED
 	ODC-13 Energy (qc, qc_type=simultaneous, ao_basis=none)...........PASSED
 	ODC-13 Lambda_3 Energy (qc, qc_type=simultaneous, ao_basis=none)..PASSED
 	ODC-13 Total Energy (qc, qc_type=simultaneous, ao_basis=none).....PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

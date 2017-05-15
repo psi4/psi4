@@ -1,33 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:17:25 2016
+    Psi4 started on: Monday, 15 May 2017 03:36PM
 
-    Process ID:  11125
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  14388
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
-
-memory 250 mb
 
 refnuc   =   4.91953818754668 #TEST
 refscf   = -25.94361431841737 #TEST
@@ -50,43 +51,48 @@ H     3.00000000    -0.37149000     0.00000000
 }
 
 set {
-  reference rohf
-  basis cc-pVDZ 
-  docc [3,0,0,0]
-  socc [1,0,0,0]
-  freeze_core true
-  dipmom true
-  num_roots 2
+  reference     rohf
+  basis         cc-pVDZ 
+  docc          [3,0,0,0]
+  socc          [1,0,0,0]
+  freeze_core   true
+  num_roots     2
 }
 
 set scf d_convergence 10
 set detci e_convergence 8
 
-thisenergy = energy('fci')
+thisenergy = prop('fci', properties=['DIPOLE', 'QUADRUPOLE', 'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE'])
 
 compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
-compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
-compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
-compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
-compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI root 2 correlation energy")  #TEST
-compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
-compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
-compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
-compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 0 ENERGY") #TEST
+compare_values(refci2,   get_variable("CI ROOT 1 TOTAL ENERGY"),       7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refcorr1, get_variable("CI ROOT 0 CORRELATION ENERGY"), 7, "CI ROOT 0 correlation energy")  #TEST
+compare_values(refcorr2, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI ROOT 1 correlation energy")  #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, get_variable("CI ROOT 0 DIPOLE Z"), 3, "CI ROOT 0 Z Component of dipole")        #TEST
+compare_values(refDipCI2, get_variable("CI ROOT 1 DIPOLE Z"), 3, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(abs(refTDM), abs(get_variable("CI ROOT 0 -> ROOT 1 DIPOLE Z")), 3, "CI ROOT 0 -> ROOT 1 Z Component of dipole")        #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:36:38 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:17:25 2016
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry B          line   100 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-4 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -121,14 +127,15 @@ compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
-  Energy threshold   = 1.00e-08
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 15
     Number of basis function: 29
     Number of Cartesian functions: 30
@@ -150,37 +157,51 @@ compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     159] index = [             0,12720]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   4
+      Number of AO shells:              15
+      Number of primitives:             37
+      Number of atomic orbitals:        30
+      Number of basis functions:        29
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 189660 doubles for integral storage.
+  We computed 7216 shell quartets total.
+  Whereas there are 7260 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.3025411798E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:   -23.03240979837526   -2.30324e+01   5.10160e-02 
-   @ROHF iter   2:   -24.65703135282067   -1.62462e+00   4.44486e-02 DIIS
-   @ROHF iter   3:   -25.90600042349005   -1.24897e+00   7.90575e-03 DIIS
-   @ROHF iter   4:   -25.93696888187663   -3.09685e-02   2.90180e-03 DIIS
-   @ROHF iter   5:   -25.94319228883798   -6.22341e-03   7.40119e-04 DIIS
-   @ROHF iter   6:   -25.94361080715634   -4.18518e-04   7.58312e-05 DIIS
-   @ROHF iter   7:   -25.94361417161479   -3.36446e-06   1.41410e-05 DIIS
-   @ROHF iter   8:   -25.94361431031653   -1.38702e-07   3.40854e-06 DIIS
-   @ROHF iter   9:   -25.94361431820208   -7.88555e-09   5.86881e-07 DIIS
-   @ROHF iter  10:   -25.94361431841390   -2.11820e-10   7.57490e-08 DIIS
-   @ROHF iter  11:   -25.94361431841729   -3.39639e-12   9.41919e-09 DIIS
-   @ROHF iter  12:   -25.94361431841734   -4.26326e-14   1.34225e-09 DIIS
-   @ROHF iter  13:   -25.94361431841731    2.13163e-14   1.76683e-10 DIIS
-   @ROHF iter  14:   -25.94361431841735   -3.55271e-14   1.79926e-11 DIIS
+   @ROHF iter   1:   -25.58338194564928   -2.55834e+01   2.94445e-02 
+   @ROHF iter   2:   -25.90384566339140   -3.20464e-01   9.40391e-03 DIIS
+   @ROHF iter   3:   -25.93990208052293   -3.60564e-02   2.55571e-03 DIIS
+   @ROHF iter   4:   -25.94348840801802   -3.58633e-03   4.30659e-04 DIIS
+   @ROHF iter   5:   -25.94360179622035   -1.13388e-04   1.26849e-04 DIIS
+   @ROHF iter   6:   -25.94361376998734   -1.19738e-05   2.78311e-05 DIIS
+   @ROHF iter   7:   -25.94361431321263   -5.43225e-07   2.74412e-06 DIIS
+   @ROHF iter   8:   -25.94361431836047   -5.14784e-09   2.85752e-07 DIIS
+   @ROHF iter   9:   -25.94361431841662   -5.61542e-11   3.22873e-08 DIIS
+   @ROHF iter  10:   -25.94361431841725   -6.25278e-13   4.17633e-09 DIIS
+   @ROHF iter  11:   -25.94361431841727   -2.13163e-14   5.66765e-10 DIIS
+   @ROHF iter  12:   -25.94361431841724    3.55271e-14   6.34692e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -214,24 +235,22 @@ compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5
 
   Energy converged.
 
-  @ROHF Final Energy:   -25.94361431841735
+  @ROHF Final Energy:   -25.94361431841724
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              4.9195381875466886
-    One-Electron Energy =                 -41.2341126178890107
-    Two-Electron Energy =                  10.3709601119249708
+    One-Electron Energy =                 -41.2341126184518387
+    Two-Electron Energy =                  10.3709601124879143
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -25.9436143184173460
+    Total Energy =                        -25.9436143184172394
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -248,90 +267,95 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.0383     Total:     2.0383
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:17:25 2016
+*** tstop() called on psinet at Mon May 15 15:36:38 2017
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   4
+      Number of AO shells:              15
+      Number of SO shells:              12
+      Number of primitives:             37
+      Number of atomic orbitals:        30
+      Number of basis functions:        29
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  14    2    5    8 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 25462 non-zero two-electron integrals.
+        Stored in file 33.
+
 
          ---------------------------------------------------------
-                                 D E T C I  
+                          Configuration Interaction
+                            (a 'D E T C I' module)
 
-                             C. David Sherrill
-                             Matt L. Leininger
-                               18 June 1999
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
          ---------------------------------------------------------
 
 Warning: iopen=0,opentype!=closed. Making iopen=1
 
-DETCI PARAMETERS: 
-   EX LEVEL      =        5      H0 BLOCKSIZE =      400
-   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
-   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   MAXITER       =       12      NUM PRINT    =       20
-   NUM ROOTS     =        2      ICORE        =        1
-   PRINT         =        1      FCI          =      yes
-   R CONV        = 1.00e-04      MIXED        =      yes
-   E CONV        = 1.00e-08      MIXED4       =      yes
-   OEI FILE      =       35      R4S          =       no
-   REPL OTF      =       no
-   TEI FILE      =       72      DIAG METHOD  =      SEM
-   PRECONDITIONER= DAVIDSON      UPDATE       = DAVIDSON
-   S             =   0.5000      Ms0          =       no
-   MAX NUM VECS  =       26
-   RESTART       =       no
-   GUESS VECTOR  =  H0BLOCK      OPENTYPE     = HIGHSPIN
-   REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
-   LSE           =       no      LSE ITER     =        0
-   HD OTF        =      yes      NO DFILE     =       no
-   MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      MPN WIGNER   =       no
-   PERT Z        =   1.0000      FOLLOW ROOT  =        0
-   NUM THREADS   =        1
-   VECS WRITE    =       no      NUM VECS WRITE =      0
-   FILTER GUESS  =       no      SF RESTRICT  =       no
-   OPDM          =      yes      TRANS DENSITY=      yes
+   ==> Parameters <==
 
-   FILES         =  50 51 52 53
+    EX LEVEL       =        5      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        2      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-08      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.5000      Ms0           =       NO
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      = HIGHSPIN
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       50      REF SYM       =     AUTO
+    IOPEN        =      YES
 
-   EX ALLOW      =  1  1  1  1  1 
-   STATE AVERAGE =  1(1.00) 
+    EX ALLOW       =  1  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
 
-ORBITALS:
-   NMO          =       29
-   FROZEN CORE  =        1      RESTR CORE   =        0
-   FROZEN VIRT  =        0      RESTR VIRT   =        0
-   DROPPED CORE =        1      DROPPED VIRT =        0
-   EXPLICIT CORE=        0      ORBS IN CI   =       28
-   NUM ALP      =        4      NUM BET      =        3
-   NUM ALP EXPL =        3      NUM BET EXPL =        2
-   IOPEN        =      yes
+   ==> CI Orbital and Space information <==
 
-   DOCC            =   3   0   0   0 
-   SOCC            =   1   0   0   0 
-
-   FROZEN DOCC     =   1   0   0   0 
-   RESTRICTED DOCC =   0   0   0   0 
-   ACTIVE          =  13   2   5   8 
-   RESTRICTED UOCC =   0   0   0   0 
-   FROZEN UOCC     =   0   0   0   0 
-         ---------------------------------------------------------
-
+   ------------------------------------------------------
+               Space    Total    A1    A2    B1    B2
+   ------------------------------------------------------
+                 Nso       29    14     2     5     8
+                 Nmo       29    14     2     5     8
+               Ndocc        3     3     0     0     0
+               Nsocc        1     1     0     0     0
+   ------------------------------------------------------
+                       CI Spaces
+   ------------------------------------------------------
+        Dropped DOCC        1     1     0     0     0
+              Active       28    13     2     5     8
+        Dropped UOCC        0     0     0     0     0
+   ------------------------------------------------------
 
    ==> Setting up CI strings <==
 
-   There are 3276 alpha and 378 beta strings
-   The CI space requires 315138 (3.15E+05) determinants and 4 blocks
-
+    There are 3276 alpha and 378 beta strings
+    The CI space requires 315138 (3.15E+05) determinants and 4 blocks
 
    ==> Transforming CI integrals <==
+
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
@@ -341,249 +365,114 @@ ORBITALS:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** H0 Block Eigenvalue = -25.97273536
+   ==> Starting CI iterations <==
 
-Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
-Using 2 initial trial vectors
-Iter  0  Root  1 = -25.972735357   Delta_E -7.326E+00   Delta_C  3.703E-01  
-Iter  0  Root  2 = -25.759915244   Delta_E -7.113E+00   Delta_C  3.157E-01  
+    H0 Block Eigenvalue = -25.99171157
 
-Iter  1  Root  1 = -26.025201486   Delta_E -5.247E-02   Delta_C  7.815E-02  
-Iter  1  Root  2 = -25.803839457   Delta_E -4.392E-02   Delta_C  7.467E-02  
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 2 initial trial vectors
 
-Iter  2  Root  1 = -26.027092851   Delta_E -1.891E-03   Delta_C  1.849E-02  
-Iter  2  Root  2 = -25.805864043   Delta_E -2.025E-03   Delta_C  2.499E-02  
+     Iter   Root       Total Energy       Delta E      C RMS
 
-Iter  3  Root  1 = -26.027209975   Delta_E -1.171E-04   Delta_C  5.967E-03  
-Iter  3  Root  2 = -25.806083457   Delta_E -2.194E-04   Delta_C  1.196E-02  
+   @CI  0:     0    -25.991711567879   -7.3451E+00   3.2151E-01  
+   @CI  0:     1    -25.773095426645   -7.1265E+00   2.8259E-01  
 
-Iter  4  Root  1 = -26.027224673   Delta_E -1.470E-05   Delta_C  2.139E-03  
-Iter  4  Root  2 = -25.806142261   Delta_E -5.880E-05   Delta_C  4.447E-03  
+   @CI  1:     0    -26.026152524734   -3.4441E-02   5.6020E-02  
+   @CI  1:     1    -25.804943474729   -3.1848E-02   5.6740E-02  
 
-Iter  5  Root  1 = -26.027226555   Delta_E -1.882E-06   Delta_C  8.882E-04  
-Iter  5  Root  2 = -25.806150390   Delta_E -8.130E-06   Delta_C  1.886E-03  
+   @CI  2:     0    -26.027165504398   -1.0130E-03   1.2909E-02  
+   @CI  2:     1    -25.805973609042   -1.0301E-03   1.9884E-02  
 
-Iter  6  Root  1 = -26.027226854   Delta_E -2.987E-07   Delta_C  4.075E-04  
-Iter  6  Root  2 = -25.806151968   Delta_E -1.578E-06   Delta_C  9.113E-04  
+   @CI  3:     0    -26.027221203053   -5.5699E-05   3.6816E-03  
+   @CI  3:     1    -25.806119948824   -1.4634E-04   8.6633E-03  
 
-Iter  7  Root  1 = -26.027226916   Delta_E -6.211E-08   Delta_C  1.568E-04  
-Iter  7  Root  2 = -25.806152373   Delta_E -4.045E-07   Delta_C  5.171E-04  
+   @CI  4:     0    -26.027226440374   -5.2373E-06   1.1616E-03  
+   @CI  4:     1    -25.806147812467   -2.7864E-05   2.8800E-03  
 
-Iter  8  Root  1 = -26.027226924   Delta_E -7.972E-09   Delta_C  5.696E-05 c
-Iter  8  Root  2 = -25.806152507   Delta_E -1.347E-07   Delta_C  3.008E-04  
+   @CI  5:     0    -26.027226879157   -4.3878E-07   3.4856E-04  
+   @CI  5:     1    -25.806151047065   -3.2346E-06   1.1389E-03  
 
-Iter  9  Root  1 = -26.027226924   Delta_E -2.209E-10   Delta_C  5.004E-05 c
-Iter  9  Root  2 = -25.806152552   Delta_E -4.447E-08   Delta_C  1.566E-04  
+   @CI  6:     0    -26.027226918009   -3.8851E-08   1.2898E-04  
+   @CI  6:     1    -25.806151661355   -6.1429E-07   6.5372E-04  
 
-Iter 10  Root  1 = -26.027226924   Delta_E  0.000E+00   Delta_C  5.004E-05 c
-Iter 10  Root  2 = -25.806152562   Delta_E -1.032E-08   Delta_C  7.200E-05  
+   @CI  7:     0    -26.027226924202   -6.1934E-09   4.8790E-05 c
+   @CI  7:     1    -25.806151970997   -3.0964E-07   5.9368E-04  
 
-Iter 11  Root  1 = -26.027226924   Delta_E -1.226E-13   Delta_C  5.003E-05 c
-Iter 11  Root  2 = -25.806152564   Delta_E -2.066E-09   Delta_C  3.130E-05 c
+   @CI  8:     0    -26.027226924610   -4.0829E-10   4.0794E-05 c
+   @CI  8:     1    -25.806152260165   -2.8917E-07   5.6684E-04  
 
+   @CI  9:     0    -26.027226924680   -6.9937E-11   3.8798E-05 c
+   @CI  9:     1    -25.806152463288   -2.0312E-07   3.9544E-04  
 
-* ROOT 1 CI total energy = -26.0272269243438  (0.0000 eV,      0.00 1/cm)
+   @CI 10:     0    -26.027226924694   -1.3996E-11   3.8545E-05 c
+   @CI 10:     1    -25.806152539720   -7.6432E-08   2.0686E-04  
 
+   @CI 11:     0    -26.027226924695   -2.4691E-13   3.8555E-05 c
+   @CI 11:     1    -25.806152558885   -1.9165E-08   1.0260E-04  
 
-The 20 most important determinants
-
-    1   -0.968522  (    0,    0)  2A1X  3A1X  4A1A  
-    2   -0.062702  ( 1625,  184)  2A1A  3A1X  1B1X  
-    3   -0.062579  ( 2508,  275)  2A1A  3A1X  1B2X  
-    4    0.058170  (    0,    2)  2A1A  3A1X  4A1X  
-    5   -0.055863  ( 1627,  184)  3A1X  4A1A  1B1X  
-    6   -0.055655  ( 2510,  275)  3A1X  4A1A  1B2X  
-    7   -0.049499  ( 2598,  287)  2A1X  4A1A  2B2X  
-*   8   -0.046794  ( 2869,  326)  2A1X  4A1A  5B2X  
-*   9   -0.042531  ( 2869,  287)  2A1X  4A1A  2B2B  5B2A  
-*  10   -0.042357  ( 2598,  326)  2A1X  4A1A  2B2A  5B2B  
-   11    0.040809  (    1,    2)  2A1A  3A1X  4A1B  5A1A  
-*  12   -0.038423  (   21,   15)  2A1X  4A1A  8A1X  
-   13   -0.038292  (    3,    4)  3A1X  4A1A  5A1X  
-*  14   -0.037946  ( 1864,  222)  2A1X  4A1A  4B1X  
-*  15   -0.031038  (  121,   45)  2A1X  4A1A  12A1X  
-   16    0.030203  (   35,    2)  2A1A  3A1X  4A1B  9A1A  
-*  17   -0.027758  (   37,   22)  3A1X  4A1A  9A1X  
-*  18   -0.026935  (   37,    4)  3A1X  4A1A  5A1B  9A1A  
-*  19   -0.026869  (    3,   22)  3A1X  4A1A  5A1A  9A1B  
-   20   -0.024829  (   37,    2)  3A1X  4A1X  9A1A  
+   @CI 12:     0    -26.027226924700   -5.1905E-12   3.8432E-05 c
+   @CI 12:     1    -25.806152563408   -4.5221E-09   4.8128E-05 c
 
 
+   ==> Energetics <==
 
-* ROOT 2 CI total energy = -25.8061525641282  (6.0157 eV,  48520.21 1/cm)
+    SCF energy =          -25.943614318417239
+    Total CI energy =     -26.027226924699796
 
+   ==> FCI root 0 information <==
 
-The 20 most important determinants
+    FCI Root 0 energy =   -26.027226924699796
 
-    1   -0.902408  (    0,    1)  2A1X  3A1A  4A1X  
-    2    0.179020  (   10,    1)  2A1X  3A1A  4A1B  7A1A  
-    3    0.162720  (    0,   10)  2A1X  3A1A  4A1A  7A1B  
-    4    0.116671  (   21,    1)  2A1X  4A1X  8A1A  
-    5    0.107038  ( 2508,  274)  2A1X  3A1A  1B2X  
-    6    0.105108  ( 1625,  183)  2A1X  3A1A  1B1X  
-    7   -0.090287  (    4,    1)  2A1X  3A1A  4A1B  6A1A  
-    8   -0.076333  (    0,    6)  2A1X  3A1A  4A1A  6A1B  
-    9    0.069705  (    0,    2)  2A1A  3A1X  4A1X  
-   10   -0.053577  (   11,    1)  2A1X  4A1X  7A1A  
-   11   -0.045682  ( 1627,  185)  3A1A  4A1X  1B1X  
-   12   -0.045428  ( 2510,  276)  3A1A  4A1X  1B2X  
-   13   -0.041597  (    0,    5)  2A1A  3A1A  4A1X  5A1B  
-   14    0.041179  ( 1627,  183)  2A1B  3A1A  4A1A  1B1X  
-   15    0.041105  (    3,    1)  2A1B  3A1A  4A1X  5A1A  
-   16    0.041085  ( 2510,  274)  2A1B  3A1A  4A1A  1B2X  
-   17   -0.040009  ( 1625,  185)  2A1A  3A1A  4A1B  1B1X  
-   18   -0.039962  ( 2508,  276)  2A1A  3A1A  4A1B  1B2X  
-   19    0.039867  (    5,    1)  2A1X  4A1X  6A1A  
-   20    0.039177  ( 1783,  183)  2A1X  3A1A  1B1B  3B1A  
+   The 20 most important determinants:
 
-
-
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-  ==> Properties CI ROOT 1 <==
-
-Properties computed using the CI ROOT 1 density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     3.6631
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -4.4935
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.8304     Total:     0.8304
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -2.1108     Total:     2.1108
-
-  Quadrupole Moment: (Debye Ang)
-    XX:    -5.9694     YY:    -5.4111     ZZ:    -3.2515
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -1.0921     YY:    -0.5338     ZZ:     1.6258
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1     B     4.00424  3.00014  1.00410 -2.00438
-       2     H    -0.00010  0.01435 -0.01445  0.98575
-       3     H     0.00403  0.00332  0.00071  0.99266
-       4     H     0.00403  0.00332  0.00071  0.99266
-
-   Total alpha =  4.01219, Total beta =  3.02113, Total charge =  0.96669
-
-  Natural Orbital Occupations:
-
-  Alpha Occupations:
-  HONO-2 :    2 A1    0.984
-  HONO-1 :    3 A1    0.982
-  HONO-0 :    4 A1    0.976
-  LUNO+0 :    1 B2    0.011
-  LUNO+1 :    1 B1    0.011
-  LUNO+2 :    5 A1    0.010
-  LUNO+3 :    2 B2    0.010
-
-  Beta Occupations:
-  HONO-2 :    1 A1    1.000
-  HONO-1 :    2 A1    0.982
-  HONO-0 :    3 A1    0.963
-  LUNO+0 :    1 B2    0.011
-  LUNO+1 :    1 B1    0.011
-  LUNO+2 :    2 B2    0.010
-  LUNO+3 :    4 A1    0.009
-
-  Total Occupations:
-  HONO-2 :    1 A1    2.000
-  HONO-1 :    2 A1    1.966
-  HONO-0 :    3 A1    1.939
-  LUNO+0 :    4 A1    0.986
-  LUNO+1 :    1 B2    0.022
-  LUNO+2 :    1 B1    0.022
-  LUNO+3 :    2 B2    0.020
+    *   1    0.968523  (    0,    0)  2A1X 3A1X 4A1A 
+    *   2    0.062696  ( 1625,  184)  2A1A 3A1X 1B1X 
+    *   3    0.062572  ( 2508,  275)  2A1A 3A1X 1B2X 
+    *   4   -0.058176  (    0,    2)  2A1A 3A1X 4A1X 
+    *   5    0.055863  ( 1627,  184)  3A1X 4A1A 1B1X 
+    *   6    0.055655  ( 2510,  275)  3A1X 4A1A 1B2X 
+    *   7    0.049500  ( 2598,  287)  2A1X 4A1A 2B2X 
+    *   8    0.046794  ( 2869,  326)  2A1X 4A1A 5B2X 
+    *   9    0.042531  ( 2869,  287)  2A1X 4A1A 2B2B 5B2A 
+    *  10    0.042357  ( 2598,  326)  2A1X 4A1A 2B2A 5B2B 
+    *  11   -0.040809  (    1,    2)  2A1A 3A1X 4A1B 5A1A 
+    *  12    0.038422  (   21,   15)  2A1X 4A1A 8A1X 
+    *  13    0.038294  (    3,    4)  3A1X 4A1A 5A1X 
+    *  14    0.037945  ( 1864,  222)  2A1X 4A1A 4B1X 
+    *  15    0.031038  (  121,   45)  2A1X 4A1A 12A1X 
+    *  16   -0.030206  (   35,    2)  2A1A 3A1X 4A1B 9A1A 
+    *  17    0.027758  (   37,   22)  3A1X 4A1A 9A1X 
+    *  18    0.026935  (   37,    4)  3A1X 4A1A 5A1B 9A1A 
+    *  19    0.026868  (    3,   22)  3A1X 4A1A 5A1A 9A1B 
+    *  20    0.024829  (   37,    2)  3A1X 4A1X 9A1A 
 
 
-  ==> Properties CI ROOT 2 <==
+   ==> FCI root 1 information <==
 
-Properties computed using the CI ROOT 2 density matrix
+    FCI Root 1 energy =   -25.806152563407618
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     3.6631
+   The 20 most important determinants:
 
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0416
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     3.7047     Total:     3.7047
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     9.4164     Total:     9.4164
-
-  Quadrupole Moment: (Debye Ang)
-    XX:    -7.2279     YY:    -6.2059     ZZ:    22.0928
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Traceless Quadrupole Moment: (Debye Ang)
-    XX:   -10.1143     YY:    -9.0922     ZZ:    19.2065
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1     B     4.00424  3.00014  1.00410 -2.00438
-       2     H    -0.00010  0.01435 -0.01445  0.98575
-       3     H     0.00403  0.00332  0.00071  0.99266
-       4     H     0.00403  0.00332  0.00071  0.99266
-
-   Total alpha =  4.01219, Total beta =  3.02113, Total charge =  0.96669
-
-  Natural Orbital Occupations:
-
-  Alpha Occupations:
-  HONO-2 :    2 A1    0.997
-  HONO-1 :    3 A1    0.978
-  HONO-0 :    4 A1    0.942
-  LUNO+0 :    1 B2    0.025
-  LUNO+1 :    1 B1    0.025
-  LUNO+2 :    5 A1    0.011
-  LUNO+3 :    6 A1    0.007
-
-  Beta Occupations:
-  HONO-2 :    1 A1    1.000
-  HONO-1 :    2 A1    0.976
-  HONO-0 :    3 A1    0.941
-  LUNO+0 :    1 B2    0.026
-  LUNO+1 :    1 B1    0.025
-  LUNO+2 :    4 A1    0.011
-  LUNO+3 :    5 A1    0.007
-
-  Total Occupations:
-  HONO-2 :    1 A1    2.000
-  HONO-1 :    2 A1    1.954
-  HONO-0 :    3 A1    1.883
-  LUNO+0 :    4 A1    1.002
-  LUNO+1 :    1 B2    0.051
-  LUNO+2 :    1 B1    0.050
-  LUNO+3 :    5 A1    0.021
-
-
-  ==> Properties CI ROOT 1 -> ROOT 2 <==
-
-Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
-
-  Transition Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.6313     Total:     0.6313
-
-  Transition Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -1.6046     Total:     1.6046
-
-  Transition Quadrupole Moment: (Debye Ang)
-    XX:     0.1831     YY:     0.1242     ZZ:    -3.8651
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Traceless Transition Quadrupole Moment: (Debye Ang)
-    XX:     1.3690     YY:     1.3101     ZZ:    -2.6791
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    *   1    0.902410  (    0,    1)  2A1X 3A1A 4A1X 
+    *   2   -0.179017  (   10,    1)  2A1X 3A1A 4A1B 7A1A 
+    *   3   -0.162719  (    0,   10)  2A1X 3A1A 4A1A 7A1B 
+    *   4   -0.116670  (   21,    1)  2A1X 4A1X 8A1A 
+    *   5   -0.107055  ( 2508,  274)  2A1X 3A1A 1B2X 
+    *   6   -0.105119  ( 1625,  183)  2A1X 3A1A 1B1X 
+    *   7    0.090287  (    4,    1)  2A1X 3A1A 4A1B 6A1A 
+    *   8    0.076333  (    0,    6)  2A1X 3A1A 4A1A 6A1B 
+    *   9   -0.069672  (    0,    2)  2A1A 3A1X 4A1X 
+    *  10    0.053572  (   11,    1)  2A1X 4A1X 7A1A 
+    *  11    0.045678  ( 1627,  185)  3A1A 4A1X 1B1X 
+    *  12    0.045424  ( 2510,  276)  3A1A 4A1X 1B2X 
+    *  13    0.041606  (    0,    5)  2A1A 3A1A 4A1X 5A1B 
+    *  14   -0.041172  ( 1627,  183)  2A1B 3A1A 4A1A 1B1X 
+    *  15   -0.041111  (    3,    1)  2A1B 3A1A 4A1X 5A1A 
+    *  16   -0.041077  ( 2510,  274)  2A1B 3A1A 4A1A 1B2X 
+    *  17    0.040001  ( 1625,  185)  2A1A 3A1A 4A1B 1B1X 
+    *  18    0.039954  ( 2508,  276)  2A1A 3A1A 4A1B 1B2X 
+    *  19   -0.039868  (    5,    1)  2A1X 4A1X 6A1A 
+    *  20   -0.039177  ( 1783,  183)  2A1X 3A1A 1B1B 3B1A 
 
 		 "A good bug is a dead bug" 
 
@@ -593,15 +482,109 @@ Properties computed using the CI ROOT 1 -> ROOT 2 density matrix
 
 			 - Edward Valeev
 
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the CI density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     3.6631
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -4.4936
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.8305     Total:     0.8305
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -2.1109     Total:     2.1109
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -5.9694     YY:    -5.4110     ZZ:    -3.2513
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0921     YY:    -0.5338     ZZ:     1.6260
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+
+   ===> CI properties for all CI roots <=== 
+
+
+Properties computed using the CI ROOT 0 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     3.6631
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -4.4936
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.8305     Total:     0.8305
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -2.1109     Total:     2.1109
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -5.9694     YY:    -5.4110     ZZ:    -3.2513
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0921     YY:    -0.5338     ZZ:     1.6260
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+
+Properties computed using the CI ROOT 1 density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     3.6631
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0417
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     3.7048     Total:     3.7048
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     9.4166     Total:     9.4166
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -7.2279     YY:    -6.2059     ZZ:    22.0929
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:   -10.1143     YY:    -9.0922     ZZ:    19.2065
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+
+   ===> CI properties for all CI transition density matrices <=== 
+
+
+Properties computed using the CI ROOT 0 -> ROOT 1 density matrix
+
+  Transition Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.6313     Total:     0.6313
+
+  Transition Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -1.6045     Total:     1.6045
+
+  Transition Quadrupole Moment: (Debye Ang)
+    XX:     0.1831     YY:     0.1242     ZZ:    -3.8652
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Transition Quadrupole Moment: (Debye Ang)
+    XX:     1.3691     YY:     1.3101     ZZ:    -2.6792
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED
+	CI ROOT 0 ENERGY..................................................PASSED
 	CI ROOT 1 ENERGY..................................................PASSED
-	CI ROOT 2 ENERGY..................................................PASSED
-	CI root 1 correlation energy......................................PASSED
-	CI root 2 correlation energy......................................PASSED
+	CI ROOT 0 correlation energy......................................PASSED
+	CI ROOT 1 correlation energy......................................PASSED
 	SCF Z Component of dipole.........................................PASSED
+	CI ROOT 0 Z Component of dipole...................................PASSED
 	CI ROOT 1 Z Component of dipole...................................PASSED
-	CI ROOT 2 Z Component of dipole...................................PASSED
-	CI ROOT 1 -> ROOT 2 Z Component of dipole.........................PASSED
+	CI ROOT 0 -> ROOT 1 Z Component of dipole.........................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

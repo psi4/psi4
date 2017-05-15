@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1a2.dev267 
+                               Psi4 1.1rc3.dev5 
 
-                         Git: Rev {pbeh3c-final} ef2c4be dirty
+                         Git: Rev {master} 3fbd859 
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,15 +12,16 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    submitted.
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 28 February 2017 07:38PM
+    Psi4 started on: Monday, 15 May 2017 03:33PM
 
-    Process ID:   6588
-    PSIDATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4
+    Process ID:  11962
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -28,8 +29,6 @@
 
 --------------------------------------------------------------------------
 #! Verify HF-3c method over S22
-
-memory 200 mb
 
 def ie(es):
     return es[0] - es[1] - es[2]
@@ -148,8 +147,6 @@ for rxn in [4, 8, 16, 20]:
         EE = energy('hf3c/minix', molecule=di, bsse_type='nocp')
         compare_values(orca22[rxn-1], EE, digits, ' " hf-3c/minix')  #TEST
 --------------------------------------------------------------------------
-
-  Memory set to 200.000 MiB by Python script.
 
   ==> DFTD3 Output <==
   _________________________________
@@ -677,14 +674,24 @@ cpu-time for gCP    0.0 s
 	S22-4 mb gcp......................................................PASSED
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:15 2017
+*** at Mon May 15 15:33:55 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 7       entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2, 8       entry O          line   101 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 3, 9       entry N          line    87 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 4-6, 10-12 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -734,7 +741,8 @@ cpu-time for gCP    0.0 s
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 24
     Number of basis function: 36
     Number of Cartesian functions: 36
@@ -776,7 +784,7 @@ cpu-time for gCP    0.0 s
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -789,16 +797,16 @@ cpu-time for gCP    0.0 s
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -336.23441672694906   -3.36234e+02   2.01051e-01 
-   @RHF iter   1:  -335.31238827080813    9.22028e-01   2.31310e-02 
-   @RHF iter   2:  -335.44612108083390   -1.33733e-01   1.32536e-02 DIIS
-   @RHF iter   3:  -335.49027740762176   -4.41563e-02   2.12168e-03 DIIS
-   @RHF iter   4:  -335.49325424744376   -2.97684e-03   6.15067e-04 DIIS
-   @RHF iter   5:  -335.49347620657318   -2.21959e-04   2.11367e-04 DIIS
-   @RHF iter   6:  -335.49351599839127   -3.97918e-05   5.62471e-05 DIIS
-   @RHF iter   7:  -335.49351789290870   -1.89452e-06   1.82792e-05 DIIS
-   @RHF iter   8:  -335.49351812331963   -2.30411e-07   3.29904e-06 DIIS
-   @RHF iter   9:  -335.49351813100759   -7.68796e-09   2.42293e-07 DIIS
+   @RHF iter   0:  -336.23441672694941   -3.36234e+02   2.01051e-01 
+   @RHF iter   1:  -335.31238827080858    9.22028e-01   2.31310e-02 
+   @RHF iter   2:  -335.44612108083373   -1.33733e-01   1.32536e-02 DIIS
+   @RHF iter   3:  -335.49027740762222   -4.41563e-02   2.12168e-03 DIIS
+   @RHF iter   4:  -335.49325424744387   -2.97684e-03   6.15067e-04 DIIS
+   @RHF iter   5:  -335.49347620657358   -2.21959e-04   2.11367e-04 DIIS
+   @RHF iter   6:  -335.49351599839122   -3.97918e-05   5.62471e-05 DIIS
+   @RHF iter   7:  -335.49351789290893   -1.89452e-06   1.82792e-05 DIIS
+   @RHF iter   8:  -335.49351812331969   -2.30411e-07   3.29904e-06 DIIS
+   @RHF iter   9:  -335.49351813100782   -7.68813e-09   2.42293e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -829,20 +837,20 @@ cpu-time for gCP    0.0 s
 
   Energy converged.
 
-  @RHF Final Energy:  -335.49351813100759
+  @RHF Final Energy:  -335.49351813100782
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            230.7948552086490679
-    One-Electron Energy =                -917.7292607577668377
-    Two-Electron Energy =                 351.4408874181101510
+    One-Electron Energy =                -917.7292607577667241
+    Two-Electron Energy =                 351.4408874181098099
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -335.4935181310075905
+    Total Energy =                       -335.4935181310078178
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -861,25 +869,35 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:16 2017
+*** tstop() called on psinet at Mon May 15 15:33:56 2017
 Module time:
-	user time   =       0.69 seconds =       0.01 minutes
+	user time   =       1.11 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.69 seconds =       0.01 minutes
+	user time   =       1.11 seconds =       0.02 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:16 2017
+*** at Mon May 15 15:33:56 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2   entry O          line   101 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 3   entry N          line    87 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 4-6 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -923,7 +941,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 12
     Number of basis function: 18
     Number of Cartesian functions: 18
@@ -963,7 +982,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -976,16 +995,16 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -168.08588865844374   -1.68086e+02   2.00560e-01 
-   @RHF iter   1:  -167.62583341491489    4.60055e-01   2.47632e-02 
+   @RHF iter   0:  -168.08588865844379   -1.68086e+02   2.00560e-01 
+   @RHF iter   1:  -167.62583341491506    4.60055e-01   2.47632e-02 
    @RHF iter   2:  -167.70243926766415   -7.66059e-02   1.56986e-02 DIIS
-   @RHF iter   3:  -167.73344674090995   -3.10075e-02   2.19682e-03 DIIS
-   @RHF iter   4:  -167.73514288776636   -1.69615e-03   5.45020e-04 DIIS
-   @RHF iter   5:  -167.73525323738468   -1.10350e-04   1.63347e-04 DIIS
-   @RHF iter   6:  -167.73526249627616   -9.25889e-06   4.99453e-05 DIIS
-   @RHF iter   7:  -167.73526312649051   -6.30214e-07   1.77933e-05 DIIS
-   @RHF iter   8:  -167.73526323002085   -1.03530e-07   3.45008e-06 DIIS
-   @RHF iter   9:  -167.73526323392855   -3.90770e-09   2.07986e-07 DIIS
+   @RHF iter   3:  -167.73344674090981   -3.10075e-02   2.19682e-03 DIIS
+   @RHF iter   4:  -167.73514288776613   -1.69615e-03   5.45020e-04 DIIS
+   @RHF iter   5:  -167.73525323738477   -1.10350e-04   1.63347e-04 DIIS
+   @RHF iter   6:  -167.73526249627596   -9.25889e-06   4.99453e-05 DIIS
+   @RHF iter   7:  -167.73526312649065   -6.30215e-07   1.77933e-05 DIIS
+   @RHF iter   8:  -167.73526323002071   -1.03530e-07   3.45008e-06 DIIS
+   @RHF iter   9:  -167.73526323392852   -3.90781e-09   2.07986e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -1010,20 +1029,20 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:  -167.73526323392855
+  @RHF Final Energy:  -167.73526323392852
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             71.0728637475374398
-    One-Electron Energy =                -370.1165462949331868
-    Two-Electron Energy =                 131.3084193134671978
+    One-Electron Energy =                -370.1165462949330731
+    Two-Electron Energy =                 131.3084193134671125
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -167.7352632339285492
+    Total Energy =                       -167.7352632339285208
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1042,25 +1061,35 @@ Properties computed using the SCF density matrix
      X:    -0.7727      Y:    -3.7392      Z:     0.0000     Total:     3.8182
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:16 2017
+*** tstop() called on psinet at Mon May 15 15:33:57 2017
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.05 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.64 seconds =       0.03 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:16 2017
+*** at Mon May 15 15:33:57 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2   entry O          line   101 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 3   entry N          line    87 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 4-6 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1104,7 +1133,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 12
     Number of basis function: 18
     Number of Cartesian functions: 18
@@ -1144,7 +1174,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -1157,16 +1187,16 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -168.08588865844374   -1.68086e+02   2.00560e-01 
-   @RHF iter   1:  -167.62583341491489    4.60055e-01   2.47632e-02 
+   @RHF iter   0:  -168.08588865844379   -1.68086e+02   2.00560e-01 
+   @RHF iter   1:  -167.62583341491506    4.60055e-01   2.47632e-02 
    @RHF iter   2:  -167.70243926766415   -7.66059e-02   1.56986e-02 DIIS
-   @RHF iter   3:  -167.73344674090995   -3.10075e-02   2.19682e-03 DIIS
-   @RHF iter   4:  -167.73514288776636   -1.69615e-03   5.45020e-04 DIIS
-   @RHF iter   5:  -167.73525323738468   -1.10350e-04   1.63347e-04 DIIS
-   @RHF iter   6:  -167.73526249627616   -9.25889e-06   4.99453e-05 DIIS
-   @RHF iter   7:  -167.73526312649051   -6.30214e-07   1.77933e-05 DIIS
-   @RHF iter   8:  -167.73526323002085   -1.03530e-07   3.45008e-06 DIIS
-   @RHF iter   9:  -167.73526323392855   -3.90770e-09   2.07986e-07 DIIS
+   @RHF iter   3:  -167.73344674090981   -3.10075e-02   2.19682e-03 DIIS
+   @RHF iter   4:  -167.73514288776613   -1.69615e-03   5.45020e-04 DIIS
+   @RHF iter   5:  -167.73525323738477   -1.10350e-04   1.63347e-04 DIIS
+   @RHF iter   6:  -167.73526249627596   -9.25889e-06   4.99453e-05 DIIS
+   @RHF iter   7:  -167.73526312649065   -6.30215e-07   1.77933e-05 DIIS
+   @RHF iter   8:  -167.73526323002071   -1.03530e-07   3.45008e-06 DIIS
+   @RHF iter   9:  -167.73526323392852   -3.90781e-09   2.07986e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -1191,20 +1221,20 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:  -167.73526323392855
+  @RHF Final Energy:  -167.73526323392852
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             71.0728637475374398
-    One-Electron Energy =                -370.1165462949331868
-    Two-Electron Energy =                 131.3084193134671978
+    One-Electron Energy =                -370.1165462949330731
+    Two-Electron Energy =                 131.3084193134671125
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -167.7352632339285492
+    Total Energy =                       -167.7352632339285208
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1223,14 +1253,14 @@ Properties computed using the SCF density matrix
      X:     0.7727      Y:     3.7392      Z:     0.0000     Total:     3.8182
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:17 2017
+*** tstop() called on psinet at Mon May 15 15:33:57 2017
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.41 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       2.23 seconds =       0.04 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 	S22-4 di hf/minix.................................................PASSED
 	S22-4 ma hf/minix.................................................PASSED
@@ -1714,14 +1744,22 @@ cpu-time for gCP    0.0 s
 
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:17 2017
+*** at Mon May 15 15:33:57 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 6      entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5, 7-10 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1769,7 +1807,8 @@ cpu-time for gCP    0.0 s
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 14
     Number of basis function: 18
     Number of Cartesian functions: 18
@@ -1811,7 +1850,7 @@ cpu-time for gCP    0.0 s
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -1826,12 +1865,12 @@ cpu-time for gCP    0.0 s
 
    @RHF iter   0:   -78.93785793309367   -7.89379e+01   1.99941e-01 
    @RHF iter   1:   -79.82646470855624   -8.88607e-01   2.15180e-02 
-   @RHF iter   2:   -79.87201739055421   -4.55527e-02   5.04122e-03 DIIS
-   @RHF iter   3:   -79.87447005555168   -2.45266e-03   5.38555e-04 DIIS
-   @RHF iter   4:   -79.87449678728964   -2.67317e-05   1.08671e-04 DIIS
-   @RHF iter   5:   -79.87449809946132   -1.31217e-06   9.44701e-06 DIIS
-   @RHF iter   6:   -79.87449810947669   -1.00154e-08   1.12108e-06 DIIS
-   @RHF iter   7:   -79.87449810960315   -1.26462e-10   4.23713e-08 DIIS
+   @RHF iter   2:   -79.87201739055422   -4.55527e-02   5.04122e-03 DIIS
+   @RHF iter   3:   -79.87447005555171   -2.45266e-03   5.38555e-04 DIIS
+   @RHF iter   4:   -79.87449678728959   -2.67317e-05   1.08671e-04 DIIS
+   @RHF iter   5:   -79.87449809946139   -1.31217e-06   9.44701e-06 DIIS
+   @RHF iter   6:   -79.87449810947678   -1.00154e-08   1.12108e-06 DIIS
+   @RHF iter   7:   -79.87449810960317   -1.26391e-10   4.23713e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1857,20 +1896,20 @@ cpu-time for gCP    0.0 s
 
   Energy converged.
 
-  @RHF Final Energy:   -79.87449810960315
+  @RHF Final Energy:   -79.87449810960317
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             41.0002637952633222
-    One-Electron Energy =                -186.9083111799282619
-    Two-Electron Energy =                  66.0335492750617874
+    One-Electron Energy =                -186.9083111799282335
+    Two-Electron Energy =                  66.0335492750617448
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -79.8744981096031523
+    Total Energy =                        -79.8744981096031665
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1889,25 +1928,33 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:17 2017
+*** tstop() called on psinet at Mon May 15 15:33:58 2017
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
+	user time   =       0.61 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.81 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.87 seconds =       0.05 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:17 2017
+*** at Mon May 15 15:33:58 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1950,7 +1997,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 7
     Number of basis function: 9
     Number of Cartesian functions: 9
@@ -1990,7 +2038,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -2003,14 +2051,14 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -39.46890210286389   -3.94689e+01   1.99946e-01 
-   @RHF iter   1:   -39.91350196336104   -4.44600e-01   2.14689e-02 
-   @RHF iter   2:   -39.93621455001625   -2.27126e-02   5.00959e-03 DIIS
-   @RHF iter   3:   -39.93741934307924   -1.20479e-03   5.33935e-04 DIIS
-   @RHF iter   4:   -39.93743245529920   -1.31122e-05   1.09147e-04 DIIS
-   @RHF iter   5:   -39.93743311989883   -6.64600e-07   8.85687e-06 DIIS
-   @RHF iter   6:   -39.93743312425376   -4.35492e-09   1.16518e-06 DIIS
-   @RHF iter   7:   -39.93743312432282   -6.90648e-11   2.23790e-08 DIIS
+   @RHF iter   0:   -39.46890210286391   -3.94689e+01   1.99946e-01 
+   @RHF iter   1:   -39.91350196336102   -4.44600e-01   2.14689e-02 
+   @RHF iter   2:   -39.93621455001622   -2.27126e-02   5.00959e-03 DIIS
+   @RHF iter   3:   -39.93741934307925   -1.20479e-03   5.33935e-04 DIIS
+   @RHF iter   4:   -39.93743245529919   -1.31122e-05   1.09147e-04 DIIS
+   @RHF iter   5:   -39.93743311989882   -6.64600e-07   8.85687e-06 DIIS
+   @RHF iter   6:   -39.93743312425373   -4.35491e-09   1.16518e-06 DIIS
+   @RHF iter   7:   -39.93743312432282   -6.90861e-11   2.23790e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2038,15 +2086,15 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =             13.4480422655584029
-    One-Electron Energy =                 -79.3421413338246282
-    Two-Electron Energy =                  25.9566659439434027
+    One-Electron Energy =                 -79.3421413338246424
+    Two-Electron Energy =                  25.9566659439434275
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -39.9374331243228227
+    Total Energy =                        -39.9374331243228156
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2065,25 +2113,33 @@ Properties computed using the SCF density matrix
      X:    -0.0002      Y:     0.0018      Z:     0.0000     Total:     0.0018
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:17 2017
+*** tstop() called on psinet at Mon May 15 15:33:58 2017
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.05 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       3.23 seconds =       0.05 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:17 2017
+*** at Mon May 15 15:33:58 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2126,7 +2182,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 7
     Number of basis function: 9
     Number of Cartesian functions: 9
@@ -2166,7 +2223,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -2179,14 +2236,14 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -39.46890210286389   -3.94689e+01   1.99946e-01 
-   @RHF iter   1:   -39.91350196336106   -4.44600e-01   2.14689e-02 
-   @RHF iter   2:   -39.93621455001626   -2.27126e-02   5.00959e-03 DIIS
-   @RHF iter   3:   -39.93741934307928   -1.20479e-03   5.33935e-04 DIIS
+   @RHF iter   0:   -39.46890210286391   -3.94689e+01   1.99946e-01 
+   @RHF iter   1:   -39.91350196336109   -4.44600e-01   2.14689e-02 
+   @RHF iter   2:   -39.93621455001625   -2.27126e-02   5.00959e-03 DIIS
+   @RHF iter   3:   -39.93741934307930   -1.20479e-03   5.33935e-04 DIIS
    @RHF iter   4:   -39.93743245529920   -1.31122e-05   1.09147e-04 DIIS
-   @RHF iter   5:   -39.93743311989886   -6.64600e-07   8.85687e-06 DIIS
-   @RHF iter   6:   -39.93743312425377   -4.35492e-09   1.16518e-06 DIIS
-   @RHF iter   7:   -39.93743312432282   -6.90505e-11   2.23790e-08 DIIS
+   @RHF iter   5:   -39.93743311989888   -6.64600e-07   8.85687e-06 DIIS
+   @RHF iter   6:   -39.93743312425376   -4.35487e-09   1.16518e-06 DIIS
+   @RHF iter   7:   -39.93743312432284   -6.90790e-11   2.23790e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2209,20 +2266,20 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -39.93743312432282
+  @RHF Final Energy:   -39.93743312432284
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             13.4480422655584029
-    One-Electron Energy =                 -79.3421413338246708
-    Two-Electron Energy =                  25.9566659439434488
+    One-Electron Energy =                 -79.3421413338246992
+    Two-Electron Energy =                  25.9566659439434666
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -39.9374331243228227
+    Total Energy =                        -39.9374331243228369
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2241,15 +2298,15 @@ Properties computed using the SCF density matrix
      X:     0.0002      Y:    -0.0018      Z:     0.0000     Total:     0.0018
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:18 2017
+*** tstop() called on psinet at Mon May 15 15:33:59 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
+	user time   =       0.35 seconds =       0.01 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.28 seconds =       0.04 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.60 seconds =       0.06 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 	HF-3c for S22-8...................................................PASSED
 
 
@@ -2265,14 +2322,22 @@ Total time:
 
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:18 2017
+*** at Mon May 15 15:33:59 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2315,7 +2380,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 7
     Number of basis function: 9
     Number of Cartesian functions: 9
@@ -2329,8 +2395,8 @@ Total time:
 
         S6 =   1.000000E+00
         S8 =   8.777000E-01
-        A2 =   2.914900E+00
         A1 =   4.171000E-01
+        A2 =   2.914900E+00
 
   ==> Pre-Iterations <==
 
@@ -2365,7 +2431,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -2379,13 +2445,213 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RKS iter   0:   -39.47113677316391   -3.94711e+01   1.99946e-01 
-   @RKS iter   1:   -39.91573663366102   -4.44600e-01   2.14689e-02 
-   @RKS iter   2:   -39.93844922031625   -2.27126e-02   5.00959e-03 DIIS
-   @RKS iter   3:   -39.93965401337927   -1.20479e-03   5.33935e-04 DIIS
-   @RKS iter   4:   -39.93966712559915   -1.31122e-05   1.09147e-04 DIIS
+   @RKS iter   1:   -39.91573663366101   -4.44600e-01   2.14689e-02 
+   @RKS iter   2:   -39.93844922031622   -2.27126e-02   5.00959e-03 DIIS
+   @RKS iter   3:   -39.93965401337925   -1.20479e-03   5.33935e-04 DIIS
+   @RKS iter   4:   -39.93966712559914   -1.31122e-05   1.09147e-04 DIIS
    @RKS iter   5:   -39.93966779019883   -6.64600e-07   8.85687e-06 DIIS
-   @RKS iter   6:   -39.93966779455372   -4.35489e-09   1.16518e-06 DIIS
-   @RKS iter   7:   -39.93966779462279   -6.90719e-11   2.23790e-08 DIIS
+   @RKS iter   6:   -39.93966779455374   -4.35491e-09   1.16518e-06 DIIS
+   @RKS iter   7:   -39.93966779462283   -6.90861e-11   2.23790e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -11.133202     2Ap    -0.942549     3Ap    -0.546481  
+       4Ap    -0.546118     1App   -0.546055  
+
+    Virtual:                                                              
+
+       2App    0.701551     5Ap     0.701702     6Ap     0.702523  
+       7Ap     0.786819  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -39.93966779462283
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             13.4480422655584029
+    One-Electron Energy =                 -79.3421413338246708
+    Two-Electron Energy =                  25.9566659439434453
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =          -0.0022346703000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -39.9396677946228209
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0003      Y:    -0.0029      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0002      Y:     0.0022      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0001      Y:    -0.0007      Z:     0.0000     Total:     0.0007
+
+  Dipole Moment: (Debye)
+     X:     0.0002      Y:    -0.0018      Z:     0.0000     Total:     0.0018
+
+
+*** tstop() called on psinet at Mon May 15 15:33:59 2017
+Module time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       3.96 seconds =       0.07 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+       N-Body: Complex Energy (fragments = (2,), basis = (2,):   -39.93966779462283)
+
+       N-Body: Computing complex (2/2) with fragments (1,) in the basis of fragments (1,).
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:33:59 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000027032415    -0.000259133991     0.000000000000    12.000000000000
+           H         -0.513172967585     0.364216866009    -0.888551000000     1.007825032070
+           H         -0.513172967585     0.364216866009     0.888551000000     1.007825032070
+           H          1.026226032415     0.364033866009     0.000000000000     1.007825032070
+           H         -0.000201967585    -1.089382133991     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      5.29515  B =      5.28720  C =      5.28589 [cm^-1]
+  Rotational constants: A = 158744.65592  B = 158506.31590  C = 158466.88882 [MHz]
+  Nuclear repulsion =   13.448042265558403
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: MINIX
+    Blend: MINIX
+    Number of shells: 7
+    Number of basis function: 9
+    Number of Cartesian functions: 9
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => -D3BJ: Empirical Dispersion <=
+
+    Grimme's -D3 (BJ-damping) Dispersion Correction
+    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
+
+        S6 =   1.000000E+00
+        S8 =   8.777000E-01
+        A1 =   4.171000E-01
+        A2 =   2.914900E+00
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         7       7       0       0       0       0
+     A"         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       9       9       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   5
+      Number of AO shells:               7
+      Number of primitives:             21
+      Number of atomic orbitals:         9
+      Number of basis functions:         9
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 2070 doubles for integral storage.
+  We computed 406 shell quartets total.
+  Whereas there are 406 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 2.1546116613E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RKS iter   0:   -39.47113677316391   -3.94711e+01   1.99946e-01 
+   @RKS iter   1:   -39.91573663366098   -4.44600e-01   2.14689e-02 
+   @RKS iter   2:   -39.93844922031623   -2.27126e-02   5.00959e-03 DIIS
+   @RKS iter   3:   -39.93965401337923   -1.20479e-03   5.33935e-04 DIIS
+   @RKS iter   4:   -39.93966712559913   -1.31122e-05   1.09147e-04 DIIS
+   @RKS iter   5:   -39.93966779019883   -6.64600e-07   8.85687e-06 DIIS
+   @RKS iter   6:   -39.93966779455376   -4.35493e-09   1.16518e-06 DIIS
+   @RKS iter   7:   -39.93966779462279   -6.90363e-11   2.23790e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2413,204 +2679,13 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =             13.4480422655584029
-    One-Electron Energy =                 -79.3421413338246282
-    Two-Electron Energy =                  25.9566659439434382
+    One-Electron Energy =                 -79.3421413338246140
+    Two-Electron Energy =                  25.9566659439434240
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =          -0.0022346703000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
     Total Energy =                        -39.9396677946227925
-
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0003      Y:    -0.0029      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0002      Y:     0.0022      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0001      Y:    -0.0007      Z:     0.0000     Total:     0.0007
-
-  Dipole Moment: (Debye)
-     X:     0.0002      Y:    -0.0018      Z:     0.0000     Total:     0.0018
-
-
-*** tstop() called on psinet at Tue Feb 28 19:38:18 2017
-Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       2.52 seconds =       0.04 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
-
-       N-Body: Complex Energy (fragments = (2,), basis = (2,):   -39.93966779462279)
-
-       N-Body: Computing complex (2/2) with fragments (1,) in the basis of fragments (1,).
-
-
-*** tstart() called on psinet
-*** at Tue Feb 28 19:38:18 2017
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RKS Reference
-                        1 Threads,    200 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: cs
-    Full point group: Cs
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000027032415    -0.000259133991     0.000000000000    12.000000000000
-           H         -0.513172967585     0.364216866009    -0.888551000000     1.007825032070
-           H         -0.513172967585     0.364216866009     0.888551000000     1.007825032070
-           H          1.026226032415     0.364033866009     0.000000000000     1.007825032070
-           H         -0.000201967585    -1.089382133991     0.000000000000     1.007825032070
-
-  Running in cs symmetry.
-
-  Rotational constants: A =      5.29515  B =      5.28720  C =      5.28589 [cm^-1]
-  Rotational constants: A = 158744.65592  B = 158506.31590  C = 158466.88882 [MHz]
-  Nuclear repulsion =   13.448042265558403
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
-  Nalpha       = 5
-  Nbeta        = 5
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is SAD.
-  Energy threshold   = 1.00e-06
-  Density threshold  = 1.00e-06
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
-    Number of shells: 7
-    Number of basis function: 9
-    Number of Cartesian functions: 9
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-   => -D3BJ: Empirical Dispersion <=
-
-    Grimme's -D3 (BJ-damping) Dispersion Correction
-    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
-
-        S6 =   1.000000E+00
-        S8 =   8.777000E-01
-        A2 =   2.914900E+00
-        A1 =   4.171000E-01
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'         7       7       0       0       0       0
-     A"         2       2       0       0       0       0
-   -------------------------------------------------------
-    Total       9       9       5       5       5       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-  Using in-core PK algorithm.
-   Calculation information:
-      Number of atoms:                   5
-      Number of AO shells:               7
-      Number of primitives:             21
-      Number of atomic orbitals:         9
-      Number of basis functions:         9
-
-      Integral cutoff                 1.00e-12
-      Number of threads:                 1
-
-  Performing in-core PK
-  Using 2070 doubles for integral storage.
-  We computed 406 shell quartets total.
-  Whereas there are 406 unique shell quartets.
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               143
-    Schwarz Cutoff:          1E-12
-
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.1546116613E-01.
-  Using Symmetric Orthogonalization.
-
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @RKS iter   0:   -39.47113677316389   -3.94711e+01   1.99946e-01 
-   @RKS iter   1:   -39.91573663366097   -4.44600e-01   2.14689e-02 
-   @RKS iter   2:   -39.93844922031618   -2.27126e-02   5.00959e-03 DIIS
-   @RKS iter   3:   -39.93965401337923   -1.20479e-03   5.33935e-04 DIIS
-   @RKS iter   4:   -39.93966712559914   -1.31122e-05   1.09147e-04 DIIS
-   @RKS iter   5:   -39.93966779019883   -6.64600e-07   8.85687e-06 DIIS
-   @RKS iter   6:   -39.93966779455373   -4.35490e-09   1.16518e-06 DIIS
-   @RKS iter   7:   -39.93966779462278   -6.90434e-11   2.23790e-08 DIIS
-
-  ==> Post-Iterations <==
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Doubly Occupied:                                                      
-
-       1Ap   -11.133202     2Ap    -0.942549     3Ap    -0.546481  
-       4Ap    -0.546118     1App   -0.546055  
-
-    Virtual:                                                              
-
-       2App    0.701551     5Ap     0.701702     6Ap     0.702523  
-       7Ap     0.786819  
-
-    Final Occupation by Irrep:
-             Ap   App 
-    DOCC [     4,    1 ]
-
-  Energy converged.
-
-  @RKS Final Energy:   -39.93966779462278
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             13.4480422655584029
-    One-Electron Energy =                 -79.3421413338245856
-    Two-Electron Energy =                  25.9566659439434098
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =          -0.0022346703000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -39.9396677946227783
 
 
 
@@ -2631,17 +2706,17 @@ Properties computed using the SCF density matrix
      X:    -0.0002      Y:     0.0018      Z:     0.0000     Total:     0.0018
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:18 2017
+*** tstop() called on psinet at Mon May 15 15:33:59 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.76 seconds =       0.05 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       4.33 seconds =       0.07 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
-       N-Body: Complex Energy (fragments = (1,), basis = (1,):   -39.93966779462278)
+       N-Body: Complex Energy (fragments = (1,), basis = (1,):   -39.93966779462279)
 
    ==> N-Body: Now computing 2-body complexes <==
 
@@ -2650,14 +2725,22 @@ Total time:
 
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:18 2017
+*** at Mon May 15 15:33:59 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 6      entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5, 7-10 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2705,7 +2788,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 14
     Number of basis function: 18
     Number of Cartesian functions: 18
@@ -2719,8 +2803,8 @@ Total time:
 
         S6 =   1.000000E+00
         S8 =   8.777000E-01
-        A2 =   2.914900E+00
         A1 =   4.171000E-01
+        A2 =   2.914900E+00
 
   ==> Pre-Iterations <==
 
@@ -2757,7 +2841,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -2771,13 +2855,651 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RKS iter   0:   -78.94360206099367   -7.89436e+01   1.99941e-01 
-   @RKS iter   1:   -79.83220883645622   -8.88607e-01   2.15180e-02 
-   @RKS iter   2:   -79.87776151845419   -4.55527e-02   5.04122e-03 DIIS
-   @RKS iter   3:   -79.88021418345167   -2.45266e-03   5.38555e-04 DIIS
+   @RKS iter   1:   -79.83220883645625   -8.88607e-01   2.15180e-02 
+   @RKS iter   2:   -79.87776151845426   -4.55527e-02   5.04122e-03 DIIS
+   @RKS iter   3:   -79.88021418345166   -2.45266e-03   5.38555e-04 DIIS
    @RKS iter   4:   -79.88024091518962   -2.67317e-05   1.08671e-04 DIIS
-   @RKS iter   5:   -79.88024222736132   -1.31217e-06   9.44701e-06 DIIS
-   @RKS iter   6:   -79.88024223737669   -1.00154e-08   1.12108e-06 DIIS
-   @RKS iter   7:   -79.88024223750313   -1.26434e-10   4.23713e-08 DIIS
+   @RKS iter   5:   -79.88024222736141   -1.31217e-06   9.44701e-06 DIIS
+   @RKS iter   6:   -79.88024223737675   -1.00153e-08   1.12108e-06 DIIS
+   @RKS iter   7:   -79.88024223750310   -1.26349e-10   4.23713e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Bu   -11.132455     1Ag   -11.132405     2Ag    -0.944217  
+       2Bu    -0.939275     3Ag    -0.551725     3Bu    -0.547807  
+       1Au    -0.547744     4Ag    -0.542874     1Bg    -0.542809  
+       4Bu    -0.539295  
+
+    Virtual:                                                              
+
+       5Ag     0.697328     2Au     0.700467     5Bu     0.700619  
+       2Bg     0.704210     6Ag     0.704361     6Bu     0.709597  
+       7Ag     0.783295     7Bu     0.792040  
+
+    Final Occupation by Irrep:
+             Ag    Bg    Au    Bu 
+    DOCC [     4,    1,    1,    4 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -79.88024223750310
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             41.0002637952633151
+    One-Electron Energy =                -186.9083111799280914
+    Two-Electron Energy =                  66.0335492750616737
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =          -0.0057441279000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -79.8802422375030972
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon May 15 15:34:00 2017
+Module time:
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       4.95 seconds =       0.08 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+       N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):   -79.88024223750310)
+
+   ==> N-Body: Non-Counterpoise Corrected (NoCP)  energies <==
+
+   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]
+        1      -79.879335589246        0.000000000000        0.000000000000
+        2      -79.880242237503       -0.568930394730       -0.568930394730
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 6      entry C          line    60 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-5, 7-10 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+
+	 " hf-3c..........................................................PASSED
+
+
+   ===> N-Body Interaction Abacus <===
+        BSSE Treatment:                     nocp
+        Number of 1-body computations:     2
+        Number of 2-body computations:     1
+
+   ==> N-Body: Now computing 1-body complexes <==
+
+
+       N-Body: Computing complex (1/2) with fragments (2,) in the basis of fragments (2,).
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:00 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C         -0.000027032415     0.000259133991     0.000000000000    12.000000000000
+           H          0.000201967585     1.089382133991     0.000000000000     1.007825032070
+           H          0.513172967585    -0.364216866009    -0.888551000000     1.007825032070
+           H          0.513172967585    -0.364216866009     0.888551000000     1.007825032070
+           H         -1.026226032415    -0.364033866009     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      5.29515  B =      5.28720  C =      5.28589 [cm^-1]
+  Rotational constants: A = 158744.65592  B = 158506.31590  C = 158466.88882 [MHz]
+  Nuclear repulsion =   13.448042265558403
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: MINIX
+    Blend: MINIX
+    Number of shells: 7
+    Number of basis function: 9
+    Number of Cartesian functions: 9
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => -D3BJ: Empirical Dispersion <=
+
+    Grimme's -D3 (BJ-damping) Dispersion Correction
+    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
+
+        S6 =   1.000000E+00
+        S8 =   8.777000E-01
+        A1 =   4.171000E-01
+        A2 =   2.914900E+00
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         7       7       0       0       0       0
+     A"         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       9       9       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   5
+      Number of AO shells:               7
+      Number of primitives:             21
+      Number of atomic orbitals:         9
+      Number of basis functions:         9
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 2070 doubles for integral storage.
+  We computed 406 shell quartets total.
+  Whereas there are 406 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 2.1546116613E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RKS iter   0:   -39.47113677316391   -3.94711e+01   1.99946e-01 
+   @RKS iter   1:   -39.91573663366106   -4.44600e-01   2.14689e-02 
+   @RKS iter   2:   -39.93844922031624   -2.27126e-02   5.00959e-03 DIIS
+   @RKS iter   3:   -39.93965401337925   -1.20479e-03   5.33935e-04 DIIS
+   @RKS iter   4:   -39.93966712559920   -1.31122e-05   1.09147e-04 DIIS
+   @RKS iter   5:   -39.93966779019887   -6.64600e-07   8.85687e-06 DIIS
+   @RKS iter   6:   -39.93966779455373   -4.35486e-09   1.16518e-06 DIIS
+   @RKS iter   7:   -39.93966779462279   -6.90648e-11   2.23790e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -11.133202     2Ap    -0.942549     3Ap    -0.546481  
+       4Ap    -0.546118     1App   -0.546055  
+
+    Virtual:                                                              
+
+       2App    0.701551     5Ap     0.701702     6Ap     0.702523  
+       7Ap     0.786819  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -39.93966779462279
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             13.4480422655584029
+    One-Electron Energy =                 -79.3421413338246424
+    Two-Electron Energy =                  25.9566659439434488
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =          -0.0022346703000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -39.9396677946227925
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0003      Y:    -0.0029      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0002      Y:     0.0022      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0001      Y:    -0.0007      Z:     0.0000     Total:     0.0007
+
+  Dipole Moment: (Debye)
+     X:     0.0002      Y:    -0.0018      Z:     0.0000     Total:     0.0018
+
+
+*** tstop() called on psinet at Mon May 15 15:34:01 2017
+Module time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       5.44 seconds =       0.09 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+       N-Body: Complex Energy (fragments = (2,), basis = (2,):   -39.93966779462279)
+
+       N-Body: Computing complex (2/2) with fragments (1,) in the basis of fragments (1,).
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:01 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000027032415    -0.000259133991     0.000000000000    12.000000000000
+           H         -0.513172967585     0.364216866009    -0.888551000000     1.007825032070
+           H         -0.513172967585     0.364216866009     0.888551000000     1.007825032070
+           H          1.026226032415     0.364033866009     0.000000000000     1.007825032070
+           H         -0.000201967585    -1.089382133991     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      5.29515  B =      5.28720  C =      5.28589 [cm^-1]
+  Rotational constants: A = 158744.65592  B = 158506.31590  C = 158466.88882 [MHz]
+  Nuclear repulsion =   13.448042265558403
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: MINIX
+    Blend: MINIX
+    Number of shells: 7
+    Number of basis function: 9
+    Number of Cartesian functions: 9
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => -D3BJ: Empirical Dispersion <=
+
+    Grimme's -D3 (BJ-damping) Dispersion Correction
+    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
+
+        S6 =   1.000000E+00
+        S8 =   8.777000E-01
+        A1 =   4.171000E-01
+        A2 =   2.914900E+00
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         7       7       0       0       0       0
+     A"         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       9       9       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   5
+      Number of AO shells:               7
+      Number of primitives:             21
+      Number of atomic orbitals:         9
+      Number of basis functions:         9
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 2070 doubles for integral storage.
+  We computed 406 shell quartets total.
+  Whereas there are 406 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 2.1546116613E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RKS iter   0:   -39.47113677316391   -3.94711e+01   1.99946e-01 
+   @RKS iter   1:   -39.91573663366106   -4.44600e-01   2.14689e-02 
+   @RKS iter   2:   -39.93844922031626   -2.27126e-02   5.00959e-03 DIIS
+   @RKS iter   3:   -39.93965401337931   -1.20479e-03   5.33935e-04 DIIS
+   @RKS iter   4:   -39.93966712559921   -1.31122e-05   1.09147e-04 DIIS
+   @RKS iter   5:   -39.93966779019888   -6.64600e-07   8.85687e-06 DIIS
+   @RKS iter   6:   -39.93966779455378   -4.35490e-09   1.16518e-06 DIIS
+   @RKS iter   7:   -39.93966779462281   -6.90363e-11   2.23790e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -11.133202     2Ap    -0.942549     3Ap    -0.546481  
+       4Ap    -0.546118     1App   -0.546055  
+
+    Virtual:                                                              
+
+       2App    0.701551     5Ap     0.701702     6Ap     0.702523  
+       7Ap     0.786819  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -39.93966779462281
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             13.4480422655584029
+    One-Electron Energy =                 -79.3421413338246566
+    Two-Electron Energy =                  25.9566659439434417
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =          -0.0022346703000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -39.9396677946228138
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0003      Y:     0.0029      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0002      Y:    -0.0022      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.0001      Y:     0.0007      Z:     0.0000     Total:     0.0007
+
+  Dipole Moment: (Debye)
+     X:    -0.0002      Y:     0.0018      Z:     0.0000     Total:     0.0018
+
+
+*** tstop() called on psinet at Mon May 15 15:34:01 2017
+Module time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       5.80 seconds =       0.10 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+       N-Body: Complex Energy (fragments = (1,), basis = (1,):   -39.93966779462281)
+
+   ==> N-Body: Now computing 2-body complexes <==
+
+
+       N-Body: Computing complex (1/1) with fragments (1, 2) in the basis of fragments (1, 2).
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:34:01 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 6      entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 2-5, 7-10 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2h
+    Full point group: C2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000140000000    -1.859161000000     0.000000000000    12.000000000000
+           H         -0.513060000000    -1.494685000000    -0.888551000000     1.007825032070
+           H         -0.513060000000    -1.494685000000     0.888551000000     1.007825032070
+           H          1.026339000000    -1.494868000000     0.000000000000     1.007825032070
+           H         -0.000089000000    -2.948284000000     0.000000000000     1.007825032070
+           C         -0.000140000000     1.859161000000     0.000000000000    12.000000000000
+           H          0.000089000000     2.948284000000     0.000000000000     1.007825032070
+           H          0.513060000000     1.494685000000    -0.888551000000     1.007825032070
+           H          0.513060000000     1.494685000000     0.888551000000     1.007825032070
+           H         -1.026339000000     1.494868000000     0.000000000000     1.007825032070
+
+  Running in c2h symmetry.
+
+  Rotational constants: A =      2.64758  B =      0.14387  C =      0.14387 [cm^-1]
+  Rotational constants: A =  79372.32729  B =   4313.22629  C =   4313.16789 [MHz]
+  Nuclear repulsion =   41.000263795263315
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 20
+  Nalpha       = 10
+  Nbeta        = 10
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: MINIX
+    Blend: MINIX
+    Number of shells: 14
+    Number of basis function: 18
+    Number of Cartesian functions: 18
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+   => -D3BJ: Empirical Dispersion <=
+
+    Grimme's -D3 (BJ-damping) Dispersion Correction
+    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
+
+        S6 =   1.000000E+00
+        S8 =   8.777000E-01
+        A1 =   4.171000E-01
+        A2 =   2.914900E+00
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         7       7       0       0       0       0
+     Bg         2       2       0       0       0       0
+     Au         2       2       0       0       0       0
+     Bu         7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      18      18      10      10      10       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                  10
+      Number of AO shells:              14
+      Number of primitives:             42
+      Number of atomic orbitals:        18
+      Number of basis functions:        18
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 29412 doubles for integral storage.
+  We computed 5414 shell quartets total.
+  Whereas there are 5565 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 2.1512089372E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RKS iter   0:   -78.94360206099367   -7.89436e+01   1.99941e-01 
+   @RKS iter   1:   -79.83220883645627   -8.88607e-01   2.15180e-02 
+   @RKS iter   2:   -79.87776151845425   -4.55527e-02   5.04122e-03 DIIS
+   @RKS iter   3:   -79.88021418345171   -2.45266e-03   5.38555e-04 DIIS
+   @RKS iter   4:   -79.88024091518962   -2.67317e-05   1.08671e-04 DIIS
+   @RKS iter   5:   -79.88024222736142   -1.31217e-06   9.44701e-06 DIIS
+   @RKS iter   6:   -79.88024223737675   -1.00153e-08   1.12108e-06 DIIS
+   @RKS iter   7:   -79.88024223750313   -1.26377e-10   4.23713e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2816,7 +3538,7 @@ Total time:
     EFP Energy =                            0.0000000000000000
     Total Energy =                        -79.8802422375031256
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2835,15 +3557,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:19 2017
+*** tstop() called on psinet at Mon May 15 15:34:02 2017
 Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.60 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.15 seconds =       0.05 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       6.42 seconds =       0.11 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
        N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):   -79.88024223750313)
 
@@ -2851,610 +3573,15 @@ Total time:
 
    n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]
         1      -79.879335589246        0.000000000000        0.000000000000
-        2      -79.880242237503       -0.568930394774       -0.568930394774
-
-	 " hf-3c..........................................................PASSED
-
-
-   ===> N-Body Interaction Abacus <===
-        BSSE Treatment:                     nocp
-        Number of 1-body computations:     2
-        Number of 2-body computations:     1
-
-   ==> N-Body: Now computing 1-body complexes <==
-
-
-       N-Body: Computing complex (1/2) with fragments (2,) in the basis of fragments (2,).
-
-
-*** tstart() called on psinet
-*** at Tue Feb 28 19:38:19 2017
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RKS Reference
-                        1 Threads,    200 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: cs
-    Full point group: Cs
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           C         -0.000027032415     0.000259133991     0.000000000000    12.000000000000
-           H          0.000201967585     1.089382133991     0.000000000000     1.007825032070
-           H          0.513172967585    -0.364216866009    -0.888551000000     1.007825032070
-           H          0.513172967585    -0.364216866009     0.888551000000     1.007825032070
-           H         -1.026226032415    -0.364033866009     0.000000000000     1.007825032070
-
-  Running in cs symmetry.
-
-  Rotational constants: A =      5.29515  B =      5.28720  C =      5.28589 [cm^-1]
-  Rotational constants: A = 158744.65592  B = 158506.31590  C = 158466.88882 [MHz]
-  Nuclear repulsion =   13.448042265558403
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
-  Nalpha       = 5
-  Nbeta        = 5
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is SAD.
-  Energy threshold   = 1.00e-06
-  Density threshold  = 1.00e-06
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
-    Number of shells: 7
-    Number of basis function: 9
-    Number of Cartesian functions: 9
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-   => -D3BJ: Empirical Dispersion <=
-
-    Grimme's -D3 (BJ-damping) Dispersion Correction
-    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
-
-        S6 =   1.000000E+00
-        S8 =   8.777000E-01
-        A2 =   2.914900E+00
-        A1 =   4.171000E-01
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'         7       7       0       0       0       0
-     A"         2       2       0       0       0       0
-   -------------------------------------------------------
-    Total       9       9       5       5       5       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-  Using in-core PK algorithm.
-   Calculation information:
-      Number of atoms:                   5
-      Number of AO shells:               7
-      Number of primitives:             21
-      Number of atomic orbitals:         9
-      Number of basis functions:         9
-
-      Integral cutoff                 1.00e-12
-      Number of threads:                 1
-
-  Performing in-core PK
-  Using 2070 doubles for integral storage.
-  We computed 406 shell quartets total.
-  Whereas there are 406 unique shell quartets.
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               143
-    Schwarz Cutoff:          1E-12
-
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.1546116613E-01.
-  Using Symmetric Orthogonalization.
-
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @RKS iter   0:   -39.47113677316391   -3.94711e+01   1.99946e-01 
-   @RKS iter   1:   -39.91573663366103   -4.44600e-01   2.14689e-02 
-   @RKS iter   2:   -39.93844922031624   -2.27126e-02   5.00959e-03 DIIS
-   @RKS iter   3:   -39.93965401337927   -1.20479e-03   5.33935e-04 DIIS
-   @RKS iter   4:   -39.93966712559915   -1.31122e-05   1.09147e-04 DIIS
-   @RKS iter   5:   -39.93966779019884   -6.64600e-07   8.85687e-06 DIIS
-   @RKS iter   6:   -39.93966779455376   -4.35492e-09   1.16518e-06 DIIS
-   @RKS iter   7:   -39.93966779462281   -6.90505e-11   2.23790e-08 DIIS
-
-  ==> Post-Iterations <==
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Doubly Occupied:                                                      
-
-       1Ap   -11.133202     2Ap    -0.942549     3Ap    -0.546481  
-       4Ap    -0.546118     1App   -0.546055  
-
-    Virtual:                                                              
-
-       2App    0.701551     5Ap     0.701702     6Ap     0.702523  
-       7Ap     0.786819  
-
-    Final Occupation by Irrep:
-             Ap   App 
-    DOCC [     4,    1 ]
-
-  Energy converged.
-
-  @RKS Final Energy:   -39.93966779462281
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             13.4480422655584029
-    One-Electron Energy =                 -79.3421413338246566
-    Two-Electron Energy =                  25.9566659439434417
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =          -0.0022346703000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -39.9396677946228138
-
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0003      Y:    -0.0029      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0002      Y:     0.0022      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0001      Y:    -0.0007      Z:     0.0000     Total:     0.0007
-
-  Dipole Moment: (Debye)
-     X:     0.0002      Y:    -0.0018      Z:     0.0000     Total:     0.0018
-
-
-*** tstop() called on psinet at Tue Feb 28 19:38:19 2017
-Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       3.47 seconds =       0.06 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
-
-       N-Body: Complex Energy (fragments = (2,), basis = (2,):   -39.93966779462281)
-
-       N-Body: Computing complex (2/2) with fragments (1,) in the basis of fragments (1,).
-
-
-*** tstart() called on psinet
-*** at Tue Feb 28 19:38:19 2017
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RKS Reference
-                        1 Threads,    200 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: cs
-    Full point group: Cs
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000027032415    -0.000259133991     0.000000000000    12.000000000000
-           H         -0.513172967585     0.364216866009    -0.888551000000     1.007825032070
-           H         -0.513172967585     0.364216866009     0.888551000000     1.007825032070
-           H          1.026226032415     0.364033866009     0.000000000000     1.007825032070
-           H         -0.000201967585    -1.089382133991     0.000000000000     1.007825032070
-
-  Running in cs symmetry.
-
-  Rotational constants: A =      5.29515  B =      5.28720  C =      5.28589 [cm^-1]
-  Rotational constants: A = 158744.65592  B = 158506.31590  C = 158466.88882 [MHz]
-  Nuclear repulsion =   13.448042265558403
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
-  Nalpha       = 5
-  Nbeta        = 5
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is SAD.
-  Energy threshold   = 1.00e-06
-  Density threshold  = 1.00e-06
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
-    Number of shells: 7
-    Number of basis function: 9
-    Number of Cartesian functions: 9
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-   => -D3BJ: Empirical Dispersion <=
-
-    Grimme's -D3 (BJ-damping) Dispersion Correction
-    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
-
-        S6 =   1.000000E+00
-        S8 =   8.777000E-01
-        A2 =   2.914900E+00
-        A1 =   4.171000E-01
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'         7       7       0       0       0       0
-     A"         2       2       0       0       0       0
-   -------------------------------------------------------
-    Total       9       9       5       5       5       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-  Using in-core PK algorithm.
-   Calculation information:
-      Number of atoms:                   5
-      Number of AO shells:               7
-      Number of primitives:             21
-      Number of atomic orbitals:         9
-      Number of basis functions:         9
-
-      Integral cutoff                 1.00e-12
-      Number of threads:                 1
-
-  Performing in-core PK
-  Using 2070 doubles for integral storage.
-  We computed 406 shell quartets total.
-  Whereas there are 406 unique shell quartets.
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               143
-    Schwarz Cutoff:          1E-12
-
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.1546116613E-01.
-  Using Symmetric Orthogonalization.
-
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @RKS iter   0:   -39.47113677316391   -3.94711e+01   1.99946e-01 
-   @RKS iter   1:   -39.91573663366106   -4.44600e-01   2.14689e-02 
-   @RKS iter   2:   -39.93844922031627   -2.27126e-02   5.00959e-03 DIIS
-   @RKS iter   3:   -39.93965401337927   -1.20479e-03   5.33935e-04 DIIS
-   @RKS iter   4:   -39.93966712559918   -1.31122e-05   1.09147e-04 DIIS
-   @RKS iter   5:   -39.93966779019890   -6.64600e-07   8.85687e-06 DIIS
-   @RKS iter   6:   -39.93966779455378   -4.35487e-09   1.16518e-06 DIIS
-   @RKS iter   7:   -39.93966779462284   -6.90648e-11   2.23790e-08 DIIS
-
-  ==> Post-Iterations <==
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Doubly Occupied:                                                      
-
-       1Ap   -11.133202     2Ap    -0.942549     3Ap    -0.546481  
-       4Ap    -0.546118     1App   -0.546055  
-
-    Virtual:                                                              
-
-       2App    0.701551     5Ap     0.701702     6Ap     0.702523  
-       7Ap     0.786819  
-
-    Final Occupation by Irrep:
-             Ap   App 
-    DOCC [     4,    1 ]
-
-  Energy converged.
-
-  @RKS Final Energy:   -39.93966779462284
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             13.4480422655584029
-    One-Electron Energy =                 -79.3421413338246992
-    Two-Electron Energy =                  25.9566659439434559
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =          -0.0022346703000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -39.9396677946228422
-
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.0003      Y:     0.0029      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0002      Y:    -0.0022      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:    -0.0001      Y:     0.0007      Z:     0.0000     Total:     0.0007
-
-  Dipole Moment: (Debye)
-     X:    -0.0002      Y:     0.0018      Z:     0.0000     Total:     0.0018
-
-
-*** tstop() called on psinet at Tue Feb 28 19:38:19 2017
-Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       3.71 seconds =       0.06 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
-
-       N-Body: Complex Energy (fragments = (1,), basis = (1,):   -39.93966779462284)
-
-   ==> N-Body: Now computing 2-body complexes <==
-
-
-       N-Body: Computing complex (1/1) with fragments (1, 2) in the basis of fragments (1, 2).
-
-
-*** tstart() called on psinet
-*** at Tue Feb 28 19:38:19 2017
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RKS Reference
-                        1 Threads,    200 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c2h
-    Full point group: C2h
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z               Mass       
-    ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000140000000    -1.859161000000     0.000000000000    12.000000000000
-           H         -0.513060000000    -1.494685000000    -0.888551000000     1.007825032070
-           H         -0.513060000000    -1.494685000000     0.888551000000     1.007825032070
-           H          1.026339000000    -1.494868000000     0.000000000000     1.007825032070
-           H         -0.000089000000    -2.948284000000     0.000000000000     1.007825032070
-           C         -0.000140000000     1.859161000000     0.000000000000    12.000000000000
-           H          0.000089000000     2.948284000000     0.000000000000     1.007825032070
-           H          0.513060000000     1.494685000000    -0.888551000000     1.007825032070
-           H          0.513060000000     1.494685000000     0.888551000000     1.007825032070
-           H         -1.026339000000     1.494868000000     0.000000000000     1.007825032070
-
-  Running in c2h symmetry.
-
-  Rotational constants: A =      2.64758  B =      0.14387  C =      0.14387 [cm^-1]
-  Rotational constants: A =  79372.32729  B =   4313.22629  C =   4313.16789 [MHz]
-  Nuclear repulsion =   41.000263795263315
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 20
-  Nalpha       = 10
-  Nbeta        = 10
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Fractional occupation disabled.
-  Guess Type is SAD.
-  Energy threshold   = 1.00e-06
-  Density threshold  = 1.00e-06
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis <==
-
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
-    Number of shells: 14
-    Number of basis function: 18
-    Number of Cartesian functions: 18
-    Spherical Harmonics?: false
-    Max angular momentum: 1
-
-   => -D3BJ: Empirical Dispersion <=
-
-    Grimme's -D3 (BJ-damping) Dispersion Correction
-    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456
-
-        S6 =   1.000000E+00
-        S8 =   8.777000E-01
-        A2 =   2.914900E+00
-        A1 =   4.171000E-01
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     Ag         7       7       0       0       0       0
-     Bg         2       2       0       0       0       0
-     Au         2       2       0       0       0       0
-     Bu         7       7       0       0       0       0
-   -------------------------------------------------------
-    Total      18      18      10      10      10       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
-  Using in-core PK algorithm.
-   Calculation information:
-      Number of atoms:                  10
-      Number of AO shells:              14
-      Number of primitives:             42
-      Number of atomic orbitals:        18
-      Number of basis functions:        18
-
-      Integral cutoff                 1.00e-12
-      Number of threads:                 1
-
-  Performing in-core PK
-  Using 29412 doubles for integral storage.
-  We computed 5414 shell quartets total.
-  Whereas there are 5565 unique shell quartets.
-  ==> DiskJK: Disk-Based J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Memory (MB):               143
-    Schwarz Cutoff:          1E-12
-
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 2.1512089372E-01.
-  Using Symmetric Orthogonalization.
-
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     RMS |[F,P]|
-
-   @RKS iter   0:   -78.94360206099367   -7.89436e+01   1.99941e-01 
-   @RKS iter   1:   -79.83220883645623   -8.88607e-01   2.15180e-02 
-   @RKS iter   2:   -79.87776151845425   -4.55527e-02   5.04122e-03 DIIS
-   @RKS iter   3:   -79.88021418345171   -2.45266e-03   5.38555e-04 DIIS
-   @RKS iter   4:   -79.88024091518962   -2.67317e-05   1.08671e-04 DIIS
-   @RKS iter   5:   -79.88024222736138   -1.31217e-06   9.44701e-06 DIIS
-   @RKS iter   6:   -79.88024223737678   -1.00154e-08   1.12108e-06 DIIS
-   @RKS iter   7:   -79.88024223750318   -1.26406e-10   4.23713e-08 DIIS
-
-  ==> Post-Iterations <==
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Doubly Occupied:                                                      
-
-       1Bu   -11.132455     1Ag   -11.132405     2Ag    -0.944217  
-       2Bu    -0.939275     3Ag    -0.551725     3Bu    -0.547807  
-       1Au    -0.547744     4Ag    -0.542874     1Bg    -0.542809  
-       4Bu    -0.539295  
-
-    Virtual:                                                              
-
-       5Ag     0.697328     2Au     0.700467     5Bu     0.700619  
-       2Bg     0.704210     6Ag     0.704361     6Bu     0.709597  
-       7Ag     0.783295     7Bu     0.792040  
-
-    Final Occupation by Irrep:
-             Ag    Bg    Au    Bu 
-    DOCC [     4,    1,    1,    4 ]
-
-  Energy converged.
-
-  @RKS Final Energy:   -79.88024223750318
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             41.0002637952633151
-    One-Electron Energy =                -186.9083111799283472
-    Two-Electron Energy =                  66.0335492750618442
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =          -0.0057441279000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -79.8802422375031824
-
-
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-
-Properties computed using the SCF density matrix
-
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
-
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
-
-
-*** tstop() called on psinet at Tue Feb 28 19:38:20 2017
-Module time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       4.10 seconds =       0.07 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
-
-       N-Body: Complex Energy (fragments = (1, 2), basis = (1, 2):   -79.88024223750318)
-
-   ==> N-Body: Non-Counterpoise Corrected (NoCP)  energies <==
-
-   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]
-        1      -79.879335589246        0.000000000000        0.000000000000
-        2      -79.880242237503       -0.568930394756       -0.568930394756
+        2      -79.880242237503       -0.568930394747       -0.568930394747
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 6      entry C          line    60 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-5, 7-10 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 	 " hf-3c/minix....................................................PASSED
 
@@ -3935,14 +4062,22 @@ cpu-time for gCP    0.0 s
 
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:20 2017
+*** at Mon May 15 15:34:02 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2, 7-8  entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 3-6, 9-10 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3990,7 +4125,8 @@ cpu-time for gCP    0.0 s
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 18
     Number of basis function: 26
     Number of Cartesian functions: 26
@@ -4032,7 +4168,7 @@ cpu-time for gCP    0.0 s
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -4045,14 +4181,14 @@ cpu-time for gCP    0.0 s
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -153.42058637720095   -1.53421e+02   1.89655e-01 
+   @RHF iter   0:  -153.42058637720112   -1.53421e+02   1.89655e-01 
    @RHF iter   1:  -153.74064037572779   -3.20054e-01   1.69215e-02 
-   @RHF iter   2:  -153.79147795406817   -5.08376e-02   3.98894e-03 DIIS
-   @RHF iter   3:  -153.79441343768764   -2.93548e-03   1.07960e-03 DIIS
-   @RHF iter   4:  -153.79455342726013   -1.39990e-04   3.37573e-04 DIIS
-   @RHF iter   5:  -153.79456837462942   -1.49474e-05   8.61527e-06 DIIS
-   @RHF iter   6:  -153.79456838993556   -1.53061e-08   1.08184e-06 DIIS
-   @RHF iter   7:  -153.79456839014961   -2.14044e-10   1.99730e-07 DIIS
+   @RHF iter   2:  -153.79147795406831   -5.08376e-02   3.98894e-03 DIIS
+   @RHF iter   3:  -153.79441343768747   -2.93548e-03   1.07960e-03 DIIS
+   @RHF iter   4:  -153.79455342726010   -1.39990e-04   3.37573e-04 DIIS
+   @RHF iter   5:  -153.79456837462934   -1.49474e-05   8.61527e-06 DIIS
+   @RHF iter   6:  -153.79456838993548   -1.53061e-08   1.08184e-06 DIIS
+   @RHF iter   7:  -153.79456839014961   -2.14129e-10   1.99730e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -4093,7 +4229,7 @@ cpu-time for gCP    0.0 s
     EFP Energy =                            0.0000000000000000
     Total Energy =                       -153.7945683901496068
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -4112,25 +4248,33 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.1479     Total:     0.1479
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:20 2017
+*** tstop() called on psinet at Mon May 15 15:34:03 2017
 Module time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.65 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.60 seconds =       0.08 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       7.22 seconds =       0.12 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:20 2017
+*** at Mon May 15 15:34:03 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 3-6 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4174,7 +4318,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 10
     Number of basis function: 14
     Number of Cartesian functions: 14
@@ -4216,7 +4361,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -4229,11 +4374,11 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.78301743329928   -7.77830e+01   2.92189e-01 
-   @RHF iter   1:   -77.49093030610157    2.92087e-01   1.39263e-02 
+   @RHF iter   0:   -77.78301743329924   -7.77830e+01   2.92189e-01 
+   @RHF iter   1:   -77.49093030610156    2.92087e-01   1.39263e-02 
    @RHF iter   2:   -77.49872260595617   -7.79230e-03   2.45253e-03 DIIS
-   @RHF iter   3:   -77.49901387293642   -2.91267e-04   4.30461e-04 DIIS
-   @RHF iter   4:   -77.49902270555184   -8.83262e-06   1.81910e-05 DIIS
+   @RHF iter   3:   -77.49901387293644   -2.91267e-04   4.30461e-04 DIIS
+   @RHF iter   4:   -77.49902270555182   -8.83262e-06   1.81910e-05 DIIS
    @RHF iter   5:   -77.49902272268851   -1.71367e-08   9.80991e-07 DIIS
 
   ==> Post-Iterations <==
@@ -4263,15 +4408,15 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =             33.3580720823350489
-    One-Electron Energy =                -169.2616847307755563
-    Two-Electron Energy =                  58.4045899257520134
+    One-Electron Energy =                -169.2616847307755279
+    Two-Electron Energy =                  58.4045899257519778
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -77.4990227226884940
+    Total Energy =                        -77.4990227226885082
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -4290,25 +4435,33 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.0036     Total:     0.0036
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:21 2017
+*** tstop() called on psinet at Mon May 15 15:34:03 2017
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
+	user time   =       0.40 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.87 seconds =       0.08 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       7.64 seconds =       0.13 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:21 2017
+*** at Mon May 15 15:34:03 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 3-4 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4350,7 +4503,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 8
     Number of basis function: 12
     Number of Cartesian functions: 12
@@ -4392,7 +4546,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -4405,13 +4559,13 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -76.75825183369994   -7.67583e+01   2.63294e-01 
-   @RHF iter   1:   -76.28321832695570    4.75034e-01   1.38525e-02 
-   @RHF iter   2:   -76.29430210300970   -1.10838e-02   2.88566e-03 DIIS
-   @RHF iter   3:   -76.29481460063835   -5.12498e-04   2.82968e-04 DIIS
-   @RHF iter   4:   -76.29481928656071   -4.68592e-06   1.97516e-05 DIIS
-   @RHF iter   5:   -76.29481929557268   -9.01197e-09   1.24337e-05 DIIS
-   @RHF iter   6:   -76.29481930160011   -6.02743e-09   2.53652e-07 DIIS
+   @RHF iter   0:   -76.75825183369992   -7.67583e+01   2.63294e-01 
+   @RHF iter   1:   -76.28321832695563    4.75034e-01   1.38525e-02 
+   @RHF iter   2:   -76.29430210300961   -1.10838e-02   2.88566e-03 DIIS
+   @RHF iter   3:   -76.29481460063842   -5.12498e-04   2.82968e-04 DIIS
+   @RHF iter   4:   -76.29481928656074   -4.68592e-06   1.97516e-05 DIIS
+   @RHF iter   5:   -76.29481929557267   -9.01193e-09   1.24337e-05 DIIS
+   @RHF iter   6:   -76.29481930160016   -6.02749e-09   2.53652e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -4435,20 +4589,20 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.29481930160011
+  @RHF Final Energy:   -76.29481930160016
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.6979461027507696
-    One-Electron Energy =                -150.7728630190520107
-    Two-Electron Energy =                  49.7800976147011482
+    One-Electron Energy =                -150.7728630190520960
+    Two-Electron Energy =                  49.7800976147011767
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.2948193016000999
+    Total Energy =                        -76.2948193016001568
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -4467,15 +4621,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.0066     Total:     0.0066
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:21 2017
+*** tstop() called on psinet at Mon May 15 15:34:03 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
+	user time   =       0.35 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.11 seconds =       0.09 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       8.00 seconds =       0.13 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 	HF-3c for S22-16..................................................PASSED
 
   ==> DFTD3 Output <==
@@ -5067,14 +5221,22 @@ cpu-time for gCP    0.0 s
 
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:21 2017
+*** at Mon May 15 15:34:03 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 13-18  entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 7-12, 19-24 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5136,7 +5298,8 @@ cpu-time for gCP    0.0 s
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 48
     Number of basis function: 72
     Number of Cartesian functions: 72
@@ -5178,7 +5341,7 @@ cpu-time for gCP    0.0 s
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -5191,15 +5354,14 @@ cpu-time for gCP    0.0 s
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -461.49613850722278   -4.61496e+02   1.49744e-01 
-   @RHF iter   1:  -458.09196170078098    3.40418e+00   1.08544e-02 
-   @RHF iter   2:  -458.23863904965299   -1.46677e-01   2.71457e-03 DIIS
-   @RHF iter   3:  -458.24806171963940   -9.42267e-03   5.63840e-04 DIIS
-   @RHF iter   4:  -458.24836132217769   -2.99603e-04   9.12724e-05 DIIS
-   @RHF iter   5:  -458.24836958141623   -8.25924e-06   1.51268e-05 DIIS
-   @RHF iter   6:  -458.24836985460468   -2.73188e-07   4.87923e-06 DIIS
-   @RHF iter   7:  -458.24836988960601   -3.50013e-08   1.60690e-06 DIIS
-   @RHF iter   8:  -458.24836989859091   -8.98490e-09   6.22909e-07 DIIS
+   @RHF iter   0:  -460.28257137630135   -4.60283e+02   1.43426e-01 
+   @RHF iter   1:  -458.13618087173859    2.14639e+00   9.36016e-03 
+   @RHF iter   2:  -458.24146119319278   -1.05280e-01   2.32322e-03 DIIS
+   @RHF iter   3:  -458.24825244737713   -6.79125e-03   3.51948e-04 DIIS
+   @RHF iter   4:  -458.24836583189358   -1.13385e-04   6.56235e-05 DIIS
+   @RHF iter   5:  -458.24836980129760   -3.96940e-06   8.30271e-06 DIIS
+   @RHF iter   6:  -458.24836988824768   -8.69501e-08   2.72282e-06 DIIS
+   @RHF iter   7:  -458.24836989769449   -9.44681e-09   8.12271e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -5208,12 +5370,12 @@ cpu-time for gCP    0.0 s
 
     Doubly Occupied:                                                      
 
-       1B1   -11.179999     1A1   -11.179437     1A2   -11.179399  
-       2B1   -11.177919     1B2   -11.177880     2A1   -11.176502  
-       3A1   -11.171239     2B2   -11.170597     4A1   -11.169550  
-       3B2   -11.168566     5A1   -11.168325     6A1   -11.165853  
-       7A1    -1.162812     8A1    -1.152638     4B2    -1.022603  
-       3B1    -1.022442     5B2    -1.013339     9A1    -1.012939  
+       1B1   -11.179998     1A1   -11.179437     1A2   -11.179398  
+       2B1   -11.177918     1B2   -11.177880     2A1   -11.176501  
+       3A1   -11.171237     2B2   -11.170592     4A1   -11.169553  
+       3B2   -11.168569     5A1   -11.168324     6A1   -11.165850  
+       7A1    -1.162812     8A1    -1.152637     4B2    -1.022602  
+       3B1    -1.022441     5B2    -1.013338     9A1    -1.012938  
        2A2    -0.824895    10A1    -0.824833     6B2    -0.816162  
       11A1    -0.815884    12A1    -0.716238    13A1    -0.707181  
        4B1    -0.640964    14A1    -0.633009     7B2    -0.617109  
@@ -5221,20 +5383,20 @@ cpu-time for gCP    0.0 s
       15A1    -0.584707    10B2    -0.582876    16A1    -0.523836  
        6B1    -0.515650     3A2    -0.488439    17A1    -0.488330  
       11B2    -0.479567    18A1    -0.475863     7B1    -0.353559  
-      12B2    -0.352863     4A2    -0.343751     8B1    -0.341702  
+      12B2    -0.352863     4A2    -0.343750     8B1    -0.341701  
 
     Virtual:                                                              
 
-       5A2     0.183398    19A1     0.183721     6A2     0.192560  
-       9B1     0.193522    10B1     0.426543    11B1     0.436013  
-      20A1     0.561884    21A1     0.571677    13B2     0.640175  
+       5A2     0.183398    19A1     0.183722     6A2     0.192560  
+       9B1     0.193523    10B1     0.426544    11B1     0.436013  
+      20A1     0.561884    21A1     0.571677    13B2     0.640176  
       12B1     0.640694    14B2     0.647846    22A1     0.652906  
-       7A2     0.681029    23A1     0.681418    13B1     0.686345  
-      15B2     0.689742    24A1     0.691188    25A1     0.697520  
-      14B1     0.871303    16B2     0.871419     8A2     0.878927  
-      26A1     0.879029    27A1     0.880885    17B2     0.880983  
-      18B2     0.887536    28A1     0.891380     9A2     1.049302  
-      19B2     1.058888    15B1     1.123375    29A1     1.133744  
+       7A2     0.681030    23A1     0.681419    13B1     0.686346  
+      15B2     0.689743    24A1     0.691189    25A1     0.697521  
+      14B1     0.871304    16B2     0.871419     8A2     0.878927  
+      26A1     0.879029    27A1     0.880885    17B2     0.880984  
+      18B2     0.887536    28A1     0.891381     9A2     1.049302  
+      19B2     1.058889    15B1     1.123376    29A1     1.133745  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -5242,20 +5404,20 @@ cpu-time for gCP    0.0 s
 
   Energy converged.
 
-  @RHF Final Energy:  -458.24836989859091
+  @RHF Final Energy:  -458.24836989769449
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            592.4166452852708744
-    One-Electron Energy =               -1792.5485143198288824
-    Two-Electron Energy =                 741.8834991359669857
+    One-Electron Energy =               -1792.5484904933268808
+    Two-Electron Energy =                 741.8834753103614048
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -458.2483698985909086
+    Total Energy =                       -458.2483698976944879
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -5274,25 +5436,33 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.2420     Total:     0.2420
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:24 2017
+*** tstop() called on psinet at Mon May 15 15:34:08 2017
 Module time:
-	user time   =       2.80 seconds =       0.05 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       4.67 seconds =       0.08 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       7.93 seconds =       0.13 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =      12.70 seconds =       0.21 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         13 seconds =       0.22 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:24 2017
+*** at Mon May 15 15:34:08 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6  entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 7-12 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5342,7 +5512,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 24
     Number of basis function: 36
     Number of Cartesian functions: 36
@@ -5384,7 +5555,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -5397,14 +5568,14 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -229.55032584071381   -2.29550e+02   1.75722e-01 
-   @RHF iter   1:  -228.99803336235379    5.52292e-01   1.73109e-02 
-   @RHF iter   2:  -229.11659289485823   -1.18560e-01   4.45361e-03 DIIS
-   @RHF iter   3:  -229.12459073055919   -7.99784e-03   9.87280e-04 DIIS
-   @RHF iter   4:  -229.12487699185218   -2.86261e-04   1.15611e-04 DIIS
-   @RHF iter   5:  -229.12488097696379   -3.98511e-06   1.29007e-05 DIIS
-   @RHF iter   6:  -229.12488106272295   -8.57592e-08   2.46859e-06 DIIS
-   @RHF iter   7:  -229.12488106666660   -3.94365e-09   7.98255e-07 DIIS
+   @RHF iter   0:  -229.68518615257716   -2.29685e+02   1.76399e-01 
+   @RHF iter   1:  -229.02046361276621    6.64723e-01   1.57828e-02 
+   @RHF iter   2:  -229.11799818571373   -9.75346e-02   4.08094e-03 DIIS
+   @RHF iter   3:  -229.12458849865294   -6.59031e-03   1.00221e-03 DIIS
+   @RHF iter   4:  -229.12487856706727   -2.90068e-04   8.69149e-05 DIIS
+   @RHF iter   5:  -229.12488101846117   -2.45139e-06   1.05242e-05 DIIS
+   @RHF iter   6:  -229.12488106641544   -4.79543e-08   1.07355e-06 DIIS
+   @RHF iter   7:  -229.12488106701136   -5.95918e-10   1.99601e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -5413,21 +5584,21 @@ Total time:
 
     Doubly Occupied:                                                      
 
-       1A1   -11.176798     2A1   -11.176223     1B2   -11.176208  
-       3A1   -11.174706     2B2   -11.174691     4A1   -11.173274  
+       1A1   -11.176797     2A1   -11.176222     1B2   -11.176208  
+       3A1   -11.174705     2B2   -11.174691     4A1   -11.173274  
        5A1    -1.158374     6A1    -1.019068     3B2    -1.018664  
        4B2    -0.821781     7A1    -0.821641     8A1    -0.712655  
-       9A1    -0.638184     5B2    -0.613940    10A1    -0.588498  
-       6B2    -0.587998     1B1    -0.521111    11A1    -0.485739  
-       7B2    -0.484918     2B1    -0.348858     1A2    -0.348691  
+       9A1    -0.638184     5B2    -0.613939    10A1    -0.588497  
+       6B2    -0.587998     1B1    -0.521110    11A1    -0.485739  
+       7B2    -0.484918     2B1    -0.348859     1A2    -0.348690  
 
     Virtual:                                                              
 
-       3B1     0.187264     2A2     0.187378     4B1     0.430226  
+       3B1     0.187263     2A2     0.187379     4B1     0.430226  
       12A1     0.564508     8B2     0.642694    13A1     0.644057  
        9B2     0.684129    14A1     0.685496    15A1     0.689522  
-      16A1     0.874599    10B2     0.874801    17A1     0.882105  
-      11B2     0.882205    12B2     1.052830    18A1     1.127225  
+      16A1     0.874598    10B2     0.874802    17A1     0.882106  
+      11B2     0.882204    12B2     1.052830    18A1     1.127225  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -5435,20 +5606,20 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:  -229.12488106666660
+  @RHF Final Energy:  -229.12488106701136
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.6814389924756767
-    One-Electron Energy =                -711.1686057820427322
-    Two-Electron Energy =                 278.3622857229004239
+    One-Electron Energy =                -711.1686062682250622
+    Two-Electron Energy =                 278.3622862087379985
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -229.1248810666666031
+    Total Energy =                       -229.1248810670113585
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -5464,28 +5635,36 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -0.0001     Total:     0.0001
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -0.0003     Total:     0.0003
+     X:     0.0000      Y:     0.0000      Z:    -0.0002     Total:     0.0002
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:25 2017
+*** tstop() called on psinet at Mon May 15 15:34:09 2017
 Module time:
-	user time   =       0.60 seconds =       0.01 minutes
+	user time   =       0.96 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.53 seconds =       0.14 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      13.68 seconds =       0.23 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =         14 seconds =       0.23 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:38:25 2017
+*** at Mon May 15 15:34:09 2017
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6  entry C          line    73 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
+    atoms 7-12 entry H          line    23 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/minix.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    200 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5535,7 +5714,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/minix.gbs
+  Basis Set: MINIX
+    Blend: MINIX
     Number of shells: 24
     Number of basis function: 36
     Number of Cartesian functions: 36
@@ -5577,7 +5757,7 @@ Total time:
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               143
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -5590,14 +5770,14 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -229.55020179665189   -2.29550e+02   2.10444e-01 
-   @RHF iter   1:  -228.99579985738231    5.54402e-01   2.09704e-02 
-   @RHF iter   2:  -229.11638642449279   -1.20587e-01   5.43520e-03 DIIS
-   @RHF iter   3:  -229.12454001824787   -8.15359e-03   1.34794e-03 DIIS
-   @RHF iter   4:  -229.12490796153855   -3.67943e-04   1.22928e-04 DIIS
-   @RHF iter   5:  -229.12491131682893   -3.35529e-06   1.42629e-05 DIIS
-   @RHF iter   6:  -229.12491137796505   -6.11361e-08   1.44535e-06 DIIS
-   @RHF iter   7:  -229.12491137866908   -7.04034e-10   1.63715e-07 DIIS
+   @RHF iter   0:  -229.55020179665178   -2.29550e+02   2.10444e-01 
+   @RHF iter   1:  -228.99579985738211    5.54402e-01   2.09704e-02 
+   @RHF iter   2:  -229.11638642449273   -1.20587e-01   5.43520e-03 DIIS
+   @RHF iter   3:  -229.12454001824824   -8.15359e-03   1.34794e-03 DIIS
+   @RHF iter   4:  -229.12490796153841   -3.67943e-04   1.22928e-04 DIIS
+   @RHF iter   5:  -229.12491131682896   -3.35529e-06   1.42629e-05 DIIS
+   @RHF iter   6:  -229.12491137796499   -6.11360e-08   1.44535e-06 DIIS
+   @RHF iter   7:  -229.12491137866920   -7.04205e-10   1.63715e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -5628,20 +5808,20 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:  -229.12491137866908
+  @RHF Final Energy:  -229.12491137866920
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.6640801543523764
-    One-Electron Energy =                -711.1346571676676831
-    Two-Electron Energy =                 278.3456656346461955
+    One-Electron Energy =                -711.1346571676679105
+    Two-Electron Energy =                 278.3456656346463092
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -229.1249113786690828
+    Total Energy =                       -229.1249113786691964
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -5660,15 +5840,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0060     Total:     0.0060
 
 
-*** tstop() called on psinet at Tue Feb 28 19:38:25 2017
+*** tstop() called on psinet at Mon May 15 15:34:10 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
+	user time   =       0.93 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       9.12 seconds =       0.15 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      14.63 seconds =       0.24 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =         15 seconds =       0.25 minutes
 	HF-3c for S22-20..................................................PASSED
 
 *** Psi4 exiting successfully. Buy a developer a beer!

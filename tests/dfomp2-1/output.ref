@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:12:43 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:   7279
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13824
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -30,8 +33,6 @@
 refnuc      =  9.18738642147759 #TEST
 refscf      = -76.02674017978704 #TEST
 refomp2     = -76.22932767439706 #TEST
-
-memory 256 mb
 
 molecule h2o {
 0 1
@@ -58,18 +59,24 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Ene
 
 --------------------------------------------------------------------------
 
-  Memory set to 256.000 MiB by Python script.
-  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+*** tstart() called on psinet
+*** at Mon May 15 15:35:42 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:43 2016
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -111,11 +118,20 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Ene
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -136,7 +152,7 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Ene
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               183
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
@@ -145,6 +161,7 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Ene
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 116
     Number of Cartesian functions: 131
@@ -153,24 +170,25 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Ene
 
   Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.96970695061992   -7.59697e+01   7.01137e-02 
-   @DF-RHF iter   1:   -75.99764741192067   -2.79405e-02   1.08140e-02 
-   @DF-RHF iter   2:   -76.02043963235278   -2.27922e-02   5.24242e-03 DIIS
-   @DF-RHF iter   3:   -76.02620415734114   -5.76452e-03   9.36719e-04 DIIS
-   @DF-RHF iter   4:   -76.02665836113587   -4.54204e-04   2.89900e-04 DIIS
-   @DF-RHF iter   5:   -76.02673312131668   -7.47602e-05   7.71658e-05 DIIS
-   @DF-RHF iter   6:   -76.02674002711134   -6.90579e-06   1.18995e-05 DIIS
-   @DF-RHF iter   7:   -76.02674017763613   -1.50525e-07   1.52697e-06 DIIS
-   @DF-RHF iter   8:   -76.02674017967698   -2.04085e-09   3.53330e-07 DIIS
-   @DF-RHF iter   9:   -76.02674017978430   -1.07320e-10   6.47099e-08 DIIS
-   @DF-RHF iter  10:   -76.02674017978754   -3.24007e-12   1.54950e-08 DIIS
-   @DF-RHF iter  11:   -76.02674017978768   -1.42109e-13   2.39343e-09 DIIS
+   @DF-RHF iter   0:   -75.99429666656167   -7.59943e+01   7.03158e-02 
+   @DF-RHF iter   1:   -75.99443666219619   -1.39996e-04   1.12974e-02 
+   @DF-RHF iter   2:   -76.01975898191027   -2.53223e-02   5.54580e-03 DIIS
+   @DF-RHF iter   3:   -76.02615919849360   -6.40022e-03   9.76355e-04 DIIS
+   @DF-RHF iter   4:   -76.02666157950540   -5.02381e-04   2.96375e-04 DIIS
+   @DF-RHF iter   5:   -76.02673388866563   -7.23092e-05   7.41994e-05 DIIS
+   @DF-RHF iter   6:   -76.02673998472341   -6.09606e-06   1.31943e-05 DIIS
+   @DF-RHF iter   7:   -76.02674017475621   -1.90033e-07   2.22667e-06 DIIS
+   @DF-RHF iter   8:   -76.02674017958333   -4.82711e-09   4.63895e-07 DIIS
+   @DF-RHF iter   9:   -76.02674017978170   -1.98369e-10   7.39428e-08 DIIS
+   @DF-RHF iter  10:   -76.02674017978561   -3.90799e-12   1.80713e-08 DIIS
+   @DF-RHF iter  11:   -76.02674017978590   -2.98428e-13   2.68565e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -198,24 +216,22 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "DF-OMP2 Total Ene
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.02674017978768
+  @DF-RHF Final Energy:   -76.02674017978590
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1873864214775907
-    One-Electron Energy =                -123.1375343130286524
-    Two-Electron Energy =                  37.9234077117633603
+    One-Electron Energy =                -123.1375343110476592
+    Two-Electron Energy =                  37.9234077097841720
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0267401797877085
+    Total Energy =                        -76.0267401797859037
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -223,35 +239,50 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9765
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1669
+     X:    -0.0000      Y:     0.0000      Z:    -0.1669
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8097     Total:     0.8097
+     X:    -0.0000      Y:     0.0000      Z:     0.8097     Total:     0.8097
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.0580     Total:     2.0580
+     X:    -0.0000      Y:     0.0000      Z:     2.0580     Total:     2.0580
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:43 2016
+*** tstop() called on psinet at Mon May 15 15:35:42 2017
 Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:43 2016
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:42 2017
 
 
 
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [  ]             
+  BASIS_RELATIVISTIC          => (empty)          
   BENCH                       => 0                
   CC_DIIS_MAX_VECS            => 6                
   CC_DIIS_MIN_VECS            => 2                
@@ -290,12 +321,13 @@ Total time:
   FROZEN_UOCC                 => [  ]             
   HESS_TYPE                   => HF               
   INTEGRAL_CUTOFF             => 9                
-  INTEGRAL_PACKAGE            => ERD              
+  INTEGRAL_PACKAGE            => LIBINT           
   LEVEL_SHIFT                 => 0.02             
   LINEQ_SOLVER                => CDGESV           
   LITERAL_CFOUR               => (empty)          
   MAT_NUM_COLUMN_PRINT        => 5                
   MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MOLDEN_WITH_VIRTUAL         => TRUE             
   MOLDEN_WRITE                => FALSE            
   MO_DIIS_NUM_VECS            => 6                
   MO_MAXITER                  => 50               
@@ -321,7 +353,9 @@ Total time:
   PCG_CONVERGENCE             => 1e-06            
   PCG_MAXITER                 => 50               
   PCM                         => FALSE            
+  PCM_CC_TYPE                 => PTE              
   PCM_SCF_TYPE                => TOTAL            
+  PPL_TYPE                    => AUTO             
   PRINT                       => 1                
   PRINT_NOONS                 => 3                
   PROPERTIES                  => [  ]             
@@ -337,18 +371,15 @@ Total time:
   REGULARIZATION              => FALSE            
   REG_PARAM                   => 0.4              
   RELATIVISTIC                => NO               
-  REL_BASIS                   => (empty)          
   RESTRICTED_DOCC             => [  ]             
   RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
-  RUN_CCTRANSORT              => TRUE             
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
   SOCC                        => [  ]             
   SOS_TYPE                    => SOS              
   TRIPLES_IABC_TYPE           => DISK             
   UNITS                       => ANGSTROMS        
-  WABEF_TYPE                  => AUTO             
   WFN                         => SCF              
   WFN_TYPE                    => DF-OMP2         !
   WRITER_FILE_LABEL           => (empty)          
@@ -360,7 +391,7 @@ Total time:
 
                       DF-OMP2 (DF-OO-MP2)   
               Program Written by Ugur Bozkaya
-              Latest Revision February 19, 2016
+              Latest Revision April 17, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -377,7 +408,7 @@ Total time:
 	Number of basis functions in the DF-HF basis: 116
 	Number of basis functions in the DF-CC basis:  84
 
-	Available memory                      :    244.14 MB 
+	Available memory                      :    500.00 MB 
 	Minimum required memory for amplitudes:      0.21 MB 
 	Memory requirement for B-HF (Q|mu nu) :      0.51 MB 
 	Memory requirement for B-HF (Q|ab)    :      0.32 MB 
@@ -389,10 +420,10 @@ Total time:
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978768
-	REF Energy (a.u.)                  :   -76.02674017978768
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224270807
-	DF-MP2 Total Energy (a.u.)         :   -76.22839242249576
+	DF-HF Energy (a.u.)                :   -76.02674017978590
+	REF Energy (a.u.)                  :   -76.02674017978590
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224267883
+	DF-MP2 Total Energy (a.u.)         :   -76.22839242246474
 	======================================================================= 
 
 	Number of independent-pairs:  99
@@ -404,7 +435,7 @@ Total time:
 	            ------------------------------ 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -76.2292912846     -8.99e-04       9.73e-04         5.21e-03        3.43e-05 
+   1     -76.2292912845     -8.99e-04       9.73e-04         5.21e-03        3.43e-05 
    2     -76.2293211208     -2.98e-05       2.47e-04         1.40e-03        6.60e-06 
    3     -76.2293257152     -4.59e-06       1.40e-04         1.07e-03        2.32e-06 
    4     -76.2293275936     -1.88e-06       9.18e-05         8.06e-04        9.02e-07 
@@ -420,35 +451,35 @@ Total time:
 	Computing MP2 energy using optimized MOs... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978768
-	REF Energy (a.u.)                  :   -76.02582665088678
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20258741385621
-	DF-MP2 Total Energy (a.u.)         :   -76.22932759364389
+	DF-HF Energy (a.u.)                :   -76.02674017978590
+	REF Energy (a.u.)                  :   -76.02582665088548
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20258741385612
+	DF-MP2 Total Energy (a.u.)         :   -76.22932759364203
 	======================================================================= 
 
 	======================================================================= 
 	================ DF-OMP2 FINAL RESULTS ================================ 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978768
-	REF Energy (a.u.)                  :   -76.02582665088678
-	DF-OMP2 Correlation Energy (a.u.)  :    -0.20258741385621
-	Edfomp2 - Eref (a.u.)              :    -0.20350094275710
-	DF-OMP2 Total Energy (a.u.)        :   -76.22932759364389
+	DF-HF Energy (a.u.)                :   -76.02674017978590
+	REF Energy (a.u.)                  :   -76.02582665088548
+	DF-OMP2 Correlation Energy (a.u.)  :    -0.20258741385612
+	Edfomp2 - Eref (a.u.)              :    -0.20350094275655
+	DF-OMP2 Total Energy (a.u.)        :   -76.22932759364203
 	======================================================================= 
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:44 2016
+*** tstop() called on psinet at Mon May 15 15:35:43 2017
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.38 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	Nuclear Repulsion Energy (a.u.)...................................PASSED
 	DF-HF Energy (a.u.)...............................................PASSED
 	DF-OMP2 Total Energy (a.u.).......................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

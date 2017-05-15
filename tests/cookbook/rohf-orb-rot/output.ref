@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1a2.dev335 
+                               Psi4 1.1rc3.dev5 
 
-                         Git: Rev {rohforbtest} 8247d53 dirty
+                         Git: Rev {master} 3fbd859 
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,15 +12,16 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    submitted.
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 15 March 2017 03:13PM
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:  29770
-    PSIDATADIR: /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4
+    Process ID:  20602
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -101,7 +102,8 @@ compare_values(-150.347533153677489, ccsd_e, 6, 'X CCSD energy') #TEST
 #orb_rotate(scf_wfn.Ca(), 0, 7, 8, 90.0)
 Matrix.rotate_columns(scf_wfn.Ca(), 0, 7, 8, math.pi / 2.0)
 
-filename = core.get_writer_file_prefix(scf_wfn.molecule().name()) + ".180.npz"
+fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_wfn.molecule().name())))[1]
+filename = os.path.join(core.get_environment("PSI_SCRATCH"), fname + ".180.npz")
 data = {}
 data.update(scf_wfn.Ca().np_write(None, prefix="Ca"))
 data.update(scf_wfn.Cb().np_write(None, prefix="Cb"))
@@ -134,8 +136,16 @@ compare_values(-150.087298715913619, scf_e, 6, 'A SCF energy') #TEST
 compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:16 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:19 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -162,7 +172,7 @@ compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -183,7 +193,8 @@ compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -236,22 +247,22 @@ compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -149.49964693274592   -1.49500e+02   6.19037e-02 
-   @ROHF iter   2:  -150.03059701517071   -5.30950e-01   1.91752e-02 DIIS
-   @ROHF iter   3:  -150.09918997502172   -6.85930e-02   4.53352e-03 DIIS
-   @ROHF iter   4:  -150.10666981644096   -7.47984e-03   1.47629e-03 DIIS
-   @ROHF iter   5:  -150.10781311698173   -1.14330e-03   8.18477e-04 DIIS
-   @ROHF iter   6:  -150.10805087490724   -2.37758e-04   3.23646e-04 DIIS
-   @ROHF iter   7:  -150.10813170030792   -8.08254e-05   7.28913e-05 DIIS
-   @ROHF iter   8:  -150.10813595155054   -4.25124e-06   1.35683e-05 DIIS
-   @ROHF iter   9:  -150.10813610403085   -1.52480e-07   3.32991e-06 DIIS
-   @ROHF iter  10:  -150.10813611538714   -1.13563e-08   1.02495e-06 DIIS
-   @ROHF iter  11:  -150.10813611644687   -1.05973e-09   2.37328e-07 DIIS
-   @ROHF iter  12:  -150.10813611650161   -5.47402e-11   4.69803e-08 DIIS
-   @ROHF iter  13:  -150.10813611650320   -1.59162e-12   5.49562e-09 DIIS
-   @ROHF iter  14:  -150.10813611650320    0.00000e+00   9.26526e-10 DIIS
-   @ROHF iter  15:  -150.10813611650320    0.00000e+00   1.92697e-10 DIIS
-   @ROHF iter  16:  -150.10813611650315    5.68434e-14   6.11050e-11 DIIS
+   @ROHF iter   1:  -149.49964693274609   -1.49500e+02   6.19037e-02 
+   @ROHF iter   2:  -150.03059701517088   -5.30950e-01   1.91752e-02 DIIS
+   @ROHF iter   3:  -150.09918997502189   -6.85930e-02   4.53352e-03 DIIS
+   @ROHF iter   4:  -150.10666981644104   -7.47984e-03   1.47629e-03 DIIS
+   @ROHF iter   5:  -150.10781311698193   -1.14330e-03   8.18477e-04 DIIS
+   @ROHF iter   6:  -150.10805087490732   -2.37758e-04   3.23646e-04 DIIS
+   @ROHF iter   7:  -150.10813170030818   -8.08254e-05   7.28913e-05 DIIS
+   @ROHF iter   8:  -150.10813595155071   -4.25124e-06   1.35683e-05 DIIS
+   @ROHF iter   9:  -150.10813610403102   -1.52480e-07   3.32991e-06 DIIS
+   @ROHF iter  10:  -150.10813611538734   -1.13563e-08   1.02495e-06 DIIS
+   @ROHF iter  11:  -150.10813611644716   -1.05982e-09   2.37328e-07 DIIS
+   @ROHF iter  12:  -150.10813611650173   -5.45697e-11   4.69803e-08 DIIS
+   @ROHF iter  13:  -150.10813611650335   -1.62004e-12   5.49562e-09 DIIS
+   @ROHF iter  14:  -150.10813611650340   -5.68434e-14   9.26526e-10 DIIS
+   @ROHF iter  15:  -150.10813611650340    0.00000e+00   1.92696e-10 DIIS
+   @ROHF iter  16:  -150.10813611650343   -2.84217e-14   6.11050e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -282,20 +293,20 @@ compare_values(-150.312480530946573, ccsd_e, 6, 'A CCSD energy') #TEST
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.10813611650315
+  @ROHF Final Energy:  -150.10813611650343
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5544027469715047
-    Two-Electron Energy =                  88.3327818604164747
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5544027469718458
+    Two-Electron Energy =                  88.3327818604165174
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.1081361165031183
+    Total Energy =                       -150.1081361165034309
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -314,18 +325,26 @@ Properties computed using the SCF density matrix
      X:     0.8898      Y:     2.1845      Z:     0.0000     Total:     2.3588
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:16 2017
+*** tstop() called on psinet at Mon May 15 15:40:19 2017
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:16 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:19 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -352,7 +371,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -373,7 +392,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -426,22 +446,22 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -149.49964693274592   -1.49500e+02   6.19037e-02 
-   @ROHF iter   2:  -150.03059701517071   -5.30950e-01   1.91752e-02 DIIS
+   @ROHF iter   1:  -149.49964693274589   -1.49500e+02   6.19037e-02 
+   @ROHF iter   2:  -150.03059701517083   -5.30950e-01   1.91752e-02 DIIS
    @ROHF iter   3:  -150.09918997502172   -6.85930e-02   4.53352e-03 DIIS
-   @ROHF iter   4:  -150.10666981644096   -7.47984e-03   1.47629e-03 DIIS
-   @ROHF iter   5:  -150.10781311698173   -1.14330e-03   8.18477e-04 DIIS
+   @ROHF iter   4:  -150.10666981644101   -7.47984e-03   1.47629e-03 DIIS
+   @ROHF iter   5:  -150.10781311698184   -1.14330e-03   8.18477e-04 DIIS
    @ROHF iter   6:  -150.10805087490724   -2.37758e-04   3.23646e-04 DIIS
-   @ROHF iter   7:  -150.10813170030792   -8.08254e-05   7.28913e-05 DIIS
+   @ROHF iter   7:  -150.10813170030804   -8.08254e-05   7.28913e-05 DIIS
    @ROHF iter   8:  -150.10813595155054   -4.25124e-06   1.35683e-05 DIIS
-   @ROHF iter   9:  -150.10813610403085   -1.52480e-07   3.32991e-06 DIIS
-   @ROHF iter  10:  -150.10813611538714   -1.13563e-08   1.02495e-06 DIIS
-   @ROHF iter  11:  -150.10813611644687   -1.05973e-09   2.37328e-07 DIIS
-   @ROHF iter  12:  -150.10813611650161   -5.47402e-11   4.69803e-08 DIIS
-   @ROHF iter  13:  -150.10813611650320   -1.59162e-12   5.49562e-09 DIIS
+   @ROHF iter   9:  -150.10813610403088   -1.52480e-07   3.32991e-06 DIIS
+   @ROHF iter  10:  -150.10813611538708   -1.13562e-08   1.02495e-06 DIIS
+   @ROHF iter  11:  -150.10813611644699   -1.05990e-09   2.37328e-07 DIIS
+   @ROHF iter  12:  -150.10813611650156   -5.45697e-11   4.69803e-08 DIIS
+   @ROHF iter  13:  -150.10813611650320   -1.64846e-12   5.49562e-09 DIIS
    @ROHF iter  14:  -150.10813611650320    0.00000e+00   9.26526e-10 DIIS
-   @ROHF iter  15:  -150.10813611650320    0.00000e+00   1.92697e-10 DIIS
-   @ROHF iter  16:  -150.10813611650315    5.68434e-14   6.11050e-11 DIIS
+   @ROHF iter  15:  -150.10813611650318    2.84217e-14   1.92696e-10 DIIS
+   @ROHF iter  16:  -150.10813611650320   -2.84217e-14   6.11052e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -472,20 +492,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.10813611650315
+  @ROHF Final Energy:  -150.10813611650320
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5544027469715047
-    Two-Electron Energy =                  88.3327818604164747
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5544027469713910
+    Two-Electron Energy =                  88.3327818604162758
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.1081361165031183
+    Total Energy =                       -150.1081361165032035
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -504,14 +524,14 @@ Properties computed using the SCF density matrix
      X:     0.8898      Y:     2.1845      Z:     0.0000     Total:     2.3588
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:16 2017
+*** tstop() called on psinet at Mon May 15 15:40:19 2017
 Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.24 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.41 seconds =       0.01 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -533,12 +553,12 @@ Total time:
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 12244 non-zero two-electron integrals.
+      Computed 12237 non-zero two-electron integrals.
         Stored in file 33.
 
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:16 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:19 2017
 
 
 	Wfn Parameters:
@@ -597,7 +617,7 @@ Total time:
 	(VV|VV)...
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-	Frozen core energy     =   -131.00208578880984
+	Frozen core energy     =   -131.00208578880969
 
 	Size of irrep 0 of <ab|cd> integrals:      0.008 (MW) /      0.065 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.003 (MW) /      0.023 (MB)
@@ -611,27 +631,27 @@ Total time:
 	Size of irrep 1 of tIjAb amplitudes:       0.001 (MW) /      0.009 (MB)
 	Total:                                     0.004 (MW) /      0.030 (MB)
 
-	Nuclear Rep. energy          =     32.11348477005190
-	SCF energy                   =   -150.10813611650315
-	One-electron energy          =    -91.26517170451694
-	Two-electron (AA) energy     =      9.89131210325774
-	Two-electron (BB) energy     =      6.98973614284687
-	Two-electron (AB) energy     =     23.16458836066705
-	Two-electron energy          =    -51.21953509774529
-	Reference energy             =   -150.10813611650323
+	Nuclear Rep. energy          =     32.11348477005191
+	SCF energy                   =   -150.10813611650320
+	One-electron energy          =    -91.26517170451703
+	Two-electron (AA) energy     =      9.89131210325775
+	Two-electron (BB) energy     =      6.98973614284688
+	Two-electron (AB) energy     =     23.16458836066707
+	Two-electron energy          =    -51.21953509774534
+	Reference energy             =   -150.10813611650312
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:16 2017
+*** tstop() called on psinet at Mon May 15 15:40:19 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.60 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:16 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:19 2017
 
             **************************
             *                        *
@@ -639,9 +659,9 @@ Total time:
             *                        *
             **************************
 
-    Nuclear Rep. energy (wfn)     =   32.113484770051897
-    SCF energy          (wfn)     = -150.108136116503147
-    Reference energy    (file100) = -150.108136116503232
+    Nuclear Rep. energy (wfn)     =   32.113484770051912
+    SCF energy          (wfn)     = -150.108136116503204
+    Reference energy    (file100) = -150.108136116503118
 
     Input parameters:
     -----------------
@@ -674,32 +694,32 @@ Total time:
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
      0        -0.224091720282787    0.000e+00    0.000062    0.000217    0.000217    0.000000
-     1        -0.222775449245342    9.254e-02    0.016116    0.037867    0.053552    0.000000
-     2        -0.233432074158496    3.486e-02    0.020166    0.047616    0.067339    0.000000
-     3        -0.238534526493744    3.101e-02    0.029376    0.071111    0.100566    0.000000
-     4        -0.239294476763679    1.436e-02    0.035838    0.087798    0.124166    0.000000
-     5        -0.239409098941021    5.146e-03    0.038361    0.094452    0.133575    0.000000
-     6        -0.239380938279834    1.326e-03    0.038727    0.095407    0.134926    0.000000
-     7        -0.239395677182599    4.261e-04    0.038802    0.095610    0.135213    0.000000
-     8        -0.239397725862528    1.597e-04    0.038814    0.095644    0.135261    0.000000
-     9        -0.239396481215292    6.382e-05    0.038815    0.095648    0.135267    0.000000
-    10        -0.239396786954349    3.008e-05    0.038814    0.095647    0.135265    0.000000
-    11        -0.239397283618462    1.065e-05    0.038817    0.095655    0.135276    0.000000
-    12        -0.239397238891878    3.861e-06    0.038816    0.095652    0.135272    0.000000
-    13        -0.239397090469145    1.541e-06    0.038816    0.095652    0.135273    0.000000
-    14        -0.239397015684211    6.820e-07    0.038816    0.095652    0.135273    0.000000
-    15        -0.239397024812455    3.347e-07    0.038816    0.095652    0.135273    0.000000
-    16        -0.239397038716254    1.704e-07    0.038816    0.095652    0.135273    0.000000
-    17        -0.239397040382035    7.634e-08    0.038816    0.095652    0.135273    0.000000
-    18        -0.239397037715840    3.270e-08    0.038816    0.095652    0.135273    0.000000
-    19        -0.239397036839862    1.537e-08    0.038816    0.095652    0.135273    0.000000
-    20        -0.239397036921765    7.207e-09    0.038816    0.095652    0.135273    0.000000
-    21        -0.239397037218404    3.322e-09    0.038816    0.095652    0.135273    0.000000
-    22        -0.239397037229040    1.354e-09    0.038816    0.095652    0.135273    0.000000
-    23        -0.239397037198120    5.087e-10    0.038816    0.095652    0.135273    0.000000
-    24        -0.239397037169880    2.576e-10    0.038816    0.095652    0.135273    0.000000
-    25        -0.239397037171468    1.026e-10    0.038816    0.095652    0.135273    0.000000
-    26        -0.239397037174243    3.478e-11    0.038816    0.095652    0.135273    0.000000
+     1        -0.222775449245339    9.254e-02    0.016116    0.037867    0.053552    0.000000
+     2        -0.233432074158492    3.486e-02    0.020166    0.047616    0.067339    0.000000
+     3        -0.238534526493738    3.101e-02    0.029376    0.071111    0.100566    0.000000
+     4        -0.239294476763672    1.436e-02    0.035838    0.087798    0.124166    0.000000
+     5        -0.239409098941014    5.146e-03    0.038361    0.094452    0.133575    0.000000
+     6        -0.239380938279827    1.326e-03    0.038727    0.095407    0.134926    0.000000
+     7        -0.239395677182592    4.261e-04    0.038802    0.095610    0.135213    0.000000
+     8        -0.239397725862521    1.597e-04    0.038814    0.095644    0.135261    0.000000
+     9        -0.239396481215285    6.382e-05    0.038815    0.095648    0.135267    0.000000
+    10        -0.239396786954342    3.008e-05    0.038814    0.095647    0.135265    0.000000
+    11        -0.239397283618455    1.065e-05    0.038817    0.095655    0.135276    0.000000
+    12        -0.239397238891872    3.861e-06    0.038816    0.095652    0.135272    0.000000
+    13        -0.239397090469138    1.541e-06    0.038816    0.095652    0.135273    0.000000
+    14        -0.239397015684205    6.820e-07    0.038816    0.095652    0.135273    0.000000
+    15        -0.239397024812448    3.347e-07    0.038816    0.095652    0.135273    0.000000
+    16        -0.239397038716247    1.704e-07    0.038816    0.095652    0.135273    0.000000
+    17        -0.239397040382028    7.634e-08    0.038816    0.095652    0.135273    0.000000
+    18        -0.239397037715833    3.270e-08    0.038816    0.095652    0.135273    0.000000
+    19        -0.239397036839856    1.537e-08    0.038816    0.095652    0.135273    0.000000
+    20        -0.239397036921758    7.207e-09    0.038816    0.095652    0.135273    0.000000
+    21        -0.239397037218396    3.322e-09    0.038816    0.095652    0.135273    0.000000
+    22        -0.239397037229033    1.354e-09    0.038816    0.095652    0.135273    0.000000
+    23        -0.239397037198113    5.087e-10    0.038816    0.095652    0.135273    0.000000
+    24        -0.239397037169873    2.576e-10    0.038816    0.095652    0.135273    0.000000
+    25        -0.239397037171461    1.026e-10    0.038816    0.095652    0.135273    0.000000
+    26        -0.239397037174237    3.478e-11    0.038816    0.095652    0.135273    0.000000
 
     Iterations converged.
 
@@ -764,29 +784,37 @@ Total time:
       2   3   1   1        -0.0270200179
       4   5   3  11        -0.0248444761
 
-    SCF energy       (wfn)                    = -150.108136116503147
-    Reference energy (file100)                = -150.108136116503232
+    SCF energy       (wfn)                    = -150.108136116503204
+    Reference energy (file100)                = -150.108136116503118
 
-    Opposite-spin CCSD correlation energy     =   -0.187809756393198
-    Same-spin CCSD correlation energy         =   -0.049259771699053
-    CCSD correlation energy                   =   -0.239397037174243
-      * CCSD total energy                     = -150.347533153677489
+    Opposite-spin CCSD correlation energy     =   -0.187809756393195
+    Same-spin CCSD correlation energy         =   -0.049259771699051
+    CCSD correlation energy                   =   -0.239397037174237
+      * CCSD total energy                     = -150.347533153677347
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:17 2017
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
 Module time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       1.12 seconds =       0.02 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.50 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =       1.16 seconds =       0.02 minutes
-	system time =       1.72 seconds =       0.03 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.58 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 	X SCF energy......................................................PASSED
 	X CCSD energy.....................................................PASSED
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:17 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:25 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -813,7 +841,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -834,7 +862,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -887,22 +916,22 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -149.46220434364113   -1.49462e+02   6.24581e-02 
-   @ROHF iter   2:  -150.00574117239205   -5.43537e-01   1.97300e-02 DIIS
-   @ROHF iter   3:  -150.08029452233831   -7.45533e-02   4.80363e-03 DIIS
-   @ROHF iter   4:  -150.08685566339045   -6.56114e-03   1.10162e-03 DIIS
-   @ROHF iter   5:  -150.08720787125975   -3.52208e-04   6.01656e-04 DIIS
-   @ROHF iter   6:  -150.08729357717289   -8.57059e-05   1.03919e-04 DIIS
-   @ROHF iter   7:  -150.08729806147625   -4.48430e-06   2.69420e-05 DIIS
-   @ROHF iter   8:  -150.08729868593917   -6.24463e-07   6.04835e-06 DIIS
-   @ROHF iter   9:  -150.08729871234578   -2.64066e-08   2.08107e-06 DIIS
-   @ROHF iter  10:  -150.08729871553942   -3.19363e-09   6.36410e-07 DIIS
-   @ROHF iter  11:  -150.08729871589645   -3.57034e-10   1.48874e-07 DIIS
-   @ROHF iter  12:  -150.08729871591299   -1.65414e-11   2.75256e-08 DIIS
-   @ROHF iter  13:  -150.08729871591362   -6.25278e-13   7.25975e-09 DIIS
-   @ROHF iter  14:  -150.08729871591368   -5.68434e-14   1.22491e-09 DIIS
-   @ROHF iter  15:  -150.08729871591351    1.70530e-13   3.02776e-10 DIIS
-   @ROHF iter  16:  -150.08729871591362   -1.13687e-13   6.18388e-11 DIIS
+   @ROHF iter   1:  -149.46220434364139   -1.49462e+02   6.24581e-02 
+   @ROHF iter   2:  -150.00574117239259   -5.43537e-01   1.97300e-02 DIIS
+   @ROHF iter   3:  -150.08029452233856   -7.45533e-02   4.80363e-03 DIIS
+   @ROHF iter   4:  -150.08685566339068   -6.56114e-03   1.10162e-03 DIIS
+   @ROHF iter   5:  -150.08720787125998   -3.52208e-04   6.01656e-04 DIIS
+   @ROHF iter   6:  -150.08729357717309   -8.57059e-05   1.03919e-04 DIIS
+   @ROHF iter   7:  -150.08729806147645   -4.48430e-06   2.69420e-05 DIIS
+   @ROHF iter   8:  -150.08729868593934   -6.24463e-07   6.04835e-06 DIIS
+   @ROHF iter   9:  -150.08729871234601   -2.64067e-08   2.08107e-06 DIIS
+   @ROHF iter  10:  -150.08729871553953   -3.19352e-09   6.36410e-07 DIIS
+   @ROHF iter  11:  -150.08729871589668   -3.57147e-10   1.48874e-07 DIIS
+   @ROHF iter  12:  -150.08729871591328   -1.65983e-11   2.75256e-08 DIIS
+   @ROHF iter  13:  -150.08729871591385   -5.68434e-13   7.25975e-09 DIIS
+   @ROHF iter  14:  -150.08729871591385    0.00000e+00   1.22491e-09 DIIS
+   @ROHF iter  15:  -150.08729871591379    5.68434e-14   3.02776e-10 DIIS
+   @ROHF iter  16:  -150.08729871591390   -1.13687e-13   6.18390e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -933,20 +962,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.08729871591362
+  @ROHF Final Energy:  -150.08729871591390
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5978878876159683
-    Two-Electron Energy =                  88.3971044016504663
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5978878876164799
+    Two-Electron Energy =                  88.3971044016506653
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.0872987159135903
+    Total Energy =                       -150.0872987159139029
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -965,18 +994,26 @@ Properties computed using the SCF density matrix
      X:     0.8052      Y:     2.1825      Z:     0.0000     Total:     2.3263
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:17 2017
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.35 seconds =       0.02 minutes
-	system time =       1.87 seconds =       0.03 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.85 seconds =       0.01 minutes
+	system time =       0.59 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:17 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:25 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -1003,7 +1040,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -1024,7 +1061,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -1078,21 +1116,21 @@ Total time:
                         Total Energy        Delta E     RMS |[F,P]|
 
    @ROHF iter   1:  -149.46220434364113   -1.49462e+02   6.24581e-02 
-   @ROHF iter   2:  -150.00574117239205   -5.43537e-01   1.97300e-02 DIIS
-   @ROHF iter   3:  -150.08029452233831   -7.45533e-02   4.80363e-03 DIIS
+   @ROHF iter   2:  -150.00574117239239   -5.43537e-01   1.97300e-02 DIIS
+   @ROHF iter   3:  -150.08029452233828   -7.45533e-02   4.80363e-03 DIIS
    @ROHF iter   4:  -150.08685566339045   -6.56114e-03   1.10162e-03 DIIS
-   @ROHF iter   5:  -150.08720787125975   -3.52208e-04   6.01656e-04 DIIS
-   @ROHF iter   6:  -150.08729357717289   -8.57059e-05   1.03919e-04 DIIS
-   @ROHF iter   7:  -150.08729806147625   -4.48430e-06   2.69420e-05 DIIS
-   @ROHF iter   8:  -150.08729868593917   -6.24463e-07   6.04835e-06 DIIS
-   @ROHF iter   9:  -150.08729871234578   -2.64066e-08   2.08107e-06 DIIS
-   @ROHF iter  10:  -150.08729871553942   -3.19363e-09   6.36410e-07 DIIS
-   @ROHF iter  11:  -150.08729871589645   -3.57034e-10   1.48874e-07 DIIS
-   @ROHF iter  12:  -150.08729871591299   -1.65414e-11   2.75256e-08 DIIS
-   @ROHF iter  13:  -150.08729871591362   -6.25278e-13   7.25975e-09 DIIS
-   @ROHF iter  14:  -150.08729871591368   -5.68434e-14   1.22491e-09 DIIS
-   @ROHF iter  15:  -150.08729871591351    1.70530e-13   3.02776e-10 DIIS
-   @ROHF iter  16:  -150.08729871591362   -1.13687e-13   6.18388e-11 DIIS
+   @ROHF iter   5:  -150.08720787125981   -3.52208e-04   6.01656e-04 DIIS
+   @ROHF iter   6:  -150.08729357717283   -8.57059e-05   1.03919e-04 DIIS
+   @ROHF iter   7:  -150.08729806147619   -4.48430e-06   2.69420e-05 DIIS
+   @ROHF iter   8:  -150.08729868593929   -6.24463e-07   6.04835e-06 DIIS
+   @ROHF iter   9:  -150.08729871234573   -2.64064e-08   2.08107e-06 DIIS
+   @ROHF iter  10:  -150.08729871553939   -3.19366e-09   6.36410e-07 DIIS
+   @ROHF iter  11:  -150.08729871589657   -3.57176e-10   1.48874e-07 DIIS
+   @ROHF iter  12:  -150.08729871591311   -1.65414e-11   2.75256e-08 DIIS
+   @ROHF iter  13:  -150.08729871591368   -5.68434e-13   7.25974e-09 DIIS
+   @ROHF iter  14:  -150.08729871591365    2.84217e-14   1.22491e-09 DIIS
+   @ROHF iter  15:  -150.08729871591362    2.84217e-14   3.02776e-10 DIIS
+   @ROHF iter  16:  -150.08729871591368   -5.68434e-14   6.18384e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1123,20 +1161,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.08729871591362
+  @ROHF Final Energy:  -150.08729871591368
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5978878876159683
-    Two-Electron Energy =                  88.3971044016504663
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5978878876159115
+    Two-Electron Energy =                  88.3971044016503242
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.0872987159135903
+    Total Energy =                       -150.0872987159136756
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1155,15 +1193,15 @@ Properties computed using the SCF density matrix
      X:     0.8052      Y:     2.1825      Z:     0.0000     Total:     2.3263
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:18 2017
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.59 seconds =       0.03 minutes
-	system time =       2.11 seconds =       0.04 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.00 seconds =       0.02 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -1184,12 +1222,12 @@ Total time:
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 12244 non-zero two-electron integrals.
+      Computed 12237 non-zero two-electron integrals.
         Stored in file 33.
 
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:18 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:25 2017
 
 
 	Wfn Parameters:
@@ -1262,27 +1300,27 @@ Total time:
 	Size of irrep 1 of tIjAb amplitudes:       0.001 (MW) /      0.006 (MB)
 	Total:                                     0.004 (MW) /      0.031 (MB)
 
-	Nuclear Rep. energy          =     32.11348477005190
-	SCF energy                   =   -150.08729871591362
+	Nuclear Rep. energy          =     32.11348477005191
+	SCF energy                   =   -150.08729871591368
 	One-electron energy          =    -91.26898357570394
-	Two-electron (AA) energy     =      9.89076411420732
-	Two-electron (BB) energy     =      6.99789398370155
+	Two-electron (AA) energy     =      9.89076411420731
+	Two-electron (BB) energy     =      6.99789398370156
 	Two-electron (AB) energy     =     23.18155420262234
 	Two-electron energy          =    -51.19877127517272
 	Reference energy             =   -150.08729871591353
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:18 2017
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.66 seconds =       0.03 minutes
-	system time =       2.30 seconds =       0.04 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.05 seconds =       0.02 minutes
+	system time =       0.65 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:18 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:25 2017
 
             **************************
             *                        *
@@ -1290,8 +1328,8 @@ Total time:
             *                        *
             **************************
 
-    Nuclear Rep. energy (wfn)     =   32.113484770051897
-    SCF energy          (wfn)     = -150.087298715913619
+    Nuclear Rep. energy (wfn)     =   32.113484770051912
+    SCF energy          (wfn)     = -150.087298715913676
     Reference energy    (file100) = -150.087298715913533
 
     Input parameters:
@@ -1324,33 +1362,33 @@ Total time:
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.211496290548735    0.000e+00    0.000061    0.000208    0.000208    0.000000
+     0        -0.211496290548734    0.000e+00    0.000061    0.000208    0.000208    0.000000
      1        -0.214174923559033    6.830e-02    0.010952    0.023363    0.033040    0.000000
-     2        -0.221991642805937    2.404e-02    0.013126    0.027957    0.039537    0.000000
-     3        -0.224805394216157    1.825e-02    0.017063    0.038240    0.054080    0.000000
-     4        -0.225158905813806    8.371e-03    0.019826    0.045796    0.064765    0.000000
-     5        -0.225198055516178    3.955e-03    0.021389    0.050190    0.070980    0.000000
-     6        -0.225167516671790    1.375e-03    0.021830    0.051400    0.072691    0.000000
-     7        -0.225177285129591    5.930e-04    0.021951    0.051735    0.073165    0.000000
-     8        -0.225181683863012    2.583e-04    0.021973    0.051801    0.073257    0.000000
-     9        -0.225181141640443    1.058e-04    0.021978    0.051817    0.073280    0.000000
-    10        -0.225181145969193    4.539e-05    0.021973    0.051804    0.073262    0.000000
-    11        -0.225181732046132    1.561e-05    0.021978    0.051815    0.073277    0.000000
-    12        -0.225181947008865    5.871e-06    0.021976    0.051810    0.073271    0.000000
-    13        -0.225181899259125    2.387e-06    0.021976    0.051812    0.073273    0.000000
+     2        -0.221991642805936    2.404e-02    0.013126    0.027957    0.039537    0.000000
+     3        -0.224805394216156    1.825e-02    0.017063    0.038240    0.054080    0.000000
+     4        -0.225158905813805    8.371e-03    0.019826    0.045796    0.064765    0.000000
+     5        -0.225198055516177    3.955e-03    0.021389    0.050190    0.070980    0.000000
+     6        -0.225167516671789    1.375e-03    0.021830    0.051400    0.072691    0.000000
+     7        -0.225177285129590    5.930e-04    0.021951    0.051735    0.073165    0.000000
+     8        -0.225181683863011    2.583e-04    0.021973    0.051801    0.073257    0.000000
+     9        -0.225181141640442    1.058e-04    0.021978    0.051817    0.073280    0.000000
+    10        -0.225181145969191    4.539e-05    0.021973    0.051804    0.073262    0.000000
+    11        -0.225181732046131    1.561e-05    0.021978    0.051815    0.073277    0.000000
+    12        -0.225181947008863    5.871e-06    0.021976    0.051810    0.073271    0.000000
+    13        -0.225181899259124    2.387e-06    0.021976    0.051812    0.073273    0.000000
     14        -0.225181828830198    1.078e-06    0.021976    0.051812    0.073273    0.000000
-    15        -0.225181814234829    4.487e-07    0.021976    0.051812    0.073273    0.000000
-    16        -0.225181815479573    1.831e-07    0.021976    0.051812    0.073273    0.000000
-    17        -0.225181816354643    7.019e-08    0.021976    0.051812    0.073273    0.000000
-    18        -0.225181815573342    2.986e-08    0.021976    0.051812    0.073273    0.000000
-    19        -0.225181815033995    1.502e-08    0.021976    0.051812    0.073273    0.000000
-    20        -0.225181814993316    7.832e-09    0.021976    0.051812    0.073273    0.000000
-    21        -0.225181814996497    4.034e-09    0.021976    0.051812    0.073273    0.000000
-    22        -0.225181815049777    1.340e-09    0.021976    0.051812    0.073273    0.000000
-    23        -0.225181815035061    5.289e-10    0.021976    0.051812    0.073273    0.000000
-    24        -0.225181815032594    2.846e-10    0.021976    0.051812    0.073273    0.000000
-    25        -0.225181815030355    1.468e-10    0.021976    0.051812    0.073273    0.000000
-    26        -0.225181815033042    6.287e-11    0.021976    0.051812    0.073273    0.000000
+    15        -0.225181814234828    4.487e-07    0.021976    0.051812    0.073273    0.000000
+    16        -0.225181815479571    1.831e-07    0.021976    0.051812    0.073273    0.000000
+    17        -0.225181816354641    7.019e-08    0.021976    0.051812    0.073273    0.000000
+    18        -0.225181815573341    2.986e-08    0.021976    0.051812    0.073273    0.000000
+    19        -0.225181815033993    1.502e-08    0.021976    0.051812    0.073273    0.000000
+    20        -0.225181814993314    7.832e-09    0.021976    0.051812    0.073273    0.000000
+    21        -0.225181814996495    4.034e-09    0.021976    0.051812    0.073273    0.000000
+    22        -0.225181815049775    1.340e-09    0.021976    0.051812    0.073273    0.000000
+    23        -0.225181815035059    5.289e-10    0.021976    0.051812    0.073273    0.000000
+    24        -0.225181815032593    2.846e-10    0.021976    0.051812    0.073273    0.000000
+    25        -0.225181815030354    1.468e-10    0.021976    0.051812    0.073273    0.000000
+    26        -0.225181815033041    6.287e-11    0.021976    0.051812    0.073273    0.000000
 
     Iterations converged.
 
@@ -1415,29 +1453,37 @@ Total time:
       6   6   1   1        -0.0269046883
       5   5  10  10        -0.0266934500
 
-    SCF energy       (wfn)                    = -150.087298715913619
+    SCF energy       (wfn)                    = -150.087298715913676
     Reference energy (file100)                = -150.087298715913533
 
-    Opposite-spin CCSD correlation energy     =   -0.178829170867376
+    Opposite-spin CCSD correlation energy     =   -0.178829170867375
     Same-spin CCSD correlation energy         =   -0.044748779859788
-    CCSD correlation energy                   =   -0.225181815033042
+    CCSD correlation energy                   =   -0.225181815033041
       * CCSD total energy                     = -150.312480530946573
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:19 2017
+*** tstop() called on psinet at Mon May 15 15:40:26 2017
 Module time:
-	user time   =       0.99 seconds =       0.02 minutes
-	system time =       3.62 seconds =       0.06 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.48 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.65 seconds =       0.04 minutes
-	system time =       5.92 seconds =       0.10 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.38 seconds =       0.02 minutes
+	system time =       1.13 seconds =       0.02 minutes
+	total time  =          7 seconds =       0.12 minutes
 	A SCF energy......................................................PASSED
 	A CCSD energy.....................................................PASSED
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:19 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:26 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -1464,7 +1510,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -1485,7 +1531,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -1537,22 +1584,22 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -149.49964693274603   -1.49500e+02   5.10471e-02 
-   @ROHF iter   2:  -150.03059701517071   -5.30950e-01   1.58123e-02 DIIS
-   @ROHF iter   3:  -150.09918997502189   -6.85930e-02   3.73844e-03 DIIS
+   @ROHF iter   1:  -149.49964693274592   -1.49500e+02   5.10471e-02 
+   @ROHF iter   2:  -150.03059701517063   -5.30950e-01   1.58123e-02 DIIS
+   @ROHF iter   3:  -150.09918997502183   -6.85930e-02   3.73844e-03 DIIS
    @ROHF iter   4:  -150.10666981644101   -7.47984e-03   1.21738e-03 DIIS
-   @ROHF iter   5:  -150.10781311698190   -1.14330e-03   6.74933e-04 DIIS
-   @ROHF iter   6:  -150.10805087490741   -2.37758e-04   2.66885e-04 DIIS
-   @ROHF iter   7:  -150.10813170030815   -8.08254e-05   6.01077e-05 DIIS
-   @ROHF iter   8:  -150.10813595155071   -4.25124e-06   1.11887e-05 DIIS
-   @ROHF iter   9:  -150.10813610403113   -1.52480e-07   2.74592e-06 DIIS
-   @ROHF iter  10:  -150.10813611538725   -1.13561e-08   8.45192e-07 DIIS
-   @ROHF iter  11:  -150.10813611644704   -1.05979e-09   1.95706e-07 DIIS
-   @ROHF iter  12:  -150.10813611650150   -5.44560e-11   3.87409e-08 DIIS
-   @ROHF iter  13:  -150.10813611650320   -1.70530e-12   4.53181e-09 DIIS
-   @ROHF iter  14:  -150.10813611650320    0.00000e+00   7.64033e-10 DIIS
-   @ROHF iter  15:  -150.10813611650337   -1.70530e-13   1.58902e-10 DIIS
-   @ROHF iter  16:  -150.10813611650315    2.27374e-13   5.03892e-11 DIIS
+   @ROHF iter   5:  -150.10781311698184   -1.14330e-03   6.74933e-04 DIIS
+   @ROHF iter   6:  -150.10805087490735   -2.37758e-04   2.66885e-04 DIIS
+   @ROHF iter   7:  -150.10813170030812   -8.08254e-05   6.01077e-05 DIIS
+   @ROHF iter   8:  -150.10813595155042   -4.25124e-06   1.11887e-05 DIIS
+   @ROHF iter   9:  -150.10813610403096   -1.52481e-07   2.74592e-06 DIIS
+   @ROHF iter  10:  -150.10813611538728   -1.13563e-08   8.45192e-07 DIIS
+   @ROHF iter  11:  -150.10813611644693   -1.05965e-09   1.95706e-07 DIIS
+   @ROHF iter  12:  -150.10813611650167   -5.47402e-11   3.87409e-08 DIIS
+   @ROHF iter  13:  -150.10813611650303   -1.36424e-12   4.53181e-09 DIIS
+   @ROHF iter  14:  -150.10813611650337   -3.41061e-13   7.64032e-10 DIIS
+   @ROHF iter  15:  -150.10813611650329    8.52651e-14   1.58901e-10 DIIS
+   @ROHF iter  16:  -150.10813611650337   -8.52651e-14   5.03888e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1583,20 +1630,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.10813611650315
+  @ROHF Final Energy:  -150.10813611650337
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5544027469710500
-    Two-Electron Energy =                  88.3327818604160342
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5544027469716184
+    Two-Electron Energy =                  88.3327818604163326
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.1081361165030899
+    Total Energy =                       -150.1081361165033741
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1615,18 +1662,26 @@ Properties computed using the SCF density matrix
      X:     0.8898      Y:     2.1845      Z:     0.0000     Total:     2.3588
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:19 2017
+*** tstop() called on psinet at Mon May 15 15:40:26 2017
 Module time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.28 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.89 seconds =       0.05 minutes
-	system time =       6.26 seconds =       0.10 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.51 seconds =       0.03 minutes
+	system time =       1.14 seconds =       0.02 minutes
+	total time  =          7 seconds =       0.12 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:19 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:26 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -1653,7 +1708,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -1674,7 +1729,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -1726,22 +1782,22 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -149.49964693274603   -1.49500e+02   5.10471e-02 
-   @ROHF iter   2:  -150.03059701517071   -5.30950e-01   1.58123e-02 DIIS
-   @ROHF iter   3:  -150.09918997502189   -6.85930e-02   3.73844e-03 DIIS
-   @ROHF iter   4:  -150.10666981644101   -7.47984e-03   1.21738e-03 DIIS
-   @ROHF iter   5:  -150.10781311698190   -1.14330e-03   6.74933e-04 DIIS
-   @ROHF iter   6:  -150.10805087490741   -2.37758e-04   2.66885e-04 DIIS
-   @ROHF iter   7:  -150.10813170030815   -8.08254e-05   6.01077e-05 DIIS
-   @ROHF iter   8:  -150.10813595155071   -4.25124e-06   1.11887e-05 DIIS
-   @ROHF iter   9:  -150.10813610403113   -1.52480e-07   2.74592e-06 DIIS
-   @ROHF iter  10:  -150.10813611538725   -1.13561e-08   8.45192e-07 DIIS
-   @ROHF iter  11:  -150.10813611644704   -1.05979e-09   1.95706e-07 DIIS
-   @ROHF iter  12:  -150.10813611650150   -5.44560e-11   3.87409e-08 DIIS
-   @ROHF iter  13:  -150.10813611650320   -1.70530e-12   4.53181e-09 DIIS
-   @ROHF iter  14:  -150.10813611650320    0.00000e+00   7.64033e-10 DIIS
-   @ROHF iter  15:  -150.10813611650337   -1.70530e-13   1.58902e-10 DIIS
-   @ROHF iter  16:  -150.10813611650315    2.27374e-13   5.03892e-11 DIIS
+   @ROHF iter   1:  -149.49964693274615   -1.49500e+02   5.10471e-02 
+   @ROHF iter   2:  -150.03059701517094   -5.30950e-01   1.58123e-02 DIIS
+   @ROHF iter   3:  -150.09918997502194   -6.85930e-02   3.73844e-03 DIIS
+   @ROHF iter   4:  -150.10666981644124   -7.47984e-03   1.21738e-03 DIIS
+   @ROHF iter   5:  -150.10781311698204   -1.14330e-03   6.74933e-04 DIIS
+   @ROHF iter   6:  -150.10805087490749   -2.37758e-04   2.66885e-04 DIIS
+   @ROHF iter   7:  -150.10813170030829   -8.08254e-05   6.01077e-05 DIIS
+   @ROHF iter   8:  -150.10813595155074   -4.25124e-06   1.11887e-05 DIIS
+   @ROHF iter   9:  -150.10813610403119   -1.52480e-07   2.74592e-06 DIIS
+   @ROHF iter  10:  -150.10813611538748   -1.13563e-08   8.45192e-07 DIIS
+   @ROHF iter  11:  -150.10813611644727   -1.05979e-09   1.95706e-07 DIIS
+   @ROHF iter  12:  -150.10813611650184   -5.45697e-11   3.87409e-08 DIIS
+   @ROHF iter  13:  -150.10813611650354   -1.70530e-12   4.53181e-09 DIIS
+   @ROHF iter  14:  -150.10813611650349    5.68434e-14   7.64032e-10 DIIS
+   @ROHF iter  15:  -150.10813611650337    1.13687e-13   1.58901e-10 DIIS
+   @ROHF iter  16:  -150.10813611650352   -1.42109e-13   5.03885e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1772,20 +1828,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.10813611650315
+  @ROHF Final Energy:  -150.10813611650352
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5544027469710500
-    Two-Electron Energy =                  88.3327818604160342
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5544027469720163
+    Two-Electron Energy =                  88.3327818604165884
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.1081361165030899
+    Total Energy =                       -150.1081361165035162
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1804,15 +1860,15 @@ Properties computed using the SCF density matrix
      X:     0.8898      Y:     2.1845      Z:     0.0000     Total:     2.3588
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:19 2017
+*** tstop() called on psinet at Mon May 15 15:40:26 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.25 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.14 seconds =       0.05 minutes
-	system time =       6.56 seconds =       0.11 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.68 seconds =       0.03 minutes
+	system time =       1.15 seconds =       0.02 minutes
+	total time  =          7 seconds =       0.12 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -1833,12 +1889,12 @@ Total time:
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 12244 non-zero two-electron integrals.
+      Computed 12237 non-zero two-electron integrals.
         Stored in file 33.
 
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:19 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:26 2017
 
 
 	Wfn Parameters:
@@ -1896,7 +1952,7 @@ Total time:
 	(VV|VV)...
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-	Frozen core energy     =   -131.00208578880998
+	Frozen core energy     =   -131.00208578881018
 
 	Size of irrep 0 of <ab|cd> integrals:      0.021 (MW) /      0.166 (MB)
 	Total:                                     0.021 (MW) /      0.166 (MB)
@@ -1907,27 +1963,27 @@ Total time:
 	Size of irrep 0 of tIjAb amplitudes:       0.007 (MW) /      0.056 (MB)
 	Total:                                     0.007 (MW) /      0.056 (MB)
 
-	Nuclear Rep. energy          =     32.11348477005190
-	SCF energy                   =   -150.10813611650315
-	One-electron energy          =    -91.26517170451683
+	Nuclear Rep. energy          =     32.11348477005191
+	SCF energy                   =   -150.10813611650352
+	One-electron energy          =    -91.26517170451682
 	Two-electron (AA) energy     =      9.89131210325773
 	Two-electron (BB) energy     =      6.98973614284686
-	Two-electron (AB) energy     =     23.16458836066700
-	Two-electron energy          =    -51.21953509774523
-	Reference energy             =   -150.10813611650332
+	Two-electron (AB) energy     =     23.16458836066701
+	Two-electron energy          =    -51.21953509774521
+	Reference energy             =   -150.10813611650349
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:19 2017
+*** tstop() called on psinet at Mon May 15 15:40:26 2017
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.26 seconds =       0.05 minutes
-	system time =       6.84 seconds =       0.11 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.73 seconds =       0.03 minutes
+	system time =       1.18 seconds =       0.02 minutes
+	total time  =          7 seconds =       0.12 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:19 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:26 2017
 
             **************************
             *                        *
@@ -1935,9 +1991,9 @@ Total time:
             *                        *
             **************************
 
-    Nuclear Rep. energy (wfn)     =   32.113484770051897
-    SCF energy          (wfn)     = -150.108136116503147
-    Reference energy    (file100) = -150.108136116503317
+    Nuclear Rep. energy (wfn)     =   32.113484770051912
+    SCF energy          (wfn)     = -150.108136116503516
+    Reference energy    (file100) = -150.108136116503488
 
     Input parameters:
     -----------------
@@ -1969,33 +2025,33 @@ Total time:
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.224091720282786    0.000e+00    0.000062    0.000217    0.000217    0.000000
-     1        -0.222775449245341    9.254e-02    0.016116    0.037867    0.053552    0.000000
-     2        -0.233432074158495    3.486e-02    0.020166    0.047616    0.067339    0.000000
-     3        -0.238534526493743    3.101e-02    0.029376    0.071111    0.100566    0.000000
-     4        -0.239294476763678    1.436e-02    0.035838    0.087798    0.124166    0.000000
-     5        -0.239409098941020    5.146e-03    0.038361    0.094452    0.133575    0.000000
-     6        -0.239380938279833    1.326e-03    0.038727    0.095407    0.134926    0.000000
-     7        -0.239395677182598    4.261e-04    0.038802    0.095610    0.135213    0.000000
-     8        -0.239397725862527    1.597e-04    0.038814    0.095644    0.135261    0.000000
-     9        -0.239396481215292    6.382e-05    0.038815    0.095648    0.135267    0.000000
-    10        -0.239396786954348    3.008e-05    0.038814    0.095647    0.135265    0.000000
-    11        -0.239397283618461    1.065e-05    0.038817    0.095655    0.135276    0.000000
-    12        -0.239397238891878    3.861e-06    0.038816    0.095652    0.135272    0.000000
-    13        -0.239397090469144    1.541e-06    0.038816    0.095652    0.135273    0.000000
-    14        -0.239397015684210    6.820e-07    0.038816    0.095652    0.135273    0.000000
-    15        -0.239397024812454    3.347e-07    0.038816    0.095652    0.135273    0.000000
-    16        -0.239397038716253    1.704e-07    0.038816    0.095652    0.135273    0.000000
-    17        -0.239397040382034    7.634e-08    0.038816    0.095652    0.135273    0.000000
-    18        -0.239397037715839    3.270e-08    0.038816    0.095652    0.135273    0.000000
-    19        -0.239397036839861    1.537e-08    0.038816    0.095652    0.135273    0.000000
-    20        -0.239397036921764    7.207e-09    0.038816    0.095652    0.135273    0.000000
-    21        -0.239397037218403    3.322e-09    0.038816    0.095652    0.135273    0.000000
-    22        -0.239397037229039    1.354e-09    0.038816    0.095652    0.135273    0.000000
-    23        -0.239397037198119    5.087e-10    0.038816    0.095652    0.135273    0.000000
-    24        -0.239397037169879    2.576e-10    0.038816    0.095652    0.135273    0.000000
-    25        -0.239397037171467    1.026e-10    0.038816    0.095652    0.135273    0.000000
-    26        -0.239397037174242    3.478e-11    0.038816    0.095652    0.135273    0.000000
+     0        -0.224091720282785    0.000e+00    0.000062    0.000217    0.000217    0.000000
+     1        -0.222775449245340    9.254e-02    0.016116    0.037867    0.053552    0.000000
+     2        -0.233432074158493    3.486e-02    0.020166    0.047616    0.067339    0.000000
+     3        -0.238534526493740    3.101e-02    0.029376    0.071111    0.100566    0.000000
+     4        -0.239294476763675    1.436e-02    0.035838    0.087798    0.124166    0.000000
+     5        -0.239409098941018    5.146e-03    0.038361    0.094452    0.133575    0.000000
+     6        -0.239380938279830    1.326e-03    0.038727    0.095407    0.134926    0.000000
+     7        -0.239395677182596    4.261e-04    0.038802    0.095610    0.135213    0.000000
+     8        -0.239397725862525    1.597e-04    0.038814    0.095644    0.135261    0.000000
+     9        -0.239396481215289    6.382e-05    0.038815    0.095648    0.135267    0.000000
+    10        -0.239396786954346    3.008e-05    0.038814    0.095647    0.135265    0.000000
+    11        -0.239397283618458    1.065e-05    0.038817    0.095655    0.135276    0.000000
+    12        -0.239397238891875    3.861e-06    0.038816    0.095652    0.135272    0.000000
+    13        -0.239397090469141    1.541e-06    0.038816    0.095652    0.135273    0.000000
+    14        -0.239397015684207    6.820e-07    0.038816    0.095652    0.135273    0.000000
+    15        -0.239397024812451    3.347e-07    0.038816    0.095652    0.135273    0.000000
+    16        -0.239397038716251    1.704e-07    0.038816    0.095652    0.135273    0.000000
+    17        -0.239397040382031    7.634e-08    0.038816    0.095652    0.135273    0.000000
+    18        -0.239397037715837    3.270e-08    0.038816    0.095652    0.135273    0.000000
+    19        -0.239397036839859    1.537e-08    0.038816    0.095652    0.135273    0.000000
+    20        -0.239397036921761    7.207e-09    0.038816    0.095652    0.135273    0.000000
+    21        -0.239397037218400    3.322e-09    0.038816    0.095652    0.135273    0.000000
+    22        -0.239397037229037    1.354e-09    0.038816    0.095652    0.135273    0.000000
+    23        -0.239397037198116    5.087e-10    0.038816    0.095652    0.135273    0.000000
+    24        -0.239397037169875    2.576e-10    0.038816    0.095652    0.135273    0.000000
+    25        -0.239397037171464    1.026e-10    0.038816    0.095652    0.135273    0.000000
+    26        -0.239397037174239    3.478e-11    0.038816    0.095652    0.135273    0.000000
 
     Iterations converged.
 
@@ -2060,29 +2116,37 @@ Total time:
       2   3   1   1        -0.0270200179
       5   4   4  11        -0.0248444761
 
-    SCF energy       (wfn)                    = -150.108136116503147
-    Reference energy (file100)                = -150.108136116503317
+    SCF energy       (wfn)                    = -150.108136116503516
+    Reference energy (file100)                = -150.108136116503488
 
-    Opposite-spin CCSD correlation energy     =   -0.187809756393197
-    Same-spin CCSD correlation energy         =   -0.049259771699053
-    CCSD correlation energy                   =   -0.239397037174242
-      * CCSD total energy                     = -150.347533153677546
+    Opposite-spin CCSD correlation energy     =   -0.187809756393195
+    Same-spin CCSD correlation energy         =   -0.049259771699052
+    CCSD correlation energy                   =   -0.239397037174239
+      * CCSD total energy                     = -150.347533153677716
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:21 2017
+*** tstop() called on psinet at Mon May 15 15:40:27 2017
 Module time:
-	user time   =       1.27 seconds =       0.02 minutes
-	system time =       3.86 seconds =       0.06 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.53 seconds =       0.08 minutes
-	system time =      10.70 seconds =       0.18 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       1.63 seconds =       0.03 minutes
+	total time  =          8 seconds =       0.13 minutes
 	X SCF energy......................................................PASSED
 	X CCSD energy.....................................................PASSED
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:21 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:27 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -2109,7 +2173,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -2130,7 +2194,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -2184,22 +2249,22 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   0:  -150.02657585089713   -1.50027e+02   7.28241e-03 
-   @ROHF iter   1:  -150.07929772005770   -5.27219e-02   3.26740e-03 
-   @ROHF iter   2:  -150.08597236760329   -6.67465e-03   1.79684e-03 DIIS
-   @ROHF iter   3:  -150.08697636991798   -1.00400e-03   7.30975e-04 DIIS
-   @ROHF iter   4:  -150.08726849001340   -2.92120e-04   1.86370e-04 DIIS
-   @ROHF iter   5:  -150.08729340320070   -2.49132e-05   7.85348e-05 DIIS
-   @ROHF iter   6:  -150.08729833560352   -4.93240e-06   1.75397e-05 DIIS
-   @ROHF iter   7:  -150.08729869121328   -3.55610e-07   4.49613e-06 DIIS
-   @ROHF iter   8:  -150.08729871227735   -2.10641e-08   1.63957e-06 DIIS
-   @ROHF iter   9:  -150.08729871571694   -3.43960e-09   4.38044e-07 DIIS
-   @ROHF iter  10:  -150.08729871590168   -1.84741e-10   1.12878e-07 DIIS
-   @ROHF iter  11:  -150.08729871591316   -1.14824e-11   2.48520e-08 DIIS
-   @ROHF iter  12:  -150.08729871591373   -5.68434e-13   4.76576e-09 DIIS
-   @ROHF iter  13:  -150.08729871591362    1.13687e-13   6.58384e-10 DIIS
-   @ROHF iter  14:  -150.08729871591385   -2.27374e-13   1.49074e-10 DIIS
-   @ROHF iter  15:  -150.08729871591362    2.27374e-13   3.00360e-11 DIIS
+   @ROHF iter   0:  -150.02657585089707   -1.50027e+02   7.28241e-03 
+   @ROHF iter   1:  -150.07929772005792   -5.27219e-02   3.26740e-03 
+   @ROHF iter   2:  -150.08597236760355   -6.67465e-03   1.79684e-03 DIIS
+   @ROHF iter   3:  -150.08697636991835   -1.00400e-03   7.30975e-04 DIIS
+   @ROHF iter   4:  -150.08726849001357   -2.92120e-04   1.86370e-04 DIIS
+   @ROHF iter   5:  -150.08729340320076   -2.49132e-05   7.85348e-05 DIIS
+   @ROHF iter   6:  -150.08729833560380   -4.93240e-06   1.75397e-05 DIIS
+   @ROHF iter   7:  -150.08729869121362   -3.55610e-07   4.49613e-06 DIIS
+   @ROHF iter   8:  -150.08729871227752   -2.10639e-08   1.63957e-06 DIIS
+   @ROHF iter   9:  -150.08729871571717   -3.43965e-09   4.38044e-07 DIIS
+   @ROHF iter  10:  -150.08729871590199   -1.84826e-10   1.12878e-07 DIIS
+   @ROHF iter  11:  -150.08729871591336   -1.13687e-11   2.48520e-08 DIIS
+   @ROHF iter  12:  -150.08729871591396   -5.96856e-13   4.76576e-09 DIIS
+   @ROHF iter  13:  -150.08729871591402   -5.68434e-14   6.58385e-10 DIIS
+   @ROHF iter  14:  -150.08729871591399    2.84217e-14   1.49074e-10 DIIS
+   @ROHF iter  15:  -150.08729871591396    2.84217e-14   3.00360e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -2230,20 +2295,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.08729871591362
+  @ROHF Final Energy:  -150.08729871591396
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5978878829708947
-    Two-Electron Energy =                  88.3971043970054069
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5978878829716905
+    Two-Electron Energy =                  88.3971043970058190
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.0872987159135619
+    Total Energy =                       -150.0872987159139598
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2262,18 +2327,26 @@ Properties computed using the SCF density matrix
      X:     0.8052      Y:     2.1825      Z:    -0.0000     Total:     2.3263
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:21 2017
+*** tstop() called on psinet at Mon May 15 15:40:28 2017
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.77 seconds =       0.08 minutes
-	system time =      11.07 seconds =       0.18 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.29 seconds =       0.04 minutes
+	system time =       1.64 seconds =       0.03 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:21 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:28 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   112 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+    atoms 3   entry H          line    21 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
 
 
          ---------------------------------------------------------
@@ -2300,7 +2373,7 @@ Total time:
 
   Rotational constants: A =     20.63477  B =      1.12242  C =      1.06451 [cm^-1]
   Rotational constants: A = 618614.75377  B =  33649.17601  C =  31913.27281 [MHz]
-  Nuclear repulsion =   32.113484770051897
+  Nuclear repulsion =   32.113484770051912
 
   Charge       = 0
   Multiplicity = 2
@@ -2321,7 +2394,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /home/alaunder/bin/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs
+  Basis Set: 6-31G
+    Blend: 6-31G
     Number of shells: 12
     Number of basis function: 20
     Number of Cartesian functions: 20
@@ -2375,8 +2449,8 @@ Total time:
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   0:  -150.08729871591373   -1.50087e+02   4.08789e-12 
-   @ROHF iter   1:  -150.08729871591368    5.68434e-14   9.34504e-12 
+   @ROHF iter   0:  -150.08729871591385   -1.50087e+02   4.08787e-12 
+   @ROHF iter   1:  -150.08729871591390   -5.68434e-14   9.34480e-12 
 
   ==> Post-Iterations <==
 
@@ -2407,20 +2481,20 @@ Total time:
 
   Energy converged.
 
-  @ROHF Final Energy:  -150.08729871591368
+  @ROHF Final Energy:  -150.08729871591390
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             32.1134847700518975
-    One-Electron Energy =                -270.5978878830522945
-    Two-Electron Energy =                  88.3971043970867356
+    Nuclear Repulsion Energy =             32.1134847700519117
+    One-Electron Energy =                -270.5978878830526355
+    Two-Electron Energy =                  88.3971043970868209
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -150.0872987159136471
+    Total Energy =                       -150.0872987159139029
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2439,15 +2513,15 @@ Properties computed using the SCF density matrix
      X:     0.8052      Y:     2.1825      Z:    -0.0000     Total:     2.3263
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:21 2017
+*** tstop() called on psinet at Mon May 15 15:40:28 2017
 Module time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.26 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.03 seconds =       0.08 minutes
-	system time =      11.37 seconds =       0.19 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       1.65 seconds =       0.03 minutes
+	total time  =          9 seconds =       0.15 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -2468,12 +2542,12 @@ Total time:
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 12244 non-zero two-electron integrals.
+      Computed 12237 non-zero two-electron integrals.
         Stored in file 33.
 
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:21 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:28 2017
 
 
 	Wfn Parameters:
@@ -2531,7 +2605,7 @@ Total time:
 	(VV|VV)...
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-	Frozen core energy     =   -131.00201221079337
+	Frozen core energy     =   -131.00201221079351
 
 	Size of irrep 0 of <ab|cd> integrals:      0.021 (MW) /      0.166 (MB)
 	Total:                                     0.021 (MW) /      0.166 (MB)
@@ -2542,27 +2616,27 @@ Total time:
 	Size of irrep 0 of tIjAb amplitudes:       0.007 (MW) /      0.056 (MB)
 	Total:                                     0.007 (MW) /      0.056 (MB)
 
-	Nuclear Rep. energy          =     32.11348477005190
-	SCF energy                   =   -150.08729871591368
-	One-electron energy          =    -91.26898357593198
-	Two-electron (AA) energy     =      9.89076411429731
-	Two-electron (BB) energy     =      6.99789398372479
-	Two-electron (AB) energy     =     23.18155420273782
-	Two-electron energy          =    -51.19877127517206
-	Reference energy             =   -150.08729871591353
+	Nuclear Rep. energy          =     32.11348477005191
+	SCF energy                   =   -150.08729871591390
+	One-electron energy          =    -91.26898357593194
+	Two-electron (AA) energy     =      9.89076411429730
+	Two-electron (BB) energy     =      6.99789398372478
+	Two-electron (AB) energy     =     23.18155420273779
+	Two-electron energy          =    -51.19877127517207
+	Reference energy             =   -150.08729871591368
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:21 2017
+*** tstop() called on psinet at Mon May 15 15:40:28 2017
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.15 seconds =       0.09 minutes
-	system time =      11.66 seconds =       0.19 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       2.47 seconds =       0.04 minutes
+	system time =       1.67 seconds =       0.03 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on bzloink
-*** at Wed Mar 15 15:13:21 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:40:28 2017
 
             **************************
             *                        *
@@ -2570,9 +2644,9 @@ Total time:
             *                        *
             **************************
 
-    Nuclear Rep. energy (wfn)     =   32.113484770051897
-    SCF energy          (wfn)     = -150.087298715913676
-    Reference energy    (file100) = -150.087298715913533
+    Nuclear Rep. energy (wfn)     =   32.113484770051912
+    SCF energy          (wfn)     = -150.087298715913903
+    Reference energy    (file100) = -150.087298715913676
 
     Input parameters:
     -----------------
@@ -2606,11 +2680,11 @@ Total time:
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.059380665410045    0.000e+00    0.038816    0.095652    0.135273    0.000000
+     0        -0.059380665410048    0.000e+00    0.038816    0.095652    0.135273    0.000000
      1        -0.221926901338156    3.021e-01    0.028654    0.070031    0.099039    0.000000
      2        -0.218667527722354    8.447e-02    0.029824    0.073164    0.103470    0.000000
      3        -0.223980691621159    3.756e-02    0.026562    0.064169    0.090749    0.000000
-     4        -0.225387058452731    1.868e-02    0.025508    0.061359    0.086774    0.000000
+     4        -0.225387058452730    1.868e-02    0.025508    0.061359    0.086774    0.000000
      5        -0.225433458377231    9.935e-03    0.024326    0.058145    0.082230    0.000000
      6        -0.225328205463725    4.458e-03    0.023785    0.056737    0.080238    0.000000
      7        -0.225246978043215    2.680e-03    0.023658    0.056402    0.079764    0.000000
@@ -2619,27 +2693,27 @@ Total time:
     10        -0.225237578508051    2.318e-03    0.023122    0.054942    0.077700    0.000000
     11        -0.225213855039613    1.819e-03    0.022381    0.052915    0.074833    0.000000
     12        -0.225202401369010    8.866e-04    0.022060    0.052039    0.073595    0.000000
-    13        -0.225189193722416    3.019e-04    0.022043    0.051993    0.073530    0.000000
-    14        -0.225183400114216    1.766e-04    0.021977    0.051812    0.073274    0.000000
+    13        -0.225189193722417    3.019e-04    0.022043    0.051993    0.073530    0.000000
+    14        -0.225183400114215    1.766e-04    0.021977    0.051812    0.073274    0.000000
     15        -0.225182111588912    5.475e-05    0.021976    0.051811    0.073272    0.000000
     16        -0.225181557478008    2.727e-05    0.021973    0.051802    0.073259    0.000000
     17        -0.225181731665409    1.401e-05    0.021975    0.051808    0.073268    0.000000
     18        -0.225181768562449    6.667e-06    0.021976    0.051810    0.073270    0.000000
     19        -0.225181810897361    3.376e-06    0.021976    0.051812    0.073273    0.000000
-    20        -0.225181797300022    2.236e-06    0.021976    0.051812    0.073274    0.000000
+    20        -0.225181797300023    2.236e-06    0.021976    0.051812    0.073274    0.000000
     21        -0.225181799851815    9.222e-07    0.021976    0.051812    0.073274    0.000000
-    22        -0.225181809187342    4.019e-07    0.021976    0.051812    0.073273    0.000000
+    22        -0.225181809187343    4.019e-07    0.021976    0.051812    0.073273    0.000000
     23        -0.225181817480328    2.028e-07    0.021976    0.051812    0.073273    0.000000
     24        -0.225181817777817    7.880e-08    0.021976    0.051812    0.073273    0.000000
-    25        -0.225181816119510    3.926e-08    0.021976    0.051812    0.073273    0.000000
+    25        -0.225181816119511    3.926e-08    0.021976    0.051812    0.073273    0.000000
     26        -0.225181815211560    1.602e-08    0.021976    0.051812    0.073273    0.000000
     27        -0.225181815087184    6.700e-09    0.021976    0.051812    0.073273    0.000000
-    28        -0.225181815046319    3.199e-09    0.021976    0.051812    0.073273    0.000000
+    28        -0.225181815046318    3.199e-09    0.021976    0.051812    0.073273    0.000000
     29        -0.225181815070149    2.174e-09    0.021976    0.051812    0.073273    0.000000
     30        -0.225181815043373    9.056e-10    0.021976    0.051812    0.073273    0.000000
     31        -0.225181815034884    3.931e-10    0.021976    0.051812    0.073273    0.000000
-    32        -0.225181815031928    1.849e-10    0.021976    0.051812    0.073273    0.000000
-    33        -0.225181815033703    7.952e-11    0.021976    0.051812    0.073273    0.000000
+    32        -0.225181815031929    1.849e-10    0.021976    0.051812    0.073273    0.000000
+    33        -0.225181815033704    7.952e-11    0.021976    0.051812    0.073273    0.000000
 
     Iterations converged.
 
@@ -2704,24 +2778,24 @@ Total time:
       5   5   1   1        -0.0269046883
       3   3   3   3        -0.0266934500
 
-    SCF energy       (wfn)                    = -150.087298715913676
-    Reference energy (file100)                = -150.087298715913533
+    SCF energy       (wfn)                    = -150.087298715913903
+    Reference energy (file100)                = -150.087298715913676
 
-    Opposite-spin CCSD correlation energy     =   -0.178829170863606
+    Opposite-spin CCSD correlation energy     =   -0.178829170863607
     Same-spin CCSD correlation energy         =   -0.044748779862989
-    CCSD correlation energy                   =   -0.225181815033703
-      * CCSD total energy                     = -150.312480530947226
+    CCSD correlation energy                   =   -0.225181815033704
+      * CCSD total energy                     = -150.312480530947369
 
 
-*** tstop() called on bzloink at Wed Mar 15 15:13:23 2017
+*** tstop() called on psinet at Mon May 15 15:40:29 2017
 Module time:
-	user time   =       1.45 seconds =       0.02 minutes
-	system time =       4.41 seconds =       0.07 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.50 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.60 seconds =       0.11 minutes
-	system time =      16.07 seconds =       0.27 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       2.97 seconds =       0.05 minutes
+	system time =       2.17 seconds =       0.04 minutes
+	total time  =         10 seconds =       0.17 minutes
 	A SCF energy......................................................PASSED
 	A CCSD energy.....................................................PASSED
 

@@ -1,28 +1,35 @@
+
     -----------------------------------------------------------------------
-          PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta1 Driver
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.1rc3.dev5 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+                         Git: Rev {master} 3fbd859 
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Using LocalCommunicator (Number of processes = 1)
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Memory level set to 256.000 MB
-
+    Process ID:  21016
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
 
-memory 500 mb
 
 molecule h2o {
     o
@@ -37,16 +44,27 @@ set {
 
 energy('mrccsdt')
 
+compare_values(  8.801465529972, get_variable("NUCLEAR REPULSION ENERGY"), 6, 'NRE')  #TEST
+compare_values(-76.021418445155, get_variable("SCF TOTAL ENERGY"), 6, 'SCF')  #TEST
+compare_values( -0.204692406830, get_variable("MP2 CORRELATION ENERGY") , 6, 'MP2 correlation')  #TEST
+compare_values( -0.217715210258, get_variable("CCSDT CORRELATION ENERGY"), 6, 'CCSDT correlation')  #TEST
+compare_values(-76.239133655413, get_variable("CURRENT ENERGY"), 6, 'CCSDT')  #TEST
+
 --------------------------------------------------------------------------
 
-  Memory set to 500.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:40:44 2017
 
-*** tstart() called on login1
-*** at Fri Jan 20 12:16:44 2012
+   => Loading Basis Set <=
 
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
 
 
          ---------------------------------------------------------
@@ -59,24 +77,21 @@ energy('mrccsdt')
   ==> Geometry <==
 
     Molecular point group: c2v
+    Full point group: C2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O         -0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.790689573744     0.543701060724
-           H         -0.000000000000     0.790689573744     0.543701060724
-
-    Number of unique atoms: 2
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 2 
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -90,14 +105,15 @@ energy('mrccsdt')
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
-  ==> Primary Basis: CC-PVDZ <==
+  ==> Primary Basis <==
 
-  Basis Set
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
@@ -106,128 +122,159 @@ energy('mrccsdt')
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7382433493E-02.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  Initial RHF energy:   -58.68914684955000
-
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A1        11      11       3       3       3       0
+     A1        11      11       0       0       0       0
      A2         2       2       0       0       0       0
-     B1         4       4       1       1       1       0
-     B2         7       7       1       1       1       0
+     B1         4       4       0       0       0       0
+     B2         7       7       0       0       0       0
    -------------------------------------------------------
     Total      24      24       5       5       5       0
    -------------------------------------------------------
 
   ==> Integral Setup <==
 
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
+  Using in-core PK algorithm.
    Calculation information:
       Number of atoms:                   3
       Number of AO shells:              12
-      Number of SO shells:               9
       Number of primitives:             32
       Number of atomic orbitals:        25
       Number of basis functions:        24
 
-      Number of irreps:                  4
-      Number of functions per irrep: [  11    2    4    7 ]
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
 
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
 
-      Computing two-electron integrals...done
-      Computed 11412 non-zero two-electron integrals.
-        Stored in file 33.
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 3.7382439507E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   1:   -68.92345265790384   -1.02343e+01   0.00000e+00 
-	Occupation by irrep:
-	         A1    A2    B1    B2 
-	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.87832942140342   -9.54877e-01   5.29715e-01 DIIS
-	Occupation by irrep:
-	         A1    A2    B1    B2 
-	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.76505679542871   -5.88673e+00   4.96564e-01 DIIS
-   @RHF iter   4:   -75.99909056522100   -2.34034e-01   1.67112e-02 DIIS
-   @RHF iter   5:   -76.02109885108773   -2.20083e-02   7.82169e-03 DIIS
-   @RHF iter   6:   -76.02136730573586   -2.68455e-04   1.37201e-03 DIIS
-   @RHF iter   7:   -76.02141646192911   -4.91562e-05   4.89170e-04 DIIS
-   @RHF iter   8:   -76.02141835368259   -1.89175e-06   1.11626e-04 DIIS
-   @RHF iter   9:   -76.02141845904514   -1.05363e-07   1.80568e-05 DIIS
-   @RHF iter  10:   -76.02141846015853   -1.11339e-09   2.94238e-06 DIIS
-   @RHF iter  11:   -76.02141846024014   -8.16129e-11   6.18311e-07 DIIS
-   @RHF iter  12:   -76.02141846024253   -2.38742e-12   8.35574e-08 DIIS
-   @RHF iter  13:   -76.02141846024250    2.84217e-14   1.55142e-08 DIIS
+   @RHF iter   0:   -75.82127221040778   -7.58213e+01   1.11204e-01 
+   @RHF iter   1:   -75.99645439731029   -1.75182e-01   1.79501e-02 
+   @RHF iter   2:   -76.01558599244962   -1.91316e-02   9.08257e-03 DIIS
+   @RHF iter   3:   -76.02117245232881   -5.58646e-03   1.30382e-03 DIIS
+   @RHF iter   4:   -76.02138663855784   -2.14186e-04   3.38846e-04 DIIS
+   @RHF iter   5:   -76.02141595932180   -2.93208e-05   8.79377e-05 DIIS
+   @RHF iter   6:   -76.02141839738947   -2.43807e-06   1.36441e-05 DIIS
+   @RHF iter   7:   -76.02141844497399   -4.75845e-08   9.87821e-07 DIIS
+   @RHF iter   8:   -76.02141844515114   -1.77153e-10   1.43569e-07 DIIS
+   @RHF iter   9:   -76.02141844515486   -3.72324e-12   2.02677e-08 DIIS
+   @RHF iter  10:   -76.02141844515496   -9.94760e-14   3.01829e-09 DIIS
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
+    Orbital Energies (a.u.)
+    -----------------------
 
-	Doubly Occupied:                                                      
+    Doubly Occupied:                                                      
 
-	   1A1   -20.557846     2A1    -1.316181     1B2    -0.677073  
-	   3A1    -0.558726     1B1    -0.490383  
+       1A1   -20.557846     2A1    -1.316181     1B2    -0.677073  
+       3A1    -0.558726     1B1    -0.490383  
 
-	Virtual:                                                              
+    Virtual:                                                              
 
-	   4A1     0.178011     2B2     0.249490     3B2     0.760274  
-	   5A1     0.816118     6A1     1.166182     2B1     1.198611  
-	   4B2     1.256467     7A1     1.452518     1A2     1.466082  
-	   3B1     1.667951     8A1     1.877148     5B2     1.889827  
-	   6B2     2.354902     9A1     2.388287     4B1     3.248786  
-	   2A2     3.297834    10A1     3.453879    11A1     3.821364  
-	   7B2     4.099041  
+       4A1     0.178011     2B2     0.249490     3B2     0.760274  
+       5A1     0.816118     6A1     1.166182     2B1     1.198611  
+       4B2     1.256467     7A1     1.452518     1A2     1.466082  
+       3B1     1.667951     8A1     1.877148     5B2     1.889827  
+       6B2     2.354901     9A1     2.388286     4B1     3.248786  
+       2A2     3.297834    10A1     3.453879    11A1     3.821364  
+       7B2     4.099041  
 
-	Final Occupation by Irrep:
-	         A1    A2    B1    B2 
-	DOCC [     3,    0,    1,    1 ]
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02141846024250
+  @RHF Final Energy:   -76.02141844515496
 
-  ==> Properties <==
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -122.4453516704664082
+    Two-Electron Energy =                  37.6224676953393811
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -76.0214184451549642
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     1.0191
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1947
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.8244     Total:     0.8244
+     X:     0.0000      Y:     0.0000      Z:     0.8244     Total:     0.8244
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0955     Total:     2.0955
+     X:     0.0000      Y:     0.0000      Z:     2.0955     Total:     2.0955
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on login1 at Fri Jan 20 12:16:44 2012
+*** tstop() called on psinet at Mon May 15 15:40:45 2017
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-  MRCC input file generator.
-   Will generate fort.55 and fort.56 files.
+*** tstart() called on psinet
+*** at Mon May 15 15:40:45 2017
+
+  Psi4 interface to MRCC:
+    Generating inputs for CCSDT.
+
+    Automatically determined settings:
+        method 1
+        exlevel 3
+        fullname CCSDT
+
+    Orbital Information:
+
+            Frozen Core [   1,  0,  0,  0]
+            Active DOCC [   2,  0,  1,  1]
+                   SOCC [   0,  0,  0,  0]
+         Frozen Virtual [   0,  0,  0,  0]
+
+              Total MOs [  10,  2,  4,  7]
 
     Beginning integral transformation.
+
+  WARNING: Integrals were not found on disk. Computing them now.
+           If you modified any of the integrals those modifications
+           will be lost. If you need them file an issue on GitHub:
+               https://github.com/psi4/psi4/issues
+
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
@@ -241,173 +288,205 @@ Total time:
   Generating fort.55 integral file...done.
   Generating fort.56 input file...done.
 
+*** tstop() called on psinet at Mon May 15 15:40:45 2017
+Module time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
 ===== Begin fort.56 input for MRCC ======
-     3     1     0     0     1      0     0      1     0     1     1     1     0      0      0     8     0     0    0.00    0   500
+     3     1     0     0     1      0     0     1     0     1     1     1     0      0      0     6     0     0    0.00    0   524
 ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem
   2  2  0  0  0  0  0  0  0  0  0  0  2  0  0  0  2  0  0  0  0  0  0
 ===== End   fort.56 input for MRCC ======
+ **********************************************************************
+                          MRCC program system
+ **********************************************************************
  
+                              Written by
+    Mihaly Kallay, Zoltan Rolik, Istvan Ladjanszki, Lorant Szegedy,
+           Bence Ladoczki, Jozsef Csontos, and Bence Kornis
+ 
+        Department of Physical Chemistry and Materials Science
+            Budapest University of Technology and Economics
+                  Budapest P.O.Box 91, H-1521 Hungary
+ 
+                              www.mrcc.hu
+ 
+ ************************ 2017-05-15 15:40:45 *************************
  Executing goldstone...
  
  Generation of CC equations in terms of H and T...
  Generation of antisymmetrized Goldstone diagrams...
- Number of diagrams in T^                        1  equations:  
-                       15
- Number of diagrams in T^                        2  equations:  
-                       37
- Number of diagrams in T^                        3  equations:  
-                       47
+ Number of diagrams in T^1 equations:    15
+ Number of diagrams in T^2 equations:    37
+ Number of diagrams in T^3 equations:    47
  Translation of diagrams to factorized equations...
  Optimizing intermediate calculation...
  Number of floating-point operations per iteration step:   1.3427E+08
  Probable CPU time per iteration step (hours):      0.00
  Required memory (Mbytes):      18.1
- Number of intermediates:                                     71
- Number of intermediates to be stored:                        29
+ Number of intermediates:                                  71
+ Number of intermediates to be stored:                     29
  Length of intermediate file (Mbytes):       1.5
  
+ ************************ 2017-05-15 15:40:45 *************************
  Executing xmrcc...
  
  **********************************************************************
- CC(                        3 ) calculation 
+ CC(                     3 ) calculation 
  
  
  Allocation of 100.0 Mbytes of memory...
- Number of spinorbitals:                       46
- Number of alpha electrons:                           4
- Number of beta electrons:                            4
- Spin multiplicity:                        1
+ Number of spinorbitals:                    46
+ Number of alpha electrons:                        4
+ Number of beta electrons:                         4
+ Spin multiplicity:                     1
  z-component of spin:  0.0
- Spatial symmetry:                         1
- Convergence criterion:  1.0E-08
+ Spatial symmetry:                      1
+ Convergence criterion:  1.0E-06
  Construction of occupation graphs...
- Number of                        0 -fold excitations:  
-                        1
- Number of                        1 -fold excitations:  
-                       50
- Number of                        2 -fold excitations:  
-                     2056
- Number of                        3 -fold excitations:  
-                    40910
- Total number of configurations:                     43017
+ Number of                     0 -fold excitations:                      1
+ Number of                     1 -fold excitations:                     50
+ Number of                     2 -fold excitations:                   2056
+ Number of                     3 -fold excitations:                  40910
+ Total number of configurations:                  43017
  Calculation of coupling coefficients...
- Length of intermediate file (Mbytes):       1.2
+ Length of intermediate file (Mbytes):       1.4
  
  ======================================================================
  
  Memory requirements /Mbyte/: 
                Minimal        Optimal
- Real*8:          0.5596         2.1400
- Integer:         0.6142
- Total:           1.1738         2.7542
+ Real*8:          0.5596         2.1430
+ Integer:         0.5057
+ Total:           1.0653         2.6487
  
  
+ ************************ 2017-05-15 15:40:45 *************************
  Executing mrcc...
  
  **********************************************************************
  CCSDT calculation                                                      
  
  
- Allocation of   2.1 Mbytes of memory...
- Number of spinorbitals:                       46
- Number of alpha electrons:                           4
- Number of beta electrons:                            4
- Spin multiplicity:                        1
+ OpenMP parallel version is running.
+ Number of CPUs:   1
+ Allocation of    2.1 Mbytes of memory...
+ Number of spinorbitals:  46
+ Number of alpha electrons:  4
+ Number of beta  electrons:  4
+ Spin multiplicity: 1
  z-component of spin:  0.0
- Spatial symmetry:                         1
- Convergence criterion:  1.0E-08
+ Spatial symmetry: 1
+ Convergence criterion:  1.0E-06
  Construction of occupation graphs...
- Number of                        0 -fold excitations:  
-                        1
- Number of                        1 -fold excitations:  
-                       50
- Number of                        2 -fold excitations:  
-                     2056
- Number of                        3 -fold excitations:  
-                    40910
- Total number of configurations:                     43017
+ Number of 0-fold excitations: 1
+ Number of 1-fold excitations: 50
+ Number of 2-fold excitations: 2056
+ Number of 3-fold excitations: 40910
+ Total number of determinants: 43017
  Calculation of coupling coefficients...
  Initial cluster amplitudes are generated.
- Length of intermediate file (Mbytes):       1.2
- Reading integral list from unit                       55 ...
- Energy of reference determinant /au/:   -76.02141846
+ Length of intermediate file (Mbytes):       1.4
+ Reading integral list from unit 55...
+ Sorting integrals...
+ Energy of reference determinant [au]:     -76.021418445155
  Calculation of MP denominators...
  
  Starting CC iteration...
  ======================================================================
- Norm of residual vector:    0.96001905
- CPU time /min/:     0.008
+ Norm of residual vector:     0.96001904
+ CPU time [min]:     0.006                   Wall time [min]:     0.006
  
- Iteration  1  CC energy:  -76.22611086  Energy decrease:    0.20469240
+ Iteration  1  CC energy:   -76.22611085  Energy decrease:   0.20469241
  ======================================================================
- Norm of residual vector:    0.18240731
- CPU time /min/:     0.015
+ Norm of residual vector:     0.18240732
+ CPU time [min]:     0.011                   Wall time [min]:     0.011
  
- Iteration  2  CC energy:  -76.23075471  Energy decrease:    0.00464385
+ Iteration  2  CC energy:   -76.23075470  Energy decrease:   0.00464385
  ======================================================================
- Norm of residual vector:    0.04872156
- CPU time /min/:     0.023
+ Norm of residual vector:     0.04872156
+ CPU time [min]:     0.017                   Wall time [min]:     0.017
  
- Iteration  3  CC energy:  -76.23825800  Energy decrease:    0.00750328
+ Iteration  3  CC energy:   -76.23825799  Energy decrease:   0.00750329
  ======================================================================
- Norm of residual vector:    0.01383282
- CPU time /min/:     0.031
+ Norm of residual vector:     0.01383282
+ CPU time [min]:     0.022                   Wall time [min]:     0.022
  
- Iteration  4  CC energy:  -76.23918196  Energy decrease:    0.00092396
+ Iteration  4  CC energy:   -76.23918195  Energy decrease:   0.00092396
  ======================================================================
- Norm of residual vector:    0.00428528
- CPU time /min/:     0.039
+ Norm of residual vector:     0.00428528
+ CPU time [min]:     0.027                   Wall time [min]:     0.028
  
- Iteration  5  CC energy:  -76.23913749  Energy decrease:    0.00004446
+ Iteration  5  CC energy:   -76.23913749  Energy decrease:   0.00004446
  ======================================================================
- Norm of residual vector:    0.00124020
- CPU time /min/:     0.047
+ Norm of residual vector:     0.00124020
+ CPU time [min]:     0.033                   Wall time [min]:     0.033
  
- Iteration  6  CC energy:  -76.23913171  Energy decrease:    0.00000578
+ Iteration  6  CC energy:   -76.23913170  Energy decrease:   0.00000578
  ======================================================================
- Norm of residual vector:    0.00041445
- CPU time /min/:     0.055
+ Norm of residual vector:     0.00041445
+ CPU time [min]:     0.039                   Wall time [min]:     0.039
  
- Iteration  7  CC energy:  -76.23913441  Energy decrease:    0.00000270
+ Iteration  7  CC energy:   -76.23913440  Energy decrease:   0.00000270
  ======================================================================
- Norm of residual vector:    0.00015479
- CPU time /min/:     0.070
+ Norm of residual vector:     0.00015479
+ CPU time [min]:     0.044                   Wall time [min]:     0.044
  
- Iteration  8  CC energy:  -76.23913388  Energy decrease:    0.00000053
+ Iteration  8  CC energy:   -76.23913388  Energy decrease:   0.00000053
  ======================================================================
- Norm of residual vector:    0.00005161
- CPU time /min/:     0.078
+ Norm of residual vector:     0.00005161
+ CPU time [min]:     0.050                   Wall time [min]:     0.050
  
- Iteration  9  CC energy:  -76.23913374  Energy decrease:    0.00000014
+ Iteration  9  CC energy:   -76.23913373  Energy decrease:   0.00000014
  ======================================================================
- Norm of residual vector:    0.00001420
- CPU time /min/:     0.086
+ Norm of residual vector:     0.00001420
+ CPU time [min]:     0.056                   Wall time [min]:     0.056
  
- Iteration 10  CC energy:  -76.23913370  Energy decrease:    0.00000004
+ Iteration 10  CC energy:   -76.23913369  Energy decrease:   0.00000004
  ======================================================================
- Norm of residual vector:    0.00000429
- CPU time /min/:     0.094
+ Norm of residual vector:     0.00000429
+ CPU time [min]:     0.061                   Wall time [min]:     0.062
  
- Iteration 11  CC energy:  -76.23913366  Energy decrease:    0.00000004
+ Iteration 11  CC energy:   -76.23913365  Energy decrease:   0.00000004
  ======================================================================
- Norm of residual vector:    0.00000141
- CPU time /min/:     0.102
+ Norm of residual vector:     0.00000141
+ CPU time [min]:     0.067                   Wall time [min]:     0.067
  
- Iteration 12  CC energy:  -76.23913366  Energy decrease:    9.2200E-10
+ Iteration 12  CC energy:   -76.23913365  Energy decrease:   9.2200E-10
+ ======================================================================
+ Norm of residual vector:     0.00000043
+ CPU time [min]:     0.072                   Wall time [min]:     0.073
+ 
+ Iteration 13  CC energy:   -76.23913366  Energy decrease:   1.6959E-09
  ======================================================================
  
- Iteration has converged in                       12  steps.
+ Iteration has converged in 13 steps.
  
  Final results:
- Total CCSDT energy /au/:        -76.239133662753
- Total MP(2) energy /au/:        -76.226110861653
+ Total CCSDT energy [au]:            -76.239133655412
+ Total MP2 energy [au]:              -76.226110851971
+ 
+ ************************ 2017-05-15 15:40:50 *************************
+                      Normal termination of mrcc.
+ **********************************************************************
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //       Full results from MRCC      //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-#property method        sym st mul        value             CPU(sec)
-ENERGY   MP(2)            1  1  1  -7.622611086165254E+01 4.92872953E-01
-ENERGY   CCSDT            1  1  1  -7.623913366275291E+01 5.62417912E+00
+#property method        sym st mul        value             CPU(sec)       Wall(sec)
+ENERGY   MP2              1  1  1  -7.622611085197104E+01 3.43370000E-01 3.53944000E-01
+ENERGY   CCSDT            1  1  1  -7.623913365541196E+01 4.00268100E+00 4.00324600E+00
+	NRE...............................................................PASSED
+	SCF...............................................................PASSED
+	MP2 correlation...................................................PASSED
+	CCSDT correlation.................................................PASSED
+	CCSDT.............................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

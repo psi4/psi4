@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:20:24 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:  11521
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13701
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -30,8 +33,6 @@
 refnuc      =  9.18738642147759 #TEST
 refscf      = -76.02674017978640 #TEST
 refcc       = -76.23811132426373 #TEST
-
-memory 256 mb
 
 molecule h2o {
 0 1
@@ -60,18 +61,24 @@ compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD Total Energ
 
 --------------------------------------------------------------------------
 
-  Memory set to 256.000 MiB by Python script.
-  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+*** tstart() called on psinet
+*** at Mon May 15 15:35:34 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:20:25 2016
+  A requested method does not make use of molecular symmetry: further calculations in C1 point group.
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -113,11 +120,20 @@ compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD Total Energ
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -138,7 +154,7 @@ compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD Total Energ
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               183
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
@@ -147,6 +163,7 @@ compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD Total Energ
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 116
     Number of Cartesian functions: 131
@@ -155,23 +172,24 @@ compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD Total Energ
 
   Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   1:   -74.45729759707982   -7.44573e+01   8.90027e-02 
-   @DF-RHF iter   2:   -75.48203171292013   -1.02473e+00   4.99145e-02 DIIS
-   @DF-RHF iter   3:   -76.02183611428288   -5.39804e-01   4.30050e-03 DIIS
-   @DF-RHF iter   4:   -76.02656929718182   -4.73318e-03   6.16119e-04 DIIS
-   @DF-RHF iter   5:   -76.02673631823396   -1.67021e-04   8.74950e-05 DIIS
-   @DF-RHF iter   6:   -76.02673993126496   -3.61303e-06   1.89525e-05 DIIS
-   @DF-RHF iter   7:   -76.02674017348889   -2.42224e-07   3.22001e-06 DIIS
-   @DF-RHF iter   8:   -76.02674017962491   -6.13602e-09   4.78156e-07 DIIS
-   @DF-RHF iter   9:   -76.02674017977694   -1.52028e-10   1.49830e-07 DIIS
-   @DF-RHF iter  10:   -76.02674017978759   -1.06581e-11   2.68355e-08 DIIS
-   @DF-RHF iter  11:   -76.02674017978768   -8.52651e-14   1.32481e-09 DIIS
+   @DF-RHF iter   1:   -74.45729759707766   -7.44573e+01   8.90027e-02 
+   @DF-RHF iter   2:   -75.48203171291803   -1.02473e+00   4.99145e-02 DIIS
+   @DF-RHF iter   3:   -76.02183611428097   -5.39804e-01   4.30050e-03 DIIS
+   @DF-RHF iter   4:   -76.02656929718000   -4.73318e-03   6.16119e-04 DIIS
+   @DF-RHF iter   5:   -76.02673631823205   -1.67021e-04   8.74950e-05 DIIS
+   @DF-RHF iter   6:   -76.02673993126305   -3.61303e-06   1.89525e-05 DIIS
+   @DF-RHF iter   7:   -76.02674017348701   -2.42224e-07   3.22001e-06 DIIS
+   @DF-RHF iter   8:   -76.02674017962306   -6.13605e-09   4.78156e-07 DIIS
+   @DF-RHF iter   9:   -76.02674017977502   -1.51957e-10   1.49830e-07 DIIS
+   @DF-RHF iter  10:   -76.02674017978566   -1.06439e-11   2.68355e-08 DIIS
+   @DF-RHF iter  11:   -76.02674017978583   -1.70530e-13   1.32481e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -199,24 +217,22 @@ compare_values(refcc, get_variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD Total Energ
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.02674017978768
+  @DF-RHF Final Energy:   -76.02674017978583
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1873864214775907
-    One-Electron Energy =                -123.1375343175395187
-    Two-Electron Energy =                  37.9234077162742267
+    One-Electron Energy =                -123.1375343175383534
+    Two-Electron Energy =                  37.9234077162749372
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0267401797877085
+    Total Energy =                        -76.0267401797858327
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -233,26 +249,41 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     2.0580     Total:     2.0580
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:20:25 2016
+*** tstop() called on psinet at Mon May 15 15:35:35 2017
 Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:20:25 2016
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:35 2017
 
 
 
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [  ]             
+  BASIS_RELATIVISTIC          => (empty)          
   BENCH                       => 0                
   CC_DIIS_MAX_VECS            => 6                
   CC_DIIS_MIN_VECS            => 2                
@@ -291,12 +322,13 @@ Total time:
   FROZEN_UOCC                 => [  ]             
   HESS_TYPE                   => HF               
   INTEGRAL_CUTOFF             => 9                
-  INTEGRAL_PACKAGE            => ERD              
+  INTEGRAL_PACKAGE            => LIBINT           
   LEVEL_SHIFT                 => 0.02             
   LINEQ_SOLVER                => CDGESV           
   LITERAL_CFOUR               => (empty)          
   MAT_NUM_COLUMN_PRINT        => 5                
   MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MOLDEN_WITH_VIRTUAL         => TRUE             
   MOLDEN_WRITE                => FALSE            
   MO_DIIS_NUM_VECS            => 6                
   MO_MAXITER                  => 50               
@@ -322,7 +354,9 @@ Total time:
   PCG_CONVERGENCE             => 1e-06            
   PCG_MAXITER                 => 50               
   PCM                         => FALSE            
+  PCM_CC_TYPE                 => PTE              
   PCM_SCF_TYPE                => TOTAL            
+  PPL_TYPE                    => AUTO             
   PRINT                       => 1                
   PRINT_NOONS                 => 3                
   PROPERTIES                  => [  ]             
@@ -338,18 +372,15 @@ Total time:
   REGULARIZATION              => FALSE            
   REG_PARAM                   => 0.4              
   RELATIVISTIC                => NO               
-  REL_BASIS                   => (empty)          
   RESTRICTED_DOCC             => [  ]             
   RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
-  RUN_CCTRANSORT              => TRUE             
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
   SOCC                        => [  ]             
   SOS_TYPE                    => SOS              
   TRIPLES_IABC_TYPE           => DISK             
   UNITS                       => ANGSTROMS        
-  WABEF_TYPE                  => AUTO             
   WFN                         => SCF              
   WFN_TYPE                    => DF-CCSD         !
   WRITER_FILE_LABEL           => (empty)          
@@ -361,7 +392,7 @@ Total time:
 
                        DF-CCSD   
               Program Written by Ugur Bozkaya
-              Latest Revision February 19, 2016
+              Latest Revision April 17, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -375,7 +406,7 @@ Total time:
 
 	Number of basis functions in the DF-CC basis:  84
 
-	Available memory                      :    244.14 MB 
+	Available memory                      :    500.00 MB 
 	Memory requirement for 3-index ints   :      0.29 MB 
 	Memory requirement for DF-CC int trans:      0.89 MB 
 	Memory requirement for CC contractions:      0.28 MB 
@@ -387,10 +418,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978768
-	REF Energy (a.u.)                  :   -76.02674017978768
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224259168
-	DF-MP2 Total Energy (a.u.)         :   -76.22839242237936
+	DF-HF Energy (a.u.)                :   -76.02674017978583
+	REF Energy (a.u.)                  :   -76.02674017978583
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224259169
+	DF-MP2 Total Energy (a.u.)         :   -76.22839242237752
 	======================================================================= 
 
  ============================================================================== 
@@ -418,24 +449,24 @@ Total time:
 	================ CCSD FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -76.02674017978768
-	REF Energy (a.u.)                  :   -76.02674017978768
-	DF-CCSD Correlation Energy (a.u.)  :    -0.21137114447965
-	DF-CCSD Total Energy (a.u.)        :   -76.23811132426732
+	SCF Energy (a.u.)                  :   -76.02674017978583
+	REF Energy (a.u.)                  :   -76.02674017978583
+	DF-CCSD Correlation Energy (a.u.)  :    -0.21137114447966
+	DF-CCSD Total Energy (a.u.)        :   -76.23811132426549
 	======================================================================= 
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:20:25 2016
+*** tstop() called on psinet at Mon May 15 15:35:35 2017
 Module time:
 	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	Nuclear Repulsion Energy (a.u.)...................................PASSED
 	DF-HF Energy (a.u.)...............................................PASSED
 	DF-CCSD Total Energy (a.u.).......................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

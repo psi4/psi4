@@ -1,33 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} ad94c93
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Mar 18 13:36:42 2016
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:    430
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  20921
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! EFP-only single-point, all components for benzene dimer
-
-memory 200 mb
 
 molecule bz2 {
 efp C6H6 -0.30448173 -2.24210052 -0.29383131 -0.642499 1.534222 -0.568147
@@ -47,20 +48,20 @@ compare_values(-0.021092526180, get_variable('efp disp energy'), 6, 'EFP-EFP Dis
 compare_values( 0.018202051938, get_variable('current energy'), 6, 'EFP-EFP Total')  #TEST
 
 --------------------------------------------------------------------------
-
-  Memory set to 200.000 MiB by Python script.
-  EFP fragment c6h6 read from /home/dsmith/Gits/dgas_psi/share/efpfrag/c6h6.efp
+  EFP fragment c6h6 read from /home/psilocaluser/miniconda3/envs/p4deps27/share/libefp/fraglib/c6h6.efp
 Warning: There are no quantum mechanical atoms in this molecule.
 
 
-LIBEFP ver. 1.2.1
-Copyright (c) 2012-2014 Ilya Kaliman
+LIBEFP ver. 1.4.2
+Copyright (c) 2012-2017 Ilya Kaliman
 
-Journal Reference:
-    Kaliman and Slipchenko, JCC 2013.
+Journal References:
+  - Kaliman and Slipchenko, JCC 2013.
     DOI: http://dx.doi.org/10.1002/jcc.23375
+  - Kaliman and Slipchenko, JCC 2015.
+    DOI: http://dx.doi.org/10.1002/jcc.23772
 
-Project web site: http://www.libefp.org/
+Project web site: https://libefp.github.io/
 
 
   ==> EFP/EFP Setup <==
@@ -109,22 +110,22 @@ Project web site: http://www.libefp.org/
 
     EFP Results
   ------------------------------------------------------------
-    Electrostatics                     -0.006945896401 [H] *
-      EFP/EFP                          -0.006945896401 [H] *
-      QM-Nuc/EFP                        0.000000000000 [H] 
+    Electrostatics                     -0.006945896401 [Eh] *
+      EFP/EFP                          -0.006945896401 [Eh] *
+      QM-Nuc/EFP                        0.000000000000 [Eh] 
 
-    Exchange                            0.046915604831 [H] *
-      EFP/EFP                           0.046915604831 [H] *
-      QM/EFP                            0.000000000000 [H] 
+    Exchange                            0.046915604831 [Eh] *
+      EFP/EFP                           0.046915604831 [Eh] *
+      QM/EFP                            0.000000000000 [Eh] 
 
-    Induction                          -0.000674988983 [H] *
-      EFP/EFP                          -0.000674988983 [H] *
+    Induction                          -0.000674988983 [Eh] *
+      EFP/EFP                          -0.000674988983 [Eh] *
 
-    Dispersion                         -0.021092525874 [H] *
-      EFP/EFP                          -0.021092525874 [H] *
-      QM/EFP                            0.000000000000 [H] 
+    Dispersion                         -0.021092525874 [Eh] *
+      EFP/EFP                          -0.021092525874 [Eh] *
+      QM/EFP                            0.000000000000 [Eh] 
 
-    Total EFP                           0.018202193573 [H]
+    Total EFP                           0.018202193573 [Eh]
 	NRE...............................................................PASSED
 	EFP-EFP Elst......................................................PASSED
 	EFP-EFP Exch......................................................PASSED
@@ -132,4 +133,4 @@ Project web site: http://www.libefp.org/
 	EFP-EFP Disp......................................................PASSED
 	EFP-EFP Total.....................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

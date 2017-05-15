@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:13:32 2016
+    Psi4 started on: Monday, 15 May 2017 03:39PM
 
-    Process ID:   7629
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  15604
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -53,19 +56,19 @@ nat_orbs_t3 true
 
 energy('sapt2+3(ccd)')
 
-Eref = [
--0.01306509072, 
- 0.01341768624, 
--0.00391313510,
--0.00358358119, 
--0.00858408936, 
--0.00672343851,
--0.00733405078, 
--0.00700901577,
--0.00718054690,
--0.00729762464,
--0.00697258964,
--0.00714412076]
+Eref = [  #TEST
+-0.01306509072,  #TEST
+ 0.01341768624,  #TEST
+-0.00391313510,  #TEST
+-0.00358358119,  #TEST
+-0.00858408936,  #TEST
+-0.00672343851,  #TEST
+-0.00733405078,  #TEST
+-0.00700901577,  #TEST
+-0.00718054690,  #TEST
+-0.00729762464,  #TEST
+-0.00697258964,  #TEST
+-0.00714412076]  #TEST
 
 Labels = [
 'SAPT Elst',
@@ -87,20 +90,20 @@ Echeck.append(psi4.get_variable("SAPT ELST ENERGY"))
 Echeck.append(psi4.get_variable("SAPT EXCH ENERGY"))
 Echeck.append(psi4.get_variable("SAPT IND ENERGY"))
 Echeck.append(psi4.get_variable("SAPT DISP ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT0 ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2 ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2+ ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2+(3) ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2+3 ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2+(CCD) ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2+(3)(CCD) ENERGY"))
-Echeck.append(psi4.get_variable("SAPT SAPT2+3(CCD) ENERGY"))
+Echeck.append(psi4.get_variable("SAPT0 TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2 TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2+ TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2+(3) TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2+3 TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2+(CCD) TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2+(3)(CCD) TOTAL ENERGY"))
+Echeck.append(psi4.get_variable("SAPT2+3(CCD) TOTAL ENERGY"))
 
-for k in range(0,len(Labels)):
-    compare_values(Eref[k],Echeck[k],6,Labels[k])
+for k in range(0, len(Labels)):  #TEST
+    compare_values(Eref[k], Echeck[k], 6, Labels[k])  #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 1000.000 MiB by Python script.
+  Memory set to 953.674 MiB by Python driver.
   SAPT does not make use of molecular symmetry, further calculations in C1 point group.
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -108,15 +111,23 @@ for k in range(0,len(Labels)):
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:32 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:39:23 2017
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3, 5-6 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -161,11 +172,20 @@ for k in range(0,len(Labels)):
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
     Number of shells: 38
     Number of basis function: 82
     Number of Cartesian functions: 86
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 4     entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -194,7 +214,8 @@ for k in range(0,len(Labels)):
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
     Number of shells: 104
     Number of basis function: 300
     Number of Cartesian functions: 342
@@ -203,24 +224,25 @@ for k in range(0,len(Labels)):
 
   Minimum eigenvalue in the overlap matrix is 1.5458174156E-03.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -152.02399536462030   -1.52024e+02   2.97610e-02 
-   @DF-RHF iter   1:  -152.02844686020620   -4.45150e-03   4.49344e-03 
-   @DF-RHF iter   2:  -152.07443369100011   -4.59868e-02   2.31444e-03 DIIS
-   @DF-RHF iter   3:  -152.08754394766595   -1.31103e-02   4.32960e-04 DIIS
-   @DF-RHF iter   4:  -152.08844034413050   -8.96396e-04   1.11628e-04 DIIS
-   @DF-RHF iter   5:  -152.08855020523814   -1.09861e-04   3.18315e-05 DIIS
-   @DF-RHF iter   6:  -152.08855837154175   -8.16630e-06   1.38577e-05 DIIS
-   @DF-RHF iter   7:  -152.08855924105535   -8.69514e-07   2.60242e-06 DIIS
-   @DF-RHF iter   8:  -152.08855930677126   -6.57159e-08   5.48419e-07 DIIS
-   @DF-RHF iter   9:  -152.08855930997021   -3.19895e-09   1.41728e-07 DIIS
-   @DF-RHF iter  10:  -152.08855931016990   -1.99691e-10   3.02228e-08 DIIS
-   @DF-RHF iter  11:  -152.08855931017848   -8.58336e-12   3.82873e-09 DIIS
+   @DF-RHF iter   0:  -152.09889080344215   -1.52099e+02   2.98949e-02 
+   @DF-RHF iter   1:  -152.01768003880912    8.12108e-02   4.79638e-03 
+   @DF-RHF iter   2:  -152.07170323529667   -5.40232e-02   2.48861e-03 DIIS
+   @DF-RHF iter   3:  -152.08709782693427   -1.53946e-02   4.91527e-04 DIIS
+   @DF-RHF iter   4:  -152.08837204198508   -1.27422e-03   1.35409e-04 DIIS
+   @DF-RHF iter   5:  -152.08854568101373   -1.73639e-04   3.67840e-05 DIIS
+   @DF-RHF iter   6:  -152.08855819908641   -1.25181e-05   1.51954e-05 DIIS
+   @DF-RHF iter   7:  -152.08855920774320   -1.00866e-06   3.23719e-06 DIIS
+   @DF-RHF iter   8:  -152.08855930555168   -9.78085e-08   6.44141e-07 DIIS
+   @DF-RHF iter   9:  -152.08855930998868   -4.43700e-09   1.36298e-07 DIIS
+   @DF-RHF iter  10:  -152.08855931016416   -1.75476e-10   3.02465e-08 DIIS
+   @DF-RHF iter  11:  -152.08855931017274   -8.58336e-12   5.04772e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -239,7 +261,7 @@ for k in range(0,len(Labels)):
       11A      0.028509    12A      0.055390    13A      0.056015  
       14A      0.090965    15A      0.156904    16A      0.185106  
       17A      0.211368    18A      0.214763    19A      0.226647  
-      20A      0.236785    21A      0.261716    22A      0.284391  
+      20A      0.236784    21A      0.261716    22A      0.284391  
       23A      0.294520    24A      0.332786    25A      0.351553  
       26A      0.364132    27A      0.382424    28A      0.441710  
       29A      0.458373    30A      0.486897    31A      0.524480  
@@ -258,7 +280,7 @@ for k in range(0,len(Labels)):
       68A      2.700541    69A      2.771041    70A      2.791336  
       71A      3.018081    72A      3.122743    73A      3.694159  
       74A      3.698103    75A      3.709431    76A      3.741715  
-      77A      3.771102    78A      3.790699    79A      4.043224  
+      77A      3.771102    78A      3.790699    79A      4.043223  
       80A      4.159440    81A      4.287651    82A      4.410083  
 
     Final Occupation by Irrep:
@@ -267,24 +289,22 @@ for k in range(0,len(Labels)):
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -152.08855931017848
+  @DF-RHF Final Energy:  -152.08855931017274
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             36.6628478527552986
-    One-Electron Energy =                -282.5286053285181538
-    Two-Electron Energy =                  93.7771981655843803
+    One-Electron Energy =                -282.5286053094907857
+    Two-Electron Energy =                  93.7771981465627249
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -152.0885593101784821
+    Total Energy =                       -152.0885593101727409
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -292,25 +312,23 @@ Properties computed using the SCF density matrix
      X:     1.0217      Y:     0.0515      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0163      Y:    -0.0169      Z:     0.0000
+     X:     0.0163      Y:    -0.0169      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:     1.0380      Y:     0.0345      Z:     0.0000     Total:     1.0386
+     X:     1.0380      Y:     0.0345      Z:    -0.0000     Total:     1.0386
 
   Dipole Moment: (Debye)
-     X:     2.6383      Y:     0.0878      Z:     0.0000     Total:     2.6398
+     X:     2.6383      Y:     0.0878      Z:    -0.0000     Total:     2.6398
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:33 2016
+*** tstop() called on psinet at Mon May 15 15:39:24 2017
 Module time:
-	user time   =       0.68 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.00 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.68 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       1.00 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -318,15 +336,23 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:33 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:39:24 2017
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3, 5-6 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -371,11 +397,20 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
     Number of shells: 38
     Number of basis function: 82
     Number of Cartesian functions: 86
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 4     entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -404,7 +439,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
     Number of shells: 104
     Number of basis function: 300
     Number of Cartesian functions: 342
@@ -413,23 +449,24 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 1.5458174156E-03.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.04768242685934   -7.60477e+01   2.09004e-02 
-   @DF-RHF iter   1:   -75.99825544120807    4.94270e-02   3.69539e-03 
-   @DF-RHF iter   2:   -76.03053117708596   -3.22757e-02   2.01663e-03 DIIS
-   @DF-RHF iter   3:   -76.04047575334532   -9.94458e-03   3.66350e-04 DIIS
-   @DF-RHF iter   4:   -76.04115647410784   -6.80721e-04   1.00494e-04 DIIS
-   @DF-RHF iter   5:   -76.04124434205447   -8.78679e-05   2.18948e-05 DIIS
-   @DF-RHF iter   6:   -76.04124955877775   -5.21672e-06   3.60615e-06 DIIS
-   @DF-RHF iter   7:   -76.04124970215472   -1.43377e-07   7.75860e-07 DIIS
-   @DF-RHF iter   8:   -76.04124970910672   -6.95201e-09   2.08413e-07 DIIS
-   @DF-RHF iter   9:   -76.04124970958732   -4.80597e-10   4.83971e-08 DIIS
-   @DF-RHF iter  10:   -76.04124970961246   -2.51390e-11   6.75828e-09 DIIS
+   @DF-RHF iter   0:   -76.05483328352237   -7.60548e+01   2.09197e-02 
+   @DF-RHF iter   1:   -75.99759253331895    5.72408e-02   3.72250e-03 
+   @DF-RHF iter   2:   -76.02991945562752   -3.23269e-02   2.04091e-03 DIIS
+   @DF-RHF iter   3:   -76.04030508673819   -1.03856e-02   3.88010e-04 DIIS
+   @DF-RHF iter   4:   -76.04112693502545   -8.21848e-04   1.10478e-04 DIIS
+   @DF-RHF iter   5:   -76.04124228463625   -1.15350e-04   2.51399e-05 DIIS
+   @DF-RHF iter   6:   -76.04124947107597   -7.18644e-06   4.64165e-06 DIIS
+   @DF-RHF iter   7:   -76.04124969998374   -2.28908e-07   9.13939e-07 DIIS
+   @DF-RHF iter   8:   -76.04124970934741   -9.36367e-09   1.67857e-07 DIIS
+   @DF-RHF iter   9:   -76.04124970961117   -2.63753e-10   3.47638e-08 DIIS
+   @DF-RHF iter  10:   -76.04124970962026   -9.09495e-12   5.75089e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -461,7 +498,7 @@ Total time:
       51A      1.759609    52A      2.017361    53A      2.019199  
       54A      2.063881    55A      2.111443    56A      2.257187  
       57A      2.381281    58A      2.509103    59A      2.520118  
-      60A      2.535996    61A      2.575037    62A      2.697583  
+      60A      2.535996    61A      2.575036    62A      2.697583  
       63A      2.748538    64A      2.823618    65A      2.987136  
       66A      3.444151    67A      3.680922    68A      3.715098  
       69A      3.743887    70A      3.902466    71A      4.082346  
@@ -476,24 +513,22 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.04124970961246
+  @DF-RHF Final Energy:   -76.04124970962026
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1638301459659299
-    One-Electron Energy =                -122.9210104750586652
-    Two-Electron Energy =                  37.7159306194803037
+    One-Electron Energy =                -122.9210104733447508
+    Two-Electron Energy =                  37.7159306177585520
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0412497096124298
+    Total Energy =                        -76.0412497096202742
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -501,25 +536,23 @@ Properties computed using the SCF density matrix
      X:   -26.9920      Y:    -0.2173      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    27.3712      Y:     0.9088      Z:    -0.0000
+     X:    27.3712      Y:     0.9088      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.3792      Y:     0.6915      Z:    -0.0000     Total:     0.7887
+     X:     0.3792      Y:     0.6915      Z:     0.0000     Total:     0.7887
 
   Dipole Moment: (Debye)
-     X:     0.9638      Y:     1.7576      Z:    -0.0000     Total:     2.0046
+     X:     0.9638      Y:     1.7576      Z:     0.0000     Total:     2.0046
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:34 2016
+*** tstop() called on psinet at Mon May 15 15:39:25 2017
 Module time:
-	user time   =       0.62 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.34 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       1.74 seconds =       0.03 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -527,15 +560,23 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:34 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:39:25 2017
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3, 5-6 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -580,11 +621,20 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
     Number of shells: 38
     Number of basis function: 82
     Number of Cartesian functions: 86
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 4     entry O          line   269 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    69 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -613,7 +663,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
     Number of shells: 104
     Number of basis function: 300
     Number of Cartesian functions: 342
@@ -622,23 +673,24 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 1.5458174156E-03.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.91735752500257   -7.59174e+01   2.06421e-02 
-   @DF-RHF iter   1:   -76.01605857153096   -9.87010e-02   2.95244e-03 
-   @DF-RHF iter   2:   -76.03484328844974   -1.87847e-02   1.60909e-03 DIIS
-   @DF-RHF iter   3:   -76.04117430826460   -6.33102e-03   2.56400e-04 DIIS
-   @DF-RHF iter   4:   -76.04155363101546   -3.79323e-04   7.85142e-05 DIIS
-   @DF-RHF iter   5:   -76.04161785456969   -6.42236e-05   2.03375e-05 DIIS
-   @DF-RHF iter   6:   -76.04162287335026   -5.01878e-06   3.06492e-06 DIIS
-   @DF-RHF iter   7:   -76.04162297154656   -9.81963e-08   5.33080e-07 DIIS
-   @DF-RHF iter   8:   -76.04162297475233   -3.20577e-09   1.25312e-07 DIIS
-   @DF-RHF iter   9:   -76.04162297492655   -1.74225e-10   2.61245e-08 DIIS
-   @DF-RHF iter  10:   -76.04162297493303   -6.48015e-12   4.57296e-09 DIIS
+   @DF-RHF iter   0:   -75.98235456751542   -7.59824e+01   2.08127e-02 
+   @DF-RHF iter   1:   -76.00815660469674   -2.58020e-02   3.29641e-03 
+   @DF-RHF iter   2:   -76.03279912320399   -2.46425e-02   1.79854e-03 DIIS
+   @DF-RHF iter   3:   -76.04085985038090   -8.06073e-03   3.28499e-04 DIIS
+   @DF-RHF iter   4:   -76.04150551879042   -6.45668e-04   1.02742e-04 DIIS
+   @DF-RHF iter   5:   -76.04161532583554   -1.09807e-04   2.50235e-05 DIIS
+   @DF-RHF iter   6:   -76.04162283722532   -7.51139e-06   3.69552e-06 DIIS
+   @DF-RHF iter   7:   -76.04162297102040   -1.33795e-07   6.00928e-07 DIIS
+   @DF-RHF iter   8:   -76.04162297473754   -3.71713e-09   1.33742e-07 DIIS
+   @DF-RHF iter   9:   -76.04162297491263   -1.75092e-10   3.07974e-08 DIIS
+   @DF-RHF iter  10:   -76.04162297492117   -8.54072e-12   5.21903e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -685,24 +737,22 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.04162297493303
+  @DF-RHF Final Energy:   -76.04162297492117
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1780389049035875
-    One-Electron Energy =                -122.9478673330840763
-    Two-Electron Energy =                  37.7282054532474689
+    One-Electron Energy =                -122.9478671869202202
+    Two-Electron Energy =                  37.7282053070954646
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0416229749330199
+    Total Energy =                        -76.0416229749211681
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -710,34 +760,40 @@ Properties computed using the SCF density matrix
      X:    28.0137      Y:     0.2688      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:   -27.5751      Y:    -0.9172      Z:    -0.0000
+     X:   -27.5751      Y:    -0.9172      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.4386      Y:    -0.6484      Z:    -0.0000     Total:     0.7828
+     X:     0.4386      Y:    -0.6484      Z:     0.0000     Total:     0.7828
 
   Dipole Moment: (Debye)
-     X:     1.1148      Y:    -1.6481      Z:    -0.0000     Total:     1.9897
+     X:     1.1148      Y:    -1.6481      Z:     0.0000     Total:     1.9897
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:35 2016
+*** tstop() called on psinet at Mon May 15 15:39:26 2017
 Module time:
-	user time   =       0.62 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.02 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.48 seconds =       0.04 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_SAPT
+    atoms 1, 4     entry O          line   203 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2-3, 5-6 entry H          line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            SAPT2+3(CCD)           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:13:35 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:39:26 2017
 
        SAPT2+3   
     CCD+(ST) Disp   
@@ -766,54 +822,54 @@ Total time:
     Monomer A: 41 virtual orbitals dropped
     Monomer B: 38 virtual orbitals dropped
 
-    Elst10,r            =    -0.013375426405 H
-    Exch10 (S^2)        =     0.011138026322 H
-    Exch10              =     0.011218222189 H
-    Ind20,r (A<-B)      =    -0.001439572709 H
-    Ind20,r (B<-A)      =    -0.003135734587 H
-    Ind20,r             =    -0.004575307296 H
-    Exch-Ind20,r (A<-B) =     0.000948668180 H
-    Exch-Ind20,r (B<-A) =     0.001529616515 H
-    Exch-Ind20,r        =     0.002478284695 H
-    Disp20              =    -0.003542919163 H
-    Disp20 (NO)         =    -0.003106924171 H
-    Exch-Disp20         =     0.000645455827 H
-    Elst12,r            =     0.000044903102 H
-    Exch11              =     0.000045589085 H
-    Exch12              =     0.002153869883 H
-    Ind22               =    -0.000837186325 H
-    Disp21              =     0.000112161729 H
-    Disp22 (SDQ)        =    -0.000178921614 H
+    Elst10,r            =    -0.013375429365 [Eh]
+    Exch10 (S^2)        =     0.011138027617 [Eh]
+    Exch10              =     0.011218223502 [Eh]
+    Ind20,r (A<-B)      =    -0.001439572100 [Eh]
+    Ind20,r (B<-A)      =    -0.003135736123 [Eh]
+    Ind20,r             =    -0.004575308224 [Eh]
+    Exch-Ind20,r (A<-B) =     0.000948667500 [Eh]
+    Exch-Ind20,r (B<-A) =     0.001529617648 [Eh]
+    Exch-Ind20,r        =     0.002478285148 [Eh]
+    Disp20              =    -0.003542919423 [Eh]
+    Disp20 (NO)         =    -0.003106924351 [Eh]
+    Exch-Disp20         =     0.000645455914 [Eh]
+    Elst12,r            =     0.000044903392 [Eh]
+    Exch11              =     0.000045589076 [Eh]
+    Exch12              =     0.002153870009 [Eh]
+    Ind22               =    -0.000837186437 [Eh]
+    Disp21              =     0.000112161712 [Eh]
+    Disp22 (SDQ)        =    -0.000178921625 [Eh]
 
     (i =   1 of   4)          0 seconds
     (i =   2 of   4)          0 seconds
     (i =   3 of   4)          0 seconds
     (i =   4 of   4)          0 seconds
 
-    Disp220 (T)         =    -0.000245133429 H
+    Disp220 (T)         =    -0.000245133439 [Eh]
 
     (i =   1 of   4)          0 seconds
     (i =   2 of   4)          0 seconds
     (i =   3 of   4)          0 seconds
     (i =   4 of   4)          0 seconds
 
-    Disp202 (T)         =    -0.000231791903 H
+    Disp202 (T)         =    -0.000231791931 [Eh]
 
-    Disp22 (T)          =    -0.000476925332 H
+    Disp22 (T)          =    -0.000476925370 [Eh]
 
-    Est. Disp220 (T)    =    -0.000279533028 H
-    Est. Disp202 (T)    =    -0.000264319285 H
+    Est. Disp220 (T)    =    -0.000279533044 [Eh]
+    Est. Disp202 (T)    =    -0.000264319321 [Eh]
 
-    Est. Disp22 (T)     =    -0.000543852313 H
+    Est. Disp22 (T)     =    -0.000543852365 [Eh]
 
 ==> CCD Dispersion <==
 
 Beginning Monomer A CCD
 
 Iter       Energy (H)          dE (H)             RMS (H)
-   1      -0.21994891       0.219948914       0.000000000
-   2      -0.22224576       0.002296847       0.000082634
-   3      -0.22545157       0.003205813       0.000027763
+   1      -0.21994892       0.219948916       0.000000000
+   2      -0.22224576       0.002296846       0.000082634
+   3      -0.22545158       0.003205813       0.000027763
    4      -0.22604484       0.000593263       0.000009789
    5      -0.22628161       0.000236772       0.000004091  DIIS
    6      -0.22641551       0.000133901       0.000001726  DIIS
@@ -826,9 +882,9 @@ Iter       Energy (H)          dE (H)             RMS (H)
 Beginning Monomer B CCD
 
 Iter       Energy (H)          dE (H)             RMS (H)
-   1      -0.22009389       0.220093891       0.000000000
-   2      -0.22241270       0.002318814       0.000082476
-   3      -0.22561044       0.003197733       0.000027695
+   1      -0.22009390       0.220093897       0.000000000
+   2      -0.22241271       0.002318811       0.000082476
+   3      -0.22561044       0.003197734       0.000027695
    4      -0.22619932       0.000588878       0.000009757
    5      -0.22643503       0.000235713       0.000004076  DIIS
    6      -0.22656757       0.000132538       0.000001718  DIIS
@@ -840,38 +896,38 @@ Iter       Energy (H)          dE (H)             RMS (H)
 
 Beginning CCD Dispersion Amplitude Formation
 
-Iter      Energy (mH)         dE (mH)            RMS (mH)
-   1      -3.12123873       3.121238731       0.000000000
-   2      -3.62346444       0.502225711       0.038435004
-   3      -3.72202390       0.098559454       0.008979621
-   4      -3.74337747       0.021353570       0.002340886
-   5      -3.74836751       0.004990039       0.000656090  DIIS
-   6      -3.75003958       0.001672070       0.000193491  DIIS
-   7      -3.75004030       0.000000729       0.000001769  DIIS
-   8      -3.75004021      -0.000000090       0.000000223  DIIS
-   9      -3.75004021       0.000000001       0.000000028  DIIS
-  10      -3.75004022       0.000000000       0.000000004  DIIS
+Iter      Energy [mEh]        dE [mEh]           RMS [mEh]
+   1      -3.12123898       3.121238977       0.000000000
+   2      -3.62346473       0.502225750       0.038435005
+   3      -3.72202419       0.098559461       0.008979621
+   4      -3.74337776       0.021353571       0.002340886
+   5      -3.74836780       0.004990039       0.000656090  DIIS
+   6      -3.75003987       0.001672070       0.000193491  DIIS
+   7      -3.75004060       0.000000729       0.000001769  DIIS
+   8      -3.75004051      -0.000000090       0.000000223  DIIS
+   9      -3.75004051       0.000000001       0.000000028  DIIS
+  10      -3.75004051       0.000000000       0.000000004  DIIS
 
 Beginning Intramonomer A CCD Dispersion
 
-Iter      Energy (mH)         dE (mH)            RMS (mH)
-   1       0.24126659      -0.241266594       0.000000000
-   2       0.25424210      -0.012975505       0.000646050
-   3       0.26204893      -0.007806836       0.000220542
-   4       0.26417600      -0.002127061       0.000080105
-   5       0.26505471      -0.000878712       0.000030927  DIIS
-   6       0.26559022      -0.000535514       0.000012114  DIIS
-   7       0.26559784      -0.000007621       0.000000462  DIIS
-   8       0.26559891      -0.000001063       0.000000095  DIIS
-   9       0.26559975      -0.000000841       0.000000025  DIIS
-  10       0.26559990      -0.000000150       0.000000006  DIIS
-  11       0.26559990      -0.000000005       0.000000002  DIIS
+Iter      Energy [mEh]        dE [mEh]           RMS [mEh]
+   1       0.24126662      -0.241266619       0.000000000
+   2       0.25424212      -0.012975504       0.000646050
+   3       0.26204896      -0.007806836       0.000220542
+   4       0.26417602      -0.002127061       0.000080105
+   5       0.26505473      -0.000878711       0.000030927  DIIS
+   6       0.26559024      -0.000535514       0.000012114  DIIS
+   7       0.26559787      -0.000007621       0.000000462  DIIS
+   8       0.26559893      -0.000001063       0.000000095  DIIS
+   9       0.26559977      -0.000000841       0.000000025  DIIS
+  10       0.26559992      -0.000000150       0.000000006  DIIS
+  11       0.26559992      -0.000000005       0.000000002  DIIS
 
 Beginning Intramonomer B CCD Dispersion
 
-Iter      Energy (mH)         dE (mH)            RMS (mH)
-   1       0.24661101      -0.246611008       0.000000000
-   2       0.24531606       0.001294948       0.000397279
+Iter      Energy [mEh]        dE [mEh]           RMS [mEh]
+   1       0.24661101      -0.246611013       0.000000000
+   2       0.24531606       0.001294951       0.000397279
    3       0.24942459      -0.004108527       0.000098699
    4       0.24995870      -0.000534115       0.000027449
    5       0.25023518      -0.000276479       0.000008942  DIIS
@@ -882,109 +938,108 @@ Iter      Energy (mH)         dE (mH)            RMS (mH)
   10       0.25037129      -0.000000100       0.000000003  DIIS
   11       0.25037129      -0.000000001       0.000000001  DIIS
 
-    Disp2 (CCD)         =    -0.003234069026 H
+    Disp2 (CCD)         =    -0.003234069294 [Eh]
 
-    Disp220 (S)         =    -0.153235561177 mH
-    Disp202 (S)         =    -0.153036359820 mH
-    Disp22 (S)          =    -0.306271920997 mH
+    Disp220 (S)         =    -0.153235548071 mEh
+    Disp202 (S)         =    -0.153036391307 mEh
+    Disp22 (S)          =    -0.306271939378 mEh
 
-
-    (i =   1 of   4)          0 seconds
-    (i =   2 of   4)          0 seconds
-    (i =   3 of   4)          0 seconds
-    (i =   4 of   4)          0 seconds
-
-    Disp220 (T)         =    -0.000260812383 H
 
     (i =   1 of   4)          0 seconds
     (i =   2 of   4)          0 seconds
     (i =   3 of   4)          0 seconds
     (i =   4 of   4)          0 seconds
 
-    Disp202 (T)         =    -0.000244974746 H
+    Disp220 (T)         =    -0.000260812395 [Eh]
 
-    Disp22 (T)          =    -0.000505787129 H
+    (i =   1 of   4)          0 seconds
+    (i =   2 of   4)          0 seconds
+    (i =   3 of   4)          0 seconds
+    (i =   4 of   4)          0 seconds
 
-    Est. Disp220 (T)    =    -0.000297412211 H
-    Est. Disp202 (T)    =    -0.000279352078 H
+    Disp202 (T)         =    -0.000244974773 [Eh]
 
-    Est. Disp22 (T)     =    -0.000576764289 H
-    Elst13,r            =     0.000265435224 H
-    Disp30              =     0.000059599786 H
-    Exch-Disp30         =    -0.000018234097 H
-    Ind30               =    -0.003500171985 H
-    Ind30,r             =    -0.004917147297 H
-    Exch-Ind30          =     0.003088744196 H
-    Ind-Disp30          =    -0.000918168741 H
-    Exch-Ind-Disp30     =     0.000764871757 H
+    Disp22 (T)          =    -0.000505787169 [Eh]
+
+    Est. Disp220 (T)    =    -0.000297412231 [Eh]
+    Est. Disp202 (T)    =    -0.000279352113 [Eh]
+
+    Est. Disp22 (T)     =    -0.000576764344 [Eh]
+    Elst13,r            =     0.000265435139 [Eh]
+    Disp30              =     0.000059599795 [Eh]
+    Exch-Disp30         =    -0.000018234097 [Eh]
+    Ind30               =    -0.003500172222 [Eh]
+    Ind30,r             =    -0.004917147811 [Eh]
+    Exch-Ind30          =     0.003088744383 [Eh]
+    Ind-Disp30          =    -0.000918168884 [Eh]
+    Exch-Ind-Disp30     =     0.000764871873 [Eh]
 
     SAPT Results 
-  --------------------------------------------------------------------------
-    Electrostatics              -13.06508808 mH      -8.19846689 kcal mol^-1
-      Elst10,r                  -13.37542641 mH      -8.39320714 kcal mol^-1
-      Elst12,r                    0.04490310 mH       0.02817712 kcal mol^-1
-      Elst13,r                    0.26543522 mH       0.16656312 kcal mol^-1
+  --------------------------------------------------------------------------------------------------------
+    Electrostatics                -13.06509083 [mEh]      -8.19846862 [kcal/mol]     -34.30239598 [kJ/mol]
+      Elst10,r                    -13.37542936 [mEh]      -8.39320899 [kcal/mol]     -35.11718980 [kJ/mol]
+      Elst12,r                      0.04490339 [mEh]       0.02817730 [kcal/mol]       0.11789385 [kJ/mol]
+      Elst13,r                      0.26543514 [mEh]       0.16656307 [kcal/mol]       0.69689996 [kJ/mol]
 
-    Exchange                     13.41768116 mH       8.41972239 kcal mol^-1
-      Exch10                     11.21822219 mH       7.03954100 kcal mol^-1
-      Exch10(S^2)                11.13802632 mH       6.98921733 kcal mol^-1
-      Exch11(S^2)                 0.04558909 mH       0.02860758 kcal mol^-1
-      Exch12(S^2)                 2.15386988 mH       1.35157381 kcal mol^-1
+    Exchange                       13.41768259 [mEh]       8.41972329 [kcal/mol]      35.22812563 [kJ/mol]
+      Exch10                       11.21822350 [mEh]       7.03954182 [kcal/mol]      29.45344580 [kJ/mol]
+      Exch10(S^2)                  11.13802762 [mEh]       6.98921814 [kcal/mol]      29.24289151 [kJ/mol]
+      Exch11(S^2)                   0.04558908 [mEh]       0.02860758 [kcal/mol]       0.11969412 [kJ/mol]
+      Exch12(S^2)                   2.15387001 [mEh]       1.35157389 [kcal/mol]       5.65498571 [kJ/mol]
 
-    Induction                    -3.91313305 mH      -2.45552817 kcal mol^-1
-      Ind20,r                    -4.57530730 mH      -2.87104879 kcal mol^-1
-      Ind30,r                    -4.91714730 mH      -3.08555664 kcal mol^-1
-      Ind22                      -0.83718633 mH      -0.52534237 kcal mol^-1
-      Exch-Ind20,r                2.47828470 mH       1.55514719 kcal mol^-1
-      Exch-Ind30,r                4.33916112 mH       2.72286482 kcal mol^-1
-      Exch-Ind22                  0.45347469 mH       0.28455968 kcal mol^-1
-      delta HF,r (2)             -1.43239882 mH      -0.89884387 kcal mol^-1
-      delta HF,r (3)             -0.85441264 mH      -0.53615205 kcal mol^-1
+    Induction                      -3.91313146 [mEh]      -2.45552717 [kcal/mol]     -10.27392666 [kJ/mol]
+      Ind20,r                      -4.57530822 [mEh]      -2.87104938 [kcal/mol]     -12.01247174 [kJ/mol]
+      Ind30,r                      -4.91714781 [mEh]      -3.08555696 [kcal/mol]     -12.90997158 [kJ/mol]
+      Ind22                        -0.83718644 [mEh]      -0.52534244 [kcal/mol]      -2.19803299 [kJ/mol]
+      Exch-Ind20,r                  2.47828515 [mEh]       1.55514747 [kcal/mol]       6.50673766 [kJ/mol]
+      Exch-Ind30,r                  4.33916154 [mEh]       2.72286509 [kcal/mol]      11.39246862 [kJ/mol]
+      Exch-Ind22                    0.45347474 [mEh]       0.28455971 [kcal/mol]       1.19059793 [kJ/mol]
+      delta HF,r (2)               -1.43239669 [mEh]      -0.89884253 [kcal/mol]      -3.76075752 [kJ/mol]
+      delta HF,r (3)               -0.85441042 [mEh]      -0.53615066 [kcal/mol]      -2.24325456 [kJ/mol]
 
-    Dispersion                   -3.58358071 mH      -2.24873094 kcal mol^-1
-      Disp20                     -3.54291916 mH      -2.22321543 kcal mol^-1
-      Disp30                      0.05959979 mH       0.03739943 kcal mol^-1
-      Disp21                      0.11216173 mH       0.07038255 kcal mol^-1
-      Disp22 (SDQ)               -0.17892161 mH      -0.11227501 kcal mol^-1
-      Disp22 (T)                 -0.47692533 mH      -0.29927518 kcal mol^-1
-      Est. Disp22 (T)            -0.54385231 mH      -0.34127249 kcal mol^-1
-      Disp2 (CCD)                -3.23406903 mH      -2.02940904 kcal mol^-1
-      Disp22 (S) (CCD)           -0.30627192 mH      -0.19218854 kcal mol^-1
-      Disp22 (T) (CCD)           -0.50578713 mH      -0.31738623 kcal mol^-1
-      Est. Disp22 (T) (CCD)      -0.57676429 mH      -0.36192507 kcal mol^-1
-      Exch-Disp20                 0.64545583 mH       0.40502966 kcal mol^-1
-      Exch-Disp30                -0.01823410 mH      -0.01144207 kcal mol^-1
-      Ind-Disp30                 -0.91816874 mH      -0.57615961 kcal mol^-1
-      Exch-Ind-Disp30             0.76487176 mH       0.47996429 kcal mol^-1
+    Dispersion                     -3.58358098 [mEh]      -2.24873111 [kcal/mol]      -9.40869185 [kJ/mol]
+      Disp20                       -3.54291942 [mEh]      -2.22321560 [kcal/mol]      -9.30193495 [kJ/mol]
+      Disp30                        0.05959980 [mEh]       0.03739944 [kcal/mol]       0.15647926 [kJ/mol]
+      Disp21                        0.11216171 [mEh]       0.07038254 [kcal/mol]       0.29448057 [kJ/mol]
+      Disp22 (SDQ)                 -0.17892162 [mEh]      -0.11227502 [kcal/mol]      -0.46975873 [kJ/mol]
+      Disp22 (T)                   -0.47692537 [mEh]      -0.29927520 [kcal/mol]      -1.25216756 [kJ/mol]
+      Est. Disp22 (T)              -0.54385237 [mEh]      -0.34127253 [kcal/mol]      -1.42788438 [kJ/mol]
+      Disp2 (CCD)                  -3.23406929 [mEh]      -2.02940921 [kcal/mol]      -8.49104893 [kJ/mol]
+      Disp22 (S) (CCD)             -0.30627194 [mEh]      -0.19218855 [kcal/mol]      -0.80411698 [kJ/mol]
+      Disp22 (T) (CCD)             -0.50578717 [mEh]      -0.31738625 [kcal/mol]      -1.32794421 [kJ/mol]
+      Est. Disp22 (T) (CCD)        -0.57676434 [mEh]      -0.36192510 [kcal/mol]      -1.51429478 [kJ/mol]
+      Exch-Disp20                   0.64545591 [mEh]       0.40502972 [kcal/mol]       1.69464450 [kJ/mol]
+      Exch-Disp30                  -0.01823410 [mEh]      -0.01144207 [kcal/mol]      -0.04787362 [kJ/mol]
+      Ind-Disp30                   -0.91816888 [mEh]      -0.57615970 [kcal/mol]      -2.41065241 [kJ/mol]
+      Exch-Ind-Disp30               0.76487187 [mEh]       0.47996437 [kcal/mol]       2.00817110 [kJ/mol]
 
-  Total HF                           -5.68662563 mH      -3.56841161 kcal mol^-1
-  Total SAPT0                        -8.58408897 mH      -5.38659738 kcal mol^-1
-  Total SAPT2                        -6.72343853 mH      -4.21902155 kcal mol^-1
-  Total SAPT2+                       -7.33405073 mH      -4.60218651 kcal mol^-1
-  Total SAPT2+(3)                    -7.00901572 mH      -4.39822395 kcal mol^-1
-  Total SAPT2+3                      -7.18054681 mH      -4.50586134 kcal mol^-1
-  Total SAPT2+(CCD)                  -7.29762461 mH      -4.57932877 kcal mol^-1
-  Total SAPT2+(3)(CCD)               -6.97258960 mH      -4.37536621 kcal mol^-1
-  Total SAPT2+3(CCD)                 -7.14412068 mH      -4.48300360 kcal mol^-1
+  Total HF                         -5.68662563 [mEh]      -3.56841161 [kcal/mol]     -14.93023560 [kJ/mol]
+  Total SAPT0                      -8.58408914 [mEh]      -5.38659748 [kcal/mol]     -22.53752604 [kJ/mol]
+  Total SAPT2                      -6.72343836 [mEh]      -4.21902144 [kcal/mol]     -17.65238741 [kJ/mol]
+  Total SAPT2+                     -7.33405064 [mEh]      -4.60218645 [kcal/mol]     -19.25554995 [kJ/mol]
+  Total SAPT2+(3)                  -7.00901570 [mEh]      -4.39822394 [kcal/mol]     -18.40217073 [kJ/mol]
+  Total SAPT2+3                    -7.18054681 [mEh]      -4.50586134 [kcal/mol]     -18.85252565 [kJ/mol]
+  Total SAPT2+(CCD)                -7.29762451 [mEh]      -4.57932871 [kcal/mol]     -19.15991316 [kJ/mol]
+  Total SAPT2+(3)(CCD)             -6.97258958 [mEh]      -4.37536620 [kcal/mol]     -18.30653394 [kJ/mol]
+  Total SAPT2+3(CCD)               -7.14412069 [mEh]      -4.48300360 [kcal/mol]     -18.75688886 [kJ/mol]
 
   Special recipe for scaled SAPT0 (see Manual):
-    Electrostatics sSAPT0       -13.37542641 mH      -8.39320714 kcal mol^-1
-    Exchange sSAPT0              11.21822219 mH       7.03954100 kcal mol^-1
-    Induction sSAPT0             -3.47550271 mH      -2.18091097 kcal mol^-1
-    Dispersion sSAPT0            -2.88342050 mH      -1.80937376 kcal mol^-1
-  Total sSAPT0                       -8.51612743 mH      -5.34395087 kcal mol^-1
+    Electrostatics sSAPT0         -13.37542936 [mEh]      -8.39320899 [kcal/mol]     -35.11718980 [kJ/mol]
+    Exchange sSAPT0                11.21822350 [mEh]       7.03954182 [kcal/mol]      29.45344580 [kJ/mol]
+    Induction sSAPT0               -3.47550105 [mEh]      -2.18090993 [kcal/mol]      -9.12492800 [kJ/mol]
+    Dispersion sSAPT0              -2.88342067 [mEh]      -1.80937386 [kcal/mol]      -7.57042097 [kJ/mol]
+  Total sSAPT0                     -8.51612758 [mEh]      -5.34395096 [kcal/mol]     -22.35909297 [kJ/mol]
+  --------------------------------------------------------------------------------------------------------
 
-  --------------------------------------------------------------------------
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:13:38 2016
+*** tstop() called on psinet at Mon May 15 15:39:30 2017
 Module time:
-	user time   =       2.96 seconds =       0.05 minutes
-	system time =       0.68 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       4.03 seconds =       0.07 minutes
+	system time =       0.77 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       4.98 seconds =       0.08 minutes
-	system time =       0.72 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       6.57 seconds =       0.11 minutes
+	system time =       0.85 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
 	SAPT Elst.........................................................PASSED
 	SAPT Exch.........................................................PASSED
 	SAPT Ind..........................................................PASSED
@@ -998,4 +1053,4 @@ Total time:
 	SAPT2+(3)(CCD) Total..............................................PASSED
 	SAPT2+3(CCD) Total................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!
