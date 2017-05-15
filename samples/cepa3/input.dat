@@ -24,7 +24,7 @@ dipz1 = get_variable("CISD DIPOLE Z")
 qzz1  = get_variable("CISD QUADRUPOLE ZZ")
 
 set qc_module detci
-property("cisd")
+properties("cisd")
 
 corr2 = get_variable("CI CORRELATION ENERGY")
 dipz2 = get_variable("CI DIPOLE Z")

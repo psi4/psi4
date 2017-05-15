@@ -14,4 +14,4 @@ set {
   roots_per_irrep [2, 2]
 }
 
-property('eom-ccsd', properties=['oscillator_strength'])
+properties('eom-ccsd', properties=['oscillator_strength'])

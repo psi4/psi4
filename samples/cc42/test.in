@@ -23,4 +23,4 @@ set {
   omega [589, 355, nm]
 }
 
-property('cc2',properties=['rotation'])
+properties('cc2',properties=['rotation'])

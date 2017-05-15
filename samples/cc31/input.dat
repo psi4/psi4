@@ -21,4 +21,4 @@ set {
   basis STO-3G
 }
 
-property('ccsd',properties=['rotation'])
+properties('ccsd',properties=['rotation'])

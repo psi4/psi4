@@ -27,8 +27,8 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
          'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
          'MULTIPOLE(5)', 'NO_OCCUPATIONS']
 
-property('scf', properties=props)
+properties('scf', properties=props)
 
 
-property('B3LYP', properties=props)
+properties('B3LYP', properties=props)
 

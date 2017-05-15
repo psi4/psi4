@@ -15,4 +15,4 @@ set {
   basis cc-pVDZ
 }
 
-property('ccsd',properties=['roa_tensor'])
+properties('ccsd',properties=['roa_tensor'])

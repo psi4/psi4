@@ -14,4 +14,4 @@ set {
   basis cc-pVDZ
 }
 
-property('ccsd', properties=['rotation'])
+properties('ccsd', properties=['rotation'])

@@ -12,6 +12,6 @@ set {
    basis cc-pVDZ
 }
 
-property('ccsd', properties=['polarizability'])
+properties('ccsd', properties=['polarizability'])
 
 
