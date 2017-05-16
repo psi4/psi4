@@ -43,14 +43,14 @@ void DFOCC::ccsd_canonic_triples()
     SharedTensor2d K, L, M, I, J, T, U, Tau, W, X, Y, Z;
     SharedTensor2d V, J1, J2, J3, Jt;
     SharedTensor1d Eijk;
-    int Nijk;
+    long int Nijk;
 
     // Find number of unique ijk combinations (i>=j>=k)
     /*
     Nijk = 0;
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int j = 0 ; j <= i; ++j){
-            for(int k = 0 ; k <= j; ++k){
+    for(long int i = 0 ; i < naoccA; ++i){
+        for(long int j = 0 ; j <= i; ++j){
+            for(long int k = 0 ; k <= j; ++k){
 		Nijk++;
 	    }
 	}
@@ -107,21 +107,21 @@ void DFOCC::ccsd_canonic_triples()
     // main loop
     E_t = 0.0;
     double sum = 0.0;
-    for(int i = 0 ; i < naoccA; ++i){
+    for(long int i = 0 ; i < naoccA; ++i){
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
 
-        for(int j = 0 ; j <= i; ++j){
+        for(long int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Compute J[j](a,bc) = (ja|bc) = \sum(Q) B[j](aQ) * B(Q,bc)
             Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, j*navirA*nQ, 0, 1.0, 0.0);
 	    J2->expand23(navirA, navirA, navirA, Jt);
 
-            for(int k = 0 ; k <= j; ++k){
+            for(long int k = 0 ; k <= j; ++k){
 	        // Compute J[k](a,bc) = (ka|bc) = \sum(Q) B[k](aQ) * B(Q,bc)
                 Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, k*navirA*nQ, 0, 1.0, 0.0);
 	        J3->expand23(navirA, navirA, navirA, Jt);
@@ -142,8 +142,8 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -156,8 +156,8 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -170,8 +170,8 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -184,8 +184,8 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -198,8 +198,8 @@ void DFOCC::ccsd_canonic_triples()
                 // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -210,13 +210,13 @@ void DFOCC::ccsd_canonic_triples()
 		// V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
 		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-	            int ia = ia_idxAA->get(i,a);
-                    for(int b = 0 ; b < navirA; ++b){
-			int jb = ia_idxAA->get(j,b);
-			int ab = ab_idxAA->get(a,b);
-                        for(int c = 0 ; c < navirA; ++c){
-			    int kc = ia_idxAA->get(k,c);
+                for(long int a = 0 ; a < navirA; ++a){
+	            long int ia = ia_idxAA->get(i,a);
+                    for(long int b = 0 ; b < navirA; ++b){
+			long int jb = ia_idxAA->get(j,b);
+			long int ab = ab_idxAA->get(a,b);
+                        for(long int c = 0 ; c < navirA; ++c){
+			    long int kc = ia_idxAA->get(k,c);
 			    double value = V->get(ab,c) + ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
 			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
 			    V->set(ab, c, value/denom);
@@ -231,17 +231,17 @@ void DFOCC::ccsd_canonic_triples()
 		// Compute energy
 		double Xvalue, Yvalue, Zvalue;
                 #pragma omp parallel for private(Xvalue,Yvalue,Zvalue) reduction(+:sum)
-                for(int a = 0 ; a < navirA; ++a){
+                for(long int a = 0 ; a < navirA; ++a){
 	            double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
-                    for(int b = 0 ; b <=a; ++b){
+                    for(long int b = 0 ; b <=a; ++b){
 			double Dijkab = Dijka - FockA->get(b + noccA, b + noccA);
-			int ab = ab_idxAA->get(a,b);
-			int ba = ab_idxAA->get(b,a);
-                        for(int c = 0 ; c <= b; ++c){
-			    int ac = ab_idxAA->get(a,c);
-			    int bc = ab_idxAA->get(b,c);
-			    int ca = ab_idxAA->get(c,a);
-			    int cb = ab_idxAA->get(c,b);
+			long int ab = ab_idxAA->get(a,b);
+			long int ba = ab_idxAA->get(b,a);
+                        for(long int c = 0 ; c <= b; ++c){
+			    long int ac = ab_idxAA->get(a,c);
+			    long int bc = ab_idxAA->get(b,c);
+			    long int ca = ab_idxAA->get(c,a);
+			    long int cb = ab_idxAA->get(c,b);
 
 			    // X_ijk^abc
 			    Xvalue = ( W->get(ab,c)*V->get(ab,c) ) + ( W->get(ac,b)*V->get(ac,b) )
@@ -295,7 +295,7 @@ void DFOCC::ccsd_canonic_triples_hm()
     SharedTensor2d K, L, M, I, J, T, U, Tau, W, X, Y, Z;
     SharedTensor2d V, J1, J2, J3, Jt;
     SharedTensor1d Eijk;
-    int Nijk;
+    long int Nijk;
 
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
@@ -352,11 +352,11 @@ void DFOCC::ccsd_canonic_triples_hm()
     // main loop
     E_t = 0.0;
     double sum = 0.0;
-    for(int i = 0 ; i < naoccA; ++i){
+    for(long int i = 0 ; i < naoccA; ++i){
         double Di = FockA->get(i + nfrzc, i + nfrzc);
-        for(int j = 0 ; j <= i; ++j){
+        for(long int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
-            for(int k = 0 ; k <= j; ++k){
+            for(long int k = 0 ; k <= j; ++k){
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -374,8 +374,8 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -388,8 +388,8 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -402,8 +402,8 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -416,8 +416,8 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -430,8 +430,8 @@ void DFOCC::ccsd_canonic_triples_hm()
                 // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -442,13 +442,13 @@ void DFOCC::ccsd_canonic_triples_hm()
 		// V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
 		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-	            int ia = ia_idxAA->get(i,a);
-                    for(int b = 0 ; b < navirA; ++b){
-			int jb = ia_idxAA->get(j,b);
-			int ab = ab_idxAA->get(a,b);
-                        for(int c = 0 ; c < navirA; ++c){
-			    int kc = ia_idxAA->get(k,c);
+                for(long int a = 0 ; a < navirA; ++a){
+	            long int ia = ia_idxAA->get(i,a);
+                    for(long int b = 0 ; b < navirA; ++b){
+			long int jb = ia_idxAA->get(j,b);
+			long int ab = ab_idxAA->get(a,b);
+                        for(long int c = 0 ; c < navirA; ++c){
+			    long int kc = ia_idxAA->get(k,c);
 			    double value = V->get(ab,c) + ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
 			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
 			    V->set(ab, c, value/denom);
@@ -463,17 +463,17 @@ void DFOCC::ccsd_canonic_triples_hm()
 		// Compute energy
 		double Xvalue, Yvalue, Zvalue;
                 #pragma omp parallel for private(Xvalue,Yvalue,Zvalue) reduction(+:sum)
-                for(int a = 0 ; a < navirA; ++a){
+                for(long int a = 0 ; a < navirA; ++a){
 	            double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
-                    for(int b = 0 ; b <=a; ++b){
+                    for(long int b = 0 ; b <=a; ++b){
 			double Dijkab = Dijka - FockA->get(b + noccA, b + noccA);
-			int ab = ab_idxAA->get(a,b);
-			int ba = ab_idxAA->get(b,a);
-                        for(int c = 0 ; c <= b; ++c){
-			    int ac = ab_idxAA->get(a,c);
-			    int bc = ab_idxAA->get(b,c);
-			    int ca = ab_idxAA->get(c,a);
-			    int cb = ab_idxAA->get(c,b);
+			long int ab = ab_idxAA->get(a,b);
+			long int ba = ab_idxAA->get(b,a);
+                        for(long int c = 0 ; c <= b; ++c){
+			    long int ac = ab_idxAA->get(a,c);
+			    long int bc = ab_idxAA->get(b,c);
+			    long int ca = ab_idxAA->get(c,a);
+			    long int cb = ab_idxAA->get(c,b);
 
 			    // X_ijk^abc
 			    Xvalue = ( W->get(ab,c)*V->get(ab,c) ) + ( W->get(ac,b)*V->get(ac,b) )
@@ -521,7 +521,7 @@ void DFOCC::ccsd_canonic_triples_disk()
     SharedTensor2d K, L, M, I, J, T, U, Tau, W, X, Y, Z;
     SharedTensor2d V, J1, J2, J3, Jt;
     SharedTensor1d Eijk;
-    int Nijk;
+    long int Nijk;
 
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
@@ -575,7 +575,7 @@ void DFOCC::ccsd_canonic_triples_disk()
     Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
     /*
     //psio_address addr = PSIO_ZERO;
-    for(int i = 0 ; i < naoccA; ++i){
+    for(long int i = 0 ; i < naoccA; ++i){
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
@@ -588,7 +588,7 @@ void DFOCC::ccsd_canonic_triples_disk()
     Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, 0, 0, 1.0, 0.0);
     J1->expand23(navirA, navirA, navirA, Jt);
     J1->mywrite(PSIF_DFOCC_IABC, false);
-    for(int i = 1 ; i < naoccA; ++i){
+    for(long int i = 1 ; i < naoccA; ++i){
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
@@ -603,7 +603,7 @@ void DFOCC::ccsd_canonic_triples_disk()
     // main loop
     E_t = 0.0;
     double sum = 0.0;
-    for(int i = 0 ; i < naoccA; ++i){
+    for(long int i = 0 ; i < naoccA; ++i){
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Read J[i](a,bc)
@@ -611,7 +611,7 @@ void DFOCC::ccsd_canonic_triples_disk()
 	//J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
 	J1->myread(PSIF_DFOCC_IABC, (ULI)(i*navirA*navirA*navirA)*sizeof(double));
 
-        for(int j = 0 ; j <= i; ++j){
+        for(long int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Read J[j](a,bc)
@@ -619,7 +619,7 @@ void DFOCC::ccsd_canonic_triples_disk()
 	    //J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
 	    J2->myread(PSIF_DFOCC_IABC, (ULI)(j*navirA*navirA*navirA)*sizeof(double));
 
-            for(int k = 0 ; k <= j; ++k){
+            for(long int k = 0 ; k <= j; ++k){
 	        // Read J[k](a,bc)
 	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(ULI)(k*navirA*navirA*navirA)*sizeof(double));
 	        //J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
@@ -641,8 +641,8 @@ void DFOCC::ccsd_canonic_triples_disk()
                 // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -655,8 +655,8 @@ void DFOCC::ccsd_canonic_triples_disk()
                 // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -669,8 +669,8 @@ void DFOCC::ccsd_canonic_triples_disk()
                 // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -683,8 +683,8 @@ void DFOCC::ccsd_canonic_triples_disk()
                 // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -697,8 +697,8 @@ void DFOCC::ccsd_canonic_triples_disk()
                 // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -709,13 +709,13 @@ void DFOCC::ccsd_canonic_triples_disk()
 		// V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
 		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-	            int ia = ia_idxAA->get(i,a);
-                    for(int b = 0 ; b < navirA; ++b){
-			int jb = ia_idxAA->get(j,b);
-			int ab = ab_idxAA->get(a,b);
-                        for(int c = 0 ; c < navirA; ++c){
-			    int kc = ia_idxAA->get(k,c);
+                for(long int a = 0 ; a < navirA; ++a){
+	            long int ia = ia_idxAA->get(i,a);
+                    for(long int b = 0 ; b < navirA; ++b){
+			long int jb = ia_idxAA->get(j,b);
+			long int ab = ab_idxAA->get(a,b);
+                        for(long int c = 0 ; c < navirA; ++c){
+			    long int kc = ia_idxAA->get(k,c);
 			    double value = V->get(ab,c) + ( t1A->get(i,a)*J->get(jb,kc) ) + ( t1A->get(j,b)*J->get(ia,kc) ) + ( t1A->get(k,c)*J->get(ia,jb) );
 			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
 			    V->set(ab, c, value/denom);
@@ -730,17 +730,17 @@ void DFOCC::ccsd_canonic_triples_disk()
 		// Compute energy
 		double Xvalue, Yvalue, Zvalue;
                 #pragma omp parallel for private(Xvalue,Yvalue,Zvalue) reduction(+:sum)
-                for(int a = 0 ; a < navirA; ++a){
+                for(long int a = 0 ; a < navirA; ++a){
 	            double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
-                    for(int b = 0 ; b <=a; ++b){
+                    for(long int b = 0 ; b <=a; ++b){
 			double Dijkab = Dijka - FockA->get(b + noccA, b + noccA);
-			int ab = ab_idxAA->get(a,b);
-			int ba = ab_idxAA->get(b,a);
-                        for(int c = 0 ; c <= b; ++c){
-			    int ac = ab_idxAA->get(a,c);
-			    int bc = ab_idxAA->get(b,c);
-			    int ca = ab_idxAA->get(c,a);
-			    int cb = ab_idxAA->get(c,b);
+			long int ab = ab_idxAA->get(a,b);
+			long int ba = ab_idxAA->get(b,a);
+                        for(long int c = 0 ; c <= b; ++c){
+			    long int ac = ab_idxAA->get(a,c);
+			    long int bc = ab_idxAA->get(b,c);
+			    long int ca = ab_idxAA->get(c,a);
+			    long int cb = ab_idxAA->get(c,b);
 
 			    // X_ijk^abc
 			    Xvalue = ( W->get(ab,c)*V->get(ab,c) ) + ( W->get(ac,b)*V->get(ac,b) )
@@ -793,7 +793,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
     SharedTensor2d K, L, M, I, J, T, U, Tau, W, WL, X, Y, Z;
     SharedTensor2d V, J1, J2, J3, Jt;
     SharedTensor1d Eijk;
-    int Nijk;
+    long int Nijk;
 
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
@@ -855,7 +855,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
     Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
     /*
     //psio_address addr = PSIO_ZERO;
-    for(int i = 0 ; i < naoccA; ++i){
+    for(long int i = 0 ; i < naoccA; ++i){
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
@@ -868,7 +868,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
     Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, 0, 0, 1.0, 0.0);
     J1->expand23(navirA, navirA, navirA, Jt);
     J1->mywrite(PSIF_DFOCC_IABC, false);
-    for(int i = 1 ; i < naoccA; ++i){
+    for(long int i = 1 ; i < naoccA; ++i){
 	// Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, i*navirA*nQ, 0, 1.0, 0.0);
 	J1->expand23(navirA, navirA, navirA, Jt);
@@ -884,7 +884,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
     // main loop
     E_at = 0.0;
     double sum = 0.0;
-    for(int i = 0 ; i < naoccA; ++i){
+    for(long int i = 0 ; i < naoccA; ++i){
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Read J[i](a,bc)
@@ -892,7 +892,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
 	//J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
 	J1->myread(PSIF_DFOCC_IABC, (ULI)(i*navirA*navirA*navirA)*sizeof(double));
 
-        for(int j = 0 ; j <= i; ++j){
+        for(long int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Read J[j](a,bc)
@@ -900,7 +900,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
 	    //J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
 	    J2->myread(PSIF_DFOCC_IABC, (ULI)(j*navirA*navirA*navirA)*sizeof(double));
 
-            for(int k = 0 ; k <= j; ++k){
+            for(long int k = 0 ; k <= j; ++k){
 	        // Read J[k](a,bc)
 	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(ULI)(k*navirA*navirA*navirA)*sizeof(double));
 	        //J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
@@ -922,8 +922,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](ac,b) -= \sum(m) T[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -936,8 +936,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](ba,c) -= \sum(m) T[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -950,8 +950,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](bc,a) -= \sum(m) T[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -964,8 +964,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](ca,b) -= \sum(m) T[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -978,8 +978,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](cb,a) -= \sum(m) T[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, T, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -1005,8 +1005,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](ac,b) -= \sum(m) L[i](m,ac) I[kj](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, i*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        WL->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -1019,8 +1019,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](ba,c) -= \sum(m) L[j](m,ba) I[ik](mc)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, j*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (k*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        WL->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -1033,8 +1033,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](bc,a) -= \sum(m) L[j](m,bc) I[ki](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, j*naoccA*navirA*navirA, (k*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        WL->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -1047,8 +1047,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](ca,b) -= \sum(m) L[k](m,ca) I[ij](mb)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, k*naoccA*navirA*navirA, (i*naoccA*naoccA*navirA) + (j*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        WL->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -1061,8 +1061,8 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 // W[ijk](cb,a) -= \sum(m) L[k](m,cb) I[ji](ma)
                 V->contract(true, false, navirA*navirA, navirA, naoccA, L, I, k*naoccA*navirA*navirA, (j*naoccA*naoccA*navirA) + (i*naoccA*navirA), -1.0, 1.0);
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int b = 0 ; b < navirA; ++b){
+                for(long int a = 0 ; a < navirA; ++a){
+                    for(long int b = 0 ; b < navirA; ++b){
 		        WL->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
@@ -1073,13 +1073,13 @@ void DFOCC::ccsdl_canonic_triples_disk()
 		// V[ijk](ab,c) += l_i^a (jb|kc) + l_j^b (ia|kc) + l_k^c (ia|jb)
 		// Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
                 #pragma omp parallel for
-                for(int a = 0 ; a < navirA; ++a){
-	            int ia = ia_idxAA->get(i,a);
-                    for(int b = 0 ; b < navirA; ++b){
-			int jb = ia_idxAA->get(j,b);
-			int ab = ab_idxAA->get(a,b);
-                        for(int c = 0 ; c < navirA; ++c){
-			    int kc = ia_idxAA->get(k,c);
+                for(long int a = 0 ; a < navirA; ++a){
+	            long int ia = ia_idxAA->get(i,a);
+                    for(long int b = 0 ; b < navirA; ++b){
+			long int jb = ia_idxAA->get(j,b);
+			long int ab = ab_idxAA->get(a,b);
+                        for(long int c = 0 ; c < navirA; ++c){
+			    long int kc = ia_idxAA->get(k,c);
 			    double value = V->get(ab,c) + ( l1A->get(i,a)*J->get(jb,kc) ) + ( l1A->get(j,b)*J->get(ia,kc) ) + ( l1A->get(k,c)*J->get(ia,jb) );
 			    double denom =  1 + ( (a==b) + (b==c) + (a==c) );
 			    V->set(ab, c, value/denom);
@@ -1094,17 +1094,17 @@ void DFOCC::ccsdl_canonic_triples_disk()
 		// Compute energy
 		double Xvalue, Yvalue, Zvalue;
                 #pragma omp parallel for private(Xvalue,Yvalue,Zvalue) reduction(+:sum)
-                for(int a = 0 ; a < navirA; ++a){
+                for(long int a = 0 ; a < navirA; ++a){
 	            double Dijka = Dijk - FockA->get(a + noccA, a + noccA);
-                    for(int b = 0 ; b <=a; ++b){
+                    for(long int b = 0 ; b <=a; ++b){
 			double Dijkab = Dijka - FockA->get(b + noccA, b + noccA);
-			int ab = ab_idxAA->get(a,b);
-			int ba = ab_idxAA->get(b,a);
-                        for(int c = 0 ; c <= b; ++c){
-			    int ac = ab_idxAA->get(a,c);
-			    int bc = ab_idxAA->get(b,c);
-			    int ca = ab_idxAA->get(c,a);
-			    int cb = ab_idxAA->get(c,b);
+			long int ab = ab_idxAA->get(a,b);
+			long int ba = ab_idxAA->get(b,a);
+                        for(long int c = 0 ; c <= b; ++c){
+			    long int ac = ab_idxAA->get(a,c);
+			    long int bc = ab_idxAA->get(b,c);
+			    long int ca = ab_idxAA->get(c,a);
+			    long int cb = ab_idxAA->get(c,b);
 
 			    // X_ijk^abc
 			    Xvalue = ( W->get(ab,c)*V->get(ab,c) ) + ( W->get(ac,b)*V->get(ac,b) )
