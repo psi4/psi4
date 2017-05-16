@@ -1,34 +1,35 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:32:10 2016
+    Psi4 started on: Monday, 15 May 2017 03:38PM
 
-    Process ID:  13666
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  15081
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using
 #! the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
-
-memory 250 mb
 
 refnuc      =    5.912862514729  #TEST
 refscf      =  -38.911021663021  #TEST
@@ -73,11 +74,17 @@ compare_values(refnuc, ch2.nuclear_repulsion_energy()     , 9, "Nuclear repulsio
 compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
 compare_values(refmkccsd_t, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST 
 --------------------------------------------------------------------------
+   => Loading Basis Set <=
 
-  Memory set to 250.000 MiB by Python script.
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:32:11 2016
+
+*** tstart() called on psinet
+*** at Mon May 15 15:38:26 2017
 
 
          ------------------------------------------
@@ -110,7 +117,7 @@ compare_values(refmkccsd_t, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")
   Setting level shift to 0.000 S
   @SCF    0      -35.306182112885     -35.306182112885       0.108674250013
   Setting level shift to 0.000 S
-  @SCF    1      -37.734567096233      -2.428384983348       0.106495116193
+  @SCF    1      -37.734567096232      -2.428384983348       0.106495116193
   Setting level shift to 0.000 S
   @SCF    2      -38.693389625209      -0.958822528976       0.048129098118
   Setting level shift to 0.000 S
@@ -122,7 +129,7 @@ compare_values(refmkccsd_t, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")
   Setting level shift to 0.000 S
   @SCF    6      -38.910926536614      -0.000557225861       0.000541074671
   Setting level shift to 0.000 S/E
-  @SCF    7      -38.911006332340      -0.000079795725       0.000297991449
+  @SCF    7      -38.911006332339      -0.000079795726       0.000297991449
   Setting level shift to 0.000 S/E
   @SCF    8      -38.911021622553      -0.000015290214       0.000094630067
   Setting level shift to 0.000 S/E
@@ -138,7 +145,7 @@ compare_values(refmkccsd_t, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")
   Setting level shift to 0.000 S/E
   @SCF   14      -38.911021663021      -0.000000000000       0.000000000924
   Setting level shift to 0.000 S/E
-  @SCF   15      -38.911021663021      -0.000000000000       0.000000000223
+  @SCF   15      -38.911021663021       0.000000000000       0.000000000223
   Setting level shift to 0.000 S/E
   @SCF   16      -38.911021663021      -0.000000000000       0.000000000040
   =========================================================================================
@@ -174,14 +181,14 @@ compare_values(refmkccsd_t, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")
   MCSCF Execution Completed.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:32:11 2016
+*** tstop() called on psinet at Mon May 15 15:38:26 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   MRCC          MRCC
@@ -189,8 +196,8 @@ Total time:
    MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009
    MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by
      MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett
-         MRCC            Compiled on Mar  4 2016 at 18:07:05
-         MRCC            id = 6a707c99fd2213714c6c78cfcd145480721f0359 
+         MRCC            Compiled on May 15 2017 at 15:13:06
+         MRCC
        MRCCMRCC
   For a single-point only
 
@@ -225,7 +232,7 @@ Total time:
   ==============================================================================
 
   Allocated work array of size 23960 (0.02 MiB)
-  Allocated buffer array of size 12608344 (12.02 MiB)	Presorting SO-basis two-electron integrals.
+  Allocated buffer array of size 26459888 (25.23 MiB)	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -236,15 +243,15 @@ Total time:
 
 
   Presorting two-electron integrals from IWL buffer
-    Memory available                       =      237019656 bytes
-    Memory available for presorting        =      177764742 bytes (75.0%)
+    Memory available                       =      497456112 bytes
+    Memory available for presorting        =      373092084 bytes (75.0%)
     Memory required for in-core presort    =          99352 bytes
     Presorting is not required
     Reading irreps 0 -> 3 (12419 non-zero integrals)
 
   Sorting integrals:
-    Memory available                       =      237015048 bytes
-    Memory available for sorting           =      118507524 bytes (50.0%)
+    Memory available                       =      497451504 bytes
+    Memory available for sorting           =      248725752 bytes (50.0%)
 
     Pass 1:
     Setting up the matrix list: added 240 matrices blocks
@@ -253,9 +260,9 @@ Total time:
     Frozen-core energy                     =          0.000000000
 
   Computing storage strategy:
-    Input memory                           =      250000000 bytes
-    Free memory                            =      237015048 bytes
-    Free memory available for matrices     =      229904596 bytes ( 97%)
+    Input memory                           =      524288000 bytes
+    Free memory                            =      497451504 bytes
+    Free memory available for matrices     =      482527958 bytes ( 97%)
     Memory required by fock matrices       =           7240 bytes
     Memory required by integrals           =        1352776 bytes
     Memory required by other matrices      =        1997920 bytes
@@ -265,6 +272,7 @@ Total time:
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [ 1, 0, 0, 1 ] !
+  BASIS_RELATIVISTIC          => (empty)         
   BENCH                       => 0               
   CC_NUM_THREADS              => 1               
   CC_TYPE                     => CONV            
@@ -304,11 +312,12 @@ Total time:
   FROZEN_UOCC                 => [ 0, 0, 0, 0 ] !
   HEFF4                       => FALSE          !
   HEFF_PRINT                  => FALSE           
-  INTEGRAL_PACKAGE            => ERD             
+  INTEGRAL_PACKAGE            => LIBINT          
   LITERAL_CFOUR               => (empty)         
   LOCK_SINGLET                => FALSE           
   MAT_NUM_COLUMN_PRINT        => 5               
   MAXITER                     => 100             
+  MOLDEN_WITH_VIRTUAL         => TRUE            
   MP2_CCSD_METHOD             => II              
   MP2_GUESS                   => TRUE            
   MP2_TYPE                    => DF              
@@ -318,6 +327,7 @@ Total time:
   NUM_FROZEN_UOCC             => 0               
   OFFDIAGONAL_CCSD_T          => TRUE            
   PCM                         => FALSE           
+  PCM_CC_TYPE                 => PTE             
   PCM_SCF_TYPE                => TOTAL           
   PERTURB_CBS                 => FALSE           
   PERTURB_CBS_COUPLING        => TRUE            
@@ -333,10 +343,8 @@ Total time:
   RAS3                        => [  ]            
   RAS4                        => [  ]            
   RELATIVISTIC                => NO              
-  REL_BASIS                   => (empty)         
   RESTRICTED_DOCC             => [ 2, 0, 1, 0 ] !
   RESTRICTED_UOCC             => [  ]            
-  RUN_CCTRANSORT              => TRUE            
   R_CONVERGENCE               => 1e-10          !
   SMALL_CUTOFF                => 0               
   SOCC                        => [  ]            
@@ -380,15 +388,15 @@ Total time:
 
   Heff Matrix
 
-      -38.876572843759860      0.034448819261514
-        0.034448819261514    -38.876572843759860
+      -38.876572843759817      0.034448819261514
+        0.034448819261514    -38.876572843759817
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            1    0.707107     0.500000  |[22+][][2][-]>
             0   -0.707107     0.500000  |[22-][][2][+]>
+            1    0.707107     0.500000  |[22+][][2][-]>
 
   ==============================================================================
   	Multireference Coupled Cluster
@@ -397,7 +405,7 @@ Total time:
 
   ------------------------------------------------------------------------------
   @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS
-  @CC           (Hartree)       (Hartree)                           (Sec)
+  @CC             [Eh]            [Eh]                               (Sec)
   ------------------------------------------------------------------------------
   @CC   0    -38.911021663021   0.0000e+00   0.000e+00   0.000e+00       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
@@ -438,17 +446,17 @@ Total time:
 
   Heff Matrix
 
-      -39.005469228427955      0.030189972749069
-        0.030189972749069    -39.005469228427955
+      -39.005469228427913      0.030189972749069
+        0.030189972749069    -39.005469228427913
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            1    0.707107     0.500000  |[22+][][2][-]>
             0   -0.707107     0.500000  |[22-][][2][+]>
+            1    0.707107     0.500000  |[22+][][2][-]>
 
-  Timing for singles and doubles:             0.230415 s
+  Timing for singles and doubles:             0.323001 s
 
   Computing (T) correction using the restricted loop algorithm.
 
@@ -473,27 +481,27 @@ Total time:
 
   Hamiltonian Matrix
 
-      -39.007414715201698      0.030483514262209
-        0.030483514262209    -39.007414715201698
+      -39.007414715201655      0.030483514262209
+        0.030483514262209    -39.007414715201655
 
   Computing the expectation value of Heff
 
       * Mk-MRCCSD(T) total energy   =        -39.037898229464
 
-  Timing for triples:                         0.038712 s
+  Timing for triples:                         0.055584 s
 
   PSIMRCC job completed.
-  Wall Time =             0.316180 s
-  GEMM Time =             0.027023 s
+  Wall Time =             0.459598 s
+  GEMM Time =             0.041303 s
 
   ==============================================================================
   Memory Usage Report
 
-  Maximum memory used:     17.0 Mb 
+  Maximum memory used:     30.2 Mb 
   Number of objects still in memory: 0       Current bytes used: 0             
   ==============================================================================
 	Nuclear repulsion energy..........................................PASSED
 	SCF energy........................................................PASSED
 	MkCCSD energy.....................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

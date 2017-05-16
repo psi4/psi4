@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} ad94c93
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Fri Mar 18 13:36:41 2016
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:    428
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  20950
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -45,7 +48,7 @@ ref_efp = [
     [ 0.0038830634,    -0.0039883720,    -0.0001194227,     0.0012427711,    -0.0026362462,    -0.0005023332],  #TEST
     [ 0.0000530976,     0.0005935332,     0.0003660789,    -0.0015382262,    -0.0048146666,     0.0026841256]]  #TEST
 
-refEFP = psi4.Matrix(9, 6)  #TEST
+refEFP = Matrix(9, 6)  #TEST
 refEFP.set(ref_efp)  #TEST
 
 molecule efp_spec {
@@ -86,7 +89,7 @@ efp h2o
 --
 efp ch3oh
     1.275    -2.447    -4.673
-    0.709    -3.191    -3.592
+0.709, 	-3.191,,-3.592   
     2.213    -1.978    -4.343
 --
 efp h2o
@@ -109,20 +112,22 @@ torq = get_efp_torque()
 compare_matrices(refEFP, torq, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
 
 --------------------------------------------------------------------------
-  EFP fragment ch3oh read from /home/dsmith/Gits/dgas_psi/share/efpfrag/ch3oh.efp
-  EFP fragment h2o read from /home/dsmith/Gits/dgas_psi/share/efpfrag/h2o.efp
-  EFP fragment nh3 read from /home/dsmith/Gits/dgas_psi/share/efpfrag/nh3.efp
+  EFP fragment ch3oh read from /home/psilocaluser/miniconda3/envs/p4deps27/share/libefp/fraglib/ch3oh.efp
+  EFP fragment h2o read from /home/psilocaluser/miniconda3/envs/p4deps27/share/libefp/fraglib/h2o.efp
+  EFP fragment nh3 read from /home/psilocaluser/miniconda3/envs/p4deps27/share/libefp/fraglib/nh3.efp
 Warning: There are no quantum mechanical atoms in this molecule.
 
 
-LIBEFP ver. 1.2.1
-Copyright (c) 2012-2014 Ilya Kaliman
+LIBEFP ver. 1.4.2
+Copyright (c) 2012-2017 Ilya Kaliman
 
-Journal Reference:
-    Kaliman and Slipchenko, JCC 2013.
+Journal References:
+  - Kaliman and Slipchenko, JCC 2013.
     DOI: http://dx.doi.org/10.1002/jcc.23375
+  - Kaliman and Slipchenko, JCC 2015.
+    DOI: http://dx.doi.org/10.1002/jcc.23772
 
-Project web site: http://www.libefp.org/
+Project web site: https://libefp.github.io/
 
 
   ==> EFP/EFP Setup <==
@@ -200,7 +205,7 @@ Project web site: http://www.libefp.org/
     2    -0.00464422709692
     3    -0.00163881939751
     4    -0.00355565895883
-    5    -0.00319263027310
+    5    -0.00319263027309
     6     0.01056753573061
     7    -0.00114716078365
     8    -0.00050233324857
@@ -223,24 +228,24 @@ Project web site: http://www.libefp.org/
 
     EFP Results
   ------------------------------------------------------------
-    Electrostatics                     -0.003953150098 [H] *
-      EFP/EFP                          -0.003953150098 [H] *
-      QM-Nuc/EFP                        0.000000000000 [H] 
+    Electrostatics                     -0.003953150098 [Eh] *
+      EFP/EFP                          -0.003953150098 [Eh] *
+      QM-Nuc/EFP                        0.000000000000 [Eh] 
 
-    Exchange                            0.000000000000 [H] 
-      EFP/EFP                           0.000000000000 [H] 
-      QM/EFP                            0.000000000000 [H] 
+    Exchange                            0.000000000000 [Eh] 
+      EFP/EFP                           0.000000000000 [Eh] 
+      QM/EFP                            0.000000000000 [Eh] 
 
-    Induction                          -0.002655646859 [H] *
-      EFP/EFP                          -0.002655646859 [H] *
+    Induction                          -0.002655646859 [Eh] *
+      EFP/EFP                          -0.002655646859 [Eh] *
 
-    Dispersion                          0.000000000000 [H] 
-      EFP/EFP                           0.000000000000 [H] 
-      QM/EFP                            0.000000000000 [H] 
+    Dispersion                          0.000000000000 [Eh] 
+      EFP/EFP                           0.000000000000 [Eh] 
+      QM/EFP                            0.000000000000 [Eh] 
 
-    Total EFP                          -0.006608796957 [H]
+    Total EFP                          -0.006608796957 [Eh]
 	NRE...............................................................PASSED
 	EFP Total.........................................................PASSED
 	libefp printed gradients, vs. psi4 read-from-libefp gradients.....PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

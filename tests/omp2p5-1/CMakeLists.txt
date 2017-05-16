@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(omp2_5-1 "psi;omp")
+add_regression_test(omp2p5-1 "psi;omp")

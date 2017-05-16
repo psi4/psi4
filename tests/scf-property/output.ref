@@ -1,35 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.3.1017 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {cbs_wrapper} d285b44 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wed Apr 20 13:15:15 2016
+    Psi4 started on: Monday, 15 May 2017 03:33PM
 
-    Process ID:   3793
-    PSI4DATADIR: /home/dsmith/Gits/psi4cbs/share
-    Memory level set to 256.000 MB
-
+    Process ID:  11967
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
-
-memory 500 mb
 
 molecule ch2 {
     0 3
@@ -54,10 +53,10 @@ set globals = {
 ch2.update_geometry()
 compare_values(6.648418918908746, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 
-props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',                  #TEST
-         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',                     #TEST
-         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',                       #TEST
-         'MULTIPOLE(5)', 'NO_OCCUPATIONS']                                              #TEST
+props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
+         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+         'MULTIPOLE(5)', 'NO_OCCUPATIONS']
 
 property('scf', properties=props)
 
@@ -84,31 +83,19 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE ZZ'), -7.021817489904, 4, "B3
 compare_values(psi4.get_variable('B3LYP QUADRUPOLE XY'), 0.000000000000, 4, "B3LYP QUADRUPOLE XY")    #TEST
 compare_values(psi4.get_variable('B3LYP QUADRUPOLE XZ'), 0.000000000000, 4, "B3LYP QUADRUPOLE XZ")    #TEST
 compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3LYP QUADRUPOLE YZ")    #TEST
-#energy('B3LYP')
-
-#name = 'B3LYP'
-#prop_list = []
-#for dip in ['X', 'Y', 'Z']:
-#    prop_list.append(name + ' DIPOLE ' + dip)
-#for quad in ['XX', 'YY', 'ZZ', 'XY', 'XZ', 'YZ']:
-#    prop_list.append(name + ' QUADRUPOLE ' + quad)
-#
-#for p in prop_list:
-#    val = psi4.get_variable(p)
-#    pstring  = "compare_values(psi4.get_variable("
-#    pstring += "'" + p + "'"
-#    pstring += '), %14.12f, 4, "' % val
-#    pstring += p
-#    pstring += '")'
-#    print pstring
-
 --------------------------------------------------------------------------
-
-  Memory set to 500.000 MiB by Python script.
 	Nuclear repulsion energy..........................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Wed Apr 20 13:15:16 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:33:52 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G**
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   106 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
 
 
          ---------------------------------------------------------
@@ -135,7 +122,7 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
 
   Rotational constants: A =     45.81442  B =     10.62976  C =      8.62793 [cm^-1]
   Rotational constants: A = 1373481.64320  B = 318672.22408  C = 258658.77710 [MHz]
-  Nuclear repulsion =    6.648418918908746
+  Nuclear repulsion =    6.648418918908745
 
   Charge       = 0
   Multiplicity = 3
@@ -149,7 +136,7 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -157,6 +144,7 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
   ==> Primary Basis <==
 
   Basis Set: 6-31G**
+    Blend: 6-31G**
     Number of shells: 12
     Number of basis function: 25
     Number of Cartesian functions: 25
@@ -178,39 +166,55 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     119] index = [             0,7140]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 105950 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.6982852745E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter   1:   -34.69634690262892   -3.46963e+01   2.01566e-01 
-   @UHF iter   2:   -38.38400796562516   -3.68766e+00   6.09829e-02 DIIS
-   @UHF iter   3:   -38.90810879629289   -5.24101e-01   8.15042e-03 DIIS
-   @UHF iter   4:   -38.91540261068057   -7.29381e-03   1.39107e-03 DIIS
-   @UHF iter   5:   -38.91586512660257   -4.62516e-04   3.25270e-04 DIIS
-   @UHF iter   6:   -38.91591304977090   -4.79232e-05   1.16544e-04 DIIS
-   @UHF iter   7:   -38.91591792506635   -4.87530e-06   2.81540e-05 DIIS
-   @UHF iter   8:   -38.91591818630789   -2.61242e-07   5.37448e-06 DIIS
-   @UHF iter   9:   -38.91591819607427   -9.76638e-09   1.40756e-06 DIIS
-   @UHF iter  10:   -38.91591819676599   -6.91720e-10   3.10407e-07 DIIS
+   @UHF iter   1:   -38.36628059108167   -3.83663e+01   7.21333e-02 
+   @UHF iter   2:   -38.89548973222571   -5.29209e-01   1.42319e-02 DIIS
+   @UHF iter   3:   -38.91388672591683   -1.83970e-02   2.85091e-03 DIIS
+   @UHF iter   4:   -38.91557214672942   -1.68542e-03   1.03010e-03 DIIS
+   @UHF iter   5:   -38.91588001324764   -3.07867e-04   3.22636e-04 DIIS
+   @UHF iter   6:   -38.91591576977684   -3.57565e-05   8.31296e-05 DIIS
+   @UHF iter   7:   -38.91591805527025   -2.28549e-06   1.93473e-05 DIIS
+   @UHF iter   8:   -38.91591817990773   -1.24637e-07   6.73379e-06 DIIS
+   @UHF iter   9:   -38.91591819642416   -1.65164e-08   1.04648e-06 DIIS
+   @UHF iter  10:   -38.91591819678374   -3.59577e-10   2.14837e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.148317542E-02
+   @Spin Contamination Metric:   1.148317061E-02
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.011483175E+00
+   @S^2 Observed:                2.011483171E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -220,28 +224,28 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
     Alpha Occupied:                                                       
 
        1A1   -11.245692     2A1    -0.971446     1B2    -0.631678  
-       3A1    -0.465431     1B1    -0.407643  
+       3A1    -0.465430     1B1    -0.407643  
 
     Alpha Virtual:                                                        
 
        4A1     0.283649     2B2     0.341173     5A1     0.712645  
-       3B2     0.718465     2B1     0.730654     6A1     0.818492  
+       3B2     0.718465     2B1     0.730653     6A1     0.818492  
        7A1     1.212677     4B2     1.222225     1A2     1.673437  
        8A1     1.792837     3B1     1.828806     5B2     2.245126  
        9A1     2.332763     4B1     2.735856     6B2     2.784534  
-       2A2     3.005935    10A1     3.134253    11A1     3.953221  
+       2A2     3.005935    10A1     3.134254    11A1     3.953221  
        7B2     3.970940    12A1     4.562399  
 
     Beta Occupied:                                                        
 
-       1A1   -11.198599     2A1    -0.806383     1B2    -0.595575  
+       1A1   -11.198599     2A1    -0.806384     1B2    -0.595575  
 
     Beta Virtual:                                                         
 
-       3A1     0.143352     1B1     0.174805     4A1     0.311393  
+       3A1     0.143352     1B1     0.174805     4A1     0.311392  
        2B2     0.374780     3B2     0.751470     5A1     0.816976  
        2B1     0.897458     6A1     0.922131     7A1     1.258449  
-       4B2     1.272080     1A2     1.761099     8A1     1.934958  
+       4B2     1.272080     1A2     1.761098     8A1     1.934958  
        3B1     1.994627     5B2     2.265981     9A1     2.414636  
        4B1     2.769632     6B2     2.831010     2A2     3.052013  
       10A1     3.158050    11A1     3.978253     7B2     3.991182  
@@ -254,21 +258,19 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
 
   Energy converged.
 
-  @UHF Final Energy:   -38.91591819676599
+  @UHF Final Energy:   -38.91591819678374
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.6484189189087459
-    One-Electron Energy =                 -64.8062257589913457
-    Two-Electron Energy =                  19.2418886433166030
+    Nuclear Repulsion Energy =              6.6484189189087450
+    One-Electron Energy =                 -64.8062286924430708
+    Two-Electron Energy =                  19.2418915767505929
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -38.9159181967660004
+    Total Energy =                        -38.9159181967837355
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-  Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
   HONO-2 :    2 A1 1.9959180
@@ -279,16 +281,6 @@ compare_values(psi4.get_variable('B3LYP QUADRUPOLE YZ'), -0.000000000000, 4, "B3
   LUNO+2 :    5 A1 0.0000017
   LUNO+3 :    6 A1 0.0000000
 
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Wed Apr 20 13:15:16 2016
-Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -305,67 +297,67 @@ Properties computed using the SCF density matrix
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
  Dipole Y            :          0.0000000            0.0000000            0.0000000
- Dipole Z            :         -0.5159266            0.7412432            0.2253167
+ Dipole Z            :         -0.5159271            0.7412432            0.2253161
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
- Quadrupole XX       :         -5.6980462            0.0000000           -5.6980462
+ Quadrupole XX       :         -5.6980460            0.0000000           -5.6980460
  Quadrupole XY       :          0.0000000            0.0000000            0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -10.1528752            5.6193435           -4.5335317
+ Quadrupole YY       :        -10.1528736            5.6193435           -4.5335301
  Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole ZZ       :         -6.4705589            1.2107698           -5.2597890
+ Quadrupole ZZ       :         -6.4705589            1.2107698           -5.2597891
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
  Octupole XXY        :          0.0000000            0.0000000            0.0000000
- Octupole XXZ        :         -0.0808086            0.0000000           -0.0808086
+ Octupole XXZ        :         -0.0808089            0.0000000           -0.0808089
  Octupole XYY        :          0.0000000            0.0000000            0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000            0.0000000            0.0000000
  Octupole YYY        :          0.0000000            0.0000000            0.0000000
- Octupole YYZ        :         -3.5001119            4.1981510            0.6980390
+ Octupole YYZ        :         -3.5001127            4.1981510            0.6980383
  Octupole YZZ        :          0.0000000            0.0000000            0.0000000
- Octupole ZZZ        :         -0.9668556            0.8221073           -0.1447483
+ Octupole ZZZ        :         -0.9668577            0.8221073           -0.1447504
 
  L = 4.  Multiply by 0.3766479268 to convert to Debye.ang^3
- Hexadecapole XXXX   :        -21.2940495            0.0000000          -21.2940495
+ Hexadecapole XXXX   :        -21.2940488            0.0000000          -21.2940488
  Hexadecapole XXXY   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XXXZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole XXYY   :         -9.6313341            0.0000000           -9.6313341
+ Hexadecapole XXYY   :         -9.6313316            0.0000000           -9.6313316
  Hexadecapole XXYZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole XXZZ   :         -7.4848739            0.0000000           -7.4848739
+ Hexadecapole XXZZ   :         -7.4848738            0.0000000           -7.4848738
  Hexadecapole XYYY   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XYYZ   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XYZZ   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XZZZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole YYYY   :        -47.4771942           15.7885108          -31.6886835
+ Hexadecapole YYYY   :        -47.4771760           15.7885108          -31.6886653
  Hexadecapole YYYZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole YYZZ   :        -12.1009265            3.1363933           -8.9645332
+ Hexadecapole YYZZ   :        -12.1009243            3.1363933           -8.9645310
  Hexadecapole YZZZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole ZZZZ   :        -23.9562290            0.6245336          -23.3316955
+ Hexadecapole ZZZZ   :        -23.9562296            0.6245336          -23.3316960
 
  L = 5.  Multiply by 0.1993134985 to convert to Debye.ang^4
  32-pole XXXXX       :          0.0000000            0.0000000            0.0000000
  32-pole XXXXY       :          0.0000000            0.0000000            0.0000000
- 32-pole XXXXZ       :          0.8212694            0.0000000            0.8212694
+ 32-pole XXXXZ       :          0.8212680            0.0000000            0.8212680
  32-pole XXXYY       :          0.0000000            0.0000000            0.0000000
  32-pole XXXYZ       :          0.0000000            0.0000000            0.0000000
  32-pole XXXZZ       :          0.0000000            0.0000000            0.0000000
  32-pole XXYYY       :          0.0000000            0.0000000            0.0000000
- 32-pole XXYYZ       :         -2.1286425            0.0000000           -2.1286425
+ 32-pole XXYYZ       :         -2.1286430            0.0000000           -2.1286430
  32-pole XXYZZ       :          0.0000000            0.0000000            0.0000000
- 32-pole XXZZZ       :          0.2647704            0.0000000            0.2647704
+ 32-pole XXZZZ       :          0.2647679            0.0000000            0.2647679
  32-pole XYYYY       :          0.0000000            0.0000000            0.0000000
  32-pole XYYYZ       :          0.0000000            0.0000000            0.0000000
  32-pole XYYZZ       :          0.0000000            0.0000000            0.0000000
  32-pole XYZZZ       :          0.0000000            0.0000000            0.0000000
  32-pole XZZZZ       :          0.0000000            0.0000000            0.0000000
  32-pole YYYYY       :          0.0000000            0.0000000            0.0000000
- 32-pole YYYYZ       :        -20.9202881           11.7954262           -9.1248619
+ 32-pole YYYYZ       :        -20.9202883           11.7954262           -9.1248622
  32-pole YYYZZ       :          0.0000000            0.0000000            0.0000000
- 32-pole YYZZZ       :         -8.3509545            2.3431656           -6.0077889
+ 32-pole YYZZZ       :         -8.3509571            2.3431656           -6.0077914
  32-pole YZZZZ       :          0.0000000            0.0000000            0.0000000
- 32-pole ZZZZZ       :         -1.7222052            0.4652840           -1.2569212
+ 32-pole ZZZZZ       :         -1.7222228            0.4652840           -1.2569388
 
  --------------------------------------------------------------------------------
 
@@ -373,9 +365,9 @@ Properties computed using the SCF density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  C           -14.744789809081
-    2  H            -1.100068376010
-    3  H            -1.100068376010
+    1  C           -14.744789834252
+    2  H            -1.100068523472
+    3  H            -1.100068523472
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.7412
@@ -399,17 +391,17 @@ Properties computed using the SCF density matrix
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     C     4.23666  2.02055  2.21611 -0.25720
-       2     H     0.38167  0.48973 -0.10805  0.12860
-       3     H     0.38167  0.48973 -0.10805  0.12860
+       1     C     4.23666  2.02055  2.21611 -0.25721
+       2     H     0.38167  0.48973 -0.10806  0.12860
+       3     H     0.38167  0.48973 -0.10806  0.12860
 
    Total alpha =  5.00000, Total beta =  3.00000, Total charge =  0.00000
 
   Lowdin Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     C     4.11513  2.08628  2.02885 -0.20141
-       2     H     0.44244  0.45686 -0.01442  0.10070
-       3     H     0.44244  0.45686 -0.01442  0.10070
+       2     H     0.44244  0.45686 -0.01443  0.10070
+       3     H     0.44244  0.45686 -0.01443  0.10070
 
   Total alpha =  5.00000, Total beta =  3.00000, Total charge =  0.00000
 
@@ -421,9 +413,9 @@ Properties computed using the SCF density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.95744520181432     0.95744520181432
-    2     0.95744520181432     0.00000000000000    -0.01100212008105
-    3     0.95744520181432    -0.01100212008105     0.00000000000000
+    1     0.00000000000000     0.95744502436739     0.95744502436739
+    2     0.95744502436739     0.00000000000000    -0.01100215164317
+    3     0.95744502436739    -0.01100215164317     0.00000000000000
 
 
 
@@ -432,9 +424,9 @@ Properties computed using the SCF density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.46070092504822     0.46070092504822
-    2     0.46070092504822     0.00000000000000    -0.00172949074281
-    3     0.46070092504822    -0.00172949074281     0.00000000000000
+    1     0.00000000000000     0.46070080972894     0.46070080972894
+    2     0.46070080972894     0.00000000000000    -0.00172951268957
+    3     0.46070080972894    -0.00172951268957     0.00000000000000
 
 
 
@@ -443,9 +435,9 @@ Properties computed using the SCF density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.49674427676610     0.49674427676610
-    2     0.49674427676610     0.00000000000000    -0.00927262933824
-    3     0.49674427676610    -0.00927262933824     0.00000000000000
+    1     0.00000000000000     0.49674421463845     0.49674421463845
+    2     0.49674421463845     0.00000000000000    -0.00927263895360
+    3     0.49674421463845    -0.00927263895360     0.00000000000000
 
 
 
@@ -453,9 +445,9 @@ Properties computed using the SCF density matrix
 
  #  #
  Irrep: 1
-      1:  1.9148904
-      2:  0.9464431
-      3:  0.9464431
+      1:  1.9148900
+      2:  0.9464429
+      3:  0.9464429
 
 
 
@@ -466,9 +458,9 @@ Properties computed using the SCF density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     1.03707504498832     1.03707504498831
-    2     1.03707504498832     0.00000000000000     0.02253704443958
-    3     1.03707504498831     0.02253704443958     0.00000000000000
+    1     0.00000000000000     1.03707497734409     1.03707497734409
+    2     1.03707497734409     0.00000000000000     0.02253704484525
+    3     1.03707497734409     0.02253704484525     0.00000000000000
 
 
 
@@ -477,9 +469,9 @@ Properties computed using the SCF density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.53959054759044     0.53959054759044
-    2     0.53959054759044     0.00000000000000     0.01175189872753
-    3     0.53959054759044     0.01175189872753     0.00000000000000
+    1     0.00000000000000     0.53959048241229     0.53959048241229
+    2     0.53959048241229     0.00000000000000     0.01175189184817
+    3     0.53959048241229     0.01175189184817     0.00000000000000
 
 
 
@@ -488,9 +480,9 @@ Properties computed using the SCF density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.49748449739787     0.49748449739787
-    2     0.49748449739787     0.00000000000000     0.01078514571206
-    3     0.49748449739787     0.01078514571206     0.00000000000000
+    1     0.00000000000000     0.49748449493180     0.49748449493180
+    2     0.49748449493180     0.00000000000000     0.01078515299708
+    3     0.49748449493180     0.01078515299708     0.00000000000000
 
 
 
@@ -498,36 +490,36 @@ Properties computed using the SCF density matrix
 
  #  #
  Irrep: 1
-      1:  2.0741501
-      2:  1.0596121
-      3:  1.0596121
+      1:  2.0741500
+      2:  1.0596120
+      3:  1.0596120
 
   Natural Orbital Occupations:
 
   Alpha Occupations:
   HONO-2 :    2 A1    1.000
-  HONO-1 :    3 A1    1.000
-  HONO-0 :    1 B1    1.000
+  HONO-1 :    1 B1    1.000
+  HONO-0 :    3 A1    1.000
   LUNO+0 :    4 A1    0.000
   LUNO+1 :    5 A1    0.000
-  LUNO+2 :    2 B2    0.000
+  LUNO+2 :    2 B1    0.000
   LUNO+3 :    6 A1    0.000
 
   Beta Occupations:
-  HONO-2 :    1 A1    1.000
-  HONO-1 :    1 B2    1.000
+  HONO-2 :    1 B2    1.000
+  HONO-1 :    1 A1    1.000
   HONO-0 :    2 A1    1.000
-  LUNO+0 :    2 B2    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    3 B2    0.000
-  LUNO+3 :    4 A1    0.000
+  LUNO+0 :    3 A1    0.000
+  LUNO+1 :    4 A1    0.000
+  LUNO+2 :    2 B2    0.000
+  LUNO+3 :    3 B2    0.000
 
   Total Occupations:
-  HONO-2 :    1 A1    2.000
-  HONO-1 :    1 B2    2.000
+  HONO-2 :    1 B2    2.000
+  HONO-1 :    1 A1    2.000
   HONO-0 :    2 A1    2.000
-  LUNO+0 :    3 A1    1.000
-  LUNO+1 :    1 B1    1.000
+  LUNO+0 :    1 B1    1.000
+  LUNO+1 :    3 A1    1.000
   LUNO+2 :    4 A1    0.000
   LUNO+3 :    5 A1    0.000
 
@@ -535,6 +527,16 @@ Properties computed using the SCF density matrix
  Field computed on the grid and written to grid_field.dat
 
  Electrostatic potential computed on the grid and written to grid_esp.dat
+
+*** tstop() called on psinet at Mon May 15 15:33:53 2017
+Module time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	SCF energy........................................................PASSED
 	SCF DIPOLE X......................................................PASSED
 	SCF DIPOLE Y......................................................PASSED
@@ -546,8 +548,16 @@ Properties computed using the SCF density matrix
 	SCF QUADRUPOLE XZ.................................................PASSED
 	SCF QUADRUPOLE YZ.................................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Wed Apr 20 13:15:16 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:33:53 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G**
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   106 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
 
 
          ---------------------------------------------------------
@@ -574,7 +584,7 @@ Properties computed using the SCF density matrix
 
   Rotational constants: A =     45.81442  B =     10.62976  C =      8.62793 [cm^-1]
   Rotational constants: A = 1373481.64320  B = 318672.22408  C = 258658.77710 [MHz]
-  Nuclear repulsion =    6.648418918908748
+  Nuclear repulsion =    6.648418918908745
 
   Charge       = 0
   Multiplicity = 3
@@ -588,7 +598,7 @@ Properties computed using the SCF density matrix
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -596,6 +606,7 @@ Properties computed using the SCF density matrix
   ==> Primary Basis <==
 
   Basis Set: 6-31G**
+    Blend: 6-31G**
     Number of shells: 12
     Number of basis function: 25
     Number of Cartesian functions: 25
@@ -606,7 +617,7 @@ Properties computed using the SCF density matrix
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -664,38 +675,53 @@ Properties computed using the SCF density matrix
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     119] index = [             0,7140]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 105950 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.6982852745E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter   1:   -34.94218792762025   -3.49422e+01   2.01447e-01 
-   @UKS iter   2:   -37.60702974220352   -2.66484e+00   9.48396e-02 DIIS
-   @UKS iter   3:   -39.06748479831088   -1.46046e+00   2.43269e-02 DIIS
-   @UKS iter   4:   -39.14103652087341   -7.35517e-02   1.53169e-03 DIIS
-   @UKS iter   5:   -39.14134101262782   -3.04492e-04   2.12704e-04 DIIS
-   @UKS iter   6:   -39.14134705832311   -6.04570e-06   4.41339e-05 DIIS
-   @UKS iter   7:   -39.14134739115844   -3.32835e-07   7.14337e-06 DIIS
-   @UKS iter   8:   -39.14134740518531   -1.40269e-08   1.17986e-06 DIIS
-   @UKS iter   9:   -39.14134740550915   -3.23837e-10   1.27366e-07 DIIS
+   @UKS iter   1:   -38.63239320311900   -3.86324e+01   6.82949e-02 
+   @UKS iter   2:   -38.99881405185869   -3.66421e-01   3.35887e-02 DIIS
+   @UKS iter   3:   -39.13193486577352   -1.33121e-01   8.90879e-03 DIIS
+   @UKS iter   4:   -39.14124235352717   -9.30749e-03   9.02649e-04 DIIS
+   @UKS iter   5:   -39.14134483649762   -1.02483e-04   1.17212e-04 DIIS
+   @UKS iter   6:   -39.14134732998566   -2.49349e-06   1.68923e-05 DIIS
+   @UKS iter   7:   -39.14134740454149   -7.45558e-08   2.05916e-06 DIIS
+   @UKS iter   8:   -39.14134740549849   -9.57002e-10   2.26482e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   3.956229945E-03
+   @Spin Contamination Metric:   3.956131008E-03
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.003956230E+00
+   @S^2 Observed:                2.003956131E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -726,7 +752,7 @@ Properties computed using the SCF density matrix
        3A1    -0.076572     1B1    -0.040722     4A1     0.163356  
        2B2     0.220558     3B2     0.553860     5A1     0.585687  
        2B1     0.616974     6A1     0.673520     4B2     0.978427  
-       7A1     1.005619     1A2     1.463824     8A1     1.634171  
+       7A1     1.005618     1A2     1.463824     8A1     1.634170  
        3B1     1.690887     5B2     1.955328     9A1     2.097754  
        4B1     2.451466     6B2     2.497008     2A2     2.720302  
       10A1     2.825340     7B2     3.593048    11A1     3.598967  
@@ -739,41 +765,29 @@ Properties computed using the SCF density matrix
 
   Energy converged.
 
-  @UKS Final Energy:   -39.14134740550915
+  @UKS Final Energy:   -39.14134740549849
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.6484189189087477
-    One-Electron Energy =                 -64.8689587938065699
-    Two-Electron Energy =                  24.0552385746177890
-    DFT Exchange-Correlation Energy =      -4.9760461052291181
+    Nuclear Repulsion Energy =              6.6484189189087450
+    One-Electron Energy =                 -64.8689546170430162
+    Two-Electron Energy =                  24.0552336745147670
+    DFT Exchange-Correlation Energy =      -4.9760453818789863
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -39.1413474055091513
+    Total Energy =                        -39.1413474054984931
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
-  Saving occupied orbitals to File 180.
 
   UHF NO Occupations:
-  HONO-2 :    2 A1 1.9985401
+  HONO-2 :    2 A1 1.9985402
   HONO-1 :    3 A1 1.0000000
   HONO-0 :    1 B1 1.0000000
-  LUNO+0 :    4 A1 0.0014599
-  LUNO+1 :    2 B2 0.0005185
+  LUNO+0 :    4 A1 0.0014598
+  LUNO+1 :    2 B2 0.0005184
   LUNO+2 :    5 A1 0.0000010
   LUNO+3 :    6 A1 0.0000000
 
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Wed Apr 20 13:15:17 2016
-Module time:
-	user time   =       1.55 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       1.65 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -789,16 +803,16 @@ Properties computed using the B3LYP density matrix
 
  L = 1.  Multiply by 2.5417462300 to convert to Debye
  Dipole X            :          0.0000000            0.0000000            0.0000000
- Dipole Y            :          0.0000000           -0.0000000           -0.0000000
- Dipole Z            :         -0.4887627            0.7412432            0.2524806
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :         -0.4887626            0.7412432            0.2524807
 
  L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
  Quadrupole XX       :         -5.6626689            0.0000000           -5.6626689
  Quadrupole XY       :          0.0000000            0.0000000            0.0000000
  Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
- Quadrupole YY       :        -10.0845808            5.6193435           -4.4652373
- Quadrupole YZ       :          0.0000000           -0.0000000           -0.0000000
- Quadrupole ZZ       :         -6.4313193            1.2107698           -5.2205495
+ Quadrupole YY       :        -10.0845798            5.6193435           -4.4652363
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :         -6.4313191            1.2107698           -5.2205493
 
  L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
  Octupole XXX        :          0.0000000            0.0000000            0.0000000
@@ -807,50 +821,50 @@ Properties computed using the B3LYP density matrix
  Octupole XYY        :          0.0000000            0.0000000            0.0000000
  Octupole XYZ        :          0.0000000            0.0000000            0.0000000
  Octupole XZZ        :          0.0000000            0.0000000            0.0000000
- Octupole YYY        :          0.0000000           -0.0000000           -0.0000000
- Octupole YYZ        :         -3.5000183            4.1981510            0.6981326
- Octupole YZZ        :          0.0000000           -0.0000000           -0.0000000
- Octupole ZZZ        :         -0.8881783            0.8221073           -0.0660710
+ Octupole YYY        :          0.0000000            0.0000000            0.0000000
+ Octupole YYZ        :         -3.5000182            4.1981510            0.6981328
+ Octupole YZZ        :          0.0000000            0.0000000            0.0000000
+ Octupole ZZZ        :         -0.8881787            0.8221073           -0.0660714
 
  L = 4.  Multiply by 0.3766479268 to convert to Debye.ang^3
- Hexadecapole XXXX   :        -21.0195174            0.0000000          -21.0195174
+ Hexadecapole XXXX   :        -21.0195185            0.0000000          -21.0195185
  Hexadecapole XXXY   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XXXZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole XXYY   :         -9.4944335            0.0000000           -9.4944335
+ Hexadecapole XXYY   :         -9.4944324            0.0000000           -9.4944324
  Hexadecapole XXYZ   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XXZZ   :         -7.3958816            0.0000000           -7.3958816
  Hexadecapole XYYY   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XYYZ   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XYZZ   :          0.0000000            0.0000000            0.0000000
  Hexadecapole XZZZ   :          0.0000000            0.0000000            0.0000000
- Hexadecapole YYYY   :        -47.0915109           15.7885108          -31.3030001
- Hexadecapole YYYZ   :          0.0000000           -0.0000000           -0.0000000
- Hexadecapole YYZZ   :        -12.0144244            3.1363933           -8.8780311
- Hexadecapole YZZZ   :          0.0000000           -0.0000000           -0.0000000
- Hexadecapole ZZZZ   :        -23.7079412            0.6245336          -23.0834076
+ Hexadecapole YYYY   :        -47.0915004           15.7885108          -31.3029896
+ Hexadecapole YYYZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole YYZZ   :        -12.0144227            3.1363933           -8.8780294
+ Hexadecapole YZZZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole ZZZZ   :        -23.7079400            0.6245336          -23.0834064
 
  L = 5.  Multiply by 0.1993134985 to convert to Debye.ang^4
  32-pole XXXXX       :          0.0000000            0.0000000            0.0000000
  32-pole XXXXY       :          0.0000000            0.0000000            0.0000000
- 32-pole XXXXZ       :          0.9266343            0.0000000            0.9266343
+ 32-pole XXXXZ       :          0.9266341            0.0000000            0.9266341
  32-pole XXXYY       :          0.0000000            0.0000000            0.0000000
  32-pole XXXYZ       :          0.0000000            0.0000000            0.0000000
  32-pole XXXZZ       :          0.0000000            0.0000000            0.0000000
  32-pole XXYYY       :          0.0000000            0.0000000            0.0000000
- 32-pole XXYYZ       :         -2.1268916            0.0000000           -2.1268916
+ 32-pole XXYYZ       :         -2.1268915            0.0000000           -2.1268915
  32-pole XXYZZ       :          0.0000000            0.0000000            0.0000000
- 32-pole XXZZZ       :          0.3689170            0.0000000            0.3689170
+ 32-pole XXZZZ       :          0.3689162            0.0000000            0.3689162
  32-pole XYYYY       :          0.0000000            0.0000000            0.0000000
  32-pole XYYYZ       :          0.0000000            0.0000000            0.0000000
  32-pole XYYZZ       :          0.0000000            0.0000000            0.0000000
  32-pole XYZZZ       :          0.0000000            0.0000000            0.0000000
  32-pole XZZZZ       :          0.0000000            0.0000000            0.0000000
- 32-pole YYYYY       :          0.0000000           -0.0000000           -0.0000000
- 32-pole YYYYZ       :        -21.2085716           11.7954262           -9.4131454
- 32-pole YYYZZ       :          0.0000000           -0.0000000           -0.0000000
- 32-pole YYZZZ       :         -8.3928455            2.3431656           -6.0496799
- 32-pole YZZZZ       :          0.0000000           -0.0000000           -0.0000000
- 32-pole ZZZZZ       :         -1.2144584            0.4652840           -0.7491744
+ 32-pole YYYYY       :          0.0000000            0.0000000            0.0000000
+ 32-pole YYYYZ       :        -21.2085693           11.7954262           -9.4131432
+ 32-pole YYYZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole YYZZZ       :         -8.3928456            2.3431656           -6.0496800
+ 32-pole YZZZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole ZZZZZ       :         -1.2144651            0.4652840           -0.7491811
 
  --------------------------------------------------------------------------------
 
@@ -858,29 +872,29 @@ Properties computed using the B3LYP density matrix
  ---------------------------------------------
    Center     Electrostatic Potential (a.u.)
  ---------------------------------------------
-    1  C           -14.740130435456
-    2  H            -1.094954678041
-    3  H            -1.094954678041
+    1  C           -14.740130589274
+    2  H            -1.094954676076
+    3  H            -1.094954676076
  ---------------------------------------------
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.7412
+     X:     0.0000      Y:     0.0000      Z:     0.7412
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.4888
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.2525     Total:     0.2525
+     X:     0.0000      Y:     0.0000      Z:     0.2525     Total:     0.2525
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     0.6417     Total:     0.6417
+     X:     0.0000      Y:     0.0000      Z:     0.6417     Total:     0.6417
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.6165     YY:    -6.0059     ZZ:    -7.0218
-    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -0.7351     YY:     0.8755     ZZ:    -0.1404
-    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -896,7 +910,7 @@ Properties computed using the B3LYP density matrix
        2     H     0.45334  0.44156  0.01178  0.10510
        3     H     0.45334  0.44156  0.01178  0.10510
 
-  Total alpha =  5.00000, Total beta =  3.00000, Total charge = -0.00000
+  Total alpha =  5.00000, Total beta =  3.00000, Total charge =  0.00000
 
 
   Mayer Bond Indices:
@@ -906,9 +920,9 @@ Properties computed using the B3LYP density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.96400389674231     0.96400389674231
-    2     0.96400389674231     0.00000000000000    -0.01097663836400
-    3     0.96400389674231    -0.01097663836400     0.00000000000000
+    1     0.00000000000000     0.96400391960055     0.96400391960055
+    2     0.96400391960055     0.00000000000000    -0.01097663355170
+    3     0.96400391960055    -0.01097663355170     0.00000000000000
 
 
 
@@ -917,9 +931,9 @@ Properties computed using the B3LYP density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.47486592753724     0.47486592753724
-    2     0.47486592753724     0.00000000000000    -0.00309506516243
-    3     0.47486592753724    -0.00309506516243     0.00000000000000
+    1     0.00000000000000     0.47486604407775     0.47486604407775
+    2     0.47486604407775     0.00000000000000    -0.00309507898307
+    3     0.47486604407775    -0.00309507898307     0.00000000000000
 
 
 
@@ -928,9 +942,9 @@ Properties computed using the B3LYP density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.48913796920507     0.48913796920507
-    2     0.48913796920507     0.00000000000000    -0.00788157320157
-    3     0.48913796920507    -0.00788157320157     0.00000000000000
+    1     0.00000000000000     0.48913787552280     0.48913787552280
+    2     0.48913787552280     0.00000000000000    -0.00788155456863
+    3     0.48913787552280    -0.00788155456863     0.00000000000000
 
 
 
@@ -951,9 +965,9 @@ Properties computed using the B3LYP density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     1.03812439219394     1.03812439219394
-    2     1.03812439219394     0.00000000000000     0.02372788848510
-    3     1.03812439219394     0.02372788848510     0.00000000000000
+    1     0.00000000000000     1.03812437052042     1.03812437052042
+    2     1.03812437052042     0.00000000000000     0.02372788569703
+    3     1.03812437052042     0.02372788569703     0.00000000000000
 
 
 
@@ -962,9 +976,9 @@ Properties computed using the B3LYP density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.54433731751235     0.54433731751235
-    2     0.54433731751235     0.00000000000000     0.01178666590809
-    3     0.54433731751235     0.01178666590809     0.00000000000000
+    1     0.00000000000000     0.54433735877850     0.54433735877850
+    2     0.54433735877850     0.00000000000000     0.01178666488660
+    3     0.54433735877850     0.01178666488660     0.00000000000000
 
 
 
@@ -973,9 +987,9 @@ Properties computed using the B3LYP density matrix
 
                  1                   2                   3
 
-    1     0.00000000000000     0.49378707468159     0.49378707468159
-    2     0.49378707468159     0.00000000000000     0.01194122257701
-    3     0.49378707468159     0.01194122257701     0.00000000000000
+    1     0.00000000000000     0.49378701174192     0.49378701174192
+    2     0.49378701174192     0.00000000000000     0.01194122081043
+    3     0.49378701174192     0.01194122081043     0.00000000000000
 
 
 
@@ -983,43 +997,53 @@ Properties computed using the B3LYP density matrix
 
  #  #
  Irrep: 1
-      1:  2.0762488
+      1:  2.0762487
       2:  1.0618523
       3:  1.0618523
 
   Natural Orbital Occupations:
 
   Alpha Occupations:
-  HONO-2 :    3 A1    1.000
-  HONO-1 :    1 B2    1.000
-  HONO-0 :    1 B1    1.000
+  HONO-2 :    1 B1    1.000
+  HONO-1 :    2 A1    1.000
+  HONO-0 :    3 A1    1.000
   LUNO+0 :    4 A1    0.000
-  LUNO+1 :    2 B2    0.000
+  LUNO+1 :    2 B1    0.000
   LUNO+2 :    5 A1    0.000
-  LUNO+3 :    6 A1    0.000
+  LUNO+3 :    2 B2    0.000
 
   Beta Occupations:
-  HONO-2 :    1 A1    1.000
-  HONO-1 :    2 A1    1.000
-  HONO-0 :    1 B2    1.000
+  HONO-2 :    1 B2    1.000
+  HONO-1 :    1 A1    1.000
+  HONO-0 :    2 A1    1.000
   LUNO+0 :    3 A1    0.000
-  LUNO+1 :    4 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    3 B2    0.000
-
-  Total Occupations:
-  HONO-2 :    1 A1    2.000
-  HONO-1 :    2 A1    2.000
-  HONO-0 :    1 B2    2.000
-  LUNO+0 :    3 A1    1.000
-  LUNO+1 :    1 B1    1.000
+  LUNO+1 :    2 B2    0.000
   LUNO+2 :    4 A1    0.000
   LUNO+3 :    5 A1    0.000
+
+  Total Occupations:
+  HONO-2 :    1 B2    2.000
+  HONO-1 :    1 A1    2.000
+  HONO-0 :    2 A1    2.000
+  LUNO+0 :    3 A1    1.000
+  LUNO+1 :    1 B1    1.000
+  LUNO+2 :    2 B2    0.000
+  LUNO+3 :    2 B1    0.000
 
 
  Field computed on the grid and written to grid_field.dat
 
  Electrostatic potential computed on the grid and written to grid_esp.dat
+
+*** tstop() called on psinet at Mon May 15 15:33:55 2017
+Module time:
+	user time   =       2.70 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       2.92 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 	B3LYP energy......................................................PASSED
 	B3LYP DIPOLE X....................................................PASSED
 	B3LYP DIPOLE Y....................................................PASSED
@@ -1031,4 +1055,4 @@ Properties computed using the B3LYP density matrix
 	B3LYP QUADRUPOLE XZ...............................................PASSED
 	B3LYP QUADRUPOLE YZ...............................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

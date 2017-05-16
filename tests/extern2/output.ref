@@ -1,30 +1,27 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1a2.dev250 
+                               Psi4 1.1rc3.dev5 
 
-                         Git: Rev {mp2qmmm} e6887c2 dirty
-
-
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
+                         Git: Rev {master} 3fbd859 
 
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 17 February 2017 09:38AM
+    Psi4 started on: Monday, 15 May 2017 03:36PM
 
-    Process ID:  63321
-    PSIDATADIR: /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4
+    Process ID:  14212
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -33,7 +30,6 @@
 --------------------------------------------------------------------------
 #! External potential calculation involving a TIP3P water and a QM water for DFMP2.
 #! Finite different test of the gradient is performed to validate forces.
-memory 500 mb
 
 molecule water {
   0 1
@@ -67,8 +63,6 @@ compare_matrices(an_grad, fd_grad, 5, "Finite difference (3-pt.) vs. analytic gr
 compare_values(-76.2080976129895618, fd_ener, 6, 'Finite difference energy')  #TEST
 compare_values(-76.2080976129895618, an_ener, 6, 'Analytic energy')  #TEST
 --------------------------------------------------------------------------
-
-  Memory set to 500.000 MiB by Python script.
 gradient() will perform gradient computation by finite difference of analytic energies.
 
 -------------------------------------------------------------
@@ -86,8 +80,16 @@ gradient() will perform gradient computation by finite difference of analytic en
   //    Loading displacement 1 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:19 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:18 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -114,7 +116,7 @@ gradient() will perform gradient computation by finite difference of analytic en
 
   Rotational constants: A =     11.49101  B =      0.45557  C =      0.44491 [cm^-1]
   Rotational constants: A = 344491.84174  B =  13657.68756  C =  13338.09317 [MHz]
-  Nuclear repulsion =    9.146852154519253
+  Nuclear repulsion =    9.146852154519255
 
   Charge       = 0
   Multiplicity = 1
@@ -135,12 +137,21 @@ gradient() will perform gradient computation by finite difference of analytic en
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -161,7 +172,7 @@ gradient() will perform gradient computation by finite difference of analytic en
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -169,7 +180,8 @@ gradient() will perform gradient computation by finite difference of analytic en
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -185,9 +197,9 @@ gradient() will perform gradient computation by finite difference of analytic en
         0.41700    0.54476    0.00000   -3.79996
         0.41700    0.54476    0.00000   -0.91209
 
-  Old nuclear repulsion        =    9.146852154519253
+  Old nuclear repulsion        =    9.146852154519255
   Additional nuclear repulsion =    0.278873722228465
-  Total nuclear repulsion      =    9.425725876747718
+  Total nuclear repulsion      =    9.425725876747720
 
   Minimum eigenvalue in the overlap matrix is 2.2468778762E-02.
   Using Symmetric Orthogonalization.
@@ -198,18 +210,18 @@ gradient() will perform gradient computation by finite difference of analytic en
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.97687894906412   -7.59769e+01   8.80172e-02 
-   @DF-RHF iter   1:   -75.98568693328436   -8.80798e-03   1.44320e-02 
-   @DF-RHF iter   2:   -76.01201370202635   -2.63268e-02   7.30871e-03 DIIS
-   @DF-RHF iter   3:   -76.01883150054074   -6.81780e-03   1.23488e-03 DIIS
-   @DF-RHF iter   4:   -76.01932769108467   -4.96191e-04   3.64543e-04 DIIS
-   @DF-RHF iter   5:   -76.01939705245505   -6.93614e-05   9.06098e-05 DIIS
-   @DF-RHF iter   6:   -76.01940255249500   -5.50004e-06   1.33382e-05 DIIS
-   @DF-RHF iter   7:   -76.01940266659400   -1.14099e-07   2.66711e-06 DIIS
-   @DF-RHF iter   8:   -76.01940267090352   -4.30951e-09   5.06180e-07 DIIS
-   @DF-RHF iter   9:   -76.01940267104612   -1.42606e-10   7.58094e-08 DIIS
-   @DF-RHF iter  10:   -76.01940267104854   -2.41585e-12   1.35087e-08 DIIS
-   @DF-RHF iter  11:   -76.01940267104862   -8.52651e-14   2.00860e-09 DIIS
+   @DF-RHF iter   0:   -75.96590858003587   -7.59659e+01   8.78877e-02 
+   @DF-RHF iter   1:   -75.98681087897249   -2.09023e-02   1.42064e-02 
+   @DF-RHF iter   2:   -76.01232192003896   -2.55110e-02   7.12608e-03 DIIS
+   @DF-RHF iter   3:   -76.01883936702147   -6.51745e-03   1.23219e-03 DIIS
+   @DF-RHF iter   4:   -76.01932363043392   -4.84263e-04   3.67027e-04 DIIS
+   @DF-RHF iter   5:   -76.01939647125513   -7.28408e-05   9.42739e-05 DIIS
+   @DF-RHF iter   6:   -76.01940255839732   -6.08714e-06   1.32660e-05 DIIS
+   @DF-RHF iter   7:   -76.01940266763941   -1.09242e-07   2.41253e-06 DIIS
+   @DF-RHF iter   8:   -76.01940267093583   -3.29642e-09   4.75732e-07 DIIS
+   @DF-RHF iter   9:   -76.01940267104784   -1.12010e-10   8.15270e-08 DIIS
+   @DF-RHF iter  10:   -76.01940267105066   -2.81375e-12   2.09576e-08 DIIS
+   @DF-RHF iter  11:   -76.01940267105077   -1.13687e-13   3.09370e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -235,20 +247,20 @@ gradient() will perform gradient computation by finite difference of analytic en
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01940267104862
+  @DF-RHF Final Energy:   -76.01940267105077
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.4257258767477179
-    One-Electron Energy =                -123.2831798374998158
-    Two-Electron Energy =                  37.8380512897034578
+    Nuclear Repulsion Energy =              9.4257258767477197
+    One-Electron Energy =                -123.2831798924030267
+    Two-Electron Energy =                  37.8380513446045299
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194026710486384
+    Total Energy =                        -76.0194026710507842
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -267,9 +279,31 @@ Properties computed using the SCF density matrix
      X:     0.4088      Y:    -0.0000      Z:     2.2933     Total:     2.3294
 
 
+*** tstop() called on psinet at Mon May 15 15:36:19 2017
+Module time:
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:19 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -282,7 +316,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -299,31 +334,31 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194026710486241 [Eh]
-	 Singles Energy            =      -0.0000000000000001 [Eh]
-	 Same-Spin Energy          =      -0.0484793126010058 [Eh]
-	 Opposite-Spin Energy      =      -0.1402140566494938 [Eh]
-	 Correlation Energy        =      -0.1886933692504997 [Eh]
-	 Total Energy              =     -76.2080960402991252 [Eh]
+	 Reference Energy          =     -76.0194026710507700 [Eh]
+	 Singles Energy            =      -0.0000000000000003 [Eh]
+	 Same-Spin Energy          =      -0.0484793126176790 [Eh]
+	 Opposite-Spin Energy      =      -0.1402140566879116 [Eh]
+	 Correlation Energy        =      -0.1886933693055909 [Eh]
+	 Total Energy              =     -76.2080960403563665 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161597708670019 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682568679793925 [Eh]
-	 SCS Correlation Energy    =      -0.1844166388463946 [Eh]
-	 SCS Total Energy          =     -76.2038193098950245 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161597708725597 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682568680254939 [Eh]
+	 SCS Correlation Energy    =      -0.1844166388980539 [Eh]
+	 SCS Total Energy          =     -76.2038193099488268 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:20 2017
+*** tstop() called on psinet at Mon May 15 15:36:19 2017
 Module time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.61 seconds =       0.01 minutes
+	user time   =       0.48 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -331,8 +366,16 @@ Total time:
   //    Loading displacement 2 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:20 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:19 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -380,12 +423,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -406,7 +458,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -414,7 +466,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -443,18 +496,17 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.08411722205901   -7.60841e+01   8.87172e-02 
-   @DF-RHF iter   1:   -75.96509380952827    1.19023e-01   1.75242e-02 
-   @DF-RHF iter   2:   -76.00818487738843   -4.30911e-02   9.01227e-03 DIIS
-   @DF-RHF iter   3:   -76.01850996108504   -1.03251e-02   1.67910e-03 DIIS
-   @DF-RHF iter   4:   -76.01934615923990   -8.36198e-04   4.21465e-04 DIIS
-   @DF-RHF iter   5:   -76.01941693919849   -7.07800e-05   7.43424e-05 DIIS
-   @DF-RHF iter   6:   -76.01941963786795   -2.69867e-06   1.31377e-05 DIIS
-   @DF-RHF iter   7:   -76.01941972180738   -8.39394e-08   2.64390e-06 DIIS
-   @DF-RHF iter   8:   -76.01941972525793   -3.45055e-09   3.31873e-07 DIIS
-   @DF-RHF iter   9:   -76.01941972530541   -4.74785e-11   6.55055e-08 DIIS
-   @DF-RHF iter  10:   -76.01941972530746   -2.04636e-12   1.85605e-08 DIIS
-   @DF-RHF iter  11:   -76.01941972530778   -3.26850e-13   2.09107e-09 DIIS
+   @DF-RHF iter   0:   -76.08477076134264   -7.60848e+01   8.87216e-02 
+   @DF-RHF iter   1:   -75.96496986334624    1.19801e-01   1.75435e-02 
+   @DF-RHF iter   2:   -76.00816279295476   -4.31929e-02   9.02418e-03 DIIS
+   @DF-RHF iter   3:   -76.01851123482588   -1.03484e-02   1.68001e-03 DIIS
+   @DF-RHF iter   4:   -76.01934687377630   -8.35639e-04   4.20632e-04 DIIS
+   @DF-RHF iter   5:   -76.01941703094896   -7.01572e-05   7.34798e-05 DIIS
+   @DF-RHF iter   6:   -76.01941964456515   -2.61362e-06   1.27513e-05 DIIS
+   @DF-RHF iter   7:   -76.01941972226480   -7.76997e-08   2.50812e-06 DIIS
+   @DF-RHF iter   8:   -76.01941972527506   -3.01026e-09   2.83485e-07 DIIS
+   @DF-RHF iter   9:   -76.01941972530445   -2.93880e-11   3.52474e-08 DIIS
+   @DF-RHF iter  10:   -76.01941972530493   -4.83169e-13   9.60591e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -480,18 +532,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01941972530778
+  @DF-RHF Final Energy:   -76.01941972530493
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4272261975601754
-    One-Electron Energy =                -123.2858880871893774
-    Two-Electron Energy =                  37.8392421643214121
+    One-Electron Energy =                -123.2858881384643723
+    Two-Electron Energy =                  37.8392422155992776
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194197253077846
+    Total Energy =                        -76.0194197253049140
 
 
 
@@ -506,15 +558,37 @@ Properties computed using the SCF density matrix
      X:    14.4423      Y:    -0.0000      Z:   -22.6701
 
   Dipole Moment: (a.u.)
-     X:     0.1589      Y:    -0.0000      Z:     0.9024     Total:     0.9163
+     X:     0.1588      Y:    -0.0000      Z:     0.9024     Total:     0.9163
 
   Dipole Moment: (Debye)
      X:     0.4038      Y:    -0.0000      Z:     2.2938     Total:     2.3290
 
 
+*** tstop() called on psinet at Mon May 15 15:36:19 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.85 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:19 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -527,7 +601,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -544,31 +619,31 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194197253077846 [Eh]
-	 Singles Energy            =      -0.0000000000000005 [Eh]
-	 Same-Spin Energy          =      -0.0484766084244261 [Eh]
-	 Opposite-Spin Energy      =      -0.1402028320214677 [Eh]
-	 Correlation Energy        =      -0.1886794404458943 [Eh]
-	 Total Energy              =     -76.2080991657536799 [Eh]
+	 Reference Energy          =     -76.0194197253049282 [Eh]
+	 Singles Energy            =      -0.0000000000000121 [Eh]
+	 Same-Spin Energy          =      -0.0484766083272245 [Eh]
+	 Opposite-Spin Energy      =      -0.1402028318769704 [Eh]
+	 Correlation Energy        =      -0.1886794402042070 [Eh]
+	 Total Energy              =     -76.2080991655091395 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161588694748087 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682433984257612 [Eh]
-	 SCS Correlation Energy    =      -0.1844022679005704 [Eh]
-	 SCS Total Energy          =     -76.2038219932083507 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161588694424082 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682433982523645 [Eh]
+	 SCS Correlation Energy    =      -0.1844022676947848 [Eh]
+	 SCS Total Energy          =     -76.2038219929997069 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:20 2017
+*** tstop() called on psinet at Mon May 15 15:36:19 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.20 seconds =       0.02 minutes
+	user time   =       0.94 seconds =       0.02 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -576,8 +651,16 @@ Total time:
   //    Loading displacement 3 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:20 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:19 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -625,12 +708,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -651,7 +743,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -659,7 +751,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -688,17 +781,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.00678318719488   -7.60068e+01   8.83097e-02 
-   @DF-RHF iter   1:   -75.98120092070599    2.55823e-02   1.51956e-02 
-   @DF-RHF iter   2:   -76.01115495471670   -2.99540e-02   7.79650e-03 DIIS
-   @DF-RHF iter   3:   -76.01882062647334   -7.66567e-03   1.28944e-03 DIIS
-   @DF-RHF iter   4:   -76.01935300885127   -5.32382e-04   3.56409e-04 DIIS
-   @DF-RHF iter   5:   -76.01940784779848   -5.48389e-05   7.28589e-05 DIIS
-   @DF-RHF iter   6:   -76.01941062644728   -2.77865e-06   9.05247e-06 DIIS
-   @DF-RHF iter   7:   -76.01941066664260   -4.01953e-08   1.43260e-06 DIIS
-   @DF-RHF iter   8:   -76.01941066750845   -8.65853e-10   2.45820e-07 DIIS
-   @DF-RHF iter   9:   -76.01941066753055   -2.20979e-11   2.63598e-08 DIIS
-   @DF-RHF iter  10:   -76.01941066753064   -8.52651e-14   6.29168e-09 DIIS
+   @DF-RHF iter   0:   -76.00772277446710   -7.60077e+01   8.82924e-02 
+   @DF-RHF iter   1:   -75.98076236555977    2.69604e-02   1.52397e-02 
+   @DF-RHF iter   2:   -76.01114225737778   -3.03799e-02   7.79100e-03 DIIS
+   @DF-RHF iter   3:   -76.01880967644611   -7.66742e-03   1.30919e-03 DIIS
+   @DF-RHF iter   4:   -76.01935104551941   -5.41369e-04   3.60728e-04 DIIS
+   @DF-RHF iter   5:   -76.01940758897608   -5.65435e-05   7.47297e-05 DIIS
+   @DF-RHF iter   6:   -76.01941060049968   -3.01152e-06   1.06733e-05 DIIS
+   @DF-RHF iter   7:   -76.01941066440108   -6.39014e-08   2.23073e-06 DIIS
+   @DF-RHF iter   8:   -76.01941066736725   -2.96617e-09   4.89273e-07 DIIS
+   @DF-RHF iter   9:   -76.01941066751074   -1.43487e-10   1.05650e-07 DIIS
+   @DF-RHF iter  10:   -76.01941066751704   -6.29541e-12   2.99081e-08 DIIS
+   @DF-RHF iter  11:   -76.01941066751749   -4.54747e-13   3.19683e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -724,18 +818,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01941066753064
+  @DF-RHF Final Energy:   -76.01941066751749
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4264798814893584
-    One-Electron Energy =                -123.2845397365123148
-    Two-Electron Energy =                  37.8386491874923152
+    One-Electron Energy =                -123.2845398285905247
+    Two-Electron Energy =                  37.8386492795836773
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194106675306500
+    Total Energy =                        -76.0194106675174908
 
 
 
@@ -756,9 +850,31 @@ Properties computed using the SCF density matrix
      X:     0.4063      Y:     0.0018      Z:     2.2935     Total:     2.3292
 
 
+*** tstop() called on psinet at Mon May 15 15:36:20 2017
+Module time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:20 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -771,7 +887,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -788,40 +905,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194106675306358 [Eh]
-	 Singles Energy            =      -0.0000000000000013 [Eh]
-	 Same-Spin Energy          =      -0.0484779535227070 [Eh]
-	 Opposite-Spin Energy      =      -0.1402084322049182 [Eh]
-	 Correlation Energy        =      -0.1886863857276265 [Eh]
-	 Total Energy              =     -76.2080970532582569 [Eh]
+	 Reference Energy          =     -76.0194106675174908 [Eh]
+	 Singles Energy            =      -0.0000000000000004 [Eh]
+	 Same-Spin Energy          =      -0.0484779533507280 [Eh]
+	 Opposite-Spin Energy      =      -0.1402084316936941 [Eh]
+	 Correlation Energy        =      -0.1886863850444225 [Eh]
+	 Total Energy              =     -76.2080970525619108 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161593178409023 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682501186459018 [Eh]
-	 SCS Correlation Energy    =      -0.1844094364868054 [Eh]
-	 SCS Total Energy          =     -76.2038201040174386 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161593177835760 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682501180324329 [Eh]
+	 SCS Correlation Energy    =      -0.1844094358160094 [Eh]
+	 SCS Total Energy          =     -76.2038201033334985 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:21 2017
+*** tstop() called on psinet at Mon May 15 15:36:20 2017
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.78 seconds =       0.03 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       1.39 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:21 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:20 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -869,12 +994,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -895,7 +1029,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -903,7 +1037,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -932,18 +1067,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.94330650975928   -7.59433e+01   8.76554e-02 
-   @DF-RHF iter   1:   -75.98945804341471   -4.61515e-02   1.37204e-02 
-   @DF-RHF iter   2:   -76.01295203688646   -2.34940e-02   6.78164e-03 DIIS
-   @DF-RHF iter   3:   -76.01889739380000   -5.94536e-03   1.19666e-03 DIIS
-   @DF-RHF iter   4:   -76.01933402689772   -4.36633e-04   3.56236e-04 DIIS
-   @DF-RHF iter   5:   -76.01940457722739   -7.05503e-05   9.42122e-05 DIIS
-   @DF-RHF iter   6:   -76.01941059072161   -6.01349e-06   1.15409e-05 DIIS
-   @DF-RHF iter   7:   -76.01941066665829   -7.59367e-08   1.95268e-06 DIIS
-   @DF-RHF iter   8:   -76.01941066870280   -2.04452e-09   4.10593e-07 DIIS
-   @DF-RHF iter   9:   -76.01941066877990   -7.70939e-11   7.48799e-08 DIIS
-   @DF-RHF iter  10:   -76.01941066878221   -2.31637e-12   1.91110e-08 DIIS
-   @DF-RHF iter  11:   -76.01941066878234   -1.27898e-13   3.49965e-09 DIIS
+   @DF-RHF iter   0:   -76.01161236122718   -7.60116e+01   8.83195e-02 
+   @DF-RHF iter   1:   -75.97989160277271    3.17208e-02   1.53663e-02 
+   @DF-RHF iter   2:   -76.01102173272221   -3.11301e-02   7.85346e-03 DIIS
+   @DF-RHF iter   3:   -76.01880393995911   -7.78221e-03   1.32451e-03 DIIS
+   @DF-RHF iter   4:   -76.01935290989445   -5.48970e-04   3.61388e-04 DIIS
+   @DF-RHF iter   5:   -76.01940796060424   -5.50507e-05   7.21573e-05 DIIS
+   @DF-RHF iter   6:   -76.01941062139416   -2.66079e-06   9.55504e-06 DIIS
+   @DF-RHF iter   7:   -76.01941066727038   -4.58762e-08   1.71432e-06 DIIS
+   @DF-RHF iter   8:   -76.01941066870323   -1.43285e-09   3.41134e-07 DIIS
+   @DF-RHF iter   9:   -76.01941066875804   -5.48113e-11   7.01456e-08 DIIS
+   @DF-RHF iter  10:   -76.01941066876071   -2.67164e-12   2.31246e-08 DIIS
+   @DF-RHF iter  11:   -76.01941066876115   -4.40536e-13   3.35118e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -969,18 +1104,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01941066878234
+  @DF-RHF Final Energy:   -76.01941066876115
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4264798725498853
-    One-Electron Energy =                -123.2845398074557295
-    Two-Electron Energy =                  37.8386492661235039
+    One-Electron Energy =                -123.2845398083512407
+    Two-Electron Energy =                  37.8386492670402035
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194106687823421
+    Total Energy =                        -76.0194106687611395
 
 
 
@@ -1001,9 +1136,31 @@ Properties computed using the SCF density matrix
      X:     0.4063      Y:    -0.0018      Z:     2.2935     Total:     2.3292
 
 
+*** tstop() called on psinet at Mon May 15 15:36:20 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:20 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -1016,7 +1173,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -1033,31 +1191,31 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194106687823421 [Eh]
-	 Singles Energy            =      -0.0000000000000007 [Eh]
-	 Same-Spin Energy          =      -0.0484779533549428 [Eh]
-	 Opposite-Spin Energy      =      -0.1402084316758840 [Eh]
-	 Correlation Energy        =      -0.1886863850308274 [Eh]
-	 Total Energy              =     -76.2080970538131766 [Eh]
+	 Reference Energy          =     -76.0194106687611537 [Eh]
+	 Singles Energy            =      -0.0000000000000013 [Eh]
+	 Same-Spin Energy          =      -0.0484779533521092 [Eh]
+	 Opposite-Spin Energy      =      -0.1402084316982518 [Eh]
+	 Correlation Energy        =      -0.1886863850503624 [Eh]
+	 Total Energy              =     -76.2080970538115139 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161593177849809 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682501180110608 [Eh]
-	 SCS Correlation Energy    =      -0.1844094357960424 [Eh]
-	 SCS Total Energy          =     -76.2038201045783836 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161593177840364 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682501180379022 [Eh]
+	 SCS Correlation Energy    =      -0.1844094358219399 [Eh]
+	 SCS Total Energy          =     -76.2038201045830874 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:21 2017
+*** tstop() called on psinet at Mon May 15 15:36:20 2017
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.36 seconds =       0.04 minutes
+	user time   =       1.85 seconds =       0.03 minutes
 	system time =       0.06 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
@@ -1065,8 +1223,16 @@ Total time:
   //    Loading displacement 5 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:21 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:20 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -1114,12 +1280,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1140,7 +1315,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1148,7 +1323,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -1177,17 +1353,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.89051784776855   -7.58905e+01   8.70900e-02 
-   @DF-RHF iter   1:   -75.99630949095354   -1.05792e-01   1.25487e-02 
-   @DF-RHF iter   2:   -76.01452943198228   -1.82199e-02   6.05967e-03 DIIS
-   @DF-RHF iter   3:   -76.01918150776645   -4.65208e-03   9.48893e-04 DIIS
-   @DF-RHF iter   4:   -76.01937342343476   -1.91916e-04   2.07901e-04 DIIS
-   @DF-RHF iter   5:   -76.01939223387620   -1.88104e-05   5.14340e-05 DIIS
-   @DF-RHF iter   6:   -76.01939364493286   -1.41106e-06   7.60690e-06 DIIS
-   @DF-RHF iter   7:   -76.01939367403114   -2.90983e-08   1.49542e-06 DIIS
-   @DF-RHF iter   8:   -76.01939367524528   -1.21415e-09   2.87946e-07 DIIS
-   @DF-RHF iter   9:   -76.01939367529020   -4.49205e-11   5.36020e-08 DIIS
-   @DF-RHF iter  10:   -76.01939367529174   -1.53477e-12   9.79385e-09 DIIS
+   @DF-RHF iter   0:   -76.08335108166658   -7.60834e+01   8.86437e-02 
+   @DF-RHF iter   1:   -75.96494837598277    1.18403e-01   1.75350e-02 
+   @DF-RHF iter   2:   -76.00813375303670   -4.31854e-02   9.02444e-03 DIIS
+   @DF-RHF iter   3:   -76.01848380398569   -1.03501e-02   1.68024e-03 DIIS
+   @DF-RHF iter   4:   -76.01932054121411   -8.36737e-04   4.21378e-04 DIIS
+   @DF-RHF iter   5:   -76.01939097638973   -7.04352e-05   7.35555e-05 DIIS
+   @DF-RHF iter   6:   -76.01939359434796   -2.61796e-06   1.27622e-05 DIIS
+   @DF-RHF iter   7:   -76.01939367221142   -7.78635e-08   2.51558e-06 DIIS
+   @DF-RHF iter   8:   -76.01939367524558   -3.03416e-09   2.87077e-07 DIIS
+   @DF-RHF iter   9:   -76.01939367527633   -3.07523e-11   3.79096e-08 DIIS
+   @DF-RHF iter  10:   -76.01939367527686   -5.25802e-13   1.10659e-08 DIIS
+   @DF-RHF iter  11:   -76.01939367527683    2.84217e-14   2.37790e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1213,18 +1390,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01939367529174
+  @DF-RHF Final Energy:   -76.01939367527683
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4229715515978221
-    One-Electron Energy =                -123.2780649764068528
-    Two-Electron Energy =                  37.8356997495172820
+    One-Electron Energy =                -123.2780646667555118
+    Two-Electron Energy =                  37.8356994398808482
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0193936752917523
+    Total Energy =                        -76.0193936752768309
 
 
 
@@ -1245,9 +1422,31 @@ Properties computed using the SCF density matrix
      X:     0.4061      Y:    -0.0000      Z:     2.2952     Total:     2.3308
 
 
+*** tstop() called on psinet at Mon May 15 15:36:21 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       2.21 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:21 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -1260,7 +1459,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -1277,40 +1477,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0193936752917381 [Eh]
-	 Singles Energy            =      -0.0000000000000120 [Eh]
-	 Same-Spin Energy          =      -0.0484847552285264 [Eh]
-	 Opposite-Spin Energy      =      -0.1402363067651580 [Eh]
-	 Correlation Energy        =      -0.1887210619936964 [Eh]
-	 Total Energy              =     -76.2081147372854275 [Eh]
+	 Reference Energy          =     -76.0193936752768309 [Eh]
+	 Singles Energy            =      -0.0000000000000010 [Eh]
+	 Same-Spin Energy          =      -0.0484847553414044 [Eh]
+	 Opposite-Spin Energy      =      -0.1402363069008926 [Eh]
+	 Correlation Energy        =      -0.1887210622422980 [Eh]
+	 Total Energy              =     -76.2081147375191250 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161615850761755 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682835681181896 [Eh]
-	 SCS Correlation Energy    =      -0.1844451531943770 [Eh]
-	 SCS Total Energy          =     -76.2038388284861128 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161615851138015 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682835682810711 [Eh]
+	 SCS Correlation Energy    =      -0.1844451533948736 [Eh]
+	 SCS Total Energy          =     -76.2038388286717066 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:22 2017
+*** tstop() called on psinet at Mon May 15 15:36:21 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.95 seconds =       0.05 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       2.34 seconds =       0.04 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:22 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:21 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -1358,12 +1566,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1384,7 +1601,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1392,7 +1609,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -1421,18 +1639,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.00921678444739   -7.60092e+01   8.83604e-02 
-   @DF-RHF iter   1:   -75.98038907391150    2.88277e-02   1.52923e-02 
-   @DF-RHF iter   2:   -76.01111547828953   -3.07264e-02   7.81012e-03 DIIS
-   @DF-RHF iter   3:   -76.01882017272331   -7.70469e-03   1.31700e-03 DIIS
-   @DF-RHF iter   4:   -76.01936791455364   -5.47742e-04   3.63274e-04 DIIS
-   @DF-RHF iter   5:   -76.01942496483981   -5.70503e-05   7.48197e-05 DIIS
-   @DF-RHF iter   6:   -76.01942795238831   -2.98755e-06   1.08062e-05 DIIS
-   @DF-RHF iter   7:   -76.01942801719753   -6.48092e-08   2.28355e-06 DIIS
-   @DF-RHF iter   8:   -76.01942802027956   -3.08204e-09   4.90557e-07 DIIS
-   @DF-RHF iter   9:   -76.01942802042259   -1.43032e-10   1.07758e-07 DIIS
-   @DF-RHF iter  10:   -76.01942802042937   -6.77858e-12   3.07838e-08 DIIS
-   @DF-RHF iter  11:   -76.01942802042988   -5.11591e-13   3.20854e-09 DIIS
+   @DF-RHF iter   0:   -76.00170255705618   -7.60017e+01   8.83341e-02 
+   @DF-RHF iter   1:   -75.98213142250844    1.95711e-02   1.50525e-02 
+   @DF-RHF iter   2:   -76.01131768991199   -2.91863e-02   7.71481e-03 DIIS
+   @DF-RHF iter   3:   -76.01883749531447   -7.51981e-03   1.27416e-03 DIIS
+   @DF-RHF iter   4:   -76.01936612909527   -5.28634e-04   3.59571e-04 DIIS
+   @DF-RHF iter   5:   -76.01942458084262   -5.84517e-05   7.73849e-05 DIIS
+   @DF-RHF iter   6:   -76.01942794809845   -3.36726e-06   1.09297e-05 DIIS
+   @DF-RHF iter   7:   -76.01942801687733   -6.87789e-08   2.34392e-06 DIIS
+   @DF-RHF iter   8:   -76.01942802025891   -3.38159e-09   4.93047e-07 DIIS
+   @DF-RHF iter   9:   -76.01942802041661   -1.57698e-10   8.89290e-08 DIIS
+   @DF-RHF iter  10:   -76.01942802042059   -3.97904e-12   1.61941e-08 DIIS
+   @DF-RHF iter  11:   -76.01942802042079   -1.98952e-13   1.77824e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1458,20 +1676,20 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01942802042988
+  @DF-RHF Final Energy:   -76.01942802042079
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4299848525829564
-    One-Electron Energy =                -123.2910098800118845
-    Two-Electron Energy =                  37.8415970069990379
+    One-Electron Energy =                -123.2910097984646711
+    Two-Electron Energy =                  37.8415969254609124
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194280204298849
+    Total Energy =                        -76.0194280204208042
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1490,9 +1708,31 @@ Properties computed using the SCF density matrix
      X:     0.4065      Y:    -0.0000      Z:     2.2918     Total:     2.3276
 
 
+*** tstop() called on psinet at Mon May 15 15:36:21 2017
+Module time:
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.72 seconds =       0.05 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:21 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -1505,7 +1745,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -1522,40 +1763,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194280204298849 [Eh]
-	 Singles Energy            =      -0.0000000000000004 [Eh]
-	 Same-Spin Energy          =      -0.0484711686291954 [Eh]
-	 Opposite-Spin Energy      =      -0.1401805873509016 [Eh]
-	 Correlation Energy        =      -0.1886517559800974 [Eh]
-	 Total Energy              =     -76.2080797764099884 [Eh]
+	 Reference Energy          =     -76.0194280204207899 [Eh]
+	 Singles Energy            =      -0.0000000000000001 [Eh]
+	 Same-Spin Energy          =      -0.0484711686136250 [Eh]
+	 Opposite-Spin Energy      =      -0.1401805872924079 [Eh]
+	 Correlation Energy        =      -0.1886517559060329 [Eh]
+	 Total Energy              =     -76.2080797763268265 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161570562097318 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682167048210819 [Eh]
-	 SCS Correlation Energy    =      -0.1843737610308141 [Eh]
-	 SCS Total Energy          =     -76.2038017814606974 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161570562045417 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682167047508894 [Eh]
+	 SCS Correlation Energy    =      -0.1843737609554311 [Eh]
+	 SCS Total Energy          =     -76.2038017813762281 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:23 2017
+*** tstop() called on psinet at Mon May 15 15:36:21 2017
 Module time:
-	user time   =       0.60 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.56 seconds =       0.06 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.82 seconds =       0.05 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:23 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:21 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -1582,7 +1831,7 @@ Total time:
 
   Rotational constants: A =     11.51107  B =      0.45573  C =      0.44503 [cm^-1]
   Rotational constants: A = 345093.30199  B =  13662.46676  C =  13341.74834 [MHz]
-  Nuclear repulsion =    9.148948399506164
+  Nuclear repulsion =    9.148948399506166
 
   Charge       = 0
   Multiplicity = 1
@@ -1603,12 +1852,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1629,7 +1887,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1637,7 +1895,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -1653,9 +1912,9 @@ Total time:
         0.41700    0.54476    0.00000   -3.79996
         0.41700    0.54476    0.00000   -0.91209
 
-  Old nuclear repulsion        =    9.148948399506164
+  Old nuclear repulsion        =    9.148948399506166
   Additional nuclear repulsion =    0.278913425878046
-  Total nuclear repulsion      =    9.427861825384209
+  Total nuclear repulsion      =    9.427861825384211
 
   Minimum eigenvalue in the overlap matrix is 2.2460654294E-02.
   Using Symmetric Orthogonalization.
@@ -1666,18 +1925,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.95954789648906   -7.59595e+01   8.78124e-02 
-   @DF-RHF iter   1:   -75.98697106661905   -2.74232e-02   1.41220e-02 
-   @DF-RHF iter   2:   -76.01246242262869   -2.54914e-02   7.00537e-03 DIIS
-   @DF-RHF iter   3:   -76.01882757782870   -6.36516e-03   1.27114e-03 DIIS
-   @DF-RHF iter   4:   -76.01933471165358   -5.07134e-04   3.81434e-04 DIIS
-   @DF-RHF iter   5:   -76.01941446515477   -7.97535e-05   9.74079e-05 DIIS
-   @DF-RHF iter   6:   -76.01942074419014   -6.27904e-06   1.29533e-05 DIIS
-   @DF-RHF iter   7:   -76.01942083861297   -9.44228e-08   2.37890e-06 DIIS
-   @DF-RHF iter   8:   -76.01942084167636   -3.06339e-09   4.66824e-07 DIIS
-   @DF-RHF iter   9:   -76.01942084177155   -9.51843e-11   8.35901e-08 DIIS
-   @DF-RHF iter  10:   -76.01942084177422   -2.67164e-12   2.17312e-08 DIIS
-   @DF-RHF iter  11:   -76.01942084177446   -2.41585e-13   3.99463e-09 DIIS
+   @DF-RHF iter   0:   -76.04534970722543   -7.60453e+01   8.84617e-02 
+   @DF-RHF iter   1:   -75.97205676117046    7.32929e-02   1.64224e-02 
+   @DF-RHF iter   2:   -76.00992257691070   -3.78658e-02   8.31460e-03 DIIS
+   @DF-RHF iter   3:   -76.01868357070030   -8.76099e-03   1.52459e-03 DIIS
+   @DF-RHF iter   4:   -76.01935914962075   -6.75579e-04   3.92332e-04 DIIS
+   @DF-RHF iter   5:   -76.01941864971852   -5.95001e-05   6.85331e-05 DIIS
+   @DF-RHF iter   6:   -76.01942078572065   -2.13600e-06   1.03700e-05 DIIS
+   @DF-RHF iter   7:   -76.01942083845960   -5.27389e-08   2.34717e-06 DIIS
+   @DF-RHF iter   8:   -76.01942084163795   -3.17836e-09   5.01273e-07 DIIS
+   @DF-RHF iter   9:   -76.01942084177726   -1.39309e-10   1.18966e-07 DIIS
+   @DF-RHF iter  10:   -76.01942084178532   -8.05755e-12   3.02040e-08 DIIS
+   @DF-RHF iter  11:   -76.01942084178572   -3.97904e-13   3.02230e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1703,18 +1962,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01942084177446
+  @DF-RHF Final Energy:   -76.01942084178572
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.4278618253842090
-    One-Electron Energy =                -123.2870860580356265
-    Two-Electron Energy =                  37.8398033908769662
+    Nuclear Repulsion Energy =              9.4278618253842108
+    One-Electron Energy =                -123.2870860692289767
+    Two-Electron Energy =                  37.8398034020590472
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194208417744477
+    Total Energy =                        -76.0194208417857169
 
 
 
@@ -1735,9 +1994,31 @@ Properties computed using the SCF density matrix
      X:     0.4012      Y:     0.0002      Z:     2.2939     Total:     2.3287
 
 
+*** tstop() called on psinet at Mon May 15 15:36:22 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       3.18 seconds =       0.05 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:22 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -1750,7 +2031,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -1767,40 +2049,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194208417744619 [Eh]
-	 Singles Energy            =      -0.0000000000000010 [Eh]
-	 Same-Spin Energy          =      -0.0484752874928170 [Eh]
-	 Opposite-Spin Energy      =      -0.1401974836918598 [Eh]
-	 Correlation Energy        =      -0.1886727711846778 [Eh]
-	 Total Energy              =     -76.2080936129591464 [Eh]
+	 Reference Energy          =     -76.0194208417857169 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484752875156684 [Eh]
+	 Opposite-Spin Energy      =      -0.1401974837621744 [Eh]
+	 Correlation Energy        =      -0.1886727712778433 [Eh]
+	 Total Energy              =     -76.2080936130635536 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161584291642723 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682369804302317 [Eh]
-	 SCS Correlation Energy    =      -0.1843954095945050 [Eh]
-	 SCS Total Energy          =     -76.2038162513689628 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161584291718895 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682369805146093 [Eh]
+	 SCS Correlation Energy    =      -0.1843954096864992 [Eh]
+	 SCS Total Energy          =     -76.2038162514722188 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:23 2017
+*** tstop() called on psinet at Mon May 15 15:36:22 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.14 seconds =       0.07 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       3.28 seconds =       0.05 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:23 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:22 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -1848,12 +2138,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1874,7 +2173,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1882,7 +2181,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -1911,18 +2211,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.95819102956146   -7.59582e+01   8.77569e-02 
-   @DF-RHF iter   1:   -75.98705586172288   -2.88648e-02   1.41016e-02 
-   @DF-RHF iter   2:   -76.01245930729858   -2.54034e-02   6.99641e-03 DIIS
-   @DF-RHF iter   3:   -76.01880929033270   -6.34998e-03   1.26907e-03 DIIS
-   @DF-RHF iter   4:   -76.01931493786394   -5.05648e-04   3.81302e-04 DIIS
-   @DF-RHF iter   5:   -76.01939478693730   -7.98491e-05   9.74978e-05 DIIS
-   @DF-RHF iter   6:   -76.01940108479668   -6.29786e-06   1.29084e-05 DIIS
-   @DF-RHF iter   7:   -76.01940117850802   -9.37113e-08   2.37088e-06 DIIS
-   @DF-RHF iter   8:   -76.01940118155132   -3.04330e-09   4.66620e-07 DIIS
-   @DF-RHF iter   9:   -76.01940118164663   -9.53122e-11   8.35412e-08 DIIS
-   @DF-RHF iter  10:   -76.01940118164939   -2.75691e-12   2.16823e-08 DIIS
-   @DF-RHF iter  11:   -76.01940118164967   -2.84217e-13   3.98928e-09 DIIS
+   @DF-RHF iter   0:   -76.04484435850716   -7.60448e+01   8.84150e-02 
+   @DF-RHF iter   1:   -75.97204033057452    7.28040e-02   1.64203e-02 
+   @DF-RHF iter   2:   -76.00990051984023   -3.78602e-02   8.31549e-03 DIIS
+   @DF-RHF iter   3:   -76.01866372954801   -8.76321e-03   1.52483e-03 DIIS
+   @DF-RHF iter   4:   -76.01933941475912   -6.75685e-04   3.92529e-04 DIIS
+   @DF-RHF iter   5:   -76.01939898617120   -5.95714e-05   6.85634e-05 DIIS
+   @DF-RHF iter   6:   -76.01940112525392   -2.13908e-06   1.03916e-05 DIIS
+   @DF-RHF iter   7:   -76.01940117828245   -5.30285e-08   2.35565e-06 DIIS
+   @DF-RHF iter   8:   -76.01940118148771   -3.20526e-09   5.01971e-07 DIIS
+   @DF-RHF iter   9:   -76.01940118162736   -1.39650e-10   1.19006e-07 DIIS
+   @DF-RHF iter  10:   -76.01940118163552   -8.15703e-12   3.02283e-08 DIIS
+   @DF-RHF iter  11:   -76.01940118163597   -4.54747e-13   3.02004e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1948,18 +2248,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01940118164967
+  @DF-RHF Final Energy:   -76.01940118163597
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4250615091435392
-    One-Electron Energy =                -123.2819307408638139
-    Two-Electron Energy =                  37.8374680500706262
+    One-Electron Energy =                -123.2819307521419745
+    Two-Electron Energy =                  37.8374680613624577
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194011816496555
+    Total Energy =                        -76.0194011816359847
 
 
 
@@ -1980,9 +2280,31 @@ Properties computed using the SCF density matrix
      X:     0.4113      Y:    -0.0002      Z:     2.2931     Total:     2.3297
 
 
+*** tstop() called on psinet at Mon May 15 15:36:22 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       3.65 seconds =       0.06 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:22 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -1995,7 +2317,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -2012,40 +2335,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194011816496698 [Eh]
-	 Singles Energy            =      -0.0000000000000010 [Eh]
-	 Same-Spin Energy          =      -0.0484806842811768 [Eh]
-	 Opposite-Spin Energy      =      -0.1402196117231952 [Eh]
-	 Correlation Energy        =      -0.1887002960043729 [Eh]
-	 Total Energy              =     -76.2081014776540400 [Eh]
+	 Reference Energy          =     -76.0194011816359705 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484806843033390 [Eh]
+	 Opposite-Spin Energy      =      -0.1402196117927481 [Eh]
+	 Correlation Energy        =      -0.1887002960960875 [Eh]
+	 Total Energy              =     -76.2081014777320576 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161602280937256 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682635340678342 [Eh]
-	 SCS Correlation Energy    =      -0.1844237621615608 [Eh]
-	 SCS Total Energy          =     -76.2038249438112274 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161602281011130 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682635341512977 [Eh]
+	 SCS Correlation Energy    =      -0.1844237622524111 [Eh]
+	 SCS Total Energy          =     -76.2038249438883781 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:24 2017
+*** tstop() called on psinet at Mon May 15 15:36:22 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.72 seconds =       0.08 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       3.74 seconds =       0.06 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:24 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:22 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -2093,12 +2424,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2119,7 +2459,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -2127,7 +2467,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -2156,18 +2497,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.94244316831667   -7.59424e+01   8.78502e-02 
-   @DF-RHF iter   1:   -75.99029349493028   -4.78503e-02   1.36207e-02 
-   @DF-RHF iter   2:   -76.01315291782421   -2.28594e-02   6.73701e-03 DIIS
-   @DF-RHF iter   3:   -76.01899157195324   -5.83865e-03   1.15838e-03 DIIS
-   @DF-RHF iter   4:   -76.01939591408582   -4.04342e-04   3.41462e-04 DIIS
-   @DF-RHF iter   5:   -76.01946092720267   -6.50131e-05   9.21775e-05 DIIS
-   @DF-RHF iter   6:   -76.01946684305970   -5.91586e-06   1.10945e-05 DIIS
-   @DF-RHF iter   7:   -76.01946691612338   -7.30637e-08   1.63933e-06 DIIS
-   @DF-RHF iter   8:   -76.01946691751721   -1.39383e-09   3.37952e-07 DIIS
-   @DF-RHF iter   9:   -76.01946691757063   -5.34186e-11   6.31033e-08 DIIS
-   @DF-RHF iter  10:   -76.01946691757242   -1.79057e-12   1.69665e-08 DIIS
-   @DF-RHF iter  11:   -76.01946691757249   -7.10543e-14   2.88229e-09 DIIS
+   @DF-RHF iter   0:   -76.04697144566661   -7.60470e+01   8.86365e-02 
+   @DF-RHF iter   1:   -75.97205924258634    7.49122e-02   1.64302e-02 
+   @DF-RHF iter   2:   -76.00996976913989   -3.79105e-02   8.31460e-03 DIIS
+   @DF-RHF iter   3:   -76.01872943735214   -8.75967e-03   1.52449e-03 DIIS
+   @DF-RHF iter   4:   -76.01940524207907   -6.75805e-04   3.92321e-04 DIIS
+   @DF-RHF iter   5:   -76.01946472751335   -5.94854e-05   6.85180e-05 DIIS
+   @DF-RHF iter   6:   -76.01946686158995   -2.13408e-06   1.03588e-05 DIIS
+   @DF-RHF iter   7:   -76.01946691424165   -5.26517e-08   2.34888e-06 DIIS
+   @DF-RHF iter   8:   -76.01946691743133   -3.18968e-09   5.02670e-07 DIIS
+   @DF-RHF iter   9:   -76.01946691757155   -1.40219e-10   1.18887e-07 DIIS
+   @DF-RHF iter  10:   -76.01946691757951   -7.95808e-12   3.01158e-08 DIIS
+   @DF-RHF iter  11:   -76.01946691758002   -5.11591e-13   3.02252e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2193,18 +2534,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01946691757249
+  @DF-RHF Final Energy:   -76.01946691758002
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4366779906563956
-    One-Electron Energy =                -123.3022018313788237
-    Two-Electron Energy =                  37.8460569231499591
+    One-Electron Energy =                -123.3022018622584568
+    Two-Electron Energy =                  37.8460569540220462
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194669175724727
+    Total Energy =                        -76.0194669175800186
 
 
 
@@ -2225,9 +2566,31 @@ Properties computed using the SCF density matrix
      X:     0.4064      Y:    -0.0036      Z:     2.2941     Total:     2.3299
 
 
+*** tstop() called on psinet at Mon May 15 15:36:23 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       4.11 seconds =       0.07 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:23 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -2240,7 +2603,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -2257,31 +2621,31 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194669175724869 [Eh]
-	 Singles Energy            =      -0.0000000000000003 [Eh]
-	 Same-Spin Energy          =      -0.0484615042210986 [Eh]
-	 Opposite-Spin Energy      =      -0.1401433648799414 [Eh]
-	 Correlation Energy        =      -0.1886048691010403 [Eh]
-	 Total Energy              =     -76.2080717866735284 [Eh]
+	 Reference Energy          =     -76.0194669175800186 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484615042533609 [Eh]
+	 Opposite-Spin Energy      =      -0.1401433649682922 [Eh]
+	 Correlation Energy        =      -0.1886048692216535 [Eh]
+	 Total Energy              =     -76.2080717868016677 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161538347403662 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1681720378559297 [Eh]
-	 SCS Correlation Energy    =      -0.1843258725962962 [Eh]
-	 SCS Total Energy          =     -76.2037927901687766 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161538347511203 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1681720379619507 [Eh]
+	 SCS Correlation Energy    =      -0.1843258727130714 [Eh]
+	 SCS Total Energy          =     -76.2037927902930932 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:24 2017
+*** tstop() called on psinet at Mon May 15 15:36:23 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.31 seconds =       0.09 minutes
+	user time   =       4.21 seconds =       0.07 minutes
 	system time =       0.12 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
@@ -2289,8 +2653,16 @@ Total time:
   //   Loading displacement 10 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:24 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:23 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -2317,7 +2689,7 @@ Total time:
 
   Rotational constants: A =     11.46718  B =      0.45577  C =      0.44504 [cm^-1]
   Rotational constants: A = 343777.38385  B =  13663.77651  C =  13342.10936 [MHz]
-  Nuclear repulsion =    9.137401948296720
+  Nuclear repulsion =    9.137401948296722
 
   Charge       = 0
   Multiplicity = 1
@@ -2338,12 +2710,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2364,7 +2745,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -2372,7 +2753,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -2388,7 +2770,7 @@ Total time:
         0.41700    0.54476    0.00000   -3.79996
         0.41700    0.54476    0.00000   -0.91209
 
-  Old nuclear repulsion        =    9.137401948296720
+  Old nuclear repulsion        =    9.137401948296722
   Additional nuclear repulsion =    0.278907655890854
   Total nuclear repulsion      =    9.416309604187575
 
@@ -2401,18 +2783,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.95661630235259   -7.59566e+01   8.75804e-02 
-   @DF-RHF iter   1:   -75.98692545670184   -3.03092e-02   1.41068e-02 
-   @DF-RHF iter   2:   -76.01237632746881   -2.54509e-02   7.00734e-03 DIIS
-   @DF-RHF iter   3:   -76.01874859371790   -6.37227e-03   1.27190e-03 DIIS
-   @DF-RHF iter   4:   -76.01925860724286   -5.10014e-04   3.83168e-04 DIIS
-   @DF-RHF iter   5:   -76.01933941104602   -8.08038e-05   9.80085e-05 DIIS
-   @DF-RHF iter   6:   -76.01934578880712   -6.37776e-06   1.30610e-05 DIIS
-   @DF-RHF iter   7:   -76.01934588505353   -9.62464e-08   2.41025e-06 DIIS
-   @DF-RHF iter   8:   -76.01934588820284   -3.14931e-09   4.72742e-07 DIIS
-   @DF-RHF iter   9:   -76.01934588830021   -9.73728e-11   8.46388e-08 DIIS
-   @DF-RHF iter  10:   -76.01934588830296   -2.75691e-12   2.18494e-08 DIIS
-   @DF-RHF iter  11:   -76.01934588830323   -2.70006e-13   4.01083e-09 DIIS
+   @DF-RHF iter   0:   -76.04322860386753   -7.60432e+01   8.82416e-02 
+   @DF-RHF iter   1:   -75.97202767853189    7.12009e-02   1.64126e-02 
+   @DF-RHF iter   2:   -76.00984383281049   -3.78162e-02   8.31563e-03 DIIS
+   @DF-RHF iter   3:   -76.01860863834369   -8.76481e-03   1.52493e-03 DIIS
+   @DF-RHF iter   4:   -76.01928410496811   -6.75467e-04   3.92541e-04 DIIS
+   @DF-RHF iter   5:   -76.01934369081985   -5.95859e-05   6.85787e-05 DIIS
+   @DF-RHF iter   6:   -76.01934583184966   -2.14103e-06   1.04032e-05 DIIS
+   @DF-RHF iter   7:   -76.01934588497009   -5.31204e-08   2.35407e-06 DIIS
+   @DF-RHF iter   8:   -76.01934588816431   -3.19422e-09   5.00575e-07 DIIS
+   @DF-RHF iter   9:   -76.01934588830312   -1.38812e-10   1.19077e-07 DIIS
+   @DF-RHF iter  10:   -76.01934588831111   -7.98650e-12   3.03159e-08 DIIS
+   @DF-RHF iter  11:   -76.01934588831166   -5.54223e-13   3.02044e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2438,18 +2820,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01934588830323
+  @DF-RHF Final Energy:   -76.01934588831166
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4163096041875747
-    One-Electron Energy =                -123.2669112521553245
-    Two-Electron Energy =                  37.8312557596645149
+    One-Electron Energy =                -123.2669112626010701
+    Two-Electron Energy =                  37.8312557701018335
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0193458883032349
+    Total Energy =                        -76.0193458883116620
 
 
 
@@ -2470,9 +2852,31 @@ Properties computed using the SCF density matrix
      X:     0.4062      Y:     0.0036      Z:     2.2929     Total:     2.3286
 
 
+*** tstop() called on psinet at Mon May 15 15:36:23 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       4.57 seconds =       0.08 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:23 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -2485,7 +2889,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -2502,40 +2907,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0193458883032349 [Eh]
-	 Singles Energy            =      -0.0000000000000010 [Eh]
-	 Same-Spin Energy          =      -0.0484943847793520 [Eh]
-	 Opposite-Spin Energy      =      -0.1402735791524003 [Eh]
-	 Correlation Energy        =      -0.1887679639317533 [Eh]
-	 Total Energy              =     -76.2081138522349875 [Eh]
+	 Reference Energy          =     -76.0193458883116620 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484943848002657 [Eh]
+	 Opposite-Spin Energy      =      -0.1402735792203357 [Eh]
+	 Correlation Energy        =      -0.1887679640206019 [Eh]
+	 Total Energy              =     -76.2081138523322608 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161647949264507 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1683282949828803 [Eh]
-	 SCS Correlation Energy    =      -0.1844930899093320 [Eh]
-	 SCS Total Energy          =     -76.2038389782125734 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161647949334219 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1683282950644028 [Eh]
+	 SCS Correlation Energy    =      -0.1844930899978252 [Eh]
+	 SCS Total Energy          =     -76.2038389783094914 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:25 2017
+*** tstop() called on psinet at Mon May 15 15:36:23 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.89 seconds =       0.10 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.66 seconds =       0.08 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 11 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:25 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:23 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -2583,12 +2996,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2609,7 +3031,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -2617,7 +3039,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -2646,18 +3069,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.96017563313364   -7.59602e+01   8.79082e-02 
-   @DF-RHF iter   1:   -75.98711778598121   -2.69422e-02   1.41096e-02 
-   @DF-RHF iter   2:   -76.01252614701875   -2.54084e-02   6.99224e-03 DIIS
-   @DF-RHF iter   3:   -76.01886542664109   -6.33928e-03   1.26746e-03 DIIS
-   @DF-RHF iter   4:   -76.01936794563258   -5.02519e-04   3.79342e-04 DIIS
-   @DF-RHF iter   5:   -76.01944671221388   -7.87666e-05   9.69314e-05 DIIS
-   @DF-RHF iter   6:   -76.01945292189991   -6.20969e-06   1.28116e-05 DIIS
-   @DF-RHF iter   7:   -76.01945301406890   -9.21690e-08   2.34076e-06 DIIS
-   @DF-RHF iter   8:   -76.01945301703296   -2.96406e-09   4.62167e-07 DIIS
-   @DF-RHF iter   9:   -76.01945301712672   -9.37632e-11   8.28663e-08 DIIS
-   @DF-RHF iter  10:   -76.01945301712941   -2.68585e-12   2.15921e-08 DIIS
-   @DF-RHF iter  11:   -76.01945301712961   -1.98952e-13   3.97611e-09 DIIS
+   @DF-RHF iter   0:   -76.04646466918209   -7.60465e+01   8.85584e-02 
+   @DF-RHF iter   1:   -75.97207445214882    7.43902e-02   1.64273e-02 
+   @DF-RHF iter   2:   -76.00995809775253   -3.78836e-02   8.31304e-03 DIIS
+   @DF-RHF iter   3:   -76.01871558613428   -8.75749e-03   1.52457e-03 DIIS
+   @DF-RHF iter   4:   -76.01939139712829   -6.75811e-04   3.92068e-04 DIIS
+   @DF-RHF iter   5:   -76.01945082374871   -5.94266e-05   6.85477e-05 DIIS
+   @DF-RHF iter   6:   -76.01945296097774   -2.13723e-06   1.03755e-05 DIIS
+   @DF-RHF iter   7:   -76.01945301379118   -5.28134e-08   2.34821e-06 DIIS
+   @DF-RHF iter   8:   -76.01945301697343   -3.18225e-09   5.02261e-07 DIIS
+   @DF-RHF iter   9:   -76.01945301711318   -1.39750e-10   1.19126e-07 DIIS
+   @DF-RHF iter  10:   -76.01945301712125   -8.07177e-12   3.01751e-08 DIIS
+   @DF-RHF iter  11:   -76.01945301712169   -4.40536e-13   3.02660e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2683,20 +3106,20 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01945301712961
+  @DF-RHF Final Energy:   -76.01945301712169
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4336977154263053
-    One-Electron Energy =                -123.2976912792497473
-    Two-Electron Energy =                  37.8445405466938354
+    One-Electron Energy =                -123.2976912912390901
+    Two-Electron Energy =                  37.8445405586910937
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194530171296066
+    Total Energy =                        -76.0194530171216911
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -2715,9 +3138,31 @@ Properties computed using the SCF density matrix
      X:     0.4066      Y:     0.0010      Z:     2.2903     Total:     2.3261
 
 
+*** tstop() called on psinet at Mon May 15 15:36:24 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       5.03 seconds =       0.08 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:24 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -2730,7 +3175,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -2747,40 +3193,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194530171296066 [Eh]
-	 Singles Energy            =      -0.0000000000000010 [Eh]
-	 Same-Spin Energy          =      -0.0484644834717365 [Eh]
-	 Opposite-Spin Energy      =      -0.1401529626559039 [Eh]
-	 Correlation Energy        =      -0.1886174461276413 [Eh]
-	 Total Energy              =     -76.2080704632572434 [Eh]
+	 Reference Energy          =     -76.0194530171216911 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484644834951907 [Eh]
+	 Opposite-Spin Energy      =      -0.1401529627272267 [Eh]
+	 Correlation Energy        =      -0.1886174462224178 [Eh]
+	 Total Energy              =     -76.2080704633441144 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161548278239122 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1681835551870846 [Eh]
-	 SCS Correlation Energy    =      -0.1843383830109977 [Eh]
-	 SCS Total Energy          =     -76.2037914001406023 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161548278317302 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1681835552726720 [Eh]
+	 SCS Correlation Energy    =      -0.1843383831044027 [Eh]
+	 SCS Total Energy          =     -76.2037914002260948 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:26 2017
+*** tstop() called on psinet at Mon May 15 15:36:24 2017
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.47 seconds =       0.11 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       5.12 seconds =       0.09 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 12 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:26 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:24 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -2828,12 +3282,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -2854,7 +3317,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -2862,7 +3325,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -2891,18 +3355,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.93904645278405   -7.59390e+01   8.75240e-02 
-   @DF-RHF iter   1:   -75.99015060799502   -5.11042e-02   1.36138e-02 
-   @DF-RHF iter   2:   -76.01302061780022   -2.28700e-02   6.74717e-03 DIIS
-   @DF-RHF iter   3:   -76.01888164466351   -5.86103e-03   1.16175e-03 DIIS
-   @DF-RHF iter   4:   -76.01929111006406   -4.09465e-04   3.44649e-04 DIIS
-   @DF-RHF iter   5:   -76.01935770341589   -6.65934e-05   9.31337e-05 DIIS
-   @DF-RHF iter   6:   -76.01936376517125   -6.06176e-06   1.12214e-05 DIIS
-   @DF-RHF iter   7:   -76.01936383996033   -7.47891e-08   1.67730e-06 DIIS
-   @DF-RHF iter   8:   -76.01936384141734   -1.45701e-09   3.45034e-07 DIIS
-   @DF-RHF iter   9:   -76.01936384147210   -5.47544e-11   6.33328e-08 DIIS
-   @DF-RHF iter  10:   -76.01936384147382   -1.71951e-12   1.64926e-08 DIIS
-   @DF-RHF iter  11:   -76.01936384147399   -1.70530e-13   2.67838e-09 DIIS
+   @DF-RHF iter   0:   -76.04373413339880   -7.60437e+01   8.83189e-02 
+   @DF-RHF iter   1:   -75.97201713370295    7.17170e-02   1.64154e-02 
+   @DF-RHF iter   2:   -76.00985970050574   -3.78426e-02   8.31712e-03 DIIS
+   @DF-RHF iter   3:   -76.01862655459125   -8.76685e-03   1.52485e-03 DIIS
+   @DF-RHF iter   4:   -76.01930200351826   -6.75449e-04   3.92790e-04 DIIS
+   @DF-RHF iter   5:   -76.01936164731451   -5.96438e-05   6.85488e-05 DIIS
+   @DF-RHF iter   6:   -76.01936378518005   -2.13787e-06   1.03863e-05 DIIS
+   @DF-RHF iter   7:   -76.01936383813680   -5.29568e-08   2.35467e-06 DIIS
+   @DF-RHF iter   8:   -76.01936384133842   -3.20162e-09   5.00975e-07 DIIS
+   @DF-RHF iter   9:   -76.01936384147756   -1.39138e-10   1.18840e-07 DIIS
+   @DF-RHF iter  10:   -76.01936384148559   -8.02913e-12   3.02572e-08 DIIS
+   @DF-RHF iter  11:   -76.01936384148597   -3.83693e-13   3.01617e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2928,18 +3392,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01936384147399
+  @DF-RHF Final Energy:   -76.01936384148597
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4192595875783489
-    One-Electron Energy =                -123.2713767836180807
-    Two-Electron Energy =                  37.8327533545657246
+    One-Electron Energy =                -123.2713768146704183
+    Two-Electron Energy =                  37.8327533856060967
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0193638414740036
+    Total Energy =                        -76.0193638414859691
 
 
 
@@ -2960,9 +3424,31 @@ Properties computed using the SCF density matrix
      X:     0.4059      Y:    -0.0011      Z:     2.2967     Total:     2.3323
 
 
+*** tstop() called on psinet at Mon May 15 15:36:24 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       5.49 seconds =       0.09 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:24 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -2975,7 +3461,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -2992,40 +3479,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0193638414739894 [Eh]
-	 Singles Energy            =      -0.0000000000000002 [Eh]
-	 Same-Spin Energy          =      -0.0484914692043416 [Eh]
-	 Opposite-Spin Energy      =      -0.1402640998140232 [Eh]
-	 Correlation Energy        =      -0.1887555690183651 [Eh]
-	 Total Energy              =     -76.2081194104923583 [Eh]
+	 Reference Energy          =     -76.0193638414859691 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484914692308315 [Eh]
+	 Opposite-Spin Energy      =      -0.1402640998928432 [Eh]
+	 Correlation Energy        =      -0.1887555691236752 [Eh]
+	 Total Energy              =     -76.2081194106096405 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161638230681139 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1683169197768279 [Eh]
-	 SCS Correlation Energy    =      -0.1844807428449420 [Eh]
-	 SCS Total Energy          =     -76.2038445843189294 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161638230769438 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1683169198714119 [Eh]
+	 SCS Correlation Energy    =      -0.1844807429483562 [Eh]
+	 SCS Total Energy          =     -76.2038445844343215 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:26 2017
+*** tstop() called on psinet at Mon May 15 15:36:24 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.06 seconds =       0.12 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       5.58 seconds =       0.09 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 13 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:26 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:24 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -3073,12 +3568,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -3099,7 +3603,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -3107,7 +3611,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -3124,7 +3629,7 @@ Total time:
         0.41700    0.54476    0.00000   -0.91209
 
   Old nuclear repulsion        =    9.148948402090360
-  Additional nuclear repulsion =    0.278913425866462
+  Additional nuclear repulsion =    0.278913425866461
   Total nuclear repulsion      =    9.427861827956821
 
   Minimum eigenvalue in the overlap matrix is 2.2460654274E-02.
@@ -3136,18 +3641,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.95910344623125   -7.59591e+01   8.78084e-02 
-   @DF-RHF iter   1:   -75.98702438344871   -2.79209e-02   1.41127e-02 
-   @DF-RHF iter   2:   -76.01247199099809   -2.54476e-02   7.00079e-03 DIIS
-   @DF-RHF iter   3:   -76.01882873087298   -6.35674e-03   1.26965e-03 DIIS
-   @DF-RHF iter   4:   -76.01933476171624   -5.06031e-04   3.81141e-04 DIIS
-   @DF-RHF iter   5:   -76.01941445775435   -7.96960e-05   9.74214e-05 DIIS
-   @DF-RHF iter   6:   -76.01942074402007   -6.28627e-06   1.29367e-05 DIIS
-   @DF-RHF iter   7:   -76.01942083825065   -9.42306e-08   2.37457e-06 DIIS
-   @DF-RHF iter   8:   -76.01942084130324   -3.05259e-09   4.66716e-07 DIIS
-   @DF-RHF iter   9:   -76.01942084139837   -9.51275e-11   8.34751e-08 DIIS
-   @DF-RHF iter  10:   -76.01942084140111   -2.74269e-12   2.16482e-08 DIIS
-   @DF-RHF iter  11:   -76.01942084140138   -2.70006e-13   3.97914e-09 DIIS
+   @DF-RHF iter   0:   -76.04550366699638   -7.60455e+01   8.84637e-02 
+   @DF-RHF iter   1:   -75.97207149646547    7.34322e-02   1.64220e-02 
+   @DF-RHF iter   2:   -76.00992775945730   -3.78563e-02   8.31298e-03 DIIS
+   @DF-RHF iter   3:   -76.01868477745560   -8.75702e-03   1.52424e-03 DIIS
+   @DF-RHF iter   4:   -76.01935933786831   -6.74560e-04   3.91963e-04 DIIS
+   @DF-RHF iter   5:   -76.01941866499358   -5.93271e-05   6.83772e-05 DIIS
+   @DF-RHF iter   6:   -76.01942078659124   -2.12160e-06   1.02889e-05 DIIS
+   @DF-RHF iter   7:   -76.01942083819634   -5.16051e-08   2.31459e-06 DIIS
+   @DF-RHF iter   8:   -76.01942084126901   -3.07267e-09   4.95917e-07 DIIS
+   @DF-RHF iter   9:   -76.01942084140535   -1.36339e-10   1.18187e-07 DIIS
+   @DF-RHF iter  10:   -76.01942084141342   -8.07177e-12   3.01087e-08 DIIS
+   @DF-RHF iter  11:   -76.01942084141383   -4.12115e-13   3.01540e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -3173,18 +3678,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01942084140138
+  @DF-RHF Final Energy:   -76.01942084141383
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4278618279568214
-    One-Electron Energy =                -123.2870860616706494
-    Two-Electron Energy =                  37.8398033923124473
+    One-Electron Energy =                -123.2870860727824862
+    Two-Electron Energy =                  37.8398034034118353
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194208414013843
+    Total Energy =                        -76.0194208414138330
 
 
 
@@ -3205,9 +3710,31 @@ Properties computed using the SCF density matrix
      X:     0.4012      Y:    -0.0002      Z:     2.2939     Total:     2.3287
 
 
+*** tstop() called on psinet at Mon May 15 15:36:25 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       5.95 seconds =       0.10 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:25 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -3220,7 +3747,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -3237,40 +3765,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194208414013843 [Eh]
-	 Singles Energy            =      -0.0000000000000010 [Eh]
-	 Same-Spin Energy          =      -0.0484752874885345 [Eh]
-	 Opposite-Spin Energy      =      -0.1401974836842314 [Eh]
-	 Correlation Energy        =      -0.1886727711727669 [Eh]
-	 Total Energy              =     -76.2080936125741459 [Eh]
+	 Reference Energy          =     -76.0194208414138330 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484752875107718 [Eh]
+	 Opposite-Spin Energy      =      -0.1401974837536518 [Eh]
+	 Correlation Energy        =      -0.1886727712644241 [Eh]
+	 Total Energy              =     -76.2080936126782547 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161584291628448 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682369804210777 [Eh]
-	 SCS Correlation Energy    =      -0.1843954095839235 [Eh]
-	 SCS Total Energy          =     -76.2038162509853123 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161584291702573 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682369805043822 [Eh]
+	 SCS Correlation Energy    =      -0.1843954096746399 [Eh]
+	 SCS Total Energy          =     -76.2038162510884689 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:27 2017
+*** tstop() called on psinet at Mon May 15 15:36:25 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.65 seconds =       0.13 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       6.04 seconds =       0.10 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 14 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:27 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:25 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -3318,12 +3854,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -3344,7 +3889,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -3352,7 +3897,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -3370,7 +3916,7 @@ Total time:
 
   Old nuclear repulsion        =    9.146138073673514
   Additional nuclear repulsion =    0.278923432840151
-  Total nuclear repulsion      =    9.425061506513666
+  Total nuclear repulsion      =    9.425061506513664
 
   Minimum eigenvalue in the overlap matrix is 2.2471546124E-02.
   Using Symmetric Orthogonalization.
@@ -3381,18 +3927,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.95863640728388   -7.59586e+01   8.77609e-02 
-   @DF-RHF iter   1:   -75.98700262107802   -2.83662e-02   1.41108e-02 
-   @DF-RHF iter   2:   -76.01244974221254   -2.54471e-02   7.00099e-03 DIIS
-   @DF-RHF iter   3:   -76.01880813575225   -6.35839e-03   1.27056e-03 DIIS
-   @DF-RHF iter   4:   -76.01931488760954   -5.06752e-04   3.81595e-04 DIIS
-   @DF-RHF iter   5:   -76.01939479449108   -7.99069e-05   9.74838e-05 DIIS
-   @DF-RHF iter   6:   -76.01940108499642   -6.29051e-06   1.29244e-05 DIIS
-   @DF-RHF iter   7:   -76.01940117888921   -9.38928e-08   2.37503e-06 DIIS
-   @DF-RHF iter   8:   -76.01940118194291   -3.05370e-09   4.66705e-07 DIIS
-   @DF-RHF iter   9:   -76.01940118203824   -9.53264e-11   8.36522e-08 DIIS
-   @DF-RHF iter  10:   -76.01940118204101   -2.77112e-12   2.17647e-08 DIIS
-   @DF-RHF iter  11:   -76.01940118204115   -1.42109e-13   4.00460e-09 DIIS
+   @DF-RHF iter   0:   -76.04468635878753   -7.60447e+01   8.84130e-02 
+   @DF-RHF iter   1:   -75.97202538897119    7.26610e-02   1.64207e-02 
+   @DF-RHF iter   2:   -76.00989523615033   -3.78698e-02   8.31714e-03 DIIS
+   @DF-RHF iter   3:   -76.01866249255154   -8.76726e-03   1.52519e-03 DIIS
+   @DF-RHF iter   4:   -76.01933922100640   -6.76728e-04   3.92907e-04 DIIS
+   @DF-RHF iter   5:   -76.01939897041557   -5.97494e-05   6.87237e-05 DIIS
+   @DF-RHF iter   6:   -76.01940112436506   -2.15395e-06   1.04744e-05 DIIS
+   @DF-RHF iter   7:   -76.01940117856444   -5.41994e-08   2.38835e-06 DIIS
+   @DF-RHF iter   8:   -76.01940118187790   -3.31346e-09   5.07148e-07 DIIS
+   @DF-RHF iter   9:   -76.01940118202030   -1.42407e-10   1.19743e-07 DIIS
+   @DF-RHF iter  10:   -76.01940118202836   -8.05755e-12   3.03193e-08 DIIS
+   @DF-RHF iter  11:   -76.01940118202890   -5.40012e-13   3.02744e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -3418,18 +3964,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01940118204115
+  @DF-RHF Final Energy:   -76.01940118202890
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.4250615065136660
-    One-Electron Energy =                -123.2819307371543402
-    Two-Electron Energy =                  37.8374680485995114
+    Nuclear Repulsion Energy =              9.4250615065136643
+    One-Electron Energy =                -123.2819307485149807
+    Two-Electron Energy =                  37.8374680599724300
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194011820411504
+    Total Energy =                        -76.0194011820289006
 
 
 
@@ -3450,9 +3996,31 @@ Properties computed using the SCF density matrix
      X:     0.4113      Y:     0.0002      Z:     2.2931     Total:     2.3297
 
 
+*** tstop() called on psinet at Mon May 15 15:36:25 2017
+Module time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       6.40 seconds =       0.11 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:25 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -3465,7 +4033,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -3482,40 +4051,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194011820411504 [Eh]
-	 Singles Energy            =      -0.0000000000000010 [Eh]
-	 Same-Spin Energy          =      -0.0484806842855585 [Eh]
-	 Opposite-Spin Energy      =      -0.1402196117309946 [Eh]
-	 Correlation Energy        =      -0.1887002960165541 [Eh]
-	 Total Energy              =     -76.2081014780576993 [Eh]
+	 Reference Energy          =     -76.0194011820289006 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484806843083487 [Eh]
+	 Opposite-Spin Energy      =      -0.1402196118014701 [Eh]
+	 Correlation Energy        =      -0.1887002961098193 [Eh]
+	 Total Energy              =     -76.2081014781387154 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161602280951862 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682635340771935 [Eh]
-	 SCS Correlation Energy    =      -0.1844237621723807 [Eh]
-	 SCS Total Energy          =     -76.2038249442135367 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161602281027829 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682635341617642 [Eh]
+	 SCS Correlation Energy    =      -0.1844237622645475 [Eh]
+	 SCS Total Energy          =     -76.2038249442934443 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:28 2017
+*** tstop() called on psinet at Mon May 15 15:36:25 2017
 Module time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.24 seconds =       0.14 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       6.50 seconds =       0.11 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 15 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:28 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:25 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -3563,12 +4140,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -3589,7 +4175,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -3597,7 +4183,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -3614,7 +4201,7 @@ Total time:
         0.41700    0.54476    0.00000   -0.91209
 
   Old nuclear repulsion        =    9.137401930556162
-  Additional nuclear repulsion =    0.278907655879405
+  Additional nuclear repulsion =    0.278907655879404
   Total nuclear repulsion      =    9.416309586435567
 
   Minimum eigenvalue in the overlap matrix is 2.2505613616E-02.
@@ -3626,18 +4213,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.93822991185827   -7.59382e+01   8.74454e-02 
-   @DF-RHF iter   1:   -75.99020305132014   -5.19731e-02   1.36039e-02 
-   @DF-RHF iter   2:   -76.01301747796714   -2.28144e-02   6.74087e-03 DIIS
-   @DF-RHF iter   3:   -76.01886680816642   -5.84933e-03   1.15987e-03 DIIS
-   @DF-RHF iter   4:   -76.01927385735348   -4.07049e-04   3.43236e-04 DIIS
-   @DF-RHF iter   5:   -76.01933980749638   -6.59501e-05   9.27497e-05 DIIS
-   @DF-RHF iter   6:   -76.01934581523233   -6.00774e-06   1.11549e-05 DIIS
-   @DF-RHF iter   7:   -76.01934588923231   -7.40000e-08   1.65769e-06 DIIS
-   @DF-RHF iter   8:   -76.01934589066165   -1.42934e-09   3.42987e-07 DIIS
-   @DF-RHF iter   9:   -76.01934589071683   -5.51807e-11   6.43707e-08 DIIS
-   @DF-RHF iter  10:   -76.01934589071871   -1.87583e-12   1.72765e-08 DIIS
-   @DF-RHF iter  11:   -76.01934589071887   -1.56319e-13   2.94833e-09 DIIS
+   @DF-RHF iter   0:   -76.04250719098684   -7.60425e+01   8.82304e-02 
+   @DF-RHF iter   1:   -75.97187026583595    7.06369e-02   1.64241e-02 
+   @DF-RHF iter   2:   -76.00980270038164   -3.79324e-02   8.33163e-03 DIIS
+   @DF-RHF iter   3:   -76.01860216651956   -8.79947e-03   1.52722e-03 DIIS
+   @DF-RHF iter   4:   -76.01928346227723   -6.81296e-04   3.94290e-04 DIIS
+   @DF-RHF iter   5:   -76.01934367414619   -6.02119e-05   6.88455e-05 DIIS
+   @DF-RHF iter   6:   -76.01934583334251   -2.15920e-06   1.04608e-05 DIIS
+   @DF-RHF iter   7:   -76.01934588727279   -5.39303e-08   2.38112e-06 DIIS
+   @DF-RHF iter   8:   -76.01934589055767   -3.28488e-09   5.08703e-07 DIIS
+   @DF-RHF iter   9:   -76.01934589070123   -1.43558e-10   1.21392e-07 DIIS
+   @DF-RHF iter  10:   -76.01934589070963   -8.39862e-12   3.07085e-08 DIIS
+   @DF-RHF iter  11:   -76.01934589071023   -5.96856e-13   3.06382e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -3663,18 +4250,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01934589071887
+  @DF-RHF Final Energy:   -76.01934589071023
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4163095864355668
-    One-Electron Energy =                -123.2669112057023710
-    Two-Electron Energy =                  37.8312557285479443
+    One-Electron Energy =                -123.2669112370491860
+    Two-Electron Energy =                  37.8312557599033852
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0193458907188528
+    Total Energy =                        -76.0193458907102269
 
 
 
@@ -3695,9 +4282,31 @@ Properties computed using the SCF density matrix
      X:     0.4062      Y:    -0.0036      Z:     2.2929     Total:     2.3286
 
 
+*** tstop() called on psinet at Mon May 15 15:36:26 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       6.86 seconds =       0.11 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:26 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -3710,7 +4319,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -3727,40 +4337,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0193458907188671 [Eh]
-	 Singles Energy            =      -0.0000000000000003 [Eh]
-	 Same-Spin Energy          =      -0.0484943848027517 [Eh]
-	 Opposite-Spin Energy      =      -0.1402735791932329 [Eh]
-	 Correlation Energy        =      -0.1887679639959849 [Eh]
-	 Total Energy              =     -76.2081138547148527 [Eh]
+	 Reference Energy          =     -76.0193458907102269 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484943848353615 [Eh]
+	 Opposite-Spin Energy      =      -0.1402735792832964 [Eh]
+	 Correlation Energy        =      -0.1887679641186583 [Eh]
+	 Total Energy              =     -76.2081138548288806 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161647949342506 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1683282950318794 [Eh]
-	 SCS Correlation Energy    =      -0.1844930899661303 [Eh]
-	 SCS Total Energy          =     -76.2038389806849921 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161647949451205 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1683282951399557 [Eh]
+	 SCS Correlation Energy    =      -0.1844930900850766 [Eh]
+	 SCS Total Energy          =     -76.2038389807952967 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:28 2017
+*** tstop() called on psinet at Mon May 15 15:36:26 2017
 Module time:
-	user time   =       0.59 seconds =       0.01 minutes
+	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.84 seconds =       0.15 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       6.96 seconds =       0.12 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 16 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:28 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:26 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -3808,12 +4426,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -3834,7 +4461,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -3842,7 +4469,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -3871,18 +4499,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.96079968618585   -7.59608e+01   8.79846e-02 
-   @DF-RHF iter   1:   -75.98702926558629   -2.62296e-02   1.41218e-02 
-   @DF-RHF iter   2:   -76.01251697846122   -2.54877e-02   7.00149e-03 DIIS
-   @DF-RHF iter   3:   -76.01887432045405   -6.35734e-03   1.27003e-03 DIIS
-   @DF-RHF iter   4:   -76.01938083027719   -5.06510e-04   3.81229e-04 DIIS
-   @DF-RHF iter   5:   -76.01946053334052   -7.97031e-05   9.74282e-05 DIIS
-   @DF-RHF iter   6:   -76.01946681742501   -6.28408e-06   1.29572e-05 DIIS
-   @DF-RHF iter   7:   -76.01946691193078   -9.45058e-08   2.38162e-06 DIIS
-   @DF-RHF iter   8:   -76.01946691499967   -3.06889e-09   4.66989e-07 DIIS
-   @DF-RHF iter   9:   -76.01946691509465   -9.49854e-11   8.30482e-08 DIIS
-   @DF-RHF iter  10:   -76.01946691509744   -2.78533e-12   2.14155e-08 DIIS
-   @DF-RHF iter  11:   -76.01946691509765   -2.13163e-13   3.91975e-09 DIIS
+   @DF-RHF iter   0:   -76.04769346090436   -7.60477e+01   8.86477e-02 
+   @DF-RHF iter   1:   -75.97221618608297    7.54773e-02   1.64187e-02 
+   @DF-RHF iter   2:   -76.01001064907824   -3.77945e-02   8.29864e-03 DIIS
+   @DF-RHF iter   3:   -76.01873584424929   -8.72520e-03   1.52221e-03 DIIS
+   @DF-RHF iter   4:   -76.01940587636021   -6.70032e-04   3.90580e-04 DIIS
+   @DF-RHF iter   5:   -76.01946474371927   -5.88674e-05   6.82538e-05 DIIS
+   @DF-RHF iter   6:   -76.01946685995723   -2.11624e-06   1.03027e-05 DIIS
+   @DF-RHF iter   7:   -76.01946691182756   -5.18703e-08   2.32223e-06 DIIS
+   @DF-RHF iter   8:   -76.01946691492942   -3.10186e-09   4.94645e-07 DIIS
+   @DF-RHF iter   9:   -76.01946691506477   -1.35344e-10   1.16614e-07 DIIS
+   @DF-RHF iter  10:   -76.01946691507241   -7.64544e-12   2.97298e-08 DIIS
+   @DF-RHF iter  11:   -76.01946691507294   -5.25802e-13   2.98084e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -3908,18 +4536,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01946691509765
+  @DF-RHF Final Energy:   -76.01946691507294
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4366780085407029
-    One-Electron Energy =                -123.3022018773901465
-    Two-Electron Energy =                  37.8460569537517983
+    One-Electron Energy =                -123.3022018879213419
+    Two-Electron Energy =                  37.8460569643077065
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194669150976381
+    Total Energy =                        -76.0194669150729396
 
 
 
@@ -3940,9 +4568,31 @@ Properties computed using the SCF density matrix
      X:     0.4064      Y:     0.0036      Z:     2.2941     Total:     2.3299
 
 
+*** tstop() called on psinet at Mon May 15 15:36:26 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       7.33 seconds =       0.12 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:26 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -3955,7 +4605,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -3972,40 +4623,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194669150976523 [Eh]
-	 Singles Energy            =      -0.0000000000000009 [Eh]
-	 Same-Spin Energy          =      -0.0484615041984480 [Eh]
-	 Opposite-Spin Energy      =      -0.1401433648405082 [Eh]
-	 Correlation Energy        =      -0.1886048690389571 [Eh]
-	 Total Energy              =     -76.2080717841366067 [Eh]
+	 Reference Energy          =     -76.0194669150729396 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484615042182242 [Eh]
+	 Opposite-Spin Energy      =      -0.1401433649053131 [Eh]
+	 Correlation Energy        =      -0.1886048691235377 [Eh]
+	 Total Energy              =     -76.2080717841964770 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161538347328160 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1681720378086098 [Eh]
-	 SCS Correlation Energy    =      -0.1843258725414267 [Eh]
-	 SCS Total Energy          =     -76.2037927876390739 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161538347394081 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1681720378863757 [Eh]
+	 SCS Correlation Energy    =      -0.1843258726257843 [Eh]
+	 SCS Total Energy          =     -76.2037927876987169 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:29 2017
+*** tstop() called on psinet at Mon May 15 15:36:26 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.43 seconds =       0.16 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       7.42 seconds =       0.12 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 17 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:29 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:26 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -4053,12 +4712,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -4079,7 +4747,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -4087,7 +4755,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -4104,7 +4773,7 @@ Total time:
         0.41700    0.54476    0.00000   -0.91209
 
   Old nuclear repulsion        =    9.154748995359864
-  Additional nuclear repulsion =    0.278948720103028
+  Additional nuclear repulsion =    0.278948720103027
   Total nuclear repulsion      =    9.433697715462891
 
   Minimum eigenvalue in the overlap matrix is 2.2438004988E-02.
@@ -4116,18 +4785,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.94141287209833   -7.59414e+01   8.77657e-02 
-   @DF-RHF iter   1:   -75.99027134633353   -4.88585e-02   1.36184e-02 
-   @DF-RHF iter   2:   -76.01313171195085   -2.28604e-02   6.73883e-03 DIIS
-   @DF-RHF iter   3:   -76.01897517619690   -5.84346e-03   1.15924e-03 DIIS
-   @DF-RHF iter   4:   -76.01938151396983   -4.06338e-04   3.42341e-04 DIIS
-   @DF-RHF iter   5:   -76.01944697732451   -6.54634e-05   9.24882e-05 DIIS
-   @DF-RHF iter   6:   -76.01945293962831   -5.96230e-06   1.11722e-05 DIIS
-   @DF-RHF iter   7:   -76.01945301371576   -7.40875e-08   1.66157e-06 DIIS
-   @DF-RHF iter   8:   -76.01945301514367   -1.42791e-09   3.41293e-07 DIIS
-   @DF-RHF iter   9:   -76.01945301519730   -5.36318e-11   6.27655e-08 DIIS
-   @DF-RHF iter  10:   -76.01945301519896   -1.66267e-12   1.63574e-08 DIIS
-   @DF-RHF iter  11:   -76.01945301519905   -8.52651e-14   2.63895e-09 DIIS
+   @DF-RHF iter   0:   -76.04671013552382   -7.60467e+01   8.85654e-02 
+   @DF-RHF iter   1:   -75.97224889710081    7.44612e-02   1.64106e-02 
+   @DF-RHF iter   2:   -76.00999891104894   -3.77500e-02   8.29685e-03 DIIS
+   @DF-RHF iter   3:   -76.01872144158131   -8.72253e-03   1.52152e-03 DIIS
+   @DF-RHF iter   4:   -76.01939190775954   -6.70466e-04   3.90563e-04 DIIS
+   @DF-RHF iter   5:   -76.01945083235040   -5.89246e-05   6.83779e-05 DIIS
+   @DF-RHF iter   6:   -76.01945295954977   -2.12720e-06   1.03401e-05 DIIS
+   @DF-RHF iter   7:   -76.01945301193159   -5.23818e-08   2.33162e-06 DIIS
+   @DF-RHF iter   8:   -76.01945301506137   -3.12978e-09   4.97289e-07 DIIS
+   @DF-RHF iter   9:   -76.01945301519805   -1.36680e-10   1.17555e-07 DIIS
+   @DF-RHF iter  10:   -76.01945301520593   -7.87281e-12   2.98902e-08 DIIS
+   @DF-RHF iter  11:   -76.01945301520631   -3.83693e-13   2.99975e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -4153,18 +4822,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01945301519905
+  @DF-RHF Final Energy:   -76.01945301520631
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4336977154628912
-    One-Electron Energy =                -123.2976912568265391
-    Two-Electron Energy =                  37.8445405261645789
+    One-Electron Energy =                -123.2976912873695312
+    Two-Electron Energy =                  37.8445405567003235
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194530151990620
+    Total Energy =                        -76.0194530152063095
 
 
 
@@ -4185,9 +4854,31 @@ Properties computed using the SCF density matrix
      X:     0.4066      Y:    -0.0010      Z:     2.2903     Total:     2.3261
 
 
+*** tstop() called on psinet at Mon May 15 15:36:27 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       7.79 seconds =       0.13 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:27 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -4200,7 +4891,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -4217,40 +4909,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194530151990477 [Eh]
-	 Singles Energy            =      -0.0000000000000002 [Eh]
-	 Same-Spin Energy          =      -0.0484644834632015 [Eh]
-	 Opposite-Spin Energy      =      -0.1401529626851763 [Eh]
-	 Correlation Energy        =      -0.1886174461483780 [Eh]
-	 Total Energy              =     -76.2080704613474325 [Eh]
+	 Reference Energy          =     -76.0194530152063095 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484644834914188 [Eh]
+	 Opposite-Spin Energy      =      -0.1401529627659048 [Eh]
+	 Correlation Energy        =      -0.1886174462573241 [Eh]
+	 Total Energy              =     -76.2080704614636346 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161548278210672 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1681835552222115 [Eh]
-	 SCS Correlation Energy    =      -0.1843383830432789 [Eh]
-	 SCS Total Energy          =     -76.2037913982423305 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161548278304729 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1681835553190858 [Eh]
+	 SCS Correlation Energy    =      -0.1843383831495592 [Eh]
+	 SCS Total Energy          =     -76.2037913983558752 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:29 2017
+*** tstop() called on psinet at Mon May 15 15:36:27 2017
 Module time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      10.03 seconds =       0.17 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       7.90 seconds =       0.13 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 18 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:29 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:27 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -4298,12 +4998,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -4324,7 +5033,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -4332,7 +5041,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -4361,18 +5071,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.93907198401702   -7.59391e+01   8.75258e-02 
-   @DF-RHF iter   1:   -75.99019591240115   -5.11239e-02   1.36087e-02 
-   @DF-RHF iter   2:   -76.01303220453620   -2.28363e-02   6.74286e-03 DIIS
-   @DF-RHF iter   3:   -76.01888448185515   -5.85228e-03   1.16012e-03 DIIS
-   @DF-RHF iter   4:   -76.01929168205753   -4.07200e-04   3.43508e-04 DIIS
-   @DF-RHF iter   5:   -76.01935775004718   -6.60680e-05   9.28182e-05 DIIS
-   @DF-RHF iter   6:   -76.01936376800748   -6.01796e-06   1.11521e-05 DIIS
-   @DF-RHF iter   7:   -76.01936384194013   -7.39327e-08   1.65501e-06 DIIS
-   @DF-RHF iter   8:   -76.01936384336199   -1.42185e-09   3.41582e-07 DIIS
-   @DF-RHF iter   9:   -76.01936384341657   -5.45839e-11   6.37233e-08 DIIS
-   @DF-RHF iter  10:   -76.01936384341830   -1.73372e-12   1.70552e-08 DIIS
-   @DF-RHF iter  11:   -76.01936384341843   -1.27898e-13   2.89074e-09 DIIS
+   @DF-RHF iter   0:   -76.04348348866081   -7.60435e+01   8.83119e-02 
+   @DF-RHF iter   1:   -75.97184190916701    7.16416e-02   1.64322e-02 
+   @DF-RHF iter   2:   -76.00981856023728   -3.79767e-02   8.33339e-03 DIIS
+   @DF-RHF iter   3:   -76.01862064330516   -8.80208e-03   1.52791e-03 DIIS
+   @DF-RHF iter   4:   -76.01930148671866   -6.80843e-04   3.94303e-04 DIIS
+   @DF-RHF iter   5:   -76.01936163873314   -6.01520e-05   6.87182e-05 DIIS
+   @DF-RHF iter   6:   -76.01936378660719   -2.14787e-06   1.04216e-05 DIIS
+   @DF-RHF iter   7:   -76.01936383999745   -5.33903e-08   2.37133e-06 DIIS
+   @DF-RHF iter   8:   -76.01936384325265   -3.25520e-09   5.06013e-07 DIIS
+   @DF-RHF iter   9:   -76.01936384339476   -1.42109e-10   1.20436e-07 DIIS
+   @DF-RHF iter  10:   -76.01936384340308   -8.32756e-12   3.05436e-08 DIIS
+   @DF-RHF iter  11:   -76.01936384340358   -4.97380e-13   3.04289e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -4398,18 +5108,18 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01936384341843
+  @DF-RHF Final Energy:   -76.01936384340358
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4192595874667280
-    One-Electron Energy =                -123.2713767869954751
-    Two-Electron Energy =                  37.8327533561103166
+    One-Electron Energy =                -123.2713768184249545
+    Two-Electron Energy =                  37.8327533875546465
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0193638434184322
+    Total Energy =                        -76.0193638434035819
 
 
 
@@ -4430,9 +5140,31 @@ Properties computed using the SCF density matrix
      X:     0.4059      Y:     0.0011      Z:     2.2967     Total:     2.3323
 
 
+*** tstop() called on psinet at Mon May 15 15:36:27 2017
+Module time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       8.26 seconds =       0.14 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:27 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -4445,7 +5177,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -4462,40 +5195,48 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0193638434184322 [Eh]
-	 Singles Energy            =      -0.0000000000000003 [Eh]
-	 Same-Spin Energy          =      -0.0484914692044394 [Eh]
-	 Opposite-Spin Energy      =      -0.1402640997681795 [Eh]
-	 Correlation Energy        =      -0.1887555689726192 [Eh]
-	 Total Energy              =     -76.2081194123910564 [Eh]
+	 Reference Energy          =     -76.0193638434035819 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484914692349511 [Eh]
+	 Opposite-Spin Energy      =      -0.1402640998546590 [Eh]
+	 Correlation Energy        =      -0.1887555690896106 [Eh]
+	 Total Energy              =     -76.2081194124931898 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161638230681465 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1683169197218154 [Eh]
-	 SCS Correlation Energy    =      -0.1844807427899621 [Eh]
-	 SCS Total Energy          =     -76.2038445862083904 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161638230783170 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1683169198255908 [Eh]
+	 SCS Correlation Energy    =      -0.1844807429039083 [Eh]
+	 SCS Total Energy          =     -76.2038445863074969 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:30 2017
+*** tstop() called on psinet at Mon May 15 15:36:27 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      10.62 seconds =       0.18 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       8.36 seconds =       0.14 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 19 of 19   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:30 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:27 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -4543,12 +5284,21 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -4569,7 +5319,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -4577,7 +5327,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -4606,18 +5357,18 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.94024437987363   -7.59402e+01   8.76458e-02 
-   @DF-RHF iter   1:   -75.99023668249011   -4.99923e-02   1.36135e-02 
-   @DF-RHF iter   2:   -76.01308485847773   -2.28482e-02   6.74079e-03 DIIS
-   @DF-RHF iter   3:   -76.01893263724752   -5.84778e-03   1.15968e-03 DIIS
-   @DF-RHF iter   4:   -76.01933939941948   -4.06762e-04   3.42921e-04 DIIS
-   @DF-RHF iter   5:   -76.01940516314251   -6.57637e-05   9.26520e-05 DIIS
-   @DF-RHF iter   6:   -76.01941115305890   -5.98992e-06   1.11618e-05 DIIS
-   @DF-RHF iter   7:   -76.01941122706279   -7.40039e-08   1.65808e-06 DIIS
-   @DF-RHF iter   8:   -76.01941122848724   -1.42445e-09   3.41336e-07 DIIS
-   @DF-RHF iter   9:   -76.01941122854117   -5.39302e-11   6.32057e-08 DIIS
-   @DF-RHF iter  10:   -76.01941122854302   -1.84741e-12   1.66943e-08 DIIS
-   @DF-RHF iter  11:   -76.01941122854318   -1.56319e-13   2.76412e-09 DIIS
+   @DF-RHF iter   0:   -76.04510013705357   -7.60451e+01   8.84387e-02 
+   @DF-RHF iter   1:   -75.97204871634887    7.30514e-02   1.64214e-02 
+   @DF-RHF iter   2:   -76.00991177618960   -3.78631e-02   8.31504e-03 DIIS
+   @DF-RHF iter   3:   -76.01867386704146   -8.76209e-03   1.52471e-03 DIIS
+   @DF-RHF iter   4:   -76.01934949923344   -6.75632e-04   3.92430e-04 DIIS
+   @DF-RHF iter   5:   -76.01940903479115   -5.95356e-05   6.85482e-05 DIIS
+   @DF-RHF iter   6:   -76.01941117232725   -2.13754e-06   1.03808e-05 DIIS
+   @DF-RHF iter   7:   -76.01941122521039   -5.28831e-08   2.35141e-06 DIIS
+   @DF-RHF iter   8:   -76.01941122840228   -3.19189e-09   5.01626e-07 DIIS
+   @DF-RHF iter   9:   -76.01941122854166   -1.39380e-10   1.18987e-07 DIIS
+   @DF-RHF iter  10:   -76.01941122854983   -8.17124e-12   3.02161e-08 DIIS
+   @DF-RHF iter  11:   -76.01941122855017   -3.41061e-13   3.02115e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -4643,20 +5394,20 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01941122854318
+  @DF-RHF Final Energy:   -76.01941122855017
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4264780387548672
-    One-Electron Energy =                -123.2845377058328893
-    Two-Electron Energy =                  37.8386484385348538
+    One-Electron Energy =                -123.2845377368329878
+    Two-Electron Energy =                  37.8386484695279535
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194112285431629
+    Total Energy =                        -76.0194112285501689
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -4675,9 +5426,31 @@ Properties computed using the SCF density matrix
      X:     0.4063      Y:    -0.0000      Z:     2.2935     Total:     2.3292
 
 
+*** tstop() called on psinet at Mon May 15 15:36:27 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       8.72 seconds =       0.15 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:27 2017
+
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -4690,7 +5463,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -4707,52 +5481,52 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194112285431771 [Eh]
-	 Singles Energy            =      -0.0000000000000003 [Eh]
-	 Same-Spin Energy          =      -0.0484779565293744 [Eh]
-	 Opposite-Spin Energy      =      -0.1402084280293517 [Eh]
-	 Correlation Energy        =      -0.1886863845587264 [Eh]
-	 Total Energy              =     -76.2080976131018986 [Eh]
+	 Reference Energy          =     -76.0194112285501689 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484779565586523 [Eh]
+	 Opposite-Spin Energy      =      -0.1402084281127564 [Eh]
+	 Correlation Energy        =      -0.1886863846714092 [Eh]
+	 Total Energy              =     -76.2080976132215824 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161593188431248 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682501136352220 [Eh]
-	 SCS Correlation Energy    =      -0.1844094324783472 [Eh]
-	 SCS Total Energy          =     -76.2038206610215241 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161593188528841 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682501137353077 [Eh]
+	 SCS Correlation Energy    =      -0.1844094325881923 [Eh]
+	 SCS Total Energy          =     -76.2038206611383657 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:31 2017
+*** tstop() called on psinet at Mon May 15 15:36:28 2017
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      11.21 seconds =       0.19 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       8.82 seconds =       0.15 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 -------------------------------------------------------------
 
   Computing gradient from energies (fd_1_0).
 	Using 3-point formula.
-	Energy without displacement:  -76.2080976131
+	Energy without displacement:  -76.2080976132
 	Check energies below for precision!
 	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
 
 	 Coord      Energy(-)        Energy(+)        Force
-	    0    -76.2080960403   -76.2080991658    -0.0003125455
-	    1    -76.2080970533   -76.2080970538    -0.0000000555
-	    2    -76.2081147373   -76.2080797764     0.0034960875
-	    3    -76.2080936130   -76.2081014777    -0.0007864695
-	    4    -76.2080717867   -76.2081138522    -0.0042065561
-	    5    -76.2080704633   -76.2081194105    -0.0048947235
-	    6    -76.2080936126   -76.2081014781    -0.0007865484
-	    7    -76.2081138547   -76.2080717841     0.0042070578
-	    8    -76.2080704613   -76.2081194124    -0.0048951044
+	    0    -76.2080960404   -76.2080991655    -0.0003125153
+	    1    -76.2080970526   -76.2080970538    -0.0000001250
+	    2    -76.2081147375   -76.2080797763     0.0034961192
+	    3    -76.2080936131   -76.2081014777    -0.0007864669
+	    4    -76.2080717868   -76.2081138523    -0.0042065531
+	    5    -76.2080704633   -76.2081194106    -0.0048947266
+	    6    -76.2080936127   -76.2081014781    -0.0007865460
+	    7    -76.2081138548   -76.2080717842     0.0042070632
+	    8    -76.2080704615   -76.2081194125    -0.0048951030
 
 	Gradient written.
 
@@ -4761,16 +5535,28 @@ Total time:
 
                  1                   2                   3
 
-    1    -0.00124998312953    -0.00000022193259     0.01398212763212
-    2    -0.00078954056773    -0.00422298229311    -0.00491383687789
-    3    -0.00078961974167     0.00422348593081    -0.00491421921598
+    1    -0.00124986243603    -0.00000049976179     0.01398225435574
+    2    -0.00078953791847    -0.00422297919446    -0.00491383993089
+    3    -0.00078961742339     0.00422349136771    -0.00491421780361
 
 
 
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on QuickSilver.local
-*** at Fri Feb 17 09:38:31 2017
+*** tstart() called on psinet
+*** at Mon May 15 15:36:28 2017
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:36:28 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   136 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -4818,12 +5604,21 @@ gradient() will perform analytic gradient computation.
 
   ==> Primary Basis <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -4844,7 +5639,7 @@ gradient() will perform analytic gradient computation.
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -4852,7 +5647,8 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -4881,18 +5677,18 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.94024437987360   -7.59402e+01   8.76458e-02 
-   @DF-RHF iter   1:   -75.99023668249013   -4.99923e-02   1.36135e-02 
-   @DF-RHF iter   2:   -76.01308485847774   -2.28482e-02   6.74079e-03 DIIS
-   @DF-RHF iter   3:   -76.01893263724749   -5.84778e-03   1.15968e-03 DIIS
-   @DF-RHF iter   4:   -76.01933939941938   -4.06762e-04   3.42921e-04 DIIS
-   @DF-RHF iter   5:   -76.01940516314254   -6.57637e-05   9.26520e-05 DIIS
-   @DF-RHF iter   6:   -76.01941115305881   -5.98992e-06   1.11618e-05 DIIS
-   @DF-RHF iter   7:   -76.01941122706278   -7.40040e-08   1.65808e-06 DIIS
-   @DF-RHF iter   8:   -76.01941122848723   -1.42445e-09   3.41336e-07 DIIS
-   @DF-RHF iter   9:   -76.01941122854124   -5.40155e-11   6.32057e-08 DIIS
-   @DF-RHF iter  10:   -76.01941122854302   -1.77636e-12   1.66943e-08 DIIS
-   @DF-RHF iter  11:   -76.01941122854316   -1.42109e-13   2.76412e-09 DIIS
+   @DF-RHF iter   0:   -76.04510013705357   -7.60451e+01   8.84387e-02 
+   @DF-RHF iter   1:   -75.97204871634887    7.30514e-02   1.64214e-02 
+   @DF-RHF iter   2:   -76.00991177618960   -3.78631e-02   8.31504e-03 DIIS
+   @DF-RHF iter   3:   -76.01867386704146   -8.76209e-03   1.52471e-03 DIIS
+   @DF-RHF iter   4:   -76.01934949923344   -6.75632e-04   3.92430e-04 DIIS
+   @DF-RHF iter   5:   -76.01940903479115   -5.95356e-05   6.85482e-05 DIIS
+   @DF-RHF iter   6:   -76.01941117232725   -2.13754e-06   1.03808e-05 DIIS
+   @DF-RHF iter   7:   -76.01941122521039   -5.28831e-08   2.35141e-06 DIIS
+   @DF-RHF iter   8:   -76.01941122840228   -3.19189e-09   5.01626e-07 DIIS
+   @DF-RHF iter   9:   -76.01941122854166   -1.39380e-10   1.18987e-07 DIIS
+   @DF-RHF iter  10:   -76.01941122854983   -8.17124e-12   3.02161e-08 DIIS
+   @DF-RHF iter  11:   -76.01941122855017   -3.41061e-13   3.02115e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -4918,18 +5714,18 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01941122854316
+  @DF-RHF Final Energy:   -76.01941122855017
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.4264780387548672
-    One-Electron Energy =                -123.2845377058329319
-    Two-Electron Energy =                  37.8386484385349036
+    One-Electron Energy =                -123.2845377368329878
+    Two-Electron Energy =                  37.8386484695279535
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0194112285431629
+    Total Energy =                        -76.0194112285501689
 
 
 
@@ -4950,9 +5746,27 @@ Properties computed using the SCF density matrix
      X:     0.4063      Y:    -0.0000      Z:     2.2935     Total:     2.3292
 
 
+*** tstop() called on psinet at Mon May 15 15:36:28 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       9.18 seconds =       0.15 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
+
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               DFMP2               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (6-31G* AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -4965,7 +5779,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -4999,11 +5814,12 @@ Properties computed using the SCF density matrix
            H         -0.666682000000    -0.764099000000     1.706290000000     1.007825032070
 
   Nuclear repulsion =    9.147559595308433
-  Reference energy  =  -76.019411228543163
+  Reference energy  =  -76.019411228550169
 
   ==> Basis Set <==
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/6-31gs.gbs
+  Basis Set: 6-31G*
+    Blend: 6-31G*
     Number of shells: 10
     Number of basis function: 19
     Number of Cartesian functions: 19
@@ -5026,7 +5842,7 @@ Properties computed using the SCF density matrix
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -5034,7 +5850,8 @@ Properties computed using the SCF density matrix
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -5057,28 +5874,18 @@ Properties computed using the SCF density matrix
 
     CGRSolver converged.
 
-  ## External Potential Gradient (Symmetry 0) ##
-  Irrep: 1 Size: 3 x 3
-
-                 1                   2                   3
-
-    1    -0.00446220029017     0.00000000431488     0.00527523187358
-    2     0.00081611590265     0.00232391234326    -0.00055999123033
-    3     0.00081611654914    -0.00232391492458    -0.00055999387368
-
-
-
   ==> DFCorrGrad: Density-Fitted Correlated Gradients <==
 
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          0E+00
     Fitting Condition:       1E-12
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /Users/andysim/programming/psi4/obj_debug/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs
+  Basis Set: (6-31G* AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -5088,41 +5895,41 @@ Properties computed using the SCF density matrix
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0194112285431629 [Eh]
-	 Singles Energy            =      -0.0000000000000003 [Eh]
-	 Same-Spin Energy          =      -0.0484779565293746 [Eh]
-	 Opposite-Spin Energy      =      -0.1402084280293518 [Eh]
-	 Correlation Energy        =      -0.1886863845587267 [Eh]
-	 Total Energy              =     -76.2080976131018843 [Eh]
+	 Reference Energy          =     -76.0194112285501689 [Eh]
+	 Singles Energy            =      -0.0000000000000005 [Eh]
+	 Same-Spin Energy          =      -0.0484779565586522 [Eh]
+	 Opposite-Spin Energy      =      -0.1402084281127565 [Eh]
+	 Correlation Energy        =      -0.1886863846714092 [Eh]
+	 Total Energy              =     -76.2080976132215824 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0161593188431249 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1682501136352222 [Eh]
-	 SCS Correlation Energy    =      -0.1844094324783473 [Eh]
-	 SCS Total Energy          =     -76.2038206610215099 [Eh]
+	 SCS Same-Spin Energy      =      -0.0161593188528841 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1682501137353078 [Eh]
+	 SCS Correlation Energy    =      -0.1844094325881923 [Eh]
+	 SCS Total Energy          =     -76.2038206611383657 [Eh]
 	-----------------------------------------------------------
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.001249970169    -0.000000510745     0.013982159470
-       2       -0.000789958585    -0.004219518955    -0.004913264505
-       3       -0.000790039084     0.004220031434    -0.004913648195
+       1       -0.001249970336    -0.000000511350     0.013982160719
+       2       -0.000789963072    -0.004219519123    -0.004913265395
+       3       -0.000790034424     0.004220032206    -0.004913648562
 
 
-*** tstop() called on QuickSilver.local at Fri Feb 17 09:38:32 2017
+*** tstop() called on psinet at Mon May 15 15:36:28 2017
 Module time:
-	user time   =       1.09 seconds =       0.02 minutes
+	user time   =       0.73 seconds =       0.01 minutes
 	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      12.31 seconds =       0.21 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =       9.55 seconds =       0.16 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
 	Finite difference (3-pt.) vs. analytic gradient to 10^-5..........PASSED
 	Finite difference energy..........................................PASSED
 	Analytic energy...................................................PASSED

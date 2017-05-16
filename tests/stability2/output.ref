@@ -1,52 +1,53 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:31:34 2016
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:  13603
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  20412
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! ROHF stability analysis check for CN with cc-pVDZ.  
+#! ROHF stability analysis check for CN with cc-pVDZ.
 #! This test corresponds to the rohf-stab test from Psi3.
 
 
 ref_vals_sym = [ 0.094068, 0.213961, 0.213961, 0.359135,   #TEST
-                 0.022220, 0.194516, 0.022220, 0.194516 ]  #TEST 
+                 0.022220, 0.194516, 0.022220, 0.194516 ]  #TEST
 
-nirrep = 4                                                 #TEST
-rows = psi4.Dimension(nirrep)                              #TEST
-col = psi4.Dimension(nirrep)                               #TEST
+nirrep = 4
+rows = psi4.Dimension(nirrep)  #TEST
+col = psi4.Dimension(nirrep)  #TEST
 
-for i in range(0,nirrep):                                  #TEST
-    col[i] = 1                                             #TEST  
-    rows[i] = 2                                            #TEST 
+for i in range(0,nirrep):  #TEST
+    col[i] = 1  #TEST
+    rows[i] = 2  #TEST
 
-ref = psi4.Matrix("Refs values",rows,col)                  #TEST
+ref = psi4.Matrix("Refs values",rows,col)  #TEST
 
-for h in range(0,nirrep):                                  #TEST
-    for i in range(0,2):                                   #TEST
-      ref.set(h,i,0,ref_vals_sym[h * 2 + i])               #TEST
-
-memory 500 mb
+for h in range(0,nirrep):  #TEST
+    for i in range(0,2):  #TEST
+      ref.set(h,i,0,ref_vals_sym[h * 2 + i])  #TEST
 
 nucenergy =   18.91527043470638  #TEST
 refenergy =  -92.19555660616885  #TEST
@@ -58,7 +59,7 @@ molecule cn {
    R = 1.175
 }
 
-set globals = {
+set = {
   reference = rohf
   scf_type pk
   docc = [4, 0, 1, 1]
@@ -75,16 +76,22 @@ stab = get_array_variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")                   #TEST
+compare_matrices(ref, stab, 2, "Stability eigenvalues with symmetry")                   #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 500.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:40:09 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry N          line   160 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
     There are an odd number of electrons - assuming doublet.
     Specify the multiplicity in the molecule input block.
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:31:34 2016
 
 
          ---------------------------------------------------------
@@ -110,7 +117,7 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 
   Rotational constants: A = ************  B =      1.88947  C =      1.88947 [cm^-1]
   Rotational constants: A = ************  B =  56644.99264  C =  56644.99264 [MHz]
-  Nuclear repulsion =   18.915270434706397
+  Nuclear repulsion =   18.915270434706379
 
   Charge       = 0
   Multiplicity = 2
@@ -124,7 +131,7 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-12
   Integral threshold = 0.00e+00
@@ -132,6 +139,7 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 28
     Number of Cartesian functions: 30
@@ -153,90 +161,59 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     150] index = [             0,11325]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              12
+      Number of primitives:             44
+      Number of atomic orbitals:        30
+      Number of basis functions:        28
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 165242 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 1.0795200227E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:   -83.19841367423673   -8.31984e+01   1.36243e-01 
-   @ROHF iter   2:   -84.13066745073218   -9.32254e-01   1.22587e-01 DIIS
-   @ROHF iter   3:   -91.56994102487485   -7.43927e+00   4.70362e-02 DIIS
-   @ROHF iter   4:   -92.11548468951912   -5.45544e-01   1.78041e-02 DIIS
-   @ROHF iter   5:   -92.17531716254767   -5.98325e-02   4.68871e-03 DIIS
-   @ROHF iter   6:   -92.18489693171711   -9.57977e-03   1.97972e-03 DIIS
-   @ROHF iter   7:   -92.18849213633594   -3.59520e-03   2.60041e-03 DIIS
-   @ROHF iter   8:   -92.19473815552826   -6.24602e-03   8.77748e-04 DIIS
-   @ROHF iter   9:   -92.19547838920775   -7.40234e-04   4.93687e-04 DIIS
-   @ROHF iter  10:   -92.19552604195410   -4.76527e-05   2.46913e-04 DIIS
-   @ROHF iter  11:   -92.19549304134894    3.30006e-05   2.65380e-04 DIIS
-   @ROHF iter  12:   -92.19555559553605   -6.25542e-05   2.76122e-05 DIIS
-   @ROHF iter  13:   -92.19555658870794   -9.93172e-07   5.25184e-06 DIIS
-   @ROHF iter  14:   -92.19555660604071   -1.73328e-08   4.11111e-07 DIIS
-   @ROHF iter  15:   -92.19555660616740   -1.26690e-10   4.25812e-08 DIIS
-   @ROHF iter  16:   -92.19555660616857   -1.16529e-12   1.47859e-08 DIIS
-   @ROHF iter  17:   -92.19555660616871   -1.42109e-13   1.94133e-09 DIIS
-   @ROHF iter  18:   -92.19555660616888   -1.70530e-13   5.90417e-11 DIIS
-   @ROHF iter  19:   -92.19555660616881    7.10543e-14   9.71048e-12 DIIS
-   @ROHF iter  20:   -92.19555660616869    1.13687e-13   2.19060e-12 DIIS
-   @ROHF iter  21:   -92.19555660616876   -7.10543e-14   4.60277e-13 DIIS
-
-  ==> Post-Iterations <==
-
-    Orbital Energies (a.u.)
-    -----------------------
-
-    Doubly Occupied:                                                      
-
-       1A1   -15.636443     2A1   -11.359535     3A1    -1.246019  
-       4A1    -0.626091     1B1    -0.507352     1B2    -0.507352  
-
-    Singly Occupied:                                                      
-
-       5A1    -0.337390  
-
-    Virtual:                                                              
-
-       2B2     0.177180     2B1     0.177180     6A1     0.384745  
-       3B2     0.655939     3B1     0.655939     7A1     0.699522  
-       8A1     0.869525     4B1     1.036480     4B2     1.036480  
-       9A1     1.044978     1A2     1.314443    10A1     1.314443  
-       5B1     1.503400     5B2     1.503400    11A1     1.564388  
-      12A1     2.160944     2A2     2.160944    13A1     2.254479  
-       6B2     2.677031     6B1     2.677031    14A1     3.095851  
-
-    Final Occupation by Irrep:
-             A1    A2    B1    B2 
-    DOCC [     4,    0,    1,    1 ]
-    SOCC [     1,    0,    0,    0 ]
-
-  Energy converged.
-
-  @ROHF Final Energy:   -92.19555660616876
-
-   => Energetics <=
-
-    Nuclear Repulsion Energy =             18.9152704347063967
-    One-Electron Energy =                -161.7960330251809751
-    Two-Electron Energy =                  50.6852059843058100
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -92.1955566061687648
-
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.	Presorting SO-basis two-electron integrals.
+   @ROHF iter   1:   -91.19134628324665   -9.11913e+01   8.84349e-02 
+   @ROHF iter   2:   -90.80987933238521    3.81467e-01   7.54104e-02 DIIS
+   @ROHF iter   3:   -91.95054597190756   -1.14067e+00   3.19521e-02 DIIS
+   @ROHF iter   4:   -92.18811657882185   -2.37571e-01   3.78885e-03 DIIS
+   @ROHF iter   5:   -92.19386583531954   -5.74926e-03   1.63690e-03 DIIS
+   @ROHF iter   6:   -92.19514337512314   -1.27754e-03   7.23236e-04 DIIS
+   @ROHF iter   7:   -92.19552253216844   -3.79157e-04   1.73121e-04 DIIS
+   @ROHF iter   8:   -92.19555534209496   -3.28099e-05   6.82737e-05 DIIS
+   @ROHF iter   9:   -92.19555650349741   -1.16140e-06   2.19369e-05 DIIS
+   @ROHF iter  10:   -92.19555660470175   -1.01204e-07   2.61590e-06 DIIS
+   @ROHF iter  11:   -92.19555660611155   -1.40980e-09   4.66804e-07 DIIS
+   @ROHF iter  12:   -92.19555660616825   -5.67013e-11   3.11474e-08 DIIS
+   @ROHF iter  13:   -92.19555660616874   -4.83169e-13   4.75646e-09 DIIS
+   @ROHF iter  14:   -92.19555660616879   -5.68434e-14   9.32254e-10 DIIS
+   @ROHF iter  15:   -92.19555660616879    0.00000e+00   6.20679e-11 DIIS
+   @ROHF iter  16:   -92.19555660616874    5.68434e-14   6.77533e-12 DIIS
+   @ROHF iter  17:   -92.19555660616871    2.84217e-14   1.24634e-12 DIIS
+   @ROHF iter  18:   -92.19555660616874   -2.84217e-14   1.39198e-13 DIIS
+    SO Integrals not on disk, computing...done.
+	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -250,27 +227,70 @@ compare_matrices(ref, stab, 5, "Stability eigenvalues with symmetry")           
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
     Lowest ROHF->ROHF stability eigenvalues:-
-      B2 0.022220        B1 0.022220        A1 0.094068        B2 0.194516  
-      B1 0.194516        A1 0.213961        A2 0.213961        A1 0.338722  
-      A2 0.359135        A1 0.387962        A1 0.413652        B1 0.434411  
-      B2 0.434411        B1 0.474796        B2 0.474798        A1 0.555036  
-      A1 0.608132        B2 0.618638        B1 0.618639        B1 0.688123  
-      B2 0.688124        A1 0.723342        A1 0.741728        A2 0.741728  
-      A1 0.768285        A2 0.768285        A1 0.776906        B1 0.833088  
-      B2 0.833088        A2 0.833392        B1 0.889066        B2 0.889066  
-      A1 0.933335        B2 0.955617        B1 0.955618        A1 0.969954  
-      B2 1.021805        B1 1.021805        B2 1.046458        B1 1.046461  
-      A1 1.054236        A1 1.112069        A2 1.112069        B2 1.118666  
-      B1 1.118667        A2 1.176381        A2 1.231302        B1 1.240136  
-      B2 1.240136        B1 1.360578        B2 1.360578        B2 1.473786  
-      B1 1.473787        A2 1.564732        A2 1.596708        A2 1.600315  
+      B1 0.022220        B2 0.022220        A1 0.094068        B1 0.194516  
+      B2 0.194516        A1 0.213961        A2 0.213961        A1 0.338722  
+      A2 0.359135        A1 0.387962        A1 0.413653        B2 0.434411  
+      B1 0.434411        B2 0.474797        B1 0.474799        A1 0.555036  
+      A1 0.608132        B1 0.618639        B2 0.618639        B2 0.688123  
+      B1 0.688124        A1 0.723341        A1 0.741728        A2 0.741728  
+      A1 0.768285        A2 0.768285        A1 0.776906        B2 0.833088  
+      B1 0.833088        A2 0.833392        B2 0.889066        B1 0.889066  
+      A1 0.933332        B1 0.955617        B2 0.955618        A1 0.969954  
+      B1 1.021805        B2 1.021806        B1 1.046458        B2 1.046461  
+      A1 1.054236        A1 1.112069        A2 1.112069        B1 1.118666  
+      B2 1.118667        A2 1.176381        A2 1.231302        B2 1.240136  
+      B1 1.240136        B2 1.360578        B1 1.360578        B1 1.473786  
+      B2 1.473787        A2 1.564732        A2 1.596708        A2 1.600315  
       A2 2.144561        A2 2.320092        A2 2.724518        A2 2.747591  
     
 
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -15.636443     2A1   -11.359535     3A1    -1.246019  
+       4A1    -0.626091     1B2    -0.507352     1B1    -0.507352  
+
+    Singly Occupied:                                                      
+
+       5A1    -0.337390  
+
+    Virtual:                                                              
+
+       2B1     0.177180     2B2     0.177180     6A1     0.384745  
+       3B1     0.655939     3B2     0.655939     7A1     0.699522  
+       8A1     0.869525     4B1     1.036480     4B2     1.036480  
+       9A1     1.044978    10A1     1.314443     1A2     1.314443  
+       5B1     1.503400     5B2     1.503400    11A1     1.564388  
+       2A2     2.160944    12A1     2.160944    13A1     2.254479  
+       6B1     2.677031     6B2     2.677031    14A1     3.095851  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     4,    0,    1,    1 ]
+    SOCC [     1,    0,    0,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:   -92.19555660616874
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             18.9152704347063789
+    One-Electron Energy =                -161.7960330251845278
+    Two-Electron Energy =                  50.6852059843094196
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                        -92.1955566061687364
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -287,19 +307,17 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.1723     Total:     2.1723
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:34 2016
+*** tstop() called on psinet at Mon May 15 15:40:11 2017
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 	Nuclear repulsion energy..........................................PASSED
 	Reference energy..................................................PASSED
 	Stability eigenvalues with symmetry...............................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

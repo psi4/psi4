@@ -1,33 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:26:49 2016
+    Psi4 started on: Monday, 15 May 2017 03:33PM
 
-    Process ID:  12208
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  12140
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
-
-memory 250 mb
 
 molecule h2ox2 {
    o                               0.000000    0.000000    0.118621
@@ -39,7 +40,7 @@ molecule h2ox2 {
  symmetry c1
 }
 
-set globals {
+set {
     reference rhf
     basis aug-cc-pvdz
     guess core
@@ -51,20 +52,26 @@ adc_energy = energy('adc')
 compare_values(ref_energy, adc_energy, 7, "ADC GS energy")                            #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:33:57 2017
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   243 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3, 5-6 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/aug-cc-pvdz.gbs 
+
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:26:49 2016
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -109,6 +116,7 @@ compare_values(ref_energy, adc_energy, 7, "ADC GS energy")                      
   ==> Primary Basis <==
 
   Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
     Number of shells: 38
     Number of basis function: 82
     Number of Cartesian functions: 86
@@ -127,38 +135,51 @@ compare_values(ref_energy, adc_energy, 7, "ADC GS energy")                      
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,    1711] index = [             0,1464616]
-	Batch   2 pq = [    1711,    2420] index = [       1464616,2929410]
-	Batch   3 pq = [    2420,    2964] index = [       2929410,4394130]
-	Batch   4 pq = [    2964,    3403] index = [       4394130,5791906]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   6
+      Number of AO shells:              38
+      Number of primitives:             78
+      Number of atomic orbitals:        86
+      Number of basis functions:        82
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 11583812 doubles for integral storage.
+  We computed 72390 shell quartets total.
+  Whereas there are 274911 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.6798838960E-03.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Core (One-Electron) Hamiltonian.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   1:  -137.14825184741659   -1.37148e+02   5.70976e-02 
-   @RHF iter   2:  -133.15826595280029    3.98999e+00   4.58744e-02 DIIS
-   @RHF iter   3:  -150.58953117454820   -1.74313e+01   2.38907e-02 DIIS
-   @RHF iter   4:  -151.79219157939576   -1.20266e+00   1.00952e-02 DIIS
-   @RHF iter   5:  -152.08014987910423   -2.87958e-01   5.56205e-04 DIIS
-   @RHF iter   6:  -152.08162607616345   -1.47620e-03   4.86463e-04 DIIS
-   @RHF iter   7:  -152.08220351848755   -5.77442e-04   8.19305e-05 DIIS
-   @RHF iter   8:  -152.08222856346947   -2.50450e-05   9.17479e-06 DIIS
-   @RHF iter   9:  -152.08222923738916   -6.73920e-07   2.44122e-06 DIIS
-   @RHF iter  10:  -152.08222925632657   -1.89374e-08   3.22813e-07 DIIS
-   @RHF iter  11:  -152.08222925688193   -5.55360e-10   3.48427e-08 DIIS
-   @RHF iter  12:  -152.08222925689276   -1.08287e-11   6.12360e-09 DIIS
+   @RHF iter   1:  -137.14825184742077   -1.37148e+02   5.70976e-02 
+   @RHF iter   2:  -133.15826595276448    3.98999e+00   4.58744e-02 DIIS
+   @RHF iter   3:  -150.58953117454519   -1.74313e+01   2.38907e-02 DIIS
+   @RHF iter   4:  -151.79219157939036   -1.20266e+00   1.00952e-02 DIIS
+   @RHF iter   5:  -152.08014987910400   -2.87958e-01   5.56205e-04 DIIS
+   @RHF iter   6:  -152.08162607616305   -1.47620e-03   4.86463e-04 DIIS
+   @RHF iter   7:  -152.08220351848752   -5.77442e-04   8.19305e-05 DIIS
+   @RHF iter   8:  -152.08222856346907   -2.50450e-05   9.17479e-06 DIIS
+   @RHF iter   9:  -152.08222923738882   -6.73920e-07   2.44122e-06 DIIS
+   @RHF iter  10:  -152.08222925632623   -1.89374e-08   3.22813e-07 DIIS
+   @RHF iter  11:  -152.08222925688153   -5.55303e-10   3.48427e-08 DIIS
+   @RHF iter  12:  -152.08222925689253   -1.09992e-11   6.12360e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -205,24 +226,22 @@ compare_values(ref_energy, adc_energy, 7, "ADC GS energy")                      
 
   Energy converged.
 
-  @RHF Final Energy:  -152.08222925689276
+  @RHF Final Energy:  -152.08222925689253
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             18.3648468134063556
-    One-Electron Energy =                -245.9166701524829932
-    Two-Electron Energy =                  75.4695940821838178
+    One-Electron Energy =                -245.9166701524867165
+    Two-Electron Energy =                  75.4695940821878253
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -152.0822292568928162
+    Total Energy =                       -152.0822292568925320
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -230,29 +249,50 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -1.9745
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.3904
+     X:     0.0000      Y:    -0.0000      Z:     0.3904
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -1.5841     Total:     1.5841
+     X:     0.0000      Y:    -0.0000      Z:    -1.5841     Total:     1.5841
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:    -4.0265     Total:     4.0265
+     X:     0.0000      Y:    -0.0000      Z:    -4.0265     Total:     4.0265
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:50 2016
+*** tstop() called on psinet at Mon May 15 15:33:57 2017
 Module time:
-	user time   =       0.80 seconds =       0.01 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.80 seconds =       0.01 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:26:50 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   6
+      Number of AO shells:              38
+      Number of SO shells:              38
+      Number of primitives:             78
+      Number of atomic orbitals:        86
+      Number of basis functions:        82
+
+      Number of irreps:                  1
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  82 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 1373871 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:33:58 2017
 
 
 	****************************************
@@ -317,19 +357,19 @@ Total time:
 
 	1  A state:  0.3179992 (a.u.),  8.6531970 (eV)
 	---------------------------------------------
-	          9   0         0.5923959598
-	          8   1         0.5916729398
-	          9   8        -0.2601764567
-	          8   9        -0.2598589110
-	          9   4        -0.2536037779
+	          9   0        -0.5921713659
+	          8   1        -0.5918977227
+	          9   8         0.2600778165
+	          8   9         0.2599576342
+	          9   4         0.2535076296
 
 	2  A state:  0.3179992 (a.u.),  8.6531970 (eV)
 	---------------------------------------------
-	          8   1         0.5923959597
-	          9   0        -0.5916729398
-	          8   9        -0.2601764566
-	          9   8         0.2598589109
-	          8   5        -0.2536037779
+	          8   1         0.5921713659
+	          9   0        -0.5918977227
+	          8   9        -0.2600778164
+	          9   8         0.2599576341
+	          8   5        -0.2535076297
 
 	==> ADC(2) Computation <==
 
@@ -337,11 +377,11 @@ Total time:
 	Non-iterative:  0.2559128 (a.u.),  6.9637402 (eV)
 	         Occ Vir        Coefficient
 	---------------------------------------------
-	          9   0         0.6376963951
-	          8   1         0.6369006181
-	          9   8        -0.2144401331
-	          8   9        -0.2141725347
-	          9   4        -0.2071556096
+	          9   0        -0.6374647549
+	          8   1        -0.6371324634
+	          9   8         0.2143622387
+	          8   9         0.2142504981
+	          9   4         0.2070803613
 
 	Converged in   4 iteration.
 	Squared norm of the S component:  0.9313765
@@ -351,31 +391,31 @@ Total time:
 	Non-iterative:  0.2559128 (a.u.),  6.9637402 (eV)
 	         Occ Vir        Coefficient
 	---------------------------------------------
-	          8   1         0.6376943666
-	          9   0        -0.6369026493
-	          8   9        -0.2144394508
-	          9   8         0.2141732176
-	          8   5        -0.2071549505
+	          8   1        -0.6374653785
+	          9   0         0.6371318396
+	          8   9         0.2143624483
+	          9   8        -0.2142502881
+	          8   5         0.2070805638
 
 	Converged in   4 iteration.
 	Squared norm of the S component:  0.9313765
 	The S vector is rotated up to  8.194 (deg.)
 
-->	Corresponding GS total energy (a.u.) =  -152.52670794777603
+->	Corresponding GS total energy (a.u.) =  -152.52670794777580
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:27:08 2016
+*** tstop() called on psinet at Mon May 15 15:34:24 2017
 Module time:
-	user time   =      12.74 seconds =       0.21 minutes
-	system time =       5.41 seconds =       0.09 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =      16.83 seconds =       0.28 minutes
+	system time =       9.08 seconds =       0.15 minutes
+	total time  =         26 seconds =       0.43 minutes
 Total time:
-	user time   =      13.54 seconds =       0.23 minutes
-	system time =       5.76 seconds =       0.10 minutes
-	total time  =         19 seconds =       0.32 minutes
+	user time   =      18.30 seconds =       0.30 minutes
+	system time =       9.14 seconds =       0.15 minutes
+	total time  =         27 seconds =       0.45 minutes
 
   ∩==
 (: 3)))== kskkskkskksk         BOOOoooooOOOON!
   ∪==
 	ADC GS energy.....................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

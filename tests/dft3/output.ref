@@ -1,34 +1,35 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:29:28 2016
+    Psi4 started on: Monday, 15 May 2017 03:36PM
 
-    Process ID:  12980
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  14179
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation,
 #! using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
-
-memory 250 mb
 
 Er    = -75.318545          #TEST
 Er_df = -75.319995          #TEST
@@ -46,10 +47,11 @@ molecule h2o {
     H 1 1.0 2 104.5
 }
 
-set globals {
+set {
   basis sto-3g
   dft_spherical_points 302
   dft_radial_points 99
+  df_basis_scf cc-pvdz-ri
 }
 
 for n,algorithm in enumerate(algorithms):
@@ -74,17 +76,23 @@ for n, algorithm in enumerate(algorithms):
 
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:36:15 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:28 2016
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -118,7 +126,7 @@ for n, algorithm in enumerate(algorithms):
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -126,6 +134,7 @@ for n, algorithm in enumerate(algorithms):
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -193,35 +202,50 @@ for n, algorithm in enumerate(algorithms):
 
   ==> Integral Setup <==
 
-      Computing non-zero ERF integrals (omega = 0.400)...done
-      Computed 138 non-zero ERF integrals.
-        Stored in file 36.
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
 
-	Batch   1 pq = [       0,      14] index = [             0,105]
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1218 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+  Computing range-separated integrals for PK
+  We computed 120 wK shell quartets total.
+  Whereas there are 120 wK unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                 Yes
     Omega:               4.000E-01
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:   -73.57266721866759   -7.35727e+01   2.10477e-01 
-   @RKS iter   2:   -75.13435606158716   -1.56169e+00   1.09177e-01 DIIS
-   @RKS iter   3:   -75.31783710928343   -1.83481e-01   5.03127e-03 DIIS
-   @RKS iter   4:   -75.31848375167684   -6.46642e-04   1.30851e-03 DIIS
-   @RKS iter   5:   -75.31853474173397   -5.09901e-05   1.57783e-04 DIIS
-   @RKS iter   6:   -75.31853558136466   -8.39631e-07   1.08746e-05 DIIS
-   @RKS iter   7:   -75.31853558268199   -1.31733e-09   1.25706e-07 DIIS
+   @RKS iter   0:   -75.01392238192931   -7.50139e+01   2.76129e-01 
+   @RKS iter   1:   -75.30364395218410   -2.89722e-01   2.96534e-02 
+   @RKS iter   2:   -75.31707537720987   -1.34314e-02   1.07878e-02 DIIS
+   @RKS iter   3:   -75.31850921740475   -1.43384e-03   1.05682e-03 DIIS
+   @RKS iter   4:   -75.31853504768706   -2.58303e-05   1.36555e-04 DIIS
+   @RKS iter   5:   -75.31853555377197   -5.06085e-07   2.80534e-05 DIIS
+   @RKS iter   6:   -75.31853558268111   -2.89091e-08   1.92344e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -243,24 +267,22 @@ for n, algorithm in enumerate(algorithms):
 
   Energy converged.
 
-  @RKS Final Energy:   -75.31853558268199
+  @RKS Final Energy:   -75.31853558268111
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -121.6432870294882065
-    Two-Electron Energy =                  44.8829040886290329
-    DFT Exchange-Correlation Energy =      -7.3596181717948719
+    One-Electron Energy =                -121.6432869712830893
+    Two-Electron Energy =                  44.8829040859769108
+    DFT Exchange-Correlation Energy =      -7.3596182273469868
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.3185355826819887
+    Total Energy =                        -75.3185355826811076
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -277,28 +299,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.6108     Total:     1.6108
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:31 2016
+*** tstop() called on psinet at Mon May 15 15:36:18 2017
 Module time:
-	user time   =       2.51 seconds =       0.04 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       2.89 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       2.51 seconds =       0.04 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       2.89 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 	Closed-shell wB97 Energy (PK).....................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:31 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:18 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -332,7 +360,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -340,6 +368,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -416,25 +445,26 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                 Yes
-    Memory (MB):               178
+    Memory (MB):               375
     Omega:               4.000E-01
     Schwarz Cutoff:          1E-12
 
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:   -73.57266721866759   -7.35727e+01   2.10477e-01 
-   @RKS iter   2:   -75.13435606158713   -1.56169e+00   1.09177e-01 DIIS
-   @RKS iter   3:   -75.31783710928343   -1.83481e-01   5.03127e-03 DIIS
-   @RKS iter   4:   -75.31848375167681   -6.46642e-04   1.30851e-03 DIIS
-   @RKS iter   5:   -75.31853474173394   -5.09901e-05   1.57783e-04 DIIS
-   @RKS iter   6:   -75.31853558136463   -8.39631e-07   1.08746e-05 DIIS
-   @RKS iter   7:   -75.31853558268200   -1.31737e-09   1.25706e-07 DIIS
+   @RKS iter   0:   -75.01392238192931   -7.50139e+01   2.76129e-01 
+   @RKS iter   1:   -75.30364395218415   -2.89722e-01   2.96534e-02 
+   @RKS iter   2:   -75.31707537720983   -1.34314e-02   1.07878e-02 DIIS
+   @RKS iter   3:   -75.31850921740477   -1.43384e-03   1.05682e-03 DIIS
+   @RKS iter   4:   -75.31853504768705   -2.58303e-05   1.36555e-04 DIIS
+   @RKS iter   5:   -75.31853555377198   -5.06085e-07   2.80534e-05 DIIS
+   @RKS iter   6:   -75.31853558268112   -2.89091e-08   1.92344e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -456,24 +486,22 @@ Total time:
 
   Energy converged.
 
-  @RKS Final Energy:   -75.31853558268200
+  @RKS Final Energy:   -75.31853558268112
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -121.6432870294882775
-    Two-Electron Energy =                  44.8829040886291040
-    DFT Exchange-Correlation Energy =      -7.3596181717948781
+    One-Electron Energy =                -121.6432869712831604
+    Two-Electron Energy =                  44.8829040859769819
+    DFT Exchange-Correlation Energy =      -7.3596182273469974
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.3185355826819887
+    Total Energy =                        -75.3185355826811076
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -490,28 +518,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.6108     Total:     1.6108
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:33 2016
+*** tstop() called on psinet at Mon May 15 15:36:21 2017
 Module time:
-	user time   =       2.51 seconds =       0.04 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.85 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       5.09 seconds =       0.08 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       5.75 seconds =       0.10 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 	Closed-shell wB97 Energy (OUT_OF_CORE)............................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:33 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:21 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -545,7 +579,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -553,6 +587,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -605,6 +640,14 @@ Total time:
     Max Points       =           4867
     Max Functions    =              7
 
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -630,7 +673,7 @@ Total time:
     Omega:               4.000E-01
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -638,7 +681,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: CC-PVDZ-RI
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -647,19 +691,20 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   1:   -73.57409974579032   -7.35741e+01   2.10456e-01 
-   @DF-RKS iter   2:   -75.13591468303230   -1.56181e+00   1.09147e-01 DIIS
-   @DF-RKS iter   3:   -75.31929740317281   -1.83383e-01   5.02983e-03 DIIS
-   @DF-RKS iter   4:   -75.31994342114625   -6.46018e-04   1.30762e-03 DIIS
-   @DF-RKS iter   5:   -75.31999432080571   -5.08997e-05   1.58143e-04 DIIS
-   @DF-RKS iter   6:   -75.31999516429433   -8.43489e-07   1.08802e-05 DIIS
-   @DF-RKS iter   7:   -75.31999516561342   -1.31909e-09   1.25884e-07 DIIS
+   @DF-RKS iter   0:   -75.01531149117461   -7.50153e+01   2.76101e-01 
+   @DF-RKS iter   1:   -75.30511202566329   -2.89801e-01   2.96427e-02 
+   @DF-RKS iter   2:   -75.31853717523406   -1.34251e-02   1.07795e-02 DIIS
+   @DF-RKS iter   3:   -75.31996877164295   -1.43160e-03   1.05720e-03 DIIS
+   @DF-RKS iter   4:   -75.31999462884701   -2.58572e-05   1.36760e-04 DIIS
+   @DF-RKS iter   5:   -75.31999513664663   -5.07800e-07   2.80854e-05 DIIS
+   @DF-RKS iter   6:   -75.31999516562006   -2.89734e-08   1.92574e-07 DIIS
 
   DF guess converged.
 
@@ -674,10 +719,10 @@ Total time:
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @RKS iter   8:   -75.31853556844307    1.45960e-03   4.23008e-05 DIIS
-   @RKS iter   9:   -75.31853558111813   -1.26751e-08   8.64886e-06 DIIS
-   @RKS iter  10:   -75.31853558248231   -1.36419e-09   2.59485e-06 DIIS
-   @RKS iter  11:   -75.31853558266297   -1.80663e-10   8.35814e-07 DIIS
+   @RKS iter   7:   -75.31853556844511    1.45960e-03   4.23003e-05 DIIS
+   @RKS iter   8:   -75.31853558111837   -1.26733e-08   8.64791e-06 DIIS
+   @RKS iter   9:   -75.31853558248228   -1.36392e-09   2.59461e-06 DIIS
+   @RKS iter  10:   -75.31853558266297   -1.80691e-10   8.35785e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -704,19 +749,17 @@ Total time:
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -121.6432958759736067
-    Two-Electron Energy =                  44.8829139897197038
-    DFT Exchange-Correlation Energy =      -7.3596192263811311
+    One-Electron Energy =                -121.6432958763013090
+    Two-Electron Energy =                  44.8829139900638552
+    DFT Exchange-Correlation Energy =      -7.3596192263975881
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
     Total Energy =                        -75.3185355826629745
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -733,28 +776,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.6108     Total:     1.6108
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:36 2016
+*** tstop() called on psinet at Mon May 15 15:36:26 2017
 Module time:
-	user time   =       3.13 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       4.38 seconds =       0.07 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       8.29 seconds =       0.14 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =      10.14 seconds =       0.17 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
 	Closed-shell wB97 Energy (DIRECT).................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:37 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:26 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -788,7 +837,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -796,6 +845,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -848,6 +898,14 @@ Total time:
     Max Points       =           4867
     Max Functions    =              7
 
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -871,7 +929,7 @@ Total time:
     Omega:               4.000E-01
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -879,7 +937,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: CC-PVDZ-RI
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -888,19 +947,20 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   1:   -73.57409974579032   -7.35741e+01   2.10456e-01 
-   @DF-RKS iter   2:   -75.13591468303230   -1.56181e+00   1.09147e-01 DIIS
-   @DF-RKS iter   3:   -75.31929740317281   -1.83383e-01   5.02983e-03 DIIS
-   @DF-RKS iter   4:   -75.31994342114625   -6.46018e-04   1.30762e-03 DIIS
-   @DF-RKS iter   5:   -75.31999432080571   -5.08997e-05   1.58143e-04 DIIS
-   @DF-RKS iter   6:   -75.31999516429433   -8.43489e-07   1.08802e-05 DIIS
-   @DF-RKS iter   7:   -75.31999516561342   -1.31909e-09   1.25884e-07 DIIS
+   @DF-RKS iter   0:   -75.01531149117461   -7.50153e+01   2.76101e-01 
+   @DF-RKS iter   1:   -75.30511202566329   -2.89801e-01   2.96427e-02 
+   @DF-RKS iter   2:   -75.31853717523406   -1.34251e-02   1.07795e-02 DIIS
+   @DF-RKS iter   3:   -75.31996877164295   -1.43160e-03   1.05720e-03 DIIS
+   @DF-RKS iter   4:   -75.31999462884701   -2.58572e-05   1.36760e-04 DIIS
+   @DF-RKS iter   5:   -75.31999513664663   -5.07800e-07   2.80854e-05 DIIS
+   @DF-RKS iter   6:   -75.31999516562006   -2.89734e-08   1.92574e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -922,24 +982,22 @@ Total time:
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -75.31999516561342
+  @DF-RKS Final Energy:   -75.31999516562006
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -121.6429506184766041
-    Two-Electron Energy =                  44.8810879789717916
-    DFT Exchange-Correlation Energy =      -7.3595980560806700
+    One-Electron Energy =                -121.6429505597172209
+    Two-Electron Energy =                  44.8810879757235455
+    DFT Exchange-Correlation Energy =      -7.3595981115984435
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.3199951656134203
+    Total Energy =                        -75.3199951656200568
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -956,28 +1014,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.6104     Total:     1.6104
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:38 2016
+*** tstop() called on psinet at Mon May 15 15:36:28 2017
 Module time:
-	user time   =       1.72 seconds =       0.03 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.91 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      10.05 seconds =       0.17 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      13.06 seconds =       0.22 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =         13 seconds =       0.22 minutes
 	Closed-shell wB97 Energy (DF).....................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:38 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:28 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1011,7 +1075,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -1019,6 +1083,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -1086,42 +1151,57 @@ Total time:
 
   ==> Integral Setup <==
 
-      Computing non-zero ERF integrals (omega = 0.400)...done
-      Computed 138 non-zero ERF integrals.
-        Stored in file 36.
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
 
-	Batch   1 pq = [       0,      14] index = [             0,105]
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 1218 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+  Computing range-separated integrals for PK
+  We computed 120 wK shell quartets total.
+  Whereas there are 120 wK unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                 Yes
     Omega:               4.000E-01
-    Memory (MB):               178
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter   1:   -73.79378258396130   -7.37938e+01   1.93967e-01 
-   @UKS iter   2:   -74.94192589528629   -1.14814e+00   4.54096e-02 DIIS
-   @UKS iter   3:   -74.97042602795179   -2.85001e-02   5.58144e-03 DIIS
-   @UKS iter   4:   -74.97090199503822   -4.75967e-04   8.45933e-04 DIIS
-   @UKS iter   5:   -74.97092919766143   -2.72026e-05   2.59834e-04 DIIS
-   @UKS iter   6:   -74.97093174841424   -2.55075e-06   4.53887e-05 DIIS
-   @UKS iter   7:   -74.97093185056275   -1.02149e-07   7.73211e-06 DIIS
-   @UKS iter   8:   -74.97093185234878   -1.78603e-09   5.05501e-07 DIIS
+   @UKS iter   1:   -74.76522308018249   -7.47652e+01   1.04721e-01 
+   @UKS iter   2:   -74.96038704258949   -1.95164e-01   2.25372e-02 DIIS
+   @UKS iter   3:   -74.97063291439022   -1.02459e-02   2.92530e-03 DIIS
+   @UKS iter   4:   -74.97090750365165   -2.74589e-04   8.97981e-04 DIIS
+   @UKS iter   5:   -74.97093043412684   -2.29305e-05   1.68471e-04 DIIS
+   @UKS iter   6:   -74.97093169432026   -1.26019e-06   6.14465e-05 DIIS
+   @UKS iter   7:   -74.97093185227382   -1.57954e-07   1.64741e-06 DIIS
+   @UKS iter   8:   -74.97093185235396   -8.01350e-11   3.09988e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   2.601215862E-03
+   @Spin Contamination Metric:   2.601219492E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.526012159E-01
+   @S^2 Observed:                7.526012195E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -1139,7 +1219,7 @@ Total time:
 
     Beta Occupied:                                                        
 
-       1A1   -19.473067     2A1    -1.590522     1B2    -1.073838  
+       1A1   -19.473067     2A1    -1.590523     1B2    -1.073838  
        3A1    -0.900179  
 
     Beta Virtual:                                                         
@@ -1153,24 +1233,30 @@ Total time:
 
   Energy converged.
 
-  @UKS Final Energy:   -74.97093185234878
+  @UKS Final Energy:   -74.97093185235396
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -115.7806390763017532
-    Two-Electron Energy =                  38.9991024108592939
-    DFT Exchange-Correlation Energy =      -6.9908607168783865
+    One-Electron Energy =                -115.7806411208205759
+    Two-Electron Energy =                  38.9991046228178107
+    DFT Exchange-Correlation Energy =      -6.9908608843232596
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9709318523487838
+    Total Energy =                        -74.9709318523539707
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    3 A1 1.9993551
+  HONO-1 :    1 B2 1.9993439
+  HONO-0 :    1 B1 1.0000000
+  LUNO+0 :    2 B2 0.0006561
+  LUNO+1 :    4 A1 0.0006449
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1187,36 +1273,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.6522     Total:     2.6522
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    3 A1 1.9993551
-  HONO-1 :    1 B2 1.9993439
-  HONO-0 :    1 B1 1.0000000
-  LUNO+0 :    2 B2 0.0006561
-  LUNO+1 :    4 A1 0.0006449
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:40 2016
+*** tstop() called on psinet at Mon May 15 15:36:32 2017
 Module time:
-	user time   =       2.05 seconds =       0.03 minutes
+	user time   =       3.34 seconds =       0.06 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      12.14 seconds =       0.20 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      16.41 seconds =       0.27 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         17 seconds =       0.28 minutes
 	Open-shell wB97 Energy (PK).......................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:40 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:32 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1250,7 +1334,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -1258,6 +1342,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -1334,32 +1419,33 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                 Yes
-    Memory (MB):               178
+    Memory (MB):               375
     Omega:               4.000E-01
     Schwarz Cutoff:          1E-12
 
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter   1:   -73.79378258396129   -7.37938e+01   1.93967e-01 
-   @UKS iter   2:   -74.94192589528626   -1.14814e+00   4.54096e-02 DIIS
-   @UKS iter   3:   -74.97042602795179   -2.85001e-02   5.58144e-03 DIIS
-   @UKS iter   4:   -74.97090199503825   -4.75967e-04   8.45933e-04 DIIS
-   @UKS iter   5:   -74.97092919766141   -2.72026e-05   2.59834e-04 DIIS
-   @UKS iter   6:   -74.97093174841422   -2.55075e-06   4.53887e-05 DIIS
-   @UKS iter   7:   -74.97093185056278   -1.02149e-07   7.73211e-06 DIIS
-   @UKS iter   8:   -74.97093185234877   -1.78599e-09   5.05501e-07 DIIS
+   @UKS iter   1:   -74.76522308018249   -7.47652e+01   1.04721e-01 
+   @UKS iter   2:   -74.96038704258947   -1.95164e-01   2.25372e-02 DIIS
+   @UKS iter   3:   -74.97063291439022   -1.02459e-02   2.92530e-03 DIIS
+   @UKS iter   4:   -74.97090750365166   -2.74589e-04   8.97981e-04 DIIS
+   @UKS iter   5:   -74.97093043412684   -2.29305e-05   1.68471e-04 DIIS
+   @UKS iter   6:   -74.97093169432026   -1.26019e-06   6.14465e-05 DIIS
+   @UKS iter   7:   -74.97093185227381   -1.57954e-07   1.64741e-06 DIIS
+   @UKS iter   8:   -74.97093185235396   -8.01492e-11   3.09988e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   2.601215862E-03
+   @Spin Contamination Metric:   2.601219492E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.526012159E-01
+   @S^2 Observed:                7.526012195E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -1377,7 +1463,7 @@ Total time:
 
     Beta Occupied:                                                        
 
-       1A1   -19.473067     2A1    -1.590522     1B2    -1.073838  
+       1A1   -19.473067     2A1    -1.590523     1B2    -1.073838  
        3A1    -0.900179  
 
     Beta Virtual:                                                         
@@ -1391,24 +1477,30 @@ Total time:
 
   Energy converged.
 
-  @UKS Final Energy:   -74.97093185234877
+  @UKS Final Energy:   -74.97093185235396
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -115.7806390763017532
-    Two-Electron Energy =                  38.9991024108593010
-    DFT Exchange-Correlation Energy =      -6.9908607168783865
+    One-Electron Energy =                -115.7806411208205759
+    Two-Electron Energy =                  38.9991046228178107
+    DFT Exchange-Correlation Energy =      -6.9908608843232578
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9709318523487696
+    Total Energy =                        -74.9709318523539565
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    3 A1 1.9993551
+  HONO-1 :    1 B2 1.9993439
+  HONO-0 :    1 B1 1.0000000
+  LUNO+0 :    2 B2 0.0006561
+  LUNO+1 :    4 A1 0.0006449
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1425,36 +1517,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.6522     Total:     2.6522
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    3 A1 1.9993551
-  HONO-1 :    1 B2 1.9993439
-  HONO-0 :    1 B1 1.0000000
-  LUNO+0 :    2 B2 0.0006561
-  LUNO+1 :    4 A1 0.0006449
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:43 2016
+*** tstop() called on psinet at Mon May 15 15:36:35 2017
 Module time:
-	user time   =       2.08 seconds =       0.03 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       3.30 seconds =       0.05 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      14.26 seconds =       0.24 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      19.73 seconds =       0.33 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =         20 seconds =       0.33 minutes
 	Open-shell wB97 Energy (OUT_OF_CORE)..............................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:43 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:35 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1488,7 +1578,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -1496,6 +1586,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -1548,6 +1639,14 @@ Total time:
     Max Points       =           4867
     Max Functions    =              7
 
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1573,7 +1672,7 @@ Total time:
     Omega:               4.000E-01
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1581,7 +1680,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: CC-PVDZ-RI
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -1590,20 +1690,21 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UKS iter   1:   -73.79516294050514   -7.37952e+01   1.93948e-01 
-   @DF-UKS iter   2:   -74.94335632557885   -1.14819e+00   4.53729e-02 DIIS
-   @DF-UKS iter   3:   -74.97181278605521   -2.84565e-02   5.57879e-03 DIIS
-   @DF-UKS iter   4:   -74.97228829793906   -4.75512e-04   8.45645e-04 DIIS
-   @DF-UKS iter   5:   -74.97231548970380   -2.71918e-05   2.60023e-04 DIIS
-   @DF-UKS iter   6:   -74.97231804434506   -2.55464e-06   4.53725e-05 DIIS
-   @DF-UKS iter   7:   -74.97231814635248   -1.02007e-07   7.73852e-06 DIIS
-   @DF-UKS iter   8:   -74.97231814814609   -1.79361e-09   5.05099e-07 DIIS
+   @DF-UKS iter   1:   -74.76653524996129   -7.47665e+01   1.04762e-01 
+   @DF-UKS iter   2:   -74.96176617589018   -1.95231e-01   2.25443e-02 DIIS
+   @DF-UKS iter   3:   -74.97201874526682   -1.02526e-02   2.92786e-03 DIIS
+   @DF-UKS iter   4:   -74.97229378069633   -2.75035e-04   8.98211e-04 DIIS
+   @DF-UKS iter   5:   -74.97231672966464   -2.29490e-05   1.68489e-04 DIIS
+   @DF-UKS iter   6:   -74.97231798997078   -1.26031e-06   6.14786e-05 DIIS
+   @DF-UKS iter   7:   -74.97231814807807   -1.58107e-07   1.65138e-06 DIIS
+   @DF-UKS iter   8:   -74.97231814815854   -8.04619e-11   3.11179e-07 DIIS
 
   DF guess converged.
 
@@ -1618,16 +1719,16 @@ Total time:
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @UKS iter   9:   -74.97093184117723    1.38631e-03   4.11297e-05 DIIS
-   @UKS iter  10:   -74.97093185137152   -1.01943e-08   6.43400e-06 DIIS
-   @UKS iter  11:   -74.97093185225643   -8.84910e-10   1.77599e-06 DIIS
-   @UKS iter  12:   -74.97093185234893   -9.24985e-11   5.53273e-07 DIIS
+   @UKS iter   9:   -74.97093184120443    1.38631e-03   4.11185e-05 DIIS
+   @UKS iter  10:   -74.97093185137379   -1.01694e-08   6.42905e-06 DIIS
+   @UKS iter  11:   -74.97093185225653   -8.82736e-10   1.77424e-06 DIIS
+   @UKS iter  12:   -74.97093185234894   -9.24132e-11   5.53773e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   2.601269577E-03
+   @Spin Contamination Metric:   2.601270438E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.526012696E-01
+   @S^2 Observed:                7.526012704E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -1659,24 +1760,30 @@ Total time:
 
   Energy converged.
 
-  @UKS Final Energy:   -74.97093185234893
+  @UKS Final Energy:   -74.97093185234894
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -115.7806427092074841
-    Two-Electron Energy =                  38.9991066021396762
-    DFT Exchange-Correlation Energy =      -6.9908612752531765
+    One-Electron Energy =                -115.7806427000906950
+    Two-Electron Energy =                  38.9991065928898877
+    DFT Exchange-Correlation Energy =      -6.9908612751202019
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9709318523489117
+    Total Energy =                        -74.9709318523489401
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    3 A1 1.9993551
+  HONO-1 :    1 B2 1.9993438
+  HONO-0 :    1 B1 1.0000000
+  LUNO+0 :    2 B2 0.0006562
+  LUNO+1 :    4 A1 0.0006449
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1693,36 +1800,34 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.6522     Total:     2.6522
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    3 A1 1.9993551
-  HONO-1 :    1 B2 1.9993438
-  HONO-0 :    1 B1 1.0000000
-  LUNO+0 :    2 B2 0.0006562
-  LUNO+1 :    4 A1 0.0006449
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:46 2016
+*** tstop() called on psinet at Mon May 15 15:36:41 2017
 Module time:
-	user time   =       3.19 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       5.10 seconds =       0.09 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =      17.49 seconds =       0.29 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =      24.85 seconds =       0.41 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =         26 seconds =       0.43 minutes
 	Open-shell wB97 Energy (DIRECT)...................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:46 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:36:41 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UKS Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1756,7 +1861,7 @@ Total time:
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -1764,6 +1869,7 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 5
     Number of basis function: 7
     Number of Cartesian functions: 7
@@ -1816,6 +1922,14 @@ Total time:
     Max Points       =           4867
     Max Functions    =              7
 
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1839,7 +1953,7 @@ Total time:
     Omega:               4.000E-01
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -1847,7 +1961,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: CC-PVDZ-RI
+    Blend: CC-PVDZ-RI
     Number of shells: 30
     Number of basis function: 84
     Number of Cartesian functions: 96
@@ -1856,26 +1971,27 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UKS iter   1:   -73.79516294050514   -7.37952e+01   1.93948e-01 
-   @DF-UKS iter   2:   -74.94335632557885   -1.14819e+00   4.53729e-02 DIIS
-   @DF-UKS iter   3:   -74.97181278605521   -2.84565e-02   5.57879e-03 DIIS
-   @DF-UKS iter   4:   -74.97228829793906   -4.75512e-04   8.45645e-04 DIIS
-   @DF-UKS iter   5:   -74.97231548970380   -2.71918e-05   2.60023e-04 DIIS
-   @DF-UKS iter   6:   -74.97231804434506   -2.55464e-06   4.53725e-05 DIIS
-   @DF-UKS iter   7:   -74.97231814635248   -1.02007e-07   7.73852e-06 DIIS
-   @DF-UKS iter   8:   -74.97231814814609   -1.79361e-09   5.05099e-07 DIIS
+   @DF-UKS iter   1:   -74.76653524996129   -7.47665e+01   1.04762e-01 
+   @DF-UKS iter   2:   -74.96176617589018   -1.95231e-01   2.25443e-02 DIIS
+   @DF-UKS iter   3:   -74.97201874526682   -1.02526e-02   2.92786e-03 DIIS
+   @DF-UKS iter   4:   -74.97229378069633   -2.75035e-04   8.98211e-04 DIIS
+   @DF-UKS iter   5:   -74.97231672966464   -2.29490e-05   1.68489e-04 DIIS
+   @DF-UKS iter   6:   -74.97231798997078   -1.26031e-06   6.14786e-05 DIIS
+   @DF-UKS iter   7:   -74.97231814807807   -1.58107e-07   1.65138e-06 DIIS
+   @DF-UKS iter   8:   -74.97231814815854   -8.04619e-11   3.11179e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   2.603165743E-03
+   @Spin Contamination Metric:   2.603169347E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.526031657E-01
+   @S^2 Observed:                7.526031693E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -1907,24 +2023,30 @@ Total time:
 
   Energy converged.
 
-  @DF-UKS Final Energy:   -74.97231814814609
+  @DF-UKS Final Energy:   -74.97231814815854
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -115.7803888681334286
-    Two-Electron Energy =                  38.9974472425637870
-    DFT Exchange-Correlation Energy =      -6.9908420525485147
+    One-Electron Energy =                -115.7803909378206129
+    Two-Electron Energy =                  38.9974494821331703
+    DFT Exchange-Correlation Energy =      -6.9908422224431694
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -74.9723181481460870
+    Total Energy =                        -74.9723181481585499
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    3 A1 1.9993545
+  HONO-1 :    1 B2 1.9993435
+  HONO-0 :    1 B1 1.0000000
+  LUNO+0 :    2 B2 0.0006565
+  LUNO+1 :    4 A1 0.0006455
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1941,25 +2063,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.6519     Total:     2.6519
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    3 A1 1.9993545
-  HONO-1 :    1 B2 1.9993435
-  HONO-0 :    1 B1 1.0000000
-  LUNO+0 :    2 B2 0.0006565
-  LUNO+1 :    4 A1 0.0006455
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:48 2016
+*** tstop() called on psinet at Mon May 15 15:36:44 2017
 Module time:
-	user time   =       2.12 seconds =       0.04 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       3.40 seconds =       0.06 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      19.65 seconds =       0.33 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =         20 seconds =       0.33 minutes
+	user time   =      28.26 seconds =       0.47 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =         29 seconds =       0.48 minutes
 	Open-shell wB97 Energy (DF).......................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:18:50 2016
+    Psi4 started on: Monday, 15 May 2017 03:38PM
 
-    Process ID:  11333
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  15053
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -30,7 +33,6 @@
 #! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
 #! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
  
-memory 250 mb
 refENuc   = [ 268.617178206587084, 13.021346299597003,  #TEST
               258.850941286554473, 13.021346299596999 ] #TEST
 refESCF   = [ -303.20625701081264, -75.32040649154762,  #TEST
@@ -121,21 +123,28 @@ for R in Rvals:
     count = count + 1                                                                                #TEST
 
 --------------------------------------------------------------------------
-
-  Memory set to 250.000 MiB by Python script.
 Setting geometry variable Bz to 0.000000
 Setting geometry variable Oy to 4.000000
 Setting geometry variable Hy to 4.350000
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:18:50 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:38:19 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-4, 7-8         entry C          line    60 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 5-6, 9-12, 14-16 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 13               entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -190,11 +199,21 @@ Setting geometry variable Hy to 4.350000
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 30
     Number of basis function: 44
     Number of Cartesian functions: 44
     Spherical Harmonics?: true
     Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-4, 7-8         entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 5-6, 9-12, 14-16 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 13               entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -216,7 +235,7 @@ Setting geometry variable Hy to 4.350000
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -225,6 +244,7 @@ Setting geometry variable Hy to 4.350000
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 249
     Number of basis function: 697
     Number of Cartesian functions: 792
@@ -233,29 +253,31 @@ Setting geometry variable Hy to 4.350000
 
   Minimum eigenvalue in the overlap matrix is 1.8500269953E-01.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -300.82857161016301   -3.00829e+02   1.19840e-01 
-   @DF-RHF iter   1:  -303.12803827613862   -2.29947e+00   9.52314e-03 
-   @DF-RHF iter   2:  -303.20205073375615   -7.40125e-02   1.93112e-03 
-   @DF-RHF iter   3:  -303.20575197103750   -3.70124e-03   6.07830e-04 
-   @DF-RHF iter   4:  -303.20617961774423   -4.27647e-04   2.17819e-04 
-   @DF-RHF iter   5:  -303.20624350372344   -6.38860e-05   8.90288e-05 DIIS
-   @DF-RHF iter   6:  -303.20625693503672   -1.34313e-05   8.88432e-06 DIIS
-   @DF-RHF iter   7:  -303.20625700469935   -6.96626e-08   2.24348e-06 DIIS
-   @DF-RHF iter   8:  -303.20625701032469   -5.62534e-09   3.15951e-07 DIIS
-   @DF-RHF iter   9:  -303.20625701046043   -1.35742e-10   5.02980e-08 DIIS
-   @DF-RHF iter  10:  -303.20625701046293   -2.50111e-12   1.81854e-08 DIIS
-   @DF-RHF iter  11:  -303.20625701046328   -3.41061e-13   7.30326e-09 DIIS
-   @DF-RHF iter  12:  -303.20625701046350   -2.27374e-13   3.04149e-09 DIIS
-   @DF-RHF iter  13:  -303.20625701046373   -2.27374e-13   3.55443e-10 DIIS
-   @DF-RHF iter  14:  -303.20625701046362    1.13687e-13   1.44456e-10 DIIS
-   @DF-RHF iter  15:  -303.20625701046362    0.00000e+00   3.33395e-11 DIIS
-   @DF-RHF iter  16:  -303.20625701046384   -2.27374e-13   8.78767e-12 DIIS
+   @DF-RHF iter   0:  -298.79858349130359   -2.98799e+02   1.12100e-01 
+   @DF-RHF iter   1:  -303.06212521396594   -4.26354e+00   1.24639e-02 
+   @DF-RHF iter   2:  -303.19495252976458   -1.32827e-01   3.38634e-03 
+   @DF-RHF iter   3:  -303.20515490216485   -1.02024e-02   1.04992e-03 
+   @DF-RHF iter   4:  -303.20612213314399   -9.67231e-04   3.53374e-04 
+   @DF-RHF iter   5:  -303.20623664067227   -1.14508e-04   1.35302e-04 DIIS
+   @DF-RHF iter   6:  -303.20625679142972   -2.01508e-05   1.22425e-05 DIIS
+   @DF-RHF iter   7:  -303.20625700633167   -2.14902e-07   1.80223e-06 DIIS
+   @DF-RHF iter   8:  -303.20625701035067   -4.01900e-09   5.20845e-07 DIIS
+   @DF-RHF iter   9:  -303.20625701056906   -2.18392e-10   1.36798e-07 DIIS
+   @DF-RHF iter  10:  -303.20625701058862   -1.95541e-11   2.35847e-08 DIIS
+   @DF-RHF iter  11:  -303.20625701058958   -9.66338e-13   7.99850e-09 DIIS
+   @DF-RHF iter  12:  -303.20625701058981   -2.27374e-13   2.80184e-09 DIIS
+   @DF-RHF iter  13:  -303.20625701058947    3.41061e-13   6.36305e-10 DIIS
+   @DF-RHF iter  14:  -303.20625701058975   -2.84217e-13   2.45917e-10 DIIS
+   @DF-RHF iter  15:  -303.20625701058964    1.13687e-13   7.21814e-11 DIIS
+   @DF-RHF iter  16:  -303.20625701058941    2.27374e-13   1.01543e-11 DIIS
+   @DF-RHF iter  17:  -303.20625701058970   -2.84217e-13   2.21534e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -265,13 +287,13 @@ Setting geometry variable Hy to 4.350000
     Doubly Occupied:                                                      
 
        1Ap   -20.841022     2Ap   -11.131451     1App  -11.131451  
-       3Ap   -11.131382     2App  -11.131217     4Ap   -11.131217  
+       3Ap   -11.131382     4Ap   -11.131217     2App  -11.131217  
        5Ap   -11.131131     6Ap    -1.735966     7Ap    -1.177220  
-       3App   -1.048347     8Ap    -1.048347     9Ap    -1.040704  
-       4App   -1.040704    10Ap    -0.888139    11Ap    -0.863988  
+       8Ap    -1.048347     3App   -1.048347     4App   -1.040704  
+       9Ap    -1.040704    10Ap    -0.888139    11Ap    -0.863988  
        5App   -0.863988    12Ap    -0.754290    13Ap    -0.699787  
-       6App   -0.643866     7App   -0.631087    14Ap    -0.631087  
-      15Ap    -0.546821    16Ap    -0.532754     8App   -0.532754  
+       6App   -0.643866    14Ap    -0.631087     7App   -0.631087  
+      15Ap    -0.546821     8App   -0.532754    16Ap    -0.532754  
       17Ap    -0.376469     9App   -0.376469  
 
     Virtual:                                                              
@@ -279,8 +301,8 @@ Setting geometry variable Hy to 4.350000
       18Ap     0.051961    19Ap     0.157002    10App    0.157002  
       11App    0.209699    20Ap     0.209699    21Ap     0.381297  
       22Ap     0.481209    12App    0.545968    23Ap     0.545968  
-      24Ap     0.594357    25Ap     0.603442    13App    0.603442  
-      26Ap     0.764591    14App    0.764591    15App    0.767006  
+      24Ap     0.594357    13App    0.603442    25Ap     0.603442  
+      14App    0.764591    26Ap     0.764591    15App    0.767006  
       27Ap     0.767006    16App    0.943364    28Ap     1.006810  
 
     Final Occupation by Irrep:
@@ -289,24 +311,22 @@ Setting geometry variable Hy to 4.350000
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -303.20625701046384
+  @DF-RHF Final Energy:  -303.20625701058970
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            268.6171782065725324
-    One-Electron Energy =                -937.5235567109175463
-    Two-Electron Energy =                 365.7001214938813405
+    One-Electron Energy =                -937.5235567109784824
+    Two-Electron Energy =                 365.7001214938161979
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -303.2062570104636166
+    Total Energy =                       -303.2062570105896953
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -323,17 +343,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    17.7760      Z:     0.0000     Total:    17.7760
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:51 2016
+*** tstop() called on psinet at Mon May 15 15:38:22 2017
 Module time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.81 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.81 seconds =       0.05 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -354,26 +372,34 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Quadrupole Moment: (Debye Ang)
     XX:   -33.2696     YY:    25.4524     ZZ:   -33.2696
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:   -19.5740     YY:    39.1480     ZZ:   -19.5740
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
 
 	Nuclear repulsion energy 0........................................PASSED
 	Reference energy 0................................................PASSED
 	Y Component of Dipole 0...........................................PASSED
 	YY Component of Quadrupole 0......................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:18:51 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:38:22 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -394,7 +420,7 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Rotational constants: A =      9.40193  B =      9.40193  C =      5.68937 [cm^-1]
   Rotational constants: A = 281862.63756  B = 281862.63756  C = 170562.96011 [MHz]
-  Nuclear repulsion =   13.021346299596821
+  Nuclear repulsion =   13.021346299596811
 
   Charge       = 1
   Multiplicity = 1
@@ -416,11 +442,20 @@ Properties computed using the BZH3O+ SCF density matrix
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
     Spherical Harmonics?: true
     Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-4 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -442,7 +477,7 @@ Properties computed using the BZH3O+ SCF density matrix
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -451,6 +486,7 @@ Properties computed using the BZH3O+ SCF density matrix
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 51
     Number of basis function: 139
     Number of Cartesian functions: 156
@@ -459,26 +495,27 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -70.65811387347074   -7.06581e+01   2.37958e-01 
-   @DF-RHF iter   1:   -75.16756673231669   -4.50945e+00   7.30718e-02 
-   @DF-RHF iter   2:   -75.31066576986473   -1.43099e-01   1.98761e-02 
-   @DF-RHF iter   3:   -75.31968220113538   -9.01643e-03   5.02784e-03 
-   @DF-RHF iter   4:   -75.32034262627147   -6.60425e-04   1.34866e-03 
-   @DF-RHF iter   5:   -75.32039893468578   -5.63084e-05   4.16236e-04 DIIS
-   @DF-RHF iter   6:   -75.32040648679376   -7.55211e-06   1.03344e-05 DIIS
-   @DF-RHF iter   7:   -75.32040649130732   -4.51357e-09   2.04057e-06 DIIS
-   @DF-RHF iter   8:   -75.32040649154246   -2.35133e-10   2.26200e-07 DIIS
-   @DF-RHF iter   9:   -75.32040649154482   -2.35900e-12   2.78653e-08 DIIS
-   @DF-RHF iter  10:   -75.32040649154490   -8.52651e-14   5.48089e-09 DIIS
-   @DF-RHF iter  11:   -75.32040649154490    0.00000e+00   7.01667e-10 DIIS
-   @DF-RHF iter  12:   -75.32040649154490    0.00000e+00   4.27473e-11 DIIS
-   @DF-RHF iter  13:   -75.32040649154490    0.00000e+00   4.37067e-13 DIIS
+   @DF-RHF iter   0:   -70.62926005802814   -7.06293e+01   2.37833e-01 
+   @DF-RHF iter   1:   -75.16679605842074   -4.53754e+00   7.36494e-02 
+   @DF-RHF iter   2:   -75.31066897134090   -1.43873e-01   2.00324e-02 
+   @DF-RHF iter   3:   -75.31969576337976   -9.02679e-03   5.03398e-03 
+   @DF-RHF iter   4:   -75.32034535439095   -6.49591e-04   1.33583e-03 
+   @DF-RHF iter   5:   -75.32039937336215   -5.40190e-05   4.07403e-04 DIIS
+   @DF-RHF iter   6:   -75.32040648809755   -7.11474e-06   9.00256e-06 DIIS
+   @DF-RHF iter   7:   -75.32040649134166   -3.24411e-09   1.88104e-06 DIIS
+   @DF-RHF iter   8:   -75.32040649154291   -2.01254e-10   1.80478e-07 DIIS
+   @DF-RHF iter   9:   -75.32040649154439   -1.47793e-12   2.17692e-08 DIIS
+   @DF-RHF iter  10:   -75.32040649154442   -2.84217e-14   4.13433e-09 DIIS
+   @DF-RHF iter  11:   -75.32040649154438    4.26326e-14   5.82135e-10 DIIS
+   @DF-RHF iter  12:   -75.32040649154443   -5.68434e-14   4.29068e-11 DIIS
+   @DF-RHF iter  13:   -75.32040649154435    8.52651e-14   6.03779e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -487,8 +524,8 @@ Properties computed using the BZH3O+ SCF density matrix
 
     Doubly Occupied:                                                      
 
-       1Ap   -20.845305     2Ap    -1.740778     1App   -1.045562  
-       3Ap    -1.045562     4Ap    -0.893667  
+       1Ap   -20.845305     2Ap    -1.740778     3Ap    -1.045562  
+       1App   -1.045562     4Ap    -0.893667  
 
     Virtual:                                                              
 
@@ -500,24 +537,22 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -75.32040649154490
+  @DF-RHF Final Energy:   -75.32040649154435
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             13.0213462995968214
-    One-Electron Energy =                -125.5417597070653954
-    Two-Electron Energy =                  37.2000069159236659
+    Nuclear Repulsion Energy =             13.0213462995968108
+    One-Electron Energy =                -125.5417597070666744
+    Two-Electron Energy =                  37.2000069159255276
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.3204064915449010
+    Total Energy =                        -75.3204064915443325
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -525,26 +560,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:51 2016
+*** tstop() called on psinet at Mon May 15 15:38:23 2017
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.88 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       3.27 seconds =       0.05 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -555,21 +588,21 @@ Properties computed using the H3O+ SCF density matrix
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
   Quadrupole Moment: (Debye Ang)
     XX:    -2.5134     YY:    -5.5116     ZZ:    -2.5134
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.9994     YY:    -1.9989     ZZ:     0.9994
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 	Nuclear repulsion energy 1........................................PASSED
 	Reference energy 1................................................PASSED
@@ -579,15 +612,24 @@ Setting geometry variable Bz to 0.000000
 Setting geometry variable Oy to 5.000000
 Setting geometry variable Hy to 5.350000
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:18:51 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:38:23 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-4, 7-8         entry C          line    60 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 5-6, 9-12, 14-16 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 13               entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -642,11 +684,21 @@ Setting geometry variable Hy to 5.350000
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 30
     Number of basis function: 44
     Number of Cartesian functions: 44
     Spherical Harmonics?: true
     Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-4, 7-8         entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 5-6, 9-12, 14-16 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 13               entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -668,7 +720,7 @@ Setting geometry variable Hy to 5.350000
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -677,6 +729,7 @@ Setting geometry variable Hy to 5.350000
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 249
     Number of basis function: 697
     Number of Cartesian functions: 792
@@ -685,29 +738,30 @@ Setting geometry variable Hy to 5.350000
 
   Minimum eigenvalue in the overlap matrix is 1.8500269979E-01.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -300.83303977987106   -3.00833e+02   1.19828e-01 
-   @DF-RHF iter   1:  -303.12692818669569   -2.29389e+00   9.49510e-03 
-   @DF-RHF iter   2:  -303.20085917647333   -7.39310e-02   1.89537e-03 
-   @DF-RHF iter   3:  -303.20449744457682   -3.63827e-03   6.00573e-04 
-   @DF-RHF iter   4:  -303.20492213262077   -4.24688e-04   2.17274e-04 
-   @DF-RHF iter   5:  -303.20498611526563   -6.39826e-05   8.88357e-05 DIIS
-   @DF-RHF iter   6:  -303.20499963234630   -1.35171e-05   6.10472e-06 DIIS
-   @DF-RHF iter   7:  -303.20499966792062   -3.55743e-08   2.27266e-06 DIIS
-   @DF-RHF iter   8:  -303.20499967286440   -4.94379e-09   3.19191e-07 DIIS
-   @DF-RHF iter   9:  -303.20499967299787   -1.33468e-10   3.89754e-08 DIIS
-   @DF-RHF iter  10:  -303.20499967299969   -1.81899e-12   8.20479e-09 DIIS
-   @DF-RHF iter  11:  -303.20499967299969    0.00000e+00   2.90175e-09 DIIS
-   @DF-RHF iter  12:  -303.20499967299946    2.27374e-13   1.15598e-09 DIIS
-   @DF-RHF iter  13:  -303.20499967299980   -3.41061e-13   3.34821e-10 DIIS
-   @DF-RHF iter  14:  -303.20499967299969    1.13687e-13   7.96092e-11 DIIS
-   @DF-RHF iter  15:  -303.20499967299969    0.00000e+00   2.17381e-11 DIIS
-   @DF-RHF iter  16:  -303.20499967299969    0.00000e+00   6.72183e-12 DIIS
+   @DF-RHF iter   0:  -298.51887281929305   -2.98519e+02   1.08809e-01 
+   @DF-RHF iter   1:  -303.11531243060324   -4.59644e+00   9.91143e-03 
+   @DF-RHF iter   2:  -303.19829553251395   -8.29831e-02   2.54145e-03 
+   @DF-RHF iter   3:  -303.20431930529151   -6.02377e-03   7.58779e-04 
+   @DF-RHF iter   4:  -303.20490978357947   -5.90478e-04   2.51724e-04 
+   @DF-RHF iter   5:  -303.20498510768681   -7.53241e-05   9.72110e-05 DIIS
+   @DF-RHF iter   6:  -303.20499955585865   -1.44482e-05   1.01724e-05 DIIS
+   @DF-RHF iter   7:  -303.20499967026171   -1.14403e-07   1.42700e-06 DIIS
+   @DF-RHF iter   8:  -303.20499967279505   -2.53334e-09   3.34026e-07 DIIS
+   @DF-RHF iter   9:  -303.20499967288981   -9.47580e-11   1.08627e-07 DIIS
+   @DF-RHF iter  10:  -303.20499967290152   -1.17097e-11   1.32215e-08 DIIS
+   @DF-RHF iter  11:  -303.20499967290152    0.00000e+00   2.58605e-09 DIIS
+   @DF-RHF iter  12:  -303.20499967290186   -3.41061e-13   1.05984e-09 DIIS
+   @DF-RHF iter  13:  -303.20499967290175    1.13687e-13   3.25744e-10 DIIS
+   @DF-RHF iter  14:  -303.20499967290158    1.70530e-13   8.90824e-11 DIIS
+   @DF-RHF iter  15:  -303.20499967290158    0.00000e+00   2.16118e-11 DIIS
+   @DF-RHF iter  16:  -303.20499967290175   -1.70530e-13   8.35655e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -716,24 +770,24 @@ Setting geometry variable Hy to 5.350000
 
     Doubly Occupied:                                                      
 
-       1Ap   -20.842792     2Ap   -11.116006     1App  -11.116006  
+       1Ap   -20.842792     1App  -11.116006     2Ap   -11.116006  
        3Ap   -11.115938     2App  -11.115777     4Ap   -11.115777  
        5Ap   -11.115691     6Ap    -1.738008     7Ap    -1.160812  
        8Ap    -1.042766     3App   -1.042766     4App   -1.032314  
        9Ap    -1.032314    10Ap    -0.890551    11Ap    -0.848420  
        5App   -0.848420    12Ap    -0.738806    13Ap    -0.684785  
-       6App   -0.628139    14Ap    -0.615618     7App   -0.615618  
-      15Ap    -0.530248    16Ap    -0.517440     8App   -0.517440  
+       6App   -0.628139     7App   -0.615618    14Ap    -0.615618  
+      15Ap    -0.530248     8App   -0.517440    16Ap    -0.517440  
       17Ap    -0.360022     9App   -0.360022  
 
     Virtual:                                                              
 
-      18Ap     0.050251    19Ap     0.173305    10App    0.173305  
+      18Ap     0.050251    10App    0.173305    19Ap     0.173305  
       20Ap     0.207824    11App    0.207824    21Ap     0.397550  
-      22Ap     0.495914    23Ap     0.561009    12App    0.561009  
-      24Ap     0.609503    25Ap     0.619013    13App    0.619013  
-      14App    0.780123    26Ap     0.780123    27Ap     0.782444  
-      15App    0.782444    16App    0.958966    28Ap     1.022689  
+      22Ap     0.495914    12App    0.561009    23Ap     0.561009  
+      24Ap     0.609503    13App    0.619013    25Ap     0.619013  
+      26Ap     0.780123    14App    0.780123    15App    0.782444  
+      27Ap     0.782444    16App    0.958966    28Ap     1.022689  
 
     Final Occupation by Irrep:
              Ap   App 
@@ -741,24 +795,22 @@ Setting geometry variable Hy to 5.350000
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -303.20499967299969
+  @DF-RHF Final Energy:  -303.20499967290175
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            258.8509412865401487
-    One-Electron Energy =                -918.6268932962468625
-    Two-Electron Energy =                 356.5709523367070801
+    One-Electron Energy =                -918.6268932960908842
+    Two-Electron Energy =                 356.5709523366490430
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -303.2049996729996906
+    Total Energy =                       -303.2049996729017494
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -775,17 +827,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    21.6846      Z:     0.0000     Total:    21.6846
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:52 2016
+*** tstop() called on psinet at Mon May 15 15:38:25 2017
 Module time:
-	user time   =       0.76 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       1.76 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       2.66 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       5.95 seconds =       0.10 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -806,26 +856,34 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Quadrupole Moment: (Debye Ang)
     XX:   -33.3919     YY:    57.3954     ZZ:   -33.3919
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:   -30.2624     YY:    60.5249     ZZ:   -30.2624
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
 
 	Nuclear repulsion energy 2........................................PASSED
 	Reference energy 2................................................PASSED
 	Y Component of Dipole 2...........................................PASSED
 	YY Component of Quadrupole 2......................................PASSED
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:18:52 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:38:25 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-4 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -846,7 +904,7 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Rotational constants: A =      9.40193  B =      9.40193  C =      5.68937 [cm^-1]
   Rotational constants: A = 281862.63756  B = 281862.63756  C = 170562.96011 [MHz]
-  Nuclear repulsion =   13.021346299596811
+  Nuclear repulsion =   13.021346299596814
 
   Charge       = 1
   Multiplicity = 1
@@ -868,11 +926,20 @@ Properties computed using the BZH3O+ SCF density matrix
   ==> Primary Basis <==
 
   Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 6
     Number of basis function: 8
     Number of Cartesian functions: 8
     Spherical Harmonics?: true
     Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-4 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -894,7 +961,7 @@ Properties computed using the BZH3O+ SCF density matrix
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -903,6 +970,7 @@ Properties computed using the BZH3O+ SCF density matrix
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 51
     Number of basis function: 139
     Number of Cartesian functions: 156
@@ -911,26 +979,27 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -70.65811387347151   -7.06581e+01   2.37958e-01 
-   @DF-RHF iter   1:   -75.16756673231731   -4.50945e+00   7.30718e-02 
-   @DF-RHF iter   2:   -75.31066576986537   -1.43099e-01   1.98761e-02 
-   @DF-RHF iter   3:   -75.31968220113602   -9.01643e-03   5.02784e-03 
-   @DF-RHF iter   4:   -75.32034262627208   -6.60425e-04   1.34866e-03 
-   @DF-RHF iter   5:   -75.32039893468647   -5.63084e-05   4.16236e-04 DIIS
-   @DF-RHF iter   6:   -75.32040648679443   -7.55211e-06   1.03344e-05 DIIS
-   @DF-RHF iter   7:   -75.32040649130802   -4.51359e-09   2.04057e-06 DIIS
-   @DF-RHF iter   8:   -75.32040649154311   -2.35090e-10   2.26200e-07 DIIS
-   @DF-RHF iter   9:   -75.32040649154551   -2.40163e-12   2.78653e-08 DIIS
-   @DF-RHF iter  10:   -75.32040649154565   -1.42109e-13   5.48089e-09 DIIS
-   @DF-RHF iter  11:   -75.32040649154558    7.10543e-14   7.01667e-10 DIIS
-   @DF-RHF iter  12:   -75.32040649154550    8.52651e-14   4.27481e-11 DIIS
-   @DF-RHF iter  13:   -75.32040649154557   -7.10543e-14   4.37410e-13 DIIS
+   @DF-RHF iter   0:   -70.62926005802851   -7.06293e+01   2.37833e-01 
+   @DF-RHF iter   1:   -75.16679605842096   -4.53754e+00   7.36494e-02 
+   @DF-RHF iter   2:   -75.31066897134113   -1.43873e-01   2.00324e-02 
+   @DF-RHF iter   3:   -75.31969576338003   -9.02679e-03   5.03398e-03 
+   @DF-RHF iter   4:   -75.32034535439118   -6.49591e-04   1.33583e-03 
+   @DF-RHF iter   5:   -75.32039937336239   -5.40190e-05   4.07403e-04 DIIS
+   @DF-RHF iter   6:   -75.32040648809779   -7.11474e-06   9.00256e-06 DIIS
+   @DF-RHF iter   7:   -75.32040649134188   -3.24410e-09   1.88104e-06 DIIS
+   @DF-RHF iter   8:   -75.32040649154318   -2.01297e-10   1.80478e-07 DIIS
+   @DF-RHF iter   9:   -75.32040649154462   -1.43530e-12   2.17692e-08 DIIS
+   @DF-RHF iter  10:   -75.32040649154463   -1.42109e-14   4.13433e-09 DIIS
+   @DF-RHF iter  11:   -75.32040649154463    0.00000e+00   5.82135e-10 DIIS
+   @DF-RHF iter  12:   -75.32040649154465   -1.42109e-14   4.29078e-11 DIIS
+   @DF-RHF iter  13:   -75.32040649154457    7.10543e-14   6.04826e-13 DIIS
 
   ==> Post-Iterations <==
 
@@ -939,8 +1008,8 @@ Properties computed using the BZH3O+ SCF density matrix
 
     Doubly Occupied:                                                      
 
-       1Ap   -20.845305     2Ap    -1.740778     1App   -1.045562  
-       3Ap    -1.045562     4Ap    -0.893667  
+       1Ap   -20.845305     2Ap    -1.740778     3Ap    -1.045562  
+       1App   -1.045562     4Ap    -0.893667  
 
     Virtual:                                                              
 
@@ -952,24 +1021,22 @@ Properties computed using the BZH3O+ SCF density matrix
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -75.32040649154557
+  @DF-RHF Final Energy:   -75.32040649154457
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             13.0213462995968108
-    One-Electron Energy =                -125.5417597070653244
-    Two-Electron Energy =                  37.2000069159229483
+    Nuclear Repulsion Energy =             13.0213462995968143
+    One-Electron Energy =                -125.5417597070655802
+    Two-Electron Energy =                  37.2000069159241917
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -75.3204064915455547
+    Total Energy =                        -75.3204064915445741
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -977,26 +1044,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:18:52 2016
+*** tstop() called on psinet at Mon May 15 15:38:26 2017
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.87 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       6.38 seconds =       0.11 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
@@ -1007,25 +1072,25 @@ Properties computed using the H3O+ SCF density matrix
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
   Quadrupole Moment: (Debye Ang)
     XX:    -2.5134     YY:    -5.5116     ZZ:    -2.5134
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.9994     YY:    -1.9989     ZZ:     0.9994
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 	Nuclear repulsion energy 3........................................PASSED
 	Reference energy 3................................................PASSED
 	Y Component of Dipole 3...........................................PASSED
 	YY Component of Quadrupole 3......................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

@@ -1,39 +1,36 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1a2.dev241 
+                               Psi4 1.1rc3.dev5 
 
-                         Git: Rev {master} 049d4fc dirty
-
-
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
+                         Git: Rev {master} 3fbd859 
 
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 20 March 2017 12:55PM
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:  20971
-    PSIDATADIR: /opt/vulcan/opt/vulcan/linux-x86_64/intel-16.0.1/psi4-master-avducsgnonqrcpftiesq432gagal6y7r/share/psi4
+    Process ID:  21254
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
-memory 500 Mb
+#! rohf ccsdt(q) using mrcc
 
-set { 
+set {
     basis sto-3g
     reference rohf
     die_if_not_converged False
@@ -62,12 +59,23 @@ H -2.6301702073  0.6086421759  0.0000000000
 
 energy('mrccsdt(q)')
 
-compare_values(-225.566203961615, get_variable("CCSDT TOTAL ENERGY"), 6, 'ccsdt')
-compare_values(-225.566377483810, get_variable("CCSDT(Q)/A TOTAL ENERGY"), 6, 'ccsdt(q)/a')
-compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'ccsdt(q)/b')
+compare_values(-225.566203961615, get_variable("CCSDT TOTAL ENERGY"), 6, 'ccsdt') #TEST
+compare_values(-225.566377483810, get_variable("CCSDT(Q)/A TOTAL ENERGY"), 6, 'ccsdt(q)/a') #TEST
+compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'ccsdt(q)/b') #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 500.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:40:52 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 6     entry C          line    60 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3      entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 4-5, 7-9 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+
 
          ---------------------------------------------------------
                                    SCF
@@ -120,7 +128,8 @@ compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'c
 
   ==> Primary Basis <==
 
-  Basis Set: file /opt/vulcan/opt/vulcan/linux-x86_64/intel-16.0.1/psi4-master-avducsgnonqrcpftiesq432gagal6y7r/share/psi4/basis/sto-3g.gbs
+  Basis Set: STO-3G
+    Blend: STO-3G
     Number of shells: 17
     Number of basis function: 25
     Number of Cartesian functions: 25
@@ -160,7 +169,7 @@ compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'c
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               357
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
@@ -173,23 +182,23 @@ compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'c
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -223.77343486706030   -2.23773e+02   5.46292e-02 
-   @ROHF iter   2:  -225.19683459615817   -1.42340e+00   1.55621e-02 DIIS
-   @ROHF iter   3:  -225.33604888492994   -1.39214e-01   4.82862e-03 DIIS
-   @ROHF iter   4:  -225.34970093617511   -1.36521e-02   1.43140e-03 DIIS
-   @ROHF iter   5:  -225.35102942382423   -1.32849e-03   4.76105e-04 DIIS
-   @ROHF iter   6:  -225.35118722105443   -1.57797e-04   1.42326e-04 DIIS
-   @ROHF iter   7:  -225.35120517492948   -1.79539e-05   5.62078e-05 DIIS
-   @ROHF iter   8:  -225.35120848376505   -3.30884e-06   1.43360e-05 DIIS
-   @ROHF iter   9:  -225.35120870677827   -2.23013e-07   4.11951e-06 DIIS
-   @ROHF iter  10:  -225.35120872257329   -1.57950e-08   1.32848e-06 DIIS
-   @ROHF iter  11:  -225.35120872418497   -1.61168e-09   3.17807e-07 DIIS
-   @ROHF iter  12:  -225.35120872427478   -8.98126e-11   8.55069e-08 DIIS
-   @ROHF iter  13:  -225.35120872428138   -6.59384e-12   1.38846e-08 DIIS
-   @ROHF iter  14:  -225.35120872428161   -2.27374e-13   3.46265e-09 DIIS
-   @ROHF iter  15:  -225.35120872428155    5.68434e-14   9.76100e-10 DIIS
-   @ROHF iter  16:  -225.35120872428155    0.00000e+00   2.20853e-10 DIIS
-   @ROHF iter  17:  -225.35120872428155    0.00000e+00   7.01433e-11 DIIS
+   @ROHF iter   1:  -223.77343486706019   -2.23773e+02   5.46292e-02 
+   @ROHF iter   2:  -225.19683459615806   -1.42340e+00   1.55621e-02 DIIS
+   @ROHF iter   3:  -225.33604888492999   -1.39214e-01   4.82862e-03 DIIS
+   @ROHF iter   4:  -225.34970093617505   -1.36521e-02   1.43140e-03 DIIS
+   @ROHF iter   5:  -225.35102942382412   -1.32849e-03   4.76105e-04 DIIS
+   @ROHF iter   6:  -225.35118722105420   -1.57797e-04   1.42326e-04 DIIS
+   @ROHF iter   7:  -225.35120517492931   -1.79539e-05   5.62078e-05 DIIS
+   @ROHF iter   8:  -225.35120848376482   -3.30884e-06   1.43360e-05 DIIS
+   @ROHF iter   9:  -225.35120870677798   -2.23013e-07   4.11951e-06 DIIS
+   @ROHF iter  10:  -225.35120872257301   -1.57950e-08   1.32848e-06 DIIS
+   @ROHF iter  11:  -225.35120872418469   -1.61168e-09   3.17807e-07 DIIS
+   @ROHF iter  12:  -225.35120872427456   -8.98694e-11   8.55069e-08 DIIS
+   @ROHF iter  13:  -225.35120872428115   -6.59384e-12   1.38846e-08 DIIS
+   @ROHF iter  14:  -225.35120872428138   -2.27374e-13   3.46265e-09 DIIS
+   @ROHF iter  15:  -225.35120872428126    1.13687e-13   9.76100e-10 DIIS
+   @ROHF iter  16:  -225.35120872428138   -1.13687e-13   2.20852e-10 DIIS
+   @ROHF iter  17:  -225.35120872428132    5.68434e-14   7.01433e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -222,20 +231,20 @@ compare_values(-225.566381521567, get_variable("CCSDT(Q)/B TOTAL ENERGY"), 6, 'c
 
   Energy converged.
 
-  @ROHF Final Energy:  -225.35120872428155
+  @ROHF Final Energy:  -225.35120872428132
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            123.1645544463344919
-    One-Electron Energy =                -554.3280998693244328
-    Two-Electron Energy =                 205.8123366987084353
+    One-Electron Energy =                -554.3280998693237507
+    Two-Electron Energy =                 205.8123366987079521
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -225.3512087242815198
+    Total Energy =                       -225.3512087242813209
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -254,8 +263,18 @@ Properties computed using the SCF density matrix
      X:    -1.3382      Y:     0.9870      Z:     0.0000     Total:     1.6628
 
 
-*** tstart() called on vlogin2.ccqc.uga.edu
-*** at Mon Mar 20 12:55:53 2017
+*** tstop() called on psinet at Mon May 15 15:40:52 2017
+Module time:
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:40:52 2017
 
   Psi4 interface to MRCC:
     Generating inputs for CCSDT(Q).
@@ -302,18 +321,18 @@ Properties computed using the SCF density matrix
   Generating fort.55 integral file...done.
   Generating fort.56 input file...done.
 
-*** tstop() called on vlogin2.ccqc.uga.edu at Mon Mar 20 12:55:53 2017
+*** tstop() called on psinet at Mon May 15 15:40:52 2017
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 ===== Begin fort.56 input for MRCC ======
-     4     0     0     0     3      0     0     1     0     0     0     0     1      0      0    10     0     0    0.00    0   500
+     4     0     0     0     3      0     0     1     0     0     0     0     1      0      0    10     0     0    0.00    0   524
 ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem
   2  2  2  2  2  2  2  2  1  0  0  0  0  0  0  2  2  2  2  0  0
 ===== End   fort.56 input for MRCC ======
@@ -322,18 +341,18 @@ ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub,
  **********************************************************************
  
                               Written by
-    Mihaly Kallay, Zoltan Rolik, Jozsef Csontos, Istvan Ladjanszki,
-             Lorant Szegedy, Bence Ladoczki, and Gyula Samu
+    Mihaly Kallay, Zoltan Rolik, Istvan Ladjanszki, Lorant Szegedy,
+           Bence Ladoczki, Jozsef Csontos, and Bence Kornis
  
         Department of Physical Chemistry and Materials Science
             Budapest University of Technology and Economics
                   Budapest P.O.Box 91, H-1521 Hungary
  
                               www.mrcc.hu
-
- ************************ 2017-03-20 12:55:53 *************************
+ 
+ ************************ 2017-05-15 15:40:52 *************************
  Executing goldstone...
-
+ 
  Generation of CC equations in terms of H and T...
  Generation of antisymmetrized Goldstone diagrams...
  Number of diagrams in T^1 equations:    15
@@ -348,13 +367,10 @@ ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub,
  Number of intermediates:                                  82
  Number of intermediates to be stored:                     29
  Length of intermediate file (Mbytes):      17.9
-
- ************************ 2017-03-20 12:55:53 *************************
+ 
+ ************************ 2017-05-15 15:40:52 *************************
  Executing xmrcc...
-
-     4     0     0     0     3      0     0     1     0     0     0     0     1      0      0    10     0     0    0.00    0   500
-ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem
-  2  2  2  2  2  2  2  2  1  0  0  0  0  0  0  2  2  2  2  0  0
+ 
  **********************************************************************
  CC(3)(4) calculation 
  
@@ -392,21 +408,21 @@ ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub,
  
  Memory requirements /Mbyte/: 
                Minimal        Optimal
- Real*8:         28.3841        28.3841
- Integer:         0.7313
- Total:          29.1154        29.1154
+ Real*8:         13.9318        13.9318
+ Integer:         0.6945
+ Total:          14.6263        14.6263
  
-
- ************************ 2017-03-20 12:55:53 *************************
+ 
+ ************************ 2017-05-15 15:40:52 *************************
  Executing mrcc...
-
+ 
  **********************************************************************
  CCSDT(Q) calculation                                                   
  
  
  OpenMP parallel version is running.
- Number of CPUs:   8
- Allocation of   28.4 Mbytes of memory...
+ Number of CPUs:   1
+ Allocation of   13.9 Mbytes of memory...
  Number of spinorbitals:  42
  Number of alpha electrons: 13
  Number of beta  electrons: 12
@@ -434,202 +450,182 @@ ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub,
  Starting CC iteration...
  ======================================================================
  Norm of residual vector:     0.63416555
- CPU time [min]:     0.142                   Wall time [min]:     0.018
+ CPU time [min]:     0.025                   Wall time [min]:     0.026
  
  Iteration  1  CC energy:  -225.50893703  Energy decrease:   0.15772830
  ======================================================================
  Norm of residual vector:     0.18276905
- CPU time [min]:     0.244                   Wall time [min]:     0.040
+ CPU time [min]:     0.047                   Wall time [min]:     0.048
  
  Iteration  2  CC energy:  -225.55173743  Energy decrease:   0.04280041
  ======================================================================
  Norm of residual vector:     0.05725863
- CPU time [min]:     0.353                   Wall time [min]:     0.054
+ CPU time [min]:     0.070                   Wall time [min]:     0.071
  
  Iteration  3  CC energy:  -225.56331888  Energy decrease:   0.01158145
  ======================================================================
  Norm of residual vector:     0.02230025
- CPU time [min]:     0.462                   Wall time [min]:     0.067
+ CPU time [min]:     0.093                   Wall time [min]:     0.094
  
  Iteration  4  CC energy:  -225.56573455  Energy decrease:   0.00241566
  ======================================================================
  Norm of residual vector:     0.00989128
- CPU time [min]:     0.577                   Wall time [min]:     0.082
+ CPU time [min]:     0.117                   Wall time [min]:     0.117
  
  Iteration  5  CC energy:  -225.56611216  Energy decrease:   0.00037761
  ======================================================================
  Norm of residual vector:     0.00571886
- CPU time [min]:     0.695                   Wall time [min]:     0.097
+ CPU time [min]:     0.141                   Wall time [min]:     0.141
  
  Iteration  6  CC energy:  -225.56615594  Energy decrease:   0.00004379
  ======================================================================
  Norm of residual vector:     0.00259184
- CPU time [min]:     0.818                   Wall time [min]:     0.112
+ CPU time [min]:     0.165                   Wall time [min]:     0.166
  
  Iteration  7  CC energy:  -225.56617345  Energy decrease:   0.00001751
  ======================================================================
  Norm of residual vector:     0.00118259
- CPU time [min]:     0.944                   Wall time [min]:     0.128
+ CPU time [min]:     0.190                   Wall time [min]:     0.190
  
  Iteration  8  CC energy:  -225.56619018  Energy decrease:   0.00001673
  ======================================================================
  Norm of residual vector:     0.00053775
- CPU time [min]:     1.070                   Wall time [min]:     0.144
+ CPU time [min]:     0.216                   Wall time [min]:     0.216
  
  Iteration  9  CC energy:  -225.56619902  Energy decrease:   0.00000884
  ======================================================================
  Norm of residual vector:     0.00025505
- CPU time [min]:     1.197                   Wall time [min]:     0.160
+ CPU time [min]:     0.241                   Wall time [min]:     0.241
  
  Iteration 10  CC energy:  -225.56620311  Energy decrease:   0.00000408
  ======================================================================
  Norm of residual vector:     0.00011718
- CPU time [min]:     1.327                   Wall time [min]:     0.176
+ CPU time [min]:     0.267                   Wall time [min]:     0.267
  
  Iteration 11  CC energy:  -225.56620324  Energy decrease:   0.00000013
  ======================================================================
  Norm of residual vector:     0.00006037
- CPU time [min]:     1.463                   Wall time [min]:     0.193
+ CPU time [min]:     0.293                   Wall time [min]:     0.293
  
  Iteration 12  CC energy:  -225.56620358  Energy decrease:   0.00000034
  ======================================================================
  Norm of residual vector:     0.00003192
- CPU time [min]:     1.600                   Wall time [min]:     0.211
+ CPU time [min]:     0.319                   Wall time [min]:     0.319
  
  Iteration 13  CC energy:  -225.56620399  Energy decrease:   0.00000042
  ======================================================================
  Norm of residual vector:     0.00001872
- CPU time [min]:     1.741                   Wall time [min]:     0.229
+ CPU time [min]:     0.346                   Wall time [min]:     0.346
  
  Iteration 14  CC energy:  -225.56620399  Energy decrease:   0.00000001
  ======================================================================
  Norm of residual vector:     0.00001168
- CPU time [min]:     1.886                   Wall time [min]:     0.247
+ CPU time [min]:     0.374                   Wall time [min]:     0.374
  
  Iteration 15  CC energy:  -225.56620392  Energy decrease:   0.00000007
  ======================================================================
  Norm of residual vector:     0.00000733
- CPU time [min]:     2.033                   Wall time [min]:     0.265
+ CPU time [min]:     0.401                   Wall time [min]:     0.401
  
  Iteration 16  CC energy:  -225.56620395  Energy decrease:   0.00000003
  ======================================================================
  Norm of residual vector:     0.00000400
- CPU time [min]:     2.184                   Wall time [min]:     0.284
+ CPU time [min]:     0.428                   Wall time [min]:     0.429
  
  Iteration 17  CC energy:  -225.56620398  Energy decrease:   0.00000003
  ======================================================================
  Norm of residual vector:     0.00000208
- CPU time [min]:     2.336                   Wall time [min]:     0.303
+ CPU time [min]:     0.456                   Wall time [min]:     0.457
  
  Iteration 18  CC energy:  -225.56620397  Energy decrease:   0.00000001
  ======================================================================
  Norm of residual vector:     0.00000116
- CPU time [min]:     2.493                   Wall time [min]:     0.323
+ CPU time [min]:     0.485                   Wall time [min]:     0.485
  
  Iteration 19  CC energy:  -225.56620397  Energy decrease:   0.00000001
  ======================================================================
  Norm of residual vector:     0.00000062
- CPU time [min]:     2.655                   Wall time [min]:     0.344
+ CPU time [min]:     0.513                   Wall time [min]:     0.514
  
  Iteration 20  CC energy:  -225.56620397  Energy decrease:   6.7590E-10
  ======================================================================
  Norm of residual vector:     0.00000033
- CPU time [min]:     2.815                   Wall time [min]:     0.364
+ CPU time [min]:     0.543                   Wall time [min]:     0.543
  
  Iteration 21  CC energy:  -225.56620396  Energy decrease:   1.6566E-09
  ======================================================================
  Norm of residual vector:     0.00000017
- CPU time [min]:     2.978                   Wall time [min]:     0.384
+ CPU time [min]:     0.572                   Wall time [min]:     0.572
  
  Iteration 22  CC energy:  -225.56620396  Energy decrease:   2.4294E-09
  ======================================================================
  Norm of residual vector:     0.00000008
- CPU time [min]:     3.145                   Wall time [min]:     0.405
+ CPU time [min]:     0.602                   Wall time [min]:     0.602
  
  Iteration 23  CC energy:  -225.56620396  Energy decrease:   6.5339E-10
  ======================================================================
  Norm of residual vector:     0.00000004
- CPU time [min]:     3.315                   Wall time [min]:     0.427
+ CPU time [min]:     0.632                   Wall time [min]:     0.632
  
  Iteration 24  CC energy:  -225.56620396  Energy decrease:   2.1555E-10
  ======================================================================
  Norm of residual vector:     0.00000002
- CPU time [min]:     3.487                   Wall time [min]:     0.448
+ CPU time [min]:     0.662                   Wall time [min]:     0.663
  
  Iteration 25  CC energy:  -225.56620396  Energy decrease:   6.7018E-11
  ======================================================================
  Norm of residual vector:     0.00000001
- CPU time [min]:     3.664                   Wall time [min]:     0.471
+ CPU time [min]:     0.694                   Wall time [min]:     0.695
  
  Iteration 26  CC energy:  -225.56620396  Energy decrease:   7.2646E-11
  ======================================================================
  Norm of residual vector:     0.00000001
- CPU time [min]:     3.842                   Wall time [min]:     0.493
+ CPU time [min]:     0.725                   Wall time [min]:     0.726
  
  Iteration 27  CC energy:  -225.56620396  Energy decrease:   2.7768E-11
  ======================================================================
  Norm of residual vector:     2.5817E-09
- CPU time [min]:     4.021                   Wall time [min]:     0.515
+ CPU time [min]:     0.757                   Wall time [min]:     0.757
  
  Iteration 28  CC energy:  -225.56620396  Energy decrease:   2.5267E-11
  ======================================================================
  Norm of residual vector:     1.3517E-09
- CPU time [min]:     4.206                   Wall time [min]:     0.539
+ CPU time [min]:     0.789                   Wall time [min]:     0.789
  
  Iteration 29  CC energy:  -225.56620396  Energy decrease:   8.4128E-12
  ======================================================================
  Norm of residual vector:     7.7203E-10
- CPU time [min]:     4.394                   Wall time [min]:     0.562
+ CPU time [min]:     0.821                   Wall time [min]:     0.821
  
  Iteration 30  CC energy:  -225.56620396  Energy decrease:   4.4338E-12
  ======================================================================
- Norm of residual vector:     4.1627E-10
- CPU time [min]:     4.589                   Wall time [min]:     0.587
  
- Iteration 31  CC energy:  -225.56620396  Energy decrease:   8.5265E-14
- ======================================================================
- Norm of residual vector:     2.1882E-10
- CPU time [min]:     4.785                   Wall time [min]:     0.612
- 
- Iteration 32  CC energy:  -225.56620396  Energy decrease:   2.9274E-12
- ======================================================================
- Norm of residual vector:     1.0315E-10
- CPU time [min]:     4.984                   Wall time [min]:     0.637
- 
- Iteration 33  CC energy:  -225.56620396  Energy decrease:   7.6739E-13
- ======================================================================
- Norm of residual vector:     5.5185E-11
- CPU time [min]:     5.079                   Wall time [min]:     0.649
- 
- Iteration 34  CC energy:  -225.56620396  Energy decrease:   3.1264E-13
- ======================================================================
- 
- Iteration has converged in 34 steps.
+ Convergence not achieved in 30 iterations!
  
  Final results:
- Total CCSDT energy [au]:           -225.566203961615
+ Total CCSDT energy [au]:           -225.566203961612
  
  Perturbative corrections are calculated...
  ======================================================================
  Spin case  1   Alpha:  0   Beta:  4
  Number of excitations:        31304
- CPU time [min]:     5.114                   Wall time [min]:     0.653
+ CPU time [min]:     0.829                   Wall time [min]:     0.829
  ======================================================================
  Spin case  2   Alpha:  1   Beta:  3
  Number of excitations:        960960
- CPU time [min]:     5.217                   Wall time [min]:     0.666
+ CPU time [min]:     0.895                   Wall time [min]:     0.896
  ======================================================================
  Spin case  3   Alpha:  2   Beta:  2
  Number of excitations:        2594784
- CPU time [min]:     5.419                   Wall time [min]:     0.691
+ CPU time [min]:     1.035                   Wall time [min]:     1.035
  ======================================================================
  Spin case  4   Alpha:  3   Beta:  1
  Number of excitations:        865264
- CPU time [min]:     5.498                   Wall time [min]:     0.701
+ CPU time [min]:     1.084                   Wall time [min]:     1.084
  ======================================================================
  Spin case  5   Alpha:  4   Beta:  0
  Number of excitations:        25170
- CPU time [min]:     5.503                   Wall time [min]:     0.702
+ CPU time [min]:     1.086                   Wall time [min]:     1.086
  ======================================================================
  Number of 4-fold excitations: 4477482
  
@@ -639,13 +635,13 @@ ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub,
  T_1^+ * <ab||ij> contribution:    0.000004323683
  T_2^+ * f_ai contribution:       -0.000000037498
  
- CPU time [min]:     5.519                   Wall time [min]:     0.704
+ CPU time [min]:     1.088                   Wall time [min]:     1.089
  
- Total CCSDT[Q] energy [au]:        -225.566326254049
- Total CCSDT(Q)/A energy [au]:      -225.566377483810
- Total CCSDT(Q)/B energy [au]:      -225.566381521567
+ Total CCSDT[Q] energy [au]:        -225.566326254046
+ Total CCSDT(Q)/A energy [au]:      -225.566377483807
+ Total CCSDT(Q)/B energy [au]:      -225.566381521564
  
- ************************ 2017-03-20 12:56:36 *************************
+ ************************ 2017-05-15 15:41:58 *************************
                       Normal termination of mrcc.
  **********************************************************************
 
@@ -654,10 +650,10 @@ ex.lev,nsing,ntrip, rest,CC/CI, dens,conver, symm, diag,   CS,spatial, HF,ndoub,
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 #property method        sym st mul        value             CPU(sec)       Wall(sec)
-ENERGY   CCSDT            1  1  2  -2.255662039616147E+02 3.04723301E+02 3.89153160E+01
-ENERGY   CCSDT[Q]         1  1  2  -2.255663262540487E+02 2.64049800E+01 3.32571500E+00
-ENERGY   CCSDT(Q)/A       1  1  2  -2.255663774838096E+02 0.00000000E+00 0.00000000E+00
-ENERGY   CCSDT(Q)/B       1  1  2  -2.255663815215668E+02 0.00000000E+00 0.00000000E+00
+ENERGY   CCSDT            1  1  2  -2.255662039616116E+02 4.92431980E+01 4.92672580E+01
+ENERGY   CCSDT[Q]         1  1  2  -2.255663262540456E+02 1.60654220E+01 1.60661810E+01
+ENERGY   CCSDT(Q)/A       1  1  2  -2.255663774838065E+02 0.00000000E+00 0.00000000E+00
+ENERGY   CCSDT(Q)/B       1  1  2  -2.255663815215637E+02 0.00000000E+00 0.00000000E+00
 	ccsdt.............................................................PASSED
 	ccsdt(q)/a........................................................PASSED
 	ccsdt(q)/b........................................................PASSED

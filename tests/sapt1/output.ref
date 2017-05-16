@@ -1,34 +1,35 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:12:46 2016
+    Psi4 started on: Monday, 15 May 2017 03:33PM
 
-    Process ID:   7302
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  11960
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
 #! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
-
-memory 250 mb
 
 Eref = [ 85.189064196429101,  -0.00359915058,  0.00362911158,  #TEST
          -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
@@ -56,7 +57,7 @@ molecule barrier {
  He
 }
 
-set globals {
+set {
     basis         cc-pvdz
     guess         sad
     scf_type      df
@@ -72,7 +73,7 @@ Eelst = psi4.get_variable("SAPT ELST ENERGY")
 Eexch = psi4.get_variable("SAPT EXCH ENERGY")
 Eind  = psi4.get_variable("SAPT IND ENERGY")
 Edisp = psi4.get_variable("SAPT DISP ENERGY")
-ET    = psi4.get_variable("SAPT SAPT0 ENERGY")
+ET    = psi4.get_variable("SAPT0 TOTAL ENERGY")
 
 compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
 compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")                                                 #TEST
@@ -81,8 +82,6 @@ compare_values(Eref[3], Eind, 6, "SAPT0 Eind")                                  
 compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
 compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST
 --------------------------------------------------------------------------
-
-  Memory set to 250.000 MiB by Python script.
   SAPT does not make use of molecular symmetry, further calculations in C1 point group.
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -90,15 +89,23 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:46 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:33:52 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2, 7-8  entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-6, 9-10 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -111,7 +118,7 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
            C          0.000000000000    -0.667578000000    -2.128156293689    12.000000000000
-           C          0.000000000000     0.667578000000    -2.128156293689    12.000000000000
+           C         -0.000000000000     0.667578000000    -2.128156293689    12.000000000000
            H          0.923621000000    -1.232253000000    -2.129682293689     1.007825032070
            H         -0.923621000000    -1.232253000000    -2.129682293689     1.007825032070
            H         -0.923621000000     1.232253000000    -2.129682293689     1.007825032070
@@ -125,7 +132,7 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
 
   Rotational constants: A =      0.83222  B =      0.05986  C =      0.05715 [cm^-1]
   Rotational constants: A =  24949.38471  B =   1794.70290  C =   1713.30620 [MHz]
-  Nuclear repulsion =   85.189064196429129
+  Nuclear repulsion =   85.189064196429101
 
   Charge       = 0
   Multiplicity = 1
@@ -147,11 +154,20 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 42
     Number of basis function: 86
     Number of Cartesian functions: 90
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2, 7-8  entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 3-6, 9-10 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -172,7 +188,7 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
@@ -180,7 +196,8 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 150
     Number of basis function: 418
     Number of Cartesian functions: 474
@@ -189,6 +206,7 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
 
   Minimum eigenvalue in the overlap matrix is 7.1821828298E-04.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   Determining Atomic Occupations
@@ -205,8 +223,16 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
 
   Performing Atomic UHF Computations:
 
-  UHF Computation for Unique Atom 0 which is Atom 0:
+  UHF Computation for Unique Atom 0 which is Atom 0:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000000000000    -1.261539592340    -4.021632563049    12.000000000000
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 6
     Number of basis function: 14
     Number of Cartesian functions: 15
@@ -216,33 +242,60 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
   Occupation: nalpha = 4, nbeta = 2, norbs = 14
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000000     0.000000000000     0.000000000000    12.000000000000
+           C          0.000000000000    -1.261539592340    -4.021632563049    12.000000000000
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 14
+    Number of basis function: 40
+    Number of Cartesian functions: 46
+    Spherical Harmonics?: true
+    Max angular momentum: 3
 
 
   Initial Atomic UHF Energy:    -26.3157361531
 
                                          Total Energy            Delta E              Density RMS
 
-  @Atomic UHF iteration   1 energy:   -36.74995545600607      -10.43421930287275     0.20381491156350
-  @Atomic UHF iteration   2 energy:   -37.68068984183026       -0.93073438582419     0.00852644437166
-  @Atomic UHF iteration   3 energy:   -37.68595888387346       -0.00526904204320     0.00155453215419
-  @Atomic UHF iteration   4 energy:   -37.68642674153998       -0.00046785766652     0.00076228587775
-  @Atomic UHF iteration   5 energy:   -37.68652014420294       -0.00009340266296     0.00036724853909
-  @Atomic UHF iteration   6 energy:   -37.68653937625643       -0.00001923205349     0.00017378246339
-  @Atomic UHF iteration   7 energy:   -37.68654337893653       -0.00000400268009     0.00008129601975
-  @Atomic UHF iteration   8 energy:   -37.68654421564283       -0.00000083670631     0.00003774785218
-  @Atomic UHF iteration   9 energy:   -37.68654439085712       -0.00000017521429     0.00001744235457
-  @Atomic UHF iteration  10 energy:   -37.68654442757530       -0.00000003671818     0.00000803420949
-  @Atomic UHF Final Energy for atom C:   -37.68654442757530
+  @Atomic UHF iteration   1 energy:   -36.74948949040441      -10.43375333727106     0.05752929853634
+  @Atomic UHF iteration   2 energy:   -37.68052092932642       -0.93103143892201     0.00544575040010
+  @Atomic UHF iteration   3 energy:   -37.68584073896872       -0.00531980964230     0.00140927829672
+  @Atomic UHF iteration   4 energy:   -37.68629395409353       -0.00045321512481     0.00050181615094
+  @Atomic UHF iteration   5 energy:   -37.68636360728495       -0.00006965319142     0.00004171531462
+  @Atomic UHF iteration   6 energy:   -37.68636389819805       -0.00000029091309     0.00000616994789
+  @Atomic UHF Final Energy for atom C:   -37.68636389819805
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 1 which is Atom 2:
+  UHF Computation for Unique Atom 1 which is Atom 2:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          1.745390740582    -2.328620696427    -4.024516285128     1.007825032070
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
@@ -252,13 +305,35 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
   Occupation: nalpha = 1, nbeta = 0, norbs = 5
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           H          0.000000000000     0.000000000000     0.000000000000     1.007825032070
+           H          1.745390740582    -2.328620696427    -4.024516285128     1.007825032070
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 5
+    Number of basis function: 11
+    Number of Cartesian functions: 12
+    Spherical Harmonics?: true
+    Max angular momentum: 2
 
 
   Initial Atomic UHF Energy:     -0.2496392017
@@ -266,33 +341,33 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
                                          Total Energy            Delta E              Density RMS
 
   @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
-  @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+  @Atomic UHF iteration   2 energy:    -0.49927840341958       -0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom H:    -0.49927840341958
+Finished UHF Computation!
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -156.28766680798333   -1.56288e+02   4.11857e-02 
-   @DF-RHF iter   1:  -154.80111934249749    1.48655e+00   3.24094e-03 
-   @DF-RHF iter   2:  -154.86084803257302   -5.97287e-02   9.11268e-04 DIIS
-   @DF-RHF iter   3:  -154.86591751809715   -5.06949e-03   3.11041e-04 DIIS
-   @DF-RHF iter   4:  -154.86650222602634   -5.84708e-04   5.59226e-05 DIIS
-   @DF-RHF iter   5:  -154.86652771186999   -2.54858e-05   2.66743e-05 DIIS
-   @DF-RHF iter   6:  -154.86653119982333   -3.48795e-06   7.30733e-06 DIIS
-   @DF-RHF iter   7:  -154.86653164605377   -4.46230e-07   1.57275e-06 DIIS
-   @DF-RHF iter   8:  -154.86653167638570   -3.03319e-08   4.99832e-07 DIIS
-   @DF-RHF iter   9:  -154.86653167971633   -3.33063e-09   1.43158e-07 DIIS
-   @DF-RHF iter  10:  -154.86653168001487   -2.98542e-10   3.27684e-08 DIIS
-   @DF-RHF iter  11:  -154.86653168003193   -1.70530e-11   1.51631e-08 DIIS
-   @DF-RHF iter  12:  -154.86653168003636   -4.43379e-12   7.90575e-09 DIIS
-   @DF-RHF iter  13:  -154.86653168003778   -1.42109e-12   3.75366e-09 DIIS
-   @DF-RHF iter  14:  -154.86653168003818   -3.97904e-13   1.27396e-09 DIIS
-   @DF-RHF iter  15:  -154.86653168003812    5.68434e-14   3.50081e-10 DIIS
-   @DF-RHF iter  16:  -154.86653168003818   -5.68434e-14   1.34628e-10 DIIS
-   @DF-RHF iter  17:  -154.86653168003812    5.68434e-14   5.41290e-11 DIIS
-   @DF-RHF iter  18:  -154.86653168003795    1.70530e-13   2.82105e-11 DIIS
-   @DF-RHF iter  19:  -154.86653168003824   -2.84217e-13   4.63381e-12 DIIS
+   @DF-RHF iter   0:  -155.83332333493291   -1.55833e+02   3.85954e-02 
+   @DF-RHF iter   1:  -154.78517269580959    1.04815e+00   3.77173e-03 
+   @DF-RHF iter   2:  -154.85906957570944   -7.38969e-02   1.09272e-03 DIIS
+   @DF-RHF iter   3:  -154.86565403639077   -6.58446e-03   3.73662e-04 DIIS
+   @DF-RHF iter   4:  -154.86650360466462   -8.49568e-04   5.21544e-05 DIIS
+   @DF-RHF iter   5:  -154.86652898326088   -2.53786e-05   1.44436e-05 DIIS
+   @DF-RHF iter   6:  -154.86653130426492   -2.32100e-06   5.44689e-06 DIIS
+   @DF-RHF iter   7:  -154.86653161352652   -3.09262e-07   2.55189e-06 DIIS
+   @DF-RHF iter   8:  -154.86653167099877   -5.74722e-08   9.48016e-07 DIIS
+   @DF-RHF iter   9:  -154.86653167951687   -8.51810e-09   2.02880e-07 DIIS
+   @DF-RHF iter  10:  -154.86653167997929   -4.62421e-10   3.87715e-08 DIIS
+   @DF-RHF iter  11:  -154.86653167998955   -1.02602e-11   1.64719e-08 DIIS
+   @DF-RHF iter  12:  -154.86653167999199   -2.44427e-12   5.68155e-09 DIIS
+   @DF-RHF iter  13:  -154.86653167999268   -6.82121e-13   2.46677e-09 DIIS
+   @DF-RHF iter  14:  -154.86653167999276   -8.52651e-14   1.10575e-09 DIIS
+   @DF-RHF iter  15:  -154.86653167999282   -5.68434e-14   3.41126e-10 DIIS
+   @DF-RHF iter  16:  -154.86653167999276    5.68434e-14   9.47154e-11 DIIS
+   @DF-RHF iter  17:  -154.86653167999287   -1.13687e-13   2.62871e-11 DIIS
+   @DF-RHF iter  18:  -154.86653167999293   -5.68434e-14   7.09033e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -340,24 +415,22 @@ compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                  
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -154.86653168003824
+  @DF-RHF Final Energy:  -154.86653167999293
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             85.1890641964291291
-    One-Electron Energy =                -375.7400845386466699
-    Two-Electron Energy =                 135.6844886621793478
+    Nuclear Repulsion Energy =             85.1890641964291007
+    One-Electron Energy =                -375.7400845383145906
+    Two-Electron Energy =                 135.6844886618925443
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -154.8665316800382072
+    Total Energy =                       -154.8665316799929315
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -365,41 +438,47 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -3.6884
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     3.5271
+     X:     0.0000      Y:     0.0000      Z:     3.5271
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.1613     Total:     0.1613
+     X:     0.0000      Y:     0.0000      Z:    -0.1613     Total:     0.1613
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:    -0.4101     Total:     0.4101
+     X:     0.0000      Y:     0.0000      Z:    -0.4101     Total:     0.4101
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:47 2016
+*** tstop() called on psinet at Mon May 15 15:33:54 2017
 Module time:
-	user time   =       0.93 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.94 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.93 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.94 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer A HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:47 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:33:54 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2, 7-8  entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-6, 9-10 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -412,7 +491,7 @@ Total time:
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
            C          0.000000000000    -0.667578000000    -2.128156293689    12.000000000000
-           C          0.000000000000     0.667578000000    -2.128156293689    12.000000000000
+           C         -0.000000000000     0.667578000000    -2.128156293689    12.000000000000
            H          0.923621000000    -1.232253000000    -2.129682293689     1.007825032070
            H         -0.923621000000    -1.232253000000    -2.129682293689     1.007825032070
            H         -0.923621000000     1.232253000000    -2.129682293689     1.007825032070
@@ -426,7 +505,7 @@ Total time:
 
   Rotational constants: A =      0.83222  B =      0.05986  C =      0.05715 [cm^-1]
   Rotational constants: A =  24949.38471  B =   1794.70290  C =   1713.30620 [MHz]
-  Nuclear repulsion =   33.358072082335056
+  Nuclear repulsion =   33.358072082335049
 
   Charge       = 0
   Multiplicity = 1
@@ -448,11 +527,20 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 42
     Number of basis function: 86
     Number of Cartesian functions: 90
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2, 7-8  entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 3-6, 9-10 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -473,7 +561,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           LOAD
     Schwarz Cutoff:          1E-12
@@ -481,7 +569,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 150
     Number of basis function: 418
     Number of Cartesian functions: 474
@@ -490,6 +579,7 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 7.1821828298E-04.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   Determining Atomic Occupations
@@ -506,8 +596,16 @@ Total time:
 
   Performing Atomic UHF Computations:
 
-  UHF Computation for Unique Atom 0 which is Atom 0:
+  UHF Computation for Unique Atom 0 which is Atom 0:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000000000000    -1.261539592340    -4.021632563049    12.000000000000
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 6
     Number of basis function: 14
     Number of Cartesian functions: 15
@@ -517,33 +615,60 @@ Total time:
   Occupation: nalpha = 4, nbeta = 2, norbs = 14
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000000     0.000000000000     0.000000000000    12.000000000000
+           C          0.000000000000    -1.261539592340    -4.021632563049    12.000000000000
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 14
+    Number of basis function: 40
+    Number of Cartesian functions: 46
+    Spherical Harmonics?: true
+    Max angular momentum: 3
 
 
   Initial Atomic UHF Energy:    -26.3157361531
 
                                          Total Energy            Delta E              Density RMS
 
-  @Atomic UHF iteration   1 energy:   -36.74995545600607      -10.43421930287275     0.20381491156350
-  @Atomic UHF iteration   2 energy:   -37.68068984183026       -0.93073438582419     0.00852644437166
-  @Atomic UHF iteration   3 energy:   -37.68595888387346       -0.00526904204320     0.00155453215419
-  @Atomic UHF iteration   4 energy:   -37.68642674153998       -0.00046785766652     0.00076228587775
-  @Atomic UHF iteration   5 energy:   -37.68652014420294       -0.00009340266296     0.00036724853909
-  @Atomic UHF iteration   6 energy:   -37.68653937625643       -0.00001923205349     0.00017378246339
-  @Atomic UHF iteration   7 energy:   -37.68654337893653       -0.00000400268009     0.00008129601975
-  @Atomic UHF iteration   8 energy:   -37.68654421564283       -0.00000083670631     0.00003774785218
-  @Atomic UHF iteration   9 energy:   -37.68654439085712       -0.00000017521429     0.00001744235457
-  @Atomic UHF iteration  10 energy:   -37.68654442757530       -0.00000003671818     0.00000803420949
-  @Atomic UHF Final Energy for atom C:   -37.68654442757530
+  @Atomic UHF iteration   1 energy:   -36.74948949040441      -10.43375333727106     0.05752929853634
+  @Atomic UHF iteration   2 energy:   -37.68052092932642       -0.93103143892201     0.00544575040010
+  @Atomic UHF iteration   3 energy:   -37.68584073896872       -0.00531980964230     0.00140927829672
+  @Atomic UHF iteration   4 energy:   -37.68629395409353       -0.00045321512481     0.00050181615094
+  @Atomic UHF iteration   5 energy:   -37.68636360728495       -0.00006965319142     0.00004171531462
+  @Atomic UHF iteration   6 energy:   -37.68636389819805       -0.00000029091309     0.00000616994789
+  @Atomic UHF Final Energy for atom C:   -37.68636389819805
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 1 which is Atom 2:
+  UHF Computation for Unique Atom 1 which is Atom 2:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          1.745390740582    -2.328620696427    -4.024516285128     1.007825032070
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
@@ -553,13 +678,35 @@ Total time:
   Occupation: nalpha = 1, nbeta = 0, norbs = 5
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           H          0.000000000000     0.000000000000     0.000000000000     1.007825032070
+           H          1.745390740582    -2.328620696427    -4.024516285128     1.007825032070
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 5
+    Number of basis function: 11
+    Number of Cartesian functions: 12
+    Spherical Harmonics?: true
+    Max angular momentum: 2
 
 
   Initial Atomic UHF Energy:     -0.2496392017
@@ -567,11 +714,20 @@ Total time:
                                          Total Energy            Delta E              Density RMS
 
   @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
-  @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+  @Atomic UHF iteration   2 energy:    -0.49927840341958       -0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom H:    -0.49927840341958
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 2 which is Atom 6:
+  UHF Computation for Unique Atom 2 which is Atom 6:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C(Gh)      0.000000000000     0.000000000000     5.474547390335    12.000000000000
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 6
     Number of basis function: 14
     Number of Cartesian functions: 15
@@ -581,13 +737,35 @@ Total time:
   Occupation: nalpha = 0, nbeta = 0, norbs = 14
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C(Gh)      0.000000000000     0.000000000000     0.000000000000    12.000000000000
+           C(Gh)      0.000000000000     0.000000000000     5.474547390335    12.000000000000
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 14
+    Number of basis function: 40
+    Number of Cartesian functions: 46
+    Spherical Harmonics?: true
+    Max angular momentum: 3
 
 
   Initial Atomic UHF Energy:      0.0000000000
@@ -597,9 +775,18 @@ Total time:
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom C:     0.00000000000000
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 3 which is Atom 8:
+  UHF Computation for Unique Atom 3 which is Atom 8:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H(Gh)      0.000000000000     0.000000000000     1.178914541640     1.007825032070
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
@@ -609,13 +796,35 @@ Total time:
   Occupation: nalpha = 0, nbeta = 0, norbs = 5
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           H(Gh)      0.000000000000     0.000000000000     0.000000000000     1.007825032070
+           H(Gh)      0.000000000000     0.000000000000     1.178914541640     1.007825032070
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 5
+    Number of basis function: 11
+    Number of Cartesian functions: 12
+    Spherical Harmonics?: true
+    Max angular momentum: 2
 
 
   Initial Atomic UHF Energy:      0.0000000000
@@ -625,27 +834,27 @@ Total time:
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom H:     0.00000000000000
+Finished UHF Computation!
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -78.57056843484007   -7.85706e+01   2.99167e-02 
-   @DF-RHF iter   1:   -78.00134242682188    5.69226e-01   2.43405e-03 
-   @DF-RHF iter   2:   -78.03620374758493   -3.48613e-02   7.58617e-04 DIIS
-   @DF-RHF iter   3:   -78.03980567453934   -3.60193e-03   2.63933e-04 DIIS
-   @DF-RHF iter   4:   -78.04024984098157   -4.44166e-04   3.74546e-05 DIIS
-   @DF-RHF iter   5:   -78.04026659377217   -1.67528e-05   6.51047e-06 DIIS
-   @DF-RHF iter   6:   -78.04026715740440   -5.63632e-07   1.54699e-06 DIIS
-   @DF-RHF iter   7:   -78.04026719459101   -3.71866e-08   3.73657e-07 DIIS
-   @DF-RHF iter   8:   -78.04026719684170   -2.25069e-09   6.68400e-08 DIIS
-   @DF-RHF iter   9:   -78.04026719689868   -5.69855e-11   2.22367e-08 DIIS
-   @DF-RHF iter  10:   -78.04026719690246   -3.78009e-12   8.42964e-09 DIIS
-   @DF-RHF iter  11:   -78.04026719690332   -8.52651e-13   2.14871e-09 DIIS
-   @DF-RHF iter  12:   -78.04026719690333   -1.42109e-14   5.73115e-10 DIIS
-   @DF-RHF iter  13:   -78.04026719690334   -1.42109e-14   1.33742e-10 DIIS
-   @DF-RHF iter  14:   -78.04026719690340   -5.68434e-14   2.06787e-11 DIIS
-   @DF-RHF iter  15:   -78.04026719690340    0.00000e+00   5.76629e-12 DIIS
+   @DF-RHF iter   0:   -78.11448048400747   -7.81145e+01   2.62347e-02 
+   @DF-RHF iter   1:   -77.98289296792339    1.31588e-01   3.20682e-03 
+   @DF-RHF iter   2:   -78.03404650661207   -5.11535e-02   1.02814e-03 DIIS
+   @DF-RHF iter   3:   -78.03948763862809   -5.44113e-03   3.37947e-04 DIIS
+   @DF-RHF iter   4:   -78.04024694826651   -7.59310e-04   4.14038e-05 DIIS
+   @DF-RHF iter   5:   -78.04026527138423   -1.83231e-05   1.13699e-05 DIIS
+   @DF-RHF iter   6:   -78.04026701445888   -1.74307e-06   3.33348e-06 DIIS
+   @DF-RHF iter   7:   -78.04026718890454   -1.74446e-07   7.41099e-07 DIIS
+   @DF-RHF iter   8:   -78.04026719681434   -7.90980e-09   1.11353e-07 DIIS
+   @DF-RHF iter   9:   -78.04026719688935   -7.50049e-11   3.93672e-08 DIIS
+   @DF-RHF iter  10:   -78.04026719689865   -9.30811e-12   7.29471e-09 DIIS
+   @DF-RHF iter  11:   -78.04026719689915   -4.97380e-13   1.57060e-09 DIIS
+   @DF-RHF iter  12:   -78.04026719689928   -1.27898e-13   2.97777e-10 DIIS
+   @DF-RHF iter  13:   -78.04026719689918    9.94760e-14   3.31744e-11 DIIS
+   @DF-RHF iter  14:   -78.04026719689925   -7.10543e-14   8.44130e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -693,24 +902,22 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -78.04026719690340
+  @DF-RHF Final Energy:   -78.04026719689925
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             33.3580720823350561
-    One-Electron Energy =                -169.9976731494428464
-    Two-Electron Energy =                  58.5993338702044468
+    Nuclear Repulsion Energy =             33.3580720823350489
+    One-Electron Energy =                -169.9976731488769701
+    Two-Electron Energy =                  58.5993338696426846
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -78.0402671969033292
+    Total Energy =                        -78.0402671968992365
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -718,41 +925,47 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:   -64.3577
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    64.3120
+     X:     0.0000      Y:     0.0000      Z:    64.3120
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.0456     Total:     0.0456
+     X:     0.0000      Y:     0.0000      Z:    -0.0456     Total:     0.0456
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:    -0.1160     Total:     0.1160
+     X:     0.0000      Y:     0.0000      Z:    -0.1160     Total:     0.1160
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:49 2016
+*** tstop() called on psinet at Mon May 15 15:33:56 2017
 Module time:
-	user time   =       0.70 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.19 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       1.69 seconds =       0.03 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.13 seconds =       0.05 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:49 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:33:56 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2, 7-8  entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3-6, 9-10 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -765,7 +978,7 @@ Total time:
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
            C(Gh)      0.000000000000    -0.667578000000    -2.128156293689    12.000000000000
-           C(Gh)      0.000000000000     0.667578000000    -2.128156293689    12.000000000000
+           C(Gh)     -0.000000000000     0.667578000000    -2.128156293689    12.000000000000
            H(Gh)      0.923621000000    -1.232253000000    -2.129682293689     1.007825032070
            H(Gh)     -0.923621000000    -1.232253000000    -2.129682293689     1.007825032070
            H(Gh)     -0.923621000000     1.232253000000    -2.129682293689     1.007825032070
@@ -779,7 +992,7 @@ Total time:
 
   Rotational constants: A =      0.83222  B =      0.05986  C =      0.05715 [cm^-1]
   Rotational constants: A =  24949.38471  B =   1794.70290  C =   1713.30620 [MHz]
-  Nuclear repulsion =   24.697946102750784
+  Nuclear repulsion =   24.697946102750770
 
   Charge       = 0
   Multiplicity = 1
@@ -801,11 +1014,20 @@ Total time:
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 42
     Number of basis function: 86
     Number of Cartesian functions: 90
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2, 7-8  entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 3-6, 9-10 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -826,7 +1048,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           LOAD
     Schwarz Cutoff:          1E-12
@@ -834,7 +1056,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 150
     Number of basis function: 418
     Number of Cartesian functions: 474
@@ -843,6 +1066,7 @@ Total time:
 
   Minimum eigenvalue in the overlap matrix is 7.1821828298E-04.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   Determining Atomic Occupations
@@ -859,8 +1083,16 @@ Total time:
 
   Performing Atomic UHF Computations:
 
-  UHF Computation for Unique Atom 0 which is Atom 0:
+  UHF Computation for Unique Atom 0 which is Atom 0:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C(Gh)      0.000000000000    -1.261539592340    -4.021632563049    12.000000000000
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 6
     Number of basis function: 14
     Number of Cartesian functions: 15
@@ -870,13 +1102,35 @@ Total time:
   Occupation: nalpha = 0, nbeta = 0, norbs = 14
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C(Gh)      0.000000000000     0.000000000000     0.000000000000    12.000000000000
+           C(Gh)      0.000000000000    -1.261539592340    -4.021632563049    12.000000000000
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 14
+    Number of basis function: 40
+    Number of Cartesian functions: 46
+    Spherical Harmonics?: true
+    Max angular momentum: 3
 
 
   Initial Atomic UHF Energy:      0.0000000000
@@ -886,9 +1140,18 @@ Total time:
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom C:     0.00000000000000
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 1 which is Atom 2:
+  UHF Computation for Unique Atom 1 which is Atom 2:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H(Gh)      1.745390740582    -2.328620696427    -4.024516285128     1.007825032070
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
@@ -898,13 +1161,35 @@ Total time:
   Occupation: nalpha = 0, nbeta = 0, norbs = 5
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           H(Gh)      0.000000000000     0.000000000000     0.000000000000     1.007825032070
+           H(Gh)      1.745390740582    -2.328620696427    -4.024516285128     1.007825032070
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 5
+    Number of basis function: 11
+    Number of Cartesian functions: 12
+    Spherical Harmonics?: true
+    Max angular momentum: 2
 
 
   Initial Atomic UHF Energy:      0.0000000000
@@ -914,9 +1199,18 @@ Total time:
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom H:     0.00000000000000
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 2 which is Atom 6:
+  UHF Computation for Unique Atom 2 which is Atom 6:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     5.474547390335    12.000000000000
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 6
     Number of basis function: 14
     Number of Cartesian functions: 15
@@ -926,33 +1220,60 @@ Total time:
   Occupation: nalpha = 4, nbeta = 2, norbs = 14
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000000     0.000000000000     0.000000000000    12.000000000000
+           C          0.000000000000     0.000000000000     5.474547390335    12.000000000000
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 14
+    Number of basis function: 40
+    Number of Cartesian functions: 46
+    Spherical Harmonics?: true
+    Max angular momentum: 3
 
 
   Initial Atomic UHF Energy:    -26.3157361531
 
                                          Total Energy            Delta E              Density RMS
 
-  @Atomic UHF iteration   1 energy:   -36.74995545600607      -10.43421930287275     0.20381491156350
-  @Atomic UHF iteration   2 energy:   -37.68068984183026       -0.93073438582419     0.00852644437166
-  @Atomic UHF iteration   3 energy:   -37.68595888387346       -0.00526904204320     0.00155453215419
-  @Atomic UHF iteration   4 energy:   -37.68642674153998       -0.00046785766652     0.00076228587775
-  @Atomic UHF iteration   5 energy:   -37.68652014420294       -0.00009340266296     0.00036724853909
-  @Atomic UHF iteration   6 energy:   -37.68653937625643       -0.00001923205349     0.00017378246339
-  @Atomic UHF iteration   7 energy:   -37.68654337893653       -0.00000400268009     0.00008129601975
-  @Atomic UHF iteration   8 energy:   -37.68654421564283       -0.00000083670631     0.00003774785218
-  @Atomic UHF iteration   9 energy:   -37.68654439085712       -0.00000017521429     0.00001744235457
-  @Atomic UHF iteration  10 energy:   -37.68654442757530       -0.00000003671818     0.00000803420949
-  @Atomic UHF Final Energy for atom C:   -37.68654442757530
+  @Atomic UHF iteration   1 energy:   -36.74948949040441      -10.43375333727103     0.05752929853634
+  @Atomic UHF iteration   2 energy:   -37.68052092932640       -0.93103143892199     0.00544575040010
+  @Atomic UHF iteration   3 energy:   -37.68584073896872       -0.00531980964232     0.00140927829672
+  @Atomic UHF iteration   4 energy:   -37.68629395409350       -0.00045321512478     0.00050181615094
+  @Atomic UHF iteration   5 energy:   -37.68636360728494       -0.00006965319144     0.00004171531462
+  @Atomic UHF iteration   6 energy:   -37.68636389819801       -0.00000029091307     0.00000616994789
+  @Atomic UHF Final Energy for atom C:   -37.68636389819801
+Finished UHF Computation!
 
-  UHF Computation for Unique Atom 3 which is Atom 8:
+  UHF Computation for Unique Atom 3 which is Atom 8:    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000     1.178914541640     1.007825032070
+
+
   Basis Set: CC-PVDZ
+    Blend: BASIS
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
@@ -962,13 +1283,35 @@ Total time:
   Occupation: nalpha = 1, nbeta = 0, norbs = 5
 
   Atom:
-    Full point group: C1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Molecular point group: c1
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           H          0.000000000000     0.000000000000     0.000000000000     1.007825032070
+           H          0.000000000000     0.000000000000     1.178914541640     1.007825032070
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               250
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: SAD-FIT
+    Blend: BASIS
+    Number of shells: 5
+    Number of basis function: 11
+    Number of Cartesian functions: 12
+    Spherical Harmonics?: true
+    Max angular momentum: 2
 
 
   Initial Atomic UHF Energy:     -0.2496392017
@@ -978,26 +1321,27 @@ Total time:
   @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
   @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
   @Atomic UHF Final Energy for atom H:    -0.49927840341958
+Finished UHF Computation!
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -77.70505495365055   -7.77051e+01   2.82796e-02 
-   @DF-RHF iter   1:   -76.80048817737878    9.04567e-01   2.06522e-03 
-   @DF-RHF iter   2:   -76.82394981827872   -2.34616e-02   4.47924e-04 DIIS
-   @DF-RHF iter   3:   -76.82536389245482   -1.41407e-03   1.23547e-04 DIIS
-   @DF-RHF iter   4:   -76.82545775950106   -9.38670e-05   2.49687e-05 DIIS
-   @DF-RHF iter   5:   -76.82546272703115   -4.96753e-06   6.03375e-06 DIIS
-   @DF-RHF iter   6:   -76.82546301953170   -2.92501e-07   3.05099e-06 DIIS
-   @DF-RHF iter   7:   -76.82546306670832   -4.71766e-08   8.48579e-07 DIIS
-   @DF-RHF iter   8:   -76.82546307264457   -5.93624e-09   1.58750e-07 DIIS
-   @DF-RHF iter   9:   -76.82546307295777   -3.13207e-10   1.76677e-08 DIIS
-   @DF-RHF iter  10:   -76.82546307296175   -3.97904e-12   4.82784e-09 DIIS
-   @DF-RHF iter  11:   -76.82546307296235   -5.96856e-13   2.49926e-09 DIIS
-   @DF-RHF iter  12:   -76.82546307296249   -1.42109e-13   2.50016e-10 DIIS
-   @DF-RHF iter  13:   -76.82546307296255   -5.68434e-14   3.57905e-11 DIIS
-   @DF-RHF iter  14:   -76.82546307296235    1.98952e-13   5.92189e-12 DIIS
+   @DF-RHF iter   0:   -77.70255331956803   -7.77026e+01   2.82725e-02 
+   @DF-RHF iter   1:   -76.80035981178879    9.02194e-01   2.06866e-03 
+   @DF-RHF iter   2:   -76.82392011597966   -2.35603e-02   4.50813e-04 DIIS
+   @DF-RHF iter   3:   -76.82535917796525   -1.43906e-03   1.25216e-04 DIIS
+   @DF-RHF iter   4:   -76.82545702387473   -9.78459e-05   2.60644e-05 DIIS
+   @DF-RHF iter   5:   -76.82546263871527   -5.61484e-06   6.46317e-06 DIIS
+   @DF-RHF iter   6:   -76.82546301750132   -3.78786e-07   2.95973e-06 DIIS
+   @DF-RHF iter   7:   -76.82546306498658   -4.74853e-08   1.00462e-06 DIIS
+   @DF-RHF iter   8:   -76.82546307257773   -7.59115e-09   1.71083e-07 DIIS
+   @DF-RHF iter   9:   -76.82546307293255   -3.54817e-10   1.70454e-08 DIIS
+   @DF-RHF iter  10:   -76.82546307293597   -3.42482e-12   4.30166e-09 DIIS
+   @DF-RHF iter  11:   -76.82546307293630   -3.26850e-13   2.30969e-09 DIIS
+   @DF-RHF iter  12:   -76.82546307293664   -3.41061e-13   2.80499e-10 DIIS
+   @DF-RHF iter  13:   -76.82546307293659    5.68434e-14   4.26681e-11 DIIS
+   @DF-RHF iter  14:   -76.82546307293671   -1.27898e-13   6.36643e-12 DIIS
 
   ==> Post-Iterations <==
 
@@ -1046,24 +1390,22 @@ Total time:
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.82546307296235
+  @DF-RHF Final Energy:   -76.82546307293671
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             24.6979461027507838
-    One-Electron Energy =                -151.5076339641817071
-    Two-Electron Energy =                  49.9842247884685591
+    Nuclear Repulsion Energy =             24.6979461027507696
+    One-Electron Energy =                -151.5076339641573213
+    Two-Electron Energy =                  49.9842247884698452
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.8254630729623500
+    Total Energy =                        -76.8254630729367136
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1080,25 +1422,31 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0023     Total:     0.0023
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:49 2016
+*** tstop() called on psinet at Mon May 15 15:33:57 2017
 Module time:
-	user time   =       0.60 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       1.13 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.41 seconds =       0.04 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       4.27 seconds =       0.07 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_SAPT
+    atoms 1-2, 7-8  entry C          line   158 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 3-6, 9-10 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               SAPT0               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:49 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:33:57 2017
 
         SAPT0  
     Ed Hohenstein
@@ -1116,26 +1464,26 @@ Total time:
     NVIR A     =        78
     NVIR B     =        79
 
-    Elst10,r            =    -0.003599150574 H
-    Exch10              =     0.003629111563 H
-    Exch10 (S^2)        =     0.003615540810 H
+    Elst10,r            =    -0.003599150578 [Eh]
+    Exch10              =     0.003629111562 [Eh]
+    Exch10 (S^2)        =     0.003615540809 [Eh]
 
-    Iter     Energy (mH)           dE (mH)          Residual      Time (s)
-       1      -0.79876872       0.798768719       4.654042664             0
+    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]
+       1      -0.79876872       0.798768719       4.654042663             0
        2      -1.03798579       0.239217075       1.200554616             0
        3      -1.04648145       0.008495656       0.246999252             0
-       4      -1.04232524      -0.004156210       0.045819181             0
-       5      -1.04244021       0.000114970       0.013062769             0
-       6      -1.04257703       0.000136817       0.001856613             0
-       7      -1.04256329      -0.000013733       0.000322231             0
-       8      -1.04256426       0.000000965       0.000041974             0
-       9      -1.04256425      -0.000000008       0.000007093             0
-      10      -1.04256424      -0.000000010       0.000000659             0
+       4      -1.04232524      -0.004156210       0.045819181             1
+       5      -1.04244021       0.000114970       0.013062769             1
+       6      -1.04257703       0.000136817       0.001856613             1
+       7      -1.04256329      -0.000013733       0.000322231             1
+       8      -1.04256426       0.000000965       0.000041974             1
+       9      -1.04256425      -0.000000008       0.000007093             1
+      10      -1.04256424      -0.000000010       0.000000659             1
 
     CHF Iterations converged
 
 
-    Iter     Energy (mH)           dE (mH)          Residual      Time (s)
+    Iter     Energy [mEh]          dE [mEh]         Residual      Time [s]
        1      -0.12162693       0.121626926       2.821119164             0
        2      -0.12502925       0.003402324       0.860046422             0
        3      -0.13754132       0.012512067       0.147429109             0
@@ -1150,63 +1498,61 @@ Total time:
 
     CHF Iterations converged
 
-    Ind20,r (A<-B)      =    -0.001042564241 H
-    Ind20,r (B<-A)      =    -0.000137054961 H
-    Ind20,r             =    -0.001179619203 H
-    Exch-Ind20,r (A<-B) =     0.000789228356 H
-    Exch-Ind20,r (B<-A) =     0.000052657706 H
-    Exch-Ind20,r        =     0.000841886062 H
-    Disp20              =    -0.001737715247 H
-    Disp20 (SS)         =    -0.000868857623 H
-    Disp20 (OS)         =    -0.000868857623 H
-    Exch-Disp20         =     0.000232291506 H
-    Exch-Disp20 (SS)    =     0.000136734075 H
-    Exch-Disp20 (OS)    =     0.000095557431 H
+    Ind20,r (A<-B)      =    -0.001042564241 [Eh]
+    Ind20,r (B<-A)      =    -0.000137054961 [Eh]
+    Ind20,r             =    -0.001179619202 [Eh]
+    Exch-Ind20,r (A<-B) =     0.000789228355 [Eh]
+    Exch-Ind20,r (B<-A) =     0.000052657706 [Eh]
+    Exch-Ind20,r        =     0.000841886061 [Eh]
+    Disp20              =    -0.001737715247 [Eh]
+    Disp20 (SS)         =    -0.000868857623 [Eh]
+    Disp20 (OS)         =    -0.000868857623 [Eh]
+    Exch-Disp20         =     0.000232291505 [Eh]
+    Exch-Disp20 (SS)    =     0.000136734075 [Eh]
+    Exch-Disp20 (OS)    =     0.000095557431 [Eh]
 
     SAPT Results 
-  --------------------------------------------------------------------------
-    Electrostatics               -3.59915057 mH      -2.25850118 kcal mol^-1
-      Elst10,r                   -3.59915057 mH      -2.25850118 kcal mol^-1
+  --------------------------------------------------------------------------------------------------------
+    Electrostatics                 -3.59915058 [mEh]      -2.25850118 [kcal/mol]      -9.44956984 [kJ/mol]
+      Elst10,r                     -3.59915058 [mEh]      -2.25850118 [kcal/mol]      -9.44956984 [kJ/mol]
 
-    Exchange                      3.62911156 mH       2.27730198 kcal mol^-1
-      Exch10                      3.62911156 mH       2.27730198 kcal mol^-1
-      Exch10(S^2)                 3.61554081 mH       2.26878621 kcal mol^-1
+    Exchange                        3.62911156 [mEh]       2.27730198 [kcal/mol]       9.52823241 [kJ/mol]
+      Exch10                        3.62911156 [mEh]       2.27730198 [kcal/mol]       9.52823241 [kJ/mol]
+      Exch10(S^2)                   3.61554081 [mEh]       2.26878621 [kcal/mol]       9.49260239 [kJ/mol]
 
-    Induction                    -0.83137116 mH      -0.52169330 kcal mol^-1
-      Ind20,r                    -1.17961920 mH      -0.74022226 kcal mol^-1
-      Exch-Ind20,r                0.84188606 mH       0.52829150 kcal mol^-1
-      delta HF,r (2)             -0.49363802 mH      -0.30976255 kcal mol^-1
+    Induction                      -0.83137114 [mEh]      -0.52169329 [kcal/mol]      -2.18276493 [kJ/mol]
+      Ind20,r                      -1.17961920 [mEh]      -0.74022226 [kcal/mol]      -3.09709022 [kJ/mol]
+      Exch-Ind20,r                  0.84188606 [mEh]       0.52829150 [kcal/mol]       2.21037185 [kJ/mol]
+      delta HF,r (2)               -0.49363800 [mEh]      -0.30976253 [kcal/mol]      -1.29604657 [kJ/mol]
 
-    Dispersion                   -1.50542374 mH      -0.94466770 kcal mol^-1
-      Disp20                     -1.73771525 mH      -1.09043283 kcal mol^-1
-      Exch-Disp20                 0.23229151 mH       0.14576513 kcal mol^-1
-      Disp20 (SS)                -0.86885762 mH      -0.54521641 kcal mol^-1
-      Disp20 (OS)                -0.86885762 mH      -0.54521641 kcal mol^-1
-      Exch-Disp20 (SS)            0.13673407 mH       0.08580193 kcal mol^-1
-      Exch-Disp20 (OS)            0.09555743 mH       0.05996320 kcal mol^-1
+    Dispersion                     -1.50542374 [mEh]      -0.94466770 [kcal/mol]      -3.95249003 [kJ/mol]
+      Disp20                       -1.73771525 [mEh]      -1.09043283 [kcal/mol]      -4.56237138 [kJ/mol]
+      Exch-Disp20                   0.23229151 [mEh]       0.14576513 [kcal/mol]       0.60988135 [kJ/mol]
+      Disp20 (SS)                  -0.86885762 [mEh]      -0.54521641 [kcal/mol]      -2.28118569 [kJ/mol]
+      Disp20 (OS)                  -0.86885762 [mEh]      -0.54521641 [kcal/mol]      -2.28118569 [kJ/mol]
+      Exch-Disp20 (SS)              0.13673407 [mEh]       0.08580193 [kcal/mol]       0.35899531 [kJ/mol]
+      Exch-Disp20 (OS)              0.09555743 [mEh]       0.05996320 [kcal/mol]       0.25088603 [kJ/mol]
 
-
-  Total HF                           -0.80141017 mH      -0.50289250 kcal mol^-1
-  Total SAPT0                        -2.30683391 mH      -1.44756020 kcal mol^-1
+  Total HF                         -0.80141016 [mEh]      -0.50289249 [kcal/mol]      -2.10410237 [kJ/mol]
+  Total SAPT0                      -2.30683390 [mEh]      -1.44756019 [kcal/mol]      -6.05659240 [kJ/mol]
 
   Special recipe for scaled SAPT0 (see Manual):
-    Electrostatics sSAPT0        -3.59915057 mH      -2.25850118 kcal mol^-1
-    Exchange sSAPT0               3.62911156 mH       2.27730198 kcal mol^-1
-    Induction sSAPT0             -0.82185560 mH      -0.51572220 kcal mol^-1
-    Dispersion sSAPT0            -1.50279823 mH      -0.94302016 kcal mol^-1
-  Total sSAPT0                       -2.29469284 mH      -1.43994156 kcal mol^-1
+    Electrostatics sSAPT0          -3.59915058 [mEh]      -2.25850118 [kcal/mol]      -9.44956984 [kJ/mol]
+    Exchange sSAPT0                 3.62911156 [mEh]       2.27730198 [kcal/mol]       9.52823241 [kJ/mol]
+    Induction sSAPT0               -0.82185558 [mEh]      -0.51572218 [kcal/mol]      -2.15778183 [kJ/mol]
+    Dispersion sSAPT0              -1.50279823 [mEh]      -0.94302016 [kcal/mol]      -3.94559675 [kJ/mol]
+  Total sSAPT0                     -2.29469283 [mEh]      -1.43994155 [kcal/mol]      -6.02471601 [kJ/mol]
+  --------------------------------------------------------------------------------------------------------
 
-  --------------------------------------------------------------------------
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:50 2016
+*** tstop() called on psinet at Mon May 15 15:33:58 2017
 Module time:
-	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.15 seconds =       0.00 minutes
+	user time   =       0.84 seconds =       0.01 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.07 seconds =       0.05 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       5.22 seconds =       0.09 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 	Nuclear Repulsion Energy..........................................PASSED
 	SAPT0 Eelst.......................................................PASSED
 	SAPT0 Eexch.......................................................PASSED
@@ -1214,4 +1560,4 @@ Total time:
 	SAPT0 Edisp.......................................................PASSED
 	SAPT0 Etotal......................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

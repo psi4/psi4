@@ -1,33 +1,34 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:12:42 2016
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:   7272
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  20419
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Sample UHF/6-31G** CH2 computation
-
-memory 250 mb
 
 molecule ch2 {
   0 3
@@ -46,17 +47,23 @@ energy ('scf')
 compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF energy')  #TEST
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+*** tstart() called on psinet
+*** at Mon May 15 15:40:10 2017
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:42 2016
+   => Loading Basis Set <=
+
+    Name: 6-31G**
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   106 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -76,7 +83,7 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
 
   Rotational constants: A =     55.20666  B =      8.54550  C =      7.40004 [cm^-1]
   Rotational constants: A = 1655054.02216  B = 256187.76160  C = 221847.69550 [MHz]
-  Nuclear repulsion =    6.174548543272020
+  Nuclear repulsion =    6.174548543272019
 
   Charge       = 0
   Multiplicity = 3
@@ -90,7 +97,7 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is GWH.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -98,11 +105,20 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
   ==> Primary Basis <==
 
   Basis Set: 6-31G**
+    Blend: 6-31G**
     Number of shells: 12
     Number of basis function: 25
     Number of Cartesian functions: 25
     Spherical Harmonics?: false
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (6-31G** AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -126,7 +142,7 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -134,7 +150,8 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (6-31G** AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 131
     Number of Cartesian functions: 131
@@ -143,28 +160,29 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
 
   Minimum eigenvalue in the overlap matrix is 3.5780211490E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter   1:   -34.62027814623652   -3.46203e+01   1.94991e-01 
-   @DF-UHF iter   2:   -38.25166648423128   -3.63139e+00   6.52248e-02 DIIS
-   @DF-UHF iter   3:   -38.91280743663535   -6.61141e-01   9.41848e-03 DIIS
-   @DF-UHF iter   4:   -38.92405916503632   -1.12517e-02   1.86643e-03 DIIS
-   @DF-UHF iter   5:   -38.92514117392027   -1.08201e-03   5.52069e-04 DIIS
-   @DF-UHF iter   6:   -38.92531141096379   -1.70237e-04   2.25194e-04 DIIS
-   @DF-UHF iter   7:   -38.92533302719262   -2.16162e-05   6.45764e-05 DIIS
-   @DF-UHF iter   8:   -38.92533456931786   -1.54213e-06   1.23192e-05 DIIS
-   @DF-UHF iter   9:   -38.92533462457236   -5.52545e-08   3.37266e-06 DIIS
-   @DF-UHF iter  10:   -38.92533462870696   -4.13460e-09   7.57679e-07 DIIS
+   @DF-UHF iter   1:   -38.30446511908877   -3.83045e+01   7.63815e-02 
+   @DF-UHF iter   2:   -38.89902595985197   -5.94561e-01   1.61171e-02 DIIS
+   @DF-UHF iter   3:   -38.92312688132606   -2.41009e-02   3.02401e-03 DIIS
+   @DF-UHF iter   4:   -38.92491357642594   -1.78670e-03   1.08671e-03 DIIS
+   @DF-UHF iter   5:   -38.92528736228018   -3.73786e-04   3.42545e-04 DIIS
+   @DF-UHF iter   6:   -38.92533134601543   -4.39837e-05   9.12768e-05 DIIS
+   @DF-UHF iter   7:   -38.92533431959774   -2.97358e-06   2.62980e-05 DIIS
+   @DF-UHF iter   8:   -38.92533459366038   -2.74063e-07   8.91434e-06 DIIS
+   @DF-UHF iter   9:   -38.92533462775775   -3.40974e-08   1.73053e-06 DIIS
+   @DF-UHF iter  10:   -38.92533462887528   -1.11753e-09   3.23642e-07 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.582814402E-02
+   @Spin Contamination Metric:   1.582810371E-02
    @S^2 Expected:                2.000000000E+00
-   @S^2 Observed:                2.015828144E+00
+   @S^2 Observed:                2.015828104E+00
    @S   Expected:                1.000000000E+00
    @S   Observed:                1.000000000E+00
 
@@ -173,33 +191,33 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
 
     Alpha Occupied:                                                       
 
-       1A1   -11.259489     2A1    -0.946324     1B2    -0.614187  
+       1A1   -11.259490     2A1    -0.946324     1B2    -0.614187  
        3A1    -0.446641     1B1    -0.406540  
 
     Alpha Virtual:                                                        
 
-       4A1     0.254317     2B2     0.328010     5A1     0.719488  
+       4A1     0.254317     2B2     0.328009     5A1     0.719488  
        2B1     0.730066     3B2     0.777139     6A1     0.791724  
-       7A1     1.133884     4B2     1.181427     1A2     1.661410  
-       8A1     1.827810     3B1     1.850461     5B2     2.090005  
-       9A1     2.263842     4B1     2.611908     6B2     2.754765  
-      10A1     2.881239     2A2     2.945060     7B2     3.698886  
-      11A1     3.802033    12A1     4.619087  
+       7A1     1.133884     4B2     1.181427     1A2     1.661409  
+       8A1     1.827809     3B1     1.850461     5B2     2.090004  
+       9A1     2.263841     4B1     2.611908     6B2     2.754764  
+      10A1     2.881238     2A2     2.945060     7B2     3.698886  
+      11A1     3.802033    12A1     4.619086  
 
     Beta Occupied:                                                        
 
-       1A1   -11.212010     2A1    -0.771733     1B2    -0.581859  
+       1A1   -11.212011     2A1    -0.771734     1B2    -0.581859  
 
     Beta Virtual:                                                         
 
        3A1     0.149226     1B1     0.175368     4A1     0.288419  
        2B2     0.361742     5A1     0.805431     3B2     0.810979  
-       2B1     0.898256     6A1     0.909209     7A1     1.179675  
-       4B2     1.222764     1A2     1.746390     8A1     1.974114  
+       2B1     0.898256     6A1     0.909209     7A1     1.179674  
+       4B2     1.222763     1A2     1.746390     8A1     1.974113  
        3B1     2.017092     5B2     2.120179     9A1     2.340499  
-       4B1     2.639688     6B2     2.791356    10A1     2.900005  
+       4B1     2.639687     6B2     2.791355    10A1     2.900004  
        2A2     2.986933     7B2     3.716570    11A1     3.829397  
-      12A1     4.686616  
+      12A1     4.686615  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -208,24 +226,32 @@ compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF e
 
   Energy converged.
 
-  @DF-UHF Final Energy:   -38.92533462870696
+  @DF-UHF Final Energy:   -38.92533462887528
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              6.1745485432720200
-    One-Electron Energy =                 -63.9609745097482474
-    Two-Electron Energy =                  18.8610913377692704
+    Nuclear Repulsion Energy =              6.1745485432720191
+    One-Electron Energy =                 -63.9609794076858265
+    Two-Electron Energy =                  18.8610962355385325
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -38.9253346287069633
+    Total Energy =                        -38.9253346288752766
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+  UHF NO Occupations:
+  HONO-2 :    2 A1 1.9940417
+  HONO-1 :    1 B1 1.0000000
+  HONO-0 :    3 A1 1.0000000
+  LUNO+0 :    4 A1 0.0059583
+  LUNO+1 :    2 B2 0.0019737
+  LUNO+2 :    5 A1 0.0000018
+  LUNO+3 :    6 A1 0.0000000
+
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -242,27 +268,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.5568     Total:     0.5568
 
 
-  Saving occupied orbitals to File 180.
-
-  UHF NO Occupations:
-  HONO-2 :    2 A1 1.9940416
-  HONO-1 :    1 B1 1.0000000
-  HONO-0 :    3 A1 1.0000000
-  LUNO+0 :    4 A1 0.0059584
-  LUNO+1 :    2 B2 0.0019736
-  LUNO+2 :    5 A1 0.0000018
-  LUNO+3 :    3 B2 0.0000000
-
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:42 2016
+*** tstop() called on psinet at Mon May 15 15:40:11 2017
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 	SCF energy........................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

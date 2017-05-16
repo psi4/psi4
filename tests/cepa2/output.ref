@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:26:04 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:  12147
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13239
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -58,24 +61,24 @@ compare_values(refQdpACPF, get_variable("ACPF QUADRUPOLE ZZ"), 5, "ACPF ZZ Compo
 
 clean()
 --------------------------------------------------------------------------
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:03 2017
+
    => Loading Basis Set <=
 
-    Role: BASIS
-    Keyword: BASIS
     Name: CC-PVDZ
-    atoms 1   entry O          line   190 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-    atoms 2-3 entry H          line    20 file /home/dsmith/Gits/dgas_psi/share/basis/cc-pvdz.gbs
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:26:04 2016
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -109,7 +112,7 @@ clean()
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
@@ -118,6 +121,7 @@ clean()
 
   -AO BASIS SET INFORMATION:
     Name                   = CC-PVDZ
+    Blend                  = CC-PVDZ
     Total number of shells = 12
     Number of primitives   = 32
     Number of AO           = 25
@@ -147,46 +151,52 @@ clean()
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     107] index = [             0,5778]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 3.7382439507E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    2 ]
-
-   @RHF iter   1:   -68.92345273387481   -6.89235e+01   2.17246e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -69.87832927887132   -9.54877e-01   1.85057e-01 DIIS
-   @RHF iter   3:   -75.76505683712050   -5.88673e+00   5.89320e-02 DIIS
-   @RHF iter   4:   -75.99909055478020   -2.34034e-01   1.58268e-02 DIIS
-   @RHF iter   5:   -76.02109883592935   -2.20083e-02   1.49473e-03 DIIS
-   @RHF iter   6:   -76.02136729063042   -2.68455e-04   7.42845e-04 DIIS
-   @RHF iter   7:   -76.02141644684093   -4.91562e-05   9.96120e-05 DIIS
-   @RHF iter   8:   -76.02141833859488   -1.89175e-06   3.53792e-05 DIIS
-   @RHF iter   9:   -76.02141844395750   -1.05363e-07   2.19420e-06 DIIS
-   @RHF iter  10:   -76.02141844507088   -1.11338e-09   8.32534e-07 DIIS
-   @RHF iter  11:   -76.02141844515246   -8.15845e-11   1.58269e-07 DIIS
-   @RHF iter  12:   -76.02141844515485   -2.38742e-12   1.09922e-08 DIIS
-   @RHF iter  13:   -76.02141844515486   -1.42109e-14   1.07089e-09 DIIS
-   @RHF iter  14:   -76.02141844515484    2.84217e-14   1.45663e-10 DIIS
-   @RHF iter  15:   -76.02141844515484    0.00000e+00   8.92670e-12 DIIS
+   @RHF iter   0:   -75.82127221040778   -7.58213e+01   1.11204e-01 
+   @RHF iter   1:   -75.99645439731029   -1.75182e-01   1.79501e-02 
+   @RHF iter   2:   -76.01558599244962   -1.91316e-02   9.08257e-03 DIIS
+   @RHF iter   3:   -76.02117245232881   -5.58646e-03   1.30382e-03 DIIS
+   @RHF iter   4:   -76.02138663855784   -2.14186e-04   3.38846e-04 DIIS
+   @RHF iter   5:   -76.02141595932180   -2.93208e-05   8.79377e-05 DIIS
+   @RHF iter   6:   -76.02141839738947   -2.43807e-06   1.36441e-05 DIIS
+   @RHF iter   7:   -76.02141844497399   -4.75845e-08   9.87821e-07 DIIS
+   @RHF iter   8:   -76.02141844515114   -1.77153e-10   1.43569e-07 DIIS
+   @RHF iter   9:   -76.02141844515486   -3.72324e-12   2.02677e-08 DIIS
+   @RHF iter  10:   -76.02141844515496   -9.94760e-14   3.01829e-09 DIIS
+   @RHF iter  11:   -76.02141844515495    1.42109e-14   4.86751e-10 DIIS
+   @RHF iter  12:   -76.02141844515498   -2.84217e-14   3.73576e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -214,24 +224,22 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02141844515484
+  @RHF Final Energy:   -76.02141844515498
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655299720665
-    One-Electron Energy =                -122.4453516198961012
-    Two-Electron Energy =                  37.6224676447691877
+    One-Electron Energy =                -122.4453516202522110
+    Two-Electron Energy =                  37.6224676451251696
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0214184451548505
+    Total Energy =                        -76.0214184451549784
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -247,37 +255,42 @@ Properties computed using the SCF density matrix
   Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.0955     Total:     2.0955
 
-  Quadrupole Moment: (Debye Ang)
-    XX:    -7.1302     YY:    -4.0304     ZZ:    -5.6737
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
-  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -1.5188     YY:     1.5810     ZZ:    -0.0623
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
-
-  Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.17728  4.17728  0.00000 -0.35455
-       2     H     0.41136  0.41136  0.00000  0.17728
-       3     H     0.41136  0.41136  0.00000  0.17728
-
-   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
-
-
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:05 2016
+*** tstop() called on psinet at Mon May 15 15:35:03 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:26:05 2016
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  11    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11561 non-zero two-electron integrals.
+        Stored in file 33.
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:04 2017
 
         ==> Transform all two-electron integrals <==
 
@@ -285,55 +298,55 @@ Total time:
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
-	h = 0; memfree         = 31999641
+	h = 0; memfree         = 65535641
 	h = 0; rows_per_bucket = 107
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31999804
+	h = 1; memfree         = 65535804
 	h = 1; rows_per_bucket = 50
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31999776
+	h = 2; memfree         = 65535776
 	h = 2; rows_per_bucket = 58
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31999674
+	h = 3; memfree         = 65535674
 	h = 3; rows_per_bucket = 85
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
 	Starting second half-transformation.
-	h = 0; memfree         = 31999641
+	h = 0; memfree         = 65535641
 	h = 0; rows_per_bucket = 96
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 31999804
+	h = 1; memfree         = 65535804
 	h = 1; rows_per_bucket = 48
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 31999776
+	h = 2; memfree         = 65535776
 	h = 2; rows_per_bucket = 54
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 31999674
+	h = 3; memfree         = 65535674
 	h = 3; rows_per_bucket = 78
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:05 2016
+*** tstop() called on psinet at Mon May 15 15:35:04 2017
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:26:05 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:04 2017
 
 
         **********************************************************
@@ -363,18 +376,18 @@ Total time:
         Sort (AB|CD) 2/2....done.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:05 2016
+*** tstop() called on psinet at Mon May 15 15:35:04 2017
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:26:05 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:04 2017
 
 
 
@@ -403,7 +416,7 @@ Total time:
 
   ==> Memory <==
 
-        available memory =                            244.14 mb
+        available memory =                            500.00 mb
         minimum memory requirements for QCISD =         0.14 mb
         memory requirements for QCISD(T) =              0.25 mb
 
@@ -419,7 +432,7 @@ Total time:
   Begin ACPF iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924070   -0.2009978017    0.1986952515        0
+      0   0 1   -0.2046924070   -0.2046924070    0.1986952515        0
       1   1 1   -0.2085656990   -0.0038732920    0.0290810310        0
       2   2 1   -0.2137816368   -0.0052159378    0.0116572859        0
       3   3 1   -0.2144416112   -0.0006599745    0.0037058964        0
@@ -433,9 +446,9 @@ Total time:
      11   8 4   -0.2145256532   -0.0000000000    0.0000001014        0
      12   8 5   -0.2145256532   -0.0000000000    0.0000000217        0
      13   8 6   -0.2145256532   -0.0000000000    0.0000000051        0
-     14   8 7   -0.2145256532    0.0000000000    0.0000000011        0
+     14   8 7   -0.2145256532   -0.0000000000    0.0000000011        0
      15   8 8   -0.2145256532   -0.0000000000    0.0000000003        0
-     16   8 1   -0.2145256532    0.0000000000    0.0000000001        0
+     16   8 1   -0.2145256532   -0.0000000000    0.0000000001        0
 
   ACPF iterations converged!
 
@@ -457,7 +470,7 @@ Total time:
         ACPF correlation energy:                -0.214525653225
       * ACPF total energy:                     -76.235944098380
 
-  Total time for ACPF iterations:       0.06 s (user)
+  Total time for ACPF iterations:       0.04 s (user)
                                         0.08 s (system)
                                            0 s (total)
 
@@ -465,14 +478,14 @@ Total time:
                                         0.01 s (system)
                                         0.00 s (total)
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:26:05 2016
+*** tstop() called on psinet at Mon May 15 15:35:04 2017
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 
@@ -525,4 +538,4 @@ Properties computed using the ACPF density matrix
 	ACPF Z Component of dipole........................................PASSED
 	ACPF ZZ Component of quadrupole...................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

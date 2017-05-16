@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:28:28 2016
+    Psi4 started on: Monday, 15 May 2017 03:38PM
 
-    Process ID:  12928
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  14994
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -49,7 +52,7 @@ H          4.24594        4.99166       -2.95361
 
 memory 1 Gb
 
-set globals {
+set {
   guess sad
   basis cc-pVDZ
 }
@@ -61,17 +64,25 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
 
 --------------------------------------------------------------------------
 
-  Memory set to 1000.000 MiB by Python script.
+  Memory set to 953.674 MiB by Python driver.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:28:28 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:38:06 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 12-13 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 7-11, 14   entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -102,7 +113,7 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
 
   Rotational constants: A =      0.18943  B =      0.05105  C =      0.04021 [cm^-1]
   Rotational constants: A =   5679.05425  B =   1530.30687  C =   1205.47409 [MHz]
-  Nuclear repulsion =  298.726499936978996
+  Nuclear repulsion =  298.726499936978826
 
   Charge       = 0
   Multiplicity = 1
@@ -124,11 +135,20 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6, 12-13 entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-11, 14   entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -157,7 +177,8 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -166,23 +187,24 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
 
   Minimum eigenvalue in the overlap matrix is 1.8610369896E-04.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:  -309.04173090666455   -3.09042e+02   3.50331e-02 
-   @DF-RHF iter   1:  -306.16451697612325    2.87721e+00   3.43058e-03 
-   @DF-RHF iter   2:  -306.36760905787020   -2.03092e-01   1.18917e-03 DIIS
-   @DF-RHF iter   3:  -306.39491459650100   -2.73055e-02   5.59021e-04 DIIS
-   @DF-RHF iter   4:  -306.40020712910456   -5.29253e-03   2.06914e-04 DIIS
-   @DF-RHF iter   5:  -306.40092057536430   -7.13446e-04   8.19697e-05 DIIS
-   @DF-RHF iter   6:  -306.40108225598698   -1.61681e-04   2.27273e-05 DIIS
-   @DF-RHF iter   7:  -306.40109447794299   -1.22220e-05   6.77090e-06 DIIS
-   @DF-RHF iter   8:  -306.40109585883869   -1.38090e-06   2.44896e-06 DIIS
-   @DF-RHF iter   9:  -306.40109619616834   -3.37330e-07   1.34355e-06 DIIS
-   @DF-RHF iter  10:  -306.40109629909210   -1.02924e-07   7.03102e-07 DIIS
+   @DF-RHF iter   0:  -308.81302102625756   -3.08813e+02   3.46657e-02 
+   @DF-RHF iter   1:  -306.16673585904454    2.64629e+00   3.48264e-03 
+   @DF-RHF iter   2:  -306.36940615483127   -2.02670e-01   1.20133e-03 DIIS
+   @DF-RHF iter   3:  -306.39478679374207   -2.53806e-02   5.96187e-04 DIIS
+   @DF-RHF iter   4:  -306.40018355455652   -5.39676e-03   2.20943e-04 DIIS
+   @DF-RHF iter   5:  -306.40093479468021   -7.51240e-04   7.50762e-05 DIIS
+   @DF-RHF iter   6:  -306.40108285367154   -1.48059e-04   2.18400e-05 DIIS
+   @DF-RHF iter   7:  -306.40109474559478   -1.18919e-05   6.55954e-06 DIIS
+   @DF-RHF iter   8:  -306.40109598226132   -1.23667e-06   2.13484e-06 DIIS
+   @DF-RHF iter   9:  -306.40109623296610   -2.50705e-07   1.13731e-06 DIIS
+   @DF-RHF iter  10:  -306.40109630724999   -7.42839e-08   6.17809e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -191,55 +213,55 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
 
     Doubly Occupied:                                                      
 
-       1A    -11.267968     2A    -11.251603     3A    -11.251180  
-       4A    -11.249953     5A    -11.248007     6A    -11.247587  
-       7A    -11.243179     8A    -11.234693     9A     -1.166020  
+       1A    -11.267967     2A    -11.251605     3A    -11.251179  
+       4A    -11.249951     5A    -11.248007     6A    -11.247587  
+       7A    -11.243180     8A    -11.234694     9A     -1.166020  
       10A     -1.064591    11A     -1.023639    12A     -0.996822  
-      13A     -0.851248    14A     -0.836781    15A     -0.745450  
-      16A     -0.701689    17A     -0.663917    18A     -0.634313  
+      13A     -0.851248    14A     -0.836781    15A     -0.745451  
+      16A     -0.701689    17A     -0.663917    18A     -0.634312  
       19A     -0.608748    20A     -0.594611    21A     -0.522019  
-      22A     -0.514219    23A     -0.506129    24A     -0.425800  
-      25A     -0.394948    26A     -0.342733    27A     -0.319390  
+      22A     -0.514218    23A     -0.506128    24A     -0.425801  
+      25A     -0.394949    26A     -0.342733    27A     -0.319390  
 
     Virtual:                                                              
 
       28A      0.100701    29A      0.127160    30A      0.180113  
       31A      0.204789    32A      0.208004    33A      0.217748  
-      34A      0.227254    35A      0.255500    36A      0.259582  
+      34A      0.227254    35A      0.255499    36A      0.259582  
       37A      0.267493    38A      0.364097    39A      0.394587  
       40A      0.441572    41A      0.447748    42A      0.476748  
       43A      0.477623    44A      0.538897    45A      0.579591  
       46A      0.594994    47A      0.654816    48A      0.678918  
-      49A      0.688131    50A      0.688693    51A      0.703834  
-      52A      0.723571    53A      0.728895    54A      0.731618  
-      55A      0.734670    56A      0.737214    57A      0.756730  
+      49A      0.688131    50A      0.688694    51A      0.703834  
+      52A      0.723571    53A      0.728895    54A      0.731619  
+      55A      0.734669    56A      0.737215    57A      0.756730  
       58A      0.812247    59A      0.814932    60A      0.824095  
       61A      0.832251    62A      0.866291    63A      0.871293  
       64A      0.900504    65A      0.914513    66A      0.914792  
-      67A      0.934364    68A      0.955636    69A      0.959827  
+      67A      0.934364    68A      0.955635    69A      0.959827  
       70A      1.057651    71A      1.085955    72A      1.096574  
-      73A      1.109334    74A      1.120857    75A      1.133496  
+      73A      1.109334    74A      1.120858    75A      1.133496  
       76A      1.169534    77A      1.225092    78A      1.232496  
       79A      1.239350    80A      1.245058    81A      1.246933  
-      82A      1.260485    83A      1.305714    84A      1.318648  
+      82A      1.260485    83A      1.305715    84A      1.318648  
       85A      1.326124    86A      1.334589    87A      1.344535  
-      88A      1.423101    89A      1.502914    90A      1.516275  
+      88A      1.423100    89A      1.502914    90A      1.516275  
       91A      1.548718    92A      1.571358    93A      1.573293  
-      94A      1.664308    95A      1.691972    96A      1.740334  
+      94A      1.664308    95A      1.691972    96A      1.740335  
       97A      1.743534    98A      1.749142    99A      1.763243  
      100A      1.766600   101A      1.845134   102A      1.868630  
-     103A      1.896184   104A      1.906083   105A      1.906402  
+     103A      1.896185   104A      1.906083   105A      1.906402  
      106A      1.921827   107A      1.941521   108A      1.956178  
      109A      1.980907   110A      2.010321   111A      2.068474  
-     112A      2.070790   113A      2.098724   114A      2.112089  
+     112A      2.070790   113A      2.098725   114A      2.112089  
      115A      2.138069   116A      2.145985   117A      2.165714  
      118A      2.202908   119A      2.223676   120A      2.239146  
      121A      2.260493   122A      2.299065   123A      2.303154  
      124A      2.365443   125A      2.484555   126A      2.501858  
      127A      2.505176   128A      2.527338   129A      2.727591  
-     130A      2.757461   131A      2.780264   132A      2.795160  
+     130A      2.757462   131A      2.780264   132A      2.795160  
      133A      2.795783   134A      2.957169   135A      3.007421  
-     136A      3.034952   137A      3.040026   138A      3.189589  
+     136A      3.034952   137A      3.040025   138A      3.189589  
      139A      3.229523   140A      3.319193   141A      3.598280  
      142A      3.982396  
 
@@ -249,24 +271,22 @@ compare_values(b3lyp_E, thisenergy, 6, "B3LYP energy")                          
 
   Energy converged.
 
-  @DF-RHF Final Energy:  -306.40109629909210
+  @DF-RHF Final Energy:  -306.40109630724999
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            298.7264999369789962
-    One-Electron Energy =               -1004.4408022835805241
-    Two-Electron Energy =                 399.3132060475092544
+    Nuclear Repulsion Energy =            298.7264999369788256
+    One-Electron Energy =               -1004.4407989127005294
+    Two-Electron Energy =                 399.3132026684717175
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -306.4010962990922167
+    Total Energy =                       -306.4010963072499862
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -283,28 +303,34 @@ Properties computed using the SCF density matrix
      X:    -0.7042      Y:    -0.2825      Z:     0.0348     Total:     0.7596
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:28:31 2016
+*** tstop() called on psinet at Mon May 15 15:38:12 2017
 Module time:
-	user time   =       2.73 seconds =       0.05 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       5.71 seconds =       0.10 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =       2.73 seconds =       0.05 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       5.71 seconds =       0.10 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:28:31 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:38:12 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 12-13 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 7-11, 14   entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -335,7 +361,7 @@ gradient() will perform analytic gradient computation.
 
   Rotational constants: A =      0.18943  B =      0.05105  C =      0.04021 [cm^-1]
   Rotational constants: A =   5679.05425  B =   1530.30687  C =   1205.47409 [MHz]
-  Nuclear repulsion =  298.726499936979110
+  Nuclear repulsion =  298.726499936978769
 
   Charge       = 0
   Multiplicity = 1
@@ -357,6 +383,7 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -367,7 +394,7 @@ gradient() will perform analytic gradient computation.
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -410,6 +437,14 @@ gradient() will perform analytic gradient computation.
     Max Points       =           4960
     Max Functions    =            142
 
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6, 12-13 entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-11, 14   entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -437,7 +472,8 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -446,26 +482,27 @@ gradient() will perform analytic gradient computation.
 
   Minimum eigenvalue in the overlap matrix is 1.8610369896E-04.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -309.46613245619011   -3.09466e+02   3.28185e-02 
-   @DF-RKS iter   1:  -308.21131384942129    1.25482e+00   3.99373e-03 
-   @DF-RKS iter   2:  -308.20745720629492    3.85664e-03   4.17041e-03 DIIS
-   @DF-RKS iter   3:  -308.38745163765003   -1.79994e-01   1.51745e-03 DIIS
-   @DF-RKS iter   4:  -308.41123363499042   -2.37820e-02   3.77548e-04 DIIS
-   @DF-RKS iter   5:  -308.41252479180133   -1.29116e-03   1.12268e-04 DIIS
-   @DF-RKS iter   6:  -308.41264280404204   -1.18012e-04   4.29316e-05 DIIS
-   @DF-RKS iter   7:  -308.41266249006520   -1.96860e-05   1.52399e-05 DIIS
-   @DF-RKS iter   8:  -308.41266510837960   -2.61831e-06   2.84854e-06 DIIS
-   @DF-RKS iter   9:  -308.41266519553477   -8.71552e-08   9.85525e-07 DIIS
-   @DF-RKS iter  10:  -308.41266520510663   -9.57186e-09   2.86642e-07 DIIS
-   @DF-RKS iter  11:  -308.41266520586129   -7.54653e-10   1.28259e-07 DIIS
-   @DF-RKS iter  12:  -308.41266520605535   -1.94063e-10   2.00561e-08 DIIS
-   @DF-RKS iter  13:  -308.41266520606001   -4.66116e-12   4.85852e-09 DIIS
+   @DF-RKS iter   0:  -309.29756072564652   -3.09298e+02   3.25075e-02 
+   @DF-RKS iter   1:  -308.19742187790956    1.10014e+00   4.13413e-03 
+   @DF-RKS iter   2:  -308.18006848051789    1.73534e-02   4.43486e-03 DIIS
+   @DF-RKS iter   3:  -308.38129268738419   -2.01224e-01   1.69216e-03 DIIS
+   @DF-RKS iter   4:  -308.41138443093149   -3.00917e-02   3.58471e-04 DIIS
+   @DF-RKS iter   5:  -308.41252609674211   -1.14167e-03   1.12126e-04 DIIS
+   @DF-RKS iter   6:  -308.41264329849179   -1.17202e-04   4.26254e-05 DIIS
+   @DF-RKS iter   7:  -308.41266246289712   -1.91644e-05   1.52960e-05 DIIS
+   @DF-RKS iter   8:  -308.41266510520745   -2.64231e-06   2.90301e-06 DIIS
+   @DF-RKS iter   9:  -308.41266519605705   -9.08496e-08   9.62030e-07 DIIS
+   @DF-RKS iter  10:  -308.41266520521526   -9.15821e-09   2.71566e-07 DIIS
+   @DF-RKS iter  11:  -308.41266520589096   -6.75698e-10   1.18881e-07 DIIS
+   @DF-RKS iter  12:  -308.41266520605615   -1.65187e-10   2.11929e-08 DIIS
+   @DF-RKS iter  13:  -308.41266520606098   -4.83169e-12   4.76983e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -532,24 +569,22 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:  -308.41266520606001
+  @DF-RKS Final Energy:  -308.41266520606098
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            298.7264999369791099
-    One-Electron Energy =               -1005.6000458329181129
-    Two-Electron Energy =                 435.3596386653196646
-    DFT Exchange-Correlation Energy =     -36.8987579754407022
+    Nuclear Repulsion Energy =            298.7264999369787688
+    One-Electron Energy =               -1005.6000458218356925
+    Two-Electron Energy =                 435.3596386527676145
+    DFT Exchange-Correlation Energy =     -36.8987579739716978
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -308.4126652060600691
+    Total Energy =                       -308.4126652060609786
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -566,20 +601,18 @@ Properties computed using the SCF density matrix
      X:    -0.6351      Y:    -0.2541      Z:     0.0308     Total:     0.6848
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:09 2016
+*** tstop() called on psinet at Mon May 15 15:39:12 2017
 Module time:
-	user time   =      38.72 seconds =       0.65 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      59.80 seconds =       1.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         60 seconds =       1.00 minutes
 Total time:
-	user time   =      41.55 seconds =       0.69 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =         41 seconds =       0.68 minutes
+	user time   =      65.53 seconds =       1.09 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =         66 seconds =       1.10 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:09 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:39:12 2017
 
 
          ------------------------------------------------------------
@@ -612,11 +645,12 @@ Total time:
            C          2.977239698096     1.178633170366    -0.141988929292    12.000000000000
            H          3.958169698096     1.569463170366    -0.191938929292     1.007825032070
 
-  Nuclear repulsion =  298.726499936979110
+  Nuclear repulsion =  298.726499936978769
 
   ==> Basis Set <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -637,7 +671,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -648,7 +683,7 @@ Total time:
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -695,31 +730,31 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.011155673890     0.006168218976    -0.002268652159
-       2       -0.003735691286    -0.007410501281     0.006201224385
-       3       -0.005619492920    -0.001449174205    -0.000548206588
-       4       -0.006885923643     0.001497635861    -0.003979180169
-       5        0.012339901190     0.003565386582     0.000787795682
-       6       -0.012583773143    -0.005183665513     0.000869761106
-       7       -0.005232275530     0.001304592607    -0.003187711456
-       8        0.004702925618    -0.002657884438     0.004370187045
-       9       -0.002513182203    -0.004859584516     0.004052939834
-      10        0.001245441590     0.005604453873    -0.005265207123
-      11        0.007021766587     0.002778094660    -0.000330669605
-      12        0.021093331765     0.009216794403    -0.001992536309
-      13       -0.009675405884    -0.004189362009     0.000834565929
-      14       -0.011303049946    -0.004380877754     0.000455175862
+       1        0.011155667544     0.006168217099    -0.002268650646
+       2       -0.003735690277    -0.007410498422     0.006201224097
+       3       -0.005619491802    -0.001449175336    -0.000548204698
+       4       -0.006885928423     0.001497627421    -0.003979171336
+       5        0.012339911608     0.003565388316     0.000787799472
+       6       -0.012583784139    -0.005183670253     0.000869757228
+       7       -0.005232282504     0.001304596414    -0.003187717539
+       8        0.004702928850    -0.002657885828     0.004370189360
+       9       -0.002513183228    -0.004859588879     0.004052944397
+      10        0.001245444366     0.005604462285    -0.005265214939
+      11        0.007021776951     0.002778099172    -0.000330670320
+      12        0.021093344881     0.009216800813    -0.001992540932
+      13       -0.009675409029    -0.004189363694     0.000834565734
+      14       -0.011303058715    -0.004380881861     0.000455176556
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:21 2016
+*** tstop() called on psinet at Mon May 15 15:39:28 2017
 Module time:
-	user time   =      11.08 seconds =       0.18 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      15.19 seconds =       0.25 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         16 seconds =       0.27 minutes
 Total time:
-	user time   =      52.64 seconds =       0.88 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =         53 seconds =       0.88 minutes
+	user time   =      80.72 seconds =       1.35 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =         82 seconds =       1.37 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -727,7 +762,7 @@ Total time:
 			-----------------------------------------
 
 	Internal coordinates to be generated automatically.
-	Detected frag with atoms:  1 2 3 4 5 6 7 8 9 10 11 12 13 14
+	Detected frag 1 with atoms:  1 2 3 4 5 6 7 8 9 10 11 12 13 14
 	---Fragment 1 Bond Connectivity---
 	 1 : 2 6 7
 	 2 : 1 3 10
@@ -761,20 +796,20 @@ trying 5 6 13 14
 	 C           3.5077468719        1.4020127064       -0.1795219593
 	 C           5.6261676614        2.2272939031       -0.2683201903
 	 H           7.4798567169        2.9658555676       -0.3627120106
-	             0.0111556739        0.0061682190       -0.0022686522
-	            -0.0037356913       -0.0074105013        0.0062012244
-	            -0.0056194929       -0.0014491742       -0.0005482066
-	            -0.0068859236        0.0014976359       -0.0039791802
-	             0.0123399012        0.0035653866        0.0007877957
-	            -0.0125837731       -0.0051836655        0.0008697611
-	            -0.0052322755        0.0013045926       -0.0031877115
-	             0.0047029256       -0.0026578844        0.0043701870
-	            -0.0025131822       -0.0048595845        0.0040529398
-	             0.0012454416        0.0056044539       -0.0052652071
-	             0.0070217666        0.0027780947       -0.0003306696
-	             0.0210933318        0.0092167944       -0.0019925363
-	            -0.0096754059       -0.0041893620        0.0008345659
-	            -0.0113030499       -0.0043808778        0.0004551759
+	             0.0111556675        0.0061682171       -0.0022686506
+	            -0.0037356903       -0.0074104984        0.0062012241
+	            -0.0056194918       -0.0014491753       -0.0005482047
+	            -0.0068859284        0.0014976274       -0.0039791713
+	             0.0123399116        0.0035653883        0.0007877995
+	            -0.0125837841       -0.0051836703        0.0008697572
+	            -0.0052322825        0.0013045964       -0.0031877175
+	             0.0047029289       -0.0026578858        0.0043701894
+	            -0.0025131832       -0.0048595889        0.0040529444
+	             0.0012454444        0.0056044623       -0.0052652149
+	             0.0070217770        0.0027780992       -0.0003306703
+	             0.0210933449        0.0092168008       -0.0019925409
+	            -0.0096754090       -0.0041893637        0.0008345657
+	            -0.0113030587       -0.0043808819        0.0004551766
 
 	Previous optimization step data not found.  Starting new optimization.
 
@@ -848,7 +883,7 @@ trying 5 6 13 14
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
 	Norm of target step-size    0.06897
-	Projected energy change by RFO approximation:        -0.0020137076
+	Projected energy change by RFO approximation:        -0.0020199293
 
 	Back-transformation to cartesian coordinates...
 	Could not converge backtransformation.
@@ -864,61 +899,62 @@ trying 5 6 13 14
 	    4 R(2,3)          =      1.399119     0.004840     0.000282     1.399402
 	    5 R(2,10)         =      1.080986     0.064047     0.011406     1.092392
 	    6 R(3,4)          =      1.397408     0.013653     0.001572     1.398980
-	    7 R(3,11)         =      1.081656     0.062266     0.011111     1.092767
+	    7 R(3,11)         =      1.081656     0.062267     0.011111     1.092767
 	    8 R(4,5)          =      1.397957    -0.011677    -0.001547     1.396410
 	    9 R(4,8)          =      1.082234     0.057182     0.010222     1.092456
 	   10 R(5,6)          =      1.398157     0.073151     0.010608     1.408766
-	   11 R(5,9)          =      1.081490     0.055365     0.009875     1.091365
+	   11 R(5,9)          =      1.081490     0.055366     0.009875     1.091365
 	   12 R(6,12)         =      1.436797    -0.003114    -0.000491     1.436306
 	   13 R(12,13)        =      1.204001     0.186963     0.011655     1.215656
 	   14 R(13,14)        =      1.057103     0.099940     0.016413     1.073516
 	   15 B(1,2,3)        =    119.956051     0.000120     0.286169   120.242220
 	   16 B(1,2,10)       =    120.042316    -0.000099    -0.320350   119.721966
-	   17 B(1,6,5)        =    119.968092    -0.000278    -0.693526   119.274566
-	   18 B(1,6,12)       =    120.209677     0.000083     0.179564   120.389242
-	   19 B(2,1,6)        =    120.009750     0.000038     0.169029   120.178779
+	   17 B(1,6,5)        =    119.968092    -0.000278    -0.693525   119.274566
+	   18 B(1,6,12)       =    120.209677     0.000083     0.179564   120.389241
+	   19 B(2,1,6)        =    120.009750     0.000038     0.169029   120.178778
 	   20 B(2,1,7)        =    119.897679     0.000087     0.406205   120.303884
-	   21 B(2,3,4)        =    119.998238     0.000021    -0.108992   119.889245
-	   22 B(2,3,11)       =    119.976166    -0.000009     0.060789   120.036955
-	   23 B(3,2,10)       =    120.001630    -0.000022     0.034183   120.035814
+	   21 B(2,3,4)        =    119.998238     0.000021    -0.108992   119.889246
+	   22 B(2,3,11)       =    119.976166    -0.000009     0.060788   120.036955
+	   23 B(3,2,10)       =    120.001630    -0.000022     0.034184   120.035814
 	   24 B(3,4,5)        =    120.051316     0.000074     0.175955   120.227271
 	   25 B(3,4,8)        =    120.029907    -0.000012     0.027662   120.057569
-	   26 B(4,3,11)       =    120.025596    -0.000012     0.048203   120.073800
+	   26 B(4,3,11)       =    120.025596    -0.000012     0.048204   120.073800
 	   27 B(4,5,6)        =    120.016542     0.000025     0.171377   120.187919
 	   28 B(4,5,9)        =    120.019847     0.000073     0.308432   120.328279
-	   29 B(5,4,8)        =    119.918775    -0.000062    -0.203616   119.715159
+	   29 B(5,4,8)        =    119.918775    -0.000062    -0.203615   119.715160
 	   30 B(5,6,12)       =    119.822207     0.000195     0.513983   120.336190
-	   31 B(6,1,7)        =    120.092564    -0.000125    -0.575229   119.517335
+	   31 B(6,1,7)        =    120.092564    -0.000125    -0.575229   119.517336
 	   32 B(6,5,9)        =    119.963607    -0.000098    -0.479806   119.483801
-	   33 L(6,12,13)      =    179.257306     0.000070     0.208763   179.466069
+	   33 L(6,12,13)      =    179.257306     0.000070     0.208764   179.466070
 	   34 l(6,12,13)      =    180.000000     0.000001     0.000000   180.000000
-	   35 L(12,13,14)     =    179.355869     0.000025     0.114364   179.470233
+	   35 L(12,13,14)     =    179.355869     0.000025     0.114363   179.470232
 	   36 l(12,13,14)     =    180.000000    -0.000000     0.000000   180.000000
-	   37 D(1,2,3,4)      =     -0.020885     0.000000     0.017655    -0.003231
-	   38 D(1,2,3,11)     =    179.975244     0.000000     0.022400   179.997644
-	   39 D(1,6,5,4)      =     -0.034637     0.000000     0.031747    -0.002890
-	   40 D(1,6,5,9)      =    179.989955    -0.000000    -0.006887   179.983068
-	   41 D(2,1,6,5)      =      0.036066    -0.000000    -0.033772     0.002294
-	   42 D(2,1,6,12)     =   -179.907479    -0.000001    -0.108487  -180.015966
-	   43 D(2,3,4,5)      =      0.022337    -0.000000    -0.019705     0.002632
-	   44 D(2,3,4,8)      =   -179.996086     0.000000     0.006455  -179.989632
+	   37 D(1,2,3,4)      =     -0.020885     0.000000     0.017656    -0.003229
+	   38 D(1,2,3,11)     =    179.975244     0.000000     0.022401   179.997645
+	   39 D(1,6,5,4)      =     -0.034637     0.000000     0.031750    -0.002887
+	   40 D(1,6,5,9)      =    179.989955    -0.000000    -0.006885   179.983070
+	   41 D(2,1,6,5)      =      0.036066    -0.000000    -0.033775     0.002291
+	   42 D(2,1,6,12)     =   -179.907479    -0.000001    -0.108486  -180.015966
+	   43 D(2,3,4,5)      =      0.022337    -0.000000    -0.019707     0.002631
+	   44 D(2,3,4,8)      =   -179.996086     0.000000     0.006454  -179.989632
 	   45 D(3,2,1,6)      =     -0.008315     0.000000     0.008315     0.000000
-	   46 D(3,2,1,7)      =   -179.978410    -0.000000    -0.036541  -180.014952
+	   46 D(3,2,1,7)      =   -179.978410    -0.000000    -0.036542  -180.014952
 	   47 D(3,4,5,6)      =      0.005440    -0.000000    -0.005440     0.000000
-	   48 D(3,4,5,9)      =    179.980834     0.000000     0.033767   180.014601
+	   48 D(3,4,5,9)      =    179.980834     0.000000     0.033766   180.014601
 	   49 D(4,3,2,10)     =    179.998462    -0.000000    -0.009267   179.989195
-	   50 D(4,5,6,12)     =    179.909129     0.000001     0.106232   180.015361
-	   51 D(5,4,3,11)     =   -179.973790    -0.000000    -0.024453  -179.998242
-	   52 D(5,6,1,7)      =   -179.993898     0.000000     0.011775  -179.982123
-	   53 D(6,1,2,10)     =    179.972330     0.000000     0.035976   180.008306
-	   54 D(6,5,4,8)      =   -179.976157    -0.000000    -0.031114  -180.007271
-	   55 D(7,1,2,10)     =      0.002235    -0.000000    -0.009636    -0.007401
+	   50 D(4,5,6,12)     =    179.909129     0.000001     0.106232   180.015360
+	   51 D(5,4,3,11)     =   -179.973790    -0.000000    -0.024454  -179.998244
+	   52 D(5,6,1,7)      =   -179.993898     0.000000     0.011773  -179.982125
+	   53 D(6,1,2,10)     =    179.972330     0.000000     0.035978   180.008307
+	   54 D(6,5,4,8)      =   -179.976157    -0.000000    -0.031116  -180.007273
+	   55 D(7,1,2,10)     =      0.002235    -0.000000    -0.009635    -0.007400
 	   56 D(7,1,6,12)     =      0.062556    -0.000000    -0.062556     0.000000
 	   57 D(8,4,3,11)     =      0.007786     0.000000     0.001707     0.009494
-	   58 D(8,4,5,9)      =      0.000000     0.000000     0.006891     0.006891
-	   59 D(9,5,6,12)     =     -0.066280     0.000000     0.067598     0.001318
+	   58 D(8,4,5,9)      =      0.000000     0.000000     0.006890     0.006890
+	   59 D(9,5,6,12)     =     -0.066280     0.000000     0.067597     0.001317
 	   60 D(10,2,3,11)    =     -0.005409    -0.000000    -0.004522    -0.009931
 	 ---------------------------------------------------------------------------
+	Successfully symmetrized geometry.
 
   ==> Convergence Check <==
 
@@ -935,20 +971,20 @@ trying 5 6 13 14
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (in Angstrom)
-	    C     0.2119441397  -0.8058100955   0.8944947261
-	    C    -1.0852685753  -1.3186138599   0.9551131062
-	    C    -2.0784675627  -0.8261303432   0.1010988648
-	    C    -1.7707084875   0.1837702913  -0.8167952315
-	    C    -0.4757857741   0.7020799525  -0.8838098501
-	    C     0.5290137558   0.2109809883  -0.0271768403
-	    H     0.9872420056  -1.1889796361   1.5602171611
-	    H    -2.5439733398   0.5703721301  -1.4846734998
-	    H    -0.2339383732   1.4901008144  -1.5990798087
-	    H    -1.3229832833  -2.1070423701   1.6728817104
-	    H    -3.0926407517  -1.2299420219   0.1513806694
-	    C     1.8619098762   0.7420254832  -0.0931612344
-	    C     2.9932232499   1.1843852584  -0.1407779076
-	    H     3.9894988938   1.5811677939  -0.1901168758
+	    C     0.2119441503  -0.8058101070   0.8944947397
+	    C    -1.0852685795  -1.3186138796   0.9551131071
+	    C    -2.0784675745  -0.8261303423   0.1010988595
+	    C    -1.7707084895   0.1837702959  -0.8167952514
+	    C    -0.4757857740   0.7020799544  -0.8838098549
+	    C     0.5290137579   0.2109810067  -0.0271768100
+	    H     0.9872420263  -1.1889796591   1.5602171805
+	    H    -2.5439733452   0.5703721423  -1.4846735211
+	    H    -0.2339383673   1.4901008164  -1.5990798254
+	    H    -1.3229832988  -2.1070423992   1.6728817234
+	    H    -3.0926407827  -1.2299420165   0.1513806734
+	    C     1.8619098790   0.7420254941  -0.0931612057
+	    C     2.9932232586   1.1843852697  -0.1407779082
+	    H     3.9894989126   1.5811678094  -0.1901169172
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -959,32 +995,40 @@ trying 5 6 13 14
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.211981513453    -0.805623994438     0.894697549635
-    C           -1.085231201556    -1.318427758845     0.955315929762
-    C           -2.078430189010    -0.825944242152     0.101301688338
-    C           -1.770671113716     0.183956392371    -0.816592407945
-    C           -0.475748400394     0.702266053573    -0.883607026612
-    C            0.529051129562     0.211167089393    -0.026974016749
-    H            0.987279379328    -1.188793534954     1.560419984653
-    H           -2.543935966039     0.570558231168    -1.484470676229
-    H           -0.233900999431     1.490286915496    -1.598876985151
-    H           -1.322945909590    -2.106856269012     1.673084533913
-    H           -3.092603378002    -1.229755920811     0.151583492943
-    C            1.861947249910     0.742211584255    -0.092958410884
-    C            2.993260623610     1.184571359491    -0.140575084064
-    H            3.989536267489     1.581353894948    -0.189914052261
+    C            0.211981523387    -0.805624007731     0.894697558623
+    C           -1.085231206423    -1.318427780354     0.955315926040
+    C           -2.078430201491    -0.825944243044     0.101301678372
+    C           -1.770671116417     0.183956395206    -0.816592432456
+    C           -0.475748400946     0.702266053679    -0.883607036036
+    C            0.529051130980     0.211167105932    -0.026973991075
+    H            0.987279399311    -1.188793559776     1.560419999400
+    H           -2.543935972205     0.570558241576    -1.484470702172
+    H           -0.233900994225     1.490286915714    -1.598877006528
+    H           -1.322945925775    -2.106856299960     1.673084542341
+    H           -3.092603409627    -1.229755917214     0.151583492321
+    C            1.861947252052     0.742211593331    -0.092958386765
+    C            2.993260631607     1.184571368969    -0.140575089271
+    H            3.989536285688     1.581353908637    -0.189914098354
 
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:21 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:39:28 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 12-13 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 7-11, 14   entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -996,26 +1040,26 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.211981513453    -0.805623994438     0.894697549635    12.000000000000
-           C         -1.085231201556    -1.318427758845     0.955315929762    12.000000000000
-           C         -2.078430189010    -0.825944242152     0.101301688338    12.000000000000
-           C         -1.770671113716     0.183956392371    -0.816592407945    12.000000000000
-           C         -0.475748400394     0.702266053573    -0.883607026612    12.000000000000
-           C          0.529051129562     0.211167089393    -0.026974016749    12.000000000000
-           H          0.987279379328    -1.188793534954     1.560419984653     1.007825032070
-           H         -2.543935966039     0.570558231168    -1.484470676229     1.007825032070
-           H         -0.233900999431     1.490286915496    -1.598876985151     1.007825032070
-           H         -1.322945909590    -2.106856269012     1.673084533913     1.007825032070
-           H         -3.092603378002    -1.229755920811     0.151583492943     1.007825032070
-           C          1.861947249910     0.742211584255    -0.092958410884    12.000000000000
-           C          2.993260623610     1.184571359491    -0.140575084064    12.000000000000
-           H          3.989536267489     1.581353894948    -0.189914052261     1.007825032070
+           C          0.211981523387    -0.805624007731     0.894697558623    12.000000000000
+           C         -1.085231206423    -1.318427780354     0.955315926040    12.000000000000
+           C         -2.078430201491    -0.825944243044     0.101301678372    12.000000000000
+           C         -1.770671116417     0.183956395206    -0.816592432456    12.000000000000
+           C         -0.475748400946     0.702266053679    -0.883607036036    12.000000000000
+           C          0.529051130980     0.211167105932    -0.026973991075    12.000000000000
+           H          0.987279399311    -1.188793559776     1.560419999400     1.007825032070
+           H         -2.543935972205     0.570558241576    -1.484470702172     1.007825032070
+           H         -0.233900994225     1.490286915714    -1.598877006528     1.007825032070
+           H         -1.322945925775    -2.106856299960     1.673084542341     1.007825032070
+           H         -3.092603409627    -1.229755917214     0.151583492321     1.007825032070
+           C          1.861947252052     0.742211593331    -0.092958386765    12.000000000000
+           C          2.993260631607     1.184571368969    -0.140575089271    12.000000000000
+           H          3.989536285688     1.581353908637    -0.189914098354     1.007825032070
 
   Running in c1 symmetry.
 
   Rotational constants: A =      0.18848  B =      0.05061  C =      0.03990 [cm^-1]
-  Rotational constants: A =   5650.46312  B =   1517.32255  C =   1196.12605 [MHz]
-  Nuclear repulsion =  297.606930370915279
+  Rotational constants: A =   5650.46300  B =   1517.32254  C =   1196.12604 [MHz]
+  Nuclear repulsion =  297.606928224389662
 
   Charge       = 0
   Multiplicity = 1
@@ -1037,6 +1081,7 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -1047,7 +1092,7 @@ gradient() will perform analytic gradient computation.
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -1090,6 +1135,16 @@ gradient() will perform analytic gradient computation.
     Max Points       =           4953
     Max Functions    =            142
 
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6, 12-13 entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-11, 14   entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  Reading orbitals from file 180, no projection.
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1117,37 +1172,34 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 1.9636379376E-04.
+  Minimum eigenvalue in the overlap matrix is 1.9636380192E-04.
   Using Symmetric Orthogonalization.
-  SCF Guess: Reading in previously saved MOs, projecting if necessary.
 
-  Using orbitals from previous SCF, no projection.
-  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.
-              A 
-    DOCC [    27 ]
+  SCF Guess: Orbitals guess was supplied from a previous computation.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -308.38024262641829   -3.08380e+02   4.53067e-04 
-   @DF-RKS iter   1:  -308.41349342746457   -3.32508e-02   1.09785e-04 
-   @DF-RKS iter   2:  -308.41320099079178    2.92437e-04   1.95573e-04 DIIS
-   @DF-RKS iter   3:  -308.41364819898502   -4.47208e-04   4.49875e-05 DIIS
-   @DF-RKS iter   4:  -308.41366795257977   -1.97536e-05   1.24844e-05 DIIS
-   @DF-RKS iter   5:  -308.41366941371052   -1.46113e-06   4.50316e-06 DIIS
-   @DF-RKS iter   6:  -308.41366963975838   -2.26048e-07   6.37267e-07 DIIS
-   @DF-RKS iter   7:  -308.41366964307326   -3.31488e-09   2.75557e-07 DIIS
-   @DF-RKS iter   8:  -308.41366964383838   -7.65112e-10   4.46005e-08 DIIS
-   @DF-RKS iter   9:  -308.41366964385600   -1.76215e-11   1.58754e-08 DIIS
-   @DF-RKS iter  10:  -308.41366964385793   -1.93268e-12   5.14815e-09 DIIS
+   @DF-RKS iter   0:  -308.38024256670747   -3.08380e+02   4.53067e-04 
+   @DF-RKS iter   1:  -308.41349342651841   -3.32509e-02   1.09785e-04 
+   @DF-RKS iter   2:  -308.41320098677448    2.92440e-04   1.95574e-04 DIIS
+   @DF-RKS iter   3:  -308.41364819875616   -4.47212e-04   4.49877e-05 DIIS
+   @DF-RKS iter   4:  -308.41366795252327   -1.97538e-05   1.24844e-05 DIIS
+   @DF-RKS iter   5:  -308.41366941364930   -1.46113e-06   4.50316e-06 DIIS
+   @DF-RKS iter   6:  -308.41366963969784   -2.26049e-07   6.37266e-07 DIIS
+   @DF-RKS iter   7:  -308.41366964301324   -3.31539e-09   2.75556e-07 DIIS
+   @DF-RKS iter   8:  -308.41366964377767   -7.64430e-10   4.46006e-08 DIIS
+   @DF-RKS iter   9:  -308.41366964379546   -1.77920e-11   1.58754e-08 DIIS
+   @DF-RKS iter  10:  -308.41366964379762   -2.16005e-12   5.14809e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1214,24 +1266,22 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:  -308.41366964385793
+  @DF-RKS Final Energy:  -308.41366964379762
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            297.6069303709152791
-    One-Electron Energy =               -1003.3957114651934717
-    Two-Electron Energy =                 434.2368044811860841
-    DFT Exchange-Correlation Energy =     -36.8616930307659061
+    Nuclear Repulsion Energy =            297.6069282243896623
+    One-Electron Energy =               -1003.3957072340675722
+    Two-Electron Energy =                 434.2368023368874788
+    DFT Exchange-Correlation Energy =     -36.8616929710071730
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -308.4136696438580429
+    Total Energy =                       -308.4136696437976184
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1248,20 +1298,18 @@ Properties computed using the SCF density matrix
      X:    -0.6156      Y:    -0.2441      Z:     0.0301     Total:     0.6629
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:29:53 2016
+*** tstop() called on psinet at Mon May 15 15:40:16 2017
 Module time:
-	user time   =      32.76 seconds =       0.55 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         32 seconds =       0.53 minutes
+	user time   =      48.27 seconds =       0.80 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         48 seconds =       0.80 minutes
 Total time:
-	user time   =      85.50 seconds =       1.43 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =         85 seconds =       1.42 minutes
+	user time   =     129.02 seconds =       2.15 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =        130 seconds =       2.17 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:29:53 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:40:16 2017
 
 
          ------------------------------------------------------------
@@ -1279,26 +1327,27 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.211981513453    -0.805623994438     0.894697549635    12.000000000000
-           C         -1.085231201556    -1.318427758845     0.955315929762    12.000000000000
-           C         -2.078430189010    -0.825944242152     0.101301688338    12.000000000000
-           C         -1.770671113716     0.183956392371    -0.816592407945    12.000000000000
-           C         -0.475748400394     0.702266053573    -0.883607026612    12.000000000000
-           C          0.529051129562     0.211167089393    -0.026974016749    12.000000000000
-           H          0.987279379328    -1.188793534954     1.560419984653     1.007825032070
-           H         -2.543935966039     0.570558231168    -1.484470676229     1.007825032070
-           H         -0.233900999431     1.490286915496    -1.598876985151     1.007825032070
-           H         -1.322945909590    -2.106856269012     1.673084533913     1.007825032070
-           H         -3.092603378002    -1.229755920811     0.151583492943     1.007825032070
-           C          1.861947249910     0.742211584255    -0.092958410884    12.000000000000
-           C          2.993260623610     1.184571359491    -0.140575084064    12.000000000000
-           H          3.989536267489     1.581353894948    -0.189914052261     1.007825032070
+           C          0.211981523387    -0.805624007731     0.894697558623    12.000000000000
+           C         -1.085231206423    -1.318427780354     0.955315926040    12.000000000000
+           C         -2.078430201491    -0.825944243044     0.101301678372    12.000000000000
+           C         -1.770671116417     0.183956395206    -0.816592432456    12.000000000000
+           C         -0.475748400946     0.702266053679    -0.883607036036    12.000000000000
+           C          0.529051130980     0.211167105932    -0.026973991075    12.000000000000
+           H          0.987279399311    -1.188793559776     1.560419999400     1.007825032070
+           H         -2.543935972205     0.570558241576    -1.484470702172     1.007825032070
+           H         -0.233900994225     1.490286915714    -1.598877006528     1.007825032070
+           H         -1.322945925775    -2.106856299960     1.673084542341     1.007825032070
+           H         -3.092603409627    -1.229755917214     0.151583492321     1.007825032070
+           C          1.861947252052     0.742211593331    -0.092958386765    12.000000000000
+           C          2.993260631607     1.184571368969    -0.140575089271    12.000000000000
+           H          3.989536285688     1.581353908637    -0.189914098354     1.007825032070
 
-  Nuclear repulsion =  297.606930370915279
+  Nuclear repulsion =  297.606928224389662
 
   ==> Basis Set <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -1319,7 +1368,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -1330,7 +1380,7 @@ Total time:
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -1377,31 +1427,31 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.001999471242     0.001281238531    -0.000608457575
-       2       -0.000562638461    -0.000744527862     0.000556788680
-       3        0.000335493951     0.000331396185    -0.000209376771
-       4       -0.001128503316    -0.000142482628    -0.000257775849
-       5        0.002324429820     0.000610883993     0.000192492844
-       6       -0.003463633286    -0.001766981706     0.000533902742
-       7       -0.000279809487    -0.000408023863     0.000329344912
-       8       -0.000177015332    -0.000007317621    -0.000048758355
-       9       -0.000454426345     0.000101895883    -0.000252417933
-      10       -0.000140279902    -0.000077845393     0.000036467754
-      11       -0.000280600359    -0.000132600866     0.000029887558
-      12        0.000392092762     0.000662640250    -0.000512847625
-      13        0.000504281068    -0.000183808099     0.000366483790
-      14        0.000946169838     0.000481615405    -0.000156606791
+       1        0.001999477152     0.001281246843    -0.000608468918
+       2       -0.000562634371    -0.000744521519     0.000556779890
+       3        0.000335496573     0.000331402083    -0.000209380646
+       4       -0.001128492234    -0.000142480827    -0.000257775372
+       5        0.002324429026     0.000610874718     0.000192496624
+       6       -0.003463656169    -0.001766985681     0.000533909794
+       7       -0.000279815104    -0.000408020393     0.000329338607
+       8       -0.000177007860    -0.000007320979    -0.000048751145
+       9       -0.000454429326     0.000101885388    -0.000252409030
+      10       -0.000140279521    -0.000077843834     0.000036467548
+      11       -0.000280594632    -0.000132598438     0.000029887784
+      12        0.000392122677     0.000662650618    -0.000512844755
+      13        0.000504260679    -0.000183815562     0.000366483851
+      14        0.000946155300     0.000481609794    -0.000156606849
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:30:05 2016
+*** tstop() called on psinet at Mon May 15 15:40:33 2017
 Module time:
-	user time   =      11.09 seconds =       0.18 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      15.51 seconds =       0.26 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         17 seconds =       0.28 minutes
 Total time:
-	user time   =      96.59 seconds =       1.61 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =         97 seconds =       1.62 minutes
+	user time   =     144.53 seconds =       2.41 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =        147 seconds =       2.45 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -1410,40 +1460,40 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 C           0.4005870057       -1.5224087156        1.6907333406
-	 C          -2.0507897618       -2.4914673902        1.8052854776
-	 C          -3.9276638435       -1.5608084187        0.1914324478
-	 C          -3.3460834763        0.3476272020       -1.5431360132
-	 C          -0.8990341849        1.3270905137       -1.6697752894
-	 C           0.9997617452        0.3990479672       -0.0509735044
-	 H           1.8656876436       -2.2464942096        2.9487664233
-	 H          -4.8073422754        1.0781987998       -2.8052430304
-	 H          -0.4420088311        2.8162341297       -3.0214396221
-	 H          -2.5000054577       -3.9813813498        3.1616715663
-	 H          -5.8441734221       -2.3239019006        0.2864512879
-	 C           3.5185703762        1.4025766269       -0.1756659383
-	 C           5.6564428230        2.2385154543       -0.2656484100
-	 H           7.5391309428        2.9883257806       -0.3588855476
-	             0.0019994712        0.0012812385       -0.0006084576
-	            -0.0005626385       -0.0007445279        0.0005567887
-	             0.0003354940        0.0003313962       -0.0002093768
-	            -0.0011285033       -0.0001424826       -0.0002577758
-	             0.0023244298        0.0006108840        0.0001924928
-	            -0.0034636333       -0.0017669817        0.0005339027
-	            -0.0002798095       -0.0004080239        0.0003293449
-	            -0.0001770153       -0.0000073176       -0.0000487584
-	            -0.0004544263        0.0001018959       -0.0002524179
-	            -0.0001402799       -0.0000778454        0.0000364678
-	            -0.0002806004       -0.0001326009        0.0000298876
-	             0.0003920928        0.0006626402       -0.0005128476
-	             0.0005042811       -0.0001838081        0.0003664838
-	             0.0009461698        0.0004816154       -0.0001566068
+	 C           0.4005870244       -1.5224087407        1.6907333576
+	 C          -2.0507897710       -2.4914674309        1.8052854706
+	 C          -3.9276638671       -1.5608084204        0.1914324289
+	 C          -3.3460834814        0.3476272073       -1.5431360595
+	 C          -0.8990341859        1.3270905139       -1.6697753072
+	 C           0.9997617478        0.3990479985       -0.0509734558
+	 H           1.8656876813       -2.2464942565        2.9487664511
+	 H          -4.8073422871        1.0781988194       -2.8052430794
+	 H          -0.4420088213        2.8162341301       -3.0214396625
+	 H          -2.5000054883       -3.9813814083        3.1616715822
+	 H          -5.8441734818       -2.3239018938        0.2864512868
+	 C           3.5185703803        1.4025766440       -0.1756658927
+	 C           5.6564428381        2.2385154722       -0.2656484198
+	 H           7.5391309772        2.9883258065       -0.3588856347
+	             0.0019994772        0.0012812468       -0.0006084689
+	            -0.0005626344       -0.0007445215        0.0005567799
+	             0.0003354966        0.0003314021       -0.0002093806
+	            -0.0011284922       -0.0001424808       -0.0002577754
+	             0.0023244290        0.0006108747        0.0001924966
+	            -0.0034636562       -0.0017669857        0.0005339098
+	            -0.0002798151       -0.0004080204        0.0003293386
+	            -0.0001770079       -0.0000073210       -0.0000487511
+	            -0.0004544293        0.0001018854       -0.0002524090
+	            -0.0001402795       -0.0000778438        0.0000364675
+	            -0.0002805946       -0.0001325984        0.0000298878
+	             0.0003921227        0.0006626506       -0.0005128448
+	             0.0005042607       -0.0001838156        0.0003664839
+	             0.0009461553        0.0004816098       -0.0001566068
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
 	 R(1,2)           =         2.638455	       1.396210
 	 R(1,6)           =         2.661682	       1.408501
-	 R(1,7)           =         2.062393	       1.091372
+	 R(1,7)           =         2.062394	       1.091372
 	 R(2,3)           =         2.644486	       1.399402
 	 R(2,10)          =         2.064321	       1.092392
 	 R(3,4)           =         2.643689	       1.398980
@@ -1458,10 +1508,10 @@ Total time:
 	 B(1,2,3)         =         2.098623	     120.242220
 	 B(1,2,10)        =         2.089542	     119.721966
 	 B(1,6,5)         =         2.081734	     119.274566
-	 B(1,6,12)        =         2.101189	     120.389242
-	 B(2,1,6)         =         2.097515	     120.178779
+	 B(1,6,12)        =         2.101189	     120.389241
+	 B(2,1,6)         =         2.097515	     120.178778
 	 B(2,1,7)         =         2.099699	     120.303884
-	 B(2,3,4)         =         2.092462	     119.889245
+	 B(2,3,4)         =         2.092462	     119.889246
 	 B(2,3,11)        =         2.095040	     120.036955
 	 B(3,2,10)        =         2.095020	     120.035814
 	 B(3,4,5)         =         2.098362	     120.227271
@@ -1469,44 +1519,44 @@ Total time:
 	 B(4,3,11)        =         2.095683	     120.073800
 	 B(4,5,6)         =         2.097675	     120.187919
 	 B(4,5,9)         =         2.100125	     120.328279
-	 B(5,4,8)         =         2.089424	     119.715159
+	 B(5,4,8)         =         2.089424	     119.715160
 	 B(5,6,12)        =         2.100263	     120.336190
-	 B(6,1,7)         =         2.085971	     119.517335
+	 B(6,1,7)         =         2.085971	     119.517336
 	 B(6,5,9)         =         2.085386	     119.483801
-	 L(6,12,13)       =         3.132274	     179.466069
+	 L(6,12,13)       =         3.132274	     179.466070
 	 l(6,12,13)       =         3.141593	     180.000000
-	 L(12,13,14)      =         3.132346	     179.470233
+	 L(12,13,14)      =         3.132346	     179.470232
 	 l(12,13,14)      =         3.141593	     180.000000
-	 D(1,2,3,4)       =        -0.000056	      -0.003231
-	 D(1,2,3,11)      =         3.141552	     179.997644
-	 D(1,6,5,4)       =        -0.000050	      -0.002890
-	 D(1,6,5,9)       =         3.141297	     179.983068
-	 D(2,1,6,5)       =         0.000040	       0.002294
+	 D(1,2,3,4)       =        -0.000056	      -0.003229
+	 D(1,2,3,11)      =         3.141552	     179.997645
+	 D(1,6,5,4)       =        -0.000050	      -0.002887
+	 D(1,6,5,9)       =         3.141297	     179.983070
+	 D(2,1,6,5)       =         0.000040	       0.002291
 	 D(2,1,6,12)      =         3.141314	     179.984034
-	 D(2,3,4,5)       =         0.000046	       0.002632
+	 D(2,3,4,5)       =         0.000046	       0.002631
 	 D(2,3,4,8)       =        -3.141412	    -179.989632
 	 D(3,2,1,6)       =         0.000000	       0.000000
 	 D(3,2,1,7)       =         3.141332	     179.985048
 	 D(3,4,5,6)       =         0.000000	       0.000000
 	 D(3,4,5,9)       =        -3.141338	    -179.985399
 	 D(4,3,2,10)      =         3.141404	     179.989195
-	 D(4,5,6,12)      =        -3.141325	    -179.984639
-	 D(5,4,3,11)      =        -3.141562	    -179.998242
-	 D(5,6,1,7)       =        -3.141281	    -179.982123
-	 D(6,1,2,10)      =        -3.141448	    -179.991694
-	 D(6,5,4,8)       =         3.141466	     179.992729
-	 D(7,1,2,10)      =        -0.000129	      -0.007401
+	 D(4,5,6,12)      =        -3.141325	    -179.984640
+	 D(5,4,3,11)      =        -3.141562	    -179.998244
+	 D(5,6,1,7)       =        -3.141281	    -179.982125
+	 D(6,1,2,10)      =        -3.141448	    -179.991693
+	 D(6,5,4,8)       =         3.141466	     179.992727
+	 D(7,1,2,10)      =        -0.000129	      -0.007400
 	 D(7,1,6,12)      =        -0.000000	      -0.000000
 	 D(8,4,3,11)      =         0.000166	       0.009494
-	 D(8,4,5,9)       =         0.000120	       0.006891
-	 D(9,5,6,12)      =         0.000023	       0.001318
+	 D(8,4,5,9)       =         0.000120	       0.006890
+	 D(9,5,6,12)      =         0.000023	       0.001317
 	 D(10,2,3,11)     =        -0.000173	      -0.009931
 
-	Current energy   :      -308.4136696439
+	Current energy   :      -308.4136696438
 
 	Energy change for the previous step:
-		Projected    :        -0.0020137076
-		Actual       :        -0.0010044378
+		Projected    :        -0.0020199293
+		Actual       :        -0.0010044377
 
 	Performing BFGS update.
 	Previous computed or guess Hessian on step 1.
@@ -1515,7 +1565,7 @@ Total time:
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
 	Norm of target step-size    0.01193
-	Projected energy change by RFO approximation:        -0.0000391935
+	Projected energy change by RFO approximation:        -0.0000391930
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -1531,60 +1581,61 @@ Total time:
 	    5 R(2,10)         =      1.092392    -0.000917     0.000046     1.092438
 	    6 R(3,4)          =      1.398980    -0.001397    -0.000192     1.398787
 	    7 R(3,11)         =      1.092767    -0.002570    -0.000254     1.092513
-	    8 R(4,5)          =      1.396410    -0.009173    -0.001304     1.395106
+	    8 R(4,5)          =      1.396410    -0.009172    -0.001304     1.395106
 	    9 R(4,8)          =      1.092456    -0.001261    -0.000038     1.092419
 	   10 R(5,6)          =      1.408766     0.002407     0.000553     1.409319
 	   11 R(5,9)          =      1.091365    -0.001135    -0.000021     1.091344
 	   12 R(6,12)         =      1.436306    -0.017099    -0.002733     1.433573
-	   13 R(12,13)        =      1.215656    -0.011927    -0.000526     1.215130
+	   13 R(12,13)        =      1.215656    -0.011926    -0.000526     1.215130
 	   14 R(13,14)        =      1.073516    -0.008751    -0.001133     1.072383
 	   15 B(1,2,3)        =    120.242220     0.000017     0.054253   120.296472
 	   16 B(1,2,10)       =    119.721966    -0.000018    -0.075401   119.646565
-	   17 B(1,6,5)        =    119.274566    -0.000060    -0.185807   119.088759
-	   18 B(1,6,12)       =    120.389242     0.000020     0.060962   120.450204
-	   19 B(2,1,6)        =    120.178779     0.000023     0.082846   120.261624
+	   17 B(1,6,5)        =    119.274566    -0.000060    -0.185808   119.088758
+	   18 B(1,6,12)       =    120.389241     0.000020     0.060963   120.450204
+	   19 B(2,1,6)        =    120.178778     0.000023     0.082847   120.261625
 	   20 B(2,1,7)        =    120.303884     0.000034     0.179192   120.483076
-	   21 B(2,3,4)        =    119.889245    -0.000022    -0.090988   119.798257
+	   21 B(2,3,4)        =    119.889246    -0.000022    -0.090988   119.798258
 	   22 B(2,3,11)       =    120.036955     0.000013     0.054633   120.091588
 	   23 B(3,2,10)       =    120.035814     0.000001     0.021149   120.056962
-	   24 B(3,4,5)        =    120.227271     0.000020     0.060816   120.288088
+	   24 B(3,4,5)        =    120.227271     0.000020     0.060817   120.288088
 	   25 B(3,4,8)        =    120.057569    -0.000002     0.009639   120.067208
-	   26 B(4,3,11)       =    120.073800     0.000009     0.036355   120.110155
-	   27 B(4,5,6)        =    120.187919     0.000022     0.078881   120.266799
+	   26 B(4,3,11)       =    120.073800     0.000009     0.036355   120.110154
+	   27 B(4,5,6)        =    120.187919     0.000022     0.078880   120.266800
 	   28 B(4,5,9)        =    120.328279     0.000029     0.155564   120.483843
-	   29 B(5,4,8)        =    119.715159    -0.000018    -0.070455   119.644704
-	   30 B(5,6,12)       =    120.336190     0.000040     0.124847   120.461036
-	   31 B(6,1,7)        =    119.517335    -0.000057    -0.262036   119.255299
+	   29 B(5,4,8)        =    119.715160    -0.000018    -0.070456   119.644704
+	   30 B(5,6,12)       =    120.336190     0.000040     0.124847   120.461037
+	   31 B(6,1,7)        =    119.517336    -0.000057    -0.262037   119.255299
 	   32 B(6,5,9)        =    119.483801    -0.000051    -0.234443   119.249358
-	   33 L(6,12,13)      =    179.466069     0.000042     0.128322   179.594392
+	   33 L(6,12,13)      =    179.466070     0.000042     0.128321   179.594392
 	   34 l(6,12,13)      =    180.000000    -0.000000     0.000000   180.000000
-	   35 L(12,13,14)     =    179.470233     0.000022     0.106813   179.577046
+	   35 L(12,13,14)     =    179.470232     0.000022     0.106814   179.577046
 	   36 l(12,13,14)     =    180.000000     0.000000     0.000000   180.000000
-	   37 D(1,2,3,4)      =     -0.003231     0.000000     0.005174     0.001943
-	   38 D(1,2,3,11)     =    179.997644     0.000000     0.000735   179.998379
-	   39 D(1,6,5,4)      =     -0.002890     0.000000     0.006263     0.003373
-	   40 D(1,6,5,9)      =    179.983068     0.000000     0.024498   180.007566
-	   41 D(2,1,6,5)      =      0.002294    -0.000000    -0.005183    -0.002889
-	   42 D(2,1,6,12)     =    179.984034     0.000000     0.025276   180.009310
-	   43 D(2,3,4,5)      =      0.002632    -0.000000    -0.004089    -0.001457
-	   44 D(2,3,4,8)      =   -179.989632    -0.000000    -0.014842  -180.004473
+	   37 D(1,2,3,4)      =     -0.003229     0.000000     0.005171     0.001942
+	   38 D(1,2,3,11)     =    179.997645     0.000000     0.000733   179.998378
+	   39 D(1,6,5,4)      =     -0.002887     0.000000     0.006255     0.003368
+	   40 D(1,6,5,9)      =    179.983070     0.000000     0.024493   180.007563
+	   41 D(2,1,6,5)      =      0.002291    -0.000000    -0.005176    -0.002884
+	   42 D(2,1,6,12)     =    179.984034     0.000000     0.025275   180.009310
+	   43 D(2,3,4,5)      =      0.002631    -0.000000    -0.004087    -0.001456
+	   44 D(2,3,4,8)      =   -179.989632    -0.000000    -0.014840  -180.004473
 	   45 D(3,2,1,6)      =      0.000000    -0.000000     0.000000     0.000000
-	   46 D(3,2,1,7)      =    179.985048     0.000000     0.020224   180.005273
-	   47 D(3,4,5,6)      =      0.000000    -0.000000    -0.001220    -0.001220
+	   46 D(3,2,1,7)      =    179.985048     0.000000     0.020225   180.005273
+	   47 D(3,4,5,6)      =      0.000000    -0.000000    -0.001218    -0.001218
 	   48 D(3,4,5,9)      =   -179.985399    -0.000000    -0.020066  -180.005465
 	   49 D(4,3,2,10)     =    179.989195     0.000000     0.015333   180.004528
-	   50 D(4,5,6,12)     =   -179.984639    -0.000000    -0.024188  -180.008827
-	   51 D(5,4,3,11)     =   -179.998242     0.000000     0.000350  -179.997892
-	   52 D(5,6,1,7)      =   -179.982123    -0.000000    -0.025728  -180.007851
-	   53 D(6,1,2,10)     =   -179.991694    -0.000000    -0.010631  -180.002325
-	   54 D(6,5,4,8)      =    179.992729     0.000000     0.009054   180.001784
-	   55 D(7,1,2,10)     =     -0.007401     0.000000     0.010099     0.002698
-	   56 D(7,1,6,12)     =      0.000000     0.000000     0.004348     0.004348
-	   57 D(8,4,3,11)     =      0.009494    -0.000000    -0.010402    -0.000908
-	   58 D(8,4,5,9)      =      0.006891    -0.000000    -0.009353    -0.002462
-	   59 D(9,5,6,12)     =      0.001318    -0.000000    -0.005953    -0.004634
-	   60 D(10,2,3,11)    =     -0.009931     0.000000     0.010894     0.000963
+	   50 D(4,5,6,12)     =   -179.984640    -0.000000    -0.024187  -180.008827
+	   51 D(5,4,3,11)     =   -179.998244     0.000000     0.000352  -179.997891
+	   52 D(5,6,1,7)      =   -179.982125    -0.000000    -0.025724  -180.007849
+	   53 D(6,1,2,10)     =   -179.991693    -0.000000    -0.010636  -180.002328
+	   54 D(6,5,4,8)      =    179.992727     0.000000     0.009059   180.001786
+	   55 D(7,1,2,10)     =     -0.007400     0.000000     0.010098     0.002698
+	   56 D(7,1,6,12)     =      0.000000     0.000000     0.004345     0.004345
+	   57 D(8,4,3,11)     =      0.009494    -0.000000    -0.010401    -0.000908
+	   58 D(8,4,5,9)      =      0.006890    -0.000000    -0.009351    -0.002461
+	   59 D(9,5,6,12)     =      0.001317    -0.000000    -0.005949    -0.004632
+	   60 D(10,2,3,11)    =     -0.009931     0.000000     0.010895     0.000964
 	 ---------------------------------------------------------------------------
+	Successfully symmetrized geometry.
 
   ==> Convergence Check <==
 
@@ -1601,20 +1652,20 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (in Angstrom)
-	    C     0.2108091947  -0.8055407720   0.8945861945
-	    C    -1.0853580194  -1.3178136778   0.9547178824
-	    C    -2.0787769267  -0.8261419566   0.1013755950
-	    C    -1.7698536866   0.1836702723  -0.8159311725
-	    C    -0.4762423407   0.7017493356  -0.8828925079
-	    C     0.5303128549   0.2119291867  -0.0266787472
-	    H     0.9881929423  -1.1869353472   1.5588155115
-	    H    -2.5422311738   0.5708118435  -1.4844616505
-	    H    -0.2316748806   1.4895770352  -1.5974180133
-	    H    -1.3219426737  -2.1064684739   1.6726815390
-	    H    -3.0927654585  -1.2297731664   0.1513078052
-	    C     1.8610204146   0.7411495635  -0.0920608133
-	    C     2.9913725253   1.1843522421  -0.1412142470
-	    H     3.9867262338   1.5804037156  -0.1903928566
+	    C     0.2108091999  -0.8055407812   0.8945862223
+	    C    -1.0853580402  -1.3178136985   0.9547179074
+	    C    -2.0787769567  -0.8261419783   0.1013755875
+	    C    -1.7698537185   0.1836702829  -0.8159311930
+	    C    -0.4762423514   0.7017493625  -0.8828925283
+	    C     0.5303128904   0.2119291712  -0.0266787773
+	    H     0.9881929602  -1.1869353692   1.5588155608
+	    H    -2.5422312241   0.5708118570  -1.4844616810
+	    H    -0.2316748927   1.4895770897  -1.5974180467
+	    H    -1.3219427006  -2.1064685133   1.6726815681
+	    H    -3.0927655063  -1.2297732082   0.1513077900
+	    C     1.8610204495   0.7411495556  -0.0920608344
+	    C     2.9913725773   1.1843522544  -0.1412142596
+	    H     3.9867263091   1.5804037504  -0.1903928613
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -1625,32 +1676,40 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.211118944791    -0.805452197539     0.894446812970
-    C           -1.085048269317    -1.317725103351     0.954578500853
-    C           -2.078467176644    -0.826053382191     0.101236213437
-    C           -1.769543936555     0.183758846745    -0.816070554074
-    C           -0.475932590592     0.701837910080    -0.883031889487
-    C            0.530622605011     0.212017761202    -0.026818128774
-    H            0.988502692374    -1.186846772793     1.558676129989
-    H           -2.541921423678     0.570900417915    -1.484601032094
-    H           -0.231365130475     1.489665609651    -1.597557394832
-    H           -1.321632923618    -2.106379899449     1.672542157482
-    H           -3.092455708439    -1.229684591993     0.151168423649
-    C            1.861330164738     0.741238137988    -0.092200194828
-    C            2.991682275361     1.184440816584    -0.141353628525
-    H            3.987035983927     1.580492290027    -0.190532238147
+    C            0.211118946419    -0.805452203793     0.894446847765
+    C           -1.085048293670    -1.317725121039     0.954578532894
+    C           -2.078467210243    -0.826053400881     0.101236213021
+    C           -1.769543972008     0.183758860380    -0.816070567473
+    C           -0.475932604939     0.701837939943    -0.883031902860
+    C            0.530622636924     0.212017748597    -0.026818151798
+    H            0.988502706693    -1.186846791799     1.558676186250
+    H           -2.541921477611     0.570900434411    -1.484601055499
+    H           -0.231365146244     1.489665667180    -1.597557421215
+    H           -1.321632954058    -2.106379935861     1.672542193585
+    H           -3.092455759774    -1.229684630803     0.151168415510
+    C            1.861330195970     0.741238133001    -0.092200208917
+    C            2.991682323838     1.184440831831    -0.141353634146
+    H            3.987036055637     1.580492327850    -0.190532235820
 
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:30:05 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:40:34 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 12-13 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 7-11, 14   entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1662,26 +1721,26 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.211118944791    -0.805452197539     0.894446812970    12.000000000000
-           C         -1.085048269317    -1.317725103351     0.954578500853    12.000000000000
-           C         -2.078467176644    -0.826053382191     0.101236213437    12.000000000000
-           C         -1.769543936555     0.183758846745    -0.816070554074    12.000000000000
-           C         -0.475932590592     0.701837910080    -0.883031889487    12.000000000000
-           C          0.530622605011     0.212017761202    -0.026818128774    12.000000000000
-           H          0.988502692374    -1.186846772793     1.558676129989     1.007825032070
-           H         -2.541921423678     0.570900417915    -1.484601032094     1.007825032070
-           H         -0.231365130475     1.489665609651    -1.597557394832     1.007825032070
-           H         -1.321632923618    -2.106379899449     1.672542157482     1.007825032070
-           H         -3.092455708439    -1.229684591993     0.151168423649     1.007825032070
-           C          1.861330164738     0.741238137988    -0.092200194828    12.000000000000
-           C          2.991682275361     1.184440816584    -0.141353628525    12.000000000000
-           H          3.987035983927     1.580492290027    -0.190532238147     1.007825032070
+           C          0.211118946419    -0.805452203793     0.894446847765    12.000000000000
+           C         -1.085048293670    -1.317725121039     0.954578532894    12.000000000000
+           C         -2.078467210243    -0.826053400881     0.101236213021    12.000000000000
+           C         -1.769543972008     0.183758860380    -0.816070567473    12.000000000000
+           C         -0.475932604939     0.701837939943    -0.883031902860    12.000000000000
+           C          0.530622636924     0.212017748597    -0.026818151798    12.000000000000
+           H          0.988502706693    -1.186846791799     1.558676186250     1.007825032070
+           H         -2.541921477611     0.570900434411    -1.484601055499     1.007825032070
+           H         -0.231365146244     1.489665667180    -1.597557421215     1.007825032070
+           H         -1.321632954058    -2.106379935861     1.672542193585     1.007825032070
+           H         -3.092455759774    -1.229684630803     0.151168415510     1.007825032070
+           C          1.861330195970     0.741238133001    -0.092200208917    12.000000000000
+           C          2.991682323838     1.184440831831    -0.141353634146    12.000000000000
+           H          3.987036055637     1.580492327850    -0.190532235820     1.007825032070
 
   Running in c1 symmetry.
 
   Rotational constants: A =      0.18870  B =      0.05065  C =      0.03993 [cm^-1]
-  Rotational constants: A =   5657.15444  B =   1518.30798  C =   1197.03822 [MHz]
-  Nuclear repulsion =  297.723134160899690
+  Rotational constants: A =   5657.15417  B =   1518.30793  C =   1197.03818 [MHz]
+  Nuclear repulsion =  297.723128196543598
 
   Charge       = 0
   Multiplicity = 1
@@ -1703,6 +1762,7 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -1713,7 +1773,7 @@ gradient() will perform analytic gradient computation.
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -1756,6 +1816,16 @@ gradient() will perform analytic gradient computation.
     Max Points       =           4939
     Max Functions    =            142
 
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6, 12-13 entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-11, 14   entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  Reading orbitals from file 180, no projection.
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -1783,35 +1853,32 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 1.9430578391E-04.
+  Minimum eigenvalue in the overlap matrix is 1.9430581224E-04.
   Using Symmetric Orthogonalization.
-  SCF Guess: Reading in previously saved MOs, projecting if necessary.
 
-  Using orbitals from previous SCF, no projection.
-  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.
-              A 
-    DOCC [    27 ]
+  SCF Guess: Orbitals guess was supplied from a previous computation.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -308.41548184655221   -3.08415e+02   6.03417e-05 
-   @DF-RKS iter   1:  -308.41369116936528    1.79068e-03   1.29104e-05 
-   @DF-RKS iter   2:  -308.41368808859522    3.08077e-06   2.15075e-05 DIIS
-   @DF-RKS iter   3:  -308.41369299839846   -4.90980e-06   3.20267e-06 DIIS
-   @DF-RKS iter   4:  -308.41369309035224   -9.19538e-08   1.59326e-06 DIIS
-   @DF-RKS iter   5:  -308.41369311482890   -2.44767e-08   4.80030e-07 DIIS
-   @DF-RKS iter   6:  -308.41369311750771   -2.67880e-09   1.14130e-07 DIIS
-   @DF-RKS iter   7:  -308.41369311763356   -1.25851e-10   4.14033e-08 DIIS
-   @DF-RKS iter   8:  -308.41369311765129   -1.77351e-11   7.10949e-09 DIIS
+   @DF-RKS iter   0:  -308.41548175976942   -3.08415e+02   6.03416e-05 
+   @DF-RKS iter   1:  -308.41369116875774    1.79059e-03   1.29103e-05 
+   @DF-RKS iter   2:  -308.41368808804123    3.08072e-06   2.15073e-05 DIIS
+   @DF-RKS iter   3:  -308.41369299778557   -4.90974e-06   3.20251e-06 DIIS
+   @DF-RKS iter   4:  -308.41369308973071   -9.19451e-08   1.59323e-06 DIIS
+   @DF-RKS iter   5:  -308.41369311420550   -2.44748e-08   4.80030e-07 DIIS
+   @DF-RKS iter   6:  -308.41369311688459   -2.67909e-09   1.14131e-07 DIIS
+   @DF-RKS iter   7:  -308.41369311701050   -1.25908e-10   4.14025e-08 DIIS
+   @DF-RKS iter   8:  -308.41369311702812   -1.76215e-11   7.10939e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1824,7 +1891,7 @@ gradient() will perform analytic gradient computation.
        4A    -10.200714     5A    -10.199929     6A    -10.199797  
        7A    -10.194854     8A    -10.189495     9A     -0.868245  
       10A     -0.786517    11A     -0.755527    12A     -0.729221  
-      13A     -0.628669    14A     -0.613799    15A     -0.551109  
+      13A     -0.628669    14A     -0.613799    15A     -0.551108  
       16A     -0.515522    17A     -0.480321    18A     -0.462502  
       19A     -0.439267    20A     -0.428714    21A     -0.385290  
       22A     -0.364505    23A     -0.355372    24A     -0.312720  
@@ -1844,7 +1911,7 @@ gradient() will perform analytic gradient computation.
       55A      0.515336    56A      0.521493    57A      0.532707  
       58A      0.583285    59A      0.595008    60A      0.599674  
       61A      0.611199    62A      0.635292    63A      0.663545  
-      64A      0.670094    65A      0.681376    66A      0.687022  
+      64A      0.670094    65A      0.681376    66A      0.687021  
       67A      0.695360    68A      0.713317    69A      0.748383  
       70A      0.822052    71A      0.850788    72A      0.866581  
       73A      0.868681    74A      0.897193    75A      0.905752  
@@ -1860,7 +1927,7 @@ gradient() will perform analytic gradient computation.
      103A      1.598509   104A      1.608958   105A      1.630096  
      106A      1.645333   107A      1.679260   108A      1.697410  
      109A      1.698957   110A      1.736934   111A      1.775430  
-     112A      1.775783   113A      1.800690   114A      1.815222  
+     112A      1.775782   113A      1.800690   114A      1.815222  
      115A      1.832046   116A      1.848345   117A      1.849946  
      118A      1.916838   119A      1.921853   120A      1.943621  
      121A      1.969103   122A      1.987226   123A      1.991372  
@@ -1870,7 +1937,7 @@ gradient() will perform analytic gradient computation.
      133A      2.464937   134A      2.609856   135A      2.660009  
      136A      2.690728   137A      2.710332   138A      2.830309  
      139A      2.850848   140A      2.934409   141A      3.184149  
-     142A      3.582948  
+     142A      3.582947  
 
     Final Occupation by Irrep:
               A 
@@ -1878,24 +1945,22 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:  -308.41369311765129
+  @DF-RKS Final Energy:  -308.41369311702812
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            297.7231341608996900
-    One-Electron Energy =               -1003.6246458904297469
-    Two-Electron Energy =                 434.3522506193975232
-    DFT Exchange-Correlation Energy =     -36.8644320075187153
+    Nuclear Repulsion Energy =            297.7231281965435983
+    One-Electron Energy =               -1003.6246341046108910
+    Two-Electron Energy =                 434.3522446496501175
+    DFT Exchange-Correlation Energy =     -36.8644318586109563
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -308.4136931176512348
+    Total Energy =                       -308.4136931170281173
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -1912,20 +1977,18 @@ Properties computed using the SCF density matrix
      X:    -0.6104      Y:    -0.2424      Z:     0.0291     Total:     0.6574
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:30:31 2016
+*** tstop() called on psinet at Mon May 15 15:41:12 2017
 Module time:
-	user time   =      26.35 seconds =       0.44 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      37.84 seconds =       0.63 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         38 seconds =       0.63 minutes
 Total time:
-	user time   =     123.05 seconds =       2.05 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =        123 seconds =       2.05 minutes
+	user time   =     182.41 seconds =       3.04 minutes
+	system time =       0.56 seconds =       0.01 minutes
+	total time  =        186 seconds =       3.10 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:30:31 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:41:12 2017
 
 
          ------------------------------------------------------------
@@ -1943,26 +2006,27 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.211118944791    -0.805452197539     0.894446812970    12.000000000000
-           C         -1.085048269317    -1.317725103351     0.954578500853    12.000000000000
-           C         -2.078467176644    -0.826053382191     0.101236213437    12.000000000000
-           C         -1.769543936555     0.183758846745    -0.816070554074    12.000000000000
-           C         -0.475932590592     0.701837910080    -0.883031889487    12.000000000000
-           C          0.530622605011     0.212017761202    -0.026818128774    12.000000000000
-           H          0.988502692374    -1.186846772793     1.558676129989     1.007825032070
-           H         -2.541921423678     0.570900417915    -1.484601032094     1.007825032070
-           H         -0.231365130475     1.489665609651    -1.597557394832     1.007825032070
-           H         -1.321632923618    -2.106379899449     1.672542157482     1.007825032070
-           H         -3.092455708439    -1.229684591993     0.151168423649     1.007825032070
-           C          1.861330164738     0.741238137988    -0.092200194828    12.000000000000
-           C          2.991682275361     1.184440816584    -0.141353628525    12.000000000000
-           H          3.987035983927     1.580492290027    -0.190532238147     1.007825032070
+           C          0.211118946419    -0.805452203793     0.894446847765    12.000000000000
+           C         -1.085048293670    -1.317725121039     0.954578532894    12.000000000000
+           C         -2.078467210243    -0.826053400881     0.101236213021    12.000000000000
+           C         -1.769543972008     0.183758860380    -0.816070567473    12.000000000000
+           C         -0.475932604939     0.701837939943    -0.883031902860    12.000000000000
+           C          0.530622636924     0.212017748597    -0.026818151798    12.000000000000
+           H          0.988502706693    -1.186846791799     1.558676186250     1.007825032070
+           H         -2.541921477611     0.570900434411    -1.484601055499     1.007825032070
+           H         -0.231365146244     1.489665667180    -1.597557421215     1.007825032070
+           H         -1.321632954058    -2.106379935861     1.672542193585     1.007825032070
+           H         -3.092455759774    -1.229684630803     0.151168415510     1.007825032070
+           C          1.861330195970     0.741238133001    -0.092200208917    12.000000000000
+           C          2.991682323838     1.184440831831    -0.141353634146    12.000000000000
+           H          3.987036055637     1.580492327850    -0.190532235820     1.007825032070
 
-  Nuclear repulsion =  297.723134160899690
+  Nuclear repulsion =  297.723128196543598
 
   ==> Basis Set <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -1983,7 +2047,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -1994,7 +2059,7 @@ Total time:
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -2041,31 +2106,31 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000406211313     0.000339320188    -0.000200392161
-       2       -0.000118891073     0.000010270898    -0.000054035602
-       3        0.000269404306     0.000138001531    -0.000042099491
-       4       -0.000139070683    -0.000130134183     0.000082916929
-       5        0.000536376565     0.000077830033     0.000109922737
-       6       -0.000815145363    -0.000473978012     0.000213662845
-       7       -0.000040335186    -0.000108115657     0.000091086844
-       8       -0.000079108893     0.000018709782    -0.000048980401
-       9       -0.000091736354     0.000049012075    -0.000086725902
-      10       -0.000053000503    -0.000076202414     0.000056776970
-      11       -0.000159380197    -0.000075871454     0.000019276491
-      12       -0.000041913372     0.000310794824    -0.000337188014
-      13        0.000198663223    -0.000220478101     0.000294165184
-      14        0.000143448852     0.000147097978    -0.000099218844
+       1        0.000406210106     0.000339311097    -0.000200373432
+       2       -0.000118892358     0.000010259551    -0.000054021725
+       3        0.000269399379     0.000137991706    -0.000042093203
+       4       -0.000139081433    -0.000130127211     0.000082906678
+       5        0.000536371779     0.000077843228     0.000109915538
+       6       -0.000815110840    -0.000473976206     0.000213655046
+       7       -0.000040326039    -0.000108121020     0.000091095748
+       8       -0.000079120979     0.000018715404    -0.000048991247
+       9       -0.000091731961     0.000049028400    -0.000086740475
+      10       -0.000053002781    -0.000076209831     0.000056781966
+      11       -0.000159396942    -0.000075878258     0.000019277436
+      12       -0.000041951303     0.000310782879    -0.000337189343
+      13        0.000198686096    -0.000220468782     0.000294164366
+      14        0.000143469920     0.000147106527    -0.000099219770
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:30:42 2016
+*** tstop() called on psinet at Mon May 15 15:41:27 2017
 Module time:
-	user time   =      10.76 seconds =       0.18 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =      14.70 seconds =       0.25 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
 Total time:
-	user time   =     133.81 seconds =       2.23 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =        134 seconds =       2.23 minutes
+	user time   =     197.11 seconds =       3.29 minutes
+	system time =       0.62 seconds =       0.01 minutes
+	total time  =        201 seconds =       3.35 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -2074,34 +2139,34 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 C           0.3989569871       -1.5220840665        1.6902595169
-	 C          -2.0504440700       -2.4901395638        1.8038919390
-	 C          -3.9277337400       -1.5610146635        0.1913087181
-	 C          -3.3439534202        0.3472538948       -1.5421498523
-	 C          -0.8993822539        1.3262814397       -1.6686884377
-	 C           1.0027314034        0.4006555040       -0.0506789188
-	 H           1.8679993702       -2.2428153623        2.9454710155
-	 H          -4.8035353421        1.0788454390       -2.8054893673
-	 H          -0.4372167333        2.8150600318       -3.0189459578
-	 H          -2.4975242738       -3.9804811418        3.1606466233
-	 H          -5.8438943670       -2.3237671087        0.2856669206
-	 C           3.5174042542        1.4007370800       -0.1742331176
-	 C           5.6534601770        2.2382687640       -0.2671196458
-	 H           7.5344060916        2.9866975833       -0.3600537496
-	             0.0004062113        0.0003393202       -0.0002003922
-	            -0.0001188911        0.0000102709       -0.0000540356
-	             0.0002694043        0.0001380015       -0.0000420995
-	            -0.0001390707       -0.0001301342        0.0000829169
-	             0.0005363766        0.0000778300        0.0001099227
-	            -0.0008151454       -0.0004739780        0.0002136628
-	            -0.0000403352       -0.0001081157        0.0000910868
-	            -0.0000791089        0.0000187098       -0.0000489804
-	            -0.0000917364        0.0000490121       -0.0000867259
-	            -0.0000530005       -0.0000762024        0.0000567770
-	            -0.0001593802       -0.0000758715        0.0000192765
-	            -0.0000419134        0.0003107948       -0.0003371880
-	             0.0001986632       -0.0002204781        0.0002941652
-	             0.0001434489        0.0001470980       -0.0000992188
+	 C           0.3989569902       -1.5220840783        1.6902595827
+	 C          -2.0504441160       -2.4901395972        1.8038919995
+	 C          -3.9277338035       -1.5610146988        0.1913087173
+	 C          -3.3439534872        0.3472539206       -1.5421498776
+	 C          -0.8993822810        1.3262814962       -1.6686884630
+	 C           1.0027314637        0.4006554802       -0.0506789623
+	 H           1.8679993973       -2.2428153982        2.9454711219
+	 H          -4.8035354440        1.0788454702       -2.8054894115
+	 H          -0.4372167631        2.8150601405       -3.0189460077
+	 H          -2.4975243314       -3.9804812106        3.1606466916
+	 H          -5.8438944640       -2.3237671820        0.2856669053
+	 C           3.5174043133        1.4007370706       -0.1742331442
+	 C           5.6534602686        2.2382687928       -0.2671196564
+	 H           7.5344062271        2.9866976548       -0.3600537452
+	             0.0004062101        0.0003393111       -0.0002003734
+	            -0.0001188924        0.0000102596       -0.0000540217
+	             0.0002693994        0.0001379917       -0.0000420932
+	            -0.0001390814       -0.0001301272        0.0000829067
+	             0.0005363718        0.0000778432        0.0001099155
+	            -0.0008151108       -0.0004739762        0.0002136550
+	            -0.0000403260       -0.0001081210        0.0000910957
+	            -0.0000791210        0.0000187154       -0.0000489912
+	            -0.0000917320        0.0000490284       -0.0000867405
+	            -0.0000530028       -0.0000762098        0.0000567820
+	            -0.0001593969       -0.0000758783        0.0000192774
+	            -0.0000419513        0.0003107829       -0.0003371893
+	             0.0001986861       -0.0002204688        0.0002941644
+	             0.0001434699        0.0001471065       -0.0000992198
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
@@ -2120,57 +2185,57 @@ Total time:
 	 R(12,13)         =         2.296263	       1.215130
 	 R(13,14)         =         2.026509	       1.072383
 	 B(1,2,3)         =         2.099570	     120.296472
-	 B(1,2,10)        =         2.088226	     119.646565
-	 B(1,6,5)         =         2.078491	     119.088759
+	 B(1,2,10)        =         2.088227	     119.646565
+	 B(1,6,5)         =         2.078491	     119.088758
 	 B(1,6,12)        =         2.102253	     120.450204
-	 B(2,1,6)         =         2.098961	     120.261624
+	 B(2,1,6)         =         2.098961	     120.261625
 	 B(2,1,7)         =         2.102826	     120.483076
-	 B(2,3,4)         =         2.090874	     119.798257
+	 B(2,3,4)         =         2.090874	     119.798258
 	 B(2,3,11)        =         2.095994	     120.091588
 	 B(3,2,10)        =         2.095389	     120.056962
 	 B(3,4,5)         =         2.099423	     120.288088
 	 B(3,4,8)         =         2.095568	     120.067208
-	 B(4,3,11)        =         2.096318	     120.110155
-	 B(4,5,6)         =         2.099052	     120.266799
+	 B(4,3,11)        =         2.096318	     120.110154
+	 B(4,5,6)         =         2.099052	     120.266800
 	 B(4,5,9)         =         2.102840	     120.483843
 	 B(5,4,8)         =         2.088194	     119.644704
-	 B(5,6,12)        =         2.102442	     120.461036
+	 B(5,6,12)        =         2.102442	     120.461037
 	 B(6,1,7)         =         2.081398	     119.255299
 	 B(6,5,9)         =         2.081294	     119.249358
 	 L(6,12,13)       =         3.134513	     179.594392
 	 l(6,12,13)       =         3.141593	     180.000000
 	 L(12,13,14)      =         3.134211	     179.577046
 	 l(12,13,14)      =         3.141593	     180.000000
-	 D(1,2,3,4)       =         0.000034	       0.001943
-	 D(1,2,3,11)      =         3.141564	     179.998379
-	 D(1,6,5,4)       =         0.000059	       0.003373
-	 D(1,6,5,9)       =        -3.141461	    -179.992434
-	 D(2,1,6,5)       =        -0.000050	      -0.002889
+	 D(1,2,3,4)       =         0.000034	       0.001942
+	 D(1,2,3,11)      =         3.141564	     179.998378
+	 D(1,6,5,4)       =         0.000059	       0.003368
+	 D(1,6,5,9)       =        -3.141461	    -179.992437
+	 D(2,1,6,5)       =        -0.000050	      -0.002884
 	 D(2,1,6,12)      =        -3.141430	    -179.990690
-	 D(2,3,4,5)       =        -0.000025	      -0.001457
+	 D(2,3,4,5)       =        -0.000025	      -0.001456
 	 D(2,3,4,8)       =         3.141515	     179.995527
 	 D(3,2,1,6)       =         0.000000	       0.000000
 	 D(3,2,1,7)       =        -3.141501	    -179.994727
-	 D(3,4,5,6)       =        -0.000021	      -0.001220
+	 D(3,4,5,6)       =        -0.000021	      -0.001218
 	 D(3,4,5,9)       =         3.141497	     179.994535
 	 D(4,3,2,10)      =        -3.141514	    -179.995472
 	 D(4,5,6,12)      =         3.141439	     179.991173
-	 D(5,4,3,11)      =        -3.141556	    -179.997892
-	 D(5,6,1,7)       =         3.141456	     179.992149
-	 D(6,1,2,10)      =         3.141552	     179.997675
-	 D(6,5,4,8)       =        -3.141562	    -179.998216
+	 D(5,4,3,11)      =        -3.141556	    -179.997891
+	 D(5,6,1,7)       =         3.141456	     179.992151
+	 D(6,1,2,10)      =         3.141552	     179.997672
+	 D(6,5,4,8)       =        -3.141561	    -179.998214
 	 D(7,1,2,10)      =         0.000047	       0.002698
-	 D(7,1,6,12)      =         0.000076	       0.004348
+	 D(7,1,6,12)      =         0.000076	       0.004345
 	 D(8,4,3,11)      =        -0.000016	      -0.000908
-	 D(8,4,5,9)       =        -0.000043	      -0.002462
-	 D(9,5,6,12)      =        -0.000081	      -0.004634
-	 D(10,2,3,11)     =         0.000017	       0.000963
+	 D(8,4,5,9)       =        -0.000043	      -0.002461
+	 D(9,5,6,12)      =        -0.000081	      -0.004632
+	 D(10,2,3,11)     =         0.000017	       0.000964
 
-	Current energy   :      -308.4136931177
+	Current energy   :      -308.4136931170
 
 	Energy change for the previous step:
-		Projected    :        -0.0000391935
-		Actual       :        -0.0000234738
+		Projected    :        -0.0000391930
+		Actual       :        -0.0000234732
 
 	Performing BFGS update.
 	Previous computed or guess Hessian on step 1.
@@ -2179,7 +2244,7 @@ Total time:
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
 	Norm of target step-size    0.00494
-	Projected energy change by RFO approximation:        -0.0000037878
+	Projected energy change by RFO approximation:        -0.0000037887
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -2189,13 +2254,13 @@ Total time:
 	   Coordinate                Previous        Force       Change         New 
 	   ----------                --------       ------       ------       ------
 	    1 R(1,2)          =      1.395023    -0.001100    -0.000256     1.394767
-	    2 R(1,6)          =      1.409275     0.001908     0.000440     1.409715
+	    2 R(1,6)          =      1.409275     0.001907     0.000440     1.409715
 	    3 R(1,7)          =      1.091324    -0.000526    -0.000071     1.091253
-	    4 R(2,3)          =      1.398862     0.000432     0.000057     1.398919
+	    4 R(2,3)          =      1.398862     0.000431     0.000057     1.398919
 	    5 R(2,10)         =      1.092438    -0.000860    -0.000130     1.092307
 	    6 R(3,4)          =      1.398787     0.000678     0.000118     1.398906
 	    7 R(3,11)         =      1.092513    -0.001467    -0.000285     1.092228
-	    8 R(4,5)          =      1.395106    -0.001455    -0.000323     1.394782
+	    8 R(4,5)          =      1.395106    -0.001456    -0.000323     1.394782
 	    9 R(4,8)          =      1.092419    -0.000767    -0.000120     1.092299
 	   10 R(5,6)          =      1.409319     0.001466     0.000354     1.409673
 	   11 R(5,9)          =      1.091344    -0.000585    -0.000078     1.091266
@@ -2204,51 +2269,52 @@ Total time:
 	   14 R(13,14)        =      1.072383    -0.001572    -0.000280     1.072102
 	   15 B(1,2,3)        =    120.296472     0.000001     0.008718   120.305190
 	   16 B(1,2,10)       =    119.646565    -0.000003    -0.023329   119.623236
-	   17 B(1,6,5)        =    119.088759    -0.000015    -0.068930   119.019829
-	   18 B(1,6,12)       =    120.450204     0.000006     0.024796   120.475000
-	   19 B(2,1,6)        =    120.261624     0.000007     0.035587   120.297212
-	   20 B(2,1,7)        =    120.483076     0.000007     0.056974   120.540050
-	   21 B(2,3,4)        =    119.798257    -0.000004    -0.023459   119.774798
+	   17 B(1,6,5)        =    119.088758    -0.000015    -0.068929   119.019829
+	   18 B(1,6,12)       =    120.450204     0.000006     0.024795   120.474999
+	   19 B(2,1,6)        =    120.261625     0.000007     0.035587   120.297212
+	   20 B(2,1,7)        =    120.483076     0.000007     0.056975   120.540051
+	   21 B(2,3,4)        =    119.798258    -0.000004    -0.023460   119.774798
 	   22 B(2,3,11)       =    120.091588     0.000003     0.019803   120.111391
-	   23 B(3,2,10)       =    120.056962     0.000002     0.014611   120.071573
+	   23 B(3,2,10)       =    120.056962     0.000002     0.014611   120.071574
 	   24 B(3,4,5)        =    120.288088     0.000003     0.013164   120.301252
-	   25 B(3,4,8)        =    120.067208     0.000000     0.006139   120.073348
-	   26 B(4,3,11)       =    120.110155     0.000001     0.003656   120.113811
-	   27 B(4,5,6)        =    120.266799     0.000007     0.034919   120.301719
+	   25 B(3,4,8)        =    120.067208     0.000000     0.006139   120.073347
+	   26 B(4,3,11)       =    120.110154     0.000001     0.003656   120.113811
+	   27 B(4,5,6)        =    120.266800     0.000007     0.034920   120.301719
 	   28 B(4,5,9)        =    120.483843     0.000005     0.047541   120.531384
-	   29 B(5,4,8)        =    119.644704    -0.000003    -0.019303   119.625400
-	   30 B(5,6,12)       =    120.461036     0.000009     0.044133   120.505169
+	   29 B(5,4,8)        =    119.644704    -0.000003    -0.019303   119.625401
+	   30 B(5,6,12)       =    120.461037     0.000009     0.044134   120.505170
 	   31 B(6,1,7)        =    119.255299    -0.000014    -0.092561   119.162738
 	   32 B(6,5,9)        =    119.249358    -0.000013    -0.082461   119.166897
-	   33 L(6,12,13)      =    179.594392     0.000030     0.125102   179.719494
+	   33 L(6,12,13)      =    179.594392     0.000030     0.125103   179.719495
 	   34 l(6,12,13)      =    180.000000    -0.000000     0.000000   180.000000
 	   35 L(12,13,14)     =    179.577046     0.000019     0.120743   179.697789
 	   36 l(12,13,14)     =    180.000000     0.000000     0.000000   180.000000
-	   37 D(1,2,3,4)      =      0.001943    -0.000000    -0.004342    -0.002399
-	   38 D(1,2,3,11)     =    179.998379     0.000000     0.004180   180.002559
-	   39 D(1,6,5,4)      =      0.003373    -0.000000    -0.008925    -0.005552
-	   40 D(1,6,5,9)      =   -179.992434    -0.000000    -0.015682  -180.008115
-	   41 D(2,1,6,5)      =     -0.002889     0.000000     0.008110     0.005221
-	   42 D(2,1,6,12)     =   -179.990690    -0.000000    -0.018492  -180.009182
-	   43 D(2,3,4,5)      =     -0.001457     0.000000     0.003524     0.002067
-	   44 D(2,3,4,8)      =    179.995527     0.000000     0.009364   180.004890
-	   45 D(3,2,1,6)      =      0.000000    -0.000000    -0.001281    -0.001281
-	   46 D(3,2,1,7)      =   -179.994727    -0.000000    -0.009735  -180.004462
-	   47 D(3,4,5,6)      =     -0.001220     0.000000     0.003164     0.001945
-	   48 D(3,4,5,9)      =    179.994535     0.000000     0.010008   180.004543
-	   49 D(4,3,2,10)     =   -179.995472    -0.000000    -0.009162  -180.004634
-	   50 D(4,5,6,12)     =    179.991173     0.000000     0.017683   180.008855
-	   51 D(5,4,3,11)     =   -179.997892    -0.000000    -0.004999  -180.002891
-	   52 D(5,6,1,7)      =    179.992149     0.000000     0.016210   180.008359
-	   53 D(6,1,2,10)     =    179.997675     0.000000     0.003269   180.000944
-	   54 D(6,5,4,8)      =   -179.998216    -0.000000    -0.002650  -180.000866
-	   55 D(7,1,2,10)     =      0.002698    -0.000000    -0.004936    -0.002237
-	   56 D(7,1,6,12)     =      0.004348    -0.000000    -0.010392    -0.006045
+	   37 D(1,2,3,4)      =      0.001942    -0.000000    -0.004338    -0.002396
+	   38 D(1,2,3,11)     =    179.998378     0.000000     0.004181   180.002559
+	   39 D(1,6,5,4)      =      0.003368    -0.000000    -0.008912    -0.005544
+	   40 D(1,6,5,9)      =   -179.992437    -0.000000    -0.015673  -180.008110
+	   41 D(2,1,6,5)      =     -0.002884     0.000000     0.008097     0.005213
+	   42 D(2,1,6,12)     =   -179.990690    -0.000000    -0.018490  -180.009180
+	   43 D(2,3,4,5)      =     -0.001456     0.000000     0.003520     0.002064
+	   44 D(2,3,4,8)      =    179.995527     0.000000     0.009362   180.004890
+	   45 D(3,2,1,6)      =      0.000000    -0.000000    -0.001278    -0.001278
+	   46 D(3,2,1,7)      =   -179.994727    -0.000000    -0.009736  -180.004463
+	   47 D(3,4,5,6)      =     -0.001218     0.000000     0.003160     0.001942
+	   48 D(3,4,5,9)      =    179.994535     0.000000     0.010009   180.004544
+	   49 D(4,3,2,10)     =   -179.995472    -0.000000    -0.009161  -180.004633
+	   50 D(4,5,6,12)     =    179.991173     0.000000     0.017680   180.008853
+	   51 D(5,4,3,11)     =   -179.997891    -0.000000    -0.005001  -180.002892
+	   52 D(5,6,1,7)      =    179.992151     0.000000     0.016203   180.008354
+	   53 D(6,1,2,10)     =    179.997672     0.000000     0.003277   180.000949
+	   54 D(6,5,4,8)      =   -179.998214    -0.000000    -0.002657  -180.000871
+	   55 D(7,1,2,10)     =      0.002698    -0.000000    -0.004933    -0.002236
+	   56 D(7,1,6,12)     =      0.004345    -0.000000    -0.010384    -0.006039
 	   57 D(8,4,3,11)     =     -0.000908     0.000000     0.000908     0.000000
-	   58 D(8,4,5,9)      =     -0.002462     0.000000     0.004194     0.001732
-	   59 D(9,5,6,12)     =     -0.004634     0.000000     0.010926     0.006292
-	   60 D(10,2,3,11)    =      0.000963    -0.000000    -0.000963     0.000000
+	   58 D(8,4,5,9)      =     -0.002461     0.000000     0.004192     0.001730
+	   59 D(9,5,6,12)     =     -0.004632     0.000000     0.010919     0.006287
+	   60 D(10,2,3,11)    =      0.000964    -0.000000    -0.000964     0.000000
 	 ---------------------------------------------------------------------------
+	Successfully symmetrized geometry.
 
   ==> Convergence Check <==
 
@@ -2265,20 +2331,20 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (in Angstrom)
-	    C     0.2106666752  -0.8059409381   0.8945210010
-	    C    -1.0853659075  -1.3178657865   0.9545767723
-	    C    -2.0788176521  -0.8261399463   0.1012106401
-	    C    -1.7692973548   0.1837373740  -0.8160038710
-	    C    -0.4758741915   0.7014310394  -0.8828451229
-	    C     0.5313587522   0.2117377856  -0.0267730714
-	    H     0.9885607794  -1.1866463770   1.5584314671
-	    H    -2.5412464726   0.5713247298  -1.4845752288
-	    H    -0.2303008488   1.4893020694  -1.5968582144
-	    H    -1.3217185853  -2.1062990855   1.6726615568
-	    H    -3.0926996494  -1.2292882803   0.1509714555
-	    C     1.8614702180   0.7405340806  -0.0915866077
-	    C     2.9910282595   1.1852158005  -0.1422146896
-	    H     3.9861614848   1.5811073771  -0.1910329094
+	    C     0.2106666704  -0.8059409395   0.8945209890
+	    C    -1.0853659094  -1.3178657873   0.9545767518
+	    C    -2.0788176531  -0.8261399309   0.1012106390
+	    C    -1.7692973463   0.1837373597  -0.8160038774
+	    C    -0.4758742003   0.7014310253  -0.8828451145
+	    C     0.5313587225   0.2117378446  -0.0267730070
+	    H     0.9885607842  -1.1866463860   1.5584314516
+	    H    -2.5412464623   0.5713247192  -1.4845752265
+	    H    -0.2303008579   1.4893020410  -1.5968582113
+	    H    -1.3217185862  -2.1062990846   1.6726615503
+	    H    -3.0926996479  -1.2292882620   0.1509714557
+	    C     1.8614701974   0.7405341038  -0.0915865542
+	    C     2.9910282480   1.1852158021  -0.1422146840
+	    H     3.9861614878   1.5811073537  -0.1910329513
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -2289,32 +2355,40 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.210730574760    -0.805795156265     0.894510453429
-    C           -1.085302007951    -1.317720004651     0.954566224740
-    C           -2.078753752558    -0.825994164449     0.101200092567
-    C           -1.769233455282     0.183883155866    -0.816014418559
-    C           -0.475810291927     0.701576821271    -0.882855670437
-    C            0.531422651729     0.211883567397    -0.026783618916
-    H            0.988624678916    -1.186500595174     1.558420919519
-    H           -2.541182573092     0.571470511686    -1.484585776323
-    H           -0.230236949295     1.489447851262    -1.596868761933
-    H           -1.321654685795    -2.106153303626     1.672651009246
-    H           -3.092635749809    -1.229142498446     0.150960907917
-    C            1.861534117526     0.740679862467    -0.091597155234
-    C            2.991092159061     1.185361582380    -0.142225237181
-    H            3.986225384357     1.581253158969    -0.191043456993
+    C            0.210730578088    -0.805795165164     0.894510431269
+    C           -1.085302001705    -1.317720012978     0.954566193978
+    C           -2.078753745461    -0.825994156603     0.101200081243
+    C           -1.769233438612     0.183883133976    -0.816014435196
+    C           -0.475810292612     0.701576799583    -0.882855672288
+    C            0.531422630102     0.211883618896    -0.026783564742
+    H            0.988624691806    -1.186500611717     1.558420893829
+    H           -2.541182554634     0.571470493540    -1.484585784238
+    H           -0.230236950230     1.489447815328    -1.596868769044
+    H           -1.321654678563    -2.106153310309     1.672650992552
+    H           -3.092635740241    -1.229142487642     0.150960897935
+    C            1.861534105013     0.740679878077    -0.091597111994
+    C            2.991092155649     1.185361576417    -0.142225241821
+    H            3.986225395435     1.581253127982    -0.191043509116
 
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:30:42 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:41:27 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 12-13 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 7-11, 14   entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2326,26 +2400,26 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.210730574760    -0.805795156265     0.894510453429    12.000000000000
-           C         -1.085302007951    -1.317720004651     0.954566224740    12.000000000000
-           C         -2.078753752558    -0.825994164449     0.101200092567    12.000000000000
-           C         -1.769233455282     0.183883155866    -0.816014418559    12.000000000000
-           C         -0.475810291927     0.701576821271    -0.882855670437    12.000000000000
-           C          0.531422651729     0.211883567397    -0.026783618916    12.000000000000
-           H          0.988624678916    -1.186500595174     1.558420919519     1.007825032070
-           H         -2.541182573092     0.571470511686    -1.484585776323     1.007825032070
-           H         -0.230236949295     1.489447851262    -1.596868761933     1.007825032070
-           H         -1.321654685795    -2.106153303626     1.672651009246     1.007825032070
-           H         -3.092635749809    -1.229142498446     0.150960907917     1.007825032070
-           C          1.861534117526     0.740679862467    -0.091597155234    12.000000000000
-           C          2.991092159061     1.185361582380    -0.142225237181    12.000000000000
-           H          3.986225384357     1.581253158969    -0.191043456993     1.007825032070
+           C          0.210730578088    -0.805795165164     0.894510431269    12.000000000000
+           C         -1.085302001705    -1.317720012978     0.954566193978    12.000000000000
+           C         -2.078753745461    -0.825994156603     0.101200081243    12.000000000000
+           C         -1.769233438612     0.183883133976    -0.816014435196    12.000000000000
+           C         -0.475810292612     0.701576799583    -0.882855672288    12.000000000000
+           C          0.531422630102     0.211883618896    -0.026783564742    12.000000000000
+           H          0.988624691806    -1.186500611717     1.558420893829     1.007825032070
+           H         -2.541182554634     0.571470493540    -1.484585784238     1.007825032070
+           H         -0.230236950230     1.489447815328    -1.596868769044     1.007825032070
+           H         -1.321654678563    -2.106153310309     1.672650992552     1.007825032070
+           H         -3.092635740241    -1.229142487642     0.150960897935     1.007825032070
+           C          1.861534105013     0.740679878077    -0.091597111994    12.000000000000
+           C          2.991092155649     1.185361576417    -0.142225241821    12.000000000000
+           H          3.986225395435     1.581253127982    -0.191043509116     1.007825032070
 
   Running in c1 symmetry.
 
   Rotational constants: A =      0.18873  B =      0.05065  C =      0.03993 [cm^-1]
-  Rotational constants: A =   5658.08350  B =   1518.31667  C =   1197.08521 [MHz]
-  Nuclear repulsion =  297.733714066381140
+  Rotational constants: A =   5658.08359  B =   1518.31668  C =   1197.08522 [MHz]
+  Nuclear repulsion =  297.733715476670625
 
   Charge       = 0
   Multiplicity = 1
@@ -2367,6 +2441,7 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -2377,7 +2452,7 @@ gradient() will perform analytic gradient computation.
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -2420,6 +2495,16 @@ gradient() will perform analytic gradient computation.
     Max Points       =           4934
     Max Functions    =            142
 
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6, 12-13 entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-11, 14   entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  Reading orbitals from file 180, no projection.
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -2447,35 +2532,32 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 1.9373914814E-04.
+  Minimum eigenvalue in the overlap matrix is 1.9373914560E-04.
   Using Symmetric Orthogonalization.
-  SCF Guess: Reading in previously saved MOs, projecting if necessary.
 
-  Using orbitals from previous SCF, no projection.
-  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.
-              A 
-    DOCC [    27 ]
+  SCF Guess: Orbitals guess was supplied from a previous computation.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -308.41387863851833   -3.08414e+02   2.99520e-05 
-   @DF-RKS iter   1:  -308.41369511536743    1.83523e-04   5.28635e-06 
-   @DF-RKS iter   2:  -308.41369470757786    4.07790e-07   8.11493e-06 DIIS
-   @DF-RKS iter   3:  -308.41369543176313   -7.24185e-07   1.39725e-06 DIIS
-   @DF-RKS iter   4:  -308.41369544931899   -1.75559e-08   6.87747e-07 DIIS
-   @DF-RKS iter   5:  -308.41369545384578   -4.52678e-09   2.06838e-07 DIIS
-   @DF-RKS iter   6:  -308.41369545426448   -4.18709e-10   6.90654e-08 DIIS
-   @DF-RKS iter   7:  -308.41369545431826   -5.37739e-11   1.73681e-08 DIIS
-   @DF-RKS iter   8:  -308.41369545432099   -2.72848e-12   5.48999e-09 DIIS
+   @DF-RKS iter   0:  -308.41387881154299   -3.08414e+02   2.99518e-05 
+   @DF-RKS iter   1:  -308.41369511549277    1.83696e-04   5.28615e-06 
+   @DF-RKS iter   2:  -308.41369470773753    4.07755e-07   8.11461e-06 DIIS
+   @DF-RKS iter   3:  -308.41369543187250   -7.24135e-07   1.39698e-06 DIIS
+   @DF-RKS iter   4:  -308.41369544942165   -1.75492e-08   6.87638e-07 DIIS
+   @DF-RKS iter   5:  -308.41369545394758   -4.52593e-09   2.06835e-07 DIIS
+   @DF-RKS iter   6:  -308.41369545436595   -4.18368e-10   6.90722e-08 DIIS
+   @DF-RKS iter   7:  -308.41369545441944   -5.34897e-11   1.73675e-08 DIIS
+   @DF-RKS iter   8:  -308.41369545442262   -3.18323e-12   5.49018e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -2484,7 +2566,7 @@ gradient() will perform analytic gradient computation.
 
     Doubly Occupied:                                                      
 
-       1A    -10.220368     2A    -10.201823     3A    -10.201819  
+       1A    -10.220368     2A    -10.201822     3A    -10.201819  
        4A    -10.200718     5A    -10.199901     6A    -10.199774  
        7A    -10.194830     8A    -10.189486     9A     -0.868210  
       10A     -0.786592    11A     -0.755532    12A     -0.729248  
@@ -2532,7 +2614,7 @@ gradient() will perform analytic gradient computation.
      127A      2.194798   128A      2.199248   129A      2.364041  
      130A      2.412012   131A      2.412238   132A      2.450195  
      133A      2.465472   134A      2.610092   135A      2.660690  
-     136A      2.691005   137A      2.710403   138A      2.831224  
+     136A      2.691006   137A      2.710403   138A      2.831224  
      139A      2.851142   140A      2.934261   141A      3.185216  
      142A      3.583062  
 
@@ -2542,24 +2624,22 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:  -308.41369545432099
+  @DF-RKS Final Energy:  -308.41369545442262
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            297.7337140663811397
-    One-Electron Energy =               -1003.6450371261548753
-    Two-Electron Energy =                 434.3625465734173758
-    DFT Exchange-Correlation Energy =     -36.8649189679646554
+    Nuclear Repulsion Energy =            297.7337154766706249
+    One-Electron Energy =               -1003.6450399199050025
+    Two-Electron Energy =                 434.3625479824677313
+    DFT Exchange-Correlation Energy =     -36.8649189936559267
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -308.4136954543209868
+    Total Energy =                       -308.4136954544226228
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -2576,20 +2656,18 @@ Properties computed using the SCF density matrix
      X:    -0.6089      Y:    -0.2414      Z:     0.0294     Total:     0.6557
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:08 2016
+*** tstop() called on psinet at Mon May 15 15:42:05 2017
 Module time:
-	user time   =      25.40 seconds =       0.42 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      37.62 seconds =       0.63 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =         38 seconds =       0.63 minutes
 Total time:
-	user time   =     159.31 seconds =       2.66 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =        160 seconds =       2.67 minutes
+	user time   =     234.76 seconds =       3.91 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =        239 seconds =       3.98 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:31:08 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:42:05 2017
 
 
          ------------------------------------------------------------
@@ -2607,26 +2685,27 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.210730574760    -0.805795156265     0.894510453429    12.000000000000
-           C         -1.085302007951    -1.317720004651     0.954566224740    12.000000000000
-           C         -2.078753752558    -0.825994164449     0.101200092567    12.000000000000
-           C         -1.769233455282     0.183883155866    -0.816014418559    12.000000000000
-           C         -0.475810291927     0.701576821271    -0.882855670437    12.000000000000
-           C          0.531422651729     0.211883567397    -0.026783618916    12.000000000000
-           H          0.988624678916    -1.186500595174     1.558420919519     1.007825032070
-           H         -2.541182573092     0.571470511686    -1.484585776323     1.007825032070
-           H         -0.230236949295     1.489447851262    -1.596868761933     1.007825032070
-           H         -1.321654685795    -2.106153303626     1.672651009246     1.007825032070
-           H         -3.092635749809    -1.229142498446     0.150960907917     1.007825032070
-           C          1.861534117526     0.740679862467    -0.091597155234    12.000000000000
-           C          2.991092159061     1.185361582380    -0.142225237181    12.000000000000
-           H          3.986225384357     1.581253158969    -0.191043456993     1.007825032070
+           C          0.210730578088    -0.805795165164     0.894510431269    12.000000000000
+           C         -1.085302001705    -1.317720012978     0.954566193978    12.000000000000
+           C         -2.078753745461    -0.825994156603     0.101200081243    12.000000000000
+           C         -1.769233438612     0.183883133976    -0.816014435196    12.000000000000
+           C         -0.475810292612     0.701576799583    -0.882855672288    12.000000000000
+           C          0.531422630102     0.211883618896    -0.026783564742    12.000000000000
+           H          0.988624691806    -1.186500611717     1.558420893829     1.007825032070
+           H         -2.541182554634     0.571470493540    -1.484585784238     1.007825032070
+           H         -0.230236950230     1.489447815328    -1.596868769044     1.007825032070
+           H         -1.321654678563    -2.106153310309     1.672650992552     1.007825032070
+           H         -3.092635740241    -1.229142487642     0.150960897935     1.007825032070
+           C          1.861534105013     0.740679878077    -0.091597111994    12.000000000000
+           C          2.991092155649     1.185361576417    -0.142225241821    12.000000000000
+           H          3.986225395435     1.581253127982    -0.191043509116     1.007825032070
 
-  Nuclear repulsion =  297.733714066381140
+  Nuclear repulsion =  297.733715476670625
 
   ==> Basis Set <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -2647,7 +2726,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -2658,7 +2738,7 @@ Total time:
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -2705,31 +2785,31 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000047249333    -0.000048080085     0.000036882297
-       2        0.000017201359     0.000031626687    -0.000024324384
-       3       -0.000014911432    -0.000011723705     0.000001252939
-       4        0.000031953647     0.000002015318     0.000009542202
-       5       -0.000077552209    -0.000010682844    -0.000010458218
-       6        0.000147773801    -0.000018001782     0.000038886142
-       7        0.000009728635     0.000015039003    -0.000008214664
-       8       -0.000000388941     0.000007063411    -0.000005821852
-       9        0.000013105991     0.000000506106     0.000007473640
-      10        0.000003160909    -0.000006516116     0.000008945648
-      11        0.000004369949     0.000001901147     0.000002096493
-      12       -0.000102781410     0.000175706380    -0.000201965933
-      13        0.000078921298    -0.000179738756     0.000210992766
-      14       -0.000047663014     0.000047153793    -0.000066108555
+       1       -0.000047256801    -0.000048079763     0.000036866153
+       2        0.000017200405     0.000031635963    -0.000024336100
+       3       -0.000014907057    -0.000011714396     0.000001249936
+       4        0.000031963773     0.000002008019     0.000009549822
+       5       -0.000077560470    -0.000010697308    -0.000010459219
+       6        0.000147768046    -0.000017988401     0.000038898364
+       7        0.000009733919     0.000015037476    -0.000008210808
+       8       -0.000000389286     0.000007064229    -0.000005819830
+       9        0.000013105023     0.000000503110     0.000007475650
+      10        0.000003160363    -0.000006518359     0.000008950674
+      11        0.000004373456     0.000001902119     0.000002095853
+      12       -0.000102786858     0.000175698000    -0.000201964827
+      13        0.000078922081    -0.000179738328     0.000210992165
+      14       -0.000047657341     0.000047156201    -0.000066109306
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:18 2016
+*** tstop() called on psinet at Mon May 15 15:42:19 2017
 Module time:
-	user time   =      10.65 seconds =       0.18 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      14.62 seconds =       0.24 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         14 seconds =       0.23 minutes
 Total time:
-	user time   =     169.96 seconds =       2.83 minutes
-	system time =       0.43 seconds =       0.01 minutes
-	total time  =        170 seconds =       2.83 minutes
+	user time   =     249.38 seconds =       4.16 minutes
+	system time =       0.75 seconds =       0.01 minutes
+	total time  =        253 seconds =       4.22 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -2738,34 +2818,34 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 C           0.3982230741       -1.5227321645        1.6903797800
-	 C          -2.0509235665       -2.4901299286        1.8038687405
-	 C          -3.9282752900       -1.5609027582        0.1912404596
-	 C          -3.3433666956        0.3474888050       -1.5420437716
-	 C          -0.8991511429        1.3257880534       -1.6683554320
-	 C           1.0042432726        0.4004019144       -0.0506137046
-	 H           1.8682298914       -2.2421611814        2.9449887377
-	 H          -4.8021391168        1.0799227601       -2.8054605380
-	 H          -0.4350847798        2.8146485281       -3.0176446302
-	 H          -2.4975653984       -3.9800529377        3.1608523234
-	 H          -5.8442345959       -2.3227427004        0.2852747727
-	 C           3.5177896691        1.3996820922       -0.1730935379
-	 C           5.6523450188        2.2400087591       -0.2687667475
-	 H           7.5328742804        2.9881354172       -0.3610198132
-	            -0.0000472493       -0.0000480801        0.0000368823
-	             0.0000172014        0.0000316267       -0.0000243244
-	            -0.0000149114       -0.0000117237        0.0000012529
-	             0.0000319536        0.0000020153        0.0000095422
-	            -0.0000775522       -0.0000106828       -0.0000104582
-	             0.0001477738       -0.0000180018        0.0000388861
-	             0.0000097286        0.0000150390       -0.0000082147
-	            -0.0000003889        0.0000070634       -0.0000058219
-	             0.0000131060        0.0000005061        0.0000074736
-	             0.0000031609       -0.0000065161        0.0000089456
-	             0.0000043699        0.0000019011        0.0000020965
-	            -0.0001027814        0.0001757064       -0.0002019659
-	             0.0000789213       -0.0001797388        0.0002109928
-	            -0.0000476630        0.0000471538       -0.0000661086
+	 C           0.3982230804       -1.5227321814        1.6903797381
+	 C          -2.0509235547       -2.4901299444        1.8038686823
+	 C          -3.9282752766       -1.5609027433        0.1912404382
+	 C          -3.3433666641        0.3474887637       -1.5420438030
+	 C          -0.8991511442        1.3257880124       -1.6683554355
+	 C           1.0042432317        0.4004020118       -0.0506136022
+	 H           1.8682299157       -2.2421612126        2.9449886891
+	 H          -4.8021390819        1.0799227258       -2.8054605530
+	 H          -0.4350847816        2.8146484602       -3.0176446437
+	 H          -2.4975653847       -3.9800529504        3.1608522918
+	 H          -5.8442345778       -2.3227426799        0.2852747539
+	 C           3.5177896455        1.3996821217       -0.1730934562
+	 C           5.6523450124        2.2400087479       -0.2687667562
+	 H           7.5328743013        2.9881353587       -0.3610199117
+	            -0.0000472568       -0.0000480798        0.0000368662
+	             0.0000172004        0.0000316360       -0.0000243361
+	            -0.0000149071       -0.0000117144        0.0000012499
+	             0.0000319638        0.0000020080        0.0000095498
+	            -0.0000775605       -0.0000106973       -0.0000104592
+	             0.0001477680       -0.0000179884        0.0000388984
+	             0.0000097339        0.0000150375       -0.0000082108
+	            -0.0000003893        0.0000070642       -0.0000058198
+	             0.0000131050        0.0000005031        0.0000074756
+	             0.0000031604       -0.0000065184        0.0000089507
+	             0.0000043735        0.0000019021        0.0000020959
+	            -0.0001027869        0.0001756980       -0.0002019648
+	             0.0000789221       -0.0001797383        0.0002109922
+	            -0.0000476573        0.0000471562       -0.0000661093
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
@@ -2786,55 +2866,55 @@ Total time:
 	 B(1,2,3)         =         2.099722	     120.305190
 	 B(1,2,10)        =         2.087819	     119.623236
 	 B(1,6,5)         =         2.077288	     119.019829
-	 B(1,6,12)        =         2.102685	     120.475000
+	 B(1,6,12)        =         2.102685	     120.474999
 	 B(2,1,6)         =         2.099582	     120.297212
-	 B(2,1,7)         =         2.103821	     120.540050
+	 B(2,1,7)         =         2.103821	     120.540051
 	 B(2,3,4)         =         2.090465	     119.774798
 	 B(2,3,11)        =         2.096339	     120.111391
-	 B(3,2,10)        =         2.095644	     120.071573
+	 B(3,2,10)        =         2.095644	     120.071574
 	 B(3,4,5)         =         2.099653	     120.301252
-	 B(3,4,8)         =         2.095675	     120.073348
+	 B(3,4,8)         =         2.095675	     120.073347
 	 B(4,3,11)        =         2.096381	     120.113811
 	 B(4,5,6)         =         2.099661	     120.301719
 	 B(4,5,9)         =         2.103670	     120.531384
-	 B(5,4,8)         =         2.087857	     119.625400
-	 B(5,6,12)        =         2.103212	     120.505169
+	 B(5,4,8)         =         2.087857	     119.625401
+	 B(5,6,12)        =         2.103212	     120.505170
 	 B(6,1,7)         =         2.079782	     119.162738
 	 B(6,5,9)         =         2.079855	     119.166897
-	 L(6,12,13)       =         3.136697	     179.719494
+	 L(6,12,13)       =         3.136697	     179.719495
 	 l(6,12,13)       =         3.141593	     180.000000
 	 L(12,13,14)      =         3.136318	     179.697789
 	 l(12,13,14)      =         3.141593	     180.000000
-	 D(1,2,3,4)       =        -0.000042	      -0.002399
+	 D(1,2,3,4)       =        -0.000042	      -0.002396
 	 D(1,2,3,11)      =        -3.141548	    -179.997441
-	 D(1,6,5,4)       =        -0.000097	      -0.005552
-	 D(1,6,5,9)       =         3.141451	     179.991885
-	 D(2,1,6,5)       =         0.000091	       0.005221
-	 D(2,1,6,12)      =         3.141432	     179.990818
-	 D(2,3,4,5)       =         0.000036	       0.002067
+	 D(1,6,5,4)       =        -0.000097	      -0.005544
+	 D(1,6,5,9)       =         3.141451	     179.991890
+	 D(2,1,6,5)       =         0.000091	       0.005213
+	 D(2,1,6,12)      =         3.141432	     179.990820
+	 D(2,3,4,5)       =         0.000036	       0.002064
 	 D(2,3,4,8)       =        -3.141507	    -179.995110
-	 D(3,2,1,6)       =        -0.000022	      -0.001281
-	 D(3,2,1,7)       =         3.141515	     179.995538
-	 D(3,4,5,6)       =         0.000034	       0.001945
-	 D(3,4,5,9)       =        -3.141513	    -179.995457
-	 D(4,3,2,10)      =         3.141512	     179.995366
-	 D(4,5,6,12)      =        -3.141438	    -179.991145
-	 D(5,4,3,11)      =         3.141542	     179.997109
-	 D(5,6,1,7)       =        -3.141447	    -179.991641
-	 D(6,1,2,10)      =        -3.141576	    -179.999056
-	 D(6,5,4,8)       =         3.141578	     179.999134
-	 D(7,1,2,10)      =        -0.000039	      -0.002237
-	 D(7,1,6,12)      =        -0.000105	      -0.006045
+	 D(3,2,1,6)       =        -0.000022	      -0.001278
+	 D(3,2,1,7)       =         3.141515	     179.995537
+	 D(3,4,5,6)       =         0.000034	       0.001942
+	 D(3,4,5,9)       =        -3.141513	    -179.995456
+	 D(4,3,2,10)      =         3.141512	     179.995367
+	 D(4,5,6,12)      =        -3.141438	    -179.991147
+	 D(5,4,3,11)      =         3.141542	     179.997108
+	 D(5,6,1,7)       =        -3.141447	    -179.991646
+	 D(6,1,2,10)      =        -3.141576	    -179.999051
+	 D(6,5,4,8)       =         3.141577	     179.999129
+	 D(7,1,2,10)      =        -0.000039	      -0.002236
+	 D(7,1,6,12)      =        -0.000105	      -0.006039
 	 D(8,4,3,11)      =        -0.000000	      -0.000000
-	 D(8,4,5,9)       =         0.000030	       0.001732
-	 D(9,5,6,12)      =         0.000110	       0.006292
+	 D(8,4,5,9)       =         0.000030	       0.001730
+	 D(9,5,6,12)      =         0.000110	       0.006287
 	 D(10,2,3,11)     =         0.000000	       0.000000
 
-	Current energy   :      -308.4136954543
+	Current energy   :      -308.4136954544
 
 	Energy change for the previous step:
-		Projected    :        -0.0000037878
-		Actual       :        -0.0000023367
+		Projected    :        -0.0000037887
+		Actual       :        -0.0000023374
 
 	Performing BFGS update.
 	Previous computed or guess Hessian on step 1.
@@ -2843,12 +2923,12 @@ Total time:
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
 	Norm of target step-size    0.00231
-	Projected energy change by RFO approximation:        -0.0000009898
+	Projected energy change by RFO approximation:        -0.0000009902
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
 	First geometry is closer to target in internal coordinates, so am using that one.
-	First geometry has RMS(Delta(q)) = 3.26e-06
+	First geometry has RMS(Delta(q)) = 3.25e-06
 
 	--- Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
 	 ---------------------------------------------------------------------------
@@ -2858,9 +2938,9 @@ Total time:
 	    2 R(1,6)          =      1.409715    -0.000255     0.000008     1.409723
 	    3 R(1,7)          =      1.091253     0.000032    -0.000001     1.091252
 	    4 R(2,3)          =      1.398919     0.000017     0.000015     1.398934
-	    5 R(2,10)         =      1.092307    -0.000086    -0.000034     1.092274
+	    5 R(2,10)         =      1.092307    -0.000087    -0.000034     1.092274
 	    6 R(3,4)          =      1.398906    -0.000022     0.000015     1.398920
-	    7 R(3,11)         =      1.092228     0.000028    -0.000027     1.092201
+	    7 R(3,11)         =      1.092228     0.000029    -0.000027     1.092201
 	    8 R(4,5)          =      1.394782     0.000183    -0.000002     1.394780
 	    9 R(4,8)          =      1.092299    -0.000057    -0.000026     1.092273
 	   10 R(5,6)          =      1.409673    -0.000250     0.000000     1.409673
@@ -2868,53 +2948,54 @@ Total time:
 	   12 R(6,12)         =      1.432837     0.000424     0.000005     1.432842
 	   13 R(12,13)        =      1.214992     0.000230     0.000005     1.214998
 	   14 R(13,14)        =      1.072102     0.000206     0.000014     1.072116
-	   15 B(1,2,3)        =    120.305190    -0.000001    -0.002854   120.302337
+	   15 B(1,2,3)        =    120.305190    -0.000001    -0.002854   120.302336
 	   16 B(1,2,10)       =    119.623236     0.000001     0.001373   119.624609
-	   17 B(1,6,5)        =    119.019829     0.000002    -0.000758   119.019071
-	   18 B(1,6,12)       =    120.475000     0.000000     0.003167   120.478167
-	   19 B(2,1,6)        =    120.297212    -0.000000     0.002417   120.299629
-	   20 B(2,1,7)        =    120.540050    -0.000001    -0.001011   120.539040
-	   21 B(2,3,4)        =    119.774798     0.000001     0.001301   119.776098
-	   22 B(2,3,11)       =    120.111391    -0.000000     0.000980   120.112372
-	   23 B(3,2,10)       =    120.071573     0.000000     0.001481   120.073055
-	   24 B(3,4,5)        =    120.301252    -0.000001    -0.000243   120.301009
-	   25 B(3,4,8)        =    120.073348    -0.000000    -0.000892   120.072455
+	   17 B(1,6,5)        =    119.019829     0.000002    -0.000757   119.019072
+	   18 B(1,6,12)       =    120.474999     0.000000     0.003167   120.478166
+	   19 B(2,1,6)        =    120.297212    -0.000000     0.002417   120.299628
+	   20 B(2,1,7)        =    120.540051    -0.000001    -0.001011   120.539039
+	   21 B(2,3,4)        =    119.774798     0.000001     0.001301   119.776099
+	   22 B(2,3,11)       =    120.111391    -0.000000     0.000980   120.112371
+	   23 B(3,2,10)       =    120.071574     0.000000     0.001481   120.073055
+	   24 B(3,4,5)        =    120.301252    -0.000001    -0.000244   120.301009
+	   25 B(3,4,8)        =    120.073347    -0.000000    -0.000892   120.072455
 	   26 B(4,3,11)       =    120.113811    -0.000000    -0.002281   120.111530
-	   27 B(4,5,6)        =    120.301719    -0.000001     0.000138   120.301856
+	   27 B(4,5,6)        =    120.301719    -0.000001     0.000137   120.301856
 	   28 B(4,5,9)        =    120.531384    -0.000001     0.000935   120.532319
-	   29 B(5,4,8)        =    119.625400     0.000001     0.001136   119.626536
-	   30 B(5,6,12)       =    120.505169    -0.000002    -0.002408   120.502762
-	   31 B(6,1,7)        =    119.162738     0.000002    -0.001406   119.161332
+	   29 B(5,4,8)        =    119.625401     0.000001     0.001136   119.626536
+	   30 B(5,6,12)       =    120.505170    -0.000002    -0.002409   120.502761
+	   31 B(6,1,7)        =    119.162738     0.000002    -0.001405   119.161332
 	   32 B(6,5,9)        =    119.166897     0.000002    -0.001072   119.165825
-	   33 L(6,12,13)      =    179.719494     0.000020     0.086334   179.805828
+	   33 L(6,12,13)      =    179.719495     0.000020     0.086333   179.805828
 	   34 l(6,12,13)      =    180.000000    -0.000000     0.000000   180.000000
-	   35 L(12,13,14)     =    179.697789     0.000014     0.091134   179.788923
+	   35 L(12,13,14)     =    179.697789     0.000014     0.091134   179.788922
 	   36 l(12,13,14)     =    180.000000     0.000000     0.000000   180.000000
-	   37 D(1,2,3,4)      =     -0.002399     0.000000     0.004722     0.002323
-	   38 D(1,2,3,11)     =   -179.997441    -0.000000    -0.004070  -180.001511
-	   39 D(1,6,5,4)      =     -0.005552     0.000000     0.011311     0.005759
-	   40 D(1,6,5,9)      =    179.991885     0.000000     0.014060   180.005945
-	   41 D(2,1,6,5)      =      0.005221    -0.000000    -0.010815    -0.005594
-	   42 D(2,1,6,12)     =    179.990818     0.000000     0.014815   180.005633
-	   43 D(2,3,4,5)      =      0.002067    -0.000000    -0.004224    -0.002157
-	   44 D(2,3,4,8)      =   -179.995110    -0.000000    -0.008228  -180.003338
-	   45 D(3,2,1,6)      =     -0.001281     0.000000     0.002872     0.001591
-	   46 D(3,2,1,7)      =    179.995538     0.000000     0.006498   180.002036
-	   47 D(3,4,5,6)      =      0.001945    -0.000000    -0.003867    -0.001922
-	   48 D(3,4,5,9)      =   -179.995457    -0.000000    -0.006654  -180.002110
-	   49 D(4,3,2,10)     =    179.995366     0.000000     0.007904   180.003271
-	   50 D(4,5,6,12)     =   -179.991145    -0.000000    -0.014326  -180.005471
-	   51 D(5,4,3,11)     =    179.997109     0.000000     0.004567   180.001676
-	   52 D(5,6,1,7)      =   -179.991641    -0.000000    -0.014392  -180.006033
-	   53 D(6,1,2,10)     =   -179.999056    -0.000000    -0.000944  -180.000000
-	   54 D(6,5,4,8)      =    179.999134     0.000000     0.000866   180.000000
-	   55 D(7,1,2,10)     =     -0.002237     0.000000     0.003330     0.001093
-	   56 D(7,1,6,12)     =     -0.006045     0.000000     0.011238     0.005194
+	   37 D(1,2,3,4)      =     -0.002396     0.000000     0.004718     0.002321
+	   38 D(1,2,3,11)     =   -179.997441    -0.000000    -0.004070  -180.001510
+	   39 D(1,6,5,4)      =     -0.005544     0.000000     0.011297     0.005753
+	   40 D(1,6,5,9)      =    179.991890     0.000000     0.014052   180.005942
+	   41 D(2,1,6,5)      =      0.005213    -0.000000    -0.010801    -0.005589
+	   42 D(2,1,6,12)     =    179.990820     0.000000     0.014811   180.005631
+	   43 D(2,3,4,5)      =      0.002064    -0.000000    -0.004220    -0.002156
+	   44 D(2,3,4,8)      =   -179.995110    -0.000000    -0.008227  -180.003337
+	   45 D(3,2,1,6)      =     -0.001278     0.000000     0.002867     0.001589
+	   46 D(3,2,1,7)      =    179.995537     0.000000     0.006499   180.002036
+	   47 D(3,4,5,6)      =      0.001942    -0.000000    -0.003862    -0.001920
+	   48 D(3,4,5,9)      =   -179.995456    -0.000000    -0.006655  -180.002111
+	   49 D(4,3,2,10)     =    179.995367     0.000000     0.007903   180.003270
+	   50 D(4,5,6,12)     =   -179.991147    -0.000000    -0.014322  -180.005469
+	   51 D(5,4,3,11)     =    179.997108     0.000000     0.004568   180.001676
+	   52 D(5,6,1,7)      =   -179.991646    -0.000000    -0.014384  -180.006030
+	   53 D(6,1,2,10)     =   -179.999051    -0.000000    -0.000949  -180.000000
+	   54 D(6,5,4,8)      =    179.999129     0.000000     0.000871   180.000000
+	   55 D(7,1,2,10)     =     -0.002236     0.000000     0.003328     0.001093
+	   56 D(7,1,6,12)     =     -0.006039     0.000000     0.011229     0.005190
 	   57 D(8,4,3,11)     =      0.000000     0.000000     0.000000     0.000000
-	   58 D(8,4,5,9)      =      0.001732    -0.000000    -0.002668    -0.000935
-	   59 D(9,5,6,12)     =      0.006292    -0.000000    -0.011577    -0.005284
+	   58 D(8,4,5,9)      =      0.001730    -0.000000    -0.002665    -0.000935
+	   59 D(9,5,6,12)     =      0.006287    -0.000000    -0.011567    -0.005280
 	   60 D(10,2,3,11)    =      0.000000    -0.000000     0.000000     0.000000
 	 ---------------------------------------------------------------------------
+	Successfully symmetrized geometry.
 
   ==> Convergence Check <==
 
@@ -2931,20 +3012,20 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (in Angstrom)
-	    C     0.2105628592  -0.8059692904   0.8948028085
-	    C    -1.0855003898  -1.3178419980   0.9546402365
-	    C    -2.0787836271  -0.8259401359   0.1011544889
-	    C    -1.7690354005   0.1839534075  -0.8159873778
-	    C    -0.4755674419   0.7015602709  -0.8825853484
-	    C     0.5314637537   0.2118324651  -0.0262954862
-	    H     0.9883658353  -1.1868591529   1.5587127146
-	    H    -2.5408205465   0.5715443233  -1.4847039476
-	    H    -0.2297725943   1.4893564768  -1.5965972293
-	    H    -1.3219866823  -2.1063464272   1.6725518508
-	    H    -3.0926692718  -1.2290389982   0.1506438830
-	    C     1.8616835978   0.7403681844  -0.0911155910
-	    C     2.9908193254   1.1859824307  -0.1430747349
-	    H     3.9860606834   1.5816492326  -0.1918107552
+	    C     0.2105628678  -0.8059692919   0.8948028035
+	    C    -1.0855003818  -1.3178419992   0.9546402312
+	    C    -2.0787836125  -0.8259401452   0.1011544712
+	    C    -1.7690353907   0.1839534085  -0.8159873844
+	    C    -0.4755674355   0.7015602720  -0.8825853487
+	    C     0.5314637595   0.2118324218  -0.0262955252
+	    H     0.9883658364  -1.1868591495   1.5587127097
+	    H    -2.5408205313   0.5715443186  -1.4847039518
+	    H    -0.2297725883   1.4893564786  -1.5965972207
+	    H    -1.3219866781  -2.1063464225   1.6725518481
+	    H    -3.0926692587  -1.2290390039   0.1506438747
+	    C     1.8616835937   0.7403681653  -0.0911156046
+	    C     2.9908193126   1.1859824205  -0.1430747395
+	    H     3.9860606609   1.5816492266  -0.1918107613
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -2955,32 +3036,40 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.210566879068    -0.805976795084     0.894723278452
-    C           -1.085496369998    -1.317849502617     0.954560706441
-    C           -2.078779607273    -0.825947640602     0.101074958890
-    C           -1.769031380629     0.183945902879    -0.816066907880
-    C           -0.475563422083     0.701552766221    -0.882664878460
-    C            0.531467773522     0.211824960456    -0.026375016241
-    H            0.988369855093    -1.186866657557     1.558633184514
-    H           -2.540816526706     0.571536818625    -1.484783477622
-    H           -0.229768574478     1.489348972154    -1.596676759368
-    H           -1.321982662480    -2.106353931866     1.672472320753
-    H           -3.092665251940    -1.229046502839     0.150564352999
-    C            1.861687617647     0.740360679692    -0.091195121079
-    C            2.990823345251     1.185974926046    -0.143154264981
-    H            3.986064703274     1.581641727959    -0.191890285262
+    C            0.210566883184    -0.805976786811     0.894723284416
+    C           -1.085496366413    -1.317849494099     0.954560712152
+    C           -2.078779597084    -0.825947640117     0.101074952170
+    C           -1.769031375287     0.183945913648    -0.816066903473
+    C           -0.475563420080     0.701552777087    -0.882664867724
+    C            0.531467774922     0.211824926892    -0.026375044269
+    H            0.988369851794    -1.186866644396     1.558633190668
+    H           -2.540816515863     0.571536823711    -1.484783470873
+    H           -0.229768572939     1.489348983730    -1.596676739778
+    H           -1.321982662730    -2.106353917384     1.672472328986
+    H           -3.092665243354    -1.229046498818     0.150564355590
+    C            1.861687609073     0.740360670399    -0.091195123659
+    C            2.990823327995     1.185974925616    -0.143154258523
+    H            3.986064676254     1.581641731746    -0.191890280329
 
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:31:18 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:42:19 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6, 12-13 entry C          line   130 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 7-11, 14   entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,   1000 MiB Core
+                        1 Threads,    953 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2992,26 +3081,26 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.210566879068    -0.805976795084     0.894723278452    12.000000000000
-           C         -1.085496369998    -1.317849502617     0.954560706441    12.000000000000
-           C         -2.078779607273    -0.825947640602     0.101074958890    12.000000000000
-           C         -1.769031380629     0.183945902879    -0.816066907880    12.000000000000
-           C         -0.475563422083     0.701552766221    -0.882664878460    12.000000000000
-           C          0.531467773522     0.211824960456    -0.026375016241    12.000000000000
-           H          0.988369855093    -1.186866657557     1.558633184514     1.007825032070
-           H         -2.540816526706     0.571536818625    -1.484783477622     1.007825032070
-           H         -0.229768574478     1.489348972154    -1.596676759368     1.007825032070
-           H         -1.321982662480    -2.106353931866     1.672472320753     1.007825032070
-           H         -3.092665251940    -1.229046502839     0.150564352999     1.007825032070
-           C          1.861687617647     0.740360679692    -0.091195121079    12.000000000000
-           C          2.990823345251     1.185974926046    -0.143154264981    12.000000000000
-           H          3.986064703274     1.581641727959    -0.191890285262     1.007825032070
+           C          0.210566883184    -0.805976786811     0.894723284416    12.000000000000
+           C         -1.085496366413    -1.317849494099     0.954560712152    12.000000000000
+           C         -2.078779597084    -0.825947640117     0.101074952170    12.000000000000
+           C         -1.769031375287     0.183945913648    -0.816066903473    12.000000000000
+           C         -0.475563420080     0.701552777087    -0.882664867724    12.000000000000
+           C          0.531467774922     0.211824926892    -0.026375044269    12.000000000000
+           H          0.988369851794    -1.186866644396     1.558633190668     1.007825032070
+           H         -2.540816515863     0.571536823711    -1.484783470873     1.007825032070
+           H         -0.229768572939     1.489348983730    -1.596676739778     1.007825032070
+           H         -1.321982662730    -2.106353917384     1.672472328986     1.007825032070
+           H         -3.092665243354    -1.229046498818     0.150564355590     1.007825032070
+           C          1.861687609073     0.740360670399    -0.091195123659    12.000000000000
+           C          2.990823327995     1.185974925616    -0.143154258523    12.000000000000
+           H          3.986064676254     1.581641731746    -0.191890280329     1.007825032070
 
   Running in c1 symmetry.
 
   Rotational constants: A =      0.18873  B =      0.05065  C =      0.03993 [cm^-1]
-  Rotational constants: A =   5658.02616  B =   1518.30534  C =   1197.07560 [MHz]
-  Nuclear repulsion =  297.732924217639948
+  Rotational constants: A =   5658.02617  B =   1518.30536  C =   1197.07561 [MHz]
+  Nuclear repulsion =  297.732925173229432
 
   Charge       = 0
   Multiplicity = 1
@@ -3033,6 +3122,7 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -3043,7 +3133,7 @@ gradient() will perform analytic gradient computation.
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -3086,6 +3176,16 @@ gradient() will perform analytic gradient computation.
     Max Points       =           4936
     Max Functions    =            142
 
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-6, 12-13 entry C          line   120 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 7-11, 14   entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  Reading orbitals from file 180, no projection.
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -3113,35 +3213,32 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 1.9371161565E-04.
+  Minimum eigenvalue in the overlap matrix is 1.9371161003E-04.
   Using Symmetric Orthogonalization.
-  SCF Guess: Reading in previously saved MOs, projecting if necessary.
 
-  Using orbitals from previous SCF, no projection.
-  Recomputing DOCC and SOCC from number of alpha and beta electrons from previous calculation.
-              A 
-    DOCC [    27 ]
+  SCF Guess: Orbitals guess was supplied from a previous computation.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -308.41370473402878   -3.08414e+02   1.81522e-05 
-   @DF-RKS iter   1:  -308.41369600649909    8.72753e-06   1.78753e-06 
-   @DF-RKS iter   2:  -308.41369602249472   -1.59956e-08   1.52610e-06 DIIS
-   @DF-RKS iter   3:  -308.41369604275326   -2.02585e-08   7.75742e-07 DIIS
-   @DF-RKS iter   4:  -308.41369604979832   -7.04506e-09   9.91098e-08 DIIS
-   @DF-RKS iter   5:  -308.41369604985812   -5.97993e-11   6.98939e-08 DIIS
-   @DF-RKS iter   6:  -308.41369604990575   -4.76348e-11   1.94664e-08 DIIS
-   @DF-RKS iter   7:  -308.41369604990894   -3.18323e-12   1.05386e-08 DIIS
-   @DF-RKS iter   8:  -308.41369604990962   -6.82121e-13   5.65509e-10 DIIS
+   @DF-RKS iter   0:  -308.41370472869522   -3.08414e+02   1.81519e-05 
+   @DF-RKS iter   1:  -308.41369600648773    8.72221e-06   1.78746e-06 
+   @DF-RKS iter   2:  -308.41369602248642   -1.59987e-08   1.52593e-06 DIIS
+   @DF-RKS iter   3:  -308.41369604273888   -2.02525e-08   7.75678e-07 DIIS
+   @DF-RKS iter   4:  -308.41369604978280   -7.04392e-09   9.91169e-08 DIIS
+   @DF-RKS iter   5:  -308.41369604984260   -5.97993e-11   6.98999e-08 DIIS
+   @DF-RKS iter   6:  -308.41369604989052   -4.79190e-11   1.94792e-08 DIIS
+   @DF-RKS iter   7:  -308.41369604989359   -3.06954e-12   1.05367e-08 DIIS
+   @DF-RKS iter   8:  -308.41369604989490   -1.30740e-12   5.65596e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -3208,24 +3305,22 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:  -308.41369604990962
+  @DF-RKS Final Energy:  -308.41369604989490
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            297.7329242176399475
-    One-Electron Energy =               -1003.6434546773223246
-    Two-Electron Energy =                 434.3617533757973206
-    DFT Exchange-Correlation Energy =     -36.8649189660245611
+    Nuclear Repulsion Energy =            297.7329251732294324
+    One-Electron Energy =               -1003.6434565707230604
+    Two-Electron Energy =                 434.3617543362580591
+    DFT Exchange-Correlation Energy =     -36.8649189886593476
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -308.4136960499096176
+    Total Energy =                       -308.4136960498948952
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -3242,20 +3337,18 @@ Properties computed using the SCF density matrix
      X:    -0.6088      Y:    -0.2417      Z:     0.0292     Total:     0.6557
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:44 2016
+*** tstop() called on psinet at Mon May 15 15:42:56 2017
 Module time:
-	user time   =      25.52 seconds =       0.43 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      36.85 seconds =       0.61 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         37 seconds =       0.62 minutes
 Total time:
-	user time   =     195.57 seconds =       3.26 minutes
-	system time =       0.46 seconds =       0.01 minutes
-	total time  =        196 seconds =       3.27 minutes
+	user time   =     286.26 seconds =       4.77 minutes
+	system time =       0.82 seconds =       0.01 minutes
+	total time  =        290 seconds =       4.83 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:31:44 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:42:56 2017
 
 
          ------------------------------------------------------------
@@ -3273,26 +3366,27 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.210566879068    -0.805976795084     0.894723278452    12.000000000000
-           C         -1.085496369998    -1.317849502617     0.954560706441    12.000000000000
-           C         -2.078779607273    -0.825947640602     0.101074958890    12.000000000000
-           C         -1.769031380629     0.183945902879    -0.816066907880    12.000000000000
-           C         -0.475563422083     0.701552766221    -0.882664878460    12.000000000000
-           C          0.531467773522     0.211824960456    -0.026375016241    12.000000000000
-           H          0.988369855093    -1.186866657557     1.558633184514     1.007825032070
-           H         -2.540816526706     0.571536818625    -1.484783477622     1.007825032070
-           H         -0.229768574478     1.489348972154    -1.596676759368     1.007825032070
-           H         -1.321982662480    -2.106353931866     1.672472320753     1.007825032070
-           H         -3.092665251940    -1.229046502839     0.150564352999     1.007825032070
-           C          1.861687617647     0.740360679692    -0.091195121079    12.000000000000
-           C          2.990823345251     1.185974926046    -0.143154264981    12.000000000000
-           H          3.986064703274     1.581641727959    -0.191890285262     1.007825032070
+           C          0.210566883184    -0.805976786811     0.894723284416    12.000000000000
+           C         -1.085496366413    -1.317849494099     0.954560712152    12.000000000000
+           C         -2.078779597084    -0.825947640117     0.101074952170    12.000000000000
+           C         -1.769031375287     0.183945913648    -0.816066903473    12.000000000000
+           C         -0.475563420080     0.701552777087    -0.882664867724    12.000000000000
+           C          0.531467774922     0.211824926892    -0.026375044269    12.000000000000
+           H          0.988369851794    -1.186866644396     1.558633190668     1.007825032070
+           H         -2.540816515863     0.571536823711    -1.484783470873     1.007825032070
+           H         -0.229768572939     1.489348983730    -1.596676739778     1.007825032070
+           H         -1.321982662730    -2.106353917384     1.672472328986     1.007825032070
+           H         -3.092665243354    -1.229046498818     0.150564355590     1.007825032070
+           C          1.861687609073     0.740360670399    -0.091195123659    12.000000000000
+           C          2.990823327995     1.185974925616    -0.143154258523    12.000000000000
+           H          3.986064676254     1.581641731746    -0.191890280329     1.007825032070
 
-  Nuclear repulsion =  297.732924217639948
+  Nuclear repulsion =  297.732925173229432
 
   ==> Basis Set <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 66
     Number of basis function: 142
     Number of Cartesian functions: 150
@@ -3313,7 +3407,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 246
     Number of basis function: 698
     Number of Cartesian functions: 798
@@ -3324,7 +3419,7 @@ Total time:
 
    => B3LYP Composite Functional <= 
 
-    B3LYP Hybrid-GGA Exchange-Correlation Functional
+    B3LYP Hybrid-GGA Exchange-Correlation Functional (VWN1-RPA)
 
     P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
 
@@ -3371,31 +3466,31 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000054536493    -0.000058236482     0.000032301892
-       2        0.000021108105     0.000001060295     0.000004978236
-       3       -0.000038020468    -0.000014426013     0.000006452781
-       4        0.000019034040     0.000018233414    -0.000012609154
-       5       -0.000075467812    -0.000019534940    -0.000015163994
-       6        0.000132713363     0.000036429549     0.000035916004
-       7        0.000009590340     0.000014098330    -0.000012657116
-       8        0.000010817757    -0.000000859563     0.000004385955
-       9        0.000014101386    -0.000003995650     0.000007451514
-      10        0.000008749057     0.000008275072    -0.000005563687
-      11        0.000021881716     0.000008613188    -0.000002869147
-      12       -0.000080500429     0.000106680843    -0.000143843917
-      13        0.000056399234    -0.000125193777     0.000146615512
-      14       -0.000030197451     0.000035123939    -0.000046188183
+       1       -0.000054536237    -0.000058234620     0.000032310457
+       2        0.000021092424     0.000001062558     0.000004971790
+       3       -0.000038011895    -0.000014419943     0.000006445737
+       4        0.000019029175     0.000018233760    -0.000012609053
+       5       -0.000075482900    -0.000019527298    -0.000015165971
+       6        0.000132718783     0.000036424274     0.000035901283
+       7        0.000009590562     0.000014097245    -0.000012655951
+       8        0.000010830141    -0.000000866210     0.000004395532
+       9        0.000014098588    -0.000004002130     0.000007456971
+      10        0.000008750879     0.000008276889    -0.000005565725
+      11        0.000021888365     0.000008615918    -0.000002868161
+      12       -0.000080486656     0.000106681555    -0.000143837827
+      13        0.000056398938    -0.000125193649     0.000146615815
+      14       -0.000030207822     0.000035119852    -0.000046188201
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:31:55 2016
+*** tstop() called on psinet at Mon May 15 15:43:11 2017
 Module time:
-	user time   =      10.72 seconds =       0.18 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =      14.36 seconds =       0.24 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
 Total time:
-	user time   =     206.29 seconds =       3.44 minutes
-	system time =       0.50 seconds =       0.01 minutes
-	total time  =        207 seconds =       3.45 minutes
+	user time   =     300.63 seconds =       5.01 minutes
+	system time =       0.88 seconds =       0.01 minutes
+	total time  =        305 seconds =       5.08 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -3404,34 +3499,34 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 C           0.3979137341       -1.5230754122        1.6907819610
-	 C          -2.0512908575       -2.4903746443        1.8038583124
-	 C          -3.9283241484       -1.5608148408        0.1910039912
-	 C          -3.3429848299        0.3476073797       -1.5421429620
-	 C          -0.8986846266        1.3257425959       -1.6679948874
-	 C           1.0043285404        0.4002911634       -0.0498415574
-	 H           1.8677483441       -2.2428529390        2.9453898604
-	 H          -4.8014473894        1.0800480621       -2.8058341393
-	 H          -0.4341996797        2.8144616737       -3.0172817979
-	 H          -2.4981851845       -3.9804320702        3.1605146511
-	 H          -5.8442903469       -2.3225612949        0.2845253925
-	 C           3.5180797423        1.3990789242       -0.1723338035
-	 C           5.6518370344        2.2411678107       -0.2705223556
-	 H           7.5325706372        2.9888697062       -0.3626200867
-	            -0.0000545365       -0.0000582365        0.0000323019
-	             0.0000211081        0.0000010603        0.0000049782
-	            -0.0000380205       -0.0000144260        0.0000064528
-	             0.0000190340        0.0000182334       -0.0000126092
-	            -0.0000754678       -0.0000195349       -0.0000151640
-	             0.0001327134        0.0000364295        0.0000359160
-	             0.0000095903        0.0000140983       -0.0000126571
-	             0.0000108178       -0.0000008596        0.0000043860
-	             0.0000141014       -0.0000039956        0.0000074515
-	             0.0000087491        0.0000082751       -0.0000055637
-	             0.0000218817        0.0000086132       -0.0000028691
-	            -0.0000805004        0.0001066808       -0.0001438439
-	             0.0000563992       -0.0001251938        0.0001466155
-	            -0.0000301975        0.0000351239       -0.0000461882
+	 C           0.3979137419       -1.5230753965        1.6907819723
+	 C          -2.0512908508       -2.4903746282        1.8038583232
+	 C          -3.9283241291       -1.5608148399        0.1910039785
+	 C          -3.3429848198        0.3476074001       -1.5421429537
+	 C          -0.8986846228        1.3257426165       -1.6679948671
+	 C           1.0043285431        0.4002910999       -0.0498416104
+	 H           1.8677483379       -2.2428529142        2.9453898720
+	 H          -4.8014473689        1.0800480717       -2.8058341266
+	 H          -0.4341996768        2.8144616955       -3.0172817609
+	 H          -2.4981851850       -3.9804320428        3.1605146666
+	 H          -5.8442903306       -2.3225612873        0.2845253974
+	 C           3.5180797261        1.3990789066       -0.1723338084
+	 C           5.6518370018        2.2411678099       -0.2705223434
+	 H           7.5325705861        2.9888697133       -0.3626200774
+	            -0.0000545362       -0.0000582346        0.0000323105
+	             0.0000210924        0.0000010626        0.0000049718
+	            -0.0000380119       -0.0000144199        0.0000064457
+	             0.0000190292        0.0000182338       -0.0000126091
+	            -0.0000754829       -0.0000195273       -0.0000151660
+	             0.0001327188        0.0000364243        0.0000359013
+	             0.0000095906        0.0000140972       -0.0000126560
+	             0.0000108301       -0.0000008662        0.0000043955
+	             0.0000140986       -0.0000040021        0.0000074570
+	             0.0000087509        0.0000082769       -0.0000055657
+	             0.0000218884        0.0000086159       -0.0000028682
+	            -0.0000804867        0.0001066816       -0.0001438378
+	             0.0000563989       -0.0001251936        0.0001466158
+	            -0.0000302078        0.0000351199       -0.0000461882
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
@@ -3449,14 +3544,14 @@ Total time:
 	 R(6,12)          =         2.707679	       1.432842
 	 R(12,13)         =         2.296013	       1.214998
 	 R(13,14)         =         2.026006	       1.072116
-	 B(1,2,3)         =         2.099672	     120.302337
+	 B(1,2,3)         =         2.099672	     120.302336
 	 B(1,2,10)        =         2.087843	     119.624609
-	 B(1,6,5)         =         2.077275	     119.019071
-	 B(1,6,12)        =         2.102741	     120.478167
-	 B(2,1,6)         =         2.099625	     120.299629
-	 B(2,1,7)         =         2.103803	     120.539040
-	 B(2,3,4)         =         2.090487	     119.776098
-	 B(2,3,11)        =         2.096356	     120.112372
+	 B(1,6,5)         =         2.077275	     119.019072
+	 B(1,6,12)        =         2.102741	     120.478166
+	 B(2,1,6)         =         2.099625	     120.299628
+	 B(2,1,7)         =         2.103803	     120.539039
+	 B(2,3,4)         =         2.090487	     119.776099
+	 B(2,3,11)        =         2.096356	     120.112371
 	 B(3,2,10)        =         2.095670	     120.073055
 	 B(3,4,5)         =         2.099649	     120.301009
 	 B(3,4,8)         =         2.095660	     120.072455
@@ -3464,43 +3559,43 @@ Total time:
 	 B(4,5,6)         =         2.099663	     120.301856
 	 B(4,5,9)         =         2.103686	     120.532319
 	 B(5,4,8)         =         2.087877	     119.626536
-	 B(5,6,12)        =         2.103170	     120.502762
+	 B(5,6,12)        =         2.103170	     120.502761
 	 B(6,1,7)         =         2.079758	     119.161332
 	 B(6,5,9)         =         2.079836	     119.165825
 	 L(6,12,13)       =         3.138204	     179.805828
 	 l(6,12,13)       =         3.141593	     180.000000
-	 L(12,13,14)      =         3.137909	     179.788923
+	 L(12,13,14)      =         3.137909	     179.788922
 	 l(12,13,14)      =         3.141593	     180.000000
-	 D(1,2,3,4)       =         0.000041	       0.002323
-	 D(1,2,3,11)      =         3.141566	     179.998489
-	 D(1,6,5,4)       =         0.000101	       0.005759
-	 D(1,6,5,9)       =        -3.141489	    -179.994055
-	 D(2,1,6,5)       =        -0.000098	      -0.005594
-	 D(2,1,6,12)      =        -3.141494	    -179.994367
-	 D(2,3,4,5)       =        -0.000038	      -0.002157
-	 D(2,3,4,8)       =         3.141534	     179.996662
-	 D(3,2,1,6)       =         0.000028	       0.001591
+	 D(1,2,3,4)       =         0.000041	       0.002321
+	 D(1,2,3,11)      =         3.141566	     179.998490
+	 D(1,6,5,4)       =         0.000100	       0.005753
+	 D(1,6,5,9)       =        -3.141489	    -179.994058
+	 D(2,1,6,5)       =        -0.000098	      -0.005589
+	 D(2,1,6,12)      =        -3.141494	    -179.994369
+	 D(2,3,4,5)       =        -0.000038	      -0.002156
+	 D(2,3,4,8)       =         3.141534	     179.996663
+	 D(3,2,1,6)       =         0.000028	       0.001589
 	 D(3,2,1,7)       =        -3.141557	    -179.997964
-	 D(3,4,5,6)       =        -0.000034	      -0.001922
-	 D(3,4,5,9)       =         3.141556	     179.997890
-	 D(4,3,2,10)      =        -3.141536	    -179.996729
-	 D(4,5,6,12)      =         3.141497	     179.994529
+	 D(3,4,5,6)       =        -0.000034	      -0.001920
+	 D(3,4,5,9)       =         3.141556	     179.997889
+	 D(4,3,2,10)      =        -3.141536	    -179.996730
+	 D(4,5,6,12)      =         3.141497	     179.994531
 	 D(5,4,3,11)      =        -3.141563	    -179.998324
-	 D(5,6,1,7)       =         3.141487	     179.993967
+	 D(5,6,1,7)       =         3.141487	     179.993970
 	 D(6,1,2,10)      =         3.141593	     180.000000
 	 D(6,5,4,8)       =         3.141593	     180.000000
 	 D(7,1,2,10)      =         0.000019	       0.001093
-	 D(7,1,6,12)      =         0.000091	       0.005194
+	 D(7,1,6,12)      =         0.000091	       0.005190
 	 D(8,4,3,11)      =         0.000000	       0.000000
 	 D(8,4,5,9)       =        -0.000016	      -0.000935
-	 D(9,5,6,12)      =        -0.000092	      -0.005284
+	 D(9,5,6,12)      =        -0.000092	      -0.005280
 	 D(10,2,3,11)     =        -0.000000	      -0.000000
 
 	Current energy   :      -308.4136960499
 
 	Energy change for the previous step:
-		Projected    :        -0.0000009898
-		Actual       :        -0.0000005956
+		Projected    :        -0.0000009902
+		Actual       :        -0.0000005955
 
 	Performing BFGS update.
 	Previous computed or guess Hessian on step 1.
@@ -3508,8 +3603,8 @@ Total time:
 	Taking RFO optimization step.
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
-	Norm of target step-size    0.00518
-	Projected energy change by RFO approximation:        -0.0000045376
+	Norm of target step-size    0.00517
+	Projected energy change by RFO approximation:        -0.0000045356
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -3523,62 +3618,63 @@ Total time:
 	    3 R(1,7)          =      1.091252     0.000053     0.000014     1.091266
 	    4 R(2,3)          =      1.398934    -0.000097    -0.000012     1.398922
 	    5 R(2,10)         =      1.092274     0.000090    -0.000001     1.092272
-	    6 R(3,4)          =      1.398920    -0.000111    -0.000011     1.398909
+	    6 R(3,4)          =      1.398920    -0.000111    -0.000011     1.398910
 	    7 R(3,11)         =      1.092201     0.000185     0.000030     1.092231
-	    8 R(4,5)          =      1.394780     0.000181     0.000033     1.394813
+	    8 R(4,5)          =      1.394780     0.000181     0.000033     1.394814
 	    9 R(4,8)          =      1.092273     0.000083     0.000003     1.092277
 	   10 R(5,6)          =      1.409673    -0.000241    -0.000049     1.409623
-	   11 R(5,9)          =      1.091261     0.000043     0.000004     1.091266
+	   11 R(5,9)          =      1.091261     0.000043     0.000005     1.091266
 	   12 R(6,12)         =      1.432842     0.000378     0.000087     1.432929
 	   13 R(12,13)        =      1.214998     0.000127     0.000010     1.215007
 	   14 R(13,14)        =      1.072116     0.000117     0.000029     1.072145
-	   15 B(1,2,3)        =    120.302337    -0.000000    -0.003964   120.298372
-	   16 B(1,2,10)       =    119.624609     0.000001     0.005229   119.629837
-	   17 B(1,6,5)        =    119.019071     0.000002     0.008936   119.028007
-	   18 B(1,6,12)       =    120.478167     0.000000     0.005678   120.483845
-	   19 B(2,1,6)        =    120.299629    -0.000001    -0.002170   120.297459
-	   20 B(2,1,7)        =    120.539040    -0.000001    -0.009532   120.529507
-	   21 B(2,3,4)        =    119.776098     0.000000     0.003896   119.779994
-	   22 B(2,3,11)       =    120.112372    -0.000000    -0.000978   120.111394
-	   23 B(3,2,10)       =    120.073055    -0.000000    -0.001264   120.071790
+	   15 B(1,2,3)        =    120.302336    -0.000000    -0.003964   120.298372
+	   16 B(1,2,10)       =    119.624609     0.000001     0.005230   119.629839
+	   17 B(1,6,5)        =    119.019072     0.000002     0.008938   119.028009
+	   18 B(1,6,12)       =    120.478166     0.000000     0.005680   120.483846
+	   19 B(2,1,6)        =    120.299628    -0.000001    -0.002168   120.297460
+	   20 B(2,1,7)        =    120.539039    -0.000001    -0.009532   120.529508
+	   21 B(2,3,4)        =    119.776099     0.000000     0.003893   119.779992
+	   22 B(2,3,11)       =    120.112371    -0.000000    -0.000975   120.111396
+	   23 B(3,2,10)       =    120.073055    -0.000000    -0.001266   120.071789
 	   24 B(3,4,5)        =    120.301009    -0.000000    -0.000831   120.300178
-	   25 B(3,4,8)        =    120.072455    -0.000000    -0.002753   120.069703
+	   25 B(3,4,8)        =    120.072455    -0.000000    -0.002752   120.069704
 	   26 B(4,3,11)       =    120.111530    -0.000000    -0.002919   120.108611
-	   27 B(4,5,6)        =    120.301856    -0.000001    -0.005869   120.295987
-	   28 B(4,5,9)        =    120.532319    -0.000001    -0.003589   120.528730
-	   29 B(5,4,8)        =    119.626536     0.000000     0.003583   119.630119
-	   30 B(5,6,12)       =    120.502762    -0.000002    -0.014620   120.488142
-	   31 B(6,1,7)        =    119.161332     0.000002     0.011702   119.173034
-	   32 B(6,5,9)        =    119.165825     0.000002     0.009458   119.175283
-	   33 L(6,12,13)      =    179.805828     0.000014     0.192103   179.997931
+	   27 B(4,5,6)        =    120.301856    -0.000001    -0.005870   120.295986
+	   28 B(4,5,9)        =    120.532319    -0.000001    -0.003586   120.528733
+	   29 B(5,4,8)        =    119.626536     0.000000     0.003582   119.630119
+	   30 B(5,6,12)       =    120.502761    -0.000002    -0.014623   120.488138
+	   31 B(6,1,7)        =    119.161332     0.000002     0.011700   119.173033
+	   32 B(6,5,9)        =    119.165825     0.000002     0.009456   119.175281
+	   33 L(6,12,13)      =    179.805828     0.000014     0.192111   179.997939
 	   34 l(6,12,13)      =    180.000000     0.000000     0.000000   180.000000
-	   35 L(12,13,14)     =    179.788923     0.000010     0.210045   179.998967
+	   35 L(12,13,14)     =    179.788922     0.000010     0.210044   179.998967
 	   36 l(12,13,14)     =    180.000000    -0.000000     0.000000   180.000000
-	   37 D(1,2,3,4)      =      0.002323    -0.000000    -0.009398    -0.007075
-	   38 D(1,2,3,11)     =    179.998489     0.000000     0.004832   180.003321
-	   39 D(1,6,5,4)      =      0.005759    -0.000000    -0.023050    -0.017292
-	   40 D(1,6,5,9)      =   -179.994055    -0.000000    -0.021275  -180.015330
-	   41 D(2,1,6,5)      =     -0.005594     0.000000     0.022568     0.016974
-	   42 D(2,1,6,12)     =   -179.994367    -0.000000    -0.017902  -180.012269
-	   43 D(2,3,4,5)      =     -0.002157     0.000000     0.008914     0.006756
-	   44 D(2,3,4,8)      =    179.996662     0.000000     0.010664   180.007326
-	   45 D(3,2,1,6)      =      0.001591    -0.000000    -0.006495    -0.004904
-	   46 D(3,2,1,7)      =   -179.997964    -0.000000    -0.005391  -180.003355
-	   47 D(3,4,5,6)      =     -0.001922     0.000000     0.007463     0.005541
-	   48 D(3,4,5,9)      =    179.997890     0.000000     0.005663   180.003553
-	   49 D(4,3,2,10)     =   -179.996729    -0.000000    -0.010438  -180.007167
-	   50 D(4,5,6,12)     =    179.994529     0.000000     0.017424   180.011953
-	   51 D(5,4,3,11)     =   -179.998324    -0.000000    -0.005316  -180.003639
-	   52 D(5,6,1,7)      =    179.993967     0.000000     0.021479   180.015446
-	   53 D(6,1,2,10)     =    180.000000    -0.000000    -0.004812   179.995188
-	   54 D(6,5,4,8)      =    180.000000     0.000000     0.004974   180.004974
-	   55 D(7,1,2,10)     =      0.001093    -0.000000    -0.004356    -0.003263
-	   56 D(7,1,6,12)     =      0.005194    -0.000000    -0.018991    -0.013797
-	   57 D(8,4,3,11)     =      0.000000    -0.000000    -0.003070    -0.003070
-	   58 D(8,4,5,9)      =     -0.000935     0.000000     0.003921     0.002986
-	   59 D(9,5,6,12)     =     -0.005284     0.000000     0.019199     0.013915
-	   60 D(10,2,3,11)    =      0.000000     0.000000     0.003229     0.003229
+	   37 D(1,2,3,4)      =      0.002321    -0.000000    -0.009390    -0.007068
+	   38 D(1,2,3,11)     =    179.998490     0.000000     0.004832   180.003322
+	   39 D(1,6,5,4)      =      0.005753    -0.000000    -0.023029    -0.017275
+	   40 D(1,6,5,9)      =   -179.994058    -0.000000    -0.021265  -180.015323
+	   41 D(2,1,6,5)      =     -0.005589     0.000000     0.022547     0.016959
+	   42 D(2,1,6,12)     =   -179.994369    -0.000000    -0.017900  -180.012268
+	   43 D(2,3,4,5)      =     -0.002156     0.000000     0.008906     0.006750
+	   44 D(2,3,4,8)      =    179.996663     0.000000     0.010665   180.007328
+	   45 D(3,2,1,6)      =      0.001589    -0.000000    -0.006489    -0.004900
+	   46 D(3,2,1,7)      =   -179.997964    -0.000000    -0.005395  -180.003359
+	   47 D(3,4,5,6)      =     -0.001920     0.000000     0.007455     0.005536
+	   48 D(3,4,5,9)      =    179.997889     0.000000     0.005668   180.003557
+	   49 D(4,3,2,10)     =   -179.996730    -0.000000    -0.010436  -180.007167
+	   50 D(4,5,6,12)     =    179.994531     0.000000     0.017422   180.011953
+	   51 D(5,4,3,11)     =   -179.998324    -0.000000    -0.005315  -180.003639
+	   52 D(5,6,1,7)      =    179.993970     0.000000     0.021468   180.015438
+	   53 D(6,1,2,10)     =    180.000000    -0.000000    -0.004802   179.995198
+	   54 D(6,5,4,8)      =    180.000000     0.000000     0.004961   180.004961
+	   55 D(7,1,2,10)     =      0.001093    -0.000000    -0.004353    -0.003261
+	   56 D(7,1,6,12)     =      0.005190    -0.000000    -0.018979    -0.013789
+	   57 D(8,4,3,11)     =      0.000000    -0.000000    -0.003062    -0.003062
+	   58 D(8,4,5,9)      =     -0.000935     0.000000     0.003917     0.002982
+	   59 D(9,5,6,12)     =     -0.005280     0.000000     0.019186     0.013905
+	   60 D(10,2,3,11)    =      0.000000     0.000000     0.003223     0.003223
 	 ---------------------------------------------------------------------------
+	Successfully symmetrized geometry.
 
   ==> Convergence Check <==
 
@@ -3589,7 +3685,7 @@ Total time:
   ---------------------------------------------------------------------------------------------
     Convergence Criteria    1.00e-06 *    3.00e-04 *             o    1.20e-03 *             o
   ---------------------------------------------------------------------------------------------
-      5    -308.41369605   -5.96e-07 *    1.84e-04 *    3.21e-05 o    3.67e-03      6.61e-04 o  ~
+      5    -308.41369605   -5.95e-07 *    1.84e-04 *    3.21e-05 o    3.67e-03      6.61e-04 o  ~
   ---------------------------------------------------------------------------------------------
 
 
@@ -3601,31 +3697,31 @@ Total time:
   --------------------------------------------------------------------------------------------------------------- ~
    Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~
   --------------------------------------------------------------------------------------------------------------- ~
-      1    -308.412665206060   -308.412665206060      0.02269315      0.00427874      0.03101543      0.00890129  ~
-      2    -308.413669643858     -0.001004437798      0.00207543      0.00047856      0.00516413      0.00154023  ~
-      3    -308.413693117651     -0.000023473793      0.00040017      0.00011840      0.00218344      0.00063808  ~
-      4    -308.413695454321     -0.000002336670      0.00026860      0.00004412      0.00159059      0.00029824  ~
-      5    -308.413696049910     -0.000000595589      0.00018444      0.00003207      0.00366597      0.00066097  ~
+      1    -308.412665206061   -308.412665206061      0.02269316      0.00427874      0.03101545      0.00890130  ~
+      2    -308.413669643798     -0.001004437737      0.00207542      0.00047856      0.00516412      0.00154023  ~
+      3    -308.413693117028     -0.000023473230      0.00040017      0.00011841      0.00218347      0.00063808  ~
+      4    -308.413695454423     -0.000002337395      0.00026859      0.00004412      0.00159058      0.00029822  ~
+      5    -308.413696049895     -0.000000595472      0.00018443      0.00003207      0.00366597      0.00066096  ~
   --------------------------------------------------------------------------------------------------------------- ~
 
 	Writing optimization data to binary file.
-	Final energy is   -308.4136960499096
+	Final energy is   -308.4136960498949
 	Final (previous) structure:
 	Cartesian Geometry (in Angstrom)
-	    C     0.2105668791  -0.8059767951   0.8947232785
-	    C    -1.0854963700  -1.3178495026   0.9545607064
-	    C    -2.0787796073  -0.8259476406   0.1010749589
-	    C    -1.7690313806   0.1839459029  -0.8160669079
-	    C    -0.4755634221   0.7015527662  -0.8826648785
-	    C     0.5314677735   0.2118249605  -0.0263750162
-	    H     0.9883698551  -1.1868666576   1.5586331845
-	    H    -2.5408165267   0.5715368186  -1.4847834776
-	    H    -0.2297685745   1.4893489722  -1.5966767594
-	    H    -1.3219826625  -2.1063539319   1.6724723208
-	    H    -3.0926652519  -1.2290465028   0.1505643530
-	    C     1.8616876176   0.7403606797  -0.0911951211
-	    C     2.9908233453   1.1859749260  -0.1431542650
-	    H     3.9860647033   1.5816417280  -0.1918902853
+	    C     0.2105668832  -0.8059767868   0.8947232844
+	    C    -1.0854963664  -1.3178494941   0.9545607122
+	    C    -2.0787795971  -0.8259476401   0.1010749522
+	    C    -1.7690313753   0.1839459136  -0.8160669035
+	    C    -0.4755634201   0.7015527771  -0.8826648677
+	    C     0.5314677749   0.2118249269  -0.0263750443
+	    H     0.9883698518  -1.1868666444   1.5586331907
+	    H    -2.5408165159   0.5715368237  -1.4847834709
+	    H    -0.2297685729   1.4893489837  -1.5966767398
+	    H    -1.3219826627  -2.1063539174   1.6724723290
+	    H    -3.0926652434  -1.2290464988   0.1505643556
+	    C     1.8616876091   0.7403606704  -0.0911951237
+	    C     2.9908233280   1.1859749256  -0.1431542585
+	    H     3.9860646763   1.5816417317  -0.1918902803
 	Saving final (previous) structure.
 			--------------------------
 			 OPTKING Finished Execution 
@@ -3637,22 +3733,22 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.210566879068    -0.805976795084     0.894723278452
-    C           -1.085496369998    -1.317849502617     0.954560706441
-    C           -2.078779607273    -0.825947640602     0.101074958890
-    C           -1.769031380629     0.183945902879    -0.816066907880
-    C           -0.475563422083     0.701552766221    -0.882664878460
-    C            0.531467773522     0.211824960456    -0.026375016241
-    H            0.988369855093    -1.186866657557     1.558633184514
-    H           -2.540816526706     0.571536818625    -1.484783477622
-    H           -0.229768574478     1.489348972154    -1.596676759368
-    H           -1.321982662480    -2.106353931866     1.672472320753
-    H           -3.092665251940    -1.229046502839     0.150564352999
-    C            1.861687617647     0.740360679692    -0.091195121079
-    C            2.990823345251     1.185974926046    -0.143154264981
-    H            3.986064703274     1.581641727959    -0.191890285262
+    C            0.210566883184    -0.805976786811     0.894723284416
+    C           -1.085496366413    -1.317849494099     0.954560712152
+    C           -2.078779597084    -0.825947640117     0.101074952170
+    C           -1.769031375287     0.183945913648    -0.816066903473
+    C           -0.475563420080     0.701552777087    -0.882664867724
+    C            0.531467774922     0.211824926892    -0.026375044269
+    H            0.988369851794    -1.186866644396     1.558633190668
+    H           -2.540816515863     0.571536823711    -1.484783470873
+    H           -0.229768572939     1.489348983730    -1.596676739778
+    H           -1.321982662730    -2.106353917384     1.672472328986
+    H           -3.092665243354    -1.229046498818     0.150564355590
+    C            1.861687609073     0.740360670399    -0.091195123659
+    C            2.990823327995     1.185974925616    -0.143154258523
+    H            3.986064676254     1.581641731746    -0.191890280329
 
 	Cleaning optimization helper files.
 	B3LYP energy......................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

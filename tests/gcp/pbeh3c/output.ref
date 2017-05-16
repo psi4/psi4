@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1a2.dev267 
+                               Psi4 1.1rc3.dev5 
 
-                         Git: Rev {pbeh3c-final} ef2c4be dirty
+                         Git: Rev {master} 3fbd859 
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,15 +12,16 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    submitted.
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 28 February 2017 07:39PM
+    Psi4 started on: Monday, 15 May 2017 03:40PM
 
-    Process ID:   6706
-    PSIDATADIR: /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4
+    Process ID:  20985
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -289,14 +290,22 @@ ethene.print_out()
 	S22-16 pbeh-3c gcp................................................PASSED
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:39:54 2017
+*** at Mon May 15 15:40:42 2017
+
+   => Loading Basis Set <=
+
+    Name: DEF2-MSVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 4     entry O          line   144 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
+    atoms 2-3, 5-6 entry H          line    25 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    524 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -340,7 +349,8 @@ ethene.print_out()
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 22
     Number of basis function: 38
     Number of Cartesian functions: 40
@@ -403,6 +413,14 @@ ethene.print_out()
         A1 =   4.860000E-01
         A2 =   4.500000E+00
 
+   => Loading Basis Set <=
+
+    Name: (DEF2-MSVP AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1, 4     entry O          line   322 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 2-3, 5-6 entry H          line    22 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -430,7 +448,8 @@ ethene.print_out()
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 74
     Number of basis function: 226
     Number of Cartesian functions: 266
@@ -446,14 +465,14 @@ ethene.print_out()
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:  -152.54924497452319   -1.52549e+02   5.90296e-02 
-   @DF-RKS iter   1:  -152.43680630021245    1.12439e-01   1.28338e-02 
-   @DF-RKS iter   2:  -152.44139429231245   -4.58799e-03   1.31468e-02 DIIS
-   @DF-RKS iter   3:  -152.52525865702822   -8.38644e-02   4.52602e-04 DIIS
-   @DF-RKS iter   4:  -152.52538333438380   -1.24677e-04   9.12246e-05 DIIS
-   @DF-RKS iter   5:  -152.52538955329044   -6.21891e-06   5.22308e-05 DIIS
-   @DF-RKS iter   6:  -152.52539097335472   -1.42006e-06   1.15848e-05 DIIS
-   @DF-RKS iter   7:  -152.52539107913839   -1.05784e-07   8.69807e-07 DIIS
+   @DF-RKS iter   0:  -152.54924497451952   -1.52549e+02   5.90296e-02 
+   @DF-RKS iter   1:  -152.43680630020856    1.12439e-01   1.28338e-02 
+   @DF-RKS iter   2:  -152.44139429230862   -4.58799e-03   1.31468e-02 DIIS
+   @DF-RKS iter   3:  -152.52525865702458   -8.38644e-02   4.52602e-04 DIIS
+   @DF-RKS iter   4:  -152.52538333438014   -1.24677e-04   9.12246e-05 DIIS
+   @DF-RKS iter   5:  -152.52538955328677   -6.21891e-06   5.22308e-05 DIIS
+   @DF-RKS iter   6:  -152.52539097335108   -1.42006e-06   1.15848e-05 DIIS
+   @DF-RKS iter   7:  -152.52539107913452   -1.05783e-07   8.69807e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -486,20 +505,20 @@ ethene.print_out()
 
   Energy converged.
 
-  @DF-RKS Final Energy:  -152.52539107913839
+  @DF-RKS Final Energy:  -152.52539107913452
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             36.6628478527552986
-    One-Electron Energy =                -282.8741833708744480
-    Two-Electron Energy =                 104.5925567214113983
-    DFT Exchange-Correlation Energy =     -10.9128248463306718
+    One-Electron Energy =                -282.8741833708752438
+    Two-Electron Energy =                 104.5925567214161731
+    DFT Exchange-Correlation Energy =     -10.9128248463307518
     Empirical Dispersion Energy =           0.0062125639000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                       -152.5253910791384158
+    Total Energy =                       -152.5253910791345220
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -518,26 +537,34 @@ Properties computed using the SCF density matrix
      X:     2.9031      Y:     0.0718      Z:    -0.0000     Total:     2.9039
 
 
-*** tstop() called on psinet at Tue Feb 28 19:39:58 2017
+*** tstop() called on psinet at Mon May 15 15:40:49 2017
 Module time:
-	user time   =       3.58 seconds =       0.06 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       6.00 seconds =       0.10 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =       3.58 seconds =       0.06 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       6.00 seconds =       0.10 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 	S22-2 pbdh-3c df-scf..............................................PASSED
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:39:58 2017
+*** at Mon May 15 15:40:49 2017
+
+   => Loading Basis Set <=
+
+    Name: DEF2-MSVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   144 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
+    atoms 2-3 entry H          line    25 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    524 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -578,7 +605,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 11
     Number of basis function: 19
     Number of Cartesian functions: 20
@@ -641,6 +669,14 @@ Total time:
         A1 =   4.860000E-01
         A2 =   4.500000E+00
 
+   => Loading Basis Set <=
+
+    Name: (DEF2-MSVP AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   322 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 2-3 entry H          line    22 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -668,7 +704,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 37
     Number of basis function: 113
     Number of Cartesian functions: 133
@@ -684,14 +721,14 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -76.32703064968422   -7.63270e+01   8.34298e-02 
-   @DF-RKS iter   1:   -76.19851619533878    1.28514e-01   2.05296e-02 
-   @DF-RKS iter   2:   -76.20102090700196   -2.50471e-03   2.15334e-02 DIIS
-   @DF-RKS iter   3:   -76.25780639445668   -5.67855e-02   7.84091e-04 DIIS
-   @DF-RKS iter   4:   -76.25790516042946   -9.87660e-05   1.46727e-04 DIIS
-   @DF-RKS iter   5:   -76.25791034789174   -5.18746e-06   1.55597e-05 DIIS
-   @DF-RKS iter   6:   -76.25791045834559   -1.10454e-07   1.97480e-06 DIIS
-   @DF-RKS iter   7:   -76.25791045985129   -1.50570e-09   4.30338e-07 DIIS
+   @DF-RKS iter   0:   -76.32703064968574   -7.63270e+01   8.34298e-02 
+   @DF-RKS iter   1:   -76.19851619534030    1.28514e-01   2.05296e-02 
+   @DF-RKS iter   2:   -76.20102090700357   -2.50471e-03   2.15334e-02 DIIS
+   @DF-RKS iter   3:   -76.25780639445840   -5.67855e-02   7.84091e-04 DIIS
+   @DF-RKS iter   4:   -76.25790516043121   -9.87660e-05   1.46727e-04 DIIS
+   @DF-RKS iter   5:   -76.25791034789336   -5.18746e-06   1.55597e-05 DIIS
+   @DF-RKS iter   6:   -76.25791045834741   -1.10454e-07   1.97480e-06 DIIS
+   @DF-RKS iter   7:   -76.25791045985306   -1.50565e-09   4.30338e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -717,20 +754,20 @@ Total time:
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -76.25791045985129
+  @DF-RKS Final Energy:   -76.25791045985306
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1638301459659299
-    One-Electron Energy =                -123.1027306809268396
-    Two-Electron Energy =                  43.1336469134800780
-    DFT Exchange-Correlation Energy =      -5.4538028553704603
+    One-Electron Energy =                -123.1027306809278912
+    Two-Electron Energy =                  43.1336469134794172
+    DFT Exchange-Correlation Energy =      -5.4538028553705242
     Empirical Dispersion Energy =           0.0011460170000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.2579104598513027
+    Total Energy =                        -76.2579104598530648
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -749,26 +786,34 @@ Properties computed using the SCF density matrix
      X:     1.0372      Y:     1.8967      Z:    -0.0000     Total:     2.1617
 
 
-*** tstop() called on psinet at Tue Feb 28 19:39:59 2017
+*** tstop() called on psinet at Mon May 15 15:40:51 2017
 Module time:
-	user time   =       1.53 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.45 seconds =       0.04 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       5.12 seconds =       0.09 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       8.47 seconds =       0.14 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
 	S22-2 pbdh-3c df-scf..............................................PASSED
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:39:59 2017
+*** at Mon May 15 15:40:51 2017
+
+   => Loading Basis Set <=
+
+    Name: DEF2-MSVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   144 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
+    atoms 2-3 entry H          line    25 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    524 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -780,7 +825,7 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000     0.065656839906    15.994914619560
+           O         -0.000000000000    -0.000000000000     0.065656839906    15.994914619560
            H          0.000000000000     0.758561000000    -0.521010847655     1.007825032070
            H          0.000000000000    -0.758561000000    -0.521010847655     1.007825032070
 
@@ -809,7 +854,8 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 11
     Number of basis function: 19
     Number of Cartesian functions: 20
@@ -872,6 +918,14 @@ Total time:
         A1 =   4.860000E-01
         A2 =   4.500000E+00
 
+   => Loading Basis Set <=
+
+    Name: (DEF2-MSVP AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   322 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 2-3 entry H          line    22 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -899,7 +953,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 37
     Number of basis function: 113
     Number of Cartesian functions: 133
@@ -915,14 +970,14 @@ Total time:
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -76.29740849762737   -7.62974e+01   8.34029e-02 
-   @DF-RKS iter   1:   -76.20334753736445    9.40610e-02   1.97686e-02 
-   @DF-RKS iter   2:   -76.20586356307383   -2.51603e-03   2.06305e-02 DIIS
-   @DF-RKS iter   3:   -76.25786051493748   -5.19970e-02   7.49543e-04 DIIS
-   @DF-RKS iter   4:   -76.25794785886202   -8.73439e-05   1.36534e-04 DIIS
-   @DF-RKS iter   5:   -76.25795235250743   -4.49365e-06   1.79676e-05 DIIS
-   @DF-RKS iter   6:   -76.25795248287791   -1.30370e-07   2.96265e-06 DIIS
-   @DF-RKS iter   7:   -76.25795248604723   -3.16932e-09   7.19144e-07 DIIS
+   @DF-RKS iter   0:   -76.29740849762372   -7.62974e+01   8.34029e-02 
+   @DF-RKS iter   1:   -76.20334753736104    9.40610e-02   1.97686e-02 
+   @DF-RKS iter   2:   -76.20586356307054   -2.51603e-03   2.06305e-02 DIIS
+   @DF-RKS iter   3:   -76.25786051493390   -5.19970e-02   7.49543e-04 DIIS
+   @DF-RKS iter   4:   -76.25794785885839   -8.73439e-05   1.36534e-04 DIIS
+   @DF-RKS iter   5:   -76.25795235250385   -4.49365e-06   1.79676e-05 DIIS
+   @DF-RKS iter   6:   -76.25795248287423   -1.30370e-07   2.96265e-06 DIIS
+   @DF-RKS iter   7:   -76.25795248604355   -3.16932e-09   7.19144e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -948,27 +1003,27 @@ Total time:
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -76.25795248604723
+  @DF-RKS Final Energy:   -76.25795248604355
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1780389049035875
-    One-Electron Energy =                -123.1285981100715929
-    Two-Electron Energy =                  43.1461384546294369
-    DFT Exchange-Correlation Energy =      -5.4546665398086498
+    One-Electron Energy =                -123.1285981100678129
+    Two-Electron Energy =                  43.1461384546290390
+    DFT Exchange-Correlation Energy =      -5.4546665398083585
     Empirical Dispersion Energy =           0.0011348043000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.2579524860472304
+    Total Energy =                        -76.2579524860435498
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.9765
+     X:     0.0000      Y:     0.0000      Z:    -0.9765
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.1280
@@ -980,15 +1035,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.1569     Total:     2.1569
 
 
-*** tstop() called on psinet at Tue Feb 28 19:40:01 2017
+*** tstop() called on psinet at Mon May 15 15:40:54 2017
 Module time:
-	user time   =       1.54 seconds =       0.03 minutes
+	user time   =       2.48 seconds =       0.04 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       6.66 seconds =       0.11 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =      10.97 seconds =       0.18 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
 	S22-2 pbdh-3c df-scf..............................................PASSED
     Molecular point group: c1
     Full point group: C2v
@@ -1007,7 +1062,15 @@ Total time:
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:40:01 2017
+*** at Mon May 15 15:40:54 2017
+
+   => Loading Basis Set <=
+
+    Name: DEF2-MSVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry C          line   100 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
+    atoms 3-6 entry H          line    25 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
@@ -1017,7 +1080,7 @@ gradient() will perform analytic gradient computation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    524 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1061,7 +1124,8 @@ gradient() will perform analytic gradient computation.
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 22
     Number of basis function: 38
     Number of Cartesian functions: 40
@@ -1110,8 +1174,8 @@ gradient() will perform analytic gradient computation.
     Radial Points    =             75
     Spherical Points =            302
     Total Points     =         132190
-    Total Blocks     =            126
-    Max Points       =           4997
+    Total Blocks     =            122
+    Max Points       =           4683
     Max Functions    =             38
 
    => -D3BJ: Empirical Dispersion <=
@@ -1123,6 +1187,14 @@ gradient() will perform analytic gradient computation.
         S8 =   0.000000E+00
         A1 =   4.860000E-01
         A2 =   4.500000E+00
+
+   => Loading Basis Set <=
+
+    Name: (DEF2-MSVP AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry C          line   202 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 3-6 entry H          line    22 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -1151,7 +1223,8 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 74
     Number of basis function: 222
     Number of Cartesian functions: 258
@@ -1167,16 +1240,16 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -78.62662442776276   -7.86266e+01   5.96177e-02 
-   @DF-RKS iter   1:   -78.35022711128408    2.76397e-01   7.92514e-03 
-   @DF-RKS iter   2:   -78.37770856800533   -2.74815e-02   5.94125e-03 DIIS
-   @DF-RKS iter   3:   -78.40487493736188   -2.71664e-02   3.81728e-04 DIIS
-   @DF-RKS iter   4:   -78.40516587152088   -2.90934e-04   7.27750e-05 DIIS
-   @DF-RKS iter   5:   -78.40517957638590   -1.37049e-05   1.16183e-05 DIIS
-   @DF-RKS iter   6:   -78.40517989349011   -3.17104e-07   6.05277e-06 DIIS
-   @DF-RKS iter   7:   -78.40517991935793   -2.58678e-08   1.72518e-06 DIIS
-   @DF-RKS iter   8:   -78.40517992179714   -2.43921e-09   5.40096e-08 DIIS
-   @DF-RKS iter   9:   -78.40517992180253   -5.38591e-12   9.85342e-09 DIIS
+   @DF-RKS iter   0:   -78.62662442775192   -7.86266e+01   5.96177e-02 
+   @DF-RKS iter   1:   -78.35022711127326    2.76397e-01   7.92514e-03 
+   @DF-RKS iter   2:   -78.37770856799436   -2.74815e-02   5.94125e-03 DIIS
+   @DF-RKS iter   3:   -78.40487493735080   -2.71664e-02   3.81728e-04 DIIS
+   @DF-RKS iter   4:   -78.40516587150981   -2.90934e-04   7.27750e-05 DIIS
+   @DF-RKS iter   5:   -78.40517957637469   -1.37049e-05   1.16183e-05 DIIS
+   @DF-RKS iter   6:   -78.40517989347902   -3.17104e-07   6.05277e-06 DIIS
+   @DF-RKS iter   7:   -78.40517991934682   -2.58678e-08   1.72518e-06 DIIS
+   @DF-RKS iter   8:   -78.40517992178594   -2.43912e-09   5.40096e-08 DIIS
+   @DF-RKS iter   9:   -78.40517992179130   -5.35749e-12   9.85342e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1208,20 +1281,20 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -78.40517992180253
+  @DF-RKS Final Energy:   -78.40517992179130
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             33.3580720823350489
-    One-Electron Energy =                -170.2208215738002650
-    Two-Electron Energy =                  65.6392254250256713
-    DFT Exchange-Correlation Energy =      -7.1853102607629786
+    One-Electron Energy =                -170.2208215737912269
+    Two-Electron Energy =                  65.6392254250272487
+    DFT Exchange-Correlation Energy =      -7.1853102607623569
     Empirical Dispersion Energy =           0.0036544054000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -78.4051799218025280
+    Total Energy =                        -78.4051799217913015
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
@@ -1240,18 +1313,18 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.0047     Total:     0.0047
 
 
-*** tstop() called on psinet at Tue Feb 28 19:40:05 2017
+*** tstop() called on psinet at Mon May 15 15:41:02 2017
 Module time:
-	user time   =       4.58 seconds =       0.08 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       7.58 seconds =       0.13 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 Total time:
-	user time   =      11.25 seconds =       0.19 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =      18.57 seconds =       0.31 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         20 seconds =       0.33 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:40:05 2017
+*** at Mon May 15 15:41:02 2017
 
 
          ------------------------------------------------------------
@@ -1280,7 +1353,8 @@ Total time:
 
   ==> Basis Set <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 22
     Number of basis function: 38
     Number of Cartesian functions: 40
@@ -1301,7 +1375,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 74
     Number of basis function: 222
     Number of Cartesian functions: 258
@@ -1350,31 +1425,31 @@ Total time:
     Radial Points    =             75
     Spherical Points =            302
     Total Points     =         132190
-    Total Blocks     =            126
-    Max Points       =           4997
+    Total Blocks     =            122
+    Max Points       =           4683
     Max Functions    =             38
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000465    -0.013971590163     0.000190401953
-       2        0.000000002659     0.013971588311     0.000190403394
-       3        0.000995625910     0.000309626859    -0.000095193775
-       4       -0.000995626945     0.000309626320    -0.000095185238
-       5       -0.000995628482    -0.000309625279    -0.000095186622
-       6        0.000995626392    -0.000309626048    -0.000095195149
+       1        0.000000000463    -0.013971593279     0.000190401970
+       2        0.000000002657     0.013971593795     0.000190403404
+       3        0.000995628591     0.000309625287    -0.000095193784
+       4       -0.000995629623     0.000309624749    -0.000095185247
+       5       -0.000995629852    -0.000309624893    -0.000095186627
+       6        0.000995627765    -0.000309625659    -0.000095195154
 
 
-*** tstop() called on psinet at Tue Feb 28 19:40:15 2017
+*** tstop() called on psinet at Mon May 15 15:41:04 2017
 Module time:
-	user time   =       1.02 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       1.59 seconds =       0.03 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      12.28 seconds =       0.20 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         21 seconds =       0.35 minutes
+	user time   =      20.16 seconds =       0.34 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =         22 seconds =       0.37 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -1398,12 +1473,12 @@ Total time:
 	 H          -1.7453907406       -2.3286206964       -0.0024690018
 	 H          -1.7453907406        2.3286206964       -0.0024690018
 	 H           1.7453907406        2.3286206964       -0.0024690018
-	             0.0000000005       -0.0139715902        0.0001904020
-	             0.0000000027        0.0139715883        0.0001904034
-	             0.0009956259        0.0003096269       -0.0000951938
-	            -0.0009956269        0.0003096263       -0.0000951852
-	            -0.0009956285       -0.0003096253       -0.0000951866
-	             0.0009956264       -0.0003096260       -0.0000951951
+	             0.0000000005       -0.0139715933        0.0001904020
+	             0.0000000027        0.0139715938        0.0001904034
+	             0.0009956286        0.0003096253       -0.0000951938
+	            -0.0009956296        0.0003096247       -0.0000951852
+	            -0.0009956299       -0.0003096249       -0.0000951866
+	             0.0009956278       -0.0003096257       -0.0000951952
 
 	Previous optimization step data not found.  Starting new optimization.
 
@@ -1432,7 +1507,7 @@ Total time:
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
 	Norm of target step-size    0.02734
-	Projected energy change by RFO approximation:        -0.0004304470
+	Projected energy change by RFO approximation:        -0.0004218983
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -1447,11 +1522,11 @@ Total time:
 	    4 R(2,5)          =      1.082560    -0.005669    -0.001019     1.081541
 	    5 R(2,6)          =      1.082560    -0.005669    -0.001019     1.081541
 	    6 B(1,2,5)        =    121.440367     0.000041     0.191187   121.631554
-	    7 B(1,2,6)        =    121.440367     0.000041     0.191186   121.631553
+	    7 B(1,2,6)        =    121.440367     0.000041     0.191187   121.631553
 	    8 B(2,1,3)        =    121.440367     0.000041     0.191187   121.631554
 	    9 B(2,1,4)        =    121.440367     0.000041     0.191187   121.631554
 	   10 B(3,1,4)        =    117.119010    -0.000081    -0.382304   116.736706
-	   11 B(5,2,6)        =    117.119010    -0.000081    -0.382304   116.736707
+	   11 B(5,2,6)        =    117.119010    -0.000081    -0.382304   116.736706
 	   12 D(3,1,2,5)      =    179.810673     0.000003     0.351512   180.162185
 	   13 D(3,1,2,6)      =      0.000000    -0.000000     0.000000     0.000000
 	   14 D(4,1,2,5)      =      0.000000     0.000000     0.000000     0.000000
@@ -1474,12 +1549,12 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (in Angstrom)
-	    C    -0.0000000005  -0.6615220982  -0.0016667449
-	    C    -0.0000000021   0.6615220996  -0.0016667665
-	    H     0.9208640527  -1.2287413189  -0.0003634342
-	    H    -0.9208640512  -1.2287413198  -0.0003634343
-	    H    -0.9208640503   1.2287413199  -0.0003634284
-	    H     0.9208640514   1.2287413175  -0.0003634285
+	    C    -0.0000000005  -0.6615220963  -0.0016667450
+	    C    -0.0000000021   0.6615220959  -0.0016667666
+	    H     0.9208640486  -1.2287413147  -0.0003634342
+	    H    -0.9208640472  -1.2287413157  -0.0003634343
+	    H    -0.9208640476   1.2287413166  -0.0003634284
+	    H     0.9208640488   1.2287413142  -0.0003634285
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
@@ -1490,28 +1565,36 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.000000000486    -0.661522098759    -0.000187425786
-    C           -0.000000001054     0.661522099057    -0.000187447421
-    H            0.920864053703    -1.228741319417     0.001115884895
-    H           -0.920864050193    -1.228741320379     0.001115884795
-    H           -0.920864049219     1.228741319335     0.001115890734
-    H            0.920864052469     1.228741316913     0.001115890630
-    C            0.000000001032    -0.000000000542     5.026860779641
-    C            0.000000001032    -0.000000000542     3.819597779641
-    H            0.000000001032    -0.000000000542     2.753709779641
-    H            0.000000001032    -0.000000000542     6.090286779641
+    C            0.000000000486    -0.661522096112    -0.000187425807
+    C           -0.000000001054     0.661522096032    -0.000187447420
+    H            0.920864049655    -1.228741314567     0.001115884960
+    H           -0.920864046141    -1.228741315541     0.001115884859
+    H           -0.920864046565     1.228741316751     0.001115890792
+    H            0.920864049816     1.228741314313     0.001115890687
+    C            0.000000001033     0.000000000146     5.026860779678
+    C            0.000000001033     0.000000000146     3.819597779678
+    H            0.000000001033     0.000000000146     2.753709779678
+    H            0.000000001033     0.000000000146     6.090286779678
 
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:40:15 2017
+*** at Mon May 15 15:41:04 2017
+
+   => Loading Basis Set <=
+
+    Name: DEF2-MSVP
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry C          line   100 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
+    atoms 3-6 entry H          line    25 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-msvp.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        1 Threads,    524 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1523,18 +1606,18 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000486    -0.661522098759    -0.000187425786    12.000000000000
-           C         -0.000000001054     0.661522099057    -0.000187447421    12.000000000000
-           H          0.920864053703    -1.228741319417     0.001115884895     1.007825032070
-           H         -0.920864050193    -1.228741320379     0.001115884795     1.007825032070
-           H         -0.920864049219     1.228741319335     0.001115890734     1.007825032070
-           H          0.920864052469     1.228741316913     0.001115890630     1.007825032070
+           C          0.000000000486    -0.661522096112    -0.000187425807    12.000000000000
+           C         -0.000000001054     0.661522096032    -0.000187447420    12.000000000000
+           H          0.920864049655    -1.228741314567     0.001115884960     1.007825032070
+           H         -0.920864046141    -1.228741315541     0.001115884859     1.007825032070
+           H         -0.920864046565     1.228741316751     0.001115890792     1.007825032070
+           H          0.920864049816     1.228741314313     0.001115890687     1.007825032070
 
   Running in c1 symmetry.
 
   Rotational constants: A =      4.93128  B =      1.01618  C =      0.84256 [cm^-1]
-  Rotational constants: A = 147836.02614  B =  30464.41279  C =  25259.27806 [MHz]
-  Nuclear repulsion =   33.531738037942752
+  Rotational constants: A = 147836.02721  B =  30464.41302  C =  25259.27825 [MHz]
+  Nuclear repulsion =   33.531738161329081
 
   Charge       = 0
   Multiplicity = 1
@@ -1555,7 +1638,8 @@ gradient() will perform analytic gradient computation.
 
   ==> Primary Basis <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 22
     Number of basis function: 38
     Number of Cartesian functions: 40
@@ -1618,6 +1702,14 @@ gradient() will perform analytic gradient computation.
         A1 =   4.860000E-01
         A2 =   4.500000E+00
 
+   => Loading Basis Set <=
+
+    Name: (DEF2-MSVP AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry C          line   202 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+    atoms 3-6 entry H          line    22 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
   Reading orbitals from file 180, no projection.
 
   ==> Pre-Iterations <==
@@ -1647,14 +1739,15 @@ gradient() will perform analytic gradient computation.
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 74
     Number of basis function: 222
     Number of Cartesian functions: 258
     Spherical Harmonics?: true
     Max angular momentum: 4
 
-  Minimum eigenvalue in the overlap matrix is 9.3237370322E-03.
+  Minimum eigenvalue in the overlap matrix is 9.3237368720E-03.
   Using Symmetric Orthogonalization.
 
   SCF Guess: Orbitals guess was supplied from a previous computation.
@@ -1663,13 +1756,13 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter   0:   -78.41309878411867   -7.84131e+01   7.77958e-04 
-   @DF-RKS iter   1:   -78.40532395493335    7.77483e-03   1.25188e-04 
-   @DF-RKS iter   2:   -78.40532946863368   -5.51370e-06   9.95147e-05 DIIS
-   @DF-RKS iter   3:   -78.40533682312835   -7.35449e-06   3.20660e-06 DIIS
-   @DF-RKS iter   4:   -78.40533682925422   -6.12587e-09   6.97801e-07 DIIS
-   @DF-RKS iter   5:   -78.40533682966488   -4.10651e-10   5.05630e-08 DIIS
-   @DF-RKS iter   6:   -78.40533682966814   -3.26850e-12   6.89811e-09 DIIS
+   @DF-RKS iter   0:   -78.41309879142375   -7.84131e+01   7.77958e-04 
+   @DF-RKS iter   1:   -78.40532395490179    7.77484e-03   1.25188e-04 
+   @DF-RKS iter   2:   -78.40532946860691   -5.51371e-06   9.95148e-05 DIIS
+   @DF-RKS iter   3:   -78.40533682310861   -7.35450e-06   3.20660e-06 DIIS
+   @DF-RKS iter   4:   -78.40533682923446   -6.12584e-09   6.97801e-07 DIIS
+   @DF-RKS iter   5:   -78.40533682964528   -4.10822e-10   5.05630e-08 DIIS
+   @DF-RKS iter   6:   -78.40533682964858   -3.29692e-12   6.89812e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -1701,50 +1794,50 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RKS Final Energy:   -78.40533682966814
+  @DF-RKS Final Energy:   -78.40533682964858
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =             33.5317380379427519
-    One-Electron Energy =                -170.5613441977928915
-    Two-Electron Energy =                  65.8117112680058369
-    DFT Exchange-Correlation Energy =      -7.1911394735238394
+    Nuclear Repulsion Energy =             33.5317381613290806
+    One-Electron Energy =                -170.5613444366962312
+    Two-Electron Energy =                  65.8117113888014131
+    DFT Exchange-Correlation Energy =      -7.1911394787828504
     Empirical Dispersion Energy =           0.0036975357000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -78.4053368296681441
+    Total Energy =                        -78.4053368296485900
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0042
+     X:     0.0000      Y:     0.0000      Z:     0.0042
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0026
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0026
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0016     Total:     0.0016
+     X:    -0.0000      Y:    -0.0000      Z:     0.0016     Total:     0.0016
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0040     Total:     0.0040
+     X:    -0.0000      Y:    -0.0000      Z:     0.0040     Total:     0.0040
 
 
-*** tstop() called on psinet at Tue Feb 28 19:40:19 2017
+*** tstop() called on psinet at Mon May 15 15:41:09 2017
 Module time:
-	user time   =       3.18 seconds =       0.05 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       5.26 seconds =       0.09 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =      15.47 seconds =       0.26 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      25.44 seconds =       0.42 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =         27 seconds =       0.45 minutes
 
 *** tstart() called on psinet
-*** at Tue Feb 28 19:40:19 2017
+*** at Mon May 15 15:41:09 2017
 
 
          ------------------------------------------------------------
@@ -1762,18 +1855,19 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000486    -0.661522098759    -0.000187425786    12.000000000000
-           C         -0.000000001054     0.661522099057    -0.000187447421    12.000000000000
-           H          0.920864053703    -1.228741319417     0.001115884895     1.007825032070
-           H         -0.920864050193    -1.228741320379     0.001115884795     1.007825032070
-           H         -0.920864049219     1.228741319335     0.001115890734     1.007825032070
-           H          0.920864052469     1.228741316913     0.001115890630     1.007825032070
+           C          0.000000000486    -0.661522096112    -0.000187425807    12.000000000000
+           C         -0.000000001054     0.661522096032    -0.000187447420    12.000000000000
+           H          0.920864049655    -1.228741314567     0.001115884960     1.007825032070
+           H         -0.920864046141    -1.228741315541     0.001115884859     1.007825032070
+           H         -0.920864046565     1.228741316751     0.001115890792     1.007825032070
+           H          0.920864049816     1.228741314313     0.001115890687     1.007825032070
 
-  Nuclear repulsion =   33.531738037942752
+  Nuclear repulsion =   33.531738161329081
 
   ==> Basis Set <==
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-msvp.gbs
+  Basis Set: DEF2-MSVP
+    Blend: DEF2-MSVP
     Number of shells: 22
     Number of basis function: 38
     Number of Cartesian functions: 40
@@ -1794,7 +1888,8 @@ Total time:
 
    => Auxiliary Basis Set <=
 
-  Basis Set: file /theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/objdir3/stage/theoryfs2/ds/cdsgroup/psi4-compile/hrw-directclone/psi4/install-psi4-3/share/psi4/basis/def2-qzvpp-jkfit.gbs
+  Basis Set: (DEF2-MSVP AUX)
+    Blend: DEF2-QZVPP-JKFIT
     Number of shells: 74
     Number of basis function: 222
     Number of Cartesian functions: 258
@@ -1851,23 +1946,23 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000527     0.000380004096    -0.000162749174
-       2       -0.000000002489    -0.000380004018    -0.000162757165
-       3        0.000092729402     0.000593363782     0.000081364305
-       4       -0.000092728465     0.000593364483     0.000081364300
-       5       -0.000092727656    -0.000593364581     0.000081366459
-       6        0.000092729736    -0.000593363763     0.000081366448
+       1       -0.000000000620     0.000380000484    -0.000162749206
+       2       -0.000000002496    -0.000380001103    -0.000162757187
+       3        0.000092730872     0.000593363283     0.000081364320
+       4       -0.000092729848     0.000593364024     0.000081364315
+       5       -0.000092729727    -0.000593363752     0.000081366471
+       6        0.000092731819    -0.000593362937     0.000081366460
 
 
-*** tstop() called on psinet at Tue Feb 28 19:40:19 2017
+*** tstop() called on psinet at Mon May 15 15:41:11 2017
 Module time:
-	user time   =       0.94 seconds =       0.02 minutes
+	user time   =       1.58 seconds =       0.03 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      16.42 seconds =       0.27 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      27.02 seconds =       0.45 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =         29 seconds =       0.48 minutes
 
 			-----------------------------------------
 			 OPTKING 2.0: for geometry optimizations 
@@ -1876,18 +1971,18 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 C           0.0000000009       -1.2500955975       -0.0003541834
-	 C          -0.0000000020        1.2500955981       -0.0003542243
-	 H           1.7401808671       -2.3219845819        0.0021087168
-	 H          -1.7401808605       -2.3219845837        0.0021087167
-	 H          -1.7401808586        2.3219845817        0.0021087279
-	 H           1.7401808648        2.3219845771        0.0021087277
-	            -0.0000000005        0.0003800041       -0.0001627492
-	            -0.0000000025       -0.0003800040       -0.0001627572
-	             0.0000927294        0.0005933638        0.0000813643
-	            -0.0000927285        0.0005933645        0.0000813643
-	            -0.0000927277       -0.0005933646        0.0000813665
-	             0.0000927297       -0.0005933638        0.0000813664
+	 C           0.0000000009       -1.2500955925       -0.0003541834
+	 C          -0.0000000020        1.2500955924       -0.0003542243
+	 H           1.7401808595       -2.3219845727        0.0021087170
+	 H          -1.7401808528       -2.3219845745        0.0021087168
+	 H          -1.7401808536        2.3219845768        0.0021087280
+	 H           1.7401808598        2.3219845722        0.0021087278
+	            -0.0000000006        0.0003800005       -0.0001627492
+	            -0.0000000025       -0.0003800011       -0.0001627572
+	             0.0000927309        0.0005933633        0.0000813643
+	            -0.0000927298        0.0005933640        0.0000813643
+	            -0.0000927297       -0.0005933638        0.0000813665
+	             0.0000927318       -0.0005933629        0.0000813665
 
 	---Fragment 1 Intrafragment Coordinates---
 	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
@@ -1901,16 +1996,16 @@ Total time:
 	 B(2,1,3)         =         2.122871	     121.631554
 	 B(2,1,4)         =         2.122871	     121.631554
 	 B(3,1,4)         =         2.037440	     116.736706
-	 B(5,2,6)         =         2.037440	     116.736707
+	 B(5,2,6)         =         2.037440	     116.736706
 	 D(3,1,2,5)       =        -3.138762	    -179.837815
 	 D(3,1,2,6)       =        -0.000000	      -0.000000
 	 D(4,1,2,5)       =         0.000000	       0.000000
 	 D(4,1,2,6)       =         3.138762	     179.837816
 
-	Current energy   :       -78.4053368297
+	Current energy   :       -78.4053368296
 
 	Energy change for the previous step:
-		Projected    :        -0.0004304470
+		Projected    :        -0.0004218983
 		Actual       :        -0.0001569079
 
 	Performing BFGS update.
@@ -1920,7 +2015,7 @@ Total time:
 	Going to follow RFO solution 1.
 	Using RFO vector 1.
 	Norm of target step-size    0.01066
-	Projected energy change by RFO approximation:        -0.0000102723
+	Projected energy change by RFO approximation:        -0.0000039414
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -1939,7 +2034,7 @@ Total time:
 	    8 B(2,1,3)        =    121.631554     0.000029     0.133728   121.765282
 	    9 B(2,1,4)        =    121.631554     0.000029     0.133728   121.765282
 	   10 B(3,1,4)        =    116.736706    -0.000057    -0.267354   116.469352
-	   11 B(5,2,6)        =    116.736707    -0.000057    -0.267354   116.469353
+	   11 B(5,2,6)        =    116.736706    -0.000057    -0.267354   116.469352
 	   12 D(3,1,2,5)      =   -179.837815    -0.000002    -0.271344  -180.109159
 	   13 D(3,1,2,6)      =      0.000000     0.000000     0.000000     0.000000
 	   14 D(4,1,2,5)      =      0.000000    -0.000000     0.000000     0.000000
@@ -1968,20 +2063,20 @@ Total time:
   --------------------------------------------------------------------------------------------------------------- ~
    Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~
   --------------------------------------------------------------------------------------------------------------- ~
-      1     -78.405179921803    -78.405179921803      0.01335234      0.00349914      0.02288799      0.00705956  ~
-      2     -78.405336829668     -0.000156907866      0.00156673      0.00054283      0.00473584      0.00275515  ~
+      1     -78.405179921791    -78.405179921791      0.01335234      0.00349915      0.02288800      0.00705957  ~
+      2     -78.405336829649     -0.000156907857      0.00156673      0.00054283      0.00473584      0.00275515  ~
   --------------------------------------------------------------------------------------------------------------- ~
 
 	Writing optimization data to binary file.
-	Final energy is    -78.4053368296681
+	Final energy is    -78.4053368296486
 	Final (previous) structure:
 	Cartesian Geometry (in Angstrom)
-	    C     0.0000000005  -0.6615220988  -0.0001874258
-	    C    -0.0000000011   0.6615220991  -0.0001874474
-	    H     0.9208640537  -1.2287413194   0.0011158849
-	    H    -0.9208640502  -1.2287413204   0.0011158848
-	    H    -0.9208640492   1.2287413193   0.0011158907
-	    H     0.9208640525   1.2287413169   0.0011158906
+	    C     0.0000000005  -0.6615220961  -0.0001874258
+	    C    -0.0000000011   0.6615220960  -0.0001874474
+	    H     0.9208640497  -1.2287413146   0.0011158850
+	    H    -0.9208640461  -1.2287413155   0.0011158849
+	    H    -0.9208640466   1.2287413168   0.0011158908
+	    H     0.9208640498   1.2287413143   0.0011158907
 	Saving final (previous) structure.
 			--------------------------
 			 OPTKING Finished Execution 
@@ -1993,16 +2088,16 @@ Total time:
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
-    C            0.000000000486    -0.661522098759    -0.000187425786
-    C           -0.000000001054     0.661522099057    -0.000187447421
-    H            0.920864053703    -1.228741319417     0.001115884895
-    H           -0.920864050193    -1.228741320379     0.001115884795
-    H           -0.920864049219     1.228741319335     0.001115890734
-    H            0.920864052469     1.228741316913     0.001115890630
-    C            0.000000001032    -0.000000000542     5.026860779641
-    C            0.000000001032    -0.000000000542     3.819597779641
-    H            0.000000001032    -0.000000000542     2.753709779641
-    H            0.000000001032    -0.000000000542     6.090286779641
+    C            0.000000000486    -0.661522096112    -0.000187425807
+    C           -0.000000001054     0.661522096032    -0.000187447420
+    H            0.920864049655    -1.228741314567     0.001115884960
+    H           -0.920864046141    -1.228741315541     0.001115884859
+    H           -0.920864046565     1.228741316751     0.001115890792
+    H            0.920864049816     1.228741314313     0.001115890687
+    C            0.000000001033     0.000000000146     5.026860779678
+    C            0.000000001033     0.000000000146     3.819597779678
+    H            0.000000001033     0.000000000146     2.753709779678
+    H            0.000000001033     0.000000000146     6.090286779678
 
 	Cleaning optimization helper files.
     Molecular point group: c1
@@ -2012,12 +2107,12 @@ Total time:
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C          0.000000000486    -0.661522098759    -0.000187425786    12.000000000000
-           C         -0.000000001054     0.661522099057    -0.000187447421    12.000000000000
-           H          0.920864053703    -1.228741319417     0.001115884895     1.007825032070
-           H         -0.920864050193    -1.228741320379     0.001115884795     1.007825032070
-           H         -0.920864049219     1.228741319335     0.001115890734     1.007825032070
-           H          0.920864052469     1.228741316913     0.001115890630     1.007825032070
+           C          0.000000000486    -0.661522096112    -0.000187425807    12.000000000000
+           C         -0.000000001054     0.661522096032    -0.000187447420    12.000000000000
+           H          0.920864049655    -1.228741314567     0.001115884960     1.007825032070
+           H         -0.920864046141    -1.228741315541     0.001115884859     1.007825032070
+           H         -0.920864046565     1.228741316751     0.001115890792     1.007825032070
+           H          0.920864049816     1.228741314313     0.001115890687     1.007825032070
 
 	Ethene_2 geom.....................................................PASSED
     Molecular point group: d2h

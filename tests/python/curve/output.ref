@@ -1,0 +1,762 @@
+
+*** tstart() called on psinet
+*** at Mon May 15 15:40:20 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -1.000000000000     4.002603254150
+          HE          0.000000000000     0.000000000000     1.000000000000     4.002603254150
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      2.10583  C =      2.10583 [cm^-1]
+  Rotational constants: A = ************  B =  63131.28893  C =  63131.28893 [MHz]
+  Nuclear repulsion =    1.058354417180000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 4
+    Number of basis function: 4
+    Number of Cartesian functions: 4
+    Spherical Harmonics?: false
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    38 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         2       2       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        0       0       0       0       0       0
+     B3g        0       0       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        2       2       0       0       0       0
+     B2u        0       0       0       0       0       0
+     B3u        0       0       0       0       0       0
+   -------------------------------------------------------
+    Total       4       4       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 50
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 3.2273862272E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:    -5.71301577726210   -5.71302e+00   2.10882e-03 
+   @DF-RHF iter   1:    -5.70825969695112    4.75608e-03   1.76970e-04 
+   @DF-RHF iter   2:    -5.70825982011234   -1.23161e-07   1.89404e-05 DIIS
+   @DF-RHF iter   3:    -5.70825982153454   -1.42220e-09   2.08082e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.935499     1B1u   -0.891608  
+
+    Virtual:                                                              
+
+       2Ag     1.301350     2B1u    1.543270  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:    -5.70825982153454
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              1.0583544171799999
+    One-Electron Energy =                  -9.8790147003564819
+    Two-Electron Energy =                   3.1124004616419381
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                         -5.7082598215345435
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon May 15 15:40:20 2017
+Module time:
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:40:20 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -1.500000000000     4.002603254150
+          HE          0.000000000000     0.000000000000     1.500000000000     4.002603254150
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.93593  C =      0.93593 [cm^-1]
+  Rotational constants: A = ************  B =  28058.35063  C =  28058.35063 [MHz]
+  Nuclear repulsion =    0.705569611453333
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 4
+    Number of basis function: 4
+    Number of Cartesian functions: 4
+    Spherical Harmonics?: false
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    38 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         2       2       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        0       0       0       0       0       0
+     B3g        0       0       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        2       2       0       0       0       0
+     B2u        0       0       0       0       0       0
+     B3u        0       0       0       0       0       0
+   -------------------------------------------------------
+    Total       4       4       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 50
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 3.6192985119E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:    -5.71037032231682   -5.71037e+00   1.64891e-03 
+   @DF-RHF iter   1:    -5.71036134812512    8.97419e-06   1.25695e-04 
+   @DF-RHF iter   2:    -5.71036140692475   -5.87996e-08   9.58027e-06 DIIS
+   @DF-RHF iter   3:    -5.71036140726835   -3.43604e-10   3.34587e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.915979     1B1u   -0.912334  
+
+    Virtual:                                                              
+
+       2Ag     1.375362     2B1u    1.424766  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:    -5.71036140726835
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.7055696114533331
+    One-Electron Energy =                  -9.1752372603829375
+    Two-Electron Energy =                   2.7593062416612542
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                         -5.7103614072683504
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:40:25 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -2.000000000000     4.002603254150
+          HE          0.000000000000     0.000000000000     2.000000000000     4.002603254150
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.52646  C =      0.52646 [cm^-1]
+  Rotational constants: A = ************  B =  15782.82223  C =  15782.82223 [MHz]
+  Nuclear repulsion =    0.529177208590000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 4
+    Number of basis function: 4
+    Number of Cartesian functions: 4
+    Spherical Harmonics?: false
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    38 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         2       2       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        0       0       0       0       0       0
+     B3g        0       0       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        2       2       0       0       0       0
+     B2u        0       0       0       0       0       0
+     B3u        0       0       0       0       0       0
+   -------------------------------------------------------
+    Total       4       4       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 50
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 3.6575238561E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:    -5.71036302869100   -5.71036e+00   1.27830e-04 
+   @DF-RHF iter   1:    -5.71036306943578   -4.07448e-08   7.41628e-06 
+   @DF-RHF iter   2:    -5.71036306963709   -2.01311e-10   4.34633e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.914243     1B1u   -0.914072  
+
+    Virtual:                                                              
+
+       2Ag     1.398749     2B1u    1.400701  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:    -5.71036306963709
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.5291772085899999
+    One-Electron Energy =                  -8.8224496812272939
+    Two-Electron Energy =                   2.5829094030002082
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                         -5.7103630696370864
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
+Module time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.03 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on psinet
+*** at Mon May 15 15:40:25 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    29 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -2.500000000000     4.002603254150
+          HE          0.000000000000     0.000000000000     2.500000000000     4.002603254150
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.33693  C =      0.33693 [cm^-1]
+  Rotational constants: A = ************  B =  10101.00623  C =  10101.00623 [MHz]
+  Nuclear repulsion =    0.423341766872000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 4
+    Number of basis function: 4
+    Number of Cartesian functions: 4
+    Spherical Harmonics?: false
+    Max angular momentum: 0
+
+   => Loading Basis Set <=
+
+    Name: (6-31G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-2 entry HE         line    38 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/def2-qzvpp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         2       2       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        0       0       0       0       0       0
+     B3g        0       0       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        2       2       0       0       0       0
+     B2u        0       0       0       0       0       0
+     B3u        0       0       0       0       0       0
+   -------------------------------------------------------
+    Total       4       4       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (6-31G AUX)
+    Blend: DEF2-QZVPP-JKFIT
+    Number of shells: 18
+    Number of basis function: 50
+    Number of Cartesian functions: 50
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  Minimum eigenvalue in the overlap matrix is 3.6585142486E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter   0:    -5.71036203539668   -5.71036e+00   2.47949e-05 
+   @DF-RHF iter   1:    -5.71036203768045   -2.28377e-09   1.87355e-06 
+   @DF-RHF iter   2:    -5.71036203769350   -1.30518e-11   1.41759e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.914158     1B1u   -0.914156  
+
+    Virtual:                                                              
+
+       2Ag     1.399715     2B1u    1.399739  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  Energy converged.
+
+  @DF-RHF Final Energy:    -5.71036203769350
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.4233417668720001
+    One-Electron Energy =                  -8.6107799636234681
+    Two-Electron Energy =                   2.4770761590579675
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                         -5.7103620376935016
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on psinet at Mon May 15 15:40:25 2017
+Module time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.35 seconds =       0.02 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+	SCF Energy @2.000R................................................PASSED
+	SCF Energy @3.000R................................................PASSED
+	SCF Energy @4.000R................................................PASSED
+	SCF Energy @5.000R................................................PASSED

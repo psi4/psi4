@@ -1,36 +1,37 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.4.193 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {dma} 95b7815 dirty
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
-    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
-    B. P. Pritchard
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thu Mar 24 12:54:42 2016
+    Psi4 started on: Monday, 15 May 2017 03:33PM
 
-    Process ID:  48603
-    PSI4DATADIR: /Users/andysim/programming/psi4/share
-    Memory level set to 256.000 MB
-
+    Process ID:  11971
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Water RHF/cc-pVTZ distributed multipole analysis
 ref_energy = -76.0571685433842219                                                                   #TEST
 ref_dma_mat = psi4.Matrix(3, 9)                                                                     #TEST
-ref_dma_mat.set_name('Reference DMA values')                                                        #TEST
+ref_dma_mat.name = 'Reference DMA values'                                                           #TEST
 ref_dma_arr = [                                                                                     #TEST
   [ -0.43406697290168, -0.18762673939633,  0.00000000000000,  0.00000000000000,  0.03206686487531,  #TEST
      0.00000000000000, -0.00000000000000, -0.53123477172696,  0.00000000000000 ],                   #TEST
@@ -43,7 +44,7 @@ for i in range(3):                                                              
     for j in range(9):                                                                              #TEST
         ref_dma_mat.set(i, j, ref_dma_arr[i][j])                                                    #TEST
 ref_tot_mat = psi4.Matrix(1, 9)                                                                     #TEST
-ref_tot_mat.set_name("Reference total values")                                                      #TEST
+ref_tot_mat.name = "Reference total values"                                                         #TEST
 ref_tot_arr = [                                                                                     #TEST
      0.00000000516346, -0.79665315928128,  0.00000000000000,  0.00000000000000,  0.10813259329390,  #TEST
      0.00000000000000,  0.00000000000000, -2.01989585894142,  0.00000000000000                      #TEST
@@ -55,8 +56,8 @@ molecule water {
     O  0.000000  0.000000  0.117176
     H -0.000000 -0.756950 -0.468706
     H -0.000000  0.756950 -0.468706
- noreorient
- nocom
+ noreorient # These are not needed, but are used here to guarantee that the
+ nocom      # GDMA origin placement defined below is at the O atom.
 }
 
 set {
@@ -78,19 +79,27 @@ compare_values(ref_energy, energy, 8, "SCF Energy")                             
 compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")                             #TEST
 compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")                                   #TEST
 --------------------------------------------------------------------------
+
+*** tstart() called on psinet
+*** at Mon May 15 15:33:52 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   247 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
-
-
-*** tstart() called on QuickSilver.local
-*** at Thu Mar 24 12:54:42 2016
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -124,7 +133,7 @@ compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")               
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-10
   Integral threshold = 0.00e+00
@@ -132,6 +141,7 @@ compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")               
   ==> Primary Basis <==
 
   Basis Set: CC-PVTZ
+    Blend: CC-PVTZ
     Number of shells: 22
     Number of basis function: 58
     Number of Cartesian functions: 65
@@ -153,46 +163,52 @@ compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")               
 
   ==> Integral Setup <==
 
-	Batch   1 pq = [       0,     523] index = [             0,137026]
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              22
+      Number of primitives:             42
+      Number of atomic orbitals:        65
+      Number of basis functions:        58
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 2929232 doubles for integral storage.
+  We computed 32131 shell quartets total.
+  Whereas there are 32131 unique shell quartets.
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               183
+    Memory (MB):               375
     Schwarz Cutoff:          1E-12
 
+    OpenMP threads:              1
   Minimum eigenvalue in the overlap matrix is 2.4949282310E-03.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    2 ]
-
-   @RHF iter   1:   -61.40925229795674   -6.14093e+01   2.47527e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @RHF iter   2:   -66.72025068712405   -5.31100e+00   9.77433e-02 DIIS
-   @RHF iter   3:   -73.83683741430355   -7.11659e+00   8.69017e-02 DIIS
-   @RHF iter   4:   -75.71247145151231   -1.87563e+00   3.04068e-02 DIIS
-   @RHF iter   5:   -76.05495707781468   -3.42486e-01   1.91391e-03 DIIS
-   @RHF iter   6:   -76.05669231406269   -1.73524e-03   1.18639e-03 DIIS
-   @RHF iter   7:   -76.05714226850148   -4.49954e-04   2.14933e-04 DIIS
-   @RHF iter   8:   -76.05716744277633   -2.51743e-05   2.90382e-05 DIIS
-   @RHF iter   9:   -76.05716851422399   -1.07145e-06   4.98712e-06 DIIS
-   @RHF iter  10:   -76.05716854290682   -2.86828e-08   7.68636e-07 DIIS
-   @RHF iter  11:   -76.05716854337167   -4.64851e-10   1.52421e-07 DIIS
-   @RHF iter  12:   -76.05716854338405   -1.23777e-11   1.44829e-08 DIIS
-   @RHF iter  13:   -76.05716854338421   -1.56319e-13   2.83397e-09 DIIS
-   @RHF iter  14:   -76.05716854338419    1.42109e-14   4.25520e-10 DIIS
-   @RHF iter  15:   -76.05716854338428   -8.52651e-14   4.91407e-11 DIIS
+   @RHF iter   0:   -75.89978048480356   -7.58998e+01   5.40802e-02 
+   @RHF iter   1:   -76.03052308295949   -1.30743e-01   8.41087e-03 
+   @RHF iter   2:   -76.05017572156665   -1.96526e-02   4.81651e-03 DIIS
+   @RHF iter   3:   -76.05704252614900   -6.86680e-03   4.62728e-04 DIIS
+   @RHF iter   4:   -76.05715831914850   -1.15793e-04   1.08401e-04 DIIS
+   @RHF iter   5:   -76.05716798461704   -9.66547e-06   2.14326e-05 DIIS
+   @RHF iter   6:   -76.05716851573638   -5.31119e-07   4.43026e-06 DIIS
+   @RHF iter   7:   -76.05716854242586   -2.66895e-08   8.17028e-07 DIIS
+   @RHF iter   8:   -76.05716854337601   -9.50152e-10   8.59606e-08 DIIS
+   @RHF iter   9:   -76.05716854338384   -7.83018e-12   1.85795e-08 DIIS
+   @RHF iter  10:   -76.05716854338415   -3.12639e-13   2.38995e-09 DIIS
+   @RHF iter  11:   -76.05716854338424   -8.52651e-14   3.72529e-10 DIIS
+   @RHF iter  12:   -76.05716854338411    1.27898e-13   5.07079e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -231,24 +247,22 @@ compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")               
 
   Energy converged.
 
-  @RHF Final Energy:   -76.05716854338428
+  @RHF Final Energy:   -76.05716854338411
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1949689212927712
-    One-Electron Energy =                -123.1194645836755939
-    Two-Electron Energy =                  37.8673271189985599
+    One-Electron Energy =                -123.1194645832369048
+    Two-Electron Energy =                  37.8673271185600129
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0571685433842646
+    Total Energy =                        -76.0571685433841225
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -265,16 +279,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -2.0249     Total:     2.0249
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on QuickSilver.local at Thu Mar 24 12:54:43 2016
+*** tstop() called on psinet at Mon May 15 15:33:53 2017
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
                                      G D M A
 
@@ -285,10 +297,10 @@ Total time:
                Distributed Multipoles from Gaussian wavefunctions
 
 
-Starting at 12:54:43 on 24 Mar 2016 
+Starting at 15:33:53 on 15 May 2017 
 
 
-Using SCF density matrix from file output.water.fchk
+Using SCF density matrix from file /home/psilocaluser/gits/hrw-direct/objdir4/tests/gdma/gdma-gdma1/output.water.11971.fchk
 
 
                          Distributed Multipole Analysis
@@ -322,7 +334,7 @@ Total multipoles referred to origin at
 |Q1| =   0.796653  Q10  =  -0.796653
 |Q2| =   2.022788  Q20  =   0.108133  Q22c =  -2.019896
 
-Finished at 12:54:43 on 24 Mar 2016 
+Finished at 15:33:53 on 15 May 2017 
 
   DMA results are available in the Python driver through the
 	  get_array_variable('DMA DISTRIBUTED MULTIPOLES')
@@ -334,4 +346,4 @@ Finished at 12:54:43 on 24 Mar 2016
 	DMA Distributed Multipoles........................................PASSED
 	DMA Total Multipoles..............................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:32:14 2016
+    Psi4 started on: Monday, 15 May 2017 03:38PM
 
-    Process ID:  13672
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  15096
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -29,8 +32,6 @@
 #! the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 test_freq = psi4.Vector(1)  #TEST
 test_freq.set(0, 0, 1401.8121) #TEST
-
-memory 250 mb
 
 molecule o2 {
   0 3
@@ -70,8 +71,6 @@ mrcc_e, mrcc_wfn = frequencies('psimrcc', dertype=0, return_wfn=True)
 fd_freq = mrcc_wfn.frequencies()                         #TEST
 compare_vectors(test_freq, fd_freq, 1,"Frequency test:") #TEST
 --------------------------------------------------------------------------
-
-  Memory set to 250.000 MiB by Python script.
 hessian() will perform frequency computation by finite difference of analytic energies.
 
 -------------------------------------------------------------
@@ -108,9 +107,16 @@ hessian() will perform frequency computation by finite difference of analytic en
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 1 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:32:14 2016
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:38:28 2017
 
 
          ------------------------------------------
@@ -141,42 +147,42 @@ hessian() will perform frequency computation by finite difference of analytic en
          Cycle          Energy               D(Energy)            D(Density)            DIIS
   ===========================================================================================
   Setting level shift to 0.000 S
-  @SCF    0     -141.715169183827    -141.715169183827       0.109325685627
+  @SCF    0     -141.715169183887    -141.715169183887       0.109325685627
   Setting level shift to 0.000 S
-  @SCF    1     -147.931668732431      -6.216499548604       0.099388505779
+  @SCF    1     -147.931668732465      -6.216499548578       0.099388505779
   Setting level shift to 0.000 S
-  @SCF    2     -149.400649203566      -1.468980471135       0.035019719421
+  @SCF    2     -149.400649203567      -1.468980471102       0.035019719420
   Setting level shift to 0.000 S
-  @SCF    3     -149.569206155859      -0.168556952293       0.013942282479
+  @SCF    3     -149.569206155856      -0.168556952288       0.013942282479
   Setting level shift to 0.000 S
-  @SCF    4     -149.592423164010      -0.023217008151       0.004596395749
+  @SCF    4     -149.592423164006      -0.023217008150       0.004596395749
   Setting level shift to 0.000 S
-  @SCF    5     -149.595296496541      -0.002873332531       0.001740986751
+  @SCF    5     -149.595296496537      -0.002873332531       0.001740986751
   Setting level shift to 0.000 S
-  @SCF    6     -149.595666338645      -0.000369842104       0.000607387027
+  @SCF    6     -149.595666338641      -0.000369842104       0.000607387027
   Setting level shift to 0.000 S/E
-  @SCF    7     -149.595713322234      -0.000046983589       0.000218570036
+  @SCF    7     -149.595713322230      -0.000046983589       0.000218570036
   Setting level shift to 0.000 S/E
-  @SCF    8     -149.595720200309      -0.000006878075       0.000058381086
+  @SCF    8     -149.595720200305      -0.000006878075       0.000058381086
   Setting level shift to 0.000 S/E
-  @SCF    9     -149.595720200349      -0.000000000040       0.000000170653
+  @SCF    9     -149.595720200345      -0.000000000041       0.000000170653
   Setting level shift to 0.000 S/E
-  @SCF   10     -149.595720200349      -0.000000000000       0.000000010157
+  @SCF   10     -149.595720200346      -0.000000000000       0.000000010157
   Setting level shift to 0.000 S/E
-  @SCF   11     -149.595720200349      -0.000000000000       0.000000001213
+  @SCF   11     -149.595720200345       0.000000000000       0.000000001213
   Setting level shift to 0.000 S/E
-  @SCF   12     -149.595720200349       0.000000000000       0.000000000299
+  @SCF   12     -149.595720200345      -0.000000000000       0.000000000299
   Setting level shift to 0.000 S/E
-  @SCF   13     -149.595720200349      -0.000000000000       0.000000000013
+  @SCF   13     -149.595720200345       0.000000000000       0.000000000013
   Setting level shift to 0.000 S/E
-  @SCF   14     -149.595720200349       0.000000000000       0.000000000001
+  @SCF   14     -149.595720200345      -0.000000000000       0.000000000001
   Setting level shift to 0.000 S/E
-  @SCF   15     -149.595720200349      -0.000000000000       0.000000000000
+  @SCF   15     -149.595720200345       0.000000000000       0.000000000000
   Setting level shift to 0.000 S/E
-  @SCF   16     -149.595720200349       0.000000000000       0.000000000000
+  @SCF   16     -149.595720200345      -0.000000000000       0.000000000000
   =========================================================================================
 
-      * SCF total energy   =    -149.595720200349
+      * SCF total energy   =    -149.595720200345
 
 
   End of SCF
@@ -194,13 +200,13 @@ hessian() will perform frequency computation by finite difference of analytic en
       4     -1.114272 B1u      5     -0.715731  Ag      6     -0.683182 B3u
       7     -0.683182 B2u
   Active orbitals
-      8     -0.226756 B3g      9     -0.226756 B2g
+      8     -0.226756 B2g      9     -0.226756 B3g
   Unoccupied orbitals
-     10      0.404489 B1u     11      1.067199 B1u     12      1.111151 B2u
-     13      1.111151 B3u     14      1.176542  Ag     15      1.214941 B2g
+     10      0.404489 B1u     11      1.067199 B1u     12      1.111151 B3u
+     13      1.111151 B2u     14      1.176542  Ag     15      1.214941 B2g
      16      1.214941 B3g     17      1.343208  Ag     18      1.942330 B1u
      19      2.412341 B2u     20      2.412341 B3u     21      2.710121 B1g
-     22      2.710121  Ag     23      2.983729  Au     24      2.983729 B1u
+     22      2.710121  Ag     23      2.983729 B1u     24      2.983729  Au
      25      3.047429  Ag     26      3.593142 B2g     27      3.593142 B3g
      28      4.186108 B1u
   =========================================================================
@@ -209,13 +215,13 @@ hessian() will perform frequency computation by finite difference of analytic en
   MCSCF Execution Completed.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:32:14 2016
+*** tstop() called on psinet at Mon May 15 15:38:28 2017
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.07 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -224,14 +230,14 @@ Total time:
    MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009
    MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by
      MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett
-         MRCC            Compiled on Mar  4 2016 at 18:07:05
-         MRCC            id = 6a707c99fd2213714c6c78cfcd145480721f0359 
+         MRCC            Compiled on May 15 2017 at 15:13:06
+         MRCC
        MRCCMRCC
 
   ==============================================================================
   System Info:
   ------------------------------------------------------------------------------
-  Nuclear Energy   = 26.979233310     SCF Energy       = -149.595720200 
+  Nuclear Energy   = 26.979233309     SCF Energy       = -149.595720200 
 
   MOs and Symmetry:
   ------------------------------------------------------------------------------
@@ -259,7 +265,7 @@ Total time:
   ==============================================================================
 
   Allocated work array of size 22504 (0.02 MiB)
-  Allocated buffer array of size 12605120 (12.02 MiB)	Presorting SO-basis two-electron integrals.
+  Allocated buffer array of size 26456664 (25.23 MiB)	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -270,26 +276,26 @@ Total time:
 
 
   Presorting two-electron integrals from IWL buffer
-    Memory available                       =      236931268 bytes
-    Memory available for presorting        =      177698451 bytes (75.0%)
+    Memory available                       =      497367724 bytes
+    Memory available for presorting        =      373025793 bytes (75.0%)
     Memory required for in-core presort    =          92072 bytes
     Presorting is not required
-    Reading irreps 0 -> 7 (10410 non-zero integrals)
+    Reading irreps 0 -> 7 (10427 non-zero integrals)
 
   Sorting integrals:
-    Memory available                       =      236924996 bytes
-    Memory available for sorting           =      118462498 bytes (50.0%)
+    Memory available                       =      497361452 bytes
+    Memory available for sorting           =      248680726 bytes (50.0%)
 
     Pass 1:
     Setting up the matrix list: added 480 matrices blocks
     Integrals from irreps 0 -> 7 will be read in core
 
-    Frozen-core energy                     =       -130.014881458
+    Frozen-core energy                     =       -130.014881457
 
   Computing storage strategy:
-    Input memory                           =      250000000 bytes
-    Free memory                            =      236924996 bytes
-    Free memory available for matrices     =      229817246 bytes ( 97%)
+    Input memory                           =      524288000 bytes
+    Free memory                            =      497361452 bytes
+    Free memory available for matrices     =      482440608 bytes ( 97%)
     Memory required by fock matrices       =           4048 bytes
     Memory required by integrals           =        1012232 bytes
     Memory required by other matrices      =        1470128 bytes
@@ -299,6 +305,7 @@ Total time:
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [ 0, 0, 1, 1, 0, 0, 0, 0 ] !
+  BASIS_RELATIVISTIC          => (empty)                     
   BENCH                       => 0                           
   CC_NUM_THREADS              => 1                           
   CC_TYPE                     => CONV                        
@@ -338,11 +345,12 @@ Total time:
   FROZEN_UOCC                 => [ 0, 0, 0, 0, 0, 0, 0, 0 ] !
   HEFF4                       => TRUE                        
   HEFF_PRINT                  => FALSE                       
-  INTEGRAL_PACKAGE            => ERD                         
+  INTEGRAL_PACKAGE            => LIBINT                      
   LITERAL_CFOUR               => (empty)                     
   LOCK_SINGLET                => FALSE                       
   MAT_NUM_COLUMN_PRINT        => 5                           
   MAXITER                     => 100                         
+  MOLDEN_WITH_VIRTUAL         => TRUE                        
   MP2_CCSD_METHOD             => II                          
   MP2_GUESS                   => TRUE                        
   MP2_TYPE                    => DF                          
@@ -352,6 +360,7 @@ Total time:
   NUM_FROZEN_UOCC             => 0                           
   OFFDIAGONAL_CCSD_T          => TRUE                        
   PCM                         => FALSE                       
+  PCM_CC_TYPE                 => PTE                         
   PCM_SCF_TYPE                => TOTAL                       
   PERTURB_CBS                 => FALSE                       
   PERTURB_CBS_COUPLING        => TRUE                        
@@ -367,10 +376,8 @@ Total time:
   RAS3                        => [  ]                        
   RAS4                        => [  ]                        
   RELATIVISTIC                => NO                          
-  REL_BASIS                   => (empty)                     
   RESTRICTED_DOCC             => [ 2, 0, 0, 0, 0, 1, 1, 1 ] !
   RESTRICTED_UOCC             => [  ]                        
-  RUN_CCTRANSORT              => TRUE                        
   R_CONVERGENCE               => 1e-10                      !
   SMALL_CUTOFF                => 0                           
   SOCC                        => [  ]                        
@@ -391,8 +398,8 @@ Total time:
 
   Heff Matrix
 
-        -149.572064810215         0.023655390134
-           0.023655390134      -149.572064810215
+        -149.572064810211         0.023655390134
+           0.023655390134      -149.572064810211
 
   Left Matrix
 
@@ -406,23 +413,23 @@ Total time:
 
   Real                  Imaginary
 
-       -149.595720200349           0.000000000000
-       -149.548409420081           0.000000000000
+       -149.595720200345           0.000000000000
+       -149.548409420077           0.000000000000
 
 
-  The eigenvalue for root 0 is -149.595720200349 (0.000000000000)
+  The eigenvalue for root 0 is -149.595720200345 (0.000000000000)
 
   Heff Matrix
 
-     -149.572064810215295      0.023655390134019
-        0.023655390134019   -149.572064810215295
+     -149.572064810211288      0.023655390133988
+        0.023655390133988   -149.572064810211288
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
             0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
+            1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
 
   ==============================================================================
   	Multireference Coupled Cluster
@@ -431,45 +438,45 @@ Total time:
 
   ------------------------------------------------------------------------------
   @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS
-  @CC           (Hartree)       (Hartree)                           (Sec)
+  @CC             [Eh]            [Eh]                               (Sec)
   ------------------------------------------------------------------------------
-  @CC   0   -149.595720200349   0.0000e+00   0.000e+00   0.000e+00       0
+  @CC   0   -149.595720200345   0.0000e+00   0.000e+00   0.000e+00       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
   @CC   1   -149.991292653907  -3.9557e-01   6.848e-02   4.722e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   2   -149.950387671648   4.0905e-02   5.029e-02   1.287e-01       0
+  @CC   2   -149.950387671645   4.0905e-02   5.029e-02   1.287e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   3   -149.972987913978  -2.2600e-02   1.333e-02   3.650e-02       0
+  @CC   3   -149.972987913977  -2.2600e-02   1.333e-02   3.650e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   4   -149.967808398430   5.1795e-03   6.135e-03   1.660e-02       0
+  @CC   4   -149.967808398428   5.1795e-03   6.135e-03   1.660e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   5   -149.970238292123  -2.4299e-03   1.504e-03   5.293e-03       0   S
-  @CC   6   -149.969665642769   5.7265e-04   7.951e-04   3.198e-03       0   S/E
-  @CC   7   -149.969947294627  -2.8165e-04   1.705e-04   1.372e-03       0   S
-  @CC   8   -149.969915455551   3.1839e-05   2.864e-05   9.771e-05       0   S
-  @CC   9   -149.969918994867  -3.5393e-06   9.960e-06   3.600e-05       0   S
-  @CC  10   -149.969914966270   4.0286e-06   1.912e-06   1.839e-05       0   S
-  @CC  11   -149.969914708084   2.5819e-07   1.475e-06   9.984e-06       0   S
-  @CC  12   -149.969913887248   8.2084e-07   4.448e-07   5.732e-06       0   S
-  @CC  13   -149.969913645708   2.4154e-07   3.258e-07   3.308e-06       0   S/E
-  @CC  14   -149.969913188342   4.5737e-07   1.327e-07   1.945e-06       0   S
-  @CC  15   -149.969913193364  -5.0222e-09   2.463e-08   7.452e-08       0   S
-  @CC  16   -149.969913194569  -1.2043e-09   7.738e-09   2.949e-08       0   S
-  @CC  17   -149.969913193642   9.2700e-10   2.487e-09   1.464e-08       0   S
-  @CC  18   -149.969913193686  -4.4679e-11   1.125e-09   8.132e-09       0   S
-  @CC  19   -149.969913193519   1.6689e-10   5.363e-10   4.463e-09       0   S
-  @CC  20   -149.969913193496   2.3249e-11   2.654e-10   2.549e-09       0   S/E
-  @CC  21   -149.969913193424   7.2049e-11   1.380e-10   1.445e-09       0   S
-  @CC  22   -149.969913193420   4.6043e-12   1.994e-11   7.108e-11       0
+  @CC   5   -149.970238292122  -2.4299e-03   1.504e-03   5.293e-03       0   S
+  @CC   6   -149.969665642768   5.7265e-04   7.951e-04   3.198e-03       0   S/E
+  @CC   7   -149.969947294625  -2.8165e-04   1.705e-04   1.372e-03       0   S
+  @CC   8   -149.969915455549   3.1839e-05   2.864e-05   9.771e-05       0   S
+  @CC   9   -149.969918994865  -3.5393e-06   9.960e-06   3.600e-05       0   S
+  @CC  10   -149.969914966268   4.0286e-06   1.912e-06   1.839e-05       0   S
+  @CC  11   -149.969914708082   2.5819e-07   1.475e-06   9.984e-06       0   S
+  @CC  12   -149.969913887247   8.2084e-07   4.448e-07   5.732e-06       0   S
+  @CC  13   -149.969913645707   2.4154e-07   3.258e-07   3.308e-06       0   S/E
+  @CC  14   -149.969913188341   4.5737e-07   1.327e-07   1.945e-06       0   S
+  @CC  15   -149.969913193363  -5.0222e-09   2.463e-08   7.452e-08       0   S
+  @CC  16   -149.969913194567  -1.2042e-09   7.738e-09   2.949e-08       0   S
+  @CC  17   -149.969913193640   9.2697e-10   2.487e-09   1.464e-08       0   S
+  @CC  18   -149.969913193685  -4.4679e-11   1.125e-09   8.132e-09       0   S
+  @CC  19   -149.969913193518   1.6692e-10   5.363e-10   4.463e-09       0   S
+  @CC  20   -149.969913193494   2.3249e-11   2.654e-10   2.549e-09       0   S/E
+  @CC  21   -149.969913193422   7.2021e-11   1.380e-10   1.445e-09       0   S
+  @CC  22   -149.969913193418   4.6327e-12   1.994e-11   7.108e-11       0
   ------------------------------------------------------------------------------
 
-      * Mk-MRCCSD total energy      =    -149.969913193420
+      * Mk-MRCCSD total energy      =    -149.969913193418
 
 
   Heff Matrix
 
-     -149.949495111983765      0.020418081435733
-        0.020418081435733   -149.949495111983765
+     -149.949495111982259      0.020418081435570
+        0.020418081435570   -149.949495111982259
 
   Most important determinants in the wave function
 
@@ -478,25 +485,36 @@ Total time:
             1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
             0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
 
-  Timing for singles and doubles:             0.230792 s
+  Timing for singles and doubles:             0.376304 s
 
   PSIMRCC job completed.
-  Wall Time =             0.282091 s
-  GEMM Time =             0.020374 s
+  Wall Time =             0.469668 s
+  GEMM Time =             0.033253 s
 
   ==============================================================================
   Memory Usage Report
 
-  Maximum memory used:     14.8 Mb 
+  Maximum memory used:     28.1 Mb 
   Number of objects still in memory: 0       Current bytes used: 0             
   ==============================================================================
+
+
+Warning! psimrcc does not have an associated derived wavefunction.The returned wavefunction is the incoming reference wavefunction.
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:32:14 2016
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:38:29 2017
 
 
          ------------------------------------------
@@ -527,42 +545,42 @@ Total time:
          Cycle          Energy               D(Energy)            D(Density)            DIIS
   ===========================================================================================
   Setting level shift to 0.000 S
-  @SCF    0     -141.706295346736    -141.706295346736       0.109362942346
+  @SCF    0     -141.706295346797    -141.706295346797       0.109362942346
   Setting level shift to 0.000 S
-  @SCF    1     -147.926606222080      -6.220310875344       0.099435230835
+  @SCF    1     -147.926606222114      -6.220310875317       0.099435230834
   Setting level shift to 0.000 S
-  @SCF    2     -149.400445981949      -1.473839759870       0.035082086947
+  @SCF    2     -149.400445981951      -1.473839759837       0.035082086946
   Setting level shift to 0.000 S
-  @SCF    3     -149.569650664456      -0.169204682506       0.013969368892
+  @SCF    3     -149.569650664452      -0.169204682502       0.013969368892
   Setting level shift to 0.000 S
-  @SCF    4     -149.592988402134      -0.023337737678       0.004606955557
+  @SCF    4     -149.592988402130      -0.023337737677       0.004606955557
   Setting level shift to 0.000 S
-  @SCF    5     -149.595878954447      -0.002890552313       0.001746104130
+  @SCF    5     -149.595878954443      -0.002890552313       0.001746104130
   Setting level shift to 0.000 S
-  @SCF    6     -149.596251380666      -0.000372426220       0.000609350424
+  @SCF    6     -149.596251380662      -0.000372426220       0.000609350424
   Setting level shift to 0.000 S/E
-  @SCF    7     -149.596298736160      -0.000047355494       0.000219405806
+  @SCF    7     -149.596298736156      -0.000047355494       0.000219405806
   Setting level shift to 0.000 S/E
-  @SCF    8     -149.596305676320      -0.000006940160       0.000058610478
+  @SCF    8     -149.596305676316      -0.000006940160       0.000058610478
   Setting level shift to 0.000 S/E
-  @SCF    9     -149.596305676361      -0.000000000041       0.000000171789
+  @SCF    9     -149.596305676357      -0.000000000041       0.000000171789
   Setting level shift to 0.000 S/E
-  @SCF   10     -149.596305676361      -0.000000000000       0.000000010356
+  @SCF   10     -149.596305676357      -0.000000000000       0.000000010356
   Setting level shift to 0.000 S/E
-  @SCF   11     -149.596305676361       0.000000000000       0.000000001247
+  @SCF   11     -149.596305676357      -0.000000000000       0.000000001247
   Setting level shift to 0.000 S/E
-  @SCF   12     -149.596305676361      -0.000000000000       0.000000000307
+  @SCF   12     -149.596305676357       0.000000000000       0.000000000307
   Setting level shift to 0.000 S/E
-  @SCF   13     -149.596305676361       0.000000000000       0.000000000013
+  @SCF   13     -149.596305676357       0.000000000000       0.000000000013
   Setting level shift to 0.000 S/E
-  @SCF   14     -149.596305676361      -0.000000000000       0.000000000001
+  @SCF   14     -149.596305676357      -0.000000000000       0.000000000001
   Setting level shift to 0.000 S/E
-  @SCF   15     -149.596305676361      -0.000000000000       0.000000000000
+  @SCF   15     -149.596305676357       0.000000000000       0.000000000000
   Setting level shift to 0.000 S/E
-  @SCF   16     -149.596305676361      -0.000000000000       0.000000000000
+  @SCF   16     -149.596305676357      -0.000000000000       0.000000000000
   =========================================================================================
 
-      * SCF total energy   =    -149.596305676361
+      * SCF total energy   =    -149.596305676357
 
 
   End of SCF
@@ -582,11 +600,11 @@ Total time:
   Active orbitals
       8     -0.226029 B3g      9     -0.226029 B2g
   Unoccupied orbitals
-     10      0.406773 B1u     11      1.067532 B1u     12      1.111168 B3u
-     13      1.111168 B2u     14      1.175743  Ag     15      1.215002 B3g
-     16      1.215002 B2g     17      1.342572  Ag     18      1.943498 B1u
-     19      2.411765 B3u     20      2.411765 B2u     21      2.709139 B1g
-     22      2.709139  Ag     23      2.984665  Au     24      2.984665 B1u
+     10      0.406773 B1u     11      1.067532 B1u     12      1.111168 B2u
+     13      1.111168 B3u     14      1.175743  Ag     15      1.215002 B2g
+     16      1.215002 B3g     17      1.342572  Ag     18      1.943498 B1u
+     19      2.411765 B3u     20      2.411765 B2u     21      2.709139  Ag
+     22      2.709139 B1g     23      2.984665 B1u     24      2.984665  Au
      25      3.052447  Ag     26      3.596463 B3g     27      3.596463 B2g
      28      4.186474 B1u
   =========================================================================
@@ -595,14 +613,14 @@ Total time:
   MCSCF Execution Completed.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:32:15 2016
+*** tstop() called on psinet at Mon May 15 15:38:29 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =      -0.00 seconds =      -0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   MRCC          MRCC
@@ -610,8 +628,8 @@ Total time:
    MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009
    MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by
      MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett
-         MRCC            Compiled on Mar  4 2016 at 18:07:05
-         MRCC            id = 6a707c99fd2213714c6c78cfcd145480721f0359 
+         MRCC            Compiled on May 15 2017 at 15:13:06
+         MRCC
        MRCCMRCC
 
   ==============================================================================
@@ -645,7 +663,7 @@ Total time:
   ==============================================================================
 
   Allocated work array of size 22504 (0.02 MiB)
-  Allocated buffer array of size 12605120 (12.02 MiB)	Presorting SO-basis two-electron integrals.
+  Allocated buffer array of size 26456664 (25.23 MiB)	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -656,15 +674,15 @@ Total time:
 
 
   Presorting two-electron integrals from IWL buffer
-    Memory available                       =      236931268 bytes
-    Memory available for presorting        =      177698451 bytes (75.0%)
+    Memory available                       =      497367724 bytes
+    Memory available for presorting        =      373025793 bytes (75.0%)
     Memory required for in-core presort    =          92072 bytes
     Presorting is not required
-    Reading irreps 0 -> 7 (10408 non-zero integrals)
+    Reading irreps 0 -> 7 (10445 non-zero integrals)
 
   Sorting integrals:
-    Memory available                       =      236924996 bytes
-    Memory available for sorting           =      118462498 bytes (50.0%)
+    Memory available                       =      497361452 bytes
+    Memory available for sorting           =      248680726 bytes (50.0%)
 
     Pass 1:
     Setting up the matrix list: added 480 matrices blocks
@@ -673,9 +691,9 @@ Total time:
     Frozen-core energy                     =       -130.032501405
 
   Computing storage strategy:
-    Input memory                           =      250000000 bytes
-    Free memory                            =      236924996 bytes
-    Free memory available for matrices     =      229817246 bytes ( 97%)
+    Input memory                           =      524288000 bytes
+    Free memory                            =      497361452 bytes
+    Free memory available for matrices     =      482440608 bytes ( 97%)
     Memory required by fock matrices       =           4048 bytes
     Memory required by integrals           =        1012232 bytes
     Memory required by other matrices      =        1470128 bytes
@@ -685,6 +703,7 @@ Total time:
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [ 0, 0, 1, 1, 0, 0, 0, 0 ] !
+  BASIS_RELATIVISTIC          => (empty)                     
   BENCH                       => 0                           
   CC_NUM_THREADS              => 1                           
   CC_TYPE                     => CONV                        
@@ -724,11 +743,12 @@ Total time:
   FROZEN_UOCC                 => [ 0, 0, 0, 0, 0, 0, 0, 0 ] !
   HEFF4                       => TRUE                        
   HEFF_PRINT                  => FALSE                       
-  INTEGRAL_PACKAGE            => ERD                         
+  INTEGRAL_PACKAGE            => LIBINT                      
   LITERAL_CFOUR               => (empty)                     
   LOCK_SINGLET                => FALSE                       
   MAT_NUM_COLUMN_PRINT        => 5                           
   MAXITER                     => 100                         
+  MOLDEN_WITH_VIRTUAL         => TRUE                        
   MP2_CCSD_METHOD             => II                          
   MP2_GUESS                   => TRUE                        
   MP2_TYPE                    => DF                          
@@ -738,6 +758,7 @@ Total time:
   NUM_FROZEN_UOCC             => 0                           
   OFFDIAGONAL_CCSD_T          => TRUE                        
   PCM                         => FALSE                       
+  PCM_CC_TYPE                 => PTE                         
   PCM_SCF_TYPE                => TOTAL                       
   PERTURB_CBS                 => FALSE                       
   PERTURB_CBS_COUPLING        => TRUE                        
@@ -753,10 +774,8 @@ Total time:
   RAS3                        => [  ]                        
   RAS4                        => [  ]                        
   RELATIVISTIC                => NO                          
-  REL_BASIS                   => (empty)                     
   RESTRICTED_DOCC             => [ 2, 0, 0, 0, 0, 1, 1, 1 ] !
   RESTRICTED_UOCC             => [  ]                        
-  RUN_CCTRANSORT              => TRUE                        
   R_CONVERGENCE               => 1e-10                      !
   SMALL_CUTOFF                => 0                           
   SOCC                        => [  ]                        
@@ -777,8 +796,8 @@ Total time:
 
   Heff Matrix
 
-        -149.572645753838         0.023659922523
-           0.023659922523      -149.572645753838
+        -149.572645753834         0.023659922523
+           0.023659922523      -149.572645753834
 
   Left Matrix
 
@@ -792,23 +811,23 @@ Total time:
 
   Real                  Imaginary
 
-       -149.596305676361           0.000000000000
-       -149.548985831315           0.000000000000
+       -149.596305676357           0.000000000000
+       -149.548985831311           0.000000000000
 
 
-  The eigenvalue for root 0 is -149.596305676361 (0.000000000000)
+  The eigenvalue for root 0 is -149.596305676357 (0.000000000000)
 
   Heff Matrix
 
-     -149.572645753838060      0.023659922522939
-        0.023659922522939   -149.572645753838060
+     -149.572645753833967      0.023659922522908
+        0.023659922522908   -149.572645753833967
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
             0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
+            1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
 
   ==============================================================================
   	Multireference Coupled Cluster
@@ -817,72 +836,83 @@ Total time:
 
   ------------------------------------------------------------------------------
   @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS
-  @CC           (Hartree)       (Hartree)                           (Sec)
+  @CC             [Eh]            [Eh]                               (Sec)
   ------------------------------------------------------------------------------
-  @CC   0   -149.596305676361   0.0000e+00   0.000e+00   0.000e+00       0
+  @CC   0   -149.596305676357   0.0000e+00   0.000e+00   0.000e+00       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
   @CC   1   -149.991286044428  -3.9498e-01   6.840e-02   4.713e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   2   -149.950773633174   4.0512e-02   5.003e-02   1.279e-01       0
+  @CC   2   -149.950773633171   4.0512e-02   5.003e-02   1.279e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   3   -149.973163860918  -2.2390e-02   1.321e-02   3.614e-02       0
+  @CC   3   -149.973163860917  -2.2390e-02   1.321e-02   3.614e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   4   -149.968074227951   5.0896e-03   6.067e-03   1.642e-02       0
+  @CC   4   -149.968074227949   5.0896e-03   6.067e-03   1.642e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   5   -149.970464564364  -2.3903e-03   1.480e-03   5.234e-03       0   S
-  @CC   6   -149.969907040004   5.5752e-04   7.824e-04   3.159e-03       0   S/E
-  @CC   7   -149.970183581999  -2.7654e-04   1.672e-04   1.359e-03       0   S
-  @CC   8   -149.970152060872   3.1521e-05   2.834e-05   9.689e-05       0   S
-  @CC   9   -149.970155519600  -3.4587e-06   9.871e-06   3.564e-05       0   S
-  @CC  10   -149.970151554672   3.9649e-06   1.884e-06   1.820e-05       0   S
-  @CC  11   -149.970151288438   2.6623e-07   1.455e-06   9.887e-06       0   S
-  @CC  12   -149.970150480897   8.0754e-07   4.406e-07   5.672e-06       0   S
-  @CC  13   -149.970150240346   2.4055e-07   3.213e-07   3.274e-06       0   S/E
-  @CC  14   -149.970149789128   4.5122e-07   1.314e-07   1.923e-06       0   S
-  @CC  15   -149.970149794300  -5.1720e-09   2.430e-08   7.327e-08       0   S
-  @CC  16   -149.970149795422  -1.1216e-09   7.572e-09   2.894e-08       0   S
-  @CC  17   -149.970149794543   8.7908e-10   2.456e-09   1.435e-08       0   S
-  @CC  18   -149.970149794580  -3.7431e-11   1.107e-09   7.958e-09       0   S
-  @CC  19   -149.970149794421   1.5891e-10   5.288e-10   4.363e-09       0   S
-  @CC  20   -149.970149794398   2.3050e-11   2.612e-10   2.487e-09       0   S/E
-  @CC  21   -149.970149794330   6.8667e-11   1.355e-10   1.408e-09       0   S
-  @CC  22   -149.970149794325   4.5191e-12   1.941e-11   6.887e-11       0
+  @CC   5   -149.970464564362  -2.3903e-03   1.480e-03   5.234e-03       0   S
+  @CC   6   -149.969907040002   5.5752e-04   7.824e-04   3.159e-03       0   S/E
+  @CC   7   -149.970183581997  -2.7654e-04   1.672e-04   1.359e-03       0   S
+  @CC   8   -149.970152060870   3.1521e-05   2.834e-05   9.689e-05       0   S
+  @CC   9   -149.970155519599  -3.4587e-06   9.871e-06   3.564e-05       0   S
+  @CC  10   -149.970151554670   3.9649e-06   1.884e-06   1.820e-05       0   S
+  @CC  11   -149.970151288436   2.6623e-07   1.455e-06   9.887e-06       0   S
+  @CC  12   -149.970150480895   8.0754e-07   4.406e-07   5.672e-06       0   S
+  @CC  13   -149.970150240344   2.4055e-07   3.213e-07   3.274e-06       0   S/E
+  @CC  14   -149.970149789126   4.5122e-07   1.314e-07   1.923e-06       0   S
+  @CC  15   -149.970149794298  -5.1720e-09   2.430e-08   7.327e-08       0   S
+  @CC  16   -149.970149795420  -1.1216e-09   7.572e-09   2.894e-08       0   S
+  @CC  17   -149.970149794541   8.7908e-10   2.456e-09   1.435e-08       0   S
+  @CC  18   -149.970149794578  -3.7431e-11   1.107e-09   7.958e-09       0   S
+  @CC  19   -149.970149794420   1.5888e-10   5.288e-10   4.363e-09       0   S
+  @CC  20   -149.970149794397   2.3050e-11   2.612e-10   2.487e-09       0   S/E
+  @CC  21   -149.970149794328   6.8695e-11   1.355e-10   1.408e-09       0   S
+  @CC  22   -149.970149794323   4.5191e-12   1.941e-11   6.886e-11       0
   ------------------------------------------------------------------------------
 
-      * Mk-MRCCSD total energy      =    -149.970149794325
+      * Mk-MRCCSD total energy      =    -149.970149794323
 
 
   Heff Matrix
 
-     -149.949707617344416      0.020442176980655
-        0.020442176980655   -149.949707617344416
+     -149.949707617342824      0.020442176980492
+        0.020442176980492   -149.949707617342824
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
             1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
+            0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
 
-  Timing for singles and doubles:             0.232875 s
+  Timing for singles and doubles:             0.321889 s
 
   PSIMRCC job completed.
-  Wall Time =             0.277923 s
-  GEMM Time =             0.020328 s
+  Wall Time =             0.400624 s
+  GEMM Time =             0.028535 s
 
   ==============================================================================
   Memory Usage Report
 
-  Maximum memory used:     14.8 Mb 
+  Maximum memory used:     28.1 Mb 
   Number of objects still in memory: 0       Current bytes used: 0             
   ==============================================================================
+
+
+Warning! psimrcc does not have an associated derived wavefunction.The returned wavefunction is the incoming reference wavefunction.
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:32:15 2016
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:38:29 2017
 
 
          ------------------------------------------
@@ -913,42 +943,42 @@ Total time:
          Cycle          Energy               D(Energy)            D(Density)            DIIS
   ===========================================================================================
   Setting level shift to 0.000 S
-  @SCF    0     -141.688313341540    -141.688313341540       0.109440674159
+  @SCF    0     -141.688313341602    -141.688313341602       0.109440674159
   Setting level shift to 0.000 S
-  @SCF    1     -147.916364022557      -6.228050681017       0.099532588338
+  @SCF    1     -147.916364022593      -6.228050680991       0.099532588338
   Setting level shift to 0.000 S
-  @SCF    2     -149.400003483012      -1.483639460454       0.035208183119
+  @SCF    2     -149.400003483013      -1.483639460421       0.035208183119
   Setting level shift to 0.000 S
-  @SCF    3     -149.570514338404      -0.170510855392       0.014023895442
+  @SCF    3     -149.570514338401      -0.170510855387       0.014023895442
   Setting level shift to 0.000 S
-  @SCF    4     -149.594096231525      -0.023581893121       0.004628236088
+  @SCF    4     -149.594096231521      -0.023581893120       0.004628236088
   Setting level shift to 0.000 S
-  @SCF    5     -149.597021645544      -0.002925414019       0.001756421750
+  @SCF    5     -149.597021645540      -0.002925414019       0.001756421750
   Setting level shift to 0.000 S
-  @SCF    6     -149.597399312109      -0.000377666565       0.000613310107
+  @SCF    6     -149.597399312105      -0.000377666565       0.000613310107
   Setting level shift to 0.000 S/E
-  @SCF    7     -149.597447422898      -0.000048110789       0.000221093157
+  @SCF    7     -149.597447422894      -0.000048110789       0.000221093157
   Setting level shift to 0.000 S/E
-  @SCF    8     -149.597454489372      -0.000007066474       0.000059073862
+  @SCF    8     -149.597454489369      -0.000007066474       0.000059073862
   Setting level shift to 0.000 S/E
-  @SCF    9     -149.597454489414      -0.000000000042       0.000000174083
+  @SCF    9     -149.597454489410      -0.000000000042       0.000000174083
   Setting level shift to 0.000 S/E
-  @SCF   10     -149.597454489414      -0.000000000000       0.000000010769
+  @SCF   10     -149.597454489410      -0.000000000000       0.000000010769
   Setting level shift to 0.000 S/E
-  @SCF   11     -149.597454489414      -0.000000000000       0.000000001318
+  @SCF   11     -149.597454489410       0.000000000000       0.000000001318
   Setting level shift to 0.000 S/E
-  @SCF   12     -149.597454489414      -0.000000000000       0.000000000323
+  @SCF   12     -149.597454489410       0.000000000000       0.000000000323
   Setting level shift to 0.000 S/E
-  @SCF   13     -149.597454489414       0.000000000000       0.000000000014
+  @SCF   13     -149.597454489410       0.000000000000       0.000000000014
   Setting level shift to 0.000 S/E
-  @SCF   14     -149.597454489414       0.000000000000       0.000000000001
+  @SCF   14     -149.597454489410      -0.000000000000       0.000000000001
   Setting level shift to 0.000 S/E
-  @SCF   15     -149.597454489414      -0.000000000000       0.000000000000
+  @SCF   15     -149.597454489410      -0.000000000000       0.000000000000
   Setting level shift to 0.000 S/E
-  @SCF   16     -149.597454489414       0.000000000000       0.000000000000
+  @SCF   16     -149.597454489410       0.000000000000       0.000000000000
   =========================================================================================
 
-      * SCF total energy   =    -149.597454489414
+      * SCF total energy   =    -149.597454489410
 
 
   End of SCF
@@ -966,13 +996,13 @@ Total time:
       4     -1.112373 B1u      5     -0.717351  Ag      6     -0.685260 B2u
       7     -0.685260 B3u
   Active orbitals
-      8     -0.224566 B3g      9     -0.224566 B2g
+      8     -0.224566 B2g      9     -0.224566 B3g
   Unoccupied orbitals
      10      0.411354 B1u     11      1.068231 B1u     12      1.111190 B2u
-     13      1.111190 B3u     14      1.174126  Ag     15      1.215127 B3g
-     16      1.215127 B2g     17      1.341321  Ag     18      1.945851 B1u
+     13      1.111190 B3u     14      1.174126  Ag     15      1.215127 B2g
+     16      1.215127 B3g     17      1.341321  Ag     18      1.945851 B1u
      19      2.410660 B3u     20      2.410660 B2u     21      2.707162 B1g
-     22      2.707162  Ag     23      2.986552  Au     24      2.986552 B1u
+     22      2.707162  Ag     23      2.986552 B1u     24      2.986552  Au
      25      3.062529  Ag     26      3.603121 B3g     27      3.603121 B2g
      28      4.187170 B1u
   =========================================================================
@@ -981,23 +1011,23 @@ Total time:
   MCSCF Execution Completed.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:32:15 2016
+*** tstop() called on psinet at Mon May 15 15:38:30 2017
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.72 seconds =       0.01 minutes
-	system time =       0.09 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.15 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   MRCC          MRCC
    MRCC  MRCC  MRCC
    MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009
    MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by
      MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett
-         MRCC            Compiled on Mar  4 2016 at 18:07:05
-         MRCC            id = 6a707c99fd2213714c6c78cfcd145480721f0359 
+         MRCC            Compiled on May 15 2017 at 15:13:06
+         MRCC
        MRCCMRCC
 
   ==============================================================================
@@ -1031,7 +1061,7 @@ Total time:
   ==============================================================================
 
   Allocated work array of size 22504 (0.02 MiB)
-  Allocated buffer array of size 12605120 (12.02 MiB)	Presorting SO-basis two-electron integrals.
+  Allocated buffer array of size 26456664 (25.23 MiB)	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -1042,15 +1072,15 @@ Total time:
 
 
   Presorting two-electron integrals from IWL buffer
-    Memory available                       =      236931268 bytes
-    Memory available for presorting        =      177698451 bytes (75.0%)
+    Memory available                       =      497367724 bytes
+    Memory available for presorting        =      373025793 bytes (75.0%)
     Memory required for in-core presort    =          92072 bytes
     Presorting is not required
-    Reading irreps 0 -> 7 (10415 non-zero integrals)
+    Reading irreps 0 -> 7 (10452 non-zero integrals)
 
   Sorting integrals:
-    Memory available                       =      236924996 bytes
-    Memory available for sorting           =      118462498 bytes (50.0%)
+    Memory available                       =      497361452 bytes
+    Memory available for sorting           =      248680726 bytes (50.0%)
 
     Pass 1:
     Setting up the matrix list: added 480 matrices blocks
@@ -1059,9 +1089,9 @@ Total time:
     Frozen-core energy                     =       -130.067899624
 
   Computing storage strategy:
-    Input memory                           =      250000000 bytes
-    Free memory                            =      236924996 bytes
-    Free memory available for matrices     =      229817246 bytes ( 97%)
+    Input memory                           =      524288000 bytes
+    Free memory                            =      497361452 bytes
+    Free memory available for matrices     =      482440608 bytes ( 97%)
     Memory required by fock matrices       =           4048 bytes
     Memory required by integrals           =        1012232 bytes
     Memory required by other matrices      =        1470128 bytes
@@ -1071,6 +1101,7 @@ Total time:
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [ 0, 0, 1, 1, 0, 0, 0, 0 ] !
+  BASIS_RELATIVISTIC          => (empty)                     
   BENCH                       => 0                           
   CC_NUM_THREADS              => 1                           
   CC_TYPE                     => CONV                        
@@ -1110,11 +1141,12 @@ Total time:
   FROZEN_UOCC                 => [ 0, 0, 0, 0, 0, 0, 0, 0 ] !
   HEFF4                       => TRUE                        
   HEFF_PRINT                  => FALSE                       
-  INTEGRAL_PACKAGE            => ERD                         
+  INTEGRAL_PACKAGE            => LIBINT                      
   LITERAL_CFOUR               => (empty)                     
   LOCK_SINGLET                => FALSE                       
   MAT_NUM_COLUMN_PRINT        => 5                           
   MAXITER                     => 100                         
+  MOLDEN_WITH_VIRTUAL         => TRUE                        
   MP2_CCSD_METHOD             => II                          
   MP2_GUESS                   => TRUE                        
   MP2_TYPE                    => DF                          
@@ -1124,6 +1156,7 @@ Total time:
   NUM_FROZEN_UOCC             => 0                           
   OFFDIAGONAL_CCSD_T          => TRUE                        
   PCM                         => FALSE                       
+  PCM_CC_TYPE                 => PTE                         
   PCM_SCF_TYPE                => TOTAL                       
   PERTURB_CBS                 => FALSE                       
   PERTURB_CBS_COUPLING        => TRUE                        
@@ -1139,10 +1172,8 @@ Total time:
   RAS3                        => [  ]                        
   RAS4                        => [  ]                        
   RELATIVISTIC                => NO                          
-  REL_BASIS                   => (empty)                     
   RESTRICTED_DOCC             => [ 2, 0, 0, 0, 0, 1, 1, 1 ] !
   RESTRICTED_UOCC             => [  ]                        
-  RUN_CCTRANSORT              => TRUE                        
   R_CONVERGENCE               => 1e-10                      !
   SMALL_CUTOFF                => 0                           
   SOCC                        => [  ]                        
@@ -1163,8 +1194,8 @@ Total time:
 
   Heff Matrix
 
-        -149.573785552664         0.023668936751
-           0.023668936751      -149.573785552664
+        -149.573785552660         0.023668936751
+           0.023668936751      -149.573785552660
 
   Left Matrix
 
@@ -1178,23 +1209,23 @@ Total time:
 
   Real                  Imaginary
 
-       -149.597454489414           0.000000000000
-       -149.550116615913           0.000000000000
+       -149.597454489411           0.000000000000
+       -149.550116615909           0.000000000000
 
 
-  The eigenvalue for root 0 is -149.597454489414 (0.000000000000)
+  The eigenvalue for root 0 is -149.597454489411 (0.000000000000)
 
   Heff Matrix
 
-     -149.573785552663509      0.023668936750708
-        0.023668936750708   -149.573785552663509
+     -149.573785552659871      0.023668936750678
+        0.023668936750678   -149.573785552659871
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
             1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
+            0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
 
   ==============================================================================
   	Multireference Coupled Cluster
@@ -1203,45 +1234,45 @@ Total time:
 
   ------------------------------------------------------------------------------
   @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS
-  @CC           (Hartree)       (Hartree)                           (Sec)
+  @CC             [Eh]            [Eh]                               (Sec)
   ------------------------------------------------------------------------------
-  @CC   0   -149.597454489414   0.0000e+00   0.000e+00   0.000e+00       0
+  @CC   0   -149.597454489411   0.0000e+00   0.000e+00   0.000e+00       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   1   -149.991254250434  -3.9380e-01   6.824e-02   4.694e-01       0
+  @CC   1   -149.991254250435  -3.9380e-01   6.824e-02   4.694e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   2   -149.951519993946   3.9734e-02   4.950e-02   1.264e-01       0
+  @CC   2   -149.951519993944   3.9734e-02   4.950e-02   1.264e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   3   -149.973495970079  -2.1976e-02   1.298e-02   3.544e-02       0
+  @CC   3   -149.973495970078  -2.1976e-02   1.298e-02   3.544e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   4   -149.968582438341   4.9135e-03   5.934e-03   1.605e-02       0
+  @CC   4   -149.968582438339   4.9135e-03   5.934e-03   1.605e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   5   -149.970895644557  -2.3132e-03   1.433e-03   5.118e-03       0   S
-  @CC   6   -149.970367407765   5.2824e-04   7.576e-04   3.082e-03       0   S/E
-  @CC   7   -149.970634061123  -2.6665e-04   1.608e-04   1.332e-03       0   S
-  @CC   8   -149.970603176632   3.0884e-05   2.774e-05   9.525e-05       0   S
-  @CC   9   -149.970606477157  -3.3005e-06   9.696e-06   3.493e-05       0   S
-  @CC  10   -149.970602637522   3.8396e-06   1.829e-06   1.783e-05       0   S
-  @CC  11   -149.970602356228   2.8129e-07   1.416e-06   9.694e-06       0   S
-  @CC  12   -149.970601574737   7.8149e-07   4.324e-07   5.555e-06       0   S
-  @CC  13   -149.970601336366   2.3837e-07   3.123e-07   3.205e-06       0   S/E
-  @CC  14   -149.970600897348   4.3902e-07   1.290e-07   1.881e-06       0   S
-  @CC  15   -149.970600902788  -5.4406e-09   2.365e-08   7.083e-08       0   S
-  @CC  16   -149.970600903758  -9.6938e-10   7.256e-09   2.786e-08       0   S
-  @CC  17   -149.970600902969   7.8893e-10   2.395e-09   1.379e-08       0   S
-  @CC  18   -149.970600902993  -2.4585e-11   1.074e-09   7.622e-09       0   S
-  @CC  19   -149.970600902849   1.4390e-10   5.140e-10   4.170e-09       0   S
-  @CC  20   -149.970600902827   2.2538e-11   2.530e-10   2.368e-09       0   S/E
-  @CC  21   -149.970600902765   6.2386e-11   1.308e-10   1.337e-09       0   S
-  @CC  22   -149.970600902760   4.3201e-12   1.837e-11   6.458e-11       0
+  @CC   5   -149.970895644556  -2.3132e-03   1.433e-03   5.118e-03       0   S
+  @CC   6   -149.970367407764   5.2824e-04   7.576e-04   3.082e-03       0   S/E
+  @CC   7   -149.970634061122  -2.6665e-04   1.608e-04   1.332e-03       0   S
+  @CC   8   -149.970603176631   3.0884e-05   2.774e-05   9.525e-05       0   S
+  @CC   9   -149.970606477155  -3.3005e-06   9.696e-06   3.493e-05       0   S
+  @CC  10   -149.970602637521   3.8396e-06   1.829e-06   1.783e-05       0   S
+  @CC  11   -149.970602356227   2.8129e-07   1.416e-06   9.694e-06       0   S
+  @CC  12   -149.970601574735   7.8149e-07   4.324e-07   5.555e-06       0   S
+  @CC  13   -149.970601336364   2.3837e-07   3.123e-07   3.205e-06       0   S/E
+  @CC  14   -149.970600897346   4.3902e-07   1.290e-07   1.881e-06       0   S
+  @CC  15   -149.970600902787  -5.4406e-09   2.365e-08   7.083e-08       0   S
+  @CC  16   -149.970600903756  -9.6938e-10   7.256e-09   2.786e-08       0   S
+  @CC  17   -149.970600902967   7.8893e-10   2.395e-09   1.379e-08       0   S
+  @CC  18   -149.970600902992  -2.4585e-11   1.074e-09   7.622e-09       0   S
+  @CC  19   -149.970600902848   1.4390e-10   5.140e-10   4.170e-09       0   S
+  @CC  20   -149.970600902826   2.2538e-11   2.530e-10   2.368e-09       0   S/E
+  @CC  21   -149.970600902763   6.2386e-11   1.308e-10   1.337e-09       0   S
+  @CC  22   -149.970600902759   4.2917e-12   1.837e-11   6.458e-11       0
   ------------------------------------------------------------------------------
 
-      * Mk-MRCCSD total energy      =    -149.970600902760
+      * Mk-MRCCSD total energy      =    -149.970600902759
 
 
   Heff Matrix
 
-     -149.950110869995711      0.020490032764521
-        0.020490032764521   -149.950110869995711
+     -149.950110869994575      0.020490032764360
+        0.020490032764360   -149.950110869994575
 
   Most important determinants in the wave function
 
@@ -1250,25 +1281,36 @@ Total time:
             0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
             1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
 
-  Timing for singles and doubles:             0.232367 s
+  Timing for singles and doubles:             0.320420 s
 
   PSIMRCC job completed.
-  Wall Time =             0.276120 s
-  GEMM Time =             0.020132 s
+  Wall Time =             0.403696 s
+  GEMM Time =             0.028857 s
 
   ==============================================================================
   Memory Usage Report
 
-  Maximum memory used:     14.8 Mb 
+  Maximum memory used:     28.1 Mb 
   Number of objects still in memory: 0       Current bytes used: 0             
   ==============================================================================
+
+
+Warning! psimrcc does not have an associated derived wavefunction.The returned wavefunction is the incoming reference wavefunction.
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:32:15 2016
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:38:30 2017
 
 
          ------------------------------------------
@@ -1299,42 +1341,42 @@ Total time:
          Cycle          Energy               D(Energy)            D(Density)            DIIS
   ===========================================================================================
   Setting level shift to 0.000 S
-  @SCF    0     -141.679204313784    -141.679204313784       0.109481191352
+  @SCF    0     -141.679204313847    -141.679204313847       0.109481191351
   Setting level shift to 0.000 S
-  @SCF    1     -147.911183977648      -6.231979663864       0.099583270277
+  @SCF    1     -147.911183977684      -6.231979663837       0.099583270277
   Setting level shift to 0.000 S
-  @SCF    2     -149.399763957564      -1.488579979916       0.035271914651
+  @SCF    2     -149.399763957566      -1.488579979882       0.035271914650
   Setting level shift to 0.000 S
-  @SCF    3     -149.570933267521      -0.171169309957       0.014051335553
+  @SCF    3     -149.570933267518      -0.171169309952       0.014051335552
   Setting level shift to 0.000 S
-  @SCF    4     -149.594638597584      -0.023705330063       0.004638956978
+  @SCF    4     -149.594638597580      -0.023705330062       0.004638956978
   Setting level shift to 0.000 S
-  @SCF    5     -149.597581655523      -0.002943057939       0.001761622144
+  @SCF    5     -149.597581655519      -0.002943057939       0.001761622144
   Setting level shift to 0.000 S
-  @SCF    6     -149.597961978739      -0.000380323216       0.000615306452
+  @SCF    6     -149.597961978735      -0.000380323216       0.000615306452
   Setting level shift to 0.000 S/E
-  @SCF    7     -149.598010472996      -0.000048494257       0.000221944785
+  @SCF    7     -149.598010472992      -0.000048494257       0.000221944785
   Setting level shift to 0.000 S/E
-  @SCF    8     -149.598017603716      -0.000007130720       0.000059307868
+  @SCF    8     -149.598017603712      -0.000007130720       0.000059307868
   Setting level shift to 0.000 S/E
-  @SCF    9     -149.598017603758      -0.000000000042       0.000000175240
+  @SCF    9     -149.598017603754      -0.000000000042       0.000000175240
   Setting level shift to 0.000 S/E
-  @SCF   10     -149.598017603758      -0.000000000000       0.000000010983
+  @SCF   10     -149.598017603754      -0.000000000000       0.000000010983
   Setting level shift to 0.000 S/E
-  @SCF   11     -149.598017603758       0.000000000000       0.000000001354
+  @SCF   11     -149.598017603754       0.000000000000       0.000000001354
   Setting level shift to 0.000 S/E
-  @SCF   12     -149.598017603758       0.000000000000       0.000000000331
+  @SCF   12     -149.598017603754       0.000000000000       0.000000000331
   Setting level shift to 0.000 S/E
-  @SCF   13     -149.598017603758      -0.000000000000       0.000000000014
+  @SCF   13     -149.598017603755      -0.000000000000       0.000000000014
   Setting level shift to 0.000 S/E
-  @SCF   14     -149.598017603758      -0.000000000000       0.000000000001
+  @SCF   14     -149.598017603755      -0.000000000000       0.000000000001
   Setting level shift to 0.000 S/E
-  @SCF   15     -149.598017603758       0.000000000000       0.000000000000
+  @SCF   15     -149.598017603755       0.000000000000       0.000000000000
   Setting level shift to 0.000 S/E
-  @SCF   16     -149.598017603758       0.000000000000       0.000000000000
+  @SCF   16     -149.598017603755       0.000000000000       0.000000000000
   =========================================================================================
 
-      * SCF total energy   =    -149.598017603758
+      * SCF total energy   =    -149.598017603755
 
 
   End of SCF
@@ -1352,13 +1394,13 @@ Total time:
       4     -1.111737 B1u      5     -0.717890  Ag      6     -0.685959 B2u
       7     -0.685959 B3u
   Active orbitals
-      8     -0.223830 B2g      9     -0.223830 B3g
+      8     -0.223830 B3g      9     -0.223830 B2g
   Unoccupied orbitals
-     10      0.413652 B1u     11      1.068596 B1u     12      1.111195 B2u
-     13      1.111195 B3u     14      1.173307  Ag     15      1.215191 B2g
-     16      1.215191 B3g     17      1.340706  Ag     18      1.947036 B1u
-     19      2.410131 B2u     20      2.410131 B3u     21      2.706168 B1g
-     22      2.706168  Ag     23      2.987503  Au     24      2.987503 B1u
+     10      0.413652 B1u     11      1.068596 B1u     12      1.111195 B3u
+     13      1.111195 B2u     14      1.173307  Ag     15      1.215191 B3g
+     16      1.215191 B2g     17      1.340706  Ag     18      1.947036 B1u
+     19      2.410131 B2u     20      2.410131 B3u     21      2.706168  Ag
+     22      2.706168 B1g     23      2.987503  Au     24      2.987503 B1u
      25      3.067593  Ag     26      3.606457 B2g     27      3.606457 B3g
      28      4.187502 B1u
   =========================================================================
@@ -1367,23 +1409,23 @@ Total time:
   MCSCF Execution Completed.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:32:15 2016
+*** tstop() called on psinet at Mon May 15 15:38:30 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.05 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.64 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   MRCC          MRCC
    MRCC  MRCC  MRCC
    MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009
    MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by
      MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett
-         MRCC            Compiled on Mar  4 2016 at 18:07:05
-         MRCC            id = 6a707c99fd2213714c6c78cfcd145480721f0359 
+         MRCC            Compiled on May 15 2017 at 15:13:06
+         MRCC
        MRCCMRCC
 
   ==============================================================================
@@ -1417,7 +1459,7 @@ Total time:
   ==============================================================================
 
   Allocated work array of size 22504 (0.02 MiB)
-  Allocated buffer array of size 12605120 (12.02 MiB)	Presorting SO-basis two-electron integrals.
+  Allocated buffer array of size 26456664 (25.23 MiB)	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -1428,15 +1470,15 @@ Total time:
 
 
   Presorting two-electron integrals from IWL buffer
-    Memory available                       =      236931268 bytes
-    Memory available for presorting        =      177698451 bytes (75.0%)
+    Memory available                       =      497367724 bytes
+    Memory available for presorting        =      373025793 bytes (75.0%)
     Memory required for in-core presort    =          92072 bytes
     Presorting is not required
-    Reading irreps 0 -> 7 (10427 non-zero integrals)
+    Reading irreps 0 -> 7 (10420 non-zero integrals)
 
   Sorting integrals:
-    Memory available                       =      236924996 bytes
-    Memory available for sorting           =      118462498 bytes (50.0%)
+    Memory available                       =      497361452 bytes
+    Memory available for sorting           =      248680726 bytes (50.0%)
 
     Pass 1:
     Setting up the matrix list: added 480 matrices blocks
@@ -1445,9 +1487,9 @@ Total time:
     Frozen-core energy                     =       -130.085678370
 
   Computing storage strategy:
-    Input memory                           =      250000000 bytes
-    Free memory                            =      236924996 bytes
-    Free memory available for matrices     =      229817246 bytes ( 97%)
+    Input memory                           =      524288000 bytes
+    Free memory                            =      497361452 bytes
+    Free memory available for matrices     =      482440608 bytes ( 97%)
     Memory required by fock matrices       =           4048 bytes
     Memory required by integrals           =        1012232 bytes
     Memory required by other matrices      =        1470128 bytes
@@ -1457,6 +1499,7 @@ Total time:
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [ 0, 0, 1, 1, 0, 0, 0, 0 ] !
+  BASIS_RELATIVISTIC          => (empty)                     
   BENCH                       => 0                           
   CC_NUM_THREADS              => 1                           
   CC_TYPE                     => CONV                        
@@ -1496,11 +1539,12 @@ Total time:
   FROZEN_UOCC                 => [ 0, 0, 0, 0, 0, 0, 0, 0 ] !
   HEFF4                       => TRUE                        
   HEFF_PRINT                  => FALSE                       
-  INTEGRAL_PACKAGE            => ERD                         
+  INTEGRAL_PACKAGE            => LIBINT                      
   LITERAL_CFOUR               => (empty)                     
   LOCK_SINGLET                => FALSE                       
   MAT_NUM_COLUMN_PRINT        => 5                           
   MAXITER                     => 100                         
+  MOLDEN_WITH_VIRTUAL         => TRUE                        
   MP2_CCSD_METHOD             => II                          
   MP2_GUESS                   => TRUE                        
   MP2_TYPE                    => DF                          
@@ -1510,6 +1554,7 @@ Total time:
   NUM_FROZEN_UOCC             => 0                           
   OFFDIAGONAL_CCSD_T          => TRUE                        
   PCM                         => FALSE                       
+  PCM_CC_TYPE                 => PTE                         
   PCM_SCF_TYPE                => TOTAL                       
   PERTURB_CBS                 => FALSE                       
   PERTURB_CBS_COUPLING        => TRUE                        
@@ -1525,10 +1570,8 @@ Total time:
   RAS3                        => [  ]                        
   RAS4                        => [  ]                        
   RELATIVISTIC                => NO                          
-  REL_BASIS                   => (empty)                     
   RESTRICTED_DOCC             => [ 2, 0, 0, 0, 0, 1, 1, 1 ] !
   RESTRICTED_UOCC             => [  ]                        
-  RUN_CCTRANSORT              => TRUE                        
   R_CONVERGENCE               => 1e-10                      !
   SMALL_CUTOFF                => 0                           
   SOCC                        => [  ]                        
@@ -1549,8 +1592,8 @@ Total time:
 
   Heff Matrix
 
-        -149.574344185779         0.023673417980
-           0.023673417980      -149.574344185779
+        -149.574344185775         0.023673417980
+           0.023673417980      -149.574344185775
 
   Left Matrix
 
@@ -1564,16 +1607,16 @@ Total time:
 
   Real                  Imaginary
 
-       -149.598017603759           0.000000000000
-       -149.550670767799           0.000000000000
+       -149.598017603755           0.000000000000
+       -149.550670767795           0.000000000000
 
 
-  The eigenvalue for root 0 is -149.598017603759 (0.000000000000)
+  The eigenvalue for root 0 is -149.598017603755 (0.000000000000)
 
   Heff Matrix
 
-     -149.574344185778841      0.023673417979716
-        0.023673417979716   -149.574344185778841
+     -149.574344185775061      0.023673417979686
+        0.023673417979686   -149.574344185775061
 
   Most important determinants in the wave function
 
@@ -1589,72 +1632,83 @@ Total time:
 
   ------------------------------------------------------------------------------
   @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS
-  @CC           (Hartree)       (Hartree)                           (Sec)
+  @CC             [Eh]            [Eh]                               (Sec)
   ------------------------------------------------------------------------------
-  @CC   0   -149.598017603759   0.0000e+00   0.000e+00   0.000e+00       0
+  @CC   0   -149.598017603755   0.0000e+00   0.000e+00   0.000e+00       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
   @CC   1   -149.991228845864  -3.9321e-01   6.816e-02   4.685e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   2   -149.951880190078   3.9349e-02   4.923e-02   1.256e-01       0
+  @CC   2   -149.951880190076   3.9349e-02   4.923e-02   1.256e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   3   -149.973651898647  -2.1772e-02   1.286e-02   3.510e-02       0
+  @CC   3   -149.973651898646  -2.1772e-02   1.286e-02   3.510e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   4   -149.968824614341   4.8273e-03   5.869e-03   1.587e-02       0
+  @CC   4   -149.968824614340   4.8273e-03   5.869e-03   1.587e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   5   -149.971100226931  -2.2756e-03   1.410e-03   5.062e-03       0   S
-  @CC   6   -149.970586165249   5.1406e-04   7.456e-04   3.045e-03       0   S/E
-  @CC   7   -149.970848035138  -2.6187e-04   1.577e-04   1.318e-03       0   S
-  @CC   8   -149.970817469148   3.0566e-05   2.745e-05   9.444e-05       0   S
-  @CC   9   -149.970820692067  -3.2229e-06   9.609e-06   3.459e-05       0   S
-  @CC  10   -149.970816914053   3.7780e-06   1.803e-06   1.765e-05       0   S
-  @CC  11   -149.970816625734   2.8832e-07   1.397e-06   9.599e-06       0   S
-  @CC  12   -149.970815857000   7.6873e-07   4.284e-07   5.497e-06       0   S
-  @CC  13   -149.970815619815   2.3718e-07   3.079e-07   3.171e-06       0   S/E
-  @CC  14   -149.970815186847   4.3297e-07   1.277e-07   1.859e-06       0   S
-  @CC  15   -149.970815192406  -5.5591e-09   2.333e-08   6.964e-08       0   S
-  @CC  16   -149.970815193306  -8.9977e-10   7.104e-09   2.734e-08       0   S
-  @CC  17   -149.970815192559   7.4670e-10   2.365e-09   1.352e-08       0   S
-  @CC  18   -149.970815192578  -1.8986e-11   1.058e-09   7.458e-09       0   S
-  @CC  19   -149.970815192441   1.3691e-10   5.067e-10   4.076e-09       0   S
-  @CC  20   -149.970815192419   2.2226e-11   2.490e-10   2.311e-09       0   S/E
-  @CC  21   -149.970815192359   5.9401e-11   1.284e-10   1.303e-09       0   S
-  @CC  22   -149.970815192355   4.2064e-12   1.785e-11   6.251e-11       0
+  @CC   5   -149.971100226930  -2.2756e-03   1.410e-03   5.062e-03       0   S
+  @CC   6   -149.970586165247   5.1406e-04   7.456e-04   3.045e-03       0   S/E
+  @CC   7   -149.970848035137  -2.6187e-04   1.577e-04   1.318e-03       0   S
+  @CC   8   -149.970817469146   3.0566e-05   2.745e-05   9.444e-05       0   S
+  @CC   9   -149.970820692065  -3.2229e-06   9.609e-06   3.459e-05       0   S
+  @CC  10   -149.970816914052   3.7780e-06   1.803e-06   1.765e-05       0   S
+  @CC  11   -149.970816625732   2.8832e-07   1.397e-06   9.599e-06       0   S
+  @CC  12   -149.970815856998   7.6873e-07   4.284e-07   5.497e-06       0   S
+  @CC  13   -149.970815619814   2.3718e-07   3.079e-07   3.171e-06       0   S/E
+  @CC  14   -149.970815186845   4.3297e-07   1.277e-07   1.859e-06       0   S
+  @CC  15   -149.970815192404  -5.5590e-09   2.333e-08   6.964e-08       0   S
+  @CC  16   -149.970815193304  -8.9977e-10   7.104e-09   2.734e-08       0   S
+  @CC  17   -149.970815192557   7.4670e-10   2.365e-09   1.352e-08       0   S
+  @CC  18   -149.970815192576  -1.8986e-11   1.058e-09   7.458e-09       0   S
+  @CC  19   -149.970815192440   1.3688e-10   5.067e-10   4.076e-09       0   S
+  @CC  20   -149.970815192417   2.2254e-11   2.490e-10   2.311e-09       0   S/E
+  @CC  21   -149.970815192358   5.9430e-11   1.284e-10   1.303e-09       0   S
+  @CC  22   -149.970815192354   4.1780e-12   1.785e-11   6.251e-11       0
   ------------------------------------------------------------------------------
 
-      * Mk-MRCCSD total energy      =    -149.970815192355
+      * Mk-MRCCSD total energy      =    -149.970815192354
 
 
   Heff Matrix
 
-     -149.950301400811441      0.020513791543737
-        0.020513791543737   -149.950301400811441
+     -149.950301400810162      0.020513791543576
+        0.020513791543576   -149.950301400810162
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
             0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
+            1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
 
-  Timing for singles and doubles:             0.230971 s
+  Timing for singles and doubles:             0.316688 s
 
   PSIMRCC job completed.
-  Wall Time =             0.274844 s
-  GEMM Time =             0.020210 s
+  Wall Time =             0.402581 s
+  GEMM Time =             0.028864 s
 
   ==============================================================================
   Memory Usage Report
 
-  Maximum memory used:     14.8 Mb 
+  Maximum memory used:     28.1 Mb 
   Number of objects still in memory: 0       Current bytes used: 0             
   ==============================================================================
+
+
+Warning! psimrcc does not have an associated derived wavefunction.The returned wavefunction is the incoming reference wavefunction.
+
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:32:16 2016
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:38:31 2017
 
 
          ------------------------------------------
@@ -1685,42 +1739,42 @@ Total time:
          Cycle          Energy               D(Energy)            D(Density)            DIIS
   ===========================================================================================
   Setting level shift to 0.000 S
-  @SCF    0     -141.697343542362    -141.697343542362       0.109401264900
+  @SCF    0     -141.697343542423    -141.697343542423       0.109401264900
   Setting level shift to 0.000 S
-  @SCF    1     -147.921504711339      -6.224161168977       0.099483250172
+  @SCF    1     -147.921504711374      -6.224161168951       0.099483250171
   Setting level shift to 0.000 S
-  @SCF    2     -149.400230782901      -1.478726071562       0.035144907699
+  @SCF    2     -149.400230782903      -1.478726071529       0.035144907699
   Setting level shift to 0.000 S
-  @SCF    3     -149.570086764443      -0.169855981542       0.013996573217
+  @SCF    3     -149.570086764440      -0.169855981537       0.013996573217
   Setting level shift to 0.000 S
-  @SCF    4     -149.593546128614      -0.023459364171       0.004617568976
+  @SCF    4     -149.593546128610      -0.023459364170       0.004617568976
   Setting level shift to 0.000 S
-  @SCF    5     -149.596454041091      -0.002907912478       0.001751249104
+  @SCF    5     -149.596454041087      -0.002907912478       0.001751249104
   Setting level shift to 0.000 S
-  @SCF    6     -149.596829075395      -0.000375034304       0.000611324774
+  @SCF    6     -149.596829075391      -0.000375034303       0.000611324774
   Setting level shift to 0.000 S/E
-  @SCF    7     -149.596876806609      -0.000047731214       0.000220246839
+  @SCF    7     -149.596876806605      -0.000047731214       0.000220246839
   Setting level shift to 0.000 S/E
-  @SCF    8     -149.596883809566      -0.000007002957       0.000058841401
+  @SCF    8     -149.596883809562      -0.000007002957       0.000058841401
   Setting level shift to 0.000 S/E
-  @SCF    9     -149.596883809607      -0.000000000041       0.000000172932
+  @SCF    9     -149.596883809603      -0.000000000041       0.000000172932
   Setting level shift to 0.000 S/E
-  @SCF   10     -149.596883809607      -0.000000000000       0.000000010559
+  @SCF   10     -149.596883809604      -0.000000000000       0.000000010559
   Setting level shift to 0.000 S/E
-  @SCF   11     -149.596883809607       0.000000000000       0.000000001282
+  @SCF   11     -149.596883809603       0.000000000000       0.000000001282
   Setting level shift to 0.000 S/E
-  @SCF   12     -149.596883809607       0.000000000000       0.000000000315
+  @SCF   12     -149.596883809603       0.000000000000       0.000000000315
   Setting level shift to 0.000 S/E
-  @SCF   13     -149.596883809607      -0.000000000000       0.000000000013
+  @SCF   13     -149.596883809603       0.000000000000       0.000000000013
   Setting level shift to 0.000 S/E
-  @SCF   14     -149.596883809607       0.000000000000       0.000000000001
+  @SCF   14     -149.596883809603      -0.000000000000       0.000000000001
   Setting level shift to 0.000 S/E
-  @SCF   15     -149.596883809607      -0.000000000000       0.000000000000
+  @SCF   15     -149.596883809604      -0.000000000000       0.000000000000
   Setting level shift to 0.000 S/E
-  @SCF   16     -149.596883809607       0.000000000000       0.000000000000
+  @SCF   16     -149.596883809603       0.000000000000       0.000000000000
   =========================================================================================
 
-      * SCF total energy   =    -149.596883809607
+      * SCF total energy   =    -149.596883809603
 
 
   End of SCF
@@ -1735,17 +1789,17 @@ Total time:
   -------------------------------------------------------------------------
   Doubly occupied orbitals
       1    -20.736006  Ag      2    -20.735208 B1u      3     -1.616180  Ag
-      4     -1.113007 B1u      5     -0.716811  Ag      6     -0.684565 B3u
-      7     -0.684565 B2u
+      4     -1.113007 B1u      5     -0.716811  Ag      6     -0.684565 B2u
+      7     -0.684565 B3u
   Active orbitals
-      8     -0.225299 B3g      9     -0.225299 B2g
+      8     -0.225299 B2g      9     -0.225299 B3g
   Unoccupied orbitals
      10      0.409061 B1u     11      1.067876 B1u     12      1.111181 B2u
      13      1.111181 B3u     14      1.174938  Ag     15      1.215064 B3g
      16      1.215064 B2g     17      1.341943  Ag     18      1.944672 B1u
-     19      2.411205 B2u     20      2.411205 B3u     21      2.708153 B1g
+     19      2.411205 B3u     20      2.411205 B2u     21      2.708153 B1g
      22      2.708153  Ag     23      2.985606 B1u     24      2.985606  Au
-     25      3.057480  Ag     26      3.599790 B2g     27      3.599790 B3g
+     25      3.057480  Ag     26      3.599790 B3g     27      3.599790 B2g
      28      4.186828 B1u
   =========================================================================
 
@@ -1753,23 +1807,23 @@ Total time:
   MCSCF Execution Completed.
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:32:16 2016
+*** tstop() called on psinet at Mon May 15 15:38:31 2017
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.38 seconds =       0.02 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.14 seconds =       0.04 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
   MRCC          MRCC
    MRCC  MRCC  MRCC
    MRCC  MRCC  MRCC      PSIMRCC Version 0.9.3.3, July 2009
    MRCC  MRCC  MRCC      Multireference Coupled Cluster, written by
      MRCCMRCCMRCC        Francesco A. Evangelista and Andrew C. Simmonett
-         MRCC            Compiled on Mar  4 2016 at 18:07:05
-         MRCC            id = 6a707c99fd2213714c6c78cfcd145480721f0359 
+         MRCC            Compiled on May 15 2017 at 15:13:06
+         MRCC
        MRCCMRCC
 
   ==============================================================================
@@ -1803,7 +1857,7 @@ Total time:
   ==============================================================================
 
   Allocated work array of size 22504 (0.02 MiB)
-  Allocated buffer array of size 12605120 (12.02 MiB)	Presorting SO-basis two-electron integrals.
+  Allocated buffer array of size 26456664 (25.23 MiB)	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
 	Transforming the one-electron integrals and constructing Fock matrices
 	Starting first half-transformation.
@@ -1814,15 +1868,15 @@ Total time:
 
 
   Presorting two-electron integrals from IWL buffer
-    Memory available                       =      236931268 bytes
-    Memory available for presorting        =      177698451 bytes (75.0%)
+    Memory available                       =      497367724 bytes
+    Memory available for presorting        =      373025793 bytes (75.0%)
     Memory required for in-core presort    =          92072 bytes
     Presorting is not required
-    Reading irreps 0 -> 7 (10442 non-zero integrals)
+    Reading irreps 0 -> 7 (10390 non-zero integrals)
 
   Sorting integrals:
-    Memory available                       =      236924996 bytes
-    Memory available for sorting           =      118462498 bytes (50.0%)
+    Memory available                       =      497361452 bytes
+    Memory available for sorting           =      248680726 bytes (50.0%)
 
     Pass 1:
     Setting up the matrix list: added 480 matrices blocks
@@ -1831,9 +1885,9 @@ Total time:
     Frozen-core energy                     =       -130.050174048
 
   Computing storage strategy:
-    Input memory                           =      250000000 bytes
-    Free memory                            =      236924996 bytes
-    Free memory available for matrices     =      229817246 bytes ( 97%)
+    Input memory                           =      524288000 bytes
+    Free memory                            =      497361452 bytes
+    Free memory available for matrices     =      482440608 bytes ( 97%)
     Memory required by fock matrices       =           4048 bytes
     Memory required by integrals           =        1012232 bytes
     Memory required by other matrices      =        1470128 bytes
@@ -1843,6 +1897,7 @@ Total time:
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [ 0, 0, 1, 1, 0, 0, 0, 0 ] !
+  BASIS_RELATIVISTIC          => (empty)                     
   BENCH                       => 0                           
   CC_NUM_THREADS              => 1                           
   CC_TYPE                     => CONV                        
@@ -1882,11 +1937,12 @@ Total time:
   FROZEN_UOCC                 => [ 0, 0, 0, 0, 0, 0, 0, 0 ] !
   HEFF4                       => TRUE                        
   HEFF_PRINT                  => FALSE                       
-  INTEGRAL_PACKAGE            => ERD                         
+  INTEGRAL_PACKAGE            => LIBINT                      
   LITERAL_CFOUR               => (empty)                     
   LOCK_SINGLET                => FALSE                       
   MAT_NUM_COLUMN_PRINT        => 5                           
   MAXITER                     => 100                         
+  MOLDEN_WITH_VIRTUAL         => TRUE                        
   MP2_CCSD_METHOD             => II                          
   MP2_GUESS                   => TRUE                        
   MP2_TYPE                    => DF                          
@@ -1896,6 +1952,7 @@ Total time:
   NUM_FROZEN_UOCC             => 0                           
   OFFDIAGONAL_CCSD_T          => TRUE                        
   PCM                         => FALSE                       
+  PCM_CC_TYPE                 => PTE                         
   PCM_SCF_TYPE                => TOTAL                       
   PERTURB_CBS                 => FALSE                       
   PERTURB_CBS_COUPLING        => TRUE                        
@@ -1911,10 +1968,8 @@ Total time:
   RAS3                        => [  ]                        
   RAS4                        => [  ]                        
   RELATIVISTIC                => NO                          
-  REL_BASIS                   => (empty)                     
   RESTRICTED_DOCC             => [ 2, 0, 0, 0, 0, 1, 1, 1 ] !
   RESTRICTED_UOCC             => [  ]                        
-  RUN_CCTRANSORT              => TRUE                        
   R_CONVERGENCE               => 1e-10                      !
   SMALL_CUTOFF                => 0                           
   SOCC                        => [  ]                        
@@ -1935,8 +1990,8 @@ Total time:
 
   Heff Matrix
 
-        -149.573219371444         0.023664438163
-           0.023664438163      -149.573219371444
+        -149.573219371441         0.023664438163
+           0.023664438163      -149.573219371441
 
   Left Matrix
 
@@ -1950,16 +2005,16 @@ Total time:
 
   Real                  Imaginary
 
-       -149.596883809607           0.000000000000
-       -149.549554933281           0.000000000000
+       -149.596883809604           0.000000000000
+       -149.549554933278           0.000000000000
 
 
-  The eigenvalue for root 0 is -149.596883809607 (0.000000000000)
+  The eigenvalue for root 0 is -149.596883809604 (0.000000000000)
 
   Heff Matrix
 
-     -149.573219371444196      0.023664438163004
-        0.023664438163004   -149.573219371444196
+     -149.573219371440558      0.023664438162974
+        0.023664438162974   -149.573219371440558
 
   Most important determinants in the wave function
 
@@ -1975,65 +2030,69 @@ Total time:
 
   ------------------------------------------------------------------------------
   @CC Cycle      Energy          Delta E    ||DeltaT1|| ||DeltaT2|| Timing  DIIS
-  @CC           (Hartree)       (Hartree)                           (Sec)
+  @CC             [Eh]            [Eh]                               (Sec)
   ------------------------------------------------------------------------------
-  @CC   0   -149.596883809607   0.0000e+00   0.000e+00   0.000e+00       0
+  @CC   0   -149.596883809604   0.0000e+00   0.000e+00   0.000e+00       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
   @CC   1   -149.991273279717  -3.9439e-01   6.832e-02   4.703e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   2   -149.951151107561   4.0122e-02   4.976e-02   1.271e-01       0
+  @CC   2   -149.951151107559   4.0122e-02   4.976e-02   1.271e-01       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   3   -149.973333251679  -2.2182e-02   1.309e-02   3.579e-02       0
+  @CC   3   -149.973333251678  -2.2182e-02   1.309e-02   3.579e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   4   -149.968332275160   5.0010e-03   6.000e-03   1.623e-02       0
+  @CC   4   -149.968332275159   5.0010e-03   6.000e-03   1.623e-02       0
   Tikhonow regularization turned on.  Omega = 0.000e+00   S
-  @CC   5   -149.970683719224  -2.3514e-03   1.456e-03   5.175e-03       0   S
-  @CC   6   -149.970140996942   5.4272e-04   7.699e-04   3.120e-03       0   S/E
-  @CC   7   -149.970412540228  -2.7154e-04   1.640e-04   1.345e-03       0   S
-  @CC   8   -149.970381337327   3.1203e-05   2.803e-05   9.607e-05       0   S
-  @CC   9   -149.970384716457  -3.3791e-06   9.783e-06   3.529e-05       0   S
-  @CC  10   -149.970380814517   3.9019e-06   1.856e-06   1.802e-05       0   S
-  @CC  11   -149.970380540582   2.7393e-07   1.435e-06   9.790e-06       0   S
-  @CC  12   -149.970379746156   7.9443e-07   4.364e-07   5.613e-06       0   S
-  @CC  13   -149.970379506662   2.3949e-07   3.167e-07   3.239e-06       0   S/E
-  @CC  14   -149.970379061560   4.4510e-07   1.302e-07   1.902e-06       0   S
-  @CC  15   -149.970379066872  -5.3116e-09   2.398e-08   7.204e-08       0   S
-  @CC  16   -149.970379067915  -1.0433e-09   7.412e-09   2.840e-08       0   S
-  @CC  17   -149.970379067082   8.3304e-10   2.426e-09   1.407e-08       0   S
-  @CC  18   -149.970379067113  -3.0724e-11   1.091e-09   7.789e-09       0   S
-  @CC  19   -149.970379066962   1.5120e-10   5.214e-10   4.265e-09       0   S
-  @CC  20   -149.970379066939   2.2851e-11   2.571e-10   2.427e-09       0   S/E
-  @CC  21   -149.970379066873   6.5484e-11   1.331e-10   1.372e-09       0   S
-  @CC  22   -149.970379066869   4.3769e-12   1.889e-11   6.670e-11       0
+  @CC   5   -149.970683719222  -2.3514e-03   1.456e-03   5.175e-03       0   S
+  @CC   6   -149.970140996941   5.4272e-04   7.699e-04   3.120e-03       0   S/E
+  @CC   7   -149.970412540226  -2.7154e-04   1.640e-04   1.345e-03       0   S
+  @CC   8   -149.970381337326   3.1203e-05   2.803e-05   9.607e-05       0   S
+  @CC   9   -149.970384716456  -3.3791e-06   9.783e-06   3.529e-05       0   S
+  @CC  10   -149.970380814516   3.9019e-06   1.856e-06   1.802e-05       0   S
+  @CC  11   -149.970380540581   2.7393e-07   1.435e-06   9.790e-06       0   S
+  @CC  12   -149.970379746155   7.9443e-07   4.364e-07   5.613e-06       0   S
+  @CC  13   -149.970379506660   2.3949e-07   3.167e-07   3.239e-06       0   S/E
+  @CC  14   -149.970379061559   4.4510e-07   1.302e-07   1.902e-06       0   S
+  @CC  15   -149.970379066871  -5.3116e-09   2.398e-08   7.204e-08       0   S
+  @CC  16   -149.970379067914  -1.0433e-09   7.412e-09   2.840e-08       0   S
+  @CC  17   -149.970379067081   8.3304e-10   2.426e-09   1.407e-08       0   S
+  @CC  18   -149.970379067112  -3.0724e-11   1.091e-09   7.789e-09       0   S
+  @CC  19   -149.970379066960   1.5120e-10   5.214e-10   4.265e-09       0   S
+  @CC  20   -149.970379066938   2.2823e-11   2.571e-10   2.427e-09       0   S/E
+  @CC  21   -149.970379066872   6.5512e-11   1.331e-10   1.372e-09       0   S
+  @CC  22   -149.970379066868   4.3769e-12   1.889e-11   6.670e-11       0
   ------------------------------------------------------------------------------
 
-      * Mk-MRCCSD total energy      =    -149.970379066869
+      * Mk-MRCCSD total energy      =    -149.970379066868
 
 
   Heff Matrix
 
-     -149.949912905869098      0.020466160999933
-        0.020466160999933   -149.949912905869098
+     -149.949912905867961      0.020466160999771
+        0.020466160999771   -149.949912905867961
 
   Most important determinants in the wave function
 
   determinant  eigenvector   eigenvector^2
 
-            0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
             1    0.707107     0.500000  |[22][][+][-][][2][2][2]>
+            0   -0.707107     0.500000  |[22][][-][+][][2][2][2]>
 
-  Timing for singles and doubles:             0.225783 s
+  Timing for singles and doubles:             0.309889 s
 
   PSIMRCC job completed.
-  Wall Time =             0.269386 s
-  GEMM Time =             0.019860 s
+  Wall Time =             0.382141 s
+  GEMM Time =             0.026797 s
 
   ==============================================================================
   Memory Usage Report
 
-  Maximum memory used:     14.8 Mb 
+  Maximum memory used:     28.1 Mb 
   Number of objects still in memory: 0       Current bytes used: 0             
   ==============================================================================
+
+
+Warning! psimrcc does not have an associated derived wavefunction.The returned wavefunction is the incoming reference wavefunction.
+
 
 -------------------------------------------------------------
 
@@ -2053,10 +2112,10 @@ Total time:
 	  Irrep      Harmonic Frequency   
 	                  (cm-1)          
 	-----------------------------------------------
-	     Ag         1401.8119  
+	     Ag         1401.8120  
 	-----------------------------------------------
 
-	Normal Modes (mass-weighted).
+	Normal Modes (non-mass-weighted).
 	Molecular mass is   31.98983 amu.
 	Frequencies in cm^-1; force constants in au.
 
@@ -2070,47 +2129,85 @@ Total time:
 
  #  #
  Irrep: 1
-      1: 1401.8119024
+      1: 1401.8119524
 
 
             *********************************************
             * Thermodynamic Analysis by R.A. King, 2012 *
             *********************************************
 
-    Full point group: D_inf_h (D_inf_h)
+  ==> Inputs to Thermochemistry <==
 
-    Data used to determine thermochemical information:
-    Temperature (K):          298.15
-    Pressure (Pa)  :       101325.00
-    Multiplicity   :               3
-    Rotor type     :          LINEAR
-    Rotational symmetry number :   2
+  Temperature:                       298.15 [K]
+  Pressure:                       101325.00 [Pa]
+  Multiplicity:                           3
+  Full point group:                 D_inf_h (D_inf_h)
+  Rotor type:                        LINEAR
+  Rotational symmetry no.:                2
 
-    Rotational constants:
-           wavenumbers          GHz
+  No.    Vib. Freq. [cm^-1]      Vib. Temp. [K]
+    1              1401.812            2016.892
 
-    Nuclear masses:
-         15.994915 15.994915
+  ==> Components <==
 
-    No.    Vib. Freq. (cm^-1)      Vib. Temp. (K)
-      1              1401.812            2016.892
+  Entropy, S
+    Electronic S          2.183 [cal/(mol K)]       9.134 [J/(mol K)]      0.00347910 [mEh/K] (multiplicity = 3)
+    Translational S      36.321 [cal/(mol K)]     151.966 [J/(mol K)]      0.05788067 [mEh/K] (mol. weight = 31.9898 [u], P = 101325.00 [Pa])
+    Rotational S         10.619 [cal/(mol K)]      44.431 [J/(mol K)]      0.01692274 [mEh/K] (symmetry no. = 2)
+    Vibrational S         0.018 [cal/(mol K)]       0.075 [J/(mol K)]      0.00002840 [mEh/K]
+  Total S                49.141 [cal/(mol K)]     205.605 [J/(mol K)]      0.07831091 [mEh/K]
 
-    Component        Thermal Energy             Cv              S
-                           kcal/mol    cal/(mol K)    cal/(mol K) 
-    Electronic                0.000          0.000          2.183
-    Translational             0.889          2.981         36.321
-    Rotational                0.592          1.987         10.619
-    Vibrational               2.009          0.105          0.018
-    Total                     3.490          5.073         49.141
+  Constant volume heat capacity, Cv
+    Electronic Cv         0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K]
+    Translational Cv      2.981 [cal/(mol K)]      12.472 [J/(mol K)]      0.00475022 [mEh/K]
+    Rotational Cv         1.987 [cal/(mol K)]       8.314 [J/(mol K)]      0.00316681 [mEh/K]
+    Vibrational Cv        0.105 [cal/(mol K)]       0.440 [J/(mol K)]      0.00016759 [mEh/K]
+  Total Cv                5.073 [cal/(mol K)]      21.226 [J/(mol K)]      0.00808463 [mEh/K]
 
-                               cm^(-1)              au        kcal/mol
-    Zero-point energy         700.9060      0.00319356          2.0040
+  Constant pressure heat capacity, Cp
+    Electronic Cp         0.000 [cal/(mol K)]       0.000 [J/(mol K)]      0.00000000 [mEh/K]
+    Translational Cp      4.968 [cal/(mol K)]      20.786 [J/(mol K)]      0.00791704 [mEh/K]
+    Rotational Cp         1.987 [cal/(mol K)]       8.314 [J/(mol K)]      0.00316681 [mEh/K]
+    Vibrational Cp        0.105 [cal/(mol K)]       0.440 [J/(mol K)]      0.00016759 [mEh/K]
+  Total Cp                7.060 [cal/(mol K)]      29.541 [J/(mol K)]      0.01125144 [mEh/K]
 
-    Energies in Hartree/particle:   Correction            Total
-    Energy (0 K)                    0.00319356    -149.59369025
-    Internal energy                 0.00556141    -149.59132240
-    Enthalpy                        0.00650559    -149.59037822
-    Gibbs Free Energy              -0.01684281    -149.61372662
+  ==> Energy Analysis <== 
+
+  Raw electronic energy, E0
+  Total E0, Electronic energy at well bottom at 0 [K]             -149.97037907 [Eh]
+
+  Zero-point energy, ZPE_vib = Sum_i nu_i / 2
+    Electronic ZPE        0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Translational ZPE     0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Rotational ZPE        0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Vibrational ZPE       2.004 [kcal/mol]       8.385 [kJ/mol]      0.00319356 [Eh]         700.906 [cm^-1]
+    Correction ZPE        2.004 [kcal/mol]       8.385 [kJ/mol]      0.00319356 [Eh]         700.906 [cm^-1]
+  Total ZPE, Electronic energy at 0 [K]                           -149.96718550 [Eh]
+
+  Thermal Energy, E (includes ZPE)
+    Electronic E          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Translational E       0.889 [kcal/mol]       3.718 [kJ/mol]      0.00141628 [Eh]
+    Rotational E          0.592 [kcal/mol]       2.479 [kJ/mol]      0.00094419 [Eh]
+    Vibrational E         2.009 [kcal/mol]       8.404 [kJ/mol]      0.00320094 [Eh]
+  Correction E            3.490 [kcal/mol]      14.601 [kJ/mol]      0.00556140 [Eh]
+  Total E, Electronic energy at  298.15 [K]                       -149.96481766 [Eh]
+
+  Enthalpy, H_trans = E_trans + k_B * T
+    Electronic H          0.000 [kcal/mol]       0.000 [kJ/mol]      0.00000000 [Eh]
+    Translational H       1.481 [kcal/mol]       6.197 [kJ/mol]      0.00236046 [Eh]
+    Rotational H          0.592 [kcal/mol]       2.479 [kJ/mol]      0.00094419 [Eh]
+    Vibrational H         2.009 [kcal/mol]       8.404 [kJ/mol]      0.00320094 [Eh]
+  Correction H            4.082 [kcal/mol]      17.080 [kJ/mol]      0.00650559 [Eh]
+  Total H, Enthalpy at  298.15 [K]                                -149.96387348 [Eh]
+
+  Gibbs free energy, G = H - T * S
+    Electronic G         -0.651 [kcal/mol]      -2.723 [kJ/mol]     -0.00103729 [Eh]
+    Translational G      -9.348 [kcal/mol]     -39.111 [kJ/mol]     -0.01489666 [Eh]
+    Rotational G         -2.574 [kcal/mol]     -10.768 [kJ/mol]     -0.00410133 [Eh]
+    Vibrational G         2.003 [kcal/mol]       8.382 [kJ/mol]      0.00319247 [Eh]
+  Correction G          -10.569 [kcal/mol]     -44.221 [kJ/mol]     -0.01684281 [Eh]
+  Total G, Free enthalpy at  298.15 [K]                           -149.98722188 [Eh]
+
 	Frequency test:...................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

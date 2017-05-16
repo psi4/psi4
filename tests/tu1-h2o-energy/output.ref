@@ -1,34 +1,37 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:12:41 2016
+    Psi4 started on: Monday, 15 May 2017 03:33PM
 
-    Process ID:   7270
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  12103
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
 # Any line starting with the # character is a comment line
 #! Sample HF/cc-pVDZ H2O computation
 
-memory 250 mb
+memory 600 mb
 
 molecule h2o {
   O 
@@ -44,20 +47,28 @@ compare_csx()  #TEST
 
 --------------------------------------------------------------------------
 
-  Memory set to 250.000 MiB by Python script.
+  Memory set to 572.205 MiB by Python driver.
+
+*** tstart() called on psinet
+*** at Mon May 15 15:33:56 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
-
-
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:41 2016
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    250 MiB Core
+                        1 Threads,    572 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -77,7 +88,7 @@ compare_csx()  #TEST
 
   Rotational constants: A =     27.26297  B =     14.51533  C =      9.47217 [cm^-1]
   Rotational constants: A = 817323.20514  B = 435158.59817  C = 283968.37324 [MHz]
-  Nuclear repulsion =    9.168193260387572
+  Nuclear repulsion =    9.168193260387573
 
   Charge       = 0
   Multiplicity = 1
@@ -91,7 +102,7 @@ compare_csx()  #TEST
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
-  Guess Type is CORE.
+  Guess Type is SAD.
   Energy threshold   = 1.00e-06
   Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
@@ -99,11 +110,20 @@ compare_csx()  #TEST
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -127,7 +147,7 @@ compare_csx()  #TEST
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               178
+    Memory (MB):               429
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -135,7 +155,8 @@ compare_csx()  #TEST
 
    => Auxiliary Basis Set <=
 
-  Basis Set: 
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 116
     Number of Cartesian functions: 131
@@ -144,30 +165,22 @@ compare_csx()  #TEST
 
   Minimum eigenvalue in the overlap matrix is 3.4377086883E-02.
   Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    0,    2 ]
-
-   @DF-RHF iter   1:   -68.87679589143508   -6.88768e+01   2.24865e-01 
-    Occupation by irrep:
-             A1    A2    B1    B2 
-    DOCC [     3,    0,    1,    1 ]
-
-   @DF-RHF iter   2:   -69.94739928772678   -1.07060e+00   1.83983e-01 DIIS
-   @DF-RHF iter   3:   -75.73846363254631   -5.79106e+00   6.30960e-02 DIIS
-   @DF-RHF iter   4:   -76.00166118148643   -2.63198e-01   1.71040e-02 DIIS
-   @DF-RHF iter   5:   -76.02634573488037   -2.46846e-02   1.53954e-03 DIIS
-   @DF-RHF iter   6:   -76.02659024803164   -2.44513e-04   6.83100e-04 DIIS
-   @DF-RHF iter   7:   -76.02663102295007   -4.07749e-05   9.57609e-05 DIIS
-   @DF-RHF iter   8:   -76.02663264436282   -1.62141e-06   3.21842e-05 DIIS
-   @DF-RHF iter   9:   -76.02663273410616   -8.97433e-08   1.86418e-06 DIIS
-   @DF-RHF iter  10:   -76.02663273485712   -7.50958e-10   6.68973e-07 DIIS
+   @DF-RHF iter   0:   -76.03049623797784   -7.60305e+01   1.22323e-01 
+   @DF-RHF iter   1:   -75.97804245024133    5.24538e-02   2.36811e-02 
+   @DF-RHF iter   2:   -76.01631130967900   -3.82689e-02   1.20982e-02 DIIS
+   @DF-RHF iter   3:   -76.02598593531496   -9.67463e-03   1.99651e-03 DIIS
+   @DF-RHF iter   4:   -76.02658147942525   -5.95544e-04   5.26898e-04 DIIS
+   @DF-RHF iter   5:   -76.02663115167121   -4.96722e-05   8.13580e-05 DIIS
+   @DF-RHF iter   6:   -76.02663267569983   -1.52403e-06   1.50869e-05 DIIS
+   @DF-RHF iter   7:   -76.02663273269354   -5.69937e-08   2.76959e-06 DIIS
+   @DF-RHF iter   8:   -76.02663273485861   -2.16507e-09   4.42054e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -176,18 +189,18 @@ compare_csx()  #TEST
 
     Doubly Occupied:                                                      
 
-       1A1   -20.550926     2A1    -1.335311     1B2    -0.697803  
-       3A1    -0.566087     1B1    -0.492948  
+       1A1   -20.550924     2A1    -1.335311     1B2    -0.697803  
+       3A1    -0.566086     1B1    -0.492948  
 
     Virtual:                                                              
 
-       4A1     0.185107     2B2     0.255846     3B2     0.787336  
-       5A1     0.851825     6A1     1.163855     2B1     1.200424  
-       4B2     1.253573     7A1     1.445290     1A2     1.476011  
-       3B1     1.674661     8A1     1.868110     5B2     1.932579  
-       6B2     2.446529     9A1     2.483816     4B1     3.283957  
-       2A2     3.336669    10A1     3.507634    11A1     3.863420  
-       7B2     4.144759  
+       4A1     0.185107     2B2     0.255846     3B2     0.787337  
+       5A1     0.851826     6A1     1.163856     2B1     1.200425  
+       4B2     1.253574     7A1     1.445291     1A2     1.476011  
+       3B1     1.674661     8A1     1.868111     5B2     1.932579  
+       6B2     2.446530     9A1     2.483817     4B1     3.283958  
+       2A2     3.336670    10A1     3.507634    11A1     3.863421  
+       7B2     4.144760  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -195,24 +208,22 @@ compare_csx()  #TEST
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.02663273485712
+  @DF-RHF Final Energy:   -76.02663273485861
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1681932603875715
-    One-Electron Energy =                -123.1034719815359466
-    Two-Electron Energy =                  37.9086459862912477
+    Nuclear Repulsion Energy =              9.1681932603875733
+    One-Electron Energy =                -123.1035066557758455
+    Two-Electron Energy =                  37.9086806605296616
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0266327348571309
+    Total Energy =                        -76.0266327348586231
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -229,17 +240,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0595     Total:     2.0595
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:41 2016
+*** tstop() called on psinet at Mon May 15 15:33:56 2017
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 	SCF energy........................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!

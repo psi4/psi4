@@ -1,27 +1,30 @@
+
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                              Psi4 0.5 Driver
+                               Psi4 1.1rc3.dev5 
 
-                          Git: Rev {master} dbe9080
+                         Git: Rev {master} 3fbd859 
 
-    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
-    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
-    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
-    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
-    (doi: 10.1002/wcms.93)
 
-                         Additional Contributions by
-    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Mon Mar 14 15:12:47 2016
+    Psi4 started on: Monday, 15 May 2017 03:35PM
 
-    Process ID:   7304
-    PSI4DATADIR: /home/dsmith/Gits/dgas_psi/share
-    Memory level set to 256.000 MB
-
+    Process ID:  13878
+    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
   ==> Input File <==
 
 --------------------------------------------------------------------------
@@ -34,8 +37,6 @@ ref_vals = [                                                             #TEST
            ]                                                             #TEST
 ref = psi4.Matrix(3, 3)                                                #TEST
 ref.set(ref_vals)
-
-memory 256 mb
 
 molecule h2o {
 0 1
@@ -61,19 +62,25 @@ compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 
 
 --------------------------------------------------------------------------
-
-  Memory set to 256.000 MiB by Python script.
 gradient() will perform analytic gradient computation.
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:48 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:46 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -93,7 +100,7 @@ gradient() will perform analytic gradient computation.
 
   Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
   Rotational constants: A = 820325.16776  B = 437109.76453  C = 285161.58706 [MHz]
-  Nuclear repulsion =    9.187386421477591
+  Nuclear repulsion =    9.187386421477592
 
   Charge       = 0
   Multiplicity = 1
@@ -115,11 +122,20 @@ gradient() will perform analytic gradient computation.
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
     Number of shells: 12
     Number of basis function: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -140,7 +156,7 @@ gradient() will perform analytic gradient computation.
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               183
+    Memory (MB):               375
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
@@ -149,6 +165,7 @@ gradient() will perform analytic gradient computation.
    => Auxiliary Basis Set <=
 
   Basis Set: CC-PVDZ-JKFIT
+    Blend: CC-PVDZ-JKFIT
     Number of shells: 42
     Number of basis function: 116
     Number of Cartesian functions: 131
@@ -157,27 +174,28 @@ gradient() will perform analytic gradient computation.
 
   Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
   Using Symmetric Orthogonalization.
+
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.96970695061836   -7.59697e+01   7.01137e-02 
-   @DF-RHF iter   1:   -75.99764741191919   -2.79405e-02   1.08140e-02 
-   @DF-RHF iter   2:   -76.02043963235138   -2.27922e-02   5.24242e-03 DIIS
-   @DF-RHF iter   3:   -76.02620415733969   -5.76452e-03   9.36719e-04 DIIS
-   @DF-RHF iter   4:   -76.02665836113431   -4.54204e-04   2.89900e-04 DIIS
-   @DF-RHF iter   5:   -76.02673312131520   -7.47602e-05   7.71658e-05 DIIS
-   @DF-RHF iter   6:   -76.02674002710987   -6.90579e-06   1.18995e-05 DIIS
-   @DF-RHF iter   7:   -76.02674017763462   -1.50525e-07   1.52697e-06 DIIS
-   @DF-RHF iter   8:   -76.02674017967550   -2.04088e-09   3.53330e-07 DIIS
-   @DF-RHF iter   9:   -76.02674017978282   -1.07320e-10   6.47099e-08 DIIS
-   @DF-RHF iter  10:   -76.02674017978606   -3.24007e-12   1.54950e-08 DIIS
-   @DF-RHF iter  11:   -76.02674017978626   -1.98952e-13   2.39343e-09 DIIS
-   @DF-RHF iter  12:   -76.02674017978634   -8.52651e-14   5.22952e-10 DIIS
-   @DF-RHF iter  13:   -76.02674017978620    1.42109e-13   1.45731e-10 DIIS
-   @DF-RHF iter  14:   -76.02674017978623   -2.84217e-14   3.92174e-11 DIIS
+   @DF-RHF iter   0:   -76.05124131707881   -7.60512e+01   7.05721e-02 
+   @DF-RHF iter   1:   -75.98268109612502    6.85602e-02   1.27030e-02 
+   @DF-RHF iter   2:   -76.01796198002032   -3.52809e-02   6.22730e-03 DIIS
+   @DF-RHF iter   3:   -76.02598528615204   -8.02331e-03   1.19025e-03 DIIS
+   @DF-RHF iter   4:   -76.02666667525563   -6.81389e-04   3.27864e-04 DIIS
+   @DF-RHF iter   5:   -76.02673656003468   -6.98848e-05   6.32151e-05 DIIS
+   @DF-RHF iter   6:   -76.02673999414142   -3.43411e-06   1.35687e-05 DIIS
+   @DF-RHF iter   7:   -76.02674017093882   -1.76797e-07   2.91763e-06 DIIS
+   @DF-RHF iter   8:   -76.02674017941325   -8.47443e-09   6.56497e-07 DIIS
+   @DF-RHF iter   9:   -76.02674017977012   -3.56863e-10   1.32813e-07 DIIS
+   @DF-RHF iter  10:   -76.02674017978481   -1.46940e-11   2.89913e-08 DIIS
+   @DF-RHF iter  11:   -76.02674017978538   -5.68434e-13   3.61026e-09 DIIS
+   @DF-RHF iter  12:   -76.02674017978532    5.68434e-14   7.95216e-10 DIIS
+   @DF-RHF iter  13:   -76.02674017978543   -1.13687e-13   2.65575e-10 DIIS
+   @DF-RHF iter  14:   -76.02674017978541    2.84217e-14   6.55463e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -205,24 +223,22 @@ gradient() will perform analytic gradient computation.
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.02674017978623
+  @DF-RHF Final Energy:   -76.02674017978541
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1873864214775907
-    One-Electron Energy =                -123.1375342600149168
-    Two-Electron Energy =                  37.9234076587511026
+    Nuclear Repulsion Energy =              9.1873864214775924
+    One-Electron Energy =                -123.1375342580428622
+    Two-Electron Energy =                  37.9234076567798510
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
     PCM Polarization Energy =               0.0000000000000000
     EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0267401797862306
+    Total Energy =                        -76.0267401797854063
 
-    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
-  ==> Properties <==
-
 
 Properties computed using the SCF density matrix
 
@@ -230,35 +246,50 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9765
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.1669
+     X:     0.0000      Y:    -0.0000      Z:    -0.1669
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.8097     Total:     0.8097
+     X:     0.0000      Y:    -0.0000      Z:     0.8097     Total:     0.8097
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.0580     Total:     2.0580
+     X:     0.0000      Y:    -0.0000      Z:     2.0580     Total:     2.0580
 
 
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:48 2016
+*** tstop() called on psinet at Mon May 15 15:35:46 2017
 Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+   => Loading Basis Set <=
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:48 2016
+    Name: CC-PVDZ-JKFIT
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ-RI
+    Role: RIFIT
+    Keyword: DF_BASIS_CC
+    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+
+
+*** tstart() called on psinet
+*** at Mon May 15 15:35:47 2017
 
 
 
   Options:
   ----------------------------------------------------------------------------
   ACTIVE                      => [  ]             
+  BASIS_RELATIVISTIC          => (empty)          
   BENCH                       => 0                
   CC_DIIS_MAX_VECS            => 6                
   CC_DIIS_MIN_VECS            => 2                
@@ -297,12 +328,13 @@ Total time:
   FROZEN_UOCC                 => [  ]             
   HESS_TYPE                   => HF               
   INTEGRAL_CUTOFF             => 9                
-  INTEGRAL_PACKAGE            => ERD              
+  INTEGRAL_PACKAGE            => LIBINT           
   LEVEL_SHIFT                 => 0.02             
   LINEQ_SOLVER                => CDGESV           
   LITERAL_CFOUR               => (empty)          
   MAT_NUM_COLUMN_PRINT        => 5                
   MAX_MOGRAD_CONVERGENCE      => 0.001            
+  MOLDEN_WITH_VIRTUAL         => TRUE             
   MOLDEN_WRITE                => FALSE            
   MO_DIIS_NUM_VECS            => 6                
   MO_MAXITER                  => 50               
@@ -328,7 +360,9 @@ Total time:
   PCG_CONVERGENCE             => 1e-06            
   PCG_MAXITER                 => 50               
   PCM                         => FALSE            
+  PCM_CC_TYPE                 => PTE              
   PCM_SCF_TYPE                => TOTAL            
+  PPL_TYPE                    => AUTO             
   PRINT                       => 1                
   PRINT_NOONS                 => 3                
   PROPERTIES                  => [  ]             
@@ -344,18 +378,15 @@ Total time:
   REGULARIZATION              => FALSE            
   REG_PARAM                   => 0.4              
   RELATIVISTIC                => NO               
-  REL_BASIS                   => (empty)          
   RESTRICTED_DOCC             => [  ]             
   RESTRICTED_UOCC             => [  ]             
   RMS_MOGRAD_CONVERGENCE      => 1e-06            
-  RUN_CCTRANSORT              => TRUE             
   R_CONVERGENCE               => 1e-05            
   SCS_TYPE                    => SCS              
   SOCC                        => [  ]             
   SOS_TYPE                    => SOS              
   TRIPLES_IABC_TYPE           => DISK             
   UNITS                       => ANGSTROMS        
-  WABEF_TYPE                  => AUTO             
   WFN                         => SCF              
   WFN_TYPE                    => DF-OMP2         !
   WRITER_FILE_LABEL           => (empty)          
@@ -367,7 +398,7 @@ Total time:
 
                       DF-OMP2 (DF-OO-MP2)   
               Program Written by Ugur Bozkaya
-              Latest Revision February 19, 2016
+              Latest Revision April 17, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -384,7 +415,7 @@ Total time:
 	Number of basis functions in the DF-HF basis: 116
 	Number of basis functions in the DF-CC basis:  84
 
-	Available memory                      :    244.14 MB 
+	Available memory                      :    500.00 MB 
 	Minimum required memory for amplitudes:      0.21 MB 
 	Memory requirement for B-HF (Q|mu nu) :      0.51 MB 
 	Memory requirement for B-HF (Q|ab)    :      0.32 MB 
@@ -396,10 +427,10 @@ Total time:
 	Computing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978623
-	REF Energy (a.u.)                  :   -76.02674017978623
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224255606
-	DF-MP2 Total Energy (a.u.)         :   -76.22839242234230
+	DF-HF Energy (a.u.)                :   -76.02674017978541
+	REF Energy (a.u.)                  :   -76.02674017978541
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224256007
+	DF-MP2 Total Energy (a.u.)         :   -76.22839242234548
 	======================================================================= 
 
 	Number of independent-pairs:  99
@@ -427,36 +458,36 @@ Total time:
 	Computing MP2 energy using optimized MOs... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978623
-	REF Energy (a.u.)                  :   -76.02582253158639
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20258965897750
-	DF-MP2 Total Energy (a.u.)         :   -76.22932983876373
+	DF-HF Energy (a.u.)                :   -76.02674017978541
+	REF Energy (a.u.)                  :   -76.02582253158562
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20258965897756
+	DF-MP2 Total Energy (a.u.)         :   -76.22932983876296
 	======================================================================= 
 
 	======================================================================= 
 	================ DF-OMP2 FINAL RESULTS ================================ 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978623
-	REF Energy (a.u.)                  :   -76.02582253158639
-	DF-OMP2 Correlation Energy (a.u.)  :    -0.20258965875038
+	DF-HF Energy (a.u.)                :   -76.02674017978541
+	REF Energy (a.u.)                  :   -76.02582253158562
+	DF-OMP2 Correlation Energy (a.u.)  :    -0.20258965875044
 	Edfomp2 - Eref (a.u.)              :    -0.20350730695023
-	DF-OMP2 Total Energy (a.u.)        :   -76.22932983853661
+	DF-OMP2 Total Energy (a.u.)        :   -76.22932983853585
 	======================================================================= 
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:48 2016
+*** tstop() called on psinet at Mon May 15 15:35:47 2017
 Module time:
-	user time   =       0.21 seconds =       0.00 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.18 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds1.sherrill.chemistry.gatech.edu
-*** at Mon Mar 14 15:12:48 2016
+*** tstart() called on psinet
+*** at Mon May 15 15:35:47 2017
 
 
  ============================================================================== 
@@ -489,17 +520,17 @@ Total time:
   -Kinetic Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000     0.000000000000     0.898688643652
-       2        0.000000000000     0.595899309077    -0.449344321826
-       3       -0.000000000000    -0.595899309077    -0.449344321826
+       1       -0.000000000000    -0.000000000000     0.898688643652
+       2       -0.000000000000     0.595899309077    -0.449344321826
+       3        0.000000000000    -0.595899309077    -0.449344321826
 
 
   -Potential Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000001    -0.000000000001    -8.408479025082
-       2       -0.000000000004    -5.589112045877     4.204239512542
-       3        0.000000000003     5.589112045878     4.204239512540
+       1        0.000000000004    -0.000000000000    -8.408479025082
+       2        0.000000000000    -5.589112045879     4.204239512540
+       3       -0.000000000004     5.589112045879     4.204239512542
 
 
   -Overlap Gradient:
@@ -513,36 +544,36 @@ Total time:
   -One-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000001    -0.000000000001    -7.509790381430
-       2       -0.000000000003    -4.993212736800     3.754895190716
-       3        0.000000000003     4.993212736801     3.754895190714
+       1        0.000000000003    -0.000000000000    -7.509790381430
+       2        0.000000000000    -4.993212736802     3.754895190714
+       3       -0.000000000004     4.993212736802     3.754895190716
 
 
   -Two-Electron Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000001     0.000000000001     4.054549818082
-       2        0.000000000003     2.651860852776    -2.027274909042
-       3       -0.000000000003    -2.651860852777    -2.027274909041
+       1       -0.000000000003     0.000000000000     4.054549818082
+       2       -0.000000000000     2.651860852777    -2.027274909040
+       3        0.000000000003    -2.651860852777    -2.027274909042
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.014275738435
-       2       -0.000000000000     0.002893295964    -0.007137848971
-       3        0.000000000000    -0.002893295964    -0.007137889464
+       1        0.000000000000    -0.000000000000     0.014275738435
+       2        0.000000000000     0.002893295964    -0.007137848971
+       3       -0.000000000000    -0.002893295964    -0.007137889464
 
 
-*** tstop() called on ds1.sherrill.chemistry.gatech.edu at Mon Mar 14 15:12:49 2016
+*** tstop() called on psinet at Mon May 15 15:35:47 2017
 Module time:
-	user time   =       0.22 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 	Analytic gradients................................................PASSED
 
-*** PSI4 exiting successfully. Buy a developer a beer!
+*** Psi4 exiting successfully. Buy a developer a beer!
