@@ -2008,19 +2008,17 @@ std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_a_temps()
     return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(U, S, V);
 }
 
-void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
-{
+void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
     // Actually, this routine takes mn + mk + nk
     for (int h = 0; h < nirrep_; h++) {
-        if (!rowspi_[h] || !colspi_[h ^ symmetry_])
-            continue;
+        if (!rowspi_[h] || !colspi_[h ^ symmetry_]) continue;
 
         int m = rowspi_[h];
         int n = colspi_[h ^ symmetry_];
         int k = (m < n ? m : n);
 
         double **Ap = Matrix::matrix(m, n);
-        ::memcpy((void *) Ap[0], (void *) matrix_[h][0], sizeof(double) * m * n);
+        ::memcpy((void *)Ap[0], (void *)matrix_[h][0], sizeof(double) * m * n);
         double *Sp = S->pointer(h);
         double **Up = U->pointer(h);
         double **Vp = V->pointer(h ^ symmetry_);
@@ -2031,17 +2029,18 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
         double lwork;
         int info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, &lwork, -1, iwork);
 
-        double *work = new double[(int) lwork];
+        double *work = new double[(int)lwork];
 
         // SVD
-        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work, (int) lwork, iwork);
+        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work, (int)lwork, iwork);
 
         delete[] work;
         delete[] iwork;
 
         if (info != 0) {
             if (info < 0) {
-                outfile->Printf("Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                outfile->Printf(
+                    "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
 
                 abort();
             }
@@ -2121,8 +2120,7 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
     }
 }
 
-SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned)
-{
+SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned) {
     std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
     SharedMatrix U = std::get<0>(svd_temp);
     SharedVector S = std::get<1>(svd_temp);
@@ -2136,7 +2134,7 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned)
         double *Sp = S->pointer(h);
         double S0 = (ncol ? Sp[0] : 0.0);
         for (int i = 0; i < ncol; i++) {
-            if (Sp[i] > S0 * condition) {
+            if (Sp[i] > (S0 * condition)) {
                 Sp[i] = 1.0 / Sp[i];
             } else {
                 Sp[i] = 0.0;

@@ -142,9 +142,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         X_A_coupled = X_A.clone()
         XSW_A = core.Matrix.triplet(X_A, metric_inv, W_A, False, False, False)
 
-        amplitude = metric.clone()
-        amplitude.axpy(1.0, XSW_A)
-        amplitude.general_invert()
+        amplitude_inv = metric.clone()
+        amplitude_inv.axpy(1.0, XSW_A)
+        amplitude = amplitude_inv.pseudoinverse(1.e-14)
+        amplitude.transpose_this() # Why is this coming out transposed?
         X_A_coupled.axpy(-1.0, core.Matrix.triplet(XSW_A, amplitude, X_A, False, False, False))
 
         del XSW_A, amplitude
@@ -156,9 +157,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         X_B_coupled = X_B.clone()
         XSW_B = core.Matrix.triplet(X_B, metric_inv, W_B, False, False, False)
 
-        amplitude = metric.clone()
-        amplitude.axpy(1.0, XSW_B)
-        amplitude.general_invert()
+        amplitude_inv = metric.clone()
+        amplitude_inv.axpy(1.0, XSW_B)
+        amplitude = amplitude_inv.pseudoinverse(1.e-14)
+        amplitude.transpose_this() # Why is this coming out transposed?
         X_B_coupled.axpy(-1.0, core.Matrix.triplet(XSW_B, amplitude, X_B, False, False, False))
         del XSW_B, amplitude
 
