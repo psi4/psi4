@@ -90,10 +90,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
 
     # Build object
     df_matrix_keys = ["Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"]
-    fdds_matrix_cache = {key : cache[key] for key in df_matrix_keys}
+    fdds_matrix_cache = {key: cache[key] for key in df_matrix_keys}
 
     df_vector_keys = ["eps_occ_A", "eps_vir_A", "eps_occ_B", "eps_vir_B"]
-    fdds_vector_cache = {key : cache[key] for key in df_vector_keys}
+    fdds_vector_cache = {key: cache[key] for key in df_vector_keys}
 
     fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache)
 
@@ -133,7 +133,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
     for point, weight in zip(*np.polynomial.legendre.leggauss(leg_points)):
 
         omega = leg_lambda * (1.0 - point) / (1.0 + point)
-        lambda_scale = ( (2.0 * leg_lambda) / (point + 1.0) ** 2)
+        lambda_scale = ((2.0 * leg_lambda) / (point + 1.0)**2)
 
         # Monomer A
         X_A = fdds_obj.form_unc_amplitude("A", omega)
@@ -145,9 +145,8 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         amplitude_inv = metric.clone()
         amplitude_inv.axpy(1.0, XSW_A)
         amplitude = amplitude_inv.pseudoinverse(1.e-14)
-        amplitude.transpose_this() # Why is this coming out transposed?
+        amplitude.transpose_this()    # Why is this coming out transposed?
         X_A_coupled.axpy(-1.0, core.Matrix.triplet(XSW_A, amplitude, X_A, False, False, False))
-
         del XSW_A, amplitude
 
         X_B = fdds_obj.form_unc_amplitude("B", omega)
@@ -203,7 +202,7 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
     # Build object
     df_matrix_keys = ["Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"]
     df_mfisapt_keys = ["Caocc0A", "Cvir0A", "Caocc0B", "Cvir0B"]
-    matrix_cache = {fkey : cache[ckey] for ckey, fkey in zip(df_matrix_keys, df_mfisapt_keys)}
+    matrix_cache = {fkey: cache[ckey] for ckey, fkey in zip(df_matrix_keys, df_mfisapt_keys)}
 
     other_keys = ["S", "D_A", "P_A", "V_A", "J_A", "K_A", "D_B", "P_B", "V_B", "J_B", "K_B", "K_O"]
     for key in other_keys:
@@ -213,7 +212,7 @@ def df_mp2_fisapt_dispersion(wfn, primary, auxiliary, cache, do_print=True):
 
     df_vector_keys = ["eps_occ_A", "eps_vir_A", "eps_occ_B", "eps_vir_B"]
     df_vfisapt_keys = ["eps_aocc0A", "eps_vir0A", "eps_aocc0B", "eps_vir0B"]
-    vector_cache = {fkey : cache[ckey] for ckey, fkey in zip(df_vector_keys, df_vfisapt_keys)}
+    vector_cache = {fkey: cache[ckey] for ckey, fkey in zip(df_vector_keys, df_vfisapt_keys)}
 
     wfn.set_basisset("DF_BASIS_SAPT", auxiliary)
     fisapt = core.FISAPT(wfn)
@@ -236,11 +235,8 @@ def df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, ca
     if do_print:
         core.print_out("\n  ==> E20 Dispersion (MP2) <== \n\n")
 
-    optstash = p4util.OptionsState(
-        ['SAPT', 'SAPT0_E10'],
-        ['SAPT', 'SAPT0_E20IND'],
-        ['SAPT', 'SAPT0_E20DISP'],
-        ['SAPT', 'SAPT_QUIET'])
+    optstash = p4util.OptionsState(['SAPT', 'SAPT0_E10'], ['SAPT', 'SAPT0_E20IND'],
+                                   ['SAPT', 'SAPT0_E20DISP'], ['SAPT', 'SAPT_QUIET'])
 
     core.set_local_option("SAPT", "SAPT0_E10", False)
     core.set_local_option("SAPT", "SAPT0_E20IND", False)

@@ -55,7 +55,7 @@ void SuperFunctional::common_init() {
     x_omega_ = 0.0;
     c_omega_ = 0.0;
     x_alpha_ = 0.0;
-    x_beta_ = 0.0;
+    x_beta_ = 1.0;
     c_alpha_ = 0.0;
     c_os_alpha_ = 0.0;
     c_ss_alpha_ = 0.0;
