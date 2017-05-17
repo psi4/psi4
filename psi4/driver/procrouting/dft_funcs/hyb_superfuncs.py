@@ -207,8 +207,78 @@ def build_hf_superfunctional(name, npoints, deriv, restricted):
     sup.allocate()
     return (sup, False)
 
+def build_hf3c_superfunctional(name, npoints, deriv, restricted):
+
+    sup = core.SuperFunctional.blank()
+
+    # => user-customization <= #
+
+    # no spaces, keep it short and according to convention
+    sup.set_name('HF3C')
+    # tab in, trailing newlines
+    sup.set_description('    Hartree Fock as Roothan prescribed plus 3C\n')
+    # tab in, trailing newlines
+    sup.set_citation('    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n')
+
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+    sup.set_x_alpha(1.0)
+
+    sup.allocate()
+    return (sup, ('HF3C', '-d3bj'))
+
+def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
+
+    # Call this first
+    sup = core.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBEH3C')
+    # tab in, trailing newlines
+    sup.set_description('    PBE-3C Hybrid GGA Exchange-Correlation Functional\n')
+    # tab in, trailing newlines
+    sup.set_citation('    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n')
+
+    # Add member functionals
+    pbe_x3c = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    pbe_x3c.set_alpha(0.58)
+    pbe_x3c.set_tweak([1.0245, 0.12345679])
+    sup.add_x_functional(pbe_x3c)
+
+    pbe_c3c = core.LibXCFunctional('XC_GGA_C_PBE', restricted)
+    pbe_c3c.set_tweak([0.03])
+    sup.add_c_functional(pbe_c3c)
+
+    # set gks up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.42)
+    sup.set_c_alpha(0.0)
+
+    # Call this last
+    sup.allocate()
+    return (sup, ("PBEH3C", "-d3bj"))
+
+
+    # # add member functionals
+    # pbe_x3c = build_functional('PBE_X')
+    # pbe_x3c.set_parameter('PBE_kp', 1.0245)
+    # pbe_x3c.set_parameter('PBE_mu', 0.12345679)
+    # sup.add_x_functional(pbe_x3c)
+
+    # pbe_c3c = build_functional('PBE_C')
+    # pbe_c3c.set_parameter('bet', 0.03)
+    # sup.add_c_functional(pbe_c3c)
+
+
+
 
 hyb_superfunc_list = {
+          "pbeh3c"   : build_pbeh3c_superfunctional,
           "pbe0"     : build_pbe0_superfunctional,
           "wpbe"     : build_wpbe_superfunctional,
           "wpbe0"    : build_wpbe0_superfunctional,
@@ -216,6 +286,7 @@ hyb_superfunc_list = {
           "wb97x-d"  : build_wb97xd_superfunctional,
           "hf-d"     : build_hfd_superfunctional,
           "hf"       : build_hf_superfunctional,
+          "hf3c"     : build_hf3c_superfunctional,
 
 }
 

@@ -59,6 +59,9 @@ private:
     double vv10_b_;
     double vv10_c_;
 
+    // User defined tweakers
+    std::vector<double> user_tweakers_;
+
 public:
 
     LibXCFunctional(std::string xc_name, bool unpolarized);
@@ -73,6 +76,7 @@ public:
 
     // Setters and getters
     void set_omega(double omega);
+    void set_tweak(std::vector<double> values);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
 
