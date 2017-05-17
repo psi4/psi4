@@ -1,6 +1,6 @@
-__version__ = '1.1rc2'
-__version_long = '1.1rc2+445dd2e'
-__version_upcoming_annotated_v_tag = '1.1rc3'
+__version__ = '1.1'
+__version_long = '1.1+zzzzzzz'
+__version_upcoming_annotated_v_tag = '1.2a1'
 
 def version_formatter(dummy):
     return '(inplace)'
