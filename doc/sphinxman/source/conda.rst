@@ -217,11 +217,11 @@ How to use conda to compile Psi4 faster and easier
 
     # Linux or Mac or Windows
     # substitute x.x by 2.7|3.5|3.6 for alternate python versions
-    >>> conda create -n p4deps python=x.x psi4-dev -c psi4
+    >>> conda create -n p4dev python=x.x psi4-dev -c psi4
 
 Same for Linux/Mac/Windows. Substitute desired python version: 2.7, 3.5, 3.6. Fine
 to choose your own env name. Activate environment, ``source activate
-p4deps``.  Go to where you've cloned psi4. Execute ``psi4-path-advisor``.
+p4dev``.  Go to where you've cloned psi4. Execute ``psi4-path-advisor``.
 It gives you a basic cmake command covering python, sphinx, link-time qc
 addons, and run-time qc addons. There's a help menu -h that gives more
 info. There's other options that will also pre-configure compilers. For
@@ -232,7 +232,7 @@ functional cmake command, but those are just setting up CMake cache
 |w---w| like the plugins you can always add your own CMake variables to
 the command.
 
-For run-time, you may also wish to install NumPy and the executable add-ons (*e.g.*, dftd3)::
+For run-time, you may also wish to install NumPy and the executable add-ons (*e.g.*, dftd3)
 
 .. code-block:: bash
 
@@ -241,8 +241,8 @@ For run-time, you may also wish to install NumPy and the executable add-ons (*e.
 
 .. _`sec:condadetails`:
 
-What do the conda packages psi4 & psi4-deps and the installer psi4conda contain
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+What do the conda packages psi4 & psi4-dev and the installer psi4conda contain
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``psi4`` - has full-featured psi4 itself and necessarily all the link-time qc
 addons (e.g., chemps2). It has python, pytest, and numpy. Of gcc-ness, it has minimal, run-time libraries,

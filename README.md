@@ -1,14 +1,15 @@
 <p align="center">
 <a href="https://travis-ci.org/psi4/psi4"> <img src="https://travis-ci.org/psi4/psi4.svg?branch=master" /></a>
+<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/v1.1.svg" /></a>
 <a href="https://github.com/psi4/psi4/pulls"> <img src="https://img.shields.io/github/issues-pr-closed-raw/psi4/psi4.svg" /></a>
 <a href="https://codecov.io/gh/psi4/psi4"> <img src="https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg" /></a>
-<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>
+<!--<a href="https://gitter.im/psi4devs/Lobby"> <img src="https://img.shields.io/gitter/room/nwjs/nw.js.svg" /></a>-->
 <a href="http://forum.psicode.org/"> <img src="https://img.shields.io/badge/chat-on_forum-5077AB.svg" /></a>
 <br>
-<a href="https://github.com/psi4/psi4/releases"> <img src="https://img.shields.io/github/commits-since/psi4/psi4/1.0.svg" /></a>
 <a href="http://www.psicode.org"> <img src="https://img.shields.io/badge/home-Psi4-5077AB.svg" /></a>
 <a href="http://psicode.org/psi4manual/master/index.html"> <img src="https://img.shields.io/badge/docs-latest-5077AB.svg" /></a>
 <a href="https://anaconda.org/psi4/psi4"> <img src="https://anaconda.org/psi4/psi4/badges/installer/conda.svg" /></a>
+<a href="https://opensource.org/licenses/LGPL-3.0"> <img src="https://img.shields.io/github/license/psi4/psi4.svg" /></a>
 <br><br>
 <img src="https://github.com/psi4/psi4media/blob/master/logos/psi4banner_half_tight.png" alt="Psi4 banner logo" height=200> <br>
 </p>
@@ -34,11 +35,11 @@ strives to be friendly to both users and developers.
 
 * **Communication & Support** http://psicode.org/psi4manual/master/introduction.html#technical-support
 
-* **Public Github**  https://github.com/psi4/psi4 (authoritative repository)
+* **Github**  https://github.com/psi4/psi4 (authoritative repository)
 
 * **Travis CI build status** [![Build Status](https://travis-ci.org/psi4/psi4.svg?branch=master)](https://travis-ci.org/psi4/psi4)
 
-* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux and Mac [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#quick-installation)
+* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux, Mac, and Ubuntu Shell on Windows [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](http://psicode.org/psi4manual/master/conda.html#how-to-install-a-psi4-binary-with-the-psi4conda-installer-download-site)
 
 * **CodeCov** Test case coverage for quicktests. [![codecov](https://codecov.io/gh/psi4/psi4/branch/master/graph/badge.svg)](https://codecov.io/gh/psi4/psi4)
 
@@ -86,13 +87,12 @@ Citation
 
 The journal article reference describing Psi4 is:
 
-Justin M. Turney, Andrew C. Simmonett, Robert M. Parrish,
-Edward G. Hohenstein, Francesco A. Evangelista, Justin T. Fermann,
-Benjamin J. Mintz, Lori A. Burns, Jeremiah J. Wilke,
-Micah L. Abrams, Nicholas J. Russ, Matthew L. Leininger,
-Curtis L. Janssen, Edward T. Seidl, Wesley D. Allen,
-Henry F. Schaefer, Rollin A. King, Edward F. Valeev,
-C. David Sherrill, T. Daniel Crawford (2012),
-Psi4: an open-source ab initio electronic structure program.
-WIREs Comput Mol Sci, 2: 556–565. doi: 10.1002/wcms.93
+R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+J. Chem. Theory Comput. in press (2017).
+[doi: 10.1021/acs.jctc.7b00174](http://dx.doi.org/10.1021/acs.jctc.7b00174).
 
