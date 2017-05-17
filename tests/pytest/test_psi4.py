@@ -208,7 +208,7 @@ def test_psi4_scfproperty():
              'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
              'MULTIPOLE(5)', 'NO_OCCUPATIONS']
 
-    psi4.property('scf', properties=props)
+    psi4.properties('scf', properties=props)
 
     assert psi4.compare_values(psi4.get_variable("CURRENT ENERGY"), -38.91591819679808, 6, "SCF energy")
     assert psi4.compare_values(psi4.get_variable('SCF DIPOLE X'), 0.000000000000, 4, "SCF DIPOLE X")
@@ -221,7 +221,7 @@ def test_psi4_scfproperty():
     assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE XZ'), 0.000000000000, 4, "SCF QUADRUPOLE XZ")
     assert psi4.compare_values(psi4.get_variable('SCF QUADRUPOLE YZ'), 0.000000000000, 4, "SCF QUADRUPOLE YZ")
 
-    psi4.property('B3LYP', properties=props)
+    psi4.properties('B3LYP', properties=props)
 
     assert psi4.compare_values(psi4.get_variable('CURRENT ENERGY'), -39.14134740550916, 6, "B3LYP energy")
     assert psi4.compare_values(psi4.get_variable('B3LYP DIPOLE X'), 0.000000000000, 4, "B3LYP DIPOLE X")
