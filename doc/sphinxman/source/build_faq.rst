@@ -53,6 +53,7 @@ Configuring and Installing |PSIfour| via Binary
 #. :ref:`faq:updatepsi4`
 #. :ref:`faq:psi4deps`
 #. :ref:`sec:condadetails`
+#. :ref:`faq:condamaxameri`
 
 Configuring, Building, and Installing |PSIfour| via Source
 ----------------------------------------------------------

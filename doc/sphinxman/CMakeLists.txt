@@ -20,12 +20,6 @@ if(PERL_FOUND AND SPHINX_FOUND)
     set(CCSD "${CMAKE_CURRENT_SOURCE_DIR}")
     set(CCBD "${CMAKE_CURRENT_BINARY_DIR}")
 
-    # Configure Sphinx build
-    configure_file(
-        "${CCSD}/source/conf.py.in"
-        "${CCBD}/source/conf.py"
-        @ONLY)
-
     # Static-doc reST files
     set(STATICDOC abbr_accents.rst adc.rst appendices.rst basissets.rst
     basissets_byelement.rst bibliography.rst cbs.rst cbs_eqn.rst
@@ -60,10 +54,17 @@ if(PERL_FOUND AND SPHINX_FOUND)
         message(STATUS "Some ipynb docs require extra modules (try: conda install nbsphinx jupyter_client ipykernel -c conda-forge)")
         list(APPEND STATICDOC "psiapi.rst")
         set(_jupy "")
+        set(_jupyconf "")
     else()
         list(APPEND STATICDOC "psiapi.ipynb")
         set(_jupy "w/Jupyter ")
+        set(_jupyconf "'nbsphinx',")
     endif()
+    # configure Sphinx build
+    configure_file(
+        "${CCSD}/source/conf.py.in"
+        "${CCBD}/source/conf.py"
+        @ONLY)
     # * copy all over to objdir, substituting literalinclude along the way
     foreach(rst ${STATICDOC})
        configure_file(

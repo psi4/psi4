@@ -58,7 +58,7 @@ runs libderiv from Libint for derivative integrals and simint for
 non-derivative integrals. Note that present AM maximum is ``$$(gg|gg)$$``
 
 Installation
-~~~~~~~~~~
+~~~~~~~~~~~~
 
 **Binary**
 
@@ -94,7 +94,7 @@ Installation
 .. _`cmake:simint`:
 
 How to configure simint for building Psi4
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Role and Dependencies**
 

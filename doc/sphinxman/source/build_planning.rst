@@ -301,6 +301,29 @@ any/all |PSIfour| builds detect that installation at compile-time.
 * :ref:`cmake:libint`
 
 
+.. _`faq:condamaxameri`:
+
+How to get high angular momentum integrals from conda
+-----------------------------------------------------
+
+To switch from the default libint package to the really large high AM
+package, do the below. The channel/subchannel(s) containing the `am8`
+metapackage and the high-AM libint package must be supplied (or in
+.condarc). ::
+
+    conda install am8 -c psi4
+
+To go back to the default libint package, do the below. The
+channel/subchannel containing the default libint package must be supplied
+(or in .condarc); otherwise, it'll just remove libint and every package
+depending on libint. ::
+
+    conda remove --features am8 -c psi4
+
+The default package is AM6 because of its manageable file size (on Linux,
+10MB for libint and 40MB for libderiv). The AM7 are 20/100, respectively,
+and the AM8 is 50/210.
+
 .. _`faq:setuphelp`:
 
 How to see what build configuration options are available
