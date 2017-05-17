@@ -155,6 +155,8 @@ def run_json(json_data):
     # Set a few variables
     json_data["error"] = ""
     json_data["raw_output"] = "Output storing was not requested."
+    json_data["success"] = False
+    json_data["raw_output"] = None
 
     # Check input
     for check in ["driver", "method", "molecule"]:
