@@ -85,7 +85,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
-                  options1 cubeprop-esp
+                  options1 cubeprop-esp dft-smoke
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
