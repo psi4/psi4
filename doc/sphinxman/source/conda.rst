@@ -76,7 +76,7 @@ How to install a Psi4 binary with the Psi4conda installer, download site
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Download one of the nine installers
-<http://psicode.org/develdownloads.html>`_ (Linux/Mac/Windows; Py27/35/36).
+<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py27/35/36).
 ``bash`` it. Follow the prompts and *do* make the adjustments to
 :envvar:`PATH` and :envvar:`PSI_SCRATCH` that it suggests at the end. Test
 with ``psi4 --test``. Done. Explicit commands at :ref:`sec:psi4conda`.
@@ -141,7 +141,7 @@ All done!
 
 Configuration for this set-up is summarized at :ref:`faq:runfrombinary`.
 
-.. note:: |PSIfour| installs a Python distribution alongside, so you should choose an installer based on the Python version you *want*, irrespective of any Python version you may *have*.
+.. note:: |PSIfour| installs a Python distribution alongside, so you should choose an installer based on the Python version you *want*, irrespective of any Python version you *have*.
 
 .. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
 
@@ -159,7 +159,7 @@ distribution.
 
     # Linux or Mac or Windows
     # substitute x.x by 2.7|3.5|3.6 for alternate python versions
-    >>> conda create -n p4env python=x.x psi4 psi4-deps -c psi4/label/dev -c psi4
+    >>> conda create -n p4env python=x.x psi4 psi4-rt -c psi4/label/dev -c psi4
 
 Activate environment and make the adjustments to :envvar:`PATH` and
 :envvar:`PSI_SCRATCH` that it suggests at the end. Test with ``psi4
@@ -175,8 +175,8 @@ Activate environment and make the adjustments to :envvar:`PATH` and
   above, but the environment name (:samp:`{p4env}` above) can be
   substituted.
 
-* Only reason for ``psi4-deps`` package is to get the QC runtime
-  add-ons; could say ``dftd3 gcp v2rdm_casscf`` instead of ``psi4-deps``;
+* Only reason for ``psi4-rt`` package is to get the QC runtime
+  add-ons; could say ``dftd3 gcp v2rdm_casscf`` instead of ``psi4-rt``;
   or leave them out if you don't want them.
 
 
@@ -194,7 +194,7 @@ newest stable release (roughly annually).
 
     >>> conda update psi4 -c psi4
 
-    # if psi4 channel added,
+    # if psi4 channel in defaults (true for Psi4conda installers)
     >>> conda update psi4
 
 Conda command to update an existing |PSIfour| conda installation to the
@@ -217,7 +217,7 @@ How to use conda to compile Psi4 faster and easier
 
     # Linux or Mac or Windows
     # substitute x.x by 2.7|3.5|3.6 for alternate python versions
-    >>> conda create -n p4deps python=x.x psi4-deps -c psi4
+    >>> conda create -n p4deps python=x.x psi4-dev -c psi4
 
 Same for Linux/Mac/Windows. Substitute desired python version: 2.7, 3.5, 3.6. Fine
 to choose your own env name. Activate environment, ``source activate
@@ -227,10 +227,16 @@ addons, and run-time qc addons. There's a help menu -h that gives more
 info. There's other options that will also pre-configure compilers. For
 example, at GaTech ``psi4-path-advisor --intel`` works. On Macs with
 XCode, ``psi4-path-advisor --clang`` works. Just read the help. For DGAS,
-there's an ``--disable``, but I don't encourage it. It gives you a fully
+there's a ``--disable-addons``, but I don't encourage it. It gives you a fully
 functional cmake command, but those are just setting up CMake cache
 |w---w| like the plugins you can always add your own CMake variables to
 the command.
+
+For run-time, you may also wish to install NumPy and the executable add-ons (*e.g.*, dftd3)::
+
+.. code-block:: bash
+
+    >>> conda install numpy psi4-rt
 
 
 .. _`sec:condadetails`:
@@ -238,18 +244,18 @@ the command.
 What do the conda packages psi4 & psi4-deps and the installer psi4conda contain
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-psi4 - has full-featured psi4 itself and necessarily all the link-time qc
-addons (e.g., chemps2). Of gcc-ness, it has minimal, run-time libraries,
+``psi4`` - has full-featured psi4 itself and necessarily all the link-time qc
+addons (e.g., chemps2). It has python, pytest, and numpy. Of gcc-ness, it has minimal, run-time libraries,
 not compilers, though, for Linux/Windows, full gcc and run-time gcc are the same.
-It doesn't have the run-time qc addons (e.g., dftd3).
+It doesn't have the run-time qc addons ``psi4-rt`` (*e.g.*, dftd3) or build tools (*e.g.*, sphinx and cmake).
 
-psi4-deps - does not have psi4 itself (though fine to install it
-alongside). Does have all the link-time and run-time addons. Does have
+``psi4-dev`` - does not have psi4 itself or the run-time addons ``psi4-rt`` or numpy (though fine to install them
+alongside). Does have all the link-time addons. Does have
 cmake and sphinx (and python). Of gcc-ness, has full packages, that is,
 compilers, not runtime packages.
 
-installer - has full-featured psi4 itself, all link-time qc addons, all
-run-time qc addons, and minimal gcc runtime libraries.
+Psi4conda installer - has full-featured ``psi4`` itself, all link-time qc addons, all
+run-time qc addons, and minimal gcc runtime libraries. Developers should additionally install ``psi4-dev`` for build tools.
 
 The :ref:`sec:psi4conda` uses a `conda constructor
 <https://github.com/conda/constructor>`_ to package up Miniconda,

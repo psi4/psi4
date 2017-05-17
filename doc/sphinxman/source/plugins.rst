@@ -140,6 +140,10 @@ installing XCode from the App Store that provides ``clang`` and
     $PSI4CONDA/bin/gfortran
     /usr/bin/clang++
 
+    >>> which cmake
+    $PSI4CONDA/bin/cmake
+    # if above empty, ``conda install cmake``
+
 * Create and compile plugin ::
 
     >>> psi4 --plugin-name testplugin
