@@ -239,7 +239,7 @@ def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
     # No spaces, keep it short and according to convention
     sup.set_name('PBEH3C')
     # tab in, trailing newlines
-    sup.set_description('    PBE-3C Hybrid GGA Exchange-Correlation Functional\n')
+    sup.set_description('    PBEH-3C Hybrid GGA Exchange-Correlation Functional plus 3C\n')
     # tab in, trailing newlines
     sup.set_citation('    Grimme et. al., J. Chem. Phys., 143, 054107, 2015\n')
 
