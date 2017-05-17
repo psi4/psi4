@@ -87,8 +87,6 @@ public:
     double vv10_b() { return vv10_b_; }
     double vv10_c() { return vv10_c_; }
 
-
-
 };
 
 }

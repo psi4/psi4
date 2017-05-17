@@ -164,8 +164,13 @@ void VBase::set_grac_shift(double grac_shift) {
         std::shared_ptr<Functional> grac_c_func = static_cast<std::shared_ptr<Functional>>(
             new LibXCFunctional(options_.get_str("DFT_GRAC_C_FUNC"), functional_->is_unpolarized()));
 
-        double lr_exch = functional_->x_alpha() + functional_->x_beta();
-        grac_x_func->set_alpha(1.0 - lr_exch);
+        // Special case for LRC, needs to be this way due to defaults.
+        if (functional_->is_x_lrc()) {
+            double lr_exch = functional_->x_alpha() + functional_->x_beta();
+            grac_x_func->set_alpha(1.0 - lr_exch);
+        } else {
+            grac_x_func->set_alpha(1.0 - functional_->x_alpha());
+        }
 
         functional_->set_lock(false);
         functional_->set_grac_alpha(grac_alpha);

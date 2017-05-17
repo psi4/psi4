@@ -216,7 +216,7 @@ def build_hf3c_superfunctional(name, npoints, deriv, restricted):
     # no spaces, keep it short and according to convention
     sup.set_name('HF3C')
     # tab in, trailing newlines
-    sup.set_description('    Hartree Fock as Roothan prescribed plus 3C\n')
+    sup.set_description('    Hartree Fock as Roothaan prescribed plus 3C\n')
     # tab in, trailing newlines
     sup.set_citation('    Sure et al., J. Comput. Chem., 34, 1672-1685, 2013\n')
 
@@ -262,19 +262,6 @@ def build_pbeh3c_superfunctional(name, npoints, deriv, restricted):
     # Call this last
     sup.allocate()
     return (sup, ("PBEH3C", "-d3bj"))
-
-
-    # # add member functionals
-    # pbe_x3c = build_functional('PBE_X')
-    # pbe_x3c.set_parameter('PBE_kp', 1.0245)
-    # pbe_x3c.set_parameter('PBE_mu', 0.12345679)
-    # sup.add_x_functional(pbe_x3c)
-
-    # pbe_c3c = build_functional('PBE_C')
-    # pbe_c3c.set_parameter('bet', 0.03)
-    # sup.add_c_functional(pbe_c3c)
-
-
 
 
 hyb_superfunc_list = {

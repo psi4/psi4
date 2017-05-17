@@ -265,6 +265,7 @@ def run_sapt_dft(name, **kwargs):
 
     # Dispersion
     primary_basis = wfn_A.basisset()
+    core.print_out("\n")
     aux_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
