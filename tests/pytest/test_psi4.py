@@ -1,6 +1,5 @@
 import psi4
 
-
 def test_psi4_basic():
     """tu1-h2o-energy"""
     #! Sample HF/cc-pVDZ H2O computation
@@ -15,6 +14,32 @@ def test_psi4_basic():
     psi4.energy('scf')
 
     assert psi4.compare_values(-76.0266327341067125, psi4.get_variable('SCF TOTAL ENERGY'), 6, 'SCF energy')
+
+
+def test_psi4_cc():
+    """cc1"""
+    #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
+
+    psi4.core.clean()
+    h2o = psi4.geometry("""
+        O
+        H 1 0.97
+        H 1 0.97 2 103.0
+    """)
+
+    psi4.set_options({"basis": '6-31G**'})
+
+    psi4.optimize('ccsd')
+
+    refnuc   =   9.1654609427539
+    refscf   = -76.0229427274435
+    refccsd  = -0.20823570806196
+    reftotal = -76.2311784355056
+
+    assert psi4.compare_values(refnuc,   h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")
+    assert psi4.compare_values(refscf,   psi4.get_variable("SCF total energy"), 5, "SCF energy")
+    assert psi4.compare_values(refccsd,  psi4.get_variable("CCSD correlation energy"), 4, "CCSD contribution")
+    assert psi4.compare_values(reftotal, psi4.get_variable("Current energy"), 7, "Total energy")
 
 
 def test_psi4_cas():
@@ -46,31 +71,6 @@ def test_psi4_cas():
     casscf_energy = psi4.energy('casscf', ref_wfn=cisd_wfn)
 
     assert psi4.compare_values(-76.073865006902, casscf_energy, 6, 'CASSCF Energy')
-
-
-def test_psi4_cc():
-    """cc1"""
-    #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
-
-    h2o = psi4.geometry("""
-        O
-        H 1 0.97
-        H 1 0.97 2 103.0
-    """)
-
-    psi4.set_options({"basis": '6-31G**'})
-
-    psi4.optimize('ccsd')
-
-    refnuc   =   9.1654609427539
-    refscf   = -76.0229427274435
-    refccsd  = -0.20823570806196
-    reftotal = -76.2311784355056
-
-    assert psi4.compare_values(refnuc,   h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")
-    assert psi4.compare_values(refscf,   psi4.get_variable("SCF total energy"), 5, "SCF energy")
-    assert psi4.compare_values(refccsd,  psi4.get_variable("CCSD correlation energy"), 4, "CCSD contribution")
-    assert psi4.compare_values(reftotal, psi4.get_variable("Current energy"), 7, "Total energy")
 
 
 def test_psi4_dfmp2():
