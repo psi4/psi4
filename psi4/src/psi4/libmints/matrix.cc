@@ -2120,7 +2120,7 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
     }
 }
 
-SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned) {
+SharedMatrix Matrix::pseudoinverse(double condition, int &nremoved) {
     std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
     SharedMatrix U = std::get<0>(svd_temp);
     SharedVector S = std::get<1>(svd_temp);
@@ -2128,7 +2128,7 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned) {
 
     svd(U, S, V);
 
-    bool conditioned_here = false;
+    nremoved = 0;
     for (int h = 0; h < nirrep_; h++) {
         int ncol = S->dimpi()[h];
         double *Sp = S->pointer(h);
@@ -2138,12 +2138,9 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned) {
                 Sp[i] = 1.0 / Sp[i];
             } else {
                 Sp[i] = 0.0;
-                conditioned_here = true;
+                ++nremoved;
             }
         }
-    }
-    if (conditioned) {
-        *conditioned = conditioned_here;
     }
 
     SharedMatrix Q(clone());

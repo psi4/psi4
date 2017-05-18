@@ -190,7 +190,6 @@ void export_mints(py::module& m)
     typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void (Matrix::*matrix_load)(const std::string&);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
-    typedef SharedMatrix (Matrix::*matrix_svd)(double);
 
     py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr())
         .def(py::init<int, int>())
@@ -253,7 +252,7 @@ void export_mints(py::module& m)
         .def("schmidt", &Matrix::schmidt)
         .def("invert", &Matrix::invert, "docstring")
         .def("general_invert", &Matrix::general_invert, "docstring")
-        .def("pseudoinverse", matrix_svd(&Matrix::pseudoinverse), "docstring")
+        .def("pseudoinverse", &Matrix::pseudoinverse, "docstring")
         .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring")
         .def("copy", matrix_one(&Matrix::copy), "docstring")
         .def("power", &Matrix::power, "docstring")

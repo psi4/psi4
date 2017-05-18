@@ -908,7 +908,7 @@ public:
 
     ///@{
     /// Matrix of size (m x n) which is the conditioned pseudoinverse of this (m x n)
-    SharedMatrix pseudoinverse(double condition = 0.0, bool* conditioned = NULL);
+    SharedMatrix pseudoinverse(double condition, int &nremoved);
     ///@}
 
     /*! Extract a conditioned orthonormal basis from this SPD matrix
