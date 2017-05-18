@@ -33,12 +33,6 @@
 
 namespace psi {
 
-struct dpdfile2;
-
-class PSIO;
-class Matrix;
-class Vector;
-class SimpleVector;
 class Dimension;
 
 // Forward declarations

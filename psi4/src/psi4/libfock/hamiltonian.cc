@@ -905,17 +905,17 @@ TDARHamiltonian::TDARHamiltonian(std::shared_ptr<JK> jk,
                     std::shared_ptr<Vector> eps_avir) :
     CISRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix>& C = v->C();
-    C.clear();
-    C.push_back(Cocc);
+    // std::vector<SharedMatrix>& C = v->C();
+    // C.clear();
+    // C.push_back(Cocc);
 
-    std::vector<SharedMatrix>& Cao = v->Caocc();
-    Cao.clear();
-    Cao.push_back(Caocc);
+    //std::vector<SharedMatrix>& Cao = v->Caocc();
+    //Cao.clear();
+    //Cao.push_back(Caocc);
 
-    std::vector<SharedMatrix>& Cav = v->Cavir();
-    Cav.clear();
-    Cav.push_back(Cavir);
+    //std::vector<SharedMatrix>& Cav = v->Cavir();
+    //Cav.clear();
+    //Cav.push_back(Cavir);
 }
 TDARHamiltonian::~TDARHamiltonian()
 {
@@ -931,11 +931,11 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 {
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
-    std::vector<SharedMatrix >& P = v_->P();
+    // std::vector<SharedMatrix >& P = v_->P();
 
     C_left.clear();
     C_right.clear();
-    P.clear();
+    // P.clear();
 
     int nirrep = (x.size() ? x[0]->nirrep() : 0);
 
@@ -982,16 +982,16 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                 offset += nocc * nvir;
             }
 
-            P.push_back(P2);
+            // P.push_back(P2);
         }
     }
 
     jk_->compute();
-    v_->compute();
+    // v_->compute();
 
     const std::vector<SharedMatrix >& J = jk_->J();
 //    const std::vector<SharedMatrix >& K = jk_->K();
-    const std::vector<SharedMatrix >& V = v_->V();
+//    const std::vector<SharedMatrix >& V = v_->V();
 
     double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
@@ -1018,7 +1018,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 double** Jp  = J[symm * x.size() + N]->pointer(h);
 //                double** Kp  = K[symm * x.size() + N]->pointer(h);
-                double** Vp  = V[symm * x.size() + N]->pointer(h);
+//                double** Vp  = V[symm * x.size() + N]->pointer(h);
 
                 // TODO: hybrid/RC terms
                 // -(ij|ab)P_jb = C_im K_mn C_na
@@ -1032,8 +1032,8 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                 }
 
                 // V matrix
-                C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Vp[0],nsovir,0.0,Tp,nsovir);
-                C_DGEMM('N','N',nocc,nvir,nsovir,1.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
+                // C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Vp[0],nsovir,0.0,Tp,nsovir);
+                // C_DGEMM('N','N',nocc,nvir,nsovir,1.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
 
                 for (int i = 0; i < nocc; ++i) {
                     for (int a = 0; a < nvir; ++a) {
@@ -1065,17 +1065,17 @@ TDDFTRHamiltonian::TDDFTRHamiltonian(std::shared_ptr<JK> jk,
                     std::shared_ptr<Vector> eps_avir) :
     TDHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix>& C = v->C();
-    C.clear();
-    C.push_back(Cocc);
+    // std::vector<SharedMatrix>& C = v->C();
+    // C.clear();
+    // C.push_back(Cocc);
 
-    std::vector<SharedMatrix>& Cao = v->Caocc();
-    Cao.clear();
-    Cao.push_back(Caocc);
+    // std::vector<SharedMatrix>& Cao = v->Caocc();
+    // Cao.clear();
+    // Cao.push_back(Caocc);
 
-    std::vector<SharedMatrix>& Cav = v->Cavir();
-    Cav.clear();
-    Cav.push_back(Cavir);
+    // std::vector<SharedMatrix>& Cav = v->Cavir();
+    // Cav.clear();
+    // Cav.push_back(Cavir);
 }
 TDDFTRHamiltonian::~TDDFTRHamiltonian()
 {
@@ -1267,17 +1267,17 @@ CPKSRHamiltonian::CPKSRHamiltonian(std::shared_ptr<JK> jk,
                     std::shared_ptr<Vector> eps_avir) :
     CPHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix>& C = v->C();
-    C.clear();
-    C.push_back(Cocc);
+    // std::vector<SharedMatrix>& C = v->C();
+    // C.clear();
+    // C.push_back(Cocc);
 
-    std::vector<SharedMatrix>& Cao = v->Caocc();
-    Cao.clear();
-    Cao.push_back(Caocc);
+    // std::vector<SharedMatrix>& Cao = v->Caocc();
+    // Cao.clear();
+    // Cao.push_back(Caocc);
 
-    std::vector<SharedMatrix>& Cav = v->Cavir();
-    Cav.clear();
-    Cav.push_back(Cavir);
+    // std::vector<SharedMatrix>& Cav = v->Cavir();
+    // Cav.clear();
+    // Cav.push_back(Cavir);
 }
 CPKSRHamiltonian::~CPKSRHamiltonian()
 {

@@ -8,6 +8,7 @@ foreach(dir ambit
             pcmsolver
             pybind11
             simint
+            libxc
 )
    add_subdirectory(${dir})
 endforeach()

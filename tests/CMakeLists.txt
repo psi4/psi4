@@ -49,12 +49,12 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 
                   dcft7 dcft8 dcft9 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp 
                   dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 
-                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-grad1
+                  dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-ecp dfmp2-grad1
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp3-1 dfomp3-2 
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
-                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf 
-                  dft-freq dft-grad dft-pbe0-2 dft-psivar dft-b3lyp dft1 
+                  dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf dft-grac dft-dsd 
+                  dft-freq dft-grad1 dft-grad2 dft-pbe0-2 dft-psivar dft-b3lyp dft1 dft-vv10 
                   dft1-alt dft2 dft3 docs-bases docs-dft extern1 extern2
                   fsapt1 fsapt2 isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 
@@ -80,11 +80,12 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap 
                   pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o 
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
-                  sapt7 sapt8 scf-bz2 scf-guess-read1 scf-guess-read2 scf-bs scf1 scf-occ
-                  scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf1 soscf2 stability1
-                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt 
+                  sapt7 sapt8 scf-bz2 scf-ecp scf-guess-read1 scf-guess-read2 scf-bs scf1 scf-occ
+                  scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf-large soscf-ref
+                  soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare
+                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
-                  options1 cubeprop-esp
+                  options1 cubeprop-esp dft-smoke
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

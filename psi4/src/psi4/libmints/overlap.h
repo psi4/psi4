@@ -37,9 +37,7 @@ namespace psi {
 
     class BasisSet;
     class GaussianShell;
-    class IntegralFactory;
     class SphericalTransform;
-    class Matrix;
 
 /*! \ingroup MINTS
  *  \class OverlapInt

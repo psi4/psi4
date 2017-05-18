@@ -43,7 +43,6 @@ namespace psi {
 class GaussianShell;
 class SphericalTransform;
 class BasisSet;
-class Matrix;
 
 /*! \ingroup MINTS
  *  \class TracelessQuadrupoleInt

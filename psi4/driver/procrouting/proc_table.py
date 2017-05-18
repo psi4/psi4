@@ -32,6 +32,7 @@ chemical methods.
 from __future__ import print_function
 from __future__ import absolute_import
 
+from . import sapt
 from . import proc
 from . import interface_cfour
 # never import wrappers or aliases into this file
@@ -43,6 +44,7 @@ procedures = {
             'scf'           : proc.run_scf,
             'mcscf'         : proc.run_mcscf,
             'dcft'          : proc.run_dcft,
+            'ep2'           : proc.run_dfep2,
             'mp3'           : proc.select_mp3,
             'mp2.5'         : proc.select_mp2p5,
             'mp2'           : proc.select_mp2,
@@ -63,6 +65,7 @@ procedures = {
             'dfocc'         : proc.run_dfocc,  # full control over dfocc
             'qchf'          : proc.run_qchf,
             'ccd'           : proc.run_dfocc,
+            'sapt(dft)'     : sapt.run_sapt_dft,
             'sapt0'         : proc.run_sapt,
             'ssapt0'        : proc.run_sapt,
             'sapt2'         : proc.run_sapt,
@@ -178,7 +181,7 @@ procedures = {
             'hf'            : proc.run_scf_hessian,
             'scf'            : proc.run_scf_hessian,
         },
-        'property' : {
+        'properties' : {
             'hf'       : proc.run_scf_property,
             'scf'      : proc.run_scf_property,
             'mp2'      : proc.select_mp2_property,
@@ -202,22 +205,23 @@ energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
 energy_only_methods += ['adc', 'efp', 'cphf', 'tdhf', 'cis']
 
 # Integrate DFT with driver routines
-superfunc_list = proc.dft_functional.superfunctional_list
+superfunc_list = proc.dft_funcs.superfunctional_list
 for ssuper in superfunc_list:
-    procedures['energy'][ssuper.name().lower()] = proc.run_dft
-    if not ssuper.is_c_hybrid():
-        procedures['property'][ssuper.name().lower()] = proc.run_dft_property
+      procedures['energy'][ssuper.name().lower()] = proc.run_dft
+
+      if not ssuper.is_c_hybrid():
+            procedures['properties'][ssuper.name().lower()] = proc.run_dft_property
 
 for ssuper in superfunc_list:
-    if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
-        procedures['gradient'][ssuper.name().lower()] = proc.run_dft_gradient
+      if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
+            procedures['gradient'][ssuper.name().lower()] = proc.run_dft_gradient
 
 # Integrate CFOUR with driver routines
 for ssuper in interface_cfour.cfour_list():
-    procedures['energy'][ssuper.lower()] = interface_cfour.run_cfour
+      procedures['energy'][ssuper.lower()] = interface_cfour.run_cfour
 
 for ssuper in interface_cfour.cfour_gradient_list():
-    procedures['gradient'][ssuper.lower()] = interface_cfour.run_cfour
+      procedures['gradient'][ssuper.lower()] = interface_cfour.run_cfour
 
 # dictionary to register pre- and post-compute hooks for driver routines
 hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])

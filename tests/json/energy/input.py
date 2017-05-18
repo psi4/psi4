@@ -6,16 +6,14 @@ from psi4.driver import p4util
 json_data = {}
 json_data["molecule"] = """He 0 0 0\n--\nHe 0 0 1"""
 json_data["driver"] = "energy"
-json_data["args"] = 'SCF'
+json_data["method"] = 'SCF'
 json_data["kwargs"] = {"bsse_type": "cp"}
 json_data["options"] = {"BASIS": "STO-3G"}
 json_data["return_output"] = True
 
 psi4.json_wrapper.run_json(json_data)
-
-
 p4util.compare_strings("STO-3G", json_data["options"]["BASIS"], "Options test")    # TEST
-p4util.compare_integers(True, len(json_data["output"]) > 5000, "Output returned")  # TEST
+p4util.compare_integers(True, len(json_data["raw_output"]) > 5000, "Output returned")  # TEST
 p4util.compare_integers(True, json_data["success"], "Success")                     # TEST
 
 
@@ -30,4 +28,4 @@ return_wfn = "return_wfn" not in json_data["kwargs"]                        # TE
 p4util.compare_integers(True, return_wfn, "Immutable input")                       # TEST
 
 with open("output.dat", "w") as f:
-    f.write(json_data["output"]) 
+    f.write(json_data["raw_output"]) 

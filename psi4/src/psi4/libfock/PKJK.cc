@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/lib3index/3index.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
@@ -37,16 +36,10 @@
 #include "psi4/libiwl/iwl.hpp"
 #include "jk.h"
 #include "PKmanagers.h"
-#include "jk_independent.h"
-#include "link.h"
-#include "direct_screening.h"
-#include "cubature.h"
-#include "points.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/lib3index/cholesky.h"
 
 #include <sstream>
 #include "psi4/libparallel/ParallelPrinter.h"

@@ -45,7 +45,6 @@ class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef std::shared_ptr<Matrix> SharedMatrix;
-typedef std::shared_ptr<Matrix> SharedMatrix;
 class SOMCSCF;
 
 // Well this is not ideal
@@ -62,10 +61,7 @@ struct params;
 struct stringwr;
 struct ci_blks;
 struct olsen_graph;
-struct graph_set;
 struct H_zero_block;
-struct detci_timings;
-struct mcscf_params;
 typedef std::shared_ptr<psi::detci::CIvect> SharedCIVector;
 }}
 

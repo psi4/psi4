@@ -1,0 +1,735 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Sunday, 15 January 2017 09:55AM
+
+    Process ID:  81840
+    PSIDATADIR: /Users/daniel/Gits/psixc/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
+
+memory 250 mb
+
+Eref = {"SAPT ELST ENERGY":  -0.10190449, # TEST
+        "SAPT EXCH ENERGY":   0.36545706, # TEST
+        "SAPT IND ENERGY":    0.00349281, # TEST
+        "SAPT DISP ENERGY":  -0.24398704, # TEST
+        "CURRENT ENERGY":     0.02305835} # TEST
+
+
+molecule dimer {
+  Ne
+  --
+  Ar 1 6.5
+  units bohr
+}
+
+set {
+    basis         aug-cc-pvdz
+    scf_type      df
+    sapt_dft_grac_shift_a 0.203293
+    sapt_dft_grac_shift_b 0.138264
+}
+
+energy('sapt(dft)', molecule=dimer)
+
+for k, v in Eref.items():                                  # TEST
+    compare_values(v / 1000.0, psi4.get_variable(k), 6, k) # TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on verizon-ar.imtc.gatech.edu
+*** at Sun Jan 15 09:55:25 2017
+
+  SAPT does not make use of molecular symmetry, further calculations in C1 point group.
+
+         ---------------------------------------------------------
+                            SAPT(DFT) Procedure                    
+
+                           by Daniel G. A. Smith                   
+         ---------------------------------------------------------
+
+  ==> Algorithm <==
+
+   SAPT DFT Functional             PBE0
+   Monomer A GRAC Shift        0.203293
+   Monomer B GRAC Shift        0.138264
+   Delta HF                       False
+   JK Algorithm                      DF
+
+   Required computations:
+     DFT (Monomer A)
+     DFT (Monomer B)
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                          SAPT(DFT): DFT Monomer A                 
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          NE          0.000000000000     0.000000000000    -4.332520321268    19.992440175420
+          AR(Gh)      0.000000000000     0.000000000000     2.167479678732    39.962383122510
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      0.10692  C =      0.10692 [cm^-1]
+  Rotational constants: A = ************  B =   3205.49544  C =   3205.49544 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz.gbs
+    Number of shells: 20
+    Number of basis function: 50
+    Number of Cartesian functions: 54
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Deriv            =              1
+    GGA              =           TRUE
+    Meta             =          FALSE
+
+    Exchange Hybrid  =           TRUE
+    Exchange Alpha   =       0.250000
+
+    Exchange LRC     =          FALSE
+    Exchange Beta    =       0.000000
+    Exchange Omega   =       0.000000
+
+   => Exchange Functionals <=
+
+    0.7500   XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000   XC_GGA_C_PBE
+
+   => Asymptotic Correction <=
+
+    X Functional     =    XC_GGA_X_LB
+    C Functional     =   XC_LDA_C_VWN
+    Bulk Shift       =       0.203293
+    GRAC Alpha       =       0.500000
+    GRAC Beta        =      40.000000
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =          45039
+    Total Blocks     =            478
+    Max Points       =            200
+    Max Functions    =             50
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         50      50       0       0       0       0
+   -------------------------------------------------------
+    Total      50      50       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs
+    Number of shells: 68
+    Number of basis function: 214
+    Number of Cartesian functions: 251
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 4.2959218814E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:  -128.81843295505149   -1.28818e+02   1.94450e-03 
+   @DF-RKS iter   1:  -128.82044311095436   -2.01016e-03   3.20581e-04 
+   @DF-RKS iter   2:  -128.82036836033706    7.47506e-05   3.25305e-04 DIIS
+   @DF-RKS iter   3:  -128.82048295681685   -1.14596e-04   3.77689e-06 DIIS
+   @DF-RKS iter   4:  -128.82048280131181    1.55505e-07   5.49356e-08 DIIS
+   @DF-RKS iter   5:  -128.82048280476980   -3.45798e-09   8.29202e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -31.293525     2A     -1.697822     3A     -0.788209  
+       4A     -0.788200     5A     -0.788200  
+
+    Virtual:                                                              
+
+       6A     -0.052465     7A      0.015104     8A      0.029300  
+       9A      0.029300    10A      0.070643    11A      0.093111  
+      12A      0.093111    13A      0.173202    14A      0.417827  
+      15A      0.464515    16A      0.464515    17A      0.478938  
+      18A      0.674682    19A      0.677722    20A      0.697555  
+      21A      0.697555    22A      0.741853    23A      1.315621  
+      24A      1.315629    25A      1.317452    26A      1.317452  
+      27A      1.327602    28A      1.472987    29A      1.472987  
+      30A      1.512039    31A      1.799480    32A      2.295289  
+      33A      2.331257    34A      2.333555    35A      2.333555  
+      36A      2.985188    37A      2.985188    38A      2.985873  
+      39A      2.986588    40A      3.027386    41A      5.682526  
+      42A      5.682561    43A      5.683545    44A      5.683545  
+      45A      5.691612    46A      9.088343    47A     27.622851  
+      48A     27.622851    49A     27.639303    50A    176.480011  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:  -128.82048280476980
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -182.2940958506122797
+    Two-Electron Energy =                  62.8448263644521958
+    DFT Exchange-Correlation Energy =      -9.3712133186096995
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -128.8204828047697958
+
+    Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:   -43.3252
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    43.3262
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0010     Total:     0.0010
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     0.0026     Total:     0.0026
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                          SAPT(DFT): DFT Monomer B                 
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          NE(Gh)      0.000000000000     0.000000000000    -4.332520321268    19.992440175420
+          AR          0.000000000000     0.000000000000     2.167479678732    39.962383122510
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =      0.10692  C =      0.10692 [cm^-1]
+  Rotational constants: A = ************  B =   3205.49544  C =   3205.49544 [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 18
+  Nalpha       = 9
+  Nbeta        = 9
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz.gbs
+    Number of shells: 20
+    Number of basis function: 50
+    Number of Cartesian functions: 54
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Deriv            =              1
+    GGA              =           TRUE
+    Meta             =          FALSE
+
+    Exchange Hybrid  =           TRUE
+    Exchange Alpha   =       0.250000
+
+    Exchange LRC     =          FALSE
+    Exchange Beta    =       0.000000
+    Exchange Omega   =       0.000000
+
+   => Exchange Functionals <=
+
+    0.7500   XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000   XC_GGA_C_PBE
+
+   => Asymptotic Correction <=
+
+    X Functional     =    XC_GGA_X_LB
+    C Functional     =   XC_LDA_C_VWN
+    Bulk Shift       =       0.138264
+    GRAC Alpha       =       0.500000
+    GRAC Beta        =      40.000000
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =          45039
+    Total Blocks     =            478
+    Max Points       =            200
+    Max Functions    =             50
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         50      50       0       0       0       0
+   -------------------------------------------------------
+    Total      50      50       9       9       9       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs
+    Number of shells: 68
+    Number of basis function: 214
+    Number of Cartesian functions: 251
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 4.2959218814E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:  -527.36137383557991   -5.27361e+02   3.66167e-03 
+   @DF-RKS iter   1:  -527.36590926688427   -4.53543e-03   1.34541e-03 
+   @DF-RKS iter   2:  -527.36720523068084   -1.29596e-03   8.92449e-04 DIIS
+   @DF-RKS iter   3:  -527.36810050409190   -8.95273e-04   8.80579e-06 DIIS
+   @DF-RKS iter   4:  -527.36810104996266   -5.45871e-07   1.14159e-07 DIIS
+   @DF-RKS iter   5:  -527.36810103668540    1.32773e-08   1.84470e-08 DIIS
+   @DF-RKS iter   6:  -527.36810103696212   -2.76714e-10   1.68673e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A   -115.425712     2A    -11.352475     3A     -8.873603  
+       4A     -8.873601     5A     -8.873601     6A     -1.130781  
+       7A     -0.578157     8A     -0.578156     9A     -0.578156  
+
+    Virtual:                                                              
+
+      10A     -0.058100    11A     -0.017374    12A     -0.014743  
+      13A     -0.014743    14A      0.108313    15A      0.163096  
+      16A      0.163096    17A      0.164104    18A      0.242998  
+      19A      0.242998    20A      0.258092    21A      0.258092  
+      22A      0.329637    23A      0.645497    24A      0.645497  
+      25A      0.656369    26A      0.940807    27A      1.001538  
+      28A      1.181908    29A      1.181908    30A      1.202109  
+      31A      1.202131    32A      1.220925    33A      1.235815  
+      34A      1.235815    35A      1.296834    36A      2.016811  
+      37A      2.016811    38A      2.021273    39A      2.021273  
+      40A      2.034101    41A      4.583383    42A      8.833814  
+      43A      8.834356    44A      8.834356    45A      8.845682  
+      46A      8.845686    47A      8.850013    48A      8.850013  
+      49A      8.888582    50A     53.322226  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     9 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:  -527.36810103696212
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -728.3106756432141538
+    Two-Electron Energy =                 224.1424937710609697
+    DFT Exchange-Correlation Energy =     -23.1999191648089713
+    Empirical Dispersion Energy =           0.0000000000000000
+    PCM Polarization Energy =               0.0000000000000000
+    EFP Energy =                            0.0000000000000000
+    Total Energy =                       -527.3681010369621163
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    39.0146
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:   -39.0139
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0007     Total:     0.0007
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0019     Total:     0.0019
+
+
+         ---------------------------------------------------------
+               SAPT(DFT): Intermolecular Interaction Segment       
+
+                   by Daniel G. A. Smith and Rob Parrish           
+         ---------------------------------------------------------
+
+  ==> Algorithm <==
+
+   SAPT DFT Functional             PBE0
+   Monomer A GRAC Shift        0.203293
+   Monomer B GRAC Shift        0.138264
+   Delta HF                       False
+   JK Algorithm                      DF
+
+  ==> Preparing SAPT Data Cache <== 
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           SAVE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz-jkfit.gbs
+    Number of shells: 68
+    Number of basis function: 214
+    Number of Cartesian functions: 251
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+
+  ==> E10 Electostatics <== 
+
+    Elst10,r                 -0.10195546 [mEh]
+
+  ==> E10 Exchange <== 
+
+    Exch10(S^2)               0.36554772 [mEh]
+    Exch10                    0.36563239 [mEh]
+
+  ==> E20 Induction <== 
+
+   => Uncoupled Induction <= 
+
+    Ind20,u (A<-B)           -0.01336018 [mEh]
+    Ind20,u (A->B)           -0.08757200 [mEh]
+    Ind20,u                  -0.10093218 [mEh]
+    Exch-Ind20,u (A<-B)       0.01265463 [mEh]
+    Exch-Ind20,u (A->B)       0.09118467 [mEh]
+    Exch-Ind20,u              0.10383931 [mEh]
+
+   => Coupled Induction <= 
+
+   => CPHF Monomer A <= 
+
+   ==> Coupled-Perturbed RHF Solver <==
+
+    Maxiter             =          50
+    Convergence         =   1.000E-08
+    Number of equations =           1
+   -----------------------------------------------------
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+    Guess      1.987e+00    1.987e+00       1         0
+        1      8.585e-02    8.585e-02       1         1
+        2      2.663e-02    2.663e-02       1         1
+        3      9.704e-04    9.704e-04       1         1
+        4      4.933e-05    4.933e-05       1         1
+        5      8.082e-06    8.082e-06       1         2
+        6      3.671e-07    3.671e-07       1         2
+        7      1.053e-08    1.053e-08       1         2
+        8      5.200e-10    5.200e-10       0         2
+   -----------------------------------------------------
+
+    Solver has converged.
+
+   => CPHF Monomer B <= 
+
+   ==> Coupled-Perturbed RHF Solver <==
+
+    Maxiter             =          50
+    Convergence         =   1.000E-08
+    Number of equations =           1
+   -----------------------------------------------------
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+    Guess      1.989e+00    1.989e+00       1         1
+        1      6.191e-02    6.191e-02       1         1
+        2      1.567e-02    1.567e-02       1         1
+        3      9.644e-04    9.644e-04       1         1
+        4      7.392e-05    7.392e-05       1         2
+        5      1.727e-05    1.727e-05       1         2
+        6      5.736e-07    5.736e-07       1         2
+        7      1.596e-08    1.596e-08       1         2
+        8      8.321e-10    8.321e-10       0         3
+   -----------------------------------------------------
+
+    Solver has converged.
+
+    Ind20,r (A<-B)           -0.01381624 [mEh]
+    Ind20,r (A->B)           -0.09086012 [mEh]
+    Ind20,r                  -0.10467636 [mEh]
+    Exch-Ind20,r (A<-B)       0.01307473 [mEh]
+    Exch-Ind20,r (A->B)       0.09509420 [mEh]
+    Exch-Ind20,r              0.10816893 [mEh]
+
+  ==> E20 Dispersion (CHF FDDS) <== 
+
+   Legendre Points:          10
+   Lambda Shift:          0.300
+   Fxc Kernal:             ALDA
+   (P|Fxc|Q) Thresh:  1.000e-08
+
+   => Time Integration <= 
+
+       Omega       Weight       Disp20,u         Disp20   time [s]
+   2.269e+01    6.667e-02      2.365e-06      2.350e-06          0
+   4.147e+00    1.495e-01      9.740e-05      9.009e-05          0
+   1.572e+00    2.191e-01      3.985e-04      3.196e-04          0
+   7.589e-01    2.693e-01      5.750e-04      4.055e-04          0
+   4.049e-01    2.955e-01      5.010e-04      3.299e-04          0
+   2.223e-01    2.955e-01      3.466e-04      2.224e-04          0
+   1.186e-01    2.693e-01      2.204e-04      1.402e-04          0
+   5.727e-02    2.191e-01      1.341e-04      8.512e-05          0
+   2.170e-02    1.495e-01      7.472e-05      4.738e-05          0
+   3.966e-03    6.667e-02      2.979e-05      1.889e-05          0
+
+    Disp20,u                 -0.37875895 [mEh]
+    Disp20                   -0.26441994 [mEh]
+
+  ==> E20 Dispersion (MP2) <== 
+
+  ==> DFERI: Density Fitted 3-Index Tensors <==
+
+    Schwarz cutoff =   0.000E+00
+    J cutoff       =   1.000E-12
+    Mem (GB)       =           0
+
+   => Auxiliary Basis <=
+
+  Basis Set: file /Users/daniel/Gits/psixc/psi4/share/psi4/basis/aug-cc-pvdz-ri.gbs
+    Number of shells: 50
+    Number of basis function: 164
+    Number of Cartesian functions: 196
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+
+    Disp20 (MP2)             -0.37878999 [mEh]
+    Exch-Disp20,u             0.02037017 [mEh]
+
+   SAPT(DFT) Results
+  -------------------------------------------------------------------------------------------------
+    Electrostatics           -0.10195546 [mEh]     -0.06397802 [kcal/mol]     -0.26768405 [kJ/mol]
+      Elst10,r               -0.10195546 [mEh]     -0.06397802 [kcal/mol]     -0.26768405 [kJ/mol]
+
+    Exchange                  0.36563239 [mEh]      0.22943780 [kcal/mol]      0.95996785 [kJ/mol]
+      Exch10                  0.36563239 [mEh]      0.22943780 [kcal/mol]      0.95996785 [kJ/mol]
+      Exch10(S^2)             0.36554772 [mEh]      0.22938467 [kcal/mol]      0.95974553 [kJ/mol]
+
+    Induction                 0.00349257 [mEh]      0.00219162 [kcal/mol]      0.00916974 [kJ/mol]
+      Ind20,r                -0.10467636 [mEh]     -0.06568541 [kcal/mol]     -0.27482778 [kJ/mol]
+      Exch-Ind20,r            0.10816893 [mEh]      0.06787703 [kcal/mol]      0.28399752 [kJ/mol]
+      Induction (A<-B)       -0.00074151 [mEh]     -0.00046531 [kcal/mol]     -0.00194685 [kJ/mol]
+      Induction (A->B)        0.00423408 [mEh]      0.00265693 [kcal/mol]      0.01111659 [kJ/mol]
+
+    Dispersion               -0.24404978 [mEh]     -0.15314355 [kcal/mol]     -0.64075269 [kJ/mol]
+      Disp20,r               -0.26441994 [mEh]     -0.16592603 [kcal/mol]     -0.69423456 [kJ/mol]
+      Disp20,u               -0.37878999 [mEh]     -0.23769432 [kcal/mol]     -0.99451311 [kJ/mol]
+      Exch-Disp20,u           0.02037017 [mEh]      0.01278247 [kcal/mol]      0.05348187 [kJ/mol]
+
+   Total SAPT(DFT)            0.02311973 [mEh]      0.01450785 [kcal/mol]      0.06070085 [kJ/mol]
+  -------------------------------------------------------------------------------------------------
+
+*** tstop() called on verizon-ar.imtc.gatech.edu at Sun Jan 15 09:55:34 2017
+Module time:
+	user time   =       9.32 seconds =       0.16 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
+Total time:
+	user time   =       9.32 seconds =       0.16 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
+	SAPT ELST ENERGY..................................................PASSED
+	CURRENT ENERGY....................................................PASSED
+	SAPT IND ENERGY...................................................PASSED
+	SAPT DISP ENERGY..................................................PASSED
+	SAPT EXCH ENERGY..................................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

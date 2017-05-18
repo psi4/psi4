@@ -22,7 +22,7 @@ H_l -0.5  0.7 0.0
 psi4.set_options({'basis': 'cc-pvdz'})
 
 print('[1]    <<<  uniform cc-pVDZ  >>>')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
 psi4.compare_strings('CC-PVDZ', psi4.core.get_global_option('BASIS'), 'name')  #TEST
 psi4.compare_integers(38, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(40, wert.nao(), 'nao()')  #TEST
@@ -46,7 +46,7 @@ psi4.basis_helper("""
     assign cc-pvdz
     assign c aug-cc-pvdz
 """, name='dz_PLUS')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
 psi4.compare_integers(47, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(50, wert.nao(), 'nao()')  #TEST
 psi4.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')  #TEST
@@ -75,7 +75,7 @@ psi4.basis_helper("""
 """,
 name='dz_PLUSplus',
 key='BASis')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
 psi4.compare_strings('DZ_PLUSPLUS', psi4.core.get_global_option('BASIS'), 'name')  #TEST
 psi4.compare_integers(51, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(54, wert.nao(), 'nao()')  #TEST
@@ -108,7 +108,7 @@ psi4.basis_helper("""
     assign h aug-cc-pvdz
 """,
 name = 'dz_PLUSplusplus')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
 psi4.compare_integers(55, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(58, wert.nao(), 'nao()')  #TEST
 psi4.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')  #TEST
@@ -129,7 +129,7 @@ mymol.print_out()
 psi4.set_options({'basis': 'aug-cc-pvdz'})
 
 print('[9]    <<<  aug-cc-pVDZ  >>>')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', psi4.core.get_global_option('BASIS'))
 psi4.compare_integers(64, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(68, wert.nao(), 'nao()')  #TEST
 psi4.compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')  #TEST
@@ -159,7 +159,7 @@ H_c -0.5  0.0 0.7
 psi4.set_options({'basis': 'dz_plusplusplus'})
 
 print('[11]   <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
-wert = psi4.core.BasisSet.build(mymol2, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol2, 'BASIS', psi4.core.get_global_option('BASIS'))
 psi4.compare_integers(64, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(67, wert.nao(), 'nao()')  #TEST
 psi4.compare_strings('cs', mymol2.schoenflies_symbol(), 'symm')  #TEST
@@ -179,7 +179,7 @@ psi4.basis_helper("""
 psi4.core.set_global_option('DF_BASIS_MP2', '')  # clear df_basis_mp2 {...} to get autoaux below
 
 print('[12]   <<<  cc-pV5Z on HeNe  >>>')
-wert = psi4.core.BasisSet.build(hene, 'BASIS', psi4.core.get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(hene, 'BASIS', psi4.core.get_global_option('BASIS'))
 hene.print_out()
 psi4.compare_integers(146, wert.nbf(), 'nbf()')  #TEST
 psi4.compare_integers(196, wert.nao(), 'nao()')  #TEST

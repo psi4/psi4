@@ -16,4 +16,4 @@ set {
   r_convergence 10
 }
 
-property('ccsd',properties=['rotation'])
+properties('ccsd',properties=['rotation'])

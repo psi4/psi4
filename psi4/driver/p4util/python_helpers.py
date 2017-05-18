@@ -30,7 +30,7 @@ import os
 import re
 import sys
 import uuid
-import subprocess
+import numpy as np
 
 from . import optproc
 from psi4.driver import qcdb
@@ -76,7 +76,16 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
         core.print_out(basisdict['message'])
 
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
-    return psibasis
+    ecpbasis = None
+    if 'ecp_shell_map' in basisdict:
+        ecpbasis = core.BasisSet.construct_ecp_from_pydict(mol, basisdict, puream)
+
+    if key == 'BASIS':
+        # For orbitals basis sets, we need to return ECP also
+        return psibasis, ecpbasis
+    else:
+        # There is no ECP basis for auxilliary basis sets
+        return psibasis
 
 core.BasisSet.build = pybuild_basis
 
@@ -85,14 +94,17 @@ core.BasisSet.build = pybuild_basis
 @staticmethod
 def pybuild_wavefunction(mol, basis=None):
     if basis is None:
-        basis = core.BasisSet.build(mol)
+        basis, ecpbasis = core.BasisSet.build(mol)
     elif (sys.version_info[0] == 2) and isinstance(basis, (str, unicode)):
-        basis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis, ecpbasis = core.BasisSet.build(mol, "ORBITAL", basis)
     elif (sys.version_info[0] > 2) and isinstance(basis, str):
-        basis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis, ecpbasis = core.BasisSet.build(mol, "ORBITAL", basis)
 
-
-    return core.Wavefunction(mol, basis)
+    if ecpbasis:
+        wfn = core.Wavefunction(mol, basis, ecpbasis)
+    else:
+        wfn = core.Wavefunction(mol, basis)
+    return wfn
 
 core.Wavefunction.build = pybuild_wavefunction
 
@@ -159,6 +171,38 @@ def pybuild_JK(orbital_basis, aux=None, jk_type=None):
 
 core.JK.build = pybuild_JK
 
+## Grid Helpers
+
+def get_np_xyzw(Vpot):
+    """
+    Returns the x, y, z, and weights of a grid as a tuple of NumPy array objects.
+    """
+    x_list = []
+    y_list = []
+    z_list = []
+    w_list = []
+
+    # Loop over every block in the potenital
+    for b in range(Vpot.nblocks()):
+
+        # Obtain the block
+        block = Vpot.get_block(b)
+
+        # Obtain the x, y, and z coordinates along with the weight
+        x_list.append(block.x())
+        y_list.append(block.y())
+        z_list.append(block.z())
+        w_list.append(block.w())
+
+    x = np.hstack(x_list)
+    y = np.hstack(y_list)
+    z = np.hstack(z_list)
+    w = np.hstack(w_list)
+
+    return (x, y, z, w)
+
+core.VBase.get_np_xyzw = get_np_xyzw
+
 ## Python other helps
 
 core.Molecule.run_dftd3 = qcdb.interface_dftd3.run_dftd3
@@ -182,6 +226,7 @@ def set_module_options(module, options_dict):
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
 
+## OEProp helpers
 
 def pcm_helper(block):
     """Passes multiline string *block* to PCMSolver parser."""
@@ -283,3 +328,9 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
     qcdb.libmintsbasisset.basishorde[name.upper()] = anon
     if set_option:
         core.set_global_option(key, name)
+
+core.OEProp.valid_methods = [
+    'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES',
+    'MAYER_INDICES', 'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+    'NO_OCCUPATIONS'
+]

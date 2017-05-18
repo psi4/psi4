@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(cbs-xtpl-opt "psi;quicktests;cbs")
+add_regression_test(cbs-xtpl-opt "psi;cbs")

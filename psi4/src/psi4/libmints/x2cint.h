@@ -35,6 +35,8 @@
 
 namespace psi {
 
+class MatrixFactory;
+
 /*! \ingroup MINTS
  *  \class X2CInt
  *  \brief Computes the 1e-X2C kinetic and potential integrals.

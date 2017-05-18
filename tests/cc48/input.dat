@@ -99,4 +99,4 @@ D 2 1.00
 ****
 }
 
-property('eom-ccsd', properties=['dipole'])
+properties('eom-ccsd', properties=['dipole'])

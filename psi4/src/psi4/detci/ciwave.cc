@@ -651,6 +651,8 @@ void CIWavefunction::init_mcscf_object(){
         somcscf_->set_ras(ras_spaces);
     }
 
+    somcscf_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
+
     // Set fzc energy
     SharedMatrix Cfzc = get_orbitals("FZC");
     somcscf_->set_frozen_orbitals(Cfzc);

@@ -40,6 +40,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/integral.h"
@@ -66,14 +67,21 @@ double fac[MAX_FAC];
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
                            std::shared_ptr<BasisSet> basis,
                            Options &options) :
-        options_(options), basisset_(basis), molecule_(molecule)
+        options_(options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
 {
     common_init();
 }
 
+Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
+                           std::shared_ptr<BasisSet> basis,
+                           std::shared_ptr<BasisSet> ecpbasis) :
+        options_(Process::environment.options), basisset_(basis), ecpbasisset_(ecpbasis), molecule_(molecule)
+{
+    common_init();
+}
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis) :
-        options_(Process::environment.options), basisset_(basis), molecule_(molecule)
+        options_(Process::environment.options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
 {
 
     common_init();
@@ -98,6 +106,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
 
     name_ = other->name_;
     basisset_ = other->basisset_;
+    ecpbasisset_ = other->ecpbasisset_;
     basissets_ = other->basissets_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
@@ -131,8 +140,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
     nso_ = other->nso_;
     nmo_ = other->nmo_;
     nirrep_ = other->nirrep_;
-
-    oeprop_ = other->oeprop_;
 
     same_a_b_dens_ = other->same_a_b_dens_;
     same_a_b_orbs_ = other->same_a_b_orbs_;
@@ -169,8 +176,12 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     name_ = other->name_;
     molecule_ = std::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
     basisset_ = other->basisset_;
+    ecpbasisset_ = other->ecpbasisset_;
     basissets_ = other->basissets_; // Still cannot copy basissets
-    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    if(ecpbasisset_)
+        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_, ecpbasisset_));
+    else
+        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
     factory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
     factory_->init_with(other->nsopi_, other->nsopi_);
@@ -190,8 +201,6 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     energy_ = other->energy_;
     efzc_ = other->efzc_;
     variables_ = other->variables_;
-
-    // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
 
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
@@ -240,7 +249,10 @@ void Wavefunction::common_init()
     }
 
     // Create an SO basis...we need the point group for this part.
-    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    if(ecpbasisset_)
+        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_, ecpbasisset_));
+    else
+        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
 
     std::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
@@ -412,6 +424,12 @@ std::shared_ptr<BasisSet> Wavefunction::basisset() const
 {
     return basisset_;
 }
+
+std::shared_ptr<BasisSet> Wavefunction::ecpbasisset() const
+{
+    return ecpbasisset_;
+}
+
 std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label)
 {
     // This may be slightly confusing, but better than changing this in 800 other places
@@ -459,6 +477,12 @@ std::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const
 void Wavefunction::set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn)
 {
     reference_wavefunction_ = wfn;
+}
+
+void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
+    for (int h = 0; h < nirrep_; h++) {
+        frzvpi_[h] = frzvpi[h];
+    }
 }
 
 SharedMatrix Wavefunction::Ca() const

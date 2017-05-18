@@ -366,7 +366,6 @@ def mcscf_solver(ref_wfn):
     if core.get_option("DETCI", "MCSCF_CI_CLEANUP"):
         ciwfn.cleanup_ci()
     if core.get_option("DETCI", "MCSCF_DPD_CLEANUP"):
-        # print('Cleaning up DPD data!')
         ciwfn.cleanup_dpd()
 
     del diis_obj

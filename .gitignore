@@ -48,6 +48,8 @@ input.py.dat
 *.clean
 *timer.dat
 *.molden
+*.cube
+dfh.*
 
 # Special test cases
 tests/*/iter.dat
@@ -85,6 +87,8 @@ debug
 debug_latest
 *.sh
 TEST
+*/test.py
+*/test.dat
 
 # Other random files people have added.
 svn_source

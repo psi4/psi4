@@ -35,9 +35,6 @@ namespace psi {
 class BasisSet;
 class Molecule;
 class GaussianShell;
-class ObaraSaikaTwoCenterRecursion;
-class OneBodyAOInt;
-class IntegralFactory;
 class SphericalTransform;
 class Vector3;
 

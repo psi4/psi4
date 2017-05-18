@@ -110,14 +110,14 @@ public:
     { return count_; }
 };
 
-MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int print)
+MintsHelper::MintsHelper(std::shared_ptr <BasisSet> basis, Options &options, int print, std::shared_ptr<BasisSet> ecpbasis)
         : options_(options), print_(print)
 {
-    init_helper(basis);
+    init_helper(basis, ecpbasis);
 }
 
 MintsHelper::MintsHelper(std::shared_ptr <Wavefunction> wavefunction)
-        : options_(wavefunction->options())
+        : options_(wavefunction->options()), print_(wavefunction->get_print())
 {
     init_helper(wavefunction);
 }
@@ -136,6 +136,7 @@ void MintsHelper::init_helper(std::shared_ptr <Wavefunction> wavefunction)
 
     psio_ = wavefunction->psio();
     basisset_ = wavefunction->basisset();
+    ecpbasis_ = wavefunction->ecpbasisset();
     molecule_ = basisset_->molecule();
 
     // Make sure molecule is valid.
@@ -144,9 +145,10 @@ void MintsHelper::init_helper(std::shared_ptr <Wavefunction> wavefunction)
     common_init();
 }
 
-void MintsHelper::init_helper(std::shared_ptr <BasisSet> basis)
+void MintsHelper::init_helper(std::shared_ptr <BasisSet> basis,  std::shared_ptr<BasisSet> ecpbasis)
 {
     basisset_ = basis;
+	ecpbasis_ = ecpbasis; 
     molecule_ = basis->molecule();
     psio_ = _default_psio_lib_;
 
@@ -173,7 +175,7 @@ void MintsHelper::common_init()
     #endif
 
     // Create integral factory
-    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, ecpbasis_));
 
     // Get the SO basis object.
     sobasis_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
@@ -209,6 +211,11 @@ std::shared_ptr <BasisSet> MintsHelper::basisset() const
 std::shared_ptr <SOBasisSet> MintsHelper::sobasisset() const
 {
     return sobasis_;
+}
+
+std::shared_ptr<BasisSet> MintsHelper::ecpbasisset() const
+{
+	return ecpbasis_; 
 }
 
 std::shared_ptr <MatrixFactory> MintsHelper::factory() const
@@ -514,7 +521,7 @@ SharedMatrix MintsHelper::ao_overlap()
 SharedMatrix MintsHelper::ao_overlap(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
     // Overlap
-    IntegralFactory factory(bs1, bs2);
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++){
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_overlap()));
@@ -537,7 +544,7 @@ SharedMatrix MintsHelper::ao_kinetic()
 
 SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
-    IntegralFactory factory(bs1, bs2);
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++){
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_kinetic()));
@@ -560,7 +567,7 @@ SharedMatrix MintsHelper::ao_potential()
 
 SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2)
 {
-    IntegralFactory factory(bs1, bs2);
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++){
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_potential()));
@@ -568,6 +575,29 @@ SharedMatrix MintsHelper::ao_potential(std::shared_ptr <BasisSet> bs1, std::shar
     SharedMatrix potential_mat(new Matrix("AO-basis Potential Ints", bs1->nbf(), bs2->nbf()));
     one_body_ao_computer(ints_vec, potential_mat, false);
     return potential_mat;
+}
+
+SharedMatrix MintsHelper::ao_ecp()
+{
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_ecp()));
+    }
+    SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", basisset_->nbf(), basisset_->nbf()));
+    one_body_ao_computer(ints_vec, ecp_mat, true);
+    return ecp_mat;
+}
+
+SharedMatrix MintsHelper::ao_ecp(std::shared_ptr <BasisSet> bs1, std::shared_ptr <BasisSet> bs2, std::shared_ptr <BasisSet> bsecp)
+{
+    IntegralFactory factory(bs1, bs2, bs1, bs2, bsecp);
+    std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
+    for (size_t i = 0; i < nthread_; i++){
+        ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(factory.ao_ecp()));
+    }
+    SharedMatrix ecp_mat(new Matrix("AO-basis ECP Ints", bs1->nbf(), bs2->nbf()));
+    one_body_ao_computer(ints_vec, ecp_mat, false);
+    return ecp_mat;
 }
 
 SharedMatrix MintsHelper::ao_pvp()
@@ -835,14 +865,14 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
             for (int P = 0; P < bs3->nshell(); P++) {
 
                 ints->compute_shell(M, N, P);
+                int Mfi = bs1->shell(M).function_index();
+                int Nfi = bs2->shell(N).function_index();
+                int Pfi = bs3->shell(P).function_index();
 
-                for (int m = 0, index = 0; m < bs1->shell(M).nfunction(); m++) {
-                    for (int n = 0; n < bs2->shell(N).nfunction(); n++) {
-                        for (int p = 0; p < bs3->shell(P).nfunction(); p++) {
-                            Ip[(bs1->shell(M).function_index() + m) * nbf2 + bs2->shell(N).function_index() + n]
-                            [(bs3->shell(P).function_index() + p)]
-                                    = buffer[index];
-
+                for (int m = Mfi, index = 0; m < (Mfi + bs1->shell(M).nfunction()); m++) {
+                    for (int n = Nfi; n < (Nfi + bs2->shell(N).nfunction()); n++) {
+                        for (int p = Pfi; p < (Pfi + bs3->shell(P).nfunction()); p++) {
+                            Ip[m * nbf2 + n][p] = buffer[index++];
                         }
                     }
                 }
@@ -859,7 +889,7 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
 SharedMatrix MintsHelper::ao_3coverlap()
 {
     std::vector<SphericalTransform> trans;
-    for (int i=0; i<basisset_->max_am(); i++){
+    for (int i = 0; i <= basisset_->max_am(); i++) {
         trans.push_back(SphericalTransform(i));
     }
     std::shared_ptr<ThreeCenterOverlapInt> ints(new ThreeCenterOverlapInt(trans, basisset_, basisset_, basisset_));
@@ -870,10 +900,9 @@ SharedMatrix MintsHelper::ao_3coverlap(std::shared_ptr<BasisSet> bs1,
                                        std::shared_ptr<BasisSet> bs2,
                                        std::shared_ptr<BasisSet> bs3)
 {
-
     int max_am = std::max(std::max(bs1->max_am(), bs2->max_am()), bs3->max_am());
     std::vector<SphericalTransform> trans;
-    for (int i=0; i<max_am; i++){
+    for (int i = 0; i <= max_am ; i++) {
         trans.push_back(SphericalTransform(i));
     }
     std::shared_ptr<ThreeCenterOverlapInt> ints(new ThreeCenterOverlapInt(trans, bs1, bs2, bs3));
@@ -1166,6 +1195,26 @@ SharedMatrix MintsHelper::so_kinetic()
     }
 }
 
+SharedMatrix MintsHelper::so_ecp()
+{
+    if (!integral_->hasECP()) {
+        SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
+        ecp_mat->zero();
+        outfile->Printf("\n\tWarning! ECP integrals requested, but no ECP basis detected.  Returning zeros.\n");
+        return ecp_mat;
+    }
+
+    if (factory_->nirrep() == 1) {
+        SharedMatrix ecp_mat(ao_ecp());
+        ecp_mat->set_name("AO Basis ECP");
+        return ecp_mat;
+    } else {
+        SharedMatrix ecp_mat = factory_->create_shared_matrix("SO Basis ECP");
+        ecp_mat->apply_symmetry(ao_ecp(), petite_list()->aotoso());
+        return ecp_mat;
+    }
+}
+
 SharedMatrix MintsHelper::so_potential(bool include_perturbations)
 {
     // No symmetry
@@ -1176,6 +1225,11 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations)
     } else {
         potential_mat = factory_->create_shared_matrix(PSIF_SO_V);
         potential_mat->apply_symmetry(ao_potential(), petite_list()->aotoso());
+    }
+
+    // Add ECPs, if needed
+    if (integral_->hasECP()) {
+        potential_mat->add(so_ecp());
     }
 
     // Handle addition of any perturbations here and not in SCF code.
@@ -1339,6 +1393,42 @@ std::vector <SharedMatrix> MintsHelper::ao_dipole()
     ints->compute(dipole);
 
     return dipole;
+}
+
+std::vector <SharedMatrix> MintsHelper::ao_quadrupole()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> quadrupole;
+
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_quadrupole());
+    ints->compute(quadrupole);
+
+    return quadrupole;
+}
+
+std::vector <SharedMatrix> MintsHelper::ao_traceless_quadrupole()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> quadrupole;
+
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+    quadrupole.push_back(SharedMatrix(new Matrix("AO Traceless Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_traceless_quadrupole());
+    ints->compute(quadrupole);
+
+    return quadrupole;
 }
 
 std::vector <SharedMatrix> MintsHelper::ao_nabla()

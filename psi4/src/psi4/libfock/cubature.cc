@@ -3832,17 +3832,30 @@ void BasisExtents::print(std::string out)
         printer->Printf( "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1,
             v[0], v[1], v[2], Rp[Q]);
     }
-    printer->Printf( "\n\n");
+    printer->Printf("\n\n");
 }
-BlockOPoints::BlockOPoints(int npoints, double* x, double* y, double* z, double* w, std::shared_ptr<BasisExtents> extents) :
-    npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents)
-{
+BlockOPoints::BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
+                           std::shared_ptr<BasisExtents> extents)
+    : npoints_(x->dimpi().sum()),
+      xvec_(x),
+      yvec_(y),
+      zvec_(z),
+      wvec_(w),
+      x_(xvec_->pointer()),
+      y_(yvec_->pointer()),
+      z_(zvec_->pointer()),
+      w_(wvec_->pointer()),
+      extents_(extents) {
     bound();
     populate();
 }
-BlockOPoints::~BlockOPoints()
-{
+BlockOPoints::BlockOPoints(int npoints, double *x, double *y, double *z, double *w,
+                           std::shared_ptr<BasisExtents> extents)
+    : npoints_(npoints), x_(x), y_(y), z_(z), w_(w), extents_(extents) {
+    bound();
+    populate();
 }
+BlockOPoints::~BlockOPoints() {}
 void BlockOPoints::bound()
 {
     // Initially: mean center and max spread of point cloud
@@ -3952,23 +3965,58 @@ DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule,
                  Options& options) :
     MolecularGrid(molecule), primary_(primary), options_(options)
 {
-    buildGridFromOptions();
+    std::map<std::string, std::string> opts_map;
+    std::map<std::string, int> int_opts_map;
+    buildGridFromOptions(int_opts_map, opts_map);
+}
+DFTGrid::DFTGrid(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> primary,
+                 std::map<std::string, int> int_opts_map,
+                 std::map<std::string, std::string> opts_map,
+                 Options& options) :
+    MolecularGrid(molecule), primary_(primary), options_(options)
+{
+    buildGridFromOptions(int_opts_map, opts_map);
 }
 DFTGrid::~DFTGrid()
 {
 }
 
-void DFTGrid::buildGridFromOptions()
+void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map)
 {
+
+    std::map<std::string, std::string> full_str_options;
+    std::vector<std::string> str_keys = {"DFT_RADIAL_SCHEME", "DFT_PRUNING_SCHEME", "DFT_NUCLEAR_SCHEME", "DFT_GRID_NAME"};
+    for (auto key : str_keys){
+        if (opts_map.find(key) != opts_map.end()){
+            full_str_options[key] = opts_map[key];
+        } else {
+            full_str_options[key] = options_.get_str(key);
+        }
+        // printf("%s : %s\n", key.c_str(), full_str_options[key].c_str());
+    }
+
+    std::map<std::string, int> full_int_options;
+    std::vector<std::string> int_keys = {"DFT_BLOCK_MAX_POINTS", "DFT_BLOCK_MIN_POINTS", "DFT_SPHERICAL_POINTS", "DFT_RADIAL_POINTS"};
+    for (auto key : int_keys){
+        if (int_opts_map.find(key) != int_opts_map.end()){
+            full_int_options[key] = int_opts_map[key];
+        } else {
+            full_int_options[key] = options_.get_int(key);
+        }
+        // printf("%s : %d\n", key.c_str(), full_int_options[key]);
+    }
+
+
     MolecularGridOptions opt;
     opt.bs_radius_alpha = options_.get_double("DFT_BS_RADIUS_ALPHA");
     opt.pruning_alpha = options_.get_double("DFT_PRUNING_ALPHA");
-    opt.radscheme = RadialGridMgr::WhichScheme(options_.get_str("DFT_RADIAL_SCHEME").c_str());
-    opt.prunescheme = RadialPruneMgr::WhichPruneScheme(options_.get_str("DFT_PRUNING_SCHEME").c_str());
-    opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("DFT_NUCLEAR_SCHEME").c_str());
-    opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("DFT_GRID_NAME").c_str());
-    opt.nradpts = options_.get_int("DFT_RADIAL_POINTS");
-    opt.nangpts = options_.get_int("DFT_SPHERICAL_POINTS");
+    opt.radscheme = RadialGridMgr::WhichScheme(full_str_options["DFT_RADIAL_SCHEME"].c_str());
+    opt.prunescheme = RadialPruneMgr::WhichPruneScheme(full_str_options["DFT_PRUNING_SCHEME"].c_str());
+    opt.nucscheme = NuclearWeightMgr::WhichScheme(full_str_options["DFT_NUCLEAR_SCHEME"].c_str());
+    opt.namedGrid = StandardGridMgr::WhichGrid(full_str_options["DFT_GRID_NAME"].c_str());
+    opt.nradpts = full_int_options["DFT_RADIAL_POINTS"];
+    opt.nangpts = full_int_options["DFT_SPHERICAL_POINTS"];
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) == -1) {
         LebedevGridMgr::PrintHelp(); // Tell what the admissible values are.
@@ -3978,8 +4026,8 @@ void DFTGrid::buildGridFromOptions()
     MolecularGrid::buildGridFromOptions(opt);
 
     // Blocking/sieving info
-    int max_points = options_.get_int("DFT_BLOCK_MAX_POINTS");
-    int min_points = options_.get_int("DFT_BLOCK_MIN_POINTS");
+    int max_points = full_int_options["DFT_BLOCK_MAX_POINTS"];
+    int min_points = full_int_options["DFT_BLOCK_MIN_POINTS"];
     double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
     std::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
@@ -4323,18 +4371,18 @@ void MolecularGrid::print(std::string out, int /*print*/) const
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
             std::shared_ptr<OutFile>(new OutFile(out)));
     printer->Printf("   => Molecular Quadrature <=\n\n");
-    printer->Printf("    Radial Scheme    = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
-    printer->Printf("    Pruning Scheme   = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
-    printer->Printf("    Nuclear Scheme   = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
+    printer->Printf("    Radial Scheme       = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
+    printer->Printf("    Pruning Scheme      = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
+    printer->Printf("    Nuclear Scheme      = %14s\n", NuclearWeightMgr::SchemeName(options_.nucscheme));
     printer->Printf("\n");
-    printer->Printf("    BS radius alpha  = %14g\n", options_.bs_radius_alpha);
-    printer->Printf("    Pruning alpha    = %14g\n", options_.pruning_alpha);
-    printer->Printf("    Radial Points    = %14d\n", options_.nradpts);
-    printer->Printf("    Spherical Points = %14d\n", options_.nangpts);
-    printer->Printf("    Total Points     = %14d\n", npoints_);
-    printer->Printf("    Total Blocks     = %14zu\n", blocks_.size());
-    printer->Printf("    Max Points       = %14d\n", max_points_);
-    printer->Printf("    Max Functions    = %14d\n", max_functions_);
+    printer->Printf("    BS radius alpha     = %14g\n", options_.bs_radius_alpha);
+    printer->Printf("    Pruning alpha       = %14g\n", options_.pruning_alpha);
+    printer->Printf("    Radial Points       = %14d\n", options_.nradpts);
+    printer->Printf("    Spherical Points    = %14d\n", options_.nangpts);
+    printer->Printf("    Total Points        = %14d\n", npoints_);
+    printer->Printf("    Total Blocks        = %14zu\n", blocks_.size());
+    printer->Printf("    Max Points          = %14d\n", max_points_);
+    printer->Printf("    Max Functions       = %14d\n", max_functions_);
     printer->Printf("\n");
 
 }

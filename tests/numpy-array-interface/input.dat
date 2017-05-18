@@ -200,5 +200,18 @@ json_data = irreped_mat.to_serial()
 json_vec = psi4.Matrix.from_serial(json_data)
 compare_matrices(json_vec, irreped_mat, 9, "Irreped psi4.Vector serialized read/write.")     #TEST
 
+# Test out chain_dot
+A = psi4.core.Matrix.from_array(np.random.rand(4, 3))
+B = psi4.core.Matrix.from_array(np.random.rand(3, 5))
+C = psi4.core.Matrix.from_array(np.random.rand(5, 5))
+D = psi4.core.Matrix.from_array(np.random.rand(5, 2))
+
+numpy_result = np.dot(A, B).dot(C).dot(D)
+psi_result = psi4.core.Matrix.chain_dot(A, B, C, D)
+compare_arrays(numpy_result, psi_result, 9, "Chain dot test 1.")     #TEST
+
+numpy_result = np.dot(A, B).dot(C.np.T).dot(D)
+psi_result = psi4.core.Matrix.chain_dot(A, B, C, D, trans=[False, False, True, False])
+compare_arrays(numpy_result, psi_result, 9, "Chain dot test 2.")     #TEST
 
 

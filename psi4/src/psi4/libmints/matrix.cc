@@ -1001,6 +1001,68 @@ void Matrix::symmetrize_gradient(std::shared_ptr <Molecule> molecule)
     copy(ret);
     ret.reset();
 }
+void Matrix::symmetrize_hessian(SharedMolecule molecule){
+    if ((nirrep() > 1) || (rowdim() != coldim()) || (rowdim() != 3 * molecule->natom())) {
+        throw PSIEXCEPTION("Matrix::symmetrize_hessian: Matrix cannot be symmetrized.");
+    }
+
+    CharacterTable ct = molecule->point_group()->char_table();
+
+    int **atom_map = compute_atom_map(molecule);
+
+    SharedMatrix symm(new Matrix(clone()));
+    symm->zero();
+    double **pH = pointer();
+    double **pS = symm->pointer();
+
+    // Symmetrize the Hessian's columns to remove any noise
+    int dim = 3 * molecule->natom();
+    for (int n = 0; n < dim; ++n) {
+        for (int atom = 0; atom < molecule->natom(); ++atom) {
+            for (int g = 0; g < ct.order(); ++g) {
+                int Gatom = atom_map[atom][g];
+
+                SymmetryOperation so = ct.symm_operation(g);
+
+                pS[n][3 * atom + 0] += so(0, 0) * pH[n][3 * Gatom + 0] / ct.order();
+                pS[n][3 * atom + 0] += so(0, 1) * pH[n][3 * Gatom + 1] / ct.order();
+                pS[n][3 * atom + 0] += so(0, 2) * pH[n][3 * Gatom + 2] / ct.order();
+
+                pS[n][3 * atom + 1] += so(1, 0) * pH[n][3 * Gatom + 0] / ct.order();
+                pS[n][3 * atom + 1] += so(1, 1) * pH[n][3 * Gatom + 1] / ct.order();
+                pS[n][3 * atom + 1] += so(1, 2) * pH[n][3 * Gatom + 2] / ct.order();
+
+                pS[n][3 * atom + 2] += so(2, 0) * pH[n][3 * Gatom + 0] / ct.order();
+                pS[n][3 * atom + 2] += so(2, 1) * pH[n][3 * Gatom + 1] / ct.order();
+                pS[n][3 * atom + 2] += so(2, 2) * pH[n][3 * Gatom + 2] / ct.order();
+            }
+        }
+    }
+    zero();
+    // Symmetrize the Hessian's rows to remove any noise
+    for (int n = 0; n < dim; ++n) {
+        for (int atom = 0; atom < molecule->natom(); ++atom) {
+            for (int g = 0; g < ct.order(); ++g) {
+                int Gatom = atom_map[atom][g];
+
+                SymmetryOperation so = ct.symm_operation(g);
+
+                pH[3 * atom + 0][n] += so(0, 0) * pS[3 * Gatom + 0][n] / ct.order();
+                pH[3 * atom + 0][n] += so(0, 1) * pS[3 * Gatom + 1][n] / ct.order();
+                pH[3 * atom + 0][n] += so(0, 2) * pS[3 * Gatom + 2][n] / ct.order();
+
+                pH[3 * atom + 1][n] += so(1, 0) * pS[3 * Gatom + 0][n] / ct.order();
+                pH[3 * atom + 1][n] += so(1, 1) * pS[3 * Gatom + 1][n] / ct.order();
+                pH[3 * atom + 1][n] += so(1, 2) * pS[3 * Gatom + 2][n] / ct.order();
+
+                pH[3 * atom + 2][n] += so(2, 0) * pS[3 * Gatom + 0][n] / ct.order();
+                pH[3 * atom + 2][n] += so(2, 1) * pS[3 * Gatom + 1][n] / ct.order();
+                pH[3 * atom + 2][n] += so(2, 2) * pS[3 * Gatom + 2][n] / ct.order();
+            }
+        }
+    }
+    delete_atom_map(atom_map, molecule);
+}
 
 void Matrix::identity()
 {
@@ -1946,19 +2008,17 @@ std::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_a_temps()
     return std::tuple<SharedMatrix, SharedVector, SharedMatrix>(U, S, V);
 }
 
-void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
-{
+void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V) {
     // Actually, this routine takes mn + mk + nk
     for (int h = 0; h < nirrep_; h++) {
-        if (!rowspi_[h] || !colspi_[h ^ symmetry_])
-            continue;
+        if (!rowspi_[h] || !colspi_[h ^ symmetry_]) continue;
 
         int m = rowspi_[h];
         int n = colspi_[h ^ symmetry_];
         int k = (m < n ? m : n);
 
         double **Ap = Matrix::matrix(m, n);
-        ::memcpy((void *) Ap[0], (void *) matrix_[h][0], sizeof(double) * m * n);
+        ::memcpy((void *)Ap[0], (void *)matrix_[h][0], sizeof(double) * m * n);
         double *Sp = S->pointer(h);
         double **Up = U->pointer(h);
         double **Vp = V->pointer(h ^ symmetry_);
@@ -1969,17 +2029,18 @@ void Matrix::svd(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
         double lwork;
         int info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, &lwork, -1, iwork);
 
-        double *work = new double[(int) lwork];
+        double *work = new double[(int)lwork];
 
         // SVD
-        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work, (int) lwork, iwork);
+        info = C_DGESDD('S', n, m, Ap[0], n, Sp, Vp[0], n, Up[0], k, work, (int)lwork, iwork);
 
         delete[] work;
         delete[] iwork;
 
         if (info != 0) {
             if (info < 0) {
-                outfile->Printf("Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                outfile->Printf(
+                    "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
 
                 abort();
             }
@@ -2059,8 +2120,7 @@ void Matrix::svd_a(SharedMatrix &U, SharedVector &S, SharedMatrix &V)
     }
 }
 
-SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned)
-{
+SharedMatrix Matrix::pseudoinverse(double condition, int &nremoved) {
     std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
     SharedMatrix U = std::get<0>(svd_temp);
     SharedVector S = std::get<1>(svd_temp);
@@ -2068,22 +2128,19 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool *conditioned)
 
     svd(U, S, V);
 
-    bool conditioned_here = false;
+    nremoved = 0;
     for (int h = 0; h < nirrep_; h++) {
         int ncol = S->dimpi()[h];
         double *Sp = S->pointer(h);
         double S0 = (ncol ? Sp[0] : 0.0);
         for (int i = 0; i < ncol; i++) {
-            if (Sp[i] > S0 * condition) {
+            if (Sp[i] > (S0 * condition)) {
                 Sp[i] = 1.0 / Sp[i];
             } else {
                 Sp[i] = 0.0;
-                conditioned_here = true;
+                ++nremoved;
             }
         }
-    }
-    if (conditioned) {
-        *conditioned = conditioned_here;
     }
 
     SharedMatrix Q(clone());
@@ -2280,7 +2337,7 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
         }
         sigpi[h] = nQ;
 
-	delete [] Dp;
+    delete [] Dp;
     }
 
     // Copy out to properly sized array
@@ -2653,7 +2710,7 @@ void Matrix::zero_lower()
     }
 
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for schedule(dynamic) 
+#pragma omp parallel for schedule(dynamic)
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < m; ++n) {
                 matrix_[h][m][n] = 0.0;
@@ -2670,7 +2727,7 @@ void Matrix::zero_upper()
     }
 
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for schedule(dynamic) 
+#pragma omp parallel for schedule(dynamic)
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < m; ++n) {
                 matrix_[h][n][m] = 0.0;

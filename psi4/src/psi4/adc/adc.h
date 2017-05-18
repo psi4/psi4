@@ -44,8 +44,6 @@
 namespace psi{
 
 class Options;
-class PSIO;
-class Chkpt;
 class Matrix;
 class Vector;
 class IntegralTransform;

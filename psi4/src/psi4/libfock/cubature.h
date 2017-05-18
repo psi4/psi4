@@ -35,12 +35,9 @@
 
 namespace psi {
 
-class PSIO;
 class BasisSet;
 class Matrix;
 class Vector;
-class IntVector;
-class Vector3;
 class BasisExtents;
 class BlockOPoints;
 class RadialGrid;
@@ -205,15 +202,17 @@ protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
     /// Master builder methods
-    void buildGridFromOptions();
+    void buildGridFromOptions(std::map<std::string, int> int_opts_map,
+                              std::map<std::string, std::string> opts_map);
     /// The Options object
     Options& options_;
 
 public:
-    DFTGrid(std::shared_ptr<Molecule> molecule,
-            std::shared_ptr<BasisSet> primary,
-            Options& options);
-    virtual ~DFTGrid();
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary, Options& options);
+    DFTGrid(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> primary,
+         std::map<std::string, int> int_opts_map, std::map<std::string, std::string> opts_map,
+         Options& options);
+virtual ~DFTGrid();
 };
 
 class RadialGrid {
@@ -371,6 +370,13 @@ class BlockOPoints {
 protected:
     /// number of points in this block
     int npoints_;
+
+    /// Data holders if requested
+    SharedVector xvec_;
+    SharedVector yvec_;
+    SharedVector zvec_;
+    SharedVector wvec_;
+
     /// Pointer to x (does not own)
     double* x_;
     /// Pointer to y (does not own)
@@ -397,6 +403,8 @@ protected:
     void bound();
 
 public:
+    BlockOPoints(SharedVector x, SharedVector y, SharedVector z, SharedVector w,
+                 std::shared_ptr<BasisExtents> extents);
     BlockOPoints(int npoints, double* x, double* y, double* z, double* w,
         std::shared_ptr<BasisExtents> extents);
     virtual ~BlockOPoints();

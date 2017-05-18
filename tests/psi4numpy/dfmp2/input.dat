@@ -37,8 +37,22 @@ t = time.time()
 aux = BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
                          get_option("DFMP2", "DF_BASIS_MP2"),
                          "RIFIT", get_global_option('BASIS'))
-dfobj = DFTensor(wfn.basisset(), aux, wfn.Ca(), ndocc, nvirt)
-Qov = dfobj.Qov()
+
+# Build and transform a OV basis
+print("Initializing DF_Helper object.")
+dfobj = DF_Helper(wfn.basisset(), aux)
+dfobj.set_method("DIRECT")
+dfobj.set_MO_hint(wfn.basisset().nbf())
+dfobj.initialize()
+
+
+print("Transforming the AO->MO integrals.\n")
+dfobj.add_space("O", wfn.Ca_subset("AO", "OCC"))
+dfobj.add_space("V", wfn.Ca_subset("AO", "VIR"))
+dfobj.add_transformation("Qov", "O", "V")
+
+dfobj.transform()
+Qov = dfobj.get_tensor("Qov")
 
 psi4.print_out('...Qov build in %.3f seconds with a shape of %s, %.3f GB.\n'
                 % (time.time() - t, str(Qov.shape), np.prod(Qov.shape) * 8.e-9))
@@ -87,8 +101,8 @@ psi4.print_out('MP2 total energy:                  %16.10f\n' % MP2_E)
 psi4.print_out('\nSCS-MP2 correlation energy:        %16.10f\n' % MP2corr_SS)
 psi4.print_out('SCS-MP2 total energy:              %16.10f\n\n' % SCS_MP2_E)
 
-compare_values(-0.0312016949, MP2corr_SS, 6, 'MP2 SS correlation energy:')
-compare_values(-0.1327414875, MP2corr_OS, 6, 'MP2 OS correlation energy:')
-compare_values(-0.1639431825, MP2corr_E, 6, 'MP2 correlation energy:')
-compare_values(-40.3626203385, MP2_E, 6, 'MP2 total energy:')
-compare_values(-40.3683675060, SCS_MP2_E, 6, 'SCS-MP2 total energy:')
+compare_values(-0.0312016949, MP2corr_SS, 6, 'MP2 SS correlation energy')
+compare_values(-0.1327414875, MP2corr_OS, 6, 'MP2 OS correlation energy')
+compare_values(-0.1639431825, MP2corr_E, 6, 'MP2 correlation energy')
+compare_values(-40.3626203385, MP2_E, 6, 'MP2 total energy')
+compare_values(-40.3683675060, SCS_MP2_E, 6, 'SCS-MP2 total energy')

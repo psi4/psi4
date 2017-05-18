@@ -42,9 +42,7 @@ namespace psi {
 
 class Molecule;
 class Matrix;
-class BasisSet;
 class Wavefunction;
-class Options;
 
 class GradientWriter {
     std::shared_ptr<Molecule> molecule_;

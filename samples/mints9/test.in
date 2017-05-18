@@ -21,7 +21,7 @@ H_l -0.5  0.7 0.0
 set basis cc-pvdz
 
 print('[1]    <<<  uniform cc-pVDZ  >>>')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 compare_strings('CC-PVDZ', get_global_option('BASIS'), 'name')  #TEST
 compare_integers(38, wert.nbf(), 'nbf()')  #TEST
 compare_integers(40, wert.nao(), 'nao()')  #TEST
@@ -46,7 +46,7 @@ basis dz_PLUS {  # basis block resets BASIS to DZ_PLUS
     assign cc-pvdz
     assign c aug-cc-pvdz
 }
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 compare_integers(47, wert.nbf(), 'nbf()')  #TEST
 compare_integers(50, wert.nao(), 'nao()')  #TEST
 compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')  #TEST
@@ -71,7 +71,7 @@ basis dz_PLUSplus {
     assign c aug-cc-pvdz
     assign h_r aug-cc-pvdz
 }
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 compare_strings('DZ_PLUSPLUS', get_global_option('BASIS'), 'name')  #TEST
 compare_integers(51, wert.nbf(), 'nbf()')  #TEST
 compare_integers(54, wert.nao(), 'nao()')  #TEST
@@ -103,7 +103,7 @@ basis dz_PLUSplusplus {
     assign h aug-cc-pvdz
 }
 #wert = psi4.BasisSet.pyconstruct_orbital(mymol, 'BASIS', 'dz_plusplusplus')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 compare_integers(55, wert.nbf(), 'nbf()')  #TEST
 compare_integers(58, wert.nao(), 'nao()')  #TEST
 compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')  #TEST
@@ -125,7 +125,7 @@ mymol.print_out()
 set basis aug-cc-pvdz
 
 print('[9]    <<<  aug-cc-pVDZ  >>>')
-wert = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol, 'BASIS', get_global_option('BASIS'))
 compare_integers(64, wert.nbf(), 'nbf()')  #TEST
 compare_integers(68, wert.nao(), 'nao()')  #TEST
 compare_strings('c2v', mymol.schoenflies_symbol(), 'symm')  #TEST
@@ -155,7 +155,7 @@ H_c -0.5  0.0 0.7
 set basis dz_plusplusplus
 
 print('[11]   <<<  cc-pVDZ w/ aug-cc-pVDZ on C, H  >>>')
-wert = psi4.core.BasisSet.build(mymol2, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(mymol2, 'BASIS', get_global_option('BASIS'))
 compare_integers(64, wert.nbf(), 'nbf()')  #TEST
 compare_integers(67, wert.nao(), 'nao()')  #TEST
 compare_strings('cs', mymol2.schoenflies_symbol(), 'symm')  #TEST
@@ -175,7 +175,7 @@ basis disguised5z {
 set_global_option('DF_BASIS_MP2', '')  # clear df_basis_mp2 {...} to get autoaux below
 
 print('[12]   <<<  cc-pV5Z on HeNe  >>>')
-wert = psi4.core.BasisSet.build(hene, 'BASIS', get_global_option('BASIS'))
+wert,ecp = psi4.core.BasisSet.build(hene, 'BASIS', get_global_option('BASIS'))
 compare_integers(146, wert.nbf(), 'nbf()')  #TEST
 compare_integers(196, wert.nao(), 'nao()')  #TEST
 compare_strings('DISGUISED5Z', wert.name(), 'callby')  #TEST

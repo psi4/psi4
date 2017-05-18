@@ -47,20 +47,12 @@ char* psi_ifname();
 char* psi_ofname();
 char* psi_fprefix();
 
-void ffile(FILE **fptr, const char *suffix, int code);
-void ffile_noexit(FILE **fptr, char *suffix, int code);
-void ffileb(FILE **fptr, char *suffix, int code);
-void ffileb_noexit(FILE **fptr, char *suffix, int code);
-
-void add_arr(double *a, double *b, double *c, int n);
-void add_mat(double **a,double **b,double **c,int n,int m);
 void balance(double **a, int n);
 
 /* Functions under dot.cc */
 void dot_arr(double *a, double *b, int size, double *value) ;
 double dot_mat(double **a,double **b,int n);
 
-void eigout(double **a,double *b,double *c,int m,int n,FILE *out);
 void eigsort(double *d,double **v,int n);
 void eivout(double **a, double *b, int m, int n, std::string out) ;
 void mosort(double *d, double **v, int *sym, int nso, int nmo);
@@ -80,8 +72,6 @@ void arr_to_mat(double **a,double *b,int m,int n);
 
 void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
            int nr, int nl, int nc, int add) ;
-void mxmb(double **a,int ia,int ja,double **b,int ib,int jb,double **c,
-          int ic,int jc, int nrow, int nlnk, int ncol);
 void print_array(double *a, int m, std::string out) ;
 void print_mat(double **a, int rows, int cols, std::string out) ;
 

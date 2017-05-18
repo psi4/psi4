@@ -33,8 +33,6 @@
 #include "hf.h"
 
 namespace psi {
-class Matrix;
-class Vector;
 namespace scf {
 
 class UHF : public HF {
@@ -96,6 +94,15 @@ public:
 
     virtual bool same_a_b_orbs() const { return false; }
     virtual bool same_a_b_dens() const { return false; }
+
+    /// Hessian-vector computers and solvers
+    virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
+    virtual std::vector<SharedMatrix> twoel_Hx(std::vector<SharedMatrix> x, bool combine = true,
+                                               std::string return_basis = "MO");
+    virtual std::vector<SharedMatrix> cphf_Hx(std::vector<SharedMatrix> x);
+    virtual std::vector<SharedMatrix> cphf_solve(std::vector<SharedMatrix> x_vec,
+                                                 double conv_tol = 1.e-4, int max_iter = 10,
+                                                 int print_lvl = 1);
 };
 
 }}

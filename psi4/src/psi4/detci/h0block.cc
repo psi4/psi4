@@ -106,58 +106,59 @@ void CIWavefunction::H0block_init(unsigned int size) {
      }
 }
 
-
-void CIWavefunction::H0block_free(void)
-{
-   int i;
-
-   if (H0block_->osize) {
-      free_matrix(H0block_->H0b, H0block_->osize);
-      if (Parameters_->precon == PRECON_GEN_DAVIDSON)
-         free(H0block_->H0b_diag_transpose);
-      free_matrix(H0block_->H0b_diag, H0block_->osize);
-      free_matrix(H0block_->tmp1, H0block_->osize);
-      free(H0block_->H00);
-      free(H0block_->c0b);
-      free(H0block_->c0bp);
-      free(H0block_->s0b);
-      free(H0block_->s0bp);
-      free(H0block_->alplist);
-      free(H0block_->betlist);
-      free(H0block_->alpidx);
-      free(H0block_->betidx);
-      free(H0block_->blknum);
-      free(H0block_->pair);
-      if (Parameters_->precon == PRECON_H0BLOCK_INVERT)
-         free_matrix(H0block_->H0b_inv, H0block_->osize);
-      if (Parameters_->h0block_coupling) {
-         free(H0block_->tmp_array1);
-         free(H0block_->tmp_array2);
-         }
-      if (H0block_->nbuf) {
-         free(H0block_->buf_num);
-         for (i=0; i<H0block_->nbuf; i++) free(H0block_->buf_member[i]);
-         free(H0block_->buf_member);
-         }
-      }
+void CIWavefunction::H0block_free(void) {
+    if (H0block_->osize) {
+        free_matrix(H0block_->H0b, H0block_->osize);
+        if (Parameters_->precon == PRECON_GEN_DAVIDSON) {
+            free(H0block_->H0b_diag_transpose);
+        }
+        free_matrix(H0block_->H0b_diag, H0block_->osize);
+        free_matrix(H0block_->tmp1, H0block_->osize);
+        free(H0block_->H00);
+        free(H0block_->c0b);
+        free(H0block_->c0bp);
+        free(H0block_->s0b);
+        free(H0block_->s0bp);
+        free(H0block_->alplist);
+        free(H0block_->betlist);
+        free(H0block_->alpidx);
+        free(H0block_->betidx);
+        free(H0block_->blknum);
+        free(H0block_->pair);
+        if (Parameters_->precon == PRECON_H0BLOCK_INVERT) {
+            free_matrix(H0block_->H0b_inv, H0block_->osize);
+        }
+        if (Parameters_->h0block_coupling) {
+            free(H0block_->tmp_array1);
+            free(H0block_->tmp_array2);
+        }
+        if (H0block_->nbuf) {
+            for (int i = 0; i < H0block_->nbuf; i++) {
+                if (H0block_->buf_num[i]) {
+                    free(H0block_->buf_member[i]);
+                }
+            }
+            free(H0block_->buf_num);
+            free(H0block_->buf_member);
+            H0block_->nbuf = 0;
+        }
+    }
 }
 
-void CIWavefunction::H0block_print(void)
-{
-   int i;
+void CIWavefunction::H0block_print(void) {
+    int i;
 
-   outfile->Printf( "\nMembers of H0 block:\n\n");
-   for (i=0; i<H0block_->size; i++) {
-     std::string configstring(print_config(CalcInfo_->num_ci_orbs, CalcInfo_->num_alp_expl,
-         CalcInfo_->num_bet_expl, alplist_[H0block_->alplist[i]] +
-         H0block_->alpidx[i], betlist_[H0block_->betlist[i]] +
-         H0block_->betidx[i], CalcInfo_->num_drc_orbs));
-      outfile->Printf( "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
-         i+1, H0block_->pair[i] + 1, H0block_->H00[i], H0block_->blknum[i],
-         H0block_->alpidx[i], H0block_->betidx[i], configstring.c_str());
-      }
+    outfile->Printf("\nMembers of H0 block:\n\n");
+    for (i = 0; i < H0block_->size; i++) {
+        std::string configstring(print_config(
+            CalcInfo_->num_ci_orbs, CalcInfo_->num_alp_expl, CalcInfo_->num_bet_expl,
+            alplist_[H0block_->alplist[i]] + H0block_->alpidx[i],
+            betlist_[H0block_->betlist[i]] + H0block_->betidx[i], CalcInfo_->num_drc_orbs));
+        outfile->Printf("  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n", i + 1,
+                        H0block_->pair[i] + 1, H0block_->H00[i], H0block_->blknum[i],
+                        H0block_->alpidx[i], H0block_->betidx[i], configstring.c_str());
+    }
 }
-
 
 int CIWavefunction::H0block_calc(double E)
 {

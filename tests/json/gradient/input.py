@@ -8,7 +8,7 @@ psi4.set_output_file("output.dat", False)
 json_data = {}
 json_data["molecule"] = """He 0 0 0\n--\nHe 0 0 1"""
 json_data["driver"] = "gradient"
-json_data["args"] = 'SCF'
+json_data["method"] = 'SCF'
 json_data["kwargs"] = {}
 json_data["options"] = {"BASIS": "STO-3G"}
 json_data["return_output"] = True
@@ -32,4 +32,4 @@ return_wfn = "return_wfn" not in json_data["kwargs"]                            
 p4util.compare_integers(True, return_wfn, "Immutable input")                    # TEST
 
 with open("output.dat", "w") as f:
-    f.write(json_data["output"]) 
+    f.write(json_data["raw_output"]) 

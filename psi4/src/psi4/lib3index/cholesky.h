@@ -28,14 +28,13 @@
 
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
-#include "psi4/libmints/sieve.h"
 
 namespace psi {
 
-class Matrix;
 class Vector;
 class TwoBodyAOInt;
 class BasisSet;
+
 class Cholesky {
 
 protected:

@@ -42,49 +42,58 @@ namespace psi { namespace sapt {
 std::string to_string(const int val);   // In matrix.cpp
 
 PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
-                   SharedWavefunction MonomerB, Options & options)
-{
-  tstart();
+                   SharedWavefunction MonomerB, Options& options) {
+    bool quiet = options.get_bool("SAPT_QUIET");
+    if (!quiet) {
+        tstart();
+    }
 
-  // Add a fool-proofing step in case the driver is bypassed
-  if ( Dimer->molecule()->schoenflies_symbol() != "c1" ) {
-      throw PSIEXCEPTION("SAPT can only run in C1 symmetry!\n");
-  }
+    // Add a fool-proofing step in case the driver is bypassed
+    if (Dimer->molecule()->schoenflies_symbol() != "c1") {
+        throw PSIEXCEPTION("SAPT can only run in C1 symmetry!\n");
+    }
 
-  std::shared_ptr<PSIO> psio(new PSIO);
+    std::shared_ptr<PSIO> psio(new PSIO);
 
-  if (options.get_str("SAPT_LEVEL") == "SAPT0") {
-    if (options.get_str("REFERENCE") == "RHF") {
-        SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+    if (options.get_str("SAPT_LEVEL") == "SAPT0") {
+        if (options.get_str("REFERENCE") == "RHF") {
+            SAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+            sapt.compute_energy();
+            // Copy back over the variables
+            for (const auto& kv : sapt.variables()) {
+                Dimer->set_variable(kv.first, kv.second);
+            }
+
+        } else {
+            // This is added to make sure the default for COUPLED_INDUCTION is properly
+            // set even if the user bypasses the driver to run.
+            if (options.get_str("REFERENCE") == "ROHF") {
+                if (!(options["COUPLED_INDUCTION"].has_changed()) &&
+                    options.get_bool("COUPLED_INDUCTION")) {
+                    options.set_bool("SAPT", "COUPLED_INDUCTION", false);
+                }
+            }
+            USAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
+            sapt.compute_energy();
+        }
+    } else if (options.get_str("SAPT_LEVEL") == "SAPT2") {
+        SAPT2 sapt(Dimer, MonomerA, MonomerB, options, psio);
+        sapt.compute_energy();
+    } else if (options.get_str("SAPT_LEVEL") == "SAPT2+") {
+        SAPT2p sapt(Dimer, MonomerA, MonomerB, options, psio);
+        sapt.compute_energy();
+    } else if (options.get_str("SAPT_LEVEL") == "SAPT2+3") {
+        SAPT2p3 sapt(Dimer, MonomerA, MonomerB, options, psio);
         sapt.compute_energy();
     } else {
-    // This is added to make sure the default for COUPLED_INDUCTION is properly
-    // set even if the user bypasses the driver to run.
-        if (options.get_str("REFERENCE") == "ROHF") {
-            if(! (options["COUPLED_INDUCTION"].has_changed() ) && options.get_bool("COUPLED_INDUCTION") ) {
-                options.set_bool("SAPT","COUPLED_INDUCTION", false);
-            }
-        } 
-        USAPT0 sapt(Dimer, MonomerA, MonomerB, options, psio);
-        sapt.compute_energy();
+        throw PSIEXCEPTION("Unrecognized SAPT type");
     }
-  } else if (options.get_str("SAPT_LEVEL") == "SAPT2") {
-    SAPT2 sapt(Dimer, MonomerA, MonomerB, options, psio);
-    sapt.compute_energy();
-  } else if (options.get_str("SAPT_LEVEL") == "SAPT2+") {
-    SAPT2p sapt(Dimer, MonomerA, MonomerB, options, psio);
-    sapt.compute_energy();
-  } else if (options.get_str("SAPT_LEVEL") == "SAPT2+3") {
-    SAPT2p3 sapt(Dimer, MonomerA, MonomerB, options, psio);
-    sapt.compute_energy();
-  } else {
-    throw PSIEXCEPTION("Unrecognized SAPT type");
-  }
-  // Shut down psi.
+    // Shut down psi.
 
-  tstop();
+    if (!quiet) {
+        tstop();
+    }
 
-  return Success;
+    return Success;
 }
-
 }}

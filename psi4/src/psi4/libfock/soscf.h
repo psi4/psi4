@@ -68,11 +68,15 @@ public:
      * @param AOTOSO  AOTOSO object
      * @param H       Core hamiltonian in the SO basis.
      */
-    // SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix H, bool casscf);
-    SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO,
-            SharedMatrix H);
+     SOMCSCF(std::shared_ptr<JK> jk, SharedMatrix AOTOSO, SharedMatrix H);
 
     virtual ~SOMCSCF(void);
+
+    /**
+     * Sets the amount of memory (in doubles) available to the program
+     * @param memory Amount of memory available
+     */
+    void set_memory(size_t memory) { memory_ = memory; }
 
     /**
      * Sets the ras spaces, rotations will not happen inside of a space
@@ -213,6 +217,7 @@ protected:
     bool casscf_;
     bool has_fzc_;
     bool compute_IFock_;
+    size_t memory_;
 
     /// Doubles
     double energy_drc_;

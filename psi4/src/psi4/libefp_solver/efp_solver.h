@@ -39,7 +39,6 @@ struct efp;
 
 namespace psi {
     class Options;
-    class Vector;
 }
 
 namespace psi {

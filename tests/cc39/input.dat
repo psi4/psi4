@@ -12,4 +12,4 @@ set {
   omega [0.05, 0.1, au]
 }
 
-property('cc2',properties=['polarizability'])
+properties('cc2',properties=['polarizability'])

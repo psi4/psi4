@@ -35,7 +35,6 @@
 namespace psi {
 
 class PSIO;
-class Chkpt;
 
 namespace dfmp2 {
 

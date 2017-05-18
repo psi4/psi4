@@ -39,7 +39,6 @@
 namespace psi {
 
 class BasisSet;
-class TwoBodyAOInt;
 
 /**
  * ERISieve

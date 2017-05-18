@@ -46,8 +46,6 @@ namespace psi {
 /// masks for classes of fragments to be acted upon by molecule functions
 /// The next fragment type should be 4, and ALL should be 7.
 
-class Vector3;
-
 
 /**
  * An abstract class to handle storage of Cartesian coordinate values, which
@@ -231,6 +229,9 @@ public:
     const std::string& label() const { return label_; }
     /// The order in which this appears in the full atom list.
     const int& entry_number() const { return entry_number_; }
+
+    /// Set the nuclear charge for this atom (primarily used in ECP calculations to modify Z).
+    void set_nuclear_charge(double newZ) { Z_ = newZ; }
 
     /** Set the basis for this atom
      * @param type Keyword from input file, basis, ri_basis, etc.

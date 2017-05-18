@@ -75,9 +75,7 @@ class MatrixFactory;
 class Options;
 class SOBasisSet;
 class PSIO;
-class Chkpt;
 class OrbitalSpace;
-class OEProp;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -94,6 +92,9 @@ protected:
 
     /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
+
+    /// The ECP basis set
+    std::shared_ptr<BasisSet> ecpbasisset_;
 
     /// Primary basis set for SO integrals
     std::shared_ptr<SOBasisSet> sobasisset_;
@@ -117,8 +118,6 @@ protected:
     std::shared_ptr<MatrixFactory> factory_;
 
     std::shared_ptr<Wavefunction> reference_wavefunction_;
-
-    std::shared_ptr<OEProp> oeprop_;
 
     /// How much memory you have access to.
     long int memory_;
@@ -245,6 +244,11 @@ public:
                  std::shared_ptr<BasisSet> basis,
                  Options& options);
 
+    /// Constructor for an entirely new wavefunction with an existing basis
+    Wavefunction(std::shared_ptr<Molecule> molecule,
+                 std::shared_ptr<BasisSet> basis,
+                 std::shared_ptr<BasisSet> ecpbasis);
+
     /// Constructor for an entirely new wavefunction with an existing basis and global options
     Wavefunction(std::shared_ptr<Molecule> molecule,
                  std::shared_ptr<BasisSet> basis);
@@ -301,6 +305,8 @@ public:
     std::shared_ptr<IntegralFactory> integral() const;
     /// Returns the basis set object that pertains to this wavefunction.
     std::shared_ptr<BasisSet> basisset() const;
+    /// Returns this wavefunction's ECP basisset
+    std::shared_ptr<BasisSet> ecpbasisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
 
@@ -320,6 +326,8 @@ public:
     /// Returns whether this wavefunction was obtained using density fitting or not
     bool density_fitted() const { return density_fitted_; }
 
+    /// Returns the print level
+    int get_print() const { return print_; }
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array.
@@ -343,7 +351,7 @@ public:
     void set_soccpi(const Dimension& soccpi);
 
     /// Sets the frozen virtual orbitals per irrep array.
-    void set_frzvpi(const Dimension& frzvpi) { for(int h=0; h < nirrep_; h++) frzvpi_[h] = frzvpi[h]; }
+    void set_frzvpi(const Dimension& frzvpi);
 
     /// Return the number of frozen core orbitals
     int nfrzc() const { return nfrzc_; }
@@ -388,9 +396,6 @@ public:
     virtual std::shared_ptr<Matrix> tpdm_gradient_contribution() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
-
-    std::shared_ptr<OEProp> get_oeprop() const { return oeprop_; }
-    void set_oeprop( std::shared_ptr<OEProp> oeprop ) { oeprop_ = oeprop; }
 
     /// Returns the alpha OPDM for the wavefunction
     const SharedMatrix Da() const;

@@ -27,5 +27,6 @@ set(sources_list exch-ind-disp30.cc
                  elst12.cc 
                  sapt2p3.cc 
                  ind22.cc 
+                 fdds_disp.cc
 )
 psi4_add_module(lib sapt_solver sources_list mints)

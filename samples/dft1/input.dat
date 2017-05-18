@@ -19,18 +19,15 @@ dft_radial_points 99
 reference rks
 }
 
-set dft_functional b88_x
-V11 = energy('scf')
-
 set dft_functional b3lyp
 V12 = energy('scf')
 
 set dft_functional wB97
-set dft_omega 0.4
+# set dft_omega 0.4
 V13 = energy('scf')
 
 set dft_functional wB97X 
-set dft_omega 0.3
+# set dft_omega 0.3
 V14 = energy('scf')
 
 set dft_functional b86bpbe
@@ -41,18 +38,14 @@ V16 = energy('scf')
 
 set scf_type direct
 set reference uks
-set dft_functional b88_x
-V21 = energy('scf')
 
 set dft_functional b3lyp
 V22 = energy('scf')
 
 set dft_functional wB97
-set dft_omega 0.4
 V23 = energy('scf')
 
 set dft_functional wB97X 
-set dft_omega 0.3
 V24 = energy('scf')
 
 set dft_functional b86bpbe
@@ -70,18 +63,14 @@ H 1 1.0 2 104.5
 
 set basis sto-3g
 # Must be reset in each new molecule
-set dft_functional b88_x
-V31 = energy('scf')
 
 set dft_functional b3lyp
 V32 = energy('scf')
 
 set dft_functional wB97
-set dft_omega 0.4
 V33 = energy('scf')
 
 set dft_functional wB97X 
-set dft_omega 0.3
 V34 = energy('scf')
 
 set dft_functional b86bpbe
@@ -98,18 +87,14 @@ H 1 1.0 2 104.5
 }
 
 set basis sto-3g
-set dft_functional b88_x
-V41 = energy('scf')
 
 set dft_functional b3lyp
 V42 = energy('scf')
 
 set dft_functional wB97
-set dft_omega 0.4
 V43 = energy('scf')
 
 set dft_functional wB97X 
-set dft_omega 0.3
 V44 = energy('scf')
 
 set dft_functional b86bpbe

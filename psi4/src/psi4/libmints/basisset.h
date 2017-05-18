@@ -49,16 +49,11 @@ namespace psi {
 class Molecule;
 class GaussianShell;
 
-class Chkpt;
 class BasisSetParser;
-class DealiasBasisSet;
-class SOTransformShell;
-class SphericalTransform;
-class SOTransform;
-class Matrix;
-class Vector3;
 class SOBasisSet;
 class IntegralFactory;
+
+enum BasisType { GaussianBasis = 0, ECPBasis = 1 };
 
 /*! \ingroup MINTS */
 
@@ -69,6 +64,7 @@ class IntegralFactory;
 */
 class BasisSet
 {
+protected:
     friend class BasisSetParser;
 
     //! The name of this basis set (e.g. "BASIS", "RI BASIS")
@@ -81,8 +77,14 @@ class BasisSet
     //! Array of gaussian shells
     GaussianShell *shells_;
 
+    //! The type of basis set this object encodes.
+    BasisType basistype_;
+
     //! vector of shells numbers sorted in acending AM order.
     std::vector<int> sorted_ao_shell_list_;
+
+    //! The number of core electrons for each atom type
+    std::map<std::string, int> ncore_;
 
     //! Molecule object.
     std::shared_ptr<Molecule> molecule_;
@@ -138,6 +140,8 @@ class BasisSet
     double *ucoefficients_;
     /// The flattened lists of unique contraction coefficients (as provided by the user)
     double *uoriginal_coefficients_;
+    /// The flattened list of r exponenets for ECP calculations
+    int *uns_;
     /// The flattened lists of ERD normalized contraction coefficients
     double *uerd_coefficients_;
     /// The flattened list of Cartesian coordinates for each atom
@@ -150,7 +154,8 @@ public:
     BasisSet();
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
-             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map);
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
+             BasisType type = GaussianBasis);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
@@ -241,6 +246,18 @@ public:
      */
     const GaussianShell& shell(int center, int si) const;
 
+    /// Return the type of basis set this object encodes.
+    BasisType basis_type() const { return basistype_; }
+
+    /// Return the number of core electrons associated with this (ECP) basisset, for the specified label.
+    int ncore(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
+
+    /// Return the total number of core electrons assocated with this (ECP) basisset.
+    int ncore() const;
+
+    /// Set the number of electrons associated with the given atom label, for an ECP basis set.
+    void set_ncore(const std::string &label, int n) { ncore_[std::string(label)] = n; }
+
     /** @{
      *  Print the basis set.
      *  @param out The file stream to use for printing. Defaults to outfile.
@@ -329,6 +346,16 @@ public:
     **/
     static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream);
 
+    /** Returns a new basis set object
+     * Constructs an ECP basis set from the parsed information
+     *
+     * @param mol           Psi4 molecule.  WARNING: The nuclear charges are modified by this routine
+     * @param py::dict      Python dictionary containing the basis information
+     * @param forced_puream Force puream or not
+    **/
+
+    static std::shared_ptr<BasisSet> construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pybs, const int forced_puream);
+
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
      * @return Compatible file name.
@@ -343,6 +370,8 @@ public:
     //! Returns the vector of sorted shell list.
     std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 
+    // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the underlying molecule object.
+    void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 

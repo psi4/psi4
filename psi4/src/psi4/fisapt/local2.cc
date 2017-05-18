@@ -141,9 +141,9 @@ void IBOLocalizer2::build_iaos()
 
     // => Overlap Integrals <= //
 
-    std::shared_ptr<IntegralFactory> fact11(new IntegralFactory(primary_,primary_));
-    std::shared_ptr<IntegralFactory> fact12(new IntegralFactory(primary_,minao_));
-    std::shared_ptr<IntegralFactory> fact22(new IntegralFactory(minao_,minao_));
+    std::shared_ptr<IntegralFactory> fact11(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> fact12(new IntegralFactory(primary_,minao_,primary_,minao_));
+    std::shared_ptr<IntegralFactory> fact22(new IntegralFactory(minao_,minao_,minao_,minao_));
 
     std::shared_ptr<OneBodyAOInt> ints11(fact11->ao_overlap());
     std::shared_ptr<OneBodyAOInt> ints12(fact12->ao_overlap());

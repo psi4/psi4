@@ -1,0 +1,22 @@
+#! Water-Argon complex with ECP present; check of energies and forces.
+
+
+molecule arwater {
+    Ar  0.000000000000     0.000000000000     3.000000000000
+    O   0.000000000000     0.000000000000    -0.071143036192
+    H   0.000000000000    -0.758215806856     0.564545805801
+    H   0.000000000000     0.758215806856     0.564545805801
+}
+
+set = {
+    scf_type       pk
+    basis          lanl2dz
+    df_scf_guess   false
+    d_convergence  10
+}
+
+e = energy('scf')
+
+agrad = gradient('scf')
+set points 5
+ngrad = gradient('scf', dertype=0)

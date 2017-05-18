@@ -160,14 +160,16 @@ SharedMatrix SCFGrad::compute_gradient()
 
     // => Potential/Functional <= //
     if (options_.get_str("REFERENCE") == "RKS") {
-        std::vector<SharedMatrix>& C = potential_->C();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
+        potential_->set_D({Da_});
+        // std::vector<SharedMatrix>& C = potential_->C();
+        // C.clear();
+        // C.push_back(Ca_subset("SO", "OCC"));
     } else if (options_.get_str("REFERENCE") == "UKS") {
-        std::vector<SharedMatrix>& C = potential_->C();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
+        potential_->set_D({Da_, Db_});
+        // std::vector<SharedMatrix>& C = potential_->C();
+        // C.clear();
+        // C.push_back(Ca_subset("SO", "OCC"));
+        // C.push_back(Cb_subset("SO", "OCC"));
     }
 
     // => Sizings <= //

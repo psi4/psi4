@@ -44,8 +44,6 @@ namespace psi {
 
 class JK;
 class Options;
-class Tensor;
-class AtomicDensity;
 class PSIO;
 
 namespace sapt {

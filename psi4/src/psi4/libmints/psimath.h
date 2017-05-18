@@ -39,7 +39,6 @@
 
 namespace psi {
 
-class Matrix;
 class Vector;
 class IntVector;
 

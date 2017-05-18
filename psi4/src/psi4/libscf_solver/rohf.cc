@@ -108,7 +108,7 @@ void ROHF::common_init()
 void ROHF::format_guess()
 {
     // Need to build Ct_
-    
+
     // Canonical Orthogonalization
     if (X_->rowspi() != X_->colspi()){
         throw PSIEXCEPTION("ROHF::format_guess: 'GUESS READ' is not available for canonical orthogonalization cases.");
@@ -544,6 +544,7 @@ double ROHF::compute_E()
     energies_["One-Electron"] = one_electron_E;
     energies_["Two-Electron"] = two_electron_E;
     energies_["XC"] = 0.0;
+    energies_["VV10_E"] = 0.0;
     energies_["-D"] = 0.0;
 
     double DH  = Da_->vector_dot(H_);

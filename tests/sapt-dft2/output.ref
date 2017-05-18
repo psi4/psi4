@@ -1,0 +1,251 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.1a2.dev219 
+
+                         Git: Rev {libxc} ba8b2b1 dirty
+
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci. 2, 556-565 (2012)
+    (doi: 10.1002/wcms.93)
+
+
+                         Additional Contributions by
+    A. E. DePrince, U. Bozkaya, A. Yu. Sokolov, D. G. A. Smith, R. Di Remigio,
+    R. M. Richard, J. F. Gonthier, H. R. McAlexander, M. Saitow, and
+    B. P. Pritchard
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Saturday, 14 January 2017 04:11PM
+
+    Process ID:  77280
+    PSIDATADIR: /Users/daniel/Gits/psixc/objdir/stage/usr/local/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
+#! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+memory 1250 mb
+
+Eref = {"SAPT ELST ENERGY":  -0.00007808151, # TEST
+        "SAPT EXCH ENERGY":   0.00030618033, # TEST
+        "SAPT IND ENERGY":    0.00000124532} # TEST
+
+molecule dimer {
+  O -2.930978458   -0.216411437    0.000000000
+  H -3.655219777    1.440921844    0.000000000
+  H -1.133225297    0.076934530    0.000000000
+   --
+  O  2.552311356    0.210645882    0.000000000
+  H  3.175492012   -0.706268134   -1.433472544
+  H  3.175492012   -0.706268134    1.433472544
+  units bohr
+  no_com
+  no_reorient
+}
+
+set {
+    basis         aug-cc-pvdz
+    e_convergence 1e-8
+    d_convergence 1e-8
+    sapt_dft_grac_shift_a 0.136
+    sapt_dft_grac_shift_b 0.136
+    SCF_TYPE OUT_OF_CORE
+    #DFT_BS_RADIUS_ALPHA 3.0
+
+    #sapt_dft_grac_shift_a 0.000000000001
+    #sapt_dft_grac_shift_b 0.000000000001
+    #DFT_BLOCK_MAX_RADIUS 10.0
+    #DFT_BASIS_TOLERANCE 1.e-16
+    #DFT_RADIAL_POINTS   200
+    #DFT_SPHERICAL_POINTS 590
+    #DFT_BLOCK_MAX_POINTS 2000
+    #DFT_BLOCK_MIN_POINTS 500
+    # DFT_BLOCK_SCHEME    naive
+    # DFT_PRUNING_SCHEME P_GAUSSIAN
+    SAPT_DFT_FUNCTIONAL PBE0
+}
+
+energy('sapt(dft)', molecule=dimer)
+
+#for k, v in Eref.items():                         # TEST
+#    compare_values(v, psi4.get_variable(k), 6, k) # TEST
+#energy('FISAPT0')
+
+--------------------------------------------------------------------------
+
+  Memory set to   1.250 GiB by Python script.
+
+*** tstart() called on verizon-ar.imtc.gatech.edu
+*** at Sat Jan 14 16:11:15 2017
+
+  SAPT does not make use of molecular symmetry, further calculations in C1 point group.
+
+         ---------------------------------------------------------
+                            SAPT(DFT) Procedure                    
+
+                           by Daniel G. A. Smith                   
+         ---------------------------------------------------------
+
+  ==> Algorithm <==
+
+   SAPT DFT Functional             PBE0
+   Monomer A GRAC Shift        0.136000
+   Monomer B GRAC Shift        0.136000
+   Delta HF                       False
+   JK Algorithm             OUT_OF_CORE
+
+   Required computations:
+     DFT (Monomer A)
+     DFT (Monomer B)
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                          SAPT(DFT): DFT Monomer A                 
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,   1250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O         -2.930978458000    -0.216411437000     0.000000000000    15.994914619560
+           H         -3.655219777000     1.440921844000     0.000000000000     1.007825032070
+           H         -1.133225297000     0.076934530000     0.000000000000     1.007825032070
+           O(Gh)      2.552311356000     0.210645882000     0.000000000000    15.994914619560
+           H(Gh)      3.175492012000    -0.706268134000    -1.433472544000     1.007825032070
+           H(Gh)      3.175492012000    -0.706268134000     1.433472544000     1.007825032070
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      7.15091  B =      0.21415  C =      0.21404 [cm^-1]
+  Rotational constants: A = 214378.98507  B =   6419.94535  C =   6416.86901 [MHz]
+  Nuclear repulsion =    9.163830152278887
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: file /Users/daniel/Gits/psixc/objdir/stage/usr/local/share/psi4/basis/aug-cc-pvdz.gbs
+    Number of shells: 38
+    Number of basis function: 82
+    Number of Cartesian functions: 86
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+
+    Deriv            =              1
+    GGA              =           TRUE
+    Meta             =          FALSE
+
+    Exchange Hybrid  =           TRUE
+    Exchange Alpha   =       0.250000
+
+    Exchange LRC     =          FALSE
+    Exchange Beta    =       0.000000
+    Exchange Omega   =       0.000000
+
+   => Exchange Functionals <=
+
+    0.7500   XC_GGA_X_PBE
+
+   => Correlation Functionals <=
+
+    1.0000   XC_GGA_C_PBE
+
+   => Asymptotic Correction <=
+
+    X Functional     =    XC_GGA_X_LB
+    C Functional     =   XC_LDA_C_VWN
+    Bulk Shift       =       0.136000
+    GRAC Alpha       =       0.500000
+    GRAC Beta        =      40.000000
+
+   => Molecular Quadrature <=
+
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
+
+    BS radius alpha  =              1
+    Pruning alpha    =              1
+    Radial Points    =             75
+    Spherical Points =            302
+    Total Points     =         135900
+    Total Blocks     =           1242
+    Max Points       =            200
+    Max Functions    =             82
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         82      82       0       0       0       0
+   -------------------------------------------------------
+    Total      82      82       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               894
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 1.5458174102E-03.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+

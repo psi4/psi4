@@ -42,14 +42,16 @@ import numpy as np
 from psi4 import extras
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver import constants
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
 
 from .roa import *
 from . import proc_util
 from . import empirical_dispersion
-from . import dft_functional
+from . import dft_funcs
 from . import mcscf
+from . import response
 
 # never import driver, wrappers, or aliases into this file
 
@@ -993,12 +995,13 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
 
     # Figure out functional
     if functional is None:
-        superfunc, disp_type = dft_functional.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"))
+        superfunc, disp_type = dft_funcs.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"),
+                                                               (reference == "RKS"))
     elif isinstance(functional, core.SuperFunctional):
         superfunc = functional
         disp_type = False
     elif isinstance(functional, (str, unicode)):
-        superfunc, disp_type = dft_functional.build_superfunctional(functional)
+        superfunc, disp_type = dft_funcs.build_superfunctional(functional, (reference == "RKS"))
     else:
         raise ValidationError("Functional %s is not understood" % str(functional))
 
@@ -1020,7 +1023,7 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                                                               tuple_params = modified_disp_params)
         wfn._disp_functor.print_out()
 
-    # Set the multitude of SAD basis sets
+    # Set the DF basis sets
     if (core.get_option("SCF", "SCF_TYPE") == "DF") or \
        (core.get_option("SCF", "DF_SCF_GUESS") and (core.get_option("SCF", "SCF_TYPE") == "DIRECT")):
         aux_basis = core.BasisSet.build(wfn.molecule(), "DF_BASIS_SCF",
@@ -1029,6 +1032,7 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                         puream=wfn.basisset().has_puream())
         wfn.set_basisset("DF_BASIS_SCF", aux_basis)
 
+    # Set the relativistic basis sets
     if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
         decon_basis = core.BasisSet.build(wfn.molecule(), "BASIS_RELATIVISTIC",
                                         core.get_option("SCF", "BASIS_RELATIVISTIC"),
@@ -1036,6 +1040,7 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                         puream=wfn.basisset().has_puream())
         wfn.set_basisset("BASIS_RELATIVISTIC", decon_basis)
 
+    # Set the multitude of SAD basis sets
     if (core.get_option("SCF", "GUESS") == "SAD"):
         sad_basis_list = core.BasisSet.build(wfn.molecule(), "ORBITAL",
                                              core.get_global_option("BASIS"),
@@ -1068,7 +1073,7 @@ def scf_helper(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
-        ['SCF', 'SCF_TYPE']  # Hack: scope gets changed internally with the Andy trick
+        ['SCF', 'SCF_TYPE'],  # Hack: scope gets changed internally with the Andy trick
     )
 
     optstash2 = p4util.OptionsState(
@@ -1083,6 +1088,8 @@ def scf_helper(name, **kwargs):
     read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
+    ref_func = kwargs.pop('functional', None)
+    banner = kwargs.pop('banner', None)
     if ref_wfn is not None:
         raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
 
@@ -1202,7 +1209,13 @@ def scf_helper(name, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
-        ref_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn)
+        core.print_out("\n         ---------------------------------------------------------\n");
+        if banner:
+            core.print_out("         " + banner.center(58));
+        if cast:
+            core.print_out("         " + "SCF Castup computation".center(58));
+        ref_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn,
+                                           functional=ref_func)
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
@@ -1248,7 +1261,12 @@ def scf_helper(name, **kwargs):
 
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
-    scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn)
+    if banner:
+        core.print_out("\n         ---------------------------------------------------------\n");
+        core.print_out("         " + banner.center(58));
+
+    scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn,
+                                       functional=ref_func)
     core.set_legacy_wavefunction(scf_wfn)
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
@@ -1276,7 +1294,9 @@ def scf_helper(name, **kwargs):
             if ".gbs" in basis_name:
                 basis_name = basis_name.split('/')[-1].replace('.gbs', '')
 
-            old_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            old_basis, old_ecp_basis = core.BasisSet.build(scf_molecule, "ORBITAL", basis_name, puream=puream)
+            if old_ecp_basis:
+                raise ValidationError('Projection not yet available with ECPs.')
             core.print_out("  Computing basis projection from %s to %s\n\n" % (basis_name, base_wfn.basisset().name()))
 
             nalphapi = core.Dimension.from_list(data["nalphapi"])
@@ -1965,6 +1985,56 @@ def run_scf_gradient(name, **kwargs):
         ref_wfn.set_array("-D Gradient", disp_grad)
 
     grad = core.scfgrad(ref_wfn)
+
+    if ref_wfn.ecpbasisset():
+        core.print_out("\n\n  ==> Adding ECP gradient terms (computed numerically) <==\n")
+        # Build a map of atom->ECP number
+        old_print = ref_wfn.get_print()
+        ref_wfn.set_print(0)
+        delta = 0.0001
+        natom = ref_wfn.molecule().natom()
+        mints = core.MintsHelper(ref_wfn)
+        atom_to_ecp = [ -1 for i in range(natom) ]
+        count = 0
+        for atom in range(natom):
+            # A cheesy way to account for the fact that not all atoms have ECPs
+            if ref_wfn.ecpbasisset().ncore(ref_wfn.molecule().label(atom)):
+                atom_to_ecp[atom] = count
+                count += 1
+        ecpgradmat = core.Matrix("ECP Gradient", natom, 3)
+        ecpgradmat.zero()
+        ecpgrad = np.asarray(ecpgradmat)
+        Dmat = ref_wfn.Da_subset("AO")
+        Dmat.add(ref_wfn.Db_subset("AO"))
+        def displaced_energy(atom, displacement):
+            ecpid = atom_to_ecp[atom]
+            mints.basisset().move_atom(atom, displacement)
+            if ecpid != -1: ref_wfn.ecpbasisset().move_atom(ecpid, displacement)
+            E = Dmat.vector_dot(mints.ao_ecp())
+            mints.basisset().move_atom(atom, -1*displacement)
+            if ecpid != -1: ref_wfn.ecpbasisset().move_atom(ecpid, -1*displacement)
+            return E
+
+        for atom in range(natom):
+            for xyz in range(3):
+                transvec = core.Vector3(0.0)
+                transvec[xyz] += delta
+                # +1 displacement
+                Ep1 = displaced_energy(atom,  1*transvec)
+                # -1 displacement
+                Em1 = displaced_energy(atom, -1*transvec)
+                # +2 displacement
+                Ep2 = displaced_energy(atom,  2*transvec)
+                # -2 displacement
+                Em2 = displaced_energy(atom, -2*transvec)
+                # Evaluate
+                ecpgrad[atom, xyz] = (Em2 + 8*Ep1 - 8*Em1 - Ep2) / (12*delta)
+        ecpgradmat.symmetrize_gradient(ref_wfn.molecule())
+        ecpgradmat.print_atom_vector()
+        grad.add(ecpgradmat)
+        grad.print_atom_vector()
+        ref_wfn.set_print(old_print)
+
     ref_wfn.set_gradient(grad)
 
     optstash.restore()
@@ -2103,6 +2173,9 @@ def run_dfmp2_gradient(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    if ref_wfn.ecpbasisset():
+        raise ValidationError('DF-MP2 gradients with an ECP are not yet available.  Use dertype=0 to select numerical gradients.')
 
     core.print_out('\n')
     p4util.banner('DFMP2')
@@ -2337,17 +2410,61 @@ def run_dft_property(name, **kwargs):
     optstash = proc_util.dft_set_reference_local(name)
 
     properties = kwargs.pop('properties')
-    proc_util.oeprop_validator(properties)
 
+    # What response do we need?
+    response_list_vals = list(response.scf_response.property_dicts)
+    oeprop_list_vals = core.OEProp.valid_methods
+
+    oe_properties = []
+    linear_response = []
+    unknown_property = []
+    for prop in properties:
+
+        prop = prop.upper()
+        if prop in response_list_vals:
+            linear_response.append(prop)
+        elif (prop in oeprop_list_vals) or ("MULTIPOLE(" in prop):
+            oe_properties.append(prop)
+        else:
+            unknown_property.append(prop)
+
+    # Throw if we dont know what something is
+    if len(unknown_property):
+        complete_options = oeprop_list_vals + response_list_vals
+        alt_method_name = p4util.text.find_approximate_string_matches(unknown_property[0],
+                                                         complete_options, 2)
+        alternatives = ""
+        if len(alt_method_name) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
+
+        raise ValidationError("SCF Property: Feature '%s' is not recognized. %s" % (unknown_property[0], alternatives))
+
+    # Validate OEProp
+    proc_util.oeprop_validator(oe_properties)
+
+    if len(linear_response):
+        optstash_jk = p4util.OptionsState(["SAVE_JK"])
+        core.set_global_option("SAVE_JK", True)
+
+    # Compute the Wavefunction
     scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
     oe.set_title(name.upper())
-    for prop in properties:
+    for prop in oe_properties:
         oe.add(prop.upper())
     oe.compute()
-    scf_wfn.set_oeprop(oe)
+    scf_wfn.oeprop = oe
+
+    # Run Linear Respsonse
+    if len(linear_response):
+        core.prepare_options_for_module("SCF")
+        ret = response.scf_response.cpscf_linear_response(scf_wfn, *linear_response,
+                                                            conv_tol = core.get_global_option("SOLVER_CONVERGENCE"),
+                                                            max_iter = core.get_global_option("SOLVER_MAXITER"),
+                                                            print_lvl = (core.get_global_option("PRINT") + 1))
+        optstash_jk.restore()
 
     core.tstop()
     optstash.restore()
@@ -2365,17 +2482,61 @@ def run_scf_property(name, **kwargs):
     optstash = proc_util.scf_set_reference_local(name)
 
     properties = kwargs.pop('properties')
-    proc_util.oeprop_validator(properties)
 
+    # What response do we need?
+    response_list_vals = list(response.scf_response.property_dicts)
+    oeprop_list_vals = core.OEProp.valid_methods
+
+    oe_properties = []
+    linear_response = []
+    unknown_property = []
+    for prop in properties:
+
+        prop = prop.upper()
+        if prop in response_list_vals:
+            linear_response.append(prop)
+        elif (prop in oeprop_list_vals) or ("MULTIPOLE(" in prop):
+            oe_properties.append(prop)
+        else:
+            unknown_property.append(prop)
+
+    # Throw if we dont know what something is
+    if len(unknown_property):
+        complete_options = oeprop_list_vals + response_list_vals
+        alt_method_name = p4util.text.find_approximate_string_matches(unknown_property[0],
+                                                         complete_options, 2)
+        alternatives = ""
+        if len(alt_method_name) > 0:
+            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
+
+        raise ValidationError("SCF Property: Feature '%s' is not recognized. %s" % (unknown_property[0], alternatives))
+
+    # Validate OEProp
+    proc_util.oeprop_validator(oe_properties)
+
+    if len(linear_response):
+        optstash_jk = p4util.OptionsState(["SAVE_JK"])
+        core.set_global_option("SAVE_JK", True)
+
+    # Compute the Wavefunction
     scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
     oe.set_title(name.upper())
-    for prop in properties:
+    for prop in oe_properties:
         oe.add(prop.upper())
     oe.compute()
-    scf_wfn.set_oeprop(oe)
+    scf_wfn.oeprop = oe
+
+    # Run Linear Respsonse
+    if len(linear_response):
+        core.prepare_options_for_module("SCF")
+        ret = response.scf_response.cpscf_linear_response(scf_wfn, *linear_response,
+                                                            conv_tol = core.get_global_option("SOLVER_CONVERGENCE"),
+                                                            max_iter = core.get_global_option("SOLVER_MAXITER"),
+                                                            print_lvl = (core.get_global_option("PRINT") + 1))
+        optstash_jk.restore()
 
     core.tstop()
     optstash.restore()
@@ -2566,7 +2727,7 @@ def run_dfmp2_property(name, **kwargs):
     for prop in properties:
         oe.add(prop.upper())
     oe.compute()
-    dfmp2_wfn.set_oeprop(oe)
+    dfmp2_wfn.oeprop = oe
 
     optstash.restore()
     return dfmp2_wfn
@@ -2624,7 +2785,7 @@ def run_detci_property(name, **kwargs):
 
     # Compute "the" CI density
     oe.compute()
-    ciwfn.set_oeprop(oe)
+    ciwfn.oeprop = oe
 
     # If we have more than one root, compute all data
     if nroots > 1:
@@ -2802,7 +2963,7 @@ def run_dft(name, **kwargs):
     scf_wfn = run_scf(name, **kwargs)
     returnvalue = core.get_variable('CURRENT ENERGY')
 
-    for ssuper in dft_functional.superfunctional_list:
+    for ssuper in dft_funcs.superfunctional_list:
         if ssuper.name().lower() == name:
             dfun = ssuper
 
@@ -2819,7 +2980,7 @@ def run_dft(name, **kwargs):
             dfmp2_wfn = core.dfmp2(scf_wfn)
             dfmp2_wfn.compute_energy()
 
-            vdh = dfun.c_alpha() * core.get_variable('SCS-MP2 CORRELATION ENERGY')
+            vdh = core.get_variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
             dfmp2_wfn = core.dfmp2(scf_wfn)
@@ -2975,7 +3136,7 @@ def run_detci(name, **kwargs):
         oeprop.set_title(name.upper())
         oeprop.add("DIPOLE")
         oeprop.compute()
-        ciwfn.set_oeprop(oeprop)
+        ciwfn.oeprop = oeprop
         core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
         core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
         core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))
@@ -3032,6 +3193,116 @@ def run_dfmp2(name, **kwargs):
     optstash.restore()
     core.tstop()
     return dfmp2_wfn
+
+def run_dfep2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-fitted MP2 calculation.
+
+    """
+    core.tstart()
+    optstash = p4util.OptionsState(
+        ['DF_BASIS_MP2'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, **kwargs)  # C1 certified
+
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("DF-EP2 is not availabel for %s references.",
+                              core.get_global_option('REFERENCE'))
+
+
+    # Build the wavefunction
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_EP2",
+                                    core.get_option("DFEP2", "DF_BASIS_EP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_EP2", aux_basis)
+
+    dfep2_wfn = core.DFEP2Wavefunction(ref_wfn)
+
+    # Figure out what were doing
+    if core.has_option_changed('DFEP2', 'EP2_ORBITALS'):
+        ep2_input = core.get_global_option("EP2_ORBITALS")
+
+    else:
+        n_ip = core.get_global_option("EP2_NUM_IP")
+        n_ea = core.get_global_option("EP2_NUM_EA")
+
+        eps = np.hstack(dfep2_wfn.epsilon_a().nph)
+        irrep_map = np.hstack([np.ones_like(dfep2_wfn.epsilon_a().nph[x]) * x for x in range(dfep2_wfn.nirrep())])
+        sort = np.argsort(eps)
+
+        ip_map = sort[dfep2_wfn.nalpha() - n_ip:dfep2_wfn.nalpha()]
+        ea_map = sort[dfep2_wfn.nalpha():dfep2_wfn.nalpha() + n_ea]
+
+        ep2_input = [[] for x in range(dfep2_wfn.nirrep())]
+        nalphapi = tuple(dfep2_wfn.nalphapi())
+
+        # Add IP info
+        ip_info = np.unique(irrep_map[ip_map], return_counts=True)
+        for irrep, cnt in zip(*ip_info):
+            irrep = int(irrep)
+            ep2_input[irrep].extend(range(nalphapi[irrep] - cnt, nalphapi[irrep]))
+
+        # Add EA info
+        ea_info = np.unique(irrep_map[ea_map], return_counts=True)
+        for irrep, cnt in zip(*ea_info):
+            irrep = int(irrep)
+            ep2_input[irrep].extend(range(nalphapi[irrep], nalphapi[irrep] + cnt))
+
+    # Compute
+    ret = dfep2_wfn.compute(ep2_input)
+
+    # Resort it...
+    ret_eps = []
+    for h in range(dfep2_wfn.nirrep()):
+        ep2_data = ret[h]
+        inp_data = ep2_input[h]
+
+        for i in range(len(ep2_data)):
+            tmp = [h, ep2_data[i][0], ep2_data[i][1], dfep2_wfn.epsilon_a().get(h, inp_data[i]), inp_data[i]]
+            ret_eps.append(tmp)
+
+    ret_eps.sort(key=lambda x: x[3])
+
+    h2ev = constants.hartree2ev
+    irrep_labels = dfep2_wfn.molecule().irrep_labels()
+
+    core.print_out("  ==> Results <==\n\n")
+    core.print_out("   %8s  %12s %12s %8s\n" % ("Orbital", "Koopmans (eV)", "EP2 (eV)", "EP2 PS"))
+    core.print_out("  ----------------------------------------------\n")
+    for irrep, ep2, ep2_ps, kt, pos in ret_eps:
+        label = str(pos + 1)  + irrep_labels[irrep]
+        core.print_out("  %8s    % 12.3f  % 12.3f   % 6.3f\n" % (label, (kt * h2ev), (ep2 * h2ev), ep2_ps))
+        core.set_variable("EP2 " + label.upper() + " ENERGY", ep2)
+    core.print_out("  ----------------------------------------------\n\n")
+
+    # Figure out the IP and EA
+    sorted_vals = np.array([x[1] for x in ret_eps])
+    ip_vals = sorted_vals[sorted_vals < 0]
+    ea_vals = sorted_vals[sorted_vals > 0]
+
+    ip_value = None
+    ea_value = None
+    if len(ip_vals):
+        core.set_variable("EP2 IONIZATION POTENTIAL", ip_vals[-1])
+        core.set_variable("CURRENT ENERGY", ip_vals[-1])
+    if len(ea_vals):
+        core.set_variable("EP2 ELECTRON AFFINITY", ea_vals[0])
+        if core.get_variable("EP2 IONIZATION POTENTIAL") == 0.0:
+            core.set_variable("CURRENT ENERGY", ea_vals[0])
+
+    core.print_out("  EP2 has completed successfully!\n\n")
+
+    core.tstop()
+    return dfep2_wfn
 
 
 def run_dmrgscf(name, **kwargs):
@@ -3508,12 +3779,15 @@ def run_fisapt(name, **kwargs):
                                      ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SAPT", sapt_basis)
 
-    minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
+    minao,ecpbasis = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
                                 core.get_global_option("MINAO_BASIS"))
+    if ecpbasis:
+        raise ValidationError("FISAPT does not yet work with ECPs.")
     ref_wfn.set_basisset("MINAO", minao)
 
 
-    fisapt_wfn = core.fisapt(ref_wfn)
+    fisapt_wfn = core.FISAPT(ref_wfn)
+    fisapt_wfn.compute_energy()
 
     optstash.restore()
     return fisapt_wfn
@@ -4070,7 +4344,7 @@ def run_detcas(name, **kwargs):
     oeprop.set_title(name.upper())
     oeprop.add("DIPOLE")
     oeprop.compute()
-    ciwfn.set_oeprop(oeprop)
+    ciwfn.oeprop = oeprop
     core.set_variable("CURRENT DIPOLE X", core.get_variable(name.upper() + " DIPOLE X"))
     core.set_variable("CURRENT DIPOLE Y", core.get_variable(name.upper() + " DIPOLE Y"))
     core.set_variable("CURRENT DIPOLE Z", core.get_variable(name.upper() + " DIPOLE Z"))

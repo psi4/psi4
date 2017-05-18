@@ -54,7 +54,12 @@ SAPT0::SAPT0(SharedWavefunction Dimer, SharedWavefunction MonomerA,
   e_sapt0_(0.0),
   e_sapt0_scs_(0.0)
 {
-  print_header();
+
+  if (!options_.get_bool("SAPT_QUIET")){
+    print_header();
+  } else {
+    print_ = 0;
+  }
 
   maxiter_ = options_.get_int("MAXITER");
   e_conv_ = options_.get_double("E_CONVERGENCE");
@@ -141,7 +146,23 @@ double SAPT0::compute_energy()
       timer_off("Exch-Disp20 N^4    ");
   }
 
-  print_results();
+  if (!options_.get_bool("SAPT_QUIET")){
+    print_results();
+  }
+
+  set_variable("E Elst10", e_elst10_);
+  set_variable("E Exch10", e_exch10_);
+  set_variable("E Exch10(S^2)", e_exch10_s2_);
+  set_variable("E Ind20", e_ind20_);
+  set_variable("E Exch-Ind20", e_exch_ind20_);
+  set_variable("E Disp20", e_disp20_);
+  set_variable("E Exch-Disp20", e_exch_disp20_);
+  set_variable("E Disp20(SS)", e_disp20_ss_);
+  set_variable("E Disp20(OS)", e_disp20_os_);
+  set_variable("E Exch-Disp20(SS)", e_exch_disp20_ss_);
+  set_variable("E Exch-Disp20(OS)", e_exch_disp20_os_);
+  set_variable("E SAPT0", e_sapt0_);
+  set_variable("E SCS-SAPT0", e_sapt0_scs_);
 
   return (e_sapt0_);
 }

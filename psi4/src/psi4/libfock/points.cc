@@ -73,30 +73,35 @@ void RKSFunctions::allocate()
 
     if (ansatz_ >= 0) {
         point_values_["RHO_A"] = std::shared_ptr<Vector>(new Vector("RHO_A", max_points_));
-        point_values_["RHO_B"] = point_values_["RHO_A"];
+        // point_values_["RHO_B"] = point_values_["RHO_A"];
     }
 
     if (ansatz_ >= 1) {
         point_values_["RHO_AX"] = std::shared_ptr<Vector>(new Vector("RHO_AX", max_points_));
         point_values_["RHO_AY"] = std::shared_ptr<Vector>(new Vector("RHO_AY", max_points_));
         point_values_["RHO_AZ"] = std::shared_ptr<Vector>(new Vector("RHO_AZ", max_points_));
-        point_values_["RHO_BX"] = point_values_["RHO_AX"];
-        point_values_["RHO_BY"] = point_values_["RHO_AY"];
-        point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
+        // point_values_["RHO_BX"] = point_values_["RHO_AX"];
+        // point_values_["RHO_BY"] = point_values_["RHO_AY"];
+        // point_values_["RHO_BZ"] = point_values_["RHO_AZ"];
         point_values_["GAMMA_AA"] = std::shared_ptr<Vector>(new Vector("GAMMA_AA", max_points_));
-        point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
-        point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
+        // point_values_["GAMMA_AB"] = point_values_["GAMMA_AA"];
+        // point_values_["GAMMA_BB"] = point_values_["GAMMA_AA"];
     }
 
     if (ansatz_ >= 2) {
+        point_values_["RHO_XX"] = std::shared_ptr<Vector>(new Vector("RHO_XX", max_points_));
+        point_values_["RHO_YY"] = std::shared_ptr<Vector>(new Vector("RHO_YY", max_points_));
+        point_values_["RHO_ZZ"] = std::shared_ptr<Vector>(new Vector("RHO_ZZ", max_points_));
         point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
-        point_values_["TAU_B"] = point_values_["TAU_A"];
+        // point_values_["TAU_B"] = point_values_["TAU_A"];
+        // point_values_["LAPL_RHO_A"] = std::shared_ptr<Vector>(new Vector("LAPL_RHO_A", max_points_));
+        // point_values_["LAPL_RHO_B"] = point_values_["LAPL_RHO_A"];
     }
+    build_temps();
 }
 void RKSFunctions::set_pointers(SharedMatrix D_AO)
 {
     D_AO_ = D_AO;
-    build_temps();
 }
 void RKSFunctions::set_pointers(SharedMatrix /*Da_AO*/, SharedMatrix /*Db_AO*/)
 {
@@ -108,15 +113,15 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         throw PSIEXCEPTION("RKSFunctions: call set_pointers.");
 
     // => Build basis function values <= //
-    timer_on("Points");
+    // timer_on("Functions: Points");
     BasisFunctions::compute_functions(block);
-    timer_off("Points");
+    // timer_off("Functions: Points");
 
     // => Global information <= //
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
     int nglobal = max_functions_;
-    int nlocal  = function_map.size();
+    int nlocal = function_map.size();
 
     double** Tp = temp_->pointer();
 
@@ -140,14 +145,16 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
     double** phip = basis_values_["PHI"]->pointer();
     double* rhoap = point_values_["RHO_A"]->pointer();
 
-    C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phip[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+    // Rho_a = 2.0 * D_xy phi_xa phi_ya
+    C_DGEMM('N', 'N', npoints, nlocal, nlocal, 2.0, phip[0], nglobal, D2p[0], nglobal, 0.0, Tp[0],
+            nglobal);
     for (int P = 0; P < npoints; P++) {
-        rhoap[P] = C_DDOT(nlocal,phip[P],1,Tp[P],1);
+        rhoap[P] = C_DDOT(nlocal, phip[P], 1, Tp[P], 1);
     }
 
     // => Build GGA quantities <= //
+    // Rho^l_a = D_xy phi_xa phi^l_ya
     if (ansatz_ >= 1) {
-
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
@@ -156,10 +163,12 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double* rhoazp = point_values_["RHO_AZ"]->pointer();
         double* gammaaap = point_values_["GAMMA_AA"]->pointer();
 
+        # pragma simd
         for (int P = 0; P < npoints; P++) {
-            double rho_x = 2.0 * C_DDOT(nlocal,phixp[P],1,Tp[P],1);
-            double rho_y = 2.0 * C_DDOT(nlocal,phiyp[P],1,Tp[P],1);
-            double rho_z = 2.0 * C_DDOT(nlocal,phizp[P],1,Tp[P],1);
+            // 2.0 for Px D P + P D Px
+            double rho_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tp[P], 1);
+            double rho_y = 2.0 * C_DDOT(nlocal, phiyp[P], 1, Tp[P], 1);
+            double rho_z = 2.0 * C_DDOT(nlocal, phizp[P], 1, Tp[P], 1);
             rhoaxp[P] = rho_x;
             rhoayp[P] = rho_y;
             rhoazp[P] = rho_z;
@@ -174,7 +183,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double** phizp = basis_values_["PHI_Z"]->pointer();
         double* taup = point_values_["TAU_A"]->pointer();
 
-        ::memset((void*) taup, '\0', sizeof(double) * npoints);
+        ::memset((void*)taup, '\0', sizeof(double) * npoints);
 
         double** phi[3];
         phi[0] = phixp;
@@ -183,48 +192,92 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 
         for (int x = 0; x < 3; x++) {
             double** phic = phi[x];
-            C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+            C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, D2p[0], nglobal, 0.0,
+                    Tp[0], nglobal);
             for (int P = 0; P < npoints; P++) {
                 taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
             }
         }
+
+        // Kinetic terms
+        // double** phixxp = basis_values_["PHI_XX"]->pointer();
+        // double** phixyp = basis_values_["PHI_XY"]->pointer();
+        // double** phixzp = basis_values_["PHI_XZ"]->pointer();
+        // double** phiyyp = basis_values_["PHI_YY"]->pointer();
+        // double** phiyzp = basis_values_["PHI_YZ"]->pointer();
+        // double** phizzp = basis_values_["PHI_ZZ"]->pointer();
+
+        // double* rhoxxp = point_values_["RHO_XX"]->pointer();
+        // double* rhoyyp = point_values_["RHO_YY"]->pointer();
+        // double* rhozzp = point_values_["RHO_ZZ"]->pointer();
+
+        // double* laplp = point_values_["LAPL_RHO_A"]->pointer();
+
+        // // Diagonal terms phi^xx_a D_ab phi_b
+        // for (int P = 0; P < npoints; P++) {
+        //      rhoxxp[P] = 2.0 * C_DDOT(nlocal,phixxp[P],1,Tp[P],1);
+        //      rhoyyp[P] = 2.0 * C_DDOT(nlocal,phiyyp[P],1,Tp[P],1);
+        //      rhozzp[P] = 2.0 * C_DDOT(nlocal,phizzp[P],1,Tp[P],1);
+        // }
+
+
+        // // Cross terms phi^x_a D_ab phi^x_b
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phixp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // for (int P = 0; P < npoints; P++) {
+        //      rhoxxp[P] += 2.0 * C_DDOT(nlocal,phixp[P],1,Tp[P],1);
+        // }
+
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phiyp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // for (int P = 0; P < npoints; P++) {
+        //      rhoyyp[P] += 2.0 * C_DDOT(nlocal,phiyp[P],1,Tp[P],1);
+        // }
+
+        // C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phizp[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+        // for (int P = 0; P < npoints; P++) {
+        //      rhozzp[P] += 2.0 * C_DDOT(nlocal,phizp[P],1,Tp[P],1);
+        // }
+
+        // // Put it together
+        // for (int P = 0; P < npoints; P++) {
+        //     laplp[P]  = rhoxxp[P];
+        //     laplp[P] += rhoyyp[P];
+        //     laplp[P] += rhozzp[P];
+        // }
     }
 }
 
-void RKSFunctions::set_Cs(SharedMatrix C_AO)
-{
+void RKSFunctions::set_Cs(SharedMatrix C_AO) {
     C_AO_ = C_AO;
     C_local_ = std::shared_ptr<Matrix>(new Matrix("C local", max_functions_, C_AO_->colspi()[0]));
-    orbital_values_["PSI_A"] = std::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
+    orbital_values_["PSI_A"] =
+        std::shared_ptr<Matrix>(new Matrix("PSI_A", C_AO_->colspi()[0], max_points_));
     orbital_values_["PSI_B"] = orbital_values_["PSI_A"];
 }
-void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/)
-{
+void RKSFunctions::set_Cs(SharedMatrix /*Ca_AO*/, SharedMatrix /*Cb_AO*/) {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
-void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
-{
+void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
     // => Build basis function values <= //
 
-    timer_on("Points");
+    // timer_on("Functions: Points");
     BasisFunctions::compute_functions(block);
-    timer_off("Points");
+    // timer_off("Functions: Points");
 
     // => Global information <= //
 
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
     int nglobal = max_functions_;
-    int nlocal  = function_map.size();
+    int nlocal = function_map.size();
 
     // => Build local C matrix <= //
 
     int na = C_AO_->colspi()[0];
-    double** Cap  = C_AO_->pointer();
+    double** Cap = C_AO_->pointer();
     double** Ca2p = C_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        ::memcpy(Ca2p[ml],Cap[mg],na*sizeof(double));
+        ::memcpy(Ca2p[ml], Cap[mg], na * sizeof(double));
     }
 
     // => Build orbitals <= //
@@ -232,15 +285,14 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     double** phip = basis_values_["PHI"]->pointer();
     double** psiap = orbital_values_["PSI_A"]->pointer();
 
-    C_DGEMM('T','T',na,npoints,nlocal,1.0,Ca2p[0],na,phip[0],nglobal,0.0,psiap[0],max_points_);
+    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0],
+            max_points_);
 }
 
-
-void RKSFunctions::print(std::string out, int print) const
-{
-   std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
-   std::string ans;
+void RKSFunctions::print(std::string out, int print) const {
+    std::shared_ptr<psi::PsiOutStream> printer =
+        (out == "outfile" ? outfile : std::shared_ptr<OutFile>(new OutFile(out)));
+    std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
     } else if (ansatz_ == 1) {
@@ -249,19 +301,19 @@ void RKSFunctions::print(std::string out, int print) const
         ans = "Meta-GGA";
     }
 
-    printer->Printf( "   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
+    printer->Printf("   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
-    printer->Printf( "    Point Values:\n");
+    printer->Printf("    Point Values:\n");
     for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
-        it != point_values_.end(); it++) {
-        printer->Printf( "    %s\n", (*it).first.c_str());
+         it != point_values_.end(); it++) {
+        printer->Printf("    %s\n", (*it).first.c_str());
         if (print > 3) {
             (*it).second->print();
         }
     }
     printer->Printf("\n\n");
 
-    BasisFunctions::print(out,print);
+    BasisFunctions::print(out, print);
 }
 
 UKSFunctions::UKSFunctions(std::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
@@ -320,6 +372,7 @@ void UKSFunctions::allocate()
         point_values_["TAU_A"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
         point_values_["TAU_B"] = std::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
     }
+    build_temps();
 }
 void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/)
 {
@@ -329,7 +382,6 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
 {
     Da_AO_ = Da_AO;
     Db_AO_ = Db_AO;
-    build_temps();
 }
 void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
 {
@@ -337,9 +389,9 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         throw PSIEXCEPTION("UKSFunctions: call set_pointers.");
 
     // => Build basis function values <= //
-    timer_on("Points");
+    // timer_on("Functions: Points");
     BasisFunctions::compute_functions(block);
-    timer_off("Points");
+    // timer_off("Functions: Points");
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -403,12 +455,13 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
         double* gammabbp = point_values_["GAMMA_BB"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            double rhoa_x = 2.0 * C_DDOT(nlocal,phixp[P],1,Tap[P],1);
-            double rhoa_y = 2.0 * C_DDOT(nlocal,phiyp[P],1,Tap[P],1);
-            double rhoa_z = 2.0 * C_DDOT(nlocal,phizp[P],1,Tap[P],1);
-            double rhob_x = 2.0 * C_DDOT(nlocal,phixp[P],1,Tbp[P],1);
-            double rhob_y = 2.0 * C_DDOT(nlocal,phiyp[P],1,Tbp[P],1);
-            double rhob_z = 2.0 * C_DDOT(nlocal,phizp[P],1,Tbp[P],1);
+            // 2.0 for Px D P + P D Px
+            double rhoa_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tap[P], 1);
+            double rhoa_y = 2.0 * C_DDOT(nlocal, phiyp[P], 1, Tap[P], 1);
+            double rhoa_z = 2.0 * C_DDOT(nlocal, phizp[P], 1, Tap[P], 1);
+            double rhob_x = 2.0 * C_DDOT(nlocal, phixp[P], 1, Tbp[P], 1);
+            double rhob_y = 2.0 * C_DDOT(nlocal, phiyp[P], 1, Tbp[P], 1);
+            double rhob_z = 2.0 * C_DDOT(nlocal, phizp[P], 1, Tbp[P], 1);
             rhoaxp[P] = rhoa_x;
             rhoayp[P] = rhoa_y;
             rhoazp[P] = rhoa_z;
@@ -455,7 +508,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block)
                 double** Dc = D[t];
                 double** Tc = T[t];
                 double*  tauc = tau[t];
-                C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,Dc[0],nglobal,0.0,Tc[0],nglobal);
+                C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phic[0], nglobal, Dc[0], nglobal,
+                        0.0, Tc[0], nglobal);
                 for (int P = 0; P < npoints; P++) {
                     tauc[P] += C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
                 }
@@ -481,9 +535,9 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
 {
     // => Build basis function values <= //
 
-    timer_on("Points");
+    // timer_on("Functions: Points");
     BasisFunctions::compute_functions(block);
-    timer_off("Points");
+    // timer_off("Functions: Points");
 
     // => Global information <= //
 
@@ -495,19 +549,19 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     // => Build local C matrix <= //
 
     int na = Ca_AO_->colspi()[0];
-    double** Cap  = Ca_AO_->pointer();
+    double** Cap = Ca_AO_->pointer();
     double** Ca2p = Ca_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        ::memcpy(Ca2p[ml],Cap[mg],na*sizeof(double));
+        ::memcpy(Ca2p[ml], Cap[mg], na * sizeof(double));
     }
 
     int nb = Cb_AO_->colspi()[0];
-    double** Cbp  = Cb_AO_->pointer();
+    double** Cbp = Cb_AO_->pointer();
     double** Cb2p = Cb_local_->pointer();
     for (int ml = 0; ml < nlocal; ml++) {
         int mg = function_map[ml];
-        ::memcpy(Cb2p[ml],Cbp[mg],nb*sizeof(double));
+        ::memcpy(Cb2p[ml], Cbp[mg], nb * sizeof(double));
     }
 
     // => Build orbitals <= //
@@ -516,8 +570,10 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
     double** psiap = orbital_values_["PSI_A"]->pointer();
     double** psibp = orbital_values_["PSI_B"]->pointer();
 
-    C_DGEMM('T','T',na,npoints,nlocal,1.0,Ca2p[0],na,phip[0],nglobal,0.0,psiap[0],max_points_);
-    C_DGEMM('T','T',nb,npoints,nlocal,1.0,Cb2p[0],nb,phip[0],nglobal,0.0,psibp[0],max_points_);
+    C_DGEMM('T', 'T', na, npoints, nlocal, 1.0, Ca2p[0], na, phip[0], nglobal, 0.0, psiap[0],
+            max_points_);
+    C_DGEMM('T', 'T', nb, npoints, nlocal, 1.0, Cb2p[0], nb, phip[0], nglobal, 0.0, psibp[0],
+            max_points_);
 }
 
 
@@ -585,16 +641,15 @@ void BasisFunctions::build_spherical()
 
     puream_ = true;
 
-    std::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    std::shared_ptr<IntegralFactory> fact(
+        new IntegralFactory(primary_, primary_, primary_, primary_));
 
     for (int L = 0; L <= primary_->max_am(); L++) {
-        std::vector<std::tuple<int,int,double> > comp;
+        std::vector<std::tuple<int, int, double> > comp;
         std::shared_ptr<SphericalTransformIter> trans(fact->spherical_transform_iter(L));
-        for (trans->first(); !trans->is_done();trans->next()) {
-            comp.push_back(std::tuple<int,int,double>(
-                trans->pureindex(),
-                trans->cartindex(),
-                trans->coef()));
+        for (trans->first(); !trans->is_done(); trans->next()) {
+            comp.push_back(std::tuple<int, int, double>(trans->pureindex(), trans->cartindex(),
+                                                        trans->coef()));
         }
         spherical_transforms_.push_back(comp);
     }
@@ -711,7 +766,9 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 
                 for (int i=0, index = 0; i<=L; ++i) {
                     int l = L-i;
-                    for (int j=0; j<=i; ++j, ++index) {
+
+                    // # pragma omp simd
+                    for (int j=0; j<=i; j++, index++) {
                         int m = i-j;
                         int n = j;
 
@@ -748,10 +805,10 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         double** purezp = basis_values_["PHI_Z"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(purep[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purexp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(pureyp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purezp[P]),'\0',nsig_functions*sizeof(double));
+            ::memset(static_cast<void*>(purep[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purexp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(pureyp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purezp[P]), '\0', nsig_functions * sizeof(double));
         }
 
         int function_offset = 0;
@@ -802,11 +859,13 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                 double SY = V2 * yc;
                 double SZ = V2 * zc;
 
-                for (int i=0, index = 0; i<=L; ++i) {
-                    int l = L-i+1;
-                    for (int j=0; j<=i; ++j, ++index) {
-                        int m = i-j+1;
-                        int n = j+1;
+                // # pragma simd
+                for (int i = 0, index = 0; i <= L; ++i) {
+                    int l = L - i + 1;
+
+                    for (int j = 0; j <= i; j++, index++) {
+                        int m = i - j + 1;
+                        int n = j + 1;
 
                         int lp = l - 1;
                         int mp = m - 1;
@@ -828,17 +887,21 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                     int cartindex = std::get<1>(transform[index]);
                     double coef   = std::get<2>(transform[index]);
 
-                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints, coef, &cartp[0][cartindex], max_cart,
+                            &purep[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartxp[0][cartindex], max_cart,
+                            &purexp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartyp[0][cartindex], max_cart,
+                            &pureyp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartzp[0][cartindex], max_cart,
+                            &purezp[0][pureindex + function_offset], nso);
                 }
             } else {
                 for (int q = 0; q < nQ; q++) {
-                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartxp[0][q],max_cart,&purexp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartyp[0][q],max_cart,&pureyp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartzp[0][q],max_cart,&purezp[0][q + function_offset],nso);
+                    C_DCOPY(npoints, &cartp[0][q], max_cart, &purep[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartxp[0][q], max_cart, &purexp[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartyp[0][q], max_cart, &pureyp[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartzp[0][q], max_cart, &purezp[0][q + function_offset], nso);
                 }
             }
 
@@ -867,16 +930,16 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
         double** purezzp = basis_values_["PHI_ZZ"]->pointer();
 
         for (int P = 0; P < npoints; P++) {
-            ::memset(static_cast<void*>(purep[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purexp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(pureyp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purezp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purexxp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purexyp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purexzp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(pureyyp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(pureyzp[P]),'\0',nsig_functions*sizeof(double));
-            ::memset(static_cast<void*>(purezzp[P]),'\0',nsig_functions*sizeof(double));
+            ::memset(static_cast<void*>(purep[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purexp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(pureyp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purezp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purexxp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purexyp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purexzp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(pureyyp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(pureyzp[P]), '\0', nsig_functions * sizeof(double));
+            ::memset(static_cast<void*>(purezzp[P]), '\0', nsig_functions * sizeof(double));
         }
 
         int function_offset = 0;
@@ -903,7 +966,6 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             zc_pow[2] = 1.0;
 
             for (int P = 0; P < npoints; P++) {
-
                 double xc = x[P] - v[0];
                 double yc = y[P] - v[1];
                 double zc = z[P] - v[2];
@@ -918,11 +980,11 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                 double V1 = 0.0;
                 double V2 = 0.0;
                 double V3 = 0.0;
-                double T1,T2,T3;
+                double T1, T2, T3;
                 for (int K = 0; K < nprim; K++) {
-                    T1 =  norm[K] * exp(-alpha[K] * R2);
-                    T2 =  -2.0 * alpha[K] * T1;
-                    T3 =  -2.0 * alpha[K] * T2;
+                    T1 = norm[K] * exp(-alpha[K] * R2);
+                    T2 = -2.0 * alpha[K] * T1;
+                    T3 = -2.0 * alpha[K] * T2;
                     V1 += T1;
                     V2 += T2;
                     V3 += T3;
@@ -938,26 +1000,28 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                 double SYY = V3 * yc * yc + V2;
                 double SZZ = V3 * zc * zc + V2;
 
-                for (int i=0, index = 0; i<=L; ++i) {
-                    int l = L-i+2;
-                    for (int j=0; j<=i; ++j, ++index) {
-                        int m = i-j+2;
-                        int n = j+2;
+                for (int i = 0, index = 0; i <= L; ++i) {
+                    int l = L - i + 2;
+
+                    // # pragma omp simd
+                    for (int j = 0; j <= i; j++, index++) {
+                        int m = i - j + 2;
+                        int n = j + 2;
 
                         int lp = l - 2;
                         int mp = m - 2;
                         int np = n - 2;
 
                         double A = xc_pow[l] * yc_pow[m] * zc_pow[n];
-                        double AX = lp * xc_pow[l-1] * yc_pow[m] * zc_pow[n];
-                        double AY = mp * xc_pow[l] * yc_pow[m-1] * zc_pow[n];
-                        double AZ = np * xc_pow[l] * yc_pow[m] * zc_pow[n-1];
-                        double AXY = lp * mp * xc_pow[l-1] * yc_pow[m-1] * zc_pow[n];
-                        double AXZ = lp * np * xc_pow[l-1] * yc_pow[m] * zc_pow[n-1];
-                        double AYZ = mp * np * xc_pow[l] * yc_pow[m-1] * zc_pow[n-1];
-                        double AXX = lp * (lp - 1) * xc_pow[l-2] * yc_pow[m] * zc_pow[n];
-                        double AYY = mp * (mp - 1) * xc_pow[l] * yc_pow[m-2] * zc_pow[n];
-                        double AZZ = np * (np - 1) * xc_pow[l] * yc_pow[m] * zc_pow[n-2];
+                        double AX = lp * xc_pow[l - 1] * yc_pow[m] * zc_pow[n];
+                        double AY = mp * xc_pow[l] * yc_pow[m - 1] * zc_pow[n];
+                        double AZ = np * xc_pow[l] * yc_pow[m] * zc_pow[n - 1];
+                        double AXY = lp * mp * xc_pow[l - 1] * yc_pow[m - 1] * zc_pow[n];
+                        double AXZ = lp * np * xc_pow[l - 1] * yc_pow[m] * zc_pow[n - 1];
+                        double AYZ = mp * np * xc_pow[l] * yc_pow[m - 1] * zc_pow[n - 1];
+                        double AXX = lp * (lp - 1) * xc_pow[l - 2] * yc_pow[m] * zc_pow[n];
+                        double AYY = mp * (mp - 1) * xc_pow[l] * yc_pow[m - 2] * zc_pow[n];
+                        double AZZ = np * (np - 1) * xc_pow[l] * yc_pow[m] * zc_pow[n - 2];
 
                         cartp[P][index] = S * A;
                         cartxp[P][index] = S * AX + SX * A;
@@ -978,31 +1042,47 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
                 for (size_t index = 0; index < transform.size(); index++) {
                     int pureindex = std::get<0>(transform[index]);
                     int cartindex = std::get<1>(transform[index]);
-                    double coef   = std::get<2>(transform[index]);
+                    double coef = std::get<2>(transform[index]);
 
-                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartxxp[0][cartindex],max_cart,&purexxp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartxyp[0][cartindex],max_cart,&purexyp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartxzp[0][cartindex],max_cart,&purexzp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartyyp[0][cartindex],max_cart,&pureyyp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartyzp[0][cartindex],max_cart,&pureyzp[0][pureindex + function_offset],nso);
-                    C_DAXPY(npoints,coef,&cartzzp[0][cartindex],max_cart,&purezzp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints, coef, &cartp[0][cartindex], max_cart,
+                            &purep[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartxp[0][cartindex], max_cart,
+                            &purexp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartyp[0][cartindex], max_cart,
+                            &pureyp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartzp[0][cartindex], max_cart,
+                            &purezp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartxxp[0][cartindex], max_cart,
+                            &purexxp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartxyp[0][cartindex], max_cart,
+                            &purexyp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartxzp[0][cartindex], max_cart,
+                            &purexzp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartyyp[0][cartindex], max_cart,
+                            &pureyyp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartyzp[0][cartindex], max_cart,
+                            &pureyzp[0][pureindex + function_offset], nso);
+                    C_DAXPY(npoints, coef, &cartzzp[0][cartindex], max_cart,
+                            &purezzp[0][pureindex + function_offset], nso);
                 }
             } else {
                 for (int q = 0; q < nQ; q++) {
-                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartxp[0][q],max_cart,&purexp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartyp[0][q],max_cart,&pureyp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartzp[0][q],max_cart,&purezp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartxxp[0][q],max_cart,&purexxp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartxyp[0][q],max_cart,&purexyp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartxzp[0][q],max_cart,&purexzp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartyyp[0][q],max_cart,&pureyyp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartyzp[0][q],max_cart,&pureyzp[0][q + function_offset],nso);
-                    C_DCOPY(npoints,&cartzzp[0][q],max_cart,&purezzp[0][q + function_offset],nso);
+                    C_DCOPY(npoints, &cartp[0][q], max_cart, &purep[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartxp[0][q], max_cart, &purexp[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartyp[0][q], max_cart, &pureyp[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartzp[0][q], max_cart, &purezp[0][q + function_offset], nso);
+                    C_DCOPY(npoints, &cartxxp[0][q], max_cart, &purexxp[0][q + function_offset],
+                            nso);
+                    C_DCOPY(npoints, &cartxyp[0][q], max_cart, &purexyp[0][q + function_offset],
+                            nso);
+                    C_DCOPY(npoints, &cartxzp[0][q], max_cart, &purexzp[0][q + function_offset],
+                            nso);
+                    C_DCOPY(npoints, &cartyyp[0][q], max_cart, &pureyyp[0][q + function_offset],
+                            nso);
+                    C_DCOPY(npoints, &cartyzp[0][q], max_cart, &pureyzp[0][q + function_offset],
+                            nso);
+                    C_DCOPY(npoints, &cartzzp[0][q], max_cart, &purezzp[0][q + function_offset],
+                            nso);
                 }
             }
 

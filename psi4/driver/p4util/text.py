@@ -188,7 +188,6 @@ def banner(text, type=1, width=35, strNotOutfile=False):
     else:
         core.print_out(banner)
 
-
 def print_stdout(stuff):
     """Function to print *stuff* to standard output stream."""
     print(stuff, file=sys.stdout)

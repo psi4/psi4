@@ -48,8 +48,6 @@ struct dpdfile2;
 
 class PSIO;
 class Vector;
-class SimpleVector;
-class MatrixFactory;
 class SimpleMatrix;
 class Dimension;
 class Molecule;
@@ -660,6 +658,12 @@ public:
      */
     void symmetrize_gradient(std::shared_ptr<Molecule> mol);
 
+    /**
+     * Symmetrizes the a Hessian like matrix (3 * N, 3 * N) using information
+     * from the given Molecule.
+     */
+    void symmetrize_hessian(std::shared_ptr<Molecule> mol);
+
     /// Set this to identity
     void identity();
     /// Zeros this out
@@ -904,7 +908,7 @@ public:
 
     ///@{
     /// Matrix of size (m x n) which is the conditioned pseudoinverse of this (m x n)
-    SharedMatrix pseudoinverse(double condition = 0.0, bool* conditioned = NULL);
+    SharedMatrix pseudoinverse(double condition, int &nremoved);
     ///@}
 
     /*! Extract a conditioned orthonormal basis from this SPD matrix

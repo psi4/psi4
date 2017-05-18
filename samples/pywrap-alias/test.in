@@ -107,10 +107,10 @@ clean()
 #compare_values(-5.615567415914, get_variable('SCF TOTAL ENERGY'), 6, 'opt(cbs())')  #TEST
 #clean()
 
-banner('opt(arbitraryorder())')
-optimize('mp3')
-compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 5, '[13] opt(mp3())')  #TEST
-compare_values(-5.738452948227, get_variable('CURRENT ENERGY'), 5, '[13b] opt(mp3())')  #TEST
+#banner('opt(arbitraryorder())')
+#optimize('mp3')
+#compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 5, '[13] opt(mp3())')  #TEST
+#compare_values(-5.738452948227, get_variable('CURRENT ENERGY'), 5, '[13b] opt(mp3())')  #TEST
 
 #molecule h2o {
 #     O

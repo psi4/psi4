@@ -32,8 +32,7 @@
 
 using namespace psi;
 
-void export_misc(py::module &m)
-{
-    m.def("tstart", tstart, "docstring"); 
-    m.def("tstop", tstop, "docstring"); 
+void export_misc(py::module &m) {
+    m.def("tstart", tstart, "docstring");
+    m.def("tstop", tstop, "docstring");
 }
