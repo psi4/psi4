@@ -67,7 +67,7 @@ void export_wavefunction(py::module& m) {
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>,
                       std::shared_ptr<BasisSet>>())
-        .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "docstring")
+        .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
         .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy),
              "Copies the pointers to the internal data.")
