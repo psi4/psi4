@@ -43,7 +43,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp ca
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a 
                   cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc8 cc8a cc8b cc8c 
                   cc9 cc9a cdomp2-1 cdomp2-2 cepa0-grad1 cepa0-grad2 cepa1 
-                  cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1 
+                  cepa2 cepa3 cepa4 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1 
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2 
                   ci-property cubeprop decontract dcft-grad1 dcft-grad2 
                   dcft-grad3 dcft-grad4 dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 
