@@ -341,6 +341,13 @@ double CCEnergyWavefunction::compute_energy()
         update();
         checkpoint();
     }  // end loop over iterations
+
+    // DGAS Edit
+    Process::environment.globals["CC T1 DIAGNOSTIC"] = moinfo_.t1diag;
+    Process::environment.globals["CC D1 DIAGNOSTIC"] = moinfo_.d1diag;
+    Process::environment.globals["CC NEW D1 DIAGNOSTIC"] = moinfo_.new_d1diag;
+    Process::environment.globals["CC D2 DIAGNOSTIC"] = moinfo_.d2diag;
+
     outfile->Printf( "\n");
     if(!done) {
         outfile->Printf( "     ** Wave function not converged to %2.1e ** \n",

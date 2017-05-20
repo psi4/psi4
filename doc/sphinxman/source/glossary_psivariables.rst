@@ -148,6 +148,13 @@ PSI Variables by Alpha
 .. psivar:: CC TOTAL ENERGY
    CC CORRELATION ENERGY
 
+.. psivar:: CC T1 DIAGNOSTIC
+   CC D1 DIAGNOSTIC
+   CC NEW D1 DIAGNOSTIC
+   CC D2 DIAGNOSTIC
+
+   Diagnostic of multireference character.
+
 .. psivar:: CC2 TOTAL ENERGY
    CC2 CORRELATION ENERGY
    CC3 TOTAL ENERGY
