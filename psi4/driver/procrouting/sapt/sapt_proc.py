@@ -41,13 +41,13 @@ from . import sapt_mp2_terms
 # Only export the run_ scripts
 __all__ = ['run_sapt_dft']
 
+
 def run_sapt_dft(name, **kwargs):
-    optstash = p4util.OptionsState(
-        ['SCF', 'SCF_TYPE'],
-        ['SCF', 'REFERENCE'],
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'DFT_GRAC_SHIFT'],
-        ['SCF', 'SAVE_JK'])
+    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'],
+                                   ['SCF', 'REFERENCE'],
+                                   ['SCF', 'DFT_FUNCTIONAL'],
+                                   ['SCF', 'DFT_GRAC_SHIFT'],
+                                   ['SCF', 'SAVE_JK'])
 
     core.tstart()
     # Alter default algorithm
@@ -66,7 +66,9 @@ def run_sapt_dft(name, **kwargs):
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        core.print_out(
+            '  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n'
+        )
 
     # Make sure the geometry doesnt shift or rotate
     sapt_dimer = sapt_dimer.clone()
@@ -82,13 +84,13 @@ def run_sapt_dft(name, **kwargs):
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
 
     # Print out the title and some information
-    core.print_out("\n");
-    core.print_out("         ---------------------------------------------------------\n");
-    core.print_out("         " + "SAPT(DFT) Procedure".center(58) + "\n");
-    core.print_out("\n");
-    core.print_out("         " + "by Daniel G. A. Smith".center(58) + "\n");
-    core.print_out("         ---------------------------------------------------------\n");
-    core.print_out("\n");
+    core.print_out("\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("         " + "SAPT(DFT) Procedure".center(58) + "\n")
+    core.print_out("\n")
+    core.print_out("         " + "by Daniel G. A. Smith".center(58) + "\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("\n")
 
     core.print_out("  ==> Algorithm <==\n\n")
     core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
@@ -106,9 +108,7 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("     DFT (Monomer B)\n")
     core.print_out("\n")
 
-
-
-    if (mon_a_shift == 0.0) or (mon_b_shift == 0.0):
+    if (sapt_dft_functional != "HF") and ((mon_a_shift == 0.0) or (mon_b_shift == 0.0)):
         raise ValidationError('SAPT(DFT): must set both "SAPT_DFT_GRAC_SHIFT_A" and "B".')
 
     if (core.get_option('SCF', 'REFERENCE') != 'RHF'):
@@ -116,7 +116,8 @@ def run_sapt_dft(name, **kwargs):
 
     nfrag = sapt_dimer.nfragments()
     if nfrag != 2:
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' %
+                              (nfrag))
 
     monomerA = sapt_dimer.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
@@ -139,30 +140,33 @@ def run_sapt_dft(name, **kwargs):
             core.set_global_option('DF_INTS_IO', 'SAVE')
 
         hf_data = {}
-        hf_wfn_dimer = scf_helper("SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
+        hf_wfn_dimer = scf_helper(
+            "SCF", molecule=sapt_dimer, banner="SAPT(DFT): delta HF Dimer", **kwargs)
         hf_data["HF DIMER"] = core.get_variable("CURRENT ENERGY")
 
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'dimer', 'monomerA')
-        hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
+        hf_wfn_A = scf_helper(
+            "SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
         hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
 
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
-        hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
+        hf_wfn_B = scf_helper(
+            "SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
         hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
 
         # Move it back to monomer A
         if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerB', 'dimer')
 
-        core.print_out("\n");
-        core.print_out("         ---------------------------------------------------------\n");
-        core.print_out("         " + "SAPT(DFT): delta HF Segement".center(58) + "\n");
-        core.print_out("\n");
-        core.print_out("         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n");
-        core.print_out("         ---------------------------------------------------------\n");
-        core.print_out("\n");
+        core.print_out("\n")
+        core.print_out("         ---------------------------------------------------------\n")
+        core.print_out("         " + "SAPT(DFT): delta HF Segement".center(58) + "\n")
+        core.print_out("\n")
+        core.print_out("         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n")
+        core.print_out("         ---------------------------------------------------------\n")
+        core.print_out("\n")
 
         # Build cache and JK
         sapt_jk = hf_wfn_B.jk()
@@ -178,18 +182,20 @@ def run_sapt_dft(name, **kwargs):
         hf_data.update(exch)
 
         # Induction
-        ind = sapt_jk_terms.induction(hf_cache, sapt_jk, True,
-                                      maxiter=core.get_option("SAPT", "MAXITER"),
-                                      conv=core.get_option("SAPT", "D_CONVERGENCE"))
+        ind = sapt_jk_terms.induction(
+            hf_cache,
+            sapt_jk,
+            True,
+            maxiter=core.get_option("SAPT", "MAXITER"),
+            conv=core.get_option("SAPT", "D_CONVERGENCE"))
         hf_data.update(ind)
-
 
         dhf_value = hf_data["HF DIMER"] - hf_data["HF MONOMER A"] - hf_data["HF MONOMER B"]
 
         core.print_out("\n")
         core.print_out(print_sapt_hf_summary(hf_data, "SAPT(HF)", delta_hf=dhf_value))
 
-        data["Delta HF Correction"] =  core.get_variable("SAPT(DFT) Delta HF")
+        data["Delta HF Correction"] = core.get_variable("SAPT(DFT) Delta HF")
 
     if hf_wfn_dimer is None:
         dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
@@ -221,7 +227,6 @@ def run_sapt_dft(name, **kwargs):
     if mon_b_shift:
         core.set_global_option("DFT_GRAC_SHIFT", mon_b_shift)
 
-
     core.IO.set_default_namespace('monomerB')
     wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
     data["DFT MONOMERB"] = core.get_variable("CURRENT ENERGY")
@@ -229,13 +234,13 @@ def run_sapt_dft(name, **kwargs):
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
     # Print out the title and some information
-    core.print_out("\n");
-    core.print_out("         ---------------------------------------------------------\n");
-    core.print_out("         " + "SAPT(DFT): Intermolecular Interaction Segment".center(58) + "\n");
-    core.print_out("\n");
-    core.print_out("         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n");
-    core.print_out("         ---------------------------------------------------------\n");
-    core.print_out("\n");
+    core.print_out("\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("         " + "SAPT(DFT): Intermolecular Interaction Segment".center(58) + "\n")
+    core.print_out("\n")
+    core.print_out("         " + "by Daniel G. A. Smith and Rob Parrish".center(58) + "\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("\n")
 
     core.print_out("  ==> Algorithm <==\n\n")
     core.print_out("   SAPT DFT Functional     %12s\n" % str(sapt_dft_functional))
@@ -258,24 +263,29 @@ def run_sapt_dft(name, **kwargs):
     data.update(exch)
 
     # Induction
-    ind = sapt_jk_terms.induction(cache, sapt_jk, True,
-                                  maxiter=core.get_option("SAPT", "MAXITER"),
-                                  conv=core.get_option("SAPT", "D_CONVERGENCE"))
+    ind = sapt_jk_terms.induction(
+        cache,
+        sapt_jk,
+        True,
+        maxiter=core.get_option("SAPT", "MAXITER"),
+        conv=core.get_option("SAPT", "D_CONVERGENCE"))
     data.update(ind)
 
     # Dispersion
     primary_basis = wfn_A.basisset()
     core.print_out("\n")
     aux_basis = core.BasisSet.build(sapt_dimer, "DF_BASIS_MP2",
-                                    core.get_option("DFMP2", "DF_BASIS_MP2"),
-                                    "RIFIT", core.get_global_option('BASIS'))
+                                    core.get_option("DFMP2", "DF_BASIS_MP2"), "RIFIT",
+                                    core.get_global_option('BASIS'))
     fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
     data.update(fdds_disp)
 
     if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
-        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
+        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(
+            wfn_A, primary_basis, aux_basis, cache, do_print=True)
     else:
-        mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True)
+        mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(
+            dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True)
     data.update(mp2_disp)
 
     # Print out final data
@@ -289,4 +299,3 @@ def run_sapt_dft(name, **kwargs):
     core.tstop()
 
     return dimer_wfn
-
