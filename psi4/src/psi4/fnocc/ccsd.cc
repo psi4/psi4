@@ -523,9 +523,6 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   // add T1 diagnostic to globals
   Process::environment.globals["CC T1 DIAGNOSTIC"] = t1diag;
 
-  // add T1 diagnostic to wavefunction variables
-  set_variable("CC T1 DIAGNOSTIC",t1diag);
-
   std::shared_ptr<Matrix>T (new Matrix(o,o));
   std::shared_ptr<Matrix>eigvec (new Matrix(o,o));
   std::shared_ptr<Vector>eigval (new Vector(o));
@@ -545,9 +542,6 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
   // add D1 diagnostic to globals
   Process::environment.globals["CC D1 DIAGNOSTIC"] = sqrt(eigval->pointer()[0]);
-
-  // add D1 diagnostic to wavefunction variables
-  set_variable("CC D1 DIAGNOSTIC",sqrt(eigval->pointer()[0]));
 
   // delta mp2 correction for fno computations:
   if (options_.get_bool("NAT_ORBS")){
