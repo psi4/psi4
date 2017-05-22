@@ -201,12 +201,12 @@ protected:
 
     /// Helpers for C/D/epsilon transformers
     SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon,
-                                 const std::string& basis, const std::string& subset);
-    SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis);
+                                 const std::string& basis, const std::string& subset) const;
+    SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis) const;
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi,
-                                       const std::string& basis, const std::string& subset);
+                                       const std::string& basis, const std::string& subset) const;
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi,
-                                                    const std::string& subset);
+                                                    const std::string& subset) const;
 
     /// If atomic point charges are available they will be here
     std::shared_ptr<std::vector<double>> atomic_point_charges_;
@@ -275,7 +275,7 @@ public:
     * TODO-Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are deep copied.
     **/
     void c1_deep_copy(SharedWavefunction other);
-    void c1_deep_copy(Wavefunction* other);
+    void c1_deep_copy(const Wavefunction* other);
 
     virtual ~Wavefunction();
 
@@ -406,7 +406,7 @@ public:
     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     * @return the matrix in Pitzer order in the desired basis
     **/
-    SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+    SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL") const;
 
     /**
     * Return a subset of the Cb matrix in a desired basis

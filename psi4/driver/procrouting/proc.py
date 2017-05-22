@@ -1193,18 +1193,19 @@ def scf_helper(name, post_scf=True, **kwargs):
         p4util.banner('  Computing high-spin triplet guess  ')
         core.print_out('\n')
 
-
-#    # If we force c1 copy the active molecule
-#    if use_c1:
-#        scf_molecule.update_geometry()
-#        if scf_molecule.schoenflies_symbol() != 'c1':
-#            core.print_out("""  A requested method does not make use of molecular symmetry: """
-#                           """further calculations in C1 point group.\n""")
-#            scf_molecule = scf_molecule.clone()
-#            scf_molecule.reset_point_group('c1')
-#            scf_molecule.fix_orientation(True)
-#            scf_molecule.fix_com(True)
-#            scf_molecule.update_geometry()
+    # C1: OLD WAY
+    # If we force c1 copy the active molecule
+    if use_c1:
+        scf_molecule.update_geometry()
+        if scf_molecule.schoenflies_symbol() != 'c1':
+            core.print_out("""  A requested method does not make use of molecular symmetry: """
+                           """further calculations in C1 point group.\n""")
+            scf_molecule = scf_molecule.clone()
+            scf_molecule.reset_point_group('c1')
+            scf_molecule.fix_orientation(True)
+            scf_molecule.fix_com(True)
+            scf_molecule.update_geometry()
+    # C1: NEW WAY: comment out above
 
     # If GUESS is auto guess what it should be
     if core.get_option('SCF', 'GUESS') == "AUTO":
@@ -1426,7 +1427,11 @@ def scf_helper(name, post_scf=True, **kwargs):
     if not use_c1:
         return scf_wfn
     else:
-        return scf_wfn.c1_deep_copy()
+        # C1: OLD WAY
+        return scf_wfn
+        # C1: NEW WAY
+        #return scf_wfn.deep_copy(scf_wfn)
+
 #        # If we force c1 copy the active molecule
 #        scf_molecule.update_geometry()
 #        if scf_molecule.schoenflies_symbol() != 'c1':

@@ -217,7 +217,7 @@ void Wavefunction::c1_deep_copy(SharedWavefunction other) {
     c1_deep_copy(other.get());
 }
 
-void Wavefunction::c1_deep_copy(Wavefunction *other) {
+void Wavefunction::c1_deep_copy(const Wavefunction *other) {
     if (!S_) {
         throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
     }
@@ -294,9 +294,7 @@ void Wavefunction::c1_deep_copy(Wavefunction *other) {
     if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
     if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
 
-    SharedMatrix tmp = other->Ca_subset("AO", "ALL");
-    if (other->Ca_) Ca_ = tmp; //other->Ca_subset("AO", "ALL");
-    //if (other->Ca_) Ca_ = other->Ca_subset("AO", "ALL");
+    if (other->Ca_) Ca_ = other->Ca_subset("AO", "ALL");
 //    SharedMatrix Cocc = Ca_subset("SO", "OCC");
 //    SharedMatrix Cvir = Ca_subset("SO", "VIR");
 //    Dimension virpi = Cvir->colspi();

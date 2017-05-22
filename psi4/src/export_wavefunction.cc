@@ -74,6 +74,8 @@ void export_wavefunction(py::module& m) {
              "Copies the pointers to the internal data.")
         .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy),
              "Deep copies the internal data.")
+        .def("c1_deep_copy", take_sharedwfn(&Wavefunction::c1_deep_copy),
+             "Deep copies the internal data, converting internal data to C_1 symmetry.")
         .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs,
              "Returns true if the alpha and beta orbitals are the same.")
         .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
