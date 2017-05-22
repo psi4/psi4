@@ -282,6 +282,10 @@ def run_sapt_dft(name, **kwargs):
     core.print_out("\n")
     core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
+    # Copy data back into globals
+    for k, v in data.items():
+        core.set_variable(k, v)
+
     core.tstop()
 
     return dimer_wfn

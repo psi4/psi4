@@ -739,7 +739,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
             const double *alpha = Qshell.exps();
             const double *norm  = Qshell.coefs();
 
-            const std::vector<std::tuple<int,int,double> >& transform = spherical_transforms_[L];
+            const std::vector<std::tuple<int, int, double>>& transform = spherical_transforms_[L];
 
             xc_pow[0] = 1.0;
             yc_pow[0] = 1.0;
