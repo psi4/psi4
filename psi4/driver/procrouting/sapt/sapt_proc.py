@@ -66,9 +66,7 @@ def run_sapt_dft(name, **kwargs):
 
     # Shifting to C1 so we need to copy the active molecule
     if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out(
-            '  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n'
-        )
+        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     # Make sure the geometry doesnt shift or rotate
     sapt_dimer = sapt_dimer.clone()
@@ -281,8 +279,7 @@ def run_sapt_dft(name, **kwargs):
     data.update(fdds_disp)
 
     if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
-        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(
-            wfn_A, primary_basis, aux_basis, cache, do_print=True)
+        mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
     else:
         mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(
             dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True)
