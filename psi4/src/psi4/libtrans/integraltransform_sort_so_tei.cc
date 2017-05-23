@@ -226,7 +226,7 @@ IntegralTransform::presort_so_tei()
     }
 
 
-    double *T = init_array(nTriSo_);
+    /*double *T = init_array(nTriSo_);
     if(print_>4) outfile->Printf( "The SO basis kinetic energy integrals\n");
     IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T,   T, nTriSo_, 0, print_ > 4, "outfile");
     if(print_>4) outfile->Printf( "The SO basis nuclear attraction integrals\n");
@@ -242,10 +242,11 @@ IntegralTransform::presort_so_tei()
         }
     }
     free(T);
+    */
 
 
     //H_->print();
-    /*aoH = H_->to_lower_triangle();
+    aoH = H_->to_lower_triangle();
     for(int pq=0; pq < nTriSo_; ++pq){
         aFzcOp[pq] = aoH[pq];
         aFock[pq]  = aoH[pq];
@@ -253,7 +254,7 @@ IntegralTransform::presort_so_tei()
             bFock[pq]  = aoH[pq];
             bFzcOp[pq] = aoH[pq];
         }
-    }*/
+    }
 
     int currentActiveDPD = psi::dpd_default;
     dpd_set_default(myDPDNum_);
