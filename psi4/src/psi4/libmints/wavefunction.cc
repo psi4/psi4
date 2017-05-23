@@ -218,7 +218,8 @@ void Wavefunction::c1_deep_copy(SharedWavefunction other) {
 }
 
 void Wavefunction::c1_deep_copy(const Wavefunction *other) {
-    if (!S_) {
+    // CDS: ask Jet I think below should be other->
+    if (!other->S_) {
         throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
     }
 
@@ -231,7 +232,8 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
     molecule_->set_com_fixed(true);
     molecule_->update_geometry();
 
-    basisset_ = basisset_;
+    basisset_ = other->basisset_; // CDS: think we need to reset this
+                                  // b/c it contains a molecule
     basissets_ = other->basissets_; // Still cannot copy basissets
     integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
@@ -241,7 +243,7 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
     c1_nsopi[0] = other->nsopi_.sum();
     factory_->init_with(c1_nsopi, c1_nsopi);
     //?AO2SO_ = other->AO2SO_->clone();
-    S_ = other->S_->clone();
+    S_ = other->S_->clone(); // need to transform this...
 
     psio_ = other->psio_; // We dont actually copy psio
     memory_ = other->memory_;
@@ -285,21 +287,19 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
 
     /// Below is not set in the typical constructor
     if (other->H_) H_ = other->H_->clone();
-//    if (other->Ca_) Ca_ = other->Ca_->clone();
-    if (other->Cb_) Cb_ = other->Cb_->clone();
-    if (other->Da_) Da_ = other->Da_->clone();
-    if (other->Db_) Db_ = other->Db_->clone();
-    if (other->Fa_) Fa_ = other->Fa_->clone();
-    if (other->Fb_) Fb_ = other->Fb_->clone();
-    if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
-    if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
-
     if (other->Ca_) Ca_ = other->Ca_subset("AO", "ALL");
-//    SharedMatrix Cocc = Ca_subset("SO", "OCC");
-//    SharedMatrix Cvir = Ca_subset("SO", "VIR");
-//    Dimension virpi = Cvir->colspi();
+    if (other->Cb_) Cb_ = other->Cb_subset("AO", "ALL");
+    if (other->Da_) Da_ = other->Da_subset("AO");
+    if (other->Db_) Db_ = other->Db_subset("AO");
+    if (other->Fa_) Fa_ = other->Fa_subset("AO");
+    if (other->Fb_) Fb_ = other->Fb_subset("AO");
+    if (other->epsilon_a_) epsilon_a_ =
+        other->epsilon_subset_helper(other->epsilon_a_, other->nsopi_, "AO", "ALL");
+    if (other->epsilon_b_) epsilon_b_ = 
+        other->epsilon_subset_helper(other->epsilon_b_, other->nsopi_, "AO", "ALL");
 
 
+    // what format are these in?  Not sure if we can copy
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
     if (other->tpdm_gradient_contribution_)
@@ -641,9 +641,8 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension &nocc
     return C2;
 }
 
-SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi,
-                                                 const std::string &basis, const std::string &subset) {
-    std::vector<std::vector<int>> positions = subset_occupation(noccpi, subset);
+SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension &noccpi, const std::string &basis, const std::string &subset) const {
+    std::vector <std::vector<int>> positions = subset_occupation(noccpi, subset);
 
     Dimension nmopi(nirrep_);
     for (int h = 0; h < (int)positions.size(); h++) {
@@ -683,7 +682,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
     return C2;
 }
 
-SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string &basis) {
+SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string &basis) const {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
         auto F2 = std::make_shared<Matrix>("Fock (AO basis)", basisset_->nbf(), basisset_->nbf());
@@ -738,7 +737,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
     }
 }
 
-SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string &basis) {
+SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string &basis) const {
     if (basis == "AO") {
         double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
         auto D2 = std::make_shared<Matrix>("D (AO basis)", basisset_->nbf(), basisset_->nbf());
@@ -965,19 +964,31 @@ SharedMatrix Wavefunction::Ca_subset(const std::string &basis, const std::string
     return C_subset_helper(Ca_, nalphapi_, epsilon_a_, basis, subset);
 }
 
-SharedMatrix Wavefunction::Cb_subset(const std::string &basis, const std::string &subset) {
+SharedMatrix Wavefunction::Cb_subset(const std::string &basis, const std::string &subset) const {
     return C_subset_helper(Cb_, nbetapi_, epsilon_b_, basis, subset);
 }
 
-SharedMatrix Wavefunction::Da_subset(const std::string &basis) { return D_subset_helper(Da_, Ca_, basis); }
+SharedMatrix Wavefunction::Da_subset(const std::string &basis) const {
+    return D_subset_helper(Da_, Ca_, basis);
+}
 
-SharedMatrix Wavefunction::Db_subset(const std::string &basis) { return D_subset_helper(Db_, Cb_, basis); }
+SharedMatrix Wavefunction::Db_subset(const std::string &basis) const {
+    return D_subset_helper(Db_, Cb_, basis);
+}
 
-SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) {
+SharedMatrix Wavefunction::Fa_subset(const std::string &basis) const {
+    return F_subset_helper(Fa_, Ca_, basis);
+}
+
+SharedMatrix Wavefunction::Fb_subset(const std::string &basis) const {
+    return F_subset_helper(Fb_, Cb_, basis);
+}
+
+SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) const {
     return epsilon_subset_helper(epsilon_a_, nalphapi_, basis, subset);
 }
 
-SharedVector Wavefunction::epsilon_b_subset(const std::string &basis, const std::string &subset) {
+SharedVector Wavefunction::epsilon_b_subset(const std::string &basis, const std::string &subset) const {
     return epsilon_subset_helper(epsilon_b_, nbetapi_, basis, subset);
 }
 
