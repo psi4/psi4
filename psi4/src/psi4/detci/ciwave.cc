@@ -108,6 +108,8 @@ void CIWavefunction::common_init() {
     Cb_ = Ca_;  // We can only do RHF or ROHF reference wavefunctions.
     Da_ = reference_wavefunction_->Da()->clone();
     Db_ = reference_wavefunction_->Db()->clone();
+    // AK
+    H_ = reference_wavefunction_->H()->clone();
 
     // Set information
     ints_init_ = false;

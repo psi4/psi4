@@ -116,7 +116,8 @@ IntegralTransform::IntegralTransform(std::shared_ptr<Wavefunction> wfn,
 }
 
 
-IntegralTransform::IntegralTransform(SharedMatrix c,
+IntegralTransform::IntegralTransform(SharedMatrix H,
+                                     SharedMatrix c,
                                      SharedMatrix i,
                                      SharedMatrix a,
                                      SharedMatrix v,
@@ -197,6 +198,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     Cs.push_back(c); Cs.push_back(i); Cs.push_back(a); Cs.push_back(v);
     Ca_ = Matrix::horzcat(Cs);
     Cb_ = Ca_;
+    H_ = H;
 
     common_initialize();
 

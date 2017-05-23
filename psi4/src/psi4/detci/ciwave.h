@@ -108,7 +108,7 @@ public:
     /**!
      * Transform the one and two electron integrals for a CI computation.
      */
-    void transform_ci_integrals(void);
+    void transform_ci_integrals();
 
     /**!
      * Transform the one and two electron integrals for a MCSCF computation.

@@ -140,7 +140,8 @@ class IntegralTransform{
                           FrozenOrbitals frozenOrbitals = OccAndVir,
                           bool initialize = true);
 
-        IntegralTransform(SharedMatrix c,
+        IntegralTransform(SharedMatrix H,
+                          SharedMatrix c,
                           SharedMatrix i,
                           SharedMatrix a,
                           SharedMatrix v,

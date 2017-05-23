@@ -99,7 +99,7 @@ void CIWavefunction::transform_ci_integrals() {
     spaces.push_back(act_space);
 
     IntegralTransform* ints = new IntegralTransform(
-        Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
+        H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
         IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
         IntegralTransform::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
@@ -357,7 +357,7 @@ void CIWavefunction::setup_mcscf_ints() {
 
     // Now the occ space is active, the vir space is our rot space (FZC to FZV)
     IntegralTransform* ints = new IntegralTransform(
-        Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
+        H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
         IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
         IntegralTransform::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
@@ -598,19 +598,26 @@ void CIWavefunction::transform_mcscf_ints_ao(bool approx_only)
     timer_off("CIWave: AO MCSCF integral transform");
 }
 void CIWavefunction::transform_mcscf_ints(bool approx_only) {
+    outfile->Printf("\nHa ha ha \n");
     if (!ints_init_) setup_mcscf_ints();
     timer_on("CIWave: MCSCF integral transform");
+    outfile->Printf("\nHa ha ha \n");
 
     // The orbital matrix need to be identical to the previous one
     ints_->set_orbitals(get_orbitals("ALL"));
+    outfile->Printf("\nHa ha ha \n");
 
     if (approx_only) {
+    outfile->Printf("\nHa ha ha \n");
         // We only need (aa|aa), (aa|aN) for appoximate update
         ints_->set_keep_ht_ints(true);  // Save the aa half ints here
         ints_->transform_tei_first_half(act_space_, act_space_);
+    outfile->Printf("\nHa ha ha \n");
         ints_->transform_tei_second_half(act_space_, act_space_, act_space_, rot_space_);
         ints_->set_keep_ht_ints(false);  // Need to nuke the half ints after building act/act
+    outfile->Printf("\nHa ha ha \n");
         ints_->transform_tei_second_half(act_space_, act_space_, act_space_, act_space_);
+    outfile->Printf("\nHa ha ha \n");
     } else {
         // We need (aa|aa), (aa|aN), (aa|NN), (aN|aN)
         ints_->set_keep_ht_ints(false);  // Need to nuke the half ints after building
