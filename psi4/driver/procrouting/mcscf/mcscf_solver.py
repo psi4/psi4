@@ -349,7 +349,7 @@ def mcscf_solver(ref_wfn):
             core.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
 
     # Print out CI vector information
-    if mcscf_target_conv_type == 'SO':
+    if mcscf_target_conv_type == 'OS':
         dvec.close_io_files()
         ci_grad.close_io_files()
 
