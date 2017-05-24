@@ -19,6 +19,7 @@ set(sources_list
         export_plugins.cc
         export_psio.cc
         export_wavefunction.cc
+        export_options.cc
         create_new_plugin.cc
         read_options.cc
         core.cc
