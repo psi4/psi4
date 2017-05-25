@@ -284,7 +284,7 @@ def mcscf_solver(ref_wfn):
     for mcscf_iter in one_step_iters:
 
         # Transform integrals and update the MCSCF object
-        ciwfn.transform_mcscf_integrals(False)
+        ciwfn.transform_mcscf_integrals(ciwfn.H(), False)
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
 

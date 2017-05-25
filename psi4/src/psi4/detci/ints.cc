@@ -99,7 +99,7 @@ void CIWavefunction::transform_ci_integrals() {
     spaces.push_back(act_space);
 
     IntegralTransform* ints = new IntegralTransform(
-        Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
+        H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
         IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
         IntegralTransform::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
@@ -357,7 +357,7 @@ void CIWavefunction::setup_mcscf_ints() {
 
     // Now the occ space is active, the vir space is our rot space (FZC to FZV)
     IntegralTransform* ints = new IntegralTransform(
-        Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
+        H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::Restricted,
         IntegralTransform::DPDOnly, IntegralTransform::PitzerOrder,
         IntegralTransform::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);

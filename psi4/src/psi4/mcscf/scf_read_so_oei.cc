@@ -39,6 +39,10 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 
 #include "scf.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/factory.h"
+
 
 extern FILE* outfile;
 
@@ -88,6 +92,16 @@ void SCF::read_so_oei()
       for(int j=0; j < S->get_rows(h); j++){
         int ij = INDEX(H->get_abs_row(h,i),H->get_abs_col(h,j));
         S->set(h,i,j, buffer[ij] );
+      }
+    }
+  }
+
+  H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
+  for(int h=0;h<nirreps;h++){
+    for(int i=0; i < H->get_rows(h); i++){
+      for(int j=0; j < H->get_cols(h); j++){
+        int ij = INDEX(H->get_abs_row(h,i),H->get_abs_col(h,j));
+        H_->set(h,i,j,H->get(h,i,j));
       }
     }
   }

@@ -140,7 +140,8 @@ class IntegralTransform{
                           FrozenOrbitals frozenOrbitals = OccAndVir,
                           bool initialize = true);
 
-        IntegralTransform(SharedMatrix c,
+        IntegralTransform(SharedMatrix H,
+                          SharedMatrix c,
                           SharedMatrix i,
                           SharedMatrix a,
                           SharedMatrix v,
@@ -398,6 +399,8 @@ class IntegralTransform{
         std::shared_ptr<Matrix> Ca_;
         // The alpha MO coefficients for each irrep
         std::shared_ptr<Matrix> Cb_;
+        // The one electron Hamiltonian matrix for each irrep
+        std::shared_ptr<Matrix> H_;
         // Whether to keep the IWL SO integral file after processing
         bool keepIwlSoInts_;
         // Whether to keep the IWL MO two particle density matrix
