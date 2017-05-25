@@ -401,6 +401,10 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
   double t1diag = C_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
   outfile->Printf("        T1 diagnostic:                  %20.12lf\n",t1diag);
+
+  // add T1 diagnostic to globals
+  Process::environment.globals["CC T1 DIAGNOSTIC"] = t1diag;
+
   std::shared_ptr<Matrix>T (new Matrix(o,o));
   std::shared_ptr<Matrix>eigvec (new Matrix(o,o));
   std::shared_ptr<Vector>eigval (new Vector(o));
@@ -417,6 +421,9 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   T->diagonalize(eigvec,eigval,descending);
   outfile->Printf("        D1 diagnostic:                  %20.12lf\n",sqrt(eigval->pointer()[0]));
   outfile->Printf("\n");
+
+  // add D1 diagnostic to globals
+  Process::environment.globals["CC D1 DIAGNOSTIC"] = sqrt(eigval->pointer()[0]);
 
   // delta mp2 correction for fno computations:
   if (options_.get_bool("NAT_ORBS")){
