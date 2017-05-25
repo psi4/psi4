@@ -694,8 +694,8 @@ def process_input(raw_input, print_level=1):
     #    check_parentheses_and_brackets(temp, 1)
 
     # First, remove everything from lines containing only spaces
-    blankline = re.compile(r'^\s*$')
-    temp = re.sub(blankline, '', temp, re.MULTILINE)
+    blankline = re.compile(r'^\s*$', re.MULTILINE)
+    temp = re.sub(blankline, '', temp)
 
     # Look for things like
     # set matrix [

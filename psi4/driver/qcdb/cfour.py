@@ -50,7 +50,7 @@ def harvest_output(outtext):
     pass_coord = []
     pass_grad = []
 
-    for outpass in re.split(r'--invoking executable xjoda', outtext, re.MULTILINE):
+    for outpass in re.split(r'--invoking executable xjoda', outtext):
         psivar, c4coord, c4grad = harvest_outfile_pass(outpass)
         pass_psivar.append(psivar)
         pass_coord.append(c4coord)
