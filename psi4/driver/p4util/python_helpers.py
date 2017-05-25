@@ -71,8 +71,8 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
             atom_basis_list.append(lmbs)
             #lmbs.print_detail_out()
         return atom_basis_list
-
-    if isinstance(resolved_target, basestring):
+    if ((sys.version_info < (3,0) and isinstance(resolved_target, basestring)) or
+        (sys.version_info >= (3,0) and isinstance(resolved_target, str))):
         basisdict['name'] = basisdict['name'].split('/')[-1].replace('.gbs', '')
     if callable(resolved_target):
         basisdict['name'] = resolved_target.__name__.replace('basisspec_psi4_yo__', '').upper()
