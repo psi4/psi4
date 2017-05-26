@@ -782,6 +782,7 @@ void export_mints(py::module& m)
         .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals",
               py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
+        .def("ao_grad_helper", &MintsHelper::ao_grad_helper, "docstring")
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))

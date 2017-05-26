@@ -793,8 +793,11 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     return I;
 }
 
-std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints)
+std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
 {
+
+    std::shared_ptr <TwoBodyAOInt> ints(integral_->eri());
+
     std::shared_ptr <BasisSet> bs1 = ints->basis1();
     std::shared_ptr <BasisSet> bs2 = ints->basis2();
     std::shared_ptr <BasisSet> bs3 = ints->basis3();

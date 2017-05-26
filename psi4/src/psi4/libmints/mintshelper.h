@@ -77,7 +77,6 @@ private:
 
 
     SharedMatrix ao_helper(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints);
-    std::vector<std::vector<SharedMatrix> > ao_grad_helper(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints);
     SharedMatrix ao_shell_getter(const std::string& label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
 
     SharedMatrix ao_3coverlap_helper(const std::string &label, std::shared_ptr<ThreeCenterOverlapInt> ints);
@@ -155,6 +154,9 @@ private:
                         std::shared_ptr<BasisSet> bs4);
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
+    // AK
+    std::vector<std::vector<SharedMatrix> > ao_grad_helper();
+
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);
     /// MO ERFC Omega Integrals
