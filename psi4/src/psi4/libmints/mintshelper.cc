@@ -793,7 +793,8 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     return I;
 }
 
-std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
+//std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper(int atom)
+std::vector<SharedMatrix> MintsHelper::ao_grad_helper(int atom)
 {
 
     std::shared_ptr<IntegralFactory> factory(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
@@ -812,12 +813,14 @@ std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
 
     int natom = basisset_->molecule()->natom();
 
-    std::vector<std::vector<SharedMatrix> > grad;
-    for (int i=0; i<natom; i++){
-        std::vector<SharedMatrix> temp;
-        for (int p=0; p<3; p++)
-            temp.push_back(SharedMatrix(new Matrix("ao_grad",nbf1 * nbf2, nbf3 * nbf4)));
-            grad.push_back(temp);
+    //std::vector<std::vector<SharedMatrix> > grad;
+    std::vector<SharedMatrix> grad;
+    //for (int i=0; i<natom; i++){
+     //   std::vector<SharedMatrix> temp;
+        for (int p=0; p<3; p++){
+            //temp.push_back(SharedMatrix(new Matrix("ao_grad",nbf1 * nbf2, nbf3 * nbf4)));
+            grad.push_back(SharedMatrix(new Matrix("ao_grad",nbf1 * nbf2, nbf3 * nbf4)));
+            //grad.push_back(temp);
         }
       
     const double *buffer = ints->buffer();
@@ -855,6 +858,9 @@ std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
 
                   delta = 0L;
 
+                  if( Pcenter!=atom && Qcenter!=atom && Rcenter!=atom && Scenter!=atom)
+                      continue;
+
                   for (int p = 0; p < Psize; p++) {
                       for (int q = 0; q < Qsize; q++) {
                           for (int r = 0; r < Rsize; r++) {
@@ -864,30 +870,57 @@ std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
                                     int j = (Roff + r) * nbf4 + Soff + s;
 
 
-                                  grad[Pcenter][0]->set(i, j, buffer[0 * stride + delta]);
-                                  grad[Pcenter][1]->set(i, j, buffer[1 * stride + delta]);
-                                  grad[Pcenter][2]->set(i, j, buffer[2 * stride + delta]);
+                                   if (Pcenter == atom)  {
+                                  //grad[Pcenter][0]->set(i, j, buffer[0 * stride + delta]);
+                                  //grad[Pcenter][1]->set(i, j, buffer[1 * stride + delta]);
+                                  //grad[Pcenter][2]->set(i, j, buffer[2 * stride + delta]);
+                                  grad[0]->set(i, j, buffer[0 * stride + delta]);
+                                  grad[1]->set(i, j, buffer[1 * stride + delta]);
+                                  grad[2]->set(i, j, buffer[2 * stride + delta]);
+                                  }
+                                   if (Rcenter == atom)  {
+                                  //grad[Rcenter][0]->set(i, j, buffer[3 * stride + delta]);
+                                  //grad[Rcenter][1]->set(i, j, buffer[4 * stride + delta]);
+                                  //grad[Rcenter][2]->set(i, j, buffer[5 * stride + delta]);
+                                  grad[0]->set(i, j, buffer[3 * stride + delta]);
+                                  grad[1]->set(i, j, buffer[4 * stride + delta]);
+                                  grad[2]->set(i, j, buffer[5 * stride + delta]);
+                                  }
 
-                                  grad[Rcenter][0]->set(i, j, buffer[3 * stride + delta]);
-                                  grad[Rcenter][1]->set(i, j, buffer[4 * stride + delta]);
-                                  grad[Rcenter][2]->set(i, j, buffer[5 * stride + delta]);
+                                   if (Scenter == atom)  {
+                                  //grad[Scenter][0]->set(i, j, buffer[6 * stride + delta]);
+                                  //grad[Scenter][1]->set(i, j, buffer[7 * stride + delta]);
+                                  //grad[Scenter][2]->set(i, j, buffer[8 * stride + delta]);
+                                  grad[0]->set(i, j, buffer[6 * stride + delta]);
+                                  grad[1]->set(i, j, buffer[7 * stride + delta]);
+                                  grad[2]->set(i, j, buffer[8 * stride + delta]);
+                                  }
 
-                                  grad[Scenter][0]->set(i, j, buffer[6 * stride + delta]);
-                                  grad[Scenter][1]->set(i, j, buffer[7 * stride + delta]);
-                                  grad[Scenter][2]->set(i, j, buffer[8 * stride + delta]);
+                                   if (Qcenter == atom)  {
+                                  //grad[Qcenter][0]->set(i, j, -grad[Pcenter][0]->get(i,j));
+                                  //grad[Qcenter][0]->add(i, j, -grad[Rcenter][0]->get(i,j));
+                                  //grad[Qcenter][0]->add(i, j, -grad[Scenter][0]->get(i,j));
 
+                                  grad[0]->set(i, j, -grad[0]->get(i,j));
+                                  grad[0]->add(i, j, -grad[0]->get(i,j));
+                                  grad[0]->add(i, j, -grad[0]->get(i,j));
 
-                                  grad[Qcenter][0]->set(i, j, -grad[Pcenter][0]->get(i,j));
-                                  grad[Qcenter][0]->add(i, j, -grad[Rcenter][0]->get(i,j));
-                                  grad[Qcenter][0]->add(i, j, -grad[Scenter][0]->get(i,j));
+                                  //grad[Qcenter][1]->set(i, j, -grad[Pcenter][1]->get(i,j));
+                                  //grad[Qcenter][1]->add(i, j, -grad[Rcenter][1]->get(i,j));
+                                  //grad[Qcenter][1]->add(i, j, -grad[Scenter][1]->get(i,j));
 
-                                  grad[Qcenter][1]->set(i, j, -grad[Pcenter][1]->get(i,j));
-                                  grad[Qcenter][1]->add(i, j, -grad[Rcenter][1]->get(i,j));
-                                  grad[Qcenter][1]->add(i, j, -grad[Scenter][1]->get(i,j));
+                                  grad[1]->set(i, j, -grad[1]->get(i,j));
+                                  grad[1]->add(i, j, -grad[1]->get(i,j));
+                                  grad[1]->add(i, j, -grad[1]->get(i,j));
 
-                                  grad[Qcenter][2]->set(i, j, -grad[Pcenter][2]->get(i,j));
-                                  grad[Qcenter][2]->add(i, j, -grad[Rcenter][2]->get(i,j));
-                                  grad[Qcenter][2]->add(i, j, -grad[Scenter][2]->get(i,j));
+                                  //grad[Qcenter][2]->set(i, j, -grad[Pcenter][2]->get(i,j));
+                                  //grad[Qcenter][2]->add(i, j, -grad[Rcenter][2]->get(i,j));
+                                  //grad[Qcenter][2]->add(i, j, -grad[Scenter][2]->get(i,j));
+                                  
+                                  grad[2]->set(i, j, -grad[2]->get(i,j));
+                                  grad[2]->add(i, j, -grad[2]->get(i,j));
+                                  grad[2]->add(i, j, -grad[2]->get(i,j));
+                                  }
                                   delta++;
 
                              }
@@ -901,9 +934,10 @@ std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
 
     //Build numpy and final matrix shape
     std::vector<int> nshape{nbf1, nbf2, nbf3, nbf4};
-    for (int i=0; i<natom; i++)
+    //for (int i=0; i<natom; i++)
        for (int p=0; p<3; p++)
-            grad[i][p]->set_numpy_shape(nshape);
+            grad[p]->set_numpy_shape(nshape);
+            //grad[i][p]->set_numpy_shape(nshape);
 
     return grad;
 }

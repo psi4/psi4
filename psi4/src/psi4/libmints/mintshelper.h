@@ -155,7 +155,8 @@ private:
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
     // AK
-    std::vector<std::vector<SharedMatrix> > ao_grad_helper();
+    //std::vector<std::vector<SharedMatrix> > ao_grad_helper();
+    std::vector<SharedMatrix>  ao_grad_helper(int natom);
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);
