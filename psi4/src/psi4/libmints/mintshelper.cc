@@ -793,8 +793,121 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     return I;
 }
 
-SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr<TwoBodyAOInt> ints, int M, int N,
-                                          int P, int Q) {
+std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints)
+{
+    std::shared_ptr <BasisSet> bs1 = ints->basis1();
+    std::shared_ptr <BasisSet> bs2 = ints->basis2();
+    std::shared_ptr <BasisSet> bs3 = ints->basis3();
+    std::shared_ptr <BasisSet> bs4 = ints->basis4();
+
+    int nbf1 = bs1->nbf();
+    int nbf2 = bs2->nbf();
+    int nbf3 = bs3->nbf();
+    int nbf4 = bs4->nbf();
+
+    int natom = basisset_->molecule()->natom();
+
+    std::vector<std::vector<SharedMatrix> > grad;
+    for (int i=0; i<natom; i++){
+        std::vector<SharedMatrix> temp;
+        for (int p=0; p<3; p++)
+            temp.push_back(SharedMatrix(new Matrix("ao_grad",nbf1 * nbf2, nbf3 * nbf4)));
+            grad.push_back(temp);
+        }
+      
+    const double *buffer = ints->buffer();
+
+
+    for (int P = 0; P < bs1->nshell(); P++) {
+        for (int Q = 0; Q < bs2->nshell(); Q++) {
+            for (int R = 0; R < bs3->nshell(); R++) {
+                for (int S = 0; S < bs4->nshell(); S++) {
+
+                  ints->compute_shell_deriv1(P, Q, R, S);
+
+                  int Psize = basisset_->shell(P).nfunction();
+                  int Qsize = basisset_->shell(Q).nfunction();
+                  int Rsize = basisset_->shell(R).nfunction();
+                  int Ssize = basisset_->shell(S).nfunction();
+
+                  int Pncart = basisset_->shell(P).ncartesian();
+                  int Qncart = basisset_->shell(Q).ncartesian();
+                  int Rncart = basisset_->shell(R).ncartesian();
+                  int Sncart = basisset_->shell(S).ncartesian();
+
+                  int Poff = basisset_->shell(P).function_index();
+                  int Qoff = basisset_->shell(Q).function_index();
+                  int Roff = basisset_->shell(R).function_index();
+                  int Soff = basisset_->shell(S).function_index();
+
+                  int Pcenter = basisset_->shell(P).ncenter();
+                  int Qcenter = basisset_->shell(Q).ncenter();
+                  int Rcenter = basisset_->shell(R).ncenter();
+                  int Scenter = basisset_->shell(S).ncenter();
+
+                  size_t stride = Pncart * Qncart * Rncart * Sncart;
+                  size_t delta;
+
+                  delta = 0L;
+
+                  for (int p = 0; p < Psize; p++) {
+                      for (int q = 0; q < Qsize; q++) {
+                          for (int r = 0; r < Rsize; r++) {
+                              for (int s = 0; s < Ssize; s++) {
+
+                                    int i = (Poff + p) * nbf3 + Qoff + q;
+                                    int j = (Roff + r) * nbf4 + Soff + s;
+
+
+                                  grad[Pcenter][0]->set(i, j, buffer[0 * stride + delta]);
+                                  grad[Pcenter][1]->set(i, j, buffer[1 * stride + delta]);
+                                  grad[Pcenter][2]->set(i, j, buffer[2 * stride + delta]);
+
+                                  grad[Rcenter][0]->set(i, j, buffer[3 * stride + delta]);
+                                  grad[Rcenter][1]->set(i, j, buffer[4 * stride + delta]);
+                                  grad[Rcenter][2]->set(i, j, buffer[5 * stride + delta]);
+
+                                  grad[Scenter][0]->set(i, j, buffer[6 * stride + delta]);
+                                  grad[Scenter][1]->set(i, j, buffer[7 * stride + delta]);
+                                  grad[Scenter][2]->set(i, j, buffer[8 * stride + delta]);
+
+
+                                  grad[Qcenter][0]->set(i, j, -grad[Pcenter][0]->get(i,j));
+                                  grad[Qcenter][0]->add(i, j, -grad[Rcenter][0]->get(i,j));
+                                  grad[Qcenter][0]->add(i, j, -grad[Scenter][0]->get(i,j));
+
+                                  grad[Qcenter][1]->set(i, j, -grad[Pcenter][1]->get(i,j));
+                                  grad[Qcenter][1]->add(i, j, -grad[Rcenter][1]->get(i,j));
+                                  grad[Qcenter][1]->add(i, j, -grad[Scenter][1]->get(i,j));
+
+                                  grad[Qcenter][2]->set(i, j, -grad[Pcenter][2]->get(i,j));
+                                  grad[Qcenter][2]->add(i, j, -grad[Rcenter][2]->get(i,j));
+                                  grad[Qcenter][2]->add(i, j, -grad[Scenter][2]->get(i,j));
+                                  delta++;
+
+                             }
+                         }
+                     }
+                 }
+             }
+          }
+       }
+    }
+
+    //Build numpy and final matrix shape
+    std::vector<int> nshape{nbf1, nbf2, nbf3, nbf4};
+    for (int i=0; i<natom; i++)
+       for (int p=0; p<3; p++)
+            grad[i][p]->set_numpy_shape(nshape);
+
+    return grad;
+}
+
+
+
+
+SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints, int M, int N, int P, int Q)
+{
     int mfxn = basisset_->shell(M).nfunction();
     int nfxn = basisset_->shell(N).nfunction();
     int pfxn = basisset_->shell(P).nfunction();
