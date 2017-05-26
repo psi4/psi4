@@ -796,7 +796,9 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
 std::vector<std::vector<SharedMatrix> > MintsHelper::ao_grad_helper()
 {
 
-    std::shared_ptr <TwoBodyAOInt> ints(integral_->eri());
+    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    std::shared_ptr<TwoBodyAOInt>  ints (factory->eri(1));
+
 
     std::shared_ptr <BasisSet> bs1 = ints->basis1();
     std::shared_ptr <BasisSet> bs2 = ints->basis2();
