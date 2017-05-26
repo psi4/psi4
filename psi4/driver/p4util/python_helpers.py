@@ -38,23 +38,27 @@ from psi4 import core
 
 ## Python basis helps
 
+
 @staticmethod
 def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, puream=-1, return_atomlist=False, quiet=False):
-    horde = qcdb.libmintsbasisset.basishorde
-
     if key == 'ORBITAL':
         key = 'BASIS'
 
-    # Figure out what exactly was meant by 'target'.
-    if target is not None:
+    def _resolve_target(key, target):
+        """Figure out exactly what basis set was intended by (key, target)
+        """
+        horde = qcdb.libmintsbasisset.basishorde
+        if not target:
+            if not key:
+                key = 'BASIS'
+            target = core.get_global_option(key)
+    
         if target in horde:
-            resolved_target = horde[target]
-        else:
-            resolved_target = target
-    else:
-        if key is None:
-            key = 'BASIS'
-        resolved_target = core.get_global_option(key)
+            return horde[target]
+        return target
+
+    # Figure out what exactly was meant by 'target'.
+    resolved_target = _resolve_target(key, target)
 
     # resolved_target needs to be either a string or function for pyconstuct.
     # if a string, they search for a gbs file with that name.
