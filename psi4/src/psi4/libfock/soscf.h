@@ -207,6 +207,9 @@ public:
     double current_ci_energy() { return energy_ci_; }
     SharedMatrix current_AFock() { return matrices_["AFock"]; }
     SharedMatrix current_IFock() { return matrices_["IFock"]; }
+    Dimension noccpi() {return noccpi_; }
+    Dimension nactpi() {return nactpi_; }
+    Dimension nvirpi() {return nvirpi_; }
     virtual void set_eri_tensors(SharedMatrix, SharedMatrix)
     {
     }

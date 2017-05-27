@@ -44,6 +44,53 @@ def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype)
     core.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
                     (mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype))
 
+def build_semicanonical_mos(ciwfn):
+
+    # Grab Fock matrices and build the average Fock operator
+    mcscf_obj = ciwfn.mcscf_object()
+    afock = mcscf_obj.current_AFock()
+    ifock = mcscf_obj.current_IFock()
+    Favg = afock.clone()
+    Favg.add(ifock)
+
+    # Grab orbital dimensions
+    nirrep = Favg.nirrep()
+    offsets = [0 for i in range(nirrep)]
+    nmopi = Favg.coldim()
+    noccpi = mcscf_obj.noccpi()
+    nactpi = mcscf_obj.nactpi()
+    nvirpi = mcscf_obj.nvirpi()
+
+    U = core.Matrix("U to semi", nmopi, nmopi)
+
+    # Diagonalize each block of Favg
+    for block in [noccpi,nactpi,nvirpi]:
+        F = core.Matrix("Fock",block,block)
+        for h in xrange(nirrep):
+            offset = offsets[h]
+            for i in xrange(block[h]):
+                for j in xrange(block[h]):
+                    F.set(h, i, j, Favg.get(h, i + offset, j + offset))
+
+        evals = core.Vector("F Evals", block)
+        evecs = core.Matrix("F Evecs", block, block)
+        F.diagonalize(evecs, evals, core.DiagonalizeOrder.Ascending)
+
+        # build U block
+        for h in xrange(nirrep):
+            offset = offsets[h]
+            for i in xrange(block[h]):
+                for j in xrange(block[h]):
+                    U.set(h, i + offset, j + offset, evecs.get(h, i, j))
+
+        # update offset for next block
+        for h in xrange(nirrep):
+            offsets[h] += block[h]
+
+    # rotate MOs and push them to the ciwfn
+    Cnew = core.Matrix.doublet(ciwfn.Ca(), U, False, False)
+    ciwfn.Ca().copy(Cnew)
+
 def mcscf_solver(ref_wfn):
 
     # Build CIWavefunction
@@ -355,7 +402,11 @@ def mcscf_solver(ref_wfn):
 
     # Do we diagonalize the opdm?
     if core.get_option("DETCI", "NAT_ORBS"):
+        core.print_out("  \n   Transforming MOs to the natural basis\n")
         ciwfn.ci_nat_orbs()
+    else:
+        core.print_out("  \n   Transforming MOs to the semicanonical basis\n")
+        build_semicanonical_mos(ciwfn)
 
     proc_util.print_ci_results(ciwfn, "MCSCF", scf_energy, current_energy, print_opdm_no=True)
 
