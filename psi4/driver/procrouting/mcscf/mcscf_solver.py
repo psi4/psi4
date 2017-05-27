@@ -56,36 +56,57 @@ def build_semicanonical_mos(ciwfn):
     # Grab orbital dimensions
     nirrep = Favg.nirrep()
     offsets = [0 for i in range(nirrep)]
-    nmopi = Favg.coldim()
+    offsets_correlated = [0 for i in range(nirrep)]
+
+    nmopi = ciwfn.get_dimension('ALL')
+    nfrcpi = ciwfn.get_dimension('FZC')
+    nfrvpi = ciwfn.get_dimension('FZV')
+
     noccpi = mcscf_obj.noccpi()
     nactpi = mcscf_obj.nactpi()
     nvirpi = mcscf_obj.nvirpi()
 
     U = core.Matrix("U to semi", nmopi, nmopi)
 
+    # frozen core block
+    for h in range(nirrep):
+        offset = offsets[h]
+        for i in range(nfrcpi[h]):
+            U.set(h, i + offset, i + offset, 1.0)
+        offsets[h] += nfrcpi[h]
+
     # Diagonalize each block of Favg
     for block in [noccpi,nactpi,nvirpi]:
         F = core.Matrix("Fock",block,block)
-        for h in xrange(nirrep):
+        for h in range(nirrep):
             offset = offsets[h]
-            for i in xrange(block[h]):
-                for j in xrange(block[h]):
-                    F.set(h, i, j, Favg.get(h, i + offset, j + offset))
+            offset_correlated = offsets_correlated[h]
+            for i in range(block[h]):
+                for j in range(block[h]):
+                    F.set(h, i, j, Favg.get(h, i + offset_correlated, j + offset_correlated))
 
         evals = core.Vector("F Evals", block)
         evecs = core.Matrix("F Evecs", block, block)
         F.diagonalize(evecs, evals, core.DiagonalizeOrder.Ascending)
 
         # build U block
-        for h in xrange(nirrep):
+        for h in range(nirrep):
             offset = offsets[h]
-            for i in xrange(block[h]):
-                for j in xrange(block[h]):
+            for i in range(block[h]):
+                for j in range(block[h]):
                     U.set(h, i + offset, j + offset, evecs.get(h, i, j))
 
         # update offset for next block
-        for h in xrange(nirrep):
+        for h in range(nirrep):
             offsets[h] += block[h]
+            offsets_correlated[h] += block[h]
+
+    # frozen core block
+    for h in range(nirrep):
+        offset = offsets[h]
+        for i in range(nfrvpi[h]):
+            U.set(h, i + offset, i + offset, 1.0)
+        offsets[h] += nfrvpi[h]
 
     # rotate MOs and push them to the ciwfn
     Cnew = core.Matrix.doublet(ciwfn.Ca(), U, False, False)
