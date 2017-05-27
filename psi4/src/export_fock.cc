@@ -127,7 +127,10 @@ void export_fock(py::module &m) {
         .def("current_IFock", &SOMCSCF::current_IFock)
         .def("zero_redundant", &SOMCSCF::zero_redundant)
         .def("gradient", &SOMCSCF::gradient)
-        .def("gradient_rms", &SOMCSCF::gradient_rms);
+        .def("gradient_rms", &SOMCSCF::gradient_rms)
+        .def("noccpi", &SOMCSCF::noccpi)
+        .def("nactpi", &SOMCSCF::nactpi)
+        .def("nvirpi", &SOMCSCF::nvirpi);
 
     py::class_<DFSOMCSCF, std::shared_ptr<DFSOMCSCF>, SOMCSCF>(m, "DFSOMCSCF", "docstring");
     py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
