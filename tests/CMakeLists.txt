@@ -34,7 +34,7 @@ set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2) 
 #set(py36_fail_list extern1 extern2)
-foreach(test_name adc1 adc2 casscf-fzc-sp casscf-sa-sp ao-casscf-sp casscf-sp castup1 
+foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1 
                   castup2 castup3 cbs-delta-energy cbs-xtpl-energy 
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func 
                   cbs-xtpl-wrapper cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c cc13d cc14 cc15 cc16 

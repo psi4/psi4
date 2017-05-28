@@ -1,0 +1,33 @@
+#! CASSCF/6-31G** energy point. Check energy invariance after semicanonicalization.
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    scf_type        out_of_core
+    basis           6-31G**
+    reference       rhf
+    frozen_docc     [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+    frozen_uocc     [1, 0, 0, 1]
+    mcscf_type      conv
+}
+
+# Solve and leave the Wavefunction active
+set MCSCF_CI_CLEANUP False
+set MCSCF_DPD_CLEANUP False
+cas_e, cas_wfn = energy("CASSCF", return_wfn=True)
+
+compare_values(-76.017296555283, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.072158733148, cas_e, 8, 'FZC CASSCF Energy')  #TEST
+
+# Update energy
+cas_wfn.transform_mcscf_integrals(True)
+nci_iter = cas_wfn.diag_h(1.e-10, 1.e-10)
+current_energy = psi4.core.get_variable("MCSCF TOTAL ENERGY")
+
+# Compare the energy
+compare_values(cas_e, current_energy, 8, "Rotated Orbital Energy Invariance")
