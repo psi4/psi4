@@ -44,7 +44,7 @@ def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype)
     core.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
                     (mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype))
 
-def build_semicanonical_mos(ciwfn):
+def semicanonical_orbs(ciwfn):
 
     # Grab Fock matrices and build the average Fock operator
     mcscf_obj = ciwfn.mcscf_object()
@@ -54,42 +54,41 @@ def build_semicanonical_mos(ciwfn):
     Favg.add(ifock)
 
     # Grab orbital dimensions
-    nirrep = Favg.nirrep()
+    nirrep = Favg.nirrep()    
+    nrotpi = ciwfn.get_dimension('ROT')
+    noccpi = ciwfn.get_dimension('DOCC')
+    nactpi = ciwfn.get_dimension('ACT')
+    nvirpi = ciwfn.get_dimension('VIR')
+
+    # Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
+    U = core.Matrix("U to semi", nrotpi, nrotpi)
     offsets = [0 for i in range(nirrep)]
-    offsets_correlated = [0 for i in range(nirrep)]
-
-    nmopi = ciwfn.get_dimension('ALL')
-    nfrcpi = ciwfn.get_dimension('FZC')
-    nfrvpi = ciwfn.get_dimension('FZV')
-
-    noccpi = mcscf_obj.noccpi()
-    nactpi = mcscf_obj.nactpi()
-    nvirpi = mcscf_obj.nvirpi()
-
-    U = core.Matrix("U to semi", nmopi, nmopi)
-
-    # frozen core block
-    for h in range(nirrep):
-        offset = offsets[h]
-        for i in range(nfrcpi[h]):
-            U.set(h, i + offset, i + offset, 1.0)
-        offsets[h] += nfrcpi[h]
 
     # Diagonalize each block of Favg
     for block in [noccpi,nactpi,nvirpi]:
         F = core.Matrix("Fock",block,block)
+
+#        for h in range(nirrep):
+#             offset = offsets[h]
+#             sl = slice(offset, offset + block[h])
+#             F.nph[h,:,:] = Favg.nph[h, sl, sl]
+
         for h in range(nirrep):
             offset = offsets[h]
-            offset_correlated = offsets_correlated[h]
             for i in range(block[h]):
                 for j in range(block[h]):
-                    F.set(h, i, j, Favg.get(h, i + offset_correlated, j + offset_correlated))
+                    F.set(h, i, j, Favg.get(h, i + offset, j + offset))
 
         evals = core.Vector("F Evals", block)
         evecs = core.Matrix("F Evecs", block, block)
         F.diagonalize(evecs, evals, core.DiagonalizeOrder.Ascending)
 
-        # build U block
+        # grab U block
+#        for h in range(nirrep):
+#             offset = offsets[h]
+#             sl = slice(offset, offset + block[h])
+#             U.nph[h,sl,sl] = evecs.nph[h][:]
+
         for h in range(nirrep):
             offset = offsets[h]
             for i in range(block[h]):
@@ -99,18 +98,10 @@ def build_semicanonical_mos(ciwfn):
         # update offset for next block
         for h in range(nirrep):
             offsets[h] += block[h]
-            offsets_correlated[h] += block[h]
-
-    # frozen core block
-    for h in range(nirrep):
-        offset = offsets[h]
-        for i in range(nfrvpi[h]):
-            U.set(h, i + offset, i + offset, 1.0)
-        offsets[h] += nfrvpi[h]
 
     # rotate MOs and push them to the ciwfn
-    Cnew = core.Matrix.doublet(ciwfn.Ca(), U, False, False)
-    ciwfn.Ca().copy(Cnew)
+    Cnew = core.Matrix.doublet(ciwfn.get_orbitals("ROT"), U, False, False)
+    ciwfn.set_orbitals("ROT", Cnew)
 
 def mcscf_solver(ref_wfn):
 
@@ -423,11 +414,10 @@ def mcscf_solver(ref_wfn):
 
     # Do we diagonalize the opdm?
     if core.get_option("DETCI", "NAT_ORBS"):
-        core.print_out("  \n   Transforming MOs to the natural basis\n")
         ciwfn.ci_nat_orbs()
     else:
-        core.print_out("  \n   Transforming MOs to the semicanonical basis\n")
-        build_semicanonical_mos(ciwfn)
+        core.print_out("  \n   Computing CI Semicanonical Orbitals\n")
+        semicanonical_orbs(ciwfn)
 
     proc_util.print_ci_results(ciwfn, "MCSCF", scf_energy, current_energy, print_opdm_no=True)
 
