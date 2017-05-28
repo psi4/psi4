@@ -585,7 +585,6 @@ SharedMatrix Deriv::compute()
                 ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, Da, Da_ref);
                 so_eri.compute_integrals_deriv1(functor);
                 functor.finalize();
-                tpdm_contr_ = wfn_->tpdm_gradient_contribution();
             }
             else
                 throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");

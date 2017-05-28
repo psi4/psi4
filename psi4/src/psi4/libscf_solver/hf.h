@@ -54,6 +54,8 @@ protected:
     SharedMatrix T_;
     /// The 1e potential energy matrix
     SharedMatrix V_;
+    /// A temporary spot for the H matrix
+    SharedMatrix Horig_;
     /// The DFT potential matrices (nice naming scheme)
     SharedMatrix Va_;
     SharedMatrix Vb_;
@@ -447,10 +449,10 @@ public:
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
     /** Computes the Fock matrix */
-    virtual void form_F() =0;
+    virtual void form_F() = 0;
 
     /** Forms the G matrix */
-    virtual void form_G() =0;
+    virtual void form_G() = 0;
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);
