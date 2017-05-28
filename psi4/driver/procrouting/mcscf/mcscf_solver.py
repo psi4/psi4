@@ -68,32 +68,20 @@ def semicanonical_orbs(ciwfn):
     for block in [noccpi,nactpi,nvirpi]:
         F = core.Matrix("Fock",block,block)
 
-#        for h in range(nirrep):
-#             offset = offsets[h]
-#             sl = slice(offset, offset + block[h])
-#             F.nph[h,:,:] = Favg.nph[h, sl, sl]
-
         for h in range(nirrep):
-            offset = offsets[h]
-            for i in range(block[h]):
-                for j in range(block[h]):
-                    F.set(h, i, j, Favg.get(h, i + offset, j + offset))
+             offset = offsets[h]
+             sl = slice(offset, offset + block[h])
+             F.nph[h][:] = Favg.nph[h][sl, sl]
 
         evals = core.Vector("F Evals", block)
         evecs = core.Matrix("F Evecs", block, block)
         F.diagonalize(evecs, evals, core.DiagonalizeOrder.Ascending)
 
         # grab U block
-#        for h in range(nirrep):
-#             offset = offsets[h]
-#             sl = slice(offset, offset + block[h])
-#             U.nph[h,sl,sl] = evecs.nph[h][:]
-
         for h in range(nirrep):
-            offset = offsets[h]
-            for i in range(block[h]):
-                for j in range(block[h]):
-                    U.set(h, i + offset, j + offset, evecs.get(h, i, j))
+             offset = offsets[h]
+             sl = slice(offset, offset + block[h])
+             U.nph[h][sl,sl] = evecs.nph[h][:]
 
         # update offset for next block
         for h in range(nirrep):
