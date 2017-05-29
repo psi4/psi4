@@ -407,6 +407,16 @@ def mcscf_solver(ref_wfn):
         core.print_out("  \n   Computing CI Semicanonical Orbitals\n")
         semicanonical_orbs(ciwfn)
 
+    # Retransform intragrals and update CI coeffs., OPDM, and TPDM
+    ciwfn.transform_mcscf_integrals(approx_integrals_only)
+    nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
+
+    ciwfn.set_ci_guess("DFILE")
+
+    ciwfn.form_opdm()
+    ciwfn.form_tpdm()
+    ci_grad_rms = core.get_variable("DETCI AVG DVEC NORM")
+
     proc_util.print_ci_results(ciwfn, "MCSCF", scf_energy, current_energy, print_opdm_no=True)
 
     # Set final energy
