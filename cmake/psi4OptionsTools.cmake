@@ -52,14 +52,14 @@ macro(psi4_add_module binlib libname sources)
     set_target_properties(${libname} PROPERTIES POSITION_INDEPENDENT_CODE ${BUILD_FPIC})
 
     # library modules get their headers installed
-    if(${binlib} MATCHES lib)
+    if((${binlib} MATCHES lib) OR (${binlib} MATCHES binlib))
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/psi4
                 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.i")
     endif()
 
     # binary modules explicitly compiled into psi4.so
-    if(${binlib} MATCHES bin)
+    if((${binlib} MATCHES bin) OR (${binlib} MATCHES binlib))
         set_property(GLOBAL APPEND PROPERTY BINLIST ${libname})
     endif()
 
