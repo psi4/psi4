@@ -23,6 +23,8 @@ compare_values(-76.07373669020915, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
 cas_orbs = cas_wfn.get_orbitals("ACT")
 ## Double check NO's were build #TEST
 import numpy as np                                                      #TEST
-nov0 = np.array([0.99497,  0.8246,  0.7039, 1.15089, 3.98434, 3.4344,   #TEST
-                 1.66823,  2.0639,  1.4520, 4.27167, 2.23588, 2.0423])  #TEST
+nov0 = np.array([0.99497,  0.82469,  0.70392,  1.15089,                 #TEST
+                 2.04234,  2.23589,  4.27168,  1.45200,                 #TEST
+                 2.06391,  1.66824,  3.43443,  3.98434])                #TEST
+
 compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs") #TEST
