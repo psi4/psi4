@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {mcscf_semi} aac087f dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -18,10 +18,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:35PM
+    Psi4 started on: Monday, 29 May 2017 08:39PM
 
-    Process ID:  13648
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID:   4375
+    PSIDATADIR: /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -53,21 +53,23 @@ compare_values(-76.07373669020915, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
 cas_orbs = cas_wfn.get_orbitals("ACT")
 ## Double check NO's were build #TEST
 import numpy as np                                                      #TEST
-nov0 = np.array([0.99497,  0.8246,  0.7039, 1.15089, 3.98434, 3.4344,   #TEST
-                 1.66823,  2.0639,  1.4520, 4.27167, 2.23588, 2.0423])  #TEST
+nov0 = np.array([0.99497,  0.82469,  0.70392,  1.15089,                 #TEST
+                 2.04234,  2.23589,  4.27168,  1.45200,                 #TEST 
+                 2.06391,  1.66824,  3.43443,  3.98434])                #TEST
+
 compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs") #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:31 2017
+*** tstart() called on CHE-FEVANGE-01I
+*** at Mon May 29 20:39:32 2017
 
    => Loading Basis Set <=
 
     Name: 6-31G**
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   140 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 1   entry O          line   141 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 2-3 entry H          line    36 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
@@ -75,7 +77,8 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -97,7 +100,7 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
   Rotational constants: A =     24.35462  B =     13.63610  C =      8.74166 [cm^-1]
   Rotational constants: A = 730133.20983  B = 408800.03934  C = 262068.46197 [MHz]
-  Nuclear repulsion =    8.804686618639055
+  Nuclear repulsion =    8.804686618639057
 
   Charge       = 0
   Multiplicity = 1
@@ -131,8 +134,8 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
     Name: (6-31G** AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -181,17 +184,17 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.92410988811301   -7.59241e+01   1.07940e-01 
-   @DF-RHF iter   1:   -75.97897018525356   -5.48603e-02   1.96991e-02 
-   @DF-RHF iter   2:   -76.00832996890546   -2.93598e-02   1.05049e-02 DIIS
-   @DF-RHF iter   3:   -76.01656182645057   -8.23186e-03   1.70357e-03 DIIS
-   @DF-RHF iter   4:   -76.01717477420485   -6.12948e-04   5.42585e-04 DIIS
-   @DF-RHF iter   5:   -76.01725612801941   -8.13538e-05   1.06564e-04 DIIS
-   @DF-RHF iter   6:   -76.01725989624983   -3.76823e-06   1.66204e-05 DIIS
-   @DF-RHF iter   7:   -76.01725998148453   -8.52347e-08   2.73797e-06 DIIS
-   @DF-RHF iter   8:   -76.01725998333121   -1.84669e-09   3.49212e-07 DIIS
-   @DF-RHF iter   9:   -76.01725998335534   -2.41300e-11   3.01381e-08 DIIS
-   @DF-RHF iter  10:   -76.01725998335550   -1.56319e-13   3.47380e-09 DIIS
+   @DF-RHF iter   0:   -75.91131636997139   -7.59113e+01   1.07844e-01 
+   @DF-RHF iter   1:   -75.97781077166563   -6.64944e-02   2.01717e-02 
+   @DF-RHF iter   2:   -76.00796714618973   -3.01564e-02   1.08745e-02 DIIS
+   @DF-RHF iter   3:   -76.01665151268311   -8.68437e-03   1.63084e-03 DIIS
+   @DF-RHF iter   4:   -76.01718741124952   -5.35899e-04   5.16989e-04 DIIS
+   @DF-RHF iter   5:   -76.01725653383964   -6.91226e-05   1.01491e-04 DIIS
+   @DF-RHF iter   6:   -76.01725988347584   -3.34964e-06   1.73768e-05 DIIS
+   @DF-RHF iter   7:   -76.01725998100531   -9.75295e-08   2.98600e-06 DIIS
+   @DF-RHF iter   8:   -76.01725998332293   -2.31762e-09   3.45426e-07 DIIS
+   @DF-RHF iter   9:   -76.01725998334723   -2.43006e-11   2.92801e-08 DIIS
+   @DF-RHF iter  10:   -76.01725998334723    0.00000e+00   2.86550e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -219,18 +222,14 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01725998335550
+  @DF-RHF Final Energy:   -76.01725998334723
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8046866186390549
-    One-Electron Energy =                -122.3893793598502810
-    Two-Electron Energy =                  37.5674327578557126
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0172599833555154
+    Nuclear Repulsion Energy =              8.8046866186390567
+    One-Electron Energy =                -122.3893793479471128
+    Two-Electron Energy =                  37.5674327459608222
+    Total Energy =                        -76.0172599833472304
 
 
 
@@ -239,34 +238,34 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0351
+     X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1531
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8820     Total:     0.8820
+     X:     0.0000      Y:     0.0000      Z:     0.8820     Total:     0.8820
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.2417     Total:     2.2417
+     X:     0.0000      Y:     0.0000      Z:     2.2417     Total:     2.2417
 
 
-*** tstop() called on psinet at Mon May 15 15:35:32 2017
+*** tstop() called on CHE-FEVANGE-01I at Mon May 29 20:39:32 2017
 Module time:
-	user time   =       0.49 seconds =       0.01 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.49 seconds =       0.01 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
    => Loading Basis Set <=
 
     Name: (6-31G** AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
 
          ---------------------------------------------------------
@@ -333,7 +332,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              3200
+    Memory (MB):               400
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -369,33 +368,31 @@ Total time:
    ==> Starting DF-MCSCF iterations <==
 
            Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
-   @DF-MCSCF  1:    -76.029899413311   -1.2639e-02  9.95e-03  2.47e-13    1    1  Initial CI
+   @DF-MCSCF  1:    -76.029899413290   -1.2639e-02  9.95e-03  3.98e-13    1    1  Initial CI
       Warning! Maxstep = 0.55, scaling to 0.50
-   @DF-MCSCF  2:    -76.068845723402   -3.8946e-02  1.36e-02  4.33e-06    6    1  TS
-   @DF-MCSCF  3:    -76.072987516389   -4.1418e-03  4.26e-03  5.98e-06    5    1  TS
-   @DF-MCSCF  4:    -76.073590866136   -6.0335e-04  1.58e-03  2.25e-06    5    1  TS, DIIS
-   @DF-MCSCF  5:    -76.073703332343   -1.1247e-04  7.74e-04  1.04e-06    5    1  TS, DIIS
-   @DF-MCSCF  6:    -76.073730318975   -2.6987e-05  4.21e-04  1.94e-07    6    1  TS, DIIS
-   @DF-MCSCF  7:    -76.073735919522   -5.6005e-06  1.43e-04  6.15e-08    6    1  TS, DIIS
-   @DF-MCSCF  8:    -76.073736617812   -6.9829e-07  4.02e-05  7.13e-08    5    1  TS, DIIS
-   @DF-MCSCF  9:    -76.073736691727   -7.3916e-08  7.97e-06  6.84e-09    6    1  TS, DIIS
+   @DF-MCSCF  2:    -76.068845723397   -3.8946e-02  1.36e-02  4.33e-06    6    1  TS
+   @DF-MCSCF  3:    -76.072987516387   -4.1418e-03  4.26e-03  5.98e-06    5    1  TS
+   @DF-MCSCF  4:    -76.073590866133   -6.0335e-04  1.58e-03  2.25e-06    5    1  TS, DIIS
+   @DF-MCSCF  5:    -76.073703332342   -1.1247e-04  7.74e-04  1.04e-06    5    1  TS, DIIS
+   @DF-MCSCF  6:    -76.073730318970   -2.6987e-05  4.21e-04  1.94e-07    6    1  TS, DIIS
+   @DF-MCSCF  7:    -76.073735919518   -5.6005e-06  1.43e-04  6.15e-08    6    1  TS, DIIS
+   @DF-MCSCF  8:    -76.073736617805   -6.9829e-07  4.02e-05  7.13e-08    5    1  TS, DIIS
+   @DF-MCSCF  9:    -76.073736691723   -7.3918e-08  7.97e-06  6.84e-09    6    1  TS, DIIS
 
           @DF-MCSCF has converged!
 
-   @DF-MCSCF Final Energy:  -76.073736691727390
+   @DF-MCSCF Final Energy:  -76.073736691722971
 
    Computing CI Natural Orbitals
-   !Warning: New orbitals will be sorted by occuption number,
-   orbital spaces (occ/act/vir) may change.
 
    ==> Energetics <==
 
-    SCF energy =          -76.017259983355515
-    Total MCSCF energy =  -76.073736691727390
+    SCF energy =          -76.017259983347230
+    Total MCSCF energy =  -76.073736691722971
 
    ==> MCSCF root 0 information <==
 
-    MCSCF Root 0 energy =   -76.073736691727390
+    MCSCF Root 0 energy =   -76.073736691721322
 
    Active Space Natural occupation numbers:
 
@@ -404,26 +401,26 @@ Total time:
 
    The 20 most important determinants:
 
-    *   1    0.986865  (    3,    3)  2A1X 3A1X 1B1X 1B2X 
-    *   2   -0.080424  (    6,    6)  2A1X 3A1X 1B1X 2B2X 
-    *   3   -0.052772  (    4,    4)  2A1X 4A1X 1B1X 1B2X 
-    *   4    0.050987  (    4,    6)  2A1X 3A1B 4A1A 1B1X 1B2A 2B2B 
-    *   5    0.050987  (    6,    4)  2A1X 3A1A 4A1B 1B1X 1B2B 2B2A 
-    *   6   -0.032321  (    4,    5)  2A1A 3A1B 4A1X 1B1X 1B2X 
-    *   7   -0.032321  (    5,    4)  2A1B 3A1A 4A1X 1B1X 1B2X 
-    *   8    0.031201  (    5,    6)  2A1B 3A1X 4A1A 1B1X 1B2A 2B2B 
-    *   9    0.031201  (    6,    5)  2A1A 3A1X 4A1B 1B1X 1B2B 2B2A 
-    *  10   -0.030959  (    9,    9)  2A1X 3A1X 4A1X 1B1X 
-    *  11   -0.029901  (    5,    5)  3A1X 4A1X 1B1X 1B2X 
-    *  12   -0.029396  (   10,   10)  2A1X 1B1X 1B2X 2B2X 
-    *  13   -0.026677  (    9,   10)  2A1X 3A1A 4A1A 1B1X 1B2B 2B2B 
-    *  14   -0.026677  (   10,    9)  2A1X 3A1B 4A1B 1B1X 1B2A 2B2A 
-    *  15    0.024310  (    3,    7)  2A1X 3A1A 4A1B 1B1X 1B2A 2B2B 
-    *  16    0.024310  (    7,    3)  2A1X 3A1B 4A1A 1B1X 1B2B 2B2A 
-    *  17   -0.019797  (    9,   11)  2A1A 3A1X 4A1A 1B1X 1B2B 2B2B 
-    *  18   -0.019797  (   11,    9)  2A1B 3A1X 4A1B 1B1X 1B2A 2B2A 
-    *  19   -0.017500  (   11,   11)  3A1X 1B1X 1B2X 2B2X 
-    *  20   -0.015874  (   13,   13)  2A1X 3A1X 4A1X 1B2X 
+    *   1    0.987034  (    3,    3)  2A1X 3A1X 1B1X 1B2X 
+    *   2   -0.080504  (    6,    6)  2A1X 3A1X 1B1X 2B2X 
+    *   3   -0.075529  (    4,    4)  2A1X 4A1X 1B1X 1B2X 
+    *   4    0.059859  (    4,    6)  2A1X 3A1B 4A1A 1B1X 1B2A 2B2B 
+    *   5    0.059859  (    6,    4)  2A1X 3A1A 4A1B 1B1X 1B2B 2B2A 
+    *   6   -0.033117  (    9,   10)  2A1X 3A1A 4A1A 1B1X 1B2B 2B2B 
+    *   7   -0.033117  (   10,    9)  2A1X 3A1B 4A1B 1B1X 1B2A 2B2A 
+    *   8   -0.030959  (    9,    9)  2A1X 3A1X 4A1X 1B1X 
+    *   9    0.026742  (    3,    7)  2A1X 3A1A 4A1B 1B1X 1B2A 2B2B 
+    *  10    0.026742  (    7,    3)  2A1X 3A1B 4A1A 1B1X 1B2B 2B2A 
+    *  11   -0.025094  (   10,   10)  2A1X 1B1X 1B2X 2B2X 
+    *  12   -0.021774  (   11,   11)  3A1X 1B1X 1B2X 2B2X 
+    *  13   -0.015863  (   13,   13)  2A1X 3A1X 4A1X 1B2X 
+    *  14    0.013842  (    7,    7)  2A1X 4A1X 1B1X 2B2X 
+    *  15   -0.008641  (    0,    0)  2A1X 3A1X 1B2X 2B2X 
+    *  16   -0.007288  (    5,    5)  3A1X 4A1X 1B1X 1B2X 
+    *  17   -0.005817  (   10,   11)  2A1A 3A1B 1B1X 1B2X 2B2X 
+    *  18   -0.005817  (   11,   10)  2A1B 3A1A 1B1X 1B2X 2B2X 
+    *  19    0.003777  (    4,    5)  2A1A 3A1B 4A1X 1B1X 1B2X 
+    *  20    0.003777  (    5,    4)  2A1B 3A1A 4A1X 1B1X 1B2X 
 
 
 
@@ -432,16 +429,16 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 Properties computed using the CASSCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0351
+     X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.2207
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8143     Total:     0.8143
+     X:     0.0000      Y:     0.0000      Z:     0.8143     Total:     0.8143
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.0699     Total:     2.0699
+     X:     0.0000      Y:     0.0000      Z:     2.0699     Total:     2.0699
 
 	SCF Energy........................................................PASSED
 	FZC CASSCF Energy.................................................PASSED
