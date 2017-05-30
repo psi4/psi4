@@ -28,6 +28,8 @@ using_simint = pytest.mark.skipif(psi4.addons("simint") is False,
                                 reason="Psi4 not compiled with simint. Rebuild with -DENABLE_simint")
 using_v2rdm_casscf = pytest.mark.skipif(psi4.addons("v2rdm_casscf") is False,
                                 reason="Psi4 not detecting plugin v2rdm_casscf. Build plugin if necessary and add to envvar PYTHONPATH")
+using_forte = pytest.mark.skipif(psi4.addons("forte") is False,
+                                reason="Psi4 not detecting plugin forte. Build plugin if necessary and add to envvar PYTHONPATH")
 
 
 @using_gdma
@@ -790,4 +792,66 @@ def test_dkh():
     e = psi4.energy('scf')
 
     assert psi4.compare_values(-128.66891610, e, 6, '2nd order vs Molpro')
+
+@using_forte
+@using_ambit
+def test_forte():
+    """aci-10: Perform aci on benzyne"""
+
+    import forte
+
+    refscf    = -229.20378006852584
+    refaci    = -229.359450812283
+    refacipt2 = -229.360444943286
+
+    mbenzyne = psi4.geometry("""
+      0 1
+       C   0.0000000000  -2.5451795941   0.0000000000
+       C   0.0000000000   2.5451795941   0.0000000000
+       C  -2.2828001669  -1.3508352528   0.0000000000
+       C   2.2828001669  -1.3508352528   0.0000000000
+       C   2.2828001669   1.3508352528   0.0000000000
+       C  -2.2828001669   1.3508352528   0.0000000000
+       H  -4.0782187459  -2.3208602146   0.0000000000
+       H   4.0782187459  -2.3208602146   0.0000000000
+       H   4.0782187459   2.3208602146   0.0000000000
+       H  -4.0782187459   2.3208602146   0.0000000000
+
+      units bohr
+    """)
+
+    psi4.set_options({
+       'basis': 'DZ',
+       'df_basis_mp2': 'cc-pvdz-ri',
+       'reference': 'uhf',
+       'scf_type': 'pk',
+       'd_convergence': 10,
+       'e_convergence': 12,
+       'guess': 'gwh',
+    })
+
+    psi4.set_module_options("FORTE", {
+      'root_sym': 0,
+      'frozen_docc':     [2,1,0,0,0,0,2,1],
+      'restricted_docc': [3,2,0,0,0,0,2,3],
+      'active':          [1,0,1,2,1,2,1,0],
+      'multiplicity': 1,
+      'aci_nroot': 1,
+      'job_type': 'aci',
+      'sigma': 0.001,
+      'aci_select_type': 'aimed_energy',
+      'aci_spin_projection': 1,
+      'aci_enforce_spin_complete': True,
+      'aci_add_aimed_degenerate': False,
+      'aci_project_out_spin_contaminants': False,
+      'diag_algorithm': 'full',
+      'aci_quiet_mode': True,
+    })
+
+    scf = psi4.energy('scf')
+    assert psi4.compare_values(refscf, scf,10,"SCF Energy")
+
+    psi4.energy('forte')
+    assert psi4.compare_values(refaci, psi4.get_variable("ACI ENERGY"),10,"ACI energy")
+    assert psi4.compare_values(refacipt2, psi4.get_variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 

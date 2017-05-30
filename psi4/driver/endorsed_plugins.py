@@ -32,3 +32,8 @@ try:
     import v2rdm_casscf
 except ImportError:
     pass
+
+try:
+    import forte
+except ImportError:
+    pass

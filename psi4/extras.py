@@ -118,6 +118,7 @@ _addons_ = {
     "mrcc": _psi4_which("dmrcc"),
     "gcp": _psi4_which("gcp"),
     "v2rdm_casscf": _plugin_import("v2rdm_casscf"),
+    "forte": _plugin_import("forte"),
 }
 
 def addons(request=None):
