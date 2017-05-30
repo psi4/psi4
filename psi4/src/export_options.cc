@@ -54,5 +54,6 @@ void export_options(py::module& m)
             .def("set_str_i", &Options::set_str_i, "set string option")
             .def("set_array", &Options::set_array, "set array option")
             .def("set_current_module", &Options::set_current_module, "sets *arg0* (all CAPS) as current module")
+            .def("get_current_module", &Options::get_current_module, "gets current module")
             .def("validate_options", &Options::validate_options, "validate options for *arg0* module");
 }
