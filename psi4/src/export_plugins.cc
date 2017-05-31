@@ -61,14 +61,16 @@ int py_psi_plugin_load(std::string fullpathname)
     filesystem::path pluginPath(fullpathname);
     std::string uc = to_upper_copy(pluginPath.stem());
 
-    // Make sure the plugin isn't already loaded.
-    if (plugins.count(uc) == 0) {
-        plugins[uc] = plugin_load(fullpathname);
-        outfile->Printf("%s loaded.\n", fullpathname.c_str());
-        ret = 1;
-    } else
-        ret = 2;
-
+//    // Make sure the plugin isn't already loaded.
+//    if (plugins.count(uc) == 0) {
+//        plugins[uc] = plugin_load(fullpathname);
+//        outfile->Printf("%s loaded.\n", fullpathname.c_str());
+//        ret = 1;
+//    } else
+//        ret = 2;
+    plugins[uc] = plugin_load(fullpathname);
+    outfile->Printf("%s loaded.\n", fullpathname.c_str());
+    ret = (plugins.count(uc) == 0) ? 1 : 2;
     return ret;
 }
 
