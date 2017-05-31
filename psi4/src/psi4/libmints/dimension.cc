@@ -175,4 +175,10 @@ Dimension operator-(const Dimension& a, const Dimension& b) {
     return result;
 }
 
+Slice& Slice::operator+=(const Dimension& increment)
+{
+    start_ += increment;
+    end_ += increment;
+}
+
 }

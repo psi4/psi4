@@ -747,6 +747,53 @@ void Matrix::set_column(int h, int m, SharedVector vec)
     }
 }
 
+SharedMatrix Matrix::get_block(Slice rows,Slice cols)
+{
+    const Dimension& rows_start = rows.start();
+    const Dimension& cols_start = cols.start();
+    Dimension block_rows = rows.end() - rows.start();
+    Dimension block_cols = cols.end() - cols.start();
+    SharedMatrix block = std::make_shared<Matrix>("Block",block_rows,block_cols);
+    for (int h = 0; h < nirrep_; h++){
+        int max_p = block_rows[h];
+        int max_q = block_cols[h];
+        for (int p = 0; p < max_p; p++){
+            for (int q = 0; q < max_q; q++){
+                double value = get(h,p + rows_start[h],q + cols_start[h]);
+                block->set(h,p,q,value);
+            }
+        }
+    }
+    return block;
+}
+
+void Matrix::set_block(Slice rows,Slice cols,SharedMatrix block)
+{
+    const Dimension& rows_start = rows.start();
+    const Dimension& cols_start = cols.start();
+    Dimension block_rows = rows.end() - rows.start();
+    Dimension block_cols = cols.end() - cols.start();
+    for (int h = 0; h < nirrep_; h++){
+        int max_p = block_rows[h];
+        int max_q = block_cols[h];
+        for (int p = 0; p < max_p; p++){
+            for (int q = 0; q < max_q; q++){
+                double value = block->get(h,p,q);
+                set(h,p + rows_start[h],q + cols_start[h],value);
+            }
+        }
+    }
+}
+
+/**
+ * Set a matrix block
+ *
+ * @param rows Rows slice
+ * @param cols Columns slice
+ * @return SharedMatrix object
+ */
+void set_block(Slice rows,Slice cols,SharedMatrix block);
+
 double *Matrix::to_lower_triangle() const
 {
     int sizer = 0, sizec = 0;

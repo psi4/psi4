@@ -751,4 +751,68 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
 
     // ret->write(ivec, 0);
 }
+
+void CIWavefunction::semicanonical_orbs() {
+    outfile->Printf("\n   Computing CI Semicanonical Orbitals\n");
+
+    // Grab Fock matrices and build the average Fock operator
+    SharedMatrix AFock = somcscf_->current_AFock();
+    SharedMatrix IFock = somcscf_->current_IFock();
+    SharedMatrix Favg = AFock->clone();
+    Favg->add(IFock);
+
+    // Grab orbital dimensions
+    Dimension nrotpi = get_dimension("ROT");
+    Dimension noccpi = get_dimension("DOCC");
+    Dimension nactpi = get_dimension("ACT");
+    Dimension nvirpi = get_dimension("VIR");
+
+    // Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
+    SharedMatrix U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
+    Dimension offset_start(nirrep_);
+    Dimension offset_end(nirrep_);
+    // Diagonalize each block of Favg
+    for (Dimension block : {noccpi,nactpi,nvirpi}){
+//        SharedMatrix F = std::make_shared<Matrix>("Fock",block,block);
+        offset_end += block;
+        Slice slice(offset_start,offset_end);
+        SharedMatrix F = Favg->get_block(slice,slice);
+
+
+//        for (int h = 0; h < nirrep_; ++h){
+//            size_t offset = offsets[h];
+//            for (int p = 0; p < block[h]; p++){
+//                for (int q = 0; q < block[h]; q++){
+//                    F->set(h,p,q,Favg->get(h,p + offset,q + offset));
+//                }
+//            }
+//        }
+
+        SharedVector evals = std::make_shared<Vector>("F Evals", block);
+        SharedMatrix evecs = std::make_shared<Matrix>("F Evecs", block, block);
+        F->diagonalize(evecs, evals, ascending);
+
+        U->set_block(slice,slice,evecs);
+
+        offset_start += block;
+        // grab U block
+//        for (int h = 0; h < nirrep_; ++h){
+//            size_t offset = offsets[h];
+//            for (int p = 0; p < block[h]; p++){
+//                for (int q = 0; q < block[h]; q++){
+//                    U->set(h,p + offset,q + offset,evecs->get(h,p,q));
+//                }
+//            }
+//        }
+
+        // update offset for next block
+//        for (int h = 0; h < nirrep_; ++h) offsets[h] += block[h];
+    }
+
+    // rotate MOs and push them to the ciwfn
+    SharedMatrix Cnew = Matrix::doublet(get_orbitals("ROT"), U, false, false);
+    set_orbitals("ROT", Cnew);
+    Cb_ = Ca_;
+}
+
 }} // End Psi and CIWavefunction spaces

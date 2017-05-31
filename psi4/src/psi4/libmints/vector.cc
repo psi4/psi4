@@ -210,6 +210,34 @@ void Vector::set(double *vec)
     std::copy(vec, vec + dimpi_.sum(), v_.begin());
 }
 
+SharedVector Vector::get_block(Slice slice)
+{
+    const Dimension& slice_start = slice.start();
+    Dimension slice_dim = slice.end() - slice.start();
+    SharedVector block = std::make_shared<Vector>("Block",slice_dim);
+    for (int h = 0; h < nirrep_; h++){
+        int max_p = slice_dim[h];
+        for (int p = 0; p < max_p; p++){
+                double value = get(h,p + slice_start[h]);
+                block->set(h,p,value);
+        }
+    }
+    return block;
+}
+
+void Vector::set_block(Slice slice,SharedVector block)
+{
+    const Dimension& slice_start = slice.start();
+    Dimension slice_dim = slice.end() - slice.start();
+    for (int h = 0; h < nirrep_; h++){
+        int max_p = slice_dim[h];
+        for (int p = 0; p < max_p; p++){
+                double value = block->get(h,p);
+                set(h,p + slice_start[h],value);
+        }
+    }
+}
+
 void Vector::zero()
 {
     std::fill(v_.begin(), v_.end(), 0.0);

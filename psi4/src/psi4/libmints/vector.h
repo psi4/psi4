@@ -159,6 +159,21 @@ public:
     /// Zeros the vector out
     void zero();
 
+    /**
+     * Get a vector block
+     *
+     * @param slice Vector slice
+     * @return SharedVector object
+     */
+    std::shared_ptr<Vector> get_block(Slice slice);
+
+    /**
+     * Set a vector block
+     *
+     * @param slice Vector slice
+     * @param block the SharedVector object block to set
+     */
+    void set_block(Slice slice,std::shared_ptr<Vector> block);
 
     double &operator()(int i) { return vector_[0][i]; }
 

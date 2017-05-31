@@ -409,7 +409,7 @@ def mcscf_solver(ref_wfn):
             ciwfn.ci_nat_orbs()
         else:
             core.print_out("  \n   Computing CI Semicanonical Orbitals\n")
-            semicanonical_orbs(ciwfn)
+            ciwfn.semicanonical_orbs()
 
         # Retransform intragrals and update CI coeffs., OPDM, and TPDM
         ciwfn.transform_mcscf_integrals(approx_integrals_only)

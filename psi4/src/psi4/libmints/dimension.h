@@ -99,6 +99,29 @@ public:
     friend Dimension operator-(const Dimension& a, const Dimension& b);
 };
 
+/*! \ingroup MINTS
+ *  \class Slice
+ *  \brief Slicing for Matrices and Vectors objects.
+ */
+class Slice
+{
+    Dimension start_;
+    Dimension end_;
+
+public:
+    Slice(const Dimension& start,const Dimension& end)
+        : start_(start), end_(end) {};
+    Slice(const Slice& other) : start_(other.start()), end_(other.end()) {};
+    ~Slice() {};
+
+    /// Get the start of this slice
+    const Dimension& start() const {return start_;}
+    /// Get the end of this slice
+    const Dimension& end() const {return end_;}
+    /// Increment the beginning and end of this slice
+    Slice& operator+=(const Dimension& increment);
+};
+
 }
 
 #endif // _psi_src_lib_libmints_dimension_h_
