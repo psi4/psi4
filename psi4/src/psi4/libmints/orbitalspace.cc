@@ -309,9 +309,12 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
     outfile->Printf("\n");
 
     // Pull out the nullspace vectors
-    View nullspace(V11, V11->rowspi(), zeros);
-    SharedMatrix V = nullspace();
-//        V->print();
+    Dimension zero(space1.nirrep());
+
+    Slice row_nullspace(zero,V11->rowspi());
+    Slice col_nullspace(zero,zeros);
+//    View nullspace(V11, V11->rowspi(), zeros);
+    SharedMatrix V = V11->get_block(row_nullspace,col_nullspace);
 
     // Half-back transform to space2
     SharedMatrix newC = Matrix::create("Transformation matrix", space2.C()->rowspi(), zeros);

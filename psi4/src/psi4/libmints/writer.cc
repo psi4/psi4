@@ -179,11 +179,13 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
             for (int h=0; h<nirrep; ++h)
                 ncartpi[h] = ncart;
 
-            View block_a(Ca_ao_mo, ncartpi, Ca_ao_mo->colspi(), countpi, zeropi);
-            View block_b(Cb_ao_mo, ncartpi, Cb_ao_mo->colspi(), countpi, zeropi);
-
-            SharedMatrix temp_a = block_a();
-            SharedMatrix temp_b = block_b();
+            Slice row_slice(countpi,countpi + ncartpi);
+            Slice acol_slice(zeropi,zeropi + Ca_ao_mo->colspi());
+            Slice bcol_slice(zeropi,zeropi + Cb_ao_mo->colspi());
+//            View block_a(Ca_ao_mo, ncartpi, Ca_ao_mo->colspi(), countpi, zeropi);
+//            View block_b(Cb_ao_mo, ncartpi, Cb_ao_mo->colspi(), countpi, zeropi);
+            SharedMatrix temp_a = Ca_ao_mo->get_block(row_slice,acol_slice);
+            SharedMatrix temp_b = Cb_ao_mo->get_block(row_slice,bcol_slice);
 
             for( int j =0; j < ncart; j++) {
                 for (int h=0; h < Ca_ao_mo->nirrep(); ++h) {
