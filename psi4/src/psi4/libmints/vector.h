@@ -30,6 +30,7 @@
 #define _psi_src_lib_libmints_vector_h
 
 #include "psi4/libmints/dimension.h"
+#include "psi4/libmints/typedefs.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -108,7 +109,7 @@ public:
     /**
      * Convenient creation function return SharedMatrix
      */
-    static std::shared_ptr<Vector> create(const std::string &name,
+    static SharedVector create(const std::string &name,
                                           const Dimension &dim);
 
     void init(int nirrep, int *dimpi);
@@ -146,14 +147,14 @@ public:
     void add(const std::vector<double> &rhs);
 
     /// Adds other vector to this
-    void add(const std::shared_ptr<Vector> &other);
+    void add(const SharedVector &other);
     void add(const Vector &other);
 
     /// Subtracts other vector from this
-    void subtract(const std::shared_ptr<Vector> &other);
+    void subtract(const SharedVector &other);
     void subtract(const Vector &other);
 
-    void axpy(double scale, const std::shared_ptr<Vector> &other);
+    void axpy(double scale, const SharedVector &other);
     void axpy(double scale, const Vector &other);
 
     /// Zeros the vector out
@@ -165,7 +166,7 @@ public:
      * @param slice Vector slice
      * @return SharedVector object
      */
-    std::shared_ptr<Vector> get_block(Slice slice);
+    SharedVector get_block(const Slice& slice);
 
     /**
      * Set a vector block
@@ -173,7 +174,7 @@ public:
      * @param slice Vector slice
      * @param block the SharedVector object block to set
      */
-    void set_block(Slice slice,std::shared_ptr<Vector> block);
+    void set_block(const Slice& slice,SharedVector block);
 
     double &operator()(int i) { return vector_[0][i]; }
 
@@ -236,7 +237,7 @@ public:
     void gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta);
 
     /// Vector dot product
-    double vector_dot(const std::shared_ptr<Vector> &other);
+    double vector_dot(const SharedVector &other);
     double vector_dot(const Vector &other);
     double dot(Vector *X);
 

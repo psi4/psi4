@@ -152,18 +152,23 @@ void ROHF::semicanonicalize()
     moFb->transform(Ca_);
 
     // Pick out occ-occ, and vir-vir subsets of the Fock matrices
+    Dimension zero(nirrep_);
     Dimension aoccpi = doccpi_ + soccpi_;
     Dimension boccpi = doccpi_;
     Dimension avirpi = nmopi_ - aoccpi;
     Dimension bvirpi = nmopi_ - boccpi;
-    View aOO(moFa, aoccpi, aoccpi);
-    View aVV(moFa, avirpi, avirpi, aoccpi, aoccpi);
-    View bOO(moFb, boccpi, boccpi);
-    View bVV(moFb, bvirpi, bvirpi, boccpi, boccpi);
-    SharedMatrix aFOO = aOO();
-    SharedMatrix aFVV = aVV();
-    SharedMatrix bFOO = bOO();
-    SharedMatrix bFVV = bVV();
+    Slice aocc_slice(zero,aoccpi);
+    Slice bocc_slice(zero,boccpi);
+    Slice avir_slice(aoccpi,nmopi_);
+    Slice bvir_slice(boccpi,nmopi_);
+//    View aOO(moFa, aoccpi, aoccpi);
+//    View aVV(moFa, avirpi, avirpi, aoccpi, aoccpi);
+//    View bOO(moFb, boccpi, boccpi);
+//    View bVV(moFb, bvirpi, bvirpi, boccpi, boccpi);
+    SharedMatrix aFOO = moFa->get_block(aocc_slice,aocc_slice);
+    SharedMatrix aFVV = moFa->get_block(avir_slice,avir_slice);
+    SharedMatrix bFOO = moFb->get_block(bocc_slice,bocc_slice);
+    SharedMatrix bFVV = moFb->get_block(bvir_slice,bvir_slice);
 
     // Canonicalize the Alpha occ-occ block
     evecs = SharedMatrix(new Matrix(aoccpi, aoccpi));
@@ -318,8 +323,11 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
     Dimension noccpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
-    View vMOgradient(moFeff_, noccpi, virpi, dim_zero, doccpi_);
-    SharedMatrix MOgradient = vMOgradient();
+//    View vMOgradient(moFeff_, noccpi, virpi, dim_zero, doccpi_);
+//    SharedMatrix MOgradient = vMOgradient();
+    Slice row_slice(dim_zero,noccpi);
+    Slice col_slice(doccpi_,doccpi_ + virpi);
+    SharedMatrix MOgradient = moFeff_->get_block(row_slice,col_slice);
 
     // Zero out act-act part
     for (size_t h=0; h < nirrep_; h++){
@@ -334,11 +342,16 @@ void ROHF::compute_orbital_gradient(bool save_diis)
 
     // Grab inact-act and act-vir orbs
     // Ct_ is actuall (nmo x nmo)
-    View vCia(Ct_, nmopi_, noccpi, dim_zero, dim_zero);
-    SharedMatrix Cia = vCia();
+//    View vCia(Ct_, nmopi_, noccpi, dim_zero, dim_zero);
+//    SharedMatrix Cia = vCia();
+    Slice row_slice_mo(dim_zero,nmopi_);
+    Slice col_slice_ia(dim_zero,noccpi);
+    SharedMatrix Cia = Ct_->get_block(row_slice_mo,col_slice_ia);
 
-    View vCav(Ct_, nmopi_, virpi, dim_zero, doccpi_);
-    SharedMatrix Cav = vCav();
+//    View vCav(Ct_, nmopi_, virpi, dim_zero, doccpi_);
+//    SharedMatrix Cav = vCav();
+    Slice col_slice_av(doccpi_,doccpi_ + virpi);
+    SharedMatrix Cav = Ct_->get_block(row_slice_mo,col_slice_ia);
 
     // Back transform MOgradient
     SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);

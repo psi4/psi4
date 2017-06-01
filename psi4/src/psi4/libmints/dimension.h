@@ -105,21 +105,26 @@ public:
  */
 class Slice
 {
-    Dimension start_;
+    Dimension begin_;
     Dimension end_;
 
 public:
-    Slice(const Dimension& start,const Dimension& end)
-        : start_(start), end_(end) {};
-    Slice(const Slice& other) : start_(other.start()), end_(other.end()) {};
-    ~Slice() {};
+    /// Creator
+    /// Rules: begin must be >= 0 (element wise)
+    ///        end must be end >= begin (element wise)
+    Slice(const Dimension& begin,const Dimension& end);
+    Slice(const Slice& other);
 
-    /// Get the start of this slice
-    const Dimension& start() const {return start_;}
-    /// Get the end of this slice
+    /// Get the first element of this slice
+    const Dimension& begin() const {return begin_;}
+    /// Get the past-the-end element of this slice
     const Dimension& end() const {return end_;}
     /// Increment the beginning and end of this slice
     Slice& operator+=(const Dimension& increment);
+
+private:
+    /// Check if this Slice is acceptable
+    bool validate_slice();
 };
 
 }

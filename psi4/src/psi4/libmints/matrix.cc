@@ -747,19 +747,32 @@ void Matrix::set_column(int h, int m, SharedVector vec)
     }
 }
 
-SharedMatrix Matrix::get_block(Slice rows,Slice cols)
+SharedMatrix Matrix::get_block(const Slice& rows,const Slice& cols)
 {
-    const Dimension& rows_start = rows.start();
-    const Dimension& cols_start = cols.start();
-    Dimension block_rows = rows.end() - rows.start();
-    Dimension block_cols = cols.end() - cols.start();
+    // check if slices are within bounds
+    for (int h = 0; h < nirrep_; h++){
+        if (rows.end()[h] > rowspi_[h]){
+            std::string msg = "Invalid call to Matrix::get_block(): row Slice is out of bounds. Irrep = "
+                    + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+        if (cols.end()[h] > colspi_[h]){
+            std::string msg = "Invalid call to Matrix::get_block(): column Slice is out of bounds. Irrep = "
+                    + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+    }
+    const Dimension& rows_begin = rows.begin();
+    const Dimension& cols_begin = cols.begin();
+    Dimension block_rows = rows.end() - rows.begin();
+    Dimension block_cols = cols.end() - cols.begin();
     SharedMatrix block = std::make_shared<Matrix>("Block",block_rows,block_cols);
     for (int h = 0; h < nirrep_; h++){
         int max_p = block_rows[h];
         int max_q = block_cols[h];
         for (int p = 0; p < max_p; p++){
             for (int q = 0; q < max_q; q++){
-                double value = get(h,p + rows_start[h],q + cols_start[h]);
+                double value = get(h,p + rows_begin[h],q + cols_begin[h]);
                 block->set(h,p,q,value);
             }
         }
@@ -767,19 +780,32 @@ SharedMatrix Matrix::get_block(Slice rows,Slice cols)
     return block;
 }
 
-void Matrix::set_block(Slice rows,Slice cols,SharedMatrix block)
+void Matrix::set_block(const Slice& rows,const Slice& cols,SharedMatrix block)
 {
-    const Dimension& rows_start = rows.start();
-    const Dimension& cols_start = cols.start();
-    Dimension block_rows = rows.end() - rows.start();
-    Dimension block_cols = cols.end() - cols.start();
+    // check if slices are within bounds
+    for (int h = 0; h < nirrep_; h++){
+        if (rows.end()[h] > rowspi_[h]){
+            std::string msg = "Invalid call to Matrix::set_block(): row Slice is out of bounds. Irrep = "
+                    + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+        if (cols.end()[h] > colspi_[h]){
+            std::string msg = "Invalid call to Matrix::set_block(): column Slice is out of bounds. Irrep = "
+                    + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+    }
+    const Dimension& rows_begin = rows.begin();
+    const Dimension& cols_begin = cols.begin();
+    Dimension block_rows = rows.end() - rows.begin();
+    Dimension block_cols = cols.end() - cols.begin();
     for (int h = 0; h < nirrep_; h++){
         int max_p = block_rows[h];
         int max_q = block_cols[h];
         for (int p = 0; p < max_p; p++){
             for (int q = 0; q < max_q; q++){
                 double value = block->get(h,p,q);
-                set(h,p + rows_start[h],q + cols_start[h],value);
+                set(h,p + rows_begin[h],q + cols_begin[h],value);
             }
         }
     }

@@ -465,7 +465,7 @@ public:
      * @param cols Columns slice
      * @return SharedMatrix object
      */
-    SharedMatrix get_block(Slice rows,Slice cols);
+    SharedMatrix get_block(const Slice& rows,const Slice& cols);
 
     /**
      * Set a matrix block
@@ -474,7 +474,7 @@ public:
      * @param cols Columns slice
      * @param block the SharedMatrix object block to set
      */
-    void set_block(Slice rows,Slice cols,SharedMatrix block);
+    void set_block(const Slice& rows,const Slice& cols,SharedMatrix block);
 
     /**
      * Python wrapper for get
