@@ -542,8 +542,9 @@ void load_restricted(SharedWavefunction ref, FILE *ccdensities, double tolerance
     //}
 
     // Form the orbital response contributions to the relaxed OPDM
-    View ia_view(one_particle, aocc, avir, focc, docc);
-    SharedMatrix Pia = ia_view();
+//    View ia_view(one_particle, aocc, avir, focc, docc);
+//    SharedMatrix Pia = ia_view();
+    SharedMatrix Pia = one_particle->get_block({focc, focc + aocc},{docc,docc + avir});
     Pia->set_name("Pia (MRCC OPDM ov Block)");
 
     if (debug) {
@@ -822,9 +823,11 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moH(new Matrix(PSIF_MO_FZC, wave->nmopi(), wave->nmopi()));
         moH->load(_default_psio_lib_, PSIF_OEI);
-        View vmoH(moH, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
-        moH = vmoH();
-        write_oei_to_disk(printer, moH);
+//        View vmoH(moH, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
+//        moH = vmoH();
+        Slice slice_fc(wave->frzcpi(),wave->frzcpi() + active_mopi);
+        SharedMatrix moHblock = moH->get_block(slice_fc,slice_fc);
+        write_oei_to_disk(printer, moHblock);
 
         // Print nuclear repulsion energy.
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
@@ -872,9 +875,11 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         // Load in alpha frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moH(new Matrix(PSIF_MO_A_FZC, wave->nmopi(), wave->nmopi()));
         moH->load(_default_psio_lib_, PSIF_OEI);
-        View vmoH(moH, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
-        moH = vmoH();
-        write_oei_to_disk(printer, moH);
+//        View vmoH(moH, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
+//        moH = vmoH();
+        Slice slice_fc(wave->frzcpi(),wave->frzcpi() + active_mopi);
+        SharedMatrix moHblock = moH->get_block(slice_fc,slice_fc);
+        write_oei_to_disk(printer, moHblock);
 
         // Write out separator
         printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
@@ -882,9 +887,10 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         // Load in beta frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moHb(new Matrix(PSIF_MO_B_FZC, wave->nmopi(), wave->nmopi()));
         moHb->load(_default_psio_lib_, PSIF_OEI);
-        View vmoHb(moHb, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
-        moHb = vmoHb();
-        write_oei_to_disk(printer, moHb);
+//        View vmoHb(moHb, active_mopi, active_mopi, wave->frzcpi(), wave->frzcpi());
+//        moHb = vmoHb();
+        SharedMatrix moHblockb = moHb->get_block(slice_fc,slice_fc);
+        write_oei_to_disk(printer, moHblockb);
 
         // Write out separator
         printer->Printf("%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
