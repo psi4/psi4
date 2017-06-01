@@ -44,53 +44,6 @@ def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype)
     core.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
                     (mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype))
 
-def semicanonical_orbs(ciwfn):
-
-    # Grab Fock matrices and build the average Fock operator
-    mcscf_obj = ciwfn.mcscf_object()
-    afock = mcscf_obj.current_AFock()
-    ifock = mcscf_obj.current_IFock()
-    Favg = afock.clone()
-    Favg.add(ifock)
-
-    # Grab orbital dimensions
-    nirrep = Favg.nirrep()    
-    nrotpi = ciwfn.get_dimension('ROT')
-    noccpi = ciwfn.get_dimension('DOCC')
-    nactpi = ciwfn.get_dimension('ACT')
-    nvirpi = ciwfn.get_dimension('VIR')
-
-    # Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
-    U = core.Matrix("U to semi", nrotpi, nrotpi)
-    offsets = [0 for i in range(nirrep)]
-
-    # Diagonalize each block of Favg
-    for block in [noccpi,nactpi,nvirpi]:
-        F = core.Matrix("Fock",block,block)
-
-        for h in range(nirrep):
-             offset = offsets[h]
-             sl = slice(offset, offset + block[h])
-             F.nph[h][:] = Favg.nph[h][sl, sl]
-
-        evals = core.Vector("F Evals", block)
-        evecs = core.Matrix("F Evecs", block, block)
-        F.diagonalize(evecs, evals, core.DiagonalizeOrder.Ascending)
-
-        # grab U block
-        for h in range(nirrep):
-             offset = offsets[h]
-             sl = slice(offset, offset + block[h])
-             U.nph[h][sl,sl] = evecs.nph[h][:]
-
-        # update offset for next block
-        for h in range(nirrep):
-            offsets[h] += block[h]
-
-    # rotate MOs and push them to the ciwfn
-    Cnew = core.Matrix.doublet(ciwfn.get_orbitals("ROT"), U, False, False)
-    ciwfn.set_orbitals("ROT", Cnew)
-
 def mcscf_solver(ref_wfn):
 
     # Build CIWavefunction
@@ -408,7 +361,6 @@ def mcscf_solver(ref_wfn):
         if core.get_option("DETCI", "NAT_ORBS"):
             ciwfn.ci_nat_orbs()
         else:
-            core.print_out("  \n   Computing CI Semicanonical Orbitals\n")
             ciwfn.semicanonical_orbs()
 
         # Retransform intragrals and update CI coeffs., OPDM, and TPDM
