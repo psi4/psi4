@@ -152,13 +152,13 @@ void ROHF::semicanonicalize()
     moFb->transform(Ca_);
 
     // Pick out occ-occ, and vir-vir subsets of the Fock matrices
-    Dimension zero(nirrep_);
+    Dimension dim_zero(nirrep_);
     Dimension aoccpi = doccpi_ + soccpi_;
     Dimension boccpi = doccpi_;
     Dimension avirpi = nmopi_ - aoccpi;
     Dimension bvirpi = nmopi_ - boccpi;
-    Slice aocc_slice(zero,aoccpi);
-    Slice bocc_slice(zero,boccpi);
+    Slice aocc_slice(dim_zero,aoccpi);
+    Slice bocc_slice(dim_zero,boccpi);
     Slice avir_slice(aoccpi,nmopi_);
     Slice bvir_slice(boccpi,nmopi_);
 //    View aOO(moFa, aoccpi, aoccpi);
@@ -344,18 +344,18 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     // Ct_ is actuall (nmo x nmo)
 //    View vCia(Ct_, nmopi_, noccpi, dim_zero, dim_zero);
 //    SharedMatrix Cia = vCia();
-    Slice row_slice_mo(dim_zero,nmopi_);
-    Slice col_slice_ia(dim_zero,noccpi);
-    SharedMatrix Cia = Ct_->get_block(row_slice_mo,col_slice_ia);
+    SharedMatrix Cia = Ct_->get_block({dim_zero,nmopi_},{dim_zero,noccpi});
 
 //    View vCav(Ct_, nmopi_, virpi, dim_zero, doccpi_);
 //    SharedMatrix Cav = vCav();
     Slice col_slice_av(doccpi_,doccpi_ + virpi);
-    SharedMatrix Cav = Ct_->get_block(row_slice_mo,col_slice_ia);
+    SharedMatrix Cav = Ct_->get_block({dim_zero,nmopi_},{doccpi_,doccpi_ + virpi});
 
+    outfile->Printf("\n Got here 1");
     // Back transform MOgradient
     SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
     Drms_ = gradient->rms();
+    outfile->Printf("\n Got here 2");
 
     if(save_diis){
         if (initialized_diis_manager_ == false) {
