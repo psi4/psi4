@@ -8,7 +8,7 @@ import psi4
 # Test below is fine on its own but erratic through pytest. Most likely
 #   to succeed as first test collected, so here it lies.
 @pytest.mark.xfail(True, reason='threading treatment suspect', run=True)
-def test_threaded_blas():
+def disabled_test_threaded_blas():
     threads = multiprocessing.cpu_count()
     threads = int(threads / 2)
 

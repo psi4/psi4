@@ -745,8 +745,8 @@ def test_v2rdm_casscf():
     assert psi4.compare_values(refscf, psi4.get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy")
     assert psi4.compare_values(refv2rdm, psi4.get_variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
-@using_gcp
 @using_dftd3
+@using_gcp
 def test_grimme_3c():
 
     s16di = psi4.geometry("""
@@ -793,9 +793,9 @@ def test_dkh():
 
     assert psi4.compare_values(-128.66891610, e, 6, '2nd order vs Molpro')
 
-@using_forte
 @using_ambit
-def test_forte():
+@using_forte
+def disabled_test_forte():
     """aci-10: Perform aci on benzyne"""
 
     import forte

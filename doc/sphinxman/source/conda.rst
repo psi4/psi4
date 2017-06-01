@@ -188,8 +188,6 @@ How to update a Psi4 binary
 Conda command to update an existing |PSIfour| conda installation to the
 newest stable release (roughly annually).
 
-.. warning:: Until 1.1 is official, this pulls the July 2016 1.0 version. 1.0 and 1.1 really shouldn't be mixed.
-
 .. code-block:: bash
 
     >>> conda update psi4 -c psi4
