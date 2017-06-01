@@ -35,8 +35,6 @@
 
 namespace psi {
 
-
-
 class Dimension
 {
     std::string name_;
@@ -102,6 +100,22 @@ public:
 /*! \ingroup MINTS
  *  \class Slice
  *  \brief Slicing for Matrices and Vectors objects.
+ *
+ *  Slices are pairs of Dimension objects used to manipulate parts of vectors
+ *  and matrices.
+ *
+ *  Slices can be constructed from Dimension objects:
+ *
+ *      Dimension begin;
+ *      Dimension end;
+ *      Slice slice(begin,end);
+ *
+ *  or can be implicitly constructed from pairs of Dimension objects. E.g.:
+ *
+ *      Dimension begin;
+ *      Dimension end;
+ *      SharedVector v;
+ *      v->get_block({begin,end}); // same as v->get_block(slice);
  */
 class Slice
 {
@@ -110,9 +124,10 @@ class Slice
 
 public:
     /// Creator
-    /// Rules: begin must be >= 0 (element wise)
-    ///        end must be end >= begin (element wise)
+    /// Rules: begin must satisfly begin[h] >= 0 for all h
+    ///        end must satisfly end[h] >= begin[h] for all h
     Slice(const Dimension& begin,const Dimension& end);
+    /// Copy constructor
     Slice(const Slice& other);
 
     /// Get the first element of this slice
