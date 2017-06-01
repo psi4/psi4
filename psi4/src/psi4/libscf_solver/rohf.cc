@@ -598,12 +598,15 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     // Passing these guys is annoying, pretty cheap to rebuild
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
 
-    View vCocc(Ca_, nsopi_, ret->rowspi(), dim_zero, dim_zero);
-    SharedMatrix Cocc = vCocc();
+
+//    View vCocc(Ca_, nsopi_, ret->rowspi(), dim_zero, dim_zero);
+//    SharedMatrix Cocc = vCocc();
+    SharedMatrix Cocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,ret->rowspi()});
     Cocc->set_name("Cocc");
 
-    View vCvir(Ca_, nsopi_, ret->colspi(), dim_zero, doccpi_);
-    SharedMatrix Cvir = vCvir();
+//    View vCvir(Ca_, nsopi_, ret->colspi(), dim_zero, doccpi_);
+//    SharedMatrix Cvir = vCvir();
+    SharedMatrix Cvir = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + ret->colspi()});
     Cvir->set_name("Cvir");
 
     for (size_t h=0; h<nirrep_; h++){
@@ -663,12 +666,14 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     // If scf_type is DF we can do some extra JK voodo
     if ((options_.get_str("SCF_TYPE") == "DF") || (options_.get_str("SCF_TYPE") == "CD")){
 
-        View vCdocc(Ca_, nsopi_, doccpi_, dim_zero, dim_zero);
-        SharedMatrix Cdocc = vCdocc();
+//        View vCdocc(Ca_, nsopi_, doccpi_, dim_zero, dim_zero);
+//        SharedMatrix Cdocc = vCdocc();
+        SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
         Cdocc->set_name("Cdocc");
 
-        View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
-        SharedMatrix Csocc = vCsocc();
+//        View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
+//        SharedMatrix Csocc = vCsocc();
+        SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
         Csocc->set_name("Csocc");
 
         SharedMatrix Cr_i(new Matrix("Cright for docc", nsopi_,  doccpi_));
@@ -762,8 +767,9 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 
     }
     else{
-        View vCdocc(Ca_, nsopi_, doccpi_, dim_zero, dim_zero);
-        SharedMatrix Cdocc = vCdocc();
+//        View vCdocc(Ca_, nsopi_, doccpi_, dim_zero, dim_zero);
+//        SharedMatrix Cdocc = vCdocc();
+        SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
         Cdocc->set_name("Cdocc");
 
         Cl.push_back(Cocc);
@@ -885,8 +891,9 @@ int ROHF::soscf_update()
     Dimension occpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
 
-    View vMOgradient(moFeff_, occpi, virpi, dim_zero, doccpi_);
-    SharedMatrix Gradient = vMOgradient();
+//    View vMOgradient(moFeff_, occpi, virpi, dim_zero, doccpi_);
+//    SharedMatrix Gradient = vMOgradient();
+    SharedMatrix Gradient = moFeff_->get_block({dim_zero,occpi},{doccpi_,nmopi_});
     Gradient->scale(-4.0);
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, occpi, virpi));
 
@@ -1036,19 +1043,21 @@ int ROHF::soscf_update()
 
 void ROHF::form_G()
 {
+    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
 
     std::vector<SharedMatrix> & C = jk_->C_left();
     C.clear();
 
     // Push back docc orbitals
-    View vCdocc(Ca_, nsopi_, doccpi_);
-    SharedMatrix Cdocc = vCdocc();
+//    View vCdocc(Ca_, nsopi_, doccpi_);
+//    SharedMatrix Cdocc = vCdocc();
+    SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
     C.push_back(Cdocc);
 
     // Push back socc orbitals
-    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
-    View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
-    SharedMatrix Csocc = vCsocc();
+//    View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
+//    SharedMatrix Csocc = vCsocc();
+    SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
     C.push_back(Csocc);
 
     // Run the JK object
@@ -1088,13 +1097,14 @@ bool ROHF::stability_analysis()
         SharedMatrix FIA(new Matrix("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir));
         SharedMatrix Fia(new Matrix("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir));
 
-        View Vocc(Ca_, nsopi_, nalphapi_, zero, zero);
-        SharedMatrix Cocc = Vocc();
+//        View Vocc(Ca_, nsopi_, nalphapi_, zero, zero);
+//        SharedMatrix Cocc = Vocc();
+        SharedMatrix Cocc = Ca_->get_block({zero,nsopi_},{zero,nalphapi_});
         std::vector<SharedMatrix> virandsoc;
-        View Vvirt(Ca_, nsopi_, navir,  zero, nalphapi_);
-        View Vsocc(Ca_, nsopi_, soccpi, zero, doccpi_);
-        virandsoc.push_back(Vvirt());
-        virandsoc.push_back(Vsocc());
+//        View Vvirt(Ca_, nsopi_, navir,  zero, nalphapi_);
+//        View Vsocc(Ca_, nsopi_, soccpi, zero, doccpi_);
+        virandsoc.push_back(Ca_->get_block({zero,nsopi_},{nalphapi_,nmopi_}));
+        virandsoc.push_back(Ca_->get_block({zero,nsopi_},{doccpi_,nalphapi_}));
         SharedMatrix Cvir = Matrix::horzcat(virandsoc);
         FIJ->transform(Fa_, Cocc);
         Fij->transform(Fb_, Cocc);
