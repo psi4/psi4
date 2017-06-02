@@ -710,8 +710,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
     std::vector<SharedMatrix> virandsoc;
     Slice avir_col_slice(frzcpi + clsdpi + openpi,frzcpi + clsdpi + openpi + uoccpi);
     Slice asoc_col_slice(frzcpi + clsdpi,frzcpi + clsdpi + openpi);
-    virandsoc.push_back(ref->Ca()->get_block({zero,nsopi},avir_col_slice));
-    virandsoc.push_back(ref->Ca()->get_block({zero,nsopi},asoc_col_slice));
+    virandsoc.push_back(ref->Ca()->get_block(row_slice,avir_col_slice));
+    virandsoc.push_back(ref->Ca()->get_block(row_slice,asoc_col_slice));
     Ca_vir = Matrix::horzcat(virandsoc);
     Ca_vir->set_name("Virtual orbitals");
 
