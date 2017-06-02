@@ -1077,7 +1077,11 @@ void export_mints(py::module& m)
                       "Units (Angstrom or Bohr) used to define the geometry")
         .def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1")
         .def("geometry", &Molecule::geometry,
-             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
+             "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)")
+        .def("nuclear_repulsion_energy_deriv1", &Molecule::nuclear_repulsion_energy_deriv1,
+                     "Returns first derivative of nuclear repulsion energy as a matrix (natom, 3)")
+        .def("nuclear_repulsion_energy_deriv2", &Molecule::nuclear_repulsion_energy_deriv2,
+                     "Returns second derivative of nuclear repulsion energy as a matrix (natom X 3, natom X 3)");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")
         .def("aotoso", &PetiteList::aotoso, "Return the AO->SO coefficient matrix")
