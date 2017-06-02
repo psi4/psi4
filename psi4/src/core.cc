@@ -610,6 +610,11 @@ bool specifies_convergence(std::string const& key)
     return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
+Options& py_psi_get_options()
+{
+    return Process::environment.options;
+}
+
 bool py_psi_set_local_option_string(std::string const& module, std::string const& key, std::string const& value)
 {
     std::string nonconst_key = to_upper(key);
@@ -1443,7 +1448,7 @@ PYBIND11_PLUGIN(core) {
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("set_environment", [](const std::string key, const std::string value){ return Process::environment.set(key, value); }, "Set enviromental vairable");
     core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
-    core.def("get_options",[](){ return Process::environment.options; }, "Get options");
+    core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname){
                  outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, TRUNCATE));
                  outfile_name = ofname;

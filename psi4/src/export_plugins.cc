@@ -66,9 +66,9 @@ int py_psi_plugin_load(std::string fullpathname)
         plugins[uc] = plugin_load(fullpathname);
         outfile->Printf("%s loaded.\n", fullpathname.c_str());
         ret = 1;
-    } else
-        ret = 2;
-
+    } else {
+       ret = 2;
+    }
     return ret;
 }
 

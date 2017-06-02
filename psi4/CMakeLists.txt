@@ -261,6 +261,7 @@ install(FILES ${CMAKE_BINARY_DIR}/psi4PluginCache.cmake
               ${PSI4_ROOT}/cmake/psi4OptionsTools.cmake
               ${PSI4_ROOT}/cmake/custom_static_library.cmake
               ${PSI4_ROOT}/cmake/custom_cxxstandard.cmake
+              ${PSI4_ROOT}/cmake/autocmake_omp.cmake
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
     # <<<  Export Config for Plugins  >>>

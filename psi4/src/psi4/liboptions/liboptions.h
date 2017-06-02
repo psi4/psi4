@@ -383,6 +383,7 @@ public:
     bool read_globals() const;
     void set_read_globals(bool _b);
     void set_current_module(const std::string s);
+    std::string get_current_module() const {return current_module_;}
 
     void to_upper(std::string& str);
 
