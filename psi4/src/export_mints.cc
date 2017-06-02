@@ -783,6 +783,7 @@ void export_mints(py::module& m)
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals",
               py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
         .def("ao_grad_helper", &MintsHelper::ao_grad_helper, "docstring")
+        .def("mo_grad_helper", &MintsHelper::mo_grad_helper, "docstring")
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
@@ -802,7 +803,6 @@ void export_mints(py::module& m)
              "AO F12 double commutator integrals", py::arg("corr"))
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", py::arg("bs1"), py::arg("bs2"), py::arg("bs3"))
-
 
         // Two-electron MO and transformers
         .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients",
