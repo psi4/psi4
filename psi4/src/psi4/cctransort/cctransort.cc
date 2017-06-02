@@ -697,8 +697,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   }
   else {
     Slice row_slice(zero,nsopi);
-    Slice aocc_col_slice(frzcpi,aoccpi + frzcpi);
-    SharedMatrix Ca_occ = ref->Ca()->get_block({zero,nsopi},{frzcpi,occpi + frzcpi});
+    Slice aocc_col_slice(frzcpi,occpi + frzcpi);
+    SharedMatrix Ca_occ = ref->Ca()->get_block(row_slice,aocc_col_slice);
     Ca_occ->set_name("Occupied orbitals");
 
     next = PSIO_ZERO;
