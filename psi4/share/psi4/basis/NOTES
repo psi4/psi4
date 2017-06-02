@@ -2,6 +2,19 @@
 *******************************************************************************
 
 
+Friday, June 2, 2017 -- Robert T. McGibbon
+
+[34] rmcgibbo (Github id) harvested the cc-pVXZ and cc-pwCVXZ basis sets for Li, Be, Na and Mg from Kirk Peterson's website.
+The reference is B. Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson, Theor. Chem. Acc. 128, 69 (2011).
+
+The cc-pwCVXZ basis sets for these elements are new to Psi4. The cc-pVXZ basis sets from these elements are more recent
+than the ones in EMSL.
+
+
+*******************************************************************************
+*******************************************************************************
+
+
 Friday, September 23, 2016 -- LAB
 
 [33]   jvansan (GitHub id) has harvested the Jansen pc-N basis sets from EMSL for us. They have the form [aug-]pc[S][seg]-N (N=0--4; N+1-zeta basis set). Since Psi4 can't take advantage of general contractions, those have been hidden in a subfolder.
