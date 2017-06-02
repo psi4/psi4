@@ -84,6 +84,8 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
     if not quiet:
         core.print_out(basisdict['message'])
 
+    if basisdict['key'] is None:
+        basisdict['key'] = 'BASIS'
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     ecpbasis = None
     if 'ecp_shell_map' in basisdict:
