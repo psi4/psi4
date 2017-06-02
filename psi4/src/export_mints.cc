@@ -30,7 +30,6 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/orbitalspace.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/pointgrp.h"
@@ -303,12 +302,6 @@ void export_mints(py::module& m)
             }
             return ret;
         });
-
-    py::class_<View>(m, "View")
-        .def(py::init<SharedMatrix, const Dimension&, const Dimension&>())
-        .def(py::init<SharedMatrix, const Dimension&, const Dimension&, const Dimension&,
-                      const Dimension&>())
-        .def("__call__", &View::operator(), "docstring");
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())

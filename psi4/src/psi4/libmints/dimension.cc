@@ -175,4 +175,56 @@ Dimension operator-(const Dimension& a, const Dimension& b) {
     return result;
 }
 
+Slice::Slice(const Dimension& begin,const Dimension& end)
+    : begin_(begin), end_(end)
+{
+    validate_slice();
+}
+
+Slice::Slice(const Slice& other)
+     : begin_(other.begin()), end_(other.end())
+{
+    validate_slice();
+}
+
+Slice& Slice::operator+=(const Dimension& increment)
+{
+    begin_ += increment;
+    end_ += increment;
+    validate_slice();
+    return *this;
+}
+
+bool Slice::validate_slice(){
+    bool valid = true;
+    if (begin_.n() != end_.n()){
+        valid = false;
+        std::string msg = "Invalid Slice: begin and end Dimension objects have different size.";
+        throw PSIEXCEPTION(msg);
+    }
+    // Check that
+    for (int h = 0, max_h = begin_.n(); h < max_h; h++){
+        valid = false;
+        if (begin_[h] < 0){
+            std::string msg = "Invalid Slice: element "
+                    + std::to_string(h)
+                    + " of begin Dimension object is less than zero ("
+                    + std::to_string(begin_[h]) + ")";
+            throw PSIEXCEPTION(msg);
+        }
+        if (end_[h] < begin_[h]){
+            std::string msg = "Invalid Slice: element "
+                    + std::to_string(h)
+                    + " of (end - begin) Dimension object is less than zero ("
+                    + std::to_string(end_[h] - begin_[h]) + ")";
+            throw PSIEXCEPTION(msg);
+        }
+    }
+    if (not valid){
+        begin_.print();
+        end_.print();
+    }
+    return valid;
+}
+
 }

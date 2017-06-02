@@ -35,8 +35,6 @@
 
 namespace psi {
 
-
-
 class Dimension
 {
     std::string name_;
@@ -97,6 +95,51 @@ public:
     friend bool operator!=(const Dimension& a, const Dimension& b);
     friend Dimension operator+(const Dimension& a, const Dimension& b);
     friend Dimension operator-(const Dimension& a, const Dimension& b);
+};
+
+/*! \ingroup MINTS
+ *  \class Slice
+ *  \brief Slicing for Matrices and Vectors objects.
+ *
+ *  Slices are pairs of Dimension objects used to manipulate parts of vectors
+ *  and matrices.
+ *
+ *  Slices can be constructed from Dimension objects:
+ *
+ *      Dimension begin;
+ *      Dimension end;
+ *      Slice slice(begin,end);
+ *
+ *  or can be implicitly constructed from pairs of Dimension objects. E.g.:
+ *
+ *      Dimension begin;
+ *      Dimension end;
+ *      SharedVector v;
+ *      v->get_block({begin,end}); // same as v->get_block(slice);
+ */
+class Slice
+{
+    Dimension begin_;
+    Dimension end_;
+
+public:
+    /// Creator
+    /// Rules: begin must satisfly begin[h] >= 0 for all h
+    ///        end must satisfly end[h] >= begin[h] for all h
+    Slice(const Dimension& begin,const Dimension& end);
+    /// Copy constructor
+    Slice(const Slice& other);
+
+    /// Get the first element of this slice
+    const Dimension& begin() const {return begin_;}
+    /// Get the past-the-end element of this slice
+    const Dimension& end() const {return end_;}
+    /// Increment the beginning and end of this slice
+    Slice& operator+=(const Dimension& increment);
+
+private:
+    /// Check if this Slice is acceptable
+    bool validate_slice();
 };
 
 }

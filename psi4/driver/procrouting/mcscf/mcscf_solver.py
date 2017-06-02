@@ -353,9 +353,24 @@ def mcscf_solver(ref_wfn):
         dvec.close_io_files()
         ci_grad.close_io_files()
 
-    # Do we diagonalize the opdm?
-    if core.get_option("DETCI", "NAT_ORBS"):
-        ciwfn.ci_nat_orbs()
+    # For orbital invariant methods we transform the orbitals to the natural or
+    # semicanonical basis. Frozen doubly occupied and virtual orbitals are not
+    # modified.
+    if core.get_local_option("DETCI", "WFN") != "RASSCF":
+        # Do we diagonalize the opdm?
+        if core.get_option("DETCI", "NAT_ORBS"):
+            ciwfn.ci_nat_orbs()
+        else:
+            ciwfn.semicanonical_orbs()
+
+        # Retransform intragrals and update CI coeffs., OPDM, and TPDM
+        ciwfn.transform_mcscf_integrals(approx_integrals_only)
+        nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
+
+        ciwfn.set_ci_guess("DFILE")
+
+        ciwfn.form_opdm()
+        ciwfn.form_tpdm()
 
     proc_util.print_ci_results(ciwfn, "MCSCF", scf_energy, current_energy, print_opdm_no=True)
 

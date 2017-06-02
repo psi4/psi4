@@ -751,4 +751,50 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
 
     // ret->write(ivec, 0);
 }
+
+void CIWavefunction::semicanonical_orbs() {
+    outfile->Printf("\n   Computing CI Semicanonical Orbitals\n");
+
+    // Grab Fock matrices and build the average Fock operator
+    SharedMatrix AFock = somcscf_->current_AFock();
+    SharedMatrix IFock = somcscf_->current_IFock();
+    SharedMatrix Favg = AFock->clone();
+    Favg->add(IFock);
+
+    // Grab orbital dimensions
+    Dimension nrotpi = get_dimension("ROT");
+    Dimension noccpi = get_dimension("DOCC");
+    Dimension nactpi = get_dimension("ACT");
+    Dimension nvirpi = get_dimension("VIR");
+
+    // Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
+    SharedMatrix U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
+
+    // Diagonalize each block of Favg
+    Dimension offset_start(nirrep_);
+    Dimension offset_end(nirrep_);
+    for (Dimension block : {noccpi,nactpi,nvirpi}){
+        offset_end += block;
+
+        // Grab a block of Favg
+        Slice slice(offset_start,offset_end);
+        SharedMatrix F = Favg->get_block(slice,slice);
+
+        // Diagonalize it
+        SharedVector evals = std::make_shared<Vector>("F Evals", block);
+        SharedMatrix evecs = std::make_shared<Matrix>("F Evecs", block, block);
+        F->diagonalize(evecs, evals, ascending);
+
+        // Put block in U
+        U->set_block(slice,slice,evecs);
+
+        offset_start += block;
+    }
+
+    // rotate MOs and push them to the ciwfn
+    SharedMatrix Cnew = Matrix::doublet(get_orbitals("ROT"), U, false, false);
+    set_orbitals("ROT", Cnew);
+    Cb_ = Ca_;
+}
+
 }} // End Psi and CIWavefunction spaces

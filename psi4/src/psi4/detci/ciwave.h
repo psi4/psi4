@@ -270,6 +270,11 @@ public:
      */
     void ci_nat_orbs();
 
+    /**
+     * Form CI Semicanonical Orbitals
+     */
+    void semicanonical_orbs();
+
     // Cleanup Functions
 
     /**

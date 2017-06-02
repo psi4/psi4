@@ -32,7 +32,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libiwl/iwl.h"
@@ -675,8 +674,9 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   Dimension zero(nirreps);
   psio_address next;
   if(reference == 2) {
-    View VCa_vir(ref->Ca(), nsopi, avirpi, zero, aoccpi+frzcpi);
-    Ca_vir = VCa_vir();
+    Slice row_slice(zero,nsopi);
+    Slice avir_col_slice(aoccpi + frzcpi,aoccpi + frzcpi + avirpi);
+    SharedMatrix Ca_vir = ref->Ca()->get_block(row_slice,avir_col_slice);
     Ca_vir->set_name("Alpha virtual orbitals");
 
     next = PSIO_ZERO;
@@ -685,8 +685,8 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
         psio->write(PSIF_CC_INFO, "UHF Active Alpha Virtual Orbs", (char *) Ca_vir->pointer(h)[0],
                     nsopi[h]*avirpi[h]*sizeof(double), next, &next);
 
-    View VCb_vir(ref->Cb(), nsopi, bvirpi, zero, boccpi+frzcpi);
-    Cb_vir = VCb_vir();
+    Slice bvir_col_slice(boccpi + frzcpi,boccpi + frzcpi + bvirpi);
+    SharedMatrix Cb_vir = ref->Cb()->get_block(row_slice,bvir_col_slice);
     Cb_vir->set_name("Beta virtual orbitals");
 
     next = PSIO_ZERO;
@@ -696,8 +696,9 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
                     nsopi[h]*bvirpi[h]*sizeof(double), next, &next);
   }
   else {
-    View VCa_occ(ref->Ca(), nsopi, occpi, zero, frzcpi);
-    Ca_occ = VCa_occ();
+    Slice row_slice(zero,nsopi);
+    Slice aocc_col_slice(frzcpi,occpi + frzcpi);
+    SharedMatrix Ca_occ = ref->Ca()->get_block(row_slice,aocc_col_slice);
     Ca_occ->set_name("Occupied orbitals");
 
     next = PSIO_ZERO;
@@ -706,11 +707,11 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
         psio->write(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *) Ca_occ->pointer(h)[0],
                     nsopi[h]*occpi[h]*sizeof(double), next, &next);
 
-    View Vavir(ref->Ca(), nsopi, uoccpi, zero, frzcpi+clsdpi+openpi);
-    View Vasoc(ref->Ca(), nsopi, openpi, zero, frzcpi+clsdpi);
     std::vector<SharedMatrix> virandsoc;
-    virandsoc.push_back(Vavir());
-    virandsoc.push_back(Vasoc());
+    Slice avir_col_slice(frzcpi + clsdpi + openpi,frzcpi + clsdpi + openpi + uoccpi);
+    Slice asoc_col_slice(frzcpi + clsdpi,frzcpi + clsdpi + openpi);
+    virandsoc.push_back(ref->Ca()->get_block(row_slice,avir_col_slice));
+    virandsoc.push_back(ref->Ca()->get_block(row_slice,asoc_col_slice));
     Ca_vir = Matrix::horzcat(virandsoc);
     Ca_vir->set_name("Virtual orbitals");
 

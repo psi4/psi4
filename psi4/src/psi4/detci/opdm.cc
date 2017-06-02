@@ -161,7 +161,7 @@ void CIWavefunction::form_opdm(void) {
     opdm_called_ = true;
 }
 /*
-** Resizes an act by act OPDM matrix to include the inactive porition.
+** Resizes an act by act OPDM matrix to include the inactive portion.
 ** The diagonal of the inactive portion is set to value. If virt is true
 ** the return OPDM with of size nmo x nmo.
 */
@@ -573,18 +573,19 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
 }// End OPDM Block
 
 void CIWavefunction::ci_nat_orbs() {
-  // We can only do restricted orbitals
   outfile->Printf("\n   Computing CI Natural Orbitals\n");
-  outfile->Printf("   !Warning: New orbitals will be sorted by occuption number,\n");
-  outfile->Printf("   orbital spaces (occ/act/vir) may change.\n");
 
-  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", Da_->rowspi(), Da_->colspi()));
-  SharedVector NO_occ(new Vector("OPDM Occuption", Da_->rowspi()));
+  // Diagonalize the OPDM in the active space
+  SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", opdm_->rowspi(), opdm_->colspi()));
+  SharedVector NO_occ(new Vector("OPDM Occuption", opdm_->rowspi()));
+  opdm_->diagonalize(NO_vecs, NO_occ, descending);
 
-  SharedMatrix D = opdm_add_inactive(opdm_, 2.0, true);
-  D->diagonalize(NO_vecs, NO_occ, descending);
+  // get a copy of the active orbitals
+  SharedMatrix Cactv = get_orbitals("ACT");
+  SharedMatrix Cnat = Matrix::doublet(Cactv, NO_vecs);
 
-  Ca_ = Matrix::doublet(Ca_, NO_vecs);
+  // set the active block of Ca_
+  set_orbitals("ACT",Cnat);
   Cb_ = Ca_;
 }
 

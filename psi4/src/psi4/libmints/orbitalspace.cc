@@ -29,7 +29,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/orthog.h"
 #include "psi4/libmints/matrix.h"
@@ -309,14 +308,12 @@ OrbitalSpace orthogonal_compliment(const OrbitalSpace &space1, const OrbitalSpac
     outfile->Printf("\n");
 
     // Pull out the nullspace vectors
-    View nullspace(V11, V11->rowspi(), zeros);
-    SharedMatrix V = nullspace();
-//        V->print();
+    Dimension dim_zero(space1.nirrep());
+    SharedMatrix V = V11->get_block({dim_zero,V11->rowspi()},{dim_zero,zeros});
 
     // Half-back transform to space2
     SharedMatrix newC = Matrix::create("Transformation matrix", space2.C()->rowspi(), zeros);
     newC->gemm(false, false, 1.0, space2.C(), V, 0.0);
-//        newC->print();
 
     return OrbitalSpace(id, name, newC, space2.basisset(), space2.integral());
 #endif

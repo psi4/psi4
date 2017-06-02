@@ -210,6 +210,50 @@ void Vector::set(double *vec)
     std::copy(vec, vec + dimpi_.sum(), v_.begin());
 }
 
+SharedVector Vector::get_block(const Slice& slice)
+{
+    // check if slice is within bounds
+    for (int h = 0; h < nirrep_; h++){
+        if (slice.end()[h] > dimpi_[h]){
+            std::string msg = "Invalid call to Vector::get_block(): Slice is out of bounds. Irrep = "
+                    + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+    }
+    const Dimension& slice_begin = slice.begin();
+    Dimension slice_dim = slice.end() - slice.begin();
+    SharedVector block = std::make_shared<Vector>("Block",slice_dim);
+    for (int h = 0; h < nirrep_; h++){
+        int max_p = slice_dim[h];
+        for (int p = 0; p < max_p; p++){
+                double value = get(h,p + slice_begin[h]);
+                block->set(h,p,value);
+        }
+    }
+    return block;
+}
+
+void Vector::set_block(const Slice& slice,SharedVector block)
+{
+    // check if slice is within bounds
+    for (int h = 0; h < nirrep_; h++){
+        if (slice.end()[h] > dimpi_[h]){
+            std::string msg = "Invalid call to Vector::set_block(): Slice is out of bounds. Irrep = "
+                    + std::to_string(h);
+            throw PSIEXCEPTION(msg);
+        }
+    }
+    const Dimension& slice_begin = slice.begin();
+    Dimension slice_dim = slice.end() - slice.begin();
+    for (int h = 0; h < nirrep_; h++){
+        int max_p = slice_dim[h];
+        for (int p = 0; p < max_p; p++){
+                double value = block->get(h,p);
+                set(h,p + slice_begin[h],value);
+        }
+    }
+}
+
 void Vector::zero()
 {
     std::fill(v_.begin(), v_.end(), 0.0);
@@ -290,7 +334,7 @@ void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta) 
     }
 }
 
-double Vector::vector_dot(const std::shared_ptr<Vector> &other) { return vector_dot(*other.get()); }
+double Vector::vector_dot(const SharedVector &other) { return vector_dot(*other.get()); }
 double Vector::vector_dot(const Vector &other) {
     if (v_.size() != other.v_.size()) {
         throw PSIEXCEPTION("Vector::vector_dot: Vector sizes do not match!");
@@ -312,10 +356,10 @@ double Vector::rms() { return sqrt(sum_of_squares() / v_.size()); }
 
 void Vector::scale(const double &sc) { C_DSCAL(v_.size(), sc, v_.data(), 1); }
 
-void Vector::add(const std::shared_ptr<Vector> &other) { axpy(1.0, *other.get()); }
+void Vector::add(const SharedVector &other) { axpy(1.0, *other.get()); }
 void Vector::add(const Vector &other) { axpy(1.0, other); }
 
-void Vector::subtract(const std::shared_ptr<Vector> &other) { axpy(-1.0, *other.get()); }
+void Vector::subtract(const SharedVector &other) { axpy(-1.0, *other.get()); }
 void Vector::subtract(const Vector &other) { axpy(-1.0, other); }
 
 void Vector::axpy(double scale, const SharedVector &other) { axpy(scale, *other.get()); }

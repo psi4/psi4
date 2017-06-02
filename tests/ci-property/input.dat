@@ -80,6 +80,21 @@ compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YY'), -29.28690433028
 compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE ZZ'), -27.288580048926, 2, "CASSCF ROOT 1 QUADRUPOLE ZZ")    #TEST
 compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF ROOT 1 QUADRUPOLE YZ")    #TEST
 
+set DETCI NAT_ORBS true
+cas_energy = prop('CASSCF', properties=props)    #TEST
+compare_values(-278.778339189657800, cas_energy, 6, 'CASSCF Energy')    #TEST
+compare_values(psi4.get_variable('CASSCF DIPOLE Y'), 0.000000000000, 2, "CASSCF DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CASSCF DIPOLE Z'), 1.994979146421, 2, "CASSCF DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE XX'), -22.404898239966, 2, "CASSCF QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE YY'), -27.936106983618, 2, "CASSCF QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE ZZ'), -28.338138881212, 2, "CASSCF QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CASSCF QUADRUPOLE YZ'), 0.000000000000, 2, "CASSCF QUADRUPOLE YZ")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 DIPOLE Y'), 0.000000000000, 2, "CASSCF ROOT 1 DIPOLE Y")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 DIPOLE Z'), 4.462471853372, 2, "CASSCF ROOT 1 DIPOLE Z")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE XX'), -22.295623175859, 2, "CASSCF ROOT 1 QUADRUPOLE XX")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YY'), -29.286904330283, 2, "CASSCF ROOT 1 QUADRUPOLE YY")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE ZZ'), -27.288580048926, 2, "CASSCF ROOT 1 QUADRUPOLE ZZ")    #TEST
+compare_values(psi4.get_variable('CASSCF ROOT 1 QUADRUPOLE YZ'), 0.000000000000, 4, "CASSCF ROOT 1 QUADRUPOLE YZ")    #TEST
 #name = 'CASSCF'    #TEST
 #prop_list = []    #TEST
 #for dip in ['Y', 'Z']:    #TEST

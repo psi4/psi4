@@ -31,7 +31,6 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #include <sstream>
@@ -621,61 +620,49 @@ IntegralTransform::process_eigenvectors()
         SharedMatrix Ca, Cb;
         if(moSpace->label() == MOSPACE_FZC){
             // This is the frozen occupied space
-            View Vafzc(Ca_, sopi_, focc);
-            Ca = Vafzc();
+            Ca = Ca_->get_block({zero,sopi_},{zero,focc});
             Ca->set_name("Alpha frozen occupied orbitals");
             if(transformationType_ != Restricted){
-                View Vbfzc(Cb_, sopi_, focc);
-                Cb = Vbfzc();
+                Cb = Cb_->get_block({zero,sopi_},{zero,focc});
                 Cb->set_name("Beta frozen occupied orbitals");
             }
         }else if(moSpace->label() == MOSPACE_OCC){
             // This is the occupied space
-            View Vaocc(Ca_, sopi_, aocc, zero, focc);
-            Ca = Vaocc();
+            Ca = Ca_->get_block({zero,sopi_},{focc,focc + aocc});
             Ca->set_name("Alpha occupied orbitals");
             if(transformationType_ != Restricted){
-                View Vbocc(Cb_, sopi_, bocc, zero, focc);
-                Cb = Vbocc();
+                Cb = Cb_->get_block({zero,sopi_},{focc,focc + bocc});
                 Cb->set_name("Beta occupied orbitals");
             }
         }else if(moSpace->label() == MOSPACE_ALL){
             // This is the full space, sans frozen orbitals
-            View Vaall(Ca_, sopi_, aall, zero, focc);
-            Ca = Vaall();
+            Ca = Ca_->get_block({zero,sopi_},{focc,focc + aall});
             Ca->set_name("All alpha orbitals");
             if(transformationType_ != Restricted){
-                View Vball(Cb_, sopi_, ball, zero, focc);
-                Cb = Vball();
+                Cb = Cb_->get_block({zero,sopi_},{focc,focc + ball});
                 Cb->set_name("All beta orbitals");
             }
         }else if(moSpace->label() == MOSPACE_VIR){
             // This is the virtual space
             if(transformationType_ == Restricted){
                 // Take the true virtual orbitals, and then append the SOCC orbitals
-                View Vavir(Ca_, sopi_, avir, zero, nalphapi_);
-                View Vasoc(Ca_, sopi_, openpi_, zero, clsdpi_);
                 std::vector<SharedMatrix> virandsoc;
-                virandsoc.push_back(Vavir());
-                virandsoc.push_back(Vasoc());
+                virandsoc.push_back(Ca_->get_block({zero,sopi_},{nalphapi_,nalphapi_ + avir}));
+                virandsoc.push_back(Ca_->get_block({zero,sopi_},{clsdpi_,clsdpi_ + openpi_}));
                 Ca = Matrix::horzcat(virandsoc);
                 Ca->set_name("Alpha virtual orbitals");
             }else{
-                View Vavir(Ca_, sopi_, avir, zero, nalphapi_);
-                Ca = Vavir();
+                Ca = Ca_->get_block({zero,sopi_},{nalphapi_,nalphapi_ + avir});
                 Ca->set_name("Alpha virtual orbitals");
-                View Vbvir(Cb_, sopi_, bvir, zero, nbetapi_);
-                Cb = Vbvir();
+                Cb = Cb_->get_block({zero,sopi_},{nbetapi_,nbetapi_ + bvir});
                 Cb->set_name("Beta virtual orbitals");
             }
         }else if(moSpace->label() == MOSPACE_FZV){
             // This is the frozen virtual space
-            View Vafzv(Ca_, sopi_, fvir, zero, mopi_ - frzvpi_);
-            Ca = Vafzv();
+            Ca = Ca_->get_block({zero,sopi_},{mopi_ - frzvpi_,mopi_});
             Ca->set_name("Alpha frozen virtual orbitals");
             if(transformationType_ != Restricted){
-                View Vbfzv(Cb_, sopi_, fvir, zero,  mopi_ - frzvpi_);
-                Cb = Vbfzv();
+                Cb = Cb_->get_block({zero,sopi_},{mopi_ - frzvpi_,mopi_});
                 Cb->set_name("Beta frozen virtual orbitals");
             }
         }else if(moSpace->label() == MOSPACE_NIL){

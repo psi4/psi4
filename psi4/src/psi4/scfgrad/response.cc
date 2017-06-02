@@ -32,7 +32,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/sieve.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/cdsalclist.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfock/jk.h"

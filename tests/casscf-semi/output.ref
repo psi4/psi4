@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {mcscf_semi} aac087f dirty
+                         Git: Rev {mcscf_semi} 21ead93 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -18,9 +18,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 29 May 2017 08:39PM
+    Psi4 started on: Saturday, 27 May 2017 09:15PM
 
-    Process ID:   4375
+    Process ID:  11172
     PSIDATADIR: /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -28,7 +28,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! CASSCF/6-31G** energy point
+#! CASSCF/6-31G** energy point. Check energy invariance after semicanonicalization.
 
 molecule {
 O
@@ -37,31 +37,34 @@ H 1 1.00 2 103.1
 }
 
 set {
+    scf_type        out_of_core
+    basis           6-31G**
     reference       rhf
-    mcscf_type      df
     frozen_docc     [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
-    basis           6-31G**
-    nat_orbs        True
+    frozen_uocc     [1, 0, 0, 1]
+    mcscf_type      conv
 }
 
-casscf_energy, cas_wfn = energy('casscf', return_wfn=True)
+# Solve and leave the Wavefunction active
+set MCSCF_CI_CLEANUP False
+set MCSCF_DPD_CLEANUP False
+cas_e, cas_wfn = energy("CASSCF", return_wfn=True)
 
-compare_values(-76.01725998335047, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
-compare_values(-76.07373669020915, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
+compare_values(-76.017296555283, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.072158733148, cas_e, 8, 'FZC CASSCF Energy')  #TEST
 
-cas_orbs = cas_wfn.get_orbitals("ACT")
-## Double check NO's were build #TEST
-import numpy as np                                                      #TEST
-nov0 = np.array([0.99497,  0.82469,  0.70392,  1.15089,                 #TEST
-                 2.04234,  2.23589,  4.27168,  1.45200,                 #TEST 
-                 2.06391,  1.66824,  3.43443,  3.98434])                #TEST
+# Update energy
+cas_wfn.transform_mcscf_integrals(True)
+nci_iter = cas_wfn.diag_h(1.e-10, 1.e-10)
+current_energy = psi4.core.get_variable("MCSCF TOTAL ENERGY")
 
-compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs") #TEST
+# Compare the energy
+compare_values(cas_e, current_energy, 8, "Rotated Orbital Energy Invariance")
 --------------------------------------------------------------------------
 
 *** tstart() called on CHE-FEVANGE-01I
-*** at Mon May 29 20:39:32 2017
+*** at Sat May 27 21:15:33 2017
 
    => Loading Basis Set <=
 
@@ -110,7 +113,7 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DF.
+  SCF Algorithm Type is OUT_OF_CORE.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
@@ -129,14 +132,6 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
     Spherical Harmonics?: false
     Max angular momentum: 2
 
-   => Loading Basis Set <=
-
-    Name: (6-31G** AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
   ==> Pre-Iterations <==
 
    -------------------------------------------------------
@@ -152,28 +147,13 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
     Memory (MB):               375
-    Algorithm:                Core
-    Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: (6-31G** AUX)
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
 
   Minimum eigenvalue in the overlap matrix is 2.3361254517E-02.
   Using Symmetric Orthogonalization.
@@ -182,19 +162,19 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
   ==> Iterations <==
 
-                           Total Energy        Delta E     RMS |[F,P]|
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.91131636997139   -7.59113e+01   1.07844e-01 
-   @DF-RHF iter   1:   -75.97781077166563   -6.64944e-02   2.01717e-02 
-   @DF-RHF iter   2:   -76.00796714618973   -3.01564e-02   1.08745e-02 DIIS
-   @DF-RHF iter   3:   -76.01665151268311   -8.68437e-03   1.63084e-03 DIIS
-   @DF-RHF iter   4:   -76.01718741124952   -5.35899e-04   5.16989e-04 DIIS
-   @DF-RHF iter   5:   -76.01725653383964   -6.91226e-05   1.01491e-04 DIIS
-   @DF-RHF iter   6:   -76.01725988347584   -3.34964e-06   1.73768e-05 DIIS
-   @DF-RHF iter   7:   -76.01725998100531   -9.75295e-08   2.98600e-06 DIIS
-   @DF-RHF iter   8:   -76.01725998332293   -2.31762e-09   3.45426e-07 DIIS
-   @DF-RHF iter   9:   -76.01725998334723   -2.43006e-11   2.92801e-08 DIIS
-   @DF-RHF iter  10:   -76.01725998334723    0.00000e+00   2.86550e-09 DIIS
+   @RHF iter   0:   -75.91133392155822   -7.59113e+01   1.07844e-01 
+   @RHF iter   1:   -75.97784374193544   -6.65098e-02   2.01726e-02 
+   @RHF iter   2:   -76.00800443676002   -3.01607e-02   1.08740e-02 DIIS
+   @RHF iter   3:   -76.01668829320545   -8.68386e-03   1.63059e-03 DIIS
+   @RHF iter   4:   -76.01722398743834   -5.35694e-04   5.16880e-04 DIIS
+   @RHF iter   5:   -76.01729310879369   -6.91214e-05   1.01442e-04 DIIS
+   @RHF iter   6:   -76.01729645557535   -3.34678e-06   1.73616e-05 DIIS
+   @RHF iter   7:   -76.01729655294398   -9.73686e-08   2.98423e-06 DIIS
+   @RHF iter   8:   -76.01729655525872   -2.31475e-09   3.44964e-07 DIIS
+   @RHF iter   9:   -76.01729655528293   -2.42011e-11   2.92044e-08 DIIS
+   @RHF iter  10:   -76.01729655528304   -1.13687e-13   2.87249e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -203,18 +183,18 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
     Doubly Occupied:                                                      
 
-       1A1   -20.569001     2A1    -1.320617     1B2    -0.678724  
-       3A1    -0.563921     1B1    -0.494994  
+       1A1   -20.569000     2A1    -1.320609     1B2    -0.678724  
+       3A1    -0.563930     1B1    -0.495004  
 
     Virtual:                                                              
 
-       4A1     0.202464     2B2     0.292735     3B2     0.981214  
-       5A1     1.056373     6A1     1.129238     2B1     1.168666  
-       4B2     1.295134     7A1     1.413717     1A2     1.803418  
-       8A1     1.807591     3B1     1.919544     9A1     2.513656  
-       5B2     2.538563     6B2     2.713724     2A2     2.921723  
-       4B1     2.948260    10A1     3.292263    11A1     3.621690  
-       7B2     3.876039    12A1     4.078097  
+       4A1     0.202466     2B2     0.292719     3B2     0.981164  
+       5A1     1.056318     6A1     1.129179     2B1     1.168639  
+       4B2     1.294985     7A1     1.413596     1A2     1.802875  
+       8A1     1.806916     3B1     1.918871     9A1     2.513248  
+       5B2     2.537822     6B2     2.713577     2A2     2.921065  
+       4B1     2.947486    10A1     3.291755    11A1     3.620730  
+       7B2     3.874917    12A1     4.077740  
 
     Final Occupation by Irrep:
              A1    A2    B1    B2 
@@ -222,14 +202,14 @@ compare_arrays(nov0, np.linalg.norm(cas_wfn.Ca().nph[0], axis=0), 4, "Nat Orbs")
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01725998334723
+  @RHF Final Energy:   -76.01729655528304
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8046866186390567
-    One-Electron Energy =                -122.3893793479471128
-    Two-Electron Energy =                  37.5674327459608222
-    Total Energy =                        -76.0172599833472304
+    One-Electron Energy =                -122.3894315920593954
+    Two-Electron Energy =                  37.5674484181373032
+    Total Energy =                        -76.0172965552830391
 
 
 
@@ -241,31 +221,46 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.1531
+     X:     0.0000      Y:     0.0000      Z:    -0.1532
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8820     Total:     0.8820
+     X:     0.0000      Y:     0.0000      Z:     0.8819     Total:     0.8819
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.2417     Total:     2.2417
+     X:     0.0000      Y:     0.0000      Z:     2.2414     Total:     2.2414
 
 
-*** tstop() called on CHE-FEVANGE-01I at Mon May 29 20:39:32 2017
+*** tstop() called on CHE-FEVANGE-01I at Sat May 27 21:15:33 2017
 Module time:
-	user time   =       0.27 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.27 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
-   => Loading Basis Set <=
+ MINTS: Wrapper to libmints.
+   by Justin Turney
 
-    Name: (6-31G** AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+   Calculation information:
+      Number of threads:                 1
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Integral cutoff                 1.00e-12
+      Number of functions per irrep: [  12    2    4    7 ]
+
+ OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
+         stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
 
 
          ---------------------------------------------------------
@@ -314,8 +309,8 @@ Total time:
          Frozen DOCC        1     1     0     0     0
      Restricted DOCC        0     0     0     0     0
               Active        6     3     0     1     2
-     Restricted UOCC       18     8     2     3     5
-         Frozen UOCC        0     0     0     0     0
+     Restricted UOCC       16     7     2     3     4
+         Frozen UOCC        2     1     0     0     1
    ------------------------------------------------------
 
    ==> Setting up CI strings <==
@@ -323,104 +318,74 @@ Total time:
     There are 15 alpha and 15 beta strings
     The CI space requires 65 (6.50E+01) determinants and 4 blocks
 
-   ==> Setting up DF-MCSCF integrals <==
+   ==> Setting up MCSCF integrals <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              1
-    Integrals threads:           1
-    Memory (MB):               400
-    Algorithm:                Core
-    Integral Cache:           NONE
+    Memory (MB):              3200
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
-
-   => Auxiliary Basis Set <=
-
-  Basis Set: (6-31G** AUX)
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
-
-  ==> DFERI: Density Fitted 3-Index Tensors <==
-
-    Schwarz cutoff =   1.000E-12
-    J cutoff       =   1.000E-12
-    Mem (GB)       =           0
-
-   => Auxiliary Basis <=
-
-  Basis Set: (6-31G** AUX)
-    Blend: CC-PVDZ-JKFIT
-    Number of shells: 42
-    Number of basis function: 131
-    Number of Cartesian functions: 131
-    Spherical Harmonics?: false
-    Max angular momentum: 3
 
 
-   ==> Starting DF-MCSCF iterations <==
+   ==> Starting MCSCF iterations <==
 
-           Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
-   @DF-MCSCF  1:    -76.029899413290   -1.2639e-02  9.95e-03  3.98e-13    1    1  Initial CI
+        Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
+   @MCSCF  1:    -76.029934009656   -1.2637e-02  1.02e-02  2.42e-13    1    1  Initial CI
       Warning! Maxstep = 0.55, scaling to 0.50
-   @DF-MCSCF  2:    -76.068845723397   -3.8946e-02  1.36e-02  4.33e-06    6    1  TS
-   @DF-MCSCF  3:    -76.072987516387   -4.1418e-03  4.26e-03  5.98e-06    5    1  TS
-   @DF-MCSCF  4:    -76.073590866133   -6.0335e-04  1.58e-03  2.25e-06    5    1  TS, DIIS
-   @DF-MCSCF  5:    -76.073703332342   -1.1247e-04  7.74e-04  1.04e-06    5    1  TS, DIIS
-   @DF-MCSCF  6:    -76.073730318970   -2.6987e-05  4.21e-04  1.94e-07    6    1  TS, DIIS
-   @DF-MCSCF  7:    -76.073735919518   -5.6005e-06  1.43e-04  6.15e-08    6    1  TS, DIIS
-   @DF-MCSCF  8:    -76.073736617805   -6.9829e-07  4.02e-05  7.13e-08    5    1  TS, DIIS
-   @DF-MCSCF  9:    -76.073736691723   -7.3918e-08  7.97e-06  6.84e-09    6    1  TS, DIIS
+   @MCSCF  2:    -76.067909769519   -3.7976e-02  1.32e-02  2.39e-06    6    1  TS
+   @MCSCF  3:    -76.071477324119   -3.5676e-03  4.18e-03  5.70e-06    5    1  TS
+   @MCSCF  4:    -76.072008412616   -5.3109e-04  1.65e-03  3.01e-06    5    1  TS, DIIS
+   @MCSCF  5:    -76.072119922211   -1.1151e-04  7.97e-04  1.54e-06    5    1  TS, DIIS
+   @MCSCF  6:    -76.072154759921   -3.4838e-05  3.66e-04  3.16e-07    6    1  TS, DIIS
+   @MCSCF  7:    -76.072157860727   -3.1008e-06  1.54e-04  8.95e-08    6    1  TS, DIIS
+   @MCSCF  8:    -76.072158555341   -6.9461e-07  6.61e-05  1.34e-07    5    1  TS, DIIS
+   @MCSCF  9:    -76.072158725361   -1.7002e-07  1.75e-05  2.15e-08    6    1  TS, DIIS
+   @MCSCF 10:    -76.072158733149   -7.7880e-09  3.20e-06  3.07e-09    6    1  TS, DIIS
 
-          @DF-MCSCF has converged!
+          @MCSCF has converged!
 
-   @DF-MCSCF Final Energy:  -76.073736691722971
-
-   Computing CI Natural Orbitals
+   @MCSCF Final Energy:  -76.072158733148797
+  
+   Computing CI Semicanonical Orbitals
 
    ==> Energetics <==
 
-    SCF energy =          -76.017259983347230
-    Total MCSCF energy =  -76.073736691722971
+    SCF energy =          -76.017296555283039
+    Total MCSCF energy =  -76.072158733148797
 
    ==> MCSCF root 0 information <==
 
-    MCSCF Root 0 energy =   -76.073736691721322
+    MCSCF Root 0 energy =   -76.072158733148797
 
    Active Space Natural occupation numbers:
 
-        B1   1.999335        A1   1.998790        A1   1.976041
-        B2   1.973893        B2   0.026705        A1   0.025236
+        B1   1.999342        A1   1.998424        A1   1.975965
+        B2   1.974455        B2   0.026788        A1   0.025026
 
    The 20 most important determinants:
 
-    *   1    0.987034  (    3,    3)  2A1X 3A1X 1B1X 1B2X 
-    *   2   -0.080504  (    6,    6)  2A1X 3A1X 1B1X 2B2X 
-    *   3   -0.075529  (    4,    4)  2A1X 4A1X 1B1X 1B2X 
-    *   4    0.059859  (    4,    6)  2A1X 3A1B 4A1A 1B1X 1B2A 2B2B 
-    *   5    0.059859  (    6,    4)  2A1X 3A1A 4A1B 1B1X 1B2B 2B2A 
-    *   6   -0.033117  (    9,   10)  2A1X 3A1A 4A1A 1B1X 1B2B 2B2B 
-    *   7   -0.033117  (   10,    9)  2A1X 3A1B 4A1B 1B1X 1B2A 2B2A 
-    *   8   -0.030959  (    9,    9)  2A1X 3A1X 4A1X 1B1X 
-    *   9    0.026742  (    3,    7)  2A1X 3A1A 4A1B 1B1X 1B2A 2B2B 
-    *  10    0.026742  (    7,    3)  2A1X 3A1B 4A1A 1B1X 1B2B 2B2A 
-    *  11   -0.025094  (   10,   10)  2A1X 1B1X 1B2X 2B2X 
-    *  12   -0.021774  (   11,   11)  3A1X 1B1X 1B2X 2B2X 
-    *  13   -0.015863  (   13,   13)  2A1X 3A1X 4A1X 1B2X 
-    *  14    0.013842  (    7,    7)  2A1X 4A1X 1B1X 2B2X 
-    *  15   -0.008641  (    0,    0)  2A1X 3A1X 1B2X 2B2X 
-    *  16   -0.007288  (    5,    5)  3A1X 4A1X 1B1X 1B2X 
-    *  17   -0.005817  (   10,   11)  2A1A 3A1B 1B1X 1B2X 2B2X 
-    *  18   -0.005817  (   11,   10)  2A1B 3A1A 1B1X 1B2X 2B2X 
-    *  19    0.003777  (    4,    5)  2A1A 3A1B 4A1X 1B1X 1B2X 
-    *  20    0.003777  (    5,    4)  2A1B 3A1A 4A1X 1B1X 1B2X 
+    *   1    0.986855  (    3,    3)  2A1X 3A1X 1B1X 1B2X 
+    *   2   -0.079660  (    6,    6)  2A1X 3A1X 1B1X 2B2X 
+    *   3   -0.053222  (    4,    4)  2A1X 4A1X 1B1X 1B2X 
+    *   4    0.051365  (    4,    6)  2A1X 3A1B 4A1A 1B1X 1B2A 2B2B 
+    *   5    0.051365  (    6,    4)  2A1X 3A1A 4A1B 1B1X 1B2B 2B2A 
+    *   6   -0.034130  (   10,   10)  2A1X 1B1X 1B2X 2B2X 
+    *   7   -0.032309  (    4,    5)  2A1A 3A1B 4A1X 1B1X 1B2X 
+    *   8   -0.032309  (    5,    4)  2A1B 3A1A 4A1X 1B1X 1B2X 
+    *   9   -0.030338  (    9,    9)  2A1X 3A1X 4A1X 1B1X 
+    *  10   -0.029812  (    5,    5)  3A1X 4A1X 1B1X 1B2X 
+    *  11    0.029339  (    5,    6)  2A1B 3A1X 4A1A 1B1X 1B2A 2B2B 
+    *  12    0.029339  (    6,    5)  2A1A 3A1X 4A1B 1B1X 1B2B 2B2A 
+    *  13   -0.026944  (    9,   10)  2A1X 3A1A 4A1A 1B1X 1B2B 2B2B 
+    *  14   -0.026944  (   10,    9)  2A1X 3A1B 4A1B 1B1X 1B2A 2B2A 
+    *  15    0.024422  (    3,    7)  2A1X 3A1A 4A1B 1B1X 1B2A 2B2B 
+    *  16    0.024422  (    7,    3)  2A1X 3A1B 4A1A 1B1X 1B2B 2B2A 
+    *  17   -0.018463  (    9,   11)  2A1A 3A1X 4A1A 1B1X 1B2B 2B2B 
+    *  18   -0.018463  (   11,    9)  2A1B 3A1X 4A1B 1B1X 1B2A 2B2A 
+    *  19   -0.016640  (   11,   11)  3A1X 1B1X 1B2X 2B2X 
+    *  20   -0.016146  (   13,   13)  2A1X 3A1X 4A1X 1B2X 
 
 
 
@@ -432,16 +397,16 @@ Properties computed using the CASSCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.2207
+     X:     0.0000      Y:     0.0000      Z:    -0.2250
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8143     Total:     0.8143
+     X:     0.0000      Y:     0.0000      Z:     0.8100     Total:     0.8100
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.0699     Total:     2.0699
+     X:     0.0000      Y:     0.0000      Z:     2.0589     Total:     2.0589
 
 	SCF Energy........................................................PASSED
 	FZC CASSCF Energy.................................................PASSED
-	Nat Orbs..........................................................PASSED
+	Rotated Orbital Energy Invariance.................................PASSED
 
 *** Psi4 exiting successfully. Buy a developer a beer!

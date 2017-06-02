@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {mcscf_semi} 567d193 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -18,10 +18,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:35PM
+    Psi4 started on: Monday, 29 May 2017 08:42PM
 
-    Process ID:  13967
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID:   5113
+    PSIDATADIR: /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -58,16 +58,16 @@ compare_values(-76.017259983350470, psi4.get_variable("SCF TOTAL ENERGY"), 6, "S
 compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:51 2017
+*** tstart() called on CHE-FEVANGE-01I
+*** at Mon May 29 20:42:17 2017
 
    => Loading Basis Set <=
 
     Name: 6-31G**
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   140 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
-    atoms 2-3 entry H          line    35 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 1   entry O          line   141 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
+    atoms 2-3 entry H          line    36 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/6-31gss.gbs 
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity in the molecule input block.
@@ -75,7 +75,8 @@ compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -97,7 +98,7 @@ compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
   Rotational constants: A =     24.35462  B =     13.63610  C =      8.74166 [cm^-1]
   Rotational constants: A = 730133.20983  B = 408800.03934  C = 262068.46197 [MHz]
-  Nuclear repulsion =    8.804686618639055
+  Nuclear repulsion =    8.804686618639057
 
   Charge       = 0
   Multiplicity = 1
@@ -131,8 +132,8 @@ compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST
     Name: (6-31G** AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Pre-Iterations <==
 
@@ -181,17 +182,17 @@ compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -75.92410988811301   -7.59241e+01   1.07940e-01 
-   @DF-RHF iter   1:   -75.97897018525356   -5.48603e-02   1.96991e-02 
-   @DF-RHF iter   2:   -76.00832996890546   -2.93598e-02   1.05049e-02 DIIS
-   @DF-RHF iter   3:   -76.01656182645057   -8.23186e-03   1.70357e-03 DIIS
-   @DF-RHF iter   4:   -76.01717477420485   -6.12948e-04   5.42585e-04 DIIS
-   @DF-RHF iter   5:   -76.01725612801941   -8.13538e-05   1.06564e-04 DIIS
-   @DF-RHF iter   6:   -76.01725989624983   -3.76823e-06   1.66204e-05 DIIS
-   @DF-RHF iter   7:   -76.01725998148453   -8.52347e-08   2.73797e-06 DIIS
-   @DF-RHF iter   8:   -76.01725998333121   -1.84669e-09   3.49212e-07 DIIS
-   @DF-RHF iter   9:   -76.01725998335534   -2.41300e-11   3.01381e-08 DIIS
-   @DF-RHF iter  10:   -76.01725998335550   -1.56319e-13   3.47380e-09 DIIS
+   @DF-RHF iter   0:   -75.91131636997139   -7.59113e+01   1.07844e-01 
+   @DF-RHF iter   1:   -75.97781077166557   -6.64944e-02   2.01717e-02 
+   @DF-RHF iter   2:   -76.00796714618961   -3.01564e-02   1.08745e-02 DIIS
+   @DF-RHF iter   3:   -76.01665151268307   -8.68437e-03   1.63084e-03 DIIS
+   @DF-RHF iter   4:   -76.01718741124942   -5.35899e-04   5.16989e-04 DIIS
+   @DF-RHF iter   5:   -76.01725653383956   -6.91226e-05   1.01491e-04 DIIS
+   @DF-RHF iter   6:   -76.01725988347579   -3.34964e-06   1.73768e-05 DIIS
+   @DF-RHF iter   7:   -76.01725998100517   -9.75294e-08   2.98600e-06 DIIS
+   @DF-RHF iter   8:   -76.01725998332282   -2.31765e-09   3.45426e-07 DIIS
+   @DF-RHF iter   9:   -76.01725998334709   -2.42721e-11   2.92801e-08 DIIS
+   @DF-RHF iter  10:   -76.01725998334712   -2.84217e-14   2.86550e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -219,18 +220,14 @@ compare_values(-76.073028564767768, rasscf_energy, 6, 'RASSCF Energy')  #TEST
 
   Energy converged.
 
-  @DF-RHF Final Energy:   -76.01725998335550
+  @DF-RHF Final Energy:   -76.01725998334712
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              8.8046866186390549
-    One-Electron Energy =                -122.3893793598502810
-    Two-Electron Energy =                  37.5674327578557126
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0172599833555154
+    Nuclear Repulsion Energy =              8.8046866186390567
+    One-Electron Energy =                -122.3893793479468997
+    Two-Electron Energy =                  37.5674327459607369
+    Total Energy =                        -76.0172599833471168
 
 
 
@@ -239,34 +236,34 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 Properties computed using the SCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0351
+     X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1531
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8820     Total:     0.8820
+     X:     0.0000      Y:     0.0000      Z:     0.8820     Total:     0.8820
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.2417     Total:     2.2417
+     X:     0.0000      Y:     0.0000      Z:     2.2417     Total:     2.2417
 
 
-*** tstop() called on psinet at Mon May 15 15:35:52 2017
+*** tstop() called on CHE-FEVANGE-01I at Mon May 29 20:42:17 2017
 Module time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
    => Loading Basis Set <=
 
     Name: (6-31G** AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/fevange/Source/psi4/objdir/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
 
          ---------------------------------------------------------
@@ -347,7 +344,7 @@ Total time:
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):              3200
+    Memory (MB):               400
     Algorithm:                Core
     Integral Cache:           NONE
     Schwarz Cutoff:          1E-12
@@ -383,54 +380,54 @@ Total time:
    ==> Starting DF-MCSCF iterations <==
 
            Iter         Total Energy       Delta E   Orb RMS    CI RMS  NCI NORB
-   @DF-MCSCF  1:    -76.029648336927   -1.2388e-02  9.17e-03  3.06e-13    1    1  Initial CI
+   @DF-MCSCF  1:    -76.029648336910   -1.2388e-02  9.17e-03  4.05e-13    1    1  Initial CI
       Warning! Maxstep = 0.56, scaling to 0.50
-   @DF-MCSCF  2:    -76.068062191429   -3.8414e-02  1.22e-02  7.14e-06    5    1  TS
-   @DF-MCSCF  3:    -76.072163157978   -4.1010e-03  4.00e-03  8.55e-06    4    1  TS
-   @DF-MCSCF  4:    -76.072756718943   -5.9356e-04  1.69e-03  8.18e-07    5    1  TS, DIIS
-   @DF-MCSCF  5:    -76.072882463286   -1.2574e-04  1.08e-03  5.08e-07    5    1  TS, DIIS
-   @DF-MCSCF  6:    -76.072941819886   -5.9357e-05  8.28e-04  6.52e-07    5    1  TS, DIIS
-   @DF-MCSCF  7:    -76.072958337839   -1.6518e-05  6.77e-04  3.50e-07    5    1  TS, DIIS
-   @DF-MCSCF  8:    -76.072970850143   -1.2512e-05  5.85e-04  2.11e-07    5    1  TS, DIIS
-   @DF-MCSCF  9:    -76.072992753615   -2.1903e-05  4.57e-04  5.05e-08    6    1  TS, DIIS
-   @DF-MCSCF 10:    -76.073013500043   -2.0746e-05  2.46e-04  1.11e-07    6    1  TS, DIIS
-   @DF-MCSCF 11:    -76.073014222634   -7.2259e-07  1.85e-04  1.98e-07    5    1  TS, DIIS
-   @DF-MCSCF 12:    -76.073014692991   -4.7036e-07  1.24e-04  4.19e-08    6    1  TS, DIIS
-   @DF-MCSCF 13:    -76.073014853418   -1.6043e-07  8.25e-05  7.11e-08    5    1  TS, DIIS
-   @DF-MCSCF 14:    -76.073015048630   -1.9521e-07  7.83e-05  7.48e-08    5    1  TS, DIIS
-   @DF-MCSCF 15:    -76.073015631597   -5.8297e-07  6.68e-05  1.76e-08    6    1  TS, DIIS
-   @DF-MCSCF 16:    -76.073015892836   -2.6124e-07  5.17e-05  1.36e-08    6    1  TS, DIIS
-   @DF-MCSCF 17:    -76.073016194737   -3.0190e-07  4.72e-05  2.45e-08    6    1  TS, DIIS
-   @DF-MCSCF 18:    -76.073016241546   -4.6809e-08  4.90e-05  8.60e-09    6    1  TS, DIIS
-   @DF-MCSCF 19:    -76.073016333384   -9.1838e-08  4.51e-05  4.51e-08    5    1  TS, DIIS
-   @DF-MCSCF 20:    -76.073016399844   -6.6460e-08  4.52e-05  1.18e-08    6    1  TS, DIIS
-   @DF-MCSCF 21:    -76.073016521769   -1.2192e-07  4.47e-05  1.36e-08    6    1  TS, DIIS
-   @DF-MCSCF 22:    -76.073017400969   -8.7920e-07  4.25e-05  1.34e-08    7    1  TS, DIIS
-   @DF-MCSCF 23:    -76.073020627603   -3.2266e-06  3.53e-05  9.58e-09    8    1  TS, DIIS
-   @DF-MCSCF 24:    -76.073024031983   -3.4044e-06  3.00e-05  1.62e-08    8    1  TS, DIIS
-   @DF-MCSCF 25:    -76.073024415732   -3.8375e-07  2.78e-05  2.00e-08    7    1  TS, DIIS
-   @DF-MCSCF 26:    -76.073024480208   -6.4476e-08  2.76e-05  2.51e-08    6    1  TS, DIIS
-   @DF-MCSCF 27:    -76.073024519975   -3.9766e-08  2.67e-05  1.74e-08    6    1  TS, DIIS
-   @DF-MCSCF 28:    -76.073024651070   -1.3110e-07  2.63e-05  7.52e-09    7    1  TS, DIIS
-   @DF-MCSCF 29:    -76.073024875388   -2.2432e-07  2.57e-05  1.36e-08    7    1  TS, DIIS
-   @DF-MCSCF 30:    -76.073026093012   -1.2176e-06  2.24e-05  1.05e-08    8    1  TS, DIIS
-   @DF-MCSCF 31:    -76.073027755614   -1.6626e-06  1.50e-05  2.17e-08    8    1  TS, DIIS
-   @DF-MCSCF 32:    -76.073028298447   -5.4283e-07  6.72e-06  1.32e-08    8    1  TS, DIIS
-   @DF-MCSCF 33:    -76.073028499459   -2.0101e-07  5.87e-06  6.62e-10    9    1  TS, DIIS
-   @DF-MCSCF 34:    -76.073028520435   -2.0976e-08  3.62e-06  1.47e-09    8    1  TS, DIIS
+   @DF-MCSCF  2:    -76.068062191430   -3.8414e-02  1.22e-02  7.14e-06    5    1  TS
+   @DF-MCSCF  3:    -76.072163157968   -4.1010e-03  4.00e-03  8.55e-06    4    1  TS
+   @DF-MCSCF  4:    -76.072756718937   -5.9356e-04  1.69e-03  8.18e-07    5    1  TS, DIIS
+   @DF-MCSCF  5:    -76.072882463281   -1.2574e-04  1.08e-03  5.08e-07    5    1  TS, DIIS
+   @DF-MCSCF  6:    -76.072941819881   -5.9357e-05  8.28e-04  6.52e-07    5    1  TS, DIIS
+   @DF-MCSCF  7:    -76.072958337836   -1.6518e-05  6.77e-04  3.50e-07    5    1  TS, DIIS
+   @DF-MCSCF  8:    -76.072970850137   -1.2512e-05  5.85e-04  2.11e-07    5    1  TS, DIIS
+   @DF-MCSCF  9:    -76.072992753610   -2.1903e-05  4.57e-04  5.05e-08    6    1  TS, DIIS
+   @DF-MCSCF 10:    -76.073013500042   -2.0746e-05  2.46e-04  1.11e-07    6    1  TS, DIIS
+   @DF-MCSCF 11:    -76.073014222625   -7.2258e-07  1.85e-04  1.98e-07    5    1  TS, DIIS
+   @DF-MCSCF 12:    -76.073014692988   -4.7036e-07  1.24e-04  4.19e-08    6    1  TS, DIIS
+   @DF-MCSCF 13:    -76.073014853416   -1.6043e-07  8.25e-05  7.11e-08    5    1  TS, DIIS
+   @DF-MCSCF 14:    -76.073015048628   -1.9521e-07  7.83e-05  7.48e-08    5    1  TS, DIIS
+   @DF-MCSCF 15:    -76.073015631590   -5.8296e-07  6.68e-05  1.76e-08    6    1  TS, DIIS
+   @DF-MCSCF 16:    -76.073015892830   -2.6124e-07  5.17e-05  1.36e-08    6    1  TS, DIIS
+   @DF-MCSCF 17:    -76.073016194732   -3.0190e-07  4.72e-05  2.45e-08    6    1  TS, DIIS
+   @DF-MCSCF 18:    -76.073016241544   -4.6812e-08  4.90e-05  8.60e-09    6    1  TS, DIIS
+   @DF-MCSCF 19:    -76.073016333378   -9.1834e-08  4.51e-05  4.51e-08    5    1  TS, DIIS
+   @DF-MCSCF 20:    -76.073016399839   -6.6461e-08  4.52e-05  1.18e-08    6    1  TS, DIIS
+   @DF-MCSCF 21:    -76.073016521767   -1.2193e-07  4.47e-05  1.36e-08    6    1  TS, DIIS
+   @DF-MCSCF 22:    -76.073017400965   -8.7920e-07  4.25e-05  1.34e-08    7    1  TS, DIIS
+   @DF-MCSCF 23:    -76.073020627605   -3.2266e-06  3.53e-05  9.58e-09    8    1  TS, DIIS
+   @DF-MCSCF 24:    -76.073024031966   -3.4044e-06  3.00e-05  1.62e-08    8    1  TS, DIIS
+   @DF-MCSCF 25:    -76.073024415721   -3.8376e-07  2.78e-05  2.00e-08    7    1  TS, DIIS
+   @DF-MCSCF 26:    -76.073024480194   -6.4473e-08  2.76e-05  2.51e-08    6    1  TS, DIIS
+   @DF-MCSCF 27:    -76.073024519960   -3.9766e-08  2.67e-05  1.74e-08    6    1  TS, DIIS
+   @DF-MCSCF 28:    -76.073024651056   -1.3110e-07  2.63e-05  7.52e-09    7    1  TS, DIIS
+   @DF-MCSCF 29:    -76.073024875374   -2.2432e-07  2.57e-05  1.36e-08    7    1  TS, DIIS
+   @DF-MCSCF 30:    -76.073026093003   -1.2176e-06  2.24e-05  1.05e-08    8    1  TS, DIIS
+   @DF-MCSCF 31:    -76.073027755593   -1.6626e-06  1.50e-05  2.17e-08    8    1  TS, DIIS
+   @DF-MCSCF 32:    -76.073028298448   -5.4286e-07  6.72e-06  1.32e-08    8    1  TS, DIIS
+   @DF-MCSCF 33:    -76.073028499458   -2.0101e-07  5.87e-06  6.62e-10    9    1  TS, DIIS
+   @DF-MCSCF 34:    -76.073028520427   -2.0970e-08  3.62e-06  1.47e-09    8    1  TS, DIIS
 
           @DF-MCSCF has converged!
 
-   @DF-MCSCF Final Energy:  -76.073028520435059
+   @DF-MCSCF Final Energy:  -76.073028520427187
 
    ==> Energetics <==
 
-    SCF energy =          -76.017259983355515
-    Total MCSCF energy =  -76.073028520435059
+    SCF energy =          -76.017259983347117
+    Total MCSCF energy =  -76.073028520427187
 
    ==> MCSCF root 0 information <==
 
-    MCSCF Root 0 energy =   -76.073028520435059
+    MCSCF Root 0 energy =   -76.073028520427187
 
    Active Space Natural occupation numbers:
 
@@ -467,16 +464,16 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 Properties computed using the RASSCF density matrix
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0351
+     X:     0.0000      Y:     0.0000      Z:     1.0351
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.2177
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8174     Total:     0.8174
+     X:     0.0000      Y:     0.0000      Z:     0.8174     Total:     0.8174
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.0776     Total:     2.0776
+     X:     0.0000      Y:     0.0000      Z:     2.0776     Total:     2.0776
 
 	SCF Energy........................................................PASSED
 	RASSCF Energy.....................................................PASSED
