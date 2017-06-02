@@ -304,12 +304,6 @@ void export_mints(py::module& m)
             return ret;
         });
 
-//    py::class_<View>(m, "View")
-//        .def(py::init<SharedMatrix, const Dimension&, const Dimension&>())
-//        .def(py::init<SharedMatrix, const Dimension&, const Dimension&, const Dimension&,
-//                      const Dimension&>())
-//        .def("__call__", &View::operator(), "docstring");
-
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def(py::init<std::shared_ptr<Wavefunction>, char, bool, bool>())

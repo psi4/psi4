@@ -18,7 +18,6 @@ set(sources_list local.cc
                  twobody.cc
                  vector.cc
                  sobasis.cc
-                 view.cc
                  cartesianiter.cc
                  basisset.cc
                  electrostatic.cc

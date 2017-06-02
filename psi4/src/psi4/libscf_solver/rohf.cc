@@ -161,10 +161,6 @@ void ROHF::semicanonicalize()
     Slice bocc_slice(dim_zero,boccpi);
     Slice avir_slice(aoccpi,nmopi_);
     Slice bvir_slice(boccpi,nmopi_);
-//    View aOO(moFa, aoccpi, aoccpi);
-//    View aVV(moFa, avirpi, avirpi, aoccpi, aoccpi);
-//    View bOO(moFb, boccpi, boccpi);
-//    View bVV(moFb, bvirpi, bvirpi, boccpi, boccpi);
     SharedMatrix aFOO = moFa->get_block(aocc_slice,aocc_slice);
     SharedMatrix aFVV = moFa->get_block(avir_slice,avir_slice);
     SharedMatrix bFOO = moFb->get_block(bocc_slice,bocc_slice);
@@ -323,8 +319,6 @@ void ROHF::compute_orbital_gradient(bool save_diis)
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
     Dimension noccpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
-//    View vMOgradient(moFeff_, noccpi, virpi, dim_zero, doccpi_);
-//    SharedMatrix MOgradient = vMOgradient();
     Slice row_slice(dim_zero,noccpi);
     Slice col_slice(doccpi_,doccpi_ + virpi);
     SharedMatrix MOgradient = moFeff_->get_block(row_slice,col_slice);
@@ -342,20 +336,12 @@ void ROHF::compute_orbital_gradient(bool save_diis)
 
     // Grab inact-act and act-vir orbs
     // Ct_ is actuall (nmo x nmo)
-//    View vCia(Ct_, nmopi_, noccpi, dim_zero, dim_zero);
-//    SharedMatrix Cia = vCia();
     SharedMatrix Cia = Ct_->get_block({dim_zero,nmopi_},{dim_zero,noccpi});
-
-//    View vCav(Ct_, nmopi_, virpi, dim_zero, doccpi_);
-//    SharedMatrix Cav = vCav();
-    Slice col_slice_av(doccpi_,doccpi_ + virpi);
     SharedMatrix Cav = Ct_->get_block({dim_zero,nmopi_},{doccpi_,doccpi_ + virpi});
 
-    outfile->Printf("\n Got here 1");
     // Back transform MOgradient
     SharedMatrix gradient = Matrix::triplet(Cia, MOgradient, Cav, false, false, true);
     Drms_ = gradient->rms();
-    outfile->Printf("\n Got here 2");
 
     if(save_diis){
         if (initialized_diis_manager_ == false) {
@@ -599,13 +585,8 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
 
 
-//    View vCocc(Ca_, nsopi_, ret->rowspi(), dim_zero, dim_zero);
-//    SharedMatrix Cocc = vCocc();
     SharedMatrix Cocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,ret->rowspi()});
     Cocc->set_name("Cocc");
-
-//    View vCvir(Ca_, nsopi_, ret->colspi(), dim_zero, doccpi_);
-//    SharedMatrix Cvir = vCvir();
     SharedMatrix Cvir = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + ret->colspi()});
     Cvir->set_name("Cvir");
 
@@ -666,13 +647,9 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
     // If scf_type is DF we can do some extra JK voodo
     if ((options_.get_str("SCF_TYPE") == "DF") || (options_.get_str("SCF_TYPE") == "CD")){
 
-//        View vCdocc(Ca_, nsopi_, doccpi_, dim_zero, dim_zero);
-//        SharedMatrix Cdocc = vCdocc();
         SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
         Cdocc->set_name("Cdocc");
 
-//        View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
-//        SharedMatrix Csocc = vCsocc();
         SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
         Csocc->set_name("Csocc");
 
@@ -767,8 +744,6 @@ void ROHF::Hx(SharedMatrix x, SharedMatrix ret)
 
     }
     else{
-//        View vCdocc(Ca_, nsopi_, doccpi_, dim_zero, dim_zero);
-//        SharedMatrix Cdocc = vCdocc();
         SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
         Cdocc->set_name("Cdocc");
 
@@ -891,8 +866,6 @@ int ROHF::soscf_update()
     Dimension occpi = doccpi_ + soccpi_;
     Dimension virpi = nmopi_ - doccpi_;
 
-//    View vMOgradient(moFeff_, occpi, virpi, dim_zero, doccpi_);
-//    SharedMatrix Gradient = vMOgradient();
     SharedMatrix Gradient = moFeff_->get_block({dim_zero,occpi},{doccpi_,nmopi_});
     Gradient->scale(-4.0);
     SharedMatrix Precon = SharedMatrix(new Matrix("Precon", nirrep_, occpi, virpi));
@@ -1049,14 +1022,10 @@ void ROHF::form_G()
     C.clear();
 
     // Push back docc orbitals
-//    View vCdocc(Ca_, nsopi_, doccpi_);
-//    SharedMatrix Cdocc = vCdocc();
     SharedMatrix Cdocc = Ca_->get_block({dim_zero,nsopi_},{dim_zero,doccpi_});
     C.push_back(Cdocc);
 
     // Push back socc orbitals
-//    View vCsocc(Ca_, nsopi_, soccpi_, dim_zero, doccpi_);
-//    SharedMatrix Csocc = vCsocc();
     SharedMatrix Csocc = Ca_->get_block({dim_zero,nsopi_},{doccpi_,doccpi_ + soccpi_});
     C.push_back(Csocc);
 
@@ -1097,12 +1066,8 @@ bool ROHF::stability_analysis()
         SharedMatrix FIA(new Matrix("Alpha occ-vir MO basis Fock matrix", nalphapi_, nbvir));
         SharedMatrix Fia(new Matrix("Beta occ-vir MO basis Fock matrix", nalphapi_, nbvir));
 
-//        View Vocc(Ca_, nsopi_, nalphapi_, zero, zero);
-//        SharedMatrix Cocc = Vocc();
         SharedMatrix Cocc = Ca_->get_block({zero,nsopi_},{zero,nalphapi_});
         std::vector<SharedMatrix> virandsoc;
-//        View Vvirt(Ca_, nsopi_, navir,  zero, nalphapi_);
-//        View Vsocc(Ca_, nsopi_, soccpi, zero, doccpi_);
         virandsoc.push_back(Ca_->get_block({zero,nsopi_},{nalphapi_,nmopi_}));
         virandsoc.push_back(Ca_->get_block({zero,nsopi_},{doccpi_,nalphapi_}));
         SharedMatrix Cvir = Matrix::horzcat(virandsoc);
