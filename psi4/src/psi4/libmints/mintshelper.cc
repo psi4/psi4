@@ -793,12 +793,17 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     return I;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_grad_helper(int atom)
+std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
 {
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
 
     std::shared_ptr<IntegralFactory> factory(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     std::shared_ptr<TwoBodyAOInt>  ints (factory->eri(1));
-
 
     std::shared_ptr <BasisSet> bs1 = ints->basis1();
     std::shared_ptr <BasisSet> bs2 = ints->basis2();
@@ -813,9 +818,10 @@ std::vector<SharedMatrix> MintsHelper::ao_grad_helper(int atom)
     int natom = basisset_->molecule()->natom();
 
     std::vector<SharedMatrix> grad;
-        for (int p=0; p<3; p++)
-            grad.push_back(SharedMatrix(new Matrix("ao_grad",nbf1 * nbf2, nbf3 * nbf4)));
-      
+        for (int p=0; p<3; p++){
+            sprintf(lbl, "ao_tei_grad_%d_%s", atom, cartcomp[p]);
+            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
+      }
     const double *buffer = ints->buffer();
 
 
@@ -912,13 +918,25 @@ std::vector<SharedMatrix> MintsHelper::ao_grad_helper(int atom)
     return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_grad_helper(int atom, SharedMatrix C1, SharedMatrix C2,
+std::vector<SharedMatrix> MintsHelper::mo_tei_grad(int atom, SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
-    std::vector<SharedMatrix> ao_grad = ao_grad_helper(atom);
+
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
+
+    std::vector<SharedMatrix> ao_grad = ao_tei_grad(atom);
     std::vector<SharedMatrix> mo_grad;
-    for(int p=0; p<3; p++)
-        mo_grad.push_back(mo_eri_helper(ao_grad[p], C1, C2, C3, C4));
+    for(int p=0; p<3; p++){
+        sprintf(lbl, "mo_tei_grad_%d_%s", atom, cartcomp[p]);
+        SharedMatrix temp = mo_eri_helper(ao_grad[p], C1, C2, C3, C4) ;
+        temp->set_name(lbl);
+        mo_grad.push_back(temp);
+    }
     return mo_grad;
 }
 
