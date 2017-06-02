@@ -29,7 +29,6 @@
 #include <utility>
 #include <algorithm>
 #include "psi4/libmints/writer.h"
-#include "psi4/libmints/view.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/masses.h"

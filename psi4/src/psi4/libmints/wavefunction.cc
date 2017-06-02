@@ -34,7 +34,6 @@
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libparallel/parallel.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"

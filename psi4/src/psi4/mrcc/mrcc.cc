@@ -32,7 +32,6 @@
 
 #include "psi4/libscf_solver/rohf.h"
 
-#include "psi4/libmints/view.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libtrans/integraltransform.h"

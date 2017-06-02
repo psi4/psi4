@@ -43,7 +43,6 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libmints/view.h"
 #include "rohf.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"

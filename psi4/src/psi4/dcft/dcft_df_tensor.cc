@@ -39,7 +39,6 @@
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/twobody.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/basisset.h"
