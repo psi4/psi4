@@ -1941,7 +1941,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     static-limit optical rotation tensor is subtracted from the frequency-
     dependent tensor, or ``BOTH``. Note that, for optical rotation calculations,
     only the choices of ``VELOCITY`` or ``BOTH`` will yield origin-independent results. -*/
-    options.add_str("GAUGE","LENGTH", "LENGTH VELOCITY BOTH");
+    options.add_str("GAUGE","VELOCITY", "LENGTH VELOCITY BOTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
     /*- Convergence criterion for wavefunction (change) in perturbed CC equations. -*/
