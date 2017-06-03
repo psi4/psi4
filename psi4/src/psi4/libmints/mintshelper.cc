@@ -793,7 +793,7 @@ SharedMatrix MintsHelper::ao_helper(const std::string &label, std::shared_ptr<Tw
     return I;
 }
 
-std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
+std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints)
 {
     char lbl[32];
     char ** cartcomp;
@@ -802,8 +802,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
     cartcomp[1] = strdup("Y");
     cartcomp[2] = strdup("Z");
 
-    std::shared_ptr<IntegralFactory> factory(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    std::shared_ptr<TwoBodyAOInt>  ints (factory->eri(1));
+    //std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
 
     std::shared_ptr <BasisSet> bs1 = ints->basis1();
     std::shared_ptr <BasisSet> bs2 = ints->basis2();
@@ -815,11 +814,12 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
     int nbf3 = bs3->nbf();
     int nbf4 = bs4->nbf();
 
+
     int natom = basisset_->molecule()->natom();
 
     std::vector<SharedMatrix> grad;
         for (int p=0; p<3; p++){
-            sprintf(lbl, "ao_tei_grad_%d_%s", atom, cartcomp[p]);
+            sprintf(lbl, "ao_tei_deriv1_%d_%s", atom, cartcomp[p]);
             grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
       }
     const double *buffer = ints->buffer();
@@ -830,7 +830,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
             for (int R = 0; R < bs3->nshell(); R++) {
                 for (int S = 0; S < bs4->nshell(); S++) {
 
-                  ints->compute_shell_deriv1(P, Q, R, S);
+                  //ints->compute_shell_deriv1(P, Q, R, S);
 
                   int Psize = basisset_->shell(P).nfunction();
                   int Qsize = basisset_->shell(Q).nfunction();
@@ -859,6 +859,8 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
 
                   if( Pcenter!=atom && Qcenter!=atom && Rcenter!=atom && Scenter!=atom)
                       continue;
+
+                  ints->compute_shell_deriv1(P, Q, R, S);
 
                   for (int p = 0; p < Psize; p++) {
                       for (int q = 0; q < Qsize; q++) {
@@ -918,7 +920,24 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_grad(int atom)
     return grad;
 }
 
-std::vector<SharedMatrix> MintsHelper::mo_tei_grad(int atom, SharedMatrix C1, SharedMatrix C2,
+std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom)
+{
+    std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
+    return ao_tei_deriv1_helper(atom, ints);
+}
+
+std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+                                 std::shared_ptr <BasisSet> bs2,
+                                 std::shared_ptr <BasisSet> bs3,
+                                 std::shared_ptr <BasisSet> bs4) 
+{
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr <TwoBodyAOInt> ints(intf.eri(1));
+    return ao_tei_deriv1_helper(atom, ints);
+}
+
+std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
+                                 SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
 
@@ -929,16 +948,139 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_grad(int atom, SharedMatrix C1, Sh
     cartcomp[1] = strdup("Y");
     cartcomp[2] = strdup("Z");
 
-    std::vector<SharedMatrix> ao_grad = ao_tei_grad(atom);
+    std::vector<SharedMatrix> ao_grad = ao_tei_deriv1_helper(atom, ints);
     std::vector<SharedMatrix> mo_grad;
     for(int p=0; p<3; p++){
-        sprintf(lbl, "mo_tei_grad_%d_%s", atom, cartcomp[p]);
+        sprintf(lbl, "mo_tei_deriv1_%d_%s", atom, cartcomp[p]);
         SharedMatrix temp = mo_eri_helper(ao_grad[p], C1, C2, C3, C4) ;
         temp->set_name(lbl);
         mo_grad.push_back(temp);
     }
     return mo_grad;
 }
+
+
+std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2,
+                                 SharedMatrix C3, SharedMatrix C4)
+{
+    std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
+    return mo_tei_deriv1_helper(atom, ints, C1, C2, C3, C4);
+}
+
+std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+                                 std::shared_ptr <BasisSet> bs2,
+                                 std::shared_ptr <BasisSet> bs3,
+                                 std::shared_ptr <BasisSet> bs4,
+                                 SharedMatrix C1, SharedMatrix C2, 
+                                 SharedMatrix C3, SharedMatrix C4)
+{
+
+    IntegralFactory intf(bs1, bs2, bs3, bs4);
+    std::shared_ptr <TwoBodyAOInt> ints(intf.eri(1));
+    return mo_tei_deriv1_helper(atom, ints, C1, C2, C3, C4);
+}
+
+
+
+/*std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
+{
+
+        char lbl[32];
+        char ** cartcomp;
+        cartcomp = (char **) malloc (3 * sizeof(char *));
+        cartcomp[0] = strdup("X");
+        cartcomp[1] = strdup("Y");
+        cartcomp[2] = strdup("Z");
+
+        int natom = basisset_->molecule()->natom();
+
+        std::vector<SharedMatrix> grad;
+        for (int p=0; p<3; p++){
+            sprintf(lbl, "ao_kinetic_energy_deriv1_%d_%s", atom, cartcomp[p]);
+            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
+      }
+
+
+        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        const double* buffer = Tint->buffer();
+
+
+
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            for (int Q = 0; Q < basisset_->nshell(); Q++) {
+
+                //Tint->compute_shell_deriv1(P,Q);
+
+                int nP = basisset_->shell(P).nfunction();
+                int oP = basisset_->shell(P).function_index();
+                int aP = basisset_->shell(P).ncenter();
+
+                int nQ = basisset_->shell(Q).nfunction();
+                int oQ = basisset_->shell(Q).function_index();
+                int aQ = basisset_->shell(Q).ncenter();
+
+                int offset = nP * nQ;
+                const double* ref = buffer;
+                //double perm = (P == Q ? 1.0 : 2.0);
+
+                if( aP!=atom && aQ!=atom)
+                      continue;
+
+                Tint->compute_shell_deriv1(P,Q);
+
+                if (aP == atom){
+
+                // Px
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[0] += (*ref++);
+                    }
+                }
+
+                // Py
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[1] += (*ref++);
+                    }
+                }
+
+                // Pz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[2] += (*ref++);
+                    }
+                }
+             }
+
+                if (aQ == atom){
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[0] += (*ref++);
+                    }
+                }
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[1] += (*ref++);
+                    }
+                }
+                 // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[2] += (*ref++);
+                    }
+                }
+            }
+        }
+    }
+    
+    return Tp;
+
+}
+*/
+
 
 SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints, int M, int N, int P, int Q)
 {

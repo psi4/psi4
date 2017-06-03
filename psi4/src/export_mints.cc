@@ -705,6 +705,21 @@ void export_mints(py::module& m)
     typedef SharedMatrix (MintsHelper::*normal_eri2)(
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
         std::shared_ptr<BasisSet>);
+
+
+
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_tei_deriv1)(int);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_tei_deriv12)(int,
+        std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+        std::shared_ptr<BasisSet>);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv1)(int, SharedMatrix,
+        SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv12)(int,
+        std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+        std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+
+
+
     typedef SharedMatrix (MintsHelper::*normal_3c)(
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
 
@@ -782,8 +797,10 @@ void export_mints(py::module& m)
         .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals",
               py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
-        .def("ao_tei_grad", &MintsHelper::ao_grad_helper, "docstring")
-        .def("mo_tei_grad", &MintsHelper::mo_tei_grad, "docstring")
+        .def("ao_tei_deriv1", normal_ao_tei_deriv1(&MintsHelper::ao_tei_deriv1), "docstring")
+        .def("ao_tei_deriv1", normal_ao_tei_deriv12(&MintsHelper::ao_tei_deriv1), "docstring")
+        .def("mo_tei_deriv1", normal_mo_tei_deriv1(&MintsHelper::mo_tei_deriv1), "docstring")
+        .def("mo_tei_deriv1", normal_mo_tei_deriv12(&MintsHelper::mo_tei_deriv1), "docstring")
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
