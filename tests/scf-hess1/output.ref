@@ -1,0 +1,818 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.2a1.dev212 
+
+                         Git: Rev {post1p1} 906cb98 dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 01 June 2017 01:31PM
+
+    Process ID:  35630
+    PSIDATADIR: /home/psilocaluser/gits/hrw-lab/objdir36/stage/usr/local/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
+
+psi3_hess = np.array([                                                                                    #TEST
+    [ 0.6349786,-0.0002790,-0.0000000,-0.3185355, 0.2164913, 0.0000000,-0.3164431,-0.2162124, 0.0000000], #TEST
+    [-0.0002790, 0.8039939,-0.0000000, 0.3373248,-0.4009174,-0.0000000,-0.3370458,-0.4030765, 0.0000000], #TEST
+    [-0.0000000,-0.0000000,-0.0000130, 0.0000000,-0.0000000,-0.0000008, 0.0000000, 0.0000000, 0.0000138], #TEST
+    [-0.3185355, 0.3373248, 0.0000000, 0.3011910,-0.2770123,-0.0000000, 0.0173445,-0.0603125, 0.0000000], #TEST
+    [ 0.2164913,-0.4009174,-0.0000000,-0.2770123, 0.4378681, 0.0000000, 0.0605209,-0.0369508,-0.0000000], #TEST
+    [ 0.0000000,-0.0000000,-0.0000008,-0.0000000, 0.0000000,-0.0000069, 0.0000000, 0.0000000, 0.0000077], #TEST
+    [-0.3164431,-0.3370458, 0.0000000, 0.0173445, 0.0605209, 0.0000000, 0.2990986, 0.2765248,-0.0000000], #TEST
+    [-0.2162124,-0.4030765, 0.0000000,-0.0603125,-0.0369508, 0.0000000, 0.2765248, 0.4400273,-0.0000000], #TEST
+    [ 0.0000000, 0.0000000, 0.0000138, 0.0000000,-0.0000000, 0.0000077,-0.0000000,-0.0000000,-0.0000215]  #TEST
+])                                                                                                        #TEST
+
+molecule {
+units bohr
+nocom
+noreorient
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+set {
+  puream false
+  df_scf_guess false
+  scf_type pk
+  guess sad
+  basis sto-3g
+  d_convergence 10
+}
+
+psi4_hess = hessian('scf')
+
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "STO-3G Hessian") #TEST
+
+# Clean out scratch files and go again with cc-pVDZ
+psi4.clean()
+
+psi3_hess = np.array([                                                                                    #TEST
+    [ 0.4644069,-0.0001622,-0.0000000,-0.2329078, 0.1572370, 0.0000000,-0.2314991,-0.1570748, 0.0000000], #TEST
+    [-0.0001622, 0.5691441, 0.0000000, 0.2174186,-0.2838372,-0.0000000,-0.2172564,-0.2853069, 0.0000000], #TEST
+    [-0.0000000, 0.0000000, 0.0509099, 0.0000000, 0.0000000,-0.0254596, 0.0000000,-0.0000000,-0.0254502], #TEST
+    [-0.2329078, 0.2174186, 0.0000000, 0.2177992,-0.1874277,-0.0000000, 0.0151086,-0.0299909, 0.0000000], #TEST
+    [ 0.1572370,-0.2838372, 0.0000000,-0.1874277, 0.3206988, 0.0000000, 0.0301908,-0.0368616,-0.0000000], #TEST
+    [ 0.0000000,-0.0000000,-0.0254596,-0.0000000, 0.0000000, 0.0225767, 0.0000000, 0.0000000, 0.0028829], #TEST
+    [-0.2314991,-0.2172564, 0.0000000, 0.0151086, 0.0301908, 0.0000000, 0.2163905, 0.1870657,-0.0000000], #TEST
+    [-0.1570748,-0.2853069,-0.0000000,-0.0299909,-0.0368616, 0.0000000, 0.1870657, 0.3221685,-0.0000000], #TEST
+    [ 0.0000000, 0.0000000,-0.0254502, 0.0000000,-0.0000000, 0.0028829,-0.0000000,-0.0000000, 0.0225673]  #TEST
+])                                                                                                        #TEST
+
+set {
+  puream true
+  basis cc-pvdz
+}
+
+psi4_hess = hessian('scf')
+
+compare_arrays(psi3_hess, psi4_hess, 1E-7, "cc-pVDZ Hessian") #TEST
+--------------------------------------------------------------------------
+hessian() will perform analytic frequency computation.
+
+*** tstart() called on psinet
+*** at Thu Jun  1 13:31:17 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /home/psilocaluser/gits/hrw-lab/objdir36/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /home/psilocaluser/gits/hrw-lab/objdir36/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.134467872279     0.000255539126     0.000000000000    15.994914619560
+           H         -1.069804624577     1.430455315728     0.000000000000     1.007825032070
+           H         -1.064298089419    -1.434510907104     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54251  B = 436334.11675  C = 268547.31284 [MHz]
+  Nuclear repulsion =    8.906699592615714
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'         6       6       0       0       0       0
+     A"         1       1       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 3.6316582588E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -74.73226573522375   -7.47323e+01   2.31112e-01 
+   @RHF iter   1:   -74.91418586210034   -1.81920e-01   4.00103e-02 
+   @RHF iter   2:   -74.96377105182079   -4.95852e-02   7.17911e-03 DIIS
+   @RHF iter   3:   -74.96548835255690   -1.71730e-03   2.66616e-03 DIIS
+   @RHF iter   4:   -74.96589819068119   -4.09838e-04   2.62349e-04 DIIS
+   @RHF iter   5:   -74.96590116523753   -2.97456e-06   2.69107e-05 DIIS
+   @RHF iter   6:   -74.96590118977521   -2.45377e-08   4.65017e-07 DIIS
+   @RHF iter   7:   -74.96590118978119   -5.98277e-12   2.28865e-08 DIIS
+   @RHF iter   8:   -74.96590118978126   -7.10543e-14   3.90621e-09 DIIS
+   @RHF iter   9:   -74.96590118978125    1.42109e-14   2.24080e-10 DIIS
+   @RHF iter  10:   -74.96590118978119    5.68434e-14   1.47813e-11 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.251579     2Ap    -1.257564     3Ap    -0.593858  
+       4Ap    -0.459743     1App   -0.392621  
+
+    Virtual:                                                              
+
+       5Ap     0.581822     6Ap     0.692688  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.96590118978119
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157144
+    One-Electron Energy =                -121.8344691615235291
+    Two-Electron Energy =                  37.9618683791266278
+    Total Energy =                        -74.9659011897811922
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.3859      Y:     0.0007      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.6725      Y:    -0.0013      Z:     0.0000     Total:     0.6725
+
+  Dipole Moment: (Debye)
+     X:    -1.7093      Y:    -0.0033      Z:     0.0000     Total:     1.7093
+
+
+*** tstop() called on psinet at Thu Jun  1 13:31:18 2017
+Module time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on psinet
+*** at Thu Jun  1 13:31:18 2017
+
+
+         ------------------------------------------------------------
+                                   SCF HESS                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.134467872279     0.000255539126     0.000000000000    15.994914619560
+           H         -1.069804624577     1.430455315728     0.000000000000     1.007825032070
+           H         -1.064298089419    -1.434510907104     0.000000000000     1.007825032070
+
+  Nuclear repulsion =    8.906699592615714
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    2
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 812 doubles for integral storage.
+  We computed 120 shell quartets total.
+  Whereas there are 120 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+         ------------------------------------------------------------
+                                     CPHF                           
+                                  Rob Parrish                       
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.134467872279     0.000255539126     0.000000000000    15.994914619560
+           H         -1.069804624577     1.430455315728     0.000000000000     1.007825032070
+           H         -1.064298089419    -1.434510907104     0.000000000000     1.007825032070
+
+  Nuclear repulsion =    8.906699592615714
+  Reference energy  =  -74.965901189781192
+
+  ==> Basis Set <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> CGRSolver (by Rob Parrish) <==
+
+   Number of roots    =         9
+   Preconditioning    =    JACOBI
+   Convergence cutoff =     1E-06
+   Maximum iterations =       100
+
+  ==> CPHFRHamiltonian (by Rob Parrish) <== 
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  ==> CPHF Iterations <==
+
+  => Iterations <=
+
+             Iter  Converged  Remaining    Residual
+  CGR           1          0          9   6.928E-02
+  CGR           2          3          6   1.020E-02
+  CGR           3          3          6   1.225E-03
+  CGR           4          3          6   2.662E-04
+  CGR           5          5          4   3.590E-05
+  CGR           6          9          0   3.039E-07
+
+    CGRSolver converged.
+
+  ## Total Hessian (Symmetry 0) ##
+  Irrep: 1 Size: 9 x 9
+
+                 1                   2                   3                   4                   5
+
+    1     0.63497862538875    -0.00027896869647     0.00000000000000    -0.31853552033260     0.21649132384222
+    2    -0.00027896869647     0.80399389224004     0.00000000000000     0.33732475097622    -0.40091737319740
+    3     0.00000000000000     0.00000000000000    -0.00001300512354     0.00000000000000     0.00000000000000
+    4    -0.31853552033260     0.33732475097622     0.00000000000000     0.30119099856992    -0.27701227296838
+    5     0.21649132384222    -0.40091737319740     0.00000000000000    -0.27701227296838     0.43786813720924
+    6     0.00000000000000     0.00000000000000    -0.00000079797349     0.00000000000000     0.00000000000000
+    7    -0.31644310505545    -0.33704578227975     0.00000000000000     0.01734452176269     0.06052094912617
+    8    -0.21621235514575    -0.40307651904195     0.00000000000000    -0.06031247800784    -0.03695076401184
+    9     0.00000000000000     0.00000000000000     0.00001380309770     0.00000000000000     0.00000000000000
+
+                 6                   7                   8                   9
+
+    1     0.00000000000000    -0.31644310505545    -0.21621235514575     0.00000000000000
+    2     0.00000000000000    -0.33704578227975    -0.40307651904195     0.00000000000000
+    3    -0.00000079797349     0.00000000000000     0.00000000000000     0.00001380309770
+    4     0.00000000000000     0.01734452176269    -0.06031247800784     0.00000000000000
+    5     0.00000000000000     0.06052094912617    -0.03695076401184     0.00000000000000
+    6    -0.00000687666196     0.00000000000000     0.00000000000000     0.00000767463546
+    7     0.00000000000000     0.29909858329276     0.27652483315358     0.00000000000000
+    8     0.00000000000000     0.27652483315358     0.44002728305379     0.00000000000000
+    9     0.00000767463546     0.00000000000000     0.00000000000000    -0.00002147773316
+
+
+
+
+*** tstop() called on psinet at Thu Jun  1 13:31:18 2017
+Module time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	STO-3G Hessian....................................................PASSED
+hessian() will perform analytic frequency computation.
+
+*** tstart() called on psinet
+*** at Thu Jun  1 13:31:18 2017
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   191 file /home/psilocaluser/gits/hrw-lab/objdir36/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    21 file /home/psilocaluser/gits/hrw-lab/objdir36/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.134467872279     0.000255539126     0.000000000000    15.994914619560
+           H         -1.069804624577     1.430455315728     0.000000000000     1.007825032070
+           H         -1.064298089419    -1.434510907104     0.000000000000     1.007825032070
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     23.29493  B =     14.55454  C =      8.95777 [cm^-1]
+  Rotational constants: A = 698364.54251  B = 436334.11675  C = 268547.31284 [MHz]
+  Nuclear repulsion =    8.906699592615714
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        18      18       0       0       0       0
+     A"         6       6       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  Minimum eigenvalue in the overlap matrix is 3.5860806671E-02.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:   -76.02732205133037   -7.60273e+01   8.44739e-02 
+   @RHF iter   1:   -75.96710138554504    6.02207e-02   1.74954e-02 
+   @RHF iter   2:   -76.01078257434087   -4.36812e-02   9.23616e-03 DIIS
+   @RHF iter   3:   -76.02193406739208   -1.11515e-02   1.79813e-03 DIIS
+   @RHF iter   4:   -76.02301369160313   -1.07962e-03   5.09391e-04 DIIS
+   @RHF iter   5:   -76.02312129576376   -1.07604e-04   8.84065e-05 DIIS
+   @RHF iter   6:   -76.02312541383117   -4.11807e-06   1.94629e-05 DIIS
+   @RHF iter   7:   -76.02312560893066   -1.95099e-07   3.12910e-06 DIIS
+   @RHF iter   8:   -76.02312561365305   -4.72239e-09   3.55290e-07 DIIS
+   @RHF iter   9:   -76.02312561369895   -4.59011e-11   3.03923e-08 DIIS
+   @RHF iter  10:   -76.02312561369915   -1.98952e-13   2.95742e-09 DIIS
+   @RHF iter  11:   -76.02312561369914    1.42109e-14   5.11840e-10 DIIS
+   @RHF iter  12:   -76.02312561369918   -4.26326e-14   3.74725e-11 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -20.558535     2Ap    -1.324480     3Ap    -0.674236  
+       4Ap    -0.569759     1App   -0.492701  
+
+    Virtual:                                                              
+
+       5Ap     0.179149     6Ap     0.251532     7Ap     0.753309  
+       8Ap     0.843857     9Ap     1.169745     2App    1.197957  
+      10Ap     1.260578    11Ap     1.407241     3App    1.483241  
+       4App    1.645005    12Ap     1.865506    13Ap     1.925770  
+      14Ap     2.370613    15Ap     2.420268     5App    3.278677  
+       6App    3.291778    16Ap     3.476681    17Ap     3.808091  
+      18Ap     4.132673  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02312561369918
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.9066995926157144
+    One-Electron Energy =                -122.6202273473369075
+    Two-Electron Energy =                  37.6904021410220196
+    Total Energy =                        -76.0231256136991789
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:    -1.0584      Y:    -0.0020      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2111      Y:     0.0004      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.8473      Y:    -0.0016      Z:     0.0000     Total:     0.8473
+
+  Dipole Moment: (Debye)
+     X:    -2.1536      Y:    -0.0041      Z:     0.0000     Total:     2.1536
+
+
+*** tstop() called on psinet at Thu Jun  1 13:31:18 2017
+Module time:
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on psinet
+*** at Thu Jun  1 13:31:18 2017
+
+
+         ------------------------------------------------------------
+                                   SCF HESS                          
+                          Rob Parrish, Justin Turney,                
+                       Andy Simmonett, and Alex Sokolov              
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.134467872279     0.000255539126     0.000000000000    15.994914619560
+           H         -1.069804624577     1.430455315728     0.000000000000     1.007825032070
+           H         -1.064298089419    -1.434510907104     0.000000000000     1.007825032070
+
+  Nuclear repulsion =    8.906699592615714
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> DirectJKGrad: Integral-Direct SCF Gradients <==
+
+    Gradient:                    2
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          0E+00
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+         ------------------------------------------------------------
+                                     CPHF                           
+                                  Rob Parrish                       
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.134467872279     0.000255539126     0.000000000000    15.994914619560
+           H         -1.069804624577     1.430455315728     0.000000000000     1.007825032070
+           H         -1.064298089419    -1.434510907104     0.000000000000     1.007825032070
+
+  Nuclear repulsion =    8.906699592615714
+  Reference energy  =  -76.023125613699179
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> CGRSolver (by Rob Parrish) <==
+
+   Number of roots    =         9
+   Preconditioning    =    JACOBI
+   Convergence cutoff =     1E-06
+   Maximum iterations =       100
+
+  ==> CPHFRHamiltonian (by Rob Parrish) <== 
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               450
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+  ==> CPHF Iterations <==
+
+  => Iterations <=
+
+             Iter  Converged  Remaining    Residual
+  CGR           1          0          9   1.205E-01
+  CGR           2          0          9   2.629E-02
+  CGR           3          0          9   6.673E-03
+  CGR           4          0          9   1.046E-03
+  CGR           5          0          9   1.821E-04
+  CGR           6          0          9   3.511E-05
+  CGR           7          1          8   6.958E-06
+  CGR           8          5          4   1.273E-06
+  CGR           9          9          0   1.623E-07
+
+    CGRSolver converged.
+
+  ## Total Hessian (Symmetry 0) ##
+  Irrep: 1 Size: 9 x 9
+
+                 1                   2                   3                   4                   5
+
+    1     0.46440692020340    -0.00016217026536     0.00000000000000    -0.23290778564416     0.15723697187336
+    2    -0.00016217026536     0.56914406454506     0.00000000000000     0.21741859894804    -0.28383716570672
+    3     0.00000000000000     0.00000000000000     0.05090987977671     0.00000000000000     0.00000000000000
+    4    -0.23290778564416     0.21741859894804     0.00000000000000     0.21779915849107    -0.18742773410917
+    5     0.15723697187336    -0.28383716570672     0.00000000000000    -0.18742773410917     0.32069879090257
+    6     0.00000000000000     0.00000000000000    -0.02545964556987     0.00000000000000     0.00000000000000
+    7    -0.23149913457380    -0.21725642868270     0.00000000000000     0.01510862715309     0.03019076223581
+    8    -0.15707480160801    -0.28530689885270     0.00000000000000    -0.02999086483888    -0.03686162519585
+    9     0.00000000000000     0.00000000000000    -0.02545023422128     0.00000000000000     0.00000000000000
+
+                 6                   7                   8                   9
+
+    1     0.00000000000000    -0.23149913457380    -0.15707480160801     0.00000000000000
+    2     0.00000000000000    -0.21725642868270    -0.28530689885270     0.00000000000000
+    3    -0.02545964556987     0.00000000000000     0.00000000000000    -0.02545023422128
+    4     0.00000000000000     0.01510862715309    -0.02999086483888     0.00000000000000
+    5     0.00000000000000     0.03019076223581    -0.03686162519585     0.00000000000000
+    6     0.02257670891797     0.00000000000000     0.00000000000000     0.00288293665191
+    7     0.00000000000000     0.21639050742073     0.18706566644688     0.00000000000000
+    8     0.00000000000000     0.18706566644688     0.32216852404853     0.00000000000000
+    9     0.00288293665191     0.00000000000000     0.00000000000000     0.02256729756939
+
+
+
+
+*** tstop() called on psinet at Thu Jun  1 13:31:19 2017
+Module time:
+	user time   =       0.90 seconds =       0.01 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.84 seconds =       0.03 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+	cc-pVDZ Hessian...................................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

@@ -1391,6 +1391,33 @@ run via pytest.
 
     python -c "import psi4; psi4.test()"
 
+Output looks something like the below. ``PASSED`` in green is good
+(means test ran correctly); ``SKIPPED`` in yellow is good (means that
+not all software required for test is available); ``XPASS`` or ``XFAIL``
+in yellow is fine (unexpected pass or expected fail happens when we
+include tests that need particular conditions (*e.g.*, multiple cores)
+to run correctly); ``FAILED`` in red is bad. ::
+
+    test_addons.py::test_gdma PASSED
+    test_addons.py::test_mrcc SKIPPED
+    test_addons.py::test_chemps2 PASSED
+    test_addons.py::test_dftd3 PASSED
+    test_addons.py::test_libefp PASSED
+    test_addons.py::test_pcmsolver PASSED
+    test_addons.py::test_erd PASSED
+    test_addons.py::test_simint PASSED
+    test_addons.py::test_json PASSED
+    test_addons.py::test_cfour SKIPPED
+    test_addons.py::test_v2rdm_casscf PASSED
+    test_addons.py::test_grimme_3c PASSED
+    test_addons.py::test_dkh PASSED
+    test_psi4.py::test_psi4_basic PASSED
+    test_psi4.py::test_psi4_cc PASSED
+    test_psi4.py::test_psi4_cas PASSED
+    test_psi4.py::test_psi4_dfmp2 PASSED
+    test_psi4.py::test_psi4_sapt PASSED
+    test_psi4.py::test_psi4_scfproperty PASSED
+
 
 .. _`faq:writepsi4`:
 

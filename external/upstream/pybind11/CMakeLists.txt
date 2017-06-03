@@ -12,6 +12,8 @@ else()
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}  # unused, but needs working compiler
+                   -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}  # ditto
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DPYBIND11_TEST=OFF
         INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install

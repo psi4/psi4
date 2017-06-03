@@ -80,7 +80,7 @@ protected:
     //! The type of basis set this object encodes.
     BasisType basistype_;
 
-    //! vector of shells numbers sorted in acending AM order.
+    //! vector of shells numbers sorted in ascending AM order.
     std::vector<int> sorted_ao_shell_list_;
 
     //! The number of core electrons for each atom type

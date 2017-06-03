@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
-project(psi4-core LANGUAGES C CXX VERSION 1.0)
+project(psi4-core LANGUAGES C CXX VERSION 1.1)
 # no Fortran in psi4-core proper, but language needs to be declared
 #   for CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES to be populated so
 #   static Fortran add-ons can be linked
