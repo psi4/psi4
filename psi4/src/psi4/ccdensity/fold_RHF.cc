@@ -88,7 +88,7 @@ namespace psi { namespace ccdensity {
       occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
       openpi = moinfo.openpi;
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	outfile->Printf( "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
 	outfile->Printf(   "\t---------------------------------------------------\n");
 
@@ -172,7 +172,7 @@ namespace psi { namespace ccdensity {
       }
       global_dpd_->buf4_close(&G);
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	total_two_energy += two_energy;
 	outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
 
@@ -217,6 +217,7 @@ namespace psi { namespace ccdensity {
 	global_dpd_->buf4_mat_irrep_close(&G, h);
       }
 
+     if(params.debug_){
       /* Generate spin-adapted Gijka just for the energy calculation */
       global_dpd_->buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gijka - Gjika", 2);
       global_dpd_->buf4_sort_axpy(&G, PSIF_CC_GAMMA, qprs, 0, 10, "2 Gijka - Gjika", -1);
@@ -236,13 +237,14 @@ namespace psi { namespace ccdensity {
 	outfile->Printf( "\tIJKA energy                = %20.15f\n", two_energy);
 
       }
+    }
 
       global_dpd_->file2_mat_close(&D1);
       global_dpd_->file2_close(&D1);
       global_dpd_->file2_mat_close(&D2);
       global_dpd_->file2_close(&D2);
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	/* Generate spin-adapted Gijab jut for energy calculation */
 	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
 	global_dpd_->buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gijab - Gijba", 2);
@@ -333,7 +335,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->file2_mat_close(&D);
       global_dpd_->file2_close(&D);
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	two_energy = 0.0;
 	global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
 	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
@@ -356,7 +358,7 @@ namespace psi { namespace ccdensity {
 
       }
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	/* Generate spin-adapted Gciab just for energy calculation */
 	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
 	global_dpd_->buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gciab - Gciba", 2);
@@ -377,7 +379,7 @@ namespace psi { namespace ccdensity {
 
       }
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
 
 	global_dpd_->buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gabcd - Gabdc", 2);
@@ -393,7 +395,7 @@ namespace psi { namespace ccdensity {
 	outfile->Printf( "\tABCD energy                = %20.15f\n", two_energy);
       }
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
 	if (params.ground) {
 	  //outfile->Printf( "\tCCSD correlation energy    = %20.15f\n",
