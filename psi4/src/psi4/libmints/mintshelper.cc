@@ -867,7 +867,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
                           for (int r = 0; r < Rsize; r++) {
                               for (int s = 0; s < Ssize; s++) {
 
-                                    int i = (Poff + p) * nbf3 + Qoff + q;
+                                    int i = (Poff + p) * nbf2 + Qoff + q;
                                     int j = (Roff + r) * nbf4 + Soff + s;
 
 
@@ -982,7 +982,7 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
 
 
 
-/*std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint)
+std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint)
 {
 
         char lbl[32];
@@ -1003,28 +1003,26 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
         std::vector<SharedMatrix> grad;
         for (int p=0; p<3; p++){
             sprintf(lbl, "ao_kinetic_energy_deriv1_%d_%s", atom, cartcomp[p]);
-            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2)));
+            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1, nbf2)));
       }
 
 
         const double* buffer = Tint->buffer();
 
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
+        for (int P = 0; P < bs1->nshell(); P++) {
+            for (int Q = 0; Q < bs2->nshell(); Q++) {
 
                 //Tint->compute_shell_deriv1(P,Q);
 
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
+                int nP = bs1->shell(P).nfunction();
+                int oP = bs1->shell(P).function_index();
+                int aP = bs1->shell(P).ncenter();
 
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
+                int nQ = bs2->shell(Q).nfunction();
+                int oQ = bs2->shell(Q).function_index();
+                int aQ = bs2->shell(Q).ncenter();
 
-                int offset = nP * nQ;
-                const double* ref = buffer;
-                //double perm = (P == Q ? 1.0 : 2.0);
+                int offset = 0;
 
                 if( aP!=atom && aQ!=atom)
                       continue;
@@ -1036,54 +1034,71 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
                 // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[0] += (*ref++);
+                        grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
 
+               offset += nP*nQ;
                 // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[1] += (*ref++);
+                        grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
 
+               offset += nP*nQ;
                 // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[2] += (*ref++);
+                        grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+               offset += nP*nQ;
              }
+
+             else {offset += 3*nP*nQ ;}
+
 
                 if (aQ == atom){
                 // Qx
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[0] += (*ref++);
+                        grad[0]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+               offset += nP*nQ;
 
                 // Qy
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[1] += (*ref++);
+                        grad[1]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+               offset += nP*nQ;
                  // Qz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[2] += (*ref++);
+                        grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
                     }
                 }
+               offset += nP*nQ;
             }
+             else {offset += 3*nP*nQ ;}
         }
     }
     
-    return Tp;
+    return grad;
 
 }
 
-*/
+std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
+{
+  std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+  return ao_kinetic_energy_deriv1_helper(atom, Tint);
+}
+
+
+
 
 SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints, int M, int N, int P, int Q)
 {
