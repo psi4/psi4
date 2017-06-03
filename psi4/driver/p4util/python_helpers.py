@@ -38,31 +38,35 @@ from psi4 import core
 
 ## Python basis helps
 
+
 @staticmethod
 def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, puream=-1, return_atomlist=False, quiet=False):
-    horde = qcdb.libmintsbasisset.basishorde
-
     if key == 'ORBITAL':
         key = 'BASIS'
 
-    if horde and key:
-        tmp = horde.get(core.get_global_option(key), None)
-        if tmp:
-            target = tmp
-        elif target:
-            pass
-        elif tmp is None:
-            target = None
-    elif target:
-        pass
-    elif key is None:
-        target = core.get_global_option("BASIS")
-        key = 'BASIS'
-    else:
-        target = core.get_global_option(key)
+    def _resolve_target(key, target):
+        """Figure out exactly what basis set was intended by (key, target)
+        """
+        horde = qcdb.libmintsbasisset.basishorde
+        if not target:
+            if not key:
+                key = 'BASIS'
+            target = core.get_global_option(key)
+    
+        if target in horde:
+            return horde[target]
+        return target
+
+    # Figure out what exactly was meant by 'target'.
+    resolved_target = _resolve_target(key, target)
+
+    # resolved_target needs to be either a string or function for pyconstuct.
+    # if a string, they search for a gbs file with that name.
+    # if a function, it needs to apply a basis to each atom.
 
     basisdict = qcdb.BasisSet.pyconstruct(mol.create_psi4_string_from_molecule(),
-                                          key, target, fitrole, other, return_atomlist=return_atomlist)
+                                          key, resolved_target, fitrole, other, return_atomlist=return_atomlist)
+
     if return_atomlist:
         atom_basis_list = []
         for atbs in basisdict:
@@ -71,10 +75,17 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
             atom_basis_list.append(lmbs)
             #lmbs.print_detail_out()
         return atom_basis_list
+    if ((sys.version_info < (3,0) and isinstance(resolved_target, basestring)) or
+        (sys.version_info >= (3,0) and isinstance(resolved_target, str))):
+        basisdict['name'] = basisdict['name'].split('/')[-1].replace('.gbs', '')
+    if callable(resolved_target):
+        basisdict['name'] = resolved_target.__name__.replace('basisspec_psi4_yo__', '').upper()
 
     if not quiet:
         core.print_out(basisdict['message'])
 
+    if basisdict['key'] is None:
+        basisdict['key'] = 'BASIS'
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
     ecpbasis = None
     if 'ecp_shell_map' in basisdict:
