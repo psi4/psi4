@@ -69,7 +69,7 @@ void pertbar(const char *pert, int irrep, int anti)
   global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "%s_ME", prefix2);
   global_dpd_->file2_copy(&f, PSIF_CC_OEI, lbl);
-  global_dpd_->file2_print(&f, "outfile");
+  //global_dpd_->file2_print(&f, "outfile");
   global_dpd_->file2_close(&f);
 
   /** XXBAR_MI **/
@@ -87,7 +87,7 @@ void pertbar(const char *pert, int irrep, int anti)
   global_dpd_->contract222(&f, &t1, &fbar1, 0, 0, 1, 1);
   global_dpd_->file2_close(&t1);
   global_dpd_->file2_close(&f);
-  global_dpd_->file2_print(&fbar1, "outfile");
+  //global_dpd_->file2_print(&fbar1, "outfile");
   global_dpd_->file2_close(&fbar1);
 
   /** XXBAR_AE **/
@@ -105,7 +105,7 @@ void pertbar(const char *pert, int irrep, int anti)
   global_dpd_->contract222(&t1, &f, &fbar1, 1, 1, -1, 1);
   global_dpd_->file2_close(&t1);
   global_dpd_->file2_close(&f);
-  global_dpd_->file2_print(&fbar1, "outfile");
+  //global_dpd_->file2_print(&fbar1, "outfile");
   global_dpd_->file2_close(&fbar1);
 
   /** XXBAR_IA **/
@@ -151,7 +151,7 @@ void pertbar(const char *pert, int irrep, int anti)
   global_dpd_->file2_close(&t1);
   global_dpd_->file2_close(&z);
 
-  global_dpd_->file2_print(&fbar1, "outfile");
+  //global_dpd_->file2_print(&fbar1, "outfile");
   global_dpd_->file2_close(&fbar1);
 
   /** LBAR_MbIj **/
