@@ -81,7 +81,9 @@ void deanti_UHF(struct RHO_Params rho_params)
 {
   dpdfile2 h, d;
   dpdbuf4 G, G2, A, B, C, D, E, F;
-  double one_energy=0.0, two_energy=0.0, total_two_energy=0.0;
+
+ double one_energy=0.0, two_energy=0.0, total_two_energy=0.0;
+ if(params.debug_) {
 
   outfile->Printf( "\n\tEnergies re-computed from Mulliken density:\n");
   outfile->Printf(   "\t-------------------------------------------\n");
@@ -135,38 +137,47 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->file2_close(&d);
 
   outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
-
+  }
 
   /* G(Ij,Kl) = 1/2 G(Ij,Kl) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
   global_dpd_->buf4_scm(&G, 0.5);
+  if(params.debug_) {
   global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
   two_energy = 2*global_dpd_->buf4_dot(&A, &G);
   global_dpd_->buf4_close(&A);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tIjKl energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
-
+  } 
+  global_dpd_->buf4_close(&G);
   /* G(IJ,KL) = 1/2 G(IJ,KL) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
   global_dpd_->buf4_scm(&G, 0.5);
+  if(params.debug_) {
   global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <IJ|KL>");
   two_energy = global_dpd_->buf4_dot(&A, &G);
   global_dpd_->buf4_close(&A);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
+  global_dpd_->buf4_close(&G);
 
   /* G(ij,kl) = 1/2 G(ij,kl) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 12, 12, 0, "Gijkl");
   global_dpd_->buf4_scm(&G, 0.5);
+  if(params.debug_) {
   global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 0, "A <ij|kl>");
   two_energy = global_dpd_->buf4_dot(&A, &G);
   global_dpd_->buf4_close(&A);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tijkl energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
+  global_dpd_->buf4_close(&G);
 
+  if(params.debug_) {
   /* No change to G(IJ,KA) components */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 24, 22, 24, 0, "GIjKa");
   global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
@@ -197,6 +208,7 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->buf4_close(&G);
   outfile->Printf( "\tijka energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
 
   /* G(Ij,Ab) <-- G(Ij,Ab) - G(Ib,jA) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 28, 22, 28, 0, "GIjAb");
@@ -206,12 +218,15 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "GIbjA (Ij,Ab)");
   global_dpd_->buf4_axpy(&G2, &G, -1.0);
   global_dpd_->buf4_close(&G2);
+  if(params.debug_) {
   global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
   two_energy = 2 * global_dpd_->buf4_dot(&D, &G);
   global_dpd_->buf4_close(&D);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tIjAb energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
+  global_dpd_->buf4_close(&G);
 
   /* G(IJ,AB) <-- G(IJ,AB) - G(IB,JA) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 2, 7, 0, "GIJAB");
@@ -224,12 +239,15 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "GIBJA (IJ,AB)");
   global_dpd_->buf4_axpy(&G2, &G, -1.0);
   global_dpd_->buf4_close(&G2);
+  if(params.debug_) {
   global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ|AB>");
   two_energy = global_dpd_->buf4_dot(&D, &G);
   global_dpd_->buf4_close(&D);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tIJAB energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
+  global_dpd_->buf4_close(&G);
 
   /* G(ij,ab) <-- G(ij,ab) - G(ib,ja) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
@@ -242,13 +260,17 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->buf4_init(&G2, PSIF_CC_TMP0, 0, 10, 15, 10, 15, 0, "Gibja (ij,ab)");
   global_dpd_->buf4_axpy(&G2, &G, -1.0);
   global_dpd_->buf4_close(&G2);
+  if(params.debug_) {
   global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij|ab>");
   two_energy = global_dpd_->buf4_dot(&D, &G);
   global_dpd_->buf4_close(&D);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tijab energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
+  global_dpd_->buf4_close(&G);
 
+  if(params.debug_) {
   /* No change to G(IB,JA) components */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA|JB>");
@@ -311,16 +333,20 @@ void deanti_UHF(struct RHO_Params rho_params)
   global_dpd_->buf4_close(&G);
   outfile->Printf( "\tciab energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
 
   /* G(Ab,Cd) = 1/2 G(Ab,Cd) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 28, 28, 28, 28, 0, "GAbCd");
   global_dpd_->buf4_scm(&G, 0.5);
+  if(params.debug_) {
   global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
   two_energy = 2*global_dpd_->buf4_dot(&B, &G);
   global_dpd_->buf4_close(&B);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tAbCd energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
+  }
+  global_dpd_->buf4_close(&G);
 
   /* G(AB,CD) = 1/2 G(AB,CD) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 7, 7, 0, "GABCD");
@@ -335,19 +361,23 @@ void deanti_UHF(struct RHO_Params rho_params)
   /* G(ab,cd) = 1/2 G(ab,cd) */
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 15, 15, 17, 17, 0, "Gabcd");
   global_dpd_->buf4_scm(&G, 0.5);
+  if(params.debug_) {
   global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 15, 15, 15, 15, 0, "B <ab|cd>");
   two_energy = global_dpd_->buf4_dot(&B, &G);
   global_dpd_->buf4_close(&B);
-  global_dpd_->buf4_close(&G);
+  //global_dpd_->buf4_close(&G);
   outfile->Printf( "\tabcd energy                = %20.15f\n", two_energy);
   total_two_energy += two_energy;
-
+  }
+  global_dpd_->buf4_close(&G);
+  if(params.debug_) {
   outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
 
   outfile->Printf( "\t%-7s correlation energy = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy);
   outfile->Printf( "\tTotal %-7s energy       = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy + moinfo.eref);
+  }
 }
 
 }} // namespace psi::ccdensity

@@ -80,7 +80,7 @@ namespace psi { namespace ccdensity {
       double one_energy = 0.0, two_energy = 0.0, total_two_energy = 0.0;
       dpdbuf4 A, B, C, DInts, E, FInts;
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	outfile->Printf( "\n\tEnergies re-computed from Mulliken density:\n");
 	outfile->Printf(   "\t-------------------------------------------\n");
 
@@ -120,7 +120,7 @@ namespace psi { namespace ccdensity {
 
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "2 Gijkl - Gijlk");
       global_dpd_->buf4_copy(&G1, PSIF_CC_GAMMA, "GIjKl");
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
 	two_energy = global_dpd_->buf4_dot(&A, &G1);
 	global_dpd_->buf4_close(&A);
@@ -139,7 +139,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "2 Gijka - Gjika");
       /* The factor of 2 here is necessary because Gijka is multiplied by 1/2 in Gijka.cc */
       global_dpd_->buf4_scmcopy(&G1, PSIF_CC_GAMMA, "GIjKa", 2);
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
 	two_energy = global_dpd_->buf4_dot(&E, &G1);
 	global_dpd_->buf4_close(&E);
@@ -164,7 +164,7 @@ namespace psi { namespace ccdensity {
 
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "2 Gijab - Gijba");
       global_dpd_->buf4_scmcopy(&G1, PSIF_CC_GAMMA, "GIjAb", 2);
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
 	two_energy = 2.0 * global_dpd_->buf4_dot(&DInts, &G1);
 	global_dpd_->buf4_close(&DInts);
@@ -180,7 +180,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_axpy(&G2, &G1, 1);
       global_dpd_->buf4_close(&G2);
       //  dpd_buf4_scm(&G1, 2);
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
 	two_energy = 2.0 * global_dpd_->buf4_dot(&C, &G1);
 	global_dpd_->buf4_close(&C);
@@ -200,7 +200,7 @@ namespace psi { namespace ccdensity {
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "2 Gciab - Gciba");
       /* The factor of 2 here is necessary because Gciab is multiplied by 1/2 in Gciab.cc */
       global_dpd_->buf4_scmcopy(&G1, PSIF_CC_GAMMA, "GCiAb", 2);
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
 	global_dpd_->buf4_sort(&FInts, PSIF_CC_FINTS, qpsr, 11, 5, "F <ai|bc>");
 	global_dpd_->buf4_close(&FInts);
@@ -223,7 +223,7 @@ namespace psi { namespace ccdensity {
 
       global_dpd_->buf4_init(&G1, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "2 Gabcd - Gabdc");
       global_dpd_->buf4_copy(&G1, PSIF_CC_GAMMA, "GAbCd");
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	global_dpd_->buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
 	two_energy = global_dpd_->buf4_dot(&B, &G1);
 	global_dpd_->buf4_close(&B);
@@ -233,7 +233,7 @@ namespace psi { namespace ccdensity {
 
       global_dpd_->buf4_close(&G1);
 
-      if(!params.aobasis) {
+      if(!params.aobasis && params.debug_) {
 	outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
 	if (params.ground) {
 	  //outfile->Printf( "\tCCSD correlation energy    = %20.15f\n",
