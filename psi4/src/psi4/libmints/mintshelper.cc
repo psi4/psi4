@@ -832,25 +832,25 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
 
                   //ints->compute_shell_deriv1(P, Q, R, S);
 
-                  int Psize = basisset_->shell(P).nfunction();
-                  int Qsize = basisset_->shell(Q).nfunction();
-                  int Rsize = basisset_->shell(R).nfunction();
-                  int Ssize = basisset_->shell(S).nfunction();
+                  int Psize = bs1->shell(P).nfunction();
+                  int Qsize = bs2->shell(Q).nfunction();
+                  int Rsize = bs3->shell(R).nfunction();
+                  int Ssize = bs4->shell(S).nfunction();
 
-                  int Pncart = basisset_->shell(P).ncartesian();
-                  int Qncart = basisset_->shell(Q).ncartesian();
-                  int Rncart = basisset_->shell(R).ncartesian();
-                  int Sncart = basisset_->shell(S).ncartesian();
+                  int Pncart = bs1->shell(P).ncartesian();
+                  int Qncart = bs2->shell(Q).ncartesian();
+                  int Rncart = bs3->shell(R).ncartesian();
+                  int Sncart = bs4->shell(S).ncartesian();
 
-                  int Poff = basisset_->shell(P).function_index();
-                  int Qoff = basisset_->shell(Q).function_index();
-                  int Roff = basisset_->shell(R).function_index();
-                  int Soff = basisset_->shell(S).function_index();
+                  int Poff = bs1->shell(P).function_index();
+                  int Qoff = bs2->shell(Q).function_index();
+                  int Roff = bs3->shell(R).function_index();
+                  int Soff = bs4->shell(S).function_index();
 
-                  int Pcenter = basisset_->shell(P).ncenter();
-                  int Qcenter = basisset_->shell(Q).ncenter();
-                  int Rcenter = basisset_->shell(R).ncenter();
-                  int Scenter = basisset_->shell(S).ncenter();
+                  int Pcenter = bs1->shell(P).ncenter();
+                  int Qcenter = bs2->shell(Q).ncenter();
+                  int Rcenter = bs3->shell(R).ncenter();
+                  int Scenter = bs4->shell(S).ncenter();
 
                   size_t stride = Pncart * Qncart * Rncart * Sncart;
                   size_t delta;
@@ -982,7 +982,7 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
 
 
 
-/*std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
+/*std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint)
 {
 
         char lbl[32];
@@ -992,19 +992,22 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
         cartcomp[1] = strdup("Y");
         cartcomp[2] = strdup("Z");
 
+        std::shared_ptr <BasisSet> bs1 = Tint->basis1();
+        std::shared_ptr <BasisSet> bs2 = Tint->basis2();
+
+        int nbf1 = bs1->nbf();
+        int nbf2 = bs2->nbf();
+
         int natom = basisset_->molecule()->natom();
 
         std::vector<SharedMatrix> grad;
         for (int p=0; p<3; p++){
             sprintf(lbl, "ao_kinetic_energy_deriv1_%d_%s", atom, cartcomp[p]);
-            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2, nbf3 * nbf4)));
+            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1 * nbf2)));
       }
 
 
-        std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
         const double* buffer = Tint->buffer();
-
-
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q < basisset_->nshell(); Q++) {
@@ -1079,8 +1082,8 @@ std::vector<SharedMatrix> MintsHelper::mo_tei_deriv1(int atom, std::shared_ptr <
     return Tp;
 
 }
-*/
 
+*/
 
 SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints, int M, int N, int P, int Q)
 {
