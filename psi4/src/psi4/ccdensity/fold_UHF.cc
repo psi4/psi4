@@ -93,6 +93,8 @@ void fold_UHF(struct RHO_Params rho_params)
   aocc_sym = moinfo.aocc_sym; avir_sym = moinfo.avir_sym;
   bocc_sym = moinfo.bocc_sym; bvir_sym = moinfo.bvir_sym;
 
+
+  if(params.debug_) {
   outfile->Printf( "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
   outfile->Printf(   "\t---------------------------------------------------\n");
 
@@ -168,7 +170,7 @@ void fold_UHF(struct RHO_Params rho_params)
   one_energy += this_energy;
 
   outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
-
+  }
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
   global_dpd_->file2_mat_init(&D);
@@ -254,10 +256,11 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
   two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
   global_dpd_->buf4_close(&Aints);
-
+  }
   global_dpd_->buf4_close(&G);
 
   global_dpd_->file2_mat_close(&D);
@@ -332,15 +335,18 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
   two_energy += global_dpd_->buf4_dot(&Aints, &G);
   global_dpd_->buf4_close(&Aints);
+  }
 
   global_dpd_->buf4_close(&G);
 
+  if(params.debug_){
   total_two_energy += two_energy;
   outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
-
+  }
 
   global_dpd_->file2_mat_close(&D);
   global_dpd_->file2_close(&D);
@@ -384,10 +390,12 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   two_energy = 0.0;
   global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
   two_energy += global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
+  }
 
   global_dpd_->buf4_close(&G);
 
@@ -434,10 +442,11 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_wrt(&G, h);
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
+  if(params.debug_){
   global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
   two_energy += global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
-
+  }
   global_dpd_->buf4_close(&G);
 
   global_dpd_->file2_mat_close(&D1);
@@ -481,9 +490,11 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
   two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
+  }
 
   global_dpd_->buf4_close(&G);
 
@@ -529,21 +540,25 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
   two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
   global_dpd_->buf4_close(&E);
+  }
 
   global_dpd_->buf4_close(&G);
 
+  if(params.debug_){
   total_two_energy += two_energy;
   outfile->Printf( "\tIJKA energy                = %20.15f\n", two_energy);
-
+  }
 
   global_dpd_->file2_mat_close(&D1);
   global_dpd_->file2_close(&D1);
   global_dpd_->file2_mat_close(&D2);
   global_dpd_->file2_close(&D2);
 
+  if(params.debug_){
   two_energy = 0.0;
   global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
@@ -567,6 +582,7 @@ void fold_UHF(struct RHO_Params rho_params)
   two_energy *= 2;
   total_two_energy += two_energy;
   outfile->Printf( "\tIJAB energy                = %20.15f\n", two_energy);
+  }
 
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
@@ -601,10 +617,12 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   two_energy = 0.0;
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA||JB>");
   two_energy += global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
+  }
 
   global_dpd_->buf4_close(&G);
 
@@ -644,9 +662,11 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia||jb>");
   two_energy += global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
+  }
 
   global_dpd_->buf4_close(&G);
 
@@ -686,9 +706,11 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 24, 24, 24, 24, 0, "C <Ia|Jb>");
   two_energy += global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
+  }
 
   global_dpd_->buf4_close(&G);
 
@@ -727,9 +749,11 @@ void fold_UHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
+  if(params.debug_){
   global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 27, 27, 27, 27, 0, "C <iA|jB>");
   two_energy += global_dpd_->buf4_dot(&C, &G);
   global_dpd_->buf4_close(&C);
+  }
 
   global_dpd_->buf4_close(&G);
 
@@ -737,6 +761,7 @@ void fold_UHF(struct RHO_Params rho_params)
   global_dpd_->file2_close(&D);
 
 
+  if(params.debug_){
   global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 24, 27, 24, 27, 0, "D <Ij|Ab> (Ib,jA)");
   global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 24, 27, 24, 27, 0, "GIbjA");
   two_energy -= global_dpd_->buf4_dot(&G, &DInts);
@@ -813,6 +838,7 @@ void fold_UHF(struct RHO_Params rho_params)
 	  one_energy + total_two_energy);
   outfile->Printf( "\tTotal %7s energy       = %20.15f\n", params.wfn == "CCSD_T" ? "CCSD(T)" : params.wfn.c_str(),
 	  one_energy + total_two_energy + moinfo.eref);
+   }
 }
 
 }} // namespace psi::ccdensity

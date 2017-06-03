@@ -88,7 +88,7 @@ void fold_ROHF(struct RHO_Params rho_params)
   occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
   openpi = moinfo.openpi;
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     outfile->Printf( "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
     outfile->Printf(   "\t---------------------------------------------------\n");
 
@@ -205,7 +205,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
     two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
@@ -254,7 +254,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
     two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
     global_dpd_->buf4_close(&Aints);
@@ -334,7 +334,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
     two_energy += global_dpd_->buf4_dot(&Aints, &G);
     global_dpd_->buf4_close(&Aints);
@@ -342,7 +342,7 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   global_dpd_->buf4_close(&G);
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     total_two_energy += two_energy;
     outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
 
@@ -390,7 +390,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
     two_energy += global_dpd_->buf4_dot(&E, &G);
@@ -442,7 +442,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_wrt(&G, h);
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
     two_energy += global_dpd_->buf4_dot(&E, &G);
     global_dpd_->buf4_close(&E);
@@ -491,7 +491,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
     two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
     global_dpd_->buf4_close(&E);
@@ -541,7 +541,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
     two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
     global_dpd_->buf4_close(&E);
@@ -549,7 +549,7 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   global_dpd_->buf4_close(&G);
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     total_two_energy += two_energy;
     outfile->Printf( "\tIJKA energy                = %20.15f\n", two_energy);
 
@@ -560,7 +560,7 @@ void fold_ROHF(struct RHO_Params rho_params)
   global_dpd_->file2_mat_close(&D2);
   global_dpd_->file2_close(&D2);
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
@@ -614,7 +614,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
@@ -659,7 +659,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
     global_dpd_->buf4_close(&C);
@@ -703,7 +703,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
     global_dpd_->buf4_close(&C);
@@ -746,7 +746,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
     global_dpd_->buf4_close(&C);
@@ -758,7 +758,7 @@ void fold_ROHF(struct RHO_Params rho_params)
   global_dpd_->file2_close(&D);
 
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
     two_energy -= global_dpd_->buf4_dot(&G, &DInts);
@@ -773,7 +773,7 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
     global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 7, "F(CI,AB)");
@@ -807,7 +807,7 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&BInts, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
@@ -824,7 +824,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_close(&BInts);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     total_two_energy += two_energy;
     outfile->Printf( "\tABCD energy                = %20.15f\n", two_energy);
     outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
