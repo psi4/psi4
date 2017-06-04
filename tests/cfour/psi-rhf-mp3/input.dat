@@ -4,7 +4,7 @@
 store = {}  #TEST
 test_psivars = ['nuclear repulsion energy', 'scf total energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'mp3 correlation energy', 'mp3 total energy', 'current energy', 'current correlation energy', 'current reference energy']  #TEST
 
-print '    <<<  RHF  >>>'
+print('    <<<  RHF  >>>')
 
 cfour {
 MP3 single-point energy calculation
@@ -47,7 +47,7 @@ set e_convergence 10
 
 energy('mp3')
 
-print test_psivars  #TEST
+print(test_psivars)  #TEST
 print_variables()
 for vari in test_psivars:  #TEST
     if vari == 'nuclear repulsion energy':  #TEST

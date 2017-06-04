@@ -1,6 +1,6 @@
 #! single-point MP2/qz2p on NH2 !nosample
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 ROHF-MP2 energy calculation 

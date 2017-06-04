@@ -75,14 +75,20 @@ set mp2_type conv
 set scf_type pk
 
 activate(watdim)
-optimize('c4-mp2')
+try:
+    optimize('c4-mp2')
+except psi4.ConvergenceError:
+    pass
 compare_matrices(grad_p4_mA, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
 
 clean()
 opt_clean()
 
 activate(methdim)
-optimize('c4-mp2')
+try:
+    optimize('c4-mp2')
+except psi4.ConvergenceError:
+    pass
 compare_matrices(grad_p4_mB, psi4.get_gradient(), 5, 'P4 vs C4 gradient w/ghosts')  #TEST
 
 opt_clean()
