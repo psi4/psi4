@@ -323,7 +323,7 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
         "CFOUR",
         ]
 
-    options = {'GLOBALS': {}}
+    options = collections.defaultdict(dict)
     commands = ''
     for opt in core.get_global_option_list():
         if core.has_global_option_changed(opt) or not changedOnly:
@@ -340,22 +340,19 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
             #    print('Appending module %s option %s value %s has_changed %s.' % \
             #        ('GLOBALS', opt, core.get_global_option(opt), core.has_global_option_changed(opt)))
         for module in modules:
-            try:
-                if core.has_option_changed(module, opt) or not changedOnly:
-                    if not module in options:
-                        options[module] = {}
+            if core.option_exists_in_module(module, opt):
+                hoc = core.has_option_changed(module, opt)
+                if hoc or not changedOnly:
                     val = core.get_option(module, opt)
                     options[module][opt] = {'value': val,
-                                            'has_changed': core.has_option_changed(module, opt)}
+                                            'has_changed': hoc}
                     if isinstance(val, basestring):
                         commands += """core.set_local_option('%s', '%s', '%s')\n""" % (module, opt, val)
                     else:
                         commands += """core.set_local_option('%s', '%s', %s)\n""" % (module, opt, val)
                     #if changedOnly:
                     #    print('Appending module %s option %s value %s has_changed %s.' % \
-                    #        (module, opt, core.get_option(module, opt), core.has_option_changed(module, opt)))
-            except RuntimeError:
-                pass
+                    #        (module, opt, core.get_option(module, opt), hoc))
 
     if commandsInsteadDict:
         return commands

@@ -853,6 +853,16 @@ bool py_psi_has_option_changed(std::string const& module, std::string const& key
     return data.has_changed();
 }
 
+bool py_psi_option_exists_in_module(std::string const& module, std::string const& key)
+{
+    std::string nonconst_key = to_upper(key);
+    Process::environment.options.set_current_module(module);
+    py_psi_prepare_options_for_module(module);
+    bool in_module = Process::environment.options.exists_in_active(nonconst_key);
+
+    return in_module;
+}
+    
 void py_psi_revoke_global_option_changed(std::string const& key)
 {
     std::string nonconst_key = to_upper(key);
@@ -1366,6 +1376,8 @@ PYBIND11_PLUGIN(core) {
     core.def("revoke_local_option_changed",
         py_psi_revoke_local_option_changed,
         "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    core.def("option_exists_in_module",
+        py_psi_option_exists_in_module, "Given a string of a keyword name *arg1* and a particular module *arg0*, returns whether *arg1* is a valid option for *arg0*.");
 
     // These return/set/print PSI variables found in Process::environment.globals
     core.def("has_variable",py_psi_has_variable,"Returns true if the PSI variable exists/is set.");
