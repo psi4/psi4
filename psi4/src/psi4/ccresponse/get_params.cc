@@ -204,10 +204,10 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options)
 
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");
-  if(params.prop == "ALL")
-    outfile->Printf( "\tProperty         =    POLARIZABILITY + ROTATION\n");
-  else
-    outfile->Printf( "\tProperty         =    %s\n", params.prop.c_str());
+  //if(params.prop == "ALL")
+  //  outfile->Printf( "\tProperty               =    POLARIZABILITY + ROTATION\n");
+  //else
+  outfile->Printf( "\tProperty         =    %s\n", params.prop.c_str());
   outfile->Printf( "\tReference wfn    =    %s\n",
           (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
   outfile->Printf( "\tMemory (Mbytes)  =    %5.1f\n",params.memory/1e6);
@@ -226,12 +226,19 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options)
   outfile->Printf( "\tIrrep RX         =    %s\n", moinfo.labels[moinfo.l_irreps[0]]);
   outfile->Printf( "\tIrrep RY         =    %s\n", moinfo.labels[moinfo.l_irreps[1]]);
   outfile->Printf( "\tIrrep RZ         =    %s\n", moinfo.labels[moinfo.l_irreps[2]]);
+  /*  Only length gauge calculations for polarizabilities */
+  if (params.prop == "POLARIZABILITY")
+  outfile->Printf( "\tGauge            =    LENGTH\n");
+  else { 
   outfile->Printf( "\tGauge            =    %s\n", params.gauge.c_str());
+  }
+
   for(i=0; i < params.nomega; i++) {
     if(params.omega[i] == 0.0)
-      outfile->Printf( "\tApplied field %2d =  0.000\n", i);
+       outfile->Printf( "\tApplied field %2d =  0.000\n", i);
+
     else
-      outfile->Printf( "\tApplied field %2d =    %5.3f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", i, params.omega[i],
+       outfile->Printf( "\tApplied field %2d =    %5.3f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", i, params.omega[i],
               (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
               pc_hartree2wavenumbers*params.omega[i]);
   }
