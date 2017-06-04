@@ -324,7 +324,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True)
         beta = valueHI.clone()
         beta.subtract(valueLO)
         beta.scale(1 / (zHI ** (-3) - zLO ** (-3)))
-        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
+        beta.name = 'Helgaker Corl (%s, %s) beta' % (zLO, zHI)
 
         value = valueHI.clone()
         value.scale(zHI ** 3)
@@ -884,18 +884,23 @@ def cbs(func, label, **kwargs):
     molstr = molecule.create_psi4_string_from_molecule()
     natom = molecule.natom()
 
-    # Establish method for reference energy
-    cbs_scf_wfn = kwargs.pop('scf_wfn', 'hf').lower()
-
-    if do_scf:
-        if cbs_scf_wfn not in VARH.keys():
-            raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_scf_wfn))
-
     # Establish method for correlation energy
     cbs_corl_wfn = kwargs.pop('corl_wfn', '').lower()
     if cbs_corl_wfn:
         do_corl = True
 
+    # Establish method for reference energy
+    if do_corl and cbs_corl_wfn.startswith('c4-'):
+        default_scf = 'c4-hf' 
+    else:
+        default_scf = 'hf'
+    cbs_scf_wfn = kwargs.pop('scf_wfn', default_scf).lower()
+
+    if do_scf:
+        if cbs_scf_wfn not in VARH.keys():
+            raise ValidationError("""Requested SCF method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_scf_wfn))
+
+    # ... resume correlation logic
     if do_corl:
         if cbs_corl_wfn not in VARH.keys():
             raise ValidationError("""Requested CORL method '%s' is not recognized. Add it to VARH in wrapper.py to proceed.""" % (cbs_corl_wfn))
@@ -1589,7 +1594,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['verbose'] = cbs_verbose
 
     # Find method and basis
-    if method_list[0] in ['scf', 'hf']:
+    if method_list[0] in ['scf', 'hf', 'c4-scf', 'c4-hf']:
         cbs_kwargs['scf_wfn'] = method_list[0]
         cbs_kwargs['scf_basis'] = basis_list[0]
         if 'scf_scheme' in kwargs:

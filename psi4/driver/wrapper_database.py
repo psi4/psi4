@@ -31,6 +31,7 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
+from __future__ import print_function
 from __future__ import absolute_import
 import re
 import os
@@ -220,6 +221,7 @@ def database(name, db_name, **kwargs):
     if kwargs.get('bsse_type', None) is not None:
         raise ValidationError("""Database: Cannot specify bsse_type for database. Use the cp keyword withing database instead.""")
 
+    allowoptexceeded = kwargs.get('allowoptexceeded', False)
     optstash = p4util.OptionsState(
         ['WRITER_FILE_LABEL'],
         ['SCF', 'REFERENCE'])
@@ -539,7 +541,14 @@ def database(name, db_name, **kwargs):
             exec(commands)
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, core.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            ERGT[rgt] = func(molecule=molecule, **kwargs)
+            if allowoptexceeded:
+                try:
+                    ERGT[rgt] = func(molecule=molecule, **kwargs)
+                except ConvergenceError:
+                    core.print_out("Optimization exceeded cycles for %s" % (rgt))
+                    ERGT[rgt] = 0.0
+            else:
+                ERGT[rgt] = func(molecule=molecule, **kwargs)
             core.print_variables()
             exec(actives)
             for envv in db_tabulate:
@@ -632,7 +641,8 @@ def database(name, db_name, **kwargs):
         db_rxn = dbse + '-' + str(rxn)
         for i in range(len(ACTV[db_rxn])):
             if abs(ERGT[ACTV[db_rxn][i]]) < 1.0e-12:
-                FAIL[rxn] = 1
+                if not allowoptexceeded:
+                    FAIL[rxn] = 1
 
     #   tabulate requested process::environment variables
     tables += """   For each VARIABLE requested by tabulate, a 'Reaction Value' will be formed from\n"""

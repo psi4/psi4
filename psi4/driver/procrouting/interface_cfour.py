@@ -389,8 +389,9 @@ def run_cfour(name, **kwargs):
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     #   Feb 2017 hack. Could get proper basis in skel wfn even if not through p4 basis kw
+    #   May 2017 hack: [0] to skip ecp
     gobas = core.get_global_option('BASIS') if core.get_global_option('BASIS') else 'sto-3g'
-    basis = core.BasisSet.build(molecule, "ORBITAL", gobas)
+    basis = core.BasisSet.build(molecule, "ORBITAL", gobas)[0]
     wfn = core.Wavefunction(molecule, basis)
 
     optstash.restore()
@@ -436,7 +437,7 @@ def write_zmat(name, dertype, molecule):
     """
     # Handle memory
     mem = int(0.000001 * core.get_memory())
-    if mem == 256:
+    if mem == 524:
         memcmd, memkw = '', {}
     else:
         memcmd, memkw = qcdb.cfour.muster_memory(mem)
@@ -458,7 +459,7 @@ def write_zmat(name, dertype, molecule):
         else:
             user_pg = molecule.schoenflies_symbol()
             molecule.reset_point_group('c1')  # need basis printed for *every* atom
-            qbs = core.BasisSet.build(molecule, "BASIS", core.get_global_option('BASIS'))
+            qbs = core.BasisSet.build(molecule, "BASIS", core.get_global_option('BASIS'))[0]
             with open('GENBAS', 'w') as cfour_basfile:
                 cfour_basfile.write(qbs.genbas())
             core.print_out('  GENBAS loaded from Psi4 LibMints for basis %s\n' % (core.get_global_option('BASIS')))
