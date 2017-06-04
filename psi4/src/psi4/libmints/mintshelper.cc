@@ -1098,6 +1098,13 @@ std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom)
 }
 
 
+std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+                                                                std::shared_ptr <BasisSet> bs2)
+{
+ IntegralFactory factory(bs1, bs2, bs1, bs2);
+ std::shared_ptr<OneBodyAOInt> Tint(factory.ao_kinetic(1));
+  return ao_kinetic_energy_deriv1_helper(atom, Tint);
+}
 
 
 SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints, int M, int N, int P, int Q)

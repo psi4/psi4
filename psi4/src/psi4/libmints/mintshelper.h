@@ -176,6 +176,8 @@ private:
 
     std::vector<SharedMatrix> ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint);
     std::vector<SharedMatrix> ao_kinetic_energy_deriv1(int atom);
+    std::vector<SharedMatrix> ao_kinetic_energy_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
+                                                       std::shared_ptr<BasisSet> bs2);
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);
