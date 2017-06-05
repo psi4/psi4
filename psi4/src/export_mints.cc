@@ -723,6 +723,18 @@ void export_mints(py::module& m)
     typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_ke_deriv1)(int, SharedMatrix, SharedMatrix);
     typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_ke_deriv12)(int, std::shared_ptr<BasisSet>,
              std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_pe_deriv1)(int);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_pe_deriv12)(int, std::shared_ptr<BasisSet>,
+             std::shared_ptr<BasisSet>);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_pe_deriv1)(int, SharedMatrix, SharedMatrix);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_pe_deriv12)(int, std::shared_ptr<BasisSet>,
+             std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_S_deriv1)(int);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_S_deriv12)(int, std::shared_ptr<BasisSet>,
+             std::shared_ptr<BasisSet>);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_S_deriv1)(int, SharedMatrix, SharedMatrix);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_S_deriv12)(int, std::shared_ptr<BasisSet>,
+             std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
 
 
 
@@ -813,6 +825,14 @@ void export_mints(py::module& m)
         .def("ao_kinetic_energy_deriv1", normal_ke_deriv12(&MintsHelper::ao_kinetic_energy_deriv1), "docstring")
         .def("mo_kinetic_energy_deriv1", normal_mo_ke_deriv1(&MintsHelper::mo_kinetic_energy_deriv1), "docstring")
         .def("mo_kinetic_energy_deriv1", normal_mo_ke_deriv12(&MintsHelper::mo_kinetic_energy_deriv1), "docstring")
+        .def("ao_potential_energy_deriv1", normal_ao_pe_deriv1(&MintsHelper::ao_potential_energy_deriv1), "docstring")
+        .def("ao_potential_energy_deriv1", normal_ao_pe_deriv12(&MintsHelper::ao_potential_energy_deriv1), "docstring")
+        .def("mo_potential_energy_deriv1", normal_mo_pe_deriv1(&MintsHelper::mo_potential_energy_deriv1), "docstring")
+        .def("mo_potential_energy_deriv1", normal_mo_pe_deriv12(&MintsHelper::mo_potential_energy_deriv1), "docstring")
+        .def("ao_overlap_deriv1", normal_ao_S_deriv1(&MintsHelper::ao_overlap_deriv1), "docstring")
+        .def("ao_overlap_deriv1", normal_ao_S_deriv12(&MintsHelper::ao_overlap_deriv1), "docstring")
+        .def("mo_overlap_deriv1", normal_mo_S_deriv1(&MintsHelper::mo_overlap_deriv1), "docstring")
+        .def("mo_overlap_deriv1", normal_mo_S_deriv12(&MintsHelper::mo_overlap_deriv1), "docstring")
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
