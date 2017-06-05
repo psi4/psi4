@@ -2,13 +2,21 @@
 *******************************************************************************
 
 
-Friday, June 2, 2017 -- Robert T. McGibbon
+Monday, June 5, 2017 -- Robert T. McGibbon
 
 [34] rmcgibbo (Github id) harvested the cc-pVXZ and cc-pwCVXZ basis sets for Li, Be, Na and Mg from Kirk Peterson's website.
 The reference is B. Prascher, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr., A.K. Wilson, Theor. Chem. Acc. 128, 69 (2011).
 
 The cc-pwCVXZ basis sets for these elements are new to Psi4. The cc-pVXZ basis sets from these elements are more recent
 than the ones in EMSL.
+
+Also, added cc-pwCVXZ-RI auxiliary basis sets for Li, Be, Na and Mg. The reference for these basis sets is J. G. Hill
+and K. A Peterson, "Correlation consistent basis sets for explicitly correlated wavefunctions: Valence and
+core-valence basis sets for Li, Be, Na, and Mg" Phys. Chem. Chem. Phys. (2010).
+
+Also, added new cc-pV5Z-RI auxiliary basis set for Na, which was reoptimized by Hill and Peterson (2010), updating the
+values given by Hattig (2005).
+
 
 
 *******************************************************************************
