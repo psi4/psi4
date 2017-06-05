@@ -29,8 +29,12 @@
 #include "x2cint.h"
 
 #include "psi4/libmints/mintshelper.h"
+<<<<<<< HEAD
 #include "psi4/libmints/molecule.h"
 
+=======
+#include "psi4/libmints/matrix.h"
+>>>>>>> added and exported functions for kin. energy first derivative in MO basis
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -1106,6 +1110,146 @@ std::vector<SharedMatrix> MintsHelper::ao_kinetic_energy_deriv1(int atom, std::s
   return ao_kinetic_energy_deriv1_helper(atom, Tint);
 }
 
+/*std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint,
+                                                                       SharedMatrix C1, SharedMatrix C2,
+                                                                       SharedMatrix C3, SharedMatrix C4)
+{
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
+
+    std::vector<SharedMatrix> ao_grad = ao_kinetic_energy_deriv1_helper(atom, Tint);
+    std::vector<SharedMatrix> mo_grad;
+    for(int p=0; p<3; p++){
+        sprintf(lbl, "mo_kinetic_energy_deriv1_%d_%s", atom, cartcomp[p]);
+        SharedMatrix temp = mo_eri_helper(ao_grad[p], C1, C2, C3, C4) ;
+        temp->set_name(lbl);
+        mo_grad.push_back(temp);
+    }
+    return mo_grad;
+}
+*/
+
+std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+                                                                std::shared_ptr <BasisSet> bs2,
+                                                                SharedMatrix C1, SharedMatrix C2)
+{
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
+
+    IntegralFactory factory(bs1, bs2, bs1, bs2);
+    std::shared_ptr<OneBodyAOInt> Tint(factory.ao_kinetic(1));
+    std::vector<SharedMatrix> ao_grad = ao_kinetic_energy_deriv1_helper(atom, Tint);
+    std::vector<SharedMatrix> mo_grad;
+    for(int p=0; p<3; p++){
+        sprintf(lbl, "mo_kinetic_energy_deriv1_%d_%s", atom, cartcomp[p]);
+        SharedMatrix temp(new Matrix(lbl, Tint->basis1()->nbf(), Tint->basis2()->nbf()));
+        temp->transform(C1, ao_grad[p], C2) ;
+        mo_grad.push_back(temp);
+    }
+    return mo_grad;
+}
+
+
+std::vector<SharedMatrix> MintsHelper::mo_kinetic_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2)
+{
+    char lbl[32];
+    char ** cartcomp;
+    cartcomp = (char **) malloc (3 * sizeof(char *));
+    cartcomp[0] = strdup("X");
+    cartcomp[1] = strdup("Y");
+    cartcomp[2] = strdup("Z");
+    std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+    std::vector<SharedMatrix> ao_grad = ao_kinetic_energy_deriv1_helper(atom, Tint);
+    std::vector<SharedMatrix> mo_grad ;
+    for(int p=0; p<3; p++){
+        sprintf(lbl, "mo_kinetic_energy_deriv1_%d_%s", atom, cartcomp[p]);
+        SharedMatrix temp(new Matrix(lbl, Tint->basis1()->nbf(), Tint->basis2()->nbf()));
+        temp->transform(C1, ao_grad[p], C2) ;
+        mo_grad.push_back(temp);
+    }
+    return mo_grad;
+}
+
+
+
+/*std::vector<SharedMatrix> MintsHelper::ao_potential_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Vint)
+{
+
+        char lbl[32];
+        char ** cartcomp;
+        cartcomp = (char **) malloc (3 * sizeof(char *));
+        cartcomp[0] = strdup("X");
+        cartcomp[1] = strdup("Y");
+        cartcomp[2] = strdup("Z");
+
+        std::shared_ptr <BasisSet> bs1 = Vint->basis1();
+        std::shared_ptr <BasisSet> bs2 = Vint->basis2();
+
+        int nbf1 = bs1->nbf();
+        int nbf2 = bs2->nbf();
+
+        int natom = basisset_->molecule()->natom();
+
+        std::vector<SharedMatrix> grad;
+        for (int p=0; p<3; p++){
+            sprintf(lbl, "ao_potential_energy_deriv1_%d_%s", atom, cartcomp[p]);
+            grad.push_back(SharedMatrix(new Matrix(lbl, nbf1, nbf2)));
+          }
+
+
+        const double* buffer = Vint->buffer();
+
+        for (int P = 0; P < bs1->nshell(); P++)
+            for (int Q = 0; Q < bs2->nshell(); Q++) {
+
+                int nP = basisset_->shell(P).nfunction();
+                int oP = basisset_->shell(P).function_index();
+                int aP = basisset_->shell(P).ncenter();
+
+                int nQ = basisset_->shell(Q).nfunction();
+                int oQ = basisset_->shell(Q).function_index();
+                int aQ = basisset_->shell(Q).ncenter();
+
+                if( aP!=atom && aQ!=atom)
+                      continue;
+
+                Vint->compute_shell_deriv1(P,Q);
+
+                //for (int A = 0; A < natom; A++) {
+                //    const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
+                //    const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
+                //    const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+                //    for (int p = 0; p < nP; p++) {
+                //        for (int q = 0; q < nQ; q++) {
+                //            double Vval = perm * Dp[p + oP][q + oQ];
+                //            Vp[A][0] += Vval * (*ref0++);
+                //            Vp[A][1] += Vval * (*ref1++);
+                //            Vp[A][2] += Vval * (*ref2++);
+                //        }
+                //    }
+
+                    const double* ref0 = &buffer[3 * atom * nP * nQ + 0 * nP * nQ];
+                    const double* ref1 = &buffer[3 * atom * nP * nQ + 1 * nP * nQ];
+                    const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
+
+                    for (int p = 0; p < nP; p++) 
+                        for (int q = 0; q < nQ; q++) {
+                            Vp[0]->add(p+oP, q+oQ,(ref0++));
+                            Vp[1]->add(p+oP, q+oQ,(*ref1++));
+                            Vp[2]->add(p+oP, q+oQ,(*ref2++));
+                    }
+        }
+
+}
+*/
 
 SharedMatrix MintsHelper::ao_shell_getter(const std::string &label, std::shared_ptr <TwoBodyAOInt> ints, int M, int N, int P, int Q)
 {

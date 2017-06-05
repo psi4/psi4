@@ -154,10 +154,13 @@ private:
                         std::shared_ptr<BasisSet> bs4);
     /// AO ERI Shell
     SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
-    // AK
-    //std::vector<std::vector<SharedMatrix> > ao_grad_helper();
+
+    // Derivative of one and two electron integrals in both AO and MO basis 
+
     std::vector<SharedMatrix>  ao_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints);
+
     std::vector<SharedMatrix>  ao_tei_deriv1(int atom);
+
     std::vector<SharedMatrix>  ao_tei_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
                                              std::shared_ptr<BasisSet> bs2,
                                              std::shared_ptr<BasisSet> bs3,
@@ -165,8 +168,10 @@ private:
 
     std::vector<SharedMatrix>  mo_tei_deriv1_helper(int atom, std::shared_ptr <TwoBodyAOInt> ints, 
                                                     SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+
     std::vector<SharedMatrix>  mo_tei_deriv1(int atom, SharedMatrix C1, SharedMatrix C2, 
                                              SharedMatrix C3, SharedMatrix C4);
+
     std::vector<SharedMatrix>  mo_tei_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
                                              std::shared_ptr<BasisSet> bs2,
                                              std::shared_ptr<BasisSet> bs3,
@@ -175,9 +180,20 @@ private:
                                              SharedMatrix C3, SharedMatrix C4);
 
     std::vector<SharedMatrix> ao_kinetic_energy_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Tint);
+
     std::vector<SharedMatrix> ao_kinetic_energy_deriv1(int atom);
+
     std::vector<SharedMatrix> ao_kinetic_energy_deriv1(int atom, std::shared_ptr<BasisSet> bs1,
                                                        std::shared_ptr<BasisSet> bs2);
+
+    std::vector<SharedMatrix> mo_kinetic_energy_deriv1(int atom, std::shared_ptr <BasisSet> bs1,
+                                                       std::shared_ptr <BasisSet> bs2,
+                                                       SharedMatrix C1, SharedMatrix C2);
+
+    std::vector<SharedMatrix> mo_kinetic_energy_deriv1(int atom, SharedMatrix C1, SharedMatrix C2);
+
+
+
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);

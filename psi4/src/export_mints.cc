@@ -717,9 +717,12 @@ void export_mints(py::module& m)
     typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_tei_deriv12)(int,
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
         std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ke_deriv1)(int);
-    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ke_deriv12)(int,
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_ke_deriv1)(int);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_ao_ke_deriv12)(int,
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_ke_deriv1)(int, SharedMatrix, SharedMatrix);
+    typedef std::vector<SharedMatrix> (MintsHelper::*normal_mo_ke_deriv12)(int, std::shared_ptr<BasisSet>,
+             std::shared_ptr<BasisSet>, SharedMatrix, SharedMatrix);
 
 
 
@@ -800,12 +803,16 @@ void export_mints(py::module& m)
         .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")
         .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals",
               py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
+
+        // First and second derivatives of one and two electron integrals in both ao and mo basis.
         .def("ao_tei_deriv1", normal_ao_tei_deriv1(&MintsHelper::ao_tei_deriv1), "docstring")
         .def("ao_tei_deriv1", normal_ao_tei_deriv12(&MintsHelper::ao_tei_deriv1), "docstring")
         .def("mo_tei_deriv1", normal_mo_tei_deriv1(&MintsHelper::mo_tei_deriv1), "docstring")
         .def("mo_tei_deriv1", normal_mo_tei_deriv12(&MintsHelper::mo_tei_deriv1), "docstring")
         .def("ao_kinetic_energy_deriv1", normal_ke_deriv1(&MintsHelper::ao_kinetic_energy_deriv1), "docstring")
         .def("ao_kinetic_energy_deriv1", normal_ke_deriv12(&MintsHelper::ao_kinetic_energy_deriv1), "docstring")
+        .def("mo_kinetic_energy_deriv1", normal_mo_ke_deriv1(&MintsHelper::mo_kinetic_energy_deriv1), "docstring")
+        .def("mo_kinetic_energy_deriv1", normal_mo_ke_deriv12(&MintsHelper::mo_kinetic_energy_deriv1), "docstring")
         .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
         .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
