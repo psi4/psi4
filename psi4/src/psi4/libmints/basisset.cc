@@ -44,7 +44,6 @@
 #include "integral.h"
 #include "gshell.h"
 #include "factory.h"
-#include "basisset_parser.h"
 #include "pointgrp.h"
 #include "wavefunction.h"
 #include "coordentry.h"

@@ -35,7 +35,6 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
@@ -857,10 +856,6 @@ void export_mints(py::module& m)
         .def("aotoso", &PetiteList::aotoso, "docstring")
         .def("sotoao", &PetiteList::sotoao, "docstring")
         .def("print", &PetiteList::print, "docstring");
-
-    py::class_<BasisSetParser, std::shared_ptr<BasisSetParser>>(m, "BasisSetParser", "docstring");
-    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, BasisSetParser>(
-        m, "Gaussian94BasisSetParser", "docstring");
 
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;

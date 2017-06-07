@@ -22,7 +22,6 @@ set(sources_list local.cc
                  basisset.cc
                  electrostatic.cc
                  wavefunction.cc
-                 basisset_parser.cc
                  irrep.cc
                  eribase.cc
                  fjt.cc
