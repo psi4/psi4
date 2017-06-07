@@ -1938,11 +1938,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Caching level for libdpd -*/
     options.add_int("CACHELEVEL",2);
     /*- Specifies the choice of representation of the electric dipole operator.
-    Acceptable values are ``LENGTH`` for the usual length-gauge representation,
+    For polarizability, this keyword is ignored and ``LENGTH`` gauge is computed. 
+    For optical rotation and raman optical activity, this keyword is active, and 
+    acceptable values are ``LENGTH`` for the usual length-gauge representation,
     ``VELOCITY``(default) for the modified velocity-gauge representation in which the
     static-limit optical rotation tensor is subtracted from the frequency-
-    dependent tensor, or ``BOTH``. Note that, for optical rotation calculations,
-    only the choices of ``VELOCITY`` or ``BOTH`` will yield origin-independent results. -*/
+    dependent tensor, or ``BOTH``. Note that, for optical rotation and raman optical 
+    activity calculations, only the choices of ``VELOCITY`` or ``BOTH`` will yield 
+    origin-independent results. -*/
     options.add_str("GAUGE","VELOCITY", "LENGTH VELOCITY BOTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);

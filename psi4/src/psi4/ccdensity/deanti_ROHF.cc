@@ -131,7 +131,6 @@ void deanti_ROHF(struct RHO_Params rho_params)
     global_dpd_->file2_close(&D);
 
     outfile->Printf( "\tOne-electron energy        = %20.15f\n", one_energy);
-
   }
 
   /* G(Ij,Kl) <-- 1/2 G(IJ,KL) + 1/2 G(ij,kl) + 1/2 G(Ij,Kl) + 1/2 G(iJ,kL) */
@@ -322,12 +321,12 @@ void deanti_ROHF(struct RHO_Params rho_params)
   if(!params.aobasis && params.debug_) {
     outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);
     if (params.ground) {
-      outfile->Printf( "\tCCSD correlation energy    = %20.15f\n",
+       outfile->Printf( "\tCCSD correlation energy    = %20.15f\n",
 	      one_energy + total_two_energy);
-      outfile->Printf( "\tTotal CCSD energy          = %20.15f\n",
+       outfile->Printf( "\tTotal CCSD energy          = %20.15f\n",
 	      one_energy + total_two_energy + moinfo.eref);
-    }
-    else {
+  }
+   else {
       outfile->Printf( "\tTotal EOM CCSD correlation energy        = %20.15f\n",
           one_energy + total_two_energy);
       outfile->Printf( "\tCCSD correlation + EOM excitation energy = %20.15f\n",
