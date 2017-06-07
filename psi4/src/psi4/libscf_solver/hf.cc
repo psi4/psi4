@@ -56,7 +56,6 @@
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/matrix.h"

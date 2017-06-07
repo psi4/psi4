@@ -46,7 +46,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
 
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libfock/v.h"
