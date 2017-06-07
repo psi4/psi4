@@ -315,6 +315,9 @@ std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, 
       }
     }
   }
+  else {
+    throw PsiException("FINDIF: Number of POINTS not supported", __FILE__, __LINE__);
+  }
   return disp_geoms;
 }
 
