@@ -348,7 +348,12 @@ class ShellInfo(object):
 
     def aslist(self):
         """Return minimal list of shell info"""
-        info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K], self.rpower(K)) for K in range(self.nprimitive())]
+        if self.rpowers and self.rpowers[0] is not None:
+            # This is an ECP, so we tack the radial powers onto the end of the list
+            info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K], self.rpower(K)) for K in range(self.nprimitive())]
+        else:
+            # This is a regular shell, with only coefficients and exponents to worry about
+            info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K]) for K in range(self.nprimitive())]
         return info
 
     def pyprint(self, outfile=None):

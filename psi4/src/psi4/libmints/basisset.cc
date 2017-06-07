@@ -577,7 +577,6 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
     std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
     std::string label = pybs["blend"].cast<std::string>();
-    std::string message = pybs["message"].cast<std::string>();
 
     mol->set_basis_all_atoms(name, key);
 
@@ -651,22 +650,16 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
     std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
     std::string label = pybs["blend"].cast<std::string>();
-    std::string message = pybs["message"].cast<std::string>();
-    //if (Process::environment.options.get_int("PRINT") > 1)
-    //    outfile->Printf("%s\n", message.c_str());
 
     // Handle mixed puream signals and seed parser with the resolution
     int native_puream = pybs["puream"].cast<int>();
     int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
                       ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
-    int resolved_puream;
+    GaussianType shelltype;
     if (user_puream == -1)
-        resolved_puream = (forced_puream == -1) ? native_puream : forced_puream;
+        shelltype = static_cast<GaussianType>(forced_puream == -1 ? native_puream : forced_puream);
     else
-        resolved_puream = user_puream;
-
-    // Not like we're ever using a non-G94 format
-    const std::shared_ptr <BasisSetParser> parser(new Gaussian94BasisSetParser(resolved_puream));
+        shelltype = static_cast<GaussianType>(user_puream);
 
     mol->set_basis_all_atoms(name, key);
 
@@ -674,13 +667,32 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
     typedef std::map <std::string, std::map<std::string, std::vector <ShellInfo>>> map_ssv;
     map_ssv basis_atom_shell;
     // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
-    py::list shmp = pybs["shell_map"].cast<py::list>();
-    for (int ent = 0; ent < (len(shmp)); ent += 3) {
-        std::string label = shmp[ent].cast<std::string>();
-        std::string hash = shmp[ent + 1].cast<std::string>();
-        std::vector <std::string> basbit = parser->string_to_vector(shmp[ent + 2].cast<std::string>());
-        mol->set_shell_by_label(label, hash, key);
-        basis_atom_shell[name][label] = parser->parse(label, basbit);
+    py::list basisinfo = pybs["shell_map"].cast<py::list>();
+    if(len(basisinfo) == 0)
+        throw PSIEXCEPTION("Empty information being used to construct BasisSet.");
+    for(int atom = 0; atom < py::len(basisinfo); ++atom){
+        std::vector<ShellInfo> vec_shellinfo;
+        py::list atominfo = basisinfo[atom].cast<py::list>();
+        std::string atomlabel = atominfo[0].cast<std::string>();
+        std::string hash = atominfo[1].cast<std::string>();
+        for(int atomshells = 2; atomshells < py::len(atominfo); ++atomshells){
+            // Each shell entry has p primitives that look like
+            // [ angmom, [ [ e1, c1 ], [ e2, c2 ], ...., [ ep, cp ] ] ]
+            py::list shellinfo = atominfo[atomshells].cast<py::list>();
+            int am = shellinfo[0].cast<int>();
+            std::vector<double> coefficients;
+            std::vector<double> exponents;
+            int nprim = (pybind11::len(shellinfo)) - 1; // The leading entry is the angular momentum
+            for (int primitive = 1; primitive <= nprim; primitive++) {
+                py::list primitiveinfo = shellinfo[primitive].cast<py::list>();
+                exponents.push_back(primitiveinfo[0].cast<double>());
+                coefficients.push_back(primitiveinfo[1].cast<double>());
+            }
+            Vector3 fake_center; // TODO the center information is not used; we should rip it out of here and GShell
+            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, shelltype, 0, fake_center, 0, Unnormalized));
+        }
+        mol->set_shell_by_label(atomlabel, hash, key);
+        basis_atom_shell[name][atomlabel] = vec_shellinfo;
     }
     mol->update_geometry();  // update symmetry with basisset info
 
@@ -690,8 +702,6 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
     basisset->key_ = key;
     basisset->target_ = label;
 
-    //outfile->Printf("puream: basis %d, arg %d, user %d, resolved %d, final %d\n",
-    //    native_puream, forced_puream, user_puream, resolved_puream, basisset->has_puream());
     return basisset;
 }
 

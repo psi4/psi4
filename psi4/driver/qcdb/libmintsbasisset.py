@@ -665,7 +665,7 @@ class BasisSet(object):
                     bsdict['puream'] = int(atbs.has_puream())
                     bsdict['shell_map'] = atbs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
                     if ecp:
-                        bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
+                        bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
                     bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
@@ -682,7 +682,7 @@ class BasisSet(object):
             bsdict['puream'] = int(bs.has_puream())
             bsdict['shell_map'] = bs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
             if ecp:
-                bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
+                bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
             return bsdict
 
     @classmethod
@@ -843,8 +843,13 @@ class BasisSet(object):
 
         # Construct the grand BasisSet for mol
         basisset = BasisSet(key, mol, atom_basis_shell)
+
+        # If an ECP was detected, and we're building BASIS, process it now
         ecpbasisset = None
-        if ecp_atom_basis_shell and key == 'BASIS':
+        ncore = 0
+        for atom in ecp_atom_basis_ncore:
+            ncore += ecp_atom_basis_ncore[atom]
+        if ncore and key == 'BASIS':
             ecpbasisset = BasisSet(key, mol, ecp_atom_basis_shell)
             ecpbasisset.ecp_coreinfo = ecp_atom_basis_ncore
 
@@ -1166,36 +1171,6 @@ class BasisSet(object):
             with open(out, mode='w') as handle:
                 handle.write(text)
 
-    def export_for_libmints2(self, role):
-        """From complete BasisSet object, returns array where
-        triplets of elements are each unique atom label, the hash
-        of the string shells entry in gbs format and the
-        shells entry in gbs format for that label. This packaging is
-        intended for return to libmints BasisSet::construct_from_pydict for
-        instantiation of a libmints BasisSet clone of *self*.
-
-        ACS 04/17 - I plan to replace the export_for_libmints function with something
-        like this.  I don't think the extra parsing of the string on the C++ side is
-        a very intuitive design.  With a pre-parsed list like this, we can remove all
-        C++ parsing utilities and make the code much cleaner.
-        """
-        info = []
-        for A in range(self.molecule.natom()):
-            label = self.molecule.label(A)
-            first_shell = self.center_to_shell[A]
-            n_shell = self.center_to_nshell[A]
-
-            atominfo = [label]
-            atominfo.append(self.molecule.atoms[A].shell(key=role))
-            try:
-               atominfo.append(self.ecp_coreinfo[label])
-            except KeyError:
-                raise ValidationError("Problem with number of cores in ECP constuction!")
-            for Q in range(n_shell):
-                atominfo.append(self.shells[Q + first_shell].aslist())
-            info.append(atominfo)
-        return info
-
 
     def export_for_libmints(self, role):
         """From complete BasisSet object, returns array where
@@ -1206,23 +1181,25 @@ class BasisSet(object):
         instantiation of a libmints BasisSet clone of *self*.
 
         """
-        basstrings = []
-        tally = []
+        info = []
         for A in range(self.molecule.natom()):
-            if self.molecule.label(A) not in tally:
-                label = self.molecule.label(A)
-                first_shell = self.center_to_shell[A]
-                n_shell = self.center_to_nshell[A]
+            label = self.molecule.label(A)
+            first_shell = self.center_to_shell[A]
+            n_shell = self.center_to_nshell[A]
 
-                basstrings.append(label)
-                basstrings.append(self.molecule.atoms[A].shell(key=role))
-                text = """   %s  0\n""" % (label)
-                for Q in range(n_shell):
-                    text += self.shells[Q + first_shell].pyprint(outfile=None)
-                text += """    ****\n"""
-                basstrings.append(text)
-
-        return basstrings
+            atominfo = [label]
+            atominfo.append(self.molecule.atoms[A].shell(key=role))
+            if self.ecp_coreinfo:
+                # If core information is present, this is an ECP so we add the
+                # number of electrons this atom's ECP basis accounts for here.
+                try:
+                   atominfo.append(self.ecp_coreinfo[label])
+                except KeyError:
+                    raise ValidationError("Problem with number of cores in ECP constuction!")
+            for Q in range(n_shell):
+                atominfo.append(self.shells[Q + first_shell].aslist())
+            info.append(atominfo)
+        return info
 
     def print_detail_gamess(self, out=None, numbersonly=False):
         """Prints a detailed PSI3-style summary of the basis (per-atom)
