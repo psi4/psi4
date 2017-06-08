@@ -1124,15 +1124,6 @@ public:
     const double& operator()(int h, int i, int j) const { return matrix_[h][i][j]; }
     /// @}
 
-    // Serializable pure virtual functions:
-    void send();
-    void recv();
-    void bcast(int broadcaster);
-    /**
-     * Performs element-by-element sum of all data from all nodes.
-     */
-    void sum();
-
     /// Writes this to the dpdfile2 given
     void write_to_dpdfile2(dpdfile2 *outFile);
 

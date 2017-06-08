@@ -3370,28 +3370,6 @@ void Matrix::load(std::shared_ptr <psi::PSIO> &psio,
     load(psio.get(), fileno, savetype);
 }
 
-//void Matrix::alloc()
-//{
-//    if (matrix_)
-//        release();
-
-//    matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
-//    for (int h=0; h<nirrep_; ++h) {
-//        if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
-//            matrix_[h] = Matrix::matrix(rowspi_[h], colspi_[h^symmetry_]);
-//        else {
-//            // Force rowspi_[h] and colspi_[h^symmetry] to hard 0
-//            // This solves an issue where a row can have 0 dim but a col does not (or the other way).
-
-//            // This was commented out to resolve issues that people were
-//            // dependent on one or both containing valid dimensions and
-//            // not a hard zero.
-//            //rowspi_[h] = colspi_[h^symmetry_] = 0;
-//            matrix_[h] = NULL;
-//        }
-//    }
-//}
-
 void Matrix::load_mpqc(const std::string &filename)
 {
     // Entire file.
@@ -3579,30 +3557,6 @@ void Matrix::load(const std::string &filename)
         // Set the data
         set(h, m, n, val);
     }
-}
-
-void Matrix::send()
-{
-}
-
-void Matrix::recv()
-{
-}
-
-void Matrix::bcast(int)
-{
-    std::cout << "Someone is calling the Matrix bcast routine..." << std::endl;
-    // Assume the user allocated the matrix to the correct size first.
-    /*for (int h=0; h<nirrep_; ++h) {
-        if (rowspi_[h] > 0 && colspi_[h] > 0)
-            WorldComm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
-    }*/
-}
-
-void Matrix::sum()
-{
-    //RMR--Removed the call to here because as
-    //it stood it did nothing
 }
 
 bool Matrix::equal(const Matrix &rhs)
