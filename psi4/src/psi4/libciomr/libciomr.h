@@ -49,10 +49,6 @@ char* psi_fprefix();
 
 void balance(double **a, int n);
 
-/* Functions under dot.cc */
-void dot_arr(double *a, double *b, int size, double *value) ;
-double dot_mat(double **a,double **b,int n);
-
 void eigsort(double *d,double **v,int n);
 void eivout(double **a, double *b, int m, int n, std::string out) ;
 void mosort(double *d, double **v, int *sym, int nso, int nmo);

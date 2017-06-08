@@ -9,8 +9,6 @@ set(sources_list init_array.cc
                  print_mat.cc
                  tri_to_sq.cc
                  rsp.cc
-                 mmult.cc
-                 dot.cc
                  tred2.cc
                  tstart.cc
                  eivout.cc

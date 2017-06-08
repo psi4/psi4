@@ -333,7 +333,8 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
       /* check for convergence */
       converged = 1;
       for (i=0; i<M; i++) {
-         dot_arr(d[i], d[i], N, &tval);
+         // dot_arr(d[i], d[i], N, &tval);
+         tval = C_DDOT(N, d[i], 1, d[i], 1);
          tval = sqrt(tval);
          dvecnorm[i] = tval;
          if (dvecnorm[i] <= conv_rms && fabs(lambda[i] - lastroot[i]) <= conv_e) converged_root[i] = 1;

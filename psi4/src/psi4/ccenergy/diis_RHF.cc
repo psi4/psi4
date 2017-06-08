@@ -184,7 +184,8 @@ void CCEnergyWavefunction::diis_RHF(int iter)
     psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[0],
 	      vector_length*sizeof(double), start, &end);
 
-    dot_arr(vector[0], vector[0], vector_length, &product);
+   product = C_DDOT(vector_length, vector[0], 1, vector[0], 1);
+    // dot_arr(vector[0], vector[0], vector_length, &product);
 
     B[p][p] = product;
 
@@ -195,7 +196,8 @@ void CCEnergyWavefunction::diis_RHF(int iter)
       psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[1],
 		vector_length*sizeof(double), start, &end);
 
-      dot_arr(vector[1], vector[0], vector_length, &product);
+      //dot_arr(vector[1], vector[0], vector_length, &product);
+      product = C_DDOT(vector_length, vector[1], 1, vector[0], 1);
 
       B[p][q] = B[q][p] = product;
     }

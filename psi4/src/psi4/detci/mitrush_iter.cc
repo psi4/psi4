@@ -569,7 +569,8 @@ void CIWavefunction::olsen_update(CIvect &C, CIvect &S, CIvect &Hd, double E, do
            CalcInfo_->twoel_ints->pointer(), CalcInfo_->edrc, CalcInfo_->num_alp_expl,
            CalcInfo_->num_bet_expl, CalcInfo_->nmo, buf, Parameters_->hd_ave);
       /* Check norm of residual vector i.e. before preconditioning */
-      dot_arr(buffer1, buffer1, C.buf_size_[buf], &rnormtmp);
+      // dot_arr(buffer1, buffer1, C.buf_size_[buf], &rnormtmp);
+      rnormtmp = C_DDOT(C.buf_size_[buf], buffer1, 1, buffer1, 1);
       /* C = C/(Hd - E) */
       buf_ols_denom(buffer1, buffer2, E, S.buf_size_[buf]);
       /* buffer1 is now equal to C^1, i.e. the correction to C_i
@@ -667,12 +668,14 @@ void CIWavefunction::olsen_iter_xy(CIvect &C, CIvect &S, CIvect &Hd, double *x, 
       if (Parameters_->diag_method <= METHOD_MITRUSHENKOV) {
         /* Olsen and Mitrushenkov iterators */
         S.read(curvect,buf);
-        dot_arr(buffer1, buffer2, C.buf_size_[buf], &ty);
+        // dot_arr(buffer1, buffer2, C.buf_size_[buf], &ty);
+        ty = C_DDOT(C.buf_size_[buf], buffer1, 1, buffer2, 1);
         }
       else { /* Dot buffer2 with all Sigma vectors on disk */
         for (i=0; i<L; i++) {
            S.read(i,buf);
-           dot_arr(buffer1, buffer2, C.buf_size_[buf], &tmpy);
+           //dot_arr(buffer1, buffer2, C.buf_size_[buf], &tmpy);
+           tmpy = C_DDOT(C.buf_size_[buf], buffer1, 1, buffer2, 1);
            ty += tmpy * alpha[i][curvect];
            zero_arr(sigma0b1,H0block_->size);
            S.h0block_gather_multivec(sigma0b1);

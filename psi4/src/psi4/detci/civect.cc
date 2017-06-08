@@ -726,14 +726,15 @@ void CIvect::vector_multiply(double scale, SharedCIVector X, SharedCIVector Y, i
 
 double CIvect::operator*(CIvect &b)
 {
-   double dotprod=0.0, tval;
    int i, buf;
 
+   double dotprod = 0.0;
    if (Ms0_) {
       for (buf=0; buf<buf_per_vect_; buf++) {
          read(cur_vect_, buf);
          b.read(b.cur_vect_, buf);
-         dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotprod += tval;
          }
@@ -743,7 +744,8 @@ double CIvect::operator*(CIvect &b)
       for (buf=0; buf<buf_per_vect_; buf++) {
          read(cur_vect_, buf);
          b.read(b.cur_vect_, buf);
-         dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
          dotprod += tval;
          }
       }
@@ -2007,7 +2009,8 @@ int CIvect::schmidt_add(CIvect &c, int L)
       read(cur_vect_, buf);
       for (cvect=0; cvect<L; cvect++) {
          c.read(cvect, buf);
-         dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         //dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         tval = C_DDOT(buf_size_[buf], buffer_, 1, c.buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotval[cvect] += tval;
          }
@@ -2022,7 +2025,8 @@ int CIvect::schmidt_add(CIvect &c, int L)
        */
          xpeay(buffer_, -dotval[cvect], c.buffer_, buf_size_[buf]);
          }
-      dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       norm += tval;
       write(cur_vect_, buf);
@@ -2094,7 +2098,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
       read(source_vec, buf);
       for (cvect=first_vec; cvect<=last_vec; cvect++) {
          c.read(cvect, buf);
-         dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         tval = C_DDOT(buf_size_[buf], buffer_, 1, c.buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotval[cvect] += tval;
          }
@@ -2112,7 +2117,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
          c.read(cvect, buf);
          xpeay(buffer_, -dotval[cvect], c.buffer_, buf_size_[buf]);
          }
-      dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       norm += tval;
       write(cur_vect_, buf);
@@ -2165,7 +2171,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
            read(source_vec, buf);
            for (cvect=first_vec; cvect<=last_vec; cvect++) {
               c.read(cvect, buf);
-              dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+              // dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+              tval = C_DDOT(buf_size_[buf], buffer_, 1, c.buffer_, 1);
               if (buf_offdiag_[buf]) tval *= 2.0;
               dotchk[cvect] += tval;
               }
@@ -2302,7 +2309,8 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
             xpeay(buffer_, alpha[ivect][root], S.buffer_, buf_size_[buf]);
             S.buf_unlock();
             } /* end loop over ivect */
-         dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+         tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          norm_arr[root] += tval;
          write(root, buf);
@@ -2509,7 +2517,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
            read(i, buf);
            for (j=i; j<=(k-kvec_offset); j++) {
               C.read(j,buf);
-              dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+              //dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+              tval = C_DDOT(buf_size_[buf], buffer_, 1, C.buffer_, 1);
               if (buf_offdiag_[buf]) tval *= 2.0;
               wfn_overlap[i+kvec_offset][j+kvec_offset] += tval;
               if (i!=j) wfn_overlap[j+kvec_offset][i+kvec_offset] += tval;
@@ -2530,7 +2539,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
         read(k, buf);
         for (i=(1-kvec_offset); i<=(k-kvec_offset); i++) {
            C.read(i, buf);
-           dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+           // dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+           tval = C_DDOT(buf_size_[buf], buffer_, 1, C.buffer_, 1);
            if (buf_offdiag_[buf]) tval *= 2.0;
            wfn_overlap[k][i+kvec_offset] += tval;
            if ((i+kvec_offset)!=k) wfn_overlap[i+kvec_offset][k] += tval;
@@ -2552,11 +2562,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       S.buf_lock(buf2);
       S.read(0, buf);
       read(k-1-kvec_offset, buf);
-      dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, S.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2k += tval;
       read(k-kvec_offset, buf);
-      dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, S.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2kp1 += tval;
       S.buf_unlock();
@@ -2565,11 +2577,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
            CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
            CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
       xexy(Hd.buffer_, buffer_, buf_size_[buf]);
-      dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      //dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, Hd.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2kp1 -= tval;
       read(k-1-kvec_offset, buf);
-      dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      //dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, Hd.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2k -= tval;
       Hd.buf_unlock();
@@ -2873,7 +2887,8 @@ double CIvect::checknorm(void) {
 
     for (int buf = 0; buf < buf_per_vect_; buf++) {
         read(cur_vect_, buf);
-        dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+        //dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+        tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
         if (buf_offdiag_[buf]) tval *= 2.0;
         dotprod += tval;
     }

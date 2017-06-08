@@ -62,7 +62,8 @@ void normalize(double **A, int rows, int cols)
 
   /* divide each row by the square root of its norm */
   for (i=0; i<rows; i++) {
-    dot_arr(A[i], A[i], cols, &normval);
+    //dot_arr(A[i], A[i], cols, &normval);
+    normval = C_DDOT(cols, A[i], 1, A[i], 1);
     normval = sqrt(normval);
     for (j=0; j<cols; j++) A[i][j] /= normval;
   }
