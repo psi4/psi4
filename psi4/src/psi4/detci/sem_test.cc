@@ -190,8 +190,11 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
       Lvec[iter2] = L;
       /* form G matrix */
-      mmult(b, 0, A, 0, tmp_mat, 0, L, N, N, 0); /* tmp = B * A    */
-      mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
+      C_DGEMM('N', 'N', L, N, N, 1.0, b, N, A, N, 0.0, tmp_mat, N);
+      C_DGEMM('N', 'T', L, L, N, 1.0, tmp_mat, N, b, L, 0.0, G, L);
+
+      //mmult(b, 0, A, 0, tmp_mat, 0, L, N, N, 0); /* tmp = B * A    */
+      //mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
 
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
@@ -215,8 +218,11 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
       if (lse_do) {
         /* Form sigma_overlap matrix */
         zero_mat(sigma_overlap,maxnvect,maxnvect);
-        mmult(b, 0, A, 0, tmp_mat, 0, L, N, N, 0);
-        mmult(tmp_mat, 0, tmp_mat, 1, sigma_overlap, 0, L, N, L, 0);
+        C_DGEMM('N', 'N', L, N, N, 1.0, b, N, A, N, 0.0, tmp_mat, N);
+        C_DGEMM('N', 'T', L, L, N, 1.0, tmp_mat, N, tmp_mat, L, 0.0, sigma_overlap, L);
+
+        //mmult(b, 0, A, 0, tmp_mat, 0, L, N, N, 0);
+        //mmult(tmp_mat, 0, tmp_mat, 1, sigma_overlap, 0, L, N, L, 0);
 
        /* Form Mij matrix */
        for (k=0; k<M; k++) {
@@ -288,8 +294,11 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
         for (i=L; i<maxnvect; i++) zero_arr(b[i], N);
 
         /* reform G matrix */
-        mmult(b, 0, A, 0, tmp_mat, 0, L, N, N, 0); /* tmp = B * A    */
-        mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
+        C_DGEMM('N', 'N', L, N, N, 1.0, b, N, A, N, 0.0, tmp_mat, N);
+        C_DGEMM('N', 'T', L, L, N, 1.0, tmp_mat, N, b, L, 0.0, G, L);
+
+        //mmult(b, 0, A, 0, tmp_mat, 0, L, N, N, 0); /* tmp = B * A    */
+        //mmult(tmp_mat, 0, b, 1, G, 0, L, N, L, 0); /* G = tmp * B(T) */
 
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
         sq_rsp(L, L, G, lambda, 1, alpha, 1E-14);
@@ -308,7 +317,8 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
       zero_mat(d, M, N);
       for (k=0; k<M; k++) {
          for (i=0; i<L; i++) {
-            mmult(A,0,&(b[i]),1,&(tmp_vec),1,N,N,1,0); /* tmp=A*b[i] */
+            // mmult(A,0,&(b[i]),1,&(tmp_vec),1,N,N,1,0); /* tmp=A*b[i] */
+            C_DGEMM('N', 'T', N, 1, N, 1.0, A, N, &(b[i]), 1, 0.0, &(tmp_vec), 1)
             for (I=0; I<N; I++) {
                d[k][I] += alpha[i][k] * (tmp_vec[I] - lambda[k] * b[i][I]);
                }

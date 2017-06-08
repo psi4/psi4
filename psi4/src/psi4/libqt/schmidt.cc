@@ -96,7 +96,8 @@ main()
 
    outfile->Printf( "\nTest A * A = \n") ;
 
-   mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
+   C_DGEMM('N', 'T', 3, 3, 3, 1.0, mat, 3, mat, 3, 0.0, mat_x_mat, 3);
+   //mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
    print_mat(mat_x_mat,3,3,outfile) ;
 
    free_matrix(mat,3) ;

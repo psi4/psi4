@@ -258,12 +258,14 @@ int CIWavefunction::H0block_calc(double E)
          }
 
        /* get c0bp = (H0b - E)^{-1} * c0b */
-       mmult(H0block_->H0b_inv, 0, &(H0block_->c0b), 1, &(H0block_->c0bp), 1,
-             size, size, 1, 0);
+       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv, size, &(H0block_->c0b), size, 0.0, &(H0block_->c0bp), size);
+       //mmult(H0block_->H0b_inv, 0, &(H0block_->c0b), 1, &(H0block_->c0bp), 1,
+       //      size, size, 1, 0);
 
        /* get s0bp = (H0b - E)^{-1} * s0b */
-       mmult(H0block_->H0b_inv, 0, &(H0block_->s0b), 1, &(H0block_->s0bp), 1,
-             size, size, 1, 0);
+       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv, size, &(H0block_->s0b), size, 0.0, &(H0block_->s0bp), size);
+       //mmult(H0block_->H0b_inv, 0, &(H0block_->s0b), 1, &(H0block_->s0bp), 1,
+       //      size, size, 1, 0);
        }
 
      if (print_ > 4) {
@@ -838,7 +840,7 @@ void CIWavefunction::H0block_coupling_calc(double E)
 
      /*
        detH0 = invert_matrix(H0block_->tmp1, H0block_->H0b_inv, size, outfile);
-       mmult(H0block_->H0b_inv,0,&(gamma_1),1,&(delta_1),1,size,size,1,0);
+       // mmult(H0block_->H0b_inv,0,&(gamma_1),1,&(delta_1),1,size,size,1,0);
      */
 
     /*

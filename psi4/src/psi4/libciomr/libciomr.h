@@ -70,8 +70,8 @@ void mat_to_arr(double **a,double *b, int m, int n);
 void arr_to_mat(double **a,double *b,int m,int n);
 
 
-void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
-           int nr, int nl, int nc, int add) ;
+// void mmult(double **AF, int ta, double **BF, int tb, double **CF, int tc,
+//            int nr, int nl, int nc, int add) ;
 void print_array(double *a, int m, std::string out) ;
 void print_mat(double **a, int rows, int cols, std::string out) ;
 
