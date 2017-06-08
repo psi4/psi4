@@ -137,7 +137,8 @@ def initialize_database(database, name, prop, properties_array, additional_kwarg
     molecule = core.get_active_molecule()
     natom = molecule.natom()
     coordinates = ['x', 'y', 'z']
-    step_direction = ['p', 'm']
+    #step_direction = ['p', 'm'] changing due to change in findif atomic_displacements
+    step_direction = ['m', 'p']
 
     for atom in range(1, natom + 1):
         for coord in coordinates:
