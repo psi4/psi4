@@ -5,6 +5,7 @@ molecule sodium {
 Na
 }
 
+set d_convergence 9
 
 activate(sodium)
 set basis STO-3G
