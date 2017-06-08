@@ -280,20 +280,21 @@ void Molecule::clear()
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass, double charge, int /*lineno*/)
-{
+void Molecule::add_atom(int Z, double x, double y, double z, std::string label, double mass,
+                        double charge) {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
-    std::string l(label);
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
-        full_atoms_.push_back(std::shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(x)),
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(y)),
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(z)))));
-        if (strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(full_atoms_.back());
+        full_atoms_.push_back(std::shared_ptr<CoordEntry>(
+            new CartesianEntry(full_atoms_.size(), Z, charge, mass, label, label,
+                               std::shared_ptr<CoordValue>(new NumberValue(x)),
+                               std::shared_ptr<CoordValue>(new NumberValue(y)),
+                               std::shared_ptr<CoordValue>(new NumberValue(z)))));
+        if ((lable != "X") && (label != "x")) {
+            atoms_.push_back(full_atoms_.back());
+        }
     } else {
         throw PSIEXCEPTION("Molecule::add_atom: Adding atom on top of an existing atom.");
     }
@@ -550,8 +551,7 @@ Matrix Molecule::full_geometry() const
     return geom;
 }
 
-void Molecule::set_geometry(double **geom)
-{
+void Molecule::set_geometry(double **geom) {
     lock_frame_ = false;
     bool dummy_found = false;
     for (int i = 0; i < nallatom(); ++i) {
@@ -566,10 +566,13 @@ void Molecule::set_geometry(double **geom)
         atoms_.clear();
         int count = 0;
         std::vector<int> fragment_changes;
-        for (size_t i = 0; i < fragments_.size(); ++i)
+
+        for (size_t i = 0; i < fragments_.size(); ++i) {
             fragment_changes.push_back(0);
+        }
+
         for (int i = 0; i < nallatom(); ++i) {
-            std::shared_ptr <CoordEntry> at = full_atoms_[i];
+            std::shared_ptr<CoordEntry> at = full_atoms_[i];
 
             if (at->symbol() == "X") {
                 // Find out which fragment this atom is removed from, then bail
@@ -582,8 +585,9 @@ void Molecule::set_geometry(double **geom)
                     }
                 }
                 if (!found)
-                    throw PSIEXCEPTION("Problem converting ZMatrix coordinates to Cartesians."
-                                               "Try again, without dummy atoms.");
+                    throw PSIEXCEPTION(
+                        "Problem converting ZMatrix coordinates to Cartesians."
+                        "Try again, without dummy atoms.");
                 continue;
             }
 
@@ -593,33 +597,30 @@ void Molecule::set_geometry(double **geom)
             double mass = at->mass();
             std::string symbol = at->symbol();
             std::string label = at->label();
-            std::shared_ptr <CoordEntry> new_atom(
-                    new CartesianEntry(entrynum,
-                                       zval,
-                                       charge,
-                                       mass,
-                                       symbol,
-                                       label,
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][0] / input_units_to_au_)),
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][1] / input_units_to_au_)),
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][2] / input_units_to_au_))
-                    ));
+            std::shared_ptr<CoordEntry> new_atom(new CartesianEntry(
+                entrynum, zval, charge, mass, symbol, label,
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][0] / input_units_to_au_)),
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][1] / input_units_to_au_)),
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][2] / input_units_to_au_))));
+
             // Copy over all known basis sets
-            const std::map <std::string, std::string> &basissets = at->basissets();
+            const std::map<std::string, std::string> &basissets = at->basissets();
             std::map<std::string, std::string>::const_iterator bs = basissets.begin();
-            for (; bs != basissets.end(); ++bs)
+            for (; bs != basissets.end(); ++bs) {
                 new_atom->set_basisset(bs->second, bs->first);
+            }
+
             // Copy over all known basis hashes
-            const std::map <std::string, std::string> &shells = at->shells();
+            const std::map<std::string, std::string> &shells = at->shells();
             std::map<std::string, std::string>::const_iterator sh = shells.begin();
-            for (; sh != shells.end(); ++sh)
+            for (; sh != shells.end(); ++sh) {
                 new_atom->set_shell(sh->second, sh->first);
+            }
             atoms_.push_back(new_atom);
             count++;
         }
         full_atoms_.clear();
-        for (size_t i = 0; i < atoms_.size(); ++i)
-            full_atoms_.push_back(atoms_[i]);
+        for (size_t i = 0; i < atoms_.size(); ++i) full_atoms_.push_back(atoms_[i]);
         // Now change the bounds of each fragment, to reflect the missing dummy atoms
         int cumulative_count = 0;
         for (size_t frag = 0; frag < fragments_.size(); ++frag) {
@@ -637,8 +638,7 @@ void Molecule::set_geometry(double **geom)
     }
 }
 
-void Molecule::set_full_geometry(double **geom)
-{
+void Molecule::set_full_geometry(double **geom) {
     lock_frame_ = false;
     for (int i = 0; i < nallatom(); ++i) {
         full_atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
