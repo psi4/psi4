@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -61,12 +62,12 @@ void schmidt(double **A, int rows, int cols, std::string)
    double RValue;
    for(size_t i=0;i<cols;++i){
       // dot_arr(A[i],A[i],cols,&RValue);
-      Rvalue = C_DDOT(cols, A[i], 1, A[i], 1);
+      RValue = C_DDOT(cols, A[i], 1, A[i], 1);
       RValue=sqrt(RValue);
       for(size_t I=0;I<cols;++I)A[i][I]/=RValue;
       for(size_t j=i+1;j<cols;++j){
          // dot_arr(A[i],A[j],cols,&RValue);
-         Rvalue = C_DDOT(cols, A[i], 1, A[j], 1);
+         RValue = C_DDOT(cols, A[i], 1, A[j], 1);
          for(size_t I=0;I<cols;++I)A[j][I]-=RValue*A[i][I];
       }
    }

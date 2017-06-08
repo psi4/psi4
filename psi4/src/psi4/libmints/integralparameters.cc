@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integralparameters.h"
 

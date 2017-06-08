@@ -26,11 +26,11 @@
  * @END LICENSE
  */
 #include "psi4/libqt/qt.h"
-#include "psi4/libmints/local.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "local.h"
 
 ;
 using namespace psi;

@@ -734,7 +734,7 @@ double CIvect::operator*(CIvect &b)
          read(cur_vect_, buf);
          b.read(b.cur_vect_, buf);
          // dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
-         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b.buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotprod += tval;
          }
@@ -745,7 +745,7 @@ double CIvect::operator*(CIvect &b)
          read(cur_vect_, buf);
          b.read(b.cur_vect_, buf);
          // dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
-         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b->buffer_, 1);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b.buffer_, 1);
          dotprod += tval;
          }
       }

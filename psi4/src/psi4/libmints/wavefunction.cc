@@ -224,7 +224,7 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     variables_ = other->variables_;
 
     // Need to explicitly call copy
-    for (auto const &kv : others->arrays_) {
+    for (auto const &kv : other->arrays_) {
         arrays_[kv.first] = kv.second->clone();
     }
 }

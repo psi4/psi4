@@ -31,8 +31,6 @@
 #include "vector.h"
 #include "dimension.h"
 #include "psi4/libparallel/ParallelPrinter.h"
-#include "psi4/libparallel/mpi_wrapper.h"
-#include "psi4/libparallel/local.h"
 
 #include "psi4/pybind11.h"
 

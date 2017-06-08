@@ -292,7 +292,7 @@ void Molecule::add_atom(int Z, double x, double y, double z, std::string label, 
                                std::shared_ptr<CoordValue>(new NumberValue(x)),
                                std::shared_ptr<CoordValue>(new NumberValue(y)),
                                std::shared_ptr<CoordValue>(new NumberValue(z)))));
-        if ((lable != "X") && (label != "x")) {
+        if ((label != "X") && (label != "x")) {
             atoms_.push_back(full_atoms_.back());
         }
     } else {

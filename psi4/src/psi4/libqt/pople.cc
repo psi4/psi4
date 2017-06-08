@@ -163,7 +163,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
 
 
        //dot_arr(Bmat[0],Bmat[0],dimen,&norm);
-       norm = C_DDOT(dimen, Bmat[i], 1, Bmat[i], 1);
+       norm = C_DDOT(dimen, Bmat[0], 1, Bmat[0], 1);
        norm = sqrt(norm);
        for (i=0; i<dimen; i++) {
            x[i] = Bmat[0][i];

@@ -29,7 +29,6 @@
 #ifndef _psi_src_lib_libmints_matrix_h_
 #define _psi_src_lib_libmints_matrix_h_
 
-#include "psi4/libparallel/serialize.h"
 #include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"

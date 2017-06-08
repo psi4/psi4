@@ -261,12 +261,12 @@ int CIWavefunction::H0block_calc(double E)
          }
 
        /* get c0bp = (H0b - E)^{-1} * c0b */
-       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv, size, &(H0block_->c0b), size, 0.0, &(H0block_->c0bp), size);
+       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv[0], size, &(H0block_->c0b)[0], size, 0.0, &(H0block_->c0bp)[0], size);
        //mmult(H0block_->H0b_inv, 0, &(H0block_->c0b), 1, &(H0block_->c0bp), 1,
        //      size, size, 1, 0);
 
        /* get s0bp = (H0b - E)^{-1} * s0b */
-       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv, size, &(H0block_->s0b), size, 0.0, &(H0block_->s0bp), size);
+       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv[0], size, &(H0block_->s0b)[0], size, 0.0, &(H0block_->s0bp)[0], size);
        //mmult(H0block_->H0b_inv, 0, &(H0block_->s0b), 1, &(H0block_->s0bp), 1,
        //      size, size, 1, 0);
        }
@@ -364,10 +364,10 @@ void CIWavefunction::H0block_xy(double *x, double *y, double E)
   */
 
    //dot_arr(H0block_->c0b, H0block_->c0bp, H0block_->size, &tx);
-   tx = C_DDOT(H0block->size,  H0block_->c0bp, 1, H0block_->c0b, 1);
+   tx = C_DDOT(H0block_->size,  H0block_->c0bp, 1, H0block_->c0b, 1);
    *x += tx;
    //dot_arr(H0block_->s0b, H0block_->c0bp, H0block_->size, &ty);
-   ty = C_DDOT(H0block->size,  H0block_->c0bp, 1, H0block_->s0b, 1);
+   ty = C_DDOT(H0block_->size,  H0block_->c0bp, 1, H0block_->s0b, 1);
  /*
    //dot_arr(H0block_->c0b, H0block_->s0bp, H0block_->size, &ty);
  */
@@ -801,7 +801,7 @@ void CIWavefunction::H0block_coupling_calc(double E)
            } /* end loop over j */
 
         // dot_arr(H_12, delta_2, H0block_->coupling_size, &tval2);
-        tval2 = C_DDOT(H0block->coupling_size,  H_12, 1, delta_2, 1);
+        tval2 = C_DDOT(H0block_->coupling_size, H_12, 1, delta_2, 1);
         gamma_1[i] = tval2;
         for (j=0; j<H0block_->coupling_size; j++)
            gamma_2[j] += H_12[j] * delta_1[i];

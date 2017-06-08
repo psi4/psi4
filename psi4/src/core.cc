@@ -38,8 +38,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libplugin/plugin.h"
-#include "psi4/libparallel/mpi_wrapper.h"
-#include "psi4/libparallel/local.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libpsi4util/libpsi4util.h"
