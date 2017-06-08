@@ -43,8 +43,8 @@
 //#endif
 
 #include <ambit/tensor.h>
-#include "integrals.h"
-#include "convert.h"
+#include "psi4/ambit_interface/integrals.h"
+#include "psi4/ambit_interface/convert.h"
 
 namespace psi{ namespace @plugin@ {
 
