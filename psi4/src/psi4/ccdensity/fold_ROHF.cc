@@ -88,7 +88,7 @@ void fold_ROHF(struct RHO_Params rho_params)
   occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
   openpi = moinfo.openpi;
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     outfile->Printf( "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
     outfile->Printf(   "\t---------------------------------------------------\n");
 
@@ -181,23 +181,23 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Gj = h^Gm;
 
       for(i=0; i < occpi[Gi]; i++) {
-	I = occ_off[Gi] + i;
-	for(j=0; j < occpi[Gj]; j++) {
-	  J = occ_off[Gj] + j;
-	  for(m=0; m < occpi[Gm]; m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(j=0; j < occpi[Gj]; j++) {
+	      J = occ_off[Gj] + j;
+	      for(m=0; m < occpi[Gm]; m++) {
+	        M = occ_off[Gm] + m;
 
-	    IM = G.params->rowidx[I][M];
-	    JM = G.params->colidx[J][M];
-	    MI = G.params->rowidx[M][I];
-	    MJ = G.params->colidx[M][J];
+	        IM = G.params->rowidx[I][M];
+	        JM = G.params->colidx[J][M];
+	        MI = G.params->rowidx[M][I];
+	        MJ = G.params->colidx[M][J];
 
-	    G.matrix[h][IM][JM] += D.matrix[Gi][i][j];
-	    G.matrix[h][IM][MJ] -= D.matrix[Gi][i][j];
-	    G.matrix[h][MI][MJ] += D.matrix[Gi][i][j];
-	    G.matrix[h][MI][JM] -= D.matrix[Gi][i][j];
-	  }
-	}
+	        G.matrix[h][IM][JM] += D.matrix[Gi][i][j];
+	        G.matrix[h][IM][MJ] -= D.matrix[Gi][i][j];
+	        G.matrix[h][MI][MJ] += D.matrix[Gi][i][j];
+	        G.matrix[h][MI][JM] -= D.matrix[Gi][i][j];
+	      }
+	    }
       }
     }
 
@@ -205,7 +205,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
     two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
@@ -230,23 +230,23 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Gj = h^Gm;
 
       for(i=0; i < (occpi[Gi] - openpi[Gi]); i++) {
-	I = occ_off[Gi] + i;
-	for(j=0; j < (occpi[Gj] - openpi[Gj]); j++) {
-	  J = occ_off[Gj] + j;
-	  for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(j=0; j < (occpi[Gj] - openpi[Gj]); j++) {
+	      J = occ_off[Gj] + j;
+	      for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
+	        M = occ_off[Gm] + m;
 
-	    IM = G.params->rowidx[I][M];
-	    JM = G.params->colidx[J][M];
-	    MI = G.params->rowidx[M][I];
-	    MJ = G.params->colidx[M][J];
+	        IM = G.params->rowidx[I][M];
+	        JM = G.params->colidx[J][M];
+	        MI = G.params->rowidx[M][I];
+	        MJ = G.params->colidx[M][J];
 
-	    G.matrix[h][IM][JM] += D.matrix[Gi][i][j];
-	    G.matrix[h][MI][JM] -= D.matrix[Gi][i][j];
-	    G.matrix[h][MI][MJ] += D.matrix[Gi][i][j];
-	    G.matrix[h][IM][MJ] -= D.matrix[Gi][i][j];
-	  }
-	}
+	        G.matrix[h][IM][JM] += D.matrix[Gi][i][j];
+	        G.matrix[h][MI][JM] -= D.matrix[Gi][i][j];
+	        G.matrix[h][MI][MJ] += D.matrix[Gi][i][j];
+	        G.matrix[h][IM][MJ] -= D.matrix[Gi][i][j];
+	      }
+	    }
       }
     }
 
@@ -254,7 +254,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
     two_energy += 0.25 * global_dpd_->buf4_dot(&Aints, &G);
     global_dpd_->buf4_close(&Aints);
@@ -278,18 +278,18 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Gj = h^Gm;
 
       for(i=0; i < occpi[Gi]; i++) {
-	I = occ_off[Gi] + i;
-	for(j=0; j < occpi[Gj]; j++) {
-	  J = occ_off[Gj] + j;
-	  for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(j=0; j < occpi[Gj]; j++) {
+	      J = occ_off[Gj] + j;
+	      for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
+	        M = occ_off[Gm] + m;
 
-	    IM = G.params->rowidx[I][M];
-	    JM = G.params->colidx[J][M];
+	        IM = G.params->rowidx[I][M];
+	        JM = G.params->colidx[J][M];
 
-	    G.matrix[h][IM][JM] += D.matrix[Gi][i][j];
-	  }
-	}
+	        G.matrix[h][IM][JM] += D.matrix[Gi][i][j];
+	      }
+	    }
       }
     }
 
@@ -315,18 +315,18 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gk = Gl = h^Gm;
 
       for(k=0; k < (occpi[Gk] - openpi[Gk]); k++) {
-	K = occ_off[Gk] + k;
-	for(l=0; l < (occpi[Gl] - openpi[Gl]); l++) {
-	  L = occ_off[Gl] + l;
-	  for(m=0; m < occpi[Gm]; m++) {
-	    M = occ_off[Gm] + m;
+	    K = occ_off[Gk] + k;
+	    for(l=0; l < (occpi[Gl] - openpi[Gl]); l++) {
+	      L = occ_off[Gl] + l;
+	      for(m=0; m < occpi[Gm]; m++) {
+	        M = occ_off[Gm] + m;
 
-	    MK = G.params->rowidx[M][K];
-	    ML = G.params->colidx[M][L];
+	        MK = G.params->rowidx[M][K];
+	        ML = G.params->colidx[M][L];
 
-	    G.matrix[h][MK][ML] += D.matrix[Gk][k][l];
-	  }
-	}
+	        G.matrix[h][MK][ML] += D.matrix[Gk][k][l];
+	      }
+	    }
       }
     }
 
@@ -334,7 +334,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
     two_energy += global_dpd_->buf4_dot(&Aints, &G);
     global_dpd_->buf4_close(&Aints);
@@ -342,10 +342,9 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   global_dpd_->buf4_close(&G);
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     total_two_energy += two_energy;
     outfile->Printf( "\tIJKL energy                = %20.15f\n", two_energy);
-
   }
 
   global_dpd_->file2_mat_close(&D);
@@ -367,22 +366,22 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Ga = h^Gm;
 
       for(i=0; i < occpi[Gi]; i++) {
-	I = occ_off[Gi] + i;
-	for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < occpi[Gm]; m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < occpi[Gm]; m++) {
+	        M = occ_off[Gm] + m;
 
-	    MI = G.params->rowidx[M][I];
-	    IM = G.params->rowidx[I][M];
-	    MA = G.params->colidx[M][A];
+	        MI = G.params->rowidx[M][I];
+	        IM = G.params->rowidx[I][M];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
-					  D2.matrix[Gi][i][a]);
-	    G.matrix[h][IM][MA] -= 0.5 * (D1.matrix[Gi][i][a] +
-					  D2.matrix[Gi][i][a]);
-	  }
-	}
+	        G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
+	    				  D2.matrix[Gi][i][a]);
+	        G.matrix[h][IM][MA] -= 0.5 * (D1.matrix[Gi][i][a] +
+	    				  D2.matrix[Gi][i][a]);
+	      }
+	    }
       }
     }
 
@@ -390,7 +389,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
     two_energy += global_dpd_->buf4_dot(&E, &G);
@@ -420,29 +419,29 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Ga = h^Gm;
 
       for(i=0; i < (occpi[Gi] - openpi[Gi]); i++) {
-	I = occ_off[Gi] + i;
-	for(a=0; a < virtpi[Ga]; a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(a=0; a < virtpi[Ga]; a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
+	        M = occ_off[Gm] + m;
 
-	    MI = G.params->rowidx[M][I];
-	    IM = G.params->rowidx[I][M];
-	    MA = G.params->colidx[M][A];
+	        MI = G.params->rowidx[M][I];
+	        IM = G.params->rowidx[I][M];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
-					  D2.matrix[Gi][i][a]);
-	    G.matrix[h][IM][MA] -= 0.5 * (D1.matrix[Gi][i][a] +
-					  D2.matrix[Gi][i][a]);
-	  }
-	}
+	        G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
+	    				  D2.matrix[Gi][i][a]);
+	        G.matrix[h][IM][MA] -= 0.5 * (D1.matrix[Gi][i][a] +
+	    				  D2.matrix[Gi][i][a]);
+	      }
+	    }
       }
     }
 
     global_dpd_->buf4_mat_irrep_wrt(&G, h);
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 2, 10, 0, "E <ij||ka> (i>j,ka)");
     two_energy += global_dpd_->buf4_dot(&E, &G);
     global_dpd_->buf4_close(&E);
@@ -471,19 +470,19 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Ga = h^Gm;
 
       for(i=0; i < occpi[Gi]; i++) {
-	I = occ_off[Gi] + i;
-	for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
+	        M = occ_off[Gm] + m;
 
-	    MI = G.params->rowidx[M][I];
-	    MA = G.params->colidx[M][A];
+	        MI = G.params->rowidx[M][I];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
-					  D2.matrix[Gi][i][a]);
-	  }
-	}
+	        G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
+	    				  D2.matrix[Gi][i][a]);
+	      }
+	    }
       }
     }
 
@@ -491,7 +490,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
     two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
     global_dpd_->buf4_close(&E);
@@ -521,19 +520,19 @@ void fold_ROHF(struct RHO_Params rho_params)
       Gi = Ga = h^Gm;
 
       for(i=0; i < (occpi[Gi] - openpi[Gi]); i++) {
-	I = occ_off[Gi] + i;
-	for(a=0; a < virtpi[Ga]; a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < occpi[Gm]; m++) {
-	    M = occ_off[Gm] + m;
+	    I = occ_off[Gi] + i;
+	    for(a=0; a < virtpi[Ga]; a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < occpi[Gm]; m++) {
+	        M = occ_off[Gm] + m;
 
-	    MI = G.params->rowidx[M][I];
-	    MA = G.params->colidx[M][A];
+	        MI = G.params->rowidx[M][I];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
-					  D2.matrix[Gi][i][a]);
-	  }
-	}
+	        G.matrix[h][MI][MA] += 0.5 * (D1.matrix[Gi][i][a] +
+	    				  D2.matrix[Gi][i][a]);
+	      }
+	    }
       }
     }
 
@@ -541,26 +540,21 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
     two_energy += 2 * global_dpd_->buf4_dot(&E, &G);
     global_dpd_->buf4_close(&E);
+    total_two_energy += two_energy;
+    outfile->Printf( "\tIJKA energy                = %20.15f\n", two_energy);
   }
 
   global_dpd_->buf4_close(&G);
-
-  if(!params.aobasis) {
-    total_two_energy += two_energy;
-    outfile->Printf( "\tIJKA energy                = %20.15f\n", two_energy);
-
-  }
-
   global_dpd_->file2_mat_close(&D1);
   global_dpd_->file2_close(&D1);
   global_dpd_->file2_mat_close(&D2);
   global_dpd_->file2_close(&D2);
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
@@ -579,7 +573,6 @@ void fold_ROHF(struct RHO_Params rho_params)
     two_energy *= 2;
     total_two_energy += two_energy;
     outfile->Printf( "\tIJAB energy                = %20.15f\n", two_energy);
-
   }
 
   global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
@@ -595,18 +588,18 @@ void fold_ROHF(struct RHO_Params rho_params)
       Ga = Gb = h^Gm;
 
       for(b=0; b < (virtpi[Gb] - openpi[Gb]); b++) {
-	B = vir_off[Gb] + b;
-	for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < occpi[Gm]; m++) {
-	    M = occ_off[Gm] + m;
+	    B = vir_off[Gb] + b;
+	    for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < occpi[Gm]; m++) {
+	        M = occ_off[Gm] + m;
 
-	    MB = G.params->rowidx[M][B];
-	    MA = G.params->colidx[M][A];
+	        MB = G.params->rowidx[M][B];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
-	  }
-	}
+	        G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
+	      }
+	    }
       }
     }
 
@@ -614,7 +607,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
@@ -640,18 +633,18 @@ void fold_ROHF(struct RHO_Params rho_params)
       Ga = Gb = h^Gm;
 
       for(b=0; b < virtpi[Gb]; b++) {
-	B = vir_off[Gb] + b;
-	for(a=0; a < virtpi[Ga]; a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
-	    M = occ_off[Gm] + m;
+	    B = vir_off[Gb] + b;
+	    for(a=0; a < virtpi[Ga]; a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
+	        M = occ_off[Gm] + m;
 
-	    MB = G.params->rowidx[M][B];
-	    MA = G.params->colidx[M][A];
+	        MB = G.params->rowidx[M][B];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
-	  }
-	}
+	        G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
+	      }
+	    }
       }
     }
 
@@ -659,7 +652,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
     global_dpd_->buf4_close(&C);
@@ -684,18 +677,18 @@ void fold_ROHF(struct RHO_Params rho_params)
       Ga = Gb = h^Gm;
 
       for(b=0; b < virtpi[Gb]; b++) {
-	B = vir_off[Gb] + b;
-	for(a=0; a < virtpi[Ga]; a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < occpi[Gm]; m++) {
-	    M = occ_off[Gm] + m;
+	    B = vir_off[Gb] + b;
+	    for(a=0; a < virtpi[Ga]; a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < occpi[Gm]; m++) {
+	        M = occ_off[Gm] + m;
 
-	    MB = G.params->rowidx[M][B];
-	    MA = G.params->colidx[M][A];
+	        MB = G.params->rowidx[M][B];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
-	  }
-	}
+	        G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
+	      }
+	    }
       }
     }
 
@@ -703,7 +696,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
     global_dpd_->buf4_close(&C);
@@ -728,25 +721,25 @@ void fold_ROHF(struct RHO_Params rho_params)
       Ga = Gb = h^Gm;
 
       for(b=0; b < (virtpi[Gb] - openpi[Gb]); b++) {
-	B = vir_off[Gb] + b;
-	for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
-	  A = vir_off[Ga] + a;
-	  for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
-	    M = occ_off[Gm] + m;
+	    B = vir_off[Gb] + b;
+	    for(a=0; a < (virtpi[Ga] - openpi[Ga]); a++) {
+	      A = vir_off[Ga] + a;
+	      for(m=0; m < (occpi[Gm] - openpi[Gm]); m++) {
+	        M = occ_off[Gm] + m;
 
-	    MB = G.params->rowidx[M][B];
-	    MA = G.params->colidx[M][A];
+	        MB = G.params->rowidx[M][B];
+	        MA = G.params->colidx[M][A];
 
-	    G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
-	  }
-	}
+	        G.matrix[h][MB][MA] += D.matrix[Ga][a][b];
+	      }
+	    }
       }
     }
     global_dpd_->buf4_mat_irrep_wrt(&G, h);
     global_dpd_->buf4_mat_irrep_close(&G, h);
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
     two_energy += global_dpd_->buf4_dot(&C, &G);
     global_dpd_->buf4_close(&C);
@@ -758,7 +751,7 @@ void fold_ROHF(struct RHO_Params rho_params)
   global_dpd_->file2_close(&D);
 
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     global_dpd_->buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
     two_energy -= global_dpd_->buf4_dot(&G, &DInts);
@@ -773,7 +766,7 @@ void fold_ROHF(struct RHO_Params rho_params)
 
   }
 
-  if(!params.aobasis) {
+  if(!params.aobasis && params.debug_) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
     global_dpd_->buf4_sort(&FInts, PSIF_CC_TMP0, qprs, 11, 7, "F(CI,AB)");
@@ -805,9 +798,6 @@ void fold_ROHF(struct RHO_Params rho_params)
     total_two_energy += two_energy;
     outfile->Printf( "\tCIAB energy                = %20.15f\n", two_energy);
 
-  }
-
-  if(!params.aobasis) {
     two_energy = 0.0;
     global_dpd_->buf4_init(&BInts, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
     global_dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
@@ -822,9 +812,7 @@ void fold_ROHF(struct RHO_Params rho_params)
     two_energy += global_dpd_->buf4_dot(&G, &BInts);
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&BInts);
-  }
 
-  if(!params.aobasis) {
     total_two_energy += two_energy;
     outfile->Printf( "\tABCD energy                = %20.15f\n", two_energy);
     outfile->Printf( "\tTotal two-electron energy  = %20.15f\n", total_two_energy);

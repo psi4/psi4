@@ -138,6 +138,7 @@ void get_params( Options& options)
     params.connect_xi = options.get_bool("XI_CONNECT");
 
   params.write_nos = options.get_bool("WRITE_NOS");
+  params.debug_ = options.get_int("DEBUG");
 
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");

@@ -271,7 +271,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
  
     sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
     if (!params.onepdm) {
-      if(!params.aobasis) energy(rho_params[i]);
+      if(!params.aobasis && params.debug_) energy(rho_params[i]);
 
       kinetic(ref_wfn); /* puts kinetic energy integrals into MO basis */
 

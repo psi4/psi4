@@ -115,9 +115,9 @@ void polar(void)
       }
 
     if (params.wfn == "CC2")
-      outfile->Printf( "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n                 CC2 Dipole Polarizability (Length Gauge) [(e^2 a0^2)/E_h]:\n");
     else
-      outfile->Printf( "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n                 CCSD Dipole Polarizability (Length Gauge) [(e^2 a0^2)/E_h]:\n");
     outfile->Printf( "  -------------------------------------------------------------------------\n");
     if(params.omega[i] != 0.0)
       omega_nm = (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]);

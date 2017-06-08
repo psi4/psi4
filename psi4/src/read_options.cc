@@ -1699,6 +1699,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
     /* Do Write NOs (molden) */
     options.add_bool("WRITE_NOS",false);
+    /* Reproducing energies from densities ? */
+    options.add_int("DEBUG", 0);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
@@ -1936,12 +1938,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Caching level for libdpd -*/
     options.add_int("CACHELEVEL",2);
     /*- Specifies the choice of representation of the electric dipole operator.
-    Acceptable values are ``LENGTH`` for the usual length-gauge representation,
-    ``VELOCITY`` for the modified velocity-gauge representation in which the
+    For polarizability, this keyword is ignored and ``LENGTH`` gauge is computed. 
+    For optical rotation and raman optical activity, this keyword is active, and 
+    acceptable values are ``LENGTH`` for the usual length-gauge representation,
+    ``VELOCITY``(default) for the modified velocity-gauge representation in which the
     static-limit optical rotation tensor is subtracted from the frequency-
-    dependent tensor, or ``BOTH``. Note that, for optical rotation calculations,
-    only the choices of ``VELOCITY`` or ``BOTH`` will yield origin-independent results. -*/
-    options.add_str("GAUGE","LENGTH", "LENGTH VELOCITY BOTH");
+    dependent tensor, or ``BOTH``. Note that, for optical rotation and raman optical 
+    activity calculations, only the choices of ``VELOCITY`` or ``BOTH`` will yield 
+    origin-independent results. -*/
+    options.add_str("GAUGE","VELOCITY", "LENGTH VELOCITY BOTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
     /*- Convergence criterion for wavefunction (change) in perturbed CC equations. -*/
