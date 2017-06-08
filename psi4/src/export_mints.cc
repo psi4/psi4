@@ -366,7 +366,7 @@ void export_mints(py::module& m)
 
     py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")
         .def(py::init<int, const std::vector<double>&, const std::vector<double>&, GaussianType,
-                      int, const Vector3&, int, PrimitiveType>());
+                      PrimitiveType>());
 
     py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 

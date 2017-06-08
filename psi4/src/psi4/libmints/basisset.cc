@@ -609,8 +609,7 @@ BasisSet::construct_ecp_from_pydict(std::shared_ptr <Molecule> mol, py::dict pyb
                 coefficients.push_back(primitiveinfo[1].cast<double>());
                 ns.push_back(primitiveinfo[2].cast<int>());
             }
-            Vector3 fake_center; // TODO the center information is not used; we should rip it out of here and GShell
-            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns, 0, fake_center, 0));
+            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
         }
         mol->set_shell_by_label(atomlabel, hash, key);
         basis_atom_ncore[name][atomlabel] = ncore;
@@ -687,8 +686,7 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
                 exponents.push_back(primitiveinfo[0].cast<double>());
                 coefficients.push_back(primitiveinfo[1].cast<double>());
             }
-            Vector3 fake_center; // TODO the center information is not used; we should rip it out of here and GShell
-            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, shelltype, 0, fake_center, 0, Unnormalized));
+            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, shelltype, Unnormalized));
         }
         mol->set_shell_by_label(atomlabel, hash, key);
         basis_atom_shell[name][atomlabel] = vec_shellinfo;

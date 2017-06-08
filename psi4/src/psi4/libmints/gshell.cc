@@ -38,10 +38,8 @@
 using namespace psi;
 
 ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<double> &e,
-                     const std::vector<int> &n, int nc, const Vector3 &center,
-                     int start)
-    : puream_(Cartesian), exp_(e), coef_(c), n_(n),
-      nc_(nc), center_(center), start_(start)
+                     const std::vector<int> &n)
+    : puream_(Cartesian), exp_(e), coef_(c), n_(n)
 {
     if(am < 0) {
         shelltype_ = ECPType1;
@@ -62,10 +60,8 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<dou
 }
 
 ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<double> &e,
-                     GaussianType pure, int nc, const Vector3 &center,
-                     int start, PrimitiveType pt)
-    : l_(am), puream_(pure), exp_(e), coef_(c),
-      nc_(nc), center_(center), start_(start), shelltype_(Gaussian)
+                     GaussianType pure, PrimitiveType pt)
+    : l_(am), puream_(pure), exp_(e), coef_(c), shelltype_(Gaussian)
 {
     for(size_t prim = 0; prim < c.size(); ++prim){
         original_coef_.push_back(c[prim]);
@@ -80,20 +76,6 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<dou
         normalize_shell();
         erd_normalize_shell();
     }
-}
-
-ShellInfo ShellInfo::copy()
-{
-    return ShellInfo(l_, original_coef_, exp_,
-                         GaussianType(puream_),
-                         nc_, center_, start_, Unnormalized);
-}
-
-ShellInfo ShellInfo::copy(int nc, const Vector3& c)
-{
-    return ShellInfo(l_, original_coef_, exp_,
-                         GaussianType(puream_),
-                         nc, c, start_, Unnormalized);
 }
 
 double ShellInfo::primitive_normalization(int p)
@@ -197,10 +179,6 @@ double ShellInfo::normalize(int /*l*/, int /*m*/, int /*n*/)
     return 1.0;
 }
 
-const Vector3& ShellInfo::center() const
-{
-    return center_;
-}
 
 const char *ShellInfo::amtypes = "spdfghiklmnopqrtuvwxyz";
 const char *ShellInfo::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";
@@ -214,10 +192,7 @@ bool ShellInfo::operator==(const ShellInfo& RHS)const
            coef_==RHS.coef_ &&
            erd_coef_==RHS.erd_coef_ &&
            original_coef_==RHS.erd_coef_ &&
-           nc_==RHS.nc_ &&
            n_ == RHS.n_ &&
-           center_==RHS.center_ &&
-           start_==RHS.start_ &&
            ncartesian_==RHS.ncartesian_ &&
            nfunction_==RHS.nfunction_
     );
