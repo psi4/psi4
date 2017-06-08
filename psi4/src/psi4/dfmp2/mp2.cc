@@ -229,6 +229,7 @@ double DFMP2::compute_energy()
     form_energy();
     timer_off("DFMP2 Energy");
     print_energies();
+    energy_ = variables_["MP2 TOTAL ENERGY"];
 
     return variables_["MP2 TOTAL ENERGY"];
 }
@@ -314,6 +315,7 @@ SharedMatrix DFMP2::compute_gradient()
 
     if(options_.get_bool("ONEPDM")){
         print_energies();
+        energy_ = variables_["MP2 TOTAL ENERGY"];
         return SharedMatrix(new Matrix("NULL", 0, 0));
     }
 
@@ -322,6 +324,7 @@ SharedMatrix DFMP2::compute_gradient()
     timer_off("DFMP2 grad");
 
     print_energies();
+    energy_ = variables_["MP2 TOTAL ENERGY"];
 
     print_gradients();
 
