@@ -818,9 +818,102 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
         throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
     }
 }
-SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi, std::shared_ptr<BasisSet> old_basis,
-                                            std::shared_ptr<BasisSet> new_basis) {
-    // Based on Werner's method from Mol. Phys. 102, 21-22, 2311
+
+SharedMatrix Wavefunction::matrix_subset_helper(SharedMatrix M, SharedMatrix C,
+    const std::string &basis, const std::string matrix_basename) const
+{
+    if (basis == "AO") {
+        double *temp = new double[AO2SO_->max_ncol() * AO2SO_->max_nrow()];
+        std::string m2_name = matrix_basename + " (AO basis)";
+        SharedMatrix M2 = SharedMatrix(new Matrix(m2_name, basisset_->nbf(), basisset_->nbf()));
+        int symm = M->symmetry();
+        for (int h = 0; h < AO2SO_->nirrep(); ++h) {
+            int nao = AO2SO_->rowspi()[0];
+            int nsol = AO2SO_->colspi()[h];
+            int nsor = AO2SO_->colspi()[h ^ symm];
+            if (!nsol || !nsor) continue;
+            double **Ulp = AO2SO_->pointer(h);
+            double **Urp = AO2SO_->pointer(h ^ symm);
+            double **MSOp = M->pointer(h);
+            double **MAOp = M2->pointer();
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, MAOp[0], nao);
+        }
+        delete[] temp;
+        return M2;
+    } else if (basis == "CartAO") {
+        /*
+         * Added by ACS. Rob's definition of AO is simply a desymmetrized SO (i.e. using spherical basis
+         * functions).  In cases like EFP and PCM where many OE integral evaluations are needed, we want
+         * to avoid the spherical transformation, so we need to back transform the density matrix all the
+         * way back to Cartesian AOs.
+         */
+
+        PetiteList petite(basisset_, integral_, true);
+        SharedMatrix my_aotoso = petite.aotoso();
+        double *temp = new double[my_aotoso->max_ncol() * my_aotoso->max_nrow()];
+        std::string m2_name = matrix_basename + " (CartAO basis)";
+        SharedMatrix M2 = SharedMatrix(new Matrix(m2_name, basisset_->nao(), basisset_->nao()));
+        int symm = M->symmetry();
+        for (int h = 0; h < my_aotoso->nirrep(); ++h) {
+            int nao = my_aotoso->rowspi()[0];
+            int nsol = my_aotoso->colspi()[h];
+            int nsor = my_aotoso->colspi()[h ^ symm];
+            if (!nsol || !nsor) continue;
+            double **Ulp = my_aotoso->pointer(h);
+            double **Urp = my_aotoso->pointer(h ^ symm);
+            double **MSOp = M->pointer(h);
+            double **MAOp = M2->pointer();
+            C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, MSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
+            C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, MAOp[0], nao);
+        }
+        delete[] temp;
+        return M2;
+    } else if (basis == "SO") {
+        SharedMatrix M2 = M->clone();
+        std::string m2_name = matrix_basename + " (SO basis)";
+        M2->set_name(m2_name);
+        return M2; 
+    } else if (basis == "MO") {
+        std::string m2_name = matrix_basename + " (MO basis)";
+        SharedMatrix M2(new Matrix(m2_name, C->colspi(), C->colspi()));
+
+        int symm = M->symmetry();
+        int nirrep = M->nirrep();
+
+        double *SC = new double[C->max_ncol() * C->max_nrow()];
+        double *temp = new double[C->max_ncol() * C->max_nrow()];
+        for (int h = 0; h < nirrep; h++) {
+            int nmol = C->colspi()[h];
+            int nmor = C->colspi()[h ^ symm];
+            int nsol = C->rowspi()[h];
+            int nsor = C->rowspi()[h ^ symm];
+            if (!nmol || !nmor || !nsol || !nsor) continue;
+            double **Slp = S_->pointer(h);
+            double **Srp = S_->pointer(h ^ symm);
+            double **Clp = C->pointer(h);
+            double **Crp = C->pointer(h ^ symm);
+            double **Mmop = M2->pointer(h);
+            double **Msop = M->pointer(h);
+
+            C_DGEMM('N', 'N', nsor, nmor, nsor, 1.0, Srp[0], nsor, Crp[0], nmor, 0.0, SC, nmor);
+            C_DGEMM('N', 'N', nsol, nmor, nsor, 1.0, Msop[0], nsor, SC, nmor, 0.0, temp, nmor);
+            C_DGEMM('N', 'N', nsol, nmol, nsol, 1.0, Slp[0], nsol, Clp[0], nmol, 0.0, SC, nmol);
+            C_DGEMM('T', 'N', nmol, nmor, nsol, 1.0, SC, nmol, temp, nmor, 0.0, Mmop[0], nmor);
+        }
+        delete[] temp;
+        delete[] SC;
+        return M2;
+    } else {
+        throw PSIEXCEPTION("Invalid basis requested, use AO, CartAO, SO, or MO");
+    }
+}
+
+
+SharedMatrix Wavefunction::basis_projection(SharedMatrix C_A, Dimension noccpi,
+                                            std::shared_ptr<BasisSet> old_basis,
+                                            std::shared_ptr<BasisSet> new_basis) { 
+// Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     std::shared_ptr<IntegralFactory> newfactory =
         std::make_shared<IntegralFactory>(new_basis, new_basis, new_basis, new_basis);
     std::shared_ptr<IntegralFactory> hybfactory =

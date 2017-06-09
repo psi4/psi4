@@ -458,7 +458,7 @@ subset = "ALL") const;
     /**
     * Return the D matrix in the desired basis
     * @param D matrix in the SO basis to transform
-    * @param C matrix in the SO basis to use as a transformer
+    * @param C matrix in the SO basis to use for transforms to the MO basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO, CartAO
     * @return the D matrix in the desired basis
@@ -484,12 +484,25 @@ subset = "ALL") const;
     /**
     * Return the F matrix in the desired basis
     * @param F matrix in the SO basis to transform
-    * @param C matrix in the SO basis to use as a transformer
+    * @param C matrix in the SO basis to use for transforms to the MO basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO, CartAO
     * @return the F matrix in the desired basis
     **/
     SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis) const;
+
+
+    /**
+    * Transform a matrix M into the desired basis 
+    * @param M matrix in the SO basis to transform
+    * @param C matrix in the SO basis to use for transforms to MO basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO, CartAO
+    * @return the matrix M in the desired basis
+    **/
+    SharedMatrix matrix_subset_helper(SharedMatrix M, 
+        SharedMatrix C, const std::string &basis, 
+        const std::string matrix_basename) const;
 
     /**
     * Return the alpha orbital eigenvalues in the desired basis
