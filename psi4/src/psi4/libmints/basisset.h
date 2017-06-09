@@ -171,7 +171,7 @@ public:
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
              std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
-             std::map<std::__1::string, std::map<std::__1::string, std::vector<ShellInfo> > > &ecp_shell_map);
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &ecp_shell_map);
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
