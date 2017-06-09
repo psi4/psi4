@@ -1,0 +1,5 @@
+set(sources_list convert.cc integrals.cc)
+if(TARGET ambit::ambit)
+    psi4_add_module(binlib ambit_interface sources_list mints)
+    target_link_libraries(ambit_interface PUBLIC ambit::ambit)
+endif()
