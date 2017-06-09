@@ -653,7 +653,7 @@ class BasisSet(object):
 
         if return_atomlist:
             if returnBasisSet:
-                return bs, ecp
+                return bs
             else:
                 atom_basis_list = []
                 for atbs in bs:
@@ -672,7 +672,7 @@ class BasisSet(object):
 
         if returnBasisSet:
             #print(text)
-            return bs, ecp
+            return bs
         else:
             bsdict = {}
             bsdict['message'] = text

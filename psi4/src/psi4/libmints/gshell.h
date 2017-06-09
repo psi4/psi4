@@ -239,6 +239,7 @@ protected:
 public:
     /** Constructor; Use this version for regular Gaussian basis sets.
      *  @param shelltype The type of shell this structure describes
+     *  @param nprimitive The number of primitives in this shell.
      *  @param am Angular momentum.
      *  @param pure Pure spherical harmonics, or Cartesian.
      *  @param oc An array of contraction coefficients.
@@ -263,24 +264,21 @@ public:
     /** Constructor; use this version for ECPs.
      *  @param shelltype The type of shell this structure describes
      *  @param am Angular momentum.
-     *  @param pure Pure spherical harmonics, or Cartesian.
+     *  @param nprimitive The number of primitives in this shell.
      *  @param oc An array of contraction coefficients.
      *  @param e An array of exponent values.
      *  @param n An array of r exponent values for ECPs.
      *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
      *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
-     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
      */
     GaussianShell(ShellType shelltype,
                   int am,
                   int nprimitive,
-                  const double *oc,
+                  const double *c,
                   const double *e,
                   const int *n,
-                  GaussianType pure,
                   int nc,
-                  const double* center,
-                  int start);
+                  const double* center);
     ///Builds and empty GShell
     GaussianShell() {}
 

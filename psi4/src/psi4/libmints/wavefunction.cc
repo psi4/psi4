@@ -66,23 +66,15 @@ double fac[MAX_FAC];
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
                            std::shared_ptr<BasisSet> basis,
                            Options &options) :
-        options_(options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
+        options_(options), basisset_(basis), molecule_(molecule)
 {
     common_init();
 }
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
-                           std::shared_ptr<BasisSet> basis,
-                           std::shared_ptr<BasisSet> ecpbasis) :
-        options_(Process::environment.options), basisset_(basis), ecpbasisset_(ecpbasis), molecule_(molecule)
+                           std::shared_ptr<BasisSet> basis) :
+        options_(Process::environment.options), basisset_(basis), molecule_(molecule)
 {
-    common_init();
-}
-
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis) :
-        options_(Process::environment.options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
-{
-
     common_init();
 }
 
@@ -105,7 +97,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
 
     name_ = other->name_;
     basisset_ = other->basisset_;
-    ecpbasisset_ = other->ecpbasisset_;
     basissets_ = other->basissets_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
@@ -175,12 +166,8 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     name_ = other->name_;
     molecule_ = std::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
     basisset_ = other->basisset_;
-    ecpbasisset_ = other->ecpbasisset_;
     basissets_ = other->basissets_; // Still cannot copy basissets
-    if(ecpbasisset_)
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_, ecpbasisset_));
-    else
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
     factory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
     factory_->init_with(other->nsopi_, other->nsopi_);
@@ -248,10 +235,7 @@ void Wavefunction::common_init()
     }
 
     // Create an SO basis...we need the point group for this part.
-    if(ecpbasisset_)
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_, ecpbasisset_));
-    else
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
 
     std::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
@@ -422,11 +406,6 @@ std::shared_ptr<IntegralFactory> Wavefunction::integral() const
 std::shared_ptr<BasisSet> Wavefunction::basisset() const
 {
     return basisset_;
-}
-
-std::shared_ptr<BasisSet> Wavefunction::ecpbasisset() const
-{
-    return ecpbasisset_;
 }
 
 std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label)

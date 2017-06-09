@@ -210,13 +210,12 @@ GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const 
 }
 
 GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const double *oc, const double *e,
-                             const int *n, GaussianType pure,
-                             int nc, const double *center, int start)
-    : l_(am), puream_(pure), exp_(e), original_coef_(oc), coef_(oc), erd_coef_(oc), n_(n),
-      nc_(nc), center_(center), start_(start), nprimitive_(nprimitive), shelltype_(shelltype)
+                             const int *n, int nc, const double *center)
+    : l_(am), puream_(Pure), exp_(e), original_coef_(oc), coef_(oc), erd_coef_(oc), n_(n),
+      nc_(nc), center_(center), start_(-1), nprimitive_(nprimitive), shelltype_(shelltype)
 {
-    ncartesian_ = INT_NCART(l_);
-    nfunction_  = INT_NFUNC(puream_, l_);
+    ncartesian_ = -1;
+    nfunction_  = -1;
 }
 
 int GaussianShell::nfunction() const
