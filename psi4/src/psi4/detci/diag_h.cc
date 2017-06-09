@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
-#include <cmath>
-#include <cstring>
 #include "psi4/psifiles.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
@@ -37,11 +34,16 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/slaterdset.h"
+#include "psi4/libparallel/process.h"
 
 #include "psi4/detci/structs.h"
 #include "psi4/detci/slaterd.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+
+#include <cstdio>
+#include <cmath>
+#include <cstring>
 
 namespace psi {
 namespace detci {

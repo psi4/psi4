@@ -35,6 +35,8 @@
 namespace psi {
 
 class ERISieve;
+class BasisSet;
+class PSIO;
 
 namespace dfmp2 {
 

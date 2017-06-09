@@ -40,6 +40,7 @@
 #include <map>
 #include <utility>
 
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "matrixtmp.h"
 #include "operation.h"

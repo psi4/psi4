@@ -35,6 +35,8 @@
 #include <string>
 #include <cmath>
 #include <cstdlib>
+
+#include "psi4/libparallel/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -44,6 +46,8 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/multipolesymmetry.h"
+#include "psi4/liboptions/liboptions.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

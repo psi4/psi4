@@ -26,13 +26,16 @@
  * @END LICENSE
  */
 
+#include "defines.h"
+#include "dfocc.h"
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/writer.h"
 #include "psi4/libmints/writer_file_prefix.h"
-#include "defines.h"
-#include "dfocc.h"
+#include "psi4/libparallel/process.h"
+#include "psi4/liboptions/liboptions.h"
 
 using namespace psi;
 using namespace std;

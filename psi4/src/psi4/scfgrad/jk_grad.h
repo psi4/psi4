@@ -35,6 +35,9 @@
 namespace psi {
 
 class ERISieve;
+class BasisSet;
+class PSIO;
+class TwoBodyAOInt;
 
 namespace scfgrad {
 

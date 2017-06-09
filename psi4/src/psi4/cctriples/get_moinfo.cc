@@ -34,12 +34,16 @@
 #include <cstdlib>
 #include <string>
 #include <cstring>
+
+#include "psi4/libparallel/process.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

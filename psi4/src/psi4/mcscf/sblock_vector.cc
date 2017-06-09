@@ -31,6 +31,7 @@
 #include <cstdio>
 
 #include "sblock_vector.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "psi4/psi4-dec.h"
 

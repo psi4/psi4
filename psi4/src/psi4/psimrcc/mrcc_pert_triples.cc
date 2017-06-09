@@ -35,6 +35,10 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/process.h"
+
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS

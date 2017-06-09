@@ -26,15 +26,15 @@
  * @END LICENSE
  */
 
-#include <cstring>
-#include <iostream>
+#include "vector_base.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-
-#include "vector_base.h"
-
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
+
+#include <cstring>
+#include <iostream>
 
 extern FILE* outfile;
 

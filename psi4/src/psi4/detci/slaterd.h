@@ -58,7 +58,10 @@
 
 #ifndef _psi_src_bin_detci_slaterd_h
 #define _psi_src_bin_detci_slaterd_h
+
+#include <stdlib.h>
 #include <string>
+
 namespace psi { namespace detci {
 
 class CIWavefunction;
@@ -72,10 +75,10 @@ class SlaterDeterminant {
       unsigned char *Occs_[2];
 
    public:
-      SlaterDeterminant() { nalp_=0; nbet_=0; Occs_[0]=NULL; Occs_[1]=NULL; }
+      SlaterDeterminant() { nalp_=0; nbet_=0; Occs_[0]=nullptr; Occs_[1]=nullptr; }
       ~SlaterDeterminant() { 
-         if (Occs_[0] != NULL) free(Occs_[0]);
-         if (Occs_[1] != NULL) free(Occs_[1]);
+         if (Occs_[0] != nullptr) free(Occs_[0]);
+         if (Occs_[1] != nullptr) free(Occs_[1]);
          }
       void set(unsigned int nalp, unsigned char *alpoccs, 
          unsigned int nbet, unsigned char *betoccs);

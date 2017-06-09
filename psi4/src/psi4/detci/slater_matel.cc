@@ -31,12 +31,14 @@
     \brief Enter brief description of file here
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include "psi4/psi4-dec.h"
-
 #include "psi4/detci/slaterd.h"
 #include "psi4/detci/ciwave.h"
+
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cstdio>
+#include <cstdlib>
 
 
 namespace psi { namespace detci {

@@ -26,9 +26,9 @@
  * @END LICENSE
  */
 
-#include <map>
 #include "dcft.h"
-#include <cmath>
+#include "defines.h"
+
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
@@ -36,7 +36,11 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "defines.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <map>
+#include <cmath>
 
 
 using namespace std;

@@ -35,6 +35,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi { namespace cctriples {
 

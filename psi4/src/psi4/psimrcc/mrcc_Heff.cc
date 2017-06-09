@@ -26,14 +26,16 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/liboptions/liboptions.h"
 #include "mrcc.h"
 #include "matrix.h"
 #include "blas.h"
 #include "debugging.h"
+
+#include "psi4/libmoinfo/libmoinfo.h"
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/process.h"
 
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH

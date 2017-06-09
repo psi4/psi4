@@ -39,20 +39,22 @@
 ** Last modified by MLL on 25 November 1997
 */
 
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ci_tol.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ciwave.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libqt/slaterdset.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/detci/structs.h"
-#include "psi4/detci/ci_tol.h"
-#include "psi4/detci/civect.h"
-#include "psi4/detci/ciwave.h"
 #include "psi4/physconst.h"
+#include "psi4/libparallel/process.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 namespace psi { namespace detci {
 

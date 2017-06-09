@@ -49,7 +49,7 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
 
 #if defined(OPTKING_PACKAGE_PSI)
   std::shared_ptr<psi::PsiOutStream> printer(psi_fp=="outfile"? psi::outfile:
-     std::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::std::ostream::app)));
+     std::shared_ptr<psi::PsiOutStream>(new psi::PsiOutStream(psi_fp,std::ostream::app)));
 
   printer->Printf("%s", line);
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -60,7 +60,6 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
 void offlush_out(void) {
 #if defined(OPTKING_PACKAGE_PSI)
   std::shared_ptr<psi::PsiOutStream> printer(psi::outfile);
-  printer->Flush();
 #elif defined(OPTKING_PACKAGE_QCHEM)
   fflush(qc_outfile);
 #endif

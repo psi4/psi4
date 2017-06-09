@@ -41,6 +41,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libsapt_solver/fdds_disp.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libparallel/process.h"
 
 using namespace psi;
 

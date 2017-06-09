@@ -37,7 +37,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
-
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 using std::vector;
 namespace psi{ namespace cctransort {

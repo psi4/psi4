@@ -41,6 +41,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/writer_file_prefix.h"
+#include "psi4/libparallel/process.h"
 
 #include "psi4/libparallel/PsiOutStream.h"
 

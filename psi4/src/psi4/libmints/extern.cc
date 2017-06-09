@@ -36,6 +36,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/physconst.h"
 #include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
 
 #ifdef _OPENMP
 #include <omp.h>

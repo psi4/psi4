@@ -26,11 +26,6 @@
  * @END LICENSE
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
@@ -43,6 +38,14 @@
 #include "psi4/detci/civect.h"
 #include "psi4/detci/structs.h"
 #include "psi4/detci/slaterd.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
+#include "psi4/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <memory>
+ PRAGMA_WARNING_POP
 
 namespace psi { namespace detci {
 

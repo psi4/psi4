@@ -37,6 +37,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/cdsalclist.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi {
 namespace findif {

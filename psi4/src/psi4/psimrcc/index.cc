@@ -38,6 +38,7 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/memory_manager.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "index.h"
 

@@ -34,6 +34,7 @@
 
 #ifdef _OPENMP
   #include <omp.h>
+  #include "psi4/libparallel/process.h"
 #endif
 
 #ifdef USING_LAPACK_MKL

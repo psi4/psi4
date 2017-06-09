@@ -42,6 +42,7 @@
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libparallel/process.h"
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/PsiOutStream.h"
@@ -1164,7 +1165,7 @@ bool psi4_python_module_initialize()
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
-    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(());
+    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream());
     outfile_name = "stdout";
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
     psi_file_prefix = strdup(fprefix.c_str());

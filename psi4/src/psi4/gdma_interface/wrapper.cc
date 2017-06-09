@@ -26,9 +26,13 @@
  * @END LICENSE
  */
 #ifdef USING_gdma
-#include "psi4/libmints/matrix.h"
-#include "psi4/libparallel/PsiOutStream.h"
+
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
 #include <iostream>
 
 
@@ -46,15 +50,12 @@ namespace psi { namespace gdma_interface {
 
 SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options & options, const std::string &datfilename)
 {
-    outfile->Flush();
     run_gdma(outfile_name.c_str(), datfilename.c_str());
     // Reopen the outfile
-    if(outfile_name == "stdout"){
-        outfile=std::shared_ptr<PsiOutStream>(new PsiOutStream(());
-    }
-    else{
-       outfile=std::shared_ptr<PsiOutStream>
-          (new PsiOutStream(outfile_name,(std::ostream::app)));
+    if (outfile_name == "stdout") {
+        outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream());
+    } else {
+        outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(outfile_name, std::ostream::app));
     }
     int nsites = get_nsites();
     int maxorder = 0;

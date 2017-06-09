@@ -31,7 +31,6 @@
 #include "psi4/libmints/integralparameters.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/local.h"
-#include "psi4/libmints/view.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"

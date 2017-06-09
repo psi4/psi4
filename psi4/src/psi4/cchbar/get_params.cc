@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
+#include "psi4/libparallel/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"

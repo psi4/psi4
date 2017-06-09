@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include "psi4/fisapt/fisapt.h"
+#include "psi4/fisapt/local2.h"
 
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
@@ -40,10 +42,10 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/fisapt/fisapt.h"
 #include "psi4/libcubeprop/csg.h"
-#include "psi4/fisapt/local2.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libparallel/process.h"
+
 
 #ifdef _OPENMP
 #include <omp.h>

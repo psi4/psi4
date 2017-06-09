@@ -35,6 +35,7 @@
 #include <fstream>
 #include <iostream>
 #include "globals.h"
+#include "psi4/liboptions/liboptions.h"
 #include "molecule.h"
 #include "print.h"
 #include "io.h"

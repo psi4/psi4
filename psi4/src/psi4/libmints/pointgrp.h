@@ -83,7 +83,7 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
 
-#include <string>
+#include <string.h>
 #include <cstdio>
 #include <stdint.h>
 #include <vector>

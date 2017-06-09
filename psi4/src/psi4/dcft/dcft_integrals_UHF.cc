@@ -27,12 +27,13 @@
  */
 
 #include "dcft.h"
+#include "defines.h"
+
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libtrans/integraltransform.h"
-#include "defines.h"
-
-
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi{ namespace dcft{
 

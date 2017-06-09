@@ -26,10 +26,11 @@
  * @END LICENSE
  */
 
-#include <vector>
 #include "psi4/psifiles.h"
-
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
+
+#include <vector>
 
 namespace psi { namespace cctransort {
 

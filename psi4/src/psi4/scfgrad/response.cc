@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include "scf_grad.h"
+#include "jk_grad.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
@@ -38,13 +40,12 @@
 #include "psi4/libfock/apps.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/psifiles.h"
-#include "scf_grad.h"
-#include "jk_grad.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/liboptions/liboptions.h"
 
 #include <algorithm>
 

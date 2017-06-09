@@ -35,6 +35,10 @@
 #include "psi4/libsapt_solver/sapt2.h"
 #include "psi4/libsapt_solver/sapt2p.h"
 #include "psi4/libsapt_solver/sapt2p3.h"
+
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 //#include <libsapt_solver/sapt_dft.h>
 
 namespace psi { namespace sapt {

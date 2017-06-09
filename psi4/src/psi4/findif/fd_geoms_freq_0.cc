@@ -49,6 +49,7 @@
 
 #include "findif.h"
 #include "psi4/liboptions/liboptions_python.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/cdsalclist.h"

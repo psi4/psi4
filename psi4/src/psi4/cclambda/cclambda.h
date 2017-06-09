@@ -29,6 +29,8 @@
 #ifndef CCLAMBDA_H
 #define CCLAMBDA_H
 
+#include "psi4/libmints/wavefunction.h"
+
 namespace psi {
 class Wavefunction;
 class Options;

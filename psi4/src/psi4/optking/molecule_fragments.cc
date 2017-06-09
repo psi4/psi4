@@ -40,6 +40,7 @@
 #include "v3d.h"
 #include "atom_data.h"
 #include "psi4/optking/physconst.h"
+#include "psi4/libparallel/process.h"
 #include "cov_radii.h"
 
 #include "print.h"

@@ -30,6 +30,10 @@
 #include "psi4/libplugin/plugin.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+#include "psi4/liboptions/liboptions.h"
+
 #include <string>
 #include <vector>
 

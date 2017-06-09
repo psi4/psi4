@@ -32,6 +32,7 @@
 */
 #include <cstdio>
 #include <cmath>
+#include "psi4/libparallel/PsiOutStream.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN

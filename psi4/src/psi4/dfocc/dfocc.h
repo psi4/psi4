@@ -29,9 +29,11 @@
 #ifndef dfocc_h
 #define dfocc_h
 
+#include "tensors.h"
+
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
-#include "tensors.h"
 
 using namespace std;
 

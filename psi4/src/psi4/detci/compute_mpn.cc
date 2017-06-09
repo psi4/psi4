@@ -41,9 +41,6 @@
 
 /* #define DEBUG */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
@@ -51,6 +48,11 @@
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+#include "psi4/libparallel/process.h"
+
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 
 namespace psi { namespace detci {
 

@@ -26,14 +26,17 @@
  * @END LICENSE
  */
 
+#include "dcft.h"
+#include "defines.h"
+
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
-#include "dcft.h"
-#include "defines.h"
 
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"

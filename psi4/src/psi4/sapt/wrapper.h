@@ -30,8 +30,12 @@
 #define SAPTENERGY_H
 
 #include "psi4/psi4-dec.h"
+#include "psi4/libmints/typedefs.h"
 
-namespace psi { namespace sapt {
+namespace psi {
+class Options;
+
+namespace sapt {
 
 PsiReturnType sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA,
                    SharedWavefunction MonomerB, Options & options);

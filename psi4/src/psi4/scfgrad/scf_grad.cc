@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include "scf_grad.h"
+#include "jk_grad.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
@@ -40,8 +42,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
-#include "scf_grad.h"
-#include "jk_grad.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include <algorithm>
 

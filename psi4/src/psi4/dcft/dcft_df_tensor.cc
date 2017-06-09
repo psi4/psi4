@@ -26,12 +26,10 @@
  * @END LICENSE
  */
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
+#include "dcft.h"
+#include "defines.h"
 
+#include "psi4/libparallel/process.h"
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
@@ -42,22 +40,27 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/basisset.h"
-#include "dcft.h"
-#include "defines.h"
-#include <vector>
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libdiis/diismanager.h"
-
 #include "psi4/lib3index/3index.h"
 
 #include "psi4/libmints/sieve.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/apps.h"
 #include "psi4/physconst.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <sstream>
+#include <vector>
+
 
 #ifdef _OPENMP
 #include <omp.h>

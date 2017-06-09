@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include "jk_grad.h"
 
 #include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
@@ -33,11 +34,14 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
-#include "jk_grad.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/process.h"
+
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif

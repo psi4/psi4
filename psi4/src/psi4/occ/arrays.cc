@@ -28,14 +28,17 @@
 
 // Latest revision on April 25, 2013.
 
-#include <stdio.h>
-#include "psi4/libqt/qt.h"
 #include "arrays.h"
 
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <stdio.h>
+#include <cmath>
 
 using namespace psi;
 using namespace std;
-#include "psi4/libparallel/PsiOutStream.h"
 namespace psi{ namespace occwave{
 
 
@@ -194,7 +197,7 @@ double Array1d::rms()
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += A1d_[i] * A1d_[i];
-  summ=sqrt(summ)/dim1_;
+  summ=std::sqrt(summ)/dim1_;
 
   return summ;
 }//
@@ -204,7 +207,7 @@ double Array1d::rms(const Array1d* Atemp)
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += (A1d_[i] - Atemp->A1d_[i])  * (A1d_[i] - Atemp->A1d_[i]);
-  summ=sqrt(summ)/dim1_;
+  summ=std::sqrt(summ)/dim1_;
 
   return summ;
 }//
@@ -859,7 +862,7 @@ void Array2d::mgs()
 	  rmgs1 += A2d_[i][k] * A2d_[i][k];
 	}
 
-	rmgs1 = sqrt(rmgs1);
+	rmgs1 = std::sqrt(rmgs1);
 
 	for (int i=0; i<dim1_;i++) {
 	  A2d_[i][k]/=rmgs1;

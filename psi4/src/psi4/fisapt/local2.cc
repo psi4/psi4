@@ -26,15 +26,16 @@
  * @END LICENSE
  */
 
+#include "psi4/fisapt/local2.h"
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/fisapt/local2.h"
-
-
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi {
 

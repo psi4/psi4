@@ -31,6 +31,7 @@
 
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "index.h"
 #include "matrix.h"

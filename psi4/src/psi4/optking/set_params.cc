@@ -37,6 +37,7 @@
 
 #if defined(OPTKING_PACKAGE_PSI)
  #include "psi4/psi4-dec.h"
+ #include "psi4/liboptions/liboptions.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h>
 #endif

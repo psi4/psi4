@@ -46,6 +46,7 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "debugging.h"
 #include "matrix.h"

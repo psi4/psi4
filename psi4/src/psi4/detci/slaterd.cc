@@ -35,6 +35,7 @@
 #include <cstdlib> /* was libc.h */
 /* gcc 2.7.0 doesn't like #include <cstring> */
 #include "psi4/detci/slaterd.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "psi4/psi4-dec.h"
 

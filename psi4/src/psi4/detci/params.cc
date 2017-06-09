@@ -38,10 +38,6 @@
 **
 */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <iomanip>
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
@@ -52,6 +48,13 @@
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/structs.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/process.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <iomanip>
 
 namespace psi { namespace detci {
 

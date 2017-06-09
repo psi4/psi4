@@ -39,8 +39,10 @@
 ** University of Georgia
 */
 
-#include "psi4/detci/odometer.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include "psi4/detci/odometer.h"
 
 #include <cstdio>
 

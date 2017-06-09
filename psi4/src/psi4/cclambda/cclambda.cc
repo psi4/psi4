@@ -34,21 +34,26 @@
 **  CCLAMBDA: Program to calculate the coupled-cluster lambda vector.
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
+#include "MOInfo.h"
+#include "Params.h"
+#include "Local.h"
+#include "globals.h"
+#include "cclambda.h"
+
+#include "psi4/libparallel/process.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/wavefunction.h"
-#include "MOInfo.h"
-#include "Params.h"
-#include "Local.h"
-#include "globals.h"
-#include "cclambda.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 
 namespace psi { namespace cclambda {
 

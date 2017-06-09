@@ -26,11 +26,13 @@
  * @END LICENSE
  */
 
-#include"ccsd.h"
-#include"frozen_natural_orbitals.h"
+#include "ccsd.h"
+#include "frozen_natural_orbitals.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
+#include "psi4/liboptions/liboptions.h"
+
 
 namespace psi{ namespace fnocc{
 

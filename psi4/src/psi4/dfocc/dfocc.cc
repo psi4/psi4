@@ -31,6 +31,9 @@
 #include "psi4/libqt/qt.h"
 #include "dfocc.h"
 #include "defines.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+
 
 using namespace psi;
 

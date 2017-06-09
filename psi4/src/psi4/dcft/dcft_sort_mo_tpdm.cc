@@ -34,6 +34,8 @@
 #include "psi4/libtrans/integraltransform_functors.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/mospace.h"
+#include "psi4/libparallel/process.h"
+
 #define EXTERN
 #include "psi4/libdpd/dpd.gbl"
 #include "dcft.h"

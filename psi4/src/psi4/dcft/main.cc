@@ -26,13 +26,17 @@
  * @END LICENSE
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "defines.h"
+#include "dcft.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
-#include "defines.h"
-#include "dcft.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace psi;
 

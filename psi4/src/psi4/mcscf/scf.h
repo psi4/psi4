@@ -34,6 +34,7 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/memory_manager.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #define STORE_TEI 0
 

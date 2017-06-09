@@ -38,6 +38,7 @@
 #include "psi4/libmints/writer.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/cdsalclist.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "psi4/pybind11.h"
 

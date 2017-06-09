@@ -26,9 +26,10 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
 #include "occwave.h"
 
+#include "psi4/libqt/qt.h"
+#include "psi4/libparallel/process.h"
 
 using namespace psi;
 using namespace std;

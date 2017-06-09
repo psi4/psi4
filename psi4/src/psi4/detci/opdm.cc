@@ -31,9 +31,6 @@
     \brief Enter brief description of file here
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libciomr/libciomr.h"
@@ -41,9 +38,15 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "psi4/libparallel/process.h"
+
 #include "psi4/detci/structs.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 namespace psi { namespace detci {
 

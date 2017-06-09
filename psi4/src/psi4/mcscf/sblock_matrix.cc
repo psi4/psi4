@@ -26,14 +26,14 @@
  * @END LICENSE
  */
 
-#include <cstdlib>
-#include <cstdio>
-
-#include "psi4/psifiles.h"
-
 #include "sblock_matrix.h"
 
+#include "psi4/psifiles.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
+
+#include <cstdlib>
+#include <cstdio>
 
 namespace psi{ namespace mcscf{
 
