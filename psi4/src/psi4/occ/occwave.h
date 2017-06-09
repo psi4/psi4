@@ -32,7 +32,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "arrays.h"
 

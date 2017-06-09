@@ -1,5 +1,6 @@
-set(sources_list quad.cc 
-                 stl_string.cc 
+set(sources_list stl_string.cc 
+                 PsiOutStream.cc
+                 process.cc
                  memory_manager.cc 
                  exception.cc 
                  combinations.cc 

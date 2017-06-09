@@ -29,7 +29,7 @@
 #include "dcft.h"
 #include "defines.h"
 
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
@@ -52,7 +52,7 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/apps.h"
 #include "psi4/physconst.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <iostream>
 #include <cstdlib>

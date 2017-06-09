@@ -29,7 +29,7 @@
 #include "occwave.h"
 
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 using namespace psi;
 using namespace std;

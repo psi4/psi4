@@ -33,7 +33,7 @@
 #include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 using namespace std;
 

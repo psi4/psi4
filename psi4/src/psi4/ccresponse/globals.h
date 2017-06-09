@@ -31,7 +31,7 @@
     \brief Enter brief description of file here
 */
 #include "psi4/psifiles.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include <cstdio>
 
 namespace psi {

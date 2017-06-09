@@ -29,7 +29,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/pybind11.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <memory>
 #include <stdexcept>

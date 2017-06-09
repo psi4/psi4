@@ -35,7 +35,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 using namespace std;
 

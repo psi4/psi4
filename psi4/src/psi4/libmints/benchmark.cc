@@ -44,7 +44,7 @@
 #ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 

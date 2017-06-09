@@ -38,7 +38,7 @@
  PRAGMA_WARNING_POP
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/typedefs.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi{
 class Molecule;

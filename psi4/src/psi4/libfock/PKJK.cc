@@ -42,10 +42,10 @@
 #include "psi4/libmints/sobasis.h"
 
 #include <sstream>
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 #endif
 
 using namespace std;

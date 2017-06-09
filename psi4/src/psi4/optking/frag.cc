@@ -51,7 +51,7 @@
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
 #endif
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace opt {
 
 using namespace v3d;

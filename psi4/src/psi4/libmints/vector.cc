@@ -30,7 +30,7 @@
 #include "matrix.h"
 #include "vector.h"
 #include "dimension.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/pybind11.h"
 

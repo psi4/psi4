@@ -33,7 +33,7 @@
 
 #include "findif.h"
 #include "psi4/libmints/writer_file_prefix.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"

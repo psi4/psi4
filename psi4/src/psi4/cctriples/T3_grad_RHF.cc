@@ -41,7 +41,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi { namespace cctriples {
 
     void T3_grad_RHF(void)

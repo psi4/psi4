@@ -37,7 +37,7 @@
 #include "matrix.h"
 #include "psi4/psi4-dec.h"
 #include <cstdio>
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 ;
 using namespace psi;
 

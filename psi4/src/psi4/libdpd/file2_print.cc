@@ -32,7 +32,7 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 /* dpd_file2_print(): Prints out data for all irreps of a two-index dpdfile.

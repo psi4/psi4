@@ -44,8 +44,8 @@
 #include "psi4/physconst.h"
 #include "psi4/libmints/element_to_Z.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libparallel/PsiOutStream.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cmath>
 #include <cstdio>
@@ -60,7 +60,7 @@
 #include <sstream>
 #include <regex>
 
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace {
 // the third parameter of from_string() should be

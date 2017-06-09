@@ -32,7 +32,7 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 int DPD::file4_print(dpdfile4 *File, std::string out)

@@ -39,7 +39,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/sieve.h"
 #include "psi4/lib3index/dftensor.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 
 #include "psi4/libqt/qt.h"

@@ -28,7 +28,7 @@
 
 #include "psi4/dfep2/dfep2.h"
 
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
 #include "psi4/libmints/basisset.h"
@@ -40,7 +40,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cstdio>
 #include <cstdlib>

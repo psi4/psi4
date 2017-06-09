@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 /*!
 ** \file
 ** \brief Print a matrix to a file in a formatted style

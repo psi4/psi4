@@ -31,7 +31,7 @@
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/multipolesymmetry.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <vector>
 

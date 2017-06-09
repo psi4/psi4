@@ -32,7 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi { namespace cclambda {
 
 void status(const char *s, std::string out)

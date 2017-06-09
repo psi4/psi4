@@ -31,7 +31,7 @@
 
 #include "tensors.h"
 
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
 

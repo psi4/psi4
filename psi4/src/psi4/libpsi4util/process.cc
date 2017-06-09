@@ -29,8 +29,8 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/extern.h"
-#include "psi4/libparallel/PsiOutStream.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <regex>
 

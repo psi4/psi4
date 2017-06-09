@@ -28,7 +28,7 @@
 
 #include <cstdio>
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "heff.h"
 

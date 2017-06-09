@@ -38,8 +38,8 @@
 #include "psi4/detci/civect.h"
 #include "psi4/detci/structs.h"
 #include "psi4/detci/slaterd.h"
-#include "psi4/libparallel/PsiOutStream.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH

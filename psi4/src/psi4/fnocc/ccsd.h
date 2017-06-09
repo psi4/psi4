@@ -35,7 +35,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 long int Position(long int i,long int j);
 

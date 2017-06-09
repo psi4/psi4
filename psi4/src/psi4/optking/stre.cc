@@ -38,7 +38,7 @@
 #include "v3d.h"
 #include "psi4/optking/physconst.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "print.h"
 
 namespace opt {

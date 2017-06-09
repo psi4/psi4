@@ -37,11 +37,11 @@
 #include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/aiohandler.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 #endif
 
 namespace psi {

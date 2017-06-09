@@ -40,7 +40,7 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 

@@ -26,8 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libparallel_psioutstream_h_
-#define _psi_src_lib_libparallel_psioutstream_h_
+#ifndef _psi_src_lib_libpsi4util_psioutstream_h_
+#define _psi_src_lib_libpsi4util_psioutstream_h_
 
 #include <vector>
 #include <string>

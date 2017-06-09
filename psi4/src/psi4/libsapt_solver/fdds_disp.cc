@@ -37,9 +37,9 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libsapt_solver/fdds_disp.h"
 #include "psi4/libmints/3coverlap.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <iomanip>
 

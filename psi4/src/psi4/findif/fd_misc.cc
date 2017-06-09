@@ -41,9 +41,9 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/writer_file_prefix.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 using SharedMatrix=std::shared_ptr<Matrix>;

@@ -43,8 +43,8 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libparallel/PsiOutStream.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "factory.h"
 #include "wavefunction.h"
@@ -3662,12 +3662,12 @@ void Matrix::set_by_python_list(const py::list &data)
 
     // Make sure nrows < rows
     if ((size_t) nrow() > rows)
-        throw PSIEXCEPTION("Uh, moron!");
+        throw PSIEXCEPTION("Number of rows in list is more than the rows in the matrix!");
 
     for (size_t i = 0; i < rows; ++i) {
         size_t cols = py::len(data[i]);
         if ((size_t) ncol() > cols)
-            throw PSIEXCEPTION("Uh, moron!");
+            thcol PSIEXCEPTION("Number of cols in list is more than the cols in the matrix!");
         for (size_t j = 0; j < cols; ++j) {
             set(i, j, data[i].cast<py::list>()[j].cast<double>());
         }

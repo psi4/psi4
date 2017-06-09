@@ -35,7 +35,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"

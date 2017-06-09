@@ -42,7 +42,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <algorithm>
 
@@ -50,7 +50,7 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 #endif
 
 using namespace std;

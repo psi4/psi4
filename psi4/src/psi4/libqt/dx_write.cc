@@ -37,7 +37,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"

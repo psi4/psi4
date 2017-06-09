@@ -36,7 +36,7 @@
 #include "print.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
  #include <cmath>

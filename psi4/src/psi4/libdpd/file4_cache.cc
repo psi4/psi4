@@ -35,7 +35,7 @@
 #include <cstring>
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 void DPD::file4_cache_init(void)

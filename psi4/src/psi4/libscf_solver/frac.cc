@@ -49,7 +49,7 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cstdlib>
 #include <cstdio>

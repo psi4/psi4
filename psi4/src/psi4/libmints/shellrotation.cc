@@ -60,7 +60,7 @@
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cstdio>
 

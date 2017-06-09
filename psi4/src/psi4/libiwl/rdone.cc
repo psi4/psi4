@@ -36,7 +36,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 void IWL::read_one(PSIO *psio, int itap, const char *label, double *ints,

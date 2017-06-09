@@ -29,8 +29,8 @@
 #include "mp2.h"
 #include "corr_grad.h"
 
-#include "psi4/libparallel/PsiOutStream.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libfock/jk.h"

@@ -50,7 +50,7 @@
 #include "psi4/libqt/slaterdset.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/physconst.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cstdio>
 #include <cstdlib>

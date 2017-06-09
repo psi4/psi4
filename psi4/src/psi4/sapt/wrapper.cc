@@ -37,7 +37,7 @@
 #include "psi4/libsapt_solver/sapt2p3.h"
 
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 //#include <libsapt_solver/sapt_dft.h>
 

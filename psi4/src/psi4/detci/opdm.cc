@@ -38,7 +38,7 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "psi4/detci/structs.h"
 #include "psi4/detci/civect.h"

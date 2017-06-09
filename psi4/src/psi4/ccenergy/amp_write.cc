@@ -37,7 +37,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
 #include "ccwave.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi { namespace ccenergy {
 

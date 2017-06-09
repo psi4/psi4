@@ -32,7 +32,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/masses.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"

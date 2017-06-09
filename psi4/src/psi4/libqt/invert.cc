@@ -38,7 +38,7 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "qt.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 #define SMALL_DET 1.0E-10

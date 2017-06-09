@@ -29,7 +29,7 @@
 #include "sblock_matrix.h"
 
 #include "psi4/psifiles.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
 
 #include <cstdlib>

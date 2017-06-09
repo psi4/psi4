@@ -34,7 +34,7 @@
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 using namespace psi;
 
 ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<double> &e,

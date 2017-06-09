@@ -34,7 +34,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/memory_manager.h"
-#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "special_matrices.h"
 

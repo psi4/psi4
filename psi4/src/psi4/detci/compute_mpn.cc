@@ -48,7 +48,7 @@
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
-#include "psi4/libparallel/process.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cstdlib>
 #include <cstdio>
