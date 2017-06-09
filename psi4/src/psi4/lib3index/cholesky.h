@@ -29,6 +29,8 @@
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
 
+#include "psi4/libmints/typedefs.h"
+
 namespace psi {
 
 class Vector;

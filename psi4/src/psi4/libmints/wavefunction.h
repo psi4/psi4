@@ -31,7 +31,6 @@
 
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 
 #include "psi4/pybind11.h"

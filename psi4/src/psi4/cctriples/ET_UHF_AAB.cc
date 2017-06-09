@@ -40,7 +40,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi { namespace cctriples {
 
 double ET_UHF_AAB(void)
@@ -169,7 +169,7 @@ double ET_UHF_AAB(void)
 	    }
 	  }
 	}
-  std::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
   //ffile(&ijkfile,"ijk.dat",0);
   printer->Printf( "Spin Case: AAB\n");
   printer->Printf( "Number of IJK combintions: %d\n", nijk);

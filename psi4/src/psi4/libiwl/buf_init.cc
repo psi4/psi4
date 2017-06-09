@@ -36,6 +36,8 @@
 #include "iwl.h"
 #include "iwl.hpp"
 #include "psi4/psi4-dec.h" //need outfile
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 namespace psi {
 

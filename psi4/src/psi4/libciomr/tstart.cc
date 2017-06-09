@@ -32,15 +32,17 @@
 ** \ingroup CIOMR
 */
 
+#define EXTERN
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <sys/times.h>
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
 #include <string>
 #include <ctime>
-#define EXTERN
-#include "psi4/psi4-dec.h"
-#include <sys/times.h>
 
 namespace psi {
 

@@ -33,11 +33,15 @@
 */
 
 #include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <strings.h>
-#include "psi4/psi4-dec.h"
+
 namespace psi {
 
   /**

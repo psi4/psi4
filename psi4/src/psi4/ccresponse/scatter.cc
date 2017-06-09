@@ -59,7 +59,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/physconst.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 //#include "oldphysconst.h"
 //#include "mass.h"
@@ -83,7 +83,7 @@ void rs(int nm, int n, double **array, double *e_vals, int matz,
 
 namespace psi { namespace ccresponse {
 
-void print_tensor_der(std::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list);
+void print_tensor_der(std::shared_ptr<PsiOutStream> myfile, std::vector<SharedMatrix> my_tensor_list);
 
 //void scatter(double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
 void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, std::vector <SharedMatrix> pol, std::vector <SharedMatrix> rot, std::vector <SharedMatrix> quad)
@@ -191,7 +191,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 
     // Write Out the Tensor Derivatives to File tender.dat //
     // Outfile derivs("tender.dat", "w");
-    std::shared_ptr<OutFile> derivs(new OutFile("tender.dat", TRUNCATE));
+    std::shared_ptr<PsiOutStream> derivs(new PsiOutStream("tender.dat", std::ostream::trunc));
     derivs->Printf( "******************************************************\n");
     derivs->Printf( "**********                                  **********\n");
     derivs->Printf( "**********        TENSOR DERIVATIVES        **********\n");
@@ -728,7 +728,7 @@ void scatter(std::shared_ptr<Molecule> molecule, Options &options, double step, 
 }
 
 // Handy Tensor Derivative Array Printer
-void print_tensor_der(std::shared_ptr<OutFile> myfile, std::vector<SharedMatrix> my_tensor_list)
+void print_tensor_der(std::shared_ptr<PsiOutStream> myfile, std::vector<SharedMatrix> my_tensor_list)
 {
   for(int i=0; i < my_tensor_list.size(); ++i)  {
     int atom_num  = i/3;

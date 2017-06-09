@@ -27,7 +27,6 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "psi4/libscf_solver/rohf.h"
@@ -41,7 +40,7 @@
 #include "psi4/libfock/apps.h"
 #include "psi4/libqt/qt.h"
 #include <vector>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/fnocc/frozen_natural_orbitals.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -56,7 +55,7 @@ namespace mrcc {
 
 namespace {
 
-void write_oei_to_disk(std::shared_ptr <OutFile> &printer, SharedMatrix moH)
+void write_oei_to_disk(std::shared_ptr <PsiOutStream> &printer, SharedMatrix moH)
 {
     // Walk through moH and save the non-zero values
     int offset = 0;
@@ -72,7 +71,7 @@ void write_oei_to_disk(std::shared_ptr <OutFile> &printer, SharedMatrix moH)
     }
 }
 
-void write_tei_to_disk(std::shared_ptr <OutFile> &printer, int nirrep, dpdbuf4 &K, double ints_tolerance)
+void write_tei_to_disk(std::shared_ptr <PsiOutStream> &printer, int nirrep, dpdbuf4 &K, double ints_tolerance)
 {
     for (int h = 0; h < nirrep; ++h) {
         global_dpd_->buf4_mat_irrep_init(&K, h);
@@ -732,7 +731,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     outfile->Printf("\n");
     //FILE* fort55 = fopen("fort.55", "w");
-    std::shared_ptr <OutFile> printer(new OutFile("fort.55", TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream("fort.55", std::ostream::trunc));
     printer->Printf("%22d%22d\n", nbf, nelectron);
 
     // Print out orbital symmetries
@@ -960,7 +959,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         for (int n = 0; n < active_socc[h]; ++n)
             symm ^= h;
     symm += 1; // stupid 1 based fortran
-    printer = std::shared_ptr<OutFile>(new OutFile("fort.56", TRUNCATE));
+    printer = std::shared_ptr<PsiOutStream>(new PsiOutStream("fort.56", std::ostream::trunc));
     //FILE* fort56 = fopen("fort.56", "w");
     printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d%6d%6d      0      0%6d     0     0    0.00    0%6lu\n",
                     exlevel,                                         // # 1

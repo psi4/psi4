@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include "jk.h"
 
 #include "psi4/lib3index/3index.h"
 #include "psi4/libpsio/psio.hpp"
@@ -36,19 +37,16 @@
 #include "psi4/psifiles.h"
 #include "psi4/libmints/sieve.h"
 #include "psi4/libiwl/iwl.hpp"
-#include "jk.h"
-//#include "jk_independent.h"
-//#include "link.h"
-//#include "direct_screening.h"
-//#include "cubature.h"
-//#include "points.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/lib3index/cholesky.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include <vector>
 #ifdef _OPENMP
 #include <omp.h>
 #endif

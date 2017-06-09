@@ -40,11 +40,12 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
 #include "factory.h"
 #include "wavefunction.h"
 #include "dimension.h"
@@ -886,7 +887,7 @@ SharedMatrix Matrix::to_block_sharedmatrix() const
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
     const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     int num_frames = int(n / print_ncol);
@@ -936,7 +937,7 @@ void Matrix::print(std::string out, const char *extra) const
 {
     int h;
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     if (name_.length()) {
         if (extra == NULL)
             printer->Printf("  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
@@ -988,7 +989,7 @@ void Matrix::print_atom_vector(std::string out)
 {
     int i;
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     if (name_.length()) {
         printer->Printf("\n  -%s:\n", name_.c_str());
     }
@@ -1007,7 +1008,7 @@ void Matrix::print_atom_vector(std::string out)
 void Matrix::eivprint(const Vector *const values, std::string out)
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     if (symmetry_)
         throw PSIEXCEPTION("Matrix::eivprint: This print does not make sense for non-totally symmetric matrices.");
 
@@ -3123,8 +3124,8 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
         throw PSIEXCEPTION("Matrix::save: Unable to save lower triangle for non-totally symmetric matrix.");
 
     std::shared_ptr <psi::PsiOutStream> printer =
-            std::shared_ptr<OutFile>(
-                    new OutFile(filename, (append ? APPEND : TRUNCATE)));
+            std::shared_ptr<PsiOutStream>(
+                    new PsiOutStream(filename, (append ? std::ostream::app : std::ostream::trunc)));
     printer->Printf("%s\n", name_.c_str());
     printer->Printf("symmetry %d\n", symmetry_);
 

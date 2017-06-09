@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include "soscf.h"
+#include "jk.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
@@ -39,8 +41,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-#include "soscf.h"
-#include "jk.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi {
 

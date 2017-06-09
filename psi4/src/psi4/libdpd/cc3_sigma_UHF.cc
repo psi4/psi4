@@ -38,7 +38,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 /*
@@ -56,7 +56,7 @@ void DPD::cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ,
                             int *avirtpi, int *avir_off, double omega, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int h, nirreps;
     int *occ_off, *occpi, *vir_off, *virtpi;
     int Gi, Gj, Gk, Gijk, Ga, Gb, Gc;
@@ -291,7 +291,7 @@ void DPD::cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij,
                             double omega, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int h, nirreps;
     int *occ_off, *occpi, *vir_off, *virtpi;
     int Gi, Gj, Gk, Gijk, Ga, Gb, Gc;
@@ -532,7 +532,7 @@ void DPD::cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
                             double omega, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int h, nirreps;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;
@@ -1071,7 +1071,7 @@ void DPD::cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
                             double omega, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int h, nirreps, S_irr;
     int Gi, Gj, Gk, Gijk;
     int Ga, Gb, Gc, Gab;

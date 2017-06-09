@@ -28,7 +28,6 @@
 
 #include "stability.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "psi4/libpsio/psio.hpp"
@@ -39,6 +38,9 @@
 #include "psi4/libfock/hamiltonian.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/physconst.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+#include "psi4/liboptions/liboptions.h"
 
 
 using namespace std;

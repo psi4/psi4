@@ -42,7 +42,7 @@
 #include "psi4/libmints/sobasis.h"
 
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

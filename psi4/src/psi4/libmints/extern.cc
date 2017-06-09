@@ -35,7 +35,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/physconst.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -71,7 +71,7 @@ void ExternalPotential::addBasis(std::shared_ptr <BasisSet> basis, SharedVector 
 void ExternalPotential::print(std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("   => External Potential Field: %s <= \n\n", name_.c_str());
 
     // Charges

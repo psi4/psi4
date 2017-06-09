@@ -79,7 +79,7 @@ void schmidt(double **A, int rows, int cols, std::string)
 #ifdef STANDALONE
 main()
 {
-   std::string OutFileRMR ;
+   std::string out_fname ;
    double **mat, **mat_copy, **mat_x_mat ;
    void schmidt(double **A, int rows, int cols) ;
 

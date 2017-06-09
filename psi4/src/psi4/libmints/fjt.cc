@@ -53,13 +53,17 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include <cmath>
 #include "integral.h"
 #include "fjt.h"
 #include "wavefunction.h"
 #include "integralparameters.h"
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cmath>
+
 using namespace psi;
 using namespace std;
 ;

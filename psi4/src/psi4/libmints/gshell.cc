@@ -34,7 +34,7 @@
 
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 using namespace psi;
 
 ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<double> &e,
@@ -163,7 +163,7 @@ int ShellInfo::nprimitive() const
 void ShellInfo::print(std::string out) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
    printer->Printf( "    %c %3d 1.00\n", AMCHAR(), nprimitive());
 
@@ -231,7 +231,7 @@ int GaussianShell::nprimitive() const
 void GaussianShell::print(std::string out) const
 {
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-                                                               std::shared_ptr<OutFile>(new OutFile(out)));
+                                                               std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
 
     if(shelltype_ == ECPType1 || shelltype_ == ECPType2) {

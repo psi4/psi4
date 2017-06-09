@@ -37,7 +37,7 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "ccwave.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 namespace psi { namespace ccenergy {
 
@@ -58,7 +58,7 @@ void CCEnergyWavefunction::analyze(void)
   max = 9;
   min = 0;
   width = (max-min) / (num_div);
-  std::shared_ptr<OutFile> printer(new OutFile("tamps.dat",APPEND));
+  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("tamps.dat",std::ostream::app));
   amp_array = init_array(num_div);
 
   nvir = moinfo_.virtpi[0];
@@ -117,7 +117,7 @@ void CCEnergyWavefunction::analyze(void)
   max = 2;
   min = -5;
   width = (max-min) / (num_div);
-  std::shared_ptr<OutFile> printer2(new OutFile("t1amps.dat",APPEND));
+  std::shared_ptr<PsiOutStream> printer2(new PsiOutStream("t1amps.dat",std::ostream::app));
   amp_array = init_array(num_div);
 
   global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");

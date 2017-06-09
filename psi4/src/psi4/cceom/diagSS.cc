@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <string>
 #include <cmath>
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"

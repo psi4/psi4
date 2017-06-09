@@ -26,13 +26,18 @@
  * @END LICENSE
  */
 
-#include <cmath>
-#include <string>
 #include "functional.h"
 #include "LibXCfunctional.h"
+
 #include "psi4/libmints/vector.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+
+#include <cmath>
+#include <string>
+
 
 using namespace psi;
 

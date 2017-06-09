@@ -47,6 +47,7 @@ abcd              - Virtual indices
 #ifndef SOSCF_H
 #define SOSCF_H
 
+#include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 #include <map>
 

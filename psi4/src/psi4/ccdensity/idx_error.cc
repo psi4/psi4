@@ -35,7 +35,8 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 namespace psi {
 namespace ccdensity {
 
@@ -43,7 +44,7 @@ void idx_error(const char *message, int p, int q, int r, int s, int pq, int rs,
                int pq_sym, int rs_sym, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
   printer->Printf( "\n\tDPD Parameter Error in %s\n", message);
   printer->Printf(
           "\t-------------------------------------------------\n");

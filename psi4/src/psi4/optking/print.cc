@@ -33,7 +33,7 @@
 
 #include "print.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace opt {
 
@@ -49,7 +49,7 @@ void oprintf(const std::string psi_fp, const FILE *qc_fp, const char* format,...
 
 #if defined(OPTKING_PACKAGE_PSI)
   std::shared_ptr<psi::PsiOutStream> printer(psi_fp=="outfile"? psi::outfile:
-     std::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::APPEND)));
+     std::shared_ptr<psi::OutFile>(new psi::OutFile(psi_fp,psi::std::ostream::app)));
 
   printer->Printf("%s", line);
 #elif defined(OPTKING_PACKAGE_QCHEM)

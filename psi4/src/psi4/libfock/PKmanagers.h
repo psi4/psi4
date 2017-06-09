@@ -25,6 +25,9 @@
 #define PKMGR_H
 
 //TODO Const correctness of everything
+#include "psi4/libmints/typedefs.h"
+#include <psi4/libpsio/psio.hpp>
+#include <vector>
 
 namespace psi {
 

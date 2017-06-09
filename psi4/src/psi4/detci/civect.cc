@@ -59,7 +59,7 @@
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/civect.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libmints/vector.h"
 
 namespace psi { namespace detci {

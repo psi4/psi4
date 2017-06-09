@@ -51,6 +51,8 @@
 #include "psi4/libmints/multipoles.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 #include <iostream>
 #include <cstdlib>

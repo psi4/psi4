@@ -40,7 +40,6 @@
 // PSI unit number for opt_data binary file
 #if defined (OPTKING_PACKAGE_PSI)
  #define PSI_OPTDATA_FILE_NUM 1
- #include "psi4/libparallel/parallel.h"
  #include "psi4/libpsio/psio.h"
  #include "psi4/libpsio/psio.hpp"
  using namespace psi;

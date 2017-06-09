@@ -51,7 +51,7 @@
 #elif defined (OPTKING_PACKAGE_QCHEM)
  #include "qcmath.h"
 #endif
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace opt {
 
 void FRAG::print_geom(std::string psi_fp, FILE *qc_fp, const int id, bool print_masses) {

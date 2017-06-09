@@ -43,6 +43,9 @@
 #include "psi4/masses.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/element_to_Z.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 #include <cmath>
 #include <cstdio>
@@ -57,7 +60,7 @@
 #include <sstream>
 #include <regex>
 
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace {
 // the third parameter of from_string() should be
@@ -1908,7 +1911,7 @@ void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) cons
 {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    std::shared_ptr <OutFile> printer(new OutFile(filename, TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream(filename, std::ostream::trunc));
 
     int N = natom();
     if (!save_ghosts) {

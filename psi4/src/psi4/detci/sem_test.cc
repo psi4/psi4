@@ -71,7 +71,7 @@ double **A ;
 double *evals, **evecs ;
 int i, j, used;
 void sem() ;
-std::string OutFileRMR ;
+std::string out_fname ;
 
    ffile(&outfile, "output.dat", 0) ;
    tstart(outfile) ;

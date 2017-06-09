@@ -80,7 +80,8 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -365,7 +366,7 @@ void
 PointGroup::print(std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("PointGroup: %s\n", symb.c_str());
 }
 

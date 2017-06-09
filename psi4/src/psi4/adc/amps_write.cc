@@ -27,7 +27,7 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
 #include <cmath>
 #include "adc.h"
@@ -48,7 +48,7 @@ void
 ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    struct onestack *t1stack;
     int Gia = B->my_irrep;
 

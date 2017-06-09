@@ -25,6 +25,9 @@
  *
  * @END LICENSE
  */
+
+#include "x2cint.h"
+
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
@@ -37,7 +40,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/psi4-dec.h"
-#include "x2cint.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -661,8 +665,7 @@ SharedMatrix MintsHelper::ao_dkh(int dkh_order)
 
     return H_dk_cc;
 #else
-    UNUSED(dkh_order);
-    outfile->Printf("    Douglas-Kroll-Hess integrals requested but are not available.\n");
+    outfile->Printf("    Douglas-Kroll-Hess integrals of order %d requested but are not available.\n", dkh_order);
     throw PSIEXCEPTION("Douglas-Kroll-Hess integrals requested but were not compiled in.");
 #endif
 }

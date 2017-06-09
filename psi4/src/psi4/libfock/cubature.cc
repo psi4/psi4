@@ -29,8 +29,16 @@
 
 #include "cubature.h"
 #include "gridblocker.h"
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
 
 #include <vector>
 #include <string>
@@ -38,10 +46,6 @@
 #include <cstdio>
 #include <limits>
 #include <ctype.h>
-#include "psi4/libparallel/ParallelPrinter.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/matrix.h"
 
 using namespace std;
 using namespace psi;
@@ -3821,7 +3825,7 @@ void BasisExtents::computeExtents()
 void BasisExtents::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    printer->Printf( "   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
     double* Rp = shell_extents_->pointer();
@@ -3927,7 +3931,7 @@ void BlockOPoints::populate()
 void BlockOPoints::print(std::string out, int print)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    printer->Printf( "   => BlockOPoints: %d Points <=\n\n", npoints_);
 
     printer->Printf( "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
@@ -4369,7 +4373,7 @@ void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_p
 void MolecularGrid::print(std::string out, int /*print*/) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("   => Molecular Quadrature <=\n\n");
     printer->Printf("    Radial Scheme       = %14s\n" , RadialGridMgr::SchemeName(options_.radscheme));
     printer->Printf("    Pruning Scheme      = %14s\n" , RadialPruneMgr::SchemeName(options_.prunescheme));
@@ -4389,7 +4393,7 @@ void MolecularGrid::print(std::string out, int /*print*/) const
 void MolecularGrid::print_details(std::string out, int /*print*/) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    printer->Printf("   > Grid Details <\n\n");
     for (size_t A = 0; A < radial_grids_.size(); A++) {
         printer->Printf("    Atom: %4d, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(), radial_grids_[A]->alpha());
@@ -4482,9 +4486,9 @@ void OctreeGridBlocker::block()
 
     // => OLD ALGORITHM <= //
     // K-PR Tree blocking
-    std::shared_ptr<OutFile> printer;
+    std::shared_ptr<PsiOutStream> printer;
     if (bench_) {
-       printer=std::shared_ptr<OutFile>(new OutFile("khtree.dat"));
+       printer=std::shared_ptr<PsiOutStream>(new PsiOutStream("khtree.dat"));
        //fh_ktree = fopen("ktree.dat","w");
         //outfile->Printf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
     }
@@ -4629,7 +4633,7 @@ void OctreeGridBlocker::block()
     int index = 0;
     int unique_block = 0;
     if (bench_) {
-       printer=std::shared_ptr<OutFile>(new OutFile("finished_blocks.dat",APPEND));
+       printer=std::shared_ptr<PsiOutStream>(new PsiOutStream("finished_blocks.dat",std::ostream::app));
         //outfile->Printf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W");
     }
     for (size_t A = 0; A < completed_tree.size(); A++) {
@@ -4667,7 +4671,7 @@ void OctreeGridBlocker::block()
     }
 
     if (bench_) {
-       printer=std::shared_ptr<OutFile>(new OutFile("extents.dat",APPEND));
+       printer=std::shared_ptr<PsiOutStream>(new PsiOutStream("extents.dat",std::ostream::app));
         //FILE* fh_extents = fopen("extents.dat","w");
         //outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
         std::shared_ptr<BasisSet> basis = extents_->basis();
@@ -4684,7 +4688,7 @@ void OctreeGridBlocker::block()
         for (int i = 2; i < 20; i++) {
             std::stringstream ss;
             ss << "extents" << i << ".dat";
-            printer=std::shared_ptr<OutFile>(new OutFile(ss.str(),APPEND));
+            printer=std::shared_ptr<PsiOutStream>(new PsiOutStream(ss.str(),std::ostream::app));
             //FILE* fh_extents = fopen(ss.str().c_str(),"w");
             //outfile->Printf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
             extents_->set_delta(pow(10.0,-i));
@@ -4714,7 +4718,7 @@ RadialGrid::~RadialGrid()
 void RadialGrid::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    if (level > 0) {
         printer->Printf( "   => RadialGrid: %s Scheme <=\n\n", scheme_.c_str());
         printer->Printf( "      Points: %d\n", npoints_);
@@ -4826,7 +4830,7 @@ SphericalGrid::~SphericalGrid()
 void SphericalGrid::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));if (level > 0) {
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));if (level > 0) {
         printer->Printf( "   => SphericalGrid: %s Scheme <=\n\n", scheme_.c_str());
         printer->Printf( "      Points: %d\n", npoints_);
         printer->Printf( "   %4s %24s %24s %24s %24s\n", "N", "X", "Y", "Z",  "W");

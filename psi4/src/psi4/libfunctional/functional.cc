@@ -28,7 +28,9 @@
 
 #include "functional.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+
 namespace psi {
 
 Functional::Functional()
@@ -60,7 +62,7 @@ std::shared_ptr<Functional> Functional::build_worker() {
 void Functional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<OutFile>(new OutFile(out)));
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("   => %s Functional <=\n\n", name_.c_str());
 
     printer->Printf("%s", description_.c_str());

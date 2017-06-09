@@ -78,8 +78,10 @@
 */
 
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/exception.h"
+
 #include <ctype.h>
 
 using namespace std;
@@ -151,7 +153,7 @@ void CharacterTable::print(std::string out) const
 {
     if (!nirrep_) return;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<OutFile>(new OutFile(out)));
+          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     int i;
 
     printer->Printf( "  point group %s\n\n", symb.c_str());

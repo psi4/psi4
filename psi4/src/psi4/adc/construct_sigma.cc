@@ -26,9 +26,11 @@
  * @END LICENSE
  */
 
+#include "adc.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "adc.h"
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi{ namespace adc{
 

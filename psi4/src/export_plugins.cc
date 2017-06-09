@@ -28,7 +28,6 @@
 
 #include "psi4/pybind11.h"
 #include "psi4/libplugin/plugin.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libfilesystem/path.h"
 #include <string>

@@ -49,7 +49,7 @@
 #include "psi4/lib3index/cholesky.h"
 
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -578,7 +578,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       std::shared_ptr<OutFile> printer(new OutFile("bench.dat",APPEND));
+       std::shared_ptr<PsiOutStream> printer(new PsiOutStream("bench.dat",std::ostream::app));
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);

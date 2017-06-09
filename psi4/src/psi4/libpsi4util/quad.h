@@ -86,7 +86,7 @@ class ChebyshevIIQuadrature : public Quadrature {
         ~ChebyshevIIQuadrature() {}
 
         /// Prints the Quadrature rule
-        void print(std::string OutFileRMR = "outfile");
+        void print(std::string out_fname = "outfile");
 
 };
 

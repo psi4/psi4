@@ -34,10 +34,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+
+#include "psi4/libparallel/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"

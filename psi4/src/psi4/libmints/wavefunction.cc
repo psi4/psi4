@@ -27,13 +27,12 @@
  */
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/parallel.h"
+#include "psi4/libmints/view.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
@@ -48,6 +47,7 @@
 #include "psi4/libmints/corrtab.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libparallel/process.h"
 
 #include <cstdlib>
 #include <cstdio>

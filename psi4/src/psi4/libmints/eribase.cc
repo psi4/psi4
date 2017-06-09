@@ -35,6 +35,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/fjt.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "psi4/pybind11.h"
 

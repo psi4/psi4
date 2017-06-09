@@ -34,7 +34,7 @@
 
 #include <cstdio>
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 /*!
@@ -52,7 +52,7 @@ namespace psi {
 void print_mat(double **a, int m, int n, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 int num_frames = int(n/10);
 int num_frames_rem = n%10; //adding one for changing 0->1 start
 int num_frame_counter = 0;

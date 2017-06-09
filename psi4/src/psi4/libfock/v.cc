@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#include "cubature.h"
+#include "points.h"
+#include "v.h"
 
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -33,14 +36,13 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 
-#include "cubature.h"
-#include "points.h"
-#include "v.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 #include <cstdlib>
 #include <sstream>

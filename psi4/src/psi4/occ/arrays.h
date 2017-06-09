@@ -67,7 +67,7 @@ class Array1d
   void memalloc();
   void zero();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, double value);
   void set(double *vec);
@@ -127,7 +127,7 @@ class Array2d
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, int j, double value);
   void set(double **A);

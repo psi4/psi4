@@ -21,12 +21,13 @@
  *@END LICENSE
  */
 
+#include "PKmanagers.h"
+#include "PK_workers.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
-#include "PKmanagers.h"
-#include "PK_workers.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/twobody.h"
@@ -36,6 +37,7 @@
 #include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/aiohandler.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #ifdef _OPENMP
 #include <omp.h>

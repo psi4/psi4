@@ -35,14 +35,14 @@
 #include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
     std::string out, int dirac)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
     int idx;
     Label *lblptr;
@@ -109,7 +109,7 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
                      double value, int printflag, std::string out, int dirac)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
   int idx;
   Label *lblptr;
   Value *valptr;

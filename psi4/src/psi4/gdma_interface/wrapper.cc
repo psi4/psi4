@@ -27,8 +27,7 @@
  */
 #ifdef USING_gdma
 #include "psi4/libmints/matrix.h"
-#include "psi4/libparallel/parallel.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
 #include <iostream>
 
@@ -51,11 +50,11 @@ SharedWavefunction gdma_interface(SharedWavefunction ref_wfn, Options & options,
     run_gdma(outfile_name.c_str(), datfilename.c_str());
     // Reopen the outfile
     if(outfile_name == "stdout"){
-        outfile=std::shared_ptr<PsiOutStream>(new PsiOutStream());
+        outfile=std::shared_ptr<PsiOutStream>(new PsiOutStream(());
     }
     else{
        outfile=std::shared_ptr<PsiOutStream>
-          (new OutFile(outfile_name,(APPEND)));
+          (new PsiOutStream(outfile_name,(std::ostream::app)));
     }
     int nsites = get_nsites();
     int maxorder = 0;

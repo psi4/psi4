@@ -34,14 +34,14 @@
 #include <cstdlib>
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 int DPD::mat4_irrep_print(double **matrix, dpdparams4 *Params,
                      int block, int my_irrep, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     div_t fraction;
     int i,j,r_irrep;
     int rows, cols, cols_per_page, num_pages, last_page, page, first_col;

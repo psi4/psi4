@@ -34,6 +34,7 @@
 #include <cmath>
 #include <cstring>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

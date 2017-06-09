@@ -26,11 +26,13 @@
  * @END LICENSE
  */
 #include "psi4/libmints/3coverlap.h"
-#include <memory>
-#include <stdexcept>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/pybind11.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <memory>
+#include <stdexcept>
 
 using namespace psi;
 

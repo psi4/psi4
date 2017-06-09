@@ -50,7 +50,7 @@
 #endif
 
 #if defined(OPTKING_PACKAGE_PSI)
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #endif
 
 namespace opt {

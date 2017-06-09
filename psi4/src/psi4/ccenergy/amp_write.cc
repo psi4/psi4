@@ -37,7 +37,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
 #include "ccwave.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi { namespace ccenergy {
 
@@ -57,8 +57,8 @@ void onestack_insert(struct onestack *stack, double value, int i, int a,
     int level, int stacklen);
 void twostack_insert(struct twostack *stack, double value, int i, int j,
     int a, int b, int level, int stacklen);
-void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string OutFileRMR);
-void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string OutFileRMR);
+void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out_fname);
+void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out_fname);
 
 void CCEnergyWavefunction::amp_write(void)
 {
@@ -116,7 +116,7 @@ void CCEnergyWavefunction::amp_write(void)
 void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int m, h, nirreps, Gia;
   int i, I, a, A, numt1;
   int num2print=0;
@@ -197,7 +197,7 @@ void onestack_insert(struct onestack *stack, double value, int i, int a, int lev
 void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int m, h, nirreps, Gijab, numt2;
   int ij, ab, i, j, a, b;
   int num2print=0;

@@ -32,7 +32,6 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/rel_potential.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/x2cint.h"
@@ -41,6 +40,7 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi {
 
@@ -494,7 +494,6 @@ void X2CInt::test_h_FW_plus()
         }else{
             outfile->Printf("             There is something wrong with the X2C module.\n\n");
         }
-        outfile->Flush();
     }
 }
 

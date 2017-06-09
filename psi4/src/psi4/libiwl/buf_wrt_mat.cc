@@ -35,7 +35,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
@@ -75,7 +75,7 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
     int printflag, int *ioff, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     int idx, r, s, R, S, rtr, str;
     int ij, kl;
     double value;

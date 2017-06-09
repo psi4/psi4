@@ -230,7 +230,7 @@ public:
 
     // => Utility <= //
 
-    void print(std::string OutFileRMR = "outfile", int print = 1) const;
+    void print(std::string out_fname = "outfile", int print = 1) const;
     void py_print() const { print("outfile", 1); }
     void py_print_detail(int level) const { print("outfile", level); }
 

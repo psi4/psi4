@@ -54,13 +54,15 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include <cstdio>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/shellrotation.h"
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/pointgrp.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cstdio>
 
 using namespace psi;
 

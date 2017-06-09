@@ -30,7 +30,7 @@
 #include "psi4/libqt/qt.h"
 #include "points.h"
 #include "cubature.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
@@ -291,7 +291,7 @@ void RKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block) {
 
 void RKSFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<OutFile>(new OutFile(out)));
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -580,7 +580,7 @@ void UKSFunctions::compute_orbitals(std::shared_ptr<BlockOPoints> block)
 void UKSFunctions::print(std::string out, int print) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    std::string ans;
     if (ansatz_ == 0) {
         ans = "LSDA";
@@ -1097,7 +1097,7 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block)
 void BasisFunctions::print(std::string out, int print) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    printer->Printf( "   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
     printer->Printf( "    Basis Values:\n");

@@ -41,7 +41,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi { namespace ccresponse {
 
 double **Build_R(void);
@@ -67,7 +67,7 @@ void analyze(const char *pert, int irrep, double omega)
 
 
   sprintf(lbl, "X_%s_%5.3f", pert, omega);
-  std::shared_ptr<OutFile> printer(new OutFile(lbl,APPEND));
+  std::shared_ptr<PsiOutStream> printer(new PsiOutStream(lbl,std::ostream::app));
   //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 
@@ -129,7 +129,7 @@ void analyze(const char *pert, int irrep, double omega)
   width = (max-min) / (num_div);
 
   sprintf(lbl, "X1_%s_%5.3f", pert, omega);
-  std::shared_ptr<OutFile> printer2(new OutFile(lbl,APPEND));
+  std::shared_ptr<PsiOutStream> printer2(new PsiOutStream(lbl,std::ostream::app));
   //ffile(&efile, lbl, 1);
   amp_array = init_array(num_div);
 

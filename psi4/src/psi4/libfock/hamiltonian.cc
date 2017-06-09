@@ -26,15 +26,16 @@
  * @END LICENSE
  */
 
-
-#include "psi4/libqt/qt.h"
-#include "psi4/psi4-dec.h"
 #include "points.h"
 #include "hamiltonian.h"
 #include "jk.h"
 #include "v.h"
+
+#include "psi4/libqt/qt.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include <sstream>
 

@@ -45,6 +45,7 @@
 // I think this is forward-declaring class Options -CDS
 namespace psi {
 class Options;
+class Wavefunction;
 }
 
 namespace psi {
@@ -53,10 +54,10 @@ void dx_read(double **V_eff, double *phi_ao, double *phi_so,int nao,int nso, dou
 void fill_sym_matrix(double **A, int size);
 double combinations(int n, int k);
 double factorial(int n);
-void schmidt(double **A, int rows, int cols, std::string OutFileRMR);
+void schmidt(double **A, int rows, int cols, std::string out_fname);
 int schmidt_add(double **A, int rows, int cols, double *v);
 void normalize(double **A, int rows, int cols);
-double invert_matrix(double **a, double **y, int N, std::string OutFileRMR);
+double invert_matrix(double **a, double **y, int N, std::string out_fname);
 void solve_2x2_pep(double **H, double S, double *evals, double **evecs);
 void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps);
@@ -80,8 +81,8 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
 double dot_block(double **A, double **B, int rows, int cols, double alpha);
 void dirprd_block(double **A, double **B, int rows, int cols);
 int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
-           std::string OutFileRMR, int print_lvl);
-void mat_print(double **A, int rows, int cols, std::string OutFileRMR);
+           std::string out_fname, int print_lvl);
+void mat_print(double **A, int rows, int cols, std::string out_fname);
 
 void timer_init(void);
 void timer_done(void);

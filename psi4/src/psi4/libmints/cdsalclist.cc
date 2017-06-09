@@ -35,6 +35,7 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include <algorithm>
 
@@ -342,7 +343,7 @@ std::string CdSalcList::name_of_component(int component)
         const CdSalc::Component& com = salc.component(i);
 
         name += com.coef > 0.0 ? "+" : "-";
-        name += to_string(fabs(com.coef)) + " ";
+        name += std::to_string(fabs(com.coef)) + " ";
         name += molecule_->label(com.atom);
         if (com.xyz == 0)
             name += "-x";

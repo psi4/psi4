@@ -32,8 +32,11 @@
 */
 #include <cstdio>
 #include "dpd.h"
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 #define EXTERN
 #include "dpd.gbl"
 #include "psi4/psi4-dec.h"

@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "dpd.h"
 
 namespace psi {

@@ -38,7 +38,7 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "qt.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 #define SMALL_DET 1.0E-10
@@ -67,7 +67,7 @@ namespace psi {
 double invert_matrix(double **a, double **y, int N, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    double  d, *col, *colptr;
    int i, j;
    int *indx ;

@@ -33,16 +33,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include "dpd.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 
 void DPD::dpd_error(const char *caller, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf( "Error in: %s\n", caller);
-    close(dpd_default);
+    dpd_close(dpd_default);
     exit(PSI_RETURN_FAILURE);
 }
 

@@ -41,6 +41,16 @@
  *  -MOM:  To use MOM with FRAC, set MOM_START to either FRAC_START or FRAC_START+1 (I think I prefer the latter).
  */
 
+#include "hf.h"
+
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/sointegral_onebody.h"
+#include "psi4/libmints/factory.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -49,13 +59,6 @@
 #include <utility>
 #include <tuple>
 
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/factory.h"
-#include "psi4/libqt/qt.h"
-
-#include "hf.h"
 
 
 using namespace std;

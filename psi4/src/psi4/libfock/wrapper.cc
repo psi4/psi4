@@ -26,11 +26,7 @@
  * @END LICENSE
  */
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
+#include "apps.h"
 
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
@@ -40,10 +36,15 @@
 #include "psi4/libqt/qt.h"
 
 #include "psi4/psi4-dec.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
-#include "apps.h"
-
-
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <sstream>
 
 namespace psi {
 namespace libfock {

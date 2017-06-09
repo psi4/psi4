@@ -39,6 +39,9 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/potential.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+
 #include "csg.h"
 
 #ifdef _OPENMP
@@ -232,7 +235,6 @@ void CubicScalarGrid::print_header()
     outfile->Printf("\n");
 
     primary_->print();
-    outfile->Flush();
 }
 void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type)
 {
@@ -276,7 +278,6 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     if (filesystem::path(filepath_).make_absolute().is_directory() == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
-        outfile->Flush();
         exit(Failure);
     }
 

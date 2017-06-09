@@ -36,7 +36,7 @@
 #include <cstdio>
 #include <vector>
 #include <string>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "print.h"
 #include "coordinates.h"
 #include "psi4/psi4-dec.h"

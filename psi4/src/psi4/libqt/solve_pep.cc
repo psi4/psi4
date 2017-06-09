@@ -32,10 +32,13 @@
   \ingroup QT
 */
 
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include "psi4/psi4-dec.h"
+
 namespace psi {
 
 #define A_MIN 1.0E-10

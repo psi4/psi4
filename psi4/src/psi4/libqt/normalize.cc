@@ -74,7 +74,7 @@ void normalize(double **A, int rows, int cols)
 #ifdef STANDALONE
 main()
 {
-std::string OutFileRMR ;
+std::string out_fname ;
 double **mat ;
 void normalize(double **A, int rows, int cols) ;
 

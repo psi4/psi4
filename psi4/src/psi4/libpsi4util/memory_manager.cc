@@ -36,7 +36,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "memory_manager.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi{
 
 using namespace std;
@@ -94,7 +94,7 @@ void MemoryManager::UnregisterMemory(void *mem, size_t size, const char *fileNam
 void MemoryManager::MemCheck(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    static bool alreadyChecked = false;
 
   printer->Printf( "\n\n");

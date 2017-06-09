@@ -29,7 +29,6 @@
 #ifndef _psi_src_lib_libmints_matrix_h_
 #define _psi_src_lib_libmints_matrix_h_
 
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
@@ -581,7 +580,7 @@ public:
     void print(std::string outfile = "outfile", const char *extra=NULL) const;
 
     /// Prints the matrix with atom and xyz styling.
-    void print_atom_vector(std::string OutFileRMR = "outfile");
+    void print_atom_vector(std::string out_fname = "outfile");
 
     /**
      * Prints the matrix so that it can be copied and pasted into Mathematica easily.

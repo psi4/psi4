@@ -683,7 +683,7 @@ public:
     static const char *bits_to_basic_name(unsigned char bits);
     static bool full_name_to_bits(const std::string& pg, unsigned char& bits);
 
-    void print(std::string OutFileRMR = "outfile") const;
+    void print(std::string out_fname = "outfile") const;
 };
 
 }

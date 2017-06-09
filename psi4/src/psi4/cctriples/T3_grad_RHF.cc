@@ -41,7 +41,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi { namespace cctriples {
 
     void T3_grad_RHF(void)
@@ -179,7 +179,7 @@ namespace psi { namespace cctriples {
 		}
 	      }
 	    }
-      //boost::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+      //boost::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
       //ffile(&ijkfile,"ijk.dat", 0);
       //printer->Printf( "Number of IJK combinations: %d\n", nijk);
       //printer->Printf( "\nCurrent IJK Combination: ");*/
@@ -949,7 +949,7 @@ namespace psi { namespace cctriples {
               }
             }
 
-      boost::shared_ptr<OutFile> printer1(new OutFile("abc.dat",TRUNCATE));
+      boost::shared_ptr<PsiOutStream> printer1(new PsiOutStream("abc.dat",std::ostream::trunc));
       //ffile(&abcfile,"abc.dat", 0);
       printer1->Printf( "Number of ABC combinations: %d\n", nabc);
       printer1->Printf( "\nCurrent ABC Combination: ");*/

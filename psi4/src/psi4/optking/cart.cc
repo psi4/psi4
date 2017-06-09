@@ -34,7 +34,7 @@
 #include "cart.h"
 #include <sstream>
 #include "opt_except.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "v3d.h"
 #include "psi4/optking/physconst.h"
 #include "psi4/psi4-dec.h"

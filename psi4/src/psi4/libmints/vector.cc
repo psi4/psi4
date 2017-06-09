@@ -30,7 +30,7 @@
 #include "matrix.h"
 #include "vector.h"
 #include "dimension.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include "psi4/pybind11.h"
 
@@ -290,7 +290,7 @@ void Vector::pyset(int key, double value)
 void Vector::print(std::string out, const char *extra) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     int h;
     if (extra == NULL) {
         printer->Printf("\n # %s #\n", name_.c_str());

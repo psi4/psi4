@@ -26,17 +26,19 @@
  * @END LICENSE
  */
 
-#include "psi4/psi4-dec.h"
 
-#include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/sointegral_twobody.h"
-#include "psi4/libmints/twobody.h"
 #include "basisset.h"
 #include "gshell.h"
 #include "integral.h"
 #include "sobasis.h"
 #include "matrix.h"
 #include "molecule.h"
+
+#include "psi4/psi4-dec.h"
+#include "psi4/libmints/sointegral_onebody.h"
+#include "psi4/libmints/sointegral_twobody.h"
+#include "psi4/libmints/twobody.h"
+#include "psi4/libparallel/process.h"
 
  #include "psi4/pragma.h"
  PRAGMA_WARNING_PUSH

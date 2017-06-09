@@ -44,7 +44,7 @@
 #ifdef USING_LAPACK_MKL
 #include <mkl.h>
 #endif
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi {
 
@@ -1600,7 +1600,7 @@ void benchmark_math(double min_time)
     ops.push_back("fabs");
 
     // In case the compiler gets awesome
-    std::shared_ptr<OutFile> printer(new OutFile("dump.dat",TRUNCATE));
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("dump.dat",std::ostream::trunc));
 
     #define LOOP_SIZE 10000
     #define UNROLL_SIZE 10

@@ -289,7 +289,7 @@ public:
                  int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
                  int num_subspaces, std::vector<int*> &spaceArrays);
 
-    void dpd_error(const char *caller, std::string OutFileRMR);
+    void dpd_error(const char *caller, std::string out_fname);
 
     double **dpd_block_matrix(size_t n, size_t m);
     void free_dpd_block(double **array, size_t n, size_t m);
@@ -327,8 +327,8 @@ public:
     int file2_mat_close(dpdfile2 *File);
     int file2_mat_rd(dpdfile2 *File);
     int file2_mat_wrt(dpdfile2 *File);
-    int file2_print(dpdfile2 *File, std::string OutFileRMR);
-    int file2_mat_print(dpdfile2 *File, std::string OutFileRMR);
+    int file2_print(dpdfile2 *File, std::string out_fname);
+    int file2_mat_print(dpdfile2 *File, std::string out_fname);
     int file2_copy(dpdfile2 *InFile, int outfilenum, const char *label);
     int file2_dirprd(dpdfile2 *FileA, dpdfile2 *FileB);
     double file2_dot(dpdfile2 *FileA, dpdfile2 *FileB);
@@ -355,7 +355,7 @@ public:
     int file4_mat_irrep_row_rd(dpdfile4 *File, int irrep, int row);
     int file4_mat_irrep_row_wrt(dpdfile4 *File, int irrep, int row);
     int file4_mat_irrep_row_zero(dpdfile4 *File, int irrep, int row);
-    int file4_print(dpdfile4 *File, std::string OutFileRMR);
+    int file4_print(dpdfile4 *File, std::string out_fname);
     int file4_mat_irrep_rd_block(dpdfile4 *File, int irrep, int start_pq,
                                  int num_pq);
     int file4_mat_irrep_wrt_block(dpdfile4 *File, int irrep, int start_pq,
@@ -373,7 +373,7 @@ public:
     int buf4_mat_irrep_close(dpdbuf4 *Buf, int irrep);
     int buf4_mat_irrep_rd(dpdbuf4 *Buf, int irrep);
     int buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep);
-    int buf4_print(dpdbuf4 *Buf, std::string OutFileRMR, int print_data);
+    int buf4_print(dpdbuf4 *Buf, std::string out_fname, int print_data);
     int buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label);
     int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                   int pqnum, int rsnum, const char *label);
@@ -420,11 +420,11 @@ public:
     int trans4_mat_irrep_shift31(dpdtrans4 *Trans, int irrep);
 
     int mat4_irrep_print(double **matrix, dpdparams4 *Params,
-                         int irrep, int my_irrep, std::string OutFileRMR);
+                         int irrep, int my_irrep, std::string out_fname);
 
     void file2_cache_init(void);
     void file2_cache_close(void);
-    void file2_cache_print(std::string OutFileRMR);
+    void file2_cache_print(std::string out_fname);
     dpd_file2_cache_entry* file2_cache_scan(int filenum, int irrep, int pnum, int qnum, const char *label, int dpdnum);
     dpd_file2_cache_entry* dpd_file2_cache_last(void);
     int file2_cache_add(dpdfile2 *File);
@@ -434,7 +434,7 @@ public:
 
     void file4_cache_init(void);
     void file4_cache_close(void);
-    void file4_cache_print(std::string OutFileRMR);
+    void file4_cache_print(std::string out_fname);
     void file4_cache_print_screen(void);
     int file4_cache_get_priority(dpdfile4 *File);
 
@@ -475,25 +475,25 @@ public:
                        int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
                        int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe,
                        dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-                       double omega,std::string OutFileRMR, int newtrips);
+                       double omega,std::string out_fname, int newtrips);
 
     void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                           int do_singles, dpdbuf4 *Dints, dpdfile2 *SIA,
                           int do_doubles, dpdfile2 *FME, dpdbuf4 *WAmEf, dpdbuf4 *WMnIe,
                           dpdbuf4 *SIjAb, int *occpi, int *occ_off, int *virtpi, int *vir_off,
-                          double omega, std::string OutFileRMR, int nthreads, int newtrips);
+                          double omega, std::string out_fname, int nthreads, int newtrips);
 
     void cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ,
                            int do_singles, dpdbuf4 *Dints_anti, dpdfile2 *SIA, int do_doubles,
                            dpdfile2 *FME, dpdbuf4 *WMAFE, dpdbuf4 *WMNIE, dpdbuf4 *SIJAB,
                            int *aoccpi, int *aocc_off, int *avirtpi, int *avir_off, double omega,
-                           std::string OutFileRMR);
+                           std::string out_fname);
 
     void cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij,
                            int do_singles, dpdbuf4 *Dijab_anti, dpdfile2 *Sia, int do_doubles,
                            dpdfile2 *Fme, dpdbuf4 *Wmafe, dpdbuf4 *Wmnie, dpdbuf4 *Sijab,
                            int *boccpi, int *bocc_off, int *bvirtpi, int *bvir_off, double omega,
-                           std::string OutFileRMR);
+                           std::string out_fname);
 
     void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
                            dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -504,7 +504,7 @@ public:
                            dpdbuf4 *WMNIE, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
                            dpdbuf4 *SIJAB, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
                            int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-                           double omega, std::string OutFileRMR);
+                           double omega, std::string out_fname);
 
     void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
                            dpdbuf4 *FBB, dpdbuf4 *FAB, dpdbuf4 *FBA,
@@ -515,7 +515,7 @@ public:
                            dpdbuf4 *Wmnie, dpdbuf4 *WMnIe, dpdbuf4 *WmNiE,
                            dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
                            int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
-                           double omega, std::string OutFileRMR);
+                           double omega, std::string out_fname);
 }; // Dpd class
 
 

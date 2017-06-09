@@ -32,7 +32,7 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/masses.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
@@ -53,7 +53,7 @@ GradientWriter::GradientWriter(std::shared_ptr<Molecule> mol, const Matrix& grad
 
 void GradientWriter::write(const std::string &filename)
 {
-   std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+   std::shared_ptr<PsiOutStream> printer(new PsiOutStream(filename,std::ostream::app));
    int i;
 
 
@@ -82,7 +82,7 @@ MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction)
 }
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB, bool dovirtual)
 {
-    std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream(filename,std::ostream::app));
 
     int atom;
 
@@ -674,7 +674,7 @@ void NBOWriter::write(const std::string &filename)
 
     MintsHelper helper(wavefunction_->basisset(), wavefunction_->options(), 0);
     SharedMatrix sotoao = helper.petite_list()->sotoao();
-    std::shared_ptr<OutFile> printer(new OutFile(filename,APPEND));
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream(filename,std::ostream::app));
 
 
     //Get the basis set and molecule from the wavefuntion

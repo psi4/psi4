@@ -37,6 +37,8 @@
 #include <cstring>
 #include <strings.h>
 #include "psi4/psifiles.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 #include <unistd.h>
 #ifdef _POSIX_MEMLOCK
 #include <sys/mman.h>

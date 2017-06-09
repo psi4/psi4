@@ -29,6 +29,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include <stdexcept>
 

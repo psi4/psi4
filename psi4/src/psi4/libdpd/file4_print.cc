@@ -32,13 +32,13 @@
 */
 #include <cstdio>
 #include "dpd.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 int DPD::file4_print(dpdfile4 *File, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int i, h, my_irrep;
     dpdparams4 *Params;
 

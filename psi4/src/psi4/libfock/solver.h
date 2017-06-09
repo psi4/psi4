@@ -29,6 +29,12 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+#include <psi4/libmints/typedefs.h>
+#include <psi4/liboptions/liboptions.h>
+
+#include <vector>
+#include <string>
+
 namespace psi {
 
 class Vector;

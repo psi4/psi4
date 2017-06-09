@@ -42,7 +42,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/writer_file_prefix.h"
 
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi {
 using SharedMatrix=std::shared_ptr<Matrix>;
@@ -157,7 +157,7 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
 {
     std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
-    std::shared_ptr <OutFile> printer(new OutFile(normal_modes_fname, TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream(normal_modes_fname, std::ostream::trunc));
 
     printer->Printf("[Molden Format]\n[FREQ]\n");
     for(int i = 0; i < modes.size(); ++i) { // print descending order

@@ -46,7 +46,6 @@
  #include "psi4/libmints/molecule.h"
  #include "psi4/libmints/matrix.h"
  #include "psi4/libmints/wavefunction.h"
- #include "psi4/libparallel/parallel.h"
  #include "psi4/libmints/writer_file_prefix.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER

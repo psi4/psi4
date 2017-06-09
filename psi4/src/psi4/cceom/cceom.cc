@@ -33,18 +33,22 @@
 /*
 **  CCEOM: Program to calculate the EOM CCSD right-hand eigenvector and  energy
 */
-#include <cstdio>
-#include <cstdlib>
-#include <string>
+
+#include "Params.h"
+#include "MOInfo.h"
+#include "Local.h"
+#include "globals.h"
+
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
-#include "Params.h"
-#include "MOInfo.h"
-#include "Local.h"
-#include "globals.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
 
 namespace psi { namespace cceom {
 

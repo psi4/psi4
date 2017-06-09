@@ -63,7 +63,7 @@
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 ;
 
@@ -762,7 +762,7 @@ void PetiteList::print(std::string out)
 {
     int i;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                    std::shared_ptr<OutFile>(new OutFile(out)));
+                                                    std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("PetiteList:\n");
 
     if (c1_) {

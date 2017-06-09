@@ -36,7 +36,7 @@
 
 #include "index.h"
 #include "matrix.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi{
 
     namespace psimrcc{
@@ -331,12 +331,12 @@ double CCMatrix::dot_product(CCMatrix* B_Matrix, CCMatrix* C_Matrix, int h)
   return(value);
 }
 
-void CCMatrix::print_dpdmatrix(int irrep, std::string OutFileRMR)
+void CCMatrix::print_dpdmatrix(int irrep, std::string out_fname)
 {
   int ii,jj,kk,nn,ll;
   int i,j;
-  std::shared_ptr<psi::PsiOutStream> printer(OutFileRMR=="outfile"? psi::outfile:
-     std::shared_ptr<psi::OutFile>(new psi::OutFile(OutFileRMR,psi::APPEND)));
+  std::shared_ptr<psi::PsiOutStream> printer(out_fname=="outfile"? psi::outfile:
+     std::shared_ptr<psi::OutFile>(new psi::OutFile(out_fname,psi::std::ostream::app)));
   double** mat=matrix[irrep];
   int left_offset  = left->get_first(irrep);
   int right_offset = right->get_first(irrep);

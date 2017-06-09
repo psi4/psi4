@@ -30,12 +30,16 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
+
 #include "psi4/libdpd/dpd.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
 #define EXTERN
 #include "globals.h"
+
+#include <cmath>
 
 namespace psi { namespace ccdensity {
 
@@ -91,7 +95,7 @@ void build_X(void)
     for(int h=0; h < moinfo.nirreps; h++){
       for(int i=0; i < moinfo.occpi[h]; i++)
           for(int j=0; j < moinfo.occpi[h]; j++){
-             double diff = fabs(I2.matrix[h][i][j] - I2.matrix[h][j][i]); 
+             double diff = std::fabs(I2.matrix[h][i][j] - I2.matrix[h][j][i]); 
              if (diff > 1e-8) 
 		  I.matrix[h][i][j] = (I2.matrix[h][i][j] - I2.matrix[h][j][i])/(F.matrix[h][i][i] - F.matrix[h][j][j]) ;
              else 
@@ -99,7 +103,7 @@ void build_X(void)
       }
       for(int a=0; a < moinfo.virtpi[h]; a++)
           for(int b=0; b < moinfo.virtpi[h]; b++) {
-             double diff = fabs(I3.matrix[h][a][b] - I3.matrix[h][b][a]); 
+             double diff = std::fabs(I3.matrix[h][a][b] - I3.matrix[h][b][a]); 
              if (diff > 1e-8) 
 		  I1.matrix[h][a][b] = (I3.matrix[h][a][b] - I3.matrix[h][b][a]) /(F1.matrix[h][a][a] - F1.matrix[h][b][b]) ;
              else 

@@ -33,6 +33,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"

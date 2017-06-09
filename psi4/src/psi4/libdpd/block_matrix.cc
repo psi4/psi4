@@ -59,13 +59,15 @@
 //#include <mm_malloc.h>
 #endif
 
+#include "dpd.h"
+
+#include "psi4/libqt/qt.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/psi4-dec.h"
+
 #include<cstdio>
 #include<cstdlib>
 #include<cstring>
-#include "psi4/libqt/qt.h"
-#include "dpd.h"
-
-#include "psi4/psi4-dec.h"
 
 namespace psi {
 

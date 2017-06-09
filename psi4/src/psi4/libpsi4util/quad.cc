@@ -31,7 +31,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 using namespace psi;
 
 namespace psi {
@@ -70,7 +70,7 @@ ChebyshevIIQuadrature::ChebyshevIIQuadrature(int npoints, double t0) :
 void ChebyshevIIQuadrature::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    printer->Printf( "  Chebyshev Type II Quadrature of %d Points\n", npoints_);
     printer->Printf( "        for integration on [0, \\infty)\n");
     printer->Printf( "           Center %14.10E\n", center_);

@@ -34,7 +34,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "tensors.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 
@@ -116,10 +116,10 @@ void Tensor1d::print()
 
 }//
 
-void Tensor1d::print(std::string OutFileRMR)
+void Tensor1d::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
     printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
@@ -703,13 +703,13 @@ void Tensor2d::print()
   }
 }//
 
-void Tensor2d::print(std::string OutFileRMR)
+void Tensor2d::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname)));
    if (A2d_) {
       if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-      print_mat(A2d_,dim1_,dim2_,OutFileRMR);
+      print_mat(A2d_,dim1_,dim2_,out_fname);
   }
 }//
 
@@ -6232,12 +6232,12 @@ void Tensor2i::print()
 
 }//
 
-void Tensor2i::print(std::string OutFileRMR)
+void Tensor2i::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-  print_int_mat(A2i_,dim1_,dim2_,OutFileRMR);
+  print_int_mat(A2i_,dim1_,dim2_,out_fname);
 }//
 
 void Tensor2i::release()

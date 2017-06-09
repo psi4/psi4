@@ -38,11 +38,12 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/cholesky.h"
+#include "psi4/libparallel/process.h"
 
 #include "jk.h"
 
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif

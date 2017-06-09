@@ -34,6 +34,9 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/process.h"
 
 #include "cubeprop.h"
 #include "csg.h"
@@ -99,7 +102,6 @@ void CubeProperties::print_header()
 {
     outfile->Printf( "  ==> One Electron Grid Properties (v2.0) <==\n\n");
     grid_->print_header();
-    outfile->Flush();
 }
 void CubeProperties::compute_properties()
 {
@@ -113,7 +115,6 @@ void CubeProperties::compute_properties()
     if (filesystem::path(filepath).make_absolute().is_directory() == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
-        outfile->Flush();
         exit(Failure);
     }
 

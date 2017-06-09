@@ -72,9 +72,13 @@
 **  Moved to libdpd for use by (T) and CC3 codes by TDC, July 2004.
 */
 
-#include <cstdio>
 #include "dpd.h"
+
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cstdio>
+
 namespace psi {
 
 void DPD::sort_3d(double ***Win, double ***Wout, int nirreps, int h, int *rowtot, int **rowidx,

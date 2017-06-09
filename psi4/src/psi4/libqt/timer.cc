@@ -66,17 +66,21 @@
 ** J. F. Gonthier, February 2016
 */
 
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
 #include <ctime>
-#include <sys/param.h>
+
+#include <sys/time.h>
 #include <sys/times.h>
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/psifiles.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+
 /* guess for HZ, if missing */
 #ifndef HZ
 #define HZ 60
@@ -138,7 +142,7 @@ void timer_done(void)
   gethostname(host, 40);
 
   /* Dump the timing data to timer.dat and free the timers */
-  std::shared_ptr<OutFile> printer(new OutFile("timer.dat",APPEND));
+  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat",std::ostream::app));
   printer->Printf( "\n");
   printer->Printf( "Host: %s\n", host);
   printer->Printf( "\n");

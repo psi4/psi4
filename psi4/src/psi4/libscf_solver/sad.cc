@@ -44,7 +44,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
@@ -54,6 +53,9 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
+#include "psi4/liboptions/liboptions.h"
 #include "hf.h"
 #include "sad.h"
 

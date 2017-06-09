@@ -59,7 +59,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/psi4-dec.h"
 
 #include <cmath>
@@ -209,7 +209,7 @@ void
 SymmetryOperation::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    printer->Printf( "        1          2          3\n");
     printer->Printf( "  1  ");
     printer->Printf( "%10.7f ", d[0][0]);

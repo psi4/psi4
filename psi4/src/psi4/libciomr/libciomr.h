@@ -112,7 +112,7 @@ double ** block_matrix(unsigned long int n, unsigned long int m, bool mlock = fa
 void free_block(double **array);
 
 /* Functions in fndcor */
-void fndcor(long int *maxcrb, std::string OutFileRMR);
+void fndcor(long int *maxcrb, std::string out_fname);
 
 }
 

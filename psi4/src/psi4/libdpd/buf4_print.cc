@@ -33,7 +33,7 @@
 #include <cstdio>
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 /* dpd_buf4_print(): Prints out data for all irreps of a dpd
@@ -41,14 +41,14 @@ namespace psi {
 **
 ** Arguments:
 **   dpdbuf4 *Buf: A pointer to the dpdbuf to be printed.
-**   std::string OutFileRMR: The formatted output file stream.
+**   std::string out_fname: The formatted output file stream.
 **   int print_data: 0 = print buf4 parameters only; 1 = print matrices
 */
 
 int DPD::buf4_print(dpdbuf4 *Buf, std::string out, int print_data)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int h, i, all_buf_irrep;
     dpdparams4 *Params;
 

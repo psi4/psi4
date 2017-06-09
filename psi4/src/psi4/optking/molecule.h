@@ -39,7 +39,7 @@
 #include "interfrag.h"
 #include "fb_frag.h"
 #include "print.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include <fstream>
 
 namespace opt {

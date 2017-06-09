@@ -35,6 +35,8 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 #include "moinfo_scf.h"
 

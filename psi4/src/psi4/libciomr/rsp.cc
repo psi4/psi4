@@ -33,9 +33,12 @@
 */
 
 #include "psi4/psifiles.h"
-#include <cstdlib>
 #include "libciomr.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cstdlib>
+
 namespace psi {
 
 extern void tred2(int n,double** a,double* d,double* e,int matz);

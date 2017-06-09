@@ -30,10 +30,15 @@
     \ingroup DPD
     \brief Enter brief description of file here
 */
+
+#include "dpd.h"
+
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 #include <cstdio>
 #include <cstdlib>
-#include "dpd.h"
-#include "psi4/psi4-dec.h"
+
 namespace psi {
 
 int DPD::buf4_mat_irrep_row_rd(dpdbuf4 *Buf, int irrep, int pq)

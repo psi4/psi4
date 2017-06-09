@@ -32,12 +32,15 @@
   \ingroup QT
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include "psi4/libciomr/libciomr.h"
 #include "qt.h"
+
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cstdio>
+#include <cstdlib>
 
 namespace psi {
 

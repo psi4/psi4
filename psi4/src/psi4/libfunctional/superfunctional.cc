@@ -29,7 +29,8 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
 #include "superfunctional.h"
@@ -142,7 +143,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer =
-        (out == "outfile" ? outfile : std::shared_ptr<OutFile>(new OutFile(out)));
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("   => Composite Functional: %s <= \n\n", name_.c_str());
 
     if (description_ != "") {

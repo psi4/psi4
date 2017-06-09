@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 /*!
 ** \file
 ** \brief Print a matrix to a file in a formatted style
@@ -53,7 +53,7 @@ namespace psi {
 int mat_print(double **matrix, int rows, int cols, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    div_t fraction;
   int i,j;
   int cols_per_page, num_pages, last_page, page, first_col;

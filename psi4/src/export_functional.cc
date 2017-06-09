@@ -199,7 +199,7 @@ void export_functional(py::module &m) {
 
     py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions",
                                                                                 "docstring")
-        .def("print_out", &PointFunctions::print, py::arg("OutFileRMR") = "outfile",
+        .def("print_out", &PointFunctions::print, py::arg("out_fname") = "outfile",
              py::arg("print") = 2, "docstring")
         .def("ansatz", &PointFunctions::ansatz, "docstring")
         .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
@@ -244,7 +244,7 @@ void export_functional(py::module &m) {
              })
         .def("refresh", &BlockOPoints::refresh, "docstring")
         .def("npoints", &BlockOPoints::npoints, "docstring")
-        .def("print_out", &BlockOPoints::print, py::arg("OutFileRMR") = "outfile",
+        .def("print_out", &BlockOPoints::print, py::arg("out_fname") = "outfile",
              py::arg("print") = 2, "docstring")
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");

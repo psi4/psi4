@@ -37,7 +37,7 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "qt.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 #define ZERO 1e-13
@@ -61,7 +61,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
           std::string out, int print_lvl)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    double det, tval;
    double **Bmat; /* Matrix of expansion vectors */
    double **Ab;   /* Matrix of A x expansion vectors */

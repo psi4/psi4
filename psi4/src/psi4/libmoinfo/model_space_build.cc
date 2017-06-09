@@ -26,12 +26,14 @@
  * @END LICENSE
  */
 
-#include "psi4/psifiles.h"
-
 #include "model_space.h"
 #include "moinfo.h"
-#include <cstdio>
+
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/psifiles.h"
+
+#include <cstdio>
 namespace psi{
 
 

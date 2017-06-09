@@ -35,7 +35,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "iwl.h"
 #include "iwl.hpp"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 /*!
@@ -55,7 +55,7 @@ void IWL::write(int p, int q, int pq, int pqsym,
     int *lasti, int printflag, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(out)));
+         std::shared_ptr<PsiOutStream>(new PsiOutStream((out))));
     int r, s, rs, rsym, ssym, smax, idx;
     double value;
     Label *lblptr;

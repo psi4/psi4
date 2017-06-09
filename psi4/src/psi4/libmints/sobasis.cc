@@ -37,7 +37,7 @@
 #include "matrix.h"
 #include "psi4/psi4-dec.h"
 #include <cstdio>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 ;
 using namespace psi;
 
@@ -391,7 +391,7 @@ void SOBasisSet::print(std::string out) const
 {
     int i,j,k;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<OutFile>(new OutFile(out)));
+          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf( "  SOBasis:\n");
     printer->Printf( "    nshell(SO) = %d\n", nshell_);
     printer->Printf( "    nirrep = %d\n", nirrep_);

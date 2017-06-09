@@ -34,6 +34,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/adc/adc.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi{ namespace adc {
 

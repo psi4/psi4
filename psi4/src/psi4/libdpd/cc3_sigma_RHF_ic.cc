@@ -41,7 +41,7 @@
 #include <pthread.h>
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 //MKL Header
 #ifdef USING_LAPACK_MKL
 #include <mkl.h>
@@ -72,7 +72,7 @@ void DPD::cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
                            double omega, std::string out, int nthreads, int newtrips)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     int h, nirreps, thread, nijk, *ijk_part, errcod=0;
     int Gi, Gj, Gk, Gl, Ga, Gb, Gc, Gd;
     int i, j, k, l, a, b, c, d, row, col;
@@ -344,7 +344,7 @@ void* cc3_sigma_RHF_ic_thread(void* thread_data_in)
     double omega;
     dpdfile2 *FME, *fIJ, *fAB;
     dpdbuf4 *CIjAb, *WAbEi, *WMbIj, *Dints, *WmAEf, *WMnIe;
-    std::string OutFileRMR;
+    std::string out_fname;
     int newtrips;
     int Gcb, Gac, cb, ac;
 

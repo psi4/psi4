@@ -31,6 +31,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
 
 #include "psi4/physconst.h"
 #include "psi4/adc/adc.h"

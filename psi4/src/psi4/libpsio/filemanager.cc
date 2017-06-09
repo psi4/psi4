@@ -35,7 +35,7 @@
 #include "psio.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi{
 
@@ -138,7 +138,7 @@ void PSIOManager::move_file(const std::string& old_full_path, const std::string&
 void PSIOManager::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("                    --------------------------------\n");
     printer->Printf("                    ==> Psi4 Current File Status <==\n");
     printer->Printf( "                    --------------------------------\n");

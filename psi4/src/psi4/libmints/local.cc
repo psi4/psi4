@@ -25,14 +25,19 @@
  *
  * @END LICENSE
  */
+
+#include "local.h"
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
-#include "local.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/process.h"
 
-;
+
 using namespace psi;
 
 namespace psi {

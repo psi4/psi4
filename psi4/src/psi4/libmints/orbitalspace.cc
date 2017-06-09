@@ -40,6 +40,9 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/sobasis.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/process.h"
 
 #include <tuple>
 

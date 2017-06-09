@@ -26,16 +26,16 @@
  * @END LICENSE
  */
 
-
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
 #include "apps.h"
 #include "jk.h"
 #include "v.h"
 #include "hamiltonian.h"
 #include "solver.h"
+
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libmints/matrix.h"
@@ -43,6 +43,9 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/multipolesymmetry.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libparallel/process.h"
 
 #include <algorithm>
 #include <tuple>

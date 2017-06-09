@@ -26,14 +26,17 @@
  * @END LICENSE
  */
 
-#include <cmath>
 #include "psi4/libmints/vector3.h"
 #include "psi4/libmints/molecule.h"
-#include <sstream>
-#include <iomanip>
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/coordentry.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
+#include <cmath>
+#include <sstream>
+#include <iomanip>
+
 using namespace psi;
 
 namespace {

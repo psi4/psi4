@@ -29,7 +29,7 @@
 #include "sapt2p.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-
+#include "psi4/liboptions/liboptions.h"
 
 namespace psi { namespace sapt {
 

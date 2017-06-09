@@ -41,7 +41,6 @@
 #include "psi4/physconst.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/liboptions/liboptions_python.h"

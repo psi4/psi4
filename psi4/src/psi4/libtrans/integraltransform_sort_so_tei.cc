@@ -26,15 +26,18 @@
  * @END LICENSE
  */
 
+#include "integraltransform_functors.h"
+#include "mospace.h"
 #include "integraltransform.h"
+
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/psifiles.h"
-#include "integraltransform_functors.h"
-#include "mospace.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 #define EXTERN
 #include "psi4/libdpd/dpd.gbl"
 

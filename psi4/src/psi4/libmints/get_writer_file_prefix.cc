@@ -33,6 +33,7 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libparallel/process.h"
 
 #include <string>
 
@@ -61,7 +62,7 @@ namespace psi {
 
 std::string get_writer_file_prefix(const std::string& molecule_name)
 {
-    const std::string pid="."+to_string(getpid());
+    const std::string pid= "." + std::to_string(getpid());
     const std::string label = Process::environment.options.get_str("WRITER_FILE_LABEL");
     if (!label.empty()) {
         return label+pid;

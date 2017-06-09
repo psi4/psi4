@@ -32,7 +32,6 @@
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/physconst.h"
 #include "psi4/psifiles.h"
 

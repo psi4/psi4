@@ -76,7 +76,7 @@
 
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 #include <stdlib.h>
 
@@ -160,7 +160,7 @@ void IrreducibleRepresentation::print(std::string out) const
     if (!g)
         return;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-          std::shared_ptr<OutFile>(new OutFile(out)));
+          std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     int i,d;
 
     printer->Printf( "  %-5s", symb);

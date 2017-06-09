@@ -50,6 +50,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libparallel/PsiOutStream.h"
+#include "psi4/libparallel/process.h"
 
 
 namespace psi { namespace sapt {

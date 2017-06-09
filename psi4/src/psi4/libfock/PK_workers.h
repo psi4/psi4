@@ -38,6 +38,8 @@
 
 #include "psi4/libiwl/config.h"
 #include "psi4/libpsio/config.h"
+#include "psi4/libpsi4util/exception.h"
+
 
 namespace psi {
 

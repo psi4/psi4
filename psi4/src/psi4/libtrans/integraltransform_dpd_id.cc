@@ -28,7 +28,9 @@
 
 #include "integraltransform.h"
 #include "mospace.h"
+
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 using namespace psi;
 

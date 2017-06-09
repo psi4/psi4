@@ -33,6 +33,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/osrecur.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi{
 

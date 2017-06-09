@@ -30,13 +30,16 @@
     \ingroup CCENERGY
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
+#include "Params.h"
+#include "ccwave.h"
+
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libdpd/dpd.h"
-#include "Params.h"
-#include "ccwave.h"
+
+#include <cstdio>
+#include <cstdlib>
 
 namespace psi { namespace ccenergy {
 

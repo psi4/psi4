@@ -33,9 +33,11 @@
 */
 
 #include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
+
 #include <cstdio>
 #include <cmath>
-#include "psi4/psi4-dec.h"
 #define DSIGN(a,b) (((b) >= 0.0) ? (fabs(a)) : (-fabs(a)))
 
 namespace psi {

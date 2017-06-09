@@ -36,6 +36,7 @@
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libparallel/PsiOutStream.h"
 namespace psi {
 
 int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,

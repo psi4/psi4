@@ -44,7 +44,7 @@
 #include "psi4/libfilesystem/path.h"
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libparallel/PsiOutStream.h"
 #include "psi4/ccenergy/ccwave.h"
 #include "psi4/cclambda/cclambda.h"
 #include "psi4/libqt/qt.h"
@@ -187,7 +187,7 @@ void py_flush_outfile()
 void py_close_outfile()
 {
     if (outfile) {
-        outfile = std::shared_ptr<OutFile>();
+        outfile = std::shared_ptr<PsiOutStream>();
     }
 }
 
@@ -197,7 +197,7 @@ void py_reopen_outfile()
         //outfile = stdout;
     }
     else {
-        outfile = std::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
+        outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(outfile_name, std::ostream::app));
         if (!outfile)
             throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
@@ -206,7 +206,7 @@ void py_reopen_outfile()
 void py_be_quiet()
 {
     py_close_outfile();
-    outfile = std::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
+    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream("/dev/null", std::ostream::app));
     if (!outfile)
         throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
@@ -1164,7 +1164,7 @@ bool psi4_python_module_initialize()
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
-    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream());
+    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(());
     outfile_name = "stdout";
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
     psi_file_prefix = strdup(fprefix.c_str());
@@ -1202,7 +1202,7 @@ void psi4_python_module_finalize()
     // There is only one timer:
     timer_done();
 
-    outfile = std::shared_ptr<OutFile>();
+    outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = NULL;
 
 }
@@ -1460,11 +1460,11 @@ PYBIND11_PLUGIN(core) {
     core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname){
-                 outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, TRUNCATE));
+                 outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(ofname, std::ostream::trunc));
                  outfile_name = ofname;
                  });
     core.def("set_output_file", [](const std::string ofname, bool append){
-                 outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
+                 outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(ofname, (append ? std::ostream::app:std::ostream::trunc)));
                  outfile_name = ofname;
                  });
     core.def("get_output_file", [](){ return outfile_name; });
