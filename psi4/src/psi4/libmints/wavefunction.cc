@@ -694,7 +694,7 @@ SharedMatrix Wavefunction::F_subset_helper(SharedMatrix F, SharedMatrix C, const
             if (!nsol || !nsor) continue;
             double **Ulp = AO2SO_->pointer(h);
             double **Urp = AO2SO_->pointer(h ^ symm);
-            double **FSOp = F->pointer(h ^ symm);
+            double **FSOp = F->pointer(h);
             double **FAOp = F2->pointer();
             C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, FSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
             C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, FAOp[0], nao);
@@ -749,7 +749,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
             if (!nsol || !nsor) continue;
             double **Ulp = AO2SO_->pointer(h);
             double **Urp = AO2SO_->pointer(h ^ symm);
-            double **DSOp = D->pointer(h ^ symm);
+            double **DSOp = D->pointer(h);
             double **DAOp = D2->pointer();
             C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
             C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, DAOp[0], nao);
@@ -776,7 +776,7 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
             if (!nsol || !nsor) continue;
             double **Ulp = my_aotoso->pointer(h);
             double **Urp = my_aotoso->pointer(h ^ symm);
-            double **DSOp = D->pointer(h ^ symm);
+            double **DSOp = D->pointer(h);
             double **DAOp = D2->pointer();
             C_DGEMM('N', 'T', nsol, nao, nsor, 1.0, DSOp[0], nsor, Urp[0], nsor, 0.0, temp, nao);
             C_DGEMM('N', 'N', nao, nao, nsol, 1.0, Ulp[0], nsol, temp, nao, 1.0, DAOp[0], nao);
