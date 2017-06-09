@@ -1062,19 +1062,19 @@ SharedMatrix Wavefunction::Cb_subset(const std::string &basis, const std::string
 }
 
 SharedMatrix Wavefunction::Da_subset(const std::string &basis) const {
-    return D_subset_helper(Da_, Ca_, basis);
+    return matrix_subset_helper(Da_, Ca_, basis, "D");
 }
 
 SharedMatrix Wavefunction::Db_subset(const std::string &basis) const {
-    return D_subset_helper(Db_, Cb_, basis);
+    return matrix_subset_helper(Db_, Cb_, basis, "D");
 }
 
 SharedMatrix Wavefunction::Fa_subset(const std::string &basis) const {
-    return F_subset_helper(Fa_, Ca_, basis);
+    return matrix_subset_helper(Fa_, Ca_, basis, "Fock");
 }
 
 SharedMatrix Wavefunction::Fb_subset(const std::string &basis) const {
-    return F_subset_helper(Fb_, Cb_, basis);
+    return matrix_subset_helper(Fb_, Cb_, basis, "Fock");
 }
 
 SharedVector Wavefunction::epsilon_a_subset(const std::string &basis, const std::string &subset) const {

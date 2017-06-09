@@ -363,7 +363,7 @@ std::vector<SharedMatrix> RHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
     if (needs_ao) {
         Cocc_ao = Ca_subset("AO", "OCC");
         Cvir_ao = Ca_subset("AO", "VIR");
-        F_ao = F_subset_helper(Fa_, Ca_, "AO");
+        F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
     }
     if (needs_so) {
         Cocc_so = Ca_subset("SO", "OCC");
@@ -577,7 +577,7 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix Cocc_ao = Ca_subset("AO", "ALL");
-        SharedMatrix F_ao = F_subset_helper(Fa_, Ca_, "AO");
+        SharedMatrix F_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
         SharedMatrix IFock_ao = Matrix::triplet(Cocc_ao, F_ao, Cocc_ao, true, false, false);
         Precon_ao = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
 
