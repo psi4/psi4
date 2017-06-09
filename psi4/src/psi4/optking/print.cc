@@ -34,6 +34,7 @@
 #include "print.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/PsiOutStream.h"
+#include <cstdarg>
 
 namespace opt {
 
@@ -67,7 +68,7 @@ void offlush_out(void) {
 
 // oprintf_out is always to primary output file
 void oprintf_out(const char* format,...) {
-  char line[256];
+  char line[512];
   va_list args;
   va_start(args, format);
   vsprintf(line, format, args);

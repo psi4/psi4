@@ -36,6 +36,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libparallel/PsiOutStream.h"
 
 namespace psi{ namespace @plugin@{
 
