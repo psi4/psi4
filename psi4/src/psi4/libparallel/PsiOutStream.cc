@@ -51,7 +51,7 @@ PsiOutStream::PsiOutStream(std::string fname, std::ios_base::openmode mode) {
         is_cout_ = false;
     }
 
-    buffer_.resize(512);
+    buffer_.resize(512000);
 }
 
 PsiOutStream::~PsiOutStream() {

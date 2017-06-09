@@ -55,6 +55,7 @@
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libparallel/process.h"
 #endif
 
 

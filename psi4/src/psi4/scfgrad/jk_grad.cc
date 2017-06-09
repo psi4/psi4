@@ -41,9 +41,9 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libparallel/process.h"
 
-
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libparallel/process.h"
 #endif
 
 using namespace psi;

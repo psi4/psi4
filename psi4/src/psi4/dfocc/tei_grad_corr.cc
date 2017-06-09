@@ -40,6 +40,7 @@
 
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libparallel/process.h"
 #endif
 
 using namespace psi;
