@@ -34,6 +34,7 @@
 #include <sstream>
 #include <libgen.h>
 #include <string.h>
+#include <regex>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -47,11 +48,10 @@ namespace psi {
  String manipulation
  ********************/
 
-std::vector <std::string> split(const std::string &str)
-{
+std::vector<std::string> split(const std::string &str) {
     // Split a string
     typedef std::string::const_iterator iter;
-    std::vector <std::string> splitted_string;
+    std::vector<std::string> splitted_string;
     iter i = str.begin();
     while (i != str.end()) {
         // Ignore leading blanks
@@ -59,11 +59,29 @@ std::vector <std::string> split(const std::string &str)
         // Find the end of next word
         iter j = find_if(i, str.end(), space);
         // Copy the characters in [i,j)
-        if (i != str.end())
-            splitted_string.push_back(std::string(i, j));
+        if (i != str.end()) splitted_string.push_back(std::string(i, j));
         i = j;
     }
     return (splitted_string);
+}
+
+std::vector<std::string> split(const std::string &input, const std::string &regex) {
+    // passing -1 as the submatch index parameter performs splitting
+    std::regex re(regex);
+    std::sregex_token_iterator first{input.begin(), input.end(), re, -1}, last;
+    return {first, last};
+}
+
+template <typename Range1T, typename Range2T>
+bool iequals(const Range1T &Input, const Range2T &Test);
+{
+    if (std::distance(std::begin(Input), std::end(Input)) !=
+        std::distance(std::begin(Test), std::end(Test)))
+        return false;
+
+    return std::equal(
+        std::begin(Input), std::end(Input), std::begin(Test),
+        [](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
 }
 
 bool opening_square_bracket(char c);
@@ -139,12 +157,9 @@ void trim_spaces(std::string &str)
         str = str.substr(startpos, endpos - startpos + 1);
 }
 
-unsigned int edit_distance(const std::string &s1, const std::string &s2)
-{
+unsigned int edit_distance(const std::string &s1, const std::string &s2) {
     const size_t len1 = s1.size(), len2 = s2.size();
-    std::vector < std::vector < unsigned
-    int > > d(len1 + 1, std::vector < unsigned
-    int > (len2 + 1));
+    std::vector<std::vector<unsigned int> > d(len1 + 1, std::vector<unsigned int>(len2 + 1));
 
     d[0][0] = 0;
     for (unsigned int i = 1; i <= len1; ++i) d[i][0] = i;
@@ -214,89 +229,28 @@ int to_integer(const std::string inString)
     return i;
 }
 
-std::string add_reference(std::string &str, int reference)
-{
+std::string add_reference(std::string &str, int reference) {
     return (str + "{" + to_string(reference) + "}");
 }
 
-void append_reference(std::string &str, int reference)
-{
-    str += "{" + to_string(reference) + "}";
+void append_reference(std::string &str, int reference) { str += "{" + to_string(reference) + "}"; }
+
+Timer::Timer()
+    : ___start(),
+      ___end(),
+      ___dummy(),
+      delta_time_seconds(0),
+      delta_time_hours(0),
+      delta_time_days(0) {
+    gettimeofday(&___start, &___dummy);
 }
 
-/*********************************************************
- Memory Allocation
- *********************************************************/
-
-/**
- * Convert the size of a doubles array in Mb using the definition 1Mb = 1048576 bytes
- * @param n size of the array
- * @return
- */
-double to_MB(size_t n)
-{
-    return (double(n * sizeof(double)) / 1048576.0);
-    // Using this definition 1 Mb has ca. 5% more than 1000000 bytes
+double Timer::get() {
+    gettimeofday(&___end, &___dummy);
+    delta_time_seconds =
+        (___end.tv_sec - ___start.tv_sec) + (___end.tv_usec - ___start.tv_usec) / 1000000.0;
+    delta_time_hours = delta_time_seconds / 3600.0;
+    delta_time_days = delta_time_hours / 24.0;
+    return (delta_time_seconds);
 }
-
-unsigned long int init_smatrix(short **&matrix, int size1, int size2)
-{
-    unsigned long int size, uli_size1, uli_size2;
-    uli_size1 = static_cast<unsigned long int>(size1);
-    uli_size2 = static_cast<unsigned long int>(size2);
-    size = uli_size1 * uli_size2;
-    if (!uli_size1 || !uli_size2) {
-        matrix = NULL;
-    } else {
-        matrix = new short *[uli_size1];
-        short *vector = new short[size];
-        for (unsigned long int i = 0; i < size; i++) vector[i] = 0;
-        for (unsigned long int i = 0; i < uli_size1; i++)
-            matrix[i] = &(vector[i * uli_size2]);
-    }
-    return (size * sizeof(short));
-}
-
-unsigned long int free_smatrix(short **&matrix, int size1, int size2)
-{
-    unsigned long int size, uli_size1, uli_size2;
-    uli_size1 = static_cast<unsigned long int>(size1);
-    uli_size2 = static_cast<unsigned long int>(size2);
-    size = uli_size1 * uli_size2;
-    if (matrix == NULL) return (0);
-    delete[] matrix[0];
-    delete[] matrix;
-    return (size * sizeof(short));
-}
-
-unsigned long int init_smatrix(short ***&matrix, int size1, int size2, int size3)
-{
-    unsigned long int size = static_cast<unsigned long int>(size1 * size2 * size3);
-    matrix = new short **[size1];
-    for (int i = 0; i < size1; i++) {
-        matrix[i] = new short *[size2];
-    }
-    for (int i = 0; i < size1; i++) {
-        for (int j = 0; j < size2; j++) {
-            matrix[i][j] = new short[size3];
-        }
-    }
-    return (size * sizeof(short));
-}
-
-unsigned long int free_smatrix(short ***matrix, int size1, int size2, int size3)
-{
-    unsigned long int size = static_cast<unsigned long int>(size1 * size2 * size3);
-    for (int i = 0; i < size1; i++) {
-        for (int j = 0; j < size2; j++) {
-            delete[] matrix[i][j];
-        }
-    }
-    for (int i = 0; i < size1; i++) {
-        delete[] matrix[i];
-    }
-    delete[] matrix;
-    return (size * sizeof(short));
-}
-
 }
