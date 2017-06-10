@@ -709,13 +709,6 @@ bool py_psi_set_global_option_double(std::string const& key, double value)
     return true;
 }
 
-bool py_psi_set_global_option_python(std::string const& key, py::object& obj)
-{
-    std::string nonconst_key = to_upper(key);
-    Process::environment.options.set_global_python(nonconst_key, obj);
-    return true;
-}
-
 bool py_psi_set_local_option_array(std::string const& module, std::string const& key, const py::list& values,
                                    DataType *entry = NULL)
 {
@@ -879,6 +872,30 @@ void py_psi_revoke_local_option_changed(std::string const& module, std::string c
     data.dechanged();
 }
 
+// Quick function that unpacks a data type
+py::list data_to_list(py::list l, Data d)
+{
+    if(d.is_array()){
+        // Recurse
+        py::list row;
+        for(int i = 0; i < d.size(); ++i){
+            data_to_list(row, d[i]);
+        }
+        l.append(row);
+    }else if(d.type() == "double"){
+        l.append(py::float_(d.to_double()));
+    }else if(d.type() == "string"){
+        l.append(py::str(d.to_string()));
+    }else if(d.type() == "boolean"){
+        l.append(py::bool_(d.to_integer()));
+    }else if(d.type() == "int"){
+        l.append(py::int_(d.to_integer()));
+    }else{
+        throw PSIEXCEPTION("Unknown data type in fill_list");
+    }
+    return l;
+}
+
 py::object py_psi_get_local_option(std::string const& module, std::string const& key)
 {
     std::string nonconst_key = to_upper(key);
@@ -892,8 +909,13 @@ py::object py_psi_get_local_option(std::string const& module, std::string const&
         return py::cast(data.to_integer());
     else if (data.type() == "double")
         return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::object(data.to_list());
+    else if (data.type() == "array"){
+        py::list l;
+        for (size_t i = 0; i < data.size(); i++){
+            data_to_list(l, data[i]);
+        }
+        return l;
+    }
 
     return py::object();
 }
@@ -909,8 +931,13 @@ py::object py_psi_get_global_option(std::string const& key)
         return py::cast(data.to_integer());
     else if (data.type() == "double")
         return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::object(data.to_list());
+    else if (data.type() == "array"){
+        py::list l;
+        for (size_t i = 0; i < data.size(); i++){
+            data_to_list(l, data[i]);
+        }
+        return l;
+    }
 
     return py::object();
 }
@@ -928,8 +955,13 @@ py::object py_psi_get_option(std::string const& module, std::string const& key)
         return py::cast(data.to_integer());
     else if (data.type() == "double")
         return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::object(data.to_list());
+    else if (data.type() == "array"){
+        py::list l;
+        for (size_t i = 0; i < data.size(); i++){
+            data_to_list(l, data[i]);
+        }
+        return l;
+    }
 
     return py::object();
 }
@@ -1342,8 +1374,6 @@ PYBIND11_PLUGIN(core) {
         "Sets value *arg2* to double keyword *arg1* for all modules.");
     core.def("set_global_option", py_psi_set_global_option_string,
         "Sets value *arg2* to string keyword *arg1* for all modules.");
-    core.def("set_global_option_python", py_psi_set_global_option_python,
-        "Sets a global option to a Python object type.");
 
     // Print options list
     core.def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");

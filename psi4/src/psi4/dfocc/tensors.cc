@@ -41,6 +41,7 @@
 
 #include <stdio.h>
 #include <fstream>
+#include <cmath>
 
 using namespace std;
 
@@ -209,7 +210,7 @@ double Tensor1d::rms()
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += A1d_[i] * A1d_[i];
-  summ=sqrt(summ/dim1_);
+  summ=std::sqrt(summ/dim1_);
 
   return summ;
 }//
@@ -218,7 +219,7 @@ double Tensor1d::rms(const SharedTensor1d& Atemp)
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += (A1d_[i] - Atemp->A1d_[i])  * (A1d_[i] - Atemp->A1d_[i]);
-  summ=sqrt(summ/dim1_);
+  summ=std::sqrt(summ/dim1_);
 
   return summ;
 }//
@@ -2475,7 +2476,7 @@ void Tensor2d::mgs()
 	  rmgs1 += A2d_[i][k] * A2d_[i][k];
 	}
 
-	rmgs1 = sqrt(rmgs1);
+	rmgs1 = std::sqrt(rmgs1);
 
 	for (int i=0; i<dim1_;i++) {
 	  A2d_[i][k]/=rmgs1;
@@ -3310,7 +3311,7 @@ double Tensor2d::rms()
             summ += A2d_[i][j] * A2d_[i][j];
        }
   }
-  summ=sqrt(summ/(dim1_*dim2_));
+  summ=std::sqrt(summ/(dim1_*dim2_));
 
   return summ;
 }//
@@ -3324,7 +3325,7 @@ double Tensor2d::rms(const SharedTensor2d& a)
             summ += (A2d_[i][j] - a->A2d_[i][j]) * (A2d_[i][j] - a->A2d_[i][j]);
        }
   }
-  summ=sqrt(summ/(dim1_*dim2_));
+  summ=std::sqrt(summ/(dim1_*dim2_));
 
   return summ;
 }//
@@ -5930,7 +5931,7 @@ double Tensor2d::get_max_element()
   #pragma omp parallel for
   for (int i=0; i < dim1_; i++) {
        for (int j=0; j < dim2_; j++) {
-           if ( fabs(A2d_[i][j]) > value ) value = fabs(A2d_[i][j]);
+           if ( std::fabs(A2d_[i][j]) > value ) value = std::fabs(A2d_[i][j]);
        }
   }
   return value;

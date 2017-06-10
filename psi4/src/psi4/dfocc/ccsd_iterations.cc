@@ -32,6 +32,8 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libmints/matrix.h"
 
+#include <cmath>
+
 using namespace std;
 
 
@@ -121,7 +123,7 @@ do
     }
 
 }
-while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
+while(std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
 
  //delete
  if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
@@ -157,7 +159,7 @@ outfile->Printf(" ==============================================================
     double t1diag, t1norm, t1_ref;
     t1_ref = 0.02;
     t1norm = t1A->norm();
-    t1diag = t1norm/sqrt(2.0*naoccA);
+    t1diag = t1norm/std::sqrt(2.0*naoccA);
     outfile->Printf("\n\tT1 diagnostic reference value: %20.14f\n", t1_ref);
     outfile->Printf("\tT1 diagnostic                : %20.14f\n", t1diag);
 }

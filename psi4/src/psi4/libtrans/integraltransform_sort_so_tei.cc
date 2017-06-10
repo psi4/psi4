@@ -38,6 +38,8 @@
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <cmath>
+
 #define EXTERN
 #include "psi4/libdpd/dpd.gbl"
 
@@ -95,7 +97,7 @@ IntegralTransform::compute_fock_like_matrices(SharedMatrix Hcore, std::vector<Sh
             memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h]);
             rowsPerBucket = memFree / (J.params->coltot[h]);
             if(rowsPerBucket > J.params->rowtot[h]) rowsPerBucket = (size_t) J.params->rowtot[h];
-            nBuckets = static_cast<int>(ceil(static_cast<double>(J.params->rowtot[h])/
+            nBuckets = static_cast<int>(std::ceil(static_cast<double>(J.params->rowtot[h])/
                                              static_cast<double>(rowsPerBucket)));
             rowsLeft = static_cast<size_t>(J.params->rowtot[h] % rowsPerBucket);
         }else{

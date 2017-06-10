@@ -42,6 +42,8 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
+#include <cmath>
+
 using namespace psi;
 
 

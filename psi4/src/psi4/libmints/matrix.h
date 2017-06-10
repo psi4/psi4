@@ -33,8 +33,6 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include "psi4/pybind11.h"
-
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -473,15 +471,6 @@ public:
      * @param block the SharedMatrix object block to set
      */
     void set_block(const Slice& rows,const Slice& cols,SharedMatrix block);
-
-    /**
-     * Python wrapper for get
-     */
-    double pyget(const py::tuple& key);
-    /**
-     * Python wrapper for set
-     */
-    void pyset(const py::tuple& key, double value);
 
     /**
      * Returns the double** pointer to the h-th irrep block matrix
@@ -1143,18 +1132,11 @@ public:
     bool equal_but_for_row_order(const Matrix* rhs, double TOL=1.0e-10);
     /// @}
 
-    /**
-     * Takes a Python object (assumes that it is a "matrix" array) and
-     * sets the matrix to that.
-     */
-    void set_by_python_list(const py::list& data);
-
      /**
      * Adds accessability to the matrix shape for numpy
      */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
-    std::vector<py::buffer_info> array_interface();
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta

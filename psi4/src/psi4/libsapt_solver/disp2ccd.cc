@@ -31,6 +31,8 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
 
+#include <cmath>
+
 namespace psi { namespace sapt {
 
 void SAPT2p::disp2ccd() //!
@@ -429,7 +431,7 @@ double SAPT2p::r_ccd_iterate(const char *TARBS, const char *TARBSerr, const char
       (E_old-E_new)*4000.0,RMS*4000.0);
 
 
-    if (iter > 1 && (4000.0*fabs(E_old-E_new) < ccd_e_conv_ &&
+    if (iter > 1 && (4000.0*std::fabs(E_old-E_new) < ccd_e_conv_ &&
       4000.0*RMS < ccd_t_conv_)) {
       if (iter > min_ccd_vecs_) {
         outfile->Printf("  DIIS\n");
@@ -581,7 +583,7 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   free_block(tARBS);  //!
   free_block(t2ARBS); //!
 
-  return(sqrt(RMS));
+  return(std::sqrt(RMS));
 }
 
 void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR, const char *ThetaARAR, //!
@@ -722,7 +724,7 @@ double SAPT2p::s_ccd_iterate(const char *SARAR, const char *SARARerr, const char
       (E_old-E_new)*1000.0,RMS*1000.0);
 
 
-    if (iter > 1 && (1000.0*fabs(E_old-E_new) < ccd_e_conv_ &&
+    if (iter > 1 && (1000.0*std::fabs(E_old-E_new) < ccd_e_conv_ &&
       1000.0*RMS < ccd_t_conv_)) {
       if (iter > min_ccd_vecs_) {
         outfile->Printf("  DIIS\n");
@@ -1088,7 +1090,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   free_block(sARAR);  //!
   free_block(s2ARAR); //!
 
-  return (sqrt(RMS));
+  return (std::sqrt(RMS));
 }
 
 void SAPT2p::disp_s_prep(const char *TAR, const char *TpAR, const char *ThetaARAR, //!
@@ -1670,7 +1672,7 @@ void SAPT2p::ccd_iterate(const char *TARAR, const char *TARARerr, const char *Th
     outfile->Printf("%4d %16.8lf %17.9lf %17.9lf",iter,E_new,E_old-E_new,RMS);
 
 
-    if (iter > 1 && (fabs(E_old-E_new) < ccd_e_conv_ &&
+    if (iter > 1 && (std::fabs(E_old-E_new) < ccd_e_conv_ &&
       RMS < ccd_t_conv_)) {
       if (iter > min_ccd_vecs_) {
         outfile->Printf("  DIIS\n");
@@ -2005,7 +2007,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   free_block(tARAR); //!
   free_block(t2ARAR); //!
 
-  return(sqrt(RMS));
+  return(std::sqrt(RMS));
 }
 
 // => Utility Crap <= //

@@ -38,8 +38,6 @@
 #include <iterator>
 #include <memory>
 
-#include "psi4/pybind11.h"
-
 namespace psi {
 
 class Matrix;
@@ -184,14 +182,6 @@ public:
 
     const double &operator[](int i) const { return vector_[0][i]; }
 
-    double pyget(const py::tuple &key);
-
-    void pyset(const py::tuple &key, double value);
-
-    double pyget(int key);
-
-    void pyset(int key, double value);
-
     /// Returns a copy of the vector_
     double *to_block_vector();
 
@@ -295,7 +285,6 @@ public:
     */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
-    std::vector<py::buffer_info> array_interface();
 
     friend class Matrix;
 };

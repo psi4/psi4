@@ -37,6 +37,8 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
+#include <cmath>
+
 namespace psi{ namespace dcft{
 
 void
@@ -101,7 +103,7 @@ DCFTSolver::run_qc_dcft()
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_cumulant_residual();
-        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
+        if (std::fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Compute new SCF energy
@@ -113,7 +115,7 @@ DCFTSolver::run_qc_dcft()
         // Add lambda energy to the DCFT total energy
         new_total_energy_ += lambda_energy_;
         // Check convergence of the total DCFT energy
-        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
+        energyConverged_ = std::fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
         // Determine the independent pairs (IDPs) and create array for the orbital and cumulant gradient in the basis of IDPs
         form_idps();
         if (nidp_ != 0) {
@@ -352,7 +354,7 @@ void DCFTSolver::form_idps(){
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = 0; a < navirpi_[h]; ++a){
-                if (fabs(orbital_gradient_a_->get(h, i, a + naoccpi_[h])) > cutoff) {
+                if (std::fabs(orbital_gradient_a_->get(h, i, a + naoccpi_[h])) > cutoff) {
                     lookup_orbitals_[orbital_address] = 1;
                     grad[orbital_idp_a_] = (-1.0) * orbital_gradient_a_->get(h, i, a + naoccpi_[h]);
                     Hd[orbital_idp_a_] = 2.0 * (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
@@ -367,7 +369,7 @@ void DCFTSolver::form_idps(){
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = 0; a < nbvirpi_[h]; ++a){
-                if (fabs(orbital_gradient_b_->get(h, i, a + nboccpi_[h])) > cutoff) {
+                if (std::fabs(orbital_gradient_b_->get(h, i, a + nboccpi_[h])) > cutoff) {
                     lookup_orbitals_[orbital_address] = 1;
                     int index = orbital_idp_a_ + orbital_idp_b_;
                     grad[index] = (-1.0) * orbital_gradient_b_->get(h, i, a + nboccpi_[h]);
@@ -410,7 +412,7 @@ void DCFTSolver::form_idps(){
                     size_t b = R.params->colorb[h][ab][1];
                     int bsym = R.params->ssym[b];
                     b -= R.params->soff[bsym];
-                    if (fabs(R.matrix[h][ij][ab]) > cutoff) {
+                    if (std::fabs(R.matrix[h][ij][ab]) > cutoff) {
                         lookup_cumulant_[cumulant_address] = 1;
                         int index = orbital_idp_ + cumulant_idp_aa_;
                         grad[index] = -0.25 * R.matrix[h][ij][ab];
@@ -448,7 +450,7 @@ void DCFTSolver::form_idps(){
                     size_t b = R.params->colorb[h][ab][1];
                     int bsym = R.params->ssym[b];
                     b -= R.params->soff[bsym];
-                    if (fabs(R.matrix[h][ij][ab]) > cutoff) {
+                    if (std::fabs(R.matrix[h][ij][ab]) > cutoff) {
                         lookup_cumulant_[cumulant_address] = 1;
                         int index = orbital_idp_ + cumulant_idp_aa_ + cumulant_idp_ab_;
                         grad[index] = -0.25 * R.matrix[h][ij][ab];
@@ -486,7 +488,7 @@ void DCFTSolver::form_idps(){
                     size_t b = R.params->colorb[h][ab][1];
                     int bsym = R.params->ssym[b];
                     b -= R.params->soff[bsym];
-                    if (fabs(R.matrix[h][ij][ab]) > cutoff) {
+                    if (std::fabs(R.matrix[h][ij][ab]) > cutoff) {
                         lookup_cumulant_[cumulant_address] = 1;
                         int index = orbital_idp_ + cumulant_idp_aa_ + cumulant_idp_ab_ + cumulant_idp_bb_;
                         grad[index] = -0.25 * R.matrix[h][ij][ab];
@@ -1857,7 +1859,7 @@ DCFTSolver::iterate_nr_conjugate_gradients() {
         D_->add(S_);
 
         // Compute RMS of the residual
-        residual_rms = sqrt(residual_rms/nidp_);
+        residual_rms = std::sqrt(residual_rms/nidp_);
         // Check convergence
         converged = (residual_rms < cumulant_threshold_);
 
@@ -1922,7 +1924,7 @@ DCFTSolver::iterate_nr_jacobi() {
             residual_rms += value_r * value_r;
         }
         // Compute RMS of the residual
-        residual_rms = sqrt(residual_rms/nidp_);
+        residual_rms = std::sqrt(residual_rms/nidp_);
         // Save current X
         for (int p = 0; p < nidp_; ++p) {
             double value = X_->get(p);
@@ -1946,7 +1948,7 @@ DCFTSolver::check_qc_convergence() {
 
     if (orbital_idp_ != 0) {
         for (int p = 0; p < orbital_idp_; ++p) orbitals_convergence_ += X_->get(p) * X_->get(p);
-        orbitals_convergence_ = sqrt(orbitals_convergence_/orbital_idp_);
+        orbitals_convergence_ = std::sqrt(orbitals_convergence_/orbital_idp_);
     }
 
     if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
@@ -1954,7 +1956,7 @@ DCFTSolver::check_qc_convergence() {
 
         if (cumulant_idp_ != 0) {
             for (int p = orbital_idp_; p < nidp_; ++p) cumulant_convergence_ += X_->get(p) * X_->get(p);
-            cumulant_convergence_ = sqrt(cumulant_convergence_/cumulant_idp_);
+            cumulant_convergence_ = std::sqrt(cumulant_convergence_/cumulant_idp_);
         }
     }
 
@@ -2151,7 +2153,7 @@ DCFTSolver::run_davidson() {
         SharedMatrix check(new Matrix("Orthonormality Check, after rotation", b_dim_, b_dim_));
         check->gemm(0, 1, 1.0, b_, b_, 0.0);
         for (int i = 0; i < b_dim_; ++i) {
-            if (fabs(check->get(i,i) - 1.0) > 1e-5) throw PSIEXCEPTION("Norm is not preserved! Make STABILITY_AUGMENT_SPACE_TOL larger");
+            if (std::fabs(check->get(i,i) - 1.0) > 1e-5) throw PSIEXCEPTION("Norm is not preserved! Make STABILITY_AUGMENT_SPACE_TOL larger");
         }
 
         // Compute the residual: r_kp = sigma'_kp - ro_k b_kp'
@@ -2170,7 +2172,7 @@ DCFTSolver::run_davidson() {
         for (int k = 0; k < nvecs; ++k) {
             double new_val = Evals->get(k);
             double ms = C_DDOT(b_dim_, r_p[k], 1, r_p[k], 1);
-            double rms = sqrt(ms / (double) b_dim_);
+            double rms = std::sqrt(ms / (double) b_dim_);
             bool not_converged = rms > r_convergence_;
             if (not_converged) n_bad += 1;
             else n_good += 1;
@@ -2235,7 +2237,7 @@ DCFTSolver::run_davidson() {
                 max_values_idp[stored] = i;
                 // Sort the values in the ascending order
                 for (int p = 0; p < stored; ++p) {
-                    if (fabs(max_values[stored - p]) > fabs(max_values[stored - p - 1])) {
+                    if (std::fabs(max_values[stored - p]) > std::fabs(max_values[stored - p - 1])) {
                         double temp_val = max_values[stored - p - 1];
                         max_values[stored - p - 1] = max_values[stored - p];
                         max_values[stored - p] = temp_val;
@@ -2280,7 +2282,7 @@ bool
 DCFTSolver::augment_b(double *vec, double tol) {
 
     // Normalize the vec array first
-    double vec_norm = sqrt(C_DDOT(nidp_, vec, 1, vec, 1));
+    double vec_norm = std::sqrt(C_DDOT(nidp_, vec, 1, vec, 1));
     double inv_norm = 1.0/vec_norm;
     C_DSCAL(nidp_, inv_norm, vec, 1);
 
@@ -2297,7 +2299,7 @@ DCFTSolver::augment_b(double *vec, double tol) {
     for (int k = 0; k < b_dim_; ++k) C_DAXPY(nidp_, -bxb->get(k, 0), b_->pointer()[k], 1, bpp[0], 1);
 
     // Compute the norm of the leftover part of the |b'> space
-    vec_norm = sqrt(C_DDOT(nidp_, bpp[0], 1, bpp[0], 1));
+    vec_norm = std::sqrt(C_DDOT(nidp_, bpp[0], 1, bpp[0], 1));
 
     // If the rms exceeds a given threshold then augment the |b> space
     if(vec_norm > tol){

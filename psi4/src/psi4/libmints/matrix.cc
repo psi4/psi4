@@ -3641,39 +3641,6 @@ bool Matrix::equal_but_for_row_order(const Matrix *rhs, double TOL)
     return true;
 }
 
-double Matrix::pyget(const py::tuple &key)
-{
-    return get(key[0].cast<int>(),
-               key[1].cast<int>(),
-               key[2].cast<int>());
-}
-
-void Matrix::pyset(const py::tuple &key, double value)
-{
-    return set(key[0].cast<int>(),
-               key[1].cast<int>(),
-               key[2].cast<int>(),
-               value);
-}
-
-void Matrix::set_by_python_list(const py::list &data)
-{
-    size_t rows = py::len(data);
-
-    // Make sure nrows < rows
-    if ((size_t) nrow() > rows)
-        throw PSIEXCEPTION("Number of rows in list is more than the rows in the matrix!");
-
-    for (size_t i = 0; i < rows; ++i) {
-        size_t cols = py::len(data[i]);
-        if ((size_t) ncol() > cols)
-            thcol PSIEXCEPTION("Number of cols in list is more than the cols in the matrix!");
-        for (size_t j = 0; j < cols; ++j) {
-            set(i, j, data[i].cast<py::list>()[j].cast<double>());
-        }
-    }
-}
-
 void Matrix::rotate_columns(int h, int i, int j, double theta)
 {
     if (h > nirrep_)
@@ -3686,38 +3653,6 @@ void Matrix::rotate_columns(int h, int i, int j, double theta)
     double costheta = cos(theta);
     double sintheta = sin(theta);
     C_DROT(rowspi_[h], &matrix_[h][0][i], colspi_[h], &matrix_[h][0][j], colspi_[h], costheta, sintheta);
-}
-std::vector<py::buffer_info> Matrix::array_interface(){
-    std::vector<py::buffer_info> ret;
-
-    if (numpy_shape_.size()) {
-        if (nirrep_ > 1){
-            throw PSIEXCEPTION("Matrix::array_interface numpy shape with more than one irrep is not valid.");
-        }
-
-        std::vector<size_t> shape(numpy_shape_.size());
-        std::vector<size_t> strides(numpy_shape_.size());
-        size_t current_stride = sizeof(double);
-
-        for (size_t i = numpy_shape_.size(); i-- > 0;) {
-            shape[i] = numpy_shape_[i];
-            strides[i] = current_stride;
-            current_stride *= numpy_shape_[i];
-        }
-        ret.push_back(py::buffer_info(get_pointer(0), sizeof(double),
-                                      py::format_descriptor<double>::format(),
-                                      numpy_shape_.size(),
-                                      shape, strides));
-
-    } else {
-        for (size_t h = 0; h < nirrep_; h++) {
-            ret.push_back(py::buffer_info(get_pointer(h), sizeof(double),
-                          py::format_descriptor<double>::format(), 2,
-                          {static_cast<size_t>(rowspi(h)), static_cast<size_t>(colspi(h))},
-                          {sizeof(double) * rowspi(h), sizeof(double)}));
-        }
-    }
-    return ret;
 }
 
 } // namespace psi

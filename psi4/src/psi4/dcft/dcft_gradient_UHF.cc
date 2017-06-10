@@ -37,6 +37,8 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <cmath>
+
 namespace psi{ namespace dcft{
 
 void DCFTSolver::compute_gradient_UHF()
@@ -1201,7 +1203,7 @@ DCFTSolver::iterate_orbital_response()
         }
 
         // Check convergence
-        converged = (fabs(orbital_response_rms_) < fabs(orbitals_threshold_));
+        converged = (std::fabs(orbital_response_rms_) < std::fabs(orbitals_threshold_));
 
         // Print iterative trace
         outfile->Printf( "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
@@ -1962,7 +1964,7 @@ DCFTSolver::compute_response_coupling()
     global_dpd_->buf4_close(&T);
 
     // Compute RMS of dC
-    return sqrt(sumSQ / nElements);
+    return std::sqrt(sumSQ / nElements);
 
 }
 
@@ -2045,7 +2047,7 @@ DCFTSolver::iterate_cumulant_response()
         }
 
         // Check the convergence
-        converged = (fabs(cumulant_response_rms_) < fabs(cumulant_threshold_));
+        converged = (std::fabs(cumulant_response_rms_) < std::fabs(cumulant_threshold_));
 
         // Print iterative trace
         outfile->Printf( "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
@@ -3189,7 +3191,7 @@ DCFTSolver::compute_cumulant_response_residual()
     sumSQ += global_dpd_->buf4_dot_self(&R);
     global_dpd_->buf4_close(&R);
 
-    return sqrt(sumSQ / nElements);
+    return std::sqrt(sumSQ / nElements);
 }
 
 void
