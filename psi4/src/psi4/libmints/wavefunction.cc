@@ -140,7 +140,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
 void Wavefunction::deep_copy(SharedWavefunction other) { deep_copy(other.get()); }
 
 void Wavefunction::deep_copy(const Wavefunction *other) {
-    if (!S_) {
+    if (!other->S_) {
         throw PSIEXCEPTION("Wavefunction::deep_copy must copy an initialized wavefunction.");
     }
 
@@ -218,7 +218,6 @@ void Wavefunction::c1_deep_copy(SharedWavefunction other) {
 }
 
 void Wavefunction::c1_deep_copy(const Wavefunction *other) {
-    // CDS: ask Jet I think below should be other->
     if (!other->S_) {
         throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
     }
@@ -242,8 +241,11 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
     Dimension c1_nsopi = Dimension(1);
     c1_nsopi[0] = other->nsopi_.sum();
     factory_->init_with(c1_nsopi, c1_nsopi);
-    //?AO2SO_ = other->AO2SO_->clone();
-    S_ = other->S_->clone(); // need to transform this...
+
+    // Need to re-generate AO2SO_ because the new SO basis is different
+    // than the old one (lower symmetry)
+    std::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
+    AO2SO_ = pet->aotoso();
 
     psio_ = other->psio_; // We dont actually copy psio
     memory_ = other->memory_;
@@ -259,8 +261,7 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
     efzc_ = other->efzc_;
     variables_ = other->variables_;
 
-    // How should we handle OEProp? oeprop_ = std::shared_ptr<OEProp>(this);
-
+    // collapse all the Dimension objects down to one element
     doccpi_.init(1, other->doccpi_.name());
     doccpi_[0] = other->doccpi_.sum();
     soccpi_.init(1, other->soccpi_.name());
@@ -285,8 +286,14 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
     same_a_b_dens_ = other->same_a_b_dens_;
     same_a_b_orbs_ = other->same_a_b_orbs_;
 
+
+    S_ = factory_->create_shared_matrix("S");
+    S_->remove_symmetry(other->S(), other->aotoso());
+
     /// Below is not set in the typical constructor
-    if (other->H_) H_ = other->H_->clone();
+    H_ = factory_->create_shared_matrix("One-electron Hamiltonian");
+    H_->remove_symmetry(other->H(), other->aotoso());
+
     if (other->Ca_) Ca_ = other->Ca_subset("AO", "ALL");
     if (other->Cb_) Cb_ = other->Cb_subset("AO", "ALL");
     if (other->Da_) Da_ = other->Da_subset("AO");
@@ -299,21 +306,12 @@ void Wavefunction::c1_deep_copy(const Wavefunction *other) {
         other->epsilon_subset_helper(other->epsilon_b_, other->nsopi_, "AO", "ALL");
 
 
-    // what format are these in?  Not sure if we can copy
+    // these are simple SharedMatrices of size 3*natom_, etc., so should
+    // not depend on symmetry ... can just copy them
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
     if (other->tpdm_gradient_contribution_)
         tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_->clone();
-
-// # Copy SCF quantities using built in functions to cast from SO (c2v symmetry) to AO (C1 symmetry).
-// nosym_wfn.Ca().np[:] = sym_wfn.Ca_subset("AO", "ALL")
-// nosym_wfn.Cb().np[:] = sym_wfn.Cb_subset("AO", "ALL")
-// 
-// nosym_wfn.epsilon_a().np[:] = sym_wfn.epsilon_a_subset("AO", "ALL")
-// nosym_wfn.epsilon_b().np[:] = sym_wfn.epsilon_b_subset("AO", "ALL")
-// 
-// # Zip up alpha/beta/nfzc/ndocc/etc, cant actually do this yet. Need Python setters.
-// nosym_wfn.ndocc()[0] = sym_wfn.ndocc().sum()
 
 }
 

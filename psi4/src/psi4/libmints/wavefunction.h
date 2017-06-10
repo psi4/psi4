@@ -193,10 +193,10 @@ protected:
     /// Beta orbital energies
     SharedVector epsilon_b_;
 
-    /// If a gradient is available it will be here:
+    /// gradient, if available, as natom_ x 3 SharedMatrix
     SharedMatrix gradient_;
 
-    /// If a Hessian is available it will be here:
+    /// Hessian, if available, as natom_*3 x natom_*3 SharedMatrix
     SharedMatrix hessian_;
 
     /// Helpers for C/D/epsilon transformers

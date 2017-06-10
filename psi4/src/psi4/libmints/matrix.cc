@@ -2708,7 +2708,7 @@ void Matrix::remove_symmetry(const SharedMatrix &a, const SharedMatrix &SO2AO) {
         throw PSIEXCEPTION("Matrix::remove_symmetry: Sizes are not compatible.\n");
     }
 
-    // Ensure we're working with a clea
+    // Ensure we're working with a clean matrix
     zero();
 
     // Create temporary matrix of proper size.
