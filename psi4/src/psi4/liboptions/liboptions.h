@@ -29,10 +29,6 @@
 #ifndef _psi_src_lib_liboptions_liboptions_hpp
 #define _psi_src_lib_liboptions_liboptions_hpp
 
-#include <string>
-#include <vector>
-#include <map>
-// Forward boost python object
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
 #endif
@@ -43,41 +39,44 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
 
+#include <memory>
+#include <string>
+#include <vector>
+#include <map>
+
 namespace psi {
 
-class DataTypeException : public PsiException
-{
-public:
-    DataTypeException(const std::string& message) : PSIEXCEPTION(message) { }
+class DataTypeException : public PsiException {
+   public:
+    DataTypeException(const std::string& message) : PSIEXCEPTION(message) {}
 };
 
-class IndexException : public PsiException
-{
-public:
-    IndexException(const std::string& message) : PSIEXCEPTION(message + " is not a valid option.") { }
-    IndexException(const std::string& message, const std::string &module) :
-        PSIEXCEPTION(message + " is not a valid option for module " + module) { }
+class IndexException : public PsiException {
+   public:
+    IndexException(const std::string& message)
+        : PSIEXCEPTION(message + " is not a valid option.") {}
+    IndexException(const std::string& message, const std::string& module)
+        : PSIEXCEPTION(message + " is not a valid option for module " + module) {}
 };
 
-class DuplicateKeyException : public PsiException
-{
-public:
-    DuplicateKeyException(const std::string &key, const std::string &type1, const std::string &type2,
-                          const char *lfile, int lline):
-        PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, lfile, lline) { }
+class DuplicateKeyException : public PsiException {
+   public:
+    DuplicateKeyException(const std::string& key, const std::string& type1,
+                          const std::string& type2, const char* lfile, int lline)
+        : PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2,
+                       lfile, lline) {}
 };
 
-class OptionsException : public PsiException
-{
-public:
-    OptionsException(const std::string& message) : PSIEXCEPTION("Options Exception: " + message) { }
+class OptionsException : public PsiException {
+   public:
+    OptionsException(const std::string& message) : PSIEXCEPTION("Options Exception: " + message) {}
 };
 
 class Data;
-class DataType
-{
+class DataType {
     bool changed_;
-public:
+
+   public:
     DataType();
     virtual ~DataType();
 
@@ -92,7 +91,7 @@ public:
 
     virtual bool is_array() const;
     virtual unsigned int size() const;
-    virtual void add(DataType *);
+    virtual void add(DataType*);
     virtual void add(std::string, DataType*);
     virtual void add(bool);
     virtual void add(int);
@@ -124,10 +123,10 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class BooleanDataType : public DataType
-{
+class BooleanDataType : public DataType {
     bool boolean_;
-public:
+
+   public:
     BooleanDataType();
     BooleanDataType(bool b);
     virtual ~BooleanDataType();
@@ -147,10 +146,10 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class IntDataType : public DataType
-{
+class IntDataType : public DataType {
     int integer_;
-public:
+
+   public:
     IntDataType();
     IntDataType(int i);
     virtual ~IntDataType();
@@ -170,10 +169,10 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class DoubleDataType : public DataType
-{
+class DoubleDataType : public DataType {
     double double_;
-public:
+
+   public:
     DoubleDataType();
     DoubleDataType(double d);
     virtual ~DoubleDataType();
@@ -193,11 +192,11 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class StringDataType : public DataType
-{
+class StringDataType : public DataType {
     std::string str_;
     std::vector<std::string> choices_;
-public:
+
+   public:
     StringDataType();
     StringDataType(std::string s);
     StringDataType(std::string s, std::string c);
@@ -221,11 +220,11 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class IStringDataType : public DataType
-{
+class IStringDataType : public DataType {
     std::string str_;
     std::vector<std::string> choices_;
-public:
+
+   public:
     IStringDataType();
     IStringDataType(std::string s);
     IStringDataType(std::string s, std::string c);
@@ -245,12 +244,12 @@ public:
     virtual void assign(std::string s);
 };
 
-class Data
-{
+class Data {
     std::shared_ptr<DataType> ptr_;
-public:
+
+   public:
     Data();
-    Data(DataType *t);
+    Data(DataType* t);
     Data(const Data& copy);
 
     std::string to_string() const;
@@ -269,8 +268,8 @@ public:
 
     std::string type() const;
 
-    void add(DataType *data);
-    void add(std::string s, DataType *data);
+    void add(DataType* data);
+    void add(std::string s, DataType* data);
     void add(bool b);
     void add(int i);
     void add(double d);
@@ -280,7 +279,7 @@ public:
     void add(std::string key, double d);
     void add(std::string key, std::string s, std::string c);
 
-    void assign(DataType *data);
+    void assign(DataType* data);
     void assign(bool b);
     void assign(int i);
     void assign(double d);
@@ -297,15 +296,15 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class ArrayType : public DataType
-{
+class ArrayType : public DataType {
     std::vector<Data> array_;
-public:
+
+   public:
     ArrayType();
 
     virtual std::string type() const;
 
-    virtual void add(DataType *data);
+    virtual void add(DataType* data);
     virtual void add(bool b);
     virtual void add(int i);
     virtual void add(double d);
@@ -327,17 +326,17 @@ public:
 #ifdef __INTEL_COMPILER
 #pragma warning disable 654
 #endif
-class MapType : public DataType
-{
+class MapType : public DataType {
     std::map<std::string, Data> keyvals_;
     typedef std::map<std::string, Data>::iterator iterator;
     typedef std::map<std::string, Data>::const_iterator const_iterator;
-public:
+
+   public:
     MapType();
 
     virtual std::string type() const;
 
-    virtual void add(std::string key, DataType *data);
+    virtual void add(std::string key, DataType* data);
     virtual void add(std::string key, bool b);
     virtual void add(std::string key, int i);
     virtual void add(std::string key, double d);
@@ -353,8 +352,7 @@ public:
     virtual std::string to_string() const;
 };
 
-class Options
-{
+class Options {
     bool edit_globals_;
 
     /// A temporary map used for validation of local options
@@ -372,20 +370,20 @@ class Options
     typedef std::map<std::string, Data>::const_iterator const_iterator;
     typedef std::map<std::string, std::map<std::string, Data> >::const_iterator const_mod_iterator;
 
-public:
+   public:
     Options();
 
-    Options & operator=(const Options& rhs);
+    Options& operator=(const Options& rhs);
     bool read_globals() const;
     void set_read_globals(bool _b);
     void set_current_module(const std::string s);
-    std::string get_current_module() const {return current_module_;}
+    std::string get_current_module() const { return current_module_; }
 
     void to_upper(std::string& str);
 
     void validate_options();
 
-    void add(std::string key, DataType *data);
+    void add(std::string key, DataType* data);
     void add(std::string key, bool b);
     void add(std::string key, int i);
     void add(std::string key, double d);
@@ -398,29 +396,34 @@ public:
     void add_str(std::string key, std::string s, std::string c = "");
     void add_str_i(std::string key, std::string s, std::string c = "");
     void add_array(std::string key);
-    void set_bool(const std::string &module, const std::string &key, bool b);
-    void set_int(const std::string &module, const std::string &key, int i);
-    void set_double(const std::string & module, const std::string &key, double d);
-    void set_str(const std::string & module, const std::string &key, std::string s);
-    void set_str_i(const std::string & module, const std::string &key, std::string s);
-    void set_array(const std::string &module, const std::string& key);
+    void set_bool(const std::string& module, const std::string& key, bool b);
+    void set_int(const std::string& module, const std::string& key, int i);
+    void set_double(const std::string& module, const std::string& key, double d);
+    void set_str(const std::string& module, const std::string& key, std::string s);
+    void set_str_i(const std::string& module, const std::string& key, std::string s);
+    void set_array(const std::string& module, const std::string& key);
 
-    void set_global_bool(const std::string &key, bool b);
-    void set_global_int(const std::string &key, int i);
-    void set_global_double(const std::string &key, double d);
-    void set_global_str(const std::string &key, const std::string &s);
+    void set_global_bool(const std::string& key, bool b);
+    void set_global_int(const std::string& key, int i);
+    void set_global_double(const std::string& key, double d);
+    void set_global_str(const std::string& key, const std::string& s);
     void set_global_array(const std::string& key);
 
     DataType* set_global_array_entry(const std::string& key, DataType* entry, DataType* loc);
-    void set_global_array_double(std::string key, double val, DataType *entry);
-    void set_global_array_string(std::string key, std::string val, DataType *entry);
-    void set_global_array_int(std::string key, int val, DataType *entry);
-    DataType* set_global_array_array(std::string key, DataType *entry);
-    DataType* set_local_array_entry(const std::string &module, const std::string& key, DataType* entry, DataType* loc);
-    void set_local_array_double(const std::string &module, const std::string &key, double val, DataType *entry);
-    void set_local_array_string(const std::string &module, const std::string &key, std::string val, DataType *entry);
-    void set_local_array_int(const std::string &module, const std::string &key, int val, DataType *entry);
-    DataType* set_local_array_array(const std::string &module, const std::string &key, DataType *entry);
+    void set_global_array_double(std::string key, double val, DataType* entry);
+    void set_global_array_string(std::string key, std::string val, DataType* entry);
+    void set_global_array_int(std::string key, int val, DataType* entry);
+    DataType* set_global_array_array(std::string key, DataType* entry);
+    DataType* set_local_array_entry(const std::string& module, const std::string& key,
+                                    DataType* entry, DataType* loc);
+    void set_local_array_double(const std::string& module, const std::string& key, double val,
+                                DataType* entry);
+    void set_local_array_string(const std::string& module, const std::string& key, std::string val,
+                                DataType* entry);
+    void set_local_array_int(const std::string& module, const std::string& key, int val,
+                             DataType* entry);
+    DataType* set_local_array_array(const std::string& module, const std::string& key,
+                                    DataType* entry);
 
     void clear(void);
 
@@ -463,6 +466,5 @@ public:
     void print_globals();
     std::vector<std::string> list_globals();
 };
-
 }
 #endif

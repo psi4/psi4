@@ -85,6 +85,7 @@ void DataType::to_upper(std::string& str)
 
 void DataType::add_choices(std::string str)
 {
+    printf("I am here!\n");
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
@@ -562,7 +563,7 @@ Data::Data()
 { }
 
 Data::Data(DataType *t){
-   ptr_= std::make_shared<DataType>(*t);
+   ptr_= std::shared_ptr<DataType>(t);
 
 }
 
