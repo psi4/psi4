@@ -35,6 +35,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"

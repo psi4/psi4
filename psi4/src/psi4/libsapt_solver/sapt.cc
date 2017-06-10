@@ -35,6 +35,8 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/basisset.h"
 
+#include <cstring>
+
 namespace psi { namespace sapt {
 
 SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,

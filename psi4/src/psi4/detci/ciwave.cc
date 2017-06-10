@@ -31,6 +31,7 @@
 #include "psi4/psifiles.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libscf_solver/hf.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libfock/soscf.h"
 #include "psi4/detci/globaldefs.h"

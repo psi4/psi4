@@ -48,6 +48,8 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
@@ -55,6 +57,7 @@
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/matrix.h"
@@ -76,9 +79,7 @@ namespace psi { namespace scf {
 HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
        Options &options, std::shared_ptr<PSIO> psio)
     : Wavefunction(options),
-      functional_(func),
-      nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6) {
+      functional_(func) {
     shallow_copy(ref_wfn);
     psio_ = psio;
     common_init();

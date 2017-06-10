@@ -33,6 +33,8 @@
 #include <sys/stat.h>
 #include "psi4/pybind11.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsio/psio.hpp"

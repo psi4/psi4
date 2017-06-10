@@ -39,6 +39,7 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/quadrupole.h"

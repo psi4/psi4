@@ -40,6 +40,8 @@
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/multipolesymmetry.h"

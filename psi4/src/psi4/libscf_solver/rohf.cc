@@ -42,6 +42,8 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libtrans/integraltransform.h"

@@ -38,7 +38,6 @@
 #include <vector>
 
 #include "linear_algebra.h"
-#include "molecule.h"
 #include "print.h"
 
 #include "io.h"

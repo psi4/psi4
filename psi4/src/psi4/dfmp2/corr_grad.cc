@@ -37,6 +37,7 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/sieve.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"

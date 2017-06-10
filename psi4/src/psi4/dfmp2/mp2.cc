@@ -50,6 +50,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/molecule.h"
 
 #ifdef _OPENMP
 #include <omp.h>

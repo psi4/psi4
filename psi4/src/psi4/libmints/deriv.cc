@@ -33,13 +33,16 @@
  *      Author: jturney
  */
 
-#include "psi4/libtrans/integraltransform.h"
-#include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/deriv.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sointegral_onebody.h"
+
+#include "psi4/libtrans/integraltransform.h"
+#include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 

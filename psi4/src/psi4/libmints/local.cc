@@ -30,11 +30,12 @@
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 
 

@@ -47,6 +47,8 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"

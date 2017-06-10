@@ -42,6 +42,8 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libfock/v.h"
@@ -53,6 +55,9 @@
 #include "stability.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/vector.h"
 
 namespace psi { namespace scf {
 

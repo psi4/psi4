@@ -34,6 +34,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"

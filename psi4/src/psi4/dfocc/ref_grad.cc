@@ -36,6 +36,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/sieve.h"
 #include "dfocc.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"

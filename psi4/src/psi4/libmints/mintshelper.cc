@@ -29,6 +29,8 @@
 #include "x2cint.h"
 
 #include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/molecule.h"
+
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
