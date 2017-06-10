@@ -40,7 +40,11 @@ def translate_interface(interface):
     This is extra stupid with unicode
     """
 
-    if sys.version_info[0] > 2:
+    # Not super easy to do this C side, very easy py side
+    interface["shape"] = tuple(interface["shape"])
+
+    # Python3 is awesome
+    if sys.version_info[0] >= 3:
         return interface
 
     nouni_interface = {}
@@ -66,10 +70,7 @@ def _get_raw_views(self, copy=False):
     ret = []
     for data in self.array_interface():
 
-        # Yet another hack
-        if isinstance(data["shape"], list):
-            data["shape"] = tuple(data["shape"])
-
+        # Watch out for those shapes without data
         if 0 in data["shape"]:
             ret.append(np.empty(shape=data["shape"]))
         else:
