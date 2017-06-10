@@ -19,4 +19,4 @@ set(sources_list init_array.cc
                  sq_to_tri.cc
                  lubksb.cc
 )
-psi4_add_module(lib ciomr sources_list parallel)
+psi4_add_module(lib ciomr sources_list psi4util)

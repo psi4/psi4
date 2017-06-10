@@ -48,6 +48,7 @@
 #include "psi4/libpsi4util/process.h"
 #include <memory>
 
+#include <typeinfo>
 #include "psi4/pybind11.h"
 
 #include "psi4/psi4-dec.h"
@@ -562,6 +563,7 @@ Data::Data()
 
 Data::Data(DataType *t){
    ptr_= std::make_shared<DataType>(*t);
+
 }
 
 Data::Data(const Data& copy)

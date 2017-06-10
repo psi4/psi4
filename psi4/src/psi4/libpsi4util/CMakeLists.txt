@@ -5,4 +5,4 @@ set(sources_list stl_string.cc
                  exception.cc 
                  combinations.cc 
 )
-psi4_add_module(lib psi4util sources_list parallel)
+psi4_add_module(lib psi4util sources_list)

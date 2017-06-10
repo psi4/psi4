@@ -72,17 +72,16 @@ std::vector<std::string> split(const std::string &input, const std::string &rege
     return {first, last};
 }
 
-template <typename Range1T, typename Range2T>
-bool iequals(const Range1T &Input, const Range2T &Test)
-{
-    if (std::distance(std::begin(Input), std::end(Input)) !=
-        std::distance(std::begin(Test), std::end(Test)))
-        return false;
+// template <typename Range1T, typename Range2T>
+// bool iequals(const Range1T &Input, const Range2T &Test) {
+//     if (std::distance(std::begin(Input), std::end(Input)) !=
+//         std::distance(std::begin(Test), std::end(Test)))
+//         return false;
 
-    return std::equal(
-        std::begin(Input), std::end(Input), std::begin(Test),
-        [](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
-}
+//     return std::equal(
+//         std::begin(Input), std::end(Input), std::begin(Test),
+//         [](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
+// }
 
 bool opening_square_bracket(char c);
 
