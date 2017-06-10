@@ -73,7 +73,7 @@ std::vector<std::string> split(const std::string &input, const std::string &rege
 }
 
 template <typename Range1T, typename Range2T>
-bool iequals(const Range1T &Input, const Range2T &Test);
+bool iequals(const Range1T &Input, const Range2T &Test)
 {
     if (std::distance(std::begin(Input), std::end(Input)) !=
         std::distance(std::begin(Test), std::end(Test)))

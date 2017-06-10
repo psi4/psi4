@@ -36,6 +36,7 @@
 #include <stddef.h>
 #include <vector>
 #include <memory>
+#include <map>
 
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];

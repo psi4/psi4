@@ -35,6 +35,8 @@
 #include "dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
+#include <cmath>
+
 using namespace std;
 
 namespace psi{ namespace occwave{
@@ -317,7 +319,7 @@ double SymBlockMatrix::rms()
 	}
       }
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -339,7 +341,7 @@ double SymBlockMatrix::rms(SymBlockMatrix* Atemp)
 	}
       }
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -612,7 +614,7 @@ void SymBlockMatrix::mgs()
 	  rmgs1+=matrix_[h][i][k]* matrix_[h][i][k];
 	}
 
-	rmgs1=sqrt(rmgs1);
+	rmgs1=std::sqrt(rmgs1);
 
 	for (int i=0; i<rowspi_[h];i++) {
 	  matrix_[h][i][k]/=rmgs1;
@@ -1045,7 +1047,7 @@ double SymBlockVector::rms()
 	  summ += vector_[h][j] * vector_[h][j];
 	}
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -1065,7 +1067,7 @@ double SymBlockVector::rms(SymBlockVector* Atemp)
 	  summ += (vector_[h][j] * vector_[h][j]) - (Atemp->vector_[h][j] * Atemp->vector_[h][j]);
 	}
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -1078,7 +1080,7 @@ double SymBlockVector::norm()
 	  summ += vector_[h][j] * vector_[h][j];
 	}
     }
-    summ=sqrt(summ);
+    summ=std::sqrt(summ);
     return summ;
 }//
 

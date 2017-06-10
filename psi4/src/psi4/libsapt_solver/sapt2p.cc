@@ -29,6 +29,8 @@
 #include "sapt2p.h"
 #include "psi4/physconst.h"
 
+#include <cmath>
+
 namespace psi { namespace sapt {
 
 SAPT2p::SAPT2p(SharedWavefunction Dimer, SharedWavefunction MonomerA,
@@ -211,14 +213,14 @@ void SAPT2p::print_results()
   // less than the scaling tolerance, we do not scale.
   double scaling_tol = 1.0e-5;
 
-  // The power applied to the scaling factor for sSAPT0
+  // The std::power applied to the scaling factor for sSAPT0
   double alpha = 3.0;
 
   double sapt_Xscal = ( e_exch10_ < scaling_tol ? 1.0 : e_exch10_ / e_exch10_s2_ );
   if(exch_scale_alpha_ != 0.0) {
-      sapt_Xscal = pow(sapt_Xscal, exch_scale_alpha_);
+      sapt_Xscal = std::pow(sapt_Xscal, exch_scale_alpha_);
   }
-  double sSAPT_Xscal = pow(sapt_Xscal,alpha);
+  double sSAPT_Xscal = std::pow(sapt_Xscal,alpha);
 
   // Now we compute everything once without scaling, and then with scaling
   // if requested.

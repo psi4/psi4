@@ -247,7 +247,7 @@ public:
 
 class Data
 {
-    Ref<DataType> ptr_;
+    std::shared_ptr<DataType> ptr_;
 public:
     Data();
     Data(DataType *t);
@@ -321,6 +321,7 @@ public:
     virtual std::string to_string() const;
 
     virtual void reset();
+    std::vector<Data> data() { return array_; }
 };
 
 #ifdef __INTEL_COMPILER

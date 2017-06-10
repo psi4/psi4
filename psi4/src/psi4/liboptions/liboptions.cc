@@ -560,9 +560,9 @@ void IStringDataType::assign(std::string s)
 Data::Data()
 { }
 
-Data::Data(DataType *t)
-    : ptr_(t)
-{ }
+Data::Data(DataType *t){
+   ptr_= std::make_shared<DataType>(*t);
+}
 
 Data::Data(const Data& copy)
 {
@@ -701,17 +701,17 @@ void Data::reset()
 
 DataType* Data::get() const
 {
-    return ptr_.pointer();
+    return ptr_.get();
 }
 
 Data& Data::operator[](int i)
 {
-    return (*(ptr_.pointer()))[i];
+    return (*(ptr_.get()))[i];
 }
 
 Data& Data::operator[](std::string s)
 {
-    return (*(ptr_.pointer()))[s];
+    return (*(ptr_.get()))[s];
 }
 
 // ArrayType
