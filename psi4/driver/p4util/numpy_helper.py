@@ -87,10 +87,8 @@ def _find_dim(arr, ndim):
         return [0] * ndim
 
     # Make sure this is a numpy array like thing
-    try:
-        arr.shape
-    except:
-        raise ValidationError("Expected numpy array, found object of type '%s'", type(arr))
+    if not hasattr(arr, 'shape'):
+        raise ValidationError("Expected numpy array, found object of type '%s'" % type(arr))
 
     if len(arr.shape) == ndim:
         return [arr.shape[x] for x in range(ndim)]
@@ -517,6 +515,7 @@ def _chain_dot(*args, **kwargs):
 
 # Matirx attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
+core.Matrix.from_list = classmethod(lambda self, x: array_to_matrix(self, np.array(x)))
 core.Matrix.to_array = _to_array
 core.Matrix.shape = _np_shape
 core.Matrix.np = _np_view
@@ -530,6 +529,7 @@ core.Matrix.chain_dot = _chain_dot
 
 # Vector attributes
 core.Vector.from_array = classmethod(array_to_matrix)
+core.Vector.from_list = classmethod(lambda self, x: array_to_matrix(self, np.array(x)))
 core.Vector.to_array = _to_array
 core.Vector.shape = _np_shape
 core.Vector.np = _np_view
