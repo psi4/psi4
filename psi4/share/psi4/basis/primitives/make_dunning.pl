@@ -55,6 +55,7 @@ foreach $ord (@HORDINAL) {
    $basis_jk         =       "molpro-basis-cc-pv"   . $ord . "z-jkfit.gbs";
    $basis_dk         =              "basis-cc-pv"   . $ord . "z-dk.gbs";
    $basis_w_core_dk  =            "basis-cc-pwcv"   . $ord . "z-dk.gbs";
+   $partial_pwcv     =    "partial-basis-cc-pwcv"   . $ord . "z.gbs";
 
    $diffuse          =        "diffuse-aug-cc-pv"   . $ord . "z.gbs";
    $d_diffuse        =      "diffuse-d-aug-cc-pv"   . $ord . "z.gbs";
@@ -148,6 +149,12 @@ foreach $ord (@HORDINAL) {
    $gbs02 = "cc-pV(" . $ord . "+d)Z.gbs";
    copygbs($gbs02, $basis_xpd, 1);
 
+   $otrpartial_pwcv = "otrpartial-basis-cc-pwcv" . $ord . "z_autogen.gbs";
+   mergegbs($otrpartial_pwcv, $gbs01, $w_core, $excl, 1);
+
+   $otrpartial_pwcv_xpd = "otrpartial-basis-cc-pwcv_" . $ord . "pdz_autogen.gbs";
+   mergegbs($otrpartial_pwcv_xpd, $gbs02, $w_core, $excl, 1);
+
    $gbs03 = "cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs03, $gbs01, $core, $excl, 1);
 
@@ -155,10 +162,10 @@ foreach $ord (@HORDINAL) {
    mergegbs($gbs04, $gbs02, $core, $excl, 1);
 
    $gbs05 = "cc-pwCV" . $ord . "Z.gbs";
-   mergegbs($gbs05, $gbs01, $w_core, $excl, 1);
+   mergegbs($gbs05, $partial_pwcv, $otrpartial_pwcv, $incl, 1);
 
    $gbs06 = "cc-pwCV(" . $ord . "+d)Z.gbs";
-   mergegbs($gbs06, $gbs02, $w_core, $excl, 1);
+   mergegbs($gbs06, $partial_pwcv, $otrpartial_pwcv_xpd, $incl, 1);
 
    $gbs07 = "aug-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs07, $gbs01, $diffuse, $excl, 1);
