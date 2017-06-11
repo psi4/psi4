@@ -29,9 +29,10 @@
 #
 
 $emslmanipulate = "./emsl_manipulate.pl";
-@HORDINAL = ("D", "T", "Q", "5", "6");
+@HORDINAL = ("d", "t", "q", "5", "6");
 
 $excl = "exclusive";
+$incl = "inclusive";
 $hhe  = "insert_hhe";
 $alar = "insert_alar";
 
@@ -95,7 +96,7 @@ foreach $ord (@HORDINAL) {
    $frag_core        =        "corevalence-cc-pcv"  . $ord . "z.gbs";
    $frag_w_core      =              "tight-cc-pwcv" . $ord . "z.gbs";
    $frag_w_core_ri   =              "tight-cc-pwcv" . $ord . "z-ri.gbs";
-   $frag_hhe         = "basis-blankHHe.gbs";
+   $frag_hhe         = "basis-blankhhe.gbs";
 
    $core = "corevalence-cc-pcv" . $ord . "z_autogen.gbs";
    mergegbs($core, $frag_core, $frag_hhe, $hhe, 0);
@@ -543,14 +544,14 @@ sub copygbs {
 
    my($dest, $origin, $pywrite) = @_;
 
-   $plaindest = $dest;
+   $plaindest = lc($dest);
    $plaindest =~ s/\(/_/g;
    $plaindest =~ s/\)/_/g;
    $plaindest =~ s/,/_/g;
    $plaindest =~ s/\+/p/g;
    $plaindest =~ s/\*/s/g;
 
-   $plainorigin = $origin;
+   $plainorigin = lc($origin);
    $plainorigin =~ s/\(/_/g;
    $plainorigin =~ s/\)/_/g;
    $plainorigin =~ s/,/_/g;
