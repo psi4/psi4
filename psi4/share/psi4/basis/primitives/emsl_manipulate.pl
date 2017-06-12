@@ -46,6 +46,7 @@ if ( ($mode eq "") || ($mode eq "exclusive") ) { $mode = "exclusive"; }
 elsif ($mode eq "inclusive")                   { $mode = "inclusive"; }
 elsif ($mode eq "insert_alar")                 { $mode = "alar";      }
 elsif ($mode eq "insert_hhe")                  { $mode = "hhe";       }
+elsif ($mode eq "favorfirst")                  { $mode = "favorfirst";}
 else                                           { die "\nERROR: improper mode $mode\n\n"; }
 
 if ($quiet eq "quiet") { $quiet = "quiet"; }
@@ -199,13 +200,36 @@ foreach $element (@HELEM) {
       }
    }
 
+   elsif ($mode eq "favorfirst") {
+
+      if ($startline1 != 0) {
+
+         if ($quiet eq "no") { print "** 1 **"; }
+         print GBS_OUT "$element     0\n";
+
+         print_element_file1 ();
+
+         print GBS_OUT "****\n";
+
+      }
+      elsif ($startline2 != 0) {
+
+         if ($quiet eq "no") { print "** 2 **"; }
+         print GBS_OUT "$element     0\n";
+
+         print_element_file2 ();
+
+         print GBS_OUT "****\n";
+
+      }
+   }
 }
 
 if ($quiet eq "no") { print "\n\n"; }
 print GBS_OUT "\n";
 close(GBS_OUT);
 
-if ($quiet eq "quiet") { system ("mv merge-$file1-$file2.gbs merged.gbs"); }
+system ("mv merge-$file1-$file2.gbs merged.gbs");
 
 
 sub print_element_file1 {
@@ -248,5 +272,7 @@ sub print_usage {
    print   "       a third argument of 'insert_alar' uses available elements from the first\n";
    print   "          file, except for al-si-p-s-cl-ar which are taken from the second\n";
    print   "       a fourth argument of 'quiet' writes only errors to the screen\n\n";
+   print   "       a third argument of 'favorfirst' uses available elements from the first\n";
+   print   "          file, then falls back to the second file (unused)\n";
 }
 
