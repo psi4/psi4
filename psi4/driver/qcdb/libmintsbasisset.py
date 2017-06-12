@@ -44,7 +44,7 @@ from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
 from .periodictable import *
-from .libmintsgshell import GaussianShell, ShellInfo
+from .libmintsgshell import ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis, corresponding_zeta
 if sys.version_info >= (3,0):
@@ -197,14 +197,13 @@ class BasisSet(object):
         self.xyz = [0.0, 0.0, 0.0]
         self.name = '(Empty Basis Set)'
         self.shells = []
-        self.shells.append(GaussianShell(0, self.PYnprimitive,
-            self.uoriginal_coefficients, self.ucoefficients, self.uerd_coefficients,
+        self.shells.append(ShellInfo(0, self.uoriginal_coefficients,
             self.uexponents, 'Cartesian', 0, self.xyz, 0))
 
     def constructor_role_mol_shellmap(self, role, mol, shell_map):
         """The most commonly used constructor. Extracts basis set name for *role*
         from each atom of *mol*, looks up basis and role entries in the
-        *shell_map* dictionary, retrieves the GaussianShell objects and returns
+        *shell_map* dictionary, retrieves the ShellInfo objects and returns
         the BasisSet.
 
         """
@@ -296,7 +295,7 @@ class BasisSet(object):
         shell_count = 0
         ao_count = 0
         bf_count = 0
-        xyz_ptr = [0.0, 0.0, 0.0]  # libmints seems to be always passing GaussianShell zeros, so following suit
+        xyz_ptr = [0.0, 0.0, 0.0]  # libmints seems to be always passing ShellInfo zeros, so following suit
         self.puream = False
         self.PYmax_am = 0
         self.PYmax_nprimitive = 0
@@ -323,13 +322,11 @@ class BasisSet(object):
                 self.puream = thisshell.is_pure()
                 tst = ustart + atom_nprim
                 tsp = ustart + atom_nprim + shell_nprim
-                self.shells[shell_count] = GaussianShell(am, shell_nprim,
+                self.shells[shell_count] = ShellInfo(am,
                     self.uoriginal_coefficients[tst:tsp],
-                    self.ucoefficients[tst:tsp],
-                    self.uerd_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    n, xyz_ptr, bf_count, rpowers[tst:tsp])
+                    n, xyz_ptr, bf_count, pt='Unnormalized', rpowers=rpowers[tst:tsp])
                 for thisbf in range(thisshell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
                     self.function_center[bf_count] = n
@@ -441,13 +438,11 @@ class BasisSet(object):
                 self.puream = shell.is_pure()
                 tst = prim_count
                 tsp = prim_count + shell_nprim
-                self.shells[shell_count] = GaussianShell(am, shell_nprim,
+                self.shells[shell_count] = ShellInfo(am,
                     self.uoriginal_coefficients[tst:tsp],
-                    self.ucoefficients[tst:tsp],
-                    self.uerd_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    center, self.xyz, bf_count)
+                    center, self.xyz, bf_count, pt='Unnormalized', rpowers=None)
                 self.shells[shell_count].pyprint()
                 for thisbf in range(shell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
@@ -485,7 +480,7 @@ class BasisSet(object):
     def build(molecule, shells):
         """Builder factory method
         * @param molecule the molecule to build the BasisSet around
-        * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
+        * @param shells array of *atom-numbered* ShellInfo to build the BasisSet from
         * @return BasisSet corresponding to this molecule and set of shells
 
         """
@@ -719,7 +714,7 @@ class BasisSet(object):
             if deffit not in univdef.keys():
                 raise ValidationError("""BasisSet::construct: deffit argument invalid: %s""" % (deffit))
 
-        # Map of GaussianShells
+        # Map of ShellInfo
         atom_basis_shell = OrderedDict()
         ecp_atom_basis_shell = OrderedDict()
         ecp_atom_basis_ncore = OrderedDict()
@@ -1014,7 +1009,7 @@ class BasisSet(object):
     def shell(self, si, center=None):
         """Return the si'th Gaussian shell on center
         *  @param i Shell number
-        *  @return A shared pointer to the GaussianShell object for the i'th shell.
+        *  @return A shared pointer to the ShellInfo object for the i'th shell.
 
         """
         if center is not None:
@@ -1362,7 +1357,7 @@ class BasisSet(object):
 
     @staticmethod
     def decontract(shells):
-        """Procedure applied to list to GaussianShell-s *shells* that returns
+        """Procedure applied to list to ShellInfo-s *shells* that returns
         another list of shells, one for every AM and exponent pair in the input
         list. Decontracts the shells.
 
