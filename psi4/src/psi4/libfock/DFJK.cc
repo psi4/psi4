@@ -696,7 +696,7 @@ void DFJK::initialize_JK_disk()
 
     // ==> Memory Sizing <== //
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
-    ULI buffer_memory = memory_ - 2*two_memory; // Two is for buffer space in fitting
+    ULI buffer_memory =(memory_ > 2 * two_memory) ? memory_ - 2*two_memory : 0; // Two is for buffer space in fitting
 
     //outfile->Printf( "Buffer memory = %ld words\n", buffer_memory);
 
