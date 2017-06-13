@@ -1499,12 +1499,11 @@ void Molecule::deactivate_all_fragments()
     }
 }
 
-void Molecule::set_active_fragments(py::list reals)
+void Molecule::set_active_fragments(std::vector<int> reals)
 {
     lock_frame_ = false;
-    for (int i = 0; i < py::len(reals); ++i) {
-        int fragment = reals[i].cast<int>();
-        fragment_types_[fragment - 1] = Real;
+    for (int i = 0; i < reals.size(); ++i) {
+        fragment_types_[reals[i] - 1] = Real;
     }
 }
 
@@ -1514,12 +1513,11 @@ void Molecule::set_active_fragment(int fragment)
     fragment_types_[fragment - 1] = Real;
 }
 
-void Molecule::set_ghost_fragments(py::list ghosts)
+void Molecule::set_ghost_fragments(std::vector<int> ghosts)
 {
     lock_frame_ = false;
-    for (int i = 0; i < py::len(ghosts); ++i) {
-        int fragment = ghosts[i].cast<int>();
-        fragment_types_[fragment - 1] = Ghost;
+    for (int i = 0; i < ghosts.size(); ++i) {
+        fragment_types_[ghosts[i] - 1] = Ghost;
     }
 }
 
@@ -1529,42 +1527,32 @@ void Molecule::set_ghost_fragment(int fragment)
     fragment_types_[fragment - 1] = Ghost;
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_1(py::list reals,
-                                                          py::list ghosts)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_1(std::vector<int> reals,
+                                                         std::vector<int> ghosts) {
     std::vector<int> realVec;
-    for (int i = 0; i < py::len(reals); ++i)
-        realVec.push_back(reals[i].cast<int>() - 1);
+    for (int i = 0; i < reals.size(); ++i) realVec.push_back(reals[i] - 1);
 
     std::vector<int> ghostVec;
-    for (int i = 0; i < py::len(ghosts); ++i)
-        ghostVec.push_back(ghosts[i].cast<int>() - 1);
+    for (int i = 0; i < ghosts.size(); ++i) ghostVec.push_back(ghosts[i] - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_2(py::list reals,
-                                                          int ghost)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_2(std::vector<int> reals, int ghost) {
     std::vector<int> realVec;
-    for (int i = 0; i < py::len(reals); ++i)
-        realVec.push_back(reals[i].cast<int>() - 1);
+    for (int i = 0; i < reals.size(); ++i) realVec.push_back(reals[i] - 1);
 
     std::vector<int> ghostVec;
-    if (ghost >= 1)
-        ghostVec.push_back(ghost - 1);
+    if (ghost >= 1) ghostVec.push_back(ghost - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_3(int reals,
-                                                          py::list ghost)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_3(int reals, std::vector<int> ghost) {
     std::vector<int> realVec;
     realVec.push_back(reals - 1);
     std::vector<int> ghostVec;
-    for (int i = 0; i < py::len(ghost); ++i)
-        ghostVec.push_back(ghost[i].cast<int>() - 1);
+    for (int i = 0; i < ghost.size(); ++i) ghostVec.push_back(ghost[i] - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
@@ -1581,7 +1569,7 @@ std::shared_ptr <Molecule> Molecule::py_extract_subsets_4(int reals,
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_5(py::list reals)
+std::shared_ptr <Molecule> Molecule::py_extract_subsets_5(std::vector<int> reals)
 {
     return py_extract_subsets_2(reals, -1);
 }

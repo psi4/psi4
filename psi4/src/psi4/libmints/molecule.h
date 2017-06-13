@@ -35,8 +35,6 @@
 #include <map>
 #include <memory>
 
-#include "psi4/pybind11.h"
-
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
 #define DEFAULT_SYM_TOL 1.0E-8
 #define FULL_PG_TOL 1.0e-8 // default
@@ -529,7 +527,7 @@ public:
      * Sets the specified list of fragments to be real.
      * @param reals The list of real fragments.
      */
-    void set_active_fragments(py::list reals);
+    void set_active_fragments(std::vector<int> reals);
 
     /**
      * Sets the specified fragment to be real.
@@ -541,7 +539,7 @@ public:
      * Sets the specified list of fragments to be ghosts.
      * @param ghosts The list of ghosts fragments.
      */
-    void set_ghost_fragments(py::list ghosts);
+    void set_ghost_fragments(std::vector<int> ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
@@ -565,7 +563,7 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_1(py::list reals, py::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_1(std::vector<int> reals, std::vector<int> ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -573,7 +571,7 @@ public:
      * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_2(py::list reals, int ghost = -1);
+    std::shared_ptr<Molecule> py_extract_subsets_2(std::vector<int> reals, int ghost = -1);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -581,7 +579,7 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_3(int reals, py::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_3(int reals, std::vector<int> ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -596,7 +594,7 @@ public:
      * @param reals A list containing the real atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_5(py::list reals);
+    std::shared_ptr<Molecule> py_extract_subsets_5(std::vector<int> reals);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
