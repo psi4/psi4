@@ -149,6 +149,26 @@ class BasisSet(object):
         else:
             raise ValidationError('BasisSet::constructor: Inappropriate configuration of constructor arguments')
 
+    def __eq__(self, other):
+        """Naive equality test. Haven't considered exp/coeff distribution among shells or AM"""
+
+        if isinstance(other, self.__class__):
+            if ((self.name == other.name) and
+                (self.puream == other.puream) and
+                (self.PYnao == other.PYnao) and
+                (self.PYnbf == other.PYnbf) and
+                (self.n_prim_per_shell == other.n_prim_per_shell) and
+                (self.ucoefficients == other.ucoefficients) and
+                (self.uexponents == other.uexponents)):
+                return True
+            else:
+                return False
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
     # <<< Methods for Construction >>>
 
     def initialize_singletons(self):
@@ -697,7 +717,10 @@ class BasisSet(object):
         # Paths to search for gbs files: here + PSIPATH + library
         psidatadir = os.environ.get('PSIDATADIR', None)
         #nolongerpredicatble psidatadir = __file__ + '/../../..' if psidatadir is None else psidatadir
-        libraryPath = ':' + os.path.abspath(psidatadir) + '/basis'
+        if psidatadir:
+            libraryPath = ':' + os.path.abspath(psidatadir) + '/basis'
+        else:
+            libraryPath = ''
         basisPath = os.path.abspath('.') + \
             ':' + ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + \
             libraryPath

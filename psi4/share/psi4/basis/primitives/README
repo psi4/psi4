@@ -2,8 +2,8 @@ Brief Instructions:
 
 Automation is really only for the Dunning basis sets. For others, use emsl_manipulate.pl directly.
 
-[1]   Update any of the primitives (basis-, corevalence-, tight-, diffuse-, hold-, molpro-, etc.) 
-      as needed. These come directly from EMSL.
+[1]   Update any of the primitives (basis-, corevalence-, tight-, diffuse-, hold-, molpro-,
+      partial-, etc.) as needed. These come directly from EMSL.
 
 [2]   Make the necessary hand edits to hold- files. Detailed instructions for first generation are 
       found in NOTES. Changes should only be necessary if their dependent basis sets from EMSL changed.
@@ -11,13 +11,14 @@ Automation is really only for the Dunning basis sets. For others, use emsl_manip
 [3]   Run make_dunning.pl to generate the basis sets proper. dual adzp will be carried along but
       these need to be edited by hand to actually make changes.
 
-[4]   Run dunning_prepend_and_checknew.pl to add spherical to the top of the file and show if the basis
-      is any different from its current form (presently set to two directories up- change as needed).
+[4]   Run `dunning_prepend_and_checknew.pl` to add spherical to the top of the file and show if the basis
+      is any different from its current form (presently set to one directories up- change as needed).
+      Blue is new, yellow is changed, red is deleted.
 
-[5]   Look at basisdunningdiffer.txt and transfer into the main basis directory any that have changed.
+      Can run diff_gbs.py directly on one (`./diff_gbs.py probe.gbs`) or two files (`./diff_gbs.py probe.gbs ref.gbs`)
 
-[6]   Delete basis sets here (keep primitives), tar back up and place in main basis directory.
+[5]   Look at basisdunningfiles.txt and transfer into the main basis directory any that have changed.
 
-[7]   Rerun documentbases.pl to regenerate the psi4bases.html file. Update the latter on the trac page.
+[6]   Delete basis sets here (keep primitives) via `./clean.sh`.
 
 
