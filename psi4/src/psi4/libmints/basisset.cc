@@ -179,12 +179,49 @@ std::shared_ptr <Molecule> BasisSet::molecule() const
     return molecule_;
 }
 
-int BasisSet::ncore() const
+int BasisSet::n_ecp_core() const
 {
     int ncoreelectrons = 0;
     for (int A = 0; A < molecule_->natom(); A++)
-       ncoreelectrons += ncore(molecule_->label(A));
+       ncoreelectrons += n_ecp_core(molecule_->label(A));
     return ncoreelectrons;
+}
+
+int BasisSet::n_frozen_core(const std::string& depth, SharedMolecule mol)
+{
+    std::string local = depth;
+    if (depth.empty())
+        local = Process::environment.options.get_str("FREEZE_CORE");
+
+    SharedMolecule mymol = mol ? mol : molecule_;
+
+    if (local == "FALSE") {
+        return 0;
+    } else if (local == "TRUE") {
+        int nfzc = 0;
+        // Freeze the number of core electrons corresponding to the
+        // nearest previous noble gas atom.  This means that the 4p block
+        // will still have 3d electrons active.  Alkali earth atoms will
+        // have one valence electron in this scheme.
+        for (int A = 0; A < mymol->natom(); A++) {
+            // If this center as an ECP present, move along.
+            if(n_ecp_core(mymol->label(A)))
+                continue;
+            double Z = mymol->Z(A);
+            if (Z > 2)  nfzc += 1;
+            if (Z > 10) nfzc += 4;
+            if (Z > 18) nfzc += 4;
+            if (Z > 36) nfzc += 9;
+            if (Z > 54) nfzc += 9;
+            if (Z > 86) nfzc += 16;
+            if (Z > 108) {
+                throw PSIEXCEPTION("Invalid atomic number");
+            }
+        }
+        return nfzc;
+    } else {
+        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
+    }
 }
 
 void BasisSet::print(std::string out) const
@@ -201,8 +238,8 @@ void BasisSet::print(std::string out) const
     if(has_ECP()) {
         printer->Printf("  Core potential: %s\n", name_.c_str());
         printer->Printf("    Number of shells: %d\n", n_ecp_shell());
-        printer->Printf("    Number of terms: %d\n", n_ecp_primitive());
-        printer->Printf("    Number of core electrons: %d\n", ncore());
+        printer->Printf("    Number of ECP primitives: %d\n", n_ecp_primitive());
+        printer->Printf("    Number of ECP core electrons: %d\n", n_ecp_core());
         printer->Printf("    Max angular momentum: %d\n\n", max_ecp_am());
     }
 }
@@ -293,7 +330,7 @@ void BasisSet::print_summary(std::string out) const
         printer->Printf("  -CORE POTENTIAL INFORMATION:\n");
         printer->Printf("    Total number of shells   = %d\n", n_ecp_shell());
         printer->Printf("    Number of terms          = %d\n", n_ecp_primitive_);
-        printer->Printf("    Number of core electrons = %d\n", ncore());
+        printer->Printf("    Number of core electrons = %d\n", n_ecp_core());
         printer->Printf("    Maximum AM               = %d\n", max_ecp_am_);
         printer->Printf("\n");
 
@@ -320,7 +357,7 @@ void BasisSet::print_summary(std::string out) const
 
             int first_shell = center_to_ecp_shell_[A];
             int n_shell = center_to_ecp_nshell_[A];
-            int ncoreelectrons = ncore(molecule_->label(A));
+            int ncoreelectrons = n_ecp_core(molecule_->label(A));
             printer->Printf("%2d   ", ncoreelectrons);
 
             if(ncoreelectrons){
@@ -401,14 +438,14 @@ void BasisSet::print_detail(std::string out) const
 
         for (int uA = 0; uA < molecule_->nunique(); uA++) {
             const int A = molecule_->unique(uA);
-            if (ncore(molecule_->label(A))) {
+            if (n_ecp_core(molecule_->label(A))) {
                 int first_shell = center_to_ecp_shell_[A];
                 int n_shell = center_to_ecp_nshell_[A];
                 int shellam = 0;
                 for(int shell = 0; shell < n_shell; ++shell)
                     shellam = ecp_shells_[shell+first_shell].am() > shellam ? ecp_shells_[shell+first_shell].am() : shellam;
                 printer->Printf("   %2s %3d\n", molecule_->symbol(A).c_str(), A + 1);
-                printer->Printf("   %2s-ECP  %d %3d\n", molecule_->symbol(A).c_str(), shellam, ncore(molecule_->label(A)));
+                printer->Printf("   %2s-ECP  %d %3d\n", molecule_->symbol(A).c_str(), shellam, n_ecp_core(molecule_->label(A)));
 
                 for (int Q = 0; Q < n_shell; Q++)
                     ecp_shells_[Q + first_shell].print(out);
@@ -673,7 +710,7 @@ std::shared_ptr<BasisSet> BasisSet::construct_from_pydict(const std::shared_ptr 
             int ncore = basis_atom_ncore[basis][label];
             int Z = mol->true_atomic_number(atom) - ncore;
             mol->set_nuclear_charge(atom, Z);
-            basisset->set_ncore(label, ncore);
+            basisset->set_n_ecp_core(label, ncore);
         }
     }
 

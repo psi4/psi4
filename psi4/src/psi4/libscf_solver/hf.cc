@@ -1170,7 +1170,7 @@ void HF::compute_fcpi()
         if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
             nfzc = options_.get_int("NUM_FROZEN_DOCC");
         } else {
-            nfzc = molecule_->nfrozen_core(basisset_, options_.get_str("FREEZE_CORE"));
+            nfzc = basisset_->n_frozen_core();
         }
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;

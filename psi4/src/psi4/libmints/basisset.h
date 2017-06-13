@@ -285,13 +285,16 @@ public:
     const GaussianShell& shell(int center, int si) const;
 
     /// Return the number of core electrons associated with this (ECP) basisset, for the specified label.
-    int ncore(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
+    int n_ecp_core(const std::string &label) const { return ncore_.count(label) ? ncore_.at(label) : 0; }
 
     /// Return the total number of core electrons assocated with this (ECP) basisset.
-    int ncore() const;
+    int n_ecp_core() const;
 
     /// Set the number of electrons associated with the given atom label, for an ECP basis set.
-    void set_ncore(const std::string &label, int n) { ncore_[std::string(label)] = n; }
+    void set_n_ecp_core(const std::string &label, int n) { ncore_[std::string(label)] = n; }
+
+    /// Number of frozen core for molecule given freezing state, accounting for any ECP present
+    int n_frozen_core(const std::string& depth = "", SharedMolecule mol=nullptr);
 
     /** @{
      *  Print the basis set.

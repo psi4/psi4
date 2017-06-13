@@ -37,6 +37,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/psifiles.h"
 
 #include "psi4/psi4-dec.h"
@@ -53,7 +54,7 @@ void SCF::save_info()
     nmo_ = nso_;
 
     // figure out how many frozen orbitals per irrep
-    int nfrzc = molecule_->nfrozen_core(basisset_);
+    int nfrzc = basisset_->n_frozen_core();
     intvec frz;
     for(int h = 0; h < nirreps; ++h) frz.push_back(0);
     vector<std::pair<double, int> > sorted_evals;

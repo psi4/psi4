@@ -681,41 +681,6 @@ void Molecule::rotate_full(const Matrix &R)
     set_full_geometry(new_geom);
 }
 
-int Molecule::nfrozen_core(std::shared_ptr<BasisSet> ecpbasis, const std::string &depth)
-{
-    std::string local = depth;
-    if (depth.empty())
-        local = Process::environment.options.get_str("FREEZE_CORE");
-
-    if (local == "FALSE") {
-        return 0;
-    } else if (local == "TRUE") {
-        int nfzc = 0;
-        // Freeze the number of core electrons corresponding to the
-        // nearest previous noble gas atom.  This means that the 4p block
-        // will still have 3d electrons active.  Alkali earth atoms will
-        // have one valence electron in this scheme.
-        for (int A = 0; A < natom(); A++) {
-            // If this center as an ECP present, move along.
-            if(ecpbasis)
-                if(ecpbasis->ncore(label(A)))
-                    continue;
-            if (Z(A) > 2) nfzc += 1;
-            if (Z(A) > 10) nfzc += 4;
-            if (Z(A) > 18) nfzc += 4;
-            if (Z(A) > 36) nfzc += 9;
-            if (Z(A) > 54) nfzc += 9;
-            if (Z(A) > 86) nfzc += 16;
-            if (Z(A) > 108) {
-                throw PSIEXCEPTION("Invalid atomic number");
-            }
-        }
-        return nfzc;
-    } else {
-        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
-    }
-}
-
 void Molecule::init_with_xyz(const std::string &xyzfilename)
 {
     lock_frame_ = false;
