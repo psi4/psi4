@@ -44,7 +44,7 @@ from .exceptions import *
 from .psiutil import search_file
 from .molecule import Molecule
 from .periodictable import *
-from .libmintsgshell import GaussianShell, ShellInfo
+from .libmintsgshell import ShellInfo
 from .libmintsbasissetparser import Gaussian94BasisSetParser
 from .basislist import corresponding_basis, corresponding_zeta
 if sys.version_info >= (3,0):
@@ -197,14 +197,13 @@ class BasisSet(object):
         self.xyz = [0.0, 0.0, 0.0]
         self.name = '(Empty Basis Set)'
         self.shells = []
-        self.shells.append(GaussianShell(0, self.PYnprimitive,
-            self.uoriginal_coefficients, self.ucoefficients, self.uerd_coefficients,
+        self.shells.append(ShellInfo(0, self.uoriginal_coefficients,
             self.uexponents, 'Cartesian', 0, self.xyz, 0))
 
     def constructor_role_mol_shellmap(self, role, mol, shell_map):
         """The most commonly used constructor. Extracts basis set name for *role*
         from each atom of *mol*, looks up basis and role entries in the
-        *shell_map* dictionary, retrieves the GaussianShell objects and returns
+        *shell_map* dictionary, retrieves the ShellInfo objects and returns
         the BasisSet.
 
         """
@@ -296,7 +295,7 @@ class BasisSet(object):
         shell_count = 0
         ao_count = 0
         bf_count = 0
-        xyz_ptr = [0.0, 0.0, 0.0]  # libmints seems to be always passing GaussianShell zeros, so following suit
+        xyz_ptr = [0.0, 0.0, 0.0]  # libmints seems to be always passing ShellInfo zeros, so following suit
         self.puream = False
         self.PYmax_am = 0
         self.PYmax_nprimitive = 0
@@ -323,13 +322,11 @@ class BasisSet(object):
                 self.puream = thisshell.is_pure()
                 tst = ustart + atom_nprim
                 tsp = ustart + atom_nprim + shell_nprim
-                self.shells[shell_count] = GaussianShell(am, shell_nprim,
+                self.shells[shell_count] = ShellInfo(am,
                     self.uoriginal_coefficients[tst:tsp],
-                    self.ucoefficients[tst:tsp],
-                    self.uerd_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    n, xyz_ptr, bf_count, rpowers[tst:tsp])
+                    n, xyz_ptr, bf_count, pt='Unnormalized', rpowers=rpowers[tst:tsp])
                 for thisbf in range(thisshell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
                     self.function_center[bf_count] = n
@@ -441,13 +438,11 @@ class BasisSet(object):
                 self.puream = shell.is_pure()
                 tst = prim_count
                 tsp = prim_count + shell_nprim
-                self.shells[shell_count] = GaussianShell(am, shell_nprim,
+                self.shells[shell_count] = ShellInfo(am,
                     self.uoriginal_coefficients[tst:tsp],
-                    self.ucoefficients[tst:tsp],
-                    self.uerd_coefficients[tst:tsp],
                     self.uexponents[tst:tsp],
                     'Pure' if self.puream else 'Cartesian',
-                    center, self.xyz, bf_count)
+                    center, self.xyz, bf_count, pt='Unnormalized', rpowers=None)
                 self.shells[shell_count].pyprint()
                 for thisbf in range(shell.nfunction()):
                     self.function_to_shell[bf_count] = shell_count
@@ -485,7 +480,7 @@ class BasisSet(object):
     def build(molecule, shells):
         """Builder factory method
         * @param molecule the molecule to build the BasisSet around
-        * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
+        * @param shells array of *atom-numbered* ShellInfo to build the BasisSet from
         * @return BasisSet corresponding to this molecule and set of shells
 
         """
@@ -653,7 +648,7 @@ class BasisSet(object):
 
         if return_atomlist:
             if returnBasisSet:
-                return bs, ecp
+                return bs
             else:
                 atom_basis_list = []
                 for atbs in bs:
@@ -665,14 +660,14 @@ class BasisSet(object):
                     bsdict['puream'] = int(atbs.has_puream())
                     bsdict['shell_map'] = atbs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
                     if ecp:
-                        bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
+                        bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
                     bsdict['molecule'] = atbs.molecule.create_psi4_string_from_molecule(force_c1=True)
                     atom_basis_list.append(bsdict)
                 return atom_basis_list
 
         if returnBasisSet:
             #print(text)
-            return bs, ecp
+            return bs
         else:
             bsdict = {}
             bsdict['message'] = text
@@ -682,7 +677,7 @@ class BasisSet(object):
             bsdict['puream'] = int(bs.has_puream())
             bsdict['shell_map'] = bs.export_for_libmints('BASIS' if fitrole == 'ORBITAL' else fitrole)
             if ecp:
-                bsdict['ecp_shell_map'] = ecp.export_for_libmints2('BASIS')
+                bsdict['ecp_shell_map'] = ecp.export_for_libmints('BASIS')
             return bsdict
 
     @classmethod
@@ -719,7 +714,7 @@ class BasisSet(object):
             if deffit not in univdef.keys():
                 raise ValidationError("""BasisSet::construct: deffit argument invalid: %s""" % (deffit))
 
-        # Map of GaussianShells
+        # Map of ShellInfo
         atom_basis_shell = OrderedDict()
         ecp_atom_basis_shell = OrderedDict()
         ecp_atom_basis_ncore = OrderedDict()
@@ -843,8 +838,13 @@ class BasisSet(object):
 
         # Construct the grand BasisSet for mol
         basisset = BasisSet(key, mol, atom_basis_shell)
+
+        # If an ECP was detected, and we're building BASIS, process it now
         ecpbasisset = None
-        if ecp_atom_basis_shell and key == 'BASIS':
+        ncore = 0
+        for atom in ecp_atom_basis_ncore:
+            ncore += ecp_atom_basis_ncore[atom]
+        if ncore and key == 'BASIS':
             ecpbasisset = BasisSet(key, mol, ecp_atom_basis_shell)
             ecpbasisset.ecp_coreinfo = ecp_atom_basis_ncore
 
@@ -1009,7 +1009,7 @@ class BasisSet(object):
     def shell(self, si, center=None):
         """Return the si'th Gaussian shell on center
         *  @param i Shell number
-        *  @return A shared pointer to the GaussianShell object for the i'th shell.
+        *  @return A shared pointer to the ShellInfo object for the i'th shell.
 
         """
         if center is not None:
@@ -1166,36 +1166,6 @@ class BasisSet(object):
             with open(out, mode='w') as handle:
                 handle.write(text)
 
-    def export_for_libmints2(self, role):
-        """From complete BasisSet object, returns array where
-        triplets of elements are each unique atom label, the hash
-        of the string shells entry in gbs format and the
-        shells entry in gbs format for that label. This packaging is
-        intended for return to libmints BasisSet::construct_from_pydict for
-        instantiation of a libmints BasisSet clone of *self*.
-
-        ACS 04/17 - I plan to replace the export_for_libmints function with something
-        like this.  I don't think the extra parsing of the string on the C++ side is
-        a very intuitive design.  With a pre-parsed list like this, we can remove all
-        C++ parsing utilities and make the code much cleaner.
-        """
-        info = []
-        for A in range(self.molecule.natom()):
-            label = self.molecule.label(A)
-            first_shell = self.center_to_shell[A]
-            n_shell = self.center_to_nshell[A]
-
-            atominfo = [label]
-            atominfo.append(self.molecule.atoms[A].shell(key=role))
-            try:
-               atominfo.append(self.ecp_coreinfo[label])
-            except KeyError:
-                raise ValidationError("Problem with number of cores in ECP constuction!")
-            for Q in range(n_shell):
-                atominfo.append(self.shells[Q + first_shell].aslist())
-            info.append(atominfo)
-        return info
-
 
     def export_for_libmints(self, role):
         """From complete BasisSet object, returns array where
@@ -1206,23 +1176,25 @@ class BasisSet(object):
         instantiation of a libmints BasisSet clone of *self*.
 
         """
-        basstrings = []
-        tally = []
+        info = []
         for A in range(self.molecule.natom()):
-            if self.molecule.label(A) not in tally:
-                label = self.molecule.label(A)
-                first_shell = self.center_to_shell[A]
-                n_shell = self.center_to_nshell[A]
+            label = self.molecule.label(A)
+            first_shell = self.center_to_shell[A]
+            n_shell = self.center_to_nshell[A]
 
-                basstrings.append(label)
-                basstrings.append(self.molecule.atoms[A].shell(key=role))
-                text = """   %s  0\n""" % (label)
-                for Q in range(n_shell):
-                    text += self.shells[Q + first_shell].pyprint(outfile=None)
-                text += """    ****\n"""
-                basstrings.append(text)
-
-        return basstrings
+            atominfo = [label]
+            atominfo.append(self.molecule.atoms[A].shell(key=role))
+            if self.ecp_coreinfo:
+                # If core information is present, this is an ECP so we add the
+                # number of electrons this atom's ECP basis accounts for here.
+                try:
+                   atominfo.append(self.ecp_coreinfo[label])
+                except KeyError:
+                    raise ValidationError("Problem with number of cores in ECP constuction!")
+            for Q in range(n_shell):
+                atominfo.append(self.shells[Q + first_shell].aslist())
+            info.append(atominfo)
+        return info
 
     def print_detail_gamess(self, out=None, numbersonly=False):
         """Prints a detailed PSI3-style summary of the basis (per-atom)
@@ -1385,7 +1357,7 @@ class BasisSet(object):
 
     @staticmethod
     def decontract(shells):
-        """Procedure applied to list to GaussianShell-s *shells* that returns
+        """Procedure applied to list to ShellInfo-s *shells* that returns
         another list of shells, one for every AM and exponent pair in the input
         list. Decontracts the shells.
 

@@ -138,7 +138,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
 
     // ==> Form Aux overlap <==
 
-    IntegralFactory factory(auxiliary_, auxiliary_);
+    IntegralFactory factory(auxiliary_);
     std::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
     aux_overlap_ = SharedMatrix(new Matrix("Auxiliary Overlap", naux, naux));
     overlap->compute(aux_overlap_);

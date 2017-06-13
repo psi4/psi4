@@ -809,8 +809,8 @@ void FISAPT::freeze_core()
     //std::shared_ptr<Molecule> molA = mol->extract_subsets({0},{});
     //std::shared_ptr<Molecule> molB = mol->extract_subsets({1},{});
 
-    int nfocc0A = molA->nfrozen_core(reference_->ecpbasisset(), options_.get_str("FREEZE_CORE"));
-    int nfocc0B = molB->nfrozen_core(reference_->ecpbasisset(), options_.get_str("FREEZE_CORE"));
+    int nfocc0A = reference_->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), molA);
+    int nfocc0B = reference_->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), molB);
 
     int nbf =   matrices_["Cocc0A"]->rowspi()[0];
     int nocc0A = matrices_["Cocc0A"]->colspi()[0];

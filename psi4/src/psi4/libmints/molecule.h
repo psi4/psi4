@@ -305,9 +305,6 @@ public:
     void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
     void set_shell_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
-    /// Number of frozen core for molecule given freezing state
-    int nfrozen_core(std::shared_ptr<BasisSet> ecpbasis, const std::string& depth = "");
-
     /// @{
     /// Tests to see of an atom is at the passed position with a given tolerance
     int atom_at_position1(double *, double tol = 0.05) const;

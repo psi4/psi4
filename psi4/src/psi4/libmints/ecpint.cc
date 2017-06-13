@@ -647,12 +647,13 @@ void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end
 
 //***************************************** ECP INTEGRAL ***********************************************
 
-ECPInt::ECPInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1, 
-    std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> _basis, int deriv) : OneBodyAOInt(st, bs1, bs2, deriv), basis(_basis) {
+ECPInt::ECPInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
+    std::shared_ptr<BasisSet> bs2, int deriv) : OneBodyAOInt(st, bs1, bs2, deriv)
+{
 	// Initialise angular and radial integrators
 	int maxam1 = bs1->max_am(); int maxam2 = bs2->max_am();  
 	int maxLB = maxam1 > maxam2 ? maxam1 : maxam2;
-	int maxLU = basis->max_am();
+    int maxLU = bs1_->max_ecp_am();
 	angInts.init(maxLB + deriv, maxLU);
 	angInts.compute();
 	radInts.init(2*(maxLB + deriv) + maxLU);
@@ -916,9 +917,10 @@ void ECPInt::compute_pair(const GaussianShell &shellA, const GaussianShell &shel
 	memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
 	TwoIndex<double> tempValues;
 	int ao12;
-    for (int i = 0; i < basis->nshell(); i++) {
-        const GaussianShell &myshell = basis->shell(i);
-        compute_shell_pair(myshell, shellA, shellB, tempValues);
+    // TODO check that bs1 and bs2 ECPs are the same
+    for (int i = 0; i < bs1_->n_ecp_shell(); i++) {
+        const GaussianShell &ecpshell = bs1_->ecp_shell(i);
+        compute_shell_pair(ecpshell, shellA, shellB, tempValues);
         ao12 = 0;
         for (int a = 0; a < shellA.ncartesian(); a++) {
             for (int b = 0; b < shellB.ncartesian(); b++) {

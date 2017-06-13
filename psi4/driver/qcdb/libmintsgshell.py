@@ -348,7 +348,12 @@ class ShellInfo(object):
 
     def aslist(self):
         """Return minimal list of shell info"""
-        info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K], self.rpower(K)) for K in range(self.nprimitive())]
+        if self.rpowers and self.rpowers[0] is not None:
+            # This is an ECP, so we tack the radial powers onto the end of the list
+            info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K], self.rpower(K)) for K in range(self.nprimitive())]
+        else:
+            # This is a regular shell, with only coefficients and exponents to worry about
+            info = [self.l] + [(self.PYexp[K], self.PYoriginal_coef[K]) for K in range(self.nprimitive())]
         return info
 
     def pyprint(self, outfile=None):
@@ -390,51 +395,3 @@ class ShellInfo(object):
     def set_function_index(self, i):
         """Set basis function index where this shell starts."""
         self.start = i
-
-
-class GaussianShell(ShellInfo):
-    """Class with same information as :py:class:`ShellInfo`. In C++,
-    class uses more efficient data structures, but in Python differences
-    minimal.
-
-    """
-
-    def __init__(self, am, nprimitive, oc, c, ec, e, pure, nc, center, start, rpowers=None):
-        ShellInfo.__init__(self, am=am, c=c, e=e, pure=pure, nc=nc, center=center, start=start, pt='Normalized', rpowers=rpowers)
-        """
-        *  @param am Angular momentum.
-        *  @param pure Pure spherical harmonics, or Cartesian.
-        *  @param oc An array of contraction coefficients.
-        *  @param c An array of normalized contraction coefficients.
-        *  @param ec An array of ERD normalized contraction coefficients.
-        *  @param e An array of exponent values.
-        *  @param pure an enum describing whether this shell uses pure or Cartesian functions.
-        *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
-        *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
-        *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
-        *  @param pt Is the shell already normalized?
-
-        """
-        self.PYnprimitive = nprimitive
-        self.PYoriginal_coef = oc
-        self.PYerd_coef = ec
-
-    def nprimitive(self):
-        """The number of primitive Gaussians"""
-        return self.PYnprimitive
-
-
-
-#GaussianShell(0, nprimitive_,
-#    uoriginal_coefficients_, ucoefficients_, uerd_coefficients_,
-#    uexponents_, GaussianType(0), 0, xyz_, 0)
-#
-#GaussianShell(am, shell_nprim,
-#    &uoriginal_coefficients_[ustart+atom_nprim], &ucoefficients_[ustart+atom_nprim], &uerd_coefficients_[ustart+atom_nprim],
-#    &uexponents_[ustart+atom_nprim], puream, n, xyz_ptr, bf_count)
-#
-#GaussianShell(am, shell_nprim,
-#    &uoriginal_coefficients_[prim_count], &ucoefficients_[prim_count], &uerd_coefficients_[prim_count],
-#    &uexponents_[prim_count], puream, center, xyz_, bf_count)
-#
-#ShellInfo(am, contractions, exponents, gaussian_type, 0, center, 0, Unnormalized)

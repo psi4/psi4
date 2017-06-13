@@ -43,7 +43,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/basisset_parser.h"
 
 using ULI=unsigned long int;
 

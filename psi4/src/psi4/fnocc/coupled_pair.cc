@@ -42,7 +42,6 @@
 #include"blas.h"
 #include"ccsd.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/lib3index/3index.h"
 
 using namespace psi;

@@ -35,7 +35,6 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
@@ -367,7 +366,7 @@ void export_mints(py::module& m)
 
     py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")
         .def(py::init<int, const std::vector<double>&, const std::vector<double>&, GaussianType,
-                      int, const Vector3&, int, PrimitiveType>());
+                      PrimitiveType>());
 
     py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 
@@ -453,10 +452,8 @@ void export_mints(py::module& m)
         .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring");
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >())
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<BasisSet>>())
         // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
         // py::return_value_policy<manage_new_object>(), "docstring").
@@ -523,7 +520,6 @@ void export_mints(py::module& m)
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
 
     typedef SharedMatrix (MintsHelper::*oneelectron)();
-    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis_ecp)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>,
                                                                  std::shared_ptr<BasisSet>);
 
@@ -559,7 +555,7 @@ void export_mints(py::module& m)
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring")
         .def("so_potential", &MintsHelper::so_potential, "docstring")
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
-        .def("ao_ecp", oneelectron_mixed_basis_ecp(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
+        .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")
 
         // One-electron properties and
@@ -858,10 +854,6 @@ void export_mints(py::module& m)
         .def("sotoao", &PetiteList::sotoao, "docstring")
         .def("print", &PetiteList::print, "docstring");
 
-    py::class_<BasisSetParser, std::shared_ptr<BasisSetParser>>(m, "BasisSetParser", "docstring");
-    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, BasisSetParser>(
-        m, "Gaussian94BasisSetParser", "docstring");
-
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
@@ -872,6 +864,7 @@ void export_mints(py::module& m)
 
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring")
         .def(py::init<const std::string&, std::shared_ptr<Molecule>,
+                      std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&,
                       std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>())
         .def("name", &BasisSet::name, "Callback handle, may represent string or function")
         .def("blend", &BasisSet::target, "Plus-separated string of [basisname] values")
@@ -894,8 +887,10 @@ void export_mints(py::module& m)
         .def("shell", no_center_version(&BasisSet::shell), py::return_value_policy::copy,
              "docstring")
         .def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy, "docstring")
-        .def("ncore", ncore_no_args(&BasisSet::ncore), "Returns the total number of core electrons for this ECP.")
-        .def("ncore", ncore_one_arg(&BasisSet::ncore), "Returns the number of core electrons associated with the specified atom type for this ECP.")
+        .def("n_frozen_core", &BasisSet::n_frozen_core, "Returns the number of frozen core electrons, accounting for the presence of any ECPs.")
+        .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core), "Returns the total number of core electrons associated with all ECPs in this basis.")
+        .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core), "Returns the number of core electrons associated with any ECP on the specified atom type for this basis set.")
+        .def("has_ECP", &BasisSet::has_ECP, "Whether this basis set object has an ECP associated with it.")
         .def("max_am", &BasisSet::max_am, "Returns maximum angular momentum used")
         .def("has_puream", &BasisSet::has_puream, "Spherical harmonics?")
         .def("shell_to_basis_function", &BasisSet::shell_to_basis_function, "docstring")
@@ -910,8 +905,7 @@ void export_mints(py::module& m)
         .def("move_atom", &BasisSet::move_atom, "Translate a given atom by a given amount.  Does not affect the underlying molecule object.")
         .def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "docstring")
-        .def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring")
-        .def_static("construct_ecp_from_pydict", &BasisSet::construct_ecp_from_pydict, "docstring");
+        .def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring")
         .def("petite_list", &SOBasisSet::petite_list, "docstring");
