@@ -241,8 +241,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbo
     # Prepare results for Psi4
     if isP4regime and dertype != 0:
         core.set_variable('DISPERSION CORRECTION ENERGY', dashd)
-        psi_dashdderiv = core.Matrix(self.natom(), 3)
-        psi_dashdderiv.set(dashdderiv)
+        psi_dashdderiv = core.Matrix.from_list(dashdderiv)
 
     # Print program output to file if verbose
     if not verbose and isP4regime:
