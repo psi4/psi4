@@ -77,6 +77,20 @@
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libparallel/ParallelPrinter.h"
+
+#include <vector>
+#include <string>
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#define omp_get_thread_num() 0
+typedef int omp_lock_t;
+#define omp_init_lock(lock_timer_p) do{}while(0)
+#define omp_set_lock(lock_timer_p) do{}while(0)
+#define omp_unset_lock(lock_timer_p) do{}while(0)
+#define omp_destroy_lock(lock_timer_p) do{}while(0)
+#endif
+
 /* guess for HZ, if missing */
 #ifndef HZ
 #define HZ 60
@@ -85,8 +99,18 @@
 #define TIMER_KEYLEN 128
 #define TIMER_OFF 0
 #define TIMER_ON 1
+#define TIMER_PARALLEL 2
 
 namespace psi {
+
+struct timer_thread {
+    unsigned int status;
+    unsigned int calls;
+    double wtime;
+    struct timeval wall_start;
+};
+
+//std::list<std::list< timer_thread > > thread_timers;
 
 struct timer {
     char key[TIMER_KEYLEN];
@@ -99,10 +123,13 @@ struct timer {
     struct timeval wall_start;
     struct timer *next;
     struct timer *last;
+    std::vector< timer_thread > thread_timers;
 };
 
 struct timer *global_timer;
 time_t timer_start, timer_end;  /* Global wall-clock on and off times */
+
+static omp_lock_t lock_timer;
 
 /*!
 ** timer_init(): Initialize the linked list of timers
@@ -117,6 +144,8 @@ void timer_init(void)
   timer_start = time(NULL);
 
   global_timer = NULL;
+
+  omp_init_lock(&lock_timer);
 }
 
 /*!
@@ -149,30 +178,49 @@ void timer_done(void)
 
   this_timer = global_timer;
   while(this_timer != NULL) {
-      if(this_timer->calls > 1) {
-          if(this_timer->wtime < 10.0) {
-              printer->Printf( "%-12s: %10.2fu %10.2fs %10.6fw %6d calls\n",
-                      this_timer->key, this_timer->utime, this_timer->stime,
-                      this_timer->wtime, this_timer->calls);
+      if (this_timer->status != TIMER_PARALLEL) {
+          if(this_timer->calls > 1) {
+              if(this_timer->wtime < 10.0) {
+                  printer->Printf( "%-12s: %10.2fu %10.2fs %10.6fw %6d calls\n",
+                          this_timer->key, this_timer->utime, this_timer->stime,
+                          this_timer->wtime, this_timer->calls);
+              } else {
+                  printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
+                          this_timer->key, this_timer->utime, this_timer->stime,
+                          this_timer->wtime, this_timer->calls);
+              }
+          }
+          else if(this_timer->calls == 1) {
+              if(this_timer->wtime < 10.0) {
+                  printer->Printf( "%-12s: %10.2fu %10.2fs %10.8fw %6d call\n",
+                          this_timer->key, this_timer->utime, this_timer->stime,
+                          this_timer->wtime, this_timer->calls);
+              } else {
+                  printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
+                          this_timer->key, this_timer->utime, this_timer->stime,
+                          this_timer->wtime, this_timer->calls);
+              }
+          }
+      } else {
+          double sum_wtime = 0.0;
+          unsigned int sum_calls = 0;
+          for (size_t i = 0, thread_size = this_timer->thread_timers.size(); i < thread_size; ++i) {
+              sum_wtime += this_timer->thread_timers[i].wtime;
+              sum_calls += this_timer->thread_timers[i].calls;
+          }
+          if(sum_wtime < 10.0) {
+              printer->Printf( "%-12s:       -.--u       -.--s       -.--w %10.6fp %6d calls\n",
+                      this_timer->key, sum_wtime, sum_calls);
           } else {
-              printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d calls\n",
-                      this_timer->key, this_timer->utime, this_timer->stime,
-                      this_timer->wtime, this_timer->calls);
+              printer->Printf( "%-12s:       -.--u       -.--s       -.--w %10.2fp %6d calls\n",
+                      this_timer->key, sum_wtime, sum_calls);
           }
       }
-      else if(this_timer->calls == 1) {
-          if(this_timer->wtime < 10.0) {
-              printer->Printf( "%-12s: %10.2fu %10.2fs %10.8fw %6d call\n",
-                      this_timer->key, this_timer->utime, this_timer->stime,
-                      this_timer->wtime, this_timer->calls);
-          } else {
-              printer->Printf( "%-12s: %10.2fu %10.2fs %10.2fw %6d call\n",
-                      this_timer->key, this_timer->utime, this_timer->stime,
-                      this_timer->wtime, this_timer->calls);
-          }
-      }
+
+
       next_timer = this_timer->next;
-      free(this_timer);
+      //free(this_timer);
+      delete this_timer;
       this_timer = next_timer;
     }
 
@@ -182,6 +230,8 @@ void timer_done(void)
   free(host);
 
   global_timer = NULL;
+
+  omp_destroy_lock(&lock_timer);
 }
 
 /*!
@@ -237,14 +287,24 @@ struct timer *timer_last(void)
 **
 ** \ingroup QT
 */
-void timer_on(const char *key)
+void timer_on(const char *key, int thread_rank)
 {
   struct timer *this_timer;
 
+  omp_set_lock(&lock_timer);
+
+
   this_timer = timer_scan(key);
 
+//  int thread_rank = omp_get_thread_num();
+  /* Dump the timing data to timer.dat and free the timers */
+  //std::shared_ptr<OutFile> printer(new OutFile("timer.dat",APPEND));
+  //printer->Printf( "\ntimer_on(%s) called in thread %d", key, thread_rank);
+  size_t thread_size = 0;
+
   if(this_timer == NULL) { /* New timer */
-      this_timer = (struct timer *) malloc(sizeof(struct timer));
+      //this_timer = (struct timer *) malloc(sizeof(struct timer));
+      this_timer = new timer;
       strcpy(this_timer->key,key);
       this_timer->calls = 0;
       this_timer->utime = 0;
@@ -254,21 +314,119 @@ void timer_on(const char *key)
       this_timer->last = timer_last();
       if(this_timer->last != NULL) this_timer->last->next = this_timer;
       else global_timer = this_timer;
+      if (0 == thread_rank) {
+          this_timer->status = TIMER_ON;
+          this_timer->calls++;
+
+          times(&(this_timer->ontime));
+          gettimeofday(&(this_timer->wall_start), NULL);
+      } else {
+          this_timer->status = TIMER_PARALLEL;
+          this_timer->thread_timers.resize(thread_rank + 1);
+          for (size_t i = 0; i <= thread_rank; ++i) {
+              this_timer->thread_timers[i].status = TIMER_OFF;
+              this_timer->thread_timers[i].calls = 0;
+              this_timer->thread_timers[i].wtime = 0.0;
+          }
+          this_timer->thread_timers[thread_rank].status = TIMER_ON;
+          this_timer->thread_timers[thread_rank].calls++;
+          gettimeofday(&(this_timer->thread_timers[thread_rank].wall_start), NULL);
+      }
     }
   else {
-    if((this_timer->status == TIMER_ON) && (this_timer->calls)) {
-        std::string str = "Timer ";
-        str += key;
-        str += " is already on.";
-        throw PsiException(str,__FILE__,__LINE__);
+    switch (this_timer->status) {
+    case TIMER_OFF:
+        if (0 == thread_rank) {
+            this_timer->status = TIMER_ON;
+            this_timer->calls++;
+
+            times(&(this_timer->ontime));
+            gettimeofday(&(this_timer->wall_start), NULL);
+        } else {
+            this_timer->thread_timers.resize(thread_rank + 1);
+            this_timer->thread_timers[0].status = this_timer->status;
+            this_timer->thread_timers[0].calls = this_timer->calls;
+            this_timer->thread_timers[0].wtime = this_timer->wtime;
+            this_timer->thread_timers[0].wall_start = this_timer->wall_start;
+            this_timer->calls = 0;
+            this_timer->utime = 0;
+            this_timer->stime = 0;
+            this_timer->wtime = 0;
+            for (size_t i = 1; i <= thread_rank; ++i) {
+                this_timer->thread_timers[i].status = TIMER_OFF;
+                this_timer->thread_timers[i].calls = 0;
+                this_timer->thread_timers[i].wtime = 0.0;
+            }
+            this_timer->thread_timers[thread_rank].status = TIMER_ON;
+            this_timer->thread_timers[thread_rank].calls++;
+            gettimeofday(&(this_timer->thread_timers[thread_rank].wall_start), NULL);
+            this_timer->status = TIMER_PARALLEL;
+        }
+        break;
+    case TIMER_ON:
+        if (0 == thread_rank) {
+            if((this_timer->status == TIMER_ON) && (this_timer->calls)) {
+                std::string str = "Timer ";
+                str += key;
+                str += " is already on.";
+                throw PsiException(str,__FILE__,__LINE__);
+            }
+            this_timer->status = TIMER_ON;
+            this_timer->calls++;
+
+            times(&(this_timer->ontime));
+            gettimeofday(&(this_timer->wall_start), NULL);
+        } else {
+            this_timer->thread_timers.resize(thread_rank + 1);
+            this_timer->thread_timers[0].status = this_timer->status;
+            this_timer->thread_timers[0].calls = this_timer->calls;
+            this_timer->thread_timers[0].wtime = this_timer->wtime;
+            this_timer->thread_timers[0].wall_start = this_timer->wall_start;
+            this_timer->calls = 0;
+            this_timer->utime = 0;
+            this_timer->stime = 0;
+            this_timer->wtime = 0;
+            for (size_t i = 1; i <= thread_rank; ++i) {
+                this_timer->thread_timers[i].status = TIMER_OFF;
+                this_timer->thread_timers[i].calls = 0;
+                this_timer->thread_timers[i].wtime = 0.0;
+            }
+            this_timer->thread_timers[thread_rank].status = TIMER_ON;
+            this_timer->thread_timers[thread_rank].calls++;
+            gettimeofday(&(this_timer->thread_timers[thread_rank].wall_start), NULL);
+            this_timer->status = TIMER_PARALLEL;
+        }
+        break;
+    case TIMER_PARALLEL:
+        thread_size = this_timer->thread_timers.size();
+        if (thread_rank >= thread_size) {
+            this_timer->thread_timers.resize(thread_rank + 1);
+            for (size_t i = thread_size; i <= thread_rank; ++i) {
+                this_timer->thread_timers[i].status = TIMER_OFF;
+                this_timer->thread_timers[i].calls = 0;
+                this_timer->thread_timers[i].wtime = 0.0;
+            }
+        }
+        if((this_timer->thread_timers[thread_rank].status == TIMER_ON) && (this_timer->thread_timers[thread_rank].calls)) {
+            std::string str = "Timer ";
+            str += key;
+            str += " on thread ";
+            str += std::to_string(thread_rank);
+            str += " is already on.";
+            throw PsiException(str,__FILE__,__LINE__);
+        }
+        this_timer->thread_timers[thread_rank].status = TIMER_ON;
+        this_timer->thread_timers[thread_rank].calls++;
+        gettimeofday(&(this_timer->thread_timers[thread_rank].wall_start), NULL);
+        break;
+
+    default:
+        break;
     }
+
   }
 
-  this_timer->status = TIMER_ON;
-  this_timer->calls++;
-
-  times(&(this_timer->ontime));
-  gettimeofday(&(this_timer->wall_start), NULL);
+  omp_unset_lock(&lock_timer);
 }
 
 /*!
@@ -313,12 +471,13 @@ double timer_nsdiff(struct timeval& endt, struct timeval& begint) {
 **
 ** \ingroup QT
 */
-void timer_off(const char *key)
+void timer_off(const char *key, int thread_rank)
 {
   struct tms ontime, offtime;
   struct timer *this_timer;
   struct timeval wall_stop;
 
+  omp_set_lock(&lock_timer);
   this_timer = timer_scan(key);
 
   if(this_timer == NULL) {
@@ -327,24 +486,70 @@ void timer_off(const char *key)
       throw PsiException(str,__FILE__,__LINE__);
     }
 
-  if(this_timer->status == TIMER_OFF) {
-     std::string str = "Timer ";
-     str += key;
-     str += " is already off.";
-     throw PsiException(str,__FILE__,__LINE__);
-    }
+//  int thread_rank = omp_get_thread_num();
+  /* Dump the timing data to timer.dat and free the timers */
+  //std::shared_ptr<OutFile> printer(new OutFile("timer.dat",APPEND));
+  //printer->Printf( "\ntimer_off(%s) called in thread %d", key, thread_rank);
+  size_t thread_size = 0;
+  std::string str;
+  switch (this_timer->status) {
+  case TIMER_OFF:
+      str = "Timer ";
+      str += key;
+      str += " is already off.";
+      throw PsiException(str,__FILE__,__LINE__);
+      break;
+  case TIMER_ON:
+      if(0 == thread_rank) {
+          ontime = this_timer->ontime;
 
-  ontime = this_timer->ontime;
+          times(&offtime);
 
-  times(&offtime);
+          this_timer->utime += ((double) (offtime.tms_utime-ontime.tms_utime))/HZ;
+          this_timer->stime += ((double) (offtime.tms_stime-ontime.tms_stime))/HZ;
 
-  this_timer->utime += ((double) (offtime.tms_utime-ontime.tms_utime))/HZ;
-  this_timer->stime += ((double) (offtime.tms_stime-ontime.tms_stime))/HZ;
+          gettimeofday(&wall_stop, NULL);
+          this_timer->wtime += timer_nsdiff(wall_stop, this_timer->wall_start);
 
-  gettimeofday(&wall_stop, NULL);
-  this_timer->wtime += timer_nsdiff(wall_stop, this_timer->wall_start);
+          this_timer->status = TIMER_OFF;
+      } else {
+          str = "Timer ";
+          str += key;
+          str += " on thread ";
+          str += std::to_string(thread_rank);
+          str += " has not been created.";
+          throw PsiException(str,__FILE__,__LINE__);
+      }
+      break;
+  case TIMER_PARALLEL:
+      thread_size = this_timer->thread_timers.size();
+      if (thread_rank >= thread_size) {
+          str = "Timer ";
+          str += key;
+          str += " on thread ";
+          str += std::to_string(thread_rank);
+          str += " has not been created.";
+          throw PsiException(str,__FILE__,__LINE__);
+      }
+      if (this_timer->thread_timers[thread_rank].status != TIMER_ON) {
+          str = "Timer ";
+          str += key;
+          str += " on thread ";
+          str += std::to_string(thread_rank);
+          str += " is already off.";
+          throw PsiException(str,__FILE__,__LINE__);
+      }
+      gettimeofday(&wall_stop, NULL);
+      this_timer->thread_timers[thread_rank].wtime += timer_nsdiff(wall_stop, this_timer->thread_timers[thread_rank].wall_start);
 
-  this_timer->status = TIMER_OFF;
+      this_timer->thread_timers[thread_rank].status = TIMER_OFF;
+      break;
+  default:
+      break;
+  }
+
+  omp_unset_lock(&lock_timer);
 }
 
 }
+
