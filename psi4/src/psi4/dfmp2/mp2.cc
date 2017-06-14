@@ -151,7 +151,7 @@ void DFMP2::block_status(std::vector<int> inds, const char* file, int line)
     }
     printf("%s:%d %zu %s %d %d\n", file, line, inds.size(), (gimp ? "GIMP" : "NOT GIMP"), inds[1] - inds[0], inds[inds.size() - 1] - inds[inds.size()-2]);
 }
-void DFMP2::block_status(std::vector<unsigned long int> inds, const char* file, int line)
+void DFMP2::block_status(std::vector<size_t> inds, const char* file, int line)
 {
     bool gimp = false;
     if (inds.size() > 2) {
@@ -1343,7 +1343,7 @@ void RDFMP2::form_Pab()
 
             // Sort the gimp column blocks, if gimp occurred. The idea is to get a contiguous iajb tensor
             if (nj != max_i) {
-                unsigned long int counter = 0L;
+                size_t counter = 0L;
                 for (long int ind = 0L; ind < ni * (ULI) navir; ind++) {
                     ::memmove((void*)&Tp[0][counter],(void*)Tp[ind],sizeof(double) * nj * (ULI) navir);
                     ::memmove((void*)&Ip[0][counter],(void*)Ip[ind],sizeof(double) * nj * (ULI) navir);
@@ -1514,7 +1514,7 @@ void RDFMP2::form_Pij()
 
             // Sort the gimp column blocks, if gimp occurred. The idea is to get a contiguous iajb tensor
             if (nb != max_a) {
-                unsigned long int counter = 0L;
+                size_t counter = 0L;
                 for (long int ind = 0L; ind < na * (ULI) naocc; ind++) {
                     ::memmove((void*)&Tp[0][counter],(void*)Tp[ind],sizeof(double) * nb * (ULI) naocc);
                     ::memmove((void*)&Ip[0][counter],(void*)Ip[ind],sizeof(double) * nb * (ULI) naocc);

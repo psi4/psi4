@@ -492,17 +492,17 @@ void DFERI::transform()
 
     // > Row requirements < //
 
-    unsigned long int per_row = 0L;
+    size_t per_row = 0L;
     // (Q|mn)
-    per_row += nso * (unsigned long int) nso;
+    per_row += nso * (size_t) nso;
     // (Q|mi)
-    per_row += max1 * (unsigned long int) nso;
+    per_row += max1 * (size_t) nso;
     // (Q|ia)
     per_row += max12;
 
     // > Maximum number of rows < //
 
-    unsigned long int max_rows = (memory_ / per_row);
+    size_t max_rows = (memory_ / per_row);
     //max_rows = 3L * auxiliary_->max_function_per_shell(); // Debug
     if (max_rows < auxiliary_->max_function_per_shell()) {
         throw PSIEXCEPTION("Out of memory in DFERI.");
@@ -561,8 +561,8 @@ void DFERI::transform()
     // => Temporary Tensors <= //
 
     // > Three-index buffers < //
-    std::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (unsigned long int) nso));
-    std::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (unsigned long int) max1));
+    std::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (size_t) nso));
+    std::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (size_t) max1));
     std::shared_ptr<Matrix> Aia(new Matrix("(A|ia)", max_rows, max12));
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
@@ -1039,7 +1039,7 @@ std::map<std::string, std::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std::
 
     // > Maximum number of rows < //
 
-    unsigned long int max_rows = (mem / per_row);
+    size_t max_rows = (mem / per_row);
     max_rows = (max_rows < auxiliary_->max_function_per_shell() ? auxiliary_->max_function_per_shell() : max_rows);
     max_rows = (max_rows > auxiliary_->nbf() ? auxiliary_->nbf() : max_rows);
 
@@ -1085,8 +1085,8 @@ std::map<std::string, std::shared_ptr<Tensor> > LSTHCERI::build_E(std::map<std::
     // => Temporary Tensors <= //
 
     // > Three-index buffers < //
-    std::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (unsigned long int) nso));
-    std::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (unsigned long int) max1));
+    std::shared_ptr<Matrix> Amn(new Matrix("(A|mn)", max_rows, nso * (size_t) nso));
+    std::shared_ptr<Matrix> Ami(new Matrix("(A|mi)", max_rows, nso * (size_t) max1));
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
 

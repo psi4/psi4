@@ -69,7 +69,7 @@ void AIOHandler::synchronize()
       if(thread_->joinable())
         thread_->join();
 }
-unsigned long int AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
+size_t AIOHandler::read(unsigned int unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -504,7 +504,7 @@ void AIOHandler::call_aio()
 
 void AIOHandler::wait_for_job(unsigned long jobid) {
 
-    std::deque<unsigned long int>::iterator it;
+    std::deque<size_t>::iterator it;
 
     std::unique_lock<std::mutex> lock(*locked_);
     it = std::find(jobID_.begin(),jobID_.end(),jobid);

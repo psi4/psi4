@@ -40,7 +40,7 @@ private:
     /// What is the job type?
     std::queue<unsigned int> job_;
     /// Unique job ID to check for job completion. Should NEVER be 0.
-    std::deque<unsigned long int> jobID_;
+    std::deque<size_t> jobID_;
     /// Unit number argument
     std::queue<unsigned int> unit_;
     /// Entry Key (80-char) argument
@@ -74,7 +74,7 @@ private:
     /// Lock variable
     std::mutex *locked_;
     /// Latest unique job ID
-    unsigned long int uniqueID_;
+    size_t uniqueID_;
     /// condition variable to wait for a specific job to finish
     std::condition_variable condition_;
 public:
@@ -85,15 +85,15 @@ public:
     /// When called, synchronize will not return until all requested data has been read or written
     void synchronize();
     /// Asynchronous read, same as PSIO::read, but nonblocking
-    unsigned long int read(unsigned int unit, const char *key, char *buffer, ULI size,
+    size_t read(unsigned int unit, const char *key, char *buffer, size_t size,
               psio_address start, psio_address *end);
     /// Asynchronous write, same as PSIO::write, but nonblocking
-    unsigned long int write(unsigned int unit, const char *key, char *buffer, ULI size,
+    size_t write(unsigned int unit, const char *key, char *buffer, size_t size,
                psio_address start, psio_address *end);
     /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
-    unsigned long int read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    size_t read_entry(unsigned int unit, const char *key, char *buffer, size_t size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
-    unsigned long int write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    size_t write_entry(unsigned int unit, const char *key, char *buffer, size_t size);
     /// Asynchronous read for reading discontinuous disk space
     /// into a continuous chunk of memory, i.e.
     ///
@@ -135,7 +135,7 @@ public:
 
     /// Function that checks if a job has been completed using the JobID.
     /// The function only returns when the job is completed.
-    void wait_for_job(unsigned long int jobid);
+    void wait_for_job(size_t jobid);
 };
 
 }

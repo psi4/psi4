@@ -51,17 +51,17 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-double * init_array(unsigned long int size)
+double * init_array(size_t size)
 {
   double *array;
 
-  if ((array = (double *) malloc(size*(unsigned long int)sizeof(double)))
+  if ((array = (double *) malloc(size*(size_t)sizeof(double)))
     == NULL) {
     outfile->Printf("init_array: trouble allocating memory \n");
     outfile->Printf("size = %ld\n",size);
     exit(PSI_RETURN_FAILURE);
   }
-  bzero(array,size*(unsigned long int)sizeof(double));
+  bzero(array,size*(size_t)sizeof(double));
   return(array);
 }
 

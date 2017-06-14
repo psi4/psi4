@@ -57,7 +57,7 @@ public:
     class Environment
     {
         std::map<std::string, std::string> environment_;
-        unsigned long int memory_;
+        size_t memory_;
         int nthread_;
 
         std::shared_ptr<Molecule> molecule_;
@@ -129,8 +129,8 @@ public:
         void set_n_threads(int nthread);
 
         /// Memory in bytes
-        unsigned long int get_memory() const;
-        void set_memory(unsigned long int m);
+        size_t get_memory() const;
+        void set_memory(size_t m);
 
         /// "Global" liboptions object.
         Options options;

@@ -129,7 +129,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     // Temps
     #ifdef _OPENMP
@@ -292,37 +292,37 @@ bool DFJK::is_core() const
     else
         return (three_memory + 2L*two_memory < memory_);
 }
-unsigned long int DFJK::memory_temp() const
+size_t DFJK::memory_temp() const
 {
-    unsigned long int mem = 0L;
+    size_t mem = 0L;
 
     // J Overhead (Jtri, Dtri, d)
     mem += 2L * sieve_->function_pairs().size() + auxiliary_->nbf();
     // K Overhead (C_temp, Q_temp)
-    mem += omp_nthread_ * (unsigned long int) primary_->nbf() * (auxiliary_->nbf() + max_nocc());
+    mem += omp_nthread_ * (size_t) primary_->nbf() * (auxiliary_->nbf() + max_nocc());
 
     return mem;
 }
 int DFJK::max_rows() const
 {
     // Start with all memory
-    unsigned long int mem = memory_;
+    size_t mem = memory_;
     // Subtract J/K/wK/C/D overhead
     mem -= memory_overhead();
     // Subtract threading temp overhead
     mem -= memory_temp();
 
     // How much will each row cost?
-    unsigned long int row_cost = 0L;
+    size_t row_cost = 0L;
     // Copies of E tensor
     row_cost += (lr_symmetric_ ? 1L : 2L) * max_nocc() * primary_->nbf();
     // Slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
     row_cost += (is_core_ ? 1L : 1L) * sieve_->function_pairs().size();
 
-    unsigned long int max_rows = mem / row_cost;
+    size_t max_rows = mem / row_cost;
 
-    if (max_rows > (unsigned long int) auxiliary_->nbf())
-        max_rows = (unsigned long int) auxiliary_->nbf();
+    if (max_rows > (size_t) auxiliary_->nbf())
+        max_rows = (size_t) auxiliary_->nbf();
     if (max_rows < 1L)
         max_rows = 1L;
 
@@ -1809,7 +1809,7 @@ void DFJK::manage_wK_disk()
 void DFJK::block_J(double** Qmnp, int naux)
 {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < J_ao_.size(); N++) {
 
@@ -1818,7 +1818,7 @@ void DFJK::block_J(double** Qmnp, int naux)
         double*  J2p  = J_temp_->pointer();
         double*  D2p  = D_temp_->pointer();
         double*  dp   = d_temp_->pointer();
-        for (unsigned long int mn = 0; mn < num_nm; ++mn) {
+        for (size_t mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
             D2p[mn] = (m == n ? Dp[m][n] : Dp[m][n] + Dp[n][m]);
@@ -1831,7 +1831,7 @@ void DFJK::block_J(double** Qmnp, int naux)
         timer_on("JK: J2");
         C_DGEMV('T',naux,num_nm,1.0,Qmnp[0],num_nm,dp,1,0.0,J2p,1);
         timer_off("JK: J2");
-        for (unsigned long int mn = 0; mn < num_nm; ++mn) {
+        for (size_t mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
             Jp[m][n] += J2p[mn];
@@ -1843,7 +1843,7 @@ void DFJK::block_K(double** Qmnp, int naux)
 {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < K_ao_.size(); N++) {
 
@@ -1938,7 +1938,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < wK_ao_.size(); N++) {
 

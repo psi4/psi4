@@ -2663,7 +2663,7 @@ void Matrix::expm(int m, bool scale)
             mag = (mag < 0.0 ? 0.0 : mag);
             mag = (mag > 4.0 ? 4.0 : mag);
             S = (int) (mag);
-            C_DSCAL(n * (unsigned long int) n, pow(2.0, -S), A[0], 1);
+            C_DSCAL(n * (size_t) n, pow(2.0, -S), A[0], 1);
         }
 
         double **T = Matrix::matrix(n, n);
@@ -2681,9 +2681,9 @@ void Matrix::expm(int m, bool scale)
         for (int Q = 1; Q <= m; Q++) {
 
             if ((Q % 2) == 1)
-                C_DAXPY(n * (unsigned long int) n, alpha[Q], T[0], 1, Y[0], 1);
+                C_DAXPY(n * (size_t) n, alpha[Q], T[0], 1, Y[0], 1);
             else
-                C_DAXPY(n * (unsigned long int) n, alpha[Q], T[0], 1, X[0], 1);
+                C_DAXPY(n * (size_t) n, alpha[Q], T[0], 1, X[0], 1);
 
             if (Q == m) break;
 
@@ -2700,8 +2700,8 @@ void Matrix::expm(int m, bool scale)
 
         ::memcpy((void *) N[0], (void *) X[0], sizeof(double) * n * n);
         ::memcpy((void *) D[0], (void *) X[0], sizeof(double) * n * n);
-        C_DAXPY(n * (unsigned long int) n, -1.0, Y[0], 1, N[0], 1);
-        C_DAXPY(n * (unsigned long int) n, 1.0, Y[0], 1, D[0], 1);
+        C_DAXPY(n * (size_t) n, -1.0, Y[0], 1, N[0], 1);
+        C_DAXPY(n * (size_t) n, 1.0, Y[0], 1, D[0], 1);
 
         //outfile->Printf("  ## N ##\n\n");
         //print_mat(N,n,n,outfile);
@@ -2759,7 +2759,7 @@ void Matrix::expm(int m, bool scale)
             ::memcpy((void *) A[0], (void *) X[0], sizeof(double) * n * n);
 
             // Inverse trace shift
-            C_DSCAL(n * (unsigned long int) n, exp(L), A[0], 1);
+            C_DSCAL(n * (size_t) n, exp(L), A[0], 1);
 
         } else {
             // Copy result back to A, transposing as you go (back to C++)

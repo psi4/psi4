@@ -138,7 +138,7 @@ void CIWavefunction::sigma_init(CIvect& C, CIvect &S)
    int i,j;
    int maxcols=0, maxrows=0;
    int nsingles, max_dim=0;
-   unsigned long int bufsz=0;
+   size_t bufsz=0;
 
    SigmaData_->transp_tmp = NULL;
    SigmaData_->cprime = NULL;

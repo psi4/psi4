@@ -34,7 +34,7 @@ namespace psi { namespace cctransort {
 
 void memcheck(int reference)
 {
-  unsigned long int irrep_size, size;
+  size_t irrep_size, size;
   dpdbuf4 Z;
 
   outfile->Printf( "\n");
@@ -43,7 +43,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 5, 5, 5, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <ab|cd> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -55,7 +55,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 10, 5, 10, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <ia|bc> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -67,7 +67,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 0, 5, 0, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of tijab amplitudes:  %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -82,7 +82,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 5, 5, 5, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <ab|cd> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -94,7 +94,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 10, 5, 10, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <ia|bc> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -106,7 +106,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 0, 5, 0, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of tIjAb amplitudes:  %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -120,7 +120,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 7, 7, 7, 7, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <AB|CD> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -131,7 +131,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 17, 17, 17, 17, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <ab|cd> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -142,7 +142,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 28, 28, 28, 28, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <Ab|Cd> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -154,7 +154,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 20, 5, 20, 5, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <IA|BC> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -166,7 +166,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 30, 15, 30, 15, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <ia|bc> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -178,7 +178,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 24, 28, 24, 28, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <Ia|Bc> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -190,7 +190,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 27, 29, 27, 29, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of <iA|bC> integrals: %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));
@@ -202,7 +202,7 @@ void memcheck(int reference)
     global_dpd_->buf4_init(&Z, 99, 0, 22, 28, 22, 28, 0, "Just a template");
     size = 0;
     for(int h=0; h < Z.params->nirreps; h++) {
-      irrep_size = (unsigned long int) Z.params->rowtot[h] * Z.params->coltot[h];
+      irrep_size = (size_t) Z.params->rowtot[h] * Z.params->coltot[h];
       size += irrep_size;
       outfile->Printf( "\tSize of irrep %1lu of tIjAb amplitudes:  %10.3lf (MW) / %10.3lf (MB)\n",
               h, irrep_size/1e6, (irrep_size/1e6)*sizeof(double));

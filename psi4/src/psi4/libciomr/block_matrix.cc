@@ -75,11 +75,11 @@ namespace psi {
 ** \ingroup CIOMR
 */
 
-double ** block_matrix(unsigned long int n, unsigned long int m, bool memlock)
+double ** block_matrix(size_t n, size_t m, bool memlock)
 {
     double **A=NULL;
     double *B=NULL;
-    unsigned long int i;
+    size_t i;
 
     if(!m || !n) return(static_cast<double **>(0));
 

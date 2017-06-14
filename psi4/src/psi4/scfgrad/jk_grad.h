@@ -52,7 +52,7 @@ protected:
     /// Bench flag, defaults to 0
     int bench_;
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
-    unsigned long int memory_;
+    size_t memory_;
     /// Number of OpenMP threads (defaults to 1 in no OpenMP, Process::environment.get_n_threads() otherwise)
     int omp_num_threads_;
     /// Integral cutoff (defaults to 0.0)
@@ -115,7 +115,7 @@ public:
      * integral generation objects typically ignore this)
      * @param memory maximum number of doubles to allocate
      */
-    void set_memory(unsigned long int memory) { memory_ = memory; }
+    void set_memory(size_t memory) { memory_ = memory; }
     /**
      * Maximum number of OpenMP threads to use. It may be necessary
      * to clamp this to some value smaller than the total number of

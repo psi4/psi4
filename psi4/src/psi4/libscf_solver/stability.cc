@@ -310,7 +310,7 @@ void UStab::preiterations()
             } else {
                 jk_ = JK::build_JK(basis_, BasisSet::zero_ao_basis_set(), options_);
             }
-            unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+            size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();
         }

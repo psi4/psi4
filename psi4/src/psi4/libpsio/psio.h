@@ -78,8 +78,8 @@ namespace psi {
 
   int psio_open_check(unsigned int unit);
 
-  unsigned long int psio_rd_toclen(unsigned int unit);
-  void psio_wt_toclen(unsigned int unit, ULI toclen);
+  size_t psio_rd_toclen(unsigned int unit);
+  void psio_wt_toclen(unsigned int unit, size_t toclen);
 
   int psio_set_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit,
                             const char* kwdval);

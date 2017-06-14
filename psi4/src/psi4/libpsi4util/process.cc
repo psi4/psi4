@@ -179,10 +179,10 @@ Process::Environment Process::get_environment()
     return environment;
 }
 
-unsigned long int Process::Environment::get_memory() const
+size_t Process::Environment::get_memory() const
 { return memory_; }
 
-void Process::Environment::set_memory(unsigned long int m)
+void Process::Environment::set_memory(size_t m)
 { memory_ = m; }
 
 int Process::Environment::get_n_threads() const

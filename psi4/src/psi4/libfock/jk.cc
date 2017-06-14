@@ -188,8 +188,8 @@ void JK::common_init() {
     std::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = SharedMatrix(pet->aotoso());
 }
-unsigned long int JK::memory_overhead() const {
-    unsigned long int mem = 0L;
+size_t JK::memory_overhead() const {
+    size_t mem = 0L;
 
     int JKwKD_factor = 1;
     if (do_J_) JKwKD_factor++;
@@ -207,8 +207,8 @@ unsigned long int JK::memory_overhead() const {
             int nbfr = C_right_[N]->rowspi()[h];
             int nocc = C_left_[N]->colspi()[symml ^ h];
 
-            mem += C_factor * (unsigned long int)nocc * (nbfl + nbfr) / 2L +
-                   JKwKD_factor * (unsigned long int)nbfl * nbfr;
+            mem += C_factor * (size_t)nocc * (nbfl + nbfr) / 2L +
+                   JKwKD_factor * (size_t)nbfl * nbfr;
         }
     }
 
@@ -220,8 +220,8 @@ unsigned long int JK::memory_overhead() const {
             for (int h = 0; h < C_left_[N]->nirrep(); h++) {
                 nocc += C_left_[N]->colspi()[h];
             }
-            mem += C_factor * (unsigned long int)nocc * nbf +
-                   JKwKD_factor * (unsigned long int)nbf * nbf;
+            mem += C_factor * (size_t)nocc * nbf +
+                   JKwKD_factor * (size_t)nbf * nbf;
         }
     }
 

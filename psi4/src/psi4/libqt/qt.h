@@ -104,18 +104,18 @@ double ***init_3d_array(int p, int q, int r);
 #define MAX_RAS_SPACES 4
 
 // BLAS 1 Double routines
-void C_DROT(unsigned long int ntot, double *x, int incx, double *y, int incy,
+void C_DROT(size_t ntot, double *x, int incx, double *y, int incy,
              double costheta, double sintheta);
-void C_DSWAP(unsigned long int length, double *x, int incx, double *y, int inc_y);
-void C_DSCAL(unsigned long int len, double alpha, double *vec, int inc);
-void C_DCOPY(unsigned long int length, double *x, int inc_x,
+void C_DSWAP(size_t length, double *x, int incx, double *y, int inc_y);
+void C_DSCAL(size_t len, double alpha, double *vec, int inc);
+void C_DCOPY(size_t length, double *x, int inc_x,
              double *y, int inc_y);
-void C_DAXPY(unsigned long int length, double a, double *x, int inc_x,
+void C_DAXPY(size_t length, double a, double *x, int inc_x,
              double *y, int inc_y);
-double C_DDOT(unsigned long int n, double *X, int inc_x, double *Y, int inc_y);
-double C_DNRM2(unsigned long int n, double *X, int inc_x);
-double C_DASUM(unsigned long int n, double *X, int inc_x);
-unsigned long int C_IDAMAX(unsigned long int n, double *X, int inc_x);
+double C_DDOT(size_t n, double *X, int inc_x, double *Y, int inc_y);
+double C_DNRM2(size_t n, double *X, int inc_x);
+double C_DASUM(size_t n, double *X, int inc_x);
+size_t C_IDAMAX(size_t n, double *X, int inc_x);
 
 // BLAS 2 Double routines
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);

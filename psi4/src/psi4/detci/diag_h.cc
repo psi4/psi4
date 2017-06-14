@@ -151,7 +151,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         double **H, **b;
         int Iarel, Ialist, Ibrel, Iblist, ij, k, l, tmpi, L;
-        unsigned long int ii, jj;
+        size_t ii, jj;
         SlaterDeterminant I, J;
         int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx;
         double *mi_coeff;

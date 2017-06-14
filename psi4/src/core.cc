@@ -1095,7 +1095,7 @@ void py_psi_clean_variable_map()
     Process::environment.arrays.clear();
 }
 
-void py_psi_set_memory(unsigned long int mem, bool quiet)
+void py_psi_set_memory(size_t mem, bool quiet)
 {
     Process::environment.set_memory(mem);
     if (!quiet){
@@ -1105,7 +1105,7 @@ void py_psi_set_memory(unsigned long int mem, bool quiet)
     }
 }
 
-unsigned long int py_psi_get_memory()
+size_t py_psi_get_memory()
 {
     return Process::environment.get_memory();
 }

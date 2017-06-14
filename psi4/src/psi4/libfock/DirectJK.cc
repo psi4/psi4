@@ -679,12 +679,12 @@ void DirectJK::compute_JK()
     /**
     sieve_->set_sieve(cutoff_);
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    unsigned long int nMN = shell_pairs.size();
-    unsigned long int nMNRS = nMN * nMN;
+    size_t nMN = shell_pairs.size();
+    size_t nMNRS = nMN * nMN;
     int nthread = eri_.size();
 
     #pragma omp parallel for schedule(dynamic,30) num_threads(nthread)
-    for (unsigned long int index = 0L; index < nMNRS; ++index) {
+    for (size_t index = 0L; index < nMNRS; ++index) {
 
         int thread = 0;
         #ifdef _OPENMP
@@ -693,8 +693,8 @@ void DirectJK::compute_JK()
 
         const double* buffer = eri_[thread]->buffer();
 
-        unsigned long int MN = index / nMN;
-        unsigned long int RS = index % nMN;
+        size_t MN = index / nMN;
+        size_t RS = index % nMN;
         if (MN < RS) continue;
 
         int M = shell_pairs[MN].first;

@@ -2088,17 +2088,17 @@ void OEProp::compute_no_occupations()
 //{
 //    double*** grid = new double**[nx];
 //
-//    double** pointers = new double*[nx*(unsigned long int)ny];
+//    double** pointers = new double*[nx*(size_t)ny];
 //
-//    double* memory = new double[nx*(unsigned long int)ny*nz];
+//    double* memory = new double[nx*(size_t)ny*nz];
 //    memset(static_cast<void*>(memory), '\0', sizeof(double)*nx*ny*nz);
 //
 //    for (int i = 0; i < nx; i++)
 //        for (int j = 0; j < ny; j++)
-//            pointers[i*(unsigned long int)ny + j] = &memory[i*(unsigned long int)ny*nz + j*(unsigned long int)nz];
+//            pointers[i*(size_t)ny + j] = &memory[i*(size_t)ny*nz + j*(size_t)nz];
 //
 //    for (int i = 0; i < nx; i++)
-//        grid[i] = &pointers[i*(unsigned long int)ny];
+//        grid[i] = &pointers[i*(size_t)ny];
 //
 //    return grid;
 //}

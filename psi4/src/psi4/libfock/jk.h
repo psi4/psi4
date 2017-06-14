@@ -236,7 +236,7 @@ protected:
     /// Bench flag, defaults to 0
     int bench_;
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
-    unsigned long int memory_;
+    size_t memory_;
     /// Number of OpenMP threads (defaults to 1 in no OpenMP, Process::environment.get_n_threads() otherwise)
     int omp_nthread_;
     /// Integral cutoff (defaults to 0.0)
@@ -328,7 +328,7 @@ protected:
     // => Helper Routines <= //
 
     /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
-    unsigned long int memory_overhead() const;
+    size_t memory_overhead() const;
 
 public:
     // => Constructors <= //
@@ -384,7 +384,7 @@ public:
      * integral generation objects typically ignore this)
      * @param memory maximum number of doubles to allocate
      */
-    void set_memory(unsigned long int memory) { memory_ = memory; }
+    void set_memory(size_t memory) { memory_ = memory; }
     /**
      * Maximum number of OpenMP threads to use. It may be necessary
      * to clamp this to some value smaller than the total number of
@@ -824,7 +824,7 @@ protected:
     void common_init();
 
     bool is_core() const;
-    unsigned long int memory_temp() const;
+    size_t memory_temp() const;
     int max_rows() const;
     int max_nocc() const;
     void initialize_temps();

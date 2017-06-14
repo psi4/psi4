@@ -137,9 +137,9 @@ void CGRSolver::print_header() const
         outfile->Printf( "   Maximum iterations = %9d\n\n", maxiter_);
     }
 }
-unsigned long int CGRSolver::memory_estimate()
+size_t CGRSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -698,9 +698,9 @@ void DLRSolver::print_header() const
         outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
-unsigned long int DLRSolver::memory_estimate()
+size_t DLRSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -1552,9 +1552,9 @@ void DLRXSolver::print_header() const
         outfile->Printf( "   Maximum iterations      = %11d\n\n", maxiter_);
     }
 }
-unsigned long int DLRXSolver::memory_estimate()
+size_t DLRXSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -2289,9 +2289,9 @@ void DLUSolver::print_header() const
 
 /*// Commented implementation below is from DLR solver but this function
 // is never called in the DLU solver.
-unsigned long int DLUSolver::memory_estimate()
+size_t DLUSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];

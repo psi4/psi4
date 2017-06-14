@@ -1888,7 +1888,7 @@ void CIvect::close_io_files(int keep) {
 int CIvect::read(int ivect, int ibuf)
 {
    int unit, buf, k, i;
-   unsigned long int size;
+   size_t size;
    int blk;
    char key[20];
 
@@ -1909,7 +1909,7 @@ int CIvect::read(int ivect, int ibuf)
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;
 
-   size = buf_size_[ibuf] * (unsigned long int) sizeof(double);
+   size = buf_size_[ibuf] * (size_t) sizeof(double);
 
    /* translate buffer number in case we renumbered after collapse * */
    buf += new_first_buf_;
@@ -1942,7 +1942,7 @@ int CIvect::read(int ivect, int ibuf)
 int CIvect::write(int ivect, int ibuf)
 {
    int unit, buf, i;
-   unsigned long int size;
+   size_t size;
    int blk;
    char key[20];
 
@@ -1961,7 +1961,7 @@ int CIvect::write(int ivect, int ibuf)
 
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;
-   size = buf_size_[ibuf] * (unsigned long int) sizeof(double);
+   size = buf_size_[ibuf] * (size_t) sizeof(double);
 
    /* translate buffer number in case we renumbered after collapse * */
    buf += new_first_buf_;

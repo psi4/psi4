@@ -3546,7 +3546,7 @@ void FISAPT::find()
         if (jk_memory < 0L) {
             throw PSIEXCEPTION("Too little static memory for FISAPT::induction");
         }
-        jk->set_memory((unsigned long int )jk_memory);
+        jk->set_memory((size_t )jk_memory);
         jk->set_do_J(true);
         jk->set_do_K(true);
         jk->initialize();

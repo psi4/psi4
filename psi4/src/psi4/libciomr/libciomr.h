@@ -54,9 +54,9 @@ void eivout(double **a, double *b, int m, int n, std::string out) ;
 void mosort(double *d, double **v, int *sym, int nso, int nmo);
 
 void flin(double **a,double *b,int in,int im,double *det);
-void free_matrix(double **array, unsigned long int size) ;
-double * init_array(unsigned long int size) ;
-double ** init_matrix(unsigned long int rows, unsigned long int cols) ;
+void free_matrix(double **array, size_t size) ;
+double * init_array(size_t size) ;
+double ** init_matrix(size_t rows, size_t cols) ;
 
 void lubksb(double **a,int n,int *indx,double *b);
 void ludcmp(double **a,int n,int *indx,double *d);
@@ -108,7 +108,7 @@ void zero_long_int_matrix(long int **array, int rows, int cols);
 void print_long_int_mat(long int **a, int m, int n, std::string out);
 
 /* Functions in block_matrix.c */
-double ** block_matrix(unsigned long int n, unsigned long int m, bool mlock = false);
+double ** block_matrix(size_t n, size_t m, bool mlock = false);
 void free_block(double **array);
 
 /* Functions in fndcor */

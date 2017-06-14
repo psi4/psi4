@@ -146,7 +146,7 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
 
     for(int p = 0; p < m; ++p){
         for(int q = 0; q <= p; ++q){
-            unsigned long int pq = INDEX((p + offset), (q + offset));
+            size_t pq = INDEX((p + offset), (q + offset));
             TMP0[p][q] = TMP0[q][p] = input[pq];
         }
     }
