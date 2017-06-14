@@ -521,7 +521,7 @@ void DFJK::initialize_JK_core()
         buffer[Q] = eri[Q]->buffer();
     }
 
-    // shell pair blocks 
+    // shell pair blocks
     std::vector<ShellPairBlock> p_blocks = eri[0]->get_blocks12();
     std::vector<ShellPairBlock> mn_blocks = eri[0]->get_blocks34();
 
@@ -562,7 +562,7 @@ void DFJK::initialize_JK_core()
         #else
             const int rank = 0;
         #endif
-    
+
         const auto & mn_block = mn_blocks[mn_block_idx];
 
         // loop over all the blocks of P
@@ -572,7 +572,7 @@ void DFJK::initialize_JK_core()
             // compute the
             eri[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
             double const * my_buffer = buffer[rank];
- 
+
             const auto & p_block = p_blocks[p_block_idx];
 
             for(const auto & mn_pair : mn_block)
@@ -595,12 +595,12 @@ void DFJK::initialize_JK_core()
                     for(int im = 0; im < num_m; ++im)
                     {
                         const int im_idx = m_start + im;
-                        
+
                         for(int in = 0; in < num_n; ++in)
                         {
                             const int in_idx = n_start + in;
                             const int imn_idx = im*num_n + in;
-                            const int sfp_idx = (im_idx*(im_idx+1))/2+in_idx; 
+                            const int sfp_idx = (im_idx*(im_idx+1))/2+in_idx;
 
                             int sfp;
 

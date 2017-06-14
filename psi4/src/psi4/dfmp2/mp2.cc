@@ -525,11 +525,7 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t ni
     }
     psio_->close(file, 1);
 }
-<<<<<<< HEAD
-void DFMP2::apply_fitting_grad(SharedMatrix Jm12, unsigned int file, size_t naux, size_t nia)
-=======
 void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size_t nia)
->>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     // Memory constraints
     size_t Jmem = naux * naux;
@@ -591,11 +587,7 @@ void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size
     psio_->close(file, 1);
 
 }
-<<<<<<< HEAD
-void DFMP2::apply_gamma(unsigned int file, size_t naux, size_t nia)
-=======
 void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia)
->>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     size_t Jmem = naux * naux;
     size_t doubles = (size_t) (options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
@@ -658,11 +650,7 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia)
 
     psio_->close(file,1);
 }
-<<<<<<< HEAD
-void DFMP2::apply_G_transpose(unsigned int file, size_t naux, size_t nia)
-=======
 void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia)
->>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     // Memory constraints
     size_t doubles = (size_t) (options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
@@ -728,11 +716,7 @@ void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia)
     }
     psio_->close(file, 1);
 }
-<<<<<<< HEAD
-void DFMP2::apply_B_transpose(unsigned int file, size_t naux, size_t naocc, size_t navir)
-=======
 void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t navir)
->>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     // Memory constraints
     size_t doubles = (size_t) (options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));

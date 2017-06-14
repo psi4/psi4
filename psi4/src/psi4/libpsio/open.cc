@@ -102,7 +102,7 @@ void PSIO::open(size_t unit, int status) {
     const char* path2 = spath2.c_str();
 
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
-    sprintf(fullpath, "%s%s.%u", path2, name, unit);
+    sprintf(fullpath, "%s%s.%zu", path2, name, unit);
     this_unit->vol[i].path = strdup(fullpath);
     free(fullpath);
 
@@ -199,7 +199,7 @@ bool PSIO::exists(size_t unit) {
     const char* path2 = spath2.c_str();
 
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
-    sprintf(fullpath, "%s%s.%u", path2, name, unit);
+    sprintf(fullpath, "%s%s.%zu", path2, name, unit);
 
     /* Now open the volume */
       stream = ::open(fullpath,O_RDWR);

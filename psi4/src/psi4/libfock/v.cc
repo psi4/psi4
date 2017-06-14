@@ -54,8 +54,6 @@
 #include <omp.h>
 #endif
 
-using size_t = unsigned long int;
-
 namespace psi {
 
 VBase::VBase(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary,

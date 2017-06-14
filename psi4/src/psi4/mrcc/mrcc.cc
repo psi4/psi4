@@ -27,6 +27,7 @@
  */
 
 #include "psi4/psi4-dec.h"
+#include "psi4/pybind11.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "psi4/libscf_solver/rohf.h"

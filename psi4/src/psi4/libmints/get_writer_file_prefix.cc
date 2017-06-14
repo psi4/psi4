@@ -36,6 +36,7 @@
 #include "psi4/libpsi4util/process.h"
 
 #include <string>
+#include <unistd.h>
 
 namespace psi {
 

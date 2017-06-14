@@ -36,6 +36,8 @@
 
 #include "package.h"
 
+#include <stddef.h>
+
 namespace opt {
 
 enum OPT_IO_FILE_STATUS {OPT_IO_OPEN_NEW, OPT_IO_OPEN_OLD} ;

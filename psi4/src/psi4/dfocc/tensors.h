@@ -46,12 +46,6 @@ namespace psi{
 
 class PSIO;
 
-<<<<<<< HEAD
-using size_t = unsigned long int;
-=======
-using size_t = size_t;
->>>>>>> 6c71344... Cleanup: unsigned long int -> size_t
-
 namespace dfoccwave{
 
 class Tensor1d;

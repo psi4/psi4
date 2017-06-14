@@ -43,7 +43,7 @@ namespace psi {
 void PSIO::get_volpath(size_t unit, size_t volume, char **path) {
   std::string kval;
   char volumeX[20];
-  sprintf(volumeX, "VOLUME%u", volume+1);
+  sprintf(volumeX, "VOLUME%zu", volume+1);
 
   kval = filecfg_kwd("PSI", volumeX, unit);
   if (!kval.empty()) {
@@ -73,7 +73,7 @@ void PSIO::get_volpath(size_t unit, size_t volume, char **path) {
   int psio_get_volpath_default(size_t volume, char **path) {
     std::string kval;
     char volumeX[20];
-    sprintf(volumeX, "VOLUME%u", volume+1);
+    sprintf(volumeX, "VOLUME%zu", volume+1);
 
     kval = _default_psio_lib_->filecfg_kwd("PSI", volumeX, -1);
     if (!kval.empty()) {

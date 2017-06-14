@@ -420,7 +420,7 @@ std::shared_ptr<BasisSet> Wavefunction::basisset() const
     return basisset_;
 }
 
-std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label)
+std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) {
     // This may be slightly confusing, but better than changing this in 800 other places
     if (label == "ORBITAL") {
         return basisset_;

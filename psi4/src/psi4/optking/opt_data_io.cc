@@ -178,13 +178,8 @@ void opt_io_read_entry(const char *key, char *buffer, size_t size) {
 
 // key    = char * ; label for entry ; not used by QChem
 // buffer = char * ; stream from which to read
-<<<<<<< HEAD
-// size   = unsigned long int ; number of bytes to read
-void opt_io_write_entry(const char *key, char *buffer, size_t size) {
-=======
 // size   = size_t ; number of bytes to read
 void opt_io_write_entry(const char *key, char *buffer, size_t size) {
->>>>>>> 6c71344... Cleanup: unsigned long int -> size_t
 #if defined(OPTKING_PACKAGE_PSI)
   psio_write_entry(PSI_OPTDATA_FILE_NUM, key, buffer, size);
 #elif defined(OPTKING_PACKAGE_QCHEM)

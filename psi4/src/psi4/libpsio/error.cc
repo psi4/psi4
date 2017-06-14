@@ -51,7 +51,7 @@ namespace psi {
   void psio_error(size_t unit, size_t errval) {
     int i;
 
-    fprintf(stderr, "PSIO_ERROR: unit = %d, errval = %d\n", unit, errval);
+    fprintf(stderr, "PSIO_ERROR: unit = %zu, errval = %zu\n", unit, errval);
     /* Try to save the TOCs for all open units */
     /* psio_tocwrite() does not call psio_error() so this is OK */
     for (i=0; i < PSIO_MAXUNIT; i++)
@@ -121,7 +121,7 @@ namespace psi {
         break;
       case PSIO_ERROR_MAXUNIT:
         fprintf(stderr, "PSIO_ERROR: %d (Maximum unit number exceeded)\n", PSIO_ERROR_MAXUNIT);
-        fprintf(stderr, "Open failed because unit %d exceeds ", unit);
+        fprintf(stderr, "Open failed because unit %zu exceeds ", unit);
         fprintf(stderr, "PSIO_MAXUNIT = %d.\n", PSIO_MAXUNIT);
         break;
     }
