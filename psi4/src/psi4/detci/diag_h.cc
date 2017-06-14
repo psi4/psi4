@@ -58,7 +58,7 @@ namespace detci {
 ** Returns: none
 */
 int CIWavefunction::diag_h(double conv_e, double conv_rms) {
-    BIGINT size;
+    size_t size;
     int nroots, i, j;
     double *evals, **evecs, nucrep, edrc, tval;
     double *cbuf;
@@ -78,7 +78,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     Parameters_->diag_iters_taken = 0;
 
     size = CIblks_->vectlen;
-    if ((BIGINT)Parameters_->nprint > size) Parameters_->nprint = (int)size;
+    if ((size_t)Parameters_->nprint > size) Parameters_->nprint = (int)size;
     nucrep = CalcInfo_->enuc;
     edrc = CalcInfo_->edrc;
 

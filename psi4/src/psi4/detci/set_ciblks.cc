@@ -331,12 +331,12 @@ void CIWavefunction::set_ciblks()
    CIblks_->offset[0] = 0;
    for (i=1; i<nblocks; i++) {
       CIblks_->offset[i] = CIblks_->offset[i-1] +
-         (BIGINT) CIblks_->Ia_size[i-1] *
-         (BIGINT) CIblks_->Ib_size[i-1];
+         (size_t) CIblks_->Ia_size[i-1] *
+         (size_t) CIblks_->Ib_size[i-1];
       }
    CIblks_->vectlen = CIblks_->offset[nblocks-1] +
-                    (BIGINT) CIblks_->Ia_size[nblocks-1] *
-                    (BIGINT) CIblks_->Ib_size[nblocks-1];
+                    (size_t) CIblks_->Ia_size[nblocks-1] *
+                    (size_t) CIblks_->Ib_size[nblocks-1];
 
    if (print_) {
      outfile->Printf(

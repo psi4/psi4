@@ -558,7 +558,7 @@ SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
     return Hd;
 }
 SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
-    BIGINT size = (hsize) ? (BIGINT)hsize : CIblks_->vectlen;
+    size_t size = (hsize) ? (size_t)hsize : CIblks_->vectlen;
     double h_size = (double)(8 * size * size);
     if (h_size > (Process::environment.get_memory() * 0.4)) {
         outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size / 1E9);

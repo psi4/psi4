@@ -90,8 +90,8 @@ CIvect::CIvect()  // Default constructor
     common_init();
 }
 
-CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
-               int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+CIvect::CIvect(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
+               int *ias, int *ibs, size_t *offs, int nac, int nbc, int nirr,
                int cdpirr, int mxv, int nu, int funit, int *fablk, int *lablk,
                int **dc, struct calcinfo *CI_CalcInfo, struct params *CI_Params,
                struct H_zero_block *CI_H0block, bool buf_init) {
@@ -177,8 +177,8 @@ void CIvect::set(int incor, int maxvect, int nunits, int funit,
         CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
 }
 
-void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
-                 int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
+                 int *ias, int *ibs, size_t *offs, int nac, int nbc, int nirr,
                  int cdpirr, int mxv, int nu, int fu, int *fablk, int *lablk,
                  int **dc) {
     int i, j, k;
@@ -206,7 +206,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     Ia_size_.resize(nb);
     Ib_size_.resize(nb);
     offset_.resize(nb);
-    // offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
+    // offset_ = (size_t *)malloc(nb * sizeof(size_t));
 
     for (i = 0; i < nb; i++) {
         Ia_code_[i] = iac[i];
@@ -753,9 +753,9 @@ double CIvect::operator*(CIvect &b)
    return(dotprod);
 }
 
-void CIvect::setarray(const double *a, BIGINT len) {
+void CIvect::setarray(const double *a, size_t len) {
     double *aptr;
-    BIGINT i;
+    size_t i;
 
     if (len > vectlen_) len = vectlen_;
 
@@ -884,7 +884,7 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
 }
 
 
-void CIvect::det2strings(BIGINT det, int *alp_code, int *alp_idx,
+void CIvect::det2strings(size_t det, int *alp_code, int *alp_idx,
          int *bet_code, int *bet_idx)
 {
    int i;
@@ -896,16 +896,16 @@ void CIvect::det2strings(BIGINT det, int *alp_code, int *alp_idx,
    *alp_code = Ia_code_[i];
    *bet_code = Ib_code_[i];
 
-   *alp_idx = (int) ((det - offset_[i]) / (BIGINT) Ib_size_[i]);
-   *bet_idx = ((det - offset_[i]) % (BIGINT) Ib_size_[i]);
+   *alp_idx = (int) ((det - offset_[i]) / (size_t) Ib_size_[i]);
+   *bet_idx = ((det - offset_[i]) % (size_t) Ib_size_[i]);
 
 }
 
-BIGINT CIvect::strings2det(int alp_code, int alp_idx,
+size_t CIvect::strings2det(int alp_code, int alp_idx,
       int bet_code, int bet_idx)
 {
    int blknum;
-   BIGINT addr;
+   size_t addr;
 
    blknum = decode_[alp_code][bet_code];
    addr = offset_[blknum];
