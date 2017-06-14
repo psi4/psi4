@@ -7,27 +7,26 @@ C
 C 1 20
 """)
 
+psi4.set_num_threads(1)
+memory = 50000
 primary = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ")
 aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ-jkfit")
 
-nbf = primary.nbf()
-naux = aux.nbf()
-
-print ("nbf:  ", nbf)
-print ("naux: ", naux)
+nbf = primary[0].nbf()
+naux = aux[0].nbf()
 
 # form metric
-mints = psi4.core.MintsHelper(primary)
+mints = psi4.core.MintsHelper(primary[0])
 zero_bas = psi4.core.BasisSet.zero_ao_basis_set()
-Jmetric = np.squeeze(mints.ao_eri(zero_bas, aux, zero_bas, aux))
+Jmetric = np.squeeze(mints.ao_eri(zero_bas, aux[0], zero_bas, aux[0]))
 
 # form inverse metric
-Jmetric_inv = mints.ao_eri(zero_bas, aux, zero_bas, aux)
+Jmetric_inv = mints.ao_eri(zero_bas, aux[0], zero_bas, aux[0])
 Jmetric_inv.power(-0.5, 1.e-12)
 Jmetric_inv = np.squeeze(Jmetric_inv)
 
 # form Qpq
-Qpq = np.squeeze(mints.ao_eri(aux, zero_bas, primary, primary))
+Qpq = np.squeeze(mints.ao_eri(aux[0], zero_bas, primary[0], primary[0]))
 Qpq = Jmetric_inv.dot(Qpq.reshape(naux, -1))
 Qpq = Qpq.reshape(naux, nbf, -1) 
 pQq = np.einsum("Qpq->pQq", Qpq)
@@ -100,12 +99,12 @@ for i in range(len(Cright)):
     K.append(np.dot(Ktmp1.reshape(nbf,-1), Ktmp2.reshape(nbf, -1).T))
 
 # now compare to DF_Helper - test STORE -----------------------------------------
-dfh = psi4.core.DF_Helper(primary, aux)
+dfh = psi4.core.DF_Helper(primary[0], aux[0])
 
 # tweak options
 dfh.set_method("STORE")
-dfh.set_memory(200000)
-dfh.set_on_core(False)
+dfh.set_memory(memory)
+dfh.set_AO_core(False)
 dfh.set_MO_hint(24)
 
 # build
@@ -139,18 +138,125 @@ D = np.dot(np.asarray(C1), np.asarray(C1).T)
 # am i right?
 for i in range(len(Cright)):
     psi4.compare_arrays(np.asarray(Ks[i]), K[i], 9, "K builds - STORE" )     #TEST
-#for i in range(len(Cright)):
-#    print (np.linalg.norm(np.asarray(Js[i]).ravel()[:naux]-Qs[i]))     #TEST
-
-Ds = []
 for i in range(len(Cright)):
-    Ds.append(np.dot(np.asarray(Cleft[i]), np.asarray(Cright[i]).T))
-    print (np.linalg.norm(np.asarray(Js[i]) -Ds[i]))
+    psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - STORE" )     #TEST
 
-#for i in range(naux):
-#    if (i == 80):
-#        print ("YUP")
-#    print (np.linalg.norm(np.asarray(Js[0]).ravel()[i] -Qs[0][i]))
-#psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - STORE" )     #TEST
+# now compare to DF_Helper - test AO_CORE -----------------------------------------
+del dfh
+dfh = psi4.core.DF_Helper(primary[0], aux[0])
 
+# tweak options
+dfh.set_method("STORE")
+dfh.set_memory(3*memory)
+dfh.set_AO_core(True)
+dfh.set_MO_hint(24)
+
+# build
+dfh.initialize()
+
+# allocate J
+Js = []
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+
+# allocate K
+Ks = []
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+
+# invoke J/K build
+dfh.build_JK(Cleft, Cright, Js, Ks)
+
+# am i right?
+for i in range(len(Cright)):
+    psi4.compare_arrays(np.asarray(Ks[i]), K[i], 9, "K builds - AO_CORE" )     #TEST
+for i in range(len(Cright)):
+    psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - AO_CORE" )     #TEST
+
+# now compare to DF_Helper - test AO_CORE -----------------------------------------
+del dfh
+dfh = psi4.core.DF_Helper(primary[0], aux[0])
+
+# tweak options
+dfh.set_method("STORE")
+dfh.set_memory(3*memory)
+dfh.set_AO_core(True)
+dfh.set_MO_hint(24)
+dfh.set_JK_hint(True)
+
+# build
+dfh.initialize()
+
+# allocate J
+Js = []
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+Js.append(psi4.core.Matrix(nbf,nbf))
+
+# allocate K
+Ks = []
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+Ks.append(psi4.core.Matrix(nbf,nbf))
+
+del Cleft
+del Cright
+
+# left sieve
+Cleft = []
+Cleft.append(C1)
+Cleft.append(C2)
+Cleft.append(C3)
+Cleft.append(C4)
+Cleft.append(C5)
+
+# right sieve
+Cright = Cleft
+
+# invoke J/K build
+dfh.build_JK(Cleft, Cright, Js, Ks)
+
+# build J
+J = []
+Qs = []
+for i in range(len(Cright)):
+    D = np.dot(np.asarray(Cleft[i]), np.asarray(Cright[i]).T)
+    Q = np.dot(Qpq.reshape(naux, -1), D.ravel())
+    Qs.append(Q)
+    J.append(np.dot(Q, Qpq.reshape(-1, nbf*nbf)))
+    J[i] = J[i].reshape(nbf, nbf)
+    
+# build K
+K = []
+for i in range(len(Cright)):
+    Ktmp1 = np.zeros((nbf, naux, np.shape(Cleft[i])[1]))
+    Ktmp2 = np.zeros((nbf, naux, np.shape(Cleft[i])[1]))
+    for j in range(nbf):
+        Ktmp1[j] = np.dot(pQq[j], Cleft[i])
+    if(Cleft[i] != Cright[i]):
+        for j in range(nbf):
+            Ktmp2[j] = np.dot(pQq[j], Cright[i])
+    else:
+        Ktmp2 = Ktmp1
+    K.append(np.dot(Ktmp1.reshape(nbf,-1), Ktmp2.reshape(nbf, -1).T))
+
+# am i right?
+for i in range(len(Cright)):
+    psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - AO_CORE = TRUE, JK_HINT = TRUE" )     #TEST
+for i in range(len(Cright)):
+    psi4.compare_arrays(np.asarray(Ks[i]), K[i], 9, "K builds - AO_CORE = TRUE, JK_HINT = TRUE" )     #TEST
+for i in range(len(Cright)):
+    psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - AO_CORE = TRUE, JK_HINT = TRUE" )     #TEST
 

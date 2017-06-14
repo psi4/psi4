@@ -38,8 +38,12 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
+<<<<<<< HEAD
 #include "psi4/libpsi4util/process.h"
 
+=======
+#include "psi4/libscf_solver/sad.h"
+>>>>>>> merged df_helper updates
 
 using namespace psi;
 
@@ -147,11 +151,14 @@ void export_fock(py::module &m) {
         .def("get_memory", &df_helper::DF_Helper::get_memory)
         .def("set_method", &df_helper::DF_Helper::set_method)
         .def("get_method", &df_helper::DF_Helper::get_method)
+        .def("set_nthreads", &df_helper::DF_Helper::set_nthreads)
         .def("hold_met", &df_helper::DF_Helper::hold_met)
         .def("set_schwarz_cutoff", &df_helper::DF_Helper::set_schwarz_cutoff)
         .def("get_schwarz_cutoff", &df_helper::DF_Helper::get_schwarz_cutoff)
-        .def("set_on_core", &df_helper::DF_Helper::set_on_core)
-        .def("get_on_core", &df_helper::DF_Helper::get_on_core)
+        .def("set_AO_core", &df_helper::DF_Helper::set_AO_core)
+        .def("get_AO_core", &df_helper::DF_Helper::get_AO_core)
+        .def("set_MO_core", &df_helper::DF_Helper::set_MO_core)
+        .def("get_MO_core", &df_helper::DF_Helper::get_MO_core)
         .def("set_MO_hint", &df_helper::DF_Helper::set_MO_hint)
         .def("get_MO_hint", &df_helper::DF_Helper::get_MO_hint)
         .def("add_space", &df_helper::DF_Helper::add_space)
@@ -166,5 +173,24 @@ void export_fock(py::module &m) {
         .def("get_tensor_shape", &df_helper::DF_Helper::get_tensor_shape)
         .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor))
         .def("get_tensor", tensor_access3(&df_helper::DF_Helper::get_tensor))
+        .def("set_JK_hint", &df_helper::DF_Helper::set_JK_hint)
+        .def("get_fun_mask", &df_helper::DF_Helper::get_fun_mask)
         .def("build_JK", &df_helper::DF_Helper::build_JK);
+
+// MATT'S HACKING FIXME
+    py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
+        .def_static("build_SAD",
+        [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i, int j) 
+        { 
+           return scf::SADGuess(basis, atomic_bases, i, j, Process::environment.options);
+        })
+        .def("compute_guess", &scf::SADGuess::compute_guess)
+        .def("set_print", &scf::SADGuess::set_print)
+        .def("set_debug", &scf::SADGuess::set_debug)    
+        .def("set_atomic_fit_bases", &scf::SADGuess::set_atomic_fit_bases)
+        .def("Da", &scf::SADGuess::Da)
+        .def("Db", &scf::SADGuess::Db)
+        .def("Ca", &scf::SADGuess::Ca)
+        .def("Cb", &scf::SADGuess::Cb);
+
 }
