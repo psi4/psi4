@@ -4379,7 +4379,7 @@ DCFTSolver::compute_ewdm_dc()
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4414,7 +4414,7 @@ DCFTSolver::compute_ewdm_dc()
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4448,7 +4448,7 @@ DCFTSolver::compute_ewdm_dc()
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4479,7 +4479,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4503,7 +4503,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4531,7 +4531,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4555,7 +4555,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4580,7 +4580,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4604,7 +4604,7 @@ DCFTSolver::compute_ewdm_dc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4633,8 +4633,8 @@ DCFTSolver::compute_ewdm_dc()
                 int K = aocc_qt[k];
                 int A = bvir_qt[a];
                 double value = G.matrix[h][ij][ka];
-                iwl_buf_wrt_val(&AB, I, K, J, A, value, 0, "NULL", 0);
-                iwl_buf_wrt_val(&AB, I, K, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, K, J, A, value, 0, "outfile", 0);
+                iwl_buf_wrt_val(&AB, I, K, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4657,8 +4657,8 @@ DCFTSolver::compute_ewdm_dc()
                 int K = bocc_qt[k];
                 int A = avir_qt[a];
                 double value = G.matrix[h][ij][ka];
-                iwl_buf_wrt_val(&AB, A, J, K, I, value, 0, "NULL", 0);
-                iwl_buf_wrt_val(&AB, J, A, K, I, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, J, K, I, value, 0, "outfile", 0);
+                iwl_buf_wrt_val(&AB, J, A, K, I, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4692,8 +4692,8 @@ DCFTSolver::compute_ewdm_dc()
                 int B = avir_qt[b];
                 int C = bvir_qt[c];
                 double value = G.matrix[h][ia][bc];
-                iwl_buf_wrt_val(&AB, I, B, A, C, value, 0, "NULL", 0);
-                iwl_buf_wrt_val(&AB, B, I, A, C, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, B, A, C, value, 0, "outfile", 0);
+                iwl_buf_wrt_val(&AB, B, I, A, C, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -4716,8 +4716,8 @@ DCFTSolver::compute_ewdm_dc()
                 int B = bvir_qt[b];
                 int C = avir_qt[c];
                 double value = G.matrix[h][ia][bc];
-                iwl_buf_wrt_val(&AB, C, A, B, I, value, 0, "NULL", 0);
-                iwl_buf_wrt_val(&AB, C, A, I, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, C, A, B, I, value, 0, "outfile", 0);
+                iwl_buf_wrt_val(&AB, C, A, I, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5013,7 +5013,7 @@ DCFTSolver::compute_ewdm_odc()
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd];
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5048,7 +5048,7 @@ DCFTSolver::compute_ewdm_odc()
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5082,7 +5082,7 @@ DCFTSolver::compute_ewdm_odc()
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5113,7 +5113,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5137,7 +5137,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5165,7 +5165,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5189,7 +5189,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5214,7 +5214,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -5238,7 +5238,7 @@ DCFTSolver::compute_ewdm_odc()
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -0.5 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
