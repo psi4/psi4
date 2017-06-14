@@ -172,17 +172,17 @@ void MemoryManager::MemCheck(std::string out)
 //          release_three(m,__FILE__,__LINE__);
 //        }
 //      }
-//      else if ((*it).second.type == "unsigned int") {
+//      else if ((*it).second.type == "size_t") {
 //        if ((*it).second.argumentList.size() == 1) {
-//          unsigned int *m = (unsigned int*)(*it).second.variable;
+//          size_t *m = (size_t*)(*it).second.variable;
 //          release_one(m,__FILE__,__LINE__);
 //        }
 //        else if ((*it).second.argumentList.size() == 2) {
-//          unsigned int **m = (unsigned int**)(*it).second.variable;
+//          size_t **m = (size_t**)(*it).second.variable;
 //          release_two(m,__FILE__,__LINE__);
 //        }
 //        else if ((*it).second.argumentList.size() == 3) {
-//          unsigned int ***m = (unsigned int***)(*it).second.variable;
+//          size_t ***m = (size_t***)(*it).second.variable;
 //          release_three(m,__FILE__,__LINE__);
 //        }
 //      }

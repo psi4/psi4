@@ -57,7 +57,7 @@ SharedWavefunction libfock(SharedWavefunction ref_wfn, Options & options)
 
     if (options.get_str("MODULE") == "RCPHF") {
         RCPHF* cphf(new RCPHF(ref_wfn, options));
-        for (unsigned int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+        for (size_t i = 0; i < options["CPHF_TASKS"].size(); i++) {
             cphf->add_task(options["CPHF_TASKS"][i].to_string());
         }
         wfn = std::shared_ptr<RBase>(cphf);
@@ -67,7 +67,7 @@ SharedWavefunction libfock(SharedWavefunction ref_wfn, Options & options)
         wfn = std::shared_ptr<RBase>(new RTDHF(ref_wfn, options));
     } else if (options.get_str("MODULE") == "RCPKS") {
         RCPKS* cphf(new RCPKS(ref_wfn, options));
-        for (unsigned int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+        for (size_t i = 0; i < options["CPHF_TASKS"].size(); i++) {
             cphf->add_task(options["CPHF_TASKS"][i].to_string());
         }
         wfn = std::shared_ptr<RBase>(cphf);

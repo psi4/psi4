@@ -75,11 +75,11 @@ public:
 
 
   // Reference counting related
-  unsigned int ref ()  const { return ref_;}   // Number of references
+  size_t ref ()  const { return ref_;}   // Number of references
   void add_reference      () { ref_++;}
   bool subtract_reference () { if (--ref_ == 0){ delete this; return true;} return false; }
   // Reference count
-  unsigned int ref_;
+  size_t ref_;
 
 private:
   // Matrix label and pointer

@@ -44,7 +44,7 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, const std::string & ns2) {
+void PSIO::change_file_namespace(size_t unit, const std::string & ns1, const std::string & ns2) {
     char *old_name, *new_name, *old_fullpath, *new_fullpath;
     _default_psio_lib_->get_filename(unit, &old_name, true);
     _default_psio_lib_->get_filename(unit, &new_name, true);

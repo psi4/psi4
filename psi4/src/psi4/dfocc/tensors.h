@@ -151,9 +151,9 @@ class Tensor2d
   public:
   Tensor2d(int d1,int d2);
   Tensor2d(string name, int d1,int d2);
-  Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2);
-  Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
-  Tensor2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+  Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2);
+  Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
+  Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
   Tensor2d(string name, int d1, int d2, int d3, int d4);
   Tensor2d(string name, int d1, int d2, int d3);
   Tensor2d();			   //default constructer
@@ -293,36 +293,36 @@ class Tensor2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
 
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(psi::PSIO* const psio, unsigned int fileno);
-  void write(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(psi::PSIO& psio, unsigned int fileno);
-  void write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
-  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
-  void write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end);
+  void write(psi::PSIO* const psio, size_t fileno);
+  void write(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end);
+  void write(psi::PSIO& psio, size_t fileno);
+  void write(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end);
+  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm);
+  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno, bool three_index, bool symm);
+  void write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
 
-  void read(psi::PSIO* psio, unsigned int fileno);
-  void read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(psi::PSIO& psio, unsigned int fileno);
-  void read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
-  void read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(psi::PSIO* psio, size_t fileno);
+  void read(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end);
+  void read(psi::PSIO& psio, size_t fileno);
+  void read(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm);
+  void read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
 
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
-  void save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void save(psi::PSIO* const psio, unsigned int fileno);
-  void save(psi::PSIO& psio, unsigned int fileno);
-  void load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
-  void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
-  void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+  void save(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void save(psi::PSIO* const psio, size_t fileno);
+  void save(psi::PSIO& psio, size_t fileno);
+  void load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
+  void load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2);
+  void load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
 
   void mywrite(const string& filename);
   void mywrite(int fileno);

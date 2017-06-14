@@ -973,7 +973,7 @@ void export_mints(py::module& m)
 
     py::class_<CorrelationFactor, std::shared_ptr<CorrelationFactor>>(m, "CorrelationFactor",
                                                                       "docstring")
-        .def(py::init<unsigned int>())
+        .def(py::init<size_t>())
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>>())
         .def("set_params", &CorrelationFactor::set_params, "docstring");
 

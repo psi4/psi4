@@ -38,8 +38,8 @@
 
 namespace psi {
 
-void PSIO::tocread(unsigned int unit) {
-  unsigned int i;
+void PSIO::tocread(size_t unit) {
+  size_t i;
   int entry_size;
   psio_ud *this_unit;
   psio_tocentry *last_entry, *this_entry;

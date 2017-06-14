@@ -42,7 +42,7 @@
 #include "psi4/libpsio/psio.hpp"
 namespace psi {
 
-void PSIO::tocclean(unsigned int unit, const char *key) {
+void PSIO::tocclean(size_t unit, const char *key) {
   psio_tocentry *this_entry, *last_entry, *prev_entry;
   psio_ud *this_unit;
 
@@ -82,7 +82,7 @@ void PSIO::tocclean(unsigned int unit, const char *key) {
    ** \ingroup PSIO
    */
 
-  int psio_tocclean(unsigned int unit, const char *key) {
+  int psio_tocclean(size_t unit, const char *key) {
     _default_psio_lib_->tocclean(unit, key);
     return 0;
   }

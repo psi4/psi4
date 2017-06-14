@@ -210,11 +210,11 @@ public:
 
 
     /// Store the computed integrals in the appropriate buffers
-    void integrals_buffering(const double *buffer, unsigned int P, unsigned int Q,
-                             unsigned int R, unsigned int S);
+    void integrals_buffering(const double *buffer, size_t P, size_t Q,
+                             size_t R, size_t S);
     /// Store the computed wK integrals in the appropriate buffers
-    void integrals_buffering_wK(const double *buffer, unsigned int P, unsigned int Q,
-                             unsigned int R, unsigned int S);
+    void integrals_buffering_wK(const double *buffer, size_t P, size_t Q,
+                             size_t R, size_t S);
 
     /// Write the buffers of integrals to PK storage
     virtual void write() = 0;

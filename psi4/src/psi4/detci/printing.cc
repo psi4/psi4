@@ -67,14 +67,14 @@ extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 ** Print the Most Important Determinants in the CI vector
 ** David Sherrill, February 1995
 */
-void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
+void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
       int *Iaidx, int *Ibidx, double *coeff)
 {
    int Ia_abs, Ib_abs;
 
    /* print out the list of most important determinants */
    outfile->Printf("\n   The %d most important determinants:\n\n", nprint) ;
-   for (unsigned int i=0; i<nprint; i++) {
+   for (size_t i=0; i<nprint; i++) {
       if (fabs(coeff[i]) < MIN_COEFF) continue;
 
       Ia_abs = str_rel2abs(Iaidx[i], Ialist[i], AlphaG_);
@@ -82,7 +82,7 @@ void CIWavefunction::print_vec(unsigned int nprint, int *Ialist, int *Iblist,
 
       #ifdef FLAG_NONBLOCKS
       int found_inblock=0;
-      for (unsigned int j=0, found_inblock=0; j<H0block_->size; j++) {
+      for (size_t j=0, found_inblock=0; j<H0block_->size; j++) {
          if (Iaidx[i] == H0block_->alpidx[j] &&
              Ibidx[i] == H0block_->betidx[j] &&
              Ialist[i] == H0block_->alplist[j] &&

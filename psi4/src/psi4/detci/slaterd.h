@@ -80,8 +80,8 @@ class SlaterDeterminant {
          if (Occs_[0] != nullptr) free(Occs_[0]);
          if (Occs_[1] != nullptr) free(Occs_[1]);
          }
-      void set(unsigned int nalp, unsigned char *alpoccs, 
-         unsigned int nbet, unsigned char *betoccs);
+      void set(size_t nalp, unsigned char *alpoccs, 
+         size_t nbet, unsigned char *betoccs);
       void print(void);
       void print_config(void);
       SlaterDeterminant& operator=(const SlaterDeterminant& s) ;

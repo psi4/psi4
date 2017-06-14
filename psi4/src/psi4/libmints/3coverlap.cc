@@ -100,7 +100,7 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
                                          const GaussianShell& sB,
                                          const GaussianShell& sC)
 {
-    unsigned int ao123;
+    size_t ao123;
     int amA = sA.am();
     int amB = sB.am();
     int amC = sC.am();

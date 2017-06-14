@@ -42,7 +42,7 @@
 
 namespace psi {
 
-psio_tocentry*PSIO::tocscan(unsigned int unit, const char *key) {
+psio_tocentry*PSIO::tocscan(size_t unit, const char *key) {
   psio_tocentry *this_entry;
 
   if (key == NULL)
@@ -75,11 +75,11 @@ psio_tocentry*PSIO::tocscan(unsigned int unit, const char *key) {
    ** \ingroup PSIO
    */
 
-  psio_tocentry *psio_tocscan(unsigned int unit, const char *key) {
+  psio_tocentry *psio_tocscan(size_t unit, const char *key) {
     return _default_psio_lib_->tocscan(unit, key);
   }
 
-bool PSIO::tocentry_exists(unsigned int unit, const char *key) {
+bool PSIO::tocentry_exists(size_t unit, const char *key) {
   psio_tocentry *this_entry;
 
   if (key == NULL)
@@ -112,7 +112,7 @@ bool PSIO::tocentry_exists(unsigned int unit, const char *key) {
    ** \ingroup PSIO
    */
 
-  bool psio_tocentry_exists(unsigned int unit, const char *key) {
+  bool psio_tocentry_exists(size_t unit, const char *key) {
     return _default_psio_lib_->tocentry_exists(unit, key);
   }
 

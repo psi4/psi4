@@ -194,11 +194,11 @@ class Array2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
   /*
-  void write(psi::PSIO* psio, unsigned int fileno);
-  void write(shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write(psi::PSIO& psio, unsigned int fileno);
-  void read(psi::PSIO* psio, unsigned int fileno);
-  void read(psi::PSIO& psio, unsigned int fileno);
+  void write(psi::PSIO* psio, size_t fileno);
+  void write(shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write(psi::PSIO& psio, size_t fileno);
+  void read(psi::PSIO* psio, size_t fileno);
+  void read(psi::PSIO& psio, size_t fileno);
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   */

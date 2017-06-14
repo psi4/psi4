@@ -133,7 +133,7 @@ DPD::file4_cache_last(void)
     return(NULL);
 }
 
-int DPD::file4_cache_add(dpdfile4 *File, unsigned int priority)
+int DPD::file4_cache_add(dpdfile4 *File, size_t priority)
 {
     int h, dpdnum;
     dpd_file4_cache_entry *this_entry;

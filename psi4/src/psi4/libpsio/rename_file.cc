@@ -46,7 +46,7 @@
 
 namespace psi {
 
-void PSIO::rename_file(unsigned int old_unit, unsigned int new_unit) {
+void PSIO::rename_file(size_t old_unit, size_t new_unit) {
   char*old_name,*new_name;
   /* Get the file name prefix */
   get_filename(old_unit, &old_name);

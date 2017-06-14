@@ -461,7 +461,7 @@ SharedMatrix DFMP2::form_inverse_metric()
         return Jm12;
     }
 }
-void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI nia)
+void DFMP2::apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t nia)
 {
     // Memory constraints
     ULI Jmem = naux * naux;
@@ -525,7 +525,11 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI ni
     }
     psio_->close(file, 1);
 }
+<<<<<<< HEAD
 void DFMP2::apply_fitting_grad(SharedMatrix Jm12, unsigned int file, ULI naux, ULI nia)
+=======
+void DFMP2::apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size_t nia)
+>>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     // Memory constraints
     ULI Jmem = naux * naux;
@@ -587,7 +591,11 @@ void DFMP2::apply_fitting_grad(SharedMatrix Jm12, unsigned int file, ULI naux, U
     psio_->close(file, 1);
 
 }
+<<<<<<< HEAD
 void DFMP2::apply_gamma(unsigned int file, ULI naux, ULI nia)
+=======
+void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia)
+>>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     ULI Jmem = naux * naux;
     ULI doubles = (ULI) (options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
@@ -650,7 +658,11 @@ void DFMP2::apply_gamma(unsigned int file, ULI naux, ULI nia)
 
     psio_->close(file,1);
 }
+<<<<<<< HEAD
 void DFMP2::apply_G_transpose(unsigned int file, ULI naux, ULI nia)
+=======
+void DFMP2::apply_G_transpose(size_t file, size_t naux, size_t nia)
+>>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     // Memory constraints
     ULI doubles = (ULI) (options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));
@@ -716,7 +728,11 @@ void DFMP2::apply_G_transpose(unsigned int file, ULI naux, ULI nia)
     }
     psio_->close(file, 1);
 }
+<<<<<<< HEAD
 void DFMP2::apply_B_transpose(unsigned int file, ULI naux, ULI naocc, ULI navir)
+=======
+void DFMP2::apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t navir)
+>>>>>>> 49ac8fc... Cleanup: unsigned int -> size_t conversion
 {
     // Memory constraints
     ULI doubles = (ULI) (options_.get_double("DFMP2_MEM_FACTOR") * (memory_ / 8L));

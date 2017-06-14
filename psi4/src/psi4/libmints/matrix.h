@@ -270,8 +270,8 @@ public:
      * @param nso Number of orbitals to use to read in.
      * @returns true if loaded, false otherwise.
      */
-    bool load(psi::PSIO* psio, unsigned int fileno, const std::string& tocentry, int nso);
-    bool load(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso);
+    bool load(psi::PSIO* psio, size_t fileno, const std::string& tocentry, int nso);
+    bool load(std::shared_ptr<psi::PSIO>& psio, size_t fileno, const std::string& tocentry, int nso);
     /** @} */
 
     /**
@@ -283,8 +283,8 @@ public:
      * @param fileno File to read from.
      * @param savetype Save information suffixing point group label.
      */
-    void load(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void load(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void load(psi::PSIO* const psio, size_t fileno, SaveType savetype=LowerTriangle);
+    void load(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -322,8 +322,8 @@ public:
      * @param fileno File to write to.
      * @param savetype Save information suffixing point group label.
      */
-    void save(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void save(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void save(psi::PSIO* const psio, size_t fileno, SaveType savetype=LowerTriangle);
+    void save(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**

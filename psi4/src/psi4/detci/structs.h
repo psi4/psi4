@@ -143,7 +143,7 @@ struct stringwr {
    unsigned char *occs;
    int **ij;
    int **oij;
-   unsigned int **ridx;
+   size_t **ridx;
    signed char **sgn;
    int *cnt;
    };

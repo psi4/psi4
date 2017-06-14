@@ -56,7 +56,7 @@
 
 namespace psi { namespace detci {
 
-extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
+extern void print_vec(size_t nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,

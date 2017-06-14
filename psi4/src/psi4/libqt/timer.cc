@@ -94,8 +94,8 @@ namespace psi {
 
 struct timer {
     char key[TIMER_KEYLEN];
-    unsigned int status;
-    unsigned int calls;
+    size_t status;
+    size_t calls;
     double utime;
     double stime;
     double wtime;

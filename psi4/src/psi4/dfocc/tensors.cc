@@ -487,7 +487,7 @@ Tensor2d::Tensor2d()
 
 }//
 
-Tensor2d::Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -505,7 +505,7 @@ Tensor2d::Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int
   read(psio, fileno);
 }
 
-Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -523,7 +523,7 @@ Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string 
   read(psio, fileno);
 }
 
-Tensor2d::Tensor2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -1872,7 +1872,7 @@ double Tensor2d::vector_dot(const SharedTensor2d &rhs)
     return value;
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1882,7 +1882,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1893,7 +1893,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
+void Tensor2d::write(psi::PSIO* const psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1903,7 +1903,7 @@ void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::write(psi::PSIO* const psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1914,17 +1914,17 @@ void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno, psio_address st
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(psi::PSIO& psio, unsigned int fileno)
+void Tensor2d::write(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
 }//
 
-void Tensor2d::write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::write(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end)
 {
     write(&psio, fileno, start, end);
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1934,7 +1934,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, un
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -1971,7 +1971,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool 
 
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -2008,7 +2008,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, un
 
 }//
 
-void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
         int ntri_col = 0.5 * dim1_ * (dim1_ +1);
@@ -2031,7 +2031,7 @@ void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 
 }//
 
-void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
 	int ntri_row, ntri_col;
@@ -2073,7 +2073,7 @@ void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fil
 
 }//
 
-void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
+void Tensor2d::read(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -2083,7 +2083,7 @@ void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::read(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -2094,7 +2094,7 @@ void Tensor2d::read(psi::PSIO* psio, unsigned int fileno, psio_address start, ps
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -2104,7 +2104,7 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -2115,17 +2115,17 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_a
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(psi::PSIO& psio, unsigned int fileno)
+void Tensor2d::read(psi::PSIO& psio, size_t fileno)
 {
     read(&psio, fileno);
 }//
 
-void Tensor2d::read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::read(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end)
 {
     read(&psio, fileno, start, end);
 }//
 
-void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -2163,7 +2163,7 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool t
 
 }//
 
-void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
         int ntri_col = 0.5 * dim1_ * (dim1_ +1);
@@ -2187,7 +2187,7 @@ void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
         temp.reset();
 }//
 
-void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
 	int ntri_row, ntri_col;
@@ -2272,37 +2272,37 @@ bool Tensor2d::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label
     return true;
 }//
 
-void Tensor2d::save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::save(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Tensor2d::save(psi::PSIO* const psio, unsigned int fileno)
+void Tensor2d::save(psi::PSIO* const psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Tensor2d::save(psi::PSIO& psio, unsigned int fileno)
+void Tensor2d::save(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
     release();
 }//
 
-void Tensor2d::load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+void Tensor2d::load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Tensor2d::load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2)
+void Tensor2d::load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Tensor2d::load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+void Tensor2d::load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(&psio, fileno);

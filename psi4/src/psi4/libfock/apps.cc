@@ -550,7 +550,7 @@ void RCIS::print_transitions()
 }
 void RCIS::print_densities()
 {
-    for (unsigned int i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
         int state = options_["CIS_OPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -563,7 +563,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
         int state = options_["CIS_DOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -576,7 +576,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
         int state = options_["CIS_TOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -589,7 +589,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
         int state = options_["CIS_NO_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -603,7 +603,7 @@ void RCIS::print_densities()
         fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
         int state = options_["CIS_AD_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);

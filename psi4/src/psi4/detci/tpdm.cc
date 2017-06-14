@@ -469,7 +469,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
   int Kbcnt, Kacnt, Kb_ex, Ka_ex, Kb_list, Ka_list, Kb_idx, Ka_idx;
   struct stringwr *Jb, *Ja, *Kb, *Ka;
   signed char *Jbsgn, *Jasgn, *Kbsgn, *Kasgn;
-  unsigned int *Jbridx, *Jaridx, *Kbridx, *Karidx;
+  size_t *Jbridx, *Jaridx, *Kbridx, *Karidx;
   double C1, C2, Ib_sgn, Ia_sgn, Kb_sgn, Ka_sgn, tval;
   int i, j, k, l, ij, kl, ijkl, oij, okl, *Jboij, *Jaoij, *Kboij, *Kaoij;
 

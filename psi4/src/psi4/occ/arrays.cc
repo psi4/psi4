@@ -750,7 +750,7 @@ double Array2d::vector_dot(double **rhs)
 }//
 
 /*
-void Array2d::write(psi::PSIO* psio, unsigned int fileno)
+void Array2d::write(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -760,7 +760,7 @@ void Array2d::write(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::write(shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -770,12 +770,12 @@ void Array2d::write(shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(psi::PSIO& psio, unsigned int fileno)
+void Array2d::write(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
 }//
 
-void Array2d::read(psi::PSIO* psio, unsigned int fileno)
+void Array2d::read(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -785,7 +785,7 @@ void Array2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::read(shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -795,7 +795,7 @@ void Array2d::read(shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(psi::PSIO& psio, unsigned int fileno)
+void Array2d::read(psi::PSIO& psio, size_t fileno)
 {
     read(&psio, fileno);
 }//

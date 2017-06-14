@@ -40,8 +40,8 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-unsigned int PSIO::toclen(unsigned int unit) {
-  unsigned int len=0;
+size_t PSIO::toclen(size_t unit) {
+  size_t len=0;
   psio_tocentry *this_entry;
 
   this_entry = psio_unit[unit].toc;
@@ -54,7 +54,7 @@ unsigned int PSIO::toclen(unsigned int unit) {
   return (len);
 }
 
-ULI PSIO::rd_toclen(unsigned int unit) {
+size_t PSIO::rd_toclen(size_t unit) {
   int errcod, stream;
   psio_ud *this_unit;
   ULI len;
@@ -79,7 +79,7 @@ ULI PSIO::rd_toclen(unsigned int unit) {
   return(len);
 }
 
-void PSIO::wt_toclen(unsigned int unit, ULI len) {
+void PSIO::wt_toclen(size_t unit, size_t len) {
   int errcod, stream;
   psio_ud *this_unit;
 
@@ -106,7 +106,7 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   }
 }
 
-size_t psio_rd_toclen(unsigned int unit) {
+size_t psio_rd_toclen(size_t unit) {
   return _default_psio_lib_->rd_toclen(unit);
 }
 

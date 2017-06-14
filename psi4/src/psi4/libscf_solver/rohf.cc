@@ -1317,7 +1317,7 @@ bool ROHF::stability_analysis()
             if(npairs == 0) continue;
 
             // Store the row indices, for convenience
-            unsigned int rank = 0;
+            size_t rank = 0;
             double **U = block_matrix(npairs, npairs);
             for(int ia = 0; ia < npairs; ++ia){
                 int iabs = Aab.params->roworb[h][ia][0];

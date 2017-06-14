@@ -69,7 +69,7 @@ void AIOHandler::synchronize()
       if(thread_->joinable())
         thread_->join();
 }
-size_t AIOHandler::read(unsigned int unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end)
+size_t AIOHandler::read(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -93,7 +93,7 @@ size_t AIOHandler::read(unsigned int unit, const char *key, char *buffer, size_t
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
+unsigned long AIOHandler::write(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -121,7 +121,7 @@ unsigned long AIOHandler::write(unsigned int unit, const char *key, char *buffer
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size)
+unsigned long AIOHandler::read_entry(size_t unit, const char *key, char *buffer, size_t size)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -143,7 +143,7 @@ unsigned long AIOHandler::read_entry(unsigned int unit, const char *key, char *b
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size)
+unsigned long AIOHandler::write_entry(size_t unit, const char *key, char *buffer, size_t size)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -165,8 +165,8 @@ unsigned long AIOHandler::write_entry(unsigned int unit, const char *key, char *
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::read_discont(unsigned int unit, const char *key,
-  double **matrix, ULI row_length, ULI col_length, ULI col_skip,
+unsigned long AIOHandler::read_discont(size_t unit, const char *key,
+  double **matrix, size_t row_length, size_t col_length, size_t col_skip,
   psio_address start)
 {
   std::unique_lock<std::mutex> lock(*locked_);
@@ -192,8 +192,8 @@ unsigned long AIOHandler::read_discont(unsigned int unit, const char *key,
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write_discont(unsigned int unit, const char *key,
-  double **matrix, ULI row_length, ULI col_length, ULI col_skip,
+unsigned long AIOHandler::write_discont(size_t unit, const char *key,
+  double **matrix, size_t row_length, size_t col_length, size_t col_skip,
   psio_address start)
 {
   std::unique_lock<std::mutex> lock(*locked_);
@@ -219,8 +219,8 @@ unsigned long AIOHandler::write_discont(unsigned int unit, const char *key,
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::zero_disk(unsigned int unit, const char *key,
-    ULI rows, ULI cols)
+unsigned long AIOHandler::zero_disk(size_t unit, const char *key,
+    size_t rows, size_t cols)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -243,7 +243,7 @@ unsigned long AIOHandler::zero_disk(unsigned int unit, const char *key,
   return uniqueID_;
 }
 
-unsigned long AIOHandler::write_iwl(unsigned int unit, const char *key,
+unsigned long AIOHandler::write_iwl(size_t unit, const char *key,
               size_t nints, int lastbuf, char *labels, char *values,
               size_t labsize, size_t valsize, size_t *address) {
   std::unique_lock<std::mutex> lock(*locked_);
@@ -284,7 +284,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
       ULI size = size_.front();
@@ -306,7 +306,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
       ULI size = size_.front();
@@ -336,7 +336,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
       ULI size = size_.front();
@@ -354,7 +354,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
       ULI size = size_.front();
@@ -372,7 +372,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       double** matrix = matrix_.front();
       ULI row_length = row_length_.front();
@@ -400,7 +400,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       double** matrix = matrix_.front();
       ULI row_length = row_length_.front();
@@ -428,7 +428,7 @@ void AIOHandler::call_aio()
 
       lock.lock();
 
-      unsigned int unit = unit_.front();
+      size_t unit = unit_.front();
       const char* key = key_.front();
       ULI row_length = row_length_.front();
       ULI col_length = col_length_.front();
@@ -455,7 +455,7 @@ void AIOHandler::call_aio()
 
         lock.lock();
 
-        unsigned int unit = unit_.front();
+        size_t unit = unit_.front();
         const char* key = key_.front();
         char* labels = buffer_.front();
         buffer_.pop();

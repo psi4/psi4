@@ -47,7 +47,7 @@ namespace psi {
 
 
 
-void PSIO::tocprint(unsigned int unit) {
+void PSIO::tocprint(size_t unit) {
   psio_tocentry *this_entry;
 
   bool already_open = open_check(unit);
@@ -81,7 +81,7 @@ void PSIO::tocprint(unsigned int unit) {
    ** \ingroup PSIO
    */
 
-  void psio_tocprint(unsigned int unit) {
+  void psio_tocprint(size_t unit) {
     return _default_psio_lib_->tocprint(unit);
   }
 

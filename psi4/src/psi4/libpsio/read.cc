@@ -44,7 +44,7 @@
 
 namespace psi {
 
-void PSIO::read(unsigned int unit, const char *key, char *buffer, ULI size,
+void PSIO::read(size_t unit, const char *key, char *buffer, size_t size,
                 psio_address start, psio_address *end) {
   psio_ud *this_unit;
   psio_tocentry *this_entry;
@@ -114,7 +114,7 @@ void PSIO::read(unsigned int unit, const char *key, char *buffer, ULI size,
    ** \ingroup PSIO
    */
 
-  int psio_read(unsigned int unit, const char *key, char *buffer, ULI size,
+  int psio_read(size_t unit, const char *key, char *buffer, size_t size,
                 psio_address start, psio_address *end) {
     _default_psio_lib_->read(unit, key, buffer, size, start, end);
     return 1;

@@ -343,7 +343,7 @@ Array2d::Array2d()
 
 }//
 
-Array2d::Array2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2)
+Array2d::Array2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -353,7 +353,7 @@ Array2d::Array2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d
   read(psio, fileno);
 }
 
-Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -363,7 +363,7 @@ Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string na
   read(psio, fileno);
 }
 
-Array2d::Array2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+Array2d::Array2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -856,7 +856,7 @@ double Array2d::vector_dot(double **rhs)
     return value;
 }//
 
-void Array2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -866,7 +866,7 @@ void Array2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(psi::PSIO* const psio, unsigned int fileno)
+void Array2d::write(psi::PSIO* const psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -876,12 +876,12 @@ void Array2d::write(psi::PSIO* const psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(psi::PSIO& psio, unsigned int fileno)
+void Array2d::write(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
 }//
 
-void Array2d::read(psi::PSIO* psio, unsigned int fileno)
+void Array2d::read(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -891,7 +891,7 @@ void Array2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -901,7 +901,7 @@ void Array2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(psi::PSIO& psio, unsigned int fileno)
+void Array2d::read(psi::PSIO& psio, size_t fileno)
 {
     read(&psio, fileno);
 }//
@@ -940,37 +940,37 @@ bool Array2d::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label,
     return true;
 }//
 
-void Array2d::save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::save(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Array2d::save(psi::PSIO* const psio, unsigned int fileno)
+void Array2d::save(psi::PSIO* const psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Array2d::save(psi::PSIO& psio, unsigned int fileno)
+void Array2d::save(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
     release();
 }//
 
-void Array2d::load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+void Array2d::load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Array2d::load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2)
+void Array2d::load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Array2d::load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+void Array2d::load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(&psio, fileno);

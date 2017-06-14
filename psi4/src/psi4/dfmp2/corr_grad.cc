@@ -499,7 +499,7 @@ void DFCorrGrad::build_AB_inv_terms()
         }
     }
 }
-void DFCorrGrad::fitting_helper(SharedMatrix J, unsigned int file, const std::string& label, size_t naux, size_t nij, size_t memory)
+void DFCorrGrad::fitting_helper(SharedMatrix J, size_t file, const std::string& label, size_t naux, size_t nij, size_t memory)
 {
     int max_cols;
     ULI effective_memory = memory - 1L * naux * naux;
@@ -577,7 +577,7 @@ void DFCorrGrad::build_UV_terms()
     }
     psio_->write_entry(unit_c_,"V",(char*) Vp[0], sizeof(double) * naux * naux);
 }
-void DFCorrGrad::UV_helper(SharedMatrix V, double c, unsigned int file, const std::string& label, size_t naux, size_t nij, size_t memory)
+void DFCorrGrad::UV_helper(SharedMatrix V, double c, size_t file, const std::string& label, size_t naux, size_t nij, size_t memory)
 {
     int max_rows;
     ULI effective_memory = memory - 1L * naux * naux;

@@ -1110,7 +1110,7 @@ size_t py_psi_get_memory()
     return Process::environment.get_memory();
 }
 
-void py_psi_set_n_threads(unsigned int nthread, bool quiet)
+void py_psi_set_n_threads(size_t nthread, bool quiet)
 {
 #ifdef _OPENMP
     Process::environment.set_n_threads(nthread);

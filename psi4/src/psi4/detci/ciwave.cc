@@ -727,7 +727,7 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
 
     //         /* loop over excitations E^b_{ij} from |B(J_b)> */
     //         int Ibcnt = Ib->cnt[Iacode];
-    //         unsigned int* Ibridx = Ib->ridx[Iacode];
+    //         size_t* Ibridx = Ib->ridx[Iacode];
     //         signed char* Ibsgn = Ib->sgn[Iacode];
     //         int* Iboij = Ib->oij[Iacode];
     //         for (Ib_ex = 0; Ib_ex < Ibcnt; Ib_ex++) {

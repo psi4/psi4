@@ -43,8 +43,8 @@
 
 namespace psi {
 
-void PSIO::tocwrite(unsigned int unit) {
-  unsigned int i;
+void PSIO::tocwrite(size_t unit) {
+  size_t i;
   psio_ud *this_unit;
   psio_tocentry *this_entry;
   ULI entry_size;
@@ -78,7 +78,7 @@ void PSIO::tocwrite(unsigned int unit) {
    ** \ingroup PSIO
    */
 
-  int psio_tocwrite(unsigned int unit) {
+  int psio_tocwrite(size_t unit) {
     _default_psio_lib_->tocwrite(unit);
     return 1;
   }

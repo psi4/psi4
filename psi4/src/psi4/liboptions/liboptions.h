@@ -90,7 +90,7 @@ class DataType {
     virtual std::string type() const;
 
     virtual bool is_array() const;
-    virtual unsigned int size() const;
+    virtual size_t size() const;
     virtual void add(DataType*);
     virtual void add(std::string, DataType*);
     virtual void add(bool);
@@ -117,7 +117,7 @@ class DataType {
     virtual void reset();
 
     virtual Data& operator[](std::string);
-    virtual Data& operator[](unsigned int);
+    virtual Data& operator[](size_t);
 };
 
 #ifdef __INTEL_COMPILER
@@ -257,7 +257,7 @@ class Data {
     double to_double() const;
 
     bool is_array() const;
-    unsigned int size() const;
+    size_t size() const;
 
     bool has_changed() const;
 
@@ -311,11 +311,11 @@ class ArrayType : public DataType {
     virtual void add(std::string s, std::string c = "");
     virtual void assign(DataType* data);
 
-    virtual Data& operator[](unsigned int i);
+    virtual Data& operator[](size_t i);
     virtual Data& operator[](std::string s);
     virtual bool is_array() const;
 
-    virtual unsigned int size() const;
+    virtual size_t size() const;
 
     virtual std::string to_string() const;
 
@@ -347,7 +347,7 @@ class MapType : public DataType {
     virtual Data& operator[](std::string s);
     virtual bool is_array() const;
 
-    virtual unsigned int size() const;
+    virtual size_t size() const;
 
     virtual std::string to_string() const;
 };

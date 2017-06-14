@@ -150,17 +150,17 @@ void solidharmcontrib(int sign,
 // l is the total angular momentum
 // m is the z component
 // r2 is the number of factors of r^2 that are included
-void solidharm(unsigned int l, int m, unsigned int r2, Matrix& coefmat)
+void solidharm(size_t l, int m, size_t r2, Matrix& coefmat)
 {
-//    printf("in solidharm(unsigned int l, int m, unsigned int r2, RefSCMatrix coefmat\n");
+//    printf("in solidharm(size_t l, int m, size_t r2, RefSCMatrix coefmat\n");
 //    printf("l = %d, m = %d, r2 = %d\n", l, m, r2);
 
     int pureindex = ipure(l,m);
 //    printf("pureindex = %d\n", pureindex);
-    for (unsigned int i=1; i<=r2; i++) pureindex += npure(l+2*i);
+    for (size_t i=1; i<=r2; i++) pureindex += npure(l+2*i);
 //    printf("pureindex = %d\n", pureindex);
 
-    unsigned int absm = abs(m);
+    size_t absm = abs(m);
 
     // this overflows 32bits for l=9
     uint64_t norm2num = factoverfact(l+absm,l);
@@ -174,12 +174,12 @@ void solidharm(unsigned int l, int m, unsigned int r2, Matrix& coefmat)
     if (m != 0) norm2num *= 2;
     reduce(norm2num,norm2den);
 
-    for (unsigned int t=0; t <= (l - absm)/2; t++) {
-        for (unsigned int u=0; u<=t; u++) {
+    for (size_t t=0; t <= (l - absm)/2; t++) {
+        for (size_t u=0; u<=t; u++) {
             int v2m;
             if (m >= 0) v2m = 0;
             else v2m = 1;
-            for (unsigned int v2 = v2m; v2 <= absm; v2+=2) {
+            for (size_t v2 = v2m; v2 <= absm; v2+=2) {
                 int x = 2*t + absm - 2*u - v2;
                 int y = 2*u + v2;
                 int z = l - x - y;

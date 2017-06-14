@@ -119,9 +119,9 @@ protected:
     long int memory_;
 
     /// Debug flag
-    unsigned int debug_;
+    size_t debug_;
     /// Print flag
-    unsigned int print_;
+    size_t print_;
 
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
@@ -523,10 +523,10 @@ public:
     const std::string& name() const { return name_; }
 
     // Set the print flag level
-    void set_print(unsigned int print) { print_ = print; }
+    void set_print(size_t print) { print_ = print; }
 
     // Set the debug flag level
-    void set_debug(unsigned int debug) { debug_ = debug; }
+    void set_debug(size_t debug) { debug_ = debug; }
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;

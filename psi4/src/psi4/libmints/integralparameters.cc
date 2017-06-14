@@ -32,7 +32,7 @@
 
 using namespace psi;
 
-CorrelationFactor::CorrelationFactor(unsigned int nparam)
+CorrelationFactor::CorrelationFactor(size_t nparam)
     : IntegralParameters(nparam)
 {
 }

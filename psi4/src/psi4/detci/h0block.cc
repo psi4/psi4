@@ -58,9 +58,9 @@ namespace psi { namespace detci {
 ** initialize everything but buf_num and buf_member, which depend on the
 ** CIvector structure
 */
-void CIWavefunction::H0block_init(unsigned int size) {
+void CIWavefunction::H0block_init(size_t size) {
 
-   unsigned int size2;
+   size_t size2;
 
    if (size > Parameters_->h0blocksize) H0block_->size = Parameters_->h0blocksize;
    else H0block_->size = size;

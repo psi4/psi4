@@ -158,9 +158,9 @@ struct dpd_file4_cache_entry {
     char label[PSIO_KEYLEN];            /* libpsio TOC keyword */
     double ***matrix;                   /* pointer to irrep blocks */
     int size;                           /* size of entry in double words */
-    unsigned int access;                /* access time */
-    unsigned int usage;                 /* number of accesses */
-    unsigned int priority;              /* priority level */
+    size_t access;                /* access time */
+    size_t usage;                 /* number of accesses */
+    size_t priority;              /* priority level */
     int lock;                           /* auto-deletion allowed? */
     int clean;                          /* has this file4 changed? */
     dpd_file4_cache_entry *next; /* pointer to next cache entry */
@@ -232,10 +232,10 @@ struct dpd_gbl {
     {}
     dpd_file2_cache_entry *file2_cache;
     dpd_file4_cache_entry *file4_cache;
-    unsigned int file4_cache_most_recent;
-    unsigned int file4_cache_least_recent;
-    unsigned int file4_cache_lru_del;
-    unsigned int file4_cache_low_del;
+    size_t file4_cache_most_recent;
+    size_t file4_cache_least_recent;
+    size_t file4_cache_lru_del;
+    size_t file4_cache_low_del;
     int cachetype;
     int *cachefiles;
     int **cachelist;
@@ -440,7 +440,7 @@ public:
 
     dpd_file4_cache_entry* file4_cache_scan(int filenum, int irrep, int pqnum, int rsnum, const char *label, int dpdnum);
     dpd_file4_cache_entry* file4_cache_last(void);
-    int file4_cache_add(dpdfile4 *File, unsigned int priority);
+    int file4_cache_add(dpdfile4 *File, size_t priority);
     int file4_cache_del(dpdfile4 *File);
     dpd_file4_cache_entry* file4_cache_find_lru(void);
     int file4_cache_del_lru(void);

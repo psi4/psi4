@@ -897,9 +897,9 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
 
     // Collect EFP fragments in forward order
-    unsigned int efp_nfrag = 0;
+    size_t efp_nfrag = 0;
     std::vector <std::string> efp_fnames;
-    for (unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
             efp_fnames.push_back(reMatches[1].str());
             efp_nfrag++;
@@ -916,7 +916,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         double *coords = NULL;
         coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
         double *pcoords = coords;
-        unsigned int currentFragment = efp_nfrag - 1;
+        size_t currentFragment = efp_nfrag - 1;
         std::vector <std::string> splitLine;
 
         // Force no reorient
@@ -1003,14 +1003,14 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         throw PSIEXCEPTION("No geometry specified");
 
     // Now go through the rest of the lines looking for fragment markers
-    unsigned int firstAtom = 0;
-    unsigned int atomCount = 0;
-    unsigned int efpCount = 0;
+    size_t firstAtom = 0;
+    size_t atomCount = 0;
+    size_t efpCount = 0;
 
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
-    for (unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if (pubchemerror)
             outfile->Printf("%s\n", lines[lineNumber].c_str());
         if (std::regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
@@ -1097,7 +1097,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     std::string atomSym, atomLabel;
     bool zmatrix = false;
     double zVal, charge;
-    unsigned int currentFragment = 0;
+    size_t currentFragment = 0;
     efpCount = 0;
 
     // Store coordinates, atom by atom
@@ -1107,7 +1107,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
 #ifdef USING_libefp
-            unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
+            size_t efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
 
             double *frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
 
@@ -1117,7 +1117,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 
             double *frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
-            for (unsigned int at = 0; at < efp_natom; at++) {
+            for (size_t at = 0; at < efp_natom; at++) {
                 // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and
                 // mass from psi4 through zVal. May want to reshuffle this.
                 zVal = frag_atom_Z[at];

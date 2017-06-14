@@ -3228,13 +3228,13 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
 }
 
 void Matrix::save(std::shared_ptr <psi::PSIO> &psio,
-                  unsigned int fileno,
+                  size_t fileno,
                   SaveType savetype)
 {
     save(psio.get(), fileno, savetype);
 }
 
-void Matrix::save(psi::PSIO *const psio, unsigned int fileno, SaveType st)
+void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -3284,14 +3284,14 @@ void Matrix::save(psi::PSIO *const psio, unsigned int fileno, SaveType st)
 }
 
 bool Matrix::load(std::shared_ptr <psi::PSIO> &psio,
-                  unsigned int fileno,
+                  size_t fileno,
                   const std::string &tocentry,
                   int nso)
 {
     return load(psio.get(), fileno, tocentry, nso);
 }
 
-bool Matrix::load(psi::PSIO *const psio, unsigned int fileno, const std::string &tocentry, int nso)
+bool Matrix::load(psi::PSIO *const psio, size_t fileno, const std::string &tocentry, int nso)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::load: Matrix is non-totally symmetric.");
@@ -3312,7 +3312,7 @@ bool Matrix::load(psi::PSIO *const psio, unsigned int fileno, const std::string 
     return true;
 }
 
-void Matrix::load(psi::PSIO *const psio, unsigned int fileno, SaveType st)
+void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st)
 {
     // The matrix must be sized correctly first
     // Check to see if the file is open
@@ -3365,7 +3365,7 @@ void Matrix::load(psi::PSIO *const psio, unsigned int fileno, SaveType st)
 }
 
 void Matrix::load(std::shared_ptr <psi::PSIO> &psio,
-                  unsigned int fileno,
+                  size_t fileno,
                   SaveType savetype)
 {
     load(psio.get(), fileno, savetype);

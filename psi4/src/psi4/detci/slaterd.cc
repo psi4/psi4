@@ -52,8 +52,8 @@ extern void common_orbs(int *same_alpha, int *same_beta, int cnt_alpha,
    int *cnt_beta_socc);
 
 
-void SlaterDeterminant::set(unsigned int na, unsigned char *alpoccs,
-      unsigned int nb, unsigned char *betoccs)
+void SlaterDeterminant::set(size_t na, unsigned char *alpoccs,
+      size_t nb, unsigned char *betoccs)
 {
    int i;
 

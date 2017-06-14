@@ -2860,7 +2860,7 @@ void CIvect::transp_block(int iblock, double **tmparr)
 /*
 ** CIvect::get_max_blk_size()
 **
-** Return the maximum RAS subblock size as a long unsigned integer
+** Return the maximum RAS subblock size as a long size_teger
 **
 */
 unsigned long CIvect::get_max_blk_size(void)
@@ -4374,7 +4374,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
      int Ja_list, int Jb_list)
 {
    struct stringwr *Ia, *Ib ;
-   unsigned int Ia_ex, Ib_ex;
+   size_t Ia_ex, Ib_ex;
    int Ia_idx, Ib_idx;
    int Ja_idx, Jb_idx;
    int Ja_sgn, Jb_sgn;
@@ -4382,7 +4382,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
    double tval, Ms, S2, smin_spls = 0.0;
 
    int Iacnt, Jbcnt, *Iaij, *Ibij;
-   unsigned int *Iaridx, *Ibridx;
+   size_t *Iaridx, *Ibridx;
    signed char *Iasgn, *Ibsgn;
 
    /* <S^2> = <S_z> + <S_z>^2 + <S_S+> */

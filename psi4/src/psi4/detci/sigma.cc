@@ -814,8 +814,8 @@ void CIWavefunction::sigma_get_contrib(struct stringwr **alplist, struct stringw
    int sac, sbc, cac, cbc;
    int nas, nbs;
    struct stringwr *Ib, *Ia, *Kb, *Ka;
-   unsigned int Ibidx, Iaidx, Kbidx, Kaidx, Ib_ex, Ia_ex;
-   unsigned int Ibcnt, Iacnt, *Ibridx, *Iaridx;
+   size_t Ibidx, Iaidx, Kbidx, Kaidx, Ib_ex, Ia_ex;
+   size_t Ibcnt, Iacnt, *Ibridx, *Iaridx;
    int Kb_list, Ka_list;
    int found,i,j;
 

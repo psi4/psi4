@@ -89,7 +89,7 @@ double Taylor_Fjt::relative_zero_(1e-6);
   Initialize Taylor_Fm_Eval object (computes incomplete
   gamma function via Taylor interpolation)
  ------------------------------------------------------*/
-Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
+Taylor_Fjt::Taylor_Fjt(size_t mmax, double accuracy) :
     cutoff_(accuracy), interp_order_(TAYLOR_INTERPOLATION_ORDER),
     F_(new double[mmax+1])
 {

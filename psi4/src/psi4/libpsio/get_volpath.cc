@@ -40,7 +40,7 @@
 
 namespace psi {
 
-void PSIO::get_volpath(unsigned int unit, unsigned int volume, char **path) {
+void PSIO::get_volpath(size_t unit, size_t volume, char **path) {
   std::string kval;
   char volumeX[20];
   sprintf(volumeX, "VOLUME%u", volume+1);
@@ -70,7 +70,7 @@ void PSIO::get_volpath(unsigned int unit, unsigned int volume, char **path) {
   abort();
 }
 
-  int psio_get_volpath_default(unsigned int volume, char **path) {
+  int psio_get_volpath_default(size_t volume, char **path) {
     std::string kval;
     char volumeX[20];
     sprintf(volumeX, "VOLUME%u", volume+1);

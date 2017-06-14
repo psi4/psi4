@@ -99,7 +99,7 @@ bool DataType::is_array() const
     return false;
 }
 
-unsigned int DataType::size() const
+size_t DataType::size() const
 {
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
@@ -209,7 +209,7 @@ Data& DataType::operator[](std::string)
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
-Data& DataType::operator[](unsigned int)
+Data& DataType::operator[](size_t)
 {
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
@@ -459,7 +459,7 @@ void StringDataType::assign(std::string s)
     to_upper(s);
     if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (unsigned int i=0; i<choices_.size(); ++i)
+        for (size_t i=0; i<choices_.size(); ++i)
             if (s == choices_[i])
                 wrong_input = false;
         if (wrong_input)
@@ -544,7 +544,7 @@ void IStringDataType::assign(std::string s)
 {
     if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (unsigned int i=0; i<choices_.size(); ++i)
+        for (size_t i=0; i<choices_.size(); ++i)
             if (s == choices_[i])
                 wrong_input = false;
         if (wrong_input)
@@ -592,7 +592,7 @@ bool Data::is_array() const
     return ptr_->is_array();
 }
 
-unsigned int Data::size() const
+size_t Data::size() const
 {
     return ptr_->size();
 }
@@ -757,7 +757,7 @@ void ArrayType::assign(DataType* data)
     array_.push_back(Data(data));
 }
 
-Data& ArrayType::operator[](unsigned int i)
+Data& ArrayType::operator[](size_t i)
 {
     if (i >= array_.size())
         throw IndexException("out of range");
@@ -767,7 +767,7 @@ Data& ArrayType::operator[](unsigned int i)
 
 Data& ArrayType::operator[](std::string s)
 {
-    unsigned int i = static_cast<unsigned int>(std::strtod(s.c_str(), NULL));
+    size_t i = static_cast<size_t>(std::strtod(s.c_str(), NULL));
     if (i >= array_.size())
         throw IndexException("out of range");
     changed();
@@ -779,7 +779,7 @@ bool ArrayType::is_array() const
     return true;
 }
 
-unsigned int ArrayType::size() const
+size_t ArrayType::size() const
 {
     return array_.size();
 }
@@ -787,7 +787,7 @@ unsigned int ArrayType::size() const
 std::string ArrayType::to_string() const
 {
     std::string str = "[ ";
-    for (unsigned int i=0; i<array_.size(); ++i) {
+    for (size_t i=0; i<array_.size(); ++i) {
         str += array_[i].to_string();
         if (i != array_.size() - 1)
             str += ", ";
@@ -861,7 +861,7 @@ bool MapType::is_array() const
     return true;
 }
 
-unsigned int MapType::size() const
+size_t MapType::size() const
 {
     return keyvals_.size();
 }
@@ -1264,7 +1264,7 @@ Data& Options::use(std::string& key)
             std::map<std::string, Data>::iterator it = locals_[current_module_].begin();
             std::map<std::string, Data>::iterator endit = locals_[current_module_].end();
             for (; it != endit; ++it){
-                unsigned int distance = edit_distance(it->first,key);
+                size_t distance = edit_distance(it->first,key);
                 if (distance < 3){
                     choices.push_back(it->first);
                 }
@@ -1275,7 +1275,7 @@ Data& Options::use(std::string& key)
             std::map<std::string, Data>::iterator it = globals_.begin();
             std::map<std::string, Data>::iterator endit = globals_.end();
             for (; it != endit; ++it){
-                unsigned int distance = edit_distance(it->first,key);
+                size_t distance = edit_distance(it->first,key);
                 if (distance < 3){
                     choices.push_back(it->first);
                 }
@@ -1341,7 +1341,7 @@ std::string Options::get_str(std::string key) {
 int* Options::get_int_array(std::string key)
 {
     int *array = new int[use(key).size()];
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array[i] = use(key)[i].to_integer();
     }
     return array;
@@ -1349,7 +1349,7 @@ int* Options::get_int_array(std::string key)
 
 void Options::fill_int_array(std::string key, int* empty_array)
 {
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         empty_array[i] = use(key)[i].to_integer();
     }
 }
@@ -1357,7 +1357,7 @@ void Options::fill_int_array(std::string key, int* empty_array)
 std::vector<int> Options::get_int_vector(std::string key)
 {
     std::vector<int> array;
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array.push_back(use(key)[i].to_integer());
     }
     return array;
@@ -1366,7 +1366,7 @@ std::vector<int> Options::get_int_vector(std::string key)
 double* Options::get_double_array(std::string key)
 {
     double *array = new double[use(key).size()];
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array[i] = use(key)[i].to_double();
     }
     return array;
@@ -1375,7 +1375,7 @@ double* Options::get_double_array(std::string key)
 std::vector<double> Options::get_double_vector(std::string key)
 {
     std::vector<double> array;
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array.push_back(use(key)[i].to_double());
     }
     return array;

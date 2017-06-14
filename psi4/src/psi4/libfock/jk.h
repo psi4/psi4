@@ -782,7 +782,7 @@ protected:
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_;
     /// File number for (Q|mn) tensor
-    unsigned int unit_;
+    size_t unit_;
     /// Core or disk?
     bool is_core_;
     /// Maximum number of rows to handle at a time
@@ -887,7 +887,7 @@ public:
      * Which file number should the (Q|mn) integrals go in
      * @param unit Unit number
      */
-    void set_unit(unsigned int unit) { unit_ = unit; }
+    void set_unit(size_t unit) { unit_ = unit; }
     /**
      * What action to take for caching three-index integrals
      * @param val One of NONE, LOAD, or SAVE

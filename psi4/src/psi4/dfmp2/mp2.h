@@ -95,17 +95,17 @@ protected:
     // Compute singles correction [for ROHF-MBPT(2) or dual-basis]
     virtual void form_singles();
     // Apply the fitting and transposition to a given disk entry Aia tensor
-    virtual void apply_fitting(SharedMatrix Jm12, unsigned int file, size_t naux, size_t nia);
+    virtual void apply_fitting(SharedMatrix Jm12, size_t file, size_t naux, size_t nia);
     // Apply the fitting again to a given disk entry Qia tensor
-    virtual void apply_fitting_grad(SharedMatrix Jm12, unsigned int file, size_t naux, size_t nia);
+    virtual void apply_fitting_grad(SharedMatrix Jm12, size_t file, size_t naux, size_t nia);
     // Form the inverse square root of the fitting metric, or read it off disk
     virtual SharedMatrix form_inverse_metric();
     // Form an abstract gamma
-    virtual void apply_gamma(unsigned int file, size_t naux, size_t nia);
+    virtual void apply_gamma(size_t file, size_t naux, size_t nia);
     // Form a transposed copy of G_ia^P
-    virtual void apply_G_transpose(unsigned int file, size_t naux, size_t nia);
+    virtual void apply_G_transpose(size_t file, size_t naux, size_t nia);
     // Form a transposed copy of iaQ
-    virtual void apply_B_transpose(unsigned int file, size_t naux, size_t naocc, size_t navir);
+    virtual void apply_B_transpose(size_t file, size_t naux, size_t naocc, size_t navir);
 
     // Debugging-routine: prints block sizing
     void block_status(std::vector<int> inds, const char* file, int line);

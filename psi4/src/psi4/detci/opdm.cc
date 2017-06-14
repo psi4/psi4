@@ -521,7 +521,7 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
   int Ia_idx, Ib_idx, Ja_idx, Jb_idx, Ja_ex, Jb_ex, Jbcnt, Jacnt;
   struct stringwr *Jb, *Ja;
   signed char *Jbsgn, *Jasgn;
-  unsigned int *Jbridx, *Jaridx;
+  size_t *Jbridx, *Jaridx;
   double C1, C2, Ib_sgn, Ia_sgn;
   int i, j, oij, *Jboij, *Jaoij;
 

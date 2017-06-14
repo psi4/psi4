@@ -90,9 +90,9 @@ std::vector<std::string> split(const std::string &input, const std::string &rege
  * @brief Compute the Levenshtein distance between two strings
  * @param s1 string to compute against
  * @param s2 string to compute against
- * @return the distance as an unsigned integer
+ * @return the distance as an size_teger
  */
-unsigned int edit_distance(const std::string &s1, const std::string &s2);
+size_t edit_distance(const std::string &s1, const std::string &s2);
 
 class Timer {
    public:

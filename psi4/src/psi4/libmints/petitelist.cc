@@ -830,7 +830,7 @@ PetiteList::compute_aotoso_info()
     int nunique = mol->nunique();
     int maxam = basis_->max_am();
     int **atom_map = compute_atom_map(mol);
-    unsigned int functions_per_irrep[8];
+    size_t functions_per_irrep[8];
     SO_block *SOs = new SO_block[nirrep_];
     for (int h = 0; h < nirrep_; ++h) {
         SOs[h].set_length(nfunction(h));
