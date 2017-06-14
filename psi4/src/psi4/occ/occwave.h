@@ -225,10 +225,10 @@ protected:
      int itr_ep;
      int ep_maxiter;
 
-     ULI memory;
-     ULI memory_mb_;
-     ULI cost_iabc_;            // Mem required for the <ia|bc> integrals
-     ULI cost_abcd_;            // Mem required for the <ab|cd> integrals
+     size_t memory;
+     size_t memory_mb_;
+     size_t cost_iabc_;            // Mem required for the <ia|bc> integrals
+     size_t cost_abcd_;            // Mem required for the <ab|cd> integrals
 
      // Common
      double Enuc;
@@ -450,8 +450,8 @@ protected:
      int *vv_pairpiAB;
      int *vv_pairpiBB;
 
-     ULI *cost_ov_;
-     ULI *cost_vv_;
+     size_t *cost_ov_;
+     size_t *cost_vv_;
 
      double *evalsA;
      double *evalsB;

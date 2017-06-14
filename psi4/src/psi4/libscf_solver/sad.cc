@@ -106,7 +106,7 @@ void SADGuess::form_D()
     // Transform Neutral D from AO to SO basis
     Da_ = SharedMatrix(new Matrix("Da SAD",AO2SO_->colspi(),AO2SO_->colspi()));
 
-    double* temp = new double[AO2SO_->rowspi()[0] * (ULI) AO2SO_->max_ncol()];
+    double* temp = new double[AO2SO_->rowspi()[0] * (size_t) AO2SO_->max_ncol()];
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nao = AO2SO_->rowspi()[h];
         int nso = AO2SO_->colspi()[h];
@@ -501,7 +501,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         throw PSIEXCEPTION(msg.str());
     }
 
-    jk->set_memory((ULI)(0.5 * (Process::environment.get_memory() / 8L)));
+    jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1)
         jk->print_header();

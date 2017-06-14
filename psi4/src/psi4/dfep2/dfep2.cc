@@ -226,8 +226,8 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
     psio->open(unit_, PSIO_OPEN_OLD);
 
-    aio->zero_disk(unit_, "EP2 I_ovvE Integrals", (ULI)(nocc * nvir), (ULI)(nvir * nE));
-    aio->zero_disk(unit_, "EP2 I_vooE Integrals", (ULI)(nocc * nvir), (ULI)(nocc * nE));
+    aio->zero_disk(unit_, "EP2 I_ovvE Integrals", (size_t)(nocc * nvir), (size_t)(nvir * nE));
+    aio->zero_disk(unit_, "EP2 I_vooE Integrals", (size_t)(nocc * nvir), (size_t)(nocc * nE));
     aio->synchronize();
 
     // How much memory are we working with?

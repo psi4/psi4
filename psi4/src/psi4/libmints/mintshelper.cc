@@ -1003,13 +1003,13 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
     SharedMatrix I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
     double **I2p = I2->pointer();
 
-    C_DGEMM('T', 'N', n1, nso * (ULI) nso * nso, nso, 1.0, C1p[0], n1, Isop[0], nso * (ULI) nso * nso, 0.0, I2p[0], nso * (ULI) nso * nso);
+    C_DGEMM('T', 'N', n1, nso * (size_t) nso * nso, nso, 1.0, C1p[0], n1, Isop[0], nso * (size_t) nso * nso, 0.0, I2p[0], nso * (size_t) nso * nso);
 
     Iso.reset();
     SharedMatrix I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
     double **I3p = I3->pointer();
 
-    C_DGEMM('N', 'N', n1 * (ULI) nso * nso, n3, nso, 1.0, I2p[0], nso, C3p[0], n3, 0.0, I3p[0], n3);
+    C_DGEMM('N', 'N', n1 * (size_t) nso * nso, n3, nso, 1.0, I2p[0], nso, C3p[0], n3, 0.0, I3p[0], n3);
 
     I2.reset();
     SharedMatrix I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
@@ -1029,13 +1029,13 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, Share
     SharedMatrix I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
     double **I5p = I5->pointer();
 
-    C_DGEMM('T', 'N', n2, n1 * (ULI) n3 * nso, nso, 1.0, C2p[0], n2, I4p[0], n1 * (ULI) n3 * nso, 0.0, I5p[0], n1 * (ULI) n3 * nso);
+    C_DGEMM('T', 'N', n2, n1 * (size_t) n3 * nso, nso, 1.0, C2p[0], n2, I4p[0], n1 * (size_t) n3 * nso, 0.0, I5p[0], n1 * (size_t) n3 * nso);
 
     I4.reset();
     SharedMatrix I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
     double **I6p = I6->pointer();
 
-    C_DGEMM('N', 'N', n2 * (ULI) n1 * n3, n4, nso, 1.0, I5p[0], nso, C4p[0], n4, 0.0, I6p[0], n4);
+    C_DGEMM('N', 'N', n2 * (size_t) n1 * n3, n4, nso, 1.0, I5p[0], nso, C4p[0], n4, 0.0, I6p[0], n4);
 
     I5.reset();
     SharedMatrix Imo(new Matrix("MO ERI Tensor", n1 * n2, n3 * n4));
@@ -1070,13 +1070,13 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
     SharedMatrix I2(new Matrix("MO ERI Tensor", nocc * nso, nso * nso));
     double **I2p = I2->pointer();
 
-    C_DGEMM('T', 'N', nocc, nso * (ULI) nso * nso, nso, 1.0, Cop[0], nocc, Isop[0], nso * (ULI) nso * nso, 0.0, I2p[0], nso * (ULI) nso * nso);
+    C_DGEMM('T', 'N', nocc, nso * (size_t) nso * nso, nso, 1.0, Cop[0], nocc, Isop[0], nso * (size_t) nso * nso, 0.0, I2p[0], nso * (size_t) nso * nso);
 
     Iso.reset();
     SharedMatrix I3(new Matrix("MO ERI Tensor", nocc * nso, nso * nocc));
     double **I3p = I3->pointer();
 
-    C_DGEMM('N', 'N', nocc * (ULI) nso * nso, nocc, nso, 1.0, I2p[0], nso, Cop[0], nocc, 0.0, I3p[0], nocc);
+    C_DGEMM('N', 'N', nocc * (size_t) nso * nso, nocc, nso, 1.0, I2p[0], nso, Cop[0], nocc, 0.0, I3p[0], nocc);
 
     I2.reset();
     SharedMatrix I4(new Matrix("MO ERI Tensor", nso * nocc, nocc * nso));
@@ -1096,13 +1096,13 @@ SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, Share
     SharedMatrix I5(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nso));
     double **I5p = I5->pointer();
 
-    C_DGEMM('T', 'N', nvir, nocc * (ULI) nocc * nso, nso, 1.0, Cvp[0], nvir, I4p[0], nocc * (ULI) nocc * nso, 0.0, I5p[0], nocc * (ULI) nocc * nso);
+    C_DGEMM('T', 'N', nvir, nocc * (size_t) nocc * nso, nso, 1.0, Cvp[0], nvir, I4p[0], nocc * (size_t) nocc * nso, 0.0, I5p[0], nocc * (size_t) nocc * nso);
 
     I4.reset();
     SharedMatrix I6(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nvir));
     double **I6p = I6->pointer();
 
-    C_DGEMM('N', 'N', nvir * (ULI) nocc * nocc, nvir, nso, 1.0, I5p[0], nso, Cvp[0], nvir, 0.0, I6p[0], nvir);
+    C_DGEMM('N', 'N', nvir * (size_t) nocc * nocc, nvir, nso, 1.0, I5p[0], nso, Cvp[0], nvir, 0.0, I6p[0], nvir);
 
     I5.reset();
     SharedMatrix Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
@@ -1542,13 +1542,13 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     SharedMatrix I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
     double **I2p = I2->pointer();
 
-    C_DGEMM('T', 'N', n1, nso * (ULI) nso * nso, nso, 1.0, C1p[0], n1, Isop[0], nso * (ULI) nso * nso, 0.0, I2p[0], nso * (ULI) nso * nso);
+    C_DGEMM('T', 'N', n1, nso * (size_t) nso * nso, nso, 1.0, C1p[0], n1, Isop[0], nso * (size_t) nso * nso, 0.0, I2p[0], nso * (size_t) nso * nso);
 
     Iso.reset();
     SharedMatrix I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
     double **I3p = I3->pointer();
 
-    C_DGEMM('N', 'N', n1 * (ULI) nso * nso, n3, nso, 1.0, I2p[0], nso, C3p[0], n3, 0.0, I3p[0], n3);
+    C_DGEMM('N', 'N', n1 * (size_t) nso * nso, n3, nso, 1.0, I2p[0], nso, C3p[0], n3, 0.0, I3p[0], n3);
 
     I2.reset();
     SharedMatrix I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
@@ -1568,13 +1568,13 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     SharedMatrix I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
     double **I5p = I5->pointer();
 
-    C_DGEMM('T', 'N', n2, n1 * (ULI) n3 * nso, nso, 1.0, C2p[0], n2, I4p[0], n1 * (ULI) n3 * nso, 0.0, I5p[0], n1 * (ULI) n3 * nso);
+    C_DGEMM('T', 'N', n2, n1 * (size_t) n3 * nso, nso, 1.0, C2p[0], n2, I4p[0], n1 * (size_t) n3 * nso, 0.0, I5p[0], n1 * (size_t) n3 * nso);
 
     I4.reset();
     SharedMatrix I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
     double **I6p = I6->pointer();
 
-    C_DGEMM('N', 'N', n2 * (ULI) n1 * n3, n4, nso, 1.0, I5p[0], nso, C4p[0], n4, 0.0, I6p[0], n4);
+    C_DGEMM('N', 'N', n2 * (size_t) n1 * n3, n4, nso, 1.0, I5p[0], nso, C4p[0], n4, 0.0, I6p[0], n4);
 
     I5.reset();
     SharedMatrix Imo(new Matrix("MO ERI Tensor", shape_left, shape_right));

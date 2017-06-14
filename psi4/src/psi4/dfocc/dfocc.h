@@ -678,7 +678,7 @@ protected:
      int orbs_already_sc;       // 0 false, 1 true
      int nincore_amp;
 
-     ULI memory;
+     size_t memory;
      double memory_mb;
      double cost_ampAA;          // Mem required for the amplitudes
      double cost_ampBB;          // Mem required for the amplitudes

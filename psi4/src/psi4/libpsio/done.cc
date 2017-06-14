@@ -49,7 +49,7 @@ namespace psi {
 PSIO::~PSIO() {
 #ifdef PSIO_STATS
   int i;
-  ULI total_read=0, total_write=0;
+  size_t total_read=0, total_write=0;
   FILE *io_out;
   time_t my_time;
   my_time = time(NULL);

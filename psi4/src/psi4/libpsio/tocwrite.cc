@@ -47,7 +47,7 @@ void PSIO::tocwrite(size_t unit) {
   size_t i;
   psio_ud *this_unit;
   psio_tocentry *this_entry;
-  ULI entry_size;
+  size_t entry_size;
   psio_address address;
 
   this_unit = &(psio_unit[unit]);
@@ -59,7 +59,7 @@ void PSIO::tocwrite(size_t unit) {
   wt_toclen(unit, this_unit->toclen);
 
   this_entry = this_unit->toc;
-  address = psio_get_address(PSIO_ZERO, sizeof(ULI));
+  address = psio_get_address(PSIO_ZERO, sizeof(size_t));
   for (i=0; i < this_unit->toclen; i++) {
     rw(unit, (char *) this_entry, address, entry_size, 1);
     this_entry = this_entry->next;

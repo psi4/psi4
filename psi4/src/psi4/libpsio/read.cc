@@ -49,7 +49,7 @@ void PSIO::read(size_t unit, const char *key, char *buffer, size_t size,
   psio_ud *this_unit;
   psio_tocentry *this_entry;
   psio_address start_toc, start_data, end_data; /* global addresses */
-  ULI tocentry_size;
+  size_t tocentry_size;
 
   this_unit = &(psio_unit[unit]);
 

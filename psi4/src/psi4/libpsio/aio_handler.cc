@@ -287,7 +287,7 @@ void AIOHandler::call_aio()
       size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
-      ULI size = size_.front();
+      size_t size = size_.front();
       psio_address start = start_.front();
       psio_address* end = end_.front();
 
@@ -309,7 +309,7 @@ void AIOHandler::call_aio()
       size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
-      ULI size = size_.front();
+      size_t size = size_.front();
       psio_address start = start_.front();
       psio_address* end = end_.front();
 
@@ -339,7 +339,7 @@ void AIOHandler::call_aio()
       size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
-      ULI size = size_.front();
+      size_t size = size_.front();
 
       unit_.pop();
       key_.pop();
@@ -357,7 +357,7 @@ void AIOHandler::call_aio()
       size_t unit = unit_.front();
       const char* key = key_.front();
       char* buffer = buffer_.front();
-      ULI size = size_.front();
+      size_t size = size_.front();
 
       unit_.pop();
       key_.pop();
@@ -375,9 +375,9 @@ void AIOHandler::call_aio()
       size_t unit = unit_.front();
       const char* key = key_.front();
       double** matrix = matrix_.front();
-      ULI row_length = row_length_.front();
-      ULI col_length = col_length_.front();
-      ULI col_skip = col_skip_.front();
+      size_t row_length = row_length_.front();
+      size_t col_length = col_length_.front();
+      size_t col_skip = col_skip_.front();
       psio_address start = start_.front();
 
       unit_.pop();
@@ -403,9 +403,9 @@ void AIOHandler::call_aio()
       size_t unit = unit_.front();
       const char* key = key_.front();
       double** matrix = matrix_.front();
-      ULI row_length = row_length_.front();
-      ULI col_length = col_length_.front();
-      ULI col_skip = col_skip_.front();
+      size_t row_length = row_length_.front();
+      size_t col_length = col_length_.front();
+      size_t col_skip = col_skip_.front();
       psio_address start = start_.front();
 
       unit_.pop();
@@ -430,8 +430,8 @@ void AIOHandler::call_aio()
 
       size_t unit = unit_.front();
       const char* key = key_.front();
-      ULI row_length = row_length_.front();
-      ULI col_length = col_length_.front();
+      size_t row_length = row_length_.front();
+      size_t col_length = col_length_.front();
 
       unit_.pop();
       key_.pop();
@@ -460,9 +460,9 @@ void AIOHandler::call_aio()
         char* labels = buffer_.front();
         buffer_.pop();
         char* values = buffer_.front();
-        ULI lab_size = size_.front();
+        size_t lab_size = size_.front();
         size_.pop();
-        ULI val_size = size_.front();
+        size_t val_size = size_.front();
         int nints = nints_.front();
         int lastbuf = lastbuf_.front();
         size_t* address = address_.front();

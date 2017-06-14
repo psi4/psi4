@@ -43,16 +43,16 @@ namespace psi {
    **
    ** \ingroup PSIO
    */
-  int psio_volseek(psio_vol *vol, ULI page, ULI offset, ULI numvols) {
+  int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols) {
     int stream, errcod;
-    ULI bignum, total_offset;
+    size_t bignum, total_offset;
 
     bignum = PSIO_BIGNUM*numvols;
 
     stream = vol->stream;
 
     /* Set file pointer to beginning of file */
-        errcod = lseek(stream, (ULI) 0, SEEK_SET);
+        errcod = lseek(stream, (size_t) 0, SEEK_SET);
     if (errcod == -1)
       return (errcod);
 
@@ -65,7 +65,7 @@ namespace psi {
     }
 
     /* Now compute the final offset including the page-relative term */
-    total_offset = (ULI) page/numvols; /* This should truncate */
+    total_offset = (size_t) page/numvols; /* This should truncate */
     total_offset *= PSIO_PAGELEN;
     total_offset += offset; /* Add the page-relative term */
         errcod = lseek(stream, total_offset, SEEK_CUR);

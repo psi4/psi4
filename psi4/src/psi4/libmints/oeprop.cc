@@ -2249,7 +2249,7 @@ void OEProp::compute_no_occupations()
 //    int nx = n_[0] + 1;
 //    int ny = n_[1] + 1;
 //    int nz = n_[2] + 1;
-//    ULI ngrid = nx*(ULI)ny*nz;
+//    size_t ngrid = nx*(size_t)ny*nz;
 //    int nblock = ngrid / block_size_;
 //    if (ngrid % block_size_ != 0)
 //        nblock++;
@@ -2271,10 +2271,10 @@ void OEProp::compute_no_occupations()
 //    for (int block = 0; block < nblock; block++) {
 //        // Indexing
 //        int size = block_size_;
-//        if (block*(ULI)block_size_ >= ngrid)
-//            size = ngrid - block*(ULI)block_size_;
+//        if (block*(size_t)block_size_ >= ngrid)
+//            size = ngrid - block*(size_t)block_size_;
 //
-//        ULI offset = block*(ULI)block_size_;
+//        size_t offset = block*(size_t)block_size_;
 //
 //        // Line up gridblock pointers
 //        // Last xp is a dirty hack b/c w is not needed for points
@@ -2401,11 +2401,11 @@ void OEProp::compute_no_occupations()
 //    }
 //}
 //#if 0
-//void GridProp::compute_mos(std::shared_ptr<GridBlock> g, ULI offset)
+//void GridProp::compute_mos(std::shared_ptr<GridBlock> g, size_t offset)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}
-//void GridProp::compute_basis_funs(std::shared_ptr<GridBlock> g, ULI offset)
+//void GridProp::compute_basis_funs(std::shared_ptr<GridBlock> g, size_t offset)
 //{
 //    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 //}

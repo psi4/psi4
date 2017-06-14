@@ -43,7 +43,7 @@
  NOTE: Refactored by Rob Parrish on 1/24/2010
  This file now contains all relevant BLAS1
  routines, with provisions made for >2^31
- elements (ULI sizes).
+ elements (size_t sizes).
 
  All BLAS2 and BLAS3 routines are now wrapped
  and are in blas_inftc23.cc

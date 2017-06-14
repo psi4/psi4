@@ -1746,7 +1746,7 @@ void DFOCC::cd_aob_cints()
     // Memory constrasize_t on rows
     size_t max_size_t = std::numeric_limits<int>::max();
 
-    ULI max_rows_ULI = ((memory - n) / (2L * n));
+    size_t max_rows_ULI = ((memory - n) / (2L * n));
     size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
 
     // Get the diagonal (Q|Q)^(0)
@@ -1937,7 +1937,7 @@ void DFOCC::cd_abcd_cints()
     // Memory constrasize_t on rows
     size_t max_size_t = std::numeric_limits<int>::max();
 
-    ULI max_rows_ULI = ((memory - n) / (2L * n));
+    size_t max_rows_ULI = ((memory - n) / (2L * n));
     size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
 
     // Get the diagonal (Q|Q)^(0)
@@ -2144,7 +2144,7 @@ void DFOCC::cd_abcd_xints()
     // Memory constrasize_t on rows
     size_t max_size_t = std::numeric_limits<int>::max();
 
-    ULI max_rows_ULI = ((memory - n) / (2L * n));
+    size_t max_rows_ULI = ((memory - n) / (2L * n));
     size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
 
     // Get the diagonal (Q|Q)^(0)

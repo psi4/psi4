@@ -54,7 +54,7 @@
 #include <omp.h>
 #endif
 
-using ULI = unsigned long int;
+using size_t = unsigned long int;
 
 namespace psi {
 

@@ -66,7 +66,7 @@ void Cholesky::choleskify()
     // Memory constrasize_t on rows
     size_t max_size_t = std::numeric_limits<int>::max();
 
-    ULI max_rows_ULI = ((memory_ - n) / (2L * n));
+    size_t max_rows_ULI = ((memory_ - n) / (2L * n));
     size_t max_rows = (max_rows_ULI > max_size_t ? max_size_t : max_rows_ULI);
 
     // Get the diagonal (Q|Q)^(0)
@@ -277,7 +277,7 @@ void CholeskyMP2::compute_diagonal(double* target)
 
     for (size_t i = 0, ia = 0; i < naocc; i++) {
         for (size_t a = 0; a < navir; a++, ia++) {
-            target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (ULI) navir, &Qp[0][ia], naocc * (ULI) navir) /
+            target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (size_t) navir, &Qp[0][ia], naocc * (size_t) navir) /
                 (symmetric_ ? sqrt(2.0 * (evp[a] - eop[i])) : (2.0 * (evp[a] - eop[i])));
         }
     }
@@ -297,7 +297,7 @@ void CholeskyMP2::compute_row(int row, double* target)
 
     for (size_t i = 0, ia = 0; i < naocc; i++) {
         for (size_t a = 0; a < navir; a++, ia++) {
-            target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (ULI) navir, &Qp[0][row], naocc * (ULI) navir) /
+            target[ia] = C_DDOT(nQ,&Qp[0][ia], naocc * (size_t) navir, &Qp[0][row], naocc * (size_t) navir) /
                 (symmetric_ ? sqrt(evp[a] + evp[b] - eop[i] - eop[j]) : (evp[a] + evp[b] - eop[i] - eop[j]));
         }
     }

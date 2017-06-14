@@ -75,7 +75,7 @@ void PSIO::tocread(size_t unit) {
 
   /* Read the TOC entry-by-entry */
   this_entry = this_unit->toc;
-  address = psio_get_address(PSIO_ZERO, sizeof(ULI)); /* start one ULI after the top of the file */
+  address = psio_get_address(PSIO_ZERO, sizeof(size_t)); /* start one size_t after the top of the file */
   for (i=0; i < this_unit->toclen; i++) {
     rw(unit, (char *) this_entry, address, entry_size, 0);
     address = this_entry->eadd;

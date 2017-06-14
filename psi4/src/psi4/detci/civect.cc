@@ -1842,11 +1842,11 @@ void CIvect::init_io_files(bool open_old) {
     int i;
 
     for (i = 0; i < nunits_; i++) {
-        if (!psio_open_check((ULI)units_[i])) {
+        if (!psio_open_check((size_t)units_[i])) {
             if (open_old) {
-                psio_open((ULI)units_[i], PSIO_OPEN_OLD);
+                psio_open((size_t)units_[i], PSIO_OPEN_OLD);
             } else {
-                psio_open((ULI)units_[i], PSIO_OPEN_NEW);
+                psio_open((size_t)units_[i], PSIO_OPEN_NEW);
             }
         }
     }
@@ -1917,7 +1917,7 @@ int CIvect::read(int ivect, int ibuf)
    sprintf(key, "buffer_ %d", buf);
    unit = file_number_[buf];
 
-   psio_read_entry((ULI) unit, key, (char *) buffer_, size);
+   psio_read_entry((size_t) unit, key, (char *) buffer_, size);
 
    cur_vect_ = ivect;
    cur_buf_ = ibuf;
@@ -1969,7 +1969,7 @@ int CIvect::write(int ivect, int ibuf)
    sprintf(key, "buffer_ %d", buf);
    unit = file_number_[buf];
 
-   psio_write_entry((ULI) unit, key, (char *) buffer_, size);
+   psio_write_entry((size_t) unit, key, (char *) buffer_, size);
 
    if (ivect >= nvect_) nvect_ = ivect + 1;
    cur_vect_ = ivect;
@@ -3517,7 +3517,7 @@ void CIvect::write_new_first_buf(void)
   int unit;
 
   unit = first_unit_;
-  psio_write_entry((ULI) unit, "New First Buffer", (char *) &new_first_buf_,
+  psio_write_entry((size_t) unit, "New First Buffer", (char *) &new_first_buf_,
     sizeof(int));
 }
 
@@ -3535,8 +3535,8 @@ int CIvect::read_new_first_buf(void)
   int nfb;
 
   unit = first_unit_;
-  if (psio_tocscan((ULI) unit, "New First Buffer") == NULL) return(-1);
-  psio_read_entry((ULI) unit, "New First Buffer", (char *) &nfb,
+  if (psio_tocscan((size_t) unit, "New First Buffer") == NULL) return(-1);
+  psio_read_entry((size_t) unit, "New First Buffer", (char *) &nfb,
     sizeof(int));
   return(nfb);
 
@@ -3565,8 +3565,8 @@ int CIvect::read_num_vecs(void)
   int nv;
 
   unit = first_unit_;
-  if (psio_tocscan((ULI) unit, "Num Vectors") == NULL) return(-1);
-  psio_read_entry((ULI) unit, "Num Vectors", (char *) &nv, sizeof(int));
+  if (psio_tocscan((size_t) unit, "Num Vectors") == NULL) return(-1);
+  psio_read_entry((size_t) unit, "Num Vectors", (char *) &nv, sizeof(int));
   return(nv);
 }
 
@@ -3580,7 +3580,7 @@ void CIvect::write_num_vecs(int nv)
   int unit;
 
   unit = first_unit_;
-  psio_write_entry((ULI) unit, "Num Vectors", (char *) &nv, sizeof(int));
+  psio_write_entry((size_t) unit, "Num Vectors", (char *) &nv, sizeof(int));
   write_toc();
   //civect_psio_debug();
 }

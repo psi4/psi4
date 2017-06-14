@@ -63,9 +63,9 @@ void CCEnergyWavefunction::diis_UHF(int iter)
   int nvector=8;  /* Number of error vectors to keep */
   int h, nirreps;
   int row, col;
-  ULI p, q, diis_cycle;
-  ULI vector_length=0;
-  ULI word;
+  size_t p, q, diis_cycle;
+  size_t vector_length=0;
+  size_t word;
   int errcod, *ipiv;
   dpdfile2 T1, T1a, T1b;
   dpdbuf4 T2, T2a, T2b, T2c;

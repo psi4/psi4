@@ -121,7 +121,7 @@ timer_off("CCD Disp Prep      ");
   double **BSAR = block_matrix(occB*nvirB_,occA*nvirA_); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,"ARBS Integrals",(char *) &(ARBS[0][0]),
-    occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+    occA*nvirA_*occB*nvirB_*(size_t) sizeof(double));
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<nvirA_; r1++,a1r1++) {
@@ -131,10 +131,10 @@ timer_off("CCD Disp Prep      ");
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,"BSAR Integrals",(char *) &(BSAR[0][0]),
-    occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+    occA*nvirA_*occB*nvirB_*(size_t) sizeof(double));
 
   psio_->read_entry(PSIF_SAPT_CCD,"T ARBS Amplitudes",(char *) &(ARBS[0][0]),
-    occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+    occA*nvirA_*occB*nvirB_*(size_t) sizeof(double));
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<nvirA_; r1++,a1r1++) {
@@ -144,7 +144,7 @@ timer_off("CCD Disp Prep      ");
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,"T BSAR Amplitudes",(char *) &(BSAR[0][0]),
-    occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+    occA*nvirA_*occB*nvirB_*(size_t) sizeof(double));
 
   free_block(ARBS); //!
   free_block(BSAR); //!
@@ -236,7 +236,7 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
     occB*virB);
 
   psio_->write_entry(PSIF_SAPT_CCD,ARBS,(char *) &(vARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   free_block(B_p_AR);
   free_block(B_p_BS);
@@ -248,7 +248,7 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   double **thARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(thARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occB*virB,occA*virA,1.0,thARAR[0],occA*virA,
     vARBS[0],occB*virB,1.0,tARBS[0],occB*virB);
@@ -256,7 +256,7 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   double **thBSBS = block_matrix(occB*virB,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ThetaBSBS,(char *) &(thBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occB*virB,occB*virB,1.0,vARBS[0],occB*virB,
     thBSBS[0],occB*virB,1.0,tARBS[0],occB*virB);
@@ -273,7 +273,7 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   free_block(vARBS); //!
 
   psio_->write_entry(PSIF_SAPT_CCD,CA_RBS,(char *) &(tARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<virA; r1++,a1r1++) {
@@ -285,7 +285,7 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   free_block(tARBS); //!
 
@@ -293,13 +293,13 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   double **gARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARAR,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,1.0,thARAR[0],occA*virA,
     gARAR[0],occA*virA,0.0,xARAR[0],occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,XARAR,(char *) &(xARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(xARAR);  //!
   free_block(thARAR); //!
@@ -308,13 +308,13 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   double **gBSBS = block_matrix(occB*virB,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GBSBS,(char *) &(gBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occB*virB,occB*virB,occB*virB,1.0,thBSBS[0],occB*virB,
     gBSBS[0],occB*virB,0.0,xBSBS[0],occB*virB);
 
   psio_->write_entry(PSIF_SAPT_CCD,XBSBS,(char *) &(xBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   free_block(xBSBS);  //!
   free_block(thBSBS); //!
@@ -323,13 +323,13 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,1.0,tARAR[0],occA*virA,
     gARAR[0],occA*virA,0.0,yARAR[0],occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,YARAR,(char *) &(yARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(yARAR); //!
 
@@ -343,9 +343,9 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
     tARAR[0],virA,0.0,xRR[0],virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,XAA,(char *) &(xAA[0][0]),
-    occA*occA*(ULI) sizeof(double));
+    occA*occA*(size_t) sizeof(double));
   psio_->write_entry(PSIF_SAPT_CCD,XRR,(char *) &(xRR[0][0]),
-    virA*virA*(ULI) sizeof(double));
+    virA*virA*(size_t) sizeof(double));
 
   free_block(tARAR); //!
   free_block(gARAR); //!
@@ -356,13 +356,13 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
   double **tBSBS = block_matrix(occB*virB,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TBSBS,(char *) &(tBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occB*virB,occB*virB,occB*virB,1.0,tBSBS[0],occB*virB,
     gBSBS[0],occB*virB,0.0,yBSBS[0],occB*virB);
 
   psio_->write_entry(PSIF_SAPT_CCD,YBSBS,(char *) &(yBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   free_block(yBSBS); //!
 
@@ -376,9 +376,9 @@ void SAPT2p::r_ccd_prep(const char *TARBS, const char *ARBS, const char *CA_RBS,
     tBSBS[0],virB,0.0,xSS[0],virB);
 
   psio_->write_entry(PSIF_SAPT_CCD,XBB,(char *) &(xBB[0][0]),
-    occB*occB*(ULI) sizeof(double));
+    occB*occB*(size_t) sizeof(double));
   psio_->write_entry(PSIF_SAPT_CCD,XSS,(char *) &(xSS[0][0]),
-    virB*virB*(ULI) sizeof(double));
+    virB*virB*(size_t) sizeof(double));
 
   free_block(tBSBS); //!
   free_block(gBSBS); //!
@@ -393,9 +393,9 @@ double SAPT2p::r_ccd_energy(const char *TARBS, const char *ARBS, int occA, int v
   double **tARBS = block_matrix(occA*virA,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARBS,(char *) &(vARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   double energy = C_DDOT((size_t)occA*virA*occB*virB,&(vARBS[0][0]),1,
     &(tARBS[0][0]),1);
@@ -474,17 +474,17 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   double **t2ARBS = block_matrix(occA*virA,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,CA_RBS,(char *) &(t2ARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   double **tARBS = block_matrix(occA*virA,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   double **gARRA = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARRA,(char *) &(gARRA[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occB*virB,occA*virA,1.0,gARRA[0],occA*virA,
     tARBS[0],occB*virB,1.0,t2ARBS[0],occB*virB);
@@ -494,7 +494,7 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   double **gBSSB = block_matrix(occB*virB,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GBSSB,(char *) &(gBSSB[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occB*virB,occB*virB,1.0,tARBS[0],occB*virB,
     gBSSB[0],occB*virB,1.0,t2ARBS[0],occB*virB);
@@ -504,15 +504,15 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   double **xARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,XARAR,(char *) &(xARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   double **xAA = block_matrix(occA,occA);
   double **xRR = block_matrix(virA,virA);
 
   psio_->read_entry(PSIF_SAPT_CCD,XAA,(char *) &(xAA[0][0]),
-    occA*occA*(ULI) sizeof(double));
+    occA*occA*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,XRR,(char *) &(xRR[0][0]),
-    virA*virA*(ULI) sizeof(double));
+    virA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occB*virB,occA*virA,1.0,xARAR[0],occA*virA,
     tARBS[0],occB*virB,1.0,t2ARBS[0],occB*virB);
@@ -533,15 +533,15 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   double **xBSBS = block_matrix(occB*virB,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,XBSBS,(char *) &(xBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   double **xBB = block_matrix(occB,occB);
   double **xSS = block_matrix(virB,virB);
 
   psio_->read_entry(PSIF_SAPT_CCD,XBB,(char *) &(xBB[0][0]),
-    occB*occB*(ULI) sizeof(double));
+    occB*occB*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,XSS,(char *) &(xSS[0][0]),
-    virB*virB*(ULI) sizeof(double));
+    virB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','T',occA*virA,occB*virB,occB*virB,1.0,tARBS[0],occB*virB,
     xBSBS[0],occB*virB,1.0,t2ARBS[0],occB*virB);
@@ -570,7 +570,7 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,TARBS,(char *) &(t2ARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   C_DAXPY((size_t)occA*virA*occB*virB,-1.0,tARBS[0],1,t2ARBS[0],1);
 
@@ -578,7 +578,7 @@ double SAPT2p::r_ccd_amplitudes(const char *TARBS, const char *TARBSerr, const c
   RMS /= (double) ((size_t)occA*virA*occB*virB);
 
   psio_->write_entry(PSIF_SAPT_CCD,TARBSerr,(char *) &(t2ARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   free_block(tARBS);  //!
   free_block(t2ARBS); //!
@@ -598,10 +598,10 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
   double **vARBS = block_matrix(occA*virA,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   psio_->read_entry(PSIF_SAPT_CCD,ARBS,(char *) &(vARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','T',occA*virA,occA*virA,occB*virB,2.0,tARBS[0],occB*virB,
     vARBS[0],occB*virB,0.0,sARAR[0],occA*virA);
@@ -614,7 +614,7 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
   double **thARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(thARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,2.0,xARAR[0],occA*virA,
     thARAR[0],occA*virA,1.0,sARAR[0],occA*virA);
@@ -643,7 +643,7 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA,virA*occA*virA,occA,-2.0,xAA[0],occA,
     tARAR[0],virA*occA*virA,1.0,sARAR[0],virA*occA*virA);
@@ -659,7 +659,7 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
   double **xARBS = block_matrix(occA*virA,occB*virB); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GBSBS,(char *) &(gBSBS[0][0]),
-    occB*virB*occB*virB*(ULI) sizeof(double));
+    occB*virB*occB*virB*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occB*virB,occB*virB,1.0,tARBS[0],occB*virB,
     gBSBS[0],occB*virB,0.0,xARBS[0],occB*virB);
@@ -672,7 +672,7 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
   free_block(tARBS); //!
 
   psio_->write_entry(PSIF_SAPT_CCD,CA_RAR,(char *) &(sARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   for(int a1r1=0; a1r1<occA*virA; a1r1++) {
     for(int a2r2=0; a2r2<a1r1; a2r2++) {
@@ -695,7 +695,7 @@ void SAPT2p::s_ccd_prep(const char *SARAR, const char *CA_RAR, const char *TARAR
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,SARAR,(char *) &(sARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(sARAR); //!
 }
@@ -766,15 +766,15 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   double **s2ARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,CA_RAR,(char *) &(s2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   double **gARRA = block_matrix(occA*virA,occA*virA); //!
   double **sARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARRA,(char *) &(gARRA[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,SARAR,(char *) &(sARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,1.0,gARRA[0],occA*virA,
     sARAR[0],occA*virA,1.0,s2ARAR[0],occA*virA);
@@ -796,7 +796,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   double **vAAAA = block_matrix(occA*occA,occA*occA);
 
   psio_->read_entry(PSIF_SAPT_CCD,AAAA,(char *) &(vAAAA[0][0]),
-    occA*occA*occA*occA*(ULI) sizeof(double));
+    occA*occA*occA*occA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*occA,virA*virA,occA*occA,0.5,vAAAA[0],occA*occA,
     sAARR[0],virA*virA,0.5,s2AARR[0],virA*virA);
@@ -829,7 +829,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   double **vARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,-1.0,sARRA[0],occA*virA,
     vARAR[0],occA*virA,1.0,s2ARAR[0],occA*virA);
@@ -837,7 +837,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   double **vAARR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,AARR,(char *) &(vAARR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,-1.0,sARRA[0],occA*virA,
     vAARR[0],occA*virA,0.0,vARAR[0],occA*virA);
@@ -858,13 +858,13 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   double **xARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,XARAR,(char *) &(xARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,1.0,xARAR[0],occA*virA,
     sARAR[0],occA*virA,1.0,s2ARAR[0],occA*virA);
 
   psio_->read_entry(PSIF_SAPT_CCD,YARAR,(char *) &(xARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,-1.0,xARAR[0],occA*virA,
     sARRA[0],occA*virA,1.0,s2ARAR[0],occA*virA);
@@ -876,18 +876,18 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARAR,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   double **xAA = block_matrix(occA,occA);
   double **xRR = block_matrix(virA,virA);
 
   psio_->read_entry(PSIF_SAPT_CCD,XAA,(char *) &(xAA[0][0]),
-    occA*occA*(ULI) sizeof(double));
+    occA*occA*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,XRR,(char *) &(xRR[0][0]),
-    virA*virA*(ULI) sizeof(double));
+    virA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA,virA*occA*virA,occA,-1.0,xAA[0],occA,
     sARAR[0],virA*occA*virA,1.0,s2ARAR[0],virA*occA*virA);
@@ -932,7 +932,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   vARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,1.0,tARRA[0],occA*virA,
     vARAR[0],occA*virA,0.0,xARAR[0],occA*virA);
@@ -980,7 +980,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   vARRA = block_matrix(occA*virA,occA*virA); //!
   vAARR = block_matrix(occA*occA,virA*virA); //!
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARRA[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<virA; r1++,a1r1++) {
     for(int a2=0,a2r2=0; a2<occA; a2++) {
@@ -994,7 +994,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
 
   sAARR = block_matrix(occA*occA,virA*virA); //!
   psio_->read_entry(PSIF_SAPT_CCD,SARAR,(char *) &(sARRA[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<virA; r1++,a1r1++) {
     for(int a2=0,a2r2=0; a2<occA; a2++) {
@@ -1008,7 +1008,7 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
 
   double **tAARR = block_matrix(occA*occA,virA*virA); //!
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARRA[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<virA; r1++,a1r1++) {
@@ -1075,17 +1075,17 @@ double SAPT2p::s_ccd_amplitudes(const char *SARAR, const char *SARARerr, const c
   sARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,SARAR,(char *) &(sARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   psio_->write_entry(PSIF_SAPT_CCD,SARAR,(char *) &(s2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DAXPY((size_t)occA*virA*occA*virA,-1.0,sARAR[0],1,s2ARAR[0],1);
   double RMS = C_DDOT((size_t)occA*virA*occA*virA,s2ARAR[0],1,s2ARAR[0],1);
   RMS /= (double) ((size_t)occA*virA*occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,SARARerr,(char *) &(s2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(sARAR);  //!
   free_block(s2ARAR); //!
@@ -1106,7 +1106,7 @@ void SAPT2p::disp_s_prep(const char *TAR, const char *TpAR, const char *ThetaARA
   double **T_p_AR = block_matrix(occA*virA,ndf_);
 
   psio_->read_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(thARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*virA,ndf_,occA*virA,1.0,thARAR[0],occA*virA,
     B_p_AR[0],ndf_,0.0,T_p_AR[0],ndf_);
@@ -1144,7 +1144,7 @@ void SAPT2p::disp_s_prep(const char *TAR, const char *TpAR, const char *ThetaARA
   double **B_p_BS = get_DF_ints_nongimp(BBfile,BSints,foccB_,noccB_,0,virB);
 
   psio_->read_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
-    occA*virA*occB*virB*(ULI) sizeof(double));
+    occA*virA*occB*virB*(size_t) sizeof(double));
 
   // Mickey mouse with ndf + 3
   double** T_p_AR2 = block_matrix(occA*virA,ndf_+3);
@@ -1211,7 +1211,7 @@ void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm, //!
       xRR[r3r4] = RR[r3][r4] + RR[r4][r3];
     }}
     psio_->write(PSIF_SAPT_CCD,RRRRp,(char *) &(xRR[0]),
-      virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
+      virtri*(size_t) sizeof(double),next_RRRRp,&next_RRRRp);
 
     if (r1 != r2) {
       for (int r3=0; r3 < virA2; r3++) {
@@ -1220,7 +1220,7 @@ void SAPT2p::vvvv_prep(const char *RRRRp, const char *RRRRm, //!
         yRR[r3r4] = RR[r3][r4] - RR[r4][r3];
       }}
       psio_->write(PSIF_SAPT_CCD,RRRRm,(char *) &(yRR[0]),
-        svirtri*(ULI) sizeof(double),next_RRRRm,&next_RRRRm);
+        svirtri*(size_t) sizeof(double),next_RRRRm,&next_RRRRm);
     }
 
   }}
@@ -1243,7 +1243,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
     virA2 = mo2no->colspi()[0];
     double** T1 = block_matrix(occA*virA,occA*virA);
     psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(T1[0][0]),
-      occA*virA*occA*virA*(ULI) sizeof(double));
+      occA*virA*occA*virA*(size_t) sizeof(double));
     double** T2 = block_matrix(occA*virA,occA*virA2);
     C_DGEMM('N','N',occA*(size_t)virA*occA,virA2,virA,1.0,T1[0],virA,Vp[0],virA2,0.0,T2[0],virA2);
     free_block(T1);
@@ -1257,7 +1257,7 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
     virA2 = virA;
     tARAR = block_matrix(occA*virA,occA*virA);
     psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-      occA*virA*occA*virA*(ULI) sizeof(double));
+      occA*virA*occA*virA*(size_t) sizeof(double));
   }
 
   int occtri = occA*(occA+1)/2;
@@ -1314,12 +1314,12 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
     std::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     psio_->read(PSIF_SAPT_CCD,RRRRp,(char *) &(vRRRRp[0][0][0]),
-        blocksize*virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
+        blocksize*virtri*(size_t) sizeof(double),next_RRRRp,&next_RRRRp);
 
   for(int r_read=0; r_read<loopsize; r_read++) {
     if (r_read < loopsize-1)
       aio->read(PSIF_SAPT_CCD,RRRRp,(char *) &(vRRRRp[(r_read+1)%2][0][0]),
-        blocksize*virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
+        blocksize*virtri*(size_t) sizeof(double),next_RRRRp,&next_RRRRp);
 
     C_DGEMM('N','T',occtri,blocksize,virtri,1.0,tpAARR[0],virtri,
       vRRRRp[r_read%2][0],virtri,1.0,&(sAARR[0][r_read*blocksize]),virtri);
@@ -1349,12 +1349,12 @@ double **SAPT2p::vvvv_ccd(const char *TARAR, const char *RRRRp, const char *RRRR
   psio_address next_RRRRm = PSIO_ZERO;
 
   psio_->read(PSIF_SAPT_CCD,RRRRm,(char *) &(vRRRRm[0][0][0]),
-        blocksize*svirtri*(ULI) sizeof(double),next_RRRRm,&next_RRRRm);
+        blocksize*svirtri*(size_t) sizeof(double),next_RRRRm,&next_RRRRm);
 
   for(int r_read=0; r_read<loopsize; r_read++) {
     if (r_read < loopsize-1)
       aio->read(PSIF_SAPT_CCD,RRRRm,(char *) &(vRRRRm[(r_read+1)%2][0][0]),
-        blocksize*svirtri*(ULI) sizeof(double),next_RRRRm,&next_RRRRm);
+        blocksize*svirtri*(size_t) sizeof(double),next_RRRRm,&next_RRRRm);
 
     C_DGEMM('N','T',occtri,blocksize,svirtri,1.0,tmAARR[0],svirtri,
       vRRRRm[r_read%2][0],svirtri,1.0,&(aAARR[0][r_read*blocksize]),svirtri);
@@ -1447,7 +1447,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}
 
   psio_->write_entry(PSIF_SAPT_CCD,AAAA,(char *) &(vAAAA[0][0]),
-    occA*occA*occA*occA*(ULI) sizeof(double));
+    occA*occA*occA*occA*(size_t) sizeof(double));
   free_block(vAAAA);
 
 
@@ -1465,7 +1465,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}
 
   psio_->write_entry(PSIF_SAPT_CCD,AARR,(char *) &(vAARR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(B_p_AA);
   free_block(B_p_RR);
@@ -1478,7 +1478,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
     occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(B_p_AR);
 
@@ -1492,7 +1492,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,GARRA,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(vAARR); //!
 
@@ -1506,7 +1506,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,GARAR,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<virA; r1++,a1r1++) {
@@ -1518,7 +1518,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,TARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
   for(int r1=0; r1<virA; r1++,a1r1++) {
@@ -1530,7 +1530,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(vARAR); //!
   free_block(gARAR); //!
@@ -1539,7 +1539,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   double **tAARR = block_matrix(occA*occA,virA*virA); //!
 
@@ -1555,7 +1555,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   vAAAA = block_matrix(occA*occA,occA*occA);
 
   psio_->read_entry(PSIF_SAPT_CCD,AAAA,(char *) &(vAAAA[0][0]),
-    occA*occA*occA*occA*(ULI) sizeof(double));
+    occA*occA*occA*occA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*occA,virA*virA,occA*occA,0.5,vAAAA[0],occA*occA,
     tAARR[0],virA*virA,0.5,t2AARR[0],virA*virA);
@@ -1579,7 +1579,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   vAARR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,AARR,(char *) &(vAARR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','T',occA*virA,occA*virA,occA*virA,-1.0,tARAR[0],occA*virA,
     vAARR[0],occA*virA,1.0,t2ARAR[0],occA*virA);
@@ -1612,10 +1612,10 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   vARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vAARR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   psio_->read_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','T',occA*virA,occA*virA,occA*virA,1.0,tARAR[0],occA*virA,
     vARAR[0],occA*virA,1.0,t2ARAR[0],occA*virA);
@@ -1645,7 +1645,7 @@ void SAPT2p::ccd_prep(const char *TARAR, const char *ThetaARAR, const char *GARA
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,T2ARAR,(char *) &(t2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(t2ARAR); //!
 }
@@ -1709,9 +1709,9 @@ double SAPT2p::ccd_energy(const char *TARAR, const char *GARAR, int occA, int vi
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARAR,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   double energy = C_DDOT((size_t)occA*virA*occA*virA,&(gARAR[0][0]),1,
     &(tARAR[0][0]),1);
@@ -1731,7 +1731,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **t2ARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(t2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DSCAL((size_t)occA*virA*occA*virA,0.5,&(t2ARAR[0][0]),1);
 
@@ -1739,9 +1739,9 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARRA,(char *) &(gARRA[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
     C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,1.0,gARRA[0],occA*virA,
       tARAR[0],occA*virA,1.0,t2ARAR[0],occA*virA);
@@ -1763,7 +1763,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **vAAAA = block_matrix(occA*occA,occA*occA);
 
   psio_->read_entry(PSIF_SAPT_CCD,AAAA,(char *) &(vAAAA[0][0]),
-    occA*occA*occA*occA*(ULI) sizeof(double));
+    occA*occA*occA*occA*(size_t) sizeof(double));
 
   C_DGEMM('N','N',occA*occA,virA*virA,occA*occA,0.5,vAAAA[0],occA*occA,
     tAARR[0],virA*virA,0.5,t2AARR[0],virA*virA);
@@ -1796,7 +1796,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **vARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
     C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,-1.0,tARRA[0],occA*virA,
       vARAR[0],occA*virA,1.0,t2ARAR[0],occA*virA);
@@ -1804,7 +1804,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **vAARR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,AARR,(char *) &(vAARR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
     C_DGEMM('N','N',occA*virA,occA*virA,occA*virA,-1.0,tARRA[0],occA*virA,
       vAARR[0],occA*virA,0.0,vARAR[0],occA*virA);
@@ -1826,7 +1826,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **xARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,GARAR,(char *) &(gARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','T',occA*virA,occA*virA,occA*virA,1.0,tARAR[0],occA*virA,
     gARAR[0],occA*virA,0.0,xARAR[0],occA*virA);
@@ -1858,7 +1858,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   double **thARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(thARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   C_DGEMM('N','T',occA*virA,occA*virA,occA*virA,0.5,thARAR[0],occA*virA,
     xARAR[0],occA*virA,1.0,t2ARAR[0],occA*virA);
@@ -1871,7 +1871,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   vARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
     C_DGEMM('N','T',occA*virA,occA*virA,occA*virA,1.0,tARRA[0],occA*virA,
       vARAR[0],occA*virA,0.0,xARAR[0],occA*virA);
@@ -1914,7 +1914,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   vARAR = block_matrix(occA*virA,occA*virA); //! // Reduces memory
 
   psio_->read_entry(PSIF_SAPT_CCD,ARAR,(char *) &(vARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double)); // Reduces memory
+    occA*virA*occA*virA*(size_t) sizeof(double)); // Reduces memory
 
   tAARR = block_matrix(occA*occA,virA*virA); //!
   vAARR = block_matrix(occA*occA,virA*virA); //!
@@ -1986,13 +1986,13 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   tARAR = block_matrix(occA*virA,occA*virA); //!
 
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   psio_->write_entry(PSIF_SAPT_CCD,TARAR,(char *) &(t2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   psio_->write_entry(PSIF_SAPT_CCD,ThetaARAR,(char *) &(th2ARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(th2ARAR); //!
 
@@ -2002,7 +2002,7 @@ double SAPT2p::ccd_amplitudes(const char *TARAR, const char *TARARerr, const cha
   RMS /= (double) ((size_t)occA*virA*occA*virA);
 
   psio_->write_entry(PSIF_SAPT_CCD,TARARerr,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occA*virA*(size_t) sizeof(double));
 
   free_block(tARAR); //!
   free_block(t2ARAR); //!
@@ -2018,7 +2018,7 @@ double **SAPT2p::read_IJKL(int filenum, char *label, int length_IJ,
   double **A = block_matrix(length_IJ,length_KL);
 
   psio_->read_entry(filenum,label,(char *) &(A[0][0]),
-                  sizeof(double)*length_IJ*(ULI) length_KL);
+                  sizeof(double)*length_IJ*(size_t) length_KL);
 
   return(A);
 }
@@ -2027,7 +2027,7 @@ void SAPT2p::write_IJKL(double **A, int filenum, const char *label, int length_I
   int length_KL)
 {
   psio_->write_entry(filenum,label,(char *) &(A[0][0]),
-                  sizeof(double)*length_IJ*(ULI) length_KL);
+                  sizeof(double)*length_IJ*(size_t) length_KL);
 
   free_block(A);
 }
@@ -2064,14 +2064,14 @@ void SAPTDIIS::store_vectors()
     double *vec = init_array(vec_length_);
 
     psio_->read_entry(filenum_,vec_label_,(char *) &(vec[0]),
-      vec_length_*(ULI) sizeof(double));
+      vec_length_*(size_t) sizeof(double));
     psio_->write_entry(diis_file_,diis_vec_label,(char *) &(vec[0]),
-      vec_length_*(ULI) sizeof(double));
+      vec_length_*(size_t) sizeof(double));
 
     psio_->read_entry(filenum_,err_label_,(char *) &(vec[0]),
-      vec_length_*(ULI) sizeof(double));
+      vec_length_*(size_t) sizeof(double));
     psio_->write_entry(diis_file_,diis_err_label,(char *) &(vec[0]),
-      vec_length_*(ULI) sizeof(double));
+      vec_length_*(size_t) sizeof(double));
 
     free(vec);
     free(diis_vec_label);
@@ -2094,11 +2094,11 @@ void SAPTDIIS::get_new_vector()
     for (int i=0; i<num_vecs_; i++) {
       char *err_label_i = get_err_label(i);
       psio_->read_entry(diis_file_,err_label_i,(char *) &(vec_i[0]),
-        vec_length_*(ULI) sizeof(double));
+        vec_length_*(size_t) sizeof(double));
       for (int j=0; j<=i; j++) {
         char *err_label_j = get_err_label(j);
         psio_->read_entry(diis_file_,err_label_j,(char *) &(vec_j[0]),
-          vec_length_*(ULI) sizeof(double));
+          vec_length_*(size_t) sizeof(double));
         Bmat[i][j] = Bmat[j][i] = C_DDOT(vec_length_,vec_i,1,vec_j,1);
         free(err_label_j);
       }
@@ -2122,13 +2122,13 @@ void SAPTDIIS::get_new_vector()
     for (int i=0; i<num_vecs_; i++) {
       char *vec_label_i = get_vec_label(i);
       psio_->read_entry(diis_file_,vec_label_i,(char *) &(vec_i[0]),
-        vec_length_*(ULI) sizeof(double));
+        vec_length_*(size_t) sizeof(double));
       C_DAXPY(vec_length_,Cvec[i],vec_i,1,vec_j,1);
       free(vec_label_i);
     }
 
     psio_->write_entry(filenum_,vec_label_,(char *) &(vec_j[0]),
-      vec_length_*(ULI) sizeof(double));
+      vec_length_*(size_t) sizeof(double));
 
     free(vec_i);
     free(vec_j);

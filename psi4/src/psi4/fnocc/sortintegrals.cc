@@ -37,36 +37,36 @@
 #include "psi4/libpsi4util/process.h"
 
 namespace psi{namespace fnocc{
-typedef long int ULI;
+typedef long int size_t;
 struct integral{
-  ULI ind;
+  size_t ind;
   double val;
 };
 void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
-void klcd_terms_incore(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,double*klcd);
-void ijkl_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI&nijkl,struct integral*ijkl);
-void ijak_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak,struct integral*ijak);
-void ijak2_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak2,struct integral*ijak2);
-void klcd_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nklcd,struct integral*klcd);
-void akjc_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nklcd,struct integral*klcd);
-void abci1_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci1,struct integral*abci1);
-void abci3_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci3,struct integral*abci3);
-void abci4_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci4,struct integral*abci4);
-void abci5_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci5,struct integral*abci5);
-void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd1,struct integral*abcd1);
-void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd2,struct integral*abcd2);
+void klcd_terms_incore(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,double*klcd);
+void ijkl_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t&nijkl,struct integral*ijkl);
+void ijak_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nijak,struct integral*ijak);
+void ijak2_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nijak2,struct integral*ijak2);
+void klcd_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nklcd,struct integral*klcd);
+void akjc_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nklcd,struct integral*klcd);
+void abci1_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci1,struct integral*abci1);
+void abci3_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci3,struct integral*abci3);
+void abci4_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci4,struct integral*abci4);
+void abci5_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci5,struct integral*abci5);
+void abcd1_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabcd1,struct integral*abcd1);
+void abcd2_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabcd2,struct integral*abcd2);
 
-void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabcd1,ULI*totalnabcd1,struct integral**abcd1,ULI binsize,ULI bucketsize,psio_address*addr,ULI nfiles);
-void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabcd2,ULI*totalnabcd2,struct integral**abcd2,ULI binsize,ULI bucketsize,psio_address*addr,ULI nfiles);
+void abcd1_terms_new(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabcd1,size_t*totalnabcd1,struct integral**abcd1,size_t binsize,size_t bucketsize,psio_address*addr,size_t nfiles);
+void abcd2_terms_new(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabcd2,size_t*totalnabcd2,struct integral**abcd2,size_t binsize,size_t bucketsize,psio_address*addr,size_t nfiles);
 
-void abci1_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci1,ULI*totalnabci1,struct integral**abci1,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles);
-void abci3_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci3,ULI*totalnabci3,struct integral**abci3,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles);
-void abci5_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci5,ULI*totalnabci5,struct integral**abci5,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles);
+void abci1_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabci1,size_t*totalnabci1,struct integral**abci1,size_t binsize,size_t bucketsize,psio_address*addr,size_t filestart,size_t nfiles);
+void abci3_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabci3,size_t*totalnabci3,struct integral**abci3,size_t binsize,size_t bucketsize,psio_address*addr,size_t filestart,size_t nfiles);
+void abci5_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabci5,size_t*totalnabci5,struct integral**abci5,size_t binsize,size_t bucketsize,psio_address*addr,size_t filestart,size_t nfiles);
 
-void abcd3_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd1,struct integral*abcd1);
-void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim);
-void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim);
-void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim,ULI filestart,ULI nfiles);
+void abcd3_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabcd1,struct integral*abcd1);
+void SortBlock(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim);
+void SortBlockNew(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim);
+void SortBlockNewNew(size_t*nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim,size_t filestart,size_t nfiles);
 }}
 
 namespace psi{namespace fnocc{
@@ -90,15 +90,15 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
 void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
 
   double val;
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI fstact = nfzc;
-  ULI lstact = norbs-nfzv;
+  size_t o = ndoccact;
+  size_t v = nvirt;
+  size_t fstact = nfzc;
+  size_t lstact = norbs-nfzv;
 
-  ULI lastbuf;
+  size_t lastbuf;
   Label *lblptr;
   Value *valptr;
-  ULI nocc,idx, p, q, r, s, pq, rs, pqrs;
+  size_t nocc,idx, p, q, r, s, pq, rs, pqrs;
 
   lblptr = Buf->labels;
   valptr = Buf->values;
@@ -110,13 +110,13 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   struct integral **abci5,**abcd1,**abcd2,*ijak,*ijak2;
 
   // available memory:
-  ULI memory = Process::environment.get_memory();
+  size_t memory = Process::environment.get_memory();
 
   // 8 bytes for tmp, 16 for integral struct
-  ULI maxelem = memory / (sizeof(double) + sizeof(struct integral));
+  size_t maxelem = memory / (sizeof(double) + sizeof(struct integral));
 
   // what is the biggest block?
-  ULI maxblock = o*o*o*o;
+  size_t maxblock = o*o*o*o;
   if (maxblock < o*o*o*v) maxblock = o*o*o*v;
   if (maxblock < o*o*v*v) maxblock = o*o*v*v;
   if (maxblock < o*v*v*v) maxblock = o*v*v*v;
@@ -135,10 +135,10 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
 
 
   // how many files does (ac|bd) need to be?
-  ULI filesize;
-  ULI vtri = v*(v+1L)/2L;
-  ULI nfiles = 0;
-  for (ULI i=1; i<=vtri*vtri; i++){
+  size_t filesize;
+  size_t vtri = v*(v+1L)/2L;
+  size_t nfiles = 0;
+  for (size_t i=1; i<=vtri*vtri; i++){
       if ( maxelem >= vtri*vtri/i ){
          filesize = vtri*vtri/i;
          if (i*filesize < vtri*vtri) filesize++;
@@ -149,10 +149,10 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   if ( nfiles == 0 ) throw PsiException("how is this possible? (ab|cd)",__FILE__,__LINE__);
 
   // how many (ab|ci) files?
-  ULI ov3filesize;
-  ULI ov3nfiles = 0;
-  ULI ov3 = o*v*v*v;
-  for (ULI i=1; i<=ov3; i++){
+  size_t ov3filesize;
+  size_t ov3nfiles = 0;
+  size_t ov3 = o*v*v*v;
+  for (size_t i=1; i<=ov3; i++){
       if ( maxelem >= ov3/i ){
          ov3filesize = ov3/i;
          if (i*ov3filesize < ov3) ov3filesize++;
@@ -164,7 +164,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
 
 
   struct integral*integralbuffer;
-  ULI nelem = maxelem/(5+3*ov3nfiles+2*nfiles) - 20;
+  size_t nelem = maxelem/(5+3*ov3nfiles+2*nfiles) - 20;
   if ((nelem+20)*(5+3*ov3nfiles+2*nfiles)>maxelem)
      integralbuffer= new integral[(nelem+20)*(5+3*ov3nfiles+2*nfiles)];
   else
@@ -177,7 +177,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
 
 
   // buckets:
-  ULI bucketsize = nelem;
+  size_t bucketsize = nelem;
 
   ijkl  = integralbuffer;
   ijak  = integralbuffer+(nelem+20);
@@ -192,7 +192,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   abci1 = (struct integral **)malloc(ov3nfiles*sizeof(struct integral *));
   abci3 = (struct integral **)malloc(ov3nfiles*sizeof(struct integral *));
   abci5 = (struct integral **)malloc(ov3nfiles*sizeof(struct integral *));
-  for (ULI k = 0; k < ov3nfiles; k++) {
+  for (size_t k = 0; k < ov3nfiles; k++) {
       abci1[k] = integralbuffer+(nelem+20L)*(5L+k);
       abci3[k] = integralbuffer+(nelem+20L)*(5L+1L*ov3nfiles+k);
       abci5[k] = integralbuffer+(nelem+20L)*(5L+2L*ov3nfiles+k);
@@ -200,7 +200,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
 
   abcd1 = (struct integral **)malloc(nfiles*sizeof(struct integral *));
   abcd2 = (struct integral **)malloc(nfiles*sizeof(struct integral *));
-  for (ULI k = 0; k < nfiles; k++) {
+  for (size_t k = 0; k < nfiles; k++) {
       abcd1[k] = integralbuffer+(nelem+20L)*(5L+3L*ov3nfiles+k);
       abcd2[k] = integralbuffer+(nelem+20L)*(nfiles+5L+3L*ov3nfiles+k);
   }
@@ -219,12 +219,12 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   psio_address *abci5_addr = new psio_address[ov3nfiles];
   psio_address *abcd1_addr = new psio_address[nfiles];
   psio_address *abcd2_addr = new psio_address[nfiles];
-  for (ULI k = 0; k < ov3nfiles; k++) {
+  for (size_t k = 0; k < ov3nfiles; k++) {
       abci1_addr[k] = PSIO_ZERO;
       abci3_addr[k] = PSIO_ZERO;
       abci5_addr[k] = PSIO_ZERO;
   }
-  for (ULI k = 0; k < nfiles; k++) {
+  for (size_t k = 0; k < nfiles; k++) {
       abcd1_addr[k] = PSIO_ZERO;
       abcd2_addr[k] = PSIO_ZERO;
   }
@@ -249,27 +249,27 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   psio->close(PSIF_DCC_ABCD2,1);
   psio->open(PSIF_DCC_IJAB,PSIO_OPEN_NEW);
   psio->close(PSIF_DCC_IJAB,1);
-  ULI nijkl=0;
-  ULI totalnijkl=0;
-  ULI nijak2=0;
-  ULI totalnijak2=0;
-  ULI nijak=0;
-  ULI totalnijak=0;
-  ULI nklcd=0;
-  ULI totalnklcd=0;
-  ULI nakjc=0;
-  ULI totalnakjc=0;
-  ULI *nabci1      = new ULI[ov3nfiles];
-  ULI *totalnabci1 = new ULI[ov3nfiles];
-  ULI *nabci3      = new ULI[ov3nfiles];
-  ULI *totalnabci3 = new ULI[ov3nfiles];
-  ULI *nabci5      = new ULI[ov3nfiles];
-  ULI *totalnabci5 = new ULI[ov3nfiles];
-  ULI *nabcd1      = new ULI[nfiles];
-  ULI *totalnabcd1 = new ULI[nfiles];
-  ULI *nabcd2      = new ULI[nfiles];
-  ULI *totalnabcd2 = new ULI[nfiles];
-  for (ULI k = 0; k < ov3nfiles; k++) {
+  size_t nijkl=0;
+  size_t totalnijkl=0;
+  size_t nijak2=0;
+  size_t totalnijak2=0;
+  size_t nijak=0;
+  size_t totalnijak=0;
+  size_t nklcd=0;
+  size_t totalnklcd=0;
+  size_t nakjc=0;
+  size_t totalnakjc=0;
+  size_t *nabci1      = new size_t[ov3nfiles];
+  size_t *totalnabci1 = new size_t[ov3nfiles];
+  size_t *nabci3      = new size_t[ov3nfiles];
+  size_t *totalnabci3 = new size_t[ov3nfiles];
+  size_t *nabci5      = new size_t[ov3nfiles];
+  size_t *totalnabci5 = new size_t[ov3nfiles];
+  size_t *nabcd1      = new size_t[nfiles];
+  size_t *totalnabcd1 = new size_t[nfiles];
+  size_t *nabcd2      = new size_t[nfiles];
+  size_t *totalnabcd2 = new size_t[nfiles];
+  for (size_t k = 0; k < ov3nfiles; k++) {
       nabci1[k] = 0;
       nabci3[k] = 0;
       nabci5[k] = 0;
@@ -277,7 +277,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       totalnabci3[k] = 0;
       totalnabci5[k] = 0;
   }
-  for (ULI k = 0; k < nfiles; k++) {
+  for (size_t k = 0; k < nfiles; k++) {
       nabcd1[k] = 0;
       nabcd2[k] = 0;
       totalnabcd1[k] = 0;
@@ -285,14 +285,14 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   }
 
   // (ab|cd) files:
-  for (ULI k = 0; k < nfiles; k++) {
+  for (size_t k = 0; k < nfiles; k++) {
       psio->open(PSIF_DCC_SORT_START+k,PSIO_OPEN_NEW);
       psio->open(PSIF_DCC_SORT_START+k+nfiles,PSIO_OPEN_NEW);
       psio->close(PSIF_DCC_SORT_START+k,1);
       psio->close(PSIF_DCC_SORT_START+k+nfiles,1);
   }
   // (ab|ci) files come after (ab|cd) files:
-  for (ULI k = 0; k < nfiles; k++) {
+  for (size_t k = 0; k < nfiles; k++) {
       psio->open(PSIF_DCC_SORT_START+k+2*nfiles,PSIO_OPEN_NEW);
       psio->open(PSIF_DCC_SORT_START+k+2*nfiles+ov3nfiles,PSIO_OPEN_NEW);
       psio->open(PSIF_DCC_SORT_START+k+2*nfiles+2*ov3nfiles,PSIO_OPEN_NEW);
@@ -306,10 +306,10 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
     * first buffer (read in when Buf was initialized)
     */
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-      p = (ULI) lblptr[idx++];
-      q = (ULI) lblptr[idx++];
-      r = (ULI) lblptr[idx++];
-      s = (ULI) lblptr[idx++];
+      p = (size_t) lblptr[idx++];
+      q = (size_t) lblptr[idx++];
+      r = (size_t) lblptr[idx++];
+      s = (size_t) lblptr[idx++];
 
       if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
       if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
@@ -407,10 +407,10 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       lastbuf = Buf->lastbuf;
       for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
 
-          p = (ULI) lblptr[idx++];
-          q = (ULI) lblptr[idx++];
-          r = (ULI) lblptr[idx++];
-          s = (ULI) lblptr[idx++];
+          p = (size_t) lblptr[idx++];
+          q = (size_t) lblptr[idx++];
+          r = (size_t) lblptr[idx++];
+          s = (size_t) lblptr[idx++];
 
           if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
           if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
@@ -507,7 +507,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   /**
     * write any leftover bits that might not have been dumped to disk
     */
-  for (ULI k = 0; k < nfiles; k++) {
+  for (size_t k = 0; k < nfiles; k++) {
       if (nabcd2[k]>0){
          psio->open(PSIF_DCC_SORT_START+k+nfiles,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k+nfiles,"E2abcd2",(char*)&abcd2[k][0],nabcd2[k]*sizeof(struct integral),abcd2_addr[k],&abcd2_addr[k]);
@@ -523,7 +523,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
          nabcd1[k]=0;
       }
   }
-  for (ULI k = 0; k < ov3nfiles; k++){
+  for (size_t k = 0; k < ov3nfiles; k++){
       if (nabci5[k]>0){
          psio->open(PSIF_DCC_SORT_START+k+2*nfiles+2*ov3nfiles,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k+2*nfiles+2*ov3nfiles,"E2abci2",(char*)&abci5[k][0],nabci5[k]*sizeof(struct integral),abci5_addr[k],&abci5_addr[k]);
@@ -636,8 +636,8 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   /**
     *  Sort ABCI2 integrals (actually, just ABCI2-2*ABCI3)
     */
-  ULI nbins,binsize,lastbin;
-  for (ULI i=1; i<=o*v*v*v; i++){
+  size_t nbins,binsize,lastbin;
+  for (size_t i=1; i<=o*v*v*v; i++){
       if (maxelem>=(double)o*v*v*v/i){
          binsize = o*v*v*v/i;
          if (i*binsize < o*v*v*v) binsize++;
@@ -656,7 +656,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   psio_address abci4_addr = PSIO_ZERO;
   psio_address abci5a_addr = PSIO_ZERO;
 
-  for (ULI i=0; i<nbins-1; i++){
+  for (size_t i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr[0],&abci3_addr[0]);
       psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr[0],&abci5_addr[0]);
       psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&tmp2[0],binsize*sizeof(double),abci5a_addr,&abci5a_addr);
@@ -675,7 +675,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   /**
     *  Combine ABCD1 and ABCD2 integrals if SJS packing
     */
-  for (ULI i=1; i<=v*(v+1)/2*v*(v+1)/2; i++){
+  for (size_t i=1; i<=v*(v+1)/2*v*(v+1)/2; i++){
       if (maxelem>=(double)v*(v+1)/2*v*(v+1)/2/i){
          binsize = v*(v+1)/2*v*(v+1)/2/i;
          if (i*binsize < v*(v+1)/2*v*(v+1)/2) binsize++;
@@ -690,7 +690,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   psio_address abcd1_new = PSIO_ZERO;
   psio_address abcd2_new = PSIO_ZERO;
   abcd1_addr[0] = abcd2_addr[0] = PSIO_ZERO;
-  for (ULI i=0; i<nbins-1; i++){
+  for (size_t i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr[0],&abcd1_addr[0]);
       psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr[0],&abcd2_addr[0]);
       C_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
@@ -713,8 +713,8 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   delete[] tmp;
   delete[] tmp2;
 }
-void klcd_terms_incore(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,double*klcd){
-  ULI k,l,c,d;
+void klcd_terms_incore(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,double*klcd){
+  size_t k,l,c,d;
   long int ind;
   if (p<o){
      k=p;
@@ -745,8 +745,8 @@ void klcd_terms_incore(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,UL
   ind = l*o*v*v+d*o*v+k*v+c;
   klcd[ind] = val;
 }
-void klcd_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nklcd,struct integral*klcd){
-  ULI k,l,c,d;
+void klcd_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nklcd,struct integral*klcd){
+  size_t k,l,c,d;
 
   if (p<o){
      k=p;
@@ -779,7 +779,7 @@ void klcd_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI
      klcd[nklcd++].val = val;
   }
 }
-void ijkl_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI&nijkl,struct integral*ijkl){
+void ijkl_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t&nijkl,struct integral*ijkl){
   if (p==q){
      if (r==s){
         ijkl[nijkl].ind   = p*o*o*o+r*o*o+q*o+s;
@@ -836,8 +836,8 @@ void ijkl_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI&nijkl
 }
 
 
-void akjc_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nakjc,struct integral*akjc){
-  ULI a,k,j,c;
+void akjc_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nakjc,struct integral*akjc){
+  size_t a,k,j,c;
   if (p>=o){
      a=p-o;
      c=q-o;
@@ -880,8 +880,8 @@ void akjc_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nakjc,struct 
      }
   }
 }
-void ijak2_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak2,struct integral*ijak2){
-  ULI i,j,a,k;
+void ijak2_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nijak2,struct integral*ijak2){
+  size_t i,j,a,k;
   if (p>=o){
      a=p-o;
      i=q;
@@ -910,8 +910,8 @@ void ijak2_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak2,struc
      ijak2[nijak2++].val = val;
   }
 }
-void ijak_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak,struct integral*ijak){
-  ULI i,j,a,k;
+void ijak_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nijak,struct integral*ijak){
+  size_t i,j,a,k;
   if (p>=o){
      a=p-o;
      i=q;
@@ -940,9 +940,9 @@ void ijak_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nijak,struct 
      ijak[nijak++].val = val;
   }
 }
-void abci5_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci5,ULI*totalnabci5,struct integral**abci5,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles){
-  ULI k,rem;
-  ULI i,a,b,c;
+void abci5_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabci5,size_t*totalnabci5,struct integral**abci5,size_t binsize,size_t bucketsize,psio_address*addr,size_t filestart,size_t nfiles){
+  size_t k,rem;
+  size_t i,a,b,c;
   if (p<o){
      i=p;
      b=q-o;
@@ -964,7 +964,7 @@ void abci5_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci5,U
      a=p-o;
      c=q-o;
   }
-  ULI ind = a*v*v*o + b*v*o + i*v + c;
+  size_t ind = a*v*v*o + b*v*o + i*v + c;
   rem = ind % binsize;
   k   = (ind - rem ) / binsize;
   abci5[k][nabci5[k]].ind   = ind;
@@ -988,8 +988,8 @@ void abci5_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci5,U
       }
   }
 }
-void abci5_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci5,struct integral*abci5){
-  ULI i,a,b,c;
+void abci5_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci5,struct integral*abci5){
+  size_t i,a,b,c;
   if (p<o){
      i=p;
      b=q-o;
@@ -1018,9 +1018,9 @@ void abci5_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci5,struc
      abci5[nabci5++].val = val;
   }
 }
-void abci3_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci3,ULI*totalnabci3,struct integral**abci3,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles){
-  ULI k,rem;
-  ULI a,f,m,e;
+void abci3_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabci3,size_t*totalnabci3,struct integral**abci3,size_t binsize,size_t bucketsize,psio_address*addr,size_t filestart,size_t nfiles){
+  size_t k,rem;
+  size_t a,f,m,e;
   if (p<o){
      m=p;
      e=q-o;
@@ -1042,7 +1042,7 @@ void abci3_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci3,U
      a=p-o;
      f=q-o;
   }
-  ULI ind = a*v*v*o + f*v*o + m*v + e;
+  size_t ind = a*v*v*o + f*v*o + m*v + e;
   rem = ind % binsize;
   k   = (ind - rem ) / binsize;
   abci3[k][nabci3[k]].ind   = ind;
@@ -1066,8 +1066,8 @@ void abci3_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci3,U
       }
   }
 }
-void abci3_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci3,struct integral*abci3){
-  ULI a,f,m,e;
+void abci3_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci3,struct integral*abci3){
+  size_t a,f,m,e;
   if (p<o){
      m=p;
      e=q-o;
@@ -1096,9 +1096,9 @@ void abci3_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci3,struc
      abci3[nabci3++].val = val;
   }
 }
-void abci1_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci1,ULI*totalnabci1,struct integral**abci1,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles){
-  ULI k,rem;
-  ULI i,a,b,c;
+void abci1_terms_new(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabci1,size_t*totalnabci1,struct integral**abci1,size_t binsize,size_t bucketsize,psio_address*addr,size_t filestart,size_t nfiles){
+  size_t k,rem;
+  size_t i,a,b,c;
   if (p<o){
      i=p;
      b=q-o;
@@ -1120,13 +1120,13 @@ void abci1_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci1,U
      a=p-o;
      c=q-o;
   }
-  ULI ind = i*v*v*v + a*v*v + b*v + c;
+  size_t ind = i*v*v*v + a*v*v + b*v + c;
   rem = ind % binsize;
   k   = (ind - rem ) / binsize;
   abci1[k][nabci1[k]].ind   = ind;
   abci1[k][nabci1[k]++].val = val;
   if (a!=c){
-     ULI ind = i*v*v*v + c*v*v + b*v + a;
+     size_t ind = i*v*v*v + c*v*v + b*v + a;
      rem = ind % binsize;
      k   = (ind - rem ) / binsize;
      abci1[k][nabci1[k]].ind   = ind;
@@ -1144,8 +1144,8 @@ void abci1_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci1,U
       }
   }
 }
-void abci1_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci1,struct integral*abci1){
-  ULI i,a,b,c;
+void abci1_terms(double val,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabci1,struct integral*abci1){
+  size_t i,a,b,c;
   if (p<o){
      i=p;
      b=q-o;
@@ -1179,9 +1179,9 @@ void abci1_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci1,struc
   * confusing to sort.  I couldn't think of an analytic way to do
   * this, so I resorted to brute force.
   */
-void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd2,struct integral*abcd2){
-  ULI ind3,a,b,c,d,ind1,ind2,index,flag;
-  ULI nvals,vals[16];
+void abcd2_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabcd2,struct integral*abcd2){
+  size_t ind3,a,b,c,d,ind1,ind2,index,flag;
+  size_t nvals,vals[16];
   nvals = 0;
 
   a = p-o;
@@ -1329,10 +1329,10 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
      }
   }
 }
-void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabcd2,ULI*totalnabcd2,struct integral**abcd2,ULI binsize,ULI bucketsize,psio_address*addr,ULI nfiles){
-  ULI ind3,a,b,c,d,ind1,ind2,index,flag;
-  ULI nvals,vals[16];
-  ULI k;
+void abcd2_terms_new(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabcd2,size_t*totalnabcd2,struct integral**abcd2,size_t binsize,size_t bucketsize,psio_address*addr,size_t nfiles){
+  size_t ind3,a,b,c,d,ind1,ind2,index,flag;
+  size_t nvals,vals[16];
+  size_t k;
   nvals = 0;
 
   a = p-o;
@@ -1351,7 +1351,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd2[k][nabcd2[k]].ind   = ind3;
         abcd2[k][nabcd2[k]++].val = val;
@@ -1367,7 +1367,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd2[k][nabcd2[k]].ind   = ind3;
            abcd2[k][nabcd2[k]++].val = val;
@@ -1391,7 +1391,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd2[k][nabcd2[k]].ind   = ind3;
         abcd2[k][nabcd2[k]++].val = val;
@@ -1407,7 +1407,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd2[k][nabcd2[k]].ind   = ind3;
            abcd2[k][nabcd2[k]++].val = val;
@@ -1431,7 +1431,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd2[k][nabcd2[k]].ind   = ind3;
         abcd2[k][nabcd2[k]++].val = val;
@@ -1447,7 +1447,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd2[k][nabcd2[k]].ind   = ind3;
            abcd2[k][nabcd2[k]++].val = val;
@@ -1471,7 +1471,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd2[k][nabcd2[k]].ind   = ind3;
         abcd2[k][nabcd2[k]++].val = val;
@@ -1487,7 +1487,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd2[k][nabcd2[k]].ind   = ind3;
            abcd2[k][nabcd2[k]++].val = val;
@@ -1508,7 +1508,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
       }
   }
 }
-void abcd3_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd3,struct integral*abcd3){
+void abcd3_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabcd3,struct integral*abcd3){
   p -= o;
   q -= o;
   r -= o;
@@ -1567,10 +1567,10 @@ void abcd3_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
      }
   }
 }
-void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabcd1,ULI*totalnabcd1,struct integral**abcd1,ULI binsize,ULI bucketsize,psio_address*addr,ULI nfiles){
-  ULI ind3,a,b,c,d,ind1,ind2,index,flag;
-  ULI nvals,vals[16];
-  ULI k;
+void abcd1_terms_new(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t*nabcd1,size_t*totalnabcd1,struct integral**abcd1,size_t binsize,size_t bucketsize,psio_address*addr,size_t nfiles){
+  size_t ind3,a,b,c,d,ind1,ind2,index,flag;
+  size_t nvals,vals[16];
+  size_t k;
   nvals = 0;
 
   a = p-o;
@@ -1589,7 +1589,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd1[k][nabcd1[k]].ind   = ind3;
         abcd1[k][nabcd1[k]++].val = val;
@@ -1605,7 +1605,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd1[k][nabcd1[k]].ind   = ind3;
            abcd1[k][nabcd1[k]++].val = val;
@@ -1629,7 +1629,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd1[k][nabcd1[k]].ind   = ind3;
         abcd1[k][nabcd1[k]++].val = val;
@@ -1645,7 +1645,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd1[k][nabcd1[k]].ind   = ind3;
            abcd1[k][nabcd1[k]++].val = val;
@@ -1669,7 +1669,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd1[k][nabcd1[k]].ind   = ind3;
         abcd1[k][nabcd1[k]++].val = val;
@@ -1685,7 +1685,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd1[k][nabcd1[k]].ind   = ind3;
            abcd1[k][nabcd1[k]++].val = val;
@@ -1709,7 +1709,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
          }
      }
      if (flag){
-        ULI rem = ind3 % binsize;
+        size_t rem = ind3 % binsize;
         k   = (ind3 - rem ) / binsize;
         abcd1[k][nabcd1[k]].ind   = ind3;
         abcd1[k][nabcd1[k]++].val = val;
@@ -1725,7 +1725,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
             }
         }
         if (flag){
-           ULI rem = ind3 % binsize;
+           size_t rem = ind3 % binsize;
            k   = (ind3 - rem ) / binsize;
            abcd1[k][nabcd1[k]].ind   = ind3;
            abcd1[k][nabcd1[k]++].val = val;
@@ -1749,9 +1749,9 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
 
 }
 
-void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd1,struct integral*abcd1){
-  ULI ind3,a,b,c,d,ind1,ind2,index,flag;
-  ULI nvals,vals[16];
+void abcd1_terms(double val,size_t pq,size_t rs,size_t p,size_t q,size_t r,size_t s,size_t o,size_t v,size_t&nabcd1,struct integral*abcd1){
+  size_t ind3,a,b,c,d,ind1,ind2,index,flag;
+  size_t nvals,vals[16];
   nvals = 0;
 
   a = p-o;
@@ -1901,11 +1901,11 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
 
 }
 
-void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim,ULI filestart,ULI nfiles){
+void SortBlockNewNew(size_t*nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim,size_t filestart,size_t nfiles){
   std::shared_ptr<PSIO> psio(new PSIO());
      // bins are coreloads
-     ULI nbins,binsize,lastbin;
-     for (ULI i=1; i<=blockdim; i++){
+     size_t nbins,binsize,lastbin;
+     for (size_t i=1; i<=blockdim; i++){
          if (maxdim>=(double)blockdim/i){
             binsize = blockdim/i;
             if (i*binsize < blockdim) binsize++;
@@ -1915,19 +1915,19 @@ void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,UL
      }
      lastbin = blockdim - (nbins-1)*binsize;
      // open temporary files:
-     for (ULI i = 0; i < nbins; i++) {
+     for (size_t i = 0; i < nbins; i++) {
          psio->open(filestart+i,PSIO_OPEN_OLD);
      }
 
      // loop over temporary files:
      psio_address addrwrite = PSIO_ZERO;
      psio->open(PSIF_DCC_TEMP,PSIO_OPEN_NEW);
-     for (ULI k = 0; k < nbins; k++) {
+     for (size_t k = 0; k < nbins; k++) {
          memset((void*)tmp,'\0',binsize*sizeof(double));
          // read coreload from this file
          psio->read_entry(filestart+k,string,(char*)&buffer[0],nelem[k]*sizeof(struct integral));
          // loop over elements and sort into tmp
-         for (ULI j = 0; j < nelem[k]; j++) {
+         for (size_t j = 0; j < nelem[k]; j++) {
              tmp[buffer[j].ind-k*binsize] = buffer[j].val;
          }
          // write this guy to PSIF_DCC_TEMP
@@ -1937,12 +1937,12 @@ void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,UL
      psio->rename_file(PSIF_DCC_TEMP,PSIFILE);
 
      // close temporary files:
-     for (ULI i = 0; i < nbins; i++) {
+     for (size_t i = 0; i < nbins; i++) {
          psio->close(filestart+i,0);
      }
 }
 
-void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim){
+void SortBlockNew(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim){
   std::shared_ptr<PSIO> psio(new PSIO());
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
@@ -1951,7 +1951,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      psio->close(PSIFILE,0);
 
      memset((void*)tmp,'\0',blockdim*sizeof(double));
-     for (ULI j=0; j<nelem; j++){
+     for (size_t j=0; j<nelem; j++){
          tmp[buffer[j].ind] = buffer[j].val;
      }
 
@@ -1960,8 +1960,8 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      psio->close(PSIFILE,1);
   }else{
      // bins are coreloads
-     ULI nbins,binsize,lastbin;
-     for (ULI i=1; i<=blockdim; i++){
+     size_t nbins,binsize,lastbin;
+     for (size_t i=1; i<=blockdim; i++){
          if (maxdim>=(double)blockdim/i){
             binsize = blockdim/i;
             if (i*binsize < blockdim) binsize++;
@@ -1976,20 +1976,20 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      struct integral**buffer2;
      buffer2 = (struct integral**)malloc(nbins*sizeof(struct integral*));
      // open temporary files:
-     for (ULI i = 0; i < nbins; i++) {
+     for (size_t i = 0; i < nbins; i++) {
          psio->open(PSIF_DCC_SORT_START+i,PSIO_OPEN_NEW);
      }
      // count elements in buffer2
-     ULI * buffer2_count = (ULI*)malloc(nbins*sizeof(long int));
+     size_t * buffer2_count = (size_t*)malloc(nbins*sizeof(long int));
      // total elements from buffer2 written to disk
-     ULI * buffer2_total = (ULI*)malloc(nbins*sizeof(long int));
+     size_t * buffer2_total = (size_t*)malloc(nbins*sizeof(long int));
      // array of addresses
      psio_address * addr = new psio_address[nbins];
      // bucketsize is binsize / nbins
-     ULI bucketsize = binsize / nbins;
+     size_t bucketsize = binsize / nbins;
      if ( bucketsize * nbins < binsize ) bucketsize++;
      printf("%5li %5li\n",binsize,bucketsize);
-     for (ULI i = 0; i < nbins; i++) {
+     for (size_t i = 0; i < nbins; i++) {
          addr[i] = PSIO_ZERO;
          buffer2_count[i] = 0;
          buffer2_total[i] = 0;
@@ -1997,8 +1997,8 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
          memset((void*)buffer2[i],'\0',bucketsize*sizeof(struct integral));
      }
 
-     ULI initialnbins,initialbinsize,initiallastbin;
-     for (ULI i=1; i<=nelem; i++){
+     size_t initialnbins,initialbinsize,initiallastbin;
+     for (size_t i=1; i<=nelem; i++){
          if (maxdim>=(double)nelem/i){
             initialbinsize = nelem/i;
             if (i*initialbinsize < nelem) initialbinsize++;
@@ -2013,14 +2013,14 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
 
      // loop over data on disk:
      psio->open(PSIFILE,PSIO_OPEN_OLD);
-     for (ULI i = 0; i < initialnbins-1; i++) {
+     for (size_t i = 0; i < initialnbins-1; i++) {
          // read buffer
          psio->read(PSIFILE,string,(char*)&buffer[0],initialbinsize*sizeof(struct integral),addr1,&addr1);
          // loop over elements:
-         for (ULI j=0; j<initialbinsize; j++){
+         for (size_t j=0; j<initialbinsize; j++){
              // which bin to i belong to?
-             ULI myk;
-             for (ULI k = 0; k < nbins; k++) {
+             size_t myk;
+             for (size_t k = 0; k < nbins; k++) {
                  if (buffer[j].ind < (k+1)*binsize && buffer[j].ind >= k*binsize ){
                      myk = k;
                      break;
@@ -2040,10 +2040,10 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      // read buffer
      psio->read(PSIFILE,string,(char*)&buffer[0],initiallastbin*sizeof(struct integral),addr1,&addr1);
      // loop over elements:
-     for (ULI j=0; j<initiallastbin; j++){
+     for (size_t j=0; j<initiallastbin; j++){
          // which bin to i belong to?
-         ULI myk;
-         for (ULI k = 0; k < nbins; k++) {
+         size_t myk;
+         for (size_t k = 0; k < nbins; k++) {
              if (buffer[j].ind < (k+1)*binsize && buffer[j].ind >= k*binsize ){
                  myk = k;
                  break;
@@ -2061,7 +2061,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      psio->close(PSIFILE,1);
 
      // write leftovers
-     for (ULI k = 0; k < nbins; k++) {
+     for (size_t k = 0; k < nbins; k++) {
          if ( buffer2_count[k] > 0 ) {
              psio->write(PSIF_DCC_SORT_START+k,string,(char*)&buffer2[k][0],buffer2_count[k]*sizeof(struct integral),addr[k],&addr[k]);
              buffer2_total[k] += buffer2_count[k];
@@ -2073,12 +2073,12 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      // loop over temporary files:
      psio_address addrwrite = PSIO_ZERO;
      psio->open(PSIF_DCC_TEMP,PSIO_OPEN_NEW);
-     for (ULI k = 0; k < nbins; k++) {
+     for (size_t k = 0; k < nbins; k++) {
          memset((void*)tmp,'\0',binsize*sizeof(double));
          // read coreload from this file
          psio->read_entry(PSIF_DCC_SORT_START+k,string,(char*)&buffer[0],buffer2_total[k]*sizeof(struct integral));
          // loop over elements and sort into tmp
-         for (ULI j = 0; j < buffer2_total[k]; j++) {
+         for (size_t j = 0; j < buffer2_total[k]; j++) {
              tmp[buffer[j].ind-k*binsize] = buffer[j].val;
          }
          // write this guy to PSIF_DCC_TEMP
@@ -2090,19 +2090,19 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
 
      /*psio->open(PSIF_DCC_TEMP,PSIO_OPEN_NEW);
      addr2=PSIO_ZERO;
-     for (ULI k=0; k<nbins; k++){
+     for (size_t k=0; k<nbins; k++){
          addr1=PSIO_ZERO;
          memset((void*)tmp,'\0',binsize*sizeof(double));
-         for (ULI i=0; i<initialnbins-1; i++){
+         for (size_t i=0; i<initialnbins-1; i++){
              psio->read(PSIFILE,string,(char*)&buffer[0],initialbinsize*sizeof(struct integral),addr1,&addr1);
-             for (ULI j=0; j<initialbinsize; j++){
+             for (size_t j=0; j<initialbinsize; j++){
                  if (buffer[j].ind < (k+1)*binsize && buffer[j].ind>=k*binsize){
                      tmp[buffer[j].ind-k*binsize] = buffer[j].val;
                  }
              }
          }
          psio->read(PSIFILE,string,(char*)&buffer[0],initiallastbin*sizeof(struct integral),addr1,&addr1);
-         for (ULI j=0; j<initiallastbin; j++){
+         for (size_t j=0; j<initiallastbin; j++){
              if (buffer[j].ind < (k+1)*binsize && buffer[j].ind>=k*binsize){
                  tmp[buffer[j].ind-k*binsize] = buffer[j].val;
              }
@@ -2117,7 +2117,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      delete[] addr;
 
      // close temporary files:
-     for (ULI i = 0; i < nbins; i++) {
+     for (size_t i = 0; i < nbins; i++) {
          psio->close(PSIF_DCC_SORT_START+i,0);
          free(buffer2[i]);
      }
@@ -2127,7 +2127,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      free(buffer2);
   }
 }
-void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim){
+void SortBlock(size_t nelem,size_t blockdim,struct integral*buffer,double*tmp,size_t PSIFILE,const char*string,size_t maxdim){
   std::shared_ptr<PSIO> psio(new PSIO());
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
@@ -2136,7 +2136,7 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      psio->close(PSIFILE,0);
 
      memset((void*)tmp,'\0',blockdim*sizeof(double));
-     for (ULI j=0; j<nelem; j++){
+     for (size_t j=0; j<nelem; j++){
          tmp[buffer[j].ind] = buffer[j].val;
      }
 
@@ -2144,8 +2144,8 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      psio->write_entry(PSIFILE,string,(char*)&tmp[0],blockdim*sizeof(double));
      psio->close(PSIFILE,1);
   }else{
-     ULI nbins,binsize,lastbin;
-     for (ULI i=1; i<=blockdim; i++){
+     size_t nbins,binsize,lastbin;
+     for (size_t i=1; i<=blockdim; i++){
          if (maxdim>=(double)blockdim/i){
             binsize = blockdim/i;
             if (i*binsize < blockdim) binsize++;
@@ -2155,8 +2155,8 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      }
      lastbin = blockdim - (nbins-1)*binsize;
 
-     ULI initialnbins,initialbinsize,initiallastbin;
-     for (ULI i=1; i<=nelem; i++){
+     size_t initialnbins,initialbinsize,initiallastbin;
+     for (size_t i=1; i<=nelem; i++){
          if (maxdim>=(double)nelem/i){
             initialbinsize = nelem/i;
             if (i*initialbinsize < nelem) initialbinsize++;
@@ -2174,19 +2174,19 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
 
      psio->open(PSIF_DCC_TEMP,PSIO_OPEN_NEW);
      addr2=PSIO_ZERO;
-     for (ULI k=0; k<nbins; k++){
+     for (size_t k=0; k<nbins; k++){
          addr1=PSIO_ZERO;
          memset((void*)tmp,'\0',binsize*sizeof(double));
-         for (ULI i=0; i<initialnbins-1; i++){
+         for (size_t i=0; i<initialnbins-1; i++){
              psio->read(PSIFILE,string,(char*)&buffer[0],initialbinsize*sizeof(struct integral),addr1,&addr1);
-             for (ULI j=0; j<initialbinsize; j++){
+             for (size_t j=0; j<initialbinsize; j++){
                  if (buffer[j].ind < (k+1)*binsize && buffer[j].ind>=k*binsize){
                      tmp[buffer[j].ind-k*binsize] = buffer[j].val;
                  }
              }
          }
          psio->read(PSIFILE,string,(char*)&buffer[0],initiallastbin*sizeof(struct integral),addr1,&addr1);
-         for (ULI j=0; j<initiallastbin; j++){
+         for (size_t j=0; j<initiallastbin; j++){
              if (buffer[j].ind < (k+1)*binsize && buffer[j].ind>=k*binsize){
                  tmp[buffer[j].ind-k*binsize] = buffer[j].val;
              }
@@ -2223,8 +2223,8 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v){
   psio->open(PSIF_DCC_ABCI,PSIO_OPEN_NEW);
   psio->close(PSIF_DCC_ABCI,0);
 
-  ULI nbins,binsize,lastbin;
-  for (ULI i=1; i<=o*v*v*v; i++){
+  size_t nbins,binsize,lastbin;
+  for (size_t i=1; i<=o*v*v*v; i++){
       if (maxelem>=(double)o*v*v*v/i){
          binsize = o*v*v*v/i;
          if (i*binsize < o*v*v*v) binsize++;
@@ -2242,7 +2242,7 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v){
   psio_address abci3_addr = PSIO_ZERO;
   psio_address abci5_addr = PSIO_ZERO;
   psio_address abci4_addr = PSIO_ZERO;
-  for (ULI i=0; i<nbins-1; i++){
+  for (size_t i=0; i<nbins-1; i++){
       psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_DCC_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
       C_DAXPY(binsize,2.0,tmp,1,tmp2,1);
@@ -2266,15 +2266,15 @@ void Sort_OV3_LowMemory(long int memory, long int o,long int v){
 void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
 
   double val;
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI fstact = nfzc;
-  ULI lstact = norbs-nfzv;
+  size_t o = ndoccact;
+  size_t v = nvirt;
+  size_t fstact = nfzc;
+  size_t lstact = norbs-nfzv;
 
-  ULI lastbuf;
+  size_t lastbuf;
   Label *lblptr;
   Value *valptr;
-  ULI nocc,idx, p, q, r, s, pq, rs;
+  size_t nocc,idx, p, q, r, s, pq, rs;
 
   lblptr = Buf->labels;
   valptr = Buf->values;
@@ -2282,10 +2282,10 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   lastbuf = Buf->lastbuf;
 
   // available memory:
-  ULI memory = Process::environment.get_memory();
+  size_t memory = Process::environment.get_memory();
 
   // 8 bytes for integrals
-  ULI maxelem = memory / (sizeof(double));
+  size_t maxelem = memory / (sizeof(double));
   if (maxelem > o*o*v*v) maxelem = o*o*v*v;
 
   outfile->Printf("        CC integral sort will use %7.2lf mb\n",
@@ -2302,10 +2302,10 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
     * first buffer (read in when Buf was initialized)
     */
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-      p = (ULI) lblptr[idx++];
-      q = (ULI) lblptr[idx++];
-      r = (ULI) lblptr[idx++];
-      s = (ULI) lblptr[idx++];
+      p = (size_t) lblptr[idx++];
+      q = (size_t) lblptr[idx++];
+      r = (size_t) lblptr[idx++];
+      s = (size_t) lblptr[idx++];
 
       if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
       if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
@@ -2331,10 +2331,10 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
       lastbuf = Buf->lastbuf;
       for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
 
-          p = (ULI) lblptr[idx++];
-          q = (ULI) lblptr[idx++];
-          r = (ULI) lblptr[idx++];
-          s = (ULI) lblptr[idx++];
+          p = (size_t) lblptr[idx++];
+          q = (size_t) lblptr[idx++];
+          r = (size_t) lblptr[idx++];
+          s = (size_t) lblptr[idx++];
 
           if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
           if (p > lstact || q > lstact || r > lstact || s > lstact) continue;

@@ -47,7 +47,7 @@ namespace psi{
 class PSIO;
 
 <<<<<<< HEAD
-using ULI = unsigned long int;
+using size_t = unsigned long int;
 =======
 using size_t = size_t;
 >>>>>>> 6c71344... Cleanup: unsigned long int -> size_t
@@ -197,15 +197,15 @@ class Tensor2d
   // axpy: Y <-- a * X + Y
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
-  void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
-  void axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
+  void axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
+  void axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void trans(const SharedTensor2d &A);
   void trans(double **A);
   void copy(double **a);
   void copy(const SharedTensor2d &Adum);
-  void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
+  void copy(size_t length, const SharedTensor2d &A, int inc_a, int inc_2d);
   void copy(const SharedTensor2d &A, int start);
   // partial copy
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
@@ -331,7 +331,7 @@ class Tensor2d
   void myread(const string& filename);
   void myread(int fileno);
   void myread(int fileno, bool append);
-  void myread(int fileno, ULI start);
+  void myread(int fileno, size_t start);
 
   // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
   // A2d_ = alpha*A + beta*A2d_

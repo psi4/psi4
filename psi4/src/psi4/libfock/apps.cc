@@ -634,7 +634,7 @@ SharedMatrix RCIS::TDso(SharedMatrix T1, bool singlet)
     // Triplets are zero
     if (!singlet) return D;
 
-    double* temp = new double[C_->max_nrow() * (ULI) T1->max_nrow()];
+    double* temp = new double[C_->max_nrow() * (size_t) T1->max_nrow()];
 
     int symm = T1->symmetry();
     for (int h = 0; h < T1->nirrep(); h++) {

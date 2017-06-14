@@ -180,7 +180,7 @@ void opt_io_read_entry(const char *key, char *buffer, size_t size) {
 // buffer = char * ; stream from which to read
 <<<<<<< HEAD
 // size   = unsigned long int ; number of bytes to read
-void opt_io_write_entry(const char *key, char *buffer, ULI size) {
+void opt_io_write_entry(const char *key, char *buffer, size_t size) {
 =======
 // size   = size_t ; number of bytes to read
 void opt_io_write_entry(const char *key, char *buffer, size_t size) {

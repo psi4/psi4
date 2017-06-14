@@ -48,7 +48,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
   psio_ud *this_unit;
   psio_tocentry *this_entry, *last_entry;
   psio_address start_toc, start_data, end_data; /* global addresses */
-  ULI tocentry_size;
+  size_t tocentry_size;
   int dirty = 0;
 
   this_unit = &(psio_unit[unit]);
@@ -73,7 +73,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
     /* Compute the global address of the new entry */
     if (!(this_unit->toclen)) { /* First TOC entry */
       this_entry->sadd.page = 0;
-      this_entry->sadd.offset = sizeof(ULI); /* offset for the toclen value stored first */
+      this_entry->sadd.offset = sizeof(size_t); /* offset for the toclen value stored first */
       this_unit->toc = this_entry;
     } else { /* Use ending address from last TOC entry */
       last_entry = toclast(unit);

@@ -88,7 +88,7 @@ FRAG::~FRAG() {
   free_array(mass);
   free_bool_matrix(connectivity);
   coords.clear_combos();
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     delete coords.simples[i];
   coords.simples.clear();
 }
@@ -318,7 +318,7 @@ int FRAG::add_bend_by_connectivity(void) {
             }
           } // ijk
 
-  for (ULI i=0; i<opt::INTCO_EXCEPT::linear_angles.size(); i+=3) {
+  for (size_t i=0; i<opt::INTCO_EXCEPT::linear_angles.size(); i+=3) {
     int A = opt::INTCO_EXCEPT::linear_angles[i];
     int B = opt::INTCO_EXCEPT::linear_angles[i+1];
     int C = opt::INTCO_EXCEPT::linear_angles[i+2];
@@ -490,7 +490,7 @@ oprintf_out("passed phi is %10.5lf\n", phi);
 
 // is simple already present in list ?
 bool FRAG::present(const SIMPLE_COORDINATE *one) const {
-  for (ULI k=0; k<coords.simples.size(); ++k) {
+  for (size_t k=0; k<coords.simples.size(); ++k) {
     if (*one == *(coords.simples[k]))
       return true;
   }
@@ -514,7 +514,7 @@ void FRAG::add_trivial_coord_combination(int simple_id) {
 
 int FRAG::form_trivial_coord_combinations(void) {
   coords.clear_combos();
-  for (ULI s=0; s<coords.simples.size(); ++s)
+  for (size_t s=0; s<coords.simples.size(); ++s)
     add_trivial_coord_combination(s);
   return coords.simples.size();
 }
@@ -608,7 +608,7 @@ int FRAG::add_cartesians(void) {
 }
 
 bool FRAG::is_noncart_present(void) const {
-  for (ULI k=0; k<coords.simples.size(); ++k) {
+  for (size_t k=0; k<coords.simples.size(); ++k) {
     if (coords.simples[k]->g_type() != INTCO_TYPE::cart_type)
       return true;
   }
@@ -620,7 +620,7 @@ bool FRAG::is_noncart_present(void) const {
 // is already present in the set.  If so, it returns the index.
 // If not, it returns the index of the end + 1.
 int FRAG::find(const SIMPLE_COORDINATE *one) const {
-  for (ULI k=0; k<coords.simples.size(); ++k) {
+  for (size_t k=0; k<coords.simples.size(); ++k) {
     if (*one == *(coords.simples[k]))
       return k;
   }
@@ -704,7 +704,7 @@ double ** FRAG::compute_derivative_B(int coord_index) const {
 double ** FRAG::compute_constraints(void) const {
   double **C = init_matrix(coords.simples.size(), coords.simples.size());
 
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->is_frozen())
       C[i][i] = 1.0;
 
@@ -713,7 +713,7 @@ double ** FRAG::compute_constraints(void) const {
 
 // freeze coords within fragments
 void FRAG::freeze_coords(void) {
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     coords.simples[i]->freeze();
 }
 
@@ -734,7 +734,7 @@ void FRAG::compute_G(double **G, bool use_masses) const {
 }
 
 void FRAG::fix_tors_near_180(void) {
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == tors_type)
       coords.simples[i]->fix_tors_near_180(geom);
 }
@@ -742,7 +742,7 @@ void FRAG::fix_tors_near_180(void) {
 // Compute axes for bends, then mark as fixed.
 void FRAG::fix_bend_axes(void) {
   BEND * a_bend;
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == bend_type) {
       a_bend = static_cast<BEND*>(coords.simples[i]);
       // If value is small, then don't fix so that value and Bmatrix
@@ -756,7 +756,7 @@ void FRAG::fix_bend_axes(void) {
 
 void FRAG::unfix_bend_axes(void) {
   BEND * a_bend;
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == bend_type) {
       a_bend = static_cast<BEND*>(coords.simples[i]);
       a_bend->unfix_axes();
@@ -764,7 +764,7 @@ void FRAG::unfix_bend_axes(void) {
 }
 
 void FRAG::fix_oofp_near_180(void) {
-  for (ULI i=0; i<coords.simples.size(); ++i)
+  for (size_t i=0; i<coords.simples.size(); ++i)
     if (coords.simples[i]->g_type() == oofp_type)
       coords.simples[i]->fix_oofp_near_180(geom);
 }
@@ -831,8 +831,8 @@ std::vector<int> FRAG::validate_angles(double const * const dq, int atom_offset)
 
   // Compute change in simple coordinates.
   double *dq_simple = init_array(coords.simples.size());
-  for (ULI cc=0; cc<coords.index.size(); ++cc)
-    for (ULI s=0; s<coords.index[cc].size(); ++s)
+  for (size_t cc=0; cc<coords.index.size(); ++cc)
+    for (size_t s=0; s<coords.index[cc].size(); ++s)
       dq_simple[ coords.index[cc][s] ] += dq[cc] * coords.coeff[cc][s];
 
   std::vector<int> lin_angle;

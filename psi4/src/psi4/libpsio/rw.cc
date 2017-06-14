@@ -63,7 +63,7 @@ void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size,
     psio_error(unit, PSIO_ERROR_LSEEK);
   for (i=1, this_page=page+1; i < numvols; i++, this_page++) {
     this_vol = this_page % numvols;
-    errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (ULI) 0,
+    errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t) 0,
                           numvols);
     if (errcod == -1)
       psio_error(unit, PSIO_ERROR_LSEEK);

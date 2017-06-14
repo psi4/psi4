@@ -351,8 +351,8 @@ private:
     KWDMap files_keywords_;
 
 #ifdef PSIO_STATS
-    ULI *psio_readlen;
-    ULI *psio_writlen;
+    size_t *psio_readlen;
+    size_t *psio_writlen;
 #endif
 
     /// Library state variable

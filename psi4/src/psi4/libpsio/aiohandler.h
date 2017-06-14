@@ -48,7 +48,7 @@ private:
     /// Memory buffer argument
     std::queue<char*> buffer_;
     /// Size argument
-    std::queue<ULI> size_;
+    std::queue<size_t> size_;
     /// Start address argument
     std::queue<psio_address> start_;
     /// End address pointer argument
@@ -56,11 +56,11 @@ private:
     /// Matrix pointer for discontinuous I/O
     std::queue<double**> matrix_;
     /// Size argument for discontinuous I/O
-    std::queue<ULI> row_length_;
+    std::queue<size_t> row_length_;
     /// Size argument for discontinuous I/O
-    std::queue<ULI> col_length_;
+    std::queue<size_t> col_length_;
     /// Size argument for discontinuous I/O
-    std::queue<ULI> col_skip_;
+    std::queue<size_t> col_skip_;
     /// For IWL: number of ints in the buffer
     std::queue<int> nints_;
     /// For IWL: is this the last buffer ?

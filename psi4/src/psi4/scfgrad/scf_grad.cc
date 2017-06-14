@@ -584,7 +584,7 @@ SharedMatrix SCFGrad::compute_gradient()
         double* eps_ap = eps_a->pointer();
         double* eps_bp = eps_b->pointer();
 
-        double* temp = new double[nso * (ULI) nalpha];
+        double* temp = new double[nso * (size_t) nalpha];
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
@@ -678,7 +678,7 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_on("Grad: JK");
 
     std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_, basissets_["DF_BASIS_SCF"]);
-    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
+    jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);
@@ -1303,7 +1303,7 @@ SharedMatrix SCFGrad::compute_hessian()
         double* eps_ap = eps_a->pointer();
         double* eps_bp = eps_b->pointer();
 
-        double* temp = new double[nso * (ULI) nalpha];
+        double* temp = new double[nso * (size_t) nalpha];
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
@@ -1467,7 +1467,7 @@ SharedMatrix SCFGrad::compute_hessian()
     timer_on("Hess: JK");
 
     std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2, basisset_, basissets_["DF_BASIS_SCF"]);
-    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
+    jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);

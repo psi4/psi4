@@ -508,13 +508,13 @@ std::shared_ptr<Matrix> SCFGrad::rhf_hessian_response()
                             }
                         }
                         // c[A] = (A|mn) D[m][n]
-                        C_DGEMV('N', np, nso*(ULI)nso, 1.0, Amnp[0], nso*(ULI)nso, Dap[0], 1, 0.0, cp, 1);
+                        C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dap[0], 1, 0.0, cp, 1);
                         // (A|mj) = (A|mn) C[n][j]
-                        C_DGEMM('N','N',np*(ULI)nso,nocc,nso,1.0,Amnp[0],nso,Cop[0],nocc,0.0,Amip[0],nocc);
+                        C_DGEMM('N','N',np*(size_t)nso,nocc,nso,1.0,Amnp[0],nso,Cop[0],nocc,0.0,Amip[0],nocc);
                         // (A|ij) = (A|mj) C[m][i]
                         #pragma omp parallel for
                         for (int p = 0; p < np; p++) {
-                            C_DGEMM('T','N',nocc,nocc,nso,1.0,Amip[p],nocc,Cop[0],nocc,0.0,&Aijp[0][p * (ULI) nocc * nocc],nocc);
+                            C_DGEMM('T','N',nocc,nocc,nso,1.0,Amip[p],nocc,Cop[0],nocc,0.0,&Aijp[0][p * (size_t) nocc * nocc],nocc);
                         }
 
                     }

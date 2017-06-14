@@ -57,7 +57,7 @@ size_t PSIO::toclen(size_t unit) {
 size_t PSIO::rd_toclen(size_t unit) {
   int errcod, stream;
   psio_ud *this_unit;
-  ULI len;
+  size_t len;
 
   this_unit = &(psio_unit[unit]);
 
@@ -71,10 +71,10 @@ size_t PSIO::rd_toclen(size_t unit) {
 
   /* Read the value */
 
-    errcod = ::read(stream, (char *) &len, sizeof(ULI));
+    errcod = ::read(stream, (char *) &len, sizeof(size_t));
 
 
-  if(errcod != sizeof(ULI)) return(0); /* assume that all is well (see comments above) */
+  if(errcod != sizeof(size_t)) return(0); /* assume that all is well (see comments above) */
 
   return(len);
 }
@@ -97,9 +97,9 @@ void PSIO::wt_toclen(size_t unit, size_t len) {
 
   /* Write the value */
 
-    errcod = ::write(stream, (char *) &len, sizeof(ULI));
+    errcod = ::write(stream, (char *) &len, sizeof(size_t));
 
-  if(errcod != sizeof(ULI)) {
+  if(errcod != sizeof(size_t)) {
     ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %d.\n", unit);
     fflush(stderr);
     throw PSIEXCEPTION("PSIO Error");
