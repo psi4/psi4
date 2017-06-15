@@ -576,12 +576,6 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
 void CIWavefunction::ci_nat_orbs() {
   outfile->Printf("\n   Computing CI Natural Orbitals\n");
 
-  // Grab Fock matrices and build the average Fock operator
-  SharedMatrix AFock = somcscf_->current_AFock();
-  SharedMatrix IFock = somcscf_->current_IFock();
-  SharedMatrix Favg = AFock->clone();
-  Favg->add(IFock);
-
   // Grab orbital dimensions
   Dimension zero_dim(nirrep_);
   Dimension noccpi = get_dimension("DOCC");
@@ -600,33 +594,42 @@ void CIWavefunction::ci_nat_orbs() {
   // set the active block of Ca_
   set_orbitals("ACT",Cnat);
 
-  // Diagonalize the doubly occupied block of Favg
-  Slice noccpi_slice(zero_dim,noccpi);
-  SharedMatrix Fo = Favg->get_block(noccpi_slice,noccpi_slice);
-  SharedVector evals_o = std::make_shared<Vector>("F Evals", noccpi);
-  SharedMatrix evecs_o = std::make_shared<Matrix>("F Evecs", noccpi, noccpi);
-  Fo->diagonalize(evecs_o, evals_o, ascending);
+  // semicanonicalize the DOCC and VIR blocks only for CASSCF
+  if (options_.get_str("WFN") == "CASSCF"){
+      // Grab Fock matrices and build the average Fock operator
+      SharedMatrix AFock = somcscf_->current_AFock();
+      SharedMatrix IFock = somcscf_->current_IFock();
+      SharedMatrix Favg = AFock->clone();
+      Favg->add(IFock);
 
-  // get a copy of the doubly occupied orbitals and rotate them
-  SharedMatrix Cocc = get_orbitals("DOCC");
-  SharedMatrix Cocc_semi = Matrix::doublet(Cocc, evecs_o);
+      // Diagonalize the doubly occupied block of Favg
+      Slice noccpi_slice(zero_dim,noccpi);
+      SharedMatrix Fo = Favg->get_block(noccpi_slice,noccpi_slice);
+      SharedVector evals_o = std::make_shared<Vector>("F Evals", noccpi);
+      SharedMatrix evecs_o = std::make_shared<Matrix>("F Evecs", noccpi, noccpi);
+      Fo->diagonalize(evecs_o, evals_o, ascending);
 
-  // set the doubly occupied orbitals block of Ca_
-  set_orbitals("DOCC",Cocc_semi);
+      // get a copy of the doubly occupied orbitals and rotate them
+      SharedMatrix Cocc = get_orbitals("DOCC");
+      SharedMatrix Cocc_semi = Matrix::doublet(Cocc, evecs_o);
 
-  // Diagonalize the virtual block of Favg
-  Slice nvirpi_slice(noccpi + nactpi, noccpi + nactpi + nvirpi);
-  SharedMatrix Fv = Favg->get_block(nvirpi_slice,nvirpi_slice);
-  SharedVector evals_v = std::make_shared<Vector>("F Evals", nvirpi);
-  SharedMatrix evecs_v = std::make_shared<Matrix>("F Evecs", nvirpi, nvirpi);
-  Fv->diagonalize(evecs_v, evals_v, ascending);
+      // set the doubly occupied orbitals block of Ca_
+      set_orbitals("DOCC",Cocc_semi);
 
-  // get a copy of the virtual orbitals and rotate them
-  SharedMatrix Cvir = get_orbitals("VIR");
-  SharedMatrix Cvir_semi = Matrix::doublet(Cvir, evecs_v);
+      // Diagonalize the virtual block of Favg
+      Slice nvirpi_slice(noccpi + nactpi, noccpi + nactpi + nvirpi);
+      SharedMatrix Fv = Favg->get_block(nvirpi_slice,nvirpi_slice);
+      SharedVector evals_v = std::make_shared<Vector>("F Evals", nvirpi);
+      SharedMatrix evecs_v = std::make_shared<Matrix>("F Evecs", nvirpi, nvirpi);
+      Fv->diagonalize(evecs_v, evals_v, ascending);
 
-  // set the virtual orbitals block of Ca_
-  set_orbitals("VIR",Cvir_semi);
+      // get a copy of the virtual orbitals and rotate them
+      SharedMatrix Cvir = get_orbitals("VIR");
+      SharedMatrix Cvir_semi = Matrix::doublet(Cvir, evecs_v);
+
+      // set the virtual orbitals block of Ca_
+      set_orbitals("VIR",Cvir_semi);
+  }
 
   Cb_ = Ca_;
 }

@@ -356,7 +356,7 @@ def mcscf_solver(ref_wfn):
     # For orbital invariant methods we transform the orbitals to the natural or
     # semicanonical basis. Frozen doubly occupied and virtual orbitals are not
     # modified.
-    if core.get_local_option("DETCI", "WFN") != "RASSCF":
+    if core.get_option("DETCI", "WFN") == "CASSCF":
         # Do we diagonalize the opdm?
         if core.get_option("DETCI", "NAT_ORBS"):
             ciwfn.ci_nat_orbs()
