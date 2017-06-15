@@ -38,7 +38,7 @@ namespace psi {
 class Dimension
 {
     std::string name_;
-    std::vector<int> blocks_;
+    std::vector<size_t> blocks_;
 
 public:
     Dimension();
@@ -51,7 +51,7 @@ public:
     Dimension& operator=(const Dimension& other);
 
     /// Assignment operator, this one can be very dangerous
-    Dimension& operator=(const int* other);
+    Dimension& operator=(const size_t* other);
 
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);

@@ -40,108 +40,103 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-namespace psi{
-class Molecule;
-class Wavefunction;
-class PointGroup;
-class Matrix;
-class Vector;
+ namespace psi {
+ class Molecule;
+ class Wavefunction;
+ class PointGroup;
+ class Matrix;
+ class Vector;
 
-namespace efp {
-    class EFP;
-}
+ namespace efp {
+ class EFP;
+ }
 
-class Process
-{
-public:
-    class Environment
-    {
-        std::map<std::string, std::string> environment_;
-        size_t memory_;
-        int nthread_;
-
-        std::shared_ptr<Molecule> molecule_;
-        SharedMatrix gradient_;
-        std::shared_ptr<efp::EFP> efp_;
-        SharedMatrix efp_torque_;
-        std::shared_ptr<Vector> frequencies_;
-        std::shared_ptr<PointGroup> parent_symmetry_;
-
-        std::shared_ptr<Molecule> legacy_molecule_;
-        std::shared_ptr<Wavefunction> legacy_wavefunction_;
+ class Process {
     public:
-        void initialize();
+     class Environment {
+         std::map<std::string, std::string> environment_;
+         size_t memory_;
+         int nthread_;
 
-        /// The symmetry of the molecule, before any displacements have been made
-        std::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
-        /// Set the "parent" symmetry
-        void set_parent_symmetry(std::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
-        const std::string& operator()(const std::string& key) const;
-        std::string operator()(const std::string& key);
-        const std::string set(const std::string& key, const std::string& value);
+         std::shared_ptr<Molecule> molecule_;
+         SharedMatrix gradient_;
+         std::shared_ptr<efp::EFP> efp_;
+         SharedMatrix efp_torque_;
+         std::shared_ptr<Vector> frequencies_;
+         std::shared_ptr<PointGroup> parent_symmetry_;
 
-        /// Set active molecule
-        void set_molecule(const std::shared_ptr<Molecule>& molecule);
-        /// Return active molecule
-        std::shared_ptr<Molecule> molecule() const;
+         std::shared_ptr<Molecule> legacy_molecule_;
+         std::shared_ptr<Wavefunction> legacy_wavefunction_;
 
+        public:
+         void initialize();
 
-        /// Temporary slots for legacy as a stop-gap
-        /// Set active molecule
-        void set_legacy_molecule(const std::shared_ptr<Molecule>& molecule);
-        /// Return active molecule
-        std::shared_ptr<Molecule> legacy_molecule() const;
+         /// The symmetry of the molecule, before any displacements have been made
+         std::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
+         /// Set the "parent" symmetry
+         void set_parent_symmetry(std::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
+         const std::string& operator()(const std::string& key) const;
+         std::string operator()(const std::string& key);
+         const std::string set(const std::string& key, const std::string& value);
 
-        /// Set wavefunction
-        void set_legacy_wavefunction(const std::shared_ptr<Wavefunction>& wavefunction);
-        /// Get wavefunction
-        std::shared_ptr<Wavefunction> legacy_wavefunction() const;
+         /// Set active molecule
+         void set_molecule(const std::shared_ptr<Molecule>& molecule);
+         /// Return active molecule
+         std::shared_ptr<Molecule> molecule() const;
 
+         /// Temporary slots for legacy as a stop-gap
+         /// Set active molecule
+         void set_legacy_molecule(const std::shared_ptr<Molecule>& molecule);
+         /// Return active molecule
+         std::shared_ptr<Molecule> legacy_molecule() const;
 
-        /// Set gradient manually
-        void set_gradient(const SharedMatrix g) { gradient_ = g; }
-        /// Get gradient manually
-        SharedMatrix gradient() const { return gradient_; }
+         /// Set wavefunction
+         void set_legacy_wavefunction(const std::shared_ptr<Wavefunction>& wavefunction);
+         /// Get wavefunction
+         std::shared_ptr<Wavefunction> legacy_wavefunction() const;
 
-        /// Set frequencies manually
-        void set_frequencies(const std::shared_ptr<Vector> f) { frequencies_ = f; }
-        /// Get frequencies manually
-        std::shared_ptr<Vector> frequencies() const { return frequencies_; }
+         /// Set gradient manually
+         void set_gradient(const SharedMatrix g) { gradient_ = g; }
+         /// Get gradient manually
+         SharedMatrix gradient() const { return gradient_; }
 
-        /// Set EFP
-        void set_efp(const std::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
-        /// Get EFP
-        std::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
+         /// Set frequencies manually
+         void set_frequencies(const std::shared_ptr<Vector> f) { frequencies_ = f; }
+         /// Get frequencies manually
+         std::shared_ptr<Vector> frequencies() const { return frequencies_; }
 
-        /// Set EFP gradient manually
-        void set_efp_torque(const SharedMatrix g) { efp_torque_ = g; }
-        /// Get EFP gradient manually
-        SharedMatrix efp_torque() const { return efp_torque_; }
+         /// Set EFP
+         void set_efp(const std::shared_ptr<psi::efp::EFP>& efp) { efp_ = efp; }
+         /// Get EFP
+         std::shared_ptr<psi::efp::EFP> get_efp() const { return efp_; }
 
-        /// Map containing current energies
-        std::map<std::string, double> globals;
+         /// Set EFP gradient manually
+         void set_efp_torque(const SharedMatrix g) { efp_torque_ = g; }
+         /// Get EFP gradient manually
+         SharedMatrix efp_torque() const { return efp_torque_; }
 
-        /// Map containing current arrays
-        std::map<std::string, std::shared_ptr<Matrix> > arrays;
+         /// Map containing current energies
+         std::map<std::string, double> globals;
 
-        /// Number of threads per process
-        int get_n_threads() const;
-        void set_n_threads(int nthread);
+         /// Map containing current arrays
+         std::map<std::string, std::shared_ptr<Matrix> > arrays;
 
-        /// Memory in bytes
-        size_t get_memory() const;
-        void set_memory(size_t m);
+         /// Number of threads per process
+         int get_n_threads() const;
+         void set_n_threads(int nthread);
 
-        /// "Global" liboptions object.
-        Options options;
-    };
+         /// Memory in bytes
+         size_t get_memory() const;
+         void set_memory(size_t m);
 
-    static Environment environment;
+         /// "Global" liboptions object.
+         Options options;
+     };
 
-    static Environment get_environment();
-};
-}
+     static Environment environment;
 
-
+     static Environment get_environment();
+ };
+ }
 
 #endif /* PROCESS_H_ */
