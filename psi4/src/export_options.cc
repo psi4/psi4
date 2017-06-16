@@ -36,7 +36,7 @@ using namespace psi;
 
 void export_options(py::module& m)
 {
-    py::class_<Options>(m, "Options", "docstring")
+    py::class_<Options>(m, "Options", "docstring", py::dynamic_attr())
             .def("add_bool", &Options::add_bool, "add bool option")
             .def("add_int", &Options::add_int, "add int option")
             .def("add_str", &Options::add_str, "add string option")

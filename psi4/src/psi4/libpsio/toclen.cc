@@ -100,7 +100,7 @@ void PSIO::wt_toclen(size_t unit, size_t len) {
     errcod = ::write(stream, (char *) &len, sizeof(size_t));
 
   if(errcod != sizeof(size_t)) {
-    ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %d.\n", unit);
+    ::fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %zu.\n", unit);
     fflush(stderr);
     throw PSIEXCEPTION("PSIO Error");
   }

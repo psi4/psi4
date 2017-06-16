@@ -115,7 +115,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
     end_data = psio_get_address(start_data, size);
     if (end_data.page > this_entry->eadd.page) {
       if (this_entry->next != NULL) {
-        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %d, %s\n", unit, key);
+        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %zu, %s\n", unit, key);
         psio_error(unit, PSIO_ERROR_BLKEND);
       }
       this_entry->eadd = end_data;
@@ -123,7 +123,7 @@ void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
     } else if ((end_data.page == this_entry->eadd.page) &&(end_data.offset
         > this_entry->eadd.offset)) {
       if (this_entry->next != NULL) {
-        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %d, %s\n", unit, key);
+        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %zu, %s\n", unit, key);
         psio_error(unit, PSIO_ERROR_BLKEND);
       }
       this_entry->eadd = end_data;

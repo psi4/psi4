@@ -53,7 +53,7 @@ void PSIO::tocclean(size_t unit, const char *key) {
     if (!strcmp(key, ""))
       this_entry = this_unit->toc;
     else {
-      fprintf(stderr, "PSIO_ERROR: Can't find TOC Entry %s in unit %d\n", key, unit);
+      fprintf(stderr, "PSIO_ERROR: Can't find TOC Entry %s in unit %zu\n", key, unit);
       psio_error(unit, PSIO_ERROR_NOTOCENT);
     }
   } else
