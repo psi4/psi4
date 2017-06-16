@@ -59,8 +59,8 @@ namespace psi {
 ** the first row.  Note that this does not form a matrix which is
 ** necessarily contiguous in memory.  Use block_matrix() for that.
 **
-** \param n = number of rows (unsigned long to allow large matrices)
-** \param m = number of columns (unsigned long to allow large matrices)
+** \param n = number of rows (size_t to allow large matrices)
+** \param m = number of columns (size_t to allow large matrices)
 **
 ** Returns: pointer to first row
 **

@@ -101,25 +101,22 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->hd_ave = EVANGELISTI;
 
   if (Parameters_->wfn == "CASSCF") {
-    Parameters_->fci = 1;
-    Parameters_->mcscf = 1;
-  }
-  else if (Parameters_->wfn == "RASSCF"){
-    Parameters_->fci = 0;
-    Parameters_->mcscf = 1;
-  }
-  else {
-    Parameters_->fci = 0;
-    Parameters_->mcscf = 0;
+      Parameters_->fci = 1;
+      Parameters_->mcscf = 1;
+  } else if (Parameters_->wfn == "RASSCF") {
+      Parameters_->fci = 0;
+      Parameters_->mcscf = 1;
+  } else {
+      Parameters_->fci = 0;
+      Parameters_->mcscf = 0;
   }
 
   if (Parameters_->wfn == "ZAPTN") {
-    Parameters_->mpn = 1;
-    Parameters_->zaptn = 1;
-  }
-  else {
-    Parameters_->mpn = 0;
-    Parameters_->zaptn = 0;
+      Parameters_->mpn = 1;
+      Parameters_->zaptn = 1;
+  } else {
+      Parameters_->mpn = 0;
+      Parameters_->zaptn = 0;
   }
 
   Parameters_->z_scale_H = 0;

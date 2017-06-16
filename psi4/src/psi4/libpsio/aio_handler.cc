@@ -93,7 +93,7 @@ size_t AIOHandler::read(size_t unit, const char *key, char *buffer, size_t size,
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end)
+size_t AIOHandler::write(size_t unit, const char *key, char *buffer, size_t size, psio_address start, psio_address *end)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -121,7 +121,7 @@ unsigned long AIOHandler::write(size_t unit, const char *key, char *buffer, size
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::read_entry(size_t unit, const char *key, char *buffer, size_t size)
+size_t AIOHandler::read_entry(size_t unit, const char *key, char *buffer, size_t size)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -143,7 +143,7 @@ unsigned long AIOHandler::read_entry(size_t unit, const char *key, char *buffer,
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write_entry(size_t unit, const char *key, char *buffer, size_t size)
+size_t AIOHandler::write_entry(size_t unit, const char *key, char *buffer, size_t size)
 {
   std::unique_lock<std::mutex> lock(*locked_);
 
@@ -165,7 +165,7 @@ unsigned long AIOHandler::write_entry(size_t unit, const char *key, char *buffer
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::read_discont(size_t unit, const char *key,
+size_t AIOHandler::read_discont(size_t unit, const char *key,
   double **matrix, size_t row_length, size_t col_length, size_t col_skip,
   psio_address start)
 {
@@ -192,7 +192,7 @@ unsigned long AIOHandler::read_discont(size_t unit, const char *key,
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::write_discont(size_t unit, const char *key,
+size_t AIOHandler::write_discont(size_t unit, const char *key,
   double **matrix, size_t row_length, size_t col_length, size_t col_skip,
   psio_address start)
 {
@@ -219,7 +219,7 @@ unsigned long AIOHandler::write_discont(size_t unit, const char *key,
   thread_ = std::make_shared<std::thread>(std::bind(&AIOHandler::call_aio,this));
   return uniqueID_;
 }
-unsigned long AIOHandler::zero_disk(size_t unit, const char *key,
+size_t AIOHandler::zero_disk(size_t unit, const char *key,
     size_t rows, size_t cols)
 {
   std::unique_lock<std::mutex> lock(*locked_);
@@ -243,7 +243,7 @@ unsigned long AIOHandler::zero_disk(size_t unit, const char *key,
   return uniqueID_;
 }
 
-unsigned long AIOHandler::write_iwl(size_t unit, const char *key,
+size_t AIOHandler::write_iwl(size_t unit, const char *key,
               size_t nints, int lastbuf, char *labels, char *values,
               size_t labsize, size_t valsize, size_t *address) {
   std::unique_lock<std::mutex> lock(*locked_);
@@ -502,7 +502,7 @@ void AIOHandler::call_aio()
   //printf("End of function call_aio\n");
 }
 
-void AIOHandler::wait_for_job(unsigned long jobid) {
+void AIOHandler::wait_for_job(size_t jobid) {
 
     std::deque<size_t>::iterator it;
 

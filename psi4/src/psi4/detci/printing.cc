@@ -332,8 +332,8 @@ std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int* orbs_per_irr)
 //      outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n",
 //              blk, CIblks.Ia_code[blk], CIblks.Ib_code[blk],
 //              CIblks.Ia_size[blk], CIblks.Ib_size[blk],
-//              (unsigned long) CIblks.Ia_size[blk] *
-//              (unsigned long) CIblks.Ib_size[blk]);
+//              (size_t) CIblks.Ia_size[blk] *
+//              (size_t) CIblks.Ib_size[blk]);
 //      }
 //}
 

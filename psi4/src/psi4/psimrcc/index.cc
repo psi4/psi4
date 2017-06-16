@@ -422,7 +422,7 @@ void CCIndex::make_three_index()
 void CCIndex::print()
 {
   outfile->Printf("\n\n---------------------------------");
-  outfile->Printf("\n\tPair Type %s has %lu elements",label.c_str(),(unsigned long) ntuples);
+  outfile->Printf("\n\tPair Type %s has %lu elements",label.c_str(),(size_t) ntuples);
   outfile->Printf("\n---------------------------------");
   int index=0;
   for(int h=0;h<nirreps;h++){

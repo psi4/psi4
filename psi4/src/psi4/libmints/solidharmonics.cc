@@ -110,10 +110,10 @@ void reduce(uint64_t &num, uint64_t &den)
     }
 }
 
-uint64_t powll(uint64_t n, unsigned long p)
+uint64_t powll(uint64_t n, size_t p)
 {
     uint64_t result = 1;
-    for (unsigned long i=0; i<p; i++) result *= n;
+    for (size_t i=0; i<p; i++) result *= n;
     return result;
 }
 

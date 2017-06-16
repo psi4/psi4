@@ -45,7 +45,7 @@ namespace psi {
 ** init_array(): This function initializes an array of doubles of
 ** length 'size' and returns a pointer to the first element
 **
-** \param size = length of array (unsigned long to allow large arrays)
+** \param size = length of array (size_t to allow large arrays)
 **
 ** Returns: pointer to new array
 **

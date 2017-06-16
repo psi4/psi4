@@ -183,8 +183,8 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
                  int **dc) {
     int i, j, k;
     int maxrows = 0, maxcols = 0;
-    unsigned long bufsize, maxbufsize;
-    unsigned long size;
+    size_t bufsize, maxbufsize;
+    size_t size;
     // static int first=1;
     /* int in_file, extras, units_used, cur_unit; */
 
@@ -236,7 +236,7 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
     if (icore_ == 1) { /* whole vector in-core */
         buf_per_vect_ = 1;
         buf_total_ = maxvect_;
-        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf_size_ = (size_t *)malloc(buf_per_vect_ * sizeof(size_t));
         buf2blk_ = init_int_array(buf_per_vect_);
         buf_offdiag_ = init_int_array(buf_per_vect_);
         for (i = 0; i < buf_per_vect_; i++) buf_size_[i] = 0;
@@ -279,12 +279,12 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
         }
 
         buf_total_ = maxvect_ * buf_per_vect_;
-        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf_size_ = (size_t *)malloc(buf_per_vect_ * sizeof(size_t));
         for (i = 0; i < buf_per_vect_; i++) {
             buf_size_[i] = 0;
             j = buf2blk_[i];
             for (k = first_ablk_[j]; k <= last_ablk_[j]; k++) {
-                buf_size_[i] += (unsigned long)Ia_size_[k] * (unsigned long)Ib_size_[k];
+                buf_size_[i] += (size_t)Ia_size_[k] * (size_t)Ib_size_[k];
             }
         }
     } /* end icore==2 */
@@ -308,14 +308,14 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
         buf_total_ = buf_per_vect_ * maxvect_;
         buf2blk_ = init_int_array(buf_per_vect_);
         buf_offdiag_ = init_int_array(buf_per_vect_);
-        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf_size_ = (size_t *)malloc(buf_per_vect_ * sizeof(size_t));
 
         if (Ms0_) {
             for (i = 0, j = 0; i < num_blocks_; i++) {
                 if (Ia_code_[i] >= Ib_code_[i] && Ia_size_[i] > 0 &&
                     Ib_size_[i] > 0) {
                     buf2blk_[j] = i;
-                    buf_size_[j] = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+                    buf_size_[j] = (size_t)Ia_size_[i] * (size_t)Ib_size_[i];
                     if (Ia_code_[i] != Ib_code_[i]) buf_offdiag_[j] = 1;
                     j++;
                 }
@@ -324,7 +324,7 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
             for (i = 0, j = 0; i < num_blocks_; i++) {
                 if (Ia_size_[i] > 0 && Ib_size_[i] > 0) {
                     buf2blk_[j] = i;
-                    buf_size_[j] = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+                    buf_size_[j] = (size_t)Ia_size_[i] * (size_t)Ib_size_[i];
                     j++;
                 }
             }
@@ -399,7 +399,7 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
         for (i = 0, maxbufsize = 0; i < nirreps_; i++) {
             for (j = first_ablk_[i], bufsize = 0; j <= last_ablk_[i]; j++) {
                 bufsize +=
-                    (unsigned long)Ia_size_[j] * (unsigned long)Ib_size_[j];
+                    (size_t)Ia_size_[j] * (size_t)Ib_size_[j];
             }
             if (bufsize > maxbufsize) maxbufsize = bufsize;
         }
@@ -419,7 +419,7 @@ void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
                 blocks_[i] = (double **)malloc(Ia_size_[i] * sizeof(double *));
             else
                 blocks_[i] = (double **)malloc(sizeof(double *));
-            bufsize = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+            bufsize = (size_t)Ia_size_[i] * (size_t)Ib_size_[i];
             if (bufsize > maxbufsize) maxbufsize = bufsize;
         }
         // CDS 11/5/97: Revise buffer_size, the size of the biggest buffer
@@ -2863,13 +2863,13 @@ void CIvect::transp_block(int iblock, double **tmparr)
 ** Return the maximum RAS subblock size as a long size_teger
 **
 */
-unsigned long CIvect::get_max_blk_size(void)
+size_t CIvect::get_max_blk_size(void)
 {
    int i;
-   unsigned long blksize, maxblksize=0;
+   size_t blksize, maxblksize=0;
 
    for (i=0; i<num_blocks_; i++) {
-      blksize = (unsigned long) Ia_size_[i] * (unsigned long) Ib_size_[i];
+      blksize = (size_t) Ia_size_[i] * (size_t) Ib_size_[i];
       if (blksize > maxblksize) maxblksize = blksize;
       }
 
@@ -3001,8 +3001,8 @@ void CIvect::restart_reord_fp(int L)
    if (new_first_buf_ >= buf_total_) new_first_buf_ -= buf_total_;
 
    /*
-   tmp_file_offset_ = (unsigned long *) malloc (buf_total_ *
-                      sizeof(unsigned long));
+   tmp_file_offset_ = (size_t *) malloc (buf_total_ *
+                      sizeof(size_t));
    tmp_file_number_ = init_int_array(buf_total_);
 
 

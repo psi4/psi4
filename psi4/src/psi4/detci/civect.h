@@ -72,7 +72,7 @@ class CIvect {
     void common_init(); /* common init func */
 
     size_t vectlen_;            /* total vector length */
-    unsigned long buffer_size_; /* size of largest in-core chunk */
+    size_t buffer_size_; /* size of largest in-core chunk */
     int num_blocks_;            /* number of blocks in vector */
     int icore_;                 /* in-core option. 1 = whole vector in-core,
                                                    2 = symm block in-core,
@@ -84,7 +84,7 @@ class CIvect {
     std::vector<int> Ib_size_;   /* num bet strings in each block */
     std::vector<size_t> offset_; /* offsets for absolute numbering.  This
                                    is a word offset, not a byte offset,
-                                   so unsigned long should be ok          */
+                                   so size_t should be ok          */
     int num_alpcodes_;          /* number of possible (total) alpha codes */
     int num_betcodes_;          /* number of possible (total) beta codes */
     int nirreps_;               /* dimension of next four arrays */
@@ -100,7 +100,7 @@ class CIvect {
     int buf_locked_;            /* is a memory buffer locked in/available?  */
     std::vector<int> units_;                /* file numbers */
     std::vector<int> file_number_;          /* unit number for given vector/block */
-    unsigned long *buf_size_;   /* size of each buffer on disk
+    size_t *buf_size_;   /* size of each buffer on disk
                                    (0...buf_per_vect) */
     int *buf2blk_;              /* buffer number -> block number for
                                    icore=0, else buf->irrep for icore=2 */
@@ -235,7 +235,7 @@ class CIvect {
     void civ_xeay(double a, CIvect &Y, int xvect, int yvect);
     void civ_xpeay(double a, CIvect &Y, int xvect, int yvect);
     void transp_block(int iblock, double **tmparr);
-    unsigned long get_max_blk_size(void);
+    size_t get_max_blk_size(void);
     double checknorm(void);
     void copy(CIvect &Src, int targetvec, int srcvec);
     void restart_gather(int ivec, int nvec, int nroot, double **alpha,

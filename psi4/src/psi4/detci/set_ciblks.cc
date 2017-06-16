@@ -372,8 +372,8 @@ void CIWavefunction::set_ciblks()
         outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n",
                 blk, CIblks_->Ia_code[blk], CIblks_->Ib_code[blk],
                 CIblks_->Ia_size[blk], CIblks_->Ib_size[blk],
-                (unsigned long) CIblks_->Ia_size[blk] *
-                (unsigned long) CIblks_->Ib_size[blk]);
+                (size_t) CIblks_->Ia_size[blk] *
+                (size_t) CIblks_->Ib_size[blk]);
 
      };
    };

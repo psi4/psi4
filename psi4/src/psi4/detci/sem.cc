@@ -67,7 +67,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       int nroots, int maxiter, int maxnvect)
 {
    int i, j, k, l, ij, I, L, L2=0, L3=0, tmpi, detH0;
-   unsigned long det1, N;
+   size_t det1, N;
    int num_alp_str, num_bet_str, Llast;
    int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx, *root_converged;
    int *Lvec, *did_root, num_root_converged;

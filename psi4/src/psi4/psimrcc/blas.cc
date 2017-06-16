@@ -320,11 +320,11 @@ int CCBLAS::compute_storage_strategy()
   size_t others_memory        = 0;
 
   outfile->Printf("\n    Input memory                           = %14lu bytes",
-                  (unsigned long)memory_manager->get_MaximumAllowedMemory());
+                  (size_t)memory_manager->get_MaximumAllowedMemory());
   outfile->Printf("\n    Free memory                            = %14lu bytes",
-                  (unsigned long)available_memory);
+                  (size_t)available_memory);
   outfile->Printf("\n    Free memory available for matrices     = %14lu bytes (%3.0f%%)",
-                  (unsigned long)storage_memory,fraction_for_in_core*100.0);
+                  (size_t)storage_memory,fraction_for_in_core*100.0);
 
   // Gather the memory requirements for all the CCMAtrix object
   // and divide the integrals from all the other matrices.
@@ -349,10 +349,10 @@ int CCBLAS::compute_storage_strategy()
       fully_in_core_memory += block_memory;
     }
   }
-  outfile->Printf("\n    Memory required by fock matrices       = %14lu bytes",(unsigned long)fock_memory);
-  outfile->Printf("\n    Memory required by integrals           = %14lu bytes",(unsigned long)integrals_memory);
-  outfile->Printf("\n    Memory required by other matrices      = %14lu bytes",(unsigned long)others_memory);
-  outfile->Printf("\n    Memory required for in-core algorithm  = %14lu bytes",(unsigned long)fully_in_core_memory);
+  outfile->Printf("\n    Memory required by fock matrices       = %14lu bytes",(size_t)fock_memory);
+  outfile->Printf("\n    Memory required by integrals           = %14lu bytes",(size_t)integrals_memory);
+  outfile->Printf("\n    Memory required by other matrices      = %14lu bytes",(size_t)others_memory);
+  outfile->Printf("\n    Memory required for in-core algorithm  = %14lu bytes",(size_t)fully_in_core_memory);
 
   // Check if you may use a fully in core algorithm
   full_in_core = false;
