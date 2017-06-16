@@ -341,16 +341,12 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_off("Grad: V");
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    if (pyExtern) {
-        std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
-        if (external) {
-            gradient_terms.push_back("External Potential");
-            timer_on("Grad: External");
-            gradients_["External Potential"] = external->computePotentialGradients(basisset_, Dt);
-            timer_off("Grad: External");
-        }  // end external
-    }
+    if (external_pot_) {
+        gradient_terms.push_back("External Potential");
+        timer_on("Grad: External");
+        gradients_["External Potential"] = external_pot_->computePotentialGradients(basisset_, Dt);
+        timer_off("Grad: External");
+    }  // end external
 
     // => Perturbation Gradient <= //
     if(options_.get_bool("PERTURB_H")) {

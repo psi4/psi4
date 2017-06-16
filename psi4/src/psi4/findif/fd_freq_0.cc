@@ -69,8 +69,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
 
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
-    py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-    bool project = !pyExtern && !options.get_bool("PERTURB_H");
+    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
     CdSalcList salc_list(mol, fact, 0xFF, project, project);
     int Nirrep = salc_list.nirrep();
 

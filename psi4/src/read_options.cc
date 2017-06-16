@@ -1355,7 +1355,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         removed in favor of the DIPOLE option in the future -*/
     options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
-    options.add("EXTERN", new PythonDataType());
+    options.add_bool("EXTERN", false);
 
     /*- Radius (bohr) of a hard-sphere external potential -*/
     options.add_double("RADIUS", 10.0); // bohr

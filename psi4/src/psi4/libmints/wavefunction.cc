@@ -146,6 +146,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
 
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
+    external_pot_ = other->external_pot_;
 
     variables_ = other->variables_;
     arrays_ = other->arrays_;
@@ -218,6 +219,9 @@ void Wavefunction::deep_copy(const Wavefunction *other)
 
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
+
+    // Not sure...
+    external_pot_ = other->external_pot_;
 
     // Copy assignment
     variables_ = other->variables_;

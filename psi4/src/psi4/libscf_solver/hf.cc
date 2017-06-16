@@ -983,15 +983,11 @@ void HF::form_H()
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    std::shared_ptr<ExternalPotential> external;
-    if (pyExtern)
-        external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
-    if (external) {
+    if (external_pot_) {
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
+        SharedMatrix Vprime = external_pot_->computePotentialMatrix(basisset_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
@@ -1001,8 +997,8 @@ void HF::form_H()
         }
 
         if (print_) {
-            external->set_print(print_);
-            external->print();
+            external_pot_->set_print(print_);
+            external_pot_->print();
         }
         if (print_ > 3)
             Vprime->print();
@@ -1010,7 +1006,7 @@ void HF::form_H()
 
 
         // Extra nuclear repulsion
-        double enuc2 = external->computeNuclearEnergy(molecule_);
+        double enuc2 = external_pot_->computeNuclearEnergy(molecule_);
         if (print_) {
                outfile->Printf( "  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
                outfile->Printf( "  Additional nuclear repulsion = %20.15f\n", enuc2);

@@ -75,6 +75,7 @@ class Options;
 class SOBasisSet;
 class PSIO;
 class OrbitalSpace;
+class ExternalPotential;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -219,6 +220,9 @@ protected:
     /// Same orbs or dens
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
+
+    // The external potenital
+    std::shared_ptr<ExternalPotential> external_pot_;
 
     // Collection of variables
     std::map<std::string, double> variables_;
@@ -530,6 +534,9 @@ public:
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
+
+    // Set the external potential
+    void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
 
     /// Get and set variables dictionary
     double get_variable(const std::string key);
