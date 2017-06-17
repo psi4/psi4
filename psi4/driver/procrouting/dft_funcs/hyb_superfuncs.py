@@ -44,9 +44,9 @@ def build_pbe0_superfunctional(name, npoints, deriv, restricted):
     # No spaces, keep it short and according to convention
     sup.set_name('PBE0')
     # Tab in, trailing newlines
-    sup.set_description('    PBE GGA Exchange-Correlation Functional\n')
+    sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
-    sup.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
+    sup.set_citation('    J.P. Perdew et. al., J. Chem. Phys., 105(22), 9982-9985, 1996\n    C. Adamo et. a., J. Chem Phys., 110(13), 6158-6170, 1999\n')
 
     # Add member functionals
     pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
