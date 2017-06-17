@@ -1,6 +1,6 @@
 #! OMP3 cc-pVDZ gradient for the NO radical
 
-ref = psi4.Matrix.from_array([                                #TEST
+ref = psi4.Matrix.from_list([                                 #TEST
         [ 0.000000000000,  0.000000000000, -0.020148084940],  #TEST
         [ 0.000000000000,  0.000000000000,  0.020148084940]   #TEST
       ])                                                      #TEST

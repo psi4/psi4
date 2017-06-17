@@ -1,9 +1,8 @@
 #! MP2 cc-pVDZ gradient for the NO radical
 
-ref_vals = psi4.Matrix.from_list(                                  #TEST
-             [ 0.000000000000,  0.000000000000, -0.195167728437],  #TEST
-             [ 0.000000000000,  0.000000000000,  0.195167728437]   #TEST
-           ])                                                       #TEST
+ref = psi4.Matrix.from_list(                                        #TEST
+            [[ 0.000000000000,  0.000000000000, -0.195167728437],   #TEST
+             [ 0.000000000000,  0.000000000000,  0.195167728437]])  #TEST
 
 
 molecule no {

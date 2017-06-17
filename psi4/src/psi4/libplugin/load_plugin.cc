@@ -48,7 +48,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     if (info.plugin_handle == NULL) {
         std::string msg = "load_plugin: Cannot open library: ";
         msg += dlerror();
-        throw PSIEXCEPTION(msg.c_str());
+        throw PSIEXCEPTION(msg);
     }
 
     info.read_options = (read_options_t) dlsym(info.plugin_handle, "read_options");

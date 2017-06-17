@@ -33,6 +33,10 @@
  */
 
 
+#include "psi4/libmints/typedefs.h"
+
+#include <vector>
+
 struct efp;
 
 namespace psi {

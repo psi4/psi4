@@ -30,12 +30,14 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libfilesystem/path.h"
 #ifdef USING_libefp
 #include <efp.h>
