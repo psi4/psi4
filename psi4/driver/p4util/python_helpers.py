@@ -340,13 +340,18 @@ def py_psi_set_global_option_python(key, EXTERN):
     """
     This is a fairly hacky way to get around EXTERN issues. Effectively we are routing this option Python side through attributes until the general Options overhaul.
     """
-    if key != "EXTERN":
+    if (key != "EXTERN"):
         raise ValidationError("Options: set_global_option_python does not recognize keyword %s" % key)
 
-
-    # Well this is probably the worst hack I have done, thats saying something
-    core.EXTERN = EXTERN
-    core.set_global_option("EXTERN", True)
+    if EXTERN == None:
+        core.EXTERN = None
+        core.set_global_option("EXTERN", False)
+    elif isinstance(EXTERN, core.ExternalPotential):
+        # Well this is probably the worst hack I have done, thats saying something
+        core.EXTERN = EXTERN
+        core.set_global_option("EXTERN", True)
+    else:
+        raise ValidationError("Options: set_global_option_python can either be a NULL or External Potential object")
 
 
 core.set_global_option_python = py_psi_set_global_option_python
