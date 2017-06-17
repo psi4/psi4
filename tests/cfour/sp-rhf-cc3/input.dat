@@ -1,6 +1,6 @@
 #! single-point CC3/qz2p on water
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 CC3 energy calculation 
@@ -29,7 +29,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O
@@ -54,7 +54,7 @@ compare_values(-0.270191667216, get_variable('mp2 correlation energy'), 6, 'MP2 
 compare_values(-0.283326618243, get_variable('cc3 correlation energy'), 6, 'CC3 corl')  #TEST
 compare_values(-76.346075078360, get_variable('cc3 total energy'), 6, 'CC3')  #TEST
 
-print '        <<< Thorough Psi4 format >>>'
+print('        <<< Thorough Psi4 format >>>')
 
 molecule {
 O
@@ -82,7 +82,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O
