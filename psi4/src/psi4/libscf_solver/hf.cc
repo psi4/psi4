@@ -150,55 +150,59 @@ void HF::common_init()
         input_docc_ = true;
         // Map the symmetry of the input DOCC, to account for displacements
         std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if(old_pg){
-            // This is one of a series of displacements;  check the dimension against the parent point group
+        if (old_pg) {
+            // This is one of a series of displacements;  check the dimension against the parent
+            // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
-	    if(options_["DOCC"].size() != full_nirreps)
-	        throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            Dimension temp_docc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h) {
-                temp_docc[h] = options_["DOCC"][h].to_integer();
-	    }
-            doccpi_ = map_irreps(temp_docc);
-        }else{
-            // This is a normal calculation; check the dimension against the current point group then read
-            if(options_["DOCC"].size() != nirreps)
+            if (options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h) {
-	      doccpi_[h] = options_["DOCC"][h].to_integer();
-	    }
+            Dimension temp_docc(full_nirreps);
+            for (int h = 0; h < full_nirreps; ++h) {
+                temp_docc[h] = options_["DOCC"][h].to_integer();
+            }
+            doccpi_ = map_irreps(temp_docc);
+        } else {
+            // This is a normal calculation; check the dimension against the current point group
+            // then read
+            if (options_["DOCC"].size() != nirreps)
+                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            for (int h = 0; h < nirreps; ++h) {
+                doccpi_[h] = options_["DOCC"][h].to_integer();
+            }
         }
-    } // else take the reference wavefunctions doccpi
+    }  // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
         // Map the symmetry of the input SOCC, to account for displacements
         std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if(old_pg){
-            // This is one of a series of displacements;  check the dimension against the parent point group
+        if (old_pg) {
+            // This is one of a series of displacements;  check the dimension against the parent
+            // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
-            if(options_["SOCC"].size() != full_nirreps)
+            if (options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             Dimension temp_socc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h) {
+            for (int h = 0; h < full_nirreps; ++h) {
                 temp_socc[h] = options_["SOCC"][h].to_integer();
-	    }
+            }
             soccpi_ = map_irreps(temp_socc);
-        }else{
-            // This is a normal calculation; check the dimension against the current point group then read
-            if(options_["SOCC"].size() != nirreps)
+        } else {
+            // This is a normal calculation; check the dimension against the current point group
+            // then read
+            if (options_["SOCC"].size() != nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h) {
+            for (int h = 0; h < nirreps; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
-	    }
+            }
         }
-    } // else take the reference wavefunctions soccpi
+    }  // else take the reference wavefunctions soccpi
 
     // Check that we have enough basis functions
     for(int h = 0; h < nirreps; ++h) {
       if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
-	throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+    throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
       }
     }
 
@@ -720,23 +724,34 @@ void HF::find_occupation()
     } else {
         std::vector<std::pair<double, int> > pairs_a;
         std::vector<std::pair<double, int> > pairs_b;
-        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+        for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i){
                 pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+            }
         }
-        for (int h=0; h<epsilon_b_->nirrep(); ++h) {
-            for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-                pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
+        sort(pairs_a.begin(), pairs_a.end());
+
+        // Do we need to sort beta?
+        if (multiplicity_ == 1) {
+            pairs_b = pairs_a;
+
+        } else {
+            for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
+                for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i){
+                    pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
+                }
+            }
+            sort(pairs_b.begin(), pairs_b.end());
         }
-        sort(pairs_a.begin(),pairs_a.end());
-        sort(pairs_b.begin(),pairs_b.end());
 
         if(!input_docc_ && !input_socc_){
+
+            // Alpha
             memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
             for (int i=0; i<nalpha_; ++i)
                 nalphapi_[pairs_a[i].second]++;
-        }
-        if(!input_docc_ && !input_socc_){
+
+            // Beta
             memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
             for (int i=0; i<nbeta_; ++i)
                 nbetapi_[pairs_b[i].second]++;
@@ -1120,12 +1135,12 @@ void HF::form_Shalf()
         if (print_)
             outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
 
-	// Double check occupation vectors
-	for(int h = 0; h < eigval->nirrep(); ++h) {
-	  if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
-	    throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
-	  }
-	}
+        // Double check occupation vectors
+        for(int h = 0; h < eigval->nirrep(); ++h) {
+          if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
+            throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
+          }
+        }
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
