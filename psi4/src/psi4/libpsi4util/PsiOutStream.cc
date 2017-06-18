@@ -83,14 +83,8 @@ void PsiOutStream::Printf(const char* format, ...) {
     va_end(args);
     (*stream_) << buffer_.data();
 }
-
-PsiOutStream& PsiOutStream::operator<<(std::string fp) {
+void PsiOutStream::Printf(std::string fp) {
     (*stream_) << fp;
-    return (*this);
-}
-PsiOutStream& PsiOutStream::operator<<(char* fp) {
-    (*stream_) << fp;
-    return (*this);
 }
 
 } // End Psi Namespace

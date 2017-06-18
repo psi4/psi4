@@ -32,6 +32,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <ostream>
 
 namespace psi {
 
@@ -46,9 +47,22 @@ class PsiOutStream {
     ~PsiOutStream();
 
     void Printf(const char* fmt, ...);
-    PsiOutStream& operator<<(std::string fp);
-    PsiOutStream& operator<<(char* );
+    void Printf(std::string fp);
     void MakeBanner(std::string header);
+
+    std::ostream* stream() { return stream_; }
+
+    // Incase we want to overload << again
+    // template <class T>
+    // PsiOutStream& operator<<(T&& x) {
+    //     *stream_ << std::forward<T>(x);
+    //     return (*this);
+    // }
+
+    // PsiOutStream& operator<<(std::ostream& (*oper)(std::ostream&)) {
+    //     *stream_ << oper;
+    //     return (*this);
+    // }
 };
 
 }  // End Psi namespace

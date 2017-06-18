@@ -600,7 +600,7 @@ void py_psi_clean_options()
 
 void py_psi_print_out(std::string s)
 {
-    (*outfile) << s;
+    (*outfile->stream()) << s;
 }
 
 /**

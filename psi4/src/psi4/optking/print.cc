@@ -75,7 +75,7 @@ void oprintf_out(const char* format,...) {
   va_end(args);
 
 #if defined(OPTKING_PACKAGE_PSI)
-  *(psi::outfile) << line;
+  *(psi::outfile->stream()) << line;
 #elif defined(OPTKING_PACKAGE_QCHEM)
   fprintf(qc_outfile, "%s", line);
 #endif
