@@ -88,5 +88,9 @@ PsiOutStream& PsiOutStream::operator<<(std::string fp) {
     (*stream_) << fp;
     return (*this);
 }
+PsiOutStream& PsiOutStream::operator<<(char* fp) {
+    (*stream_) << fp;
+    return (*this);
+}
 
 } // End Psi Namespace

@@ -47,6 +47,7 @@ class PsiOutStream {
 
     void Printf(const char* fmt, ...);
     PsiOutStream& operator<<(std::string fp);
+    PsiOutStream& operator<<(char* );
     void MakeBanner(std::string header);
 };
 
