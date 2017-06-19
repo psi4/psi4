@@ -30,14 +30,9 @@
 #define HF_H
 
 #include <vector>
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
+#include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libqt/qt.h"
 
 namespace psi {
 class Vector;
@@ -45,6 +40,9 @@ class JK;
 class PCM;
 class SuperFunctional;
 class VBase;
+class BasisSet;
+class DIISManager;
+class PSIO;
 namespace scf {
 
 class HF : public Wavefunction {
@@ -54,6 +52,8 @@ protected:
     SharedMatrix T_;
     /// The 1e potential energy matrix
     SharedMatrix V_;
+    /// A temporary spot for the H matrix
+    SharedMatrix Horig_;
     /// The DFT potential matrices (nice naming scheme)
     SharedMatrix Va_;
     SharedMatrix Vb_;
@@ -226,9 +226,6 @@ protected:
     bool cphf_converged_;
 
 public:
-    /// Nuclear contributions
-    Vector nuclear_dipole_contribution_;
-    Vector nuclear_quadrupole_contribution_;
 
     /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterations_needed_;}
@@ -447,10 +444,10 @@ public:
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
 
     /** Computes the Fock matrix */
-    virtual void form_F() =0;
+    virtual void form_F() = 0;
 
     /** Forms the G matrix */
-    virtual void form_G() =0;
+    virtual void form_G() = 0;
 
     /// Hessian-vector computers and solvers
     virtual std::vector<SharedMatrix> onel_Hx(std::vector<SharedMatrix> x);

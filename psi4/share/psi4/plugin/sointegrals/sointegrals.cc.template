@@ -29,12 +29,14 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/molecule.h"
 
 namespace psi{ namespace @plugin@ {
 

@@ -31,6 +31,8 @@
 #include "dfocc.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdiis/diismanager.h"
+
+#include <cmath>
 using namespace std;
 
 
@@ -148,7 +150,7 @@ do
     }
 
 }
-while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
+while(std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
 
 if (conver == 1) {
 outfile->Printf("\n");

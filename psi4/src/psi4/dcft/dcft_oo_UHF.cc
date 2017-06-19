@@ -26,13 +26,18 @@
  * @END LICENSE
  */
 
+#include "dcft.h"
+#include "defines.h"
+
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
-#include "dcft.h"
-#include "defines.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <cmath>
 
 namespace psi{ namespace dcft{
 
@@ -130,7 +135,7 @@ DCFTSolver::run_simult_dcft_oo()
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_cumulant_residual();
-        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
+        if (std::fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         // Update density cumulant tensor
@@ -143,7 +148,7 @@ DCFTSolver::run_simult_dcft_oo()
         orbitals_convergence_ = compute_orbital_residual();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         // Check convergence of the total DCFT energy
-        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
+        energyConverged_ = std::fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
         // Compute the orbital rotation step using Jacobi method
         compute_orbital_rotation_jacobi();
         if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
@@ -263,7 +268,7 @@ DCFTSolver::compute_orbital_residual() {
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = 0; a < navirpi_[h]; ++a){
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                maxGradient = (fabs(value) > maxGradient) ? fabs(value) : maxGradient;
+                maxGradient = (std::fabs(value) > maxGradient) ? std::fabs(value) : maxGradient;
                 orbital_gradient_a_->set(h, i, a + naoccpi_[h], value);
                 orbital_gradient_a_->set(h, a + naoccpi_[h], i, (-1.0) * value);
             }
@@ -286,7 +291,7 @@ DCFTSolver::compute_orbital_residual() {
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = 0; a < nbvirpi_[h]; ++a){
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                maxGradient = (fabs(value) > maxGradient) ? fabs(value) : maxGradient;
+                maxGradient = (std::fabs(value) > maxGradient) ? std::fabs(value) : maxGradient;
                 orbital_gradient_b_->set(h, i, a + nboccpi_[h], value);
                 orbital_gradient_b_->set(h, a + nboccpi_[h], i, (-1.0) * value);
             }

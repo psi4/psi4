@@ -31,6 +31,7 @@
 
 #include "psi4/psi4-dec.h"
 #include <map>
+#include <vector>
 
 namespace psi{
 

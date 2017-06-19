@@ -28,14 +28,17 @@
 
 // Latest revision on April 25, 2013.
 
-#include <stdio.h>
-#include "psi4/libqt/qt.h"
 #include "arrays.h"
 
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
+#include <stdio.h>
+#include <cmath>
 
 using namespace psi;
 using namespace std;
-#include "psi4/libparallel/ParallelPrinter.h"
 namespace psi{ namespace occwave{
 
 
@@ -114,10 +117,10 @@ void Array1d::print()
 
 }//
 
-void Array1d::print(std::string OutFileRMR)
+void Array1d::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname,std::ostream::app)));
   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
     printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
@@ -194,7 +197,7 @@ double Array1d::rms()
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += A1d_[i] * A1d_[i];
-  summ=sqrt(summ)/dim1_;
+  summ=std::sqrt(summ)/dim1_;
 
   return summ;
 }//
@@ -204,7 +207,7 @@ double Array1d::rms(const Array1d* Atemp)
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += (A1d_[i] - Atemp->A1d_[i])  * (A1d_[i] - Atemp->A1d_[i]);
-  summ=sqrt(summ)/dim1_;
+  summ=std::sqrt(summ)/dim1_;
 
   return summ;
 }//
@@ -398,12 +401,12 @@ void Array2d::print()
 
 }//
 
-void Array2d::print(std::string OutFileRMR)
+void Array2d::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname,std::ostream::app)));
   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-  print_mat(A2d_,dim1_,dim2_,OutFileRMR);
+  print_mat(A2d_,dim1_,dim2_,out_fname);
 }//
 
 void Array2d::release()
@@ -747,7 +750,7 @@ double Array2d::vector_dot(double **rhs)
 }//
 
 /*
-void Array2d::write(psi::PSIO* psio, unsigned int fileno)
+void Array2d::write(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -757,7 +760,7 @@ void Array2d::write(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::write(shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -767,12 +770,12 @@ void Array2d::write(shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(psi::PSIO& psio, unsigned int fileno)
+void Array2d::write(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
 }//
 
-void Array2d::read(psi::PSIO* psio, unsigned int fileno)
+void Array2d::read(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -782,7 +785,7 @@ void Array2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::read(shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -792,7 +795,7 @@ void Array2d::read(shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(psi::PSIO& psio, unsigned int fileno)
+void Array2d::read(psi::PSIO& psio, size_t fileno)
 {
     read(&psio, fileno);
 }//
@@ -859,7 +862,7 @@ void Array2d::mgs()
 	  rmgs1 += A2d_[i][k] * A2d_[i][k];
 	}
 
-	rmgs1 = sqrt(rmgs1);
+	rmgs1 = std::sqrt(rmgs1);
 
 	for (int i=0; i<dim1_;i++) {
 	  A2d_[i][k]/=rmgs1;

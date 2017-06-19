@@ -28,6 +28,8 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libefp_solver/efp_solver.h"
+#include "psi4/libpsi4util/process.h"
+
 #include "efp.h"
 
 namespace psi { namespace efp {

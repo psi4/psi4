@@ -26,11 +26,9 @@
  * @END LICENSE
  */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iomanip>
 #include "psi4/dfep2/dfep2.h"
+
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
 #include "psi4/libmints/basisset.h"
@@ -42,6 +40,12 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iomanip>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -222,8 +226,8 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
     psio->open(unit_, PSIO_OPEN_OLD);
 
-    aio->zero_disk(unit_, "EP2 I_ovvE Integrals", (ULI)(nocc * nvir), (ULI)(nvir * nE));
-    aio->zero_disk(unit_, "EP2 I_vooE Integrals", (ULI)(nocc * nvir), (ULI)(nocc * nE));
+    aio->zero_disk(unit_, "EP2 I_ovvE Integrals", (size_t)(nocc * nvir), (size_t)(nvir * nE));
+    aio->zero_disk(unit_, "EP2 I_vooE Integrals", (size_t)(nocc * nvir), (size_t)(nocc * nE));
     aio->synchronize();
 
     // How much memory are we working with?

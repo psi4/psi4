@@ -26,10 +26,12 @@
  * @END LICENSE
  */
 
-#include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/liboptions/liboptions.h"
 #include "mrcc.h"
 #include "matrix.h"
+
+#include "psi4/libmoinfo/libmoinfo.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 extern FILE* outfile;
 

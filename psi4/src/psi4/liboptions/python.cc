@@ -31,41 +31,6 @@
 
 namespace psi {
 
-py::list fill_list(py::list l, Data d)
-{
-    if(d.is_array()){
-        // Recurse
-        py::list row;
-        for(int i = 0; i < d.size(); ++i){
-            fill_list(row, d[i]);
-        }
-        l.append(row);
-    }else if(d.type() == "double"){
-        l.append(py::float_(d.to_double()));
-    }else if(d.type() == "string"){
-        l.append(py::str(d.to_string()));
-    }else if(d.type() == "boolean"){
-        l.append(py::bool_(d.to_integer()));
-    }else if(d.type() == "int"){
-        l.append(py::int_(d.to_integer()));
-    }else{
-        throw PSIEXCEPTION("Unknown data type in fill_list");
-    }
-    return l;
-}
-
-py::list Data::to_list() const
-{
-    return ptr_->to_list();
-}
-
-py::list ArrayType::to_list() const
-{
-    py::list l;
-    for(int i = 0; i < array_.size(); ++i)
-        fill_list(l, array_[i]);
-    return l;
-}
 
 PythonDataType::PythonDataType()
 {

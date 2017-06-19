@@ -29,6 +29,8 @@
 #ifndef MULTIPOLESYMMETRY_H
 #define MULTIPOLESYMMETRY_H
 
+#include "psi4/libmints/typedefs.h"
+
 #include <vector>
 #include <string>
 #include <map>

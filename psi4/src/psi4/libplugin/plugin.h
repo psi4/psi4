@@ -29,8 +29,8 @@
 #ifndef __psi4_src_lib_libplugin_plugin_h
 #define __psi4_src_lib_libplugin_plugin_h
 
-
-#include "psi4/libparallel/parallel.h"
+#include "psi4/libmints/typedefs.h"
+#include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
 #include <string>
 

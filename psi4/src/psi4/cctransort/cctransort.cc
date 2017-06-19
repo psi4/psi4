@@ -27,7 +27,6 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -38,7 +37,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
-
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 using std::vector;
 namespace psi{ namespace cctransort {

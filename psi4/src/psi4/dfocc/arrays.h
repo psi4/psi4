@@ -62,7 +62,7 @@ class Array1d
   void memalloc();
   void zero();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, double value);
   void set(double *vec);
@@ -111,9 +111,9 @@ class Array2d
   public:
   Array2d(int d1,int d2);
   Array2d(string name, int d1,int d2);
-  Array2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2);
-  Array2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
-  Array2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+  Array2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2);
+  Array2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
+  Array2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
   Array2d();			   //default constructer
   ~Array2d(); 		   	   //destructer
 
@@ -125,7 +125,7 @@ class Array2d
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, int j, double value);
   void set(double **A);
@@ -203,20 +203,20 @@ class Array2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
 
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write(psi::PSIO* const psio, unsigned int fileno);
-  void write(psi::PSIO& psio, unsigned int fileno);
-  void read(psi::PSIO* psio, unsigned int fileno);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read(psi::PSIO& psio, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write(psi::PSIO* const psio, size_t fileno);
+  void write(psi::PSIO& psio, size_t fileno);
+  void read(psi::PSIO* psio, size_t fileno);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void read(psi::PSIO& psio, size_t fileno);
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
-  void save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void save(psi::PSIO* const psio, unsigned int fileno);
-  void save(psi::PSIO& psio, unsigned int fileno);
-  void load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
-  void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
-  void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+  void save(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void save(psi::PSIO* const psio, size_t fileno);
+  void save(psi::PSIO& psio, size_t fileno);
+  void load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
+  void load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2);
+  void load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
 
   // sort1432: A2d_(ps,rq) = A(pq,rs): d1 = num p, d2 = num q, d3 = num r, d4 = num s
   // col/row_pair_idx are belong to A, while col/row_pairidx2 are belong to A2d_
@@ -338,7 +338,7 @@ class Array2i
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, int j, int value);
   void set(int **A);

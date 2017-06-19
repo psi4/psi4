@@ -29,6 +29,12 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+#include <psi4/libmints/typedefs.h>
+#include <psi4/liboptions/liboptions.h>
+
+#include <vector>
+#include <string>
+
 namespace psi {
 
 class Vector;
@@ -50,7 +56,7 @@ protected:
     /// Name of solver (set by subclasses)
     std::string name_;
     /// Memory available, in doubles, defaults to 0 => Unlimited storage
-    unsigned long int memory_;
+    size_t memory_;
 
     /// Convergence criteria, defaults to 1.0E-6
     double criteria_;
@@ -81,7 +87,7 @@ public:
     /// Set precondition type (specific to solver type)
     void set_precondition(const std::string& precondition) { precondition_ = precondition; }
     /// Set maximum vector storage space (defaults to 0 MB => Unlimited storage)
-    void set_memory(unsigned long int memory) { memory_ = memory; }
+    void set_memory(size_t memory) { memory_ = memory; }
     /// Set maximum number of iterations (defaults to 100)
     void set_maxiter(int maxiter) { maxiter_ = maxiter; }
     /// Set convergence criteria (defaults to 1.0E-6)
@@ -105,7 +111,7 @@ public:
     */
     virtual void print_header() const = 0;
     /// Estimate of maximum memory usage (in doubles)
-    virtual unsigned long int memory_estimate() = 0;
+    virtual size_t memory_estimate() = 0;
 
     // => Computers <= //
 
@@ -253,7 +259,7 @@ public:
     std::vector<std::shared_ptr<Vector> >& b() { return b_; }
 
     void print_header() const;
-    unsigned long int memory_estimate();
+    size_t memory_estimate();
     void initialize();
     void solve();
     void finalize();
@@ -355,7 +361,7 @@ public:
     // => Required Methods <= //
 
     virtual void print_header() const;
-    virtual unsigned long int memory_estimate();
+    virtual size_t memory_estimate();
     virtual void initialize();
     void solve();
     void finalize();
@@ -507,7 +513,7 @@ public:
     // => Required Methods <= //
 
     void print_header() const;
-    unsigned long int memory_estimate();
+    size_t memory_estimate();
     void initialize();
     void solve();
     void finalize();
@@ -628,7 +634,7 @@ public:
     // => Required Methods <= //
 
     virtual void print_header() const;
-    virtual unsigned long int memory_estimate(){ return 0;};
+    virtual size_t memory_estimate(){ return 0;};
     virtual void initialize();
     void solve();
     void finalize();

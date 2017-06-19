@@ -30,6 +30,8 @@
 #include "psi4/libmints/matrix.h"
 #include "occwave.h"
 
+#include <cmath>
+
 
 using namespace std;
 
@@ -138,7 +140,7 @@ if (orth_type == "MGS") {;
 	  rmgs1a += UorbA->get(h, i, k) * UorbA->get(h, i, k);
 	}// end 1a
 
-	rmgs1a=sqrt(rmgs1a);
+	rmgs1a=std::sqrt(rmgs1a);
 
 	// loop-1b
 	for (int i=0; i < nmopi_[h]; i++) {
@@ -336,8 +338,8 @@ if (orth_type == "MGS") {;
 	  rmgs1b += UorbB->get(h, i, k) * UorbB->get(h, i, k);
 	}// end 1a
 
-	rmgs1a=sqrt(rmgs1a);
-	rmgs1b=sqrt(rmgs1b);
+	rmgs1a=std::sqrt(rmgs1a);
+	rmgs1b=std::sqrt(rmgs1b);
 
 	// loop-1b
 	for (int i=0; i < nmopi_[h]; i++) {

@@ -286,7 +286,7 @@ if (reference_ == "RESTRICTED") {
                    double value = 2.0 * G.matrix[h][ij][kl];
                    if (I > K) value *= 2.0;
                    if (J > L) value *= 2.0;
-                   iwl_buf_wrt_val(&AA, I, K, J, L, value, 0, "NULL", 0);
+                   iwl_buf_wrt_val(&AA, I, K, J, L, value, 0, "outfile", 0);
                 }
             }
         }
@@ -317,7 +317,7 @@ if (wfn_type_ != "OMP2") {
                    double value = 2.0 * G.matrix[h][ab][cd];
                    if (A > C) value *= 2.0;
                    if (B > D) value *= 2.0;
-                   iwl_buf_wrt_val(&AA, A, C, B, D, value, 0, "NULL", 0);
+                   iwl_buf_wrt_val(&AA, A, C, B, D, value, 0, "outfile", 0);
                 }
             }
         }
@@ -346,7 +346,7 @@ if (wfn_type_ != "OMP2") {
                 int JB = ((B - nooA) * nooA)  + J;
                 if (IA >= JB) {
                    double value = 8.0 * G.matrix[h][ij][ab];
-                   iwl_buf_wrt_val(&AA, A, I, B, J, value, 0, "NULL", 0);
+                   iwl_buf_wrt_val(&AA, A, I, B, J, value, 0, "outfile", 0);
                 }
             }
         }
@@ -550,7 +550,7 @@ else if (reference_ == "UNRESTRICTED") {
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -614,7 +614,7 @@ if (wfn_type_ != "OMP2") {
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 8.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -639,7 +639,7 @@ if (wfn_type_ != "OMP2") {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = 2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -663,7 +663,7 @@ if (wfn_type_ != "OMP2") {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -687,7 +687,7 @@ if (wfn_type_ != "OMP2") {
                 int J = aocc_qt[j];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, J, A, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, J, A, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -713,7 +713,7 @@ if (wfn_type_ != "OMP2") {
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -738,7 +738,7 @@ if (wfn_type_ != "OMP2") {
                 int J = bocc_qt[j];
                 int B = bvir_qt[b];
                 double value = -2.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -764,7 +764,7 @@ if (wfn_type_ != "OMP2") {
                 int B = avir_qt[b];
                 int J = bocc_qt[j];
                 double value = 8.0 * G.matrix[h][ia][bj];
-                iwl_buf_wrt_val(&AB, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -790,7 +790,7 @@ if (wfn_type_ != "OMP2") {
                 int B = avir_qt[b];
                 int J = bocc_qt[j];
                 double value = 4.0 * G.matrix[h][ai][bj];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -830,7 +830,7 @@ if (wfn_type_ != "OMP2") {
                 int I = aocc_qt[i];
                 int N = bocc_qt[n];
                 double value = G.matrix[h][am][in];
-                iwl_buf_wrt_val(&AB, A, I, M, N, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, I, M, N, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -855,7 +855,7 @@ if (wfn_type_ != "OMP2") {
                 int N = aocc_qt[n];
                 int I = bocc_qt[i];
                 double value = G.matrix[h][ma][ni];
-                iwl_buf_wrt_val(&AB, M, N, A, I, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, M, N, A, I, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);

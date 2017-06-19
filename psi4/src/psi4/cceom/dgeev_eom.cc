@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"

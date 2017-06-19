@@ -30,6 +30,7 @@
 #define _dfocc_tensors_h_
 
 #include "psi4/libpsio/psio.h"
+#include "psi4/libmints/typedefs.h"
 
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define index4(i,j,k,l) index2(index2(i,j),index2(k,l))
@@ -43,7 +44,7 @@ using namespace std;
 
 namespace psi{
 
-using ULI = unsigned long int;
+class PSIO;
 
 namespace dfoccwave{
 
@@ -80,7 +81,7 @@ class Tensor1d
   void memalloc();
   void zero();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, double value);
   void set(double *vec);
@@ -144,9 +145,9 @@ class Tensor2d
   public:
   Tensor2d(int d1,int d2);
   Tensor2d(string name, int d1,int d2);
-  Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2);
-  Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
-  Tensor2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+  Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2);
+  Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
+  Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
   Tensor2d(string name, int d1, int d2, int d3, int d4);
   Tensor2d(string name, int d1, int d2, int d3);
   Tensor2d();			   //default constructer
@@ -158,7 +159,7 @@ class Tensor2d
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, int j, double value);
   void set(double **A);
@@ -190,15 +191,15 @@ class Tensor2d
   // axpy: Y <-- a * X + Y
   void axpy(double **a, double alpha);
   void axpy(const SharedTensor2d &a, double alpha);
-  void axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
-  void axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
+  void axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
+  void axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
   double **transpose2();
   SharedTensor2d transpose();
   void trans(const SharedTensor2d &A);
   void trans(double **A);
   void copy(double **a);
   void copy(const SharedTensor2d &Adum);
-  void copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d);
+  void copy(size_t length, const SharedTensor2d &A, int inc_a, int inc_2d);
   void copy(const SharedTensor2d &A, int start);
   // partial copy
   void pcopy(const SharedTensor2d &A, int dim_copy, int dim_skip);
@@ -286,36 +287,36 @@ class Tensor2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
 
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(psi::PSIO* const psio, unsigned int fileno);
-  void write(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(psi::PSIO& psio, unsigned int fileno);
-  void write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
-  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno);
-  void write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
-  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm);
-  void write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end);
+  void write(psi::PSIO* const psio, size_t fileno);
+  void write(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end);
+  void write(psi::PSIO& psio, size_t fileno);
+  void write(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end);
+  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm);
+  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno, bool three_index, bool symm);
+  void write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
 
-  void read(psi::PSIO* psio, unsigned int fileno);
-  void read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(psi::PSIO& psio, unsigned int fileno);
-  void read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end);
-  void read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm);
-  void read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void read_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
+  void read(psi::PSIO* psio, size_t fileno);
+  void read(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end);
+  void read(psi::PSIO& psio, size_t fileno);
+  void read(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end);
+  void read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm);
+  void read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
 
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
-  void save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void save(psi::PSIO* const psio, unsigned int fileno);
-  void save(psi::PSIO& psio, unsigned int fileno);
-  void load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2);
-  void load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2);
-  void load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2);
+  void save(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+  void save(psi::PSIO* const psio, size_t fileno);
+  void save(psi::PSIO& psio, size_t fileno);
+  void load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
+  void load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2);
+  void load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
 
   void mywrite(const string& filename);
   void mywrite(int fileno);
@@ -324,7 +325,7 @@ class Tensor2d
   void myread(const string& filename);
   void myread(int fileno);
   void myread(int fileno, bool append);
-  void myread(int fileno, ULI start);
+  void myread(int fileno, size_t start);
 
   // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
   // A2d_ = alpha*A + beta*A2d_
@@ -567,7 +568,7 @@ class Tensor2i
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, int j, int value);
   void set(int **A);

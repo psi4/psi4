@@ -43,6 +43,9 @@
 #include "psi4/masses.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/element_to_Z.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cmath>
 #include <cstdio>
@@ -57,7 +60,7 @@
 #include <sstream>
 #include <regex>
 
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace {
 // the third parameter of from_string() should be
@@ -280,20 +283,21 @@ void Molecule::clear()
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass, double charge, int /*lineno*/)
-{
+void Molecule::add_atom(int Z, double x, double y, double z, std::string label, double mass,
+                        double charge) {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
-    std::string l(label);
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
-        full_atoms_.push_back(std::shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(x)),
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(y)),
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(z)))));
-        if (strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(full_atoms_.back());
+        full_atoms_.push_back(std::shared_ptr<CoordEntry>(
+            new CartesianEntry(full_atoms_.size(), Z, charge, mass, label, label,
+                               std::shared_ptr<CoordValue>(new NumberValue(x)),
+                               std::shared_ptr<CoordValue>(new NumberValue(y)),
+                               std::shared_ptr<CoordValue>(new NumberValue(z)))));
+        if ((label != "X") && (label != "x")) {
+            atoms_.push_back(full_atoms_.back());
+        }
     } else {
         throw PSIEXCEPTION("Molecule::add_atom: Adding atom on top of an existing atom.");
     }
@@ -550,8 +554,7 @@ Matrix Molecule::full_geometry() const
     return geom;
 }
 
-void Molecule::set_geometry(double **geom)
-{
+void Molecule::set_geometry(double **geom) {
     lock_frame_ = false;
     bool dummy_found = false;
     for (int i = 0; i < nallatom(); ++i) {
@@ -566,10 +569,13 @@ void Molecule::set_geometry(double **geom)
         atoms_.clear();
         int count = 0;
         std::vector<int> fragment_changes;
-        for (size_t i = 0; i < fragments_.size(); ++i)
+
+        for (size_t i = 0; i < fragments_.size(); ++i) {
             fragment_changes.push_back(0);
+        }
+
         for (int i = 0; i < nallatom(); ++i) {
-            std::shared_ptr <CoordEntry> at = full_atoms_[i];
+            std::shared_ptr<CoordEntry> at = full_atoms_[i];
 
             if (at->symbol() == "X") {
                 // Find out which fragment this atom is removed from, then bail
@@ -582,8 +588,9 @@ void Molecule::set_geometry(double **geom)
                     }
                 }
                 if (!found)
-                    throw PSIEXCEPTION("Problem converting ZMatrix coordinates to Cartesians."
-                                               "Try again, without dummy atoms.");
+                    throw PSIEXCEPTION(
+                        "Problem converting ZMatrix coordinates to Cartesians."
+                        "Try again, without dummy atoms.");
                 continue;
             }
 
@@ -593,33 +600,30 @@ void Molecule::set_geometry(double **geom)
             double mass = at->mass();
             std::string symbol = at->symbol();
             std::string label = at->label();
-            std::shared_ptr <CoordEntry> new_atom(
-                    new CartesianEntry(entrynum,
-                                       zval,
-                                       charge,
-                                       mass,
-                                       symbol,
-                                       label,
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][0] / input_units_to_au_)),
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][1] / input_units_to_au_)),
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][2] / input_units_to_au_))
-                    ));
+            std::shared_ptr<CoordEntry> new_atom(new CartesianEntry(
+                entrynum, zval, charge, mass, symbol, label,
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][0] / input_units_to_au_)),
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][1] / input_units_to_au_)),
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][2] / input_units_to_au_))));
+
             // Copy over all known basis sets
-            const std::map <std::string, std::string> &basissets = at->basissets();
+            const std::map<std::string, std::string> &basissets = at->basissets();
             std::map<std::string, std::string>::const_iterator bs = basissets.begin();
-            for (; bs != basissets.end(); ++bs)
+            for (; bs != basissets.end(); ++bs) {
                 new_atom->set_basisset(bs->second, bs->first);
+            }
+
             // Copy over all known basis hashes
-            const std::map <std::string, std::string> &shells = at->shells();
+            const std::map<std::string, std::string> &shells = at->shells();
             std::map<std::string, std::string>::const_iterator sh = shells.begin();
-            for (; sh != shells.end(); ++sh)
+            for (; sh != shells.end(); ++sh) {
                 new_atom->set_shell(sh->second, sh->first);
+            }
             atoms_.push_back(new_atom);
             count++;
         }
         full_atoms_.clear();
-        for (size_t i = 0; i < atoms_.size(); ++i)
-            full_atoms_.push_back(atoms_[i]);
+        for (size_t i = 0; i < atoms_.size(); ++i) full_atoms_.push_back(atoms_[i]);
         // Now change the bounds of each fragment, to reflect the missing dummy atoms
         int cumulative_count = 0;
         for (size_t frag = 0; frag < fragments_.size(); ++frag) {
@@ -637,8 +641,7 @@ void Molecule::set_geometry(double **geom)
     }
 }
 
-void Molecule::set_full_geometry(double **geom)
-{
+void Molecule::set_full_geometry(double **geom) {
     lock_frame_ = false;
     for (int i = 0; i < nallatom(); ++i) {
         full_atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
@@ -894,9 +897,9 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
 
     // Collect EFP fragments in forward order
-    unsigned int efp_nfrag = 0;
+    size_t efp_nfrag = 0;
     std::vector <std::string> efp_fnames;
-    for (unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
             efp_fnames.push_back(reMatches[1].str());
             efp_nfrag++;
@@ -913,7 +916,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         double *coords = NULL;
         coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
         double *pcoords = coords;
-        unsigned int currentFragment = efp_nfrag - 1;
+        size_t currentFragment = efp_nfrag - 1;
         std::vector <std::string> splitLine;
 
         // Force no reorient
@@ -1000,14 +1003,14 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         throw PSIEXCEPTION("No geometry specified");
 
     // Now go through the rest of the lines looking for fragment markers
-    unsigned int firstAtom = 0;
-    unsigned int atomCount = 0;
-    unsigned int efpCount = 0;
+    size_t firstAtom = 0;
+    size_t atomCount = 0;
+    size_t efpCount = 0;
 
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
-    for (unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if (pubchemerror)
             outfile->Printf("%s\n", lines[lineNumber].c_str());
         if (std::regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
@@ -1094,7 +1097,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     std::string atomSym, atomLabel;
     bool zmatrix = false;
     double zVal, charge;
-    unsigned int currentFragment = 0;
+    size_t currentFragment = 0;
     efpCount = 0;
 
     // Store coordinates, atom by atom
@@ -1104,7 +1107,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
 #ifdef USING_libefp
-            unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
+            size_t efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
 
             double *frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
 
@@ -1114,7 +1117,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 
             double *frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
-            for (unsigned int at = 0; at < efp_natom; at++) {
+            for (size_t at = 0; at < efp_natom; at++) {
                 // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and
                 // mass from psi4 through zVal. May want to reshuffle this.
                 zVal = frag_atom_Z[at];
@@ -1496,12 +1499,11 @@ void Molecule::deactivate_all_fragments()
     }
 }
 
-void Molecule::set_active_fragments(py::list reals)
+void Molecule::set_active_fragments(std::vector<int> reals)
 {
     lock_frame_ = false;
-    for (int i = 0; i < py::len(reals); ++i) {
-        int fragment = reals[i].cast<int>();
-        fragment_types_[fragment - 1] = Real;
+    for (int i = 0; i < reals.size(); ++i) {
+        fragment_types_[reals[i] - 1] = Real;
     }
 }
 
@@ -1511,12 +1513,11 @@ void Molecule::set_active_fragment(int fragment)
     fragment_types_[fragment - 1] = Real;
 }
 
-void Molecule::set_ghost_fragments(py::list ghosts)
+void Molecule::set_ghost_fragments(std::vector<int> ghosts)
 {
     lock_frame_ = false;
-    for (int i = 0; i < py::len(ghosts); ++i) {
-        int fragment = ghosts[i].cast<int>();
-        fragment_types_[fragment - 1] = Ghost;
+    for (int i = 0; i < ghosts.size(); ++i) {
+        fragment_types_[ghosts[i] - 1] = Ghost;
     }
 }
 
@@ -1526,42 +1527,32 @@ void Molecule::set_ghost_fragment(int fragment)
     fragment_types_[fragment - 1] = Ghost;
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_1(py::list reals,
-                                                          py::list ghosts)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_1(std::vector<int> reals,
+                                                         std::vector<int> ghosts) {
     std::vector<int> realVec;
-    for (int i = 0; i < py::len(reals); ++i)
-        realVec.push_back(reals[i].cast<int>() - 1);
+    for (int i = 0; i < reals.size(); ++i) realVec.push_back(reals[i] - 1);
 
     std::vector<int> ghostVec;
-    for (int i = 0; i < py::len(ghosts); ++i)
-        ghostVec.push_back(ghosts[i].cast<int>() - 1);
+    for (int i = 0; i < ghosts.size(); ++i) ghostVec.push_back(ghosts[i] - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_2(py::list reals,
-                                                          int ghost)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_2(std::vector<int> reals, int ghost) {
     std::vector<int> realVec;
-    for (int i = 0; i < py::len(reals); ++i)
-        realVec.push_back(reals[i].cast<int>() - 1);
+    for (int i = 0; i < reals.size(); ++i) realVec.push_back(reals[i] - 1);
 
     std::vector<int> ghostVec;
-    if (ghost >= 1)
-        ghostVec.push_back(ghost - 1);
+    if (ghost >= 1) ghostVec.push_back(ghost - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_3(int reals,
-                                                          py::list ghost)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_3(int reals, std::vector<int> ghost) {
     std::vector<int> realVec;
     realVec.push_back(reals - 1);
     std::vector<int> ghostVec;
-    for (int i = 0; i < py::len(ghost); ++i)
-        ghostVec.push_back(ghost[i].cast<int>() - 1);
+    for (int i = 0; i < ghost.size(); ++i) ghostVec.push_back(ghost[i] - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
@@ -1578,7 +1569,7 @@ std::shared_ptr <Molecule> Molecule::py_extract_subsets_4(int reals,
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_5(py::list reals)
+std::shared_ptr <Molecule> Molecule::py_extract_subsets_5(std::vector<int> reals)
 {
     return py_extract_subsets_2(reals, -1);
 }
@@ -1908,7 +1899,7 @@ void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) cons
 {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    std::shared_ptr <OutFile> printer(new OutFile(filename, TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream(filename, std::ostream::trunc));
 
     int N = natom();
     if (!save_ghosts) {

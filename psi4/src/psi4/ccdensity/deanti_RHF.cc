@@ -30,15 +30,17 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <stdio.h>
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
 #define EXTERN
 #include "globals.h"
+
+#include <stdio.h>
 
 namespace psi { namespace ccdensity {
 

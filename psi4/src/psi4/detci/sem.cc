@@ -39,20 +39,22 @@
 ** Last modified by MLL on 25 November 1997
 */
 
+#include "psi4/detci/structs.h"
+#include "psi4/detci/ci_tol.h"
+#include "psi4/detci/civect.h"
+#include "psi4/detci/ciwave.h"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libqt/slaterdset.h"
 #include "psi4/libmints/vector.h"
-#include "psi4/detci/structs.h"
-#include "psi4/detci/ci_tol.h"
-#include "psi4/detci/civect.h"
-#include "psi4/detci/ciwave.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 namespace psi { namespace detci {
 
@@ -65,7 +67,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       int nroots, int maxiter, int maxnvect)
 {
    int i, j, k, l, ij, I, L, L2=0, L3=0, tmpi, detH0;
-   unsigned long det1, N;
+   size_t det1, N;
    int num_alp_str, num_bet_str, Llast;
    int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx, *root_converged;
    int *Lvec, *did_root, num_root_converged;

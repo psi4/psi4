@@ -33,7 +33,6 @@
 
 #include "onebody.h"
 #include "twobody.h"
-#include "basisset.h"
 #include "integral.h"
 #include "sobasis.h"
 #include "gshell.h"
@@ -41,9 +40,10 @@
 #include "wavefunction.h"
 #include "cdsalclist.h"
 #include "dcd.h"
-
+#include "basisset.h"
 
 #include "psi4/libqt/qt.h"
+
 #include <vector>
 
 //#define DebugPrint 1
@@ -63,6 +63,7 @@
 #endif
 
 namespace psi {
+class BasisSet;
 
 // Only include the following function if Doxygen is running to generate appropriate
 // documentation.

@@ -26,16 +26,12 @@
  * @END LICENSE
  */
 
- #include "psi4/pragma.h"
- PRAGMA_WARNING_PUSH
- PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
- #include <memory>
- PRAGMA_WARNING_POP
 #include "psi4/psi4-dec.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libscf_solver/hf.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libfock/soscf.h"
 #include "psi4/detci/globaldefs.h"
@@ -43,6 +39,14 @@
 #include "psi4/detci/civect.h"
 #include "psi4/detci/structs.h"
 #include "psi4/detci/slaterd.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
+#include "psi4/pragma.h"
+ PRAGMA_WARNING_PUSH
+ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+ #include <memory>
+ PRAGMA_WARNING_POP
 
 namespace psi { namespace detci {
 
@@ -554,7 +558,7 @@ SharedCIVector CIWavefunction::Hd_vector(int hd_type) {
     return Hd;
 }
 SharedMatrix CIWavefunction::hamiltonian(size_t hsize) {
-    BIGINT size = (hsize) ? (BIGINT)hsize : CIblks_->vectlen;
+    size_t size = (hsize) ? (size_t)hsize : CIblks_->vectlen;
     double h_size = (double)(8 * size * size);
     if (h_size > (Process::environment.get_memory() * 0.4)) {
         outfile->Printf("CIWave::Requsted size of the hamiltonian is %lf!\n", h_size / 1E9);
@@ -723,7 +727,7 @@ void CIWavefunction::compute_state_transfer(SharedCIVector ref, int ref_vec,
 
     //         /* loop over excitations E^b_{ij} from |B(J_b)> */
     //         int Ibcnt = Ib->cnt[Iacode];
-    //         unsigned int* Ibridx = Ib->ridx[Iacode];
+    //         size_t* Ibridx = Ib->ridx[Iacode];
     //         signed char* Ibsgn = Ib->sgn[Iacode];
     //         int* Iboij = Ib->oij[Iacode];
     //         for (Ib_ex = 0; Ib_ex < Ibcnt; Ib_ex++) {

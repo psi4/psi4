@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -60,11 +61,13 @@ void schmidt(double **A, int rows, int cols, std::string)
 {
    double RValue;
    for(size_t i=0;i<cols;++i){
-      dot_arr(A[i],A[i],cols,&RValue);
+      // dot_arr(A[i],A[i],cols,&RValue);
+      RValue = C_DDOT(cols, A[i], 1, A[i], 1);
       RValue=sqrt(RValue);
       for(size_t I=0;I<cols;++I)A[i][I]/=RValue;
       for(size_t j=i+1;j<cols;++j){
-         dot_arr(A[i],A[j],cols,&RValue);
+         // dot_arr(A[i],A[j],cols,&RValue);
+         RValue = C_DDOT(cols, A[i], 1, A[j], 1);
          for(size_t I=0;I<cols;++I)A[j][I]-=RValue*A[i][I];
       }
    }
@@ -76,7 +79,7 @@ void schmidt(double **A, int rows, int cols, std::string)
 #ifdef STANDALONE
 main()
 {
-   std::string OutFileRMR ;
+   std::string out_fname ;
    double **mat, **mat_copy, **mat_x_mat ;
    void schmidt(double **A, int rows, int cols) ;
 
@@ -96,7 +99,8 @@ main()
 
    outfile->Printf( "\nTest A * A = \n") ;
 
-   mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
+   C_DGEMM('N', 'T', 3, 3, 3, 1.0, mat, 3, mat, 3, 0.0, mat_x_mat, 3);
+   //mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
    print_mat(mat_x_mat,3,3,outfile) ;
 
    free_matrix(mat,3) ;

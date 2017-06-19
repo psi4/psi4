@@ -29,9 +29,11 @@
 #ifndef _psi_src_lib_libmints_helper_h
 #define _psi_src_lib_libmints_helper_h
 
-#include <vector>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/multipolesymmetry.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <vector>
 
 namespace psi {
 

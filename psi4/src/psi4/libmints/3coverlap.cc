@@ -26,11 +26,13 @@
  * @END LICENSE
  */
 #include "psi4/libmints/3coverlap.h"
-#include <memory>
-#include <stdexcept>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/pybind11.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
+#include <memory>
+#include <stdexcept>
 
 using namespace psi;
 
@@ -98,7 +100,7 @@ void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
                                          const GaussianShell& sB,
                                          const GaussianShell& sC)
 {
-    unsigned int ao123;
+    size_t ao123;
     int amA = sA.am();
     int amB = sB.am();
     int amC = sC.am();

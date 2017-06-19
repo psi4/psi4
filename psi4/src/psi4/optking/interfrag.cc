@@ -34,7 +34,7 @@
 #include "frag.h"
 #include "interfrag.h"
 #include "v3d.h" // for H_guess
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include <sstream>
 
 #include "print.h"

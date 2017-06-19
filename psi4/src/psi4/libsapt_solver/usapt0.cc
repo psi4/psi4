@@ -30,11 +30,15 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
 
 using namespace psi;
 using namespace std;
@@ -54,7 +58,7 @@ USAPT0::USAPT0(SharedWavefunction d,
     bench_ = options_.get_int("BENCH");
     coupled_ind_ = options_.get_bool("COUPLED_INDUCTION");
 // Get memory and convert it into words.
-    memory_ = (unsigned long int)(Process::environment.get_memory() * options_.get_double("SAPT_MEM_FACTOR") * 0.125);
+    memory_ = (size_t)(Process::environment.get_memory() * options_.get_double("SAPT_MEM_FACTOR") * 0.125);
 
     cpks_maxiter_ = options_.get_int("MAXITER");
     cpks_delta_ = options_.get_double("D_CONVERGENCE");
@@ -467,7 +471,7 @@ void USAPT0::fock_terms()
     if (jk_memory < 0L) {
         throw PSIEXCEPTION("Too little static memory for USAPT::fock_terms");
     }
-    jk->set_memory((unsigned long int )jk_memory);
+    jk->set_memory((size_t )jk_memory);
 
     // ==> Generalized Fock Source Terms [Elst/Exch] <== //
 

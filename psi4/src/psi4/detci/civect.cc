@@ -59,7 +59,7 @@
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/civect.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/vector.h"
 
 namespace psi { namespace detci {
@@ -90,8 +90,8 @@ CIvect::CIvect()  // Default constructor
     common_init();
 }
 
-CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
-               int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+CIvect::CIvect(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
+               int *ias, int *ibs, size_t *offs, int nac, int nbc, int nirr,
                int cdpirr, int mxv, int nu, int funit, int *fablk, int *lablk,
                int **dc, struct calcinfo *CI_CalcInfo, struct params *CI_Params,
                struct H_zero_block *CI_H0block, bool buf_init) {
@@ -177,14 +177,14 @@ void CIvect::set(int incor, int maxvect, int nunits, int funit,
         CIblks->first_iablk, CIblks->last_iablk, CIblks->decode);
 }
 
-void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
-                 int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+void CIvect::set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
+                 int *ias, int *ibs, size_t *offs, int nac, int nbc, int nirr,
                  int cdpirr, int mxv, int nu, int fu, int *fablk, int *lablk,
                  int **dc) {
     int i, j, k;
     int maxrows = 0, maxcols = 0;
-    unsigned long bufsize, maxbufsize;
-    unsigned long size;
+    size_t bufsize, maxbufsize;
+    size_t size;
     // static int first=1;
     /* int in_file, extras, units_used, cur_unit; */
 
@@ -206,7 +206,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     Ia_size_.resize(nb);
     Ib_size_.resize(nb);
     offset_.resize(nb);
-    // offset_ = (BIGINT *)malloc(nb * sizeof(BIGINT));
+    // offset_ = (size_t *)malloc(nb * sizeof(size_t));
 
     for (i = 0; i < nb; i++) {
         Ia_code_[i] = iac[i];
@@ -236,7 +236,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
     if (icore_ == 1) { /* whole vector in-core */
         buf_per_vect_ = 1;
         buf_total_ = maxvect_;
-        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf_size_ = (size_t *)malloc(buf_per_vect_ * sizeof(size_t));
         buf2blk_ = init_int_array(buf_per_vect_);
         buf_offdiag_ = init_int_array(buf_per_vect_);
         for (i = 0; i < buf_per_vect_; i++) buf_size_[i] = 0;
@@ -279,12 +279,12 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
         }
 
         buf_total_ = maxvect_ * buf_per_vect_;
-        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf_size_ = (size_t *)malloc(buf_per_vect_ * sizeof(size_t));
         for (i = 0; i < buf_per_vect_; i++) {
             buf_size_[i] = 0;
             j = buf2blk_[i];
             for (k = first_ablk_[j]; k <= last_ablk_[j]; k++) {
-                buf_size_[i] += (unsigned long)Ia_size_[k] * (unsigned long)Ib_size_[k];
+                buf_size_[i] += (size_t)Ia_size_[k] * (size_t)Ib_size_[k];
             }
         }
     } /* end icore==2 */
@@ -308,14 +308,14 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
         buf_total_ = buf_per_vect_ * maxvect_;
         buf2blk_ = init_int_array(buf_per_vect_);
         buf_offdiag_ = init_int_array(buf_per_vect_);
-        buf_size_ = (unsigned long *)malloc(buf_per_vect_ * sizeof(unsigned long));
+        buf_size_ = (size_t *)malloc(buf_per_vect_ * sizeof(size_t));
 
         if (Ms0_) {
             for (i = 0, j = 0; i < num_blocks_; i++) {
                 if (Ia_code_[i] >= Ib_code_[i] && Ia_size_[i] > 0 &&
                     Ib_size_[i] > 0) {
                     buf2blk_[j] = i;
-                    buf_size_[j] = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+                    buf_size_[j] = (size_t)Ia_size_[i] * (size_t)Ib_size_[i];
                     if (Ia_code_[i] != Ib_code_[i]) buf_offdiag_[j] = 1;
                     j++;
                 }
@@ -324,7 +324,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
             for (i = 0, j = 0; i < num_blocks_; i++) {
                 if (Ia_size_[i] > 0 && Ib_size_[i] > 0) {
                     buf2blk_[j] = i;
-                    buf_size_[j] = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+                    buf_size_[j] = (size_t)Ia_size_[i] * (size_t)Ib_size_[i];
                     j++;
                 }
             }
@@ -399,7 +399,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
         for (i = 0, maxbufsize = 0; i < nirreps_; i++) {
             for (j = first_ablk_[i], bufsize = 0; j <= last_ablk_[i]; j++) {
                 bufsize +=
-                    (unsigned long)Ia_size_[j] * (unsigned long)Ib_size_[j];
+                    (size_t)Ia_size_[j] * (size_t)Ib_size_[j];
             }
             if (bufsize > maxbufsize) maxbufsize = bufsize;
         }
@@ -419,7 +419,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
                 blocks_[i] = (double **)malloc(Ia_size_[i] * sizeof(double *));
             else
                 blocks_[i] = (double **)malloc(sizeof(double *));
-            bufsize = (unsigned long)Ia_size_[i] * (unsigned long)Ib_size_[i];
+            bufsize = (size_t)Ia_size_[i] * (size_t)Ib_size_[i];
             if (bufsize > maxbufsize) maxbufsize = bufsize;
         }
         // CDS 11/5/97: Revise buffer_size, the size of the biggest buffer
@@ -726,14 +726,15 @@ void CIvect::vector_multiply(double scale, SharedCIVector X, SharedCIVector Y, i
 
 double CIvect::operator*(CIvect &b)
 {
-   double dotprod=0.0, tval;
    int i, buf;
 
+   double dotprod = 0.0;
    if (Ms0_) {
       for (buf=0; buf<buf_per_vect_; buf++) {
          read(cur_vect_, buf);
          b.read(b.cur_vect_, buf);
-         dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b.buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotprod += tval;
          }
@@ -743,7 +744,8 @@ double CIvect::operator*(CIvect &b)
       for (buf=0; buf<buf_per_vect_; buf++) {
          read(cur_vect_, buf);
          b.read(b.cur_vect_, buf);
-         dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, b.buffer_, buf_size_[buf], &tval);
+         double tval = C_DDOT(buf_size_[buf], buffer_, 1, b.buffer_, 1);
          dotprod += tval;
          }
       }
@@ -751,9 +753,9 @@ double CIvect::operator*(CIvect &b)
    return(dotprod);
 }
 
-void CIvect::setarray(const double *a, BIGINT len) {
+void CIvect::setarray(const double *a, size_t len) {
     double *aptr;
-    BIGINT i;
+    size_t i;
 
     if (len > vectlen_) len = vectlen_;
 
@@ -882,7 +884,7 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
 }
 
 
-void CIvect::det2strings(BIGINT det, int *alp_code, int *alp_idx,
+void CIvect::det2strings(size_t det, int *alp_code, int *alp_idx,
          int *bet_code, int *bet_idx)
 {
    int i;
@@ -894,16 +896,16 @@ void CIvect::det2strings(BIGINT det, int *alp_code, int *alp_idx,
    *alp_code = Ia_code_[i];
    *bet_code = Ib_code_[i];
 
-   *alp_idx = (int) ((det - offset_[i]) / (BIGINT) Ib_size_[i]);
-   *bet_idx = ((det - offset_[i]) % (BIGINT) Ib_size_[i]);
+   *alp_idx = (int) ((det - offset_[i]) / (size_t) Ib_size_[i]);
+   *bet_idx = ((det - offset_[i]) % (size_t) Ib_size_[i]);
 
 }
 
-BIGINT CIvect::strings2det(int alp_code, int alp_idx,
+size_t CIvect::strings2det(int alp_code, int alp_idx,
       int bet_code, int bet_idx)
 {
    int blknum;
-   BIGINT addr;
+   size_t addr;
 
    blknum = decode_[alp_code][bet_code];
    addr = offset_[blknum];
@@ -1840,11 +1842,11 @@ void CIvect::init_io_files(bool open_old) {
     int i;
 
     for (i = 0; i < nunits_; i++) {
-        if (!psio_open_check((ULI)units_[i])) {
+        if (!psio_open_check((size_t)units_[i])) {
             if (open_old) {
-                psio_open((ULI)units_[i], PSIO_OPEN_OLD);
+                psio_open((size_t)units_[i], PSIO_OPEN_OLD);
             } else {
-                psio_open((ULI)units_[i], PSIO_OPEN_NEW);
+                psio_open((size_t)units_[i], PSIO_OPEN_NEW);
             }
         }
     }
@@ -1886,7 +1888,7 @@ void CIvect::close_io_files(int keep) {
 int CIvect::read(int ivect, int ibuf)
 {
    int unit, buf, k, i;
-   unsigned long int size;
+   size_t size;
    int blk;
    char key[20];
 
@@ -1907,7 +1909,7 @@ int CIvect::read(int ivect, int ibuf)
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;
 
-   size = buf_size_[ibuf] * (unsigned long int) sizeof(double);
+   size = buf_size_[ibuf] * (size_t) sizeof(double);
 
    /* translate buffer number in case we renumbered after collapse * */
    buf += new_first_buf_;
@@ -1915,7 +1917,7 @@ int CIvect::read(int ivect, int ibuf)
    sprintf(key, "buffer_ %d", buf);
    unit = file_number_[buf];
 
-   psio_read_entry((ULI) unit, key, (char *) buffer_, size);
+   psio_read_entry((size_t) unit, key, (char *) buffer_, size);
 
    cur_vect_ = ivect;
    cur_buf_ = ibuf;
@@ -1940,7 +1942,7 @@ int CIvect::read(int ivect, int ibuf)
 int CIvect::write(int ivect, int ibuf)
 {
    int unit, buf, i;
-   unsigned long int size;
+   size_t size;
    int blk;
    char key[20];
 
@@ -1959,7 +1961,7 @@ int CIvect::write(int ivect, int ibuf)
 
    if (icore_ == 1) ibuf = 0;
    buf = ivect * buf_per_vect_ + ibuf;
-   size = buf_size_[ibuf] * (unsigned long int) sizeof(double);
+   size = buf_size_[ibuf] * (size_t) sizeof(double);
 
    /* translate buffer number in case we renumbered after collapse * */
    buf += new_first_buf_;
@@ -1967,7 +1969,7 @@ int CIvect::write(int ivect, int ibuf)
    sprintf(key, "buffer_ %d", buf);
    unit = file_number_[buf];
 
-   psio_write_entry((ULI) unit, key, (char *) buffer_, size);
+   psio_write_entry((size_t) unit, key, (char *) buffer_, size);
 
    if (ivect >= nvect_) nvect_ = ivect + 1;
    cur_vect_ = ivect;
@@ -2007,7 +2009,8 @@ int CIvect::schmidt_add(CIvect &c, int L)
       read(cur_vect_, buf);
       for (cvect=0; cvect<L; cvect++) {
          c.read(cvect, buf);
-         dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         //dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         tval = C_DDOT(buf_size_[buf], buffer_, 1, c.buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotval[cvect] += tval;
          }
@@ -2022,7 +2025,8 @@ int CIvect::schmidt_add(CIvect &c, int L)
        */
          xpeay(buffer_, -dotval[cvect], c.buffer_, buf_size_[buf]);
          }
-      dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       norm += tval;
       write(cur_vect_, buf);
@@ -2094,7 +2098,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
       read(source_vec, buf);
       for (cvect=first_vec; cvect<=last_vec; cvect++) {
          c.read(cvect, buf);
-         dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+         tval = C_DDOT(buf_size_[buf], buffer_, 1, c.buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          dotval[cvect] += tval;
          }
@@ -2112,7 +2117,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
          c.read(cvect, buf);
          xpeay(buffer_, -dotval[cvect], c.buffer_, buf_size_[buf]);
          }
-      dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       norm += tval;
       write(cur_vect_, buf);
@@ -2165,7 +2171,8 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
            read(source_vec, buf);
            for (cvect=first_vec; cvect<=last_vec; cvect++) {
               c.read(cvect, buf);
-              dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+              // dot_arr(buffer_, c.buffer_, buf_size_[buf], &tval);
+              tval = C_DDOT(buf_size_[buf], buffer_, 1, c.buffer_, 1);
               if (buf_offdiag_[buf]) tval *= 2.0;
               dotchk[cvect] += tval;
               }
@@ -2302,7 +2309,8 @@ void CIvect::dcalc(int nr, int L, double **alpha, double *lambda,
             xpeay(buffer_, alpha[ivect][root], S.buffer_, buf_size_[buf]);
             S.buf_unlock();
             } /* end loop over ivect */
-         dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+         // dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+         tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
          if (buf_offdiag_[buf]) tval *= 2.0;
          norm_arr[root] += tval;
          write(root, buf);
@@ -2509,7 +2517,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
            read(i, buf);
            for (j=i; j<=(k-kvec_offset); j++) {
               C.read(j,buf);
-              dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+              //dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+              tval = C_DDOT(buf_size_[buf], buffer_, 1, C.buffer_, 1);
               if (buf_offdiag_[buf]) tval *= 2.0;
               wfn_overlap[i+kvec_offset][j+kvec_offset] += tval;
               if (i!=j) wfn_overlap[j+kvec_offset][i+kvec_offset] += tval;
@@ -2530,7 +2539,8 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
         read(k, buf);
         for (i=(1-kvec_offset); i<=(k-kvec_offset); i++) {
            C.read(i, buf);
-           dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+           // dot_arr(buffer_, C.buffer_, C.buf_size_[buf], &tval);
+           tval = C_DDOT(buf_size_[buf], buffer_, 1, C.buffer_, 1);
            if (buf_offdiag_[buf]) tval *= 2.0;
            wfn_overlap[k][i+kvec_offset] += tval;
            if ((i+kvec_offset)!=k) wfn_overlap[i+kvec_offset][k] += tval;
@@ -2552,11 +2562,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
       S.buf_lock(buf2);
       S.read(0, buf);
       read(k-1-kvec_offset, buf);
-      dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, S.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2k += tval;
       read(k-kvec_offset, buf);
-      dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      // dot_arr(buffer_, S.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, S.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2kp1 += tval;
       S.buf_unlock();
@@ -2565,11 +2577,13 @@ void CIvect::wigner_E2k_formula(CIvect &Hd, CIvect &S, CIvect &C,
            CI_CalcInfo_->twoel_ints->pointer(), CI_CalcInfo_->e0_drc, CI_CalcInfo_->num_alp_expl,
            CI_CalcInfo_->num_bet_expl, CI_CalcInfo_->nmo, buf, CI_Params_->hd_ave);
       xexy(Hd.buffer_, buffer_, buf_size_[buf]);
-      dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      //dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, Hd.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2kp1 -= tval;
       read(k-1-kvec_offset, buf);
-      dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      //dot_arr(buffer_, Hd.buffer_, buf_size_[buf], &tval);
+      tval = C_DDOT(buf_size_[buf], buffer_, 1, Hd.buffer_, 1);
       if (buf_offdiag_[buf]) tval *= 2.0;
       E2k -= tval;
       Hd.buf_unlock();
@@ -2846,16 +2860,16 @@ void CIvect::transp_block(int iblock, double **tmparr)
 /*
 ** CIvect::get_max_blk_size()
 **
-** Return the maximum RAS subblock size as a long unsigned integer
+** Return the maximum RAS subblock size as a long size_teger
 **
 */
-unsigned long CIvect::get_max_blk_size(void)
+size_t CIvect::get_max_blk_size(void)
 {
    int i;
-   unsigned long blksize, maxblksize=0;
+   size_t blksize, maxblksize=0;
 
    for (i=0; i<num_blocks_; i++) {
-      blksize = (unsigned long) Ia_size_[i] * (unsigned long) Ib_size_[i];
+      blksize = (size_t) Ia_size_[i] * (size_t) Ib_size_[i];
       if (blksize > maxblksize) maxblksize = blksize;
       }
 
@@ -2873,7 +2887,8 @@ double CIvect::checknorm(void) {
 
     for (int buf = 0; buf < buf_per_vect_; buf++) {
         read(cur_vect_, buf);
-        dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+        //dot_arr(buffer_, buffer_, buf_size_[buf], &tval);
+        tval = C_DDOT(buf_size_[buf], buffer_, 1, buffer_, 1);
         if (buf_offdiag_[buf]) tval *= 2.0;
         dotprod += tval;
     }
@@ -2986,8 +3001,8 @@ void CIvect::restart_reord_fp(int L)
    if (new_first_buf_ >= buf_total_) new_first_buf_ -= buf_total_;
 
    /*
-   tmp_file_offset_ = (unsigned long *) malloc (buf_total_ *
-                      sizeof(unsigned long));
+   tmp_file_offset_ = (size_t *) malloc (buf_total_ *
+                      sizeof(size_t));
    tmp_file_number_ = init_int_array(buf_total_);
 
 
@@ -3502,7 +3517,7 @@ void CIvect::write_new_first_buf(void)
   int unit;
 
   unit = first_unit_;
-  psio_write_entry((ULI) unit, "New First Buffer", (char *) &new_first_buf_,
+  psio_write_entry((size_t) unit, "New First Buffer", (char *) &new_first_buf_,
     sizeof(int));
 }
 
@@ -3520,8 +3535,8 @@ int CIvect::read_new_first_buf(void)
   int nfb;
 
   unit = first_unit_;
-  if (psio_tocscan((ULI) unit, "New First Buffer") == NULL) return(-1);
-  psio_read_entry((ULI) unit, "New First Buffer", (char *) &nfb,
+  if (psio_tocscan((size_t) unit, "New First Buffer") == NULL) return(-1);
+  psio_read_entry((size_t) unit, "New First Buffer", (char *) &nfb,
     sizeof(int));
   return(nfb);
 
@@ -3550,8 +3565,8 @@ int CIvect::read_num_vecs(void)
   int nv;
 
   unit = first_unit_;
-  if (psio_tocscan((ULI) unit, "Num Vectors") == NULL) return(-1);
-  psio_read_entry((ULI) unit, "Num Vectors", (char *) &nv, sizeof(int));
+  if (psio_tocscan((size_t) unit, "Num Vectors") == NULL) return(-1);
+  psio_read_entry((size_t) unit, "Num Vectors", (char *) &nv, sizeof(int));
   return(nv);
 }
 
@@ -3565,7 +3580,7 @@ void CIvect::write_num_vecs(int nv)
   int unit;
 
   unit = first_unit_;
-  psio_write_entry((ULI) unit, "Num Vectors", (char *) &nv, sizeof(int));
+  psio_write_entry((size_t) unit, "Num Vectors", (char *) &nv, sizeof(int));
   write_toc();
   //civect_psio_debug();
 }
@@ -4359,7 +4374,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
      int Ja_list, int Jb_list)
 {
    struct stringwr *Ia, *Ib ;
-   unsigned int Ia_ex, Ib_ex;
+   size_t Ia_ex, Ib_ex;
    int Ia_idx, Ib_idx;
    int Ja_idx, Jb_idx;
    int Ja_sgn, Jb_sgn;
@@ -4367,7 +4382,7 @@ double CIvect::ssq(struct stringwr *alplist, struct stringwr *betlist,
    double tval, Ms, S2, smin_spls = 0.0;
 
    int Iacnt, Jbcnt, *Iaij, *Ibij;
-   unsigned int *Iaridx, *Ibridx;
+   size_t *Iaridx, *Ibridx;
    signed char *Iasgn, *Ibsgn;
 
    /* <S^2> = <S_z> + <S_z>^2 + <S_S+> */

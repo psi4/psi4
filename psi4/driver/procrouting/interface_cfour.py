@@ -269,8 +269,7 @@ def run_cfour(name, **kwargs):
         #   blank_molecule_psi4_yo so as to not interfere with future cfour {} blocks
 
     if c4grad:
-        mat = core.Matrix(len(c4grad), 3)
-        mat.set(c4grad)
+        mat = core.Matrix.from_list(c4grad)
         core.set_gradient(mat)
 
         #print '    <<<   [3] C4-GRD-GRAD   >>>'
@@ -324,8 +323,7 @@ def run_cfour(name, **kwargs):
 #            print('GRD\n',c4outgrd)
 #            c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_files(qcdbmolecule, grd=c4outgrd)
 #
-#        p4mat = core.Matrix(len(p4grad), 3)
-#        p4mat.set(p4grad)
+#        p4mat = core.Matrix.from_list(p4grad)
 #        core.set_gradient(p4mat)
 
 #    print('    <<<  P4 PSIVAR  >>>')

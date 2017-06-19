@@ -36,13 +36,13 @@ class Vector;
 class IntegralParameters
 {
 private:
-    unsigned int nparam_;
+    size_t nparam_;
 public:
-    IntegralParameters(unsigned int nparam=0)
+    IntegralParameters(size_t nparam=0)
         : nparam_(nparam) { }
     virtual ~IntegralParameters() {}
 
-    unsigned int nparam() const { return nparam_; }
+    size_t nparam() const { return nparam_; }
 };
 
 class CorrelationFactor : public IntegralParameters
@@ -52,7 +52,7 @@ private:
     double *exponent_;
 
 public:
-    CorrelationFactor(unsigned int nparam);
+    CorrelationFactor(size_t nparam);
     CorrelationFactor(std::shared_ptr<Vector> coeff,
                       std::shared_ptr<Vector> exponent);
     virtual ~CorrelationFactor();

@@ -35,8 +35,6 @@
 #include <map>
 #include <memory>
 
-#include "psi4/pybind11.h"
-
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
 #define DEFAULT_SYM_TOL 1.0E-8
 #define FULL_PG_TOL 1.0e-8 // default
@@ -224,9 +222,8 @@ public:
      * \param charge charge to use if non standard
      * \param lineno line number when taken from a string
      */
-    void add_atom(int Z, double x, double y, double z,
-                  const char *symb = "", double mass = 0.0,
-                  double charge = 0.0, int lineno = -1);
+    void add_atom(int Z, double x, double y, double z, std::string sym = "", double mass = 0.0,
+                  double charge = 0.0);
 
     /// Whether the multiplicity was given by the user
     bool multiplicity_specified() const { return multiplicity_specified_; }
@@ -460,37 +457,37 @@ public:
     ///
     /// Symmetry
     /// @{
-    bool has_symmetry_element(Vector3& op, double tol=DEFAULT_SYM_TOL) const;
+    bool has_symmetry_element(Vector3& op, double tol = DEFAULT_SYM_TOL) const;
     std::shared_ptr<PointGroup> point_group() const;
     void set_point_group(std::shared_ptr<PointGroup> pg);
     /// Determine and set FULL point group
-    void set_full_point_group(double tol=FULL_PG_TOL);
+    void set_full_point_group(double tol = FULL_PG_TOL);
     /// Does the molecule have an inversion center at origin
-    bool has_inversion(Vector3& origin, double tol=DEFAULT_SYM_TOL) const;
+    bool has_inversion(Vector3& origin, double tol = DEFAULT_SYM_TOL) const;
     /// Is a plane?
-    bool is_plane(Vector3& origin, Vector3& uperp, double tol=DEFAULT_SYM_TOL) const;
+    bool is_plane(Vector3& origin, Vector3& uperp, double tol = DEFAULT_SYM_TOL) const;
     /// Is an axis?
-    bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=DEFAULT_SYM_TOL) const;
+    bool is_axis(Vector3& origin, Vector3& axis, int order, double tol = DEFAULT_SYM_TOL) const;
     /// Is the molecule linear, or planar?
-    void is_linear_planar(bool& linear, bool& planar, double tol=DEFAULT_SYM_TOL) const;
+    void is_linear_planar(bool& linear, bool& planar, double tol = DEFAULT_SYM_TOL) const;
     /// Find computational molecular point group, user can override this with the "symmetry" keyword
-    std::shared_ptr<PointGroup> find_point_group(double tol=DEFAULT_SYM_TOL) const;
+    std::shared_ptr<PointGroup> find_point_group(double tol = DEFAULT_SYM_TOL) const;
     /// Override symmetry from outside the molecule string
     void reset_point_group(const std::string& pgname);
     /// Find highest molecular point group
-    std::shared_ptr<PointGroup> find_highest_point_group(double tol=DEFAULT_SYM_TOL) const;
+    std::shared_ptr<PointGroup> find_highest_point_group(double tol = DEFAULT_SYM_TOL) const;
     /// Determine symmetry reference frame. If noreorient is set, this is the rotation matrix
     /// applied to the geometry in update_geometry.
-    std::shared_ptr<Matrix> symmetry_frame(double tol=DEFAULT_SYM_TOL);
+    std::shared_ptr<Matrix> symmetry_frame(double tol = DEFAULT_SYM_TOL);
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
     /// Uses the point group object obtain by calling point_group()
-    void form_symmetry_information(double tol=DEFAULT_SYM_TOL);
+    void form_symmetry_information(double tol = DEFAULT_SYM_TOL);
     /// Returns the symmetry label
     std::string sym_label();
     /// Returns the irrep labels
-    char **irrep_labels();
+    char** irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }
 
     /**
@@ -530,7 +527,7 @@ public:
      * Sets the specified list of fragments to be real.
      * @param reals The list of real fragments.
      */
-    void set_active_fragments(py::list reals);
+    void set_active_fragments(std::vector<int> reals);
 
     /**
      * Sets the specified fragment to be real.
@@ -542,7 +539,7 @@ public:
      * Sets the specified list of fragments to be ghosts.
      * @param ghosts The list of ghosts fragments.
      */
-    void set_ghost_fragments(py::list ghosts);
+    void set_ghost_fragments(std::vector<int> ghosts);
 
     /**
      * Sets the specified fragment to be a ghost.
@@ -557,8 +554,8 @@ public:
      * @param ghost_list The list of fragments that should be present in the molecule as ghosts.
      * @return The ref counted cloned molecule
      */
-    std::shared_ptr<Molecule> extract_subsets(const std::vector<int> &real_list,
-                                                const std::vector<int> &ghost_list) const;
+    std::shared_ptr<Molecule> extract_subsets(const std::vector<int>& real_list,
+                                              const std::vector<int>& ghost_list) const;
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -566,8 +563,7 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_1(py::list reals,
-                                                   py::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_1(std::vector<int> reals, std::vector<int> ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -575,8 +571,7 @@ public:
      * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_2(py::list reals,
-                                                   int ghost = -1);
+    std::shared_ptr<Molecule> py_extract_subsets_2(std::vector<int> reals, int ghost = -1);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -584,8 +579,7 @@ public:
      * @param ghost A list containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_3(int reals,
-                                                   py::list ghost);
+    std::shared_ptr<Molecule> py_extract_subsets_3(int reals, std::vector<int> ghost);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -593,15 +587,14 @@ public:
      * @param ghost An int containing the ghost atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_4(int reals,
-                                                   int ghost = -1);
+    std::shared_ptr<Molecule> py_extract_subsets_4(int reals, int ghost = -1);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
      * @param reals A list containing the real atoms.
      * @return The ref counted cloned molecule.
      */
-    std::shared_ptr<Molecule> py_extract_subsets_5(py::list reals);
+    std::shared_ptr<Molecule> py_extract_subsets_5(std::vector<int> reals);
 
     /**
      * A wrapper to extract_subsets, callable from Boost
@@ -612,7 +605,8 @@ public:
 
     // => Fragment Composition <= //
 
-    /// The list of atom ranges defining each fragment from parent molecule (fragments[frag_ind] = <Afirst,Alast+1>)
+    /// The list of atom ranges defining each fragment from parent molecule (fragments[frag_ind] =
+    /// <Afirst,Alast+1>)
     const std::vector<std::pair<int, int> >& fragments() const { return fragments_; }
     /// A list describing how to handle each fragment
     const std::vector<FragmentType>& fragment_types() const { return fragment_types_; }
@@ -622,25 +616,31 @@ public:
     const std::vector<int>& fragment_multiplicities() const { return fragment_multiplicities_; }
 
     /// Sets whether this molecule contains at least one zmatrix entry
-    void set_has_zmatrix(bool tf) {zmat_ = tf;}
+    void set_has_zmatrix(bool tf) { zmat_ = tf; }
     /// Whether this molecule has at least one zmatrix entry
-    bool has_zmatrix() const {return zmat_;}
+    bool has_zmatrix() const { return zmat_; }
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
     /// Also calls update_geometry()
-    void set_variable(const std::string &str, double val);
+    void set_variable(const std::string& str, double val);
     /// Checks to see if the variable str is in the list, sets it to val and returns
     /// true if it is, and returns false if not.
-    double get_variable(const std::string &str);
+    double get_variable(const std::string& str);
     /// Checks to see if the variable str is in the list, returns
     /// true if it is, and returns false if not.
-    bool is_variable(const std::string &str) const;
+    bool is_variable(const std::string& str) const;
 
     /// Sets the molecular charge
-    void set_molecular_charge(int charge) {charge_specified_ = true; molecular_charge_ = charge;}
+    void set_molecular_charge(int charge) {
+        charge_specified_ = true;
+        molecular_charge_ = charge;
+    }
     /// Gets the molecular charge
     int molecular_charge() const;
     /// Sets the multiplicity (defined as 2Ms + 1)
-    void set_multiplicity(int mult) { multiplicity_specified_ = true; multiplicity_ = mult; }
+    void set_multiplicity(int mult) {
+        multiplicity_specified_ = true;
+        multiplicity_ = mult;
+    }
     /// Get the multiplicity (defined as 2Ms + 1)
     int multiplicity() const;
     /// Sets the geometry units
@@ -651,9 +651,9 @@ public:
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
     /// Fix the orientation at its current frame
-    void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix;}
+    void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix; }
     /// Fix the center of mass at its current frame
-    void set_com_fixed(bool fix = true) {move_to_com_ = !fix;}
+    void set_com_fixed(bool fix = true) { move_to_com_ = !fix; }
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
@@ -661,7 +661,7 @@ public:
     /// Return point group name such as C3v or S8.
     std::string full_point_group() const;
     /// Return point group name such as Cnv or Sn.
-    std::string full_point_group_with_n() const { return FullPointGroupList[full_pg_];}
+    std::string full_point_group_with_n() const { return FullPointGroupList[full_pg_]; }
     /// Return n in Cnv, etc.; If there is no n (e.g. Td) it's the highest-order rotation axis.
     int full_pg_n() { return full_pg_n_; }
 

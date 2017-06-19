@@ -83,7 +83,7 @@
 #include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
 
-#include <string>
+#include <string.h>
 #include <cstdio>
 #include <stdint.h>
 #include <vector>
@@ -683,7 +683,7 @@ public:
     static const char *bits_to_basic_name(unsigned char bits);
     static bool full_name_to_bits(const std::string& pg, unsigned char& bits);
 
-    void print(std::string OutFileRMR = "outfile") const;
+    void print(std::string out_fname = "outfile") const;
 };
 
 }

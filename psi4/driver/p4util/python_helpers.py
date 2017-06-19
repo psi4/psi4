@@ -52,7 +52,7 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
             if not key:
                 key = 'BASIS'
             target = core.get_global_option(key)
-    
+
         if target in horde:
             return horde[target]
         return target
@@ -333,3 +333,27 @@ core.OEProp.valid_methods = [
     'MAYER_INDICES', 'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
     'NO_OCCUPATIONS'
 ]
+
+## Option helpers
+
+def py_psi_set_global_option_python(key, EXTERN):
+    """
+    This is a fairly hacky way to get around EXTERN issues. Effectively we are routing this option Python side through attributes until the general Options overhaul.
+    """
+    if (key != "EXTERN"):
+        raise ValidationError("Options: set_global_option_python does not recognize keyword %s" % key)
+
+    if EXTERN == None:
+        core.EXTERN = None
+        core.set_global_option("EXTERN", False)
+    elif isinstance(EXTERN, core.ExternalPotential):
+        # Well this is probably the worst hack I have done, thats saying something
+        core.EXTERN = EXTERN
+        core.set_global_option("EXTERN", True)
+    else:
+        raise ValidationError("Options: set_global_option_python can either be a NULL or External Potential object")
+
+
+core.set_global_option_python = py_psi_set_global_option_python
+
+

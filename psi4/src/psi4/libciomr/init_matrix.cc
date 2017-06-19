@@ -33,11 +33,15 @@
 */
 
 #include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <strings.h>
-#include "psi4/psi4-dec.h"
+
 namespace psi {
 
   /**
@@ -55,29 +59,29 @@ namespace psi {
 ** the first row.  Note that this does not form a matrix which is
 ** necessarily contiguous in memory.  Use block_matrix() for that.
 **
-** \param n = number of rows (unsigned long to allow large matrices)
-** \param m = number of columns (unsigned long to allow large matrices)
+** \param n = number of rows (size_t to allow large matrices)
+** \param m = number of columns (size_t to allow large matrices)
 **
 ** Returns: pointer to first row
 **
 ** \ingroup CIOMR
 */
-double ** init_matrix(unsigned long int n, unsigned long int m)
+double ** init_matrix(size_t n, size_t m)
 {
     double **A=NULL;
     double *B=NULL;
-    unsigned long int i;
+    size_t i;
 
     if(!m || !n) return(static_cast<double **>(0));
 
-//  if ((A = (double **) malloc(n * (unsigned long int)sizeof(double *)))==NULL) {
+//  if ((A = (double **) malloc(n * (size_t)sizeof(double *)))==NULL) {
     if ((A = new double*[n])==NULL) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("n = %ld\n",n);
         exit(PSI_RETURN_FAILURE);
     }
 
-//  if ((B = (double *) malloc(m*n * (unsigned long int)sizeof(double)))==NULL) {
+//  if ((B = (double *) malloc(m*n * (size_t)sizeof(double)))==NULL) {
     if ((B = new double[n*m])==NULL) {
         outfile->Printf("block_matrix: trouble allocating memory \n");
         outfile->Printf("m = %ld\n",m);
@@ -85,7 +89,7 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
     }
 
     // bzero is not in the C standard, use memset instead.
-    //bzero(B, m*n*(unsigned long int)sizeof(double));
+    //bzero(B, m*n*(size_t)sizeof(double));
     memset(static_cast<void*>(B), 0, m*n*sizeof(double));
 
     for (i = 0; i < n; i++) {
@@ -99,9 +103,9 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 
   /**
   double **array=NULL;
-  unsigned long int i;
+  size_t i;
 
-  if ((array = (double **) malloc(n*(unsigned long int)sizeof(double *)))
+  if ((array = (double **) malloc(n*(size_t)sizeof(double *)))
     ==NULL) {
     outfile->Printf("init_matrix: trouble allocating memory \n");
     outfile->Printf("n = %ld\n",n);
@@ -109,13 +113,13 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
   }
 
   for (i = 0; i < n; i++) {
-    if ((array[i] = (double *) malloc(m*(unsigned long int)sizeof(double)))
+    if ((array[i] = (double *) malloc(m*(size_t)sizeof(double)))
       ==NULL) {
       outfile->Printf("init_matrix: trouble allocating memory \n");
       outfile->Printf("i = %ld m = %ld\n",i,m);
       exit(PSI_RETURN_FAILURE);
     }
-    bzero(array[i],m*(unsigned long int)sizeof(double));
+    bzero(array[i],m*(size_t)sizeof(double));
   }
   return(array);
   **/
@@ -141,7 +145,7 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 **
 ** \ingroup CIOMR
 */
-void free_matrix(double **array, unsigned long int /*size*/)
+void free_matrix(double **array, size_t /*size*/)
 {
     if(array == NULL) return;
     delete [] array[0];
@@ -151,7 +155,7 @@ void free_matrix(double **array, unsigned long int /*size*/)
 // <<<<<<<<<<<<<<<<<<<<<
 
   /**
-  unsigned long int i;
+  size_t i;
 
   for (i=0; i < size ; i++) {
     free(array[i]);

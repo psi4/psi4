@@ -43,9 +43,10 @@
 #include "jk.h"
 
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
 using namespace std;
@@ -96,7 +97,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 
     SharedMatrix Ci_ao(new Matrix("Ci AO", nso, nocc));
     SharedMatrix Ca_ao(new Matrix("Ca AO", nso, nvir));
-    SharedVector Iia_ao(new Vector("(ia|ia) AO", nocc*(ULI)nvir));
+    SharedVector Iia_ao(new Vector("(ia|ia) AO", nocc*(size_t)nvir));
 
     int offset = 0;
     for (int h = 0; h < nirrep; h++) {
@@ -128,7 +129,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     // Temps
     #ifdef _OPENMP
@@ -199,16 +200,16 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
                 C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nso);
             }
 
-            C_DGEMM('N','T',nocc,rows,mrows,1.0,Ctp[0],nso,QSp[0],nso,0.0,&Elp[0][m*(ULI)nocc*rows],rows);
+            C_DGEMM('N','T',nocc,rows,mrows,1.0,Ctp[0],nso,QSp[0],nso,0.0,&Elp[0][m*(size_t)nocc*rows],rows);
         }
 
         // (ai|Q)
-        C_DGEMM('T','N',nvir,nocc*(ULI)rows,nso,1.0,Crp[0],nvir,Elp[0],nocc*(ULI)rows,0.0,Erp[0],nocc*(ULI)rows);
+        C_DGEMM('T','N',nvir,nocc*(size_t)rows,nso,1.0,Crp[0],nvir,Elp[0],nocc*(size_t)rows,0.0,Erp[0],nocc*(size_t)rows);
 
         // (ia|Q)(Q|ia)
         for (int i = 0; i < nocc; i++) {
             for (int a = 0; a < nvir; a++) {
-                double* Ep = &Erp[0][a * (ULI) nocc * rows + i * rows];
+                double* Ep = &Erp[0][a * (size_t) nocc * rows + i * rows];
                 Iiap[i * nvir + a] += C_DDOT(rows, Ep, 1, Ep, 1);
             }
         }
@@ -278,8 +279,8 @@ void DFJK::print_header() const
 bool DFJK::is_core() const
 {
     size_t ntri = sieve_->function_pairs().size();
-    ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
-    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
+    size_t three_memory = ((size_t)auxiliary_->nbf())*ntri;
+    size_t two_memory = ((size_t)auxiliary_->nbf())*auxiliary_->nbf();
 
     size_t mem = memory_;
     mem -= memory_overhead();
@@ -291,37 +292,37 @@ bool DFJK::is_core() const
     else
         return (three_memory + 2L*two_memory < memory_);
 }
-unsigned long int DFJK::memory_temp() const
+size_t DFJK::memory_temp() const
 {
-    unsigned long int mem = 0L;
+    size_t mem = 0L;
 
     // J Overhead (Jtri, Dtri, d)
     mem += 2L * sieve_->function_pairs().size() + auxiliary_->nbf();
     // K Overhead (C_temp, Q_temp)
-    mem += omp_nthread_ * (unsigned long int) primary_->nbf() * (auxiliary_->nbf() + max_nocc());
+    mem += omp_nthread_ * (size_t) primary_->nbf() * (auxiliary_->nbf() + max_nocc());
 
     return mem;
 }
 int DFJK::max_rows() const
 {
     // Start with all memory
-    unsigned long int mem = memory_;
+    size_t mem = memory_;
     // Subtract J/K/wK/C/D overhead
     mem -= memory_overhead();
     // Subtract threading temp overhead
     mem -= memory_temp();
 
     // How much will each row cost?
-    unsigned long int row_cost = 0L;
+    size_t row_cost = 0L;
     // Copies of E tensor
     row_cost += (lr_symmetric_ ? 1L : 2L) * max_nocc() * primary_->nbf();
     // Slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
     row_cost += (is_core_ ? 1L : 1L) * sieve_->function_pairs().size();
 
-    unsigned long int max_rows = mem / row_cost;
+    size_t max_rows = mem / row_cost;
 
-    if (max_rows > (unsigned long int) auxiliary_->nbf())
-        max_rows = (unsigned long int) auxiliary_->nbf();
+    if (max_rows > (size_t) auxiliary_->nbf())
+        max_rows = (size_t) auxiliary_->nbf();
     if (max_rows < 1L)
         max_rows = 1L;
 
@@ -474,8 +475,8 @@ void DFJK::postiterations()
 void DFJK::initialize_JK_core()
 {
     size_t ntri = sieve_->function_pairs().size();
-    ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
-    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
+    size_t three_memory = ((size_t)auxiliary_->nbf())*ntri;
+    size_t two_memory = ((size_t)auxiliary_->nbf())*auxiliary_->nbf();
 
     int nthread = 1;
     #ifdef _OPENMP
@@ -520,7 +521,7 @@ void DFJK::initialize_JK_core()
         buffer[Q] = eri[Q]->buffer();
     }
 
-    // shell pair blocks 
+    // shell pair blocks
     std::vector<ShellPairBlock> p_blocks = eri[0]->get_blocks12();
     std::vector<ShellPairBlock> mn_blocks = eri[0]->get_blocks34();
 
@@ -561,7 +562,7 @@ void DFJK::initialize_JK_core()
         #else
             const int rank = 0;
         #endif
-    
+
         const auto & mn_block = mn_blocks[mn_block_idx];
 
         // loop over all the blocks of P
@@ -571,7 +572,7 @@ void DFJK::initialize_JK_core()
             // compute the
             eri[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
             double const * my_buffer = buffer[rank];
- 
+
             const auto & p_block = p_blocks[p_block_idx];
 
             for(const auto & mn_pair : mn_block)
@@ -594,12 +595,12 @@ void DFJK::initialize_JK_core()
                     for(int im = 0; im < num_m; ++im)
                     {
                         const int im_idx = m_start + im;
-                        
+
                         for(int in = 0; in < num_n; ++in)
                         {
                             const int in_idx = n_start + in;
                             const int imn_idx = im*num_n + in;
-                            const int sfp_idx = (im_idx*(im_idx+1))/2+in_idx; 
+                            const int sfp_idx = (im_idx*(im_idx+1))/2+in_idx;
 
                             int sfp;
 
@@ -634,7 +635,7 @@ void DFJK::initialize_JK_core()
 
     timer_off("JK: (A|Q)^-1/2");
 
-    ULI max_cols = (memory_-three_memory-two_memory) / auxiliary_->nbf();
+    size_t max_cols = (memory_-three_memory-two_memory) / auxiliary_->nbf();
     if (max_cols < 1)
         max_cols = 1;
     if (max_cols > ntri)
@@ -643,7 +644,7 @@ void DFJK::initialize_JK_core()
     double** tempp = temp->pointer();
 
     size_t nblocks = ntri / max_cols;
-    if ((ULI)nblocks*max_cols != ntri) nblocks++;
+    if ((size_t)nblocks*max_cols != ntri) nblocks++;
 
     size_t ncol = 0;
     size_t col = 0;
@@ -695,8 +696,8 @@ void DFJK::initialize_JK_disk()
     const std::vector<long int>&  schwarz_fun_pairs_r = sieve_->function_pairs_reverse();
 
     // ==> Memory Sizing <== //
-    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
-    ULI buffer_memory =(memory_ > 2 * two_memory) ? memory_ - 2*two_memory : 0; // Two is for buffer space in fitting
+    size_t two_memory = ((size_t)auxiliary_->nbf())*auxiliary_->nbf();
+    size_t buffer_memory =(memory_ > 2 * two_memory) ? memory_ - 2*two_memory : 0; // Two is for buffer space in fitting
 
     //outfile->Printf( "Buffer memory = %ld words\n", buffer_memory);
 
@@ -737,8 +738,8 @@ void DFJK::initialize_JK_disk()
     //MN_mem->print(outfile);
 
     // Figure out exactly how much memory per M row
-    ULI* M_memp = new ULI[nshell];
-    memset(static_cast<void*>(M_memp), '\0', nshell*sizeof(ULI));
+    size_t* M_memp = new size_t[nshell];
+    memset(static_cast<void*>(M_memp), '\0', nshell*sizeof(size_t));
 
     for (int M = 0; M < nshell; M++) {
         for (int N = 0; N <= M; N++) {
@@ -752,7 +753,7 @@ void DFJK::initialize_JK_disk()
     //outfile->Printf("\n");
 
     // Find and check the minimum required memory for this problem
-    ULI min_mem = naux*(ULI) ntri;
+    size_t min_mem = naux*(size_t) ntri;
     for (int M = 0; M < nshell; M++) {
         if (min_mem > M_memp[M])
             min_mem = M_memp[M];
@@ -830,7 +831,7 @@ void DFJK::initialize_JK_disk()
     // Determine MN and mn block starts
     // also MN and mn block cols
     int nblock = 1;
-    ULI current_mem = 0L;
+    size_t current_mem = 0L;
     MN_start_b.push_back(0);
     mn_start_b.push_back(0);
     MN_col_b.push_back(0);
@@ -983,7 +984,7 @@ void DFJK::initialize_JK_disk()
 
         psio_address addr;
         for (int Q = 0; Q < naux; Q++) {
-            addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + mn_start_val)*sizeof(double));
+            addr = psio_get_address(PSIO_ZERO, (Q*(size_t) ntri + mn_start_val)*sizeof(double));
             psio_->write(unit_,"(Q|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
         }
 
@@ -1189,8 +1190,9 @@ void DFJK::initialize_wK_disk()
     const std::vector<long int>&  schwarz_fun_pairs_r = sieve_->function_pairs_reverse();
 
     // ==> Memory Sizing <== //
-    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
-    ULI buffer_memory = memory_ - 2L*two_memory; // Two is for buffer space in fitting
+    size_t two_memory = ((size_t)auxiliary_->nbf())*auxiliary_->nbf();
+    size_t buffer_memory =(memory_ > 2 * two_memory) ? memory_ - 2*two_memory : 0; // Two is for buffer space in fitting
+
 
     //outfile->Printf( "Buffer memory = %ld words\n", buffer_memory);
 
@@ -1231,8 +1233,8 @@ void DFJK::initialize_wK_disk()
     //MN_mem->print(outfile);
 
     // Figure out exactly how much memory per M row
-    ULI* M_memp = new ULI[nshell];
-    memset(static_cast<void*>(M_memp), '\0', nshell*sizeof(ULI));
+    size_t* M_memp = new size_t[nshell];
+    memset(static_cast<void*>(M_memp), '\0', nshell*sizeof(size_t));
 
     for (size_t M = 0; M < nshell; M++) {
         for (size_t N = 0; N <= M; N++) {
@@ -1246,7 +1248,7 @@ void DFJK::initialize_wK_disk()
     //outfile->Printf("\n");
 
     // Find and check the minimum required memory for this problem
-    ULI min_mem = naux*(ULI) ntri;
+    size_t min_mem = naux*(size_t) ntri;
     for (size_t M = 0; M < nshell; M++) {
         if (min_mem > M_memp[M])
             min_mem = M_memp[M];
@@ -1324,7 +1326,7 @@ void DFJK::initialize_wK_disk()
     // Determine MN and mn block starts
     // also MN and mn block cols
     int nblock = 1;
-    ULI current_mem = 0L;
+    size_t current_mem = 0L;
     MN_start_b.push_back(0);
     mn_start_b.push_back(0);
     MN_col_b.push_back(0);
@@ -1472,7 +1474,7 @@ void DFJK::initialize_wK_disk()
 
         psio_address addr;
         for (size_t Q = 0; Q < naux; Q++) {
-            addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + mn_start_val)*sizeof(double));
+            addr = psio_get_address(PSIO_ZERO, (Q*(size_t) ntri + mn_start_val)*sizeof(double));
             psio_->write(unit_,"Left (Q|w|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
         }
 
@@ -1492,8 +1494,8 @@ void DFJK::initialize_wK_disk()
         buffer2[Q] = eri2[Q]->buffer();
     }
 
-    ULI maxP = auxiliary_->max_function_per_shell();
-    ULI max_rows = memory_ / ntri;
+    size_t maxP = auxiliary_->max_function_per_shell();
+    size_t max_rows = memory_ / ntri;
     max_rows = (max_rows > naux ? naux : max_rows);
     max_rows = (max_rows < maxP ? maxP : max_rows);
 
@@ -1536,7 +1538,7 @@ void DFJK::initialize_wK_disk()
         timer_on("JK: (Q|mn)^R");
 
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (size_t QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+        for (size_t QMN = 0L; QMN < (Qstop - Qstart) * (size_t) npairs; QMN++) {
 
             int thread = 0;
             #ifdef _OPENMP
@@ -1620,8 +1622,8 @@ void DFJK::rebuild_wK_disk()
         buffer2[Q] = eri2[Q]->buffer();
     }
 
-    ULI maxP = auxiliary_->max_function_per_shell();
-    ULI max_rows = memory_ / ntri;
+    size_t maxP = auxiliary_->max_function_per_shell();
+    size_t max_rows = memory_ / ntri;
     max_rows = (max_rows > naux ? naux : max_rows);
     max_rows = (max_rows < maxP ? maxP : max_rows);
 
@@ -1664,7 +1666,7 @@ void DFJK::rebuild_wK_disk()
         timer_on("JK: (Q|mn)^R");
 
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (size_t QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+        for (size_t QMN = 0L; QMN < (Qstop - Qstart) * (size_t) npairs; QMN++) {
 
             int thread = 0;
             #ifdef _OPENMP
@@ -1743,7 +1745,7 @@ void DFJK::manage_JK_disk()
     psio_->open(unit_,PSIO_OPEN_OLD);
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
-        psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
+        psio_address addr = psio_get_address(PSIO_ZERO, (Q*(size_t) ntri) * sizeof(double));
 
         timer_on("JK: (Q|mn) Read");
         psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
@@ -1785,13 +1787,13 @@ void DFJK::manage_wK_disk()
     psio_->open(unit_,PSIO_OPEN_OLD);
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_w) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_w ? auxiliary_->nbf() - Q : max_rows_w);
-        psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
+        psio_address addr = psio_get_address(PSIO_ZERO, (Q*(size_t) ntri) * sizeof(double));
 
         timer_on("JK: (Q|mn)^L Read");
         psio_->read(unit_,"Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
         timer_off("JK: (Q|mn)^L Read");
 
-        addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
+        addr = psio_get_address(PSIO_ZERO, (Q*(size_t) ntri) * sizeof(double));
 
         timer_on("JK: (Q|mn)^R Read");
         psio_->read(unit_,"Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
@@ -1808,7 +1810,7 @@ void DFJK::manage_wK_disk()
 void DFJK::block_J(double** Qmnp, int naux)
 {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < J_ao_.size(); N++) {
 
@@ -1817,7 +1819,7 @@ void DFJK::block_J(double** Qmnp, int naux)
         double*  J2p  = J_temp_->pointer();
         double*  D2p  = D_temp_->pointer();
         double*  dp   = d_temp_->pointer();
-        for (unsigned long int mn = 0; mn < num_nm; ++mn) {
+        for (size_t mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
             D2p[mn] = (m == n ? Dp[m][n] : Dp[m][n] + Dp[n][m]);
@@ -1830,7 +1832,7 @@ void DFJK::block_J(double** Qmnp, int naux)
         timer_on("JK: J2");
         C_DGEMV('T',naux,num_nm,1.0,Qmnp[0],num_nm,dp,1,0.0,J2p,1);
         timer_off("JK: J2");
-        for (unsigned long int mn = 0; mn < num_nm; ++mn) {
+        for (size_t mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
             Jp[m][n] += J2p[mn];
@@ -1842,7 +1844,7 @@ void DFJK::block_K(double** Qmnp, int naux)
 {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < K_ao_.size(); N++) {
 
@@ -1882,7 +1884,7 @@ void DFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
                 }
 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(size_t)nocc*naux],naux);
             }
 
             timer_off("JK: K1");
@@ -1918,7 +1920,7 @@ void DFJK::block_K(double** Qmnp, int naux)
                         C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                     }
 
-                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(size_t)nocc*naux],naux);
                 }
 
                 timer_off("JK: K1");
@@ -1937,7 +1939,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 {
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
-    unsigned long int num_nm = function_pairs.size();
+    size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < wK_ao_.size(); N++) {
 
@@ -1977,7 +1979,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
                     C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
                 }
 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(size_t)nocc*naux],naux);
             }
 
             timer_off("JK: wK1");
@@ -2007,7 +2009,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
                 C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
             }
 
-            C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+            C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(size_t)nocc*naux],naux);
         }
 
         timer_off("JK: wK1");

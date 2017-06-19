@@ -49,6 +49,7 @@
 
 #include "findif.h"
 #include "psi4/liboptions/liboptions_python.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/cdsalclist.h"
@@ -75,8 +76,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Optio
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
   std::shared_ptr<MatrixFactory> fact;
-  py::object pyExtern = dynamic_cast<PythonDataType*>(options["EXTERN"].get())->to_python();
-  bool project = !pyExtern && !options.get_bool("PERTURB_H");
+  bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
   CdSalcList salc_list(mol, fact, 0xFF, project, project);
 
   int Natom = mol->natom();

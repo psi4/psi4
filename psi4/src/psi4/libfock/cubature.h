@@ -32,6 +32,10 @@
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libmints/vector3.h"
+#include "psi4/libmints/typedefs.h"
+
+#include <map>
+#include <vector>
 
 namespace psi {
 
@@ -42,6 +46,7 @@ class BasisExtents;
 class BlockOPoints;
 class RadialGrid;
 class SphericalGrid;
+class Options;
 
 // This is an auxiliary structure used internally by the grid-builder class.
 // Apparently, for performance reasons, it is not good for the final molecular grid
@@ -130,8 +135,8 @@ public:
         const std::vector<std::vector<int> >&    Ls); // Spherical orders, per atom
 
     /// Print information about the grid
-    void print(std::string OutFileRMR = "outfile", int print = 2) const;
-    void print_details(std::string OutFileRMR = "outfile", int print = 2) const;
+    void print(std::string out_fname = "outfile", int print = 2) const;
+    void print_details(std::string out_fname = "outfile", int print = 2) const;
 
     /// Orientation matrix
     std::shared_ptr<Matrix> orientation() const { return orientation_; }
@@ -265,7 +270,7 @@ public:
     double* w() const { return w_; }
 
     /// Reflection
-    void print(std::string OutFileRMR = "outfile", int level = 1) const;
+    void print(std::string out_fname = "outfile", int level = 1) const;
 };
 
 class SphericalGrid {
@@ -351,7 +356,7 @@ public:
     double* theta() const { return theta_; }
 
     /// Reflection
-    void print(std::string OutFileRMR = "outfile", int level = 1) const;
+    void print(std::string out_fname = "outfile", int level = 1) const;
 
     // ==> Unique Lebedev Grids (statically stored) <== //
 
@@ -415,7 +420,7 @@ public:
     /// Number of grid points
     int npoints() const { return npoints_; }
     /// Print a trace of this BlockOPoints
-    void print(std::string OutFileRMR = "outfile", int print = 2);
+    void print(std::string out_fname = "outfile", int print = 2);
 
     /// The x points. You do not own this
     double* x() const { return x_; }
@@ -451,7 +456,7 @@ public:
     virtual ~BasisExtents();
 
     /// Print a trace of these extents
-    void print(std::string OutFileRMR = "outfile");
+    void print(std::string out_fname = "outfile");
     /// Reset delta and recompute extents
     void set_delta(double delta) { delta_ = delta; computeExtents(); }
 

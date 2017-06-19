@@ -46,8 +46,8 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-void PSIO::open(unsigned int unit, int status) {
-  unsigned int i;
+void PSIO::open(size_t unit, int status) {
+  size_t i;
   char *name, *path;
   psio_ud *this_unit;
 
@@ -102,7 +102,7 @@ void PSIO::open(unsigned int unit, int status) {
     const char* path2 = spath2.c_str();
 
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
-    sprintf(fullpath, "%s%s.%u", path2, name, unit);
+    sprintf(fullpath, "%s%s.%zu", path2, name, unit);
     this_unit->vol[i].path = strdup(fullpath);
     free(fullpath);
 
@@ -138,8 +138,8 @@ void PSIO::open(unsigned int unit, int status) {
 
 // Mirrors PSIO::open() but just check to see if the file is there
 // status needs is assumed PSIO_OPEN_OLD if this is called
-bool PSIO::exists(unsigned int unit) {
-  unsigned int i;
+bool PSIO::exists(size_t unit) {
+  size_t i;
   char *name, *path;
   psio_ud *this_unit;
 
@@ -199,7 +199,7 @@ bool PSIO::exists(unsigned int unit) {
     const char* path2 = spath2.c_str();
 
     fullpath = (char*) malloc( (strlen(path2)+strlen(name)+80)*sizeof(char));
-    sprintf(fullpath, "%s%s.%u", path2, name, unit);
+    sprintf(fullpath, "%s%s.%zu", path2, name, unit);
 
     /* Now open the volume */
       stream = ::open(fullpath,O_RDWR);
@@ -223,7 +223,7 @@ bool PSIO::exists(unsigned int unit) {
 
 
 void
-PSIO::rehash(unsigned int unit)
+PSIO::rehash(size_t unit)
 {
   if (open_check(unit)) {
     close(unit,1);
@@ -231,7 +231,7 @@ PSIO::rehash(unsigned int unit)
   }
 }
 
-  int psio_open(unsigned int unit, int status) {
+  int psio_open(size_t unit, int status) {
     _default_psio_lib_->open(unit, status);
     return 1;
   }

@@ -30,6 +30,7 @@
 #include "psipcm.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/integral.h"
@@ -245,7 +246,6 @@ double PCM::compute_E_total(SharedMatrix &D)
   SharedMatrix D_carts;
   if(basisset_->has_puream()){
     D_carts = SharedMatrix(new Matrix("D carts", basisset_->nao(), basisset_->nao()));
-    outfile->Flush();
     D_carts->back_transform(D,my_aotoso_);
   }
   else D_carts = D;
@@ -301,7 +301,6 @@ double PCM::compute_E_separate(SharedMatrix &D)
   SharedMatrix D_carts;
   if(basisset_->has_puream()){
     D_carts = SharedMatrix(new Matrix("D carts", basisset_->nao(), basisset_->nao()));
-    outfile->Flush();
     D_carts->back_transform(D,my_aotoso_);
   }
   else D_carts = D;
@@ -372,7 +371,6 @@ double PCM::compute_E_electronic(SharedMatrix &D)
   SharedMatrix D_carts;
   if(basisset_->has_puream()){
     D_carts = SharedMatrix(new Matrix("D carts", basisset_->nao(), basisset_->nao()));
-    outfile->Flush();
     D_carts->back_transform(D,my_aotoso_);
   }
   else D_carts = D;

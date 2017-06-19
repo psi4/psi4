@@ -43,12 +43,12 @@
 
 namespace psi {
 
-void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
+void PSIO::write(size_t unit, const char *key, char *buffer, size_t size,
                  psio_address start, psio_address *end) {
   psio_ud *this_unit;
   psio_tocentry *this_entry, *last_entry;
   psio_address start_toc, start_data, end_data; /* global addresses */
-  ULI tocentry_size;
+  size_t tocentry_size;
   int dirty = 0;
 
   this_unit = &(psio_unit[unit]);
@@ -73,7 +73,7 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
     /* Compute the global address of the new entry */
     if (!(this_unit->toclen)) { /* First TOC entry */
       this_entry->sadd.page = 0;
-      this_entry->sadd.offset = sizeof(ULI); /* offset for the toclen value stored first */
+      this_entry->sadd.offset = sizeof(size_t); /* offset for the toclen value stored first */
       this_unit->toc = this_entry;
     } else { /* Use ending address from last TOC entry */
       last_entry = toclast(unit);
@@ -115,7 +115,7 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
     end_data = psio_get_address(start_data, size);
     if (end_data.page > this_entry->eadd.page) {
       if (this_entry->next != NULL) {
-        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %d, %s\n", unit, key);
+        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %zu, %s\n", unit, key);
         psio_error(unit, PSIO_ERROR_BLKEND);
       }
       this_entry->eadd = end_data;
@@ -123,7 +123,7 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
     } else if ((end_data.page == this_entry->eadd.page) &&(end_data.offset
         > this_entry->eadd.offset)) {
       if (this_entry->next != NULL) {
-        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %d, %s\n", unit, key);
+        fprintf(stderr, "PSIO_ERROR: Attempt to write into next entry: %zu, %s\n", unit, key);
         psio_error(unit, PSIO_ERROR_BLKEND);
       }
       this_entry->eadd = end_data;
@@ -160,7 +160,7 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
    ** \ingroup PSIO
    */
 
-  int psio_write(unsigned int unit, const char *key, char *buffer, ULI size,
+  int psio_write(size_t unit, const char *key, char *buffer, size_t size,
                  psio_address start, psio_address *end) {
     _default_psio_lib_->write(unit, key, buffer, size, start, end);
     return 1;

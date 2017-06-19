@@ -29,6 +29,8 @@
 #ifndef HAMILTONIAN_H
 #define HAMILTONIAN_H
 
+#include <vector>
+
 namespace psi {
 
 class Matrix;

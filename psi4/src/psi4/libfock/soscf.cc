@@ -26,6 +26,8 @@
  * @END LICENSE
  */
 
+#include "soscf.h"
+#include "jk.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
@@ -39,8 +41,9 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
-#include "soscf.h"
-#include "jk.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
+#include <cmath>
 
 namespace psi {
 
@@ -155,7 +158,7 @@ SharedMatrix SOMCSCF::form_rotation_matrix(SharedMatrix x, size_t order) {
 
         // Matrix::schmidt orthogonalizes rows not columns so we need to transpose
         for (size_t i = 0, target = 0; i < noapi_[h]; i++) {
-            for (size_t a = fmax(noccpi_[h], i); a < nmopi_[h]; a++) {
+            for (size_t a = std::fmax(noccpi_[h], i); a < nmopi_[h]; a++) {
                 Up[i][a] = xp[i][a - noccpi_[h]];
                 Up[a][i] = -1.0 * xp[i][a - noccpi_[h]];
             }

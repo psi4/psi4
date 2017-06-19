@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -60,8 +61,8 @@ void onestack_insert(struct onestack *stack, double value, int i, int a,
     int level, int stacklen);
 void twostack_insert(struct twostack *stack, double value, int i, int j,
     int a, int b, int level, int stacklen);
-void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string OutFileRMR);
-void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string OutFileRMR);
+void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out_fname);
+void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out_fname);
 
 void amp_write(const char *pert, int irrep, double omega)
 {

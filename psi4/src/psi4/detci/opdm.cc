@@ -31,9 +31,6 @@
     \brief Enter brief description of file here
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libciomr/libciomr.h"
@@ -42,9 +39,15 @@
 #include "psi4/libfock/soscf.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/process.h"
+
 #include "psi4/detci/structs.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 namespace psi { namespace detci {
 
@@ -244,7 +247,7 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
     if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
      outfile->Printf("(opdm): Trouble with malloc'ing transp_tmp\n");
     }
-    unsigned long bufsz = Ivec->get_max_blk_size();
+    size_t bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
     if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
@@ -519,7 +522,7 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
   int Ia_idx, Ib_idx, Ja_idx, Jb_idx, Ja_ex, Jb_ex, Jbcnt, Jacnt;
   struct stringwr *Jb, *Ja;
   signed char *Jbsgn, *Jasgn;
-  unsigned int *Jbridx, *Jaridx;
+  size_t *Jbridx, *Jaridx;
   double C1, C2, Ib_sgn, Ia_sgn;
   int i, j, oij, *Jboij, *Jaoij;
 

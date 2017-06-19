@@ -36,12 +36,17 @@
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "hf.h"
 

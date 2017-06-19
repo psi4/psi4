@@ -30,9 +30,7 @@
 #include "matrix.h"
 #include "vector.h"
 #include "dimension.h"
-#include "psi4/libparallel/ParallelPrinter.h"
-#include "psi4/libparallel/mpi_wrapper.h"
-#include "psi4/libparallel/local.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/pybind11.h"
 
@@ -259,40 +257,9 @@ void Vector::zero()
     std::fill(v_.begin(), v_.end(), 0.0);
 }
 
-double Vector::pyget(const py::tuple &key)
-{
-    int h = 0, elem = 0;
-    h = key[0].cast<int>();
-    elem = key[1].cast<int>();
-
-    return get(h, elem);
-}
-
-void Vector::pyset(const py::tuple &key, double value)
-{
-    int h = 0, elem = 0;
-    h = key[0].cast<int>();
-    elem = key[1].cast<int>();
-
-    set(h, elem, value);
-}
-
-double Vector::pyget(int key)
-{
-    int h = 0, elem = key;
-    return get(h, elem);
-}
-
-void Vector::pyset(int key, double value)
-{
-    int h = 0, elem = key;
-    set(h, elem, value);
-}
-
-void Vector::print(std::string out, const char *extra) const
-{
-    std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+void Vector::print(std::string out, const char *extra) const {
+    std::shared_ptr<psi::PsiOutStream> printer =
+        (out == "outfile" ? outfile : std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     int h;
     if (extra == NULL) {
         printer->Printf("\n # %s #\n", name_.c_str());
@@ -369,58 +336,6 @@ void Vector::axpy(double scale, const Vector &other) {
     }
 
     C_DAXPY(v_.size(), scale, const_cast<double *>(other.v_.data()), 1, v_.data(), 1);
-}
-
-void Vector::send() {}
-
-void Vector::recv() {}
-
-void Vector::bcast(int)
-{
-    // Assume the user allocated the matrix to the correct size first.
-    /*std::cout<<"Someone is calling the vector bcast"<<std::endl;
-    for (int h=0; h<nirrep_; ++h) {
-        if (dimpi_[h] > 0)
-            WorldComm->bcast(vector_[h], dimpi_[h], broadcaster);
-    }*/
-}
-
-void Vector::sum()
-{
-    ///RMR-See note in Matrix::sum()
-}
-
-std::vector<py::buffer_info> Vector::array_interface(){
-    std::vector<py::buffer_info> ret;
-
-    if (numpy_shape_.size()) {
-        if (nirrep_ > 1){
-            throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
-        }
-
-        std::vector<size_t> shape(numpy_shape_.size());
-        std::vector<size_t> strides(numpy_shape_.size());
-        size_t current_stride = sizeof(double);
-
-        for (size_t i = numpy_shape_.size(); i-- > 0;) {
-            shape[i] = numpy_shape_[i];
-            strides[i] = current_stride;
-            current_stride *= numpy_shape_[i];
-        }
-        ret.push_back(py::buffer_info(pointer(0), sizeof(double),
-                                      py::format_descriptor<double>::format(),
-                                      numpy_shape_.size(),
-                                      shape, strides));
-
-    } else {
-        for (size_t h = 0; h < nirrep_; h++) {
-            ret.push_back(py::buffer_info(
-                pointer(h), sizeof(double),
-                py::format_descriptor<double>::format(), 1,
-                {static_cast<size_t>(dim(h))}, {sizeof(double)}));
-        }
-    }
-    return ret;
 }
 
 } // namespace psi

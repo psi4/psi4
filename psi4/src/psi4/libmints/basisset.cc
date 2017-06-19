@@ -33,7 +33,6 @@
 */
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/psifiles.h"
 
 #include "vector3.h"
@@ -47,7 +46,7 @@
 #include "pointgrp.h"
 #include "wavefunction.h"
 #include "coordentry.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "psi4/pybind11.h"
 
@@ -227,7 +226,7 @@ int BasisSet::n_frozen_core(const std::string& depth, SharedMolecule mol)
 void BasisSet::print(std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("  Basis Set: %s\n", name_.c_str());
     printer->Printf("    Blend: %s\n", target_.c_str());
     printer->Printf("    Number of shells: %d\n", nshell());
@@ -260,7 +259,7 @@ void BasisSet::print_summary(std::string out) const
 {
 
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                                      std::shared_ptr<OutFile>(new OutFile(out)));
+                                                                      std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
     printer->Printf("  -AO BASIS SET INFORMATION:\n");
     printer->Printf("    Name                   = %s\n", name_.c_str());
@@ -400,7 +399,7 @@ void BasisSet::print_detail(std::string out) const
 {
     print_summary(out);
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                                      std::shared_ptr<OutFile>(new OutFile(out)));
+                                                                      std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
     printer->Printf("  ==> AO Basis Functions <==\n");
     printer->Printf("\n");

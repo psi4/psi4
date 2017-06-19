@@ -31,6 +31,8 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libciomr/libciomr.h"
 
+#include <cmath>
+
 using namespace psi;
 using namespace std;
 
@@ -387,7 +389,7 @@ outfile->Printf( "\t----    ---------------    ---------------\n");
    if (rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_pcg) >= tol_pcg || fabs(rms_r_pcgA) >= tol_pcg);  
+ while(std::fabs(rms_pcg) >= tol_pcg || std::fabs(rms_r_pcgA) >= tol_pcg);  
 
     // Converged?
     outfile->Printf("\n");
@@ -522,7 +524,7 @@ outfile->Printf( "\t----    ---------------    ---------------\n");
    if (rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_pcg) >= tol_pcg || fabs(rms_r_pcg) >= tol_pcg);  
+ while(std::fabs(rms_pcg) >= tol_pcg || std::fabs(rms_r_pcg) >= tol_pcg);  
     // Converged?
     outfile->Printf("\n");
     

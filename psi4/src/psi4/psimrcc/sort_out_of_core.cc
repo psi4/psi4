@@ -71,9 +71,9 @@ void CCSort::build_integrals_out_of_core()
 
   outfile->Printf("\n\n  Sorting integrals:");
   outfile->Printf("\n    Memory available                       = %14lu bytes",
-                  (unsigned long)memory_manager->get_FreeMemory());
+                  (size_t)memory_manager->get_FreeMemory());
   outfile->Printf("\n    Memory available for sorting           = %14lu bytes (%.1f%%)",
-                  (unsigned long)ccintegrals_memory,fraction_of_memory_for_sorting*100.0);
+                  (size_t)ccintegrals_memory,fraction_of_memory_for_sorting*100.0);
 
 
   while(mat_it!=mat_end){
@@ -122,7 +122,7 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& ma
         }else{
           if(blocks_added == 0){
             outfile->Printf("\n    Matrix: %s irrep %d does not fit into memory",Matrix->get_label().c_str(),mat_irrep);
-            outfile->Printf("\n            memory required = %14lu bytes",(unsigned long)block_memory);
+            outfile->Printf("\n            memory required = %14lu bytes",(size_t)block_memory);
 
           }
           out_of_memory = true;

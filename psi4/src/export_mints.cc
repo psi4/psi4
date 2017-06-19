@@ -37,6 +37,7 @@
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/local.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/mintshelper.h"
@@ -63,6 +64,7 @@
 
 
 #include <string>
+#include <pybind11/numpy.h>
 
 using namespace psi;
 
@@ -124,33 +126,37 @@ void export_mints(py::module& m)
         .def("print_out", &Vector::print_out, "docstring")
         .def("scale", &Vector::scale, "docstring")
         .def("dim", &Vector::dim, "docstring")
-        .def("__getitem__", vector_getitem_1(&Vector::pyget), "docstring")
-        .def("__setitem__", vector_setitem_1(&Vector::pyset), "docstring")
-        .def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring")
-        .def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring")
         .def("nirrep", &Vector::nirrep, "docstring")
         .def("array_interface", [](Vector& v) {
             // Dont ask, hopefully pybind11 will work on this
             py::list ret;
-            std::vector<py::buffer_info> buff_vec(v.array_interface());
-            std::string typestr = "<";
-            {
-                std::stringstream sstr;
-                sstr << (int)sizeof(double);
-                typestr += "f" + sstr.str();
+
+            // If we set a NumPy shape
+            if (v.numpy_shape().size()) {
+                if (v.nirrep() > 1){
+                    throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
+                }
+
+                py::dict interface;
+                interface["typestr"] = py::format_descriptor<double>::format();
+                interface["data"] = py::make_tuple((long)v.pointer(0), false);
+                interface["shape"] = v.numpy_shape();
+                ret.append(interface);
+
+            } else {
+                for (size_t h = 0; h < v.nirrep(); h++) {
+                    py::dict interface;
+                    interface["typestr"] = py::format_descriptor<double>::format();
+                    if (v.dim(h) == 0) {
+                        interface["data"] = py::make_tuple(0, false);
+                    } else {
+                        interface["data"] = py::make_tuple((long)(v.pointer(h)), false);
+                    }
+                    interface["shape"] = py::make_tuple(v.dim(h));
+                    ret.append(interface);
+                }
             }
 
-            for (auto const& buff : v.array_interface()) {
-                py::dict interface;
-                interface["typestr"] = py::str(typestr);
-                interface["data"] = py::make_tuple((long)buff.ptr, false);
-                py::list shape;
-                for (auto const& s : buff.shape) {
-                    shape.append(py::int_(s));
-                }
-                interface["shape"] = shape;
-                ret.append(interface);
-            }
             return ret;
         });
 
@@ -189,7 +195,8 @@ void export_mints(py::module& m)
     typedef void (Matrix::*matrix_load)(const std::string&);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
 
-    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr())
+    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr(),
+                                                py::buffer_protocol())
         .def(py::init<int, int>())
         .def(py::init<const std::string&, int, int>())
         .def(py::init<const std::string&, const Dimension&, const Dimension&>())
@@ -267,10 +274,7 @@ void export_mints(py::module& m)
         .def("set", matrix_set1(&Matrix::set), "docstring")
         .def("set", matrix_set3(&Matrix::set), "docstring")
         .def("set", matrix_set4(&Matrix::set), "docstring")
-        .def("set", &Matrix::set_by_python_list, "docstring")
         .def("project_out", &Matrix::project_out, "docstring")
-        .def("__getitem__", &Matrix::pyget, "docstring")
-        .def("__setitem__", &Matrix::pyset, "docstring")
         .def("save", matrix_save(&Matrix::save), "docstring")
         .def("load", matrix_load(&Matrix::load), "docstring")
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring")
@@ -280,25 +284,33 @@ void export_mints(py::module& m)
         .def("array_interface", [](Matrix& m) {
             // Dont ask, hopefully pybind11 will work on this
             py::list ret;
-            std::vector<py::buffer_info> buff_vec(m.array_interface());
-            std::string typestr = "<";
-            {
-                std::stringstream sstr;
-                sstr << (int)sizeof(double);
-                typestr += "f" + sstr.str();
+
+            // If we set a NumPy shape
+            if (m.numpy_shape().size()) {
+                if (m.nirrep() > 1){
+                    throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
+                }
+
+                py::dict interface;
+                interface["typestr"] = py::format_descriptor<double>::format();
+                interface["data"] = py::make_tuple((long)(m.pointer(0)[0]), false);
+                interface["shape"] = m.numpy_shape();
+                ret.append(interface);
+
+            } else {
+                for (size_t h = 0; h < m.nirrep(); h++) {
+                    py::dict interface;
+                    interface["typestr"] = py::format_descriptor<double>::format();
+                    if ((m.rowdim(h) == 0) || (m.coldim(h) == 0)) {
+                        interface["data"] = py::make_tuple(0, false);
+                    } else {
+                        interface["data"] = py::make_tuple((long)(m.pointer(h)[0]), false);
+                    }
+                    interface["shape"] = py::make_tuple(m.rowdim(h), m.coldim(h));
+                    ret.append(interface);
+                }
             }
 
-            for (auto const& buff : m.array_interface()) {
-                py::dict interface;
-                interface["typestr"] = py::str(typestr);
-                interface["data"] = py::make_tuple((long)buff.ptr, false);
-                py::list shape;
-                for (auto const& s : buff.shape) {
-                    shape.append(py::int_(s));
-                }
-                interface["shape"] = shape;
-                ret.append(interface);
-            }
             return ret;
         });
 
@@ -961,7 +973,7 @@ void export_mints(py::module& m)
 
     py::class_<CorrelationFactor, std::shared_ptr<CorrelationFactor>>(m, "CorrelationFactor",
                                                                       "docstring")
-        .def(py::init<unsigned int>())
+        .def(py::init<size_t>())
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>>())
         .def("set_params", &CorrelationFactor::set_params, "docstring");
 

@@ -77,7 +77,7 @@ Creates a new directory with files for writing a new plugin.
 You can specify an additional argument that specifies a
 template to use, for example
 >>> psi4 --plugin-name mygreatcode --plugin-template mointegrals""")
-parser.add_argument('--plugin-template', default='basic',
+parser.add_argument('--plugin-template',
                     choices=['ambit', 'aointegrals', 'basic', 'dfmp2', 'mointegrals', 'scf', 'sointegrals', 'wavefunction'],
                     help='Selects new plugin template to use.')
 parser.add_argument('--plugin-compile', action='store_true', help="""\
@@ -161,9 +161,21 @@ if args["version"]:
     print(psi4.__version__)
     sys.exit()
 
+# Prevents a poor option combination
+if args['plugin_template'] and (not args['plugin_name']):
+    raise KeyError("Please specify a '--plugin-name' for your plugin template!")
+
 if args['plugin_name']:
+
+    # Set the flag
+    if not args['plugin_template']:
+        args['plugin_template'] = 'basic'
+
     # This call does not return.
     psi4.plugin.create_plugin(args['plugin_name'], args['plugin_template'])
+
+    sys.exit()
+
 
 if args["test"]:
     psi4.test()

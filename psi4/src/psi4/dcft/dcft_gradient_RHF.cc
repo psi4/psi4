@@ -26,13 +26,16 @@
  * @END LICENSE
  */
 
+#include "dcft.h"
+#include "defines.h"
+
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
-#include "dcft.h"
-#include "defines.h"
 
 namespace psi{ namespace dcft{
 
@@ -626,7 +629,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
                 int C = avir_qt[c];
                 int D = bvir_qt[d];
                 double value = 4.0 * G.matrix[h][ab][cd] ;
-                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, "outfile", 0);
 
             }
         }
@@ -652,7 +655,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
                 int K = aocc_qt[k];
                 int L = bocc_qt[l];
                 double value = 4.0 * G.matrix[h][ij][kl];
-                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -676,7 +679,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
                 int A = avir_qt[a];
                 int B = bvir_qt[b];
                 double value = 4.0 * G.matrix[h][ij][ab];
-                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -708,7 +711,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = 1.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -732,7 +735,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
                 double value = (-2.0) * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);
@@ -797,7 +800,7 @@ DCFTSolver::compute_ewdm_odc_RHF()
                 int J = aocc_qt[j];
                 int B = avir_qt[b];
                 double value = -1.0 * G.matrix[h][ia][jb];
-                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "NULL", 0);
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, "outfile", 0);
             }
         }
         global_dpd_->buf4_mat_irrep_close(&G, h);

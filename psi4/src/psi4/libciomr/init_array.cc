@@ -37,29 +37,31 @@
 #include <cstdlib>
 #include <strings.h>
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 namespace psi {
 
 /*!
 ** init_array(): This function initializes an array of doubles of
 ** length 'size' and returns a pointer to the first element
 **
-** \param size = length of array (unsigned long to allow large arrays)
+** \param size = length of array (size_t to allow large arrays)
 **
 ** Returns: pointer to new array
 **
 ** \ingroup CIOMR
 */
-double * init_array(unsigned long int size)
+double * init_array(size_t size)
 {
   double *array;
 
-  if ((array = (double *) malloc(size*(unsigned long int)sizeof(double)))
+  if ((array = (double *) malloc(size*(size_t)sizeof(double)))
     == NULL) {
     outfile->Printf("init_array: trouble allocating memory \n");
     outfile->Printf("size = %ld\n",size);
     exit(PSI_RETURN_FAILURE);
   }
-  bzero(array,size*(unsigned long int)sizeof(double));
+  bzero(array,size*(size_t)sizeof(double));
   return(array);
 }
 

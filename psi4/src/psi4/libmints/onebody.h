@@ -68,7 +68,7 @@ protected:
     /// Whether we want to always generate Cartesian integrals;
     bool force_cartesian_;
 
-    unsigned int count_;
+    size_t count_;
     int deriv_;
     int natom_;
 

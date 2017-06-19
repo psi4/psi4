@@ -65,8 +65,8 @@ void stringset_init(StringSet *stringset, int size, int nelec, int ndrc,
   short int *frozen_occ);
 void stringset_delete(StringSet *stringset);
 void stringset_add(StringSet *stringset, int index, unsigned char *Occ);
-void stringset_write(ULI unit, const char *prefix, StringSet *sset);
-void stringset_read(ULI unit, const char *prefix, StringSet **sset);
+void stringset_write(size_t unit, const char *prefix, StringSet *sset);
+void stringset_read(size_t unit, const char *prefix, StringSet **sset);
 void stringset_reindex(StringSet *stringset, short int* mo_map);
 
 /*!
@@ -92,8 +92,8 @@ void slaterdetset_delete(SlaterDetSet *sdset);
 void slaterdetset_delete_full(SlaterDetSet *sdset);
 void slaterdetset_add(SlaterDetSet *sdset, int index, int alphastring,
   int betastring);
-void slaterdetset_write(ULI unit, const char *prefix, SlaterDetSet *sdset);
-void slaterdetset_read(ULI unit, const char *prefix, SlaterDetSet **sdset);
+void slaterdetset_write(size_t unit, const char *prefix, SlaterDetSet *sdset);
+void slaterdetset_read(size_t unit, const char *prefix, SlaterDetSet **sdset);
 
 /*!
   SlaterDetVector is a vector in the space of determinants
@@ -109,11 +109,11 @@ void slaterdetvector_delete(SlaterDetVector *sdvector);
 void slaterdetvector_delete_full(SlaterDetVector *sdvector);
 void slaterdetvector_set(SlaterDetVector *sdvector, double *coeffs);
 
-void slaterdetvector_write(ULI unit, const char *prefix, SlaterDetVector *vector);
-void slaterdetset_write_vect(ULI unit, const char *prefix,
+void slaterdetvector_write(size_t unit, const char *prefix, SlaterDetVector *vector);
+void slaterdetset_write_vect(size_t unit, const char *prefix,
   double *coeffs, int size, int vectnum);
-void slaterdetvector_read(ULI unit, const char *prefix, SlaterDetVector **vector);
-void slaterdetset_read_vect(ULI unit, const char *prefix, double *coeffs,
+void slaterdetvector_read(size_t unit, const char *prefix, SlaterDetVector **vector);
+void slaterdetset_read_vect(size_t unit, const char *prefix, double *coeffs,
   int size, int vectnum);
 
 

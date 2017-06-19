@@ -46,6 +46,9 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
 
 //MKL Header
 #ifdef USING_LAPACK_MKL

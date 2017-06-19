@@ -41,8 +41,8 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-void PSIO::close(unsigned int unit, int keep) {
-  unsigned int i;
+void PSIO::close(size_t unit, int keep) {
+  size_t i;
   psio_ud *this_unit;
   psio_tocentry *this_entry, *next_entry;
 
@@ -86,7 +86,7 @@ void PSIO::close(unsigned int unit, int keep) {
   this_unit->toc = NULL;
 }
 
-int psio_close(unsigned int unit, int keep) {
+int psio_close(size_t unit, int keep) {
   _default_psio_lib_->close(unit, keep);
   return 0;
 }

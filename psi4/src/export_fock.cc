@@ -38,6 +38,8 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libpsi4util/process.h"
+
 
 using namespace psi;
 

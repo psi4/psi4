@@ -29,6 +29,8 @@
 #ifndef THREE_INDEX_CHOLESKY
 #define THREE_INDEX_CHOLESKY
 
+#include "psi4/libmints/typedefs.h"
+
 namespace psi {
 
 class Vector;
@@ -41,7 +43,7 @@ protected:
     /// Maximum Chebyshev error allowed in the decomposition
     double delta_;
     /// Maximum memory to use, in doubles
-    unsigned long int memory_;
+    size_t memory_;
     /// Full L (Q x n), if choleskify() called()
     SharedMatrix L_;
     /// Number of columns required, if choleskify() called
@@ -53,7 +55,7 @@ public:
      * \param delta maximum Chebyshev error allowed in the decomposition
      * \param memory maximum memory allowed, in doubles
      **/
-    Cholesky(double delta, unsigned long int memory);
+    Cholesky(double delta, size_t memory);
     /// Destructor, resets L_
     virtual ~Cholesky();
 
@@ -81,7 +83,7 @@ class CholeskyMatrix : public Cholesky {
 protected:
     SharedMatrix A_;
 public:
-    CholeskyMatrix(SharedMatrix A, double delta, unsigned long int memory);
+    CholeskyMatrix(SharedMatrix A, double delta, size_t memory);
     virtual ~CholeskyMatrix();
 
     virtual size_t N();
@@ -96,7 +98,7 @@ protected:
     std::shared_ptr<BasisSet> basisset_;
     std::shared_ptr<TwoBodyAOInt> integral_;
 public:
-    CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, unsigned long int memory);
+    CholeskyERI(std::shared_ptr<TwoBodyAOInt> integral, double schwarz, double delta, size_t memory);
     virtual ~CholeskyERI();
 
     virtual size_t N();
@@ -114,7 +116,7 @@ protected:
 public:
     CholeskyMP2(SharedMatrix Qia, std::shared_ptr<Vector> eps_aocc,
         std::shared_ptr<Vector> eps_avir, bool symmetric,
-        double delta, unsigned long int memory);
+        double delta, size_t memory);
     virtual ~CholeskyMP2();
 
     virtual size_t N();
@@ -130,7 +132,7 @@ protected:
 public:
     CholeskyDelta(std::shared_ptr<Vector> eps_aocc,
         std::shared_ptr<Vector> eps_avir,
-        double delta, unsigned long int memory);
+        double delta, size_t memory);
     virtual ~CholeskyDelta();
 
     virtual size_t N();
@@ -144,7 +146,7 @@ protected:
     SharedMatrix C_;
 public:
     CholeskyLocal(SharedMatrix C,
-        double delta, unsigned long int memory);
+        double delta, size_t memory);
     virtual ~CholeskyLocal();
 
     virtual size_t N();

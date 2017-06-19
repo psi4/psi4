@@ -13,16 +13,10 @@ set {
   scf_type pk
 }
 
-anal_freqs = psi4.Vector(3)  #TEST
-anal_freqs.set(0, 0, 2170.045) #TEST
-anal_freqs.set(0, 1, 4140.001) #TEST
-anal_freqs.set(0, 2, 4391.065) #TEST
-a1_freqs = psi4.Vector(2)    #TEST
-a1_freqs.set(0, 0, anal_freqs[0]) #TEST
-a1_freqs.set(0, 1, anal_freqs[1]) #TEST
-b2_freqs = psi4.Vector(1)       #TEST
-b2_freqs.set(0, 0, anal_freqs[2]) #TEST
-
+list_freqs = [2170.045, 4140.001, 4391.065]  #TEST
+anal_freqs = psi4.Vector.from_list(list_freqs)  #TEST
+a1_freqs = psi4.Vector.from_list(list_freqs[0:2])  #TEST
+b2_freqs = psi4.Vector.from_list(list_freqs[2:3])  #TEST
 
 # Compute all frequencies with default 3-point formula.
 scf_e, scf_wfn = frequencies('scf', dertype=1, return_wfn=True)

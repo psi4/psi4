@@ -30,6 +30,8 @@
 #include "defines.h"
 #include "dfocc.h"
 
+#include <cmath>
+
 using namespace psi;
 using namespace std;
 
@@ -64,13 +66,13 @@ if (reference_ == "RESTRICTED") {
     // find biggest_mograd 
     biggest_mogradA=0;
     for (int i=0; i<nidpA;i++){ 
-      if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
+      if (std::fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=std::fabs(wogA->get(i));
     }
       
     // rms
     rms_wogA=0;
     for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
-    norm_wogA=sqrt(rms_wogA);
+    norm_wogA=std::sqrt(rms_wogA);
     rms_wogA = wogA->rms();
     rms_wog=rms_wogA;  
     
@@ -118,23 +120,23 @@ else if (reference_ == "UNRESTRICTED") {
     // find biggest_mograd 
     biggest_mogradA=0;
     for (int i=0; i<nidpA;i++){ 
-      if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
+      if (std::fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=std::fabs(wogA->get(i));
     }
     
     biggest_mogradB=0;
     for (int i=0; i<nidpB;i++){ 
-      if (fabs(wogB->get(i)) > biggest_mogradB)  biggest_mogradB=fabs(wogB->get(i));
+      if (std::fabs(wogB->get(i)) > biggest_mogradB)  biggest_mogradB=std::fabs(wogB->get(i));
     }
       
     // rms
     rms_wogA=0;
     for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
-    norm_wogA=sqrt(rms_wogA);
+    norm_wogA=std::sqrt(rms_wogA);
     rms_wogA = wogA->rms();
     
     rms_wogB=0;
     for (int i=0; i<nidpB;i++) rms_wogB += wogB->get(i) * wogB->get(i);
-    norm_wogB=sqrt(rms_wogB);
+    norm_wogB=std::sqrt(rms_wogB);
     rms_wogB = wogB->rms();
     rms_wog=MAX0(rms_wogA,rms_wogB);
     

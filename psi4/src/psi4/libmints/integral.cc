@@ -44,6 +44,7 @@
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/potentialint.h"
 #include "psi4/libmints/ecpint.h"

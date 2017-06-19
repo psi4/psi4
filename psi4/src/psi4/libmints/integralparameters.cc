@@ -26,12 +26,13 @@
  * @END LICENSE
  */
 
+#include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integralparameters.h"
 
 using namespace psi;
 
-CorrelationFactor::CorrelationFactor(unsigned int nparam)
+CorrelationFactor::CorrelationFactor(size_t nparam)
     : IntegralParameters(nparam)
 {
 }

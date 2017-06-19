@@ -29,19 +29,23 @@
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
 
+#include "gshell.h"
+
+#include "psi4/pragma.h"
+#include "psi4/libmints/typedefs.h"
+#include "psi4/psi4-dec.h"
+
+#include "psi4/pybind11.h"
+
 #include <cstdio>
 #include <string>
 #include <vector>
-
-#include "gshell.h"
-#include "molecule.h"
-
- #include "psi4/pragma.h"
+#include <map>
  PRAGMA_WARNING_PUSH
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <memory>
  PRAGMA_WARNING_POP
-#include "psi4/psi4-dec.h"
+
 namespace psi {
 
 

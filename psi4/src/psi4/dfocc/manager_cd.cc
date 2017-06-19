@@ -26,9 +26,13 @@
  * @END LICENSE
  */
 
-#include "psi4/libqt/qt.h"
 #include "dfocc.h"
+
+#include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <cmath>
 
 using namespace psi;
 using namespace std;
@@ -119,7 +123,7 @@ void DFOCC::cd_omp2_manager()
 	mograd();
         occ_iterations();
 
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) {
@@ -1792,7 +1796,7 @@ void DFOCC::omp3_manager_cd()
         occ_iterations();
 
         // main if
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) {
@@ -1821,7 +1825,7 @@ void DFOCC::omp3_manager_cd()
            }
         }// end main if
 
-        else if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "TRUE") {
+        else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
 	   outfile->Printf("\tA tighter rms_mograd_convergence tolerance is recommended... \n");
            throw PSIEXCEPTION("A tighter rms_mograd_convergence tolerance is recommended.");
@@ -2289,7 +2293,7 @@ void DFOCC::omp2_5_manager_cd()
         occ_iterations();
 
         // main if
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
 	   else if (conver == 0) {
@@ -2318,7 +2322,7 @@ void DFOCC::omp2_5_manager_cd()
            }
         }// end main if
 
-        else if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "TRUE") {
+        else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
 	   outfile->Printf("\tA tighter rms_mograd_convergence tolerance is recommended... \n");
            throw PSIEXCEPTION("A tighter rms_mograd_convergence tolerance is recommended.");
@@ -2734,7 +2738,7 @@ void DFOCC::olccd_manager_cd()
 	Elccd=ElccdL;
 
         // main if
-        if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+        if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   mo_optimized = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
@@ -2762,7 +2766,7 @@ void DFOCC::olccd_manager_cd()
            }
         }// end main if
 
-        else if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod && regularization == "TRUE") {
+        else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
 	   outfile->Printf("\tA tighter rms_mograd_convergence tolerance is recommended... \n");
            throw PSIEXCEPTION("A tighter rms_mograd_convergence tolerance is recommended.");

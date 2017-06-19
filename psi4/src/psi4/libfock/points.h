@@ -29,11 +29,13 @@
 #ifndef libfock_points_H
 #define libfock_points_H
 
+#include "psi4/libmints/typedefs.h"
+
 #include <cstdio>
 #include <map>
 #include <tuple>
-
-#include "psi4/libmints/typedefs.h"
+#include <vector>
+#include <string>
 
 namespace psi {
 
@@ -86,7 +88,7 @@ public:
     int max_points() const { return max_points_; }
     int deriv() const { return deriv_; }
 
-    virtual void print(std::string OutFileRMR = "outfile", int print = 2) const;
+    virtual void print(std::string out_fname = "outfile", int print = 2) const;
 
     // => Setters <= //
 
@@ -183,7 +185,7 @@ public:
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
-    void print(std::string OutFileRMR = "outfile", int print = 2) const;
+    void print(std::string out_fname = "outfile", int print = 2) const;
 
     void compute_orbitals(std::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);
@@ -239,7 +241,7 @@ public:
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
 
-    void print(std::string OutFileRMR = "outfile", int print = 2) const;
+    void print(std::string out_fname = "outfile", int print = 2) const;
 
     void compute_orbitals(std::shared_ptr<BlockOPoints> block);
     void set_Cs(SharedMatrix Cocc);

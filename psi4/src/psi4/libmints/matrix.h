@@ -29,13 +29,9 @@
 #ifndef _psi_src_lib_libmints_matrix_h_
 #define _psi_src_lib_libmints_matrix_h_
 
-#include "psi4/libparallel/serialize.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
-
-#include "psi4/pybind11.h"
 
 #include <cstdio>
 #include <string>
@@ -274,8 +270,8 @@ public:
      * @param nso Number of orbitals to use to read in.
      * @returns true if loaded, false otherwise.
      */
-    bool load(psi::PSIO* psio, unsigned int fileno, const std::string& tocentry, int nso);
-    bool load(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso);
+    bool load(psi::PSIO* psio, size_t fileno, const std::string& tocentry, int nso);
+    bool load(std::shared_ptr<psi::PSIO>& psio, size_t fileno, const std::string& tocentry, int nso);
     /** @} */
 
     /**
@@ -287,8 +283,8 @@ public:
      * @param fileno File to read from.
      * @param savetype Save information suffixing point group label.
      */
-    void load(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void load(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void load(psi::PSIO* const psio, size_t fileno, SaveType savetype=LowerTriangle);
+    void load(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -326,8 +322,8 @@ public:
      * @param fileno File to write to.
      * @param savetype Save information suffixing point group label.
      */
-    void save(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void save(std::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
+    void save(psi::PSIO* const psio, size_t fileno, SaveType savetype=LowerTriangle);
+    void save(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -477,15 +473,6 @@ public:
     void set_block(const Slice& rows,const Slice& cols,SharedMatrix block);
 
     /**
-     * Python wrapper for get
-     */
-    double pyget(const py::tuple& key);
-    /**
-     * Python wrapper for set
-     */
-    void pyset(const py::tuple& key, double value);
-
-    /**
      * Returns the double** pointer to the h-th irrep block matrix
      * NOTE: This method is provided for convenience in advanced
      * BLAS/LAPACK calls, and should be used with caution. In particular,
@@ -582,7 +569,7 @@ public:
     void print(std::string outfile = "outfile", const char *extra=NULL) const;
 
     /// Prints the matrix with atom and xyz styling.
-    void print_atom_vector(std::string OutFileRMR = "outfile");
+    void print_atom_vector(std::string out_fname = "outfile");
 
     /**
      * Prints the matrix so that it can be copied and pasted into Mathematica easily.
@@ -1124,15 +1111,6 @@ public:
     const double& operator()(int h, int i, int j) const { return matrix_[h][i][j]; }
     /// @}
 
-    // Serializable pure virtual functions:
-    void send();
-    void recv();
-    void bcast(int broadcaster);
-    /**
-     * Performs element-by-element sum of all data from all nodes.
-     */
-    void sum();
-
     /// Writes this to the dpdfile2 given
     void write_to_dpdfile2(dpdfile2 *outFile);
 
@@ -1154,18 +1132,11 @@ public:
     bool equal_but_for_row_order(const Matrix* rhs, double TOL=1.0e-10);
     /// @}
 
-    /**
-     * Takes a Python object (assumes that it is a "matrix" array) and
-     * sets the matrix to that.
-     */
-    void set_by_python_list(const py::list& data);
-
      /**
      * Adds accessability to the matrix shape for numpy
      */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
-    std::vector<py::buffer_info> array_interface();
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta

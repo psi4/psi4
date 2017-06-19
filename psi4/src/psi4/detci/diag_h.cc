@@ -26,9 +26,6 @@
  * @END LICENSE
  */
 
-#include <cstdio>
-#include <cmath>
-#include <cstring>
 #include "psi4/psifiles.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
@@ -37,11 +34,16 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/slaterdset.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "psi4/detci/structs.h"
 #include "psi4/detci/slaterd.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+
+#include <cstdio>
+#include <cmath>
+#include <cstring>
 
 namespace psi {
 namespace detci {
@@ -56,7 +58,7 @@ namespace detci {
 ** Returns: none
 */
 int CIWavefunction::diag_h(double conv_e, double conv_rms) {
-    BIGINT size;
+    size_t size;
     int nroots, i, j;
     double *evals, **evecs, nucrep, edrc, tval;
     double *cbuf;
@@ -76,7 +78,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
     Parameters_->diag_iters_taken = 0;
 
     size = CIblks_->vectlen;
-    if ((BIGINT)Parameters_->nprint > size) Parameters_->nprint = (int)size;
+    if ((size_t)Parameters_->nprint > size) Parameters_->nprint = (int)size;
     nucrep = CalcInfo_->enuc;
     edrc = CalcInfo_->edrc;
 
@@ -149,7 +151,7 @@ int CIWavefunction::diag_h(double conv_e, double conv_rms) {
 
         double **H, **b;
         int Iarel, Ialist, Ibrel, Iblist, ij, k, l, tmpi, L;
-        unsigned long int ii, jj;
+        size_t ii, jj;
         SlaterDeterminant I, J;
         int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx;
         double *mi_coeff;
