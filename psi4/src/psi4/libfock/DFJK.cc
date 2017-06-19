@@ -697,7 +697,7 @@ void DFJK::initialize_JK_disk()
 
     // ==> Memory Sizing <== //
     size_t two_memory = ((size_t)auxiliary_->nbf())*auxiliary_->nbf();
-    size_t buffer_memory = memory_ - 2*two_memory; // Two is for buffer space in fitting
+    size_t buffer_memory =(memory_ > 2 * two_memory) ? memory_ - 2*two_memory : 0; // Two is for buffer space in fitting
 
     //outfile->Printf( "Buffer memory = %ld words\n", buffer_memory);
 
@@ -1191,7 +1191,8 @@ void DFJK::initialize_wK_disk()
 
     // ==> Memory Sizing <== //
     size_t two_memory = ((size_t)auxiliary_->nbf())*auxiliary_->nbf();
-    size_t buffer_memory = memory_ - 2L*two_memory; // Two is for buffer space in fitting
+    size_t buffer_memory =(memory_ > 2 * two_memory) ? memory_ - 2*two_memory : 0; // Two is for buffer space in fitting
+
 
     //outfile->Printf( "Buffer memory = %ld words\n", buffer_memory);
 
