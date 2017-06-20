@@ -32,12 +32,11 @@
 #include "dimension.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "psi4/pybind11.h"
-
 #include <algorithm>
 #include <numeric>
 #include <cstdlib>
 #include <string.h>
+#include <math.h>
 
 namespace psi {
 

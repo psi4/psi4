@@ -35,8 +35,6 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/psi4-dec.h"
 
-#include "psi4/pybind11.h"
-
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -314,7 +312,9 @@ public:
 
     /// Return the construction key and target information
     const std::string & key() const { return key_; }
+    void set_key(const std::string str) {key_ = str;}
     const std::string & target() const { return target_; }
+    void set_target(const std::string str) {target_ = str;}
 
     /** Print basis set information according to the level of detail in print_level
      *  @param out The file stream to use for printing. Defaults to outfile.
@@ -381,16 +381,6 @@ public:
      * See libmints/benchmark.cc for details
      */
     static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet> > test_basis_set(int max_am);
-
-
-    /** Returns a new basis set object
-     * Constructs a basis set from the parsed information
-     *
-     * @param mol           Psi4 molecule
-     * @param py::dict      Python dictionary containing the basis information
-     * @param forced_puream Force puream or not
-    **/
-    static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name

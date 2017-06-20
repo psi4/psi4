@@ -32,6 +32,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include"psi4/libqt/qt.h"
 #include<sys/times.h>
+#include <unistd.h>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/mintshelper.h"
 #ifdef _OPENMP

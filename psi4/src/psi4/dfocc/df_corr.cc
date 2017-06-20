@@ -39,6 +39,8 @@
 #include "dfocc.h"
 #include "tensors.h"
 
+#include <limits>
+
 #ifdef _OPENMP
 #include <omp.h>
 #include "psi4/libpsi4util/process.h"

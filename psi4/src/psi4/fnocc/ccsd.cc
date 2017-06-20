@@ -40,6 +40,7 @@
 #include "psi4/lib3index/3index.h"
 
 #include <sys/times.h>
+#include <unistd.h>
 #ifdef _OPENMP
     #include<omp.h>
 #else

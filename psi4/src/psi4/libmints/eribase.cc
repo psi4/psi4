@@ -37,8 +37,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "psi4/pybind11.h"
-
 #include <stdexcept>
 #include <string>
 
