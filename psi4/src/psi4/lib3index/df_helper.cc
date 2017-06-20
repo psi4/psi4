@@ -47,6 +47,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
 
+#include <unistd.h>
 #ifdef _OPENMP
     #include <omp.h>
 #endif

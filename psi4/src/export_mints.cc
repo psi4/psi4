@@ -26,6 +26,17 @@
  * @END LICENSE
  */
 
+#ifndef PYBIND11_HAS_BEEN_INCLUDED
+#define PYBIND11_HAS_BEEN_INCLUDED
+#endif
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+#include <pybind11/pytypes.h>
+#include <pybind11/stl_bind.h>
+namespace py = pybind11;
+
+
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/deriv.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integralparameters.h"
@@ -64,9 +75,120 @@
 
 
 #include <string>
-#include <pybind11/numpy.h>
 
 using namespace psi;
+
+std::shared_ptr<BasisSet>
+BasisSet::construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &pybs, const int forced_puream){
+
+    std::string key = pybs["key"].cast<std::string>();
+    std::string name = pybs["name"].cast<std::string>();
+    std::string label = pybs["blend"].cast<std::string>();
+
+    // Handle mixed puream signals and seed parser with the resolution
+    int native_puream = pybs["puream"].cast<int>();
+    int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
+                ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+    GaussianType shelltype;
+    if (user_puream == -1)
+        shelltype = static_cast<GaussianType>(forced_puream == -1 ? native_puream : forced_puream);
+    else
+        shelltype = static_cast<GaussianType>(user_puream);
+
+    mol->set_basis_all_atoms(name, key);
+
+    // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
+    typedef std::map <std::string, std::map<std::string, std::vector <ShellInfo>>> map_ssv;
+    map_ssv basis_atom_shell;
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    py::list basisinfo = pybs["shell_map"].cast<py::list>();
+    if(len(basisinfo) == 0)
+        throw PSIEXCEPTION("Empty information being used to construct BasisSet.");
+    for(int atom = 0; atom < py::len(basisinfo); ++atom){
+        std::vector<ShellInfo> vec_shellinfo;
+        py::list atominfo = basisinfo[atom].cast<py::list>();
+        std::string atomlabel = atominfo[0].cast<std::string>();
+        std::string hash = atominfo[1].cast<std::string>();
+        for(int atomshells = 2; atomshells < py::len(atominfo); ++atomshells){
+            // Each shell entry has p primitives that look like
+            // [ angmom, [ [ e1, c1 ], [ e2, c2 ], ...., [ ep, cp ] ] ]
+            py::list shellinfo = atominfo[atomshells].cast<py::list>();
+            int am = shellinfo[0].cast<int>();
+            std::vector<double> coefficients;
+            std::vector<double> exponents;
+            int nprim = (pybind11::len(shellinfo)) - 1; // The leading entry is the angular momentum
+            for (int primitive = 1; primitive <= nprim; primitive++) {
+                py::list primitiveinfo = shellinfo[primitive].cast<py::list>();
+                exponents.push_back(primitiveinfo[0].cast<double>());
+                coefficients.push_back(primitiveinfo[1].cast<double>());
+            }
+            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, shelltype, Unnormalized));
+        }
+        mol->set_shell_by_label(atomlabel, hash, key);
+        basis_atom_shell[name][atomlabel] = vec_shellinfo;
+    }
+
+    /*
+     * Handle the ECP terms, if needed
+     */
+    map_ssv basis_atom_ecpshell;
+    std::map< std::string, std::map<std::string, int>> basis_atom_ncore;
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    int totalncore = 0;
+    if(pybs.contains("ecp_shell_map")) {
+        py::list ecpbasisinfo = pybs["ecp_shell_map"].cast<py::list>();
+        for(int atom = 0; atom < py::len(ecpbasisinfo); ++atom){
+            std::vector<ShellInfo> vec_shellinfo;
+            py::list atominfo = ecpbasisinfo[atom].cast<py::list>();
+            std::string atomlabel = atominfo[0].cast<std::string>();
+            std::string hash = atominfo[1].cast<std::string>();
+            int ncore = atominfo[2].cast<int>();
+            for(int atomshells = 3; atomshells < py::len(atominfo); ++atomshells){
+                // Each shell entry has p primitives that look like
+                // [ angmom, [ [ e1, c1, r1 ], [ e2, c2, r2 ], ...., [ ep, cp, rp ] ] ]
+                py::list shellinfo = atominfo[atomshells].cast<py::list>();
+                int am = shellinfo[0].cast<int>();
+                std::vector<double> coefficients;
+                std::vector<double> exponents;
+                std::vector<int> ns;
+                int nprim = (pybind11::len(shellinfo)) - 1; // The leading entry is the angular momentum
+                for (int primitive = 1; primitive <= nprim; primitive++) {
+                    py::list primitiveinfo = shellinfo[primitive].cast<py::list>();
+                    exponents.push_back(primitiveinfo[0].cast<double>());
+                    coefficients.push_back(primitiveinfo[1].cast<double>());
+                    ns.push_back(primitiveinfo[2].cast<int>());
+                }
+                vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
+            }
+            basis_atom_ncore[name][atomlabel] = ncore;
+            basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+            totalncore += ncore;
+        }
+    }
+
+    mol->update_geometry();  // update symmetry with basisset info
+
+    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell, basis_atom_ecpshell));
+
+    // Modify the nuclear charges, to account for the ECP.
+    if(totalncore){
+        for(int atom=0; atom<mol->natom(); ++atom){
+            const std::string &basis = mol->basis_on_atom(atom);
+            const std::string &label = mol->label(atom);
+            int ncore = basis_atom_ncore[basis][label];
+            int Z = mol->true_atomic_number(atom) - ncore;
+            mol->set_nuclear_charge(atom, Z);
+            basisset->set_n_ecp_core(label, ncore);
+        }
+    }
+
+    basisset->name_.clear();
+    basisset->name_ = name;
+    basisset->key_ = key;
+    basisset->target_ = label;
+
+    return basisset;
+}
 
 
 void export_mints(py::module& m)

@@ -52,8 +52,6 @@
 #include <vector>
 #include <memory>
 
-#include "psi4/pybind11.h"
-
 namespace psi {
 
 Dispersion::Dispersion()

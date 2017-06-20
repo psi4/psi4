@@ -28,7 +28,6 @@
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/pybind11.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <memory>

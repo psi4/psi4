@@ -35,8 +35,6 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/psi4-dec.h"
 
-#include "psi4/pybind11.h"
-
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -45,6 +43,14 @@
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <memory>
  PRAGMA_WARNING_POP
+
+#ifndef PYBIND11_HAS_BEEN_INCLUDED
+// Forward declare py::dict if the header has not been included in the header stack
+    namespace pybind11 {
+         class dict;
+    }
+    namespace py = pybind11;
+#endif
 
 namespace psi {
 
@@ -390,7 +396,7 @@ public:
      * @param py::dict      Python dictionary containing the basis information
      * @param forced_puream Force puream or not
     **/
-    static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict pybs, const int forced_puream);
+    static std::shared_ptr<BasisSet> construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &pybs, const int forced_puream);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
