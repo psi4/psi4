@@ -26,15 +26,10 @@
  * @END LICENSE
  */
 
-#ifndef PYBIND11_HAS_BEEN_INCLUDED
-#define PYBIND11_HAS_BEEN_INCLUDED
-#endif
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl_bind.h>
-namespace py = pybind11;
-
 
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/deriv.h"
@@ -77,9 +72,17 @@ namespace py = pybind11;
 #include <string>
 
 using namespace psi;
+namespace py = pybind11;
 
+/** Returns a new basis set object
+ * Constructs a basis set from the parsed information
+ *
+ * @param mol           Psi4 molecule
+ * @param py::dict      Python dictionary containing the basis information
+ * @param forced_puream Force puream or not
+**/
 std::shared_ptr<BasisSet>
-BasisSet::construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &pybs, const int forced_puream){
+construct_basisset_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &pybs, const int forced_puream){
 
     std::string key = pybs["key"].cast<std::string>();
     std::string name = pybs["name"].cast<std::string>();
@@ -182,10 +185,9 @@ BasisSet::construct_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict 
         }
     }
 
-    basisset->name_.clear();
-    basisset->name_ = name;
-    basisset->key_ = key;
-    basisset->target_ = label;
+    basisset->set_name(name);
+    basisset->set_key(key);
+    basisset->set_target(label);
 
     return basisset;
 }
@@ -1039,7 +1041,7 @@ void export_mints(py::module& m)
         .def("move_atom", &BasisSet::move_atom, "Translate a given atom by a given amount.  Does not affect the underlying molecule object.")
         .def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "docstring")
-        .def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring");
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring")
         .def("petite_list", &SOBasisSet::petite_list, "docstring");
