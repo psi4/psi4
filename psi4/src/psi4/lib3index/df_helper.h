@@ -212,6 +212,8 @@ protected:
     void compute_AO_Q(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     // store AO building (p blocking)
     void compute_AO_p(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_AO_p_core(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void contract_metric_AO_core_sp(double* Qpq, double* metp);
     // store AO grabs
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
