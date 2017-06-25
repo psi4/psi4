@@ -2310,6 +2310,9 @@ void RDFMP2::form_Z()
     SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
     double** APp = AP->pointer();
     SharedMatrix Dtemp;
+    SharedMatrix Ca__;
+    SharedVector epsilon_a__;
+    
 
     if(options_.get_bool("OPDM_RELAX")){
         psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2403,9 +2406,10 @@ void RDFMP2::form_Z()
         // Add in the reference contribution
         for (int i = 0; i < nocc; ++i)
             Dtemp->add(i, i, 1.0);
-        Ca_ = SharedMatrix(new Matrix("DF-MP2 Natural Orbitals", nsopi_, nmopi_));
-        epsilon_a_ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
+        Ca__ = SharedMatrix(new Matrix("DF-MP2 Natural Orbitals", nsopi_, nmopi_));
+        epsilon_a__ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 relaxed density", nsopi_, nsopi_));
+        
     }else{
         // Don't relax the OPDM
         Dtemp = Ppq->clone();
@@ -2414,16 +2418,18 @@ void RDFMP2::form_Z()
         Dtemp->scale(0.5);
 
         // Add in the reference contribution
+
         for (int i = 0; i < nocc; ++i)
             Dtemp->add(i, i, 1.0);
-        Ca_ = SharedMatrix(new Matrix("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_));
-        epsilon_a_ = SharedVector(new Vector("DF-MP2 (unrelaxed) NO Occupations", nmopi_));
+        Ca__ = SharedMatrix(new Matrix("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_));
+        epsilon_a__ = SharedVector(new Vector("DF-MP2 (unrelaxed) NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 unrelaxed density", nsopi_, nsopi_));
+        
     }
 
-    compute_opdm_and_nos(Dtemp, Da_, Ca_, epsilon_a_);
-    Cb_ = Ca_;
-    epsilon_b_ = epsilon_a_;
+    compute_opdm_and_nos(Dtemp, Da_, Ca__, epsilon_a__);
+    //Cb_ = Ca_;
+    //epsilon_b_ = epsilon_a_;
     Db_ = Da_;
 
     if(options_.get_bool("ONEPDM")){
