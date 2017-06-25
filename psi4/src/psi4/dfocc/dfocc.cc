@@ -33,6 +33,8 @@
 #include "defines.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
+
 
 
 using namespace psi;
@@ -534,6 +536,9 @@ double DFOCC::compute_energy()
         else if (wfn_type_ == "DF-OMP2.5") Etotal = Emp3L;
         else if (wfn_type_ == "DF-OLCCD") Etotal = ElccdL;
         else if (wfn_type_ == "QCHF") Etotal = Eref;
+
+        /* updates the wavefunction for checkpointing */
+        energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
 
         return Etotal;
 
