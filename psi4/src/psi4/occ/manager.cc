@@ -385,6 +385,11 @@ void OCCWave::mp2_manager()
              }
 	}
 
+         /* updates the wavefunction for checkpointing */
+        energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
+        name_ = "MP2";
+
+
         // S2
         //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
 

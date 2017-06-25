@@ -478,10 +478,6 @@ double OCCWave::compute_energy()
         else if (wfn_type_ == "OCEPA") return EcepaL;
         else if (wfn_type_ == "CEPA") return Ecepa;
 
-        /* updates the wavefunction for checkpointing */                  
-        energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
-
-
         return 0.0;
 } // end of compute_energy
 

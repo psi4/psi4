@@ -511,6 +511,11 @@ void DFOCC::mp2_manager()
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
+        /* updates the wavefunction for checkpointing */
+        energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
+        name_ = "DF-MP2";
+
+
         // S2
         //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
         if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") {
