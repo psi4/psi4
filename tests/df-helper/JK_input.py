@@ -12,21 +12,21 @@ memory = 50000
 primary = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ")
 aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ-jkfit")
 
-nbf = primary[0].nbf()
-naux = aux[0].nbf()
+nbf = primary.nbf()
+naux = aux.nbf()
 
 # form metric
-mints = psi4.core.MintsHelper(primary[0])
+mints = psi4.core.MintsHelper(primary)
 zero_bas = psi4.core.BasisSet.zero_ao_basis_set()
-Jmetric = np.squeeze(mints.ao_eri(zero_bas, aux[0], zero_bas, aux[0]))
+Jmetric = np.squeeze(mints.ao_eri(zero_bas, aux, zero_bas, aux))
 
 # form inverse metric
-Jmetric_inv = mints.ao_eri(zero_bas, aux[0], zero_bas, aux[0])
+Jmetric_inv = mints.ao_eri(zero_bas, aux, zero_bas, aux)
 Jmetric_inv.power(-0.5, 1.e-12)
 Jmetric_inv = np.squeeze(Jmetric_inv)
 
 # form Qpq
-Qpq = np.squeeze(mints.ao_eri(aux[0], zero_bas, primary[0], primary[0]))
+Qpq = np.squeeze(mints.ao_eri(aux, zero_bas, primary, primary))
 Qpq = Jmetric_inv.dot(Qpq.reshape(naux, -1))
 Qpq = Qpq.reshape(naux, nbf, -1) 
 pQq = np.einsum("Qpq->pQq", Qpq)
@@ -99,7 +99,7 @@ for i in range(len(Cright)):
     K.append(np.dot(Ktmp1.reshape(nbf,-1), Ktmp2.reshape(nbf, -1).T))
 
 # now compare to DF_Helper - test STORE -----------------------------------------
-dfh = psi4.core.DF_Helper(primary[0], aux[0])
+dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("STORE")
@@ -143,11 +143,11 @@ for i in range(len(Cright)):
 
 # now compare to DF_Helper - test AO_CORE -----------------------------------------
 del dfh
-dfh = psi4.core.DF_Helper(primary[0], aux[0])
+dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("STORE")
-dfh.set_memory(3*memory)
+dfh.set_memory(int(1.6*memory))
 dfh.set_AO_core(True)
 dfh.set_MO_hint(24)
 
@@ -183,11 +183,11 @@ for i in range(len(Cright)):
 
 # now compare to DF_Helper - test AO_CORE -----------------------------------------
 del dfh
-dfh = psi4.core.DF_Helper(primary[0], aux[0])
+dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("STORE")
-dfh.set_memory(3*memory)
+dfh.set_memory(int(1.6*memory))
 dfh.set_AO_core(True)
 dfh.set_MO_hint(24)
 dfh.set_JK_hint(True)

@@ -190,6 +190,9 @@ protected:
     // indexing for screened AO integrals (so useful)
     std::vector<size_t> small_skips_;
     std::vector<size_t> big_skips_;
+    std::vector<size_t> symm_skips_;
+    std::vector<size_t> symm_sizes_;
+    std::vector<size_t> symm_agg_sizes_;
 
     // shell blocking sizes and steps
     size_t pshells_;
@@ -205,7 +208,7 @@ protected:
 
     // general blocking determination
     size_t wMO_=0;
-    std::pair<size_t, size_t> pshell_blocks(const size_t mem, size_t option, std::vector<std::pair<size_t, size_t>>& b);
+    std::pair<size_t, size_t> pshell_blocks(const size_t mem, size_t hold_met, size_t symm, std::vector<std::pair<size_t, size_t>>& b);
     std::pair<size_t, size_t> Qshell_blocks(const size_t mem, size_t wtmp, size_t wfinal, std::vector<std::pair<size_t, size_t>>& b);
 
     // direct AO building (Q blocking)
@@ -213,7 +216,8 @@ protected:
     // store AO building (p blocking)
     void compute_AO_p(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void compute_AO_p_core(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void contract_metric_AO_core_sp(double* Qpq, double* metp);
+    void contract_metric_AO_core_sp(double* Qpq, double* metp, size_t begin, size_t end);
+
     // store AO grabs
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
@@ -222,7 +226,6 @@ protected:
     std::vector<size_t> schwarz_shell_mask_;
     std::vector<size_t> schwarz_fun_count_;
     void prepare_sparsity();
-    void print_masks();
 
     // metric files and setup
     std::vector<std::pair<double, std::string>> metric_keys_;
@@ -294,12 +297,12 @@ protected:
     void transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order);
 
     // => JK <=
-    void JK_disk(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
+    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
         std::vector<SharedMatrix> J, std::vector<SharedMatrix> K); 
     void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
     void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
         double* T1p, double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
-    void compute_J_sp(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
+    void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
         double* T1p, double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
     void compute_K(std::vector<SharedMatrix> Cleft, 
         std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K, double* Tp, double* Jtmp,    
