@@ -174,10 +174,8 @@ void export_fock(py::module &m) {
         .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor))
         .def("get_tensor", tensor_access3(&df_helper::DF_Helper::get_tensor))
         .def("set_JK_hint", &df_helper::DF_Helper::set_JK_hint)
-        .def("get_fun_mask", &df_helper::DF_Helper::get_fun_mask)
         .def("build_JK", &df_helper::DF_Helper::build_JK);
 
-// MATT'S HACKING FIXME
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
         [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases, int i, int j) 
@@ -192,5 +190,4 @@ void export_fock(py::module &m) {
         .def("Db", &scf::SADGuess::Db)
         .def("Ca", &scf::SADGuess::Ca)
         .def("Cb", &scf::SADGuess::Cb);
-
 }
