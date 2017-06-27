@@ -83,8 +83,9 @@ void ROHF::common_init()
     moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_      = SharedMatrix(factory_->create_matrix("C"));
+    Ca_      = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
     Cb_      = Ca_;
+    Cb_->set_name("beta MO coefficients (C)");
     Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
@@ -100,7 +101,9 @@ void ROHF::common_init()
     moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_a_->set_name("alpha orbital energies");
     epsilon_b_ = epsilon_a_;
+    epsilon_b_->set_name("beta orbital energies");
     same_a_b_dens_ = false;
     same_a_b_orbs_ = true;
 

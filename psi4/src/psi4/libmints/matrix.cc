@@ -91,6 +91,7 @@ Matrix::Matrix(const Matrix &c)
     matrix_ = NULL;
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
+    name_ = c.name();
     alloc();
     copy_from(c.matrix_);
 }
@@ -101,6 +102,7 @@ Matrix::Matrix(const SharedMatrix &c)
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
+    name_ = c->name();
     alloc();
     copy_from(c->matrix_);
 }
@@ -111,6 +113,7 @@ Matrix::Matrix(const Matrix *c)
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
+    name_ = c->name();
     alloc();
     copy_from(c->matrix_);
 }

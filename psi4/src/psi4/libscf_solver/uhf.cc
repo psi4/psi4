@@ -95,8 +95,8 @@ void UHF::common_init()
     Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
     Dt_old_ = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
-    Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
-    Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
+    Ca_     = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
+    Cb_     = SharedMatrix(factory_->create_matrix("beta MO coefficients (C)"));
     Ga_     = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_     = SharedMatrix(factory_->create_matrix("G beta"));
     Va_     = SharedMatrix(factory_->create_matrix("V alpha"));
@@ -108,7 +108,9 @@ void UHF::common_init()
     wKb_    = SharedMatrix(factory_->create_matrix("wK beta"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_a_->set_name("alpha orbital energies");
     epsilon_b_ = SharedVector(factory_->create_vector());
+    epsilon_b_->set_name("beta orbital energies");
 
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
