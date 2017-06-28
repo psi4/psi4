@@ -38,12 +38,8 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
-<<<<<<< HEAD
 #include "psi4/libpsi4util/process.h"
-
-=======
 #include "psi4/libscf_solver/sad.h"
->>>>>>> merged df_helper updates
 
 using namespace psi;
 
