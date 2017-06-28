@@ -201,6 +201,9 @@ double CoupledCluster::compute_energy() {
         Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = eccsd_ss;
         Process::environment.globals["CCSD TOTAL ENERGY"] = eccsd + escf;
+        /* updates the wavefunction for checkpointing */
+        energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
+        name_ = "CCSD";
      }else{
         Process::environment.globals["QCISD CORRELATION ENERGY"] = eccsd;
         Process::environment.globals["QCISD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;

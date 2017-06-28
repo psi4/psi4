@@ -514,6 +514,7 @@ double CCEnergyWavefunction::compute_energy()
 #endif
 
     energy_ = moinfo_.ecc + moinfo_.eref;
+    name_  = "CCSD";
     Process::environment.globals["CURRENT ENERGY"] = moinfo_.ecc+moinfo_.eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = moinfo_.ecc;
     //Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;

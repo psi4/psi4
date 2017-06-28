@@ -809,6 +809,10 @@ void DFOCC::ccsd_manager()
 	Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = Eccsd - Escf;
 
+    /* updates the wavefunction for checkpointing */        
+        energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
+        name_ = "DF-CCSD";
+
         // CCSDL
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
 	    // memalloc

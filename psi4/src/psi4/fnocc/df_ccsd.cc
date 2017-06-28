@@ -102,6 +102,9 @@ double DFCoupledCluster::compute_energy() {
   Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = eccsd_ss;
   Process::environment.globals["CCSD TOTAL ENERGY"] = eccsd + escf;
   Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;
+  /* updates the wavefunction for checkpointing */
+  energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
+  name_ = "DF-CCSD";
 
   if (options_.get_bool("COMPUTE_TRIPLES")){
       long int o = ndoccact;

@@ -72,9 +72,11 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
       if ( !options.get_bool("RUN_CEPA") ) {
           std::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
           ccsd->compute_energy();
+          return ccsd;
       } else {
           std::shared_ptr<CoupledPair> cepa (new CoupledPair(wfn,options));
           cepa->compute_energy();
+          return cepa;
       }
 
   }else {
@@ -114,10 +116,11 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
       tstop();
 
+      return ccsd;
 
   }
 
-  return wfn;
+  //return wfn;
 } // end fnocc
 
 }} // end namespaces
