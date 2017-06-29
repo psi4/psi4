@@ -392,8 +392,8 @@ def _np_write(self, filename=None, prefix=""):
     for h, v in enumerate(self.nph):
         # If returning arrays to user, we want to return copies (snapshot), not
         # views of the core.Matrix's memory.
-        if filename == None:
-            v = np.asarray(v, copy=True)
+        if filename == None and not v.flags['OWNDATA']:
+            v = np.copy(v)
         ret[prefix + "IrrepData" + str(h)] = v
 
     if isinstance(self, core.Matrix):
