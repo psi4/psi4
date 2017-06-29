@@ -310,8 +310,6 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(SharedWavefunction oth
     // not depend on symmetry ... can just copy them
     if (other->gradient_) wfn->gradient_ = other->gradient_->clone();
     if (other->hessian_) wfn->hessian_ = other->hessian_->clone();
-    if (other->tpdm_gradient_contribution_)
-        wfn->tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_->clone();
 
     return wfn;
 }
