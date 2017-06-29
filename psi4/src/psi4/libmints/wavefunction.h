@@ -273,8 +273,7 @@ public:
     * TODO-reference_wavefunction_ is set to other
     * TODO-Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are deep copied.
     **/
-    void c1_deep_copy(SharedWavefunction other);
-    void c1_deep_copy(const Wavefunction* other);
+    std::shared_ptr <Wavefunction> c1_deep_copy(SharedWavefunction other, std::shared_ptr<BasisSet> basis);
 
     virtual ~Wavefunction();
 
