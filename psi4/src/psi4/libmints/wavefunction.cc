@@ -219,7 +219,7 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(SharedWavefunction oth
         throw PSIEXCEPTION("Wavefunction::c1_deep_copy must copy an initialized wavefunction.");
     }
 
-    wfn = std::shared_ptr <Wavefunction>(new Wavefunction(basis.molecule(), basis, other->options()));
+    std::shared_ptr <Wavefunction> wfn(new Wavefunction(basis->molecule(), basis, other->options()));
   
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
