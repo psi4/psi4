@@ -390,6 +390,10 @@ def _np_write(self, filename=None, prefix=""):
     ret[prefix + "Irreps"] = self.nirrep()
     ret[prefix + "Name"] = self.name
     for h, v in enumerate(self.nph):
+        # If returning arrays to user, we want to return copies (snapshot), not
+        # views of the core.Matrix's memory.
+        if filename == None:
+            v = np.asarray(v, copy=True)
         ret[prefix + "IrrepData" + str(h)] = v
 
     if isinstance(self, core.Matrix):
