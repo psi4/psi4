@@ -408,7 +408,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     to obtain the correction vector of H0BLOCK.  The ``H0BLOCK_INV``, ``GEN_DAVIDSON``,
     and ``ITER_INV`` approaches are all formally equivalent but the ``ITER_INV`` is
     less computationally expensive.  Default is ``DAVIDSON``. -*/
-    options.add_str("PRECONDITIONER", "DAVIDSON", "LANCZOS DAVIDSON GEN_DAVIDSON H0BLOCK H0BLOCK_INV ITER_INV H0BLOCK_COUPLING EVANGELISTI");
+    options.add_str("PRECONDITIONER", "DAVIDSON", "LANCZOS DAVIDSON GEN_DAVIDSON H0BLOCK ITER_INV EVANGELISTI");
+    // options.add_str("PRECONDITIONER", "DAVIDSON", "LANCZOS DAVIDSON GEN_DAVIDSON H0BLOCK H0BLOCK_INV ITER_INV H0BLOCK_COUPLING EVANGELISTI"); // Failures
 
     /*- The update or correction vector formula, either ``DAVIDSON`` (default)
     or ``OLSEN``. -*/

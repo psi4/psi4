@@ -139,6 +139,9 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->d_filenum = options["CI_FILE_START"].to_integer() + 3;
 
   Parameters_->cc = options["CC"].to_integer();
+  if (Parameters_->cc){
+    throw PSIEXCEPTION("DETCI: The CC module is not currently enabled.\n");
+  }
 
   if (Parameters_->dertype == "FIRST" ||
       Parameters_->wfn == "DETCAS" ||
@@ -518,7 +521,7 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->sf_restrict = options["SF_RESTRICT"].to_integer();
   Parameters_->print_sigma_overlap = options["SIGMA_OVERLAP"].to_integer();
 
-  if (Parameters_->cc) Parameters_->ex_lvl = Parameters_->cc_ex_lvl + 2;
+  // if (Parameters_->cc) Parameters_->ex_lvl = Parameters_->cc_ex_lvl + 2;
 
   Parameters_->ex_allow.resize(Parameters_->ex_lvl);
   if (options["EX_ALLOW"].has_changed()) {
@@ -903,13 +906,13 @@ void CIWavefunction::print_parameters(void) {
                         Parameters_->filter_guess ? "YES" : "NO",
                         Parameters_->sf_restrict ? "YES" : "NO");
     }
-    if (Parameters_->cc && Parameters_->diis) {
-        outfile->Printf("CC options:\n");
-        outfile->Printf("    DIIS START     =   %6d      DIIS FREQ     =   %6d\n",
-                        Parameters_->diis_start, Parameters_->diis_freq);
-        outfile->Printf("    DIIS MIN VECS  =   %6d      DIIS MAX VECS=   %6d\n",
-                        Parameters_->diis_min_vecs, Parameters_->diis_max_vecs);
-    }
+    // if (Parameters_->cc && Parameters_->diis) {
+    //     outfile->Printf("CC options:\n");
+    //     outfile->Printf("    DIIS START     =   %6d      DIIS FREQ     =   %6d\n",
+    //                     Parameters_->diis_start, Parameters_->diis_freq);
+    //     outfile->Printf("    DIIS MIN VECS  =   %6d      DIIS MAX VECS=   %6d\n",
+    //                     Parameters_->diis_min_vecs, Parameters_->diis_max_vecs);
+    // }
     if (Parameters_->restart){
       outfile->Printf("    RESTART        =   %6s\n",
                       Parameters_->restart ? "YES" : "NO");
@@ -991,12 +994,12 @@ void CIWavefunction::set_ras_parameters(void) {
     } /* end FCI override */
 
     /* reset ex_lvl if incompatible with number of electrons */
-    if (Parameters_->cc &&
-        (Parameters_->cc_ex_lvl >
-         CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl)) {
-        Parameters_->cc_ex_lvl =
-            CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-    }
+    // if (Parameters_->cc &&
+    //     (Parameters_->cc_ex_lvl >
+    //      CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl)) {
+    //     Parameters_->cc_ex_lvl =
+    //         CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
+    // }
     if (Parameters_->ex_lvl >
         CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl) {
         Parameters_->ex_lvl = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
@@ -1078,60 +1081,60 @@ void CIWavefunction::set_ras_parameters(void) {
 
     /* check Parameters to make sure everything consistent */
 
-    if (Parameters_->cc) {
-        if (Parameters_->cc_a_val_ex_lvl == -1)
-            Parameters_->cc_a_val_ex_lvl = Parameters_->cc_val_ex_lvl;
-        if (Parameters_->cc_b_val_ex_lvl == -1)
-            Parameters_->cc_b_val_ex_lvl = Parameters_->cc_val_ex_lvl;
-        if (Parameters_->cc_a_val_ex_lvl >
-            Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1)
-            Parameters_->cc_a_val_ex_lvl =
-                Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1;
-        if (Parameters_->cc_b_val_ex_lvl >
-            Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1)
-            Parameters_->cc_b_val_ex_lvl =
-                Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1;
-        if (Parameters_->cc_val_ex_lvl >
-            Parameters_->cc_a_val_ex_lvl + Parameters_->cc_b_val_ex_lvl)
-            Parameters_->cc_val_ex_lvl =
-                Parameters_->cc_a_val_ex_lvl + Parameters_->cc_b_val_ex_lvl;
-    }
+    // if (Parameters_->cc) {
+    //     if (Parameters_->cc_a_val_ex_lvl == -1)
+    //         Parameters_->cc_a_val_ex_lvl = Parameters_->cc_val_ex_lvl;
+    //     if (Parameters_->cc_b_val_ex_lvl == -1)
+    //         Parameters_->cc_b_val_ex_lvl = Parameters_->cc_val_ex_lvl;
+    //     if (Parameters_->cc_a_val_ex_lvl >
+    //         Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1)
+    //         Parameters_->cc_a_val_ex_lvl =
+    //             Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1;
+    //     if (Parameters_->cc_b_val_ex_lvl >
+    //         Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1)
+    //         Parameters_->cc_b_val_ex_lvl =
+    //             Parameters_->ras3_lvl - Parameters_->ras1_lvl - 1;
+    //     if (Parameters_->cc_val_ex_lvl >
+    //         Parameters_->cc_a_val_ex_lvl + Parameters_->cc_b_val_ex_lvl)
+    //         Parameters_->cc_val_ex_lvl =
+    //             Parameters_->cc_a_val_ex_lvl + Parameters_->cc_b_val_ex_lvl;
+    // }
 
     /* deduce Parameters_->cc_a_ras3_max and Parameters_->cc_b_ras3_max if
      * needed */
-    if (Parameters_->cc & (Parameters_->cc_a_ras3_max == -1 ||
-                           Parameters_->cc_b_ras3_max == -1)) {
-        if (Parameters_->cc_ras3_max != -1) { /* have parsed cc_ras3_max */
-            Parameters_->cc_a_ras3_max =
-                (Parameters_->cc_ras3_max <= CalcInfo_->num_alp_expl)
-                    ? Parameters_->cc_ras3_max
-                    : CalcInfo_->num_alp_expl;
-            Parameters_->cc_b_ras3_max =
-                (Parameters_->cc_ras3_max <= CalcInfo_->num_bet_expl)
-                    ? Parameters_->cc_ras3_max
-                    : CalcInfo_->num_bet_expl;
-        } else {
-            Parameters_->cc_a_ras3_max =
-                (Parameters_->cc_ex_lvl <= CalcInfo_->num_alp_expl)
-                    ? Parameters_->cc_ex_lvl
-                    : CalcInfo_->num_alp_expl;
-            Parameters_->cc_b_ras3_max =
-                (Parameters_->cc_ex_lvl <= CalcInfo_->num_bet_expl)
-                    ? Parameters_->cc_ex_lvl
-                    : CalcInfo_->num_bet_expl;
-        }
-    }
+    // if (Parameters_->cc & (Parameters_->cc_a_ras3_max == -1 ||
+    //                        Parameters_->cc_b_ras3_max == -1)) {
+    //     if (Parameters_->cc_ras3_max != -1) { /* have parsed cc_ras3_max */
+    //         Parameters_->cc_a_ras3_max =
+    //             (Parameters_->cc_ras3_max <= CalcInfo_->num_alp_expl)
+    //                 ? Parameters_->cc_ras3_max
+    //                 : CalcInfo_->num_alp_expl;
+    //         Parameters_->cc_b_ras3_max =
+    //             (Parameters_->cc_ras3_max <= CalcInfo_->num_bet_expl)
+    //                 ? Parameters_->cc_ras3_max
+    //                 : CalcInfo_->num_bet_expl;
+    //     } else {
+    //         Parameters_->cc_a_ras3_max =
+    //             (Parameters_->cc_ex_lvl <= CalcInfo_->num_alp_expl)
+    //                 ? Parameters_->cc_ex_lvl
+    //                 : CalcInfo_->num_alp_expl;
+    //         Parameters_->cc_b_ras3_max =
+    //             (Parameters_->cc_ex_lvl <= CalcInfo_->num_bet_expl)
+    //                 ? Parameters_->cc_ex_lvl
+    //                 : CalcInfo_->num_bet_expl;
+    //     }
+    // }
 
-    if (Parameters_->cc) {
-        Parameters_->a_ras3_max =
-            (Parameters_->cc_a_ras3_max + 2 <= CalcInfo_->num_alp_expl)
-                ? Parameters_->cc_a_ras3_max + 2
-                : CalcInfo_->num_alp_expl;
-        Parameters_->b_ras3_max =
-            (Parameters_->cc_b_ras3_max + 2 <= CalcInfo_->num_bet_expl)
-                ? Parameters_->cc_b_ras3_max + 2
-                : CalcInfo_->num_bet_expl;
-    }
+    // if (Parameters_->cc) {
+    //     Parameters_->a_ras3_max =
+    //         (Parameters_->cc_a_ras3_max + 2 <= CalcInfo_->num_alp_expl)
+    //             ? Parameters_->cc_a_ras3_max + 2
+    //             : CalcInfo_->num_alp_expl;
+    //     Parameters_->b_ras3_max =
+    //         (Parameters_->cc_b_ras3_max + 2 <= CalcInfo_->num_bet_expl)
+    //             ? Parameters_->cc_b_ras3_max + 2
+    //             : CalcInfo_->num_bet_expl;
+    // }
 
     if (Parameters_->a_ras3_max == -1 || Parameters_->b_ras3_max == -1) {
         if (Parameters_->ras3_max != -1) { /* have parsed ras3_max */
@@ -1156,27 +1159,28 @@ void CIWavefunction::set_ras_parameters(void) {
     }
 
     if (Parameters_->cc) {
-        if (Parameters_->cc_ras4_max != -1) { /* have parsed */
-            Parameters_->cc_a_ras4_max =
-                (Parameters_->cc_ras4_max <= CalcInfo_->num_alp_expl)
-                    ? Parameters_->cc_ras4_max
-                    : CalcInfo_->num_alp_expl;
-            Parameters_->cc_b_ras4_max =
-                (Parameters_->cc_ras4_max <= CalcInfo_->num_bet_expl)
-                    ? Parameters_->cc_ras4_max
-                    : CalcInfo_->num_bet_expl;
-        } else {
-            Parameters_->cc_a_ras4_max = Parameters_->cc_a_ras3_max;
-            Parameters_->cc_b_ras4_max = Parameters_->cc_b_ras3_max;
-        }
-        Parameters_->a_ras4_max =
-            (Parameters_->cc_a_ras4_max + 2 <= CalcInfo_->num_alp_expl)
-                ? Parameters_->cc_a_ras4_max + 2
-                : CalcInfo_->num_alp_expl;
-        Parameters_->b_ras4_max =
-            (Parameters_->cc_b_ras4_max + 2 <= CalcInfo_->num_bet_expl)
-                ? Parameters_->cc_b_ras4_max + 2
-                : CalcInfo_->num_bet_expl;
+        /* Please re-enable the CC module!*/
+        // if (Parameters_->cc_ras4_max != -1) { /* have parsed */
+        //     Parameters_->cc_a_ras4_max =
+        //         (Parameters_->cc_ras4_max <= CalcInfo_->num_alp_expl)
+        //             ? Parameters_->cc_ras4_max
+        //             : CalcInfo_->num_alp_expl;
+        //     Parameters_->cc_b_ras4_max =
+        //         (Parameters_->cc_ras4_max <= CalcInfo_->num_bet_expl)
+        //             ? Parameters_->cc_ras4_max
+        //             : CalcInfo_->num_bet_expl;
+        // } else {
+        //     Parameters_->cc_a_ras4_max = Parameters_->cc_a_ras3_max;
+        //     Parameters_->cc_b_ras4_max = Parameters_->cc_b_ras3_max;
+        // }
+        // Parameters_->a_ras4_max =
+        //     (Parameters_->cc_a_ras4_max + 2 <= CalcInfo_->num_alp_expl)
+        //         ? Parameters_->cc_a_ras4_max + 2
+        //         : CalcInfo_->num_alp_expl;
+        // Parameters_->b_ras4_max =
+        //     (Parameters_->cc_b_ras4_max + 2 <= CalcInfo_->num_bet_expl)
+        //         ? Parameters_->cc_b_ras4_max + 2
+        //         : CalcInfo_->num_bet_expl;
     } else {
         if (Parameters_->ras4_max != -1) { /* have parsed */
             Parameters_->a_ras4_max =
@@ -1194,31 +1198,32 @@ void CIWavefunction::set_ras_parameters(void) {
     }
 
     if (Parameters_->cc) {
-        if (Parameters_->cc_ras34_max != -1) { /* have parsed */
-            Parameters_->cc_a_ras34_max = Parameters_->cc_ras34_max;
-            Parameters_->cc_b_ras34_max = Parameters_->cc_ras34_max;
-        } else {
-            Parameters_->cc_a_ras34_max =
-                Parameters_->cc_a_ras3_max + Parameters_->cc_a_ras4_max;
-            Parameters_->cc_b_ras34_max =
-                Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max;
-        }
-        if (Parameters_->ras34_max != -1) { /* have parsed */
-            Parameters_->a_ras34_max = Parameters_->ras34_max;
-            Parameters_->b_ras34_max = Parameters_->ras34_max;
-        } else {
-            Parameters_->a_ras34_max = Parameters_->cc_a_ras34_max + 2;
-            if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
-                Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
-            Parameters_->b_ras34_max = Parameters_->cc_b_ras34_max + 2;
-            if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
-                Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
-            Parameters_->ras34_max = Parameters_->cc_ras34_max + 2;
-            if (Parameters_->ras34_max >
-                Parameters_->a_ras34_max + Parameters_->b_ras34_max)
-                Parameters_->ras34_max =
-                    Parameters_->a_ras34_max + Parameters_->b_ras34_max;
-        }
+        /* Please re-enable the CC module!*/
+        // if (Parameters_->cc_ras34_max != -1) { /* have parsed */
+        //     Parameters_->cc_a_ras34_max = Parameters_->cc_ras34_max;
+        //     Parameters_->cc_b_ras34_max = Parameters_->cc_ras34_max;
+        // } else {
+        //     Parameters_->cc_a_ras34_max =
+        //         Parameters_->cc_a_ras3_max + Parameters_->cc_a_ras4_max;
+        //     Parameters_->cc_b_ras34_max =
+        //         Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max;
+        // }
+        // if (Parameters_->ras34_max != -1) { /* have parsed */
+        //     Parameters_->a_ras34_max = Parameters_->ras34_max;
+        //     Parameters_->b_ras34_max = Parameters_->ras34_max;
+        // } else {
+        //     Parameters_->a_ras34_max = Parameters_->cc_a_ras34_max + 2;
+        //     if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
+        //         Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
+        //     Parameters_->b_ras34_max = Parameters_->cc_b_ras34_max + 2;
+        //     if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
+        //         Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
+        //     Parameters_->ras34_max = Parameters_->cc_ras34_max + 2;
+        //     if (Parameters_->ras34_max >
+        //         Parameters_->a_ras34_max + Parameters_->b_ras34_max)
+        //         Parameters_->ras34_max =
+        //             Parameters_->a_ras34_max + Parameters_->b_ras34_max;
+        // }
     } else {                                /* non-CC */
         if (Parameters_->ras34_max != -1) { /* have parsed */
             Parameters_->a_ras34_max = Parameters_->ras34_max;
@@ -1232,26 +1237,26 @@ void CIWavefunction::set_ras_parameters(void) {
     i = Parameters_->ras4_lvl - Parameters_->ras3_lvl;
     if (Parameters_->a_ras3_max > i) Parameters_->a_ras3_max = i;
     if (Parameters_->b_ras3_max > i) Parameters_->b_ras3_max = i;
-    if (Parameters_->cc) {
-        if (Parameters_->cc_a_ras3_max > i) Parameters_->cc_a_ras3_max = i;
-        if (Parameters_->cc_b_ras3_max > i) Parameters_->cc_b_ras3_max = i;
-    }
+    // if (Parameters_->cc) {
+    //     if (Parameters_->cc_a_ras3_max > i) Parameters_->cc_a_ras3_max = i;
+    //     if (Parameters_->cc_b_ras3_max > i) Parameters_->cc_b_ras3_max = i;
+    // }
 
     i = CalcInfo_->num_ci_orbs - Parameters_->ras4_lvl;
     if (Parameters_->a_ras4_max > i) Parameters_->a_ras4_max = i;
     if (Parameters_->b_ras4_max > i) Parameters_->b_ras4_max = i;
-    if (Parameters_->cc) {
-        if (Parameters_->cc_a_ras4_max > i) Parameters_->cc_a_ras4_max = i;
-        if (Parameters_->cc_b_ras4_max > i) Parameters_->cc_b_ras4_max = i;
-    }
+    // if (Parameters_->cc) {
+    //     if (Parameters_->cc_a_ras4_max > i) Parameters_->cc_a_ras4_max = i;
+    //     if (Parameters_->cc_b_ras4_max > i) Parameters_->cc_b_ras4_max = i;
+    // }
 
     i = CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl;
     if (Parameters_->a_ras34_max > i) Parameters_->a_ras34_max = i;
     if (Parameters_->b_ras34_max > i) Parameters_->b_ras34_max = i;
-    if (Parameters_->cc) {
-        if (Parameters_->cc_a_ras34_max > i) Parameters_->cc_a_ras34_max = i;
-        if (Parameters_->cc_b_ras34_max > i) Parameters_->cc_b_ras34_max = i;
-    }
+    // if (Parameters_->cc) {
+    //     if (Parameters_->cc_a_ras34_max > i) Parameters_->cc_a_ras34_max = i;
+    //     if (Parameters_->cc_b_ras34_max > i) Parameters_->cc_b_ras34_max = i;
+    // }
 
     i = (CalcInfo_->num_alp_expl <= Parameters_->a_ras1_lvl + 1)
             ? CalcInfo_->num_alp_expl
@@ -1272,20 +1277,20 @@ void CIWavefunction::set_ras_parameters(void) {
     Parameters_->b_ras1_min += CalcInfo_->num_expl_cor_orbs;
 
     tot_expl_el = CalcInfo_->num_alp_expl + CalcInfo_->num_bet_expl;
-    if (Parameters_->cc) {
-        if (Parameters_->cc_val_ex_lvl != 0)
-            i = Parameters_->cc_val_ex_lvl;
-        else
-            i = Parameters_->cc_ex_lvl;
-        if (Parameters_->cc_ras3_max == -1) {
-            Parameters_->cc_ras3_max = (i <= tot_expl_el) ? i : tot_expl_el;
-        } else {
-            if (Parameters_->cc_ras3_max > tot_expl_el)
-                Parameters_->cc_ras3_max = tot_expl_el;
-        }
-        if (Parameters_->ras3_max == -1)
-            Parameters_->ras3_max = Parameters_->cc_ras3_max + 2;
-    }
+    // if (Parameters_->cc) {
+    //     if (Parameters_->cc_val_ex_lvl != 0)
+    //         i = Parameters_->cc_val_ex_lvl;
+    //     else
+    //         i = Parameters_->cc_ex_lvl;
+    //     if (Parameters_->cc_ras3_max == -1) {
+    //         Parameters_->cc_ras3_max = (i <= tot_expl_el) ? i : tot_expl_el;
+    //     } else {
+    //         if (Parameters_->cc_ras3_max > tot_expl_el)
+    //             Parameters_->cc_ras3_max = tot_expl_el;
+    //     }
+    //     if (Parameters_->ras3_max == -1)
+    //         Parameters_->ras3_max = Parameters_->cc_ras3_max + 2;
+    // }
     if (Parameters_->ras3_max == -1) {
         Parameters_->ras3_max = (Parameters_->ex_lvl <= tot_expl_el)
                                     ? Parameters_->ex_lvl
@@ -1297,9 +1302,9 @@ void CIWavefunction::set_ras_parameters(void) {
 
     i = 2 * (Parameters_->ras4_lvl - Parameters_->ras3_lvl);
     if (i < Parameters_->ras3_max) Parameters_->ras3_max = i;
-    if (Parameters_->cc) {
-        if (i < Parameters_->cc_ras3_max) Parameters_->cc_ras3_max = i;
-    }
+    // if (Parameters_->cc) {
+    //     if (i < Parameters_->cc_ras3_max) Parameters_->cc_ras3_max = i;
+    // }
 
     i = (tot_expl_el < 2 * (Parameters_->ras1_lvl + 1))
             ? tot_expl_el
@@ -1315,11 +1320,11 @@ void CIWavefunction::set_ras_parameters(void) {
         Parameters_->ras1_min =
             Parameters_->a_ras1_min + Parameters_->b_ras1_min;
 
-    if (Parameters_->cc && Parameters_->cc_ras4_max == -1) {
-        Parameters_->cc_ras4_max = (Parameters_->cc_ex_lvl <= tot_expl_el)
-                                       ? Parameters_->cc_ex_lvl
-                                       : tot_expl_el;
-    }
+    // if (Parameters_->cc && Parameters_->cc_ras4_max == -1) {
+    //     Parameters_->cc_ras4_max = (Parameters_->cc_ex_lvl <= tot_expl_el)
+    //                                    ? Parameters_->cc_ex_lvl
+    //                                    : tot_expl_el;
+    // }
 
     if (Parameters_->ras4_max == -1) {
         if (Parameters_->cc) {
@@ -1335,17 +1340,17 @@ void CIWavefunction::set_ras_parameters(void) {
 
     i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras4_lvl);
     if (i < Parameters_->ras4_max) Parameters_->ras4_max = i;
-    if (Parameters_->cc) {
-        if (i < Parameters_->cc_ras4_max) Parameters_->cc_ras4_max = i;
-    }
+    // if (Parameters_->cc) {
+    //     if (i < Parameters_->cc_ras4_max) Parameters_->cc_ras4_max = i;
+    // }
 
     if (Parameters_->cc && Parameters_->cc_ras34_max == -1)
         Parameters_->cc_ras34_max =
             Parameters_->cc_ras3_max + Parameters_->cc_ras4_max;
     i = 2 * (CalcInfo_->num_ci_orbs - Parameters_->ras3_lvl);
-    if (Parameters_->cc) {
-        if (i < Parameters_->cc_ras34_max) Parameters_->cc_ras34_max = i;
-    }
+    // if (Parameters_->cc) {
+    //     if (i < Parameters_->cc_ras34_max) Parameters_->cc_ras34_max = i;
+    // }
 
     if (Parameters_->ras34_max == -1 && !Parameters_->cc)
         Parameters_->ras34_max = Parameters_->ras3_max;
@@ -1361,33 +1366,33 @@ void CIWavefunction::set_ras_parameters(void) {
         Parameters_->a_ras3_max + Parameters_->a_ras4_max)
         Parameters_->a_ras34_max =
             Parameters_->a_ras3_max + Parameters_->a_ras4_max;
-    if (Parameters_->cc &&
-        (Parameters_->cc_a_ras34_max >
-         Parameters_->cc_a_ras3_max + Parameters_->cc_b_ras4_max))
-        Parameters_->cc_a_ras34_max =
-            Parameters_->cc_a_ras3_max + Parameters_->cc_a_ras4_max;
+    // if (Parameters_->cc &&
+    //     (Parameters_->cc_a_ras34_max >
+    //      Parameters_->cc_a_ras3_max + Parameters_->cc_b_ras4_max))
+    //     Parameters_->cc_a_ras34_max =
+    //         Parameters_->cc_a_ras3_max + Parameters_->cc_a_ras4_max;
 
     if (Parameters_->b_ras34_max >
         Parameters_->b_ras3_max + Parameters_->b_ras4_max)
         Parameters_->b_ras34_max =
             Parameters_->b_ras3_max + Parameters_->b_ras4_max;
-    if (Parameters_->cc &&
-        (Parameters_->cc_b_ras34_max >
-         Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max))
-        Parameters_->cc_b_ras34_max =
-            Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max;
+    // if (Parameters_->cc &&
+    //     (Parameters_->cc_b_ras34_max >
+    //      Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max))
+    //     Parameters_->cc_b_ras34_max =
+    //         Parameters_->cc_b_ras3_max + Parameters_->cc_b_ras4_max;
 
     /* now just re-check some basic things */
     if (Parameters_->a_ras34_max > CalcInfo_->num_alp_expl)
         Parameters_->a_ras34_max = CalcInfo_->num_alp_expl;
     if (Parameters_->b_ras34_max > CalcInfo_->num_bet_expl)
         Parameters_->b_ras34_max = CalcInfo_->num_bet_expl;
-    if (Parameters_->cc) {
-        if (Parameters_->cc_a_ras34_max > CalcInfo_->num_alp_expl)
-            Parameters_->cc_a_ras34_max = CalcInfo_->num_alp_expl;
-        if (Parameters_->cc_b_ras34_max > CalcInfo_->num_bet_expl)
-            Parameters_->cc_b_ras34_max = CalcInfo_->num_bet_expl;
-    }
+    // if (Parameters_->cc) {
+    //     if (Parameters_->cc_a_ras34_max > CalcInfo_->num_alp_expl)
+    //         Parameters_->cc_a_ras34_max = CalcInfo_->num_alp_expl;
+    //     if (Parameters_->cc_b_ras34_max > CalcInfo_->num_bet_expl)
+    //         Parameters_->cc_b_ras34_max = CalcInfo_->num_bet_expl;
+    // }
 
     if (Parameters_->ras34_max >
         Parameters_->a_ras34_max + Parameters_->b_ras34_max)
@@ -1436,23 +1441,23 @@ void CIWavefunction::print_ras_parameters(void) {
                       Parameters_->ras3_lvl, Parameters_->ras34_max);
       outfile->Printf("    RAS3 MAX      =   %6d\n", Parameters_->ras3_max);
   }
-  if (Parameters_->cc) {
-      outfile->Printf("    CC RAS3 MAX   =   %6d      CC RAS4 MAX   =   %6d\n",
-                      Parameters_->cc_ras3_max, Parameters_->cc_ras4_max);
-      outfile->Printf("    CC A RAS3 MAX =   %6d      CC B RAS3 MAX =   %6d\n",
-                      Parameters_->cc_a_ras3_max, Parameters_->cc_b_ras3_max);
-      outfile->Printf("    CC A RAS4 MAX =   %6d      CC B RAS4 MAX =   %6d\n",
-                      Parameters_->cc_a_ras4_max, Parameters_->cc_b_ras4_max);
-      outfile->Printf("    CC RAS34 MAX  =   %6d\n", Parameters_->cc_ras34_max);
-      outfile->Printf("    CC A RAS34 MAX=  %6d      CC B RAS34 MAX =  %6d\n",
-                      Parameters_->cc_a_ras34_max,
-                      Parameters_->cc_b_ras34_max);
-      outfile->Printf("    CC MIXED      =   %6s      CC FIX EXTERN  =  %6s\n",
-                      Parameters_->cc_mixed ? "YES"  : "NO",
-                      Parameters_->cc_fix_external ? "YES"  : "NO");
-      outfile->Printf("   CC VARIATIONAL =  %6s\n",
-                      Parameters_->cc_variational ? "YES"  : "NO");
-  }
+  // if (Parameters_->cc) {
+  //     outfile->Printf("    CC RAS3 MAX   =   %6d      CC RAS4 MAX   =   %6d\n",
+  //                     Parameters_->cc_ras3_max, Parameters_->cc_ras4_max);
+  //     outfile->Printf("    CC A RAS3 MAX =   %6d      CC B RAS3 MAX =   %6d\n",
+  //                     Parameters_->cc_a_ras3_max, Parameters_->cc_b_ras3_max);
+  //     outfile->Printf("    CC A RAS4 MAX =   %6d      CC B RAS4 MAX =   %6d\n",
+  //                     Parameters_->cc_a_ras4_max, Parameters_->cc_b_ras4_max);
+  //     outfile->Printf("    CC RAS34 MAX  =   %6d\n", Parameters_->cc_ras34_max);
+  //     outfile->Printf("    CC A RAS34 MAX=  %6d      CC B RAS34 MAX =  %6d\n",
+  //                     Parameters_->cc_a_ras34_max,
+  //                     Parameters_->cc_b_ras34_max);
+  //     outfile->Printf("    CC MIXED      =   %6s      CC FIX EXTERN  =  %6s\n",
+  //                     Parameters_->cc_mixed ? "YES"  : "NO",
+  //                     Parameters_->cc_fix_external ? "YES"  : "NO");
+  //     outfile->Printf("   CC VARIATIONAL =  %6s\n",
+  //                     Parameters_->cc_variational ? "YES"  : "NO");
+  // }
 
   CharacterTable ct = molecule_->point_group()->char_table();
   size_t sdist = 20;
