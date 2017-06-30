@@ -287,12 +287,18 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(SharedWavefunction oth
     wfn->same_a_b_orbs_ = other->same_a_b_orbs_;
 
 
+    /// Need the SO2AO matrix for remove_symmetry(), have the AO2SO matrix
+    SharedMatrix other_SO2AO = other->aotoso()->transpose();
+
     wfn->S_ = wfn->factory_->create_shared_matrix("S");
-    wfn->S_->remove_symmetry(other->S(), other->aotoso());
+    wfn->S_->remove_symmetry(other->S(), other_SO2AO);
 
     /// Below is not set in the typical constructor
-    wfn->H_ = factory_->create_shared_matrix("One-electron Hamiltonian");
-    wfn->H_->remove_symmetry(other->H(), other->aotoso());
+
+    wfn->H_ = wfn->factory_->create_shared_matrix("One-electron Hamiltonian");
+    wfn->H_->remove_symmetry(other->H(), other_SO2AO);
+    // outfile->Printf("new H:");
+    // wfn->H_->print();
 
     if (other->Ca_) wfn->Ca_ = other->Ca_subset("AO", "ALL");
     if (other->Cb_) wfn->Cb_ = other->Cb_subset("AO", "ALL");
@@ -305,6 +311,15 @@ std::shared_ptr <Wavefunction> Wavefunction::c1_deep_copy(SharedWavefunction oth
     if (other->epsilon_b_) wfn->epsilon_b_ = 
         other->epsilon_subset_helper(other->epsilon_b_, other->nsopi_, "AO", "ALL");
 
+
+    /*
+    outfile->Printf("New Ca:\n");
+    wfn->Ca_->print();
+    outfile->Printf("Epsilon a's:\n");
+    wfn->epsilon_a_->print();
+    outfile->Printf("Epsilon b's:\n");
+    wfn->epsilon_b_->print();
+    */
 
     // these are simple SharedMatrices of size 3*natom_, etc., so should
     // not depend on symmetry ... can just copy them

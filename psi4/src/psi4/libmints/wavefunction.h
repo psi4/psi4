@@ -267,13 +267,19 @@ public:
     void deep_copy(const Wavefunction* other);
 
     /**
-    * TODOCopy the contents of another Wavefunction into this one.
-    * TODOUseful at the beginning of correlated wavefunction computations.
-    * TODO-Does not set options or callbacks
-    * TODO-reference_wavefunction_ is set to other
-    * TODO-Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are deep copied.
+    * Creates a new wavefunction in C1-symmetry format from another
+    * Wavefunction that may be in a higher point group symmetry format.
+    *
+    * Note: Unlike the other deep_copy() functions, this one doesn't act on
+    * an empty wavefunction and fill it up, it is a free function that creates
+    * and returns a new Wavefunction object.  Since it doesn't act on a 
+    * *this object, it is declared as a static member function.
+    * 
+    * @param other The Wavefunction to copy
+    * @param basis A C1-symmetry basis set object (we don't yet have
+    *        the ability to copy this straight from the symmetric Wavefunction)
     **/
-    std::shared_ptr <Wavefunction> c1_deep_copy(SharedWavefunction other, std::shared_ptr<BasisSet> basis);
+    static std::shared_ptr <Wavefunction> c1_deep_copy(SharedWavefunction other, std::shared_ptr<BasisSet> basis);
 
     virtual ~Wavefunction();
 
