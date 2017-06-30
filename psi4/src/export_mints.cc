@@ -253,25 +253,30 @@ void export_mints(py::module& m)
         .def("dim", &Vector::dim, "docstring")
         .def("nirrep", &Vector::nirrep, "docstring")
         .def("array_interface", [](Vector& v) {
-            // Dont ask, hopefully pybind11 will work on this
+
+            // Build a list of NumPy views, used for the .np and .nph accessors.Vy
             py::list ret;
 
             // If we set a NumPy shape
             if (v.numpy_shape().size()) {
-                if (v.nirrep() > 1){
-                    throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
+                if (v.nirrep() > 1) {
+                    throw PSIEXCEPTION(
+                        "Vector::array_interface numpy shape with more than one irrep is not "
+                        "valid.");
                 }
 
-                // Cast up the shape to size_t
-                std::vector<size_t> shape(v.numpy_shape().begin(), v.numpy_shape().end());
+                // Cast the NumPy shape vector
+                std::vector<size_t> shape;
+                for (int val : v.numpy_shape()){
+                    shape.push_back((size_t)val);
+                }
 
-                    // Build the array
+                // Build the array
                 py::array arr(shape, v.pointer(0), py::cast(&v));
                 ret.append(arr);
 
             } else {
                 for (size_t h = 0; h < v.nirrep(); h++) {
-
                     // Hmm, sometimes we need to handle empty ptr's correctly
                     double* ptr = nullptr;
                     if (v.dim(h) != 0) {
@@ -410,25 +415,30 @@ void export_mints(py::module& m)
         .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring")
         .def("rotate_columns", &Matrix::rotate_columns, "docstring")
         .def("array_interface", [](Matrix& m) {
-            // Dont ask, hopefully pybind11 will work on this
+
+            // Build a list of NumPy views, used for the .np and .nph accessors.Vy
             py::list ret;
 
             // If we set a NumPy shape
             if (m.numpy_shape().size()) {
-                if (m.nirrep() > 1){
-                    throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
+                if (m.nirrep() > 1) {
+                    throw PSIEXCEPTION(
+                        "Vector::array_interface numpy shape with more than one irrep is not "
+                        "valid.");
                 }
 
-                // Cast up the shape to size_t
-                std::vector<size_t> shape(m.numpy_shape().begin(), m.numpy_shape().end());
+                // Cast the NumPy shape vector
+                std::vector<size_t> shape;
+                for (int val : m.numpy_shape()) {
+                    shape.push_back((size_t)val);
+                }
 
-                    // Build the array
+                // Build the array
                 py::array arr(shape, m.pointer(0)[0], py::cast(&m));
                 ret.append(arr);
 
             } else {
                 for (size_t h = 0; h < m.nirrep(); h++) {
-
                     // Hmm, sometimes we need to overload to nullptr
                     double* ptr = nullptr;
                     if ((m.rowdim(h) * m.coldim(h)) != 0) {
@@ -442,8 +452,8 @@ void export_mints(py::module& m)
             }
 
             return ret;
-        });
-        // }, py::return_value_policy::reference_internal);
+        // });
+    }, py::return_value_policy::reference_internal);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
