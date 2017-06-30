@@ -452,7 +452,6 @@ void export_mints(py::module& m)
             }
 
             return ret;
-        // });
     }, py::return_value_policy::reference_internal);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
