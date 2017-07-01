@@ -41,6 +41,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/lib3index/df_helper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -70,10 +71,7 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     max_iter_ = options_.get_int("EP2_MAXITER");
     debug_ = options_.get_int("DEBUG");
     memory_doubles_ = (size_t)(0.1 * (double)Process::environment.get_memory());
-
-    dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_EP2"), options_);
-    dferi_->print_header();
-
+    
     AO_C_ = Ca_subset("AO", "ALL");
     AO_Cocc_ = Ca_subset("AO", "OCC");
     AO_Cvir_ = Ca_subset("AO", "VIR");
@@ -93,6 +91,13 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     #ifdef _OPENMP
         num_threads_ = omp_get_max_threads();
     #endif
+    
+    // ==> Init DF object <== /
+    dfh_ = df_helper::DF_Helper::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_EP2"));
+    dfh_ -> set_method("DIRECT");
+    dfh_ -> set_memory(memory_doubles_);
+    dfh_ -> set_nthreads(num_threads_);
+    dfh_ -> initialize(); 
 }
 
 std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(std::vector<std::vector<size_t>> solve_orbs){
@@ -204,20 +209,21 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
     // ==> Transform DF integrals <== /
 
-    dferi_->clear();
-    dferi_->set_C(C_Full);
-    dferi_->add_space("i", 0, nocc);
-    dferi_->add_space("a", nocc, nocc + nvir);
-    dferi_->add_space("E", nocc + nvir, nocc + nvir + nE);
+    // add spaces
+    dfh_ -> clear();
+    dfh_ -> add_space("i", AO_Cocc_);
+    dfh_ -> add_space("a", AO_Cvir_);
+    dfh_ -> add_space("E", AO_CE   );
 
-    dferi_->add_pair_space("iaQ", "i", "a");
-    // dferi_->add_pair_space("aiQ", "i", "a", -0.5, true);
-    dferi_->add_pair_space("iEQ", "i", "E");
-    dferi_->add_pair_space("aEQ", "a", "E");
-    dferi_->compute();
+    // add transformations
+    dfh_ -> add_transformation("iaQ", "i", "a");
+    dfh_ -> add_transformation("iEQ", "i", "E");
+    dfh_ -> add_transformation("aEQ", "a", "E");
 
-    std::map<std::string, std::shared_ptr<Tensor>>& dfints = dferi_->ints();
-    size_t nQ = dferi_->size_Q();
+    // compute
+    dfh_ -> transform();
+
+    size_t nQ = dfh_ -> get_naux();
 
     // ==> Build ERI's <== /
 
@@ -265,30 +271,23 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
 
     // Read in part of the tensors
-    std::shared_ptr<Tensor> aEQT = dfints["aEQ"];
+    // have to transpose for DGAS format (Qpq -> pqQ)
+    dfh_ -> transpose("aEQ", std::make_tuple(1, 2, 0));
+    dfh_ -> transpose("iEQ", std::make_tuple(1, 2, 0));
+    dfh_ -> transpose("iaQ", std::make_tuple(1, 2, 0));
+
     SharedMatrix aEQ(new Matrix("aEQ", nE * nvir, nQ));
     double* aEQp = aEQ->pointer()[0];
-    FILE* aEQF = aEQT->file_pointer();
-    fseek(aEQF, 0L, SEEK_SET);
-    fstat = fread(aEQp, sizeof(double), nE * nvir * nQ, aEQF);
+    dfh_ -> fill_tensor("aEQ", aEQ);
 
-    std::shared_ptr<Tensor> iEQT = dfints["iEQ"];
     SharedMatrix iEQ(new Matrix("iEQ", nE * nocc, nQ));
     double* iEQp = iEQ->pointer()[0];
-    FILE* iEQF = iEQT->file_pointer();
-    fseek(iEQF, 0L, SEEK_SET);
-    fstat = fread(iEQp, sizeof(double), nE * nocc * nQ, iEQF);
+    dfh_ -> fill_tensor("iEQ", iEQ);
 
     // Allocate temps
     SharedMatrix block_iaQ(new Matrix(block_size * nvir, nQ));
     SharedMatrix temp_ovvE(new Matrix(block_size * nvir, nvir * nE));
     SharedMatrix temp_ovoE(new Matrix(block_size * nvir, nocc * nE));
-
-    // Pointer to read from
-    std::shared_ptr<Tensor> iaQT = dfints["iaQ"];
-    FILE* iaQF = iaQT->file_pointer();
-    double* block_iaQp = block_iaQ->pointer()[0];
-    fseek(iaQF, 0L, SEEK_SET);
 
     psio_address ovvE_addr = psio_get_address(PSIO_ZERO, 0);
     psio_address ovoE_addr = psio_get_address(PSIO_ZERO, 0);
@@ -304,7 +303,8 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         }
 
         // Read a IA block
-        fstat = fread(block_iaQp, sizeof(double), block_size * nvir * nQ, iaQF);
+        dfh_ -> fill_tensor("iaQ", block_iaQ, std::make_pair(bstart, bstart + block_size - 1),
+            std::make_pair(0, nvir - 1), std::make_pair(0, nQ - 1));
 
         // Write out OVVE
         temp_ovvE->gemm(false, true, 1.0, block_iaQ, aEQ, 0.0);
