@@ -861,10 +861,31 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
 
                   delta = 0L;
 
-                  if( Pcenter!=atom && Qcenter!=atom && Rcenter!=atom && Scenter!=atom)
+                  int A  = atom;
+                  int Pc = Pcenter;
+                  int Qc = Qcenter;
+                  int Rc = Rcenter;
+                  int Sc = Scenter;
+
+                  if( Pcenter != atom && Qcenter != atom && Rcenter != atom && Scenter != atom)
+                      continue;
+
+                  if( Pcenter == atom && Qcenter == atom && Rcenter == atom && Scenter == atom)
                       continue;
 
                   ints->compute_shell_deriv1(P, Q, R, S);
+
+                  double Ax, Ay, Az;
+                  double Bx, By, Bz;
+                  double Cx, Cy, Cz;
+                  double Dx, Dy, Dz;
+
+                  // => Coulomb Term <= //
+
+                  Ax = 0.0; Ay = 0.0; Az = 0.0;
+                  Bx = 0.0; By = 0.0; Bz = 0.0;
+                  Cx = 0.0; Cy = 0.0; Cz = 0.0;
+                  Dx = 0.0; Dy = 0.0; Dz = 0.0;
 
                   for (int p = 0; p < Psize; p++) {
                       for (int q = 0; q < Qsize; q++) {
@@ -874,37 +895,186 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
                                     int i = (Poff + p) * nbf2 + Qoff + q;
                                     int j = (Roff + r) * nbf4 + Soff + s;
 
+                                    Ax = buffer[0 * stride + delta];
+                                    Ay = buffer[1 * stride + delta];
+                                    Az = buffer[2 * stride + delta];
+                                    Cx = buffer[3 * stride + delta];
+                                    Cy = buffer[4 * stride + delta];
+                                    Cz = buffer[5 * stride + delta];
+                                    Dx = buffer[6 * stride + delta];
+                                    Dy = buffer[7 * stride + delta];
+                                    Dz = buffer[8 * stride + delta];
+                        
+                                    Bx = -(Ax + Cx + Dx);     
+                                    By = -(Ay + Cy + Dy);     
+                                    Bz = -(Az + Cz + Dz);     
 
-                                   if (Pcenter == atom)  {
-                                  grad[0]->set(i, j, buffer[0 * stride + delta]);
-                                  grad[1]->set(i, j, buffer[1 * stride + delta]);
-                                  grad[2]->set(i, j, buffer[2 * stride + delta]);
-                                  }
-                                   if (Rcenter == atom)  {
-                                  grad[0]->set(i, j, buffer[3 * stride + delta]);
-                                  grad[1]->set(i, j, buffer[4 * stride + delta]);
-                                  grad[2]->set(i, j, buffer[5 * stride + delta]);
-                                  }
 
-                                   if (Scenter == atom)  {
-                                  grad[0]->set(i, j, buffer[6 * stride + delta]);
-                                  grad[1]->set(i, j, buffer[7 * stride + delta]);
-                                  grad[2]->set(i, j, buffer[8 * stride + delta]);
-                                  }
+                               //    if (Pcenter == atom)  {
+                               //   grad[0]->set(i, j, buffer[0 * stride + delta]);
+                               //   grad[1]->set(i, j, buffer[1 * stride + delta]);
+                               //   grad[2]->set(i, j, buffer[2 * stride + delta]);
+                               //   }
+                               //    if (Rcenter == atom)  {
+                               //   grad[0]->set(i, j, buffer[3 * stride + delta]);
+                               //   grad[1]->set(i, j, buffer[4 * stride + delta]);
+                               //   grad[2]->set(i, j, buffer[5 * stride + delta]);
+                               //   }
 
-                                   if (Qcenter == atom)  {
-                                  grad[0]->set(i, j, -grad[0]->get(i,j));
-                                  grad[0]->add(i, j, -grad[0]->get(i,j));
-                                  grad[0]->add(i, j, -grad[0]->get(i,j));
+                               //    if (Scenter == atom)  {
+                               //   grad[0]->set(i, j, buffer[6 * stride + delta]);
+                               //   grad[1]->set(i, j, buffer[7 * stride + delta]);
+                               //   grad[2]->set(i, j, buffer[8 * stride + delta]);
+                               //   }
 
-                                  grad[1]->set(i, j, -grad[1]->get(i,j));
-                                  grad[1]->add(i, j, -grad[1]->get(i,j));
-                                  grad[1]->add(i, j, -grad[1]->get(i,j));
-                                  
-                                  grad[2]->set(i, j, -grad[2]->get(i,j));
-                                  grad[2]->add(i, j, -grad[2]->get(i,j));
-                                  grad[2]->add(i, j, -grad[2]->get(i,j));
-                                  }
+                               //    if (Qcenter == atom)  {
+                               //   grad[0]->set(i, j, -grad[0]->get(i,j));
+                               //   grad[0]->add(i, j, -grad[0]->get(i,j));
+                               //   grad[0]->add(i, j, -grad[0]->get(i,j));
+
+                               //   grad[1]->set(i, j, -grad[1]->get(i,j));
+                               //   grad[1]->add(i, j, -grad[1]->get(i,j));
+                               //   grad[1]->add(i, j, -grad[1]->get(i,j));
+                               //   
+                               //   grad[2]->set(i, j, -grad[2]->get(i,j));
+                               //   grad[2]->add(i, j, -grad[2]->get(i,j));
+                               //   grad[2]->add(i, j, -grad[2]->get(i,j));
+                               //   }
+
+                               // Single terms
+                                    if (Pc == A && Qc != A && Rc != A && Sc != A) {
+                                        grad[0]->set(i, j, Ax);
+                                        grad[1]->set(i, j, Ay);
+                                        grad[2]->set(i, j, Az);    
+                                    }
+                                    else if (Pc != A && Qc == A && Rc != A && Sc != A) {
+                                        grad[0]->set(i, j, Bx);
+                                        grad[1]->set(i, j, By);
+                                        grad[2]->set(i, j, Bz);  
+                                    }
+                                    else if (Pc != A && Qc != A && Rc == A && Sc != A) {
+                                        grad[0]->set(i, j, Cx);
+                                        grad[1]->set(i, j, Cy);
+                                        grad[2]->set(i, j, Cz);  
+                                    }
+                                    else if (Pc != A && Qc != A && Rc != A && Sc == A){
+                                        grad[0]->set(i, j, Dx);
+                                        grad[1]->set(i, j, Dy);
+                                        grad[2]->set(i, j, Dz);  
+                                    }
+
+                                    // Pcair terms
+
+                                    else if (Pc == A && Qc == A && Rc != A && Sc != A) {
+
+                                        double AB_x = Ax + Bx;
+                                        double AB_y = Ay + By;
+                                        double AB_z = Az + Bz;
+
+                                        grad[0]->set(i, j, AB_x);
+                                        grad[1]->set(i, j, AB_y);
+                                        grad[2]->set(i, j, AB_z);  
+                                    }
+                                    else if (Pc == A && Qc != A && Rc == A && Sc != A) {
+                                        double AC_x = Ax + Cx;
+                                        double AC_y = Ay + Cy;
+                                        double AC_z = Az + Cz;
+
+                                        grad[0]->set(i, j, AC_x);
+                                        grad[1]->set(i, j, AC_y);
+                                        grad[2]->set(i, j, AC_z); 
+                                    }
+                                    else if (Pc == A && Qc != A && Rc != A && Sc == A) {
+                                        double AD_x = Ax + Dx;
+                                        double AD_y = Ay + Dy;
+                                        double AD_z = Az + Dz;
+
+                                        grad[0]->set(i, j, AD_x);
+                                        grad[1]->set(i, j, AD_y);
+                                        grad[2]->set(i, j, AD_z); 
+                                    }
+                                    else if (Pc != A && Qc == A && Rc == A && Sc != A) {
+                                        double BC_x = Bx + Cx;
+                                        double BC_y = By + Cy;
+                                        double BC_z = Bz + Cz;
+                                    
+                                        grad[0]->set(i, j, BC_x);
+                                        grad[1]->set(i, j, BC_y);
+                                        grad[2]->set(i, j, BC_z);
+                                    }
+                                    else if (Pc != A && Qc == A && Rc != A && Sc == A) {
+                                        double BD_x = Bx + Dx;
+                                        double BD_y = By + Dy;
+                                        double BD_z = Bz + Dz;
+                                    
+                                        grad[0]->set(i, j, BD_x);
+                                        grad[1]->set(i, j, BD_y);
+                                        grad[2]->set(i, j, BD_z);
+                                    }
+                                    else if (Pc != A && Qc != A && Rc == A && Sc == A) {
+                                        double CD_x = Cx + Dx;
+                                        double CD_y = Cy + Dy;
+                                        double CD_z = Cz + Dz;
+                                    
+                                        grad[0]->set(i, j, CD_x);
+                                        grad[1]->set(i, j, CD_y);
+                                        grad[2]->set(i, j, CD_z);
+                                    }
+
+                                    // Ariplet terms
+                                    else if (Pc != A && Qc == A && Rc == A && Sc == A) {
+                                        double BCD_x = Bx + Cx + Dx;
+                                        double BCD_y = By + Cy + Dy;
+                                        double BCD_z = Bz + Cz + Dz;
+                                    
+                                        grad[0]->set(i, j, BCD_x);
+                                        grad[1]->set(i, j, BCD_y);
+                                        grad[2]->set(i, j, BCD_z);
+                                    }
+                                    else if (Pc == A && Qc != A && Rc == A && Sc == A) {
+                                        double ACD_x = Ax + Cx + Dx;
+                                        double ACD_y = Ay + Cy + Dy;
+                                        double ACD_z = Az + Cz + Dz;
+                                    
+                                        grad[0]->set(i, j, ACD_x);
+                                        grad[1]->set(i, j, ACD_y);
+                                        grad[2]->set(i, j, ACD_z);
+                                    }
+                                    else if (Pc == A && Qc == A && Rc != A && Sc == A) {
+                                        double ABD_x = Ax + Bx + Dx;
+                                        double ABD_y = Ay + By + Dy;
+                                        double ABD_z = Az + Bz + Dz;
+
+                                        grad[0]->set(i, j, ABD_x);
+                                        grad[1]->set(i, j, ABD_y);
+                                        grad[2]->set(i, j, ABD_z);
+                                    }
+
+
+                                  else if (Pc == A && Qc == A && Rc == A && Sc != A) {
+                                        double ABC_x = Ax + Bx + Cx;
+                                        double ABC_y = Ay + By + Cy;
+                                        double ABC_z = Az + Bz + Cz;
+
+                                        grad[0]->set(i, j, ABC_x);
+                                        grad[1]->set(i, j, ABC_y);
+                                        grad[2]->set(i, j, ABC_z);
+                                    };
+
+                                    // Qcuartet terms
+
+                               //     else if (Pc == A && Qc == A && Rc == A && Sc == A) {
+                               //         double ABCD_x = Ax + Bx + Cx + Dx;
+                               //         double ABCD_y = Ay + By + Cy + Dy;
+                               //         double ABCD_z = Az + Bz + Cz + Dz;
+                               //     
+                               //         grad[0]->set(i, j, ABCD_x);
+                               //         grad[1]->set(i, j, ABCD_y);
+                               //         grad[2]->set(i, j, ABCD_z);
+                               //     };
+
+
+
                                   delta++;
 
                              }
