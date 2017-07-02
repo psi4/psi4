@@ -65,6 +65,13 @@
 ** to billion calls to functions.
 **
 ** J. F. Gonthier, February 2016
+**
+** Modified to use std::chrono::high_resolution_clock for the module wall times.
+** Modified implementation of timer to a Class of tree structured timers
+** and a stack of timer to enable nested timer prints.
+** Implemented timer for OpenMP parallism.
+**
+** Tianyuan Zhang, June 2017
 */
 
 #include "psi4/libciomr/libciomr.h"
