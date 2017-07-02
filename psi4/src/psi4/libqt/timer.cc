@@ -75,7 +75,8 @@
 */
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 
@@ -864,7 +865,7 @@ std::vector<std::list<Timer_Structure *>> on_timers;
 time_t timer_start, timer_end;
 static omp_lock_t lock_timer;
 
-void print_timer(const Timer_Structure &timer, std::shared_ptr<OutFile> printer, std::string insert = "") {
+void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, std::string insert = "") {
     size_t key_length = timer.get_key().length();
     if (key_length > 20) {
         if (key_length < 20 + insert.length()) {
@@ -908,7 +909,7 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<OutFile> printer,
     }
 }
 
-void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<OutFile> printer, std::string indent,
+void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, std::string indent,
                         int max_nest = 4) {
     const std::list<Timer_Structure> &children = timer.get_children();
     std::string nest_space = "";
@@ -958,7 +959,7 @@ void timer_done(void) {
     gethostname(host, 40);
 
     /* Dump the timing data to timer.dat and free the timers */
-    std::shared_ptr<OutFile> printer(new OutFile("timer.dat", APPEND));
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat",std::ostream::app));
     printer->Printf("\n");
     printer->Printf("Host: %s\n", host);
     free(host);
