@@ -42,7 +42,7 @@
 
 namespace psi {
 
-void PSIO::zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
+void PSIO::zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
 
       double* buf = new double[cols];
       ::memset(static_cast<void*>(buf),'\0',cols*sizeof(double));
@@ -62,7 +62,7 @@ void PSIO::zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
    ** \ingroup PSIO
    */
 
-  int psio_zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
+  int psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols) {
     _default_psio_lib_->zero_disk(unit, key, rows, cols);
     return 1;
   }

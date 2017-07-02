@@ -30,12 +30,14 @@
 #define FISAPT_LOCAL2_H
 
 #include <vector>
+#include <map>
 #include <memory>
 
 namespace psi {
 
 class Matrix;
 class BasisSet;
+class Options;
 
 namespace fisapt {
 

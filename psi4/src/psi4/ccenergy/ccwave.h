@@ -39,6 +39,7 @@ class Options;
 struct dpd_file4_cache_entry;
 struct dpdfile2;
 struct dpdbuf4;
+struct iwlbuf;
 }
 
 namespace psi { namespace ccenergy {

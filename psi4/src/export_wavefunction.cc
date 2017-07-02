@@ -29,8 +29,11 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
+#include "psi4/libmints/extern.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
@@ -155,6 +158,7 @@ void export_wavefunction(py::module& m) {
              "Computes the gradient of the Wavefunction")
         .def("compute_hessian", &Wavefunction::compute_hessian,
              "Computes the Hessian of the Wavefunction.")
+        .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
         .def("set_variable", &Wavefunction::set_variable, "Sets the requested internal variable.")
         .def("get_variable", &Wavefunction::get_variable,
              "Returns the requested internal variable.")

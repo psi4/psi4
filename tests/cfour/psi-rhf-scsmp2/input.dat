@@ -4,7 +4,7 @@
 store = {}  #TEST
 test_psivars = ['scf total energy', 'mp2 same-spin correlation energy', 'mp2 opposite-spin correlation energy', 'mp2 singles energy', 'mp2 correlation energy', 'mp2 total energy', 'current reference energy', 'current correlation energy', 'current energy']  #TEST
 
-print '    <<<  RHF  >>>'
+print('    <<<  RHF  >>>')
 
 cfour {
 MP2 single-point energy calculation

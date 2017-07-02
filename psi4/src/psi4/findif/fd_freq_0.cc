@@ -33,7 +33,7 @@
 
 #include "findif.h"
 #include "psi4/libmints/writer_file_prefix.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
@@ -69,8 +69,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
 
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
-    py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-    bool project = !pyExtern && !options.get_bool("PERTURB_H");
+    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
     CdSalcList salc_list(mol, fact, 0xFF, project, project);
     int Nirrep = salc_list.nirrep();
 
@@ -452,7 +451,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     // Print a hessian file
     if (options.get_bool("HESSIAN_WRITE")) {
         std::string hess_fname = get_writer_file_prefix(mol->name()) + ".hess";
-        std::shared_ptr <OutFile> printer(new OutFile(hess_fname, TRUNCATE));
+        std::shared_ptr <PsiOutStream> printer(new PsiOutStream(hess_fname, std::ostream::trunc));
         //FILE *of_Hx = fopen(hess_fname.c_str(),"w");
         printer->Printf("%5d", Natom);
         printer->Printf("%5d\n", 6 * Natom);

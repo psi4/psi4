@@ -44,7 +44,7 @@
 #include "psi4/psi4-dec.h"
 namespace psi {
 
-void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, const std::string & ns2) {
+void PSIO::change_file_namespace(size_t unit, const std::string & ns1, const std::string & ns2) {
     char *old_name, *new_name, *old_fullpath, *new_fullpath;
     _default_psio_lib_->get_filename(unit, &old_name, true);
     _default_psio_lib_->get_filename(unit, &new_name, true);
@@ -56,14 +56,14 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
     new_fullpath = (char*) malloc( (strlen(path)+strlen(new_name)+80)*sizeof(char));
 
     if (ns1 == "") {
-        sprintf(old_fullpath, "%s%s.%u", path, old_name, unit);
+        sprintf(old_fullpath, "%s%s.%zu", path, old_name, unit);
     } else {
-        sprintf(old_fullpath, "%s%s.%s.%u", path, old_name, ns1.c_str(), unit);
+        sprintf(old_fullpath, "%s%s.%s.%zu", path, old_name, ns1.c_str(), unit);
     }
     if (ns2 == "") {
-        sprintf(new_fullpath, "%s%s.%u", path, new_name, unit);
+        sprintf(new_fullpath, "%s%s.%zu", path, new_name, unit);
     } else {
-        sprintf(new_fullpath, "%s%s.%s.%u", path, new_name, ns2.c_str(), unit);
+        sprintf(new_fullpath, "%s%s.%s.%zu", path, new_name, ns2.c_str(), unit);
     }
 
     //printf("%s\n",old_fullpath);

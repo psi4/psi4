@@ -32,6 +32,8 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cfloat>
 
@@ -81,10 +83,10 @@ void ERISieve::set_sieve(double sieve)
     function_pairs_reverse_.resize(nbf_ * (nbf_ + 1L) / 2L);
 
     long int offset = 0L;
-    unsigned long int MUNU = 0L;
+    size_t MUNU = 0L;
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU <= MU; NU++, MUNU++) {
-            if (shell_pair_values_[MU * (unsigned long int) nshell_ + NU] >= sieve2_over_max_) {
+            if (shell_pair_values_[MU * (size_t) nshell_ + NU] >= sieve2_over_max_) {
                 shell_pairs_.push_back(make_pair(MU, NU));
                 shell_pairs_reverse_[MUNU] = offset;
                 offset++;
@@ -95,10 +97,10 @@ void ERISieve::set_sieve(double sieve)
     }
 
     offset = 0L;
-    unsigned long int munu = 0L;
+    size_t munu = 0L;
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
-            if (function_pair_values_[mu * (unsigned long int) nbf_ + nu] >= sieve2_over_max_) {
+            if (function_pair_values_[mu * (size_t) nbf_ + nu] >= sieve2_over_max_) {
                 function_pairs_.push_back(make_pair(mu, nu));
                 function_pairs_reverse_[munu] = offset;
                 offset++;
@@ -115,7 +117,7 @@ void ERISieve::set_sieve(double sieve)
 
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU < nshell_; NU++) {
-            if (shell_pair_values_[MU * (unsigned long int) nshell_ + NU] >= sieve2_over_max_) {
+            if (shell_pair_values_[MU * (size_t) nshell_ + NU] >= sieve2_over_max_) {
                 shell_to_shell_[MU].push_back(NU);
             }
         }
@@ -123,7 +125,7 @@ void ERISieve::set_sieve(double sieve)
 
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu < nbf_; nu++) {
-            if (function_pair_values_[mu * (unsigned long int) nbf_ + nu] >= sieve2_over_max_) {
+            if (function_pair_values_[mu * (size_t) nbf_ + nu] >= sieve2_over_max_) {
                 function_to_function_[mu].push_back(nu);
             }
         }
@@ -296,8 +298,8 @@ void ERISieve::integrals()
             } // loop over primitives in MU
 
             contracted_center /= coef_denominator;
-            unsigned long int this_ind = MU * (unsigned long int) nshell + NU;
-            unsigned long int sym_ind = NU * (unsigned long int) nshell + MU;
+            size_t this_ind = MU * (size_t) nshell + NU;
+            size_t sym_ind = NU * (size_t) nshell + MU;
 
             for (int prim_it = 0; prim_it < (int)primitive_extents.size(); prim_it++)
             {
@@ -319,13 +321,13 @@ void ERISieve::integrals()
 bool ERISieve::shell_significant_qqr(int M, int N, int R, int S)
 {
 
-    double Q_mn = shell_pair_values_[N * (unsigned long int) nshell_ + M];
-    double Q_rs = shell_pair_values_[R * (unsigned long int) nshell_ + S];
+    double Q_mn = shell_pair_values_[N * (size_t) nshell_ + M];
+    double Q_rs = shell_pair_values_[R * (size_t) nshell_ + S];
 
-    double dist = contracted_centers_[N * (unsigned long int) nshell_ + M].distance(contracted_centers_[R * (unsigned long int) nshell_ + S]);
+    double dist = contracted_centers_[N * (size_t) nshell_ + M].distance(contracted_centers_[R * (size_t) nshell_ + S]);
 
-    double denom = dist - extents_[N * (unsigned long int) nshell_ + M]
-                   - extents_[R * (unsigned long int) nshell_ + S];
+    double denom = dist - extents_[N * (size_t) nshell_ + M]
+                   - extents_[R * (size_t) nshell_ + S];
 
     // this does the near field estimate if that's the only valid one
     // values of Q are squared

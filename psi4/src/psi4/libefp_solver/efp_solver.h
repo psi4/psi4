@@ -32,13 +32,16 @@
  * EFP header
  */
 
-#include "psi4/libmints/molecule.h"
 
+#include "psi4/libmints/typedefs.h"
+
+#include <vector>
 
 struct efp;
 
 namespace psi {
     class Options;
+    class Molecule;
 }
 
 namespace psi {

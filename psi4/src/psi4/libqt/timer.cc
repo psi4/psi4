@@ -78,11 +78,13 @@
 #include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <sys/param.h>
+
+#include <sys/time.h>
 #include <sys/times.h>
 #include <unistd.h>
 
@@ -118,6 +120,7 @@ typedef int omp_lock_t;
 namespace psi {
 
 using clock = std::chrono::high_resolution_clock;
+
 
 enum Timer_Status { OFF, ON, PARALLEL };
 

@@ -67,7 +67,7 @@ class Array1d
   void memalloc();
   void zero();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, double value);
   void set(double *vec);
@@ -127,7 +127,7 @@ class Array2d
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void release();
   void set(int i, int j, double value);
   void set(double **A);
@@ -194,11 +194,11 @@ class Array2d
   int dim1() const { return dim1_; }
   int dim2() const { return dim2_; }
   /*
-  void write(psi::PSIO* psio, unsigned int fileno);
-  void write(shared_ptr<psi::PSIO> psio, unsigned int fileno);
-  void write(psi::PSIO& psio, unsigned int fileno);
-  void read(psi::PSIO* psio, unsigned int fileno);
-  void read(psi::PSIO& psio, unsigned int fileno);
+  void write(psi::PSIO* psio, size_t fileno);
+  void write(shared_ptr<psi::PSIO> psio, size_t fileno);
+  void write(psi::PSIO& psio, size_t fileno);
+  void read(psi::PSIO* psio, size_t fileno);
+  void read(psi::PSIO& psio, size_t fileno);
   bool read(PSIO* psio, int itap, const char *label, int dim);
   bool read(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   */

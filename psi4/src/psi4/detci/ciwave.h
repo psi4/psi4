@@ -385,7 +385,7 @@ private:
     unsigned char ***Occs_;
 
     /// => H0block functions <= //
-    void H0block_init(unsigned int size);
+    void H0block_init(size_t size);
     void H0block_free(void);
     void H0block_print(void);
     int  H0block_calc(double E);
@@ -460,7 +460,7 @@ private:
           int *Cnt[2], int **Ij[2], int **Oij[2], int **Ridx[2],
           signed char **Sgn[2], unsigned char **Toccs);
 
-    void print_vec(unsigned int nprint, int *Ialist, int *Iblist,
+    void print_vec(size_t nprint, int *Ialist, int *Iblist,
           int *Iaidx, int *Ibidx, double *coeff);
 
     /// => MCSCF helpers <= //

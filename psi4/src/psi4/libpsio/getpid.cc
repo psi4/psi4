@@ -40,6 +40,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psi4-dec.h"
 #include <unistd.h>
+#include <sstream>
 
 namespace psi {
 

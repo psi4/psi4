@@ -47,6 +47,8 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "moinfo.h"
 
@@ -127,8 +129,8 @@ void MOInfo::read_info()
     mopi           = convert_int_array_to_vector(nirreps, ref_wfn.nmopi());
     SharedMatrix matCa = ref_wfn.Ca();
     scf            = block_matrix(nso, nmo);
-    unsigned int soOffset = 0;
-    unsigned int moOffset = 0;
+    size_t soOffset = 0;
+    size_t moOffset = 0;
     for(int h = 0; h < nirreps; ++h){
         for(int so = 0; so < sopi[h]; ++so){
             for(int mo = 0; mo < mopi[h]; ++mo){

@@ -38,10 +38,6 @@
 **
 */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <iomanip>
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
@@ -52,6 +48,13 @@
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/structs.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <iomanip>
 
 namespace psi { namespace detci {
 
@@ -98,25 +101,22 @@ void CIWavefunction::get_parameters(Options &options)
   Parameters_->hd_ave = EVANGELISTI;
 
   if (Parameters_->wfn == "CASSCF") {
-    Parameters_->fci = 1;
-    Parameters_->mcscf = 1;
-  }
-  else if (Parameters_->wfn == "RASSCF"){
-    Parameters_->fci = 0;
-    Parameters_->mcscf = 1;
-  }
-  else {
-    Parameters_->fci = 0;
-    Parameters_->mcscf = 0;
+      Parameters_->fci = 1;
+      Parameters_->mcscf = 1;
+  } else if (Parameters_->wfn == "RASSCF") {
+      Parameters_->fci = 0;
+      Parameters_->mcscf = 1;
+  } else {
+      Parameters_->fci = 0;
+      Parameters_->mcscf = 0;
   }
 
   if (Parameters_->wfn == "ZAPTN") {
-    Parameters_->mpn = 1;
-    Parameters_->zaptn = 1;
-  }
-  else {
-    Parameters_->mpn = 0;
-    Parameters_->zaptn = 0;
+      Parameters_->mpn = 1;
+      Parameters_->zaptn = 1;
+  } else {
+      Parameters_->mpn = 0;
+      Parameters_->zaptn = 0;
   }
 
   Parameters_->z_scale_H = 0;

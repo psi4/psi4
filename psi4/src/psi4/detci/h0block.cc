@@ -58,9 +58,9 @@ namespace psi { namespace detci {
 ** initialize everything but buf_num and buf_member, which depend on the
 ** CIvector structure
 */
-void CIWavefunction::H0block_init(unsigned int size) {
+void CIWavefunction::H0block_init(size_t size) {
 
-   unsigned int size2;
+   size_t size2;
 
    if (size > Parameters_->h0blocksize) H0block_->size = Parameters_->h0blocksize;
    else H0block_->size = size;
@@ -182,8 +182,11 @@ int CIWavefunction::H0block_calc(double E)
      for (i=0; i<size; i++) {
         for (j=0; j<size; j++)
            H0block_->H0b_diag_transpose[j] = H0block_->H0b_diag[j][i];
-        dot_arr(H0block_->H0b_diag_transpose, H0block_->c0b, size, &H0xc0[i]);
-        dot_arr(H0block_->H0b_diag_transpose, H0block_->s0b, size, &H0xs0[i]);
+        //dot_arr(H0block_->H0b_diag_transpose, H0block_->c0b, size, &H0xc0[i]);
+        //dot_arr(H0block_->H0b_diag_transpose, H0block_->s0b, size, &H0xs0[i]);
+        
+           H0xc0[i] = C_DDOT(size, H0block_->H0b_diag_transpose, 1, H0block_->c0b, 1);
+           H0xs0[i] = C_DDOT(size, H0block_->H0b_diag_transpose, 1, H0block_->s0b, 1);
         }
      for (i=0; i<size; i++) {
         c_tmp = s_tmp = 0.0;
@@ -258,12 +261,14 @@ int CIWavefunction::H0block_calc(double E)
          }
 
        /* get c0bp = (H0b - E)^{-1} * c0b */
-       mmult(H0block_->H0b_inv, 0, &(H0block_->c0b), 1, &(H0block_->c0bp), 1,
-             size, size, 1, 0);
+       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv[0], size, &(H0block_->c0b)[0], size, 0.0, &(H0block_->c0bp)[0], size);
+       //mmult(H0block_->H0b_inv, 0, &(H0block_->c0b), 1, &(H0block_->c0bp), 1,
+       //      size, size, 1, 0);
 
        /* get s0bp = (H0b - E)^{-1} * s0b */
-       mmult(H0block_->H0b_inv, 0, &(H0block_->s0b), 1, &(H0block_->s0bp), 1,
-             size, size, 1, 0);
+       C_DGEMM('N', 'T', size, size, size, 1.0, H0block_->H0b_inv[0], size, &(H0block_->s0b)[0], size, 0.0, &(H0block_->s0bp)[0], size);
+       //mmult(H0block_->H0b_inv, 0, &(H0block_->s0b), 1, &(H0block_->s0bp), 1,
+       //      size, size, 1, 0);
        }
 
      if (print_ > 4) {
@@ -358,11 +363,13 @@ void CIWavefunction::H0block_xy(double *x, double *y, double E)
       outfile->Printf("H0block_->s0bp[%d] = %lf\n",i,H0block_->s0bp[i]);
   */
 
-   dot_arr(H0block_->c0b, H0block_->c0bp, H0block_->size, &tx);
+   //dot_arr(H0block_->c0b, H0block_->c0bp, H0block_->size, &tx);
+   tx = C_DDOT(H0block_->size,  H0block_->c0bp, 1, H0block_->c0b, 1);
    *x += tx;
-   dot_arr(H0block_->s0b, H0block_->c0bp, H0block_->size, &ty);
+   //dot_arr(H0block_->s0b, H0block_->c0bp, H0block_->size, &ty);
+   ty = C_DDOT(H0block_->size,  H0block_->c0bp, 1, H0block_->s0b, 1);
  /*
-   dot_arr(H0block_->c0b, H0block_->s0bp, H0block_->size, &ty);
+   //dot_arr(H0block_->c0b, H0block_->s0bp, H0block_->size, &ty);
  */
    *y += ty;
    /* outfile->Printf("+tx = %lf +ty = %lf\n",tx,ty); */
@@ -793,7 +800,8 @@ void CIWavefunction::H0block_coupling_calc(double E)
            H_12[j-size] = matrix_element(&I, &J);
            } /* end loop over j */
 
-        dot_arr(H_12, delta_2, H0block_->coupling_size, &tval2);
+        // dot_arr(H_12, delta_2, H0block_->coupling_size, &tval2);
+        tval2 = C_DDOT(H0block_->coupling_size, H_12, 1, delta_2, 1);
         gamma_1[i] = tval2;
         for (j=0; j<H0block_->coupling_size; j++)
            gamma_2[j] += H_12[j] * delta_1[i];
@@ -838,7 +846,7 @@ void CIWavefunction::H0block_coupling_calc(double E)
 
      /*
        detH0 = invert_matrix(H0block_->tmp1, H0block_->H0b_inv, size, outfile);
-       mmult(H0block_->H0b_inv,0,&(gamma_1),1,&(delta_1),1,size,size,1,0);
+       // mmult(H0block_->H0b_inv,0,&(gamma_1),1,&(delta_1),1,size,size,1,0);
      */
 
     /*

@@ -39,6 +39,11 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -1312,7 +1317,7 @@ bool ROHF::stability_analysis()
             if(npairs == 0) continue;
 
             // Store the row indices, for convenience
-            unsigned int rank = 0;
+            size_t rank = 0;
             double **U = block_matrix(npairs, npairs);
             for(int ia = 0; ia < npairs; ++ia){
                 int iabs = Aab.params->roworb[h][ia][0];

@@ -40,19 +40,18 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
 #include "factory.h"
 #include "wavefunction.h"
 #include "dimension.h"
 #include "molecule.h"
 #include "pointgrp.h"
 #include "petitelist.h"
-
-#include "psi4/pybind11.h"
 
 #include <cmath>
 #include <cstdio>
@@ -886,7 +885,7 @@ SharedMatrix Matrix::to_block_sharedmatrix() const
 void Matrix::print_mat(const double *const *const a, int m, int n, std::string out) const
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
 
     const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     int num_frames = int(n / print_ncol);
@@ -936,7 +935,7 @@ void Matrix::print(std::string out, const char *extra) const
 {
     int h;
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     if (name_.length()) {
         if (extra == NULL)
             printer->Printf("  ## %s (Symmetry %d) ##\n", name_.c_str(), symmetry_);
@@ -988,7 +987,7 @@ void Matrix::print_atom_vector(std::string out)
 {
     int i;
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     if (name_.length()) {
         printer->Printf("\n  -%s:\n", name_.c_str());
     }
@@ -1007,7 +1006,7 @@ void Matrix::print_atom_vector(std::string out)
 void Matrix::eivprint(const Vector *const values, std::string out)
 {
     std::shared_ptr <psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                   std::shared_ptr<OutFile>(new OutFile(out)));
+                                                   std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     if (symmetry_)
         throw PSIEXCEPTION("Matrix::eivprint: This print does not make sense for non-totally symmetric matrices.");
 
@@ -2662,7 +2661,7 @@ void Matrix::expm(int m, bool scale)
             mag = (mag < 0.0 ? 0.0 : mag);
             mag = (mag > 4.0 ? 4.0 : mag);
             S = (int) (mag);
-            C_DSCAL(n * (unsigned long int) n, pow(2.0, -S), A[0], 1);
+            C_DSCAL(n * (size_t) n, pow(2.0, -S), A[0], 1);
         }
 
         double **T = Matrix::matrix(n, n);
@@ -2680,9 +2679,9 @@ void Matrix::expm(int m, bool scale)
         for (int Q = 1; Q <= m; Q++) {
 
             if ((Q % 2) == 1)
-                C_DAXPY(n * (unsigned long int) n, alpha[Q], T[0], 1, Y[0], 1);
+                C_DAXPY(n * (size_t) n, alpha[Q], T[0], 1, Y[0], 1);
             else
-                C_DAXPY(n * (unsigned long int) n, alpha[Q], T[0], 1, X[0], 1);
+                C_DAXPY(n * (size_t) n, alpha[Q], T[0], 1, X[0], 1);
 
             if (Q == m) break;
 
@@ -2699,8 +2698,8 @@ void Matrix::expm(int m, bool scale)
 
         ::memcpy((void *) N[0], (void *) X[0], sizeof(double) * n * n);
         ::memcpy((void *) D[0], (void *) X[0], sizeof(double) * n * n);
-        C_DAXPY(n * (unsigned long int) n, -1.0, Y[0], 1, N[0], 1);
-        C_DAXPY(n * (unsigned long int) n, 1.0, Y[0], 1, D[0], 1);
+        C_DAXPY(n * (size_t) n, -1.0, Y[0], 1, N[0], 1);
+        C_DAXPY(n * (size_t) n, 1.0, Y[0], 1, D[0], 1);
 
         //outfile->Printf("  ## N ##\n\n");
         //print_mat(N,n,n,outfile);
@@ -2758,7 +2757,7 @@ void Matrix::expm(int m, bool scale)
             ::memcpy((void *) A[0], (void *) X[0], sizeof(double) * n * n);
 
             // Inverse trace shift
-            C_DSCAL(n * (unsigned long int) n, exp(L), A[0], 1);
+            C_DSCAL(n * (size_t) n, exp(L), A[0], 1);
 
         } else {
             // Copy result back to A, transposing as you go (back to C++)
@@ -3123,8 +3122,8 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
         throw PSIEXCEPTION("Matrix::save: Unable to save lower triangle for non-totally symmetric matrix.");
 
     std::shared_ptr <psi::PsiOutStream> printer =
-            std::shared_ptr<OutFile>(
-                    new OutFile(filename, (append ? APPEND : TRUNCATE)));
+            std::shared_ptr<PsiOutStream>(
+                    new PsiOutStream(filename, (append ? std::ostream::app : std::ostream::trunc)));
     printer->Printf("%s\n", name_.c_str());
     printer->Printf("symmetry %d\n", symmetry_);
 
@@ -3227,13 +3226,13 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
 }
 
 void Matrix::save(std::shared_ptr <psi::PSIO> &psio,
-                  unsigned int fileno,
+                  size_t fileno,
                   SaveType savetype)
 {
     save(psio.get(), fileno, savetype);
 }
 
-void Matrix::save(psi::PSIO *const psio, unsigned int fileno, SaveType st)
+void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -3283,14 +3282,14 @@ void Matrix::save(psi::PSIO *const psio, unsigned int fileno, SaveType st)
 }
 
 bool Matrix::load(std::shared_ptr <psi::PSIO> &psio,
-                  unsigned int fileno,
+                  size_t fileno,
                   const std::string &tocentry,
                   int nso)
 {
     return load(psio.get(), fileno, tocentry, nso);
 }
 
-bool Matrix::load(psi::PSIO *const psio, unsigned int fileno, const std::string &tocentry, int nso)
+bool Matrix::load(psi::PSIO *const psio, size_t fileno, const std::string &tocentry, int nso)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::load: Matrix is non-totally symmetric.");
@@ -3311,7 +3310,7 @@ bool Matrix::load(psi::PSIO *const psio, unsigned int fileno, const std::string 
     return true;
 }
 
-void Matrix::load(psi::PSIO *const psio, unsigned int fileno, SaveType st)
+void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st)
 {
     // The matrix must be sized correctly first
     // Check to see if the file is open
@@ -3364,33 +3363,11 @@ void Matrix::load(psi::PSIO *const psio, unsigned int fileno, SaveType st)
 }
 
 void Matrix::load(std::shared_ptr <psi::PSIO> &psio,
-                  unsigned int fileno,
+                  size_t fileno,
                   SaveType savetype)
 {
     load(psio.get(), fileno, savetype);
 }
-
-//void Matrix::alloc()
-//{
-//    if (matrix_)
-//        release();
-
-//    matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
-//    for (int h=0; h<nirrep_; ++h) {
-//        if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
-//            matrix_[h] = Matrix::matrix(rowspi_[h], colspi_[h^symmetry_]);
-//        else {
-//            // Force rowspi_[h] and colspi_[h^symmetry] to hard 0
-//            // This solves an issue where a row can have 0 dim but a col does not (or the other way).
-
-//            // This was commented out to resolve issues that people were
-//            // dependent on one or both containing valid dimensions and
-//            // not a hard zero.
-//            //rowspi_[h] = colspi_[h^symmetry_] = 0;
-//            matrix_[h] = NULL;
-//        }
-//    }
-//}
 
 void Matrix::load_mpqc(const std::string &filename)
 {
@@ -3581,30 +3558,6 @@ void Matrix::load(const std::string &filename)
     }
 }
 
-void Matrix::send()
-{
-}
-
-void Matrix::recv()
-{
-}
-
-void Matrix::bcast(int)
-{
-    std::cout << "Someone is calling the Matrix bcast routine..." << std::endl;
-    // Assume the user allocated the matrix to the correct size first.
-    /*for (int h=0; h<nirrep_; ++h) {
-        if (rowspi_[h] > 0 && colspi_[h] > 0)
-            WorldComm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
-    }*/
-}
-
-void Matrix::sum()
-{
-    //RMR--Removed the call to here because as
-    //it stood it did nothing
-}
-
 bool Matrix::equal(const Matrix &rhs)
 {
     return equal(&rhs);
@@ -3686,39 +3639,6 @@ bool Matrix::equal_but_for_row_order(const Matrix *rhs, double TOL)
     return true;
 }
 
-double Matrix::pyget(const py::tuple &key)
-{
-    return get(key[0].cast<int>(),
-               key[1].cast<int>(),
-               key[2].cast<int>());
-}
-
-void Matrix::pyset(const py::tuple &key, double value)
-{
-    return set(key[0].cast<int>(),
-               key[1].cast<int>(),
-               key[2].cast<int>(),
-               value);
-}
-
-void Matrix::set_by_python_list(const py::list &data)
-{
-    size_t rows = py::len(data);
-
-    // Make sure nrows < rows
-    if ((size_t) nrow() > rows)
-        throw PSIEXCEPTION("Uh, moron!");
-
-    for (size_t i = 0; i < rows; ++i) {
-        size_t cols = py::len(data[i]);
-        if ((size_t) ncol() > cols)
-            throw PSIEXCEPTION("Uh, moron!");
-        for (size_t j = 0; j < cols; ++j) {
-            set(i, j, data[i].cast<py::list>()[j].cast<double>());
-        }
-    }
-}
-
 void Matrix::rotate_columns(int h, int i, int j, double theta)
 {
     if (h > nirrep_)
@@ -3731,38 +3651,6 @@ void Matrix::rotate_columns(int h, int i, int j, double theta)
     double costheta = cos(theta);
     double sintheta = sin(theta);
     C_DROT(rowspi_[h], &matrix_[h][0][i], colspi_[h], &matrix_[h][0][j], colspi_[h], costheta, sintheta);
-}
-std::vector<py::buffer_info> Matrix::array_interface(){
-    std::vector<py::buffer_info> ret;
-
-    if (numpy_shape_.size()) {
-        if (nirrep_ > 1){
-            throw PSIEXCEPTION("Matrix::array_interface numpy shape with more than one irrep is not valid.");
-        }
-
-        std::vector<size_t> shape(numpy_shape_.size());
-        std::vector<size_t> strides(numpy_shape_.size());
-        size_t current_stride = sizeof(double);
-
-        for (size_t i = numpy_shape_.size(); i-- > 0;) {
-            shape[i] = numpy_shape_[i];
-            strides[i] = current_stride;
-            current_stride *= numpy_shape_[i];
-        }
-        ret.push_back(py::buffer_info(get_pointer(0), sizeof(double),
-                                      py::format_descriptor<double>::format(),
-                                      numpy_shape_.size(),
-                                      shape, strides));
-
-    } else {
-        for (size_t h = 0; h < nirrep_; h++) {
-            ret.push_back(py::buffer_info(get_pointer(h), sizeof(double),
-                          py::format_descriptor<double>::format(), 2,
-                          {static_cast<size_t>(rowspi(h)), static_cast<size_t>(colspi(h))},
-                          {sizeof(double) * rowspi(h), sizeof(double)}));
-        }
-    }
-    return ret;
 }
 
 } // namespace psi

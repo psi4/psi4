@@ -193,7 +193,7 @@ private:
         int j;
         int k;
         int l;
-        unsigned int index;
+        size_t index;
     };
 
     Integral current;

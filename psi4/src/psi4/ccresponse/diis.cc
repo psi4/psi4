@@ -191,7 +191,8 @@ void diis(int iter, const char *pert, int irrep, double omega)
       psio_read(PSIF_CC_DIIS_ERR, lbl, (char *) vector[0],
                 vector_length*sizeof(double), start, &end);
 
-      dot_arr(vector[0], vector[0], vector_length, &product);
+     // dot_arr(vector[0], vector[0], vector_length, &product);
+      product = C_DDOT(vector_length, vector[0], 1, vector[0], 1);
 
       B[p][p] = product;
 
@@ -203,7 +204,8 @@ void diis(int iter, const char *pert, int irrep, double omega)
         psio_read(PSIF_CC_DIIS_ERR, lbl, (char *) vector[1],
                   vector_length*sizeof(double), start, &end);
 
-        dot_arr(vector[1], vector[0], vector_length, &product);
+        // dot_arr(vector[1], vector[0], vector_length, &product);
+        product = C_DDOT(vector_length, vector[1], 1, vector[0], 1);
 
         B[p][q] = B[q][p] = product;
       }

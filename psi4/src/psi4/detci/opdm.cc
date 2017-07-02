@@ -31,19 +31,23 @@
     \brief Enter brief description of file here
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/oeprop.h"
+#include "psi4/libfock/soscf.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/process.h"
+
 #include "psi4/detci/structs.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 namespace psi { namespace detci {
 
@@ -243,7 +247,7 @@ std::vector<std::vector<SharedMatrix> > CIWavefunction::opdm(SharedCIVector Ivec
     if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
      outfile->Printf("(opdm): Trouble with malloc'ing transp_tmp\n");
     }
-    unsigned long bufsz = Ivec->get_max_blk_size();
+    size_t bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
     if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
@@ -518,7 +522,7 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
   int Ia_idx, Ib_idx, Ja_idx, Jb_idx, Ja_ex, Jb_ex, Jbcnt, Jacnt;
   struct stringwr *Jb, *Ja;
   signed char *Jbsgn, *Jasgn;
-  unsigned int *Jbridx, *Jaridx;
+  size_t *Jbridx, *Jaridx;
   double C1, C2, Ib_sgn, Ia_sgn;
   int i, j, oij, *Jboij, *Jaoij;
 
@@ -575,17 +579,65 @@ void CIWavefunction::opdm_block(struct stringwr **alplist, struct stringwr **bet
 void CIWavefunction::ci_nat_orbs() {
   outfile->Printf("\n   Computing CI Natural Orbitals\n");
 
+  // Grab orbital dimensions
+  Dimension zero_dim(nirrep_);
+  Dimension noccpi = get_dimension("DOCC");
+  Dimension nactpi = get_dimension("ACT");
+  Dimension nvirpi = get_dimension("VIR");
+
   // Diagonalize the OPDM in the active space
   SharedMatrix NO_vecs(new Matrix("OPDM Eigvecs", opdm_->rowspi(), opdm_->colspi()));
   SharedVector NO_occ(new Vector("OPDM Occuption", opdm_->rowspi()));
   opdm_->diagonalize(NO_vecs, NO_occ, descending);
 
-  // get a copy of the active orbitals
+  // get a copy of the active orbitals and rotate them
   SharedMatrix Cactv = get_orbitals("ACT");
   SharedMatrix Cnat = Matrix::doublet(Cactv, NO_vecs);
 
   // set the active block of Ca_
   set_orbitals("ACT",Cnat);
+
+  // semicanonicalize the DOCC and VIR blocks only for CASSCF
+  if (options_.get_str("WFN") == "CASSCF"){
+      if (!somcscf_){
+          throw PSIEXCEPTION("CIWavefunction::ci_nat_orbs: SOMCSCF object is not allocated!");
+      }else{
+          // Grab Fock matrices and build the average Fock operator
+          SharedMatrix AFock = somcscf_->current_AFock();
+          SharedMatrix IFock = somcscf_->current_IFock();
+          SharedMatrix Favg = AFock->clone();
+          Favg->add(IFock);
+
+          // Diagonalize the doubly occupied block of Favg
+          Slice noccpi_slice(zero_dim,noccpi);
+          SharedMatrix Fo = Favg->get_block(noccpi_slice,noccpi_slice);
+          SharedVector evals_o = std::make_shared<Vector>("F Evals", noccpi);
+          SharedMatrix evecs_o = std::make_shared<Matrix>("F Evecs", noccpi, noccpi);
+          Fo->diagonalize(evecs_o, evals_o, ascending);
+
+          // get a copy of the doubly occupied orbitals and rotate them
+          SharedMatrix Cocc = get_orbitals("DOCC");
+          SharedMatrix Cocc_semi = Matrix::doublet(Cocc, evecs_o);
+
+          // set the doubly occupied orbitals block of Ca_
+          set_orbitals("DOCC",Cocc_semi);
+
+          // Diagonalize the virtual block of Favg
+          Slice nvirpi_slice(noccpi + nactpi, noccpi + nactpi + nvirpi);
+          SharedMatrix Fv = Favg->get_block(nvirpi_slice,nvirpi_slice);
+          SharedVector evals_v = std::make_shared<Vector>("F Evals", nvirpi);
+          SharedMatrix evecs_v = std::make_shared<Matrix>("F Evecs", nvirpi, nvirpi);
+          Fv->diagonalize(evecs_v, evals_v, ascending);
+
+          // get a copy of the virtual orbitals and rotate them
+          SharedMatrix Cvir = get_orbitals("VIR");
+          SharedMatrix Cvir_semi = Matrix::doublet(Cvir, evecs_v);
+
+          // set the virtual orbitals block of Ca_
+          set_orbitals("VIR",Cvir_semi);
+      }
+  }
+
   Cb_ = Ca_;
 }
 

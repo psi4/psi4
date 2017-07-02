@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -64,11 +65,13 @@ int schmidt_add(double **A, int rows, int cols, double *v)
    int i, I ;
 
    for (i=0; i<rows; i++) {
-      dot_arr(A[i], v, cols, &dotval) ;
+      // dot_arr(A[i], v, cols, &dotval) ;
+      dotval = C_DDOT(cols, A[i], 1, v, 1);
       for (I=0; I<cols; I++) v[I] -= dotval * A[i][I] ;
       }
 
-   dot_arr(v, v, cols, &normval) ;
+   // dot_arr(v, v, cols, &normval) ;
+   normval = C_DDOT(cols, v, 1, v, 1);
    normval = sqrt(normval) ;
 
    if (normval < NORM_TOL)

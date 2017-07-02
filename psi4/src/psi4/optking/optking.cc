@@ -35,13 +35,13 @@
 #include <fstream>
 #include <iostream>
 #include "globals.h"
+#include "psi4/liboptions/liboptions.h"
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
   #include "psi4/libpsi4util/exception.h"
-  #include "psi4/libparallel/parallel.h"
 #endif
 
 // Define the return types for optking.

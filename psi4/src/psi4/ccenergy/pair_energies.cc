@@ -38,6 +38,7 @@
 #include "MOInfo.h"
 #include "ccwave.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi { namespace ccenergy {
 

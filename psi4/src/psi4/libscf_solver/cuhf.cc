@@ -26,12 +26,7 @@
  * @END LICENSE
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <algorithm>
-#include <vector>
-#include <utility>
+#include "cuhf.h"
 
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libciomr/libciomr.h"
@@ -42,7 +37,17 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
-#include "cuhf.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <algorithm>
+#include <vector>
+#include <utility>
 
 using namespace std;
 using namespace psi;

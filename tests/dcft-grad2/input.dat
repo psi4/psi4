@@ -5,22 +5,18 @@
 #! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
 
 # RHF-ODC-12 gradients
-ref_vals_odc12 = [
+ref_grad_odc12 = psi4.Matrix.from_list([
            [-0.000463315203,     0.011184720362,     0.000000000000],
            [-0.000214140480,    -0.007910878984,     0.000000000000],
            [ 0.000677455683,    -0.003273841378,     0.000000000000]  
-           ]
-ref_grad_odc12 = psi4.Matrix(3, 3)
-ref_grad_odc12.set(ref_vals_odc12)
+           ])
 
 # RHF-ODC-06 gradients
-ref_vals_odc06 = [
+ref_grad_odc06 = psi4.Matrix.from_list([
             [ 0.000515887175,     0.012925332081,     0.000000000000],
             [ 0.000220010700,    -0.009272548044,     0.000000000000],
             [-0.000735897876,    -0.003652784037,     0.000000000000]
-            ]
-ref_grad_odc06 = psi4.Matrix(3, 3)
-ref_grad_odc06.set(ref_vals_odc06)
+            ])
 
 
 molecule h2o {

@@ -38,8 +38,6 @@
 #include <iterator>
 #include <memory>
 
-#include "psi4/pybind11.h"
-
 namespace psi {
 
 class Matrix;
@@ -184,14 +182,6 @@ public:
 
     const double &operator[](int i) const { return vector_[0][i]; }
 
-    double pyget(const py::tuple &key);
-
-    void pyset(const py::tuple &key, double value);
-
-    double pyget(int key);
-
-    void pyset(int key, double value);
-
     /// Returns a copy of the vector_
     double *to_block_vector();
 
@@ -249,18 +239,6 @@ public:
     /// Scale the elements of the vector
     void scale(const double &sc);
 
-    // Serializable pure virtual functions:
-    void send();
-
-    void recv();
-
-    void bcast(int broadcaster);
-
-    /**
-     * Performs element-by-element sum of all data from all nodes.
-     */
-    void sum();
-
     typedef std::vector<double>::iterator iterator;
     typedef std::vector<double>::const_iterator const_iterator;
 
@@ -307,7 +285,6 @@ public:
     */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
-    std::vector<py::buffer_info> array_interface();
 
     friend class Matrix;
 };
@@ -438,27 +415,6 @@ public:
 
     friend class VectorIterator;
 };
-
-//class VectorIterator : public std::iterator<std::forward_iterator_tag, double>
-//{
-//    pointer v_;
-
-//public:
-//    VectorIterator(pointer v) : v_(v) {}
-
-//    VectorIterator(const VectorIterator& mit) : v_(mit.v_) {}
-
-//    VectorIterator& operator++() {v_++; return *this;}  // prefix (++a)
-//    VectorIterator operator++(int) { VectorIterator tmp(*this); operator++(); return tmp; } // suffix (a++)
-
-//    bool operator==(const VectorIterator& rhs) { return v_ == rhs.v_; }
-//    bool operator!=(const VectorIterator& rhs) { return v_ != rhs.v_; }
-
-//    reference operator*() { return *v_; }
-//};
-
-typedef std::shared_ptr <Vector> SharedVector;
-typedef std::shared_ptr <IntVector> SharedIntVector;
 
 }
 

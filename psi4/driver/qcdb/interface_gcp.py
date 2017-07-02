@@ -256,8 +256,7 @@ def run_gcp(self, func=None, dertype=None, verbose=False):  # dashlvl=None, dash
     # Prepare results for Psi4
     if isP4regime and dertype != 0:
         core.set_variable('GCP CORRECTION ENERGY', dashd)
-        psi_dashdderiv = core.Matrix(self.natom(), 3)
-        psi_dashdderiv.set(dashdderiv)
+        psi_dashdderiv = core.Matrix.from_list(dashdderiv)
 
     # Print program output to file if verbose
     if not verbose and isP4regime:

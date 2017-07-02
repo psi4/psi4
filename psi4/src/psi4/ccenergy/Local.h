@@ -34,6 +34,8 @@
 #ifndef _psi_src_bin_ccenergy_local_h
 #define _psi_src_bin_ccenergy_local_h
 
+#include <string>
+
 namespace psi { namespace ccenergy {
 
 struct Local {

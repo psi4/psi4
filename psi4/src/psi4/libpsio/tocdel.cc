@@ -45,7 +45,7 @@
 
 namespace psi {
 
-bool PSIO::tocdel(unsigned int unit, const char *key) {
+bool PSIO::tocdel(size_t unit, const char *key) {
   psio_tocentry *this_entry = tocscan(unit, key);
 
   if (this_entry == NULL) return false;
@@ -66,7 +66,7 @@ bool PSIO::tocdel(unsigned int unit, const char *key) {
   return true;
 }
 
-bool psio_tocdel(unsigned int unit, const char *key) {
+bool psio_tocdel(size_t unit, const char *key) {
   return _default_psio_lib_->tocdel(unit,key);
 }
 

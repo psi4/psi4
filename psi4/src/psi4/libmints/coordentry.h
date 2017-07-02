@@ -135,9 +135,9 @@ public:
 class CoordEntry
 {
     template<class Archive>
-    friend void save(Archive & ar, const psi::Vector3 & t, unsigned int /*version*/);
+    friend void save(Archive & ar, const psi::Vector3 & t, size_t /*version*/);
     template<class Archive>
-    friend void load(Archive & ar, psi::Vector3 & t, unsigned int /*version*/);
+    friend void load(Archive & ar, psi::Vector3 & t, size_t /*version*/);
 
 protected:
     int entry_number_;

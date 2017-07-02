@@ -41,7 +41,7 @@
 
 namespace psi {
 
-int PSIO::open_check(unsigned int unit) {
+int PSIO::open_check(size_t unit) {
   psio_ud *this_unit;
 
   this_unit = &(psio_unit[unit]);
@@ -61,7 +61,7 @@ int PSIO::open_check(unsigned int unit) {
    ** \ingroup PSIO
    */
 
-  int psio_open_check(unsigned int unit) {
+  int psio_open_check(size_t unit) {
     return _default_psio_lib_->open_check(unit);
   }
 

@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -62,7 +63,8 @@ void normalize(double **A, int rows, int cols)
 
   /* divide each row by the square root of its norm */
   for (i=0; i<rows; i++) {
-    dot_arr(A[i], A[i], cols, &normval);
+    //dot_arr(A[i], A[i], cols, &normval);
+    normval = C_DDOT(cols, A[i], 1, A[i], 1);
     normval = sqrt(normval);
     for (j=0; j<cols; j++) A[i][j] /= normval;
   }
@@ -72,7 +74,7 @@ void normalize(double **A, int rows, int cols)
 #ifdef STANDALONE
 main()
 {
-std::string OutFileRMR ;
+std::string out_fname ;
 double **mat ;
 void normalize(double **A, int rows, int cols) ;
 

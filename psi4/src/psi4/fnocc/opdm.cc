@@ -33,6 +33,7 @@
 #include "ccsd.h"
 #include "psi4/libmints/matrix.h"
 
+#include <cmath>
 
 namespace psi{ namespace fnocc{
 
@@ -239,7 +240,7 @@ double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level){
           sum -= 2.*dum*dum;
       }
   }
-  nrm = sqrt(1.0-fac*sum);
+  nrm = std::sqrt(1.0-fac*sum);
 
   for (i=0; i<o*o*v*v; i++) t2[i] /= nrm;
   for (i=0; i<o*v; i++)     t1[i] /= nrm;

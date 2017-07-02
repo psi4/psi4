@@ -39,16 +39,16 @@
 
 namespace psi {
 
-void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
+void PSIO::rw(size_t unit, char *buffer, psio_address address, size_t size,
               int wrt) {
   int errcod;
-  unsigned int i;
-  ULI errcod_uli;
-  ULI page, offset;
-  ULI buf_offset;
-  ULI this_page, this_page_max, this_page_total;
-  unsigned int first_vol, this_vol, numvols;
-  ULI bytes_left, num_full_pages;
+  size_t i;
+  size_t errcod_uli;
+  size_t page, offset;
+  size_t buf_offset;
+  size_t this_page, this_page_max, this_page_total;
+  size_t first_vol, this_vol, numvols;
+  size_t bytes_left, num_full_pages;
   psio_ud *this_unit;
 
   this_unit = &(psio_unit[unit]);
@@ -63,7 +63,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
     psio_error(unit, PSIO_ERROR_LSEEK);
   for (i=1, this_page=page+1; i < numvols; i++, this_page++) {
     this_vol = this_page % numvols;
-    errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (ULI) 0,
+    errcod = psio_volseek(&(this_unit->vol[this_vol]), this_page, (size_t) 0,
                           numvols);
     if (errcod == -1)
       psio_error(unit, PSIO_ERROR_LSEEK);
@@ -143,7 +143,7 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
    ** \ingroup PSIO
    */
 
-  int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
+  int psio_rw(size_t unit, char *buffer, psio_address address, size_t size,
               int wrt) {
     _default_psio_lib_->rw(unit, buffer, address, size, wrt);
     return 1;

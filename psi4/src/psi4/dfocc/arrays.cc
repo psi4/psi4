@@ -33,7 +33,7 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "arrays.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 
 using namespace std;
@@ -119,7 +119,7 @@ void Array1d::print()
 void Array1d::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
     printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
@@ -343,7 +343,7 @@ Array2d::Array2d()
 
 }//
 
-Array2d::Array2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2)
+Array2d::Array2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -353,7 +353,7 @@ Array2d::Array2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d
   read(psio, fileno);
 }
 
-Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -363,7 +363,7 @@ Array2d::Array2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string na
   read(psio, fileno);
 }
 
-Array2d::Array2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+Array2d::Array2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -435,7 +435,7 @@ void Array2d::print()
 void Array2d::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
   if (A2d_) {
       if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
       print_mat(A2d_,dim1_,dim2_,out);
@@ -856,7 +856,7 @@ double Array2d::vector_dot(double **rhs)
     return value;
 }//
 
-void Array2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -866,7 +866,7 @@ void Array2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(psi::PSIO* const psio, unsigned int fileno)
+void Array2d::write(psi::PSIO* const psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -876,12 +876,12 @@ void Array2d::write(psi::PSIO* const psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Array2d::write(psi::PSIO& psio, unsigned int fileno)
+void Array2d::write(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
 }//
 
-void Array2d::read(psi::PSIO* psio, unsigned int fileno)
+void Array2d::read(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -891,7 +891,7 @@ void Array2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -901,7 +901,7 @@ void Array2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Array2d::read(psi::PSIO& psio, unsigned int fileno)
+void Array2d::read(psi::PSIO& psio, size_t fileno)
 {
     read(&psio, fileno);
 }//
@@ -940,37 +940,37 @@ bool Array2d::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label,
     return true;
 }//
 
-void Array2d::save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Array2d::save(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Array2d::save(psi::PSIO* const psio, unsigned int fileno)
+void Array2d::save(psi::PSIO* const psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Array2d::save(psi::PSIO& psio, unsigned int fileno)
+void Array2d::save(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
     release();
 }//
 
-void Array2d::load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+void Array2d::load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Array2d::load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2)
+void Array2d::load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Array2d::load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+void Array2d::load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(&psio, fileno);
@@ -1628,7 +1628,7 @@ void Array2i::print()
 void Array2i::print(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
   if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   print_int_mat(A2i_,dim1_,dim2_,out);
 }//

@@ -37,7 +37,6 @@
 
 // Forward declarations
 namespace psi { namespace detci {
-typedef unsigned long int BIGINT;
 struct calcinfo;
 struct params;
 struct H_zero_block;
@@ -72,8 +71,8 @@ class CIvect {
 
     void common_init(); /* common init func */
 
-    BIGINT vectlen_;            /* total vector length */
-    unsigned long buffer_size_; /* size of largest in-core chunk */
+    size_t vectlen_;            /* total vector length */
+    size_t buffer_size_; /* size of largest in-core chunk */
     int num_blocks_;            /* number of blocks in vector */
     int icore_;                 /* in-core option. 1 = whole vector in-core,
                                                    2 = symm block in-core,
@@ -83,9 +82,9 @@ class CIvect {
     std::vector<int> Ib_code_;   /* each block's beta string id code */
     std::vector<int> Ia_size_;   /* num alp strings in each block */
     std::vector<int> Ib_size_;   /* num bet strings in each block */
-    std::vector<BIGINT> offset_; /* offsets for absolute numbering.  This
+    std::vector<size_t> offset_; /* offsets for absolute numbering.  This
                                    is a word offset, not a byte offset,
-                                   so unsigned long should be ok          */
+                                   so size_t should be ok          */
     int num_alpcodes_;          /* number of possible (total) alpha codes */
     int num_betcodes_;          /* number of possible (total) beta codes */
     int nirreps_;               /* dimension of next four arrays */
@@ -101,7 +100,7 @@ class CIvect {
     int buf_locked_;            /* is a memory buffer locked in/available?  */
     std::vector<int> units_;                /* file numbers */
     std::vector<int> file_number_;          /* unit number for given vector/block */
-    unsigned long *buf_size_;   /* size of each buffer on disk
+    size_t *buf_size_;   /* size of each buffer on disk
                                    (0...buf_per_vect) */
     int *buf2blk_;              /* buffer number -> block number for
                                    icore=0, else buf->irrep for icore=2 */
@@ -129,8 +128,8 @@ class CIvect {
 
    public:
     CIvect();
-    CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc, int *ias,
-           int *ibs, BIGINT *offs, int nac, int nbc, int nirr, int cdperirr,
+    CIvect(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc, int *ias,
+           int *ibs, size_t *offs, int nac, int nbc, int nirr, int cdperirr,
            int maxvect, int nunits, int funit, int *fablk, int *lablk, int **dc,
            struct calcinfo *CI_CalcInfo, struct params *CI_Params,
            struct H_zero_block *CI_H0block, bool buf_init = true);
@@ -173,21 +172,21 @@ class CIvect {
     // Questionable functions and/or should be private
     void set(int incor, int maxvect, int nunits, int funit,
              struct ci_blks *CIblks);
-    void set(BIGINT vl, int nb, int incor, int ms0, int *iac, int *ibc,
-             int *ias, int *ibs, BIGINT *offs, int nac, int nbc, int nirr,
+    void set(size_t vl, int nb, int incor, int ms0, int *iac, int *ibc,
+             int *ias, int *ibs, size_t *offs, int nac, int nbc, int nirr,
              int cdperirr, int maxvect, int nunits, int funit, int *fablk,
              int *lablk, int **dc);
     void print();
     double operator*(CIvect &b);
-    void setarray(const double *a, BIGINT len);
+    void setarray(const double *a, size_t len);
     void max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
                       double *coeff, int neg_only);
     double blk_max_abs_vals(int i, int offdiag, int nval, int *iac, int *ibc,
                             int *iaidx, int *ibidx, double *coeff,
                             double minval, int neg_only);
-    void det2strings(BIGINT det, int *alp_code, int *bet_code, int *alp_idx,
+    void det2strings(size_t det, int *alp_code, int *bet_code, int *alp_idx,
                      int *bet_idx);
-    BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx);
+    size_t strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx);
     void diag_mat_els(struct stringwr **alplist, struct stringwr **betlist,
                       double *oei, double *tei, double edrc, int na, int nb,
                       int nbf, int method);
@@ -236,7 +235,7 @@ class CIvect {
     void civ_xeay(double a, CIvect &Y, int xvect, int yvect);
     void civ_xpeay(double a, CIvect &Y, int xvect, int yvect);
     void transp_block(int iblock, double **tmparr);
-    unsigned long get_max_blk_size(void);
+    size_t get_max_blk_size(void);
     double checknorm(void);
     void copy(CIvect &Src, int targetvec, int srcvec);
     void restart_gather(int ivec, int nvec, int nroot, double **alpha,

@@ -63,7 +63,7 @@
 #include "psi4/libmints/cartesianiter.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 ;
 
@@ -762,7 +762,7 @@ void PetiteList::print(std::string out)
 {
     int i;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile :
-                                                    std::shared_ptr<OutFile>(new OutFile(out)));
+                                                    std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     printer->Printf("PetiteList:\n");
 
     if (c1_) {
@@ -830,7 +830,7 @@ PetiteList::compute_aotoso_info()
     int nunique = mol->nunique();
     int maxam = basis_->max_am();
     int **atom_map = compute_atom_map(mol);
-    unsigned int functions_per_irrep[8];
+    size_t functions_per_irrep[8];
     SO_block *SOs = new SO_block[nirrep_];
     for (int h = 0; h < nirrep_; ++h) {
         SOs[h].set_length(nfunction(h));

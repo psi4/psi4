@@ -35,8 +35,11 @@
 #define EXTERN
 #include "globals.h"
 
+#include <cmath>
+
 #if defined(OPTKING_PACKAGE_PSI)
  #include "psi4/psi4-dec.h"
+ #include "psi4/liboptions/liboptions.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h>
 #endif
@@ -349,27 +352,27 @@ void set_params(void)
     if (options["MAX_FORCE_G_CONVERGENCE"].has_changed()) {
       Opt_params.i_untampered = false;
       Opt_params.i_max_force = true;
-      Opt_params.conv_max_force = fabs(options.get_double("MAX_FORCE_G_CONVERGENCE"));
+      Opt_params.conv_max_force = std::fabs(options.get_double("MAX_FORCE_G_CONVERGENCE"));
     }
     if (options["RMS_FORCE_G_CONVERGENCE"].has_changed()) {
       Opt_params.i_untampered = false;
       Opt_params.i_rms_force = true;
-      Opt_params.conv_rms_force = fabs(options.get_double("RMS_FORCE_G_CONVERGENCE"));
+      Opt_params.conv_rms_force = std::fabs(options.get_double("RMS_FORCE_G_CONVERGENCE"));
     }
     if (options["MAX_ENERGY_G_CONVERGENCE"].has_changed()) {
       Opt_params.i_untampered = false;
       Opt_params.i_max_DE = true;
-      Opt_params.conv_max_DE = fabs(options.get_double("MAX_ENERGY_G_CONVERGENCE"));
+      Opt_params.conv_max_DE = std::fabs(options.get_double("MAX_ENERGY_G_CONVERGENCE"));
     }
     if (options["MAX_DISP_G_CONVERGENCE"].has_changed()) {
       Opt_params.i_untampered = false;
       Opt_params.i_max_disp = true;
-      Opt_params.conv_max_disp = fabs(options.get_double("MAX_DISP_G_CONVERGENCE"));
+      Opt_params.conv_max_disp = std::fabs(options.get_double("MAX_DISP_G_CONVERGENCE"));
     }
     if (options["RMS_DISP_G_CONVERGENCE"].has_changed()) {
       Opt_params.i_untampered = false;
       Opt_params.i_rms_disp = true;
-      Opt_params.conv_rms_disp = fabs(options.get_double("RMS_DISP_G_CONVERGENCE"));
+      Opt_params.conv_rms_disp = std::fabs(options.get_double("RMS_DISP_G_CONVERGENCE"));
     }
 
     // even if a specific threshold were given, allow for Molpro/Qchem/G03 flex criteria

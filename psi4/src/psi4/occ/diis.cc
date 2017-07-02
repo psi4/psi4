@@ -29,7 +29,7 @@
 #include "occwave.h"
 #include "defines.h"
 
-
+#include <cmath>
 
 using namespace psi;
 using namespace std;
@@ -89,7 +89,7 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
          else if (lineq == "FLIN") {
             double det = 0.0;
             Bmat->lineq_flin(Cvec, &det);
-            if (fabs(det) < DIIS_MIN_DET) {
+            if (std::fabs(det) < DIIS_MIN_DET) {
                outfile->Printf( "Warning!!! Diis matrix is near-singular\n");
                outfile->Printf( "Determinant is %6.3E\n", det);
 

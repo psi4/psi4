@@ -30,6 +30,7 @@
 #ifdef USING_erd
 
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "erd_eri.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"

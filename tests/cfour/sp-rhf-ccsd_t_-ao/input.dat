@@ -1,6 +1,6 @@
 #! single-point CCSD(T)/qz2p on water with aobasis
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 CCSD(T) single-point energy calculation using AO algorithms for ABCD terms
@@ -29,7 +29,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O
@@ -59,7 +59,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O

@@ -368,9 +368,9 @@ public:
 //    // Deprecated
 //   // // Compute routines (these all work on a block of points)
 //   // /// Compute mo values
-//   // void compute_mos(std::shared_ptr<GridBlock> g, unsigned long int offset);
+//   // void compute_mos(std::shared_ptr<GridBlock> g, size_t offset);
 //   // /// Compute basis function values
-//   // void compute_basis_funs(std::shared_ptr<GridBlock> g, unsigned long int offset);
+//   // void compute_basis_funs(std::shared_ptr<GridBlock> g, size_t offset);
 //   // /// Compute total density
 //   // void compute_rho(std::shared_ptr<GridBlock> g, double* results);
 //   // /// Compute spin density (rho_a - rho_b)

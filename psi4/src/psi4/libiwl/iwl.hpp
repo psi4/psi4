@@ -82,71 +82,23 @@ namespace psi {
             int ntri, int erase, int printflg, std::string OutFileRMR);
         static void write_one(PSIO *psio, int itap, const char *label, int ntri,
             double *onel_ints);
-        static void read_two(PSIO *psio, int itap, double *ints, int *ioff,
-            int norbs, int nfzc, int nfzv, int printflg, std::string OutFileRMR);
-        static void write_two(PSIO *psio, int itap, int nbfso, double *ints,
-            int *ioff, double toler, int printflg, std::string OutFileRMR);
 
         int read(int target_pq, double *ints, int *ioff_lt, int *ioff_rt,
             int mp2, int printflg, std::string OutFileRMR);
-        int read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
-            int *ioff, int printflg, std::string OutFileRMR);
-        int read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
-            int *ioff, int printflg, std::string OutFileRMR);
-        int read_all_active(double *ints,
-            int *ioff_lt, int *ioff_rt, int no_pq_perm, int *ioff,
-            int fstact, int lstact, int printflg,std::string OutFileRMR);
-        int read_all_mp2r12a(double *ints, int *ioff_lt, int *ioff_rt,
-            int bra_ket_symm, int *ioff, int printflg, std::string OutFileRMR);
-        int read_array(int target_pq, double *ints, int *rlist, int *slist,
-            int *size, int *ioff, int printflg, std::string OutFileRMR);
-        int read_array2(double *ints, int *plist, int *qlist, int *rlist,
-            int *slist, int *size, int *ioff, int printflg, std::string OutFileRMR);
 
         void write(int p, int q, int pq, int pqsym,
             double *arr, int rmax, int *ioff, int *orbsym,
             int *firsti, int *lasti, int printflag,
             std::string OutFileRMR);
-        void write_all(int nbfso, double *ints, int *ioff, int printflg,
-            std::string OutFileRMR);
-        void write_mp2(int p, int q, int pq,
-            int pqsym, double **arr, int rsym, int *firstr, int *lastr,
-            int *firsts, int *lasts, int *occ, int *vir, int *ioff,
-            int printflag, std::string OutFileRMR);
-        void write_mp2r12a(int p, int q, int pq, int pqsym, double **arr,
-            int rsym, int *firstr, int *lastr, int *firsts, int *lasts,
-            int *occ, int bra_ket_symm, int *ioff, int printflag,
-            std::string OutFileRMR);
-        void write_array(double *arr, int *p, int *q, int *r, int *s, long int size);
-        void write_array_SI(double *arr, short int *p, short int *q, short int *r,
-            short int *s, int size);
-        void write_array_SI_nocut(double *arr, short int *p, short int *q,
-            short int *r, short int *s, int size);
-        void write_array2(double *arr, int p, int q, int *rlist, int *slist,
-            int size, int printflag, std::string OutFileRMR);
         void write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
             int sfirst, int slast, int *reorder, int reorder_offset,
             int printflag, int *ioff, std::string OutFileRMR);
-        void write_matrix2(int ptr, int qtr, double **mat, int rfirst, int rlast,
-            int sfirst, int slast, int *reorder, int reorder_offset,
-            int printflag, int *ioff, std::string OutFileRMR);
         void write_value(int p, int q, int r, int s, double value, int printflag,
-            std::string OutFileRMR, int dirac);
-        void write_value_SI(short int p, short int q,
-            short int r, short int s, double value, int printflag,
             std::string OutFileRMR, int dirac);
 
         void flush(int lastbuf);
         void to_end();
 
-        static void sort_buffer(IWL *Inbuf, IWL *Outbuf,
-            double *ints, int fpq, int lpq, int *ioff, int *ioff2,
-            int nbfso, int elbert, int intermediate, int no_pq_perm,
-            int qdim, int add, int printflg, std::string OutFileRMR);
-        static void sort_buffer_pk(IWL* inbuf, int out_tape, int is_exch,
-                                   double *ints, unsigned int fpq, unsigned int lpq,
-                                   int *so2ind, int *so2sym, int*pksymoff, int printflg,
-                                   std::string out);
     };
 
 }

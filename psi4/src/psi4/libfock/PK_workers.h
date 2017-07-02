@@ -38,6 +38,8 @@
 
 #include "psi4/libiwl/config.h"
 #include "psi4/libpsio/config.h"
+#include "psi4/libpsi4util/exception.h"
+
 
 namespace psi {
 
@@ -229,7 +231,7 @@ private:
     /// Iterator over basis functions within a shell quartet
     UniqueAOShellIt shelliter_;
     /// Current global index of the buffer
-    unsigned int bufidx_;
+    size_t bufidx_;
     /// Current offset
     size_t offset_;
     /// Current max ijkl index in the buffer
@@ -237,12 +239,12 @@ private:
     /// Size of one buffer
     size_t buf_size_;
     /// Number of buffers in the worker
-    unsigned int nbuf_;
+    size_t nbuf_;
     /// Are there any shells left ?
     bool shells_left_;
 
     /// Indices of the current shell quartet
-    unsigned int P_, Q_, R_, S_;
+    size_t P_, Q_, R_, S_;
 
     /// Is the current shell relevant to the current worker ?
     bool is_shell_relevant();
@@ -253,7 +255,7 @@ private:
 
 protected:
     /// Setter function for nbuf_
-    void set_nbuf(unsigned int tmp) {nbuf_ = tmp; }
+    void set_nbuf(size_t tmp) {nbuf_ = tmp; }
     /// Setting the buffer size, changes for wK
     void set_bufsize(size_t len) { buf_size_ = len; }
     /// Setter function for max_idx
@@ -274,11 +276,11 @@ public:
     size_t max_idx()                    const { return max_idx_; }
     size_t offset()                     const { return offset_; }
     int target_file()                   const { return target_file_; }
-    unsigned int bufidx()               const { return bufidx_; }
-    unsigned int P()                    const { return P_; }
-    unsigned int Q()                    const { return Q_; }
-    unsigned int R()                    const { return R_; }
-    unsigned int S()                    const { return S_; }
+    size_t bufidx()               const { return bufidx_; }
+    size_t P()                    const { return P_; }
+    size_t Q()                    const { return Q_; }
+    size_t R()                    const { return R_; }
+    size_t S()                    const { return S_; }
     bool do_wK()                        const { return do_wK_; }
     /// Set do_wK
     void set_do_wK(bool tmp) { do_wK_ = tmp; }
@@ -300,7 +302,7 @@ public:
     void next_quartet();
 
     /// Reallocate the buffer memory for wK
-    virtual void allocate_wK(size_t buf_size, unsigned int buf_per_thread) {
+    virtual void allocate_wK(size_t buf_size, size_t buf_per_thread) {
         throw PSIEXCEPTION("Function allocate_wK not implemented for this PK algorithm.\n");
     }
     /// For IWL, we need different arguments
@@ -332,18 +334,18 @@ public:
     }
 
     /// Functions specific to disk pre-sorting of integrals
-    virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+    virtual bool pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
         throw PSIEXCEPTION("Function pop_value not implemented for this class\n");
     }
     /// Functions specific to disk pre-sorting of integrals
-    virtual bool pop_value_wK(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+    virtual bool pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
         throw PSIEXCEPTION("Function pop_value_wK not implemented for this class\n");
     }
 
-    virtual void insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+    virtual void insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) {
         throw PSIEXCEPTION("Function insert_value not implemented for this class\n");
     }
-    virtual void insert_value_wK(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+    virtual void insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) {
         throw PSIEXCEPTION("Function insert_value_wK not implemented for this class\n");
     }
 
@@ -392,7 +394,7 @@ private:
     psio_address dummy_;
 
     /// Internal buffer index
-    unsigned int buf_;
+    size_t buf_;
 
     virtual void initialize_task();
 
@@ -400,13 +402,13 @@ public:
     /// Constructor
     PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve,
                 std::shared_ptr<AIOHandler> AIO, int target_file,
-                size_t buffer_size, unsigned int nbuffer);
+                size_t buffer_size, size_t nbuffer);
     /// Destructor
     ~PKWrkrReord();
 
     /// Reallocating memory for wK
     /// We make sure the deallocated buffers have been written to disk
-    virtual void allocate_wK(size_t buf_size, unsigned int buf_per_thread);
+    virtual void allocate_wK(size_t buf_size, size_t buf_per_thread);
 
     /// Filling integral values in relevant buffer
     virtual void fill_values(double val, size_t i, size_t j, size_t k, size_t l);
@@ -509,13 +511,13 @@ public:
     /// Filling wK integrals in the appropriate buffers
     virtual void fill_values_wK(double val, size_t i, size_t j, size_t k, size_t l);
     /// Popping a value from a buffer to finalize writing
-    virtual bool pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    virtual bool pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
     /// Inserting a value back into a buffer
-    virtual void insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l);
+    virtual void insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l);
     /// Popping a wK value from a buffer to finalize writing
-    virtual bool pop_value_wK(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
+    virtual bool pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l);
     /// Inserting a wK value back into a buffer
-    virtual void insert_value_wK(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l);
+    virtual void insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l);
     /// Flushing all buffers for current worker
     virtual void flush();
     /// Flushing all wK buffers for current worker

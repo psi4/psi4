@@ -32,7 +32,8 @@
 
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
-#include "psi4/libparallel/parallel.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/psifiles.h"
 
@@ -1354,7 +1355,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         removed in favor of the DIPOLE option in the future -*/
     options.add_str("PERTURB_WITH", "DIPOLE", "DIPOLE DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
-    options.add("EXTERN", new PythonDataType());
+    options.add_bool("EXTERN", false);
 
     /*- Radius (bohr) of a hard-sphere external potential -*/
     options.add_double("RADIUS", 10.0); // bohr
@@ -1938,13 +1939,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Caching level for libdpd -*/
     options.add_int("CACHELEVEL",2);
     /*- Specifies the choice of representation of the electric dipole operator.
-    For polarizability, this keyword is ignored and ``LENGTH`` gauge is computed. 
-    For optical rotation and raman optical activity, this keyword is active, and 
+    For polarizability, this keyword is ignored and ``LENGTH`` gauge is computed.
+    For optical rotation and raman optical activity, this keyword is active, and
     acceptable values are ``LENGTH`` for the usual length-gauge representation,
     ``VELOCITY``(default) for the modified velocity-gauge representation in which the
     static-limit optical rotation tensor is subtracted from the frequency-
-    dependent tensor, or ``BOTH``. Note that, for optical rotation and raman optical 
-    activity calculations, only the choices of ``VELOCITY`` or ``BOTH`` will yield 
+    dependent tensor, or ``BOTH``. Note that, for optical rotation and raman optical
+    activity calculations, only the choices of ``VELOCITY`` or ``BOTH`` will yield
     origin-independent results. -*/
     options.add_str("GAUGE","VELOCITY", "LENGTH VELOCITY BOTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/

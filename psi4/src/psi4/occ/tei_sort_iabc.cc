@@ -70,8 +70,8 @@ void OCCWave::tei_sort_iabc()
 
         // Make sure we are dealing with the (ia|bc) type integrals
         if (i < nooA && j >= nooA && k>= nooA && l >= nooA) {
-            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "NULL", 0);
-            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "NULL", 0);
+            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "outfile", 0);
+            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "outfile", 0);
         }
 
    }

@@ -62,8 +62,8 @@ PSIO::PSIO()
 
     psio_unit = (psio_ud *) malloc(sizeof(psio_ud)*PSIO_MAXUNIT);
 #ifdef PSIO_STATS
-    psio_readlen = (ULI *) malloc(sizeof(ULI) * PSIO_MAXUNIT);
-    psio_writlen = (ULI *) malloc(sizeof(ULI) * PSIO_MAXUNIT);
+    psio_readlen = (size_t *) malloc(sizeof(size_t) * PSIO_MAXUNIT);
+    psio_writlen = (size_t *) malloc(sizeof(size_t) * PSIO_MAXUNIT);
 #endif
     state_ = 1;
 

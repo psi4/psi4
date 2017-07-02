@@ -26,6 +26,9 @@
  * @END LICENSE
  */
 
+#include "cubature.h"
+#include "points.h"
+#include "v.h"
 
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libfunctional/functional.h"
@@ -33,14 +36,14 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 
-#include "cubature.h"
-#include "points.h"
-#include "v.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -50,8 +53,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-using ULI = unsigned long int;
 
 namespace psi {
 

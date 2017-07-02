@@ -53,6 +53,7 @@
 #include <vector>
 #include <string>
 
+#include "psi4/libmints/typedefs.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"

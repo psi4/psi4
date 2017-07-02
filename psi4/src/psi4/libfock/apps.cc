@@ -26,23 +26,28 @@
  * @END LICENSE
  */
 
-
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
 #include "apps.h"
 #include "jk.h"
 #include "v.h"
 #include "hamiltonian.h"
 #include "solver.h"
+
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/psi4-dec.h"
+#include "psi4/physconst.h"
 #include "psi4/libscf_solver/hf.h"
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/multipolesymmetry.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <algorithm>
 #include <tuple>
@@ -129,7 +134,7 @@ void RBase::preiterations()
             } else {
                 jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
             }
-            unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+            size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();
         }
@@ -545,7 +550,7 @@ void RCIS::print_transitions()
 }
 void RCIS::print_densities()
 {
-    for (unsigned int i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
         int state = options_["CIS_OPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -558,7 +563,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
         int state = options_["CIS_DOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -571,7 +576,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
         int state = options_["CIS_TOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -584,7 +589,7 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
         int state = options_["CIS_NO_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -598,7 +603,7 @@ void RCIS::print_densities()
         fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
         fclose(fh);
     }
-    for (unsigned int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
+    for (size_t i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
         int state = options_["CIS_AD_STATES"][i].to_integer();
         bool singlet = (state > 0);
         state = abs(state);
@@ -629,7 +634,7 @@ SharedMatrix RCIS::TDso(SharedMatrix T1, bool singlet)
     // Triplets are zero
     if (!singlet) return D;
 
-    double* temp = new double[C_->max_nrow() * (ULI) T1->max_nrow()];
+    double* temp = new double[C_->max_nrow() * (size_t) T1->max_nrow()];
 
     int symm = T1->symmetry();
     for (int h = 0; h < T1->nirrep(); h++) {

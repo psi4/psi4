@@ -28,7 +28,6 @@
 
 #include "stability.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "psi4/libpsio/psio.hpp"
@@ -38,7 +37,13 @@
 #include "psi4/libfock/solver.h"
 #include "psi4/libfock/hamiltonian.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
 
 
 using namespace std;
@@ -305,7 +310,7 @@ void UStab::preiterations()
             } else {
                 jk_ = JK::build_JK(basis_, BasisSet::zero_ao_basis_set(), options_);
             }
-            unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+            size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();
         }

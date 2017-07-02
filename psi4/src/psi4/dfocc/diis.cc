@@ -30,6 +30,8 @@
 #include "dfocc.h"
 #include "psi4/psi4-dec.h"
 
+#include <cmath>
+
 using namespace psi;
 using namespace std;
 
@@ -82,7 +84,7 @@ void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, Shar
          else if (lineq == "FLIN") {
             double det = 0.0;      
             Bmat->lineq_flin(Cvec, &det);
-            if (fabs(det) < DIIS_MIN_DET) { 
+            if (std::fabs(det) < DIIS_MIN_DET) { 
                outfile->Printf( "Warning!!! Diis matrix is near-singular\n");
                outfile->Printf( "Determinant is %6.3E\n", det);
                

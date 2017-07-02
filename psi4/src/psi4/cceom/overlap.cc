@@ -165,6 +165,7 @@ int overlap(int C_irr, int current) {
     global_dpd_->buf4_close(&R2AB);
   }
 
+  return 1;
 }
 
 void overlap_stash(int C_irr)

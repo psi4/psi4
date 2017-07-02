@@ -29,15 +29,18 @@
 #ifndef _psi_src_lib_libmints_potentialint_h_
 #define _psi_src_lib_libmints_potentialint_h_
 
-#include "psi4/libmints/potential.h"
+#include "psi4/libmints/gshell.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/potential.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/osrecur.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi{
 
 class GaussianShell;
 class SphericalTransform;
+class BasisSet;
 
 /**
  * This is a cheesy modification to PotentialInt, to allow the in-place handling of integrals to avoid storage

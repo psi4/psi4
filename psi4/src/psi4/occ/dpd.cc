@@ -33,7 +33,9 @@
 #include "defines.h"
 #include "arrays.h"
 #include "dpd.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
+#include <cmath>
 
 using namespace std;
 
@@ -317,7 +319,7 @@ double SymBlockMatrix::rms()
 	}
       }
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -339,7 +341,7 @@ double SymBlockMatrix::rms(SymBlockMatrix* Atemp)
 	}
       }
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -437,15 +439,15 @@ double **SymBlockMatrix::to_block_matrix()
     return temp;
 }//
 
-void SymBlockMatrix::print(std::string OutFileRMR)
+void SymBlockMatrix::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname,std::ostream::app)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (rowspi_[h] != 0 && colspi_[h] != 0) {
 	printer->Printf( "\n Irrep: %d\n", h+1);
-	print_mat(matrix_[h], rowspi_[h], colspi_[h], OutFileRMR);
+	print_mat(matrix_[h], rowspi_[h], colspi_[h], out_fname);
 	printer->Printf( "\n");
       }
     }
@@ -589,7 +591,7 @@ void SymBlockMatrix::lineq_flin(SymBlockVector* Xvec, double *det)
     }
 }//
 
-//int pople(double **A, double *x, int dimen, int num_vecs, double tolerance, std::string OutFileRMR, int print_lvl)
+//int pople(double **A, double *x, int dimen, int num_vecs, double tolerance, std::string out_fname, int print_lvl)
 void SymBlockMatrix::lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff)
 {
     for (int h=0; h<nirreps_; h++) {
@@ -612,7 +614,7 @@ void SymBlockMatrix::mgs()
 	  rmgs1+=matrix_[h][i][k]* matrix_[h][i][k];
 	}
 
-	rmgs1=sqrt(rmgs1);
+	rmgs1=std::sqrt(rmgs1);
 
 	for (int i=0; i<rowspi_[h];i++) {
 	  matrix_[h][i][k]/=rmgs1;
@@ -1045,7 +1047,7 @@ double SymBlockVector::rms()
 	  summ += vector_[h][j] * vector_[h][j];
 	}
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -1065,7 +1067,7 @@ double SymBlockVector::rms(SymBlockVector* Atemp)
 	  summ += (vector_[h][j] * vector_[h][j]) - (Atemp->vector_[h][j] * Atemp->vector_[h][j]);
 	}
     }
-    summ=sqrt(summ)/dim;
+    summ=std::sqrt(summ)/dim;
     return summ;
 }//
 
@@ -1078,7 +1080,7 @@ double SymBlockVector::norm()
 	  summ += vector_[h][j] * vector_[h][j];
 	}
     }
-    summ=sqrt(summ);
+    summ=std::sqrt(summ);
     return summ;
 }//
 
@@ -1149,10 +1151,10 @@ double SymBlockVector::trace()
     return value;
 }//
 
-void SymBlockVector::print(std::string OutFileRMR)
+void SymBlockVector::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-         std::shared_ptr<OutFile>(new OutFile(OutFileRMR,APPEND)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+         std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname,std::ostream::app)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
     for (int h=0; h<nirreps_; h++) {
       if (dimvec_[h] != 0) {

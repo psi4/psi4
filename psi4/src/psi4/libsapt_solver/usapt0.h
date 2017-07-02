@@ -81,7 +81,7 @@ protected:
     bool coupled_ind_;
     
     // Memory in doubles
-    unsigned long int memory_;
+    size_t memory_;
 
     // Energies table
     std::map<std::string, double> energies_;

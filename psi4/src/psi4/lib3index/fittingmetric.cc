@@ -55,6 +55,7 @@
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
 
@@ -309,8 +310,8 @@ void FittingMetric::form_fitting_metric()
             }
 
             // Poisson-Poisson part
-            unsigned long int AOoffset = ngaussian*(unsigned long int)naux + (unsigned long int) ngaussian;
-            unsigned long int SOoffset = ngauspi[h]*(unsigned long int)nauxpi[h] + (unsigned long int) ngauspi[h];
+            size_t AOoffset = ngaussian*(size_t)naux + (size_t) ngaussian;
+            size_t SOoffset = ngauspi[h]*(size_t)nauxpi[h] + (size_t) ngauspi[h];
             Temp = SharedMatrix(new Matrix("Temp", npoispi[h], npoisson));
             Temp1 = Temp->pointer();
             C_DGEMM('N', 'N', npoispi[h], npoisson, npoisson, 1.0, poisU[0], npoisson, &W[0][AOoffset], naux, 0.0, Temp1[0], npoisson);
@@ -375,7 +376,7 @@ void FittingMetric::form_QR_inverse(double tol)
         // Copy the J matrix to R (actually R')
         SharedMatrix R(new Matrix("R", n, n));
         double** Rp = R->pointer();
-        C_DCOPY(n*(unsigned long int)n, J[0], 1, Rp[0], 1);
+        C_DCOPY(n*(size_t)n, J[0], 1, Rp[0], 1);
 
         // QR Decomposition
         double* tau = new double[n];
@@ -393,7 +394,7 @@ void FittingMetric::form_QR_inverse(double tol)
         // Copy Jcopy to Q (actually Q')
         SharedMatrix Q(new Matrix("Q", n, n));
         double** Qp = Q->pointer();
-        C_DCOPY(n*(unsigned long int)n, Rp[0], 1, Qp[0], 1);
+        C_DCOPY(n*(size_t)n, Rp[0], 1, Qp[0], 1);
 
         // Put R in the upper triangle where it belongs
         for (int i = 1; i < n; i++)
@@ -434,10 +435,10 @@ void FittingMetric::form_QR_inverse(double tol)
         C_DTRSM('L','U','N','N',nsig,n,1.0,J[0],nsig,Qp[0],n);
 
         // Zero out the metric
-        memset(static_cast<void*>(J[0]), '\0', n*(unsigned long int)n);
+        memset(static_cast<void*>(J[0]), '\0', n*(size_t)n);
 
         // Copy the top bit in
-        C_DCOPY(n*(unsigned long int)nsig, Qp[0], 1, J[0], 1);
+        C_DCOPY(n*(size_t)nsig, Qp[0], 1, J[0], 1);
 
         delete[] tau;
     }
@@ -462,7 +463,7 @@ void FittingMetric::form_eig_inverse(double tol)
         // Copy J to W
         SharedMatrix W(new Matrix("W", n, n));
         double** Wp = W->pointer();
-        C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
+        C_DCOPY(n*(size_t)n,J[0],1,Wp[0],1);
 
         double* eigval = new double[n];
         int lwork = n * 3;
@@ -473,7 +474,7 @@ void FittingMetric::form_eig_inverse(double tol)
         SharedMatrix Jcopy(new Matrix("Jcopy", n, n));
         double** Jcopyp = Jcopy->pointer();
 
-        C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);
+        C_DCOPY(n*(size_t)n,Wp[0],1,Jcopyp[0],1);
 
         // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
         // where j'^{-1/2} is the diagonal matrix of the inverse square roots
@@ -517,7 +518,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         // Copy J to W
         SharedMatrix W(new Matrix("W", n, n));
         double** Wp = W->pointer();
-        C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
+        C_DCOPY(n*(size_t)n,J[0],1,Wp[0],1);
 
         double* eigval = new double[n];
         int lwork = n * 3;
@@ -528,7 +529,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         SharedMatrix Jcopy(new Matrix("Jcopy", n, n));
         double** Jcopyp = Jcopy->pointer();
 
-        C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);
+        C_DCOPY(n*(size_t)n,Wp[0],1,Jcopyp[0],1);
 
         // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
         // where j'^{-1/2} is the diagonal matrix of the inverse square roots

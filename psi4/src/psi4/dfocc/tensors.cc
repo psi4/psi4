@@ -27,16 +27,21 @@
  */
 
 // Latest revision on April 38, 2013.
-#include <stdio.h>
+
+#include "tensors.h"
+
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.hpp"
-#include "tensors.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+
+#include <stdio.h>
+#include <fstream>
+#include <cmath>
 
 using namespace std;
 
@@ -116,10 +121,10 @@ void Tensor1d::print()
 
 }//
 
-void Tensor1d::print(std::string OutFileRMR)
+void Tensor1d::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
   for (int p=0; p<dim1_; p++){
     printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
@@ -205,7 +210,7 @@ double Tensor1d::rms()
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += A1d_[i] * A1d_[i];
-  summ=sqrt(summ/dim1_);
+  summ=std::sqrt(summ/dim1_);
 
   return summ;
 }//
@@ -214,7 +219,7 @@ double Tensor1d::rms(const SharedTensor1d& Atemp)
 {
   double summ = 0.0;
   for (int i=0; i<dim1_; ++i) summ += (A1d_[i] - Atemp->A1d_[i])  * (A1d_[i] - Atemp->A1d_[i]);
-  summ=sqrt(summ/dim1_);
+  summ=std::sqrt(summ/dim1_);
 
   return summ;
 }//
@@ -224,7 +229,7 @@ double Tensor1d::dot(const SharedTensor1d &y)
   double value = 0.0;
   int incx = 1;
   int incy = 1;
-  if (dim1_ == y->dim1_) value = C_DDOT((ULI)dim1_, A1d_, incx, y->A1d_, incy);
+  if (dim1_ == y->dim1_) value = C_DDOT((size_t)dim1_, A1d_, incx, y->A1d_, incy);
   return value;
 }//
 
@@ -351,14 +356,14 @@ double Tensor1d::xay(const SharedTensor2d &a, const SharedTensor1d &y)
 
 void Tensor1d::axpy(const SharedTensor1d &a, double alpha)
 {
-    ULI length = (ULI)dim1_;
+    size_t length = (size_t)dim1_;
     C_DAXPY(length, alpha, a->A1d_, 1, A1d_, 1);
 }
 
 void Tensor1d::scale(double a)
 {
     //size_t size = dim1_ ;
-    ULI size = (ULI)dim1_ ;
+    size_t size = (size_t)dim1_ ;
     if (size) C_DSCAL(size, a, A1d_, 1);
 }//
 
@@ -367,7 +372,7 @@ void Tensor1d::copy(double *a)
     //size_t size;
     //size = dim1_ * sizeof(double);
     //if (size) memcpy(&(A1d_[0]), &(x[0]), size);
-    ULI size = (ULI)dim1_ ;
+    size_t size = (size_t)dim1_ ;
     C_DCOPY(size, a, 1, A1d_, 1);
 }//
 
@@ -376,7 +381,7 @@ void Tensor1d::copy(const SharedTensor1d &a)
     //size_t size;
     //size = dim1_ * sizeof(double);
     //if (size) memcpy(&(A1d_[0]), &(x->A1d_[0]), size);
-    ULI size = (ULI)dim1_ ;
+    size_t size = (size_t)dim1_ ;
     C_DCOPY(size, a->A1d_, 1, A1d_, 1);
 }//
 
@@ -482,7 +487,7 @@ Tensor2d::Tensor2d()
 
 }//
 
-Tensor2d::Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -500,7 +505,7 @@ Tensor2d::Tensor2d(psi::PSIO* psio, unsigned int fileno, string name, int d1,int
   read(psio, fileno);
 }
 
-Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -518,7 +523,7 @@ Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string 
   read(psio, fileno);
 }
 
-Tensor2d::Tensor2d(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -703,13 +708,13 @@ void Tensor2d::print()
   }
 }//
 
-void Tensor2d::print(std::string OutFileRMR)
+void Tensor2d::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname)));
    if (A2d_) {
       if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-      print_mat(A2d_,dim1_,dim2_,OutFileRMR);
+      print_mat(A2d_,dim1_,dim2_,out_fname);
   }
 }//
 
@@ -1475,13 +1480,13 @@ void Tensor2d::davidson(int n_eigval, const SharedTensor2d& eigvectors, const Sh
 
 void Tensor2d::add(const SharedTensor2d &a)
 {
-    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, 1.0, a->A2d_[0], 1, A2d_[0], 1);
 }//
 
 void Tensor2d::add(double **a)
 {
-    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, 1.0, a[0], 1, A2d_[0], 1);
 }//
 
@@ -1500,7 +1505,7 @@ void Tensor2d::add(int i, int j, double value)
 
 void Tensor2d::subtract(const SharedTensor2d &a)
 {
-    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, -1.0, a->A2d_[0], 1, A2d_[0], 1);
 }//
 
@@ -1511,22 +1516,22 @@ void Tensor2d::subtract(int i, int j, double value)
 
 void Tensor2d::axpy(double **a, double alpha)
 {
-    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, alpha, a[0], 1, A2d_[0], 1);
 }//
 
 void Tensor2d::axpy(const SharedTensor2d &a, double alpha)
 {
-    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length = (size_t)dim1_ * (size_t)dim2_;
     C_DAXPY(length, alpha, a->A2d_[0], 1, A2d_[0], 1);
 }//
 
-void Tensor2d::axpy(ULI length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha)
+void Tensor2d::axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha)
 {
     C_DAXPY(length, alpha, a->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
 
-void Tensor2d::axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha)
+void Tensor2d::axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha)
 {
     C_DAXPY(length, alpha, A->A2d_[0]+start_a, inc_a, A2d_[0]+start_2d, inc_2d);
 }//
@@ -1534,7 +1539,7 @@ void Tensor2d::axpy(ULI length, int start_a, int inc_a, const SharedTensor2d &A,
 double Tensor2d::norm()
 {
     double value = 0.0;
-    ULI length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length = (size_t)dim1_ * (size_t)dim2_;
     value = C_DNRM2(length, A2d_[0], 1);
     return value;
 }//
@@ -1592,8 +1597,8 @@ void Tensor2d::copy(double **a)
 {
     //size_t size = dim1_ * dim2_ * sizeof(double);
     //if (size) memcpy(&(A2d_[0][0]), &(a[0][0]), size);
-    ULI length;
-    length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
     C_DCOPY(length, a[0], 1, A2d_[0], 1);
 }
 
@@ -1611,15 +1616,15 @@ void Tensor2d::copy(const SharedTensor2d &Adum)
     }
 
     // If matrices are in the same size
-    ULI length;
-    length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
     if (dim1_ != 0 && dim2_ != 0) {
         //memcpy(A2d_[0], Adum->A2d_[0], dim1_ * dim2_ * sizeof(double));
         C_DCOPY(length, Adum->A2d_[0], 1, A2d_[0], 1);
     }
 }//
 
-void Tensor2d::copy(ULI length, const SharedTensor2d &A, int inc_a, int inc_2d)
+void Tensor2d::copy(size_t length, const SharedTensor2d &A, int inc_a, int inc_2d)
 {
     C_DCOPY(length, A->A2d_[0], inc_a, A2d_[0], inc_2d);
 }//
@@ -1777,19 +1782,19 @@ void Tensor2d::outer_product(const SharedTensor1d &x, const SharedTensor1d &y)
 void Tensor2d::scale(double a)
 {
     //size_t size;
-    ULI size;
-    size = (ULI)dim1_ * (ULI)dim2_;
+    size_t size;
+    size = (size_t)dim1_ * (size_t)dim2_;
     if (size) C_DSCAL(size, a, &(A2d_[0][0]), 1);
 }//
 
 void Tensor2d::scale_row(int m, double a)
 {
-    C_DSCAL((ULI)dim1_, a, &(A2d_[m][0]), 1);
+    C_DSCAL((size_t)dim1_, a, &(A2d_[m][0]), 1);
 }//
 
 void Tensor2d::scale_column(int n, double a)
 {
-    C_DSCAL((ULI)dim2_, a, &(A2d_[0][n]), dim1_);
+    C_DSCAL((size_t)dim2_, a, &(A2d_[0][n]), dim1_);
 }//
 
 void Tensor2d::identity()
@@ -1851,8 +1856,8 @@ double Tensor2d::vector_dot(double **rhs)
 {
     double value = 0.0;
     //size_t size = dim1_ * dim2_;
-    ULI size;
-    size = (ULI)dim1_ * (ULI)dim2_;
+    size_t size;
+    size = (size_t)dim1_ * (size_t)dim2_;
     if (size) value += C_DDOT(size, (&A2d_[0][0]), 1, &(rhs[0][0]), 1);
     return value;
 }//
@@ -1861,13 +1866,13 @@ double Tensor2d::vector_dot(const SharedTensor2d &rhs)
 {
     double value = 0.0;
     //size_t size = dim1_ * dim2_;
-    ULI size;
-    size = (ULI)dim1_ * (ULI)dim2_;
+    size_t size;
+    size = (size_t)dim1_ * (size_t)dim2_;
     if (size) value += C_DDOT(size, (&A2d_[0][0]), 1, &(rhs->A2d_[0][0]), 1);
     return value;
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1877,18 +1882,18 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) already_open = true;
     else psio->open(fileno, PSIO_OPEN_OLD);
-    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    size_t size_ = (size_t)dim1_*dim2_*sizeof(double);
     psio->write(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
+void Tensor2d::write(psi::PSIO* const psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1898,28 +1903,28 @@ void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(psi::PSIO* const psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::write(psi::PSIO* const psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) already_open = true;
     else psio->open(fileno, PSIO_OPEN_OLD);
-    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    size_t size_ = (size_t)dim1_*dim2_*sizeof(double);
     psio->write(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(psi::PSIO& psio, unsigned int fileno)
+void Tensor2d::write(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
 }//
 
-void Tensor2d::write(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::write(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end)
 {
     write(&psio, fileno, start, end);
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1929,7 +1934,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, un
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -1966,7 +1971,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool 
 
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, unsigned int fileno, bool three_index, bool symm)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -2003,7 +2008,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, un
 
 }//
 
-void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
         int ntri_col = 0.5 * dim1_ * (dim1_ +1);
@@ -2026,7 +2031,7 @@ void Tensor2d::write_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
 
 }//
 
-void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
 	int ntri_row, ntri_col;
@@ -2068,7 +2073,7 @@ void Tensor2d::write_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fil
 
 }//
 
-void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
+void Tensor2d::read(psi::PSIO* psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -2078,18 +2083,18 @@ void Tensor2d::read(psi::PSIO* psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(psi::PSIO* psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::read(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) already_open = true;
     else psio->open(fileno, PSIO_OPEN_OLD);
-    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    size_t size_ = (size_t)dim1_*dim2_*sizeof(double);
     psio->read(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -2099,28 +2104,28 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end)
 {
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) already_open = true;
     else psio->open(fileno, PSIO_OPEN_OLD);
-    ULI size_ = (ULI)dim1_*dim2_*sizeof(double);
+    size_t size_ = (size_t)dim1_*dim2_*sizeof(double);
     psio->read(fileno, const_cast<char*>(name_.c_str()), (char*)A2d_[0], size_, start, end);
     if (!already_open) psio->close(fileno, 1);     // Close and keep
 }
 
-void Tensor2d::read(psi::PSIO& psio, unsigned int fileno)
+void Tensor2d::read(psi::PSIO& psio, size_t fileno)
 {
     read(&psio, fileno);
 }//
 
-void Tensor2d::read(psi::PSIO& psio, unsigned int fileno, psio_address start, psio_address *end)
+void Tensor2d::read(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end)
 {
     read(&psio, fileno, start, end);
 }//
 
-void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool three_index, bool symm)
+void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -2158,7 +2163,7 @@ void Tensor2d::read(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, bool t
 
 }//
 
-void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
         int ntri_col = 0.5 * dim1_ * (dim1_ +1);
@@ -2182,7 +2187,7 @@ void Tensor2d::read_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
         temp.reset();
 }//
 
-void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::read_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
         // Form Lower triangular part
 	int ntri_row, ntri_col;
@@ -2267,37 +2272,37 @@ bool Tensor2d::read(std::shared_ptr<psi::PSIO> psio, int itap, const char *label
     return true;
 }//
 
-void Tensor2d::save(std::shared_ptr<psi::PSIO> psio, unsigned int fileno)
+void Tensor2d::save(std::shared_ptr<psi::PSIO> psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Tensor2d::save(psi::PSIO* const psio, unsigned int fileno)
+void Tensor2d::save(psi::PSIO* const psio, size_t fileno)
 {
     write(psio, fileno);
     release();
 }//
 
-void Tensor2d::save(psi::PSIO& psio, unsigned int fileno)
+void Tensor2d::save(psi::PSIO& psio, size_t fileno)
 {
     write(&psio, fileno);
     release();
 }//
 
-void Tensor2d::load(std::shared_ptr<psi::PSIO> psio, unsigned int fileno, string name, int d1,int d2)
+void Tensor2d::load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Tensor2d::load(psi::PSIO* const psio, unsigned int fileno, string name, int d1,int d2)
+void Tensor2d::load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Tensor2d::load(psi::PSIO& psio, unsigned int fileno, string name, int d1,int d2)
+void Tensor2d::load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(&psio, fileno);
@@ -2390,7 +2395,7 @@ void Tensor2d::myread(int fileno, bool append)
 
 }//
 
-void Tensor2d::myread(int fileno, ULI start)
+void Tensor2d::myread(int fileno, size_t start)
 {
       ostringstream convert;
       convert << fileno;
@@ -2412,8 +2417,8 @@ double **Tensor2d::to_block_matrix()
 {
     double **temp = block_matrix(dim1_, dim2_);
     //memcpy(&(temp[0][0]), &(A2d_[0][0]), dim1_ * dim2_ * sizeof(double));
-    ULI length;
-    length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
     C_DCOPY(length, A2d_[0], 1, temp[0], 1);
     return temp;
 }//
@@ -2471,7 +2476,7 @@ void Tensor2d::mgs()
 	  rmgs1 += A2d_[i][k] * A2d_[i][k];
 	}
 
-	rmgs1 = sqrt(rmgs1);
+	rmgs1 = std::sqrt(rmgs1);
 
 	for (int i=0; i<dim1_;i++) {
 	  A2d_[i][k]/=rmgs1;
@@ -3306,7 +3311,7 @@ double Tensor2d::rms()
             summ += A2d_[i][j] * A2d_[i][j];
        }
   }
-  summ=sqrt(summ/(dim1_*dim2_));
+  summ=std::sqrt(summ/(dim1_*dim2_));
 
   return summ;
 }//
@@ -3320,7 +3325,7 @@ double Tensor2d::rms(const SharedTensor2d& a)
             summ += (A2d_[i][j] - a->A2d_[i][j]) * (A2d_[i][j] - a->A2d_[i][j]);
        }
   }
-  summ=sqrt(summ/(dim1_*dim2_));
+  summ=std::sqrt(summ/(dim1_*dim2_));
 
   return summ;
 }//
@@ -4065,8 +4070,8 @@ void Tensor2d::set_column(const SharedTensor2d &A, int n)
   }
 
   /*
-    ULI length;
-    length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
     C_DCOPY(length, A->A2d_[0], 1, &(A2d_[0][n]), 1);
   */
 }//
@@ -4093,8 +4098,8 @@ void Tensor2d::get_column(const SharedTensor2d &A, int n)
   }
 
   /*
-    ULI length;
-    length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
     C_DCOPY(length, &(A->A2d_[0][n]), 1, A2d_[0], 1);
   */
 }//
@@ -5926,7 +5931,7 @@ double Tensor2d::get_max_element()
   #pragma omp parallel for
   for (int i=0; i < dim1_; i++) {
        for (int j=0; j < dim2_; j++) {
-           if ( fabs(A2d_[i][j]) > value ) value = fabs(A2d_[i][j]);
+           if ( std::fabs(A2d_[i][j]) > value ) value = std::fabs(A2d_[i][j]);
        }
   }
   return value;
@@ -6232,12 +6237,12 @@ void Tensor2i::print()
 
 }//
 
-void Tensor2i::print(std::string OutFileRMR)
+void Tensor2i::print(std::string out_fname)
 {
-   std::shared_ptr<psi::PsiOutStream> printer=(OutFileRMR=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(OutFileRMR)));
+   std::shared_ptr<psi::PsiOutStream> printer=(out_fname=="outfile"?outfile:
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out_fname)));
    if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
-  print_int_mat(A2i_,dim1_,dim2_,OutFileRMR);
+  print_int_mat(A2i_,dim1_,dim2_,out_fname);
 }//
 
 void Tensor2i::release()
@@ -6349,8 +6354,8 @@ void Tensor2i::copy(const SharedTensor2i& Adum)
     }
 
     // If matrices are in the same size
-    ULI length;
-    length = (ULI)dim1_ * (ULI)dim2_;
+    size_t length;
+    length = (size_t)dim1_ * (size_t)dim2_;
       if (dim1_ != 0 && dim2_ != 0) {
 	memcpy(A2i_[0], Adum->A2i_[0], dim1_ * dim2_ * sizeof(int));
       }

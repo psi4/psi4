@@ -46,8 +46,8 @@
  #include "psi4/libmints/molecule.h"
  #include "psi4/libmints/matrix.h"
  #include "psi4/libmints/wavefunction.h"
- #include "psi4/libparallel/parallel.h"
  #include "psi4/libmints/writer_file_prefix.h"
+ #include "psi4/libpsi4util/process.h"
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
  #include "EFP.h"
@@ -61,7 +61,7 @@ class BROKEN_SYMMETRY_EXCEPT;
 using namespace std;
 
 bool is_integer(const char *check) {
-  for (ULI i=0; i<strlen(check); ++i) {
+  for (size_t i=0; i<strlen(check); ++i) {
     if (!isdigit(check[i]))
       return false;
   }
@@ -289,7 +289,7 @@ void MOLECULE::read_geom_grad(void) {
 #endif
 
   // update interfragment reference points if they exist
-  for (ULI i=0; i<interfragments.size(); ++i)
+  for (size_t i=0; i<interfragments.size(); ++i)
     interfragments[i]->update_reference_points();
 
   return;

@@ -26,12 +26,9 @@
  * @END LICENSE
  */
 
-#include <utility>
-#include <algorithm>
-#include <cstdio>
+#include "scf.h"
 
-#include <cmath>
-
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/molecule.h"
@@ -39,10 +36,13 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/psifiles.h"
-
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/process.h"
 
-#include "scf.h"
+#include <utility>
+#include <algorithm>
+#include <cstdio>
+#include <cmath>
 
 namespace psi{ namespace mcscf{
 

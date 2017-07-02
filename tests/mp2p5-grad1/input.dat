@@ -1,12 +1,10 @@
 #! MP2.5 cc-pVDZ gradient for the H2O molecule.
 
-ref_vals = [                                                       #TEST
+ref = psi4.Matrix.from_list([                                      #TEST
              [ 0.000000000000,  0.000000000000,  0.010370724082],  #TEST
              [ 0.000000000000,  0.001046486798, -0.005185362041],  #TEST
              [ 0.000000000000, -0.001046486798, -0.005185362041]   #TEST
-           ]                                                       #TEST
-ref = psi4.Matrix(3, 3)                                          #TEST
-ref.set(ref_vals)
+           ])                                                      #TEST
 
 molecule h2o {
 0 1

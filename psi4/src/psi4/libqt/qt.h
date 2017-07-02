@@ -45,6 +45,7 @@
 // I think this is forward-declaring class Options -CDS
 namespace psi {
 class Options;
+class Wavefunction;
 }
 
 namespace psi {
@@ -53,10 +54,10 @@ void dx_read(double **V_eff, double *phi_ao, double *phi_so,int nao,int nso, dou
 void fill_sym_matrix(double **A, int size);
 double combinations(int n, int k);
 double factorial(int n);
-void schmidt(double **A, int rows, int cols, std::string OutFileRMR);
+void schmidt(double **A, int rows, int cols, std::string out_fname);
 int schmidt_add(double **A, int rows, int cols, double *v);
 void normalize(double **A, int rows, int cols);
-double invert_matrix(double **a, double **y, int N, std::string OutFileRMR);
+double invert_matrix(double **a, double **y, int N, std::string out_fname);
 void solve_2x2_pep(double **H, double S, double *evals, double **evecs);
 void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps);
@@ -80,8 +81,8 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
 double dot_block(double **A, double **B, int rows, int cols, double alpha);
 void dirprd_block(double **A, double **B, int rows, int cols);
 int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
-           std::string OutFileRMR, int print_lvl);
-void mat_print(double **A, int rows, int cols, std::string OutFileRMR);
+           std::string out_fname, int print_lvl);
+void mat_print(double **A, int rows, int cols, std::string out_fname);
 
 void timer_init(void);
 void timer_done(void);
@@ -103,18 +104,18 @@ double ***init_3d_array(int p, int q, int r);
 #define MAX_RAS_SPACES 4
 
 // BLAS 1 Double routines
-void C_DROT(unsigned long int ntot, double *x, int incx, double *y, int incy,
+void C_DROT(size_t ntot, double *x, int incx, double *y, int incy,
              double costheta, double sintheta);
-void C_DSWAP(unsigned long int length, double *x, int incx, double *y, int inc_y);
-void C_DSCAL(unsigned long int len, double alpha, double *vec, int inc);
-void C_DCOPY(unsigned long int length, double *x, int inc_x,
+void C_DSWAP(size_t length, double *x, int incx, double *y, int inc_y);
+void C_DSCAL(size_t len, double alpha, double *vec, int inc);
+void C_DCOPY(size_t length, double *x, int inc_x,
              double *y, int inc_y);
-void C_DAXPY(unsigned long int length, double a, double *x, int inc_x,
+void C_DAXPY(size_t length, double a, double *x, int inc_x,
              double *y, int inc_y);
-double C_DDOT(unsigned long int n, double *X, int inc_x, double *Y, int inc_y);
-double C_DNRM2(unsigned long int n, double *X, int inc_x);
-double C_DASUM(unsigned long int n, double *X, int inc_x);
-unsigned long int C_IDAMAX(unsigned long int n, double *X, int inc_x);
+double C_DDOT(size_t n, double *X, int inc_x, double *Y, int inc_y);
+double C_DNRM2(size_t n, double *X, int inc_x);
+double C_DASUM(size_t n, double *X, int inc_x);
+size_t C_IDAMAX(size_t n, double *X, int inc_x);
 
 // BLAS 2 Double routines
 void C_DGBMV(char trans, int m, int n, int kl, int ku, double alpha, double* a, int lda, double* x, int incx, double beta, double* y, int incy);

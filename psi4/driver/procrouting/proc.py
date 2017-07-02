@@ -1055,6 +1055,10 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
                                                    return_atomlist=True)
             wfn.set_sad_fitting_basissets(sad_fitting_list)
 
+    # Deal with the EXTERN issues
+    if hasattr(core, "EXTERN"):
+        wfn.set_external_potential(core.EXTERN)
+
     return wfn
 
 

@@ -35,6 +35,8 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libmints/typedefs.h"
+#include "psi4/pybind11.h"
 
 namespace psi {
 class Molecule;

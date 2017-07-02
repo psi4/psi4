@@ -89,9 +89,9 @@ void s1_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
                    int nlists, int nas, int nbs, int Ib_list, int Jb_list,
                    int Jb_list_nbs) {
   struct stringwr *Ib, *Kb;
-  unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
-  unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
-  unsigned int *Ibridx, *Kbridx;
+  size_t Ia_idx, Ib_idx, Kb_idx, Jb_idx;
+  size_t Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
+  size_t *Ibridx, *Kbridx;
   int *Ibij, *Kbij;
   signed char *Ibsgn, *Kbsgn;
   int ij, kl, ijkl;
@@ -185,9 +185,9 @@ void s1_block_vras(struct stringwr **alplist, struct stringwr **betlist,
                    int nlists, int nas, int nbs, int Ib_list, int Jb_list,
                    int Jb_list_nbs) {
   struct stringwr *Ib, *Kb;
-  unsigned int Ia_idx, Ib_idx, Kb_idx, Jb_idx;
-  unsigned int Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
-  unsigned int *Ibridx, *Kbridx;
+  size_t Ia_idx, Ib_idx, Kb_idx, Jb_idx;
+  size_t Ibcnt, Kbcnt, Kb_list, Ib_ex, Kb_ex;
+  size_t *Ibridx, *Kbridx;
   int *Ibij, *Kbij, *Iboij, *Kboij;
   signed char *Ibsgn, *Kbsgn;
   int ij, kl, ijkl, oij, okl;

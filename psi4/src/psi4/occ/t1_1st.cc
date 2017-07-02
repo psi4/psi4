@@ -31,6 +31,8 @@
 #include "occwave.h"
 #include "psi4/libmints/matrix.h"
 
+#include <cmath>
+
 
 using namespace std;
 
@@ -178,22 +180,22 @@ void OCCWave::t1_1st_gen()
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int a = 0 ; a < avirtpiA[h]; ++a){
-                rms_t1A += pow(t1newA->get(h, i, a) - t1A->get(h, i, a), 2);
+                rms_t1A += std::pow(t1newA->get(h, i, a) - t1A->get(h, i, a), 2);
             }
         }
     }
-    rms_t1A = sqrt(rms_t1A)/nidpA;
+    rms_t1A = std::sqrt(rms_t1A)/nidpA;
 
     // beta
     rms_t1B = 0.0;
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int a = 0 ; a < avirtpiB[h]; ++a){
-                rms_t1B += pow(t1newB->get(h, i, a) - t1B->get(h, i, a), 2);
+                rms_t1B += std::pow(t1newB->get(h, i, a) - t1B->get(h, i, a), 2);
             }
         }
     }
-    rms_t1B = sqrt(rms_t1B)/nidpB;
+    rms_t1B = std::sqrt(rms_t1B)/nidpB;
 
     // reset
     t1A->zero();

@@ -32,6 +32,8 @@
 #include "occwave.h"
 #include "defines.h"
 
+#include <cmath>
+
 
 using namespace std;
 
@@ -125,7 +127,7 @@ outfile->Printf(" %3d     %12.10f    %12.10f  %12.2e %12.2e \n", itr_occ, Ecorr,
     }
 
 }
-while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
+while(std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
 
 //delete
 delete t2DiisManager;

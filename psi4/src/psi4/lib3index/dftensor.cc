@@ -44,8 +44,6 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 
-using ULI=unsigned long int;
-
 using namespace std;
 
 namespace psi {
@@ -189,18 +187,18 @@ SharedMatrix DFTensor::Qso()
 SharedMatrix DFTensor::Qoo()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Ami", naux_, naocc_ * (ULI) nso_));
+    SharedMatrix Ami(new Matrix("Ami", naux_, naocc_ * (size_t) nso_));
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cop = Caocc_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_,
+    C_DGEMM('N','N', naux_ * (size_t) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_,
         0.0, Amip[0], naocc_);
 
     Amn.reset();
 
-    SharedMatrix Aia(new Matrix("Aij", naux_, naocc_ * (ULI) naocc_));
+    SharedMatrix Aia(new Matrix("Aij", naux_, naocc_ * (size_t) naocc_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -221,20 +219,20 @@ SharedMatrix DFTensor::Qoo()
 SharedMatrix DFTensor::Qov()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Qmi", naux_, naocc_ * (ULI) nso_));
+    SharedMatrix Ami(new Matrix("Qmi", naux_, naocc_ * (size_t) nso_));
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cop = Caocc_->pointer();
     double** Cvp = Cavir_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_,
+    C_DGEMM('N','N', naux_ * (size_t) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_,
         0.0, Amip[0], naocc_);
 
     Amn.reset();
 
     outfile->Printf( "DFTensor::Qov: naux %d, naocc %d, navir %d\n", naux_, naocc_, navir_);
-    SharedMatrix Aia(new Matrix("Qia", naux_, naocc_ * (ULI) navir_));
+    SharedMatrix Aia(new Matrix("Qia", naux_, naocc_ * (size_t) navir_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -256,18 +254,18 @@ SharedMatrix DFTensor::Qov()
 SharedMatrix DFTensor::Qvv()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Qmi", naux_, navir_ * (ULI) nso_));
+    SharedMatrix Ami(new Matrix("Qmi", naux_, navir_ * (size_t) nso_));
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cvp = Cavir_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, navir_, nso_, 1.0, Amnp[0], nso_, Cvp[0], navir_,
+    C_DGEMM('N','N', naux_ * (size_t) nso_, navir_, nso_, 1.0, Amnp[0], nso_, Cvp[0], navir_,
         0.0, Amip[0], navir_);
 
     Amn.reset();
 
-    SharedMatrix Aia(new Matrix("Qab", naux_, navir_ * (ULI) navir_));
+    SharedMatrix Aia(new Matrix("Qab", naux_, navir_ * (size_t) navir_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
@@ -288,18 +286,18 @@ SharedMatrix DFTensor::Qvv()
 SharedMatrix DFTensor::Qmo()
 {
     SharedMatrix Amn = Qso();
-    SharedMatrix Ami(new Matrix("Qmi", naux_, nmo_ * (ULI) nso_));
+    SharedMatrix Ami(new Matrix("Qmi", naux_, nmo_ * (size_t) nso_));
 
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cvp = C_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, nmo_, nso_, 1.0, Amnp[0], nso_, Cvp[0], nmo_,
+    C_DGEMM('N','N', naux_ * (size_t) nso_, nmo_, nso_, 1.0, Amnp[0], nso_, Cvp[0], nmo_,
         0.0, Amip[0], nmo_);
 
     Amn.reset();
 
-    SharedMatrix Aia(new Matrix("Qmo", naux_, nmo_ * (ULI) nmo_));
+    SharedMatrix Aia(new Matrix("Qmo", naux_, nmo_ * (size_t) nmo_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {

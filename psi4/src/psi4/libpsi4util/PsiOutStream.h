@@ -26,43 +26,44 @@
  * @END LICENSE
  */
 
-#if !defined(psi_src_lib_libparallel_threaded_storage)
-#define psi_src_lib_libparallel_threaded_storage
+#ifndef _psi_src_lib_libpsi4util_psioutstream_h_
+#define _psi_src_lib_libpsi4util_psioutstream_h_
 
 #include <vector>
+#include <string>
+#include <iostream>
+#include <ostream>
 
 namespace psi {
 
-template<typename T>
-class threaded_storage
-{
-    std::vector<T> storage_;
+class PsiOutStream {
+   private:
+    std::ostream* stream_;
+    bool is_cout_;
+    std::vector<char> buffer_;
 
-public:
+   public:
+    PsiOutStream(std::string fname = "", std::ios_base::openmode mode = std::ostream::trunc);
+    ~PsiOutStream();
 
-    threaded_storage(const T& value = T())
-        : storage_(Process::environment.get_n_threads(), value)
-    { }
+    void Printf(const char* fmt, ...);
+    void Printf(std::string fp);
+    void MakeBanner(std::string header);
 
-    void initialize(const T& value) {
-        storage_.clear();
-        for (int i=0; i<Process::environment.get_n_threads(); ++i) {
-            storage_.push_back(value);
-        }
-    }
+    std::ostream* stream() { return stream_; }
 
-    T& operator*() {
-        return storage_[0];
-    }
+    // Incase we want to overload << again
+    // template <class T>
+    // PsiOutStream& operator<<(T&& x) {
+    //     *stream_ << std::forward<T>(x);
+    //     return (*this);
+    // }
 
-    const T& operator[](size_t ind) const {
-        return storage_[ind];
-    }
-    T& operator[](size_t ind) {
-        return storage_[ind];
-    }
+    // PsiOutStream& operator<<(std::ostream& (*oper)(std::ostream&)) {
+    //     *stream_ << oper;
+    //     return (*this);
+    // }
 };
 
-}
-
+}  // End Psi namespace
 #endif

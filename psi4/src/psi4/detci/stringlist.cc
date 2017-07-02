@@ -65,7 +65,7 @@ int *sbgr_tr_alist;
 
 int *O, *U, *T ;
 int **Tij, **Toij, *Tcnt;
-unsigned int **Tidx;
+size_t **Tidx;
 signed char **Tsgn;
 
 
@@ -224,7 +224,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
       *Graph, int first_orb_active, int repl_otf)
 {
    unsigned char *occlist;
-   unsigned int addr;
+   size_t addr;
    int i;
    struct stringwr *node;
 
@@ -263,7 +263,7 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
    int diagcnt=0;
    static int *diagij = NULL;
    static int *diagoij = NULL;
-   unsigned int cnt, stringridx;
+   size_t cnt, stringridx;
    int ridx;
    signed char sgn;
 
@@ -383,7 +383,7 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
    string->cnt = init_int_array(nlists);
    string->ij = (int **) malloc(sizeof(int *) * nlists);
    string->oij = (int **) malloc(sizeof(int *) * nlists);
-   string->ridx = (unsigned int **) malloc(sizeof(unsigned int *) * nlists);
+   string->ridx = (size_t **) malloc(sizeof(size_t *) * nlists);
    string->sgn = (signed char **) malloc(sizeof(signed char *) * nlists);
 
 
@@ -396,8 +396,8 @@ void og_form_repinfo(struct stringwr *string, int num_ci_orbs,
       if (cnt) {
          string->ij[i] = init_int_array(cnt);
          string->oij[i] = init_int_array(cnt);
-         string->ridx[i] = (unsigned int *) malloc(cnt *
-            sizeof(unsigned int));
+         string->ridx[i] = (size_t *) malloc(cnt *
+            sizeof(size_t));
          string->sgn[i] = (signed char *) malloc(cnt *
             sizeof(signed char));
 
@@ -432,13 +432,13 @@ void init_stringwr_temps(int nel, int num_ci_orbs, int nsym)
    maxcnt = nel * num_ci_orbs; /* num single replacements inc. self-repl */
    Tij = (int **) malloc(sizeof(int *) * nsym);
    Toij = (int **) malloc(sizeof(int *) * nsym);
-   Tidx = (unsigned int **) malloc(sizeof(unsigned int *) * nsym);
+   Tidx = (size_t **) malloc(sizeof(size_t *) * nsym);
    Tsgn = (signed char **) malloc(sizeof(signed char *) * nsym);
 
    for (i=0; i<nsym; i++) {
       Tij[i] = init_int_array(maxcnt);
       Toij[i] = init_int_array(maxcnt);
-      Tidx[i] = (unsigned int *) malloc(sizeof(unsigned int) * maxcnt);
+      Tidx[i] = (size_t *) malloc(sizeof(size_t) * maxcnt);
       Tsgn[i] = (signed char *) malloc(sizeof(signed char) * maxcnt);
       }
 }

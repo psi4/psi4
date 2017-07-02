@@ -86,7 +86,7 @@ public:
     double computeNuclearEnergy(std::shared_ptr<Molecule> mol);
 
     /// Print a trace of the external potential
-    void print(std::string OutFileRMR = "outfile") const;
+    void print(std::string out_fname = "outfile") const;
 
     /// Python print helper
     void py_print() const { print("outfile"); }

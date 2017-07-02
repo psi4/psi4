@@ -30,18 +30,23 @@
     \ingroup CCTRIPLES
     \brief Enter brief description of file here
 */
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+
+#include "Params.h"
+#include "MOInfo.h"
+#include "globals.h"
+
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
-#include "Params.h"
-#include "MOInfo.h"
-#include "globals.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 namespace psi { namespace cctriples {
 

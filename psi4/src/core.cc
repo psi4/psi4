@@ -33,20 +33,21 @@
 #include <sys/stat.h>
 #include "psi4/pybind11.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libplugin/plugin.h"
-#include "psi4/libparallel/mpi_wrapper.h"
-#include "psi4/libparallel/local.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/ccenergy/ccwave.h"
 #include "psi4/cclambda/cclambda.h"
 #include "psi4/libqt/qt.h"
@@ -189,7 +190,7 @@ void py_flush_outfile()
 void py_close_outfile()
 {
     if (outfile) {
-        outfile = std::shared_ptr<OutFile>();
+        outfile = std::shared_ptr<PsiOutStream>();
     }
 }
 
@@ -199,7 +200,7 @@ void py_reopen_outfile()
         //outfile = stdout;
     }
     else {
-        outfile = std::shared_ptr<OutFile>(new OutFile(outfile_name, APPEND));
+        outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(outfile_name, std::ostream::app));
         if (!outfile)
             throw PSIEXCEPTION("Psi4: Unable to reopen output file.");
     }
@@ -208,7 +209,7 @@ void py_reopen_outfile()
 void py_be_quiet()
 {
     py_close_outfile();
-    outfile = std::shared_ptr<OutFile>(new OutFile("/dev/null", APPEND));
+    outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream("/dev/null", std::ostream::app));
     if (!outfile)
         throw PSIEXCEPTION("Psi4: Unable to redirect output to /dev/null.");
 }
@@ -599,7 +600,7 @@ void py_psi_clean_options()
 
 void py_psi_print_out(std::string s)
 {
-    (*outfile) << s;
+    (*outfile->stream()) << s;
 }
 
 /**
@@ -707,13 +708,6 @@ bool py_psi_set_global_option_double(std::string const& key, double value)
     std::string nonconst_key = to_upper(key);
 
     Process::environment.options.set_global_double(nonconst_key, value);
-    return true;
-}
-
-bool py_psi_set_global_option_python(std::string const& key, py::object& obj)
-{
-    std::string nonconst_key = to_upper(key);
-    Process::environment.options.set_global_python(nonconst_key, obj);
     return true;
 }
 
@@ -853,6 +847,16 @@ bool py_psi_has_option_changed(std::string const& module, std::string const& key
     return data.has_changed();
 }
 
+bool py_psi_option_exists_in_module(std::string const& module, std::string const& key)
+{
+    std::string nonconst_key = to_upper(key);
+    Process::environment.options.set_current_module(module);
+    py_psi_prepare_options_for_module(module);
+    bool in_module = Process::environment.options.exists_in_active(nonconst_key);
+
+    return in_module;
+}
+    
 void py_psi_revoke_global_option_changed(std::string const& key)
 {
     std::string nonconst_key = to_upper(key);
@@ -870,6 +874,30 @@ void py_psi_revoke_local_option_changed(std::string const& module, std::string c
     data.dechanged();
 }
 
+// Quick function that unpacks a data type
+py::list data_to_list(py::list l, Data d)
+{
+    if(d.is_array()){
+        // Recurse
+        py::list row;
+        for(int i = 0; i < d.size(); ++i){
+            data_to_list(row, d[i]);
+        }
+        l.append(row);
+    }else if(d.type() == "double"){
+        l.append(py::float_(d.to_double()));
+    }else if(d.type() == "string"){
+        l.append(py::str(d.to_string()));
+    }else if(d.type() == "boolean"){
+        l.append(py::bool_(d.to_integer()));
+    }else if(d.type() == "int"){
+        l.append(py::int_(d.to_integer()));
+    }else{
+        throw PSIEXCEPTION("Unknown data type in fill_list");
+    }
+    return l;
+}
+
 py::object py_psi_get_local_option(std::string const& module, std::string const& key)
 {
     std::string nonconst_key = to_upper(key);
@@ -883,8 +911,13 @@ py::object py_psi_get_local_option(std::string const& module, std::string const&
         return py::cast(data.to_integer());
     else if (data.type() == "double")
         return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::object(data.to_list());
+    else if (data.type() == "array"){
+        py::list l;
+        for (size_t i = 0; i < data.size(); i++){
+            data_to_list(l, data[i]);
+        }
+        return l;
+    }
 
     return py::object();
 }
@@ -900,8 +933,13 @@ py::object py_psi_get_global_option(std::string const& key)
         return py::cast(data.to_integer());
     else if (data.type() == "double")
         return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::object(data.to_list());
+    else if (data.type() == "array"){
+        py::list l;
+        for (size_t i = 0; i < data.size(); i++){
+            data_to_list(l, data[i]);
+        }
+        return l;
+    }
 
     return py::object();
 }
@@ -919,8 +957,13 @@ py::object py_psi_get_option(std::string const& module, std::string const& key)
         return py::cast(data.to_integer());
     else if (data.type() == "double")
         return py::cast(data.to_double());
-    else if (data.type() == "array")
-        return py::object(data.to_list());
+    else if (data.type() == "array"){
+        py::list l;
+        for (size_t i = 0; i < data.size(); i++){
+            data_to_list(l, data[i]);
+        }
+        return l;
+    }
 
     return py::object();
 }
@@ -1052,7 +1095,7 @@ void py_psi_clean_variable_map()
     Process::environment.arrays.clear();
 }
 
-void py_psi_set_memory(unsigned long int mem, bool quiet)
+void py_psi_set_memory(size_t mem, bool quiet)
 {
     Process::environment.set_memory(mem);
     if (!quiet){
@@ -1062,12 +1105,12 @@ void py_psi_set_memory(unsigned long int mem, bool quiet)
     }
 }
 
-unsigned long int py_psi_get_memory()
+size_t py_psi_get_memory()
 {
     return Process::environment.get_memory();
 }
 
-void py_psi_set_n_threads(unsigned int nthread, bool quiet)
+void py_psi_set_n_threads(size_t nthread, bool quiet)
 {
 #ifdef _OPENMP
     Process::environment.set_n_threads(nthread);
@@ -1194,7 +1237,7 @@ void psi4_python_module_finalize()
     // There is only one timer:
     timer_done();
 
-    outfile = std::shared_ptr<OutFile>();
+    outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = NULL;
 
 }
@@ -1333,8 +1376,6 @@ PYBIND11_PLUGIN(core) {
         "Sets value *arg2* to double keyword *arg1* for all modules.");
     core.def("set_global_option", py_psi_set_global_option_string,
         "Sets value *arg2* to string keyword *arg1* for all modules.");
-    core.def("set_global_option_python", py_psi_set_global_option_python,
-        "Sets a global option to a Python object type.");
 
     // Print options list
     core.def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
@@ -1366,6 +1407,8 @@ PYBIND11_PLUGIN(core) {
     core.def("revoke_local_option_changed",
         py_psi_revoke_local_option_changed,
         "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    core.def("option_exists_in_module",
+        py_psi_option_exists_in_module, "Given a string of a keyword name *arg1* and a particular module *arg0*, returns whether *arg1* is a valid option for *arg0*.");
 
     // These return/set/print PSI variables found in Process::environment.globals
     core.def("has_variable",py_psi_has_variable,"Returns true if the PSI variable exists/is set.");
@@ -1450,11 +1493,11 @@ PYBIND11_PLUGIN(core) {
     core.def("get_environment", [](const std::string key){ return Process::environment(key); }, "Get enviromental vairable");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname){
-                 outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, TRUNCATE));
+                 outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(ofname, std::ostream::trunc));
                  outfile_name = ofname;
                  });
     core.def("set_output_file", [](const std::string ofname, bool append){
-                 outfile = std::shared_ptr<PsiOutStream>(new OutFile(ofname, (append ? APPEND:TRUNCATE)));
+                 outfile = std::shared_ptr<PsiOutStream>(new PsiOutStream(ofname, (append ? std::ostream::app:std::ostream::trunc)));
                  outfile_name = ofname;
                  });
     core.def("get_output_file", [](){ return outfile_name; });

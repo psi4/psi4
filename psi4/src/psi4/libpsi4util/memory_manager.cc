@@ -36,7 +36,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psi4-dec.h"
 #include "memory_manager.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi{
 
 using namespace std;
@@ -94,7 +94,7 @@ void MemoryManager::UnregisterMemory(void *mem, size_t size, const char *fileNam
 void MemoryManager::MemCheck(std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    static bool alreadyChecked = false;
 
   printer->Printf( "\n\n");
@@ -172,17 +172,17 @@ void MemoryManager::MemCheck(std::string out)
 //          release_three(m,__FILE__,__LINE__);
 //        }
 //      }
-//      else if ((*it).second.type == "unsigned int") {
+//      else if ((*it).second.type == "size_t") {
 //        if ((*it).second.argumentList.size() == 1) {
-//          unsigned int *m = (unsigned int*)(*it).second.variable;
+//          size_t *m = (size_t*)(*it).second.variable;
 //          release_one(m,__FILE__,__LINE__);
 //        }
 //        else if ((*it).second.argumentList.size() == 2) {
-//          unsigned int **m = (unsigned int**)(*it).second.variable;
+//          size_t **m = (size_t**)(*it).second.variable;
 //          release_two(m,__FILE__,__LINE__);
 //        }
 //        else if ((*it).second.argumentList.size() == 3) {
-//          unsigned int ***m = (unsigned int***)(*it).second.variable;
+//          size_t ***m = (size_t***)(*it).second.variable;
 //          release_three(m,__FILE__,__LINE__);
 //        }
 //      }

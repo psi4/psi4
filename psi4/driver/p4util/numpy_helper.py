@@ -40,7 +40,11 @@ def translate_interface(interface):
     This is extra stupid with unicode
     """
 
-    if sys.version_info[0] > 2:
+    # Not super easy to do this C side, very easy py side
+    interface["shape"] = tuple(interface["shape"])
+
+    # Python3 is awesome
+    if sys.version_info[0] >= 3:
         return interface
 
     nouni_interface = {}
@@ -66,10 +70,7 @@ def _get_raw_views(self, copy=False):
     ret = []
     for data in self.array_interface():
 
-        # Yet another hack
-        if isinstance(data["shape"], list):
-            data["shape"] = tuple(data["shape"])
-
+        # Watch out for those shapes without data
         if 0 in data["shape"]:
             ret.append(np.empty(shape=data["shape"]))
         else:
@@ -86,10 +87,8 @@ def _find_dim(arr, ndim):
         return [0] * ndim
 
     # Make sure this is a numpy array like thing
-    try:
-        arr.shape
-    except:
-        raise ValidationError("Expected numpy array, found object of type '%s'", type(arr))
+    if not hasattr(arr, 'shape'):
+        raise ValidationError("Expected numpy array, found object of type '%s'" % type(arr))
 
     if len(arr.shape) == ndim:
         return [arr.shape[x] for x in range(ndim)]
@@ -391,6 +390,10 @@ def _np_write(self, filename=None, prefix=""):
     ret[prefix + "Irreps"] = self.nirrep()
     ret[prefix + "Name"] = self.name
     for h, v in enumerate(self.nph):
+        # If returning arrays to user, we want to return copies (snapshot), not
+        # views of the core.Matrix's memory.
+        if filename is None and not v.flags['OWNDATA']:
+            v = np.copy(v)
         ret[prefix + "IrrepData" + str(h)] = v
 
     if isinstance(self, core.Matrix):
@@ -516,6 +519,7 @@ def _chain_dot(*args, **kwargs):
 
 # Matirx attributes
 core.Matrix.from_array = classmethod(array_to_matrix)
+core.Matrix.from_list = classmethod(lambda self, x: array_to_matrix(self, np.array(x)))
 core.Matrix.to_array = _to_array
 core.Matrix.shape = _np_shape
 core.Matrix.np = _np_view
@@ -529,6 +533,7 @@ core.Matrix.chain_dot = _chain_dot
 
 # Vector attributes
 core.Vector.from_array = classmethod(array_to_matrix)
+core.Vector.from_list = classmethod(lambda self, x: array_to_matrix(self, np.array(x)))
 core.Vector.to_array = _to_array
 core.Vector.shape = _np_shape
 core.Vector.np = _np_view

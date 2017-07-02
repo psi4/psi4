@@ -123,47 +123,47 @@ void PSI_DTRSV(int irrep, char uplo, char trans, char diag, int n, SharedMatrix 
 }
 
 /// PSI_DROT, a wrapper to C_DROT using objects
-void PSI_DROT(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy, double c, double s)
+void PSI_DROT(int irrep, size_t n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy, double c, double s)
 {
     C_DROT(n, x->pointer(irrep), incx, y->pointer(irrep), incy, c, s);
 }
 /// PSI_DSWAP, a wrapper to C_DSWAP using objects
-void PSI_DSWAP(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
+void PSI_DSWAP(int irrep, size_t n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
 {
     C_DSWAP(n, x->pointer(irrep), incx, y->pointer(irrep), incy);
 }
 /// PSI_DCOPY, a wrapper to C_DCOPY using objects
-void PSI_DCOPY(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
+void PSI_DCOPY(int irrep, size_t n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
 {
     C_DCOPY(n, x->pointer(irrep), incx, y->pointer(irrep), incy);
 }
 /// PSI_DSCAL, a wrapper to C_DSCAL using objects
-void PSI_DSCAL(int irrep, unsigned long int n, double alpha, std::shared_ptr<Vector> x, int incx)
+void PSI_DSCAL(int irrep, size_t n, double alpha, std::shared_ptr<Vector> x, int incx)
 {
     C_DSCAL(n, alpha, x->pointer(irrep), incx);
 }
 /// PSI_DAXPY, a wrapper to C_DAXPY using objects
-void PSI_DAXPY(int irrep, unsigned long int n, double alpha, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
+void PSI_DAXPY(int irrep, size_t n, double alpha, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
 {
     C_DAXPY(n, alpha, x->pointer(irrep), incx, y->pointer(irrep), incy);
 }
 /// PSI_DDOT, a wrapper to C_DDOT using objects
-double PSI_DDOT(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
+double PSI_DDOT(int irrep, size_t n, std::shared_ptr<Vector> x, int incx, std::shared_ptr<Vector> y, int incy)
 {
     return C_DDOT(n, x->pointer(irrep), incx, y->pointer(irrep), incy);
 }
 /// PSI_DNRM2, a wrapper to C_DNRM2 using objects
-double PSI_DNRM2(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx)
+double PSI_DNRM2(int irrep, size_t n, std::shared_ptr<Vector> x, int incx)
 {
     return C_DNRM2(n, x->pointer(irrep), incx);
 }
 /// PSI_DASUM, a wrapper to C_DASUM using objects
-double PSI_DASUM(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx)
+double PSI_DASUM(int irrep, size_t n, std::shared_ptr<Vector> x, int incx)
 {
     return C_DASUM(n, x->pointer(irrep), incx);
 }
 /// PSI_IDAMAX, a wrapper to C_IDAMAX using objects
-unsigned long int PSI_IDAMAX(int irrep, unsigned long int n, std::shared_ptr<Vector> x, int incx)
+size_t PSI_IDAMAX(int irrep, size_t n, std::shared_ptr<Vector> x, int incx)
 {
     return C_IDAMAX(n, x->pointer(irrep), incx);
 }

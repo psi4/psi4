@@ -33,6 +33,7 @@
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/physconst.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

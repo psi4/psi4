@@ -26,8 +26,9 @@
  * @END LICENSE
  */
 
+#include "psi4/fisapt/fisapt.h"
+#include "psi4/fisapt/local2.h"
 
-#include "psi4/libmints/local.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
 #include "psi4/libfock/jk.h"
@@ -38,13 +39,14 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/fisapt/fisapt.h"
 #include "psi4/libcubeprop/csg.h"
-#include "psi4/fisapt/local2.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/process.h"
+
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -3544,7 +3546,7 @@ void FISAPT::find()
         if (jk_memory < 0L) {
             throw PSIEXCEPTION("Too little static memory for FISAPT::induction");
         }
-        jk->set_memory((unsigned long int )jk_memory);
+        jk->set_memory((size_t )jk_memory);
         jk->set_do_J(true);
         jk->set_do_K(true);
         jk->initialize();

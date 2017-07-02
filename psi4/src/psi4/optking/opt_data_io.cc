@@ -40,7 +40,6 @@
 // PSI unit number for opt_data binary file
 #if defined (OPTKING_PACKAGE_PSI)
  #define PSI_OPTDATA_FILE_NUM 1
- #include "psi4/libparallel/parallel.h"
  #include "psi4/libpsio/psio.h"
  #include "psi4/libpsio/psio.hpp"
  using namespace psi;
@@ -167,8 +166,8 @@ void opt_io_close(int keep) {
 
 // key    = char * ; label for entry ; not used by QChem
 // buffer = char * ; stream from which to read
-// size   = unsigned long int ; number of bytes to read
-void opt_io_read_entry(const char *key, char *buffer, ULI size) {
+// size   = size_t ; number of bytes to read
+void opt_io_read_entry(const char *key, char *buffer, size_t size) {
 #if defined(OPTKING_PACKAGE_PSI)
   psio_read_entry(PSI_OPTDATA_FILE_NUM, key, buffer, size);
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -179,8 +178,8 @@ void opt_io_read_entry(const char *key, char *buffer, ULI size) {
 
 // key    = char * ; label for entry ; not used by QChem
 // buffer = char * ; stream from which to read
-// size   = unsigned long int ; number of bytes to read
-void opt_io_write_entry(const char *key, char *buffer, ULI size) {
+// size   = size_t ; number of bytes to read
+void opt_io_write_entry(const char *key, char *buffer, size_t size) {
 #if defined(OPTKING_PACKAGE_PSI)
   psio_write_entry(PSI_OPTDATA_FILE_NUM, key, buffer, size);
 #elif defined(OPTKING_PACKAGE_QCHEM)

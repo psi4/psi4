@@ -60,11 +60,9 @@ namespace psi {
 #define PSIO_ERROR_IDENTVOLPATH 19
 #define PSIO_ERROR_MAXUNIT   20
 
-typedef unsigned long int ULI; /* For convenience */
-
 typedef struct {
-    ULI page; /* First page of entry */
-    ULI offset; /* Starting byte offset on fpage */
+    size_t page; /* First page of entry */
+    size_t offset; /* Starting byte offset on fpage */
 } psio_address;
 
 typedef struct {
@@ -81,9 +79,9 @@ typedef struct psio_entry {
 } psio_tocentry;
 
 typedef struct {
-    ULI numvols;
+    size_t numvols;
     psio_vol vol[PSIO_MAXVOL];
-    ULI toclen;
+    size_t toclen;
     psio_tocentry *toc;
 } psio_ud;
 

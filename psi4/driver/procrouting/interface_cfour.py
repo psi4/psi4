@@ -269,8 +269,7 @@ def run_cfour(name, **kwargs):
         #   blank_molecule_psi4_yo so as to not interfere with future cfour {} blocks
 
     if c4grad:
-        mat = core.Matrix(len(c4grad), 3)
-        mat.set(c4grad)
+        mat = core.Matrix.from_list(c4grad)
         core.set_gradient(mat)
 
         #print '    <<<   [3] C4-GRD-GRAD   >>>'
@@ -324,8 +323,7 @@ def run_cfour(name, **kwargs):
 #            print('GRD\n',c4outgrd)
 #            c4coordGRD, c4gradGRD = qcdb.cfour.cfour_harvest_files(qcdbmolecule, grd=c4outgrd)
 #
-#        p4mat = core.Matrix(len(p4grad), 3)
-#        p4mat.set(p4grad)
+#        p4mat = core.Matrix.from_list(p4grad)
 #        core.set_gradient(p4mat)
 
 #    print('    <<<  P4 PSIVAR  >>>')
@@ -391,6 +389,8 @@ def run_cfour(name, **kwargs):
     #   Feb 2017 hack. Could get proper basis in skel wfn even if not through p4 basis kw
     gobas = core.get_global_option('BASIS') if core.get_global_option('BASIS') else 'sto-3g'
     basis = core.BasisSet.build(molecule, "ORBITAL", gobas)
+    if basis.has_ECP():
+        raise ValidationError("""ECPs not hooked up for Cfour""")
     wfn = core.Wavefunction(molecule, basis)
 
     optstash.restore()
@@ -436,7 +436,7 @@ def write_zmat(name, dertype, molecule):
     """
     # Handle memory
     mem = int(0.000001 * core.get_memory())
-    if mem == 256:
+    if mem == 524:
         memcmd, memkw = '', {}
     else:
         memcmd, memkw = qcdb.cfour.muster_memory(mem)
@@ -459,6 +459,8 @@ def write_zmat(name, dertype, molecule):
             user_pg = molecule.schoenflies_symbol()
             molecule.reset_point_group('c1')  # need basis printed for *every* atom
             qbs = core.BasisSet.build(molecule, "BASIS", core.get_global_option('BASIS'))
+            if qbs.has_ECP():
+                raise ValidationError("""ECPs not hooked up for Cfour""")
             with open('GENBAS', 'w') as cfour_basfile:
                 cfour_basfile.write(qbs.genbas())
             core.print_out('  GENBAS loaded from Psi4 LibMints for basis %s\n' % (core.get_global_option('BASIS')))

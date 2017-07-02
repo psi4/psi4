@@ -35,6 +35,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+
 #include "occwave.h"
 
 using namespace psi;
@@ -220,13 +224,13 @@ if (reference_ == "RESTRICTED") {
         cost_iabc_ = 0;
         cost_abcd_ = 0;
         for(int h=0; h < nirrep_; h++) {
-            cost_iabc_ += (ULI)ov_pairpiAA[h] * (ULI)vv_pairpiAA[h];
-            cost_abcd_ += (ULI)vv_pairpiAA[h] * (ULI)vv_pairpiAA[h];
+            cost_iabc_ += (size_t)ov_pairpiAA[h] * (size_t)vv_pairpiAA[h];
+            cost_abcd_ += (size_t)vv_pairpiAA[h] * (size_t)vv_pairpiAA[h];
         }
-        cost_iabc_ /= (ULI)1024 * (ULI)1024;
-        cost_abcd_ /= (ULI)1024 * (ULI)1024;
-        cost_iabc_ *= (ULI)sizeof(double);
-        cost_abcd_ *= (ULI)sizeof(double);
+        cost_iabc_ /= (size_t)1024 * (size_t)1024;
+        cost_abcd_ /= (size_t)1024 * (size_t)1024;
+        cost_iabc_ *= (size_t)sizeof(double);
+        cost_abcd_ *= (size_t)sizeof(double);
 
         // print
     if (wfn_type_ == "OMP2") {
