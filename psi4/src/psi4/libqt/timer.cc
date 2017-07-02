@@ -95,7 +95,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #else
-#define omp_get_thread_num() 0
 typedef int omp_lock_t;
 #define omp_init_lock(lock_timer_p) \
     do {                            \
@@ -990,17 +989,16 @@ void timer_done(void) {
 **
 ** \ingroup QT
 */
-void timer_on(const char *key, int thread_rank) {
+void timer_on(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
     extern std::vector<std::list<Timer_Structure *>> on_timers;
-    std::string k(key);
     Timer_Structure *top_timer_ptr = nullptr;
     Timer_Structure *thread_0_top = on_timers[0].back();
     if (thread_rank == 0) {
-        if (k == thread_0_top->get_key()) {
+        if (key == thread_0_top->get_key()) {
             thread_0_top->turn_on(thread_rank);
         } else {
-            top_timer_ptr = thread_0_top->get_child(k);
+            top_timer_ptr = thread_0_top->get_child(key);
             top_timer_ptr->turn_on(thread_rank);
             on_timers[0].push_back(top_timer_ptr);
         }
@@ -1011,11 +1009,11 @@ void timer_on(const char *key, int thread_rank) {
         }
         if (on_timers[thread_rank].empty()) {
             while (thread_0_top != nullptr) {
-                if (thread_0_top->get_key() == k) {
+                if (thread_0_top->get_key() == key) {
                     top_timer_ptr = thread_0_top;
                     break;
                 } else {
-                    Timer_Structure *temp = thread_0_top->find_child(k);
+                    Timer_Structure *temp = thread_0_top->find_child(key);
                     if (temp != nullptr) {
                         top_timer_ptr = temp;
                         break;
@@ -1024,16 +1022,16 @@ void timer_on(const char *key, int thread_rank) {
                 thread_0_top = thread_0_top->get_parent();
             }
             if (top_timer_ptr == nullptr) {
-                top_timer_ptr = on_timers[0].back()->get_child(k);
+                top_timer_ptr = on_timers[0].back()->get_child(key);
             }
             top_timer_ptr->turn_on(thread_rank);
             on_timers[thread_rank].push_back(top_timer_ptr);
         } else {
             top_timer_ptr = on_timers[thread_rank].back();
-            if (k == top_timer_ptr->get_key()) {
+            if (key == top_timer_ptr->get_key()) {
                 top_timer_ptr->turn_on(thread_rank);
             } else {
-                top_timer_ptr = top_timer_ptr->get_child(k);
+                top_timer_ptr = top_timer_ptr->get_child(key);
                 top_timer_ptr->turn_on(thread_rank);
                 on_timers[thread_rank].push_back(top_timer_ptr);
             }
@@ -1050,21 +1048,20 @@ void timer_on(const char *key, int thread_rank) {
 **
 ** \ingroup QT
 */
-void timer_off(const char *key, int thread_rank) {
+void timer_off(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
     extern std::vector<std::list<Timer_Structure *>> on_timers;
-    std::string k(key);
     Timer_Structure *timer_ptr = nullptr;
     if (on_timers[thread_rank].empty()) {
         std::string str = "Timer ";
-        str += k;
+        str += key;
         str += " on thread ";
         str += std::to_string(thread_rank);
         str += " has never been turned on.";
         throw PsiException(str, __FILE__, __LINE__);
     }
     timer_ptr = on_timers[thread_rank].back();
-    if (k == timer_ptr->get_key()) {
+    if (key == timer_ptr->get_key()) {
         timer_ptr->turn_off(thread_rank);
         on_timers[thread_rank].pop_back();
     } else {
@@ -1076,7 +1073,7 @@ void timer_off(const char *key, int thread_rank) {
         auto iter_begin = on_timers[thread_rank].begin();
         for (; timer_iter != iter_begin;) {
             --timer_iter;
-            if ((*timer_iter)->get_key() == k) {
+            if ((*timer_iter)->get_key() == key) {
                 timer_ptr = *timer_iter;
                 break;
             } else {
@@ -1085,7 +1082,7 @@ void timer_off(const char *key, int thread_rank) {
         }
         if (timer_ptr == nullptr) {
             std::string str = "Timer ";
-            str += k;
+            str += key;
             str += " on thread ";
             str += std::to_string(thread_rank);
             str += " is not on.";
