@@ -865,14 +865,10 @@ std::vector<std::list<Timer_Structure *>> on_timers;
 time_t timer_start, timer_end;
 static omp_lock_t lock_timer;
 
-void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, std::string insert = "") {
-    size_t key_length = timer.get_key().length();
-    if (key_length > 20) {
-        if (key_length < 20 + insert.length()) {
-            insert = insert.substr(0, 20 + insert.length() - key_length);
-        } else {
-            insert = "";
-        }
+void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, int align_key_width) {
+    std::string key = timer.get_key();
+    if (key.length() < align_key_width) {
+        key.resize(align_key_width, ' ');
     }
     double wtime = std::chrono::duration_cast<std::chrono::duration<double>>(timer.get_total_wtime()).count();
     switch (timer.get_status()) {
@@ -880,47 +876,42 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
         case OFF:
             if (timer.get_n_calls() > 1) {
                 if (wtime < 10.0) {
-                    printer->Printf("%-20s%s: %10.2fu %10.2fs %10.6fw %6d calls\n", timer.get_key().c_str(),
-                                    insert.c_str(), timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
+                    printer->Printf("%s: %10.2fu %10.2fs %10.6fw %6d calls\n", key.c_str(),
+                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
                 } else {
-                    printer->Printf("%-20s%s: %10.2fu %10.2fs %10.2fw %6d calls\n", timer.get_key().c_str(),
-                                    insert.c_str(), timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
+                    printer->Printf("%s: %10.2fu %10.2fs %10.2fw %6d calls\n", key.c_str(),
+                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
                 }
             } else {
                 if (wtime < 10.0) {
-                    printer->Printf("%-20s%s: %10.2fu %10.2fs %10.8fw %6d call\n", timer.get_key().c_str(),
-                                    insert.c_str(), timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
+                    printer->Printf("%s: %10.2fu %10.2fs %10.8fw %6d call\n", key.c_str(),
+                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
                 } else {
-                    printer->Printf("%-20s%s: %10.2fu %10.2fs %10.2fw %6d call\n", timer.get_key().c_str(),
-                                    insert.c_str(), timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
+                    printer->Printf("%s: %10.2fu %10.2fs %10.2fw %6d call\n", key.c_str(),
+                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
                 }
             }
             break;
         case PARALLEL:
             if (wtime < 10.0) {
-                printer->Printf("%-20s%s:                         %10.6fp %6d calls\n", timer.get_key().c_str(),
-                                insert.c_str(), wtime, timer.get_n_calls());
+                printer->Printf("%s:                         %10.6fp %6d calls\n", key.c_str(),
+                                wtime, timer.get_n_calls());
             } else {
-                printer->Printf("%-20s%s:                         %10.2fp %6d calls\n", timer.get_key().c_str(),
-                                insert.c_str(), wtime, timer.get_n_calls());
+                printer->Printf("%s:                         %10.2fp %6d calls\n", key.c_str(),
+                                wtime, timer.get_n_calls());
             }
         default:
             break;
     }
 }
 
-void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, std::string indent,
-                        int max_nest = 4) {
+void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, std::string indent) {
     const std::list<Timer_Structure> &children = timer.get_children();
-    std::string nest_space = "";
-    for (int i = 0; i < max_nest; ++i) {
-        nest_space += "  ";
-    }
     for (auto child_iter = children.begin(), end_child_iter = children.end(); child_iter != end_child_iter;
          ++child_iter) {
         printer->Printf("%s", indent.c_str());
-        print_timer(*child_iter, printer, nest_space);
-        print_nested_timer(*child_iter, printer, indent + "| ", max_nest - 1);
+        print_timer(*child_iter, printer, 28 - indent.length());
+        print_nested_timer(*child_iter, printer, indent + "| ");
     }
 }
 
@@ -972,7 +963,7 @@ void timer_done(void) {
 
     const std::list<Timer_Structure> timer_list = root_timer.summarize();
     for (auto timer_iter = timer_list.begin(), end_iter = timer_list.end(); timer_iter != end_iter; ++timer_iter) {
-        print_timer(*timer_iter, printer, "        ");
+        print_timer(*timer_iter, printer, 28);
     }
 
     printer->Printf("\n-----------------------------------------------------------\n");
