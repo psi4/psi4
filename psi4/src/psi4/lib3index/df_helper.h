@@ -53,6 +53,7 @@ class DF_Helper {
 public:
 
     DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
+    static std::shared_ptr<DF_Helper> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
     ~DF_Helper();
 
     // user options, must set before calling build() ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -135,6 +136,7 @@ public:
     size_t get_space_size(std::string key);
     size_t get_tensor_size(std::string key);
     std::tuple<size_t, size_t, size_t> get_tensor_shape(std::string key);
+    size_t get_naux() { return naux_; }
 
     // => JK <=
     void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
@@ -154,8 +156,8 @@ protected:
     // method directive
     std::string method_ = "STORE";
     bool direct_;
-    bool AO_core_;
-    bool MO_core_;
+    bool AO_core_ = 0;
+    bool MO_core_ = 0;
 
     // threading
     size_t nthreads_ = 1;
@@ -215,8 +217,8 @@ protected:
     void compute_AO_Q(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     // store AO building (p blocking)
     void compute_AO_p(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p_core(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void contract_metric_AO_core_sp(double* Qpq, double* metp, size_t begin, size_t end);
+    void compute_AO_p_symm(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
 
     // store AO grabs
     void grab_AO(const size_t start, const size_t stop, double* Mp);
