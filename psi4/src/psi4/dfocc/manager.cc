@@ -1180,6 +1180,9 @@ void DFOCC::ccsd_t_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_t - Escf;
 	Process::environment.globals["CCSD(T) TOTAL ENERGY"] = Eccsd_t;
 	Process::environment.globals["(T) CORRECTION ENERGY"] = E_t;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["CCSD(T) TOTAL ENERGY"];
+        name_ = "DF-CCSD(T)";
 
 	/*
         // CCSDL
