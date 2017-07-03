@@ -1563,6 +1563,9 @@ void DFOCC::ccsdl_t_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_at - Escf;
 	Process::environment.globals["CCSD(AT) TOTAL ENERGY"] = Eccsd_at;
 	Process::environment.globals["(AT) CORRECTION ENERGY"] = E_at;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["CCSD(AT) TOTAL ENERGY"];
+        name_ = "DF-CCSD(AT)";
 
 	/*
         // Compute Analytic Gradients
@@ -1828,6 +1831,9 @@ void DFOCC::ccd_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccd - Escf;
 	Process::environment.globals["CCD TOTAL ENERGY"] = Eccd;
         Process::environment.globals["CCD CORRELATION ENERGY"] = Eccd - Escf;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["CCD TOTAL ENERGY"];
+        name_ = "DF-CCD";
 
         // CCDL
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
@@ -2153,6 +2159,9 @@ void DFOCC::omp3_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 	Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["OMP3 TOTAL ENERGY"];
+        name_ = "DF-OMP3";
 
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
@@ -2368,6 +2377,9 @@ void DFOCC::mp3_manager()
 	Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["MP3 TOTAL ENERGY"];
+        name_ = "DF-MP3";
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
@@ -2677,6 +2689,9 @@ void DFOCC::omp2_5_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 	Process::environment.globals["OMP2.5 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["OMP2.5 TOTAL ENERGY"];
+        name_ = "DF-OMP2.5";
 
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
@@ -2873,6 +2888,9 @@ void DFOCC::mp2_5_manager()
 	Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["MP2.5 TOTAL ENERGY"];
+        name_ = "DF-MP2.5";
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
@@ -3155,6 +3173,9 @@ void DFOCC::olccd_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = ElccdL - Escf;
 	Process::environment.globals["OLCCD TOTAL ENERGY"] = ElccdL;
         Process::environment.globals["OLCCD CORRELATION ENERGY"] = ElccdL - Escf;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["OLCCD TOTAL ENERGY"];
+        name_ = "DF-OLCCD";
 
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
@@ -3348,6 +3369,9 @@ void DFOCC::lccd_manager()
 	Process::environment.globals["LCCD TOTAL ENERGY"] = Elccd;
         Process::environment.globals["LCCD CORRELATION ENERGY"] = Elccd - Escf;
 	ElccdL = Elccd;
+    /* updates the wavefunction for checkpointing */        
+	    energy_ = Process::environment.globals["LCCD TOTAL ENERGY"];
+        name_ = "DF-LCCD";
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
