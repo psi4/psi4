@@ -393,6 +393,12 @@ before compiling.
    CMAKE_INSTALL_PREFIX=PATH  # Location to which Psi4 and internally built
                               # add-ons are installed (default: /usr/local/psi4)
 
+.. note:: It's not guaranteed, but if, in a pinch, you need to install a
+   built Psi4 to a location *not* configured by ``CMAKE_INSTALL_PREFIX``,
+   recursively copy the folders under :samp:`{objdir}/stage/{prefix}` to
+   the desired location, ``chown`` them if needed, edit the shebang in
+   ``bin/psi4`` if needed, and recursively delete all the ".pyc" files. It
+   may just run.
 
 .. ###<a name="profiling"></a>
 .. 

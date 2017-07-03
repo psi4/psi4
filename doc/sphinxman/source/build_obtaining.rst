@@ -41,6 +41,7 @@ your needs, be it binary, tarball, or version-controlled repository. Or,
 select outright among:
 
 #. :ref:`faq:binary`
+#. :ref:`faq:condapkg`
 #. :ref:`faq:clonepsi4public` (*read-only* unless core developer)
 #. :ref:`faq:forkpsi4public`
 #. :ref:`faq:tarballpsi4public`
@@ -56,7 +57,7 @@ Find-the-code Quiz
   developing anything to contribute back to the code base.
 
   * Provided I still get good, threaded BLAS/LAPACK, I'm willing to
-    sacrifice processor architecture tuning to avoid compiling it myself.
+    sacrifice processor architecture fine tuning to avoid compiling it myself.
 
     * I'm on Linux or Mac or Windows with Ubuntu Bash Shell.
 
@@ -83,8 +84,6 @@ Find-the-code Quiz
   * In keeping with the open-source philosophy, I don't mind my code being
     as public as Psi4 itself during the development process. |w---w|
     :ref:`Goto Fork-from-GitHub <faq:forkpsi4public>`
-
-.. comment  * I have scientific competitors, and I don't want to get scooped. [Goto Fork-from-GitHub-Private](#forkpsi4private)
 
   * I want to develop *using* |PSIfour| infrastructure and libraries, not
     *on* them; I think a plugin might do.
@@ -125,6 +124,38 @@ Binary Installer
   .. code-block:: bash
 
      >>> conda update psi4
+
+* **Contribute Back**
+
+  Not applicable as not under git control.
+
+
+.. _`faq:binarypackage`:
+
+Conda Binary Package
+--------------------
+
+* **Get Initially**
+
+  The pre-compiled conda packages at https://anaconda.org/psi4/psi4
+  can be installed into an existing Anaconda or Miniconda distribution
+  according to :ref:`directions <faq:psi4pkg>`. Locally, install into
+  a conda environment as below.
+
+  .. code-block:: bash
+
+     >>> conda create -n p4env psi4 -c psi4
+     >>> source activate p4env
+
+* **Build**
+
+  Not applicable as binary is pre-built.
+
+* **Get Updates** :ref:`directions <faq:updatepsi4>`
+
+  .. code-block:: bash
+
+     >>> conda update psi4 -c psi4
 
 * **Contribute Back**
 
