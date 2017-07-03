@@ -35,8 +35,6 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/psifiles.h"
 
-using namespace std;
-
 namespace psi{
 
 class DIISManager;
@@ -578,7 +576,7 @@ protected:
     int ia_pair_idxAA(int i, int j);
     int vo_pair_idxAA(int i, int j);
     int ai_pair_idxAA(int i, int j);
-    int get_rotation_block(string rotblock);
+    int get_rotation_block(std::string rotblock);
 
     // DIIS
     std::shared_ptr<DIISManager> ccsdDiisManager;
@@ -814,43 +812,43 @@ protected:
      double EccdLBB;
      double EccdLAB;
 
-     string wfn;
-     string reference;
-     string reference_;
-     string jobtype;
-     string dertype;
-     string basis;
-     string level_shift;
-     string lineq;
-     string orth_type;
-     string natorb;
-     string semicanonic;
-     string opt_method;
-     string hess_type;
-     string occ_orb_energy;
-     string do_scs;		// Spin-Component-Scaling
-     string do_sos;		// Spin-Opposite-Scaling
-     string scs_type_;
-     string sos_type_;
-     string wfn_type_;
-     string orb_resp_solver_;
-     string pcg_beta_type_;
-     string ekt_ip_;
-     string orb_opt_;
-     string rotation_blocks;
-     string conv_tei_type;
-     string regularization;
-     string do_cd;
-     string read_scf_3index;
-     string freeze_core_;
-     string oeprop_;
-     string comput_s2_;
-     string mp2_amp_type_;
-     string guess_type_;
-     string qchf_;
-     string cc_lambda_;
-     string Wabef_type_;
-     string triples_iabc_type_;
+     std::string wfn;
+     std::string reference;
+     std::string reference_;
+     std::string jobtype;
+     std::string dertype;
+     std::string basis;
+     std::string level_shift;
+     std::string lineq;
+     std::string orth_type;
+     std::string natorb;
+     std::string semicanonic;
+     std::string opt_method;
+     std::string hess_type;
+     std::string occ_orb_energy;
+     std::string do_scs;		// Spin-Component-Scaling
+     std::string do_sos;		// Spin-Opposite-Scaling
+     std::string scs_type_;
+     std::string sos_type_;
+     std::string wfn_type_;
+     std::string orb_resp_solver_;
+     std::string pcg_beta_type_;
+     std::string ekt_ip_;
+     std::string orb_opt_;
+     std::string rotation_blocks;
+     std::string conv_tei_type;
+     std::string regularization;
+     std::string do_cd;
+     std::string read_scf_3index;
+     std::string freeze_core_;
+     std::string oeprop_;
+     std::string comput_s2_;
+     std::string mp2_amp_type_;
+     std::string guess_type_;
+     std::string qchf_;
+     std::string cc_lambda_;
+     std::string Wabef_type_;
+     std::string triples_iabc_type_;
 
      bool df_ints_incore;
      bool t2_incore;

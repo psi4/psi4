@@ -46,8 +46,6 @@ namespace psi{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
 
-using namespace std;
-
 CCBLAS::CCBLAS(Options &options):
         options_(options),
         full_in_core(false),
@@ -96,7 +94,7 @@ void CCBLAS::allocate_work()
 
   work_size = 0;
   for(int h=0;h<moinfo->get_nirreps();h++){
-    vector<size_t> dimension;
+    std::vector<size_t> dimension;
     dimension.push_back(oo_pair->get_pairpi(h));
     dimension.push_back(vv_pair->get_pairpi(h));
     dimension.push_back(ff_pair->get_pairpi(h));
@@ -256,13 +254,13 @@ void CCBLAS::add_indices()
 
 void CCBLAS::print(const char* cstr)
 {
-  string str(cstr);
-  vector<string> names = moinfo->get_matrix_names(str);
+  std::string str(cstr);
+  std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(size_t n = 0; n < names.size(); ++n)
     print_ref(names[n]);
 }
 
-void CCBLAS::print_ref(string& str)
+void CCBLAS::print_ref(std::string& str)
 {
   get_Matrix(str)->print();
 }
@@ -330,20 +328,20 @@ int CCBLAS::compute_storage_strategy()
   // and divide the integrals from all the other matrices.
   // At the same time compute the memory requirements for
   // a fully in-core algorithm.
-  vector<pair<size_t,pair<CCMatrix*,int> > > integrals;
-  vector<pair<size_t,pair<CCMatrix*,int> > > fock;
-  vector<pair<size_t,pair<CCMatrix*,int> > > others;
+  std::vector<std::pair<size_t,std::pair<CCMatrix*,int> > > integrals;
+  std::vector<std::pair<size_t,std::pair<CCMatrix*,int> > > fock;
+  std::vector<std::pair<size_t,std::pair<CCMatrix*,int> > > others;
   for(MatrixMap::iterator it=matrices.begin();it!=matrices.end();++it){
     for(int h=0;h<moinfo->get_nirreps();++h){
       size_t block_memory = it->second->get_memorypi2(h);
       if(it->second->is_integral()){
-        integrals.push_back(make_pair(block_memory,make_pair(it->second,h)));
+        integrals.push_back(std::make_pair(block_memory,std::make_pair(it->second,h)));
         integrals_memory += block_memory;
       }else if(it->second->is_fock()){
-        fock.push_back(make_pair(block_memory,make_pair(it->second,h)));
+        fock.push_back(std::make_pair(block_memory,std::make_pair(it->second,h)));
         fock_memory += block_memory;
       }else{
-        others.push_back(make_pair(block_memory,make_pair(it->second,h)));
+        others.push_back(std::make_pair(block_memory,std::make_pair(it->second,h)));
         others_memory += block_memory;
       }
       fully_in_core_memory += block_memory;

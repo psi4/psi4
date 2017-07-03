@@ -38,8 +38,6 @@
 #include "psi4/liboptions/liboptions.h"
 
 using namespace psi;
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 

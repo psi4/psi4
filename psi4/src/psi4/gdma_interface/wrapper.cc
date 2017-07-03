@@ -35,9 +35,6 @@
 
 #include <iostream>
 
-
-using namespace std;
-
 extern "C" {
   void run_gdma(const char* outfilename, const char*datfilename);
   int get_nsites();

@@ -54,8 +54,6 @@
 
 namespace opt {
 
-using namespace std;
-
 void MOLECULE::print_geom_out(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
   oprintf_out("\tCartesian Geometry (au)\n");

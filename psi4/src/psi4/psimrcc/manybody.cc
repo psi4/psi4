@@ -58,8 +58,6 @@ namespace psi{
     extern MemoryManager* memory_manager;
 
 
-using namespace std;
-
 /**
  * Allocate the effective Hamiltonian matrices and eigenvectors
  * @todo wrap the current operations in an init() function
@@ -387,9 +385,9 @@ void CCManyBody::print_eigensystem(int ndets, double** Heff,double*& eigenvector
 
   std::vector<std::pair<double,int> > eigenvector_index_pair;
   for(int i = 0; i < ndets; ++i){
-    eigenvector_index_pair.push_back(make_pair(eigenvector[i]*eigenvector[i],i));
+    eigenvector_index_pair.push_back(std::make_pair(eigenvector[i]*eigenvector[i],i));
   }
-  sort(eigenvector_index_pair.begin(),eigenvector_index_pair.end(),greater<pair<double,int> >());
+  sort(eigenvector_index_pair.begin(),eigenvector_index_pair.end(),std::greater<std::pair<double,int> >());
   int max_size_list = std::min(10,static_cast<int>(eigenvector_index_pair.size()));
   outfile->Printf("\n\n  Most important determinants in the wave function");
   outfile->Printf("\n\n  determinant  eigenvector   eigenvector^2\n");
@@ -555,7 +553,7 @@ void CCManyBody::sort_eigensystem(int ndets,double*& real,double*& imaginary,dou
 {
   std::vector<std::pair<double, int> > pairs;
   for(int i=0;i<ndets;i++)
-    pairs.push_back(make_pair(real[i],i));
+    pairs.push_back(std::make_pair(real[i],i));
   sort(pairs.begin(),pairs.end());
 
   double*  tempv;

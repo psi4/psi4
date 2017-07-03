@@ -61,7 +61,6 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/exception.h"
 
-using namespace std;
 using namespace psi;
 
 /////////////////////////////////////////////////////////////////////////

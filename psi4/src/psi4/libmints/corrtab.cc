@@ -61,7 +61,6 @@
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-using namespace std;
 using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////

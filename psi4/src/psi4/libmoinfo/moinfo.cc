@@ -53,9 +53,6 @@
 #include "moinfo.h"
 
 
-
-using namespace std;
-
 namespace psi {
 
 MOInfo::MOInfo(Wavefunction& ref_wfn_, Options& options_, bool silent_)
@@ -152,13 +149,13 @@ void MOInfo::read_info()
     // Determine the wave function irrep
     // The defalut irrep is 0 (A)
     wfn_sym = 0;
-    string wavefunction_sym_str = options.get_str("WFN_SYM");
+    std::string wavefunction_sym_str = options.get_str("WFN_SYM");
     bool wfn_sym_found = false;
 
     std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
     if(old_pg){
         for(int h = 0; h < nirreps; ++h){
-            string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
+            std::string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
             trim_spaces(irr_label_str);
             to_upper(irr_label_str);
             if(wavefunction_sym_str == irr_label_str){
@@ -174,7 +171,7 @@ void MOInfo::read_info()
         }
     }else{
         for(int h = 0; h < nirreps; ++h){
-            string irr_label_str = irr_labs[h];
+            std::string irr_label_str = irr_labs[h];
             trim_spaces(irr_label_str);
             to_upper(irr_label_str);
             if(wavefunction_sym_str == irr_label_str){
@@ -352,7 +349,7 @@ void MOInfo::read_mo_spaces()
     nvir        = nactv + nextr;
 
     bool active_space_problem = false;
-    string error_msg;
+    std::string error_msg;
     if(nactv < nactive_ael){
         error_msg += "\n  - the number of active orbitals (nactv = " + to_string(nactv) + ")";
         error_msg += " is smaller than the number of active alpha electrons (nactive_ael =" + to_string(nactive_ael) +")",

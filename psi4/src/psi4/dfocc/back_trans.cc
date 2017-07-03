@@ -33,8 +33,6 @@
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
 
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 

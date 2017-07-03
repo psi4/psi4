@@ -45,8 +45,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCMRCC::synchronize_amps()
 {
   blas->solve("t1[ov]{u}     = #12# t1[o][v]{u}");

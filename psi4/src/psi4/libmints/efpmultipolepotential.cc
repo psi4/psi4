@@ -34,9 +34,8 @@
 
 ;
 using namespace psi;
-using namespace std;
 
-EFPMultipolePotentialInt::EFPMultipolePotentialInt(vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv) :
+EFPMultipolePotentialInt::EFPMultipolePotentialInt(std::vector<SphericalTransform>& spherical_transforms, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv) :
     OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),
     mvi_recur_(bs1->max_am(), bs2->max_am())
 {

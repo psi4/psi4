@@ -47,9 +47,6 @@ namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
 
-
-using namespace std;
-
 void CCMRCC::build_t2_amplitudes()
 {
   build_t2_iJaB_amplitudes();

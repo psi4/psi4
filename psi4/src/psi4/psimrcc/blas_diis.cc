@@ -53,15 +53,13 @@ namespace psi{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
 
-using namespace std;
-
-vector<pair<string,string> > diis_matrices;
+std::vector<std::pair<std::string,std::string> > diis_matrices;
 const double diis_singular_tollerance = 1.0e-12;
 
-void CCBLAS::diis_add(string amps, string delta_amps)
+void CCBLAS::diis_add(std::string amps, std::string delta_amps)
 {
-  vector<string> amps_names = moinfo->get_matrix_names(amps);
-  vector<string> delta_amps_names = moinfo->get_matrix_names(delta_amps);
+  std::vector<std::string> amps_names = moinfo->get_matrix_names(amps);
+  std::vector<std::string> delta_amps_names = moinfo->get_matrix_names(delta_amps);
   for(size_t n=0;n<amps_names.size();n++){
     diis_matrices.push_back(make_pair(amps_names[n],delta_amps_names[n]));
   }
@@ -71,7 +69,7 @@ void CCBLAS::diis_save_t_amps(int cycle)
 {
   if(options_.get_int("DIIS_MAX_VECS") != 0){
     int diis_step = cycle % options_.get_int("DIIS_MAX_VECS");
-    for(vector<pair<string,string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
+    for(std::vector<std::pair<std::string,std::string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
       for(int h=0;h<moinfo->get_nirreps();h++){
         CCMatIrTmp Amps = get_MatIrTmp(it->first,h,none);
         double** matrix = Amps->get_matrix()[h];
@@ -91,8 +89,8 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
   if(options_.get_int("DIIS_MAX_VECS") != 0){
     int diis_step = cycle % options_.get_int("DIIS_MAX_VECS");
 
-    for(vector<pair<string,string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
-      if(it->second.find("t3_delta")==string::npos){
+    for(std::vector<std::pair<std::string,std::string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
+      if(it->second.find("t3_delta")==std::string::npos){
         for(int h=0;h<moinfo->get_nirreps();h++){
           CCMatIrTmp DeltaAmps = get_MatIrTmp(it->second,h,none);
           double** matrix = DeltaAmps->get_matrix()[h];
@@ -125,7 +123,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
       allocate1(double,diis_A,options_.get_int("DIIS_MAX_VECS")+1);
       allocate2(double,diis_B,options_.get_int("DIIS_MAX_VECS")+1,options_.get_int("DIIS_MAX_VECS")+1);
       bool singularities_found = false;
-      for(vector<pair<string,string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
+      for(std::vector<std::pair<std::string,std::string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
         // Zero A and B
         for(int i=0;i<options_.get_int("DIIS_MAX_VECS");i++){
           diis_A[i]=0.0;
@@ -161,7 +159,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
 
                 int dx = 1;
                 int lenght = block_sizepi;
-                if( block_sizepi < static_cast<size_t>(numeric_limits<int>::max()) ){
+                if( block_sizepi < static_cast<size_t>(std::numeric_limits<int>::max()) ){
                   diis_B[i][j] += F_DDOT(&lenght,i_matrix,&dx,j_matrix,&dx);
                   diis_B[j][i] = diis_B[i][j];
                 }else{

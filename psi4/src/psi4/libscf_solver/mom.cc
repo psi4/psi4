@@ -55,7 +55,6 @@
 #endif
 
 
-using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
@@ -103,7 +102,7 @@ void HF::MOM_start()
         if (nmo == 0) continue;
         double* eps = epsilon_a_->pointer(h);
         for (int a = 0; a < nmo; a++)
-            orbs_a.push_back(make_pair(eps[a], make_pair(h, a)));
+            orbs_a.push_back(std::make_pair(eps[a], std::make_pair(h, a)));
     }
     std::vector<std::pair<double, std::pair<int, int> > > orbs_b;
     for (int h = 0; h < nirrep_; h++) {
@@ -111,7 +110,7 @@ void HF::MOM_start()
         if (nmo == 0) continue;
         double* eps = epsilon_b_->pointer(h);
         for (int a = 0; a < nmo; a++)
-            orbs_b.push_back(make_pair(eps[a], make_pair(h, a)));
+            orbs_b.push_back(std::make_pair(eps[a], std::make_pair(h, a)));
     }
     sort(orbs_a.begin(),orbs_a.end());
     sort(orbs_b.begin(),orbs_b.end());
@@ -551,16 +550,16 @@ void HF::MOM_start()
                 std::vector<std::pair<double,std::pair<int, bool> > > betas;
 
                 for (int i = 0; i < nalphapi_[h]; i++) {
-                    alphas.push_back(make_pair(epsilon_a_->get(h,i), make_pair(i, true)));
+                    alphas.push_back(std::make_pair(epsilon_a_->get(h,i), std::make_pair(i, true)));
                 }
                 for (int i = 0; i < nbetapi_[h]; i++) {
-                    betas.push_back(make_pair(epsilon_b_->get(h,i), make_pair(i, true)));
+                    betas.push_back(std::make_pair(epsilon_b_->get(h,i), std::make_pair(i, true)));
                 }
                 for (int i = nalphapi_[h]; i < nmopi_[h]; i++) {
-                    alphas.push_back(make_pair(epsilon_a_->get(h,i), make_pair(i, false)));
+                    alphas.push_back(std::make_pair(epsilon_a_->get(h,i), std::make_pair(i, false)));
                 }
                 for (int i = nbetapi_[h]; i < nmopi_[h]; i++) {
-                    betas.push_back(make_pair(epsilon_b_->get(h,i), make_pair(i, false)));
+                    betas.push_back(std::make_pair(epsilon_b_->get(h,i), std::make_pair(i, false)));
                 }
                 sort(alphas.begin(),alphas.end());
                 sort(betas.begin(),betas.end());
@@ -625,8 +624,8 @@ void HF::MOM()
         std::vector<std::pair<double, int> > pvec;
         pvec.resize(nmo);
         for (int a = 0; a < nmo; a++)
-            pvec[a] = make_pair(fabs(p[a]), a);
-        sort(pvec.begin(),pvec.end(), greater<std::pair<double, int> >());
+            pvec[a] = std::make_pair(fabs(p[a]), a);
+        sort(pvec.begin(),pvec.end(), std::greater<std::pair<double, int> >());
 
         //outfile->Printf("  P_a sorted:\n");
         //for (int a = 0; a < nmo; a++)
@@ -636,7 +635,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > occvec;
         occvec.resize(nalpha);
         for (int a = 0; a < nalpha; a++)
-            occvec[a] = make_pair(eps[pvec[a].second], pvec[a].second);
+            occvec[a] = std::make_pair(eps[pvec[a].second], pvec[a].second);
         sort(occvec.begin(),occvec.end());
 
         //outfile->Printf("  P_a_occ sorted:\n");
@@ -646,7 +645,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > virvec;
         virvec.resize(nmo - nalpha);
         for (int a = 0; a < nmo - nalpha; a++)
-            virvec[a] = make_pair(eps[pvec[a + nalpha].second], pvec[a + nalpha].second);
+            virvec[a] = std::make_pair(eps[pvec[a + nalpha].second], pvec[a + nalpha].second);
         sort(virvec.begin(),virvec.end());
 
         //outfile->Printf("  P_a_vir sorted:\n");
@@ -713,8 +712,8 @@ void HF::MOM()
         std::vector<std::pair<double, int> > pvec;
         pvec.resize(nmo);
         for (int a = 0; a < nmo; a++)
-            pvec[a] = make_pair(fabs(p[a]), a);
-        sort(pvec.begin(),pvec.end(), greater<std::pair<double, int> >());
+            pvec[a] = std::make_pair(fabs(p[a]), a);
+        sort(pvec.begin(),pvec.end(), std::greater<std::pair<double, int> >());
 
         //outfile->Printf("  P_a sorted:\n");
         //for (int a = 0; a < nmo; a++)
@@ -724,7 +723,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > occvec;
         occvec.resize(nbeta);
         for (int a = 0; a < nbeta; a++)
-            occvec[a] = make_pair(eps[pvec[a].second], pvec[a].second);
+            occvec[a] = std::make_pair(eps[pvec[a].second], pvec[a].second);
         sort(occvec.begin(),occvec.end());
 
         //outfile->Printf("  P_a_occ sorted:\n");
@@ -734,7 +733,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > virvec;
         virvec.resize(nmo - nbeta);
         for (int a = 0; a < nmo - nbeta; a++)
-            virvec[a] = make_pair(eps[pvec[a + nbeta].second], pvec[a + nbeta].second);
+            virvec[a] = std::make_pair(eps[pvec[a + nbeta].second], pvec[a + nbeta].second);
         sort(virvec.begin(),virvec.end());
 
         //outfile->Printf("  P_a_vir sorted:\n");

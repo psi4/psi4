@@ -44,8 +44,6 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 
-using namespace std;
-
 namespace psi {
 
 DFTensor::DFTensor(std::shared_ptr<BasisSet> primary,

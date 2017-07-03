@@ -46,8 +46,6 @@
 #include "psi4/liboptions/liboptions.h"
 
 
-using namespace std;
-
 namespace psi{
 
 namespace scf {
@@ -191,7 +189,7 @@ double UStab::compute_energy()
             // Spurious zero eigenvalue due to not enough states
             if (N >= (size_t)stabvecs[N]->dimpi()[h]) continue;
             evec_temp.push_back(tpair[h]);
-            eval_temp.push_back(make_pair(stabvals[N][h], index));
+            eval_temp.push_back(std::make_pair(stabvals[N][h], index));
             index++;
         }
     }

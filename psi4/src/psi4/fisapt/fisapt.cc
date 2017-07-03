@@ -52,8 +52,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
-
 namespace psi {
 
 namespace fisapt {

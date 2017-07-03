@@ -36,8 +36,6 @@
 #include "defines.h"
 
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 void OCCWave::trans_ints_uhf()

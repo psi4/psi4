@@ -84,7 +84,6 @@
 
 #include "psi4/libmints/pointgrp.h"
 
-using namespace std;
 using namespace psi;
 
 /*

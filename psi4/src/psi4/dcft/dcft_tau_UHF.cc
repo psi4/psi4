@@ -41,8 +41,6 @@
 
 #include <algorithm>
 
-using namespace std;
-
 namespace psi{ namespace dcft{
 
 /**
@@ -786,8 +784,8 @@ DCFTSolver::print_opdm()
         }
     }
 
-    sort(aPairs.begin(), aPairs.end(), greater<std::pair<double, int> >());
-    sort(bPairs.begin(), bPairs.end(), greater<std::pair<double, int> >());
+    sort(aPairs.begin(), aPairs.end(), std::greater<std::pair<double, int> >());
+    sort(bPairs.begin(), bPairs.end(), std::greater<std::pair<double, int> >());
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);

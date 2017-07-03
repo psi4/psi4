@@ -37,8 +37,6 @@
 
 #include <cfloat>
 
-using namespace std;
-
 namespace psi {
 
 ERISieve::ERISieve(std::shared_ptr <BasisSet> primary, double sieve) :
@@ -87,7 +85,7 @@ void ERISieve::set_sieve(double sieve)
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU <= MU; NU++, MUNU++) {
             if (shell_pair_values_[MU * (size_t) nshell_ + NU] >= sieve2_over_max_) {
-                shell_pairs_.push_back(make_pair(MU, NU));
+                shell_pairs_.push_back(std::make_pair(MU, NU));
                 shell_pairs_reverse_[MUNU] = offset;
                 offset++;
             } else {
@@ -101,7 +99,7 @@ void ERISieve::set_sieve(double sieve)
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
             if (function_pair_values_[mu * (size_t) nbf_ + nu] >= sieve2_over_max_) {
-                function_pairs_.push_back(make_pair(mu, nu));
+                function_pairs_.push_back(std::make_pair(mu, nu));
                 function_pairs_reverse_[munu] = offset;
                 offset++;
             } else {

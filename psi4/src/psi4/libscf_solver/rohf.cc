@@ -54,7 +54,6 @@
 #include "psi4/libmints/factory.h"
 #define _DEBUG
 
-using namespace std;
 using namespace psi;
 
 

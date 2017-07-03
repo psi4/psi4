@@ -34,9 +34,6 @@
 #include <cmath>
 
 
-using namespace std;
-
-
 namespace psi{ namespace occwave{
 
 void OCCWave::omp2_t2_1st_sc()

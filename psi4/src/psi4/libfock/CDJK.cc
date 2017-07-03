@@ -48,7 +48,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
 using namespace psi;
 
 namespace psi {

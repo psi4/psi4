@@ -38,8 +38,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCMRCC::print_mrccsd_energy(int cycle)
 {
   delta_energy = current_energy-old_energy;

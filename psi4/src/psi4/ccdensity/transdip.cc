@@ -45,8 +45,6 @@
 #define EXTERN
 #include "globals.h"
 
-using namespace std;
-
 namespace psi { namespace ccdensity {
 
 void transdip(MintsHelper &mints)
@@ -61,7 +59,7 @@ void transdip(MintsHelper &mints)
   scf_qt = moinfo.scf_qt;
 
   /*** Transform the SO dipole integrals to the MO basis ***/
-  vector<SharedMatrix> dipole = mints.so_dipole();
+  std::vector<SharedMatrix> dipole = mints.so_dipole();
   MUX_SO = dipole[0]->to_block_matrix();
   MUY_SO = dipole[1]->to_block_matrix();
   MUZ_SO = dipole[2]->to_block_matrix();

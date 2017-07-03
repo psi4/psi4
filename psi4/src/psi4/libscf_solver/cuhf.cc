@@ -49,7 +49,6 @@
 #include <vector>
 #include <utility>
 
-using namespace std;
 using namespace psi;
 
 

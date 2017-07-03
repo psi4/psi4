@@ -43,8 +43,6 @@
 #include <fstream>
 #include <cmath>
 
-using namespace std;
-
 namespace psi{ namespace dfoccwave{
 
 
@@ -58,7 +56,7 @@ Tensor1d::Tensor1d(int d1)
   memalloc();
 }//
 
-Tensor1d::Tensor1d(string name, int d1)
+Tensor1d::Tensor1d(std::string name, int d1)
 {
   A1d_ = NULL;
   dim1_=d1;
@@ -99,7 +97,7 @@ void Tensor1d::init(int d1)
     A1d_ = new double[dim1_];
 }//
 
-void Tensor1d::init(string name, int d1)
+void Tensor1d::init(std::string name, int d1)
 {
     dim1_=d1;
     name_=name;
@@ -454,7 +452,7 @@ Tensor2d::Tensor2d(int d1,int d2)
   memalloc();
 }//
 
-Tensor2d::Tensor2d(string name, int d1,int d2)
+Tensor2d::Tensor2d(std::string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -487,7 +485,7 @@ Tensor2d::Tensor2d()
 
 }//
 
-Tensor2d::Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(psi::PSIO* psio, size_t fileno, std::string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -505,7 +503,7 @@ Tensor2d::Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2)
   read(psio, fileno);
 }
 
-Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, std::string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -523,7 +521,7 @@ Tensor2d::Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, 
   read(psio, fileno);
 }
 
-Tensor2d::Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
+Tensor2d::Tensor2d(psi::PSIO& psio, size_t fileno, std::string name, int d1,int d2)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -541,7 +539,7 @@ Tensor2d::Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
   read(&psio, fileno);
 }//
 
-Tensor2d::Tensor2d(string name, int d1, int d2, int d3, int d4)
+Tensor2d::Tensor2d(std::string name, int d1, int d2, int d3, int d4)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -597,7 +595,7 @@ Tensor2d::Tensor2d(string name, int d1, int d2, int d3, int d4)
 
 }//
 
-Tensor2d::Tensor2d(string name, int d1, int d2, int d3)
+Tensor2d::Tensor2d(std::string name, int d1, int d2, int d3)
 {
   A2d_ = NULL;
   row_idx_ = NULL;
@@ -678,7 +676,7 @@ void Tensor2d::init(int d1,int d2)
     A2d_ = block_matrix(dim1_, dim2_);
 }//
 
-void Tensor2d::init(string name, int d1,int d2)
+void Tensor2d::init(std::string name, int d1,int d2)
 {
     dim1_=d1;
     dim2_=d2;
@@ -1924,7 +1922,7 @@ void Tensor2d::write(psi::PSIO& psio, size_t fileno, psio_address start, psio_ad
     write(&psio, fileno, start, end);
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const std::string& filename, size_t fileno)
 {
     // Check to see if the file is open
     bool already_open = false;
@@ -1971,7 +1969,7 @@ void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_
 
 }//
 
-void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno, bool three_index, bool symm)
+void Tensor2d::write(std::shared_ptr<psi::PSIO> psio, const std::string& filename, size_t fileno, bool three_index, bool symm)
 {
     // Form Lower triangular part
     if (three_index && symm) {
@@ -2290,36 +2288,36 @@ void Tensor2d::save(psi::PSIO& psio, size_t fileno)
     release();
 }//
 
-void Tensor2d::load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2)
+void Tensor2d::load(std::shared_ptr<psi::PSIO> psio, size_t fileno, std::string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Tensor2d::load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2)
+void Tensor2d::load(psi::PSIO* const psio, size_t fileno, std::string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(psio, fileno);
 }//
 
-void Tensor2d::load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2)
+void Tensor2d::load(psi::PSIO& psio, size_t fileno, std::string name, int d1,int d2)
 {
     init(name,d1,d2);
     read(&psio, fileno);
 }//
 
-void Tensor2d::mywrite(const string& filename)
+void Tensor2d::mywrite(const std::string& filename)
 {
       // write binary data
-      ofstream OutFile;
-      OutFile.open(const_cast<char*>(filename.c_str()), ios::out | ios::binary);
+      std::ofstream OutFile;
+      OutFile.open(const_cast<char*>(filename.c_str()), std::ios::out | std::ios::binary);
       OutFile.write((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       OutFile.close();
 }//
 
 void Tensor2d::mywrite(int fileno)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();
@@ -2327,15 +2325,15 @@ void Tensor2d::mywrite(int fileno)
       std::string fname = scr + "psi." + pid_  + "." + convert.str();
 
       // write binary data
-      ofstream OutFile;
-      OutFile.open(const_cast<char*>(fname.c_str()), ios::out | ios::binary);
+      std::ofstream OutFile;
+      OutFile.open(const_cast<char*>(fname.c_str()), std::ios::out | std::ios::binary);
       OutFile.write((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       OutFile.close();
 }//
 
 void Tensor2d::mywrite(int fileno, bool append)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();
@@ -2343,18 +2341,18 @@ void Tensor2d::mywrite(int fileno, bool append)
       std::string fname = scr + "psi." + pid_  + "." + convert.str();
 
       // write binary data
-      ofstream OutFile;
-      if (append) OutFile.open(const_cast<char*>(fname.c_str()), ios::out | ios::binary | ios::app);
-      else OutFile.open(const_cast<char*>(fname.c_str()), ios::out | ios::binary);
+      std::ofstream OutFile;
+      if (append) OutFile.open(const_cast<char*>(fname.c_str()), std::ios::out | std::ios::binary | std::ios::app);
+      else OutFile.open(const_cast<char*>(fname.c_str()), std::ios::out | std::ios::binary);
       OutFile.write((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       OutFile.close();
 }//
 
-void Tensor2d::myread(const string& filename)
+void Tensor2d::myread(const std::string& filename)
 {
       // read binary data
-      ifstream InFile;
-      InFile.open(const_cast<char*>(filename.c_str()), ios::in | ios::binary);
+      std::ifstream InFile;
+      InFile.open(const_cast<char*>(filename.c_str()), std::ios::in | std::ios::binary);
       InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       InFile.close();
 
@@ -2362,7 +2360,7 @@ void Tensor2d::myread(const string& filename)
 
 void Tensor2d::myread(int fileno)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();
@@ -2370,8 +2368,8 @@ void Tensor2d::myread(int fileno)
       std::string fname = scr + "psi." + pid_  + "." + convert.str();
 
       // read binary data
-      ifstream InFile;
-      InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary);
+      std::ifstream InFile;
+      InFile.open(const_cast<char*>(fname.c_str()), std::ios::in | std::ios::binary);
       InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       InFile.close();
 
@@ -2379,7 +2377,7 @@ void Tensor2d::myread(int fileno)
 
 void Tensor2d::myread(int fileno, bool append)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();
@@ -2387,9 +2385,9 @@ void Tensor2d::myread(int fileno, bool append)
       std::string fname = scr + "psi." + pid_  + "." + convert.str();
 
       // read binary data
-      ifstream InFile;
-      if (append) InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary | ios::app);
-      else InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary);
+      std::ifstream InFile;
+      if (append) InFile.open(const_cast<char*>(fname.c_str()), std::ios::in | std::ios::binary | std::ios::app);
+      else InFile.open(const_cast<char*>(fname.c_str()), std::ios::in | std::ios::binary);
       InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       InFile.close();
 
@@ -2397,7 +2395,7 @@ void Tensor2d::myread(int fileno, bool append)
 
 void Tensor2d::myread(int fileno, size_t start)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();
@@ -2405,9 +2403,9 @@ void Tensor2d::myread(int fileno, size_t start)
       //std::string fname = scr + "psi_dfocc." + convert.str();
 
       // read binary data
-      ifstream InFile;
-      InFile.open(const_cast<char*>(fname.c_str()), ios::in | ios::binary);
-      InFile.seekg(start, ios::beg);
+      std::ifstream InFile;
+      InFile.open(const_cast<char*>(fname.c_str()), std::ios::in | std::ios::binary);
+      InFile.seekg(start, std::ios::beg);
       InFile.read((char*)A2d_[0], dim1_*dim2_*sizeof(double));
       InFile.close();
 
@@ -4729,7 +4727,7 @@ void Tensor2d::cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, Sh
 
 }//
 
-void Tensor2d::cont444(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5016,7 +5014,7 @@ void Tensor2d::cont444(string idx_c, string idx_a, string idx_b, bool delete_a, 
 
 }//
 
-void Tensor2d::cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont343(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5136,7 +5134,7 @@ void Tensor2d::cont343(string idx_c, string idx_a, string idx_b, bool delete_b, 
 
 }//
 
-void Tensor2d::cont442(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont442(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5390,7 +5388,7 @@ void Tensor2d::cont442(string idx_c, string idx_a, string idx_b, bool delete_a, 
 
 }//
 
-void Tensor2d::cont424(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont424(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5525,7 +5523,7 @@ void Tensor2d::cont424(string idx_c, string idx_a, string idx_b, bool delete_a, 
 	temp.reset();
 }//
 
-void Tensor2d::cont244(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont244(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5660,7 +5658,7 @@ void Tensor2d::cont244(string idx_c, string idx_a, string idx_b, bool delete_b, 
 
 }//
 
-void Tensor2d::cont233(string idx_c, string idx_a, string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont233(std::string idx_c, std::string idx_a, std::string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5726,7 +5724,7 @@ void Tensor2d::cont233(string idx_c, string idx_a, string idx_b, SharedTensor2d&
 
 }//
 
-void Tensor2d::cont323(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont323(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5811,7 +5809,7 @@ void Tensor2d::cont323(string idx_c, string idx_a, string idx_b, bool delete_a, 
 	temp.reset();
 }//
 
-void Tensor2d::cont332(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+void Tensor2d::cont332(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
 {
 
     char ta, tb;
@@ -5951,7 +5949,7 @@ Tensor3d::Tensor3d(int d1,int d2, int d3)
   memalloc();
 }//
 
-Tensor3d::Tensor3d(string name, int d1,int d2, int d3)
+Tensor3d::Tensor3d(std::string name, int d1,int d2, int d3)
 {
   A3d_ = NULL;
   dim1_=d1;
@@ -5990,7 +5988,7 @@ void Tensor3d::init(int d1,int d2, int d3)
     memalloc();
 }//
 
-void Tensor3d::init(string name, int d1,int d2, int d3)
+void Tensor3d::init(std::string name, int d1,int d2, int d3)
 {
     dim1_=d1;
     dim2_=d2;
@@ -6042,7 +6040,7 @@ Tensor1i::Tensor1i(int d1)
   memalloc();
 }//
 
-Tensor1i::Tensor1i(string name, int d1)
+Tensor1i::Tensor1i(std::string name, int d1)
 {
   A1i_ = NULL;
   dim1_=d1;
@@ -6076,7 +6074,7 @@ void Tensor1i::init(int d1)
     A1i_ = new int[dim1_];
 }//
 
-void Tensor1i::init(string name, int d1)
+void Tensor1i::init(std::string name, int d1)
 {
     dim1_=d1;
     name_=name;
@@ -6172,7 +6170,7 @@ Tensor2i::Tensor2i(int d1,int d2)
   memalloc();
 }//
 
-Tensor2i::Tensor2i(string name, int d1,int d2)
+Tensor2i::Tensor2i(std::string name, int d1,int d2)
 {
   A2i_ = NULL;
   dim1_=d1;
@@ -6209,7 +6207,7 @@ void Tensor2i::init(int d1,int d2)
     A2i_ = init_int_matrix(dim1_, dim2_);
 }//
 
-void Tensor2i::init(string name, int d1,int d2)
+void Tensor2i::init(std::string name, int d1,int d2)
 {
     dim1_=d1;
     dim2_=d2;
@@ -6399,7 +6397,7 @@ Tensor3i::Tensor3i(int d1,int d2, int d3)
   memalloc();
 }//
 
-Tensor3i::Tensor3i(string name, int d1,int d2, int d3)
+Tensor3i::Tensor3i(std::string name, int d1,int d2, int d3)
 {
   A3i_ = NULL;
   dim1_=d1;
@@ -6447,7 +6445,7 @@ void Tensor3i::init(int d1,int d2, int d3)
     memalloc();
 }//
 
-void Tensor3i::init(string name, int d1, int d2, int d3)
+void Tensor3i::init(std::string name, int d1, int d2, int d3)
 {
     dim1_=d1;
     dim2_=d2;

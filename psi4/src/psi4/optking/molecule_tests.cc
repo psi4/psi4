@@ -52,8 +52,6 @@
 
 namespace opt {
 
-using namespace std;
-
 // test the analytic B matrix (and displacement code) by comparing
 // analytic DqDx to finite-difference DqDx
 void MOLECULE::test_B(void) {

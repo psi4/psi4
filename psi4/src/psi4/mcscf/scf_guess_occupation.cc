@@ -39,8 +39,6 @@
 
 extern FILE* outfile;
 
-using namespace std;
-
 namespace psi{ namespace mcscf{
 
 void SCF::guess_occupation()
@@ -48,20 +46,20 @@ void SCF::guess_occupation()
   if(moinfo_scf->get_guess_occupation()){
     // Assumes the eigenvalues of some Fock operator
     // are in the SBlockVector epsilon
-    vector<std::pair<double, int> > evals;
+    std::vector<std::pair<double, int> > evals;
 
     for(int h = 0; h < nirreps; ++h)
       for(int i = 0; i < sopi[h]; ++i)
-        evals.push_back( make_pair(epsilon->get(h,i),h) );
+        evals.push_back( std::make_pair(epsilon->get(h,i),h) );
 
     // Sort the eigenvalues by energy
     sort(evals.begin(),evals.end());
 
-    int ndocc = min(moinfo_scf->get_nael(),moinfo_scf->get_nbel()) - (reference == tcscf ? 1 : 0);
+    int ndocc = std::min(moinfo_scf->get_nael(),moinfo_scf->get_nbel()) - (reference == tcscf ? 1 : 0);
     int nactv = abs(moinfo_scf->get_nael()-moinfo_scf->get_nbel()) + (reference == tcscf ? 2 : 0);
 
-    vector<int> new_docc;
-    vector<int> new_actv;
+    std::vector<int> new_docc;
+    std::vector<int> new_actv;
     for(int h = 0; h < nirreps; ++h){
       new_docc.push_back(0);
       new_actv.push_back(0);

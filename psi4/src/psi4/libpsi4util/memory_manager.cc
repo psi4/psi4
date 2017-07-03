@@ -39,7 +39,6 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi{
 
-using namespace std;
 
 double bytes_to_MiB(size_t n)
 {

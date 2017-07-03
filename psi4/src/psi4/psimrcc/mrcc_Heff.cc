@@ -48,8 +48,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
 {
   total_time     = time;
@@ -122,8 +120,8 @@ void CCMRCC::build_Heff_offdiagonal()
     // Loop over reference j (in a safe way)
     for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
       if(i!=j){
-        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(i,j);
-        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(i,j);
+        std::vector<std::pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(i,j);
+        std::vector<std::pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(i,j);
         double                   sign_internal_excitation = moinfo->get_sign_internal_excitation(i,j);
 
         double element = 0.0;

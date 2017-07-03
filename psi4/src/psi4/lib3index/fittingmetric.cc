@@ -59,8 +59,6 @@
 #endif
 
 
-using namespace std;
-
 namespace psi {
 
 FittingMetric::FittingMetric(std::shared_ptr<BasisSet> aux, bool force_C1) :

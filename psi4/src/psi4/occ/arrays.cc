@@ -38,7 +38,6 @@
 #include <cmath>
 
 using namespace psi;
-using namespace std;
 namespace psi{ namespace occwave{
 
 
@@ -52,7 +51,7 @@ Array1d::Array1d(int d1)
   memalloc();
 }//
 
-Array1d::Array1d(string name, int d1)
+Array1d::Array1d(std::string name, int d1)
 {
   A1d_ = NULL;
   dim1_=d1;
@@ -77,7 +76,7 @@ Array1d* Array1d::generate(int d1)
     return new Array1d(d1);
 }
 
-Array1d* Array1d::generate(string name, int d1)
+Array1d* Array1d::generate(std::string name, int d1)
 {
     return new Array1d(name,d1);
 }
@@ -95,7 +94,7 @@ void Array1d::init(int d1)
     A1d_ = new double[dim1_];
 }//
 
-void Array1d::init(string name, int d1)
+void Array1d::init(std::string name, int d1)
 {
     dim1_=d1;
     name_=name;
@@ -327,7 +326,7 @@ Array2d::Array2d(int d1,int d2)
   memalloc();
 }//
 
-Array2d::Array2d(string name, int d1,int d2)
+Array2d::Array2d(std::string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -354,7 +353,7 @@ Array2d* Array2d::generate(int d1,int d2)
     return new Array2d(d1,d2);
 }
 
-Array2d* Array2d::generate(string name, int d1,int d2)
+Array2d* Array2d::generate(std::string name, int d1,int d2)
 {
     return new Array2d(name,d1,d2);
 }
@@ -373,7 +372,7 @@ void Array2d::init(int d1,int d2)
     A2d_ = block_matrix(dim1_, dim2_);
 }//
 
-void Array2d::init(string name, int d1,int d2)
+void Array2d::init(std::string name, int d1,int d2)
 {
     dim1_=d1;
     dim2_=d2;
@@ -920,7 +919,7 @@ Array3d::Array3d(int d1,int d2, int d3)
   memalloc();
 }//
 
-Array3d::Array3d(string name, int d1,int d2, int d3)
+Array3d::Array3d(std::string name, int d1,int d2, int d3)
 {
   A3d_ = NULL;
   dim1_=d1;
@@ -949,7 +948,7 @@ Array3d* Array3d::generate(int d1,int d2, int d3)
     return new Array3d(d1,d2,d3);
 }
 
-Array3d* Array3d::generate(string name, int d1,int d2, int d3)
+Array3d* Array3d::generate(std::string name, int d1,int d2, int d3)
 {
     return new Array3d(name,d1,d2,d3);
 }
@@ -975,7 +974,7 @@ void Array3d::init(int d1,int d2, int d3)
     }
 }//
 
-void Array3d::init(string name, int d1,int d2, int d3)
+void Array3d::init(std::string name, int d1,int d2, int d3)
 {
     dim1_=d1;
     dim2_=d2;
@@ -1035,7 +1034,7 @@ Array1i::Array1i(int d1)
   memalloc();
 }//
 
-Array1i::Array1i(string name, int d1)
+Array1i::Array1i(std::string name, int d1)
 {
   A1i_ = NULL;
   dim1_=d1;
@@ -1060,7 +1059,7 @@ Array1i* Array1i::generate(int d1)
     return new Array1i(d1);
 }
 
-Array1i* Array1i::generate(string name, int d1)
+Array1i* Array1i::generate(std::string name, int d1)
 {
     return new Array1i(name, d1);
 }
@@ -1078,7 +1077,7 @@ void Array1i::init(int d1)
     A1i_ = new int[dim1_];
 }//
 
-void Array1i::init(string name, int d1)
+void Array1i::init(std::string name, int d1)
 {
     dim1_=d1;
     name_=name;
@@ -1168,7 +1167,7 @@ Array3i::Array3i(int d1,int d2, int d3)
   memalloc();
 }//
 
-Array3i::Array3i(string name, int d1,int d2, int d3)
+Array3i::Array3i(std::string name, int d1,int d2, int d3)
 {
   A3i_ = NULL;
   dim1_=d1;
@@ -1197,7 +1196,7 @@ Array3i* Array3i::generate(int d1,int d2, int d3)
     return new Array3i(d1,d2,d3);
 }//
 
-Array3i* Array3i::generate(string name, int d1,int d2, int d3)
+Array3i* Array3i::generate(std::string name, int d1,int d2, int d3)
 {
     return new Array3i(name,d1,d2,d3);
 }//
@@ -1223,7 +1222,7 @@ void Array3i::init(int d1,int d2, int d3)
     }
 }//
 
-void Array3i::init(string name, int d1, int d2, int d3)
+void Array3i::init(std::string name, int d1, int d2, int d3)
 {
     dim1_=d1;
     dim2_=d2;

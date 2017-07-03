@@ -49,8 +49,6 @@
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 /*!
  * Runs a MRPT2 and a MRCCSD computation
  * @todo move this code in the CCMRCC class

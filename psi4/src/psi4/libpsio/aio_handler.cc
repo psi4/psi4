@@ -42,8 +42,6 @@
 #include <algorithm>
 #include <functional>
 
-using namespace std;
-
 namespace psi {
 
 AIOHandler::AIOHandler(std::shared_ptr<PSIO> psio)

@@ -64,7 +64,6 @@
 #include "sad.h"
 
 
-using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {

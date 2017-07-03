@@ -31,7 +31,6 @@
 #include "psi4/psi4-dec.h"
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 

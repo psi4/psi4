@@ -41,7 +41,6 @@
 
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ 
 
@@ -2313,7 +2312,7 @@ void USAPT0::mp2_terms()
     fseek(Bb_asf,0L,SEEK_SET);
     fseek(Cb_asf,0L,SEEK_SET);
     fseek(Db_arf,0L,SEEK_SET);
-    for (int astart = 0; astart < max(naa, nba); astart += maxa_a) {
+    for (int astart = 0; astart < std::max(naa, nba); astart += maxa_a) {
         int na_ablock = (astart + maxa_a >= naa ? naa - astart : maxa_a);
         int nb_ablock = (astart + maxb_a >= nba ? nba - astart : maxb_a);
 
@@ -2340,7 +2339,7 @@ void USAPT0::mp2_terms()
         fseek(Bb_brf,0L,SEEK_SET);
         fseek(Cb_brf,0L,SEEK_SET);
         fseek(Db_bsf,0L,SEEK_SET);
-        for (int bstart = 0; bstart < max(nab, nbb); bstart += maxa_b) {
+        for (int bstart = 0; bstart < std::max(nab, nbb); bstart += maxa_b) {
             int na_bblock = (bstart + maxa_b >= nab ? nab - bstart : maxa_b);
             int nb_bblock = (bstart + maxb_b >= nbb ? nbb - bstart : maxb_b);
 

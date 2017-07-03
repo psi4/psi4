@@ -33,8 +33,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 void CCMRCC::compute_first_order_amps()
 {
   /*

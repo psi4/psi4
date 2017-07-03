@@ -43,8 +43,6 @@
 #include <cmath>
 
 
-using namespace std;
-
 namespace psi{ namespace dcft{
 
 
@@ -236,8 +234,8 @@ namespace psi{ namespace dcft{
       std::vector<std::pair<double, int> > bPairs;
       for (int h = 0; h < nirrep_; ++h) {
           for (int i=0; i < nsopi_[h]; ++i){
-              aPairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-              bPairs.push_back(make_pair(epsilon_b_->get(h, i), h));
+              aPairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+              bPairs.push_back(std::make_pair(epsilon_b_->get(h, i), h));
           }
       }
       sort(aPairs.begin(), aPairs.end());

@@ -40,7 +40,6 @@
 
 
 using namespace psi;
-using namespace std;
 
 namespace psi{
 
@@ -68,15 +67,15 @@ class Tensor1d
   private:
   double *A1d_;
   int dim1_;
-  string name_;      // Name of the array
+  std::string name_;      // Name of the array
 
   public:
   Tensor1d(int d1);
-  Tensor1d(string name, int d1);
+  Tensor1d(std::string name, int d1);
   Tensor1d();			   //default constructer
   ~Tensor1d(); 		   	   //destructer
 
-  void init(string name, int d1);
+  void init(std::string name, int d1);
   void init(int d1);
   void memalloc();
   void zero();
@@ -140,20 +139,20 @@ class Tensor2d
   int dim1_, dim2_, d1_, d2_, d3_, d4_;
   int **row_idx_, **col_idx_;
   int *row2d1_, *row2d2_, *col2d1_, *col2d2_;
-  string name_;      // Name of the array
+  std::string name_;      // Name of the array
 
   public:
   Tensor2d(int d1,int d2);
-  Tensor2d(string name, int d1,int d2);
-  Tensor2d(psi::PSIO* psio, size_t fileno, string name, int d1,int d2);
-  Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
-  Tensor2d(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
-  Tensor2d(string name, int d1, int d2, int d3, int d4);
-  Tensor2d(string name, int d1, int d2, int d3);
+  Tensor2d(std::string name, int d1,int d2);
+  Tensor2d(psi::PSIO* psio, size_t fileno, std::string name, int d1,int d2);
+  Tensor2d(std::shared_ptr<psi::PSIO> psio, size_t fileno, std::string name, int d1,int d2);
+  Tensor2d(psi::PSIO& psio, size_t fileno, std::string name, int d1,int d2);
+  Tensor2d(std::string name, int d1, int d2, int d3, int d4);
+  Tensor2d(std::string name, int d1, int d2, int d3);
   Tensor2d();			   //default constructer
   ~Tensor2d(); 		   	   //destructer
 
-  void init(string name, int d1,int d2);
+  void init(std::string name, int d1,int d2);
   void init(int d1,int d2);
   void memalloc();
   void zero();
@@ -293,9 +292,9 @@ class Tensor2d
   void write(psi::PSIO* psio, size_t fileno, psio_address start, psio_address *end);
   void write(psi::PSIO& psio, size_t fileno);
   void write(psi::PSIO& psio, size_t fileno, psio_address start, psio_address *end);
-  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno);
+  void write(std::shared_ptr<psi::PSIO> psio, const std::string& filename, size_t fileno);
   void write(std::shared_ptr<psi::PSIO> psio, size_t fileno, bool three_index, bool symm);
-  void write(std::shared_ptr<psi::PSIO> psio, const string& filename, size_t fileno, bool three_index, bool symm);
+  void write(std::shared_ptr<psi::PSIO> psio, const std::string& filename, size_t fileno, bool three_index, bool symm);
   void write_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
   void write_anti_symm(std::shared_ptr<psi::PSIO> psio, size_t fileno);
 
@@ -314,15 +313,15 @@ class Tensor2d
   void save(std::shared_ptr<psi::PSIO> psio, size_t fileno);
   void save(psi::PSIO* const psio, size_t fileno);
   void save(psi::PSIO& psio, size_t fileno);
-  void load(std::shared_ptr<psi::PSIO> psio, size_t fileno, string name, int d1,int d2);
-  void load(psi::PSIO* const psio, size_t fileno, string name, int d1,int d2);
-  void load(psi::PSIO& psio, size_t fileno, string name, int d1,int d2);
+  void load(std::shared_ptr<psi::PSIO> psio, size_t fileno, std::string name, int d1,int d2);
+  void load(psi::PSIO* const psio, size_t fileno, std::string name, int d1,int d2);
+  void load(psi::PSIO& psio, size_t fileno, std::string name, int d1,int d2);
 
-  void mywrite(const string& filename);
+  void mywrite(const std::string& filename);
   void mywrite(int fileno);
   void mywrite(int fileno, bool append);
 
-  void myread(const string& filename);
+  void myread(const std::string& filename);
   void myread(int fileno);
   void myread(int fileno, bool append);
   void myread(int fileno, size_t start);
@@ -469,22 +468,22 @@ class Tensor2d
   void cont444(bool delete_a, int t_a1, int t_a2, int f_a1, int f_a2, SharedTensor2d& A,
 	     bool delete_b, int t_b1, int t_b2, int f_b1, int f_b2, SharedTensor2d& B,
 	     double alpha, double beta);
-  void cont444(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont444(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq) = \sum_{rst} A(pr,st) B(rs,tq)
-  void cont442(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont442(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq,rs) = \sum_{t} A(pq,rt) B(t,s)
-  void cont424(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont424(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq,rs) = \sum_{t} A(p,t) B(tq,rs)
-  void cont244(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont244(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(Q,pq) = \sum_{rs} A(Q,rs) B(rs,pq)
   // where dim(idx_c) & dim(idx_a)=2 but dim(idx_b)=4
-  void cont343(string idx_c, string idx_a, string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont343(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(Q,pq) = \sum_{r} A(p,r) B(Q,rq)
-  void cont233(string idx_c, string idx_a, string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont233(std::string idx_c, std::string idx_a, std::string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(Q,pq) = \sum_{r} A(Q,pr) B(r,q)
-  void cont323(string idx_c, string idx_a, string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont323(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq) = \sum_{Qr} A(Q,rp) B(Q,rq)
-  void cont332(string idx_c, string idx_a, string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  void cont332(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
 
   friend class Tensor1d;
   friend class Tensor3d;
@@ -498,15 +497,15 @@ class Tensor3d
   private:
   double ***A3d_;
   int dim1_,dim2_,dim3_;
-  string name_;      // Name of the array
+  std::string name_;      // Name of the array
 
   public:
   Tensor3d(int d1,int d2, int d3);
-  Tensor3d(string name, int d1,int d2, int d3);
+  Tensor3d(std::string name, int d1,int d2, int d3);
   Tensor3d();			   //default constructer
   ~Tensor3d(); 		   	   //destructer
 
-  void init(string name, int d1,int d2, int d3);
+  void init(std::string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
   void zero();
@@ -525,15 +524,15 @@ class Tensor1i
   private:
   int *A1i_;
   int dim1_;
-  string name_;      // Name of the array
+  std::string name_;      // Name of the array
 
   public:
   Tensor1i(int d1);
-  Tensor1i(string name, int d1);
+  Tensor1i(std::string name, int d1);
   Tensor1i();			   //default constructer
   ~Tensor1i(); 		   	   //destructer
 
-  void init(string name, int d1);
+  void init(std::string name, int d1);
   void init(int d1);
   void memalloc();
   void zero();
@@ -554,15 +553,15 @@ class Tensor2i
   private:
   int **A2i_;
   int dim1_,dim2_;
-  string name_;      // Name of the array
+  std::string name_;      // Name of the array
 
   public:
   Tensor2i(int d1,int d2);
-  Tensor2i(string name, int d1,int d2);
+  Tensor2i(std::string name, int d1,int d2);
   Tensor2i();			   //default constructer
   ~Tensor2i(); 		   	   //destructer
 
-  void init(string name, int d1,int d2);
+  void init(std::string name, int d1,int d2);
   void init(int d1,int d2);
   void memalloc();
   void zero();
@@ -599,15 +598,15 @@ class Tensor3i
   private:
   int ***A3i_;
   int dim1_,dim2_,dim3_;
-  string name_;      // Name of the array
+  std::string name_;      // Name of the array
 
   public:
   Tensor3i(int d1,int d2, int d3);
-  Tensor3i(string name, int d1,int d2, int d3);
+  Tensor3i(std::string name, int d1,int d2, int d3);
   Tensor3i();			   //default constructer
   ~Tensor3i(); 		           //destructer
 
-  void init(string name, int d1,int d2, int d3);
+  void init(std::string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
   void zero();

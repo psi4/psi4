@@ -41,8 +41,6 @@
 #define MIN(i,j) ((i>j) ? j : i)
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 
-using namespace std;
-
 extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
@@ -59,9 +57,9 @@ void SCF::read_so_tei()
 
   // Determine the number of matrix elements of the PK (and K) matrix to hold in core
   if(reference == rhf){
-    nin_core        = min(free_memory / sizeof(double),total_symmetric_block_size);
+    nin_core        = std::min(free_memory / sizeof(double),total_symmetric_block_size);
   }else{
-    nin_core        = min(free_memory / (2 * sizeof(double)),total_symmetric_block_size);
+    nin_core        = std::min(free_memory / (2 * sizeof(double)),total_symmetric_block_size);
   }
   if(nin_core != total_symmetric_block_size)
     out_of_core = true;

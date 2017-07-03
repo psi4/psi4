@@ -33,8 +33,6 @@
 #include "defines.h"
 
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 void OCCWave::ocepa_g_int()

@@ -42,8 +42,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 MP2_CCSD::MP2_CCSD(SharedWavefunction ref_wfn, Options &options):
         CCManyBody(ref_wfn, options)
 {

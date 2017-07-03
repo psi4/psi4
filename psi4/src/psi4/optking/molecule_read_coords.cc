@@ -53,29 +53,27 @@
 
 namespace opt {
 
-using namespace std;
-
 // convert string to integer
-bool stoi(string s, int *a);
+bool stoi(std::string s, int *a);
 
 // convert string to boolean
-bool stob(string s, bool *a);
+bool stob(std::string s, bool *a);
 
 // convert string to float
-bool stof(string s, double *val);
+bool stof(std::string s, double *val);
 
 // check string for trailing "*".  If present, remove it and return true
-bool has_asterisk(string & s);
+bool has_asterisk(std::string & s);
 
-bool myline(ifstream & fin, vector<string> & tokens, int & line_num);
+bool myline(std::ifstream & fin, std::vector<std::string> & tokens, int & line_num);
 
 // clear tokens
 // read line and tokenize it into tokens
 // lines beginning with % or empty lines are skipped/ignored
 // return false, if no more lines
-bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
-  string sline;
-  stringstream streamline;
+bool myline(std::ifstream & fin, std::vector<std::string> & tokens, int & line_num) {
+  std::string sline;
+  std::stringstream streamline;
   bool read_next = true;
   bool line_present = false;
 
@@ -115,16 +113,16 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
 }
 
 bool MOLECULE::read_coords(std::ifstream & fintco) {
-  stringstream error;
+  std::stringstream error;
   int line_num=0;
   bool D_on[6];     // interfragment coordinates active
   bool D_frozen[6]; // interfragment coordinates frozen
   FRAG * frag1;
   int first_atom, last_atom;
   int first_frag, second_frag;
-  vector<string> vline;
-  vector<int> A1; vector<int> A2; vector<int> A3;
-  vector<int> B1; vector<int> B2; vector<int> B3;
+  std::vector<std::string> vline;
+  std::vector<int> A1; std::vector<int> A2; std::vector<int> A3;
+  std::vector<int> B1; std::vector<int> B2; std::vector<int> B3;
   int ndA=0, ndB=0;
 
   bool line_present = false;
@@ -183,8 +181,8 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
         throw(INTCO_EXCEPT(error.str().c_str()));
       }
 
-      vector<int> cc_index;
-      vector<double> cc_coeff;
+      std::vector<int> cc_index;
+      std::vector<double> cc_coeff;
       for (int i=0; i<combo_length; ++i) { // Read each simple id and coefficient
         line_present = myline(fintco, vline, line_num);
         int simple_id = 0;
@@ -416,7 +414,7 @@ bool MOLECULE::read_coords(std::ifstream & fintco) {
 // definitions is so linked with that above, I'll put the function here
 // reads internal coordinate definition line
 // offset is the first atom number in the fragment so fragment can store relative numbering
-bool FRAG::read_coord(vector<string> & s, int offset) {
+bool FRAG::read_coord(std::vector<std::string> & s, int offset) {
   int a, b, c, d;
   std::string error;
   double eq_val; // for imposing a constraint
@@ -557,7 +555,7 @@ bool FRAG::read_coord(vector<string> & s, int offset) {
 }
 
 // convert string to integer
-bool stoi(string s, int *a) {
+bool stoi(std::string s, int *a) {
   int i = atoi(s.c_str());
   if (i!=0) {
     *a = i;
@@ -567,7 +565,7 @@ bool stoi(string s, int *a) {
 }
 
 // convert string to float
-bool stof(string s, double *val) {
+bool stof(std::string s, double *val) {
   double d;
   try {
     d = std::stod(s, NULL);
@@ -580,7 +578,7 @@ bool stof(string s, double *val) {
 }
 
 // convert string to boolean
-bool stob(string s, bool *a) {
+bool stob(std::string s, bool *a) {
   if (s == "1") {
     *a = true;
     return true;
@@ -594,7 +592,7 @@ bool stob(string s, bool *a) {
 }
 
 // removes asterisk and returns true if it was present
-bool has_asterisk(string & s) {
+bool has_asterisk(std::string & s) {
   if (s[s.size()-1] == '*') {
     s.erase(s.size()-1);
     return true;

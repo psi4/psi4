@@ -45,8 +45,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void IDMRPT2::build_Heff_mrpt2_offdiagonal()
 {
   build_Heff_uv();
@@ -64,8 +62,8 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal()
     // Loop over reference j (in a safe way)
     for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
       if(i!=j){
-        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(i,j);
-        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(i,j);
+        std::vector<std::pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(i,j);
+        std::vector<std::pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(i,j);
         double                   sign_internal_excitation = moinfo->get_sign_internal_excitation(i,j);
 
         double element = 0.0;

@@ -228,8 +228,8 @@ void MOLECULE::irc_step(void)
           oprintf_out("\n@IRC\n@IRC Houston, we've found a minimum!\n@IRC\n");
 
           if(Opt_params.IRC_stop == OPT_PARAMS::ASK) {
-            cout << "Would you like to proceed? (1=yes, 0=no):";
-            cin >> answer;
+            std::cout << "Would you like to proceed? (1=yes, 0=no):";
+            std::cin >> answer;
           }
           if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer) {
             p_irc_data->go = 0;

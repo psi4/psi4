@@ -34,8 +34,6 @@
 #include "dpd.h"
 
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 void OCCWave::gfock()
