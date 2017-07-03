@@ -300,13 +300,15 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     SharedMatrix AO_a(new Matrix("AO_a", nao, aoc_rowdim - nrot));
     SharedMatrix AO_F(new Matrix("AO_F", nao, aoc_rowdim));
     
-    double* rp = AO_R ->pointer()[0]; 
-    double* ap = AO_a ->pointer()[0]; 
-    double* fp = AO_F ->pointer()[0]; 
+    double** rp = AO_R ->pointer(); 
+    double** ap = AO_a ->pointer(); 
+    double** fp = AO_F ->pointer(); 
     
-    C_DCOPY(nao * nrot, &AO_Cp[0][0], 1, &rp[0], 1); 
-    C_DCOPY(nao * (aoc_rowdim - nrot), &AO_Cp[0][nrot * nao], 1, &ap[0], 1); 
-    C_DCOPY(nao * aoc_rowdim, &AO_Cp[0][0], 1, &fp[0], 1); 
+    for(size_t i=0; i<nao; i++){
+        C_DCOPY(nrot, &AO_Cp[i][0], 1, &rp[i][0], 1); 
+        C_DCOPY((aoc_rowdim - nrot), &AO_Cp[i][nrot], 1, &ap[i][0], 1); 
+        C_DCOPY(aoc_rowdim, &AO_Cp[i][0], 1, &fp[i][0], 1); 
+    }
 
 //    dferi_->set_C(AO_C);
 //    dferi_->add_space("R", 0, nrot);
@@ -366,7 +368,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     timer_off("CIWave: DFMCSCF integral transform");
 }
 void CIWavefunction::setup_mcscf_ints() {
-    printf("1hello????");
+    
     // We need to do a few weird things to make IntegralTransform work for us
     outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
 

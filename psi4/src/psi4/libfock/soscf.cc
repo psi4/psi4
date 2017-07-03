@@ -918,13 +918,15 @@ void DFSOMCSCF::transform(bool approx_only)
     SharedMatrix AO_a(new Matrix("AO_a", nao_, aoc_rowdim - nrot));
     SharedMatrix AO_F(new Matrix("AO_F", nao_, aoc_rowdim));
     
-    double* rp = AO_R ->pointer()[0]; 
-    double* ap = AO_a ->pointer()[0]; 
-    double* fp = AO_F ->pointer()[0]; 
-
-    C_DCOPY(nao_ * nrot, &AO_Cp[0][0], 1, &rp[0], 1); 
-    C_DCOPY(nao_ * (aoc_rowdim - nrot), &AO_Cp[0][nrot * nao_], 1, &ap[0], 1); 
-    C_DCOPY(nao_ * aoc_rowdim, &AO_Cp[0][0], 1, &fp[0], 1); 
+    double** rp = AO_R ->pointer(); 
+    double** ap = AO_a ->pointer(); 
+    double** fp = AO_F ->pointer(); 
+    
+    for(size_t i=0; i<nao_; i++){
+        C_DCOPY(nrot, &AO_Cp[i][0], 1, &rp[i][0], 1); 
+        C_DCOPY((aoc_rowdim - nrot), &AO_Cp[i][nrot], 1, &ap[i][0], 1); 
+        C_DCOPY(aoc_rowdim, &AO_Cp[i][0], 1, &fp[i][0], 1); 
+    }
     
 //    dferi_->clear();
 //    dferi_->set_C(AO_C);
@@ -1142,14 +1144,17 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     double** NNQp = NNQ->pointer();
 //    FILE* NNQF = NNQT->file_pointer();
 
+    std::tuple<size_t, size_t, size_t> shape = dfh_->get_tensor_shape("RRQ");
+    printf("shape of RRQ: (%d, %d, %d)\n", std::get<0>(shape), std::get<1>(shape), std::get<2>(shape));  
+ 
     for (int start = 0; start < nmo_; start += chunk_size) {
         int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
         size_t read_start = sizeof(double) * start * nmo_ * nQ;
 
 //        fseek(NNQF, read_start, SEEK_SET);
 //        fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
-        dfh_ -> fill_tensor("RRQ", NNQ, std::make_pair(start, start + chunk_size - 1), 
-            std::make_pair(0, nmo_), std::make_pair(0, nQ));
+        dfh_ -> fill_tensor("RRQ", NNQ, std::make_pair(start, start + block - 1), 
+            std::make_pair(0, nmo_ - 1), std::make_pair(0, nQ - 1));
 
         C_DGEMM('N', 'N', nact_, nmo_ * nQ, block, 1.0, dUactp[0] + start, nmo_, NNQp[0], nmo_ * nQ,
                 1.0, wnQp[0], nmo_ * nQ);

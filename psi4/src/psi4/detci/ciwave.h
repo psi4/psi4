@@ -47,6 +47,10 @@ class MOSpace;
 typedef std::shared_ptr<Matrix> SharedMatrix;
 class SOMCSCF;
 
+namespace df_helper {
+class DF_Helper;
+}
+
 // Well this is not ideal
 struct _SlaterDetSet;
 typedef _SlaterDetSet SlaterDetSet;
@@ -342,6 +346,7 @@ private:
     std::shared_ptr<MOSpace> rot_space_;
     std::shared_ptr<MOSpace> act_space_;
     std::shared_ptr<DFERI> dferi_; // DF
+    std::shared_ptr<df_helper::DF_Helper> dfh_; // DF
     std::shared_ptr<JK> jk_;
     std::shared_ptr<SOMCSCF> somcscf_;
 
