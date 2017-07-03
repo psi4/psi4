@@ -68,10 +68,15 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/lib3index/df_helper.h"
 
 #include "psi4/detci/structs.h"
 #include "psi4/detci/ciwave.h"
 #include "psi4/detci/globaldefs.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace psi { namespace detci {
 
@@ -142,7 +147,19 @@ void CIWavefunction::setup_dfmcscf_ints() {
     jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     jk_->print_header();
 
+    int num_threads_ = 1;
+    #ifdef _OPENMP
+        num_threads_ = omp_get_max_threads();
+    #endif
+    
     /// Build DF object
+    // ==> Init DF object <== /
+    dfh_ = df_helper::DF_Helper::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
+    dfh_ -> set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
+    dfh_ -> set_method("DIRECT");
+    dfh_ -> set_nthreads(num_threads_);
+    dfh_ -> initialize(); 
+    
     dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"), options_);
     dferi_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
     dferi_->print_header();
@@ -221,6 +238,7 @@ void CIWavefunction::rotate_mcscf_integrals(SharedMatrix k,
 
 }
 void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
+    
     if (!df_ints_init_) setup_dfmcscf_ints();
     timer_on("CIWave: DFMCSCF integral transform");
 
@@ -234,6 +252,8 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     int nact = CalcInfo_->num_ci_orbs;
     int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
     int aoc_rowdim = nrot + Cact->ncol();
+    
+
     SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao, aoc_rowdim));
 
     double** AO_Cp = AO_C->pointer();
@@ -273,37 +293,68 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     }
 
     // => Compute DF ints <= //
-    dferi_->clear();
-    dferi_->set_C(AO_C);
-    dferi_->add_space("R", 0, nrot);
-    dferi_->add_space("a", nrot, aoc_rowdim);
-    dferi_->add_space("F", 0, aoc_rowdim);
+    dfh_->clear();
+
+    // not ideal FIXME
+    SharedMatrix AO_R(new Matrix("AO_R", nao, nrot));
+    SharedMatrix AO_a(new Matrix("AO_a", nao, aoc_rowdim - nrot));
+    SharedMatrix AO_F(new Matrix("AO_F", nao, aoc_rowdim));
+    
+    double* rp = AO_R ->pointer()[0]; 
+    double* ap = AO_a ->pointer()[0]; 
+    double* fp = AO_F ->pointer()[0]; 
+    
+    C_DCOPY(nao * nrot, &AO_Cp[0][0], 1, &rp[0], 1); 
+    C_DCOPY(nao * (aoc_rowdim - nrot), &AO_Cp[0][nrot * nao], 1, &ap[0], 1); 
+    C_DCOPY(nao * aoc_rowdim, &AO_Cp[0][0], 1, &fp[0], 1); 
+
+//    dferi_->set_C(AO_C);
+//    dferi_->add_space("R", 0, nrot);
+//    dferi_->add_space("a", nrot, aoc_rowdim);
+//    dferi_->add_space("F", 0, aoc_rowdim);
+
+    dfh_ -> add_space("R", AO_R);
+    dfh_ -> add_space("a", AO_a);
+    dfh_ -> add_space("F", AO_F);
 
     if (approx_only) {
-        dferi_->add_pair_space("aaQ", "a", "a");
-        dferi_->add_pair_space("RaQ", "a", "R", -1.0 / 2.0, true);
+        dfh_ -> add_transformation("aaQ", "a", "a");
+        dfh_ -> add_transformation("RaQ", "R", "a");
+//        dferi_->add_pair_space("aaQ", "a", "a");
+//        dferi_->add_pair_space("RaQ", "a", "R", -1.0 / 2.0, true);
     } else {
-        dferi_->add_pair_space("aaQ", "a", "a");
-        dferi_->add_pair_space("RaQ", "a", "R", -1.0 / 2.0, true);
-        dferi_->add_pair_space("RRQ", "R", "R");
+        dfh_ -> add_transformation("aaQ", "a", "a");
+        dfh_ -> add_transformation("RaQ", "R", "a");
+        dfh_ -> add_transformation("RRQ", "R", "R");
+//        dferi_->add_pair_space("aaQ", "a", "a");
+//        dferi_->add_pair_space("RaQ", "a", "R", -1.0 / 2.0, true);
+//        dferi_->add_pair_space("RRQ", "R", "R");
     }
 
-    dferi_->compute();
-    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
+    dfh_ -> transform();
+    dfh_ -> transpose("aaQ", std::make_tuple(1, 2, 0));
+    dfh_ -> transpose("RaQ", std::make_tuple(1, 2, 0));
+    if(!approx_only)
+        dfh_ -> transpose("RRQ", std::make_tuple(1, 2, 0));
+//    dferi_->compute();
+//    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     // => Compute onel ints <= //
     onel_ints_from_jk();
 
     // => Compute twoel ints <= //
-    int nQ = dferi_->size_Q();
+    int nQ = dfh_ -> get_naux();
+//    int nQ = dferi_->size_Q();
 
-    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
+//    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
-
     double* aaQp = aaQ->pointer()[0];
-    FILE* aaQF = aaQT->file_pointer();
-    fseek(aaQF, 0L, SEEK_SET);
-    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+    dfh_ -> fill_tensor("aaQ", aaQ);
+
+//    FILE* aaQF = aaQT->file_pointer();
+//    fseek(aaQF, 0L, SEEK_SET);
+//    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+    
     SharedMatrix actMO = Matrix::doublet(aaQ, aaQ, false, true);
     aaQ.reset();
 
@@ -315,6 +366,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     timer_off("CIWave: DFMCSCF integral transform");
 }
 void CIWavefunction::setup_mcscf_ints() {
+    printf("1hello????");
     // We need to do a few weird things to make IntegralTransform work for us
     outfile->Printf("\n   ==> Setting up MCSCF integrals <==\n\n");
 
@@ -724,19 +776,21 @@ void CIWavefunction::read_dpd_ci_ints() {
 void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
                                                SharedVector twoel_out) {
     // => Rotate twoel ints <= //
-    int nQ = dferi_->size_Q();
+//    int nQ = dferi_->size_Q();
+    int nQ = dfh_->get_naux();
     int nrot = CalcInfo_->num_rot_orbs;
     int nact = CalcInfo_->num_ci_orbs;
     int nav = nact + CalcInfo_->num_rsv_orbs;
 
     // Read RaQ
-    std::shared_ptr<Tensor> RaQT = dferi_->ints()["RaQ"];
+//    std::shared_ptr<Tensor> RaQT = dferi_->ints()["RaQ"];
     SharedMatrix RaQ(new Matrix("RaQ", nrot, nact * nQ));
-
     double* RaQp = RaQ->pointer()[0];
-    FILE* RaQF = RaQT->file_pointer();
-    fseek(RaQF, 0L, SEEK_SET);
-    fread(RaQp, sizeof(double), nrot * nact * nQ, RaQF);
+    dfh_ -> fill_tensor("RaQ", RaQ);
+//    FILE* RaQF = RaQT->file_pointer();
+//    fseek(RaQF, 0L, SEEK_SET);
+//    fread(RaQp, sizeof(double), nrot * nact * nQ, RaQF);
+    
 
     // We could slice it or... I like my raw GEMM
     // Uact_av DFERI_R_a_Q - > DFERI_a_aQ
@@ -764,13 +818,13 @@ void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact,
     }
 
     // Read aaQ
-    std::shared_ptr<Tensor> aaQT = dferi_->ints()["aaQ"];
+//    std::shared_ptr<Tensor> aaQT = dferi_->ints()["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
-
     double* aaQp = aaQ->pointer()[0];
-    FILE* aaQF = aaQT->file_pointer();
-    fseek(aaQF, 0L, SEEK_SET);
-    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
+    dfh_ -> fill_tensor("aaQ", aaQ);
+//    FILE* aaQF = aaQT->file_pointer();
+//    fseek(aaQF, 0L, SEEK_SET);
+//    fread(aaQp, sizeof(double), nact * nact * nQ, aaQF);
 
 
     // Form ERI's
