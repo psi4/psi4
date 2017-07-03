@@ -87,9 +87,10 @@ void RHF::common_init()
     // Allocate matrix memory
     Fa_        = SharedMatrix(factory_->create_matrix("F"));
     Fb_        = Fa_;
-    Ca_        = SharedMatrix(factory_->create_matrix("C"));
+    Ca_        = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
     Cb_        = Ca_;
     epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_a_->set_name("orbital energies");
     epsilon_b_ = epsilon_a_;
     Da_        = SharedMatrix(factory_->create_matrix("SCF density"));
     Db_        = Da_;

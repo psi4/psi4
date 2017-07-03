@@ -229,6 +229,7 @@ double DFMP2::compute_energy()
     form_energy();
     timer_off("DFMP2 Energy");
     print_energies();
+    energy_ = variables_["MP2 TOTAL ENERGY"];
 
     return variables_["MP2 TOTAL ENERGY"];
 }
@@ -314,6 +315,7 @@ SharedMatrix DFMP2::compute_gradient()
 
     if(options_.get_bool("ONEPDM")){
         print_energies();
+        energy_ = variables_["MP2 TOTAL ENERGY"];
         return SharedMatrix(new Matrix("NULL", 0, 0));
     }
 
@@ -322,6 +324,7 @@ SharedMatrix DFMP2::compute_gradient()
     timer_off("DFMP2 grad");
 
     print_energies();
+    energy_ = variables_["MP2 TOTAL ENERGY"];
 
     print_gradients();
 
@@ -2307,6 +2310,7 @@ void RDFMP2::form_Z()
     SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
     double** APp = AP->pointer();
     SharedMatrix Dtemp;
+    
 
     if(options_.get_bool("OPDM_RELAX")){
         psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2403,6 +2407,7 @@ void RDFMP2::form_Z()
         Ca_ = SharedMatrix(new Matrix("DF-MP2 Natural Orbitals", nsopi_, nmopi_));
         epsilon_a_ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 relaxed density", nsopi_, nsopi_));
+        
     }else{
         // Don't relax the OPDM
         Dtemp = Ppq->clone();
@@ -2411,11 +2416,13 @@ void RDFMP2::form_Z()
         Dtemp->scale(0.5);
 
         // Add in the reference contribution
+
         for (int i = 0; i < nocc; ++i)
             Dtemp->add(i, i, 1.0);
         Ca_ = SharedMatrix(new Matrix("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_));
         epsilon_a_ = SharedVector(new Vector("DF-MP2 (unrelaxed) NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 unrelaxed density", nsopi_, nsopi_));
+        
     }
 
     compute_opdm_and_nos(Dtemp, Da_, Ca_, epsilon_a_);

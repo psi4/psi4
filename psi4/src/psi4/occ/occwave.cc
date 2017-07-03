@@ -593,7 +593,7 @@ void OCCWave::mem_release()
         delete oo_pairidxAA;
         delete vv_pairidxAA;
 
-    Ca_.reset();
+    //Ca_.reset();
     Ca_ref.reset();
     Hso.reset();
     Tso.reset();

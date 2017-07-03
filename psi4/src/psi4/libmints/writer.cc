@@ -78,7 +78,6 @@ void GradientWriter::write(const std::string &filename)
 MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
 {
-
 }
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb, std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA, std::shared_ptr<Vector> OccB, bool dovirtual)
 {
@@ -274,6 +273,8 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
 FCHKWriter::FCHKWriter(std::shared_ptr<Wavefunction> wavefunction)
     : wavefunction_(wavefunction)
 {
+    SharedMatrix Ca = wavefunction_->Ca();
+    Ca->print();
 }
 
 
@@ -634,10 +635,14 @@ void FCHKWriter::write(const std::string &filename)
     write_matrix("Contraction coefficients", coefficients);
     write_matrix("Coordinates of each shell", shell_coords);
     write_number("Total Energy", wavefunction_->reference_energy());
-    write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
-    write_matrix("Alpha MO coefficients", reorderedCa);
-    write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
-    write_matrix("Beta MO coefficients", reorderedCb);
+    //write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
+    write_matrix(wavefunction_->epsilon_a()->name().c_str(), wavefunction_->epsilon_a_subset("AO"));
+    //write_matrix("Alpha MO coefficients", reorderedCa);
+    write_matrix(wavefunction_->Ca()->name().c_str(), reorderedCa);
+    //write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
+    write_matrix(wavefunction_->epsilon_b()->name().c_str(), wavefunction_->epsilon_b_subset("AO"));
+    //write_matrix("Beta MO coefficients", reorderedCb);
+    write_matrix(wavefunction_->Cb()->name().c_str(), reorderedCb);
     char* label = new char[256];
     std::string type = name == "DFT" ? "SCF" : name;
     sprintf(label, "Total %s Density", type.c_str());
