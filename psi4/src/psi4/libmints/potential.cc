@@ -1010,7 +1010,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
                                 for (int nx=0; nx<cdsalc1.nx(); ++nx) {
                                     const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
                                     double temp = jcoef_aobuf * element.coef;
-                                    if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                    if ((iirrep ^ jirrep) == element.irrep && std::fabs(temp) > 1.0e-10) {
                                         result[element.salc]->add(iirrep, irel, jrel, temp);
                                     }
                                 }
@@ -1019,7 +1019,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
                                 for (int ny=0; ny<cdsalc1.ny(); ++ny) {
                                     const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
                                     double temp = jcoef_aobuf * element.coef;
-                                    if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                    if ((iirrep ^ jirrep) == element.irrep && std::fabs(temp) > 1.0e-10) {
                                         result[element.salc]->add(iirrep, irel, jrel, temp);
                                     }
                                 }
@@ -1028,7 +1028,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
                                 for (int nz=0; nz<cdsalc1.nz(); ++nz) {
                                     const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
                                     double temp = jcoef_aobuf * element.coef;
-                                    if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                    if ((iirrep ^ jirrep) == element.irrep && std::fabs(temp) > 1.0e-10) {
                                         result[element.salc]->add(iirrep, irel, jrel, temp);
                                     }
                                 }

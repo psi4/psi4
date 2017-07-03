@@ -262,7 +262,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol,
                     salc[cd] /= sqrt((double)nirrep_*stab_order);
 
                     // Count number of nonzeros
-                    if (fabs(salc[cd]) > 1e-10)
+                    if (std::fabs(salc[cd]) > 1e-10)
                         ++nonzero;
                 }
 
@@ -296,7 +296,7 @@ CdSalcList::CdSalcList(std::shared_ptr<Molecule> mol,
             bool added = false;
             CdSalc new_salc(h);
             for (int cd=0; cd < ncd_; ++cd) {
-                if (fabs(salcs(h, i, cd)) > 1.0e-10) {
+                if (std::fabs(salcs(h, i, cd)) > 1.0e-10) {
                     added = true;
                     new_salc.add(salcs(h, i, cd), cd/3, cd % 3);
                     atom_salcs_[cd/3].add(cd % 3, salcs(h, i, cd), h, salcs_.size());
@@ -343,7 +343,7 @@ std::string CdSalcList::name_of_component(int component)
         const CdSalc::Component& com = salc.component(i);
 
         name += com.coef > 0.0 ? "+" : "-";
-        name += std::to_string(fabs(com.coef)) + " ";
+        name += std::to_string(std::fabs(com.coef)) + " ";
         name += molecule_->label(com.atom);
         if (com.xyz == 0)
             name += "-x";

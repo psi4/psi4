@@ -199,8 +199,8 @@ void MOLECULE::irc_step(void)
 
   int opt_iter = p_Opt_data->g_iteration() - 1;
   if(opt_iter > 2 && p_irc_data->in_min_range) {
-    if(    fabs(p_Opt_data->g_energy(opt_iter)     - p_Opt_data->g_energy(opt_iter - 2)) < 0.01e-03
-        && fabs(p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3)) < 0.01e-03 ) {
+    if(    std::fabs(p_Opt_data->g_energy(opt_iter)     - p_Opt_data->g_energy(opt_iter - 2)) < 0.01e-03
+        && std::fabs(p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3)) < 0.01e-03 ) {
       p_irc_data->go = 0;
     }
   }
@@ -222,7 +222,7 @@ void MOLECULE::irc_step(void)
       if(p_irc_data->size() > 3) {
         if (u_f_q_dot < -0.7 ||
             (
-              fabs(p_irc_data->g_line_dist(p_irc_data->size()-1) - p_irc_data->g_line_dist(p_irc_data->size()-2)) < s*10e-03
+              std::fabs(p_irc_data->g_line_dist(p_irc_data->size()-1) - p_irc_data->g_line_dist(p_irc_data->size()-2)) < s*10e-03
             )
            ) {
           oprintf_out("\n@IRC\n@IRC Houston, we've found a minimum!\n@IRC\n");
@@ -551,13 +551,13 @@ void MOLECULE::irc_step(void)
   lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
   while(lagrangian*old_lagrangian > 0 && coarse_iter < 1000)
   {
-    if(lagrangian < 0 && fabs(lagrangian) < fabs(lb_lagrangian))
+    if(lagrangian < 0 && std::fabs(lagrangian) < std::fabs(lb_lagrangian))
     {
       lb_lagrangian = lagrangian;
       lb_lambda = lambda;
     }
 
-    if(lagrangian > 0 && fabs(lagrangian) < fabs(ub_lagrangian))
+    if(lagrangian > 0 && std::fabs(lagrangian) < std::fabs(ub_lagrangian))
     {
       ub_lagrangian = lagrangian;
       ub_lambda = lambda;
@@ -571,19 +571,19 @@ void MOLECULE::irc_step(void)
 
   oprintf_out( "\n    Determining lagrangian multiplier for constrained minimization.\n");
 
-  while (fabs(lambda - old_lambda) > 1e-16)
+  while (std::fabs(lambda - old_lambda) > 1e-16)
   {
     old_lagrangian = lagrangian;
     lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
     h_f = -df[0] / df[1];
 
-    if(lagrangian < 0 && fabs(lagrangian) < fabs(lb_lagrangian))
+    if(lagrangian < 0 && std::fabs(lagrangian) < std::fabs(lb_lagrangian))
     {
       lb_lagrangian = lagrangian;
       lb_lambda = lambda;
     }
 
-    if(lagrangian > 0 && fabs(lagrangian) < fabs(ub_lagrangian))
+    if(lagrangian > 0 && std::fabs(lagrangian) < std::fabs(ub_lagrangian))
     {
       ub_lagrangian = lagrangian;
       ub_lambda = lambda;
@@ -709,8 +709,8 @@ void MOLECULE::irc_step(void)
 //gradient at the converged point, and the vector dq_m, connecting the starting point and the new
 //point converged on the hypersphere
   double u_dqm_pm = array_dot(u_dq_m, u_p_m, Nintco);
-  double beta = acos( fabs( u_dqm_pm ) );
-  p_irc_data->arc_length = fabs( s * beta / tan( beta ) );
+  double beta = acos( std::fabs( u_dqm_pm ) );
+  p_irc_data->arc_length = std::fabs( s * beta / tan( beta ) );
   p_irc_data->line_length = sqrt( array_dot(new_dq, new_dq, Nintco) );
 
   free_array(u_dq_m);
@@ -785,11 +785,11 @@ void MOLECULE::irc_step(void)
       }
       oprintf_out("@IRC %3d   %8d      %16.8f %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n",
           point, p_irc_data->sphere_step, E,
-          DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"),
-          max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
-          rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
-          max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
-          rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
+          DE, (Opt_params.i_max_DE ? ((std::fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"),
+          max_force, (Opt_params.i_max_force ? ((std::fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+          rms_force, (Opt_params.i_rms_force ? ((std::fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+          max_disp, (Opt_params.i_max_disp ? ((std::fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+          rms_disp, (Opt_params.i_rms_disp ? ((std::fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
       oprintf_out("     -----------------------------------------------------------------------------------------------------------\n\n");
     }
   }
@@ -846,11 +846,11 @@ double *lowest_evector(double **H, int Nintco)
   // find largest element
   double max_element = -1;
   for(int i=0; i<Nintco; i++)
-    if( fabs(V[0][i]) > fabs(max_element) )
+    if( std::fabs(V[0][i]) > std::fabs(max_element) )
       max_element = V[0][i];
 
   int sign;
-  (max_element == fabs(max_element)) ? sign = 1 : sign = -1;
+  (max_element == std::fabs(max_element)) ? sign = 1 : sign = -1;
 
   double *min_evector = init_array(Nintco);
   for(int i=0; i<Nintco; i++)

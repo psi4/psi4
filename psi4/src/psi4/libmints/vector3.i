@@ -133,9 +133,9 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
             // choose the plane to be that which contains the two largest
             // components of d
             double absd[3];
-            absd[0] = fabs(d->v_[0]);
-            absd[1] = fabs(d->v_[1]);
-            absd[2] = fabs(d->v_[2]);
+            absd[0] = std::fabs(d->v_[0]);
+            absd[1] = std::fabs(d->v_[1]);
+            absd[2] = std::fabs(d->v_[2]);
             int axis0, axis1;
             if ((absd[1] - absd[0]) > 1.0e-12) {
                 axis0 = 1;

@@ -2219,16 +2219,16 @@ void benchmark_math(double min_time)
     qq = new Timer();
     while (T < min_time) {
         for (int Q = 0; Q < LOOP_SIZE; Q++) {
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
-            c = fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
+            c = std::fabs(c);
         }
 
         T = qq->get();

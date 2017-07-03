@@ -107,7 +107,7 @@ void MatrixBase::contract(MatrixBase* A, MatrixBase* B, double const alpha, doub
   size_t max_r = A->get_ncols();
   if((max_r != 0) and (nrows != 0) and (ncols != 0))
     C_DGEMM('n','t',nrows,ncols,max_r,alpha,&(A->get_matrix()[0][0]),max_r,&(B->get_matrix()[0][0]),max_r,beta,&(matrix[0][0]),ncols);
-  else if(fabs(beta) < 1.0e-9)
+  else if(std::fabs(beta) < 1.0e-9)
     zero();
   // BUG: There was a tricky bug here.  When alpha is 0.0 and you skip DGEMM the matrix doesn't get set to zero.
 }

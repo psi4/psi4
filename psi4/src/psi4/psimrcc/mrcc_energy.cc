@@ -53,7 +53,7 @@ void CCMRCC::print_mrccsd_energy(int cycle)
 
     bool is_converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") &&
                          delta_t2_amps < options_.get_double("R_CONVERGENCE") &&
-                         fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
+                         std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
 
     if(is_converged && (cycle!=0)){
       char star = (options_.get_str("CORR_WFN") == "CCSD") ? '*' : ' ';

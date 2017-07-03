@@ -303,7 +303,7 @@ bool FRAG::displace_util(double *dq, bool focus_on_constraints) {
     // maximum change and rms change in xyz coordinates < 10^-6
     if ( dx_rms < bt_dx_conv && dx_max < bt_dx_conv)
       bt_iter_done = true;
-    else if (fabs(dx_rms - dx_rms_last) < bt_dx_conv_rms_change)
+    else if (std::fabs(dx_rms - dx_rms_last) < bt_dx_conv_rms_change)
       bt_iter_done = true;
     else if ( bmat_iter_cnt >= bt_max_iter) {
       bt_iter_done = true;

@@ -386,7 +386,7 @@ outfile->Printf( "\t----    ---------------    ---------------\n");
    //if (rms_residual < tol_pcg  || rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_pcg) >= tol_pcg || fabs(rms_residual) >= tol_pcg);  
+ while(std::fabs(rms_pcg) >= tol_pcg || std::fabs(rms_residual) >= tol_pcg);  
 
     // Converged?
     outfile->Printf("\n");

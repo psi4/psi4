@@ -73,7 +73,7 @@ void IWL::write(int p, int q, int pq, int pqsym,
             rs = ioff[r] + s;
             value = arr[rs];
 
-            if (fabs(value) > cutoff_) {
+            if (std::fabs(value) > cutoff_) {
                 idx = 4 * idx_;
                 lblptr[idx] = (Label) p;
                 lblptr[idx+1] = (Label) q;

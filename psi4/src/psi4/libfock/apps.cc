@@ -461,7 +461,7 @@ void RCIS::print_amplitudes()
 
             for (int i2 = 0; i2 < naocc; i2++) {
                 for (int a2 = 0; a2 < navir; a2++) {
-                    if (fabs(Tp[i2][a2]) > cutoff) {
+                    if (std::fabs(Tp[i2][a2]) > cutoff) {
                         int ival = i2 + Cfocc_->colspi()[h2];
                         int aval = a2 + Cfocc_->colspi()[h2^symm] + Caocc_->colspi()[h2^symm];
                         amps.push_back(std::tuple<double,int,int,int,int>(Tp[i2][a2],ival,h2,aval,h2^symm));
@@ -553,7 +553,7 @@ void RCIS::print_densities()
     for (size_t i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
         int state = options_["CIS_OPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
-        state = abs(state);
+        state = std::abs(state);
 
         std::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), false);
         std::stringstream s;
@@ -566,7 +566,7 @@ void RCIS::print_densities()
     for (size_t i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
         int state = options_["CIS_DOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
-        state = abs(state);
+        state = std::abs(state);
 
         std::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), true);
         std::stringstream s;
@@ -579,7 +579,7 @@ void RCIS::print_densities()
     for (size_t i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
         int state = options_["CIS_TOPDM_STATES"][i].to_integer();
         bool singlet = (state > 0);
-        state = abs(state);
+        state = std::abs(state);
 
         std::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state-1] : triplets_[state-1]), singlet);
         std::stringstream s;
@@ -592,7 +592,7 @@ void RCIS::print_densities()
     for (size_t i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
         int state = options_["CIS_NO_STATES"][i].to_integer();
         bool singlet = (state > 0);
-        state = abs(state);
+        state = std::abs(state);
 
         std::pair<std::shared_ptr<Matrix>, std::shared_ptr<Vector> > stuff = Nao((singlet ? singlets_[state-1] : triplets_[state-1]),false);
         std::stringstream s;
@@ -606,7 +606,7 @@ void RCIS::print_densities()
     for (size_t i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
         int state = options_["CIS_AD_STATES"][i].to_integer();
         bool singlet = (state > 0);
-        state = abs(state);
+        state = std::abs(state);
 
         std::pair<std::shared_ptr<Matrix>, std::shared_ptr<Matrix> > stuff = ADao((singlet ? singlets_[state-1] : triplets_[state-1]));
         std::stringstream s;

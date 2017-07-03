@@ -496,7 +496,7 @@ double CCManyBody::diagonalize_Heff(int root,int ndets, double** Heff,double*& r
     energy = real[root];
     // Eliminate the triplet solution if required
     if((options_.get_bool("LOCK_SINGLET")==1)&&(ndets==4)){
-      if((fabs(right_eigenvector[0])<5.0e-2)&& (fabs(right_eigenvector[3])<5.0e-2) && ((right_eigenvector[1]/right_eigenvector[2])<-0.5)){
+      if((std::fabs(right_eigenvector[0])<5.0e-2)&& (std::fabs(right_eigenvector[3])<5.0e-2) && ((right_eigenvector[1]/right_eigenvector[2])<-0.5)){
         outfile->Printf("\n\tSelecting root %d since original root is a triplet\n",root+1);
         root++;
         for(int k=0;k<ndets;k++){

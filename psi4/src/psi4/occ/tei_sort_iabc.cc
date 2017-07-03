@@ -60,7 +60,7 @@ void OCCWave::tei_sort_iabc()
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN.labels()[fi+1];
         int k = ERIIN.labels()[fi+2];
         int l = ERIIN.labels()[fi+3];
@@ -105,7 +105,7 @@ void OCCWave::tei_sort_iabc()
    {
 
         int i = ERIIN2.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN2.labels()[fi+1];
         int k = ERIIN2.labels()[fi+2];
         int l = ERIIN2.labels()[fi+3];

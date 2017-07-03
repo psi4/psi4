@@ -437,7 +437,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
                }
             tval = H0block_->H0b_diag[l][i];
             if ((int) Parameters_->S % 2) tval = -tval;
-            if (fabs(H0block_->H0b_diag[j][i] - tval) > 1.0E-8) {
+            if (std::fabs(H0block_->H0b_diag[j][i] - tval) > 1.0E-8) {
               tmpi = 1;
               outfile->Printf("(sem_iter): H0block_->H0b_diag[%d][%d]"
                       " - H0block_->H0b_diag[%d][%d] = %lf - %lf = %lf"
@@ -452,7 +452,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
        l = Parameters_->filter_guess_H0_det2;
            tval = H0block_->H0b_diag[l][i];
        if (Parameters_->filter_guess_sign == -1) tval = -tval;
-       if (fabs(H0block_->H0b_diag[j][i] - tval) > 1.0E-8) {
+       if (std::fabs(H0block_->H0b_diag[j][i] - tval) > 1.0E-8) {
          tmpi = 1;
          outfile->Printf( "(sem_iter): Guess vector failed user-specified"
                           " criterion.\n");
@@ -474,7 +474,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
             Cvec.buf_unlock();
             tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
             Cvec.buf_lock(buffer1);
-            if (fabs(tval - (Parameters_->S*(Parameters_->S+1.0))) > 1.0E-3) {
+            if (std::fabs(tval - (Parameters_->S*(Parameters_->S+1.0))) > 1.0E-3) {
               outfile->Printf(
                  "Computed <S^2> not as desired, discarding guess\n");
               }
@@ -733,7 +733,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
          for (i=0; i<nroots; i++) {
             if (form_M && ((collapse_num-last_lse_collapse_num)
                >= Parameters_->lse_collapse) &&
-               (fabs(lambda[iter2][i]-lastroot[i]) < lse_tolerance)
+               (std::fabs(lambda[iter2][i]-lastroot[i]) < lse_tolerance)
                 && (m_lambda[iter2][i][0] > MALPHA_TOLERANCE)) {
                lse_do_arr[i] = 1; lse_do++;
               }
@@ -1015,7 +1015,7 @@ void CIWavefunction::sem_iter(CIvect &Hd, struct stringwr **alplist, struct stri
       /* check for convergence */
       converged = 1;
       for (i=0; i<nroots; i++) {
-         if (dvecnorm[i] <= conv_rms && fabs(lambda[iter2][i] - lastroot[i])
+         if (dvecnorm[i] <= conv_rms && std::fabs(lambda[iter2][i] - lastroot[i])
             <= conv_e) root_converged[i] = 1;
          else {
             root_converged[i] = 0;

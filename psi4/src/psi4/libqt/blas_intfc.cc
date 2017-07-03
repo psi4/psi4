@@ -328,7 +328,7 @@ size_t C_IDAMAX(size_t length, double *x, int inc_x)
         double* x_s = &x[block*inc_x*(size_t)INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg2 = ::F_IDAMAX(&length_s, x_s, &inc_x) + block*inc_x*(size_t)INT_MAX;
-        if (fabs(x[reg]) > fabs(x[reg2]))
+        if (std::fabs(x[reg]) > std::fabs(x[reg2]))
             reg = reg2;
     }
 

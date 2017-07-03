@@ -835,7 +835,7 @@ void OEProp::common_init()
         }
 
         for (int xyz = 0; xyz < 3; ++xyz) {
-            if(fabs(t[xyz]) > 1.0E-8){
+            if(std::fabs(t[xyz]) > 1.0E-8){
                 outfile->Printf( "The origin chosen breaks symmetry; multipoles will be computed without symmetry.\n");
                 origin_preserves_symmetry_ = false;
             }
@@ -1480,9 +1480,9 @@ void OEProp::compute_mo_extents()
                 }
             }
 
-            quadrupole[0]->set(0, i, fabs(sumx));
-            quadrupole[1]->set(0, i, fabs(sumy));
-            quadrupole[2]->set(0, i, fabs(sumz));
+            quadrupole[0]->set(0, i, std::fabs(sumx));
+            quadrupole[1]->set(0, i, std::fabs(sumy));
+            quadrupole[2]->set(0, i, std::fabs(sumz));
         }
 #endif
         char** labels = basisset_->molecule()->irrep_labels();
@@ -1508,10 +1508,10 @@ void OEProp::compute_mo_extents()
                     i,
                     labels[h],
                     n,
-                    fabs(quadrupole[0]->get(0, i)),
-                    fabs(quadrupole[1]->get(0, i)),
-                    fabs(quadrupole[2]->get(0, i)),
-                    fabs(xx + yy + zz));
+                    std::fabs(quadrupole[0]->get(0, i)),
+                    std::fabs(quadrupole[1]->get(0, i)),
+                    std::fabs(quadrupole[2]->get(0, i)),
+                    std::fabs(xx + yy + zz));
         }
 
         outfile->Printf( "\n");

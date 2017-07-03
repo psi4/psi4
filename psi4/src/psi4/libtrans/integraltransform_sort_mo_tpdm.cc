@@ -166,7 +166,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = aCorrToPitzer_[abs((int) lblptr[labelIndex++])];
+                int p = aCorrToPitzer_[std::abs((int) lblptr[labelIndex++])];
                 int q = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int r = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = aCorrToPitzer_[(int) lblptr[labelIndex++]];
@@ -329,7 +329,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = aCorrToPitzer_[abs((int) lblptr[labelIndex++])];
+                int p = aCorrToPitzer_[std::abs((int) lblptr[labelIndex++])];
                 int q = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int r = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = aCorrToPitzer_[(int) lblptr[labelIndex++]];
@@ -376,7 +376,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = aCorrToPitzer_[abs((int) lblptr[labelIndex++])];
+                int p = aCorrToPitzer_[std::abs((int) lblptr[labelIndex++])];
                 int q = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int r = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = bCorrToPitzer_[(int) lblptr[labelIndex++]];
@@ -425,7 +425,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = bCorrToPitzer_[abs((int) lblptr[labelIndex++])];
+                int p = bCorrToPitzer_[std::abs((int) lblptr[labelIndex++])];
                 int q = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int r = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = bCorrToPitzer_[(int) lblptr[labelIndex++]];

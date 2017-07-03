@@ -52,7 +52,7 @@ ADCWfn::shift_denom2(int root, int irrep, double omega)
         for(int i = 0;i < D.params->rowtot[Isym];i++){
             for(int a = 0;a < D.params->coltot[Isym^irrep];a++){
                 double denom = omega - D.matrix[Isym][i][a];
-                if(fabs(denom) > 1e-6)
+                if(std::fabs(denom) > 1e-6)
                     L.matrix[Isym][i][a] = 1 / denom;
                 else
                     L.matrix[Isym][i][a] = 0;

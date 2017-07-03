@@ -67,7 +67,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
      for(i=0; i < RIA->params->rowtot[h]; i++)
         for(a=0; a < RIA->params->coltot[h^C_irr]; a++) {
            tval = eval - DIA.matrix[h][i][a];
-           if (fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
+           if (std::fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
         }
   global_dpd_->file2_mat_wrt(RIA);
   global_dpd_->file2_mat_close(RIA);
@@ -86,7 +86,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
      for(i=0; i < Ria->params->rowtot[h]; i++)
         for(a=0; a < Ria->params->coltot[h^C_irr]; a++) {
            tval = eval - Dia.matrix[h][i][a];
-           if (fabs(tval) > 0.0001) Ria->matrix[h][i][a] /= tval;
+           if (std::fabs(tval) > 0.0001) Ria->matrix[h][i][a] /= tval;
         }
   global_dpd_->file2_mat_wrt(Ria);
   global_dpd_->file2_mat_close(Ria);
@@ -103,7 +103,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
     for(ij=0; ij < RIJAB->params->rowtot[h]; ij++)
        for(ab=0; ab < RIJAB->params->coltot[h^C_irr]; ab++) {
            tval = eval - DIJAB.matrix[h][ij][ab];
-           if (fabs(tval) > 0.0001) RIJAB->matrix[h][ij][ab] /= tval;
+           if (std::fabs(tval) > 0.0001) RIJAB->matrix[h][ij][ab] /= tval;
       }
     global_dpd_->buf4_mat_irrep_wrt(RIJAB, h);
     global_dpd_->buf4_mat_irrep_close(RIJAB, h);
@@ -124,7 +124,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
     for(ij=0; ij < Rijab->params->rowtot[h]; ij++)
        for(ab=0; ab < Rijab->params->coltot[h^C_irr]; ab++) {
            tval = eval - Dijab.matrix[h][ij][ab];
-           if (fabs(tval) > 0.0001) Rijab->matrix[h][ij][ab] /= tval;
+           if (std::fabs(tval) > 0.0001) Rijab->matrix[h][ij][ab] /= tval;
       }
     global_dpd_->buf4_mat_irrep_wrt(Rijab, h);
     global_dpd_->buf4_mat_irrep_close(Rijab, h);
@@ -145,7 +145,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
     for(ij=0; ij < RIjAb->params->rowtot[h]; ij++)
        for(ab=0; ab < RIjAb->params->coltot[h^C_irr]; ab++) {
            tval = eval - DIjAb.matrix[h][ij][ab];
-           if (fabs(tval) > 0.0001) RIjAb->matrix[h][ij][ab] /= tval;
+           if (std::fabs(tval) > 0.0001) RIjAb->matrix[h][ij][ab] /= tval;
       }
     global_dpd_->buf4_mat_irrep_wrt(RIjAb, h);
     global_dpd_->buf4_mat_irrep_close(RIjAb, h);
@@ -238,7 +238,7 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
 
 	for(a=0; a < local.pairdom_nrlen[ii]; a++) {
 	  tval = eval + local.eps_occ[i] - local.eps_vir[ii][a];
-	  if(fabs(tval) > 0.0001) T1bar[a] /= tval;
+	  if(std::fabs(tval) > 0.0001) T1bar[a] /= tval;
 	}
 
 	/* Transform the new T1's to the redundant projected virtual basis */
@@ -267,7 +267,7 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
       for(i=0; i < RIA->params->rowtot[h]; i++)
         for(a=0; a < RIA->params->coltot[h^C_irr]; a++) {
 	  tval = eval - DIA.matrix[h][i][a];
-	  if (fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
+	  if (std::fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
         }
     global_dpd_->file2_mat_wrt(RIA);
     global_dpd_->file2_mat_close(RIA);
@@ -307,7 +307,7 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
 	  for(a=0; a < local.pairdom_nrlen[ij]; a++) {
 	    for(b=0; b < local.pairdom_nrlen[ij]; b++) {
 	      tval = eval + local.eps_occ[i]+local.eps_occ[j]-local.eps_vir[ij][a]-local.eps_vir[ij][b];
-	      if(fabs(tval) > 0.0001) T2bar[a][b] /= tval;
+	      if(std::fabs(tval) > 0.0001) T2bar[a][b] /= tval;
 	    }
 	  }
 
@@ -363,7 +363,7 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
       for(ij=0; ij < RIjAb->params->rowtot[h]; ij++)
 	for(ab=0; ab < RIjAb->params->coltot[h^C_irr]; ab++) {
 	  tval = eval - DIjAb.matrix[h][ij][ab];
-	  if (fabs(tval) > 0.0001) RIjAb->matrix[h][ij][ab] /= tval;
+	  if (std::fabs(tval) > 0.0001) RIjAb->matrix[h][ij][ab] /= tval;
 	}
       global_dpd_->buf4_mat_irrep_wrt(RIjAb, h);
       global_dpd_->buf4_mat_irrep_close(RIjAb, h);

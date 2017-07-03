@@ -56,7 +56,7 @@ void SCF::guess_occupation()
     sort(evals.begin(),evals.end());
 
     int ndocc = std::min(moinfo_scf->get_nael(),moinfo_scf->get_nbel()) - (reference == tcscf ? 1 : 0);
-    int nactv = abs(moinfo_scf->get_nael()-moinfo_scf->get_nbel()) + (reference == tcscf ? 2 : 0);
+    int nactv = std::abs(moinfo_scf->get_nael()-moinfo_scf->get_nbel()) + (reference == tcscf ? 2 : 0);
 
     std::vector<int> new_docc;
     std::vector<int> new_actv;

@@ -372,7 +372,7 @@ L200:
     printer->Printf(")  ");
 
     for (j=ii-1; j < nn; j++) {
-      if(fabs(mat[i][j]) < 100.0)
+      if(std::fabs(mat[i][j]) < 100.0)
         printer->Printf("%12.7f",mat[i][j]);
       else
         printer->Printf("    infinity");

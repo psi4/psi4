@@ -241,7 +241,7 @@ OrbitalSpace orthogonalize(const std::string &id, const std::string &name,
     overlap->diagonalize(evecs, evals);
     for (int h = 0; h < SODIM.n(); h++) {
         for (int i = 0; i < SODIM[h]; i++) {
-            if (fabs(evals->get(h, i)) > lindep_tol) {
+            if (std::fabs(evals->get(h, i)) > lindep_tol) {
                 sqrtm->set(h, i, i, 1.0 / sqrt(evals->get(h, i)));
             }
             else {

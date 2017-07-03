@@ -58,14 +58,14 @@ int CCEnergyWavefunction::AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, 
   valptr = InBuf->values;
 
   for(idx=4*InBuf->idx; InBuf->idx < InBuf->inbuf; InBuf->idx++) {
-    p = abs((int) lblptr[idx++]);
+    p = std::abs((int) lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
 
     value = (double) valptr[InBuf->idx];
     /*
-    if(fabs(value) > 1e-8)
+    if(std::fabs(value) > 1e-8)
         outfile->Printf(stdout, "%d %d %d %d %20.14f\n", p, q, r, s, value);
     */
     count++;

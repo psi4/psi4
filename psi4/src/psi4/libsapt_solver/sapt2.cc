@@ -479,7 +479,7 @@ void SAPT2::df_integrals()
         for(int x=0;x<numx;x++) {
           int index = ( (w*numx + x) * numw + w) * numx + x;
           tei = ao_buffer[index];
-          if(fabs(tei) > max) max = fabs(tei);
+          if(std::fabs(tei) > max) max = std::fabs(tei);
         }
       }
       Schwartz[PQ] = max;
@@ -494,7 +494,7 @@ void SAPT2::df_integrals()
 
     for(int w=0;w<numw;w++) {
       tei = Jbuffer[w];
-      if(fabs(tei) > max) max = fabs(tei);
+      if(std::fabs(tei) > max) max = std::fabs(tei);
     }
     DFSchwartz[P] = max;
   }

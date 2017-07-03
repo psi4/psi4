@@ -315,7 +315,7 @@ else if(wfn_type_ == "OMP2.5") outfile->Printf(" %3d     %12.10f  %12.2e   %12.2
 
 }
 while(rms_wog >= tol_grad || biggest_mograd >= mograd_max);
-//while(fabs(DE) >= tol_Eod || rms_wog >= tol_grad || rms_kappa >= tol_grad || biggest_mograd >= mograd_max ||
+//while(std::fabs(DE) >= tol_Eod || rms_wog >= tol_grad || rms_kappa >= tol_grad || biggest_mograd >= mograd_max ||
 //      biggest_kappa >= mograd_max || rms_t2 >= tol_t2);
 
 if (conver == 1) {

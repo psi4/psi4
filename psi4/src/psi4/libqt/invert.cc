@@ -78,10 +78,10 @@ double invert_matrix(double **a, double **y, int N, std::string out)
    ludcmp(a,N,indx,&d) ;
    for (j=0; j<N; j++) d *= a[j][j];
 
-   /* outfile->Printf("detH0 in invert = %lf\n", fabs(d));
+   /* outfile->Printf("detH0 in invert = %lf\n", std::fabs(d));
     */
 
-    if (fabs(d) < SMALL_DET) {
+    if (std::fabs(d) < SMALL_DET) {
       printer->Printf("Warning (invert_matrix): Determinant is %g\n", d);
       printf("Warning (invert_matrix): Determinant is %g\n", d);
 
@@ -98,7 +98,7 @@ double invert_matrix(double **a, double **y, int N, std::string out)
    free(col);
    free(indx);
 
-   d = fabs(d);
+   d = std::fabs(d);
    return(d);
 }
 

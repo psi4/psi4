@@ -414,9 +414,9 @@ void FittingMetric::form_QR_inverse(double tol)
 
         // Find the number of significant basis functions
         int nsig = 0;
-        double R_max = fabs(Rp[0][0]);
+        double R_max = std::fabs(Rp[0][0]);
         for (int A = 0; A < n; A++) {
-            if ((fabs(Rp[A][A]) / R_max) < tol)
+            if ((std::fabs(Rp[A][A]) / R_max) < tol)
                 break;
             nsig++;
         }
@@ -613,8 +613,8 @@ void FittingMetric::pivot()
             max = 0.0;
             //Where's the pivot diagonal?
             for (int j = i; j<norbs; j++)
-                if (max <= fabs(J[j][j])) {
-                    max = fabs(J[j][j]);
+                if (max <= std::fabs(J[j][j])) {
+                    max = std::fabs(J[j][j]);
                     pivot = j;
                 }
 

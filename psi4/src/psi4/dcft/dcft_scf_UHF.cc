@@ -73,8 +73,8 @@ namespace psi{ namespace dcft{
               double prefactor = 0.0;
               for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
-                  if(fabs(val) > maximumProjection){
-                      maximumProjection = fabs(val);
+                  if(std::fabs(val) > maximumProjection){
+                      maximumProjection = std::fabs(val);
                       bestMO = newMO;
                       prefactor = val < 0.0 ? -1.0 : 1.0;
                   }
@@ -113,8 +113,8 @@ namespace psi{ namespace dcft{
               double prefactor = 0.0;
               for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
-                  if(fabs(val) > bestOverlap){
-                      bestOverlap = fabs(val);
+                  if(std::fabs(val) > bestOverlap){
+                      bestOverlap = std::fabs(val);
                       bestMO = newMO;
                       prefactor = val < 0.0 ? -1.0 : 1.0;
                   }
@@ -192,8 +192,8 @@ namespace psi{ namespace dcft{
               double prefactor = 0.0;
               for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
-                  if(fabs(val) > bestOverlap){
-                      bestOverlap = fabs(val);
+                  if(std::fabs(val) > bestOverlap){
+                      bestOverlap = std::fabs(val);
                       bestMO = newMO;
                       prefactor = val < 0.0 ? -1.0 : 1.0;
                   }
@@ -654,7 +654,7 @@ namespace psi{ namespace dcft{
         lastBuffer = iwl->last_buffer();
         for(int index = 0; index < iwl->buffer_count(); ++index){
             labelIndex = 4*index;
-            p = abs((int) lblptr[labelIndex++]);
+            p = std::abs((int) lblptr[labelIndex++]);
             q = (int) lblptr[labelIndex++];
             r = (int) lblptr[labelIndex++];
             s = (int) lblptr[labelIndex++];
@@ -1322,7 +1322,7 @@ namespace psi{ namespace dcft{
           lastBuffer = iwl->last_buffer();
           for(int index = 0; index < iwl->buffer_count(); ++index){
               labelIndex = 4*index;
-              p = abs((int) lblptr[labelIndex++]);
+              p = std::abs((int) lblptr[labelIndex++]);
               q = (int) lblptr[labelIndex++];
               r = (int) lblptr[labelIndex++];
               s = (int) lblptr[labelIndex++];
@@ -1503,7 +1503,7 @@ namespace psi{ namespace dcft{
           lastBuffer = iwl->last_buffer();
           for(int index = 0; index < iwl->buffer_count(); ++index){
               labelIndex = 4*index;
-              p = abs((int) lblptr[labelIndex++]);
+              p = std::abs((int) lblptr[labelIndex++]);
               q = (int) lblptr[labelIndex++];
               r = (int) lblptr[labelIndex++];
               s = (int) lblptr[labelIndex++];

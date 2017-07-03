@@ -131,7 +131,7 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    D_n4 = J_n4 - I_n4;
 
    /* are these ok? */
-   if (abs(D_n1) + abs(D_n2) + abs(D_n3) + abs(D_n4) > 2)
+   if (std::abs(D_n1) + std::abs(D_n2) + std::abs(D_n3) + std::abs(D_n4) > 2)
       return;
 
    /* get ijsym */

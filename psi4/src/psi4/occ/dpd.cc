@@ -768,7 +768,7 @@ void SymBlockMatrix::read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *m
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN.labels()[fi+1];
         int k = ERIIN.labels()[fi+2];
         int l = ERIIN.labels()[fi+3];
@@ -818,7 +818,7 @@ void SymBlockMatrix::read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int no
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN.labels()[fi+1];
         int a = ERIIN.labels()[fi+2];
         int b = ERIIN.labels()[fi+3];

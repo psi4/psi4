@@ -787,7 +787,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             int shell_nprim = thisshell.nprimitive();
             int am = thisshell.am();
             max_nprimitive_ = shell_nprim > max_nprimitive_ ? shell_nprim : max_nprimitive_;
-            max_am_ = max_am_ > abs(am) ? max_am_ : abs(am);
+            max_am_ = max_am_ > std::abs(am) ? max_am_ : std::abs(am);
             shell_center_[shell_count] = n;
             GaussianType puream = thisshell.is_pure() ? Pure : Cartesian;
             if (puream)
@@ -842,7 +842,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 ShellType shelltype = thisshell.shell_type();
                 int ecp_shell_nprim = thisshell.nprimitive();
                 int am = thisshell.am();
-                max_ecp_am_ = max_ecp_am_ > abs(am) ? max_ecp_am_ : abs(am);
+                max_ecp_am_ = max_ecp_am_ > std::abs(am) ? max_ecp_am_ : std::abs(am);
                 ecp_shell_center_[ecp_shell_count] = n;
                 if(shelltype == ECPType1 || shelltype == ECPType2){
                     ecp_shells_[ecp_shell_count] = GaussianShell(shelltype, am, ecp_shell_nprim, &uecpcoefficients_[ustart + atom_nprim],

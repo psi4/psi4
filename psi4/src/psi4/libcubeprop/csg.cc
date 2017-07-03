@@ -578,7 +578,7 @@ void CubicScalarGrid::add_LOL(double* v, std::shared_ptr<Matrix> D)
             double tau_LSDA = C * pow(0.5 * rhop[P], 5.0 / 3.0);
             double tau_EX   = taup[P];
             double t = tau_LSDA / tau_EX;
-            double v2 = (fabs(tau_EX / tau_LSDA) < 1.0E-15 ? 1.0 : t / (1.0 + t));
+            double v2 = (std::fabs(tau_EX / tau_LSDA) < 1.0E-15 ? 1.0 : t / (1.0 + t));
             v[P + offset] += v2;
         }
         offset += npoints;
@@ -610,7 +610,7 @@ void CubicScalarGrid::add_ELF(double* v, std::shared_ptr<Matrix> D)
             double D_EX   = tau_EX - 0.25 * gamp[P] / rhop[P];
             double D_LSDA = tau_LSDA;
             double B = D_EX / D_LSDA;
-            double v2 = (fabs(D_LSDA / D_EX) < 1.0E-15 ? 0.0 : 1.0 / (1.0 + B * B));
+            double v2 = (std::fabs(D_LSDA / D_EX) < 1.0E-15 ? 0.0 : 1.0 / (1.0 + B * B));
             v[P + offset] += v2;
         }
         offset += npoints;

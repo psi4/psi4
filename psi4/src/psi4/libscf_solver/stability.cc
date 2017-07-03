@@ -246,7 +246,7 @@ SharedMatrix UStab::analyze()
         int h = vecs_[i].first->symmetry();
         eval_sym->set(h,eig_dims[h],0,vals_[i]);
         ++eig_dims[h];
-        if ((vals_[i] < unstable_val) && (abs(vals_[i]) > convergence_) ) {
+        if ((vals_[i] < unstable_val) && (std::fabs(vals_[i]) > convergence_) ) {
             if ( vecs_[i].first->symmetry() == 0) {
                 unstable = true;
                 unstable_val = vals_[i];

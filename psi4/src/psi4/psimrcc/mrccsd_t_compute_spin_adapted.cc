@@ -278,7 +278,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
         int    cycle = 0;
         double oldE  = 1.0;
         double newE  = 0.0;
-        while(fabs(oldE-newE) > threshold){
+        while(std::fabs(oldE-newE) > threshold){
           cycle++;
           oldE = newE;
           newE = 0.0;
@@ -385,7 +385,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
         int    cycle = 0;
         double oldE  = 1.0;
         double newE  = 0.0;
-        while(fabs(oldE-newE) > threshold){
+        while(std::fabs(oldE-newE) > threshold){
           cycle++;
           oldE = newE;
           newE = 0.0;
@@ -492,7 +492,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
         int    cycle = 0;
         double oldE  = 1.0;
         double newE  = 0.0;
-        while(fabs(oldE-newE) > threshold){
+        while(std::fabs(oldE-newE) > threshold){
           cycle++;
           oldE = newE;
           newE = 0.0;
@@ -599,7 +599,7 @@ void MRCCSD_T::compute_ooO_triples_spin_adapted()
         int    cycle = 0;
         double oldE  = 1.0;
         double newE  = 0.0;
-        while(fabs(oldE-newE) > threshold){
+        while(std::fabs(oldE-newE) > threshold){
           cycle++;
           oldE = newE;
           newE = 0.0;

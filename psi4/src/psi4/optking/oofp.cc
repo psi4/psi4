@@ -375,19 +375,19 @@ double ** OOFP::Dq2Dx2(GeomType ) const {
 
             if (a==1 && b==1)
               tval +=  zeta(a,0,1)*zeta(b,1,2) * (j-i) *
-                pow(-0.5, fabs(j-i)) * (+w[k]*cos_u - u[k]) / (Lu*Lw*sin_u*sin_u);
+                pow(-0.5, std::fabs(j-i)) * (+w[k]*cos_u - u[k]) / (Lu*Lw*sin_u*sin_u);
 
             if ((a==3 && b==2) || (a==3 && b==1) || (a==2 && b==2) || (a==2 && b==1))
               tval +=  zeta(a,3,2)*zeta(b,2,1) * (j-i) *
-                pow(-0.5, fabs(j-i)) * (-w[k]*cos_v - v[k]) / (Lv*Lw*sin_v*sin_v);
+                pow(-0.5, std::fabs(j-i)) * (-w[k]*cos_v - v[k]) / (Lv*Lw*sin_v*sin_v);
 
             if ((a==2 && b==1) || (a==2 && b==0) || (a==1 && b==1) || (a==1 && b==0))
               tval +=  zeta(a,2,1)*zeta(b,1,0) * (j-i) *
-                pow(-0.5, fabs(j-i)) * (-w[k]*cos_u + u[k]) / (Lu*Lw*sin_u*sin_u);
+                pow(-0.5, std::fabs(j-i)) * (-w[k]*cos_u + u[k]) / (Lu*Lw*sin_u*sin_u);
 
             if (a==2 && b==2)
               tval +=  zeta(a,1,2)*zeta(b,2,3) * (j-i) *
-                pow(-0.5, fabs(j-i)) * (+w[k]*cos_v + v[k]) / (Lv*Lw*sin_v*sin_v);
+                pow(-0.5, std::fabs(j-i)) * (+w[k]*cos_v + v[k]) / (Lv*Lw*sin_v*sin_v);
           }
           dq2dx2[3*a+i][3*b+j] = dq2dx2[3*b+j][3*a+i] = tval;
         } // j

@@ -751,7 +751,7 @@ double ET_UHF_BBB(void)
 		      }
 
 		      /*
-		      if(fabs(VABC[Gab][ab][c]) > 1e-7)
+		      if(std::fabs(VABC[Gab][ab][c]) > 1e-7)
 			outfile->Printf( "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,VABC[Gab][ab][c]);
 		      */
 

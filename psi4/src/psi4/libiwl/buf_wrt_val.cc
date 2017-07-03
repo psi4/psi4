@@ -51,7 +51,7 @@ void IWL::write_value(int p, int q, int r, int s, double value, int printflag,
     lblptr = labels_;
     valptr = values_;
 
-    if (fabs(value) > cutoff_) {
+    if (std::fabs(value) > cutoff_) {
         idx = 4 * idx_;
         if(dirac) {
             lblptr[idx++] = (Label) p;
@@ -117,7 +117,7 @@ void iwl_buf_wrt_val(struct iwlbuf *Buf, int p, int q, int r, int s,
   lblptr = Buf->labels;
   valptr = Buf->values;
 
-  if (fabs(value) > Buf->cutoff) {
+  if (std::fabs(value) > Buf->cutoff) {
     idx = 4 * Buf->idx;
     if(dirac) {
       lblptr[idx++] = (Label) p;

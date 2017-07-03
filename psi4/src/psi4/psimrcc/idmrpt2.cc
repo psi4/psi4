@@ -122,7 +122,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
     // Compute the energy
     current_energy=c_H_c(moinfo->get_nrefs(),Heff_mrpt2,zeroth_order_eigenvector);
     delta_energy = current_energy - old_energy;
-    converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
+    converged = (std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
     outfile->Printf("\n    @PT %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
     old_energy=current_energy;
 
@@ -316,7 +316,7 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater)
       int unique_j = moinfo->get_ref_number(j);
       std::string j_str = to_string(unique_j);
       double term = zeroth_order_eigenvector[j]/zeroth_order_eigenvector[unique_i];
-      if(fabs(term)>1.0e5) term = 0.0;
+      if(std::fabs(term)>1.0e5) term = 0.0;
       blas->set_scalar("factor_mk",unique_j,Heff[unique_i][j]*term);
       if(unique_i!=j){
         if(j==unique_j){
@@ -338,7 +338,7 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater)
       int unique_j = moinfo->get_ref_number(j);
       std::string j_str = to_string(unique_j);
       double term = zeroth_order_eigenvector[j]/zeroth_order_eigenvector[unique_i];
-      if(fabs(term)>1.0e5) term = 0.0;
+      if(std::fabs(term)>1.0e5) term = 0.0;
       blas->set_scalar("factor_mk",unique_j,Heff[unique_i][j]*term);
       if(unique_i!=j){
         if(j==unique_j){

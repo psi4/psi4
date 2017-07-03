@@ -73,7 +73,7 @@ double buf_xy1(double *c, double *hd, double E, int len)
    for (i=0; i<len; i++) {
       ci = c[i];
       tval1 = hd[i] - E;
-      if (fabs(tval1) < HD_MIN) tval1 = HD_MIN; /* prevent /0 */
+      if (std::fabs(tval1) < HD_MIN) tval1 = HD_MIN; /* prevent /0 */
       tval2 = ci / tval1;
       hd[i] = tval2;
       tx += ci * tval2;
@@ -96,7 +96,7 @@ void buf_ols_denom(double *a, double *hd, double E, int len)
 
    for (i=0; i<len; i++) {
       tval = hd[i] - E;
-      if (fabs(tval) < HD_MIN) tval = HD_MIN; /* prevent /0 */
+      if (std::fabs(tval) < HD_MIN) tval = HD_MIN; /* prevent /0 */
       a[i] /= tval;
       } 
 }

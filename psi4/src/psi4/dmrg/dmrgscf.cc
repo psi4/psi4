@@ -837,7 +837,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             const std::string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
             CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt, psi4TMPpath);
             for (int state = -1; state < dmrg_which_root; state++){
-                if (state > -1){ theDMRG->newExcitation( fabs( Energy ) ); }
+                if (state > -1){ theDMRG->newExcitation( std::fabs( Energy ) ); }
                 Energy = theDMRG->Solve();
                 if ( dmrg_state_avg ){ // When SA-DMRGSCF: 2DM += current 2DM
                     theDMRG->calc2DMandCorrelations();
@@ -1012,7 +1012,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             const std::string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
             CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, false, psi4TMPpath); // Rotated orbital space --> do not use checkpoint
             for (int state = -1; state < dmrg_which_root; state++){
-                if (state > -1){ theDMRG->newExcitation( fabs( Energy ) ); }
+                if (state > -1){ theDMRG->newExcitation( std::fabs( Energy ) ); }
                 const double E_CASSCF = theDMRG->Solve();
                 if ((state == -1) && (dmrg_which_root > 0)){ theDMRG->activateExcitations( dmrg_which_root ); }
             }

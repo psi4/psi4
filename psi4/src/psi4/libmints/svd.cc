@@ -34,7 +34,7 @@
 typedef double real;
 typedef int integer;
 
-#define r_sign(a,b) ((*b<0.0)?-fabs(*a):fabs(*a))
+#define r_sign(a,b) ((*b<0.0)?-std::fabs(*a):std::fabs(*a))
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
 #define dmax(a,b) (((a)>(b))?(a):(b))
@@ -544,14 +544,14 @@ L70:
     }
     goto L200;
 L110:
-    t = (r__1 = a[j + j * a_dim1], fabs(r__1));
+    t = (r__1 = a[j + j * a_dim1], std::fabs(r__1));
     if (t != (double)0.) {
 	u = (double)1. / t;
     }
     r = (double)1.;
     i__1 = *m;
     for (l = i; l <= i__1; ++l) {
-	s = (r__1 = a[l + j * a_dim1], fabs(r__1));
+	s = (r__1 = a[l + j * a_dim1], std::fabs(r__1));
 	if (s <= t) {
 	    goto L120;
 	}
@@ -570,7 +570,7 @@ L130:
     }
     s = t * sqrt(r);
     r = a[j + j * a_dim1];
-    u = (double)1. / sqrt(s * (s + fabs(r)));
+    u = (double)1. / sqrt(s * (s + std::fabs(r)));
     if (r < (double)0.) {
 	s = -(double)s;
     }
@@ -643,14 +643,14 @@ L210:
     }
     goto L70;
 L240:
-    t = (r__1 = d[k], fabs(r__1));
+    t = (r__1 = d[k], std::fabs(r__1));
     if (t != (double)0.) {
 	u = (double)1. / t;
     }
     r = (double)1.;
     i__1 = *n;
     for (l = i; l <= i__1; ++l) {
-	s = (r__1 = d[l], fabs(r__1));
+	s = (r__1 = d[l], std::fabs(r__1));
 	if (s <= t) {
 	    goto L250;
 	}
@@ -669,7 +669,7 @@ L260:
     }
     s = t * sqrt(r);
     r = d[k];
-    u = (double)1. / sqrt(s * (s + fabs(r)));
+    u = (double)1. / sqrt(s * (s + std::fabs(r)));
     if (r < (double)0.) {
 	s = -(double)s;
     }
@@ -734,14 +734,14 @@ L350:
     d[j] = (double)0.;
     goto L440;
 L370:
-    t = (r__1 = d[j], fabs(r__1));
+    t = (r__1 = d[j], std::fabs(r__1));
     if (t != (double)0.) {
 	u = (double)1. / t;
     }
     r = (double)1.;
     i__1 = *n;
     for (l = i; l <= i__1; ++l) {
-	s = (r__1 = d[l], fabs(r__1));
+	s = (r__1 = d[l], std::fabs(r__1));
 	if (s <= t) {
 	    goto L380;
 	}
@@ -760,7 +760,7 @@ L390:
     }
     s = t * sqrt(r);
     r = d[j];
-    u = (double)1. / sqrt(s * (s + fabs(r)));
+    u = (double)1. / sqrt(s * (s + std::fabs(r)));
     if (r < (double)0.) {
 	s = -(double)s;
     }
@@ -845,14 +845,14 @@ L490:
     }
     goto L330;
 L520:
-    t = (r__1 = a[k + j * a_dim1], fabs(r__1));
+    t = (r__1 = a[k + j * a_dim1], std::fabs(r__1));
     if (t != (double)0.) {
 	u = (double)1. / t;
     }
     r = (double)1.;
     i__1 = *m;
     for (l = i; l <= i__1; ++l) {
-	s = (r__1 = a[l + j * a_dim1], fabs(r__1));
+	s = (r__1 = a[l + j * a_dim1], std::fabs(r__1));
 	if (s <= t) {
 	    goto L530;
 	}
@@ -871,7 +871,7 @@ L540:
     }
     s = t * sqrt(r);
     r = a[k + j * a_dim1];
-    u = (double)1. / sqrt(s * (s + fabs(r)));
+    u = (double)1. / sqrt(s * (s + std::fabs(r)));
     if (r < (double)0.) {
 	s = -(double)s;
     }
@@ -1477,14 +1477,14 @@ L70:
     i = j;
     v = u[j];
     u[j] = (double)0.;
-    s = -(double)v * (r__1 = e[j], fabs(r__1));
+    s = -(double)v * (r__1 = e[j], std::fabs(r__1));
 /*     --------------------------- */
 /*     |*** PROCESS LEFT SIDE ***| */
 /*     --------------------------- */
 L80:
     h = i;
     ++i;
-    r = (r__1 = e[i], fabs(r__1)) * d[i];
+    r = (r__1 = e[i], std::fabs(r__1)) * d[i];
     fgv_(&x, &y, &t, &r, &s, &e[j], &e[i]);
     if (t == (double)1.) {
 	goto L90;
@@ -1495,7 +1495,7 @@ L80:
 	goto L100;
     }
     v = x * u[i];
-    s = -(double)v * (r__1 = e[j], fabs(r__1));
+    s = -(double)v * (r__1 = e[j], std::fabs(r__1));
     goto L80;
 L90:
     d[i] = d[i] * y - v;
@@ -1505,7 +1505,7 @@ L90:
     }
     v = u[i];
     u[i] = v * y;
-    s = -(double)v * (r__1 = e[j], fabs(r__1));
+    s = -(double)v * (r__1 = e[j], std::fabs(r__1));
     goto L80;
 L100:
     if (j == 1) {
@@ -1556,15 +1556,15 @@ L140:
 /*     ----------------------------- */
     i__1 = l;
     for (i = j; i <= i__1; ++i) {
-	x = (r__1 = d[i] * e[i] * (d[i] * f[i]), fabs(r__1));
-	y = (r__1 = u[i] * e[i] * (u[i] * f[i + 1]), fabs(r__1));
+	x = (r__1 = d[i] * e[i] * (d[i] * f[i]), std::fabs(r__1));
+	y = (r__1 = u[i] * e[i] * (u[i] * f[i + 1]), std::fabs(r__1));
 /* Computing MAX */
 	r__1 = max(s,x);
 	s = dmax(r__1,y);
 /* L150: */
 	t = t + x + y;
     }
-    x = (r__1 = e[k] * d[k] * (f[k] * d[k]), fabs(r__1));
+    x = (r__1 = e[k] * d[k] * (f[k] * d[k]), std::fabs(r__1));
     s = dmax(s,x);
     t3 = s * t2;
     t += x;
@@ -1592,8 +1592,8 @@ L170:
 /*     ----------------------- */
 L180:
     sft_(&c, &d[k], &d[l], &u[l], &s, &e[k], &e[l], &t, &f[k], &f[l]);
-    v = (r__1 = e[j], fabs(r__1));
-    w = (r__1 = f[j], fabs(r__1));
+    v = (r__1 = e[j], std::fabs(r__1));
+    w = (r__1 = f[j], std::fabs(r__1));
     t = d[j] * w;
     r = t * (d[j] * v) - c;
     s = t * (u[j] * v);
@@ -1605,7 +1605,7 @@ L190:
     g = h;
     h = i;
     ++i;
-    z = (r__1 = f[i], fabs(r__1));
+    z = (r__1 = f[i], std::fabs(r__1));
 /*     ---------------------------- */
 /*     |*** PROCESS RIGHT SIDE ***| */
 /*     ---------------------------- */
@@ -1619,7 +1619,7 @@ L190:
     }
     t = u[g] + x * s;
     u[g] = t;
-    if ((r__1 = t * e[g] * (t * f[h]), fabs(r__1)) > t3) {
+    if ((r__1 = t * e[g] * (t * f[h]), std::fabs(r__1)) > t3) {
 	goto L200;
     }
     j = h;
@@ -1636,7 +1636,7 @@ L210:
     }
     t = x * u[g] + s;
     u[g] = t;
-    if ((r__1 = t * e[g] * (t * f[h]), fabs(r__1)) > t3) {
+    if ((r__1 = t * e[g] * (t * f[h]), std::fabs(r__1)) > t3) {
 	goto L220;
     }
     j = h;
@@ -1657,7 +1657,7 @@ L230:
     }
     t = r + x * s;
     d[h] = t;
-    if ((r__1 = t * e[h] * (t * f[h]), fabs(r__1)) > t3) {
+    if ((r__1 = t * e[h] * (t * f[h]), std::fabs(r__1)) > t3) {
 	goto L240;
     }
     id = 0;
@@ -1675,7 +1675,7 @@ L240:
 L250:
     t = s + x * r;
     d[h] = t;
-    if ((r__1 = t * e[h] * (t * f[h]), fabs(r__1)) > t3) {
+    if ((r__1 = t * e[h] * (t * f[h]), std::fabs(r__1)) > t3) {
 	goto L260;
     }
     id = 0;
@@ -1702,9 +1702,9 @@ L280:
     x = e[k];
     y = f[l];
     z = f[k];
-    r = (r__1 = x * d[k] * (z * d[k]), fabs(r__1));
-    s = (r__1 = w * d[l] * (y * d[l]), fabs(r__1));
-    t = (r__1 = x * u[l] * (y * u[l]), fabs(r__1));
+    r = (r__1 = x * d[k] * (z * d[k]), std::fabs(r__1));
+    s = (r__1 = w * d[l] * (y * d[l]), std::fabs(r__1));
+    t = (r__1 = x * u[l] * (y * u[l]), std::fabs(r__1));
 /*     ------------------------------ */
 /*     |*** TEST FOR CONVERGENCE ***| */
 /*     ------------------------------ */
@@ -1727,8 +1727,8 @@ L290:
     if (s > r) {
 	goto L310;
     }
-    r = -(double)d[k] * fabs(x);
-    s = u[l] * fabs(w);
+    r = -(double)d[k] * std::fabs(x);
+    s = u[l] * std::fabs(w);
     fgv_(&w, &y, &t, &r, &s, &e[l], &e[k]);
     x = e[k];
     if (t == (double)1.) {
@@ -1742,13 +1742,13 @@ L300:
     d[k] = y * d[k] - u[l];
     sng1_(&q[q_offset], lq, mq, &p[p_offset], lp, mp, &jl, &l, &k, &w, &y);
 L310:
-    r__1 = sqrt((fabs(x)));
-    r__2 = sqrt((fabs(z)));
+    r__1 = sqrt((std::fabs(x)));
+    r__2 = sqrt((std::fabs(z)));
     t = r_sign(&r__1, &x) * d[k] * r_sign(&r__2, &z);
     if (t < (double)0.) {
 	e[k] = -(double)e[k];
     }
-    d[k] = fabs(t);
+    d[k] = std::fabs(t);
     k = l;
     l = k2;
     --k2;
@@ -1758,13 +1758,13 @@ L310:
 L320:
     x = e[k];
     z = f[k];
-    r__1 = sqrt((fabs(x)));
-    r__2 = sqrt((fabs(z)));
+    r__1 = sqrt((std::fabs(x)));
+    r__2 = sqrt((std::fabs(z)));
     t = r_sign(&r__1, &x) * d[k] * r_sign(&r__2, &z);
     if (t < (double)0.) {
 	e[k] = -(double)e[k];
     }
-    d[k] = fabs(t);
+    d[k] = std::fabs(t);
     k = l;
     l = k2;
     --k2;
@@ -1788,7 +1788,7 @@ L340:
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
 	t = e[j];
-	r__1 = sqrt((fabs(t)));
+	r__1 = sqrt((std::fabs(t)));
 	t = r_sign(&r__1, &t);
 	i__2 = *mq;
 	for (i = 1; i <= i__2; ++i) {
@@ -1801,7 +1801,7 @@ L360:
     i__2 = *n;
     for (j = 1; j <= i__2; ++j) {
 	t = e[j];
-	r__1 = sqrt((fabs(t)));
+	r__1 = sqrt((std::fabs(t)));
 	t = r_sign(&r__1, &t);
 	i__1 = *mp;
 	for (i = 1; i <= i__1; ++i) {
@@ -1819,7 +1819,7 @@ L390:
     i__1 = *n;
     for (j = 1; j <= i__1; ++j) {
 	t = f[j];
-	r__1 = sqrt((fabs(t)));
+	r__1 = sqrt((std::fabs(t)));
 	t = r_sign(&r__1, &t);
 	i__2 = *mq;
 	for (i = 1; i <= i__2; ++i) {
@@ -1832,7 +1832,7 @@ L410:
     i__2 = *n;
     for (j = 1; j <= i__2; ++j) {
 	t = f[j];
-	r__1 = sqrt((fabs(t)));
+	r__1 = sqrt((std::fabs(t)));
 	t = r_sign(&r__1, &t);
 	i__1 = *mp;
 	for (i = 1; i <= i__1; ++i) {
@@ -1932,7 +1932,7 @@ fgv_(double *x, double *y, double *s, double *p, double *q,
     /* Local variables */
     static real c, r, t;
 
-    if (fabs(*p) > fabs(*q)) {
+    if (std::fabs(*p) > std::fabs(*q)) {
 	goto L10;
     }
     if (*q == (double)0.) {
@@ -1940,7 +1940,7 @@ fgv_(double *x, double *y, double *s, double *p, double *q,
     }
     r = *a / *b;
     *s = *p / *q;
-    t = fabs(r) * *s * *s;
+    t = std::fabs(r) * *s * *s;
     if (t < (double)1.) {
 	goto L70;
     }
@@ -1951,7 +1951,7 @@ fgv_(double *x, double *y, double *s, double *p, double *q,
 L10:
     r = *b / *a;
     *s = *q / *p;
-    t = fabs(r) * *s * *s;
+    t = std::fabs(r) * *s * *s;
     if (t > (double)1.) {
 	goto L60;
     }
@@ -1962,13 +1962,13 @@ L20:
     if (r_sign(&r, p) == r) {
 	goto L40;
     }
-    *b = -(double)(r__1 = *b * t, fabs(r__1));
+    *b = -(double)(r__1 = *b * t, std::fabs(r__1));
     goto L50;
 L40:
-    *b = (r__1 = *b * t, fabs(r__1));
+    *b = (r__1 = *b * t, std::fabs(r__1));
 L50:
     *y = *s;
-    *x = fabs(r) * *s;
+    *x = std::fabs(r) * *s;
     *s = (double)0.;
     return 0;
 L60:
@@ -1985,13 +1985,13 @@ L80:
     if (r_sign(&r, q) == r) {
 	goto L90;
     }
-    *b = -(double)(r__1 = c * t, fabs(r__1));
+    *b = -(double)(r__1 = c * t, std::fabs(r__1));
     goto L100;
 L90:
-    *b = (r__1 = c * t, fabs(r__1));
+    *b = (r__1 = c * t, std::fabs(r__1));
 L100:
     *y = *s;
-    *x = fabs(r) * *s;
+    *x = std::fabs(r) * *s;
     *s = (double)1.;
     return 0;
 L110:
@@ -2106,11 +2106,11 @@ sft_(double *s, double *a, double *b, double *c,
 {
     static real w, x, y, z, g0, g1, g2, h1, h2;
 
-    g0 = fabs(*e0);
-    g1 = fabs(*e1);
-    g2 = fabs(*e2);
-    h1 = fabs(*f1);
-    h2 = fabs(*f2);
+    g0 = std::fabs(*e0);
+    g1 = std::fabs(*e1);
+    g2 = std::fabs(*e2);
+    h1 = std::fabs(*f1);
+    h2 = std::fabs(*f2);
     w = *a * g2 * (*a * h2) + *c * g1 * (*c * h2);
     x = *b * g1 * (*b * h1) + *d * g0 * (*d * h1);
     y = *b * g1 * (*c * h1);
@@ -2151,12 +2151,12 @@ scl_(double *d, double *u, int */*n*/, double *q,
     t = (double)1.;
     i__1 = *k;
     for (i = *j; i <= i__1; ++i) {
-	if ((r__1 = e[i], fabs(r__1)) < t) {
-	    t = (r__2 = e[i], fabs(r__2));
+	if ((r__1 = e[i], std::fabs(r__1)) < t) {
+	    t = (r__2 = e[i], std::fabs(r__2));
 	}
 /* L10: */
-	if ((r__1 = f[i], fabs(r__1)) < t) {
-	    t = (r__2 = f[i], fabs(r__2));
+	if ((r__1 = f[i], std::fabs(r__1)) < t) {
+	    t = (r__2 = f[i], std::fabs(r__2));
 	}
     }
     if (t > *b) {
@@ -2166,11 +2166,11 @@ scl_(double *d, double *u, int */*n*/, double *q,
 /*     |*** RESCALE THE MATRIX ***| */
 /*     ---------------------------- */
     r = e[*j];
-    r__1 = sqrt((fabs(r)));
+    r__1 = sqrt((std::fabs(r)));
     r = r_sign(&r__1, &r);
     e[*j] = (double)1.;
     s = f[*j];
-    r__1 = sqrt((fabs(s)));
+    r__1 = sqrt((std::fabs(s)));
     s = r_sign(&r__1, &s);
     f[*j] = (double)1.;
     d[*j] = r * d[*j] * s;
@@ -2209,11 +2209,11 @@ L70:
     i__1 = *k;
     for (m = l; m <= i__1; ++m) {
 	t = e[m];
-	r__1 = sqrt((fabs(t)));
+	r__1 = sqrt((std::fabs(t)));
 	t = r_sign(&r__1, &t);
 	e[m] = (double)1.;
 	s = f[m];
-	r__1 = sqrt((fabs(s)));
+	r__1 = sqrt((std::fabs(s)));
 	s = r_sign(&r__1, &s);
 	f[m] = (double)1.;
 	d[m] = s * d[m] * t;
@@ -2262,8 +2262,8 @@ eig3_(double *ea, double *eb, double *a, double *b, double *y, double *z)
     static real c, s, t;
 
     t = (*b - *a) * (double).5;
-    c = sqrt((fabs(*y))) * sqrt((fabs(*z)));
-    if (fabs(t) > fabs(c)) {
+    c = sqrt((std::fabs(*y))) * sqrt((std::fabs(*z)));
+    if (std::fabs(t) > std::fabs(c)) {
 	goto L30;
     }
     if (c != (double)0.) {
@@ -2273,8 +2273,8 @@ eig3_(double *ea, double *eb, double *a, double *b, double *y, double *z)
     *eb = *b;
     return 0;
 L10:
-    t /= fabs(c);
-    s = fabs(c) / (fabs(t) + sqrt(t * t + (double)1.));
+    t /= std::fabs(c);
+    s = std::fabs(c) / (std::fabs(t) + sqrt(t * t + (double)1.));
     if (t < (double)0.) {
 	goto L20;
     }
@@ -2286,8 +2286,8 @@ L20:
     *eb = *b - s;
     return 0;
 L30:
-    t = fabs(c) / t;
-    s = t * fabs(c) / (sqrt(t * t + (double)1.) + (double)1.);
+    t = std::fabs(c) / t;
+    s = t * std::fabs(c) / (sqrt(t * t + (double)1.) + (double)1.);
     *ea = *a - s;
     *eb = *b + s;
     return 0;

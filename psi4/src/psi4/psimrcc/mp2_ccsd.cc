@@ -94,7 +94,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
     delta_energy   = current_energy - old_energy;
     old_energy = current_energy;
 
-    converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
+    converged = (std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
 
     cycle++;
 
@@ -144,7 +144,7 @@ void MP2_CCSD::compute_mp2_ccsd_energy()
     current_energy = compute_energy();
 
     delta_energy = current_energy-old_energy;
-    converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
+    converged = (std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
     old_energy=current_energy;
 
     if(cycle>options_.get_int("MAXITER")){

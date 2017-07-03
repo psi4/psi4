@@ -803,7 +803,7 @@ void DFOCC::b_so_non_zero()
         for(int m = 0 ; m < nso_; ++m){
             for(int n = 0 ; n < nso_; ++n){
                 int mn = n + (m * nso_);
-		if (fabs(bQso->get(Q,mn)) > int_cutoff_) ndf_nz++;
+		if (std::fabs(bQso->get(Q,mn)) > int_cutoff_) ndf_nz++;
             }
         }
     }
@@ -825,7 +825,7 @@ void DFOCC::b_so_non_zero()
             for(int n = 0 ; n < nso_; ++n){
                 int mn = n + (m * nso_);
 
-		if (fabs(bQso->get(Q,mn)) > int_cutoff_) {
+		if (std::fabs(bQso->get(Q,mn)) > int_cutoff_) {
 		    K->set(ndf_nz, 0, bQso->get(Q,mn));
 		    ndf_nz++;
 		    //if (m >= n) outfile->Printf("\tQ, m, n: %3d %3d %3d \n", Q, m, n);
@@ -850,7 +850,7 @@ void DFOCC::b_so_non_zero()
             for(int l = 0 ; l < nso_; ++l){
                 for(int s = 0 ; s < nso_; ++s){
                     int ls = s + (l * nso_);
-		    if (fabs(L->get(mn,ls)) > int_cutoff_) ndf_nz++;
+		    if (std::fabs(L->get(mn,ls)) > int_cutoff_) ndf_nz++;
 		}
             }
         }
@@ -878,7 +878,7 @@ void DFOCC::b_so_non_zero()
 	            int ls = index2(l,s);
 
 		    if (mn >= ls ) {
-		        if (fabs(L->get(mn2,ls2)) > int_cutoff_) ndf_nz++;
+		        if (std::fabs(L->get(mn2,ls2)) > int_cutoff_) ndf_nz++;
 		    }
 
 		}
@@ -924,7 +924,7 @@ void DFOCC::b_so_non_zero()
 	            int ls = index2(l,s);
 
 		    if (mn >= ls ) {
-		        if ( fabs(G->get(m,n)*G->get(l,s)) > int_cutoff_) ndf_nz++;
+		        if ( std::fabs(G->get(m,n)*G->get(l,s)) > int_cutoff_) ndf_nz++;
 		    }
 
 		}
@@ -950,7 +950,7 @@ void DFOCC::b_so_non_zero()
 	            int ls = index2(l,s);
 
 		    if (mn >= ls ) {
-		        if ( fabs(Sso->get(m,n)*Sso->get(l,s)) > int_cutoff_) ndf_nz++;
+		        if ( std::fabs(Sso->get(m,n)*Sso->get(l,s)) > int_cutoff_) ndf_nz++;
 		    }
 
 		}
@@ -1047,7 +1047,7 @@ void DFOCC::ldl_abcd_ints()
 
     // Count number of non-zero diagonals
     for(int i=0; i< n; i++) {
-        if (fabs(D->get(i)) > tol_ldl) ndiag++;
+        if (std::fabs(D->get(i)) > tol_ldl) ndiag++;
     }
 
     // Initialize mapping arrays
@@ -1062,7 +1062,7 @@ void DFOCC::ldl_abcd_ints()
     // Descending ordering for D
     for(int i=0; i< (n-1); i++) {
         for(int j = (i+1); j < n; j++) {
-            if (fabs(D->get(i)) < fabs(D->get(j))) {
+            if (std::fabs(D->get(i)) < std::fabs(D->get(j))) {
                 double temp= D->get(i);
          	D->set(i,D->get(j));
 		D->set(j,temp);
@@ -1077,8 +1077,8 @@ void DFOCC::ldl_abcd_ints()
     }
 
     // RMS
-    dmax = fabs(D->get(Q));
-    dmin = fabs(D->get(ndiag-1));
+    dmax = std::fabs(D->get(Q));
+    dmin = std::fabs(D->get(ndiag-1));
     outfile->Printf("\tNumber of complete LDL factors:   %5li\n",n);
     outfile->Printf("\tEstimated number of LDL factors:   %5li\n",ndiag);
     outfile->Printf("\tmax(|D_Q|) =%12.8f\n",dmax);
@@ -1152,7 +1152,7 @@ void DFOCC::ldl_abcd_ints()
         // Descending ordering for D
         for(int i=Q; i < (n-1); i++) {
             for(int j = (i+1); j < n; j++) {
-                if (fabs(D->get(i)) < fabs(D->get(j))) {
+                if (std::fabs(D->get(i)) < std::fabs(D->get(j))) {
                     double temp = D->get(i);
          	    D->set(i,D->get(j));
 		    D->set(j,temp);
@@ -1168,11 +1168,11 @@ void DFOCC::ldl_abcd_ints()
 	*/
 
         // Choose the dmax
-        dmax = fabs(D->get(Q));
+        dmax = std::fabs(D->get(Q));
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
-	    if (fabs(D->get(i)) > dmax) {
-                dmax = fabs(D->get(i));
+	    if (std::fabs(D->get(i)) > dmax) {
+                dmax = std::fabs(D->get(i));
 	    }
         }
 
@@ -1212,7 +1212,7 @@ void DFOCC::ldl_abcd_ints()
         int d0 = pair_to_idx2->get(j0);
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
-	    if (fabs(D->get(i)) * fabs(D->get(Q)) > tol_ldl) {
+	    if (std::fabs(D->get(i)) * std::fabs(D->get(Q)) > tol_ldl) {
             int ab = n2o->get(i);
             int a0 = pair_to_idx1->get(ab);
             int b0 = pair_to_idx2->get(ab);
@@ -1236,7 +1236,7 @@ void DFOCC::ldl_abcd_ints()
 	L1->set(Q,1.0); // set diagonal to 1
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
-	    if (fabs(D->get(Q)) > tol_ldl) {
+	    if (std::fabs(D->get(Q)) > tol_ldl) {
 	        double value = R1->get(i)/D->get(Q);
 	        L1->set(i,value);
 	    }
@@ -1414,7 +1414,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 
     // Count number of non-zero diagonals
     for(int i=0; i< n; i++) {
-        if (fabs(D->get(i)) > tol_ldl) ndiag++;
+        if (std::fabs(D->get(i)) > tol_ldl) ndiag++;
     }
 
     // Initialize mapping arrays
@@ -1429,7 +1429,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
     // Descending ordering for D
     for(int i=0; i< (n-1); i++) {
         for(int j = (i+1); j < n; j++) {
-            if (fabs(D->get(i)) < fabs(D->get(j))) {
+            if (std::fabs(D->get(i)) < std::fabs(D->get(j))) {
                 double temp= D->get(i);
          	D->set(i,D->get(j));
 		D->set(j,temp);
@@ -1444,8 +1444,8 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
     }
 
     // RMS
-    dmax = fabs(D->get(Q));
-    dmin = fabs(D->get(ndiag-1));
+    dmax = std::fabs(D->get(Q));
+    dmin = std::fabs(D->get(ndiag-1));
     outfile->Printf("\tNumber of complete LDL factors:   %5li\n",n);
     outfile->Printf("\tEstimated number of LDL factors:   %5li\n",ndiag);
     outfile->Printf("\tmax(|D_Q|) =%12.8f\n",dmax);
@@ -1518,7 +1518,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
         // Descending ordering for D
         for(int i=Q; i < (n-1); i++) {
             for(int j = (i+1); j < n; j++) {
-                if (fabs(D->get(i)) < fabs(D->get(j))) {
+                if (std::fabs(D->get(i)) < std::fabs(D->get(j))) {
                     double temp = D->get(i);
          	    D->set(i,D->get(j));
 		    D->set(j,temp);
@@ -1533,11 +1533,11 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
         }
 
         // Choose the dmax
-        dmax = fabs(D->get(Q));
+        dmax = std::fabs(D->get(Q));
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
-	    if (fabs(D->get(i)) > dmax) {
-                dmax = fabs(D->get(i));
+	    if (std::fabs(D->get(i)) > dmax) {
+                dmax = std::fabs(D->get(i));
 	    }
         }
 
@@ -1595,7 +1595,7 @@ void DFOCC::ldl_pqrs_ints(int dim1, int dim2, SharedTensor2d &bQ)
 	L1->set(Q,1.0); // set diagonal to 1
         #pragma omp parallel for
         for(int i = Q+1; i < n; i++) {
-	    if (fabs(D->get(Q)) > tol_ldl) {
+	    if (std::fabs(D->get(Q)) > tol_ldl) {
 	        double value = R1->get(i)/D->get(Q);
 	        L1->set(i,value);
 	    }

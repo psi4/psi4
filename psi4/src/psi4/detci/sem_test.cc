@@ -212,7 +212,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
 
       lse_do = 0;
       if (Parameters_->lse && (maxnvect-L <= M*Parameters_->collapse_size) && L>2 &&
-         (lse_tolerance > fabs(lambda[0]-lastroot[0])) && iter>=3 &&
+         (lse_tolerance > std::fabs(lambda[0]-lastroot[0])) && iter>=3 &&
          ((collapse_num-last_lse_collapse_num)>= Parameters_->lse_collapse))
         lse_do = 1;
       if (lse_do) {
@@ -337,7 +337,7 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
          tval = C_DDOT(N, d[i], 1, d[i], 1);
          tval = sqrt(tval);
          dvecnorm[i] = tval;
-         if (dvecnorm[i] <= conv_rms && fabs(lambda[i] - lastroot[i]) <= conv_e) converged_root[i] = 1;
+         if (dvecnorm[i] <= conv_rms && std::fabs(lambda[i] - lastroot[i]) <= conv_e) converged_root[i] = 1;
          else {
           converged_root[i] = 0;
           converged = 0;
@@ -377,12 +377,12 @@ void CIWavefunction::sem_test(double **A, int N, int M, int L, double **evecs, d
             /* It might be interesting to figure the best way to do this */
 
             /* previous way to do it
-            if (fabs(tval) < MIN_F_DENOM) tval = 0.1;
+            if (std::fabs(tval) < MIN_F_DENOM) tval = 0.1;
             f[k][I] = d[k][I] / tval;
             */
 
             /* the way GUGA does it */
-            if (fabs(tval) < 1.0E-8) f[k][I] = 0.0;
+            if (std::fabs(tval) < 1.0E-8) f[k][I] = 0.0;
             else f[k][I] = d[k][I] / tval;
             }
          }

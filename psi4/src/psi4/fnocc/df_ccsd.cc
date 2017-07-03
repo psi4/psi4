@@ -361,8 +361,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       //}else {
       //    double min = 1.0e9;
       //    for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
-      //        if ( fabs( diisvec[j-1] ) < min ) {
-      //            min = fabs( diisvec[j-1] );
+      //        if ( std::fabs( diisvec[j-1] ) < min ) {
+      //            min = std::fabs( diisvec[j-1] );
       //            replace_diis_iter = j;
       //        }
       //    }
@@ -383,7 +383,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       }
 
       // energy and amplitude convergence check
-      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
+      if (std::fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
   }
 
   times(&total_tmstime);

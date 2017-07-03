@@ -577,7 +577,7 @@ void iwl_integrals(IWL* iwl, DPDFunctor &dpd, FockFunctor &fock)
         lastBuffer = iwl->last_buffer();
         for(int index = 0; index < iwl->buffer_count(); ++index){
             labelIndex = 4*index;
-            p = abs((int) lblptr[labelIndex++]);
+            p = std::abs((int) lblptr[labelIndex++]);
             q = (int) lblptr[labelIndex++];
             r = (int) lblptr[labelIndex++];
             s = (int) lblptr[labelIndex++];

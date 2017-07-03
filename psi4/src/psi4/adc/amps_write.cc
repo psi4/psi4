@@ -67,7 +67,7 @@ ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
                 int A = B->params->colorb[h^Gia][a];
                 double value = B->matrix[h][i][a];
                 for(int m = 0;m < length;m++){
-                    if((fabs(value)-fabs(t1stack[m].value)) > 1e-12){
+                    if((std::fabs(value)-std::fabs(t1stack[m].value)) > 1e-12){
                         onestack_insert(t1stack, value, I, A, m, length);
                         break;
                     }
@@ -78,7 +78,7 @@ ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
     global_dpd_->file2_mat_close(B);
 
     for(int m = 0;m < ((numt1 < length) ? numt1 : length);m++){
-        if(fabs(t1stack[m].value) > 1e-6){
+        if(std::fabs(t1stack[m].value) > 1e-6){
             printer->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
         }
     }

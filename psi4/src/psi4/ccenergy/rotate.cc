@@ -94,7 +94,7 @@ int CCEnergyWavefunction::rotate(void)
         for(h=0; h < nirreps; h++)
             for(i=0; i < moinfo_.occpi[h]; i++)
                 for(a=0; a < moinfo_.virtpi[h]; a++)
-                    if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
+                    if(std::fabs(T1.matrix[h][i][a]) > max) max = std::fabs(T1.matrix[h][i][a]);
 
         global_dpd_->file2_mat_close(&T1);
         global_dpd_->file2_close(&T1);
@@ -108,7 +108,7 @@ int CCEnergyWavefunction::rotate(void)
         for(h=0; h < nirreps; h++)
             for(i=0; i < moinfo_.aoccpi[h]; i++)
                 for(a=0; a < moinfo_.avirtpi[h]; a++)
-                    if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
+                    if(std::fabs(T1.matrix[h][i][a]) > max) max = std::fabs(T1.matrix[h][i][a]);
 
         global_dpd_->file2_mat_close(&T1);
         global_dpd_->file2_close(&T1);
@@ -120,19 +120,19 @@ int CCEnergyWavefunction::rotate(void)
         for(h=0; h < nirreps; h++)
             for(i=0; i < moinfo_.boccpi[h]; i++)
                 for(a=0; a < moinfo_.bvirtpi[h]; a++)
-                    if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
+                    if(std::fabs(T1.matrix[h][i][a]) > max) max = std::fabs(T1.matrix[h][i][a]);
 
         global_dpd_->file2_mat_close(&T1);
         global_dpd_->file2_close(&T1);
     }
 
-    if(fabs(max) <= params_.bconv) {
+    if(std::fabs(max) <= params_.bconv) {
         outfile->Printf( "    Brueckner orbitals converged.  Maximum T1 = %15.12f\n",
-                         fabs(max));
+                         std::fabs(max));
         return(1);
     }
     else
-        outfile->Printf( "    Rotating orbitals.  Maximum T1 = %15.12f\n", fabs(max));
+        outfile->Printf( "    Rotating orbitals.  Maximum T1 = %15.12f\n", std::fabs(max));
 
     /* grab the SO-basis overlap integrals for later use */
     SO_S = block_matrix(nso, nso);
@@ -193,7 +193,7 @@ int CCEnergyWavefunction::rotate(void)
         }
         S = block_matrix(nmo, nmo);
         for(i=0; i < nmo; i++) {
-            if(fabs(evals[i]) > 1e-8) S[i][i] = 1/sqrt(evals[i]);
+            if(std::fabs(evals[i]) > 1e-8) S[i][i] = 1/sqrt(evals[i]);
             else S[i][i] = 0.0;
         }
         free(evals);
@@ -356,8 +356,8 @@ int CCEnergyWavefunction::rotate(void)
         for(p=0; p < nmo; p++) {
             max = 0.0;
             for(q=0; q < nmo; q++) {
-                if(fabs(MO_S[p][q]) > max) {
-                    max = fabs(MO_S[p][q]); max_col = q;
+                if(std::fabs(MO_S[p][q]) > max) {
+                    max = std::fabs(MO_S[p][q]); max_col = q;
                 }
             }
             if(max_col != p) phase_ok = 0;
@@ -440,7 +440,7 @@ int CCEnergyWavefunction::rotate(void)
         /* build S^-1/2 for this basis */
         S = block_matrix(nmo, nmo);
         for(i=0; i < nmo; i++) {
-            if(fabs(evals[i]) > 1e-8) S[i][i] = 1/sqrt(evals[i]);
+            if(std::fabs(evals[i]) > 1e-8) S[i][i] = 1/sqrt(evals[i]);
             else S[i][i] = 0.0;
         }
         free(evals);
@@ -510,7 +510,7 @@ int CCEnergyWavefunction::rotate(void)
         /* build S^-1/2 for this basis */
         S = block_matrix(nmo, nmo);
         for(i=0; i < nmo; i++) {
-            if(fabs(evals[i]) > 1e-8) S[i][i] = 1/sqrt(evals[i]);
+            if(std::fabs(evals[i]) > 1e-8) S[i][i] = 1/sqrt(evals[i]);
             else S[i][i] = 0.0;
         }
         free(evals);
@@ -644,8 +644,8 @@ int CCEnergyWavefunction::rotate(void)
         for(p=0; p < nmo; p++) {
             max = 0.0;
             for(q=0; q < nmo; q++) {
-                if(fabs(MO_S[p][q]) > max) {
-                    max = fabs(MO_S[p][q]); max_col = q;
+                if(std::fabs(MO_S[p][q]) > max) {
+                    max = std::fabs(MO_S[p][q]); max_col = q;
                 }
             }
             if(max_col != p) phase_ok = 0;
@@ -746,8 +746,8 @@ int CCEnergyWavefunction::rotate(void)
         for(p=0; p < nmo; p++) {
             max = 0.0;
             for(q=0; q < nmo; q++) {
-                if(fabs(MO_S[p][q]) > max) {
-                    max = fabs(MO_S[p][q]); max_col = q;
+                if(std::fabs(MO_S[p][q]) > max) {
+                    max = std::fabs(MO_S[p][q]); max_col = q;
                 }
             }
             if(max_col != p) phase_ok = 0;

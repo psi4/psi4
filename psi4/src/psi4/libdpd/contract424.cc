@@ -95,7 +95,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
 
     if(Ztrans) trans4_init(&Zt, Z);
 
-    /*  if(fabs(beta) > 0.0) dpd_buf4_scm(Z, beta); */
+    /*  if(std::fabs(beta) > 0.0) dpd_buf4_scm(Z, beta); */
     buf4_scm(Z, beta);
 
 #ifdef DPD_DEBUG
@@ -162,7 +162,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
         if(incore) {
             /*       dpd_buf4_scm(Z, beta); */
             buf4_mat_irrep_init(Z, hzbuf);
-            if(fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, hzbuf);
+            if(std::fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, hzbuf);
             if(Ztrans) {
                 trans4_mat_irrep_init(&Zt, hzbuf);
                 trans4_mat_irrep_rd(&Zt, hzbuf);
@@ -335,7 +335,7 @@ int DPD::contract424(dpdbuf4 *X, dpdfile2 *Y, dpdbuf4 *Z, int sum_X,
 
                 buf4_mat_irrep_row_zero(Z, hzbuf, pq);
 
-                if(fabs(beta) > 0.0)
+                if(std::fabs(beta) > 0.0)
                     buf4_mat_irrep_row_rd(Z, hzbuf, pq);
 
                 xcount = zcount = 0;

@@ -257,7 +257,7 @@ bool RHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
        return true;
     }
     else

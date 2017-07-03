@@ -138,12 +138,12 @@ void if_to_invert_axis(const Vector3 &v1, int &must_invert, int &should_invert, 
 
     for (xyz = 0; xyz < 3; xyz++) {
 
-        vabs = fabs(v1[xyz]);
+        vabs = std::fabs(v1[xyz]);
 
         if (vabs < ZERO)
             nzero++;
 
-        if (vabs > fabs(maxproj)) {
+        if (vabs > std::fabs(maxproj)) {
             maxproj = v1[xyz];
         }
 
@@ -309,7 +309,7 @@ double Molecule::mass(int atom) const
     if (atoms_[atom]->mass() != 0.0)
         ret = atoms_[atom]->mass();
     else {
-        if (fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
+        if (std::fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
             outfile->Printf("WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n");
 
         outfile->Printf("WARNING: Mass was not set in the atom object for atom %d\n", atom + 1);
@@ -1991,7 +1991,7 @@ Matrix *Molecule::inertia_tensor() const
     // Check the elements for zero and make them a hard zero.
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            if (fabs(tensor->get(i, j)) < ZERO)
+            if (std::fabs(tensor->get(i, j)) < ZERO)
                 tensor->set(i, j, 0.0);
         }
     }
@@ -2071,7 +2071,7 @@ RotorType Molecule::rotor_type(double zero_tol) const
     int degen = 0;
     for (int i = 0; i < 2; i++) {
         for (int j = i + 1; j < 3 && degen < 2; j++) {
-            abs = fabs(rot_const[i] - rot_const[j]);
+            abs = std::fabs(rot_const[i] - rot_const[j]);
             tmp = (rot_const[i] > rot_const[j]) ? rot_const[i] : rot_const[j];
             if (abs > 1.0E-14)
                 rel = abs / tmp;
@@ -2155,9 +2155,9 @@ enum AxisName
 static AxisName like_world_axis(Vector3 &axis, const Vector3 &worldxaxis, const Vector3 &worldyaxis, const Vector3 &worldzaxis)
 {
     AxisName like;
-    double xlikeness = fabs(axis.dot(worldxaxis));
-    double ylikeness = fabs(axis.dot(worldyaxis));
-    double zlikeness = fabs(axis.dot(worldzaxis));
+    double xlikeness = std::fabs(axis.dot(worldxaxis));
+    double ylikeness = std::fabs(axis.dot(worldyaxis));
+    double zlikeness = std::fabs(axis.dot(worldzaxis));
     if ((xlikeness - ylikeness) > 1.0e-12 && (xlikeness - zlikeness) > 1.0e-12) {
         like = XAxis;
         if (axis.dot(worldxaxis) < 0) axis = -axis;
@@ -2191,9 +2191,9 @@ void Molecule::is_linear_planar(bool &linear, bool &planar, double tol) const
     for (i = 2; i < natom(); ++i) {
         Vector3 tmp = xyz(i) - A;
         tmp.normalize();
-        if (fabs(BA.dot(tmp)) < min_BAdotCA) {
+        if (std::fabs(BA.dot(tmp)) < min_BAdotCA) {
             CA = tmp;
-            min_BAdotCA = fabs(BA.dot(tmp));
+            min_BAdotCA = std::fabs(BA.dot(tmp));
         }
     }
     if (min_BAdotCA >= 1.0 - tol) {
@@ -2213,7 +2213,7 @@ void Molecule::is_linear_planar(bool &linear, bool &planar, double tol) const
     BAxCA.normalize();
     for (i = 2; i < natom(); ++i) {
         Vector3 tmp = xyz(i) - A;
-        if (fabs(tmp.dot(BAxCA)) > tol) {
+        if (std::fabs(tmp.dot(BAxCA)) > tol) {
             planar = false;
             return;
         }
@@ -2294,7 +2294,7 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                 if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                 Vector3 B = xyz(j) - com;
                 // the atoms must be the same distance from the com
-                if (fabs(AdotA - B.dot(B)) > tol) continue;
+                if (std::fabs(AdotA - B.dot(B)) > tol) continue;
                 Vector3 axis = A + B;
                 // atoms colinear with the com don't work
                 if (axis.norm() < tol) continue;
@@ -2338,13 +2338,13 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
-                    if (fabs(AdotA - B.dot(B)) > tol) continue;
+                    if (std::fabs(AdotA - B.dot(B)) > tol) continue;
                     Vector3 axis = A + B;
                     // atoms colinear with the com don't work
                     if (axis.norm() < tol) continue;
                     axis.normalize();
                     // if axis is not perp continue
-                    if (fabs(axis.dot(c2axis)) > tol) continue;
+                    if (std::fabs(axis.dot(c2axis)) > tol) continue;
                     if (is_axis(com, axis, 2, tol)) {
                         have_c2axisperp = true;
                         c2axisperp = axis;
@@ -2410,7 +2410,7 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
-                    if (fabs(AdotA - B.dot(B)) > tol) continue;
+                    if (std::fabs(AdotA - B.dot(B)) > tol) continue;
                     Vector3 inplane = B + A;
                     double norm_inplane = inplane.norm();
                     if (norm_inplane < tol) continue;
@@ -2475,7 +2475,7 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                     Vector3 B = xyz(j) - com;
                     double BdotB = B.dot(B);
                     // the atoms must be the same distance from the com
-                    if (fabs(AdotA - BdotB) > tol) continue;
+                    if (std::fabs(AdotA - BdotB) > tol) continue;
                     Vector3 perp = B - A;
                     double norm_perp = perp.norm();
                     if (norm_perp < tol) continue;
@@ -2494,9 +2494,9 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
     if (have_sigma) {
         // try to make the sign of the oop vec correspond to one of
         // the world axes
-        double xlikeness = fabs(sigma.dot(worldxaxis));
-        double ylikeness = fabs(sigma.dot(worldyaxis));
-        double zlikeness = fabs(sigma.dot(worldzaxis));
+        double xlikeness = std::fabs(sigma.dot(worldxaxis));
+        double ylikeness = std::fabs(sigma.dot(worldyaxis));
+        double zlikeness = std::fabs(sigma.dot(worldzaxis));
 
         if (xlikeness > ylikeness && xlikeness > zlikeness) {
             if (sigma.dot(worldxaxis) < 0) sigma = -sigma;
@@ -2528,19 +2528,19 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
 
 #define NOISY_ZERO 1.0e-8
     // Clean up our z axis
-    if (fabs(zaxis[0]) < NOISY_ZERO)
+    if (std::fabs(zaxis[0]) < NOISY_ZERO)
         zaxis[0] = 0.0;
-    if (fabs(zaxis[1]) < NOISY_ZERO)
+    if (std::fabs(zaxis[1]) < NOISY_ZERO)
         zaxis[1] = 0.0;
-    if (fabs(zaxis[2]) < NOISY_ZERO)
+    if (std::fabs(zaxis[2]) < NOISY_ZERO)
         zaxis[2] = 0.0;
 
     // Clean up our x axis
-    if (fabs(xaxis[0]) < NOISY_ZERO)
+    if (std::fabs(xaxis[0]) < NOISY_ZERO)
         xaxis[0] = 0.0;
-    if (fabs(xaxis[1]) < NOISY_ZERO)
+    if (std::fabs(xaxis[1]) < NOISY_ZERO)
         xaxis[1] = 0.0;
-    if (fabs(xaxis[2]) < NOISY_ZERO)
+    if (std::fabs(xaxis[2]) < NOISY_ZERO)
         xaxis[2] = 0.0;
 #undef NOISY_ZERO
 
@@ -2852,7 +2852,7 @@ void Molecule::form_symmetry_information(double tol)
                 Vector3 aj(xyz(unique));
                 if (np.distance(aj) < tol
                     && Z(unique) == Z(i)
-                    && fabs(mass(unique) - mass(i)) < tol) {
+                    && std::fabs(mass(unique) - mass(i)) < tol) {
                     i_is_unique = 0;
                     i_equiv = j;
                     break;
@@ -2888,7 +2888,7 @@ void Molecule::form_symmetry_information(double tol)
             int nzero = 0;
             for (int k = 0; k < 3; ++k) {
                 double tmp = equiv_[i][j];
-                if (fabs(xyz(tmp, k)) < ztol)
+                if (std::fabs(xyz(tmp, k)) < ztol)
                     nzero++;
             }
             if (nzero > maxzero) {
@@ -3295,9 +3295,9 @@ void Molecule::set_full_point_group(double zero_tol)
         // outfile->Printf("I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 
         int unique_axis = 1;
-        if (fabs(I_evals[0] - I_evals[1]) < zero_tol)
+        if (std::fabs(I_evals[0] - I_evals[1]) < zero_tol)
             unique_axis = 2;
-        else if (fabs(I_evals[1] - I_evals[2]) < zero_tol)
+        else if (std::fabs(I_evals[1] - I_evals[2]) < zero_tol)
             unique_axis = 0;
 
         // Compute angle between unique axis and the z-axis
@@ -3307,15 +3307,15 @@ void Molecule::set_full_point_group(double zero_tol)
                          I_evects->get(2, unique_axis));
 
         dot = z_axis.dot(old_axis);
-        if (fabs(dot - 1) < 1.0e-10)
+        if (std::fabs(dot - 1) < 1.0e-10)
             phi = 0.0;
-        else if (fabs(dot + 1) < 1.0e-10)
+        else if (std::fabs(dot + 1) < 1.0e-10)
             phi = pc_pi;
         else
             phi = acos(dot);
 
         // Rotate geometry to put unique axis on the z-axis, if it isn't already.
-        if (fabs(phi) > 1.0e-14) {
+        if (std::fabs(phi) > 1.0e-14) {
             rot_axis = z_axis.cross(old_axis);
             test_mat = geom.matrix_3d_rotation(rot_axis, phi, false);
             //outfile->Printf( "Rotating by %lf to get principal axis on z-axis.\n", phi);
@@ -3337,7 +3337,7 @@ void Molecule::set_full_point_group(double zero_tol)
         // Check for sigma_h (xy plane).
         bool op_sigma_h = false;
         for (i = 0; i < natom(); ++i) {
-            if (fabs(geom(i, 2)) < zero_tol)
+            if (std::fabs(geom(i, 2)) < zero_tol)
                 continue; // atom is in xy plane
             else {
                 Vector3 test_atom(geom(i, 0), geom(i, 1), -1 * geom(i, 2));
@@ -3353,7 +3353,7 @@ void Molecule::set_full_point_group(double zero_tol)
         int pivot_atom_i = -1;
         for (i = 0; i < natom(); ++i) {
             double dist_from_z = sqrt(geom(i, 0) * geom(i, 0) + geom(i, 1) * geom(i, 1));
-            if (fabs(dist_from_z) > zero_tol) {
+            if (std::fabs(dist_from_z) > zero_tol) {
                 pivot_atom_i = i;
                 break;
             }
@@ -3366,15 +3366,15 @@ void Molecule::set_full_point_group(double zero_tol)
 
         xy_point.normalize();
         dot = y_axis.dot(xy_point);
-        if (fabs(dot - 1) < 1.0e-10)
+        if (std::fabs(dot - 1) < 1.0e-10)
             phi = 0.0;
-        else if (fabs(dot + 1) < 1.0e-10)
+        else if (std::fabs(dot + 1) < 1.0e-10)
             phi = pc_pi;
         else
             phi = acos(dot);
 
         bool is_D = false;
-        if (fabs(phi) > 1.0e-14) {
+        if (std::fabs(phi) > 1.0e-14) {
             test_mat = geom.matrix_3d_rotation(z_axis, phi, false);
             //outfile->Printf( "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
             geom.copy(test_mat);
@@ -3383,7 +3383,7 @@ void Molecule::set_full_point_group(double zero_tol)
         // Check for sigma_v (yz plane).
         bool op_sigma_v = false;
         for (i = 0; i < natom(); ++i) {
-            if (fabs(geom(i, 0)) < zero_tol)
+            if (std::fabs(geom(i, 0)) < zero_tol)
                 continue; // atom is in yz plane
             else {
                 Vector3 test_atom(-1 * geom(i, 0), geom(i, 1), geom(i, 2));
@@ -3410,7 +3410,7 @@ void Molecule::set_full_point_group(double zero_tol)
                 if (Z(i) != Z(j)) continue; // ensure same atomic number
 
                 Vector3 B(geom(j, 0), geom(j, 1), geom(j, 2)); // ensure same distance from com
-                if (fabs(AdotA - B.dot(B)) > 1.0e-6) continue; // loose check
+                if (std::fabs(AdotA - B.dot(B)) > 1.0e-6) continue; // loose check
 
                 // Use sum of atom vectors as axis if not 0.
                 Vector3 axis = A + B;
@@ -3418,7 +3418,7 @@ void Molecule::set_full_point_group(double zero_tol)
                 axis.normalize();
 
                 // Check if axis is perpendicular to z-axis.
-                if (fabs(axis.dot(z_axis)) > 1.0e-6) continue;
+                if (std::fabs(axis.dot(z_axis)) > 1.0e-6) continue;
 
                 // Do the thorough check for C2.
                 if (matrix_3d_rotation_Cn(geom, axis, false, zero_tol, 2) == 2)

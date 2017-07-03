@@ -161,7 +161,7 @@ void DCFTSolver::presort_mo_tpdm_AB()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = _ints->alpha_corr_to_pitzer()[abs((int) lblptr[labelIndex++])];
+                int p = _ints->alpha_corr_to_pitzer()[std::abs((int) lblptr[labelIndex++])];
                 int q = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
                 int r = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
                 int s = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
@@ -321,7 +321,7 @@ void DCFTSolver::presort_mo_tpdm_AA()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = _ints->alpha_corr_to_pitzer()[abs((int) lblptr[labelIndex++])];
+                int p = _ints->alpha_corr_to_pitzer()[std::abs((int) lblptr[labelIndex++])];
                 int q = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
                 int r = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];
                 int s = _ints->alpha_corr_to_pitzer()[(int) lblptr[labelIndex++]];

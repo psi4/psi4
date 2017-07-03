@@ -205,7 +205,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
             printer->Printf("----     ---------------- -------    --------- ----------\n");
 
             for(int k = 0;k < rpi_[irrep];k++){
-                double diff = fabs(lambda[k]-lambda_o[k]);
+                double diff = std::fabs(lambda[k]-lambda_o[k]);
                 if(diff < cutoff && residual_ok[k]){
                     conv[k] = 1;
                     converged++;

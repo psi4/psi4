@@ -1297,7 +1297,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
 
   	                // prescreening
 			double Gaebf = tau_max * G->get(a,e) * G->get(b,f);
-			if (fabs(Gaebf) > int_cutoff_) {
+			if (std::fabs(Gaebf) > int_cutoff_) {
 			      ndf_nz++;
                               J->contract(false, true, 1, 1, nQ, K, K, ae*nQ, bf*nQ, 1.0, 0.0);
 			      I->set(bf, e, J->get(0,0));
@@ -1473,7 +1473,7 @@ void DFOCC::ccsd_WabefT2_ao_basis()
 		        // prescreening
 			double Gmlns = tau_max * G->get(m,l) * G->get(n,s);
 			//double Gmlns = Sso->get(m,l) * Sso->get(n,s) / tau_max;
-			if (fabs(Gmlns) > int_cutoff_) {
+			if (std::fabs(Gmlns) > int_cutoff_) {
 			    ndf_nz++;
                             J->contract(false, true, 1, 1, nQ, K, K, ml*nQ, ns*nQ, 1.0, 0.0);
 		            Jmlns = J->get(0,0);

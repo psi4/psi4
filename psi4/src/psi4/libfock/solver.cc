@@ -1804,7 +1804,7 @@ void DLRXSolver::subspaceDiagonalization()
         // Sort to order as -/+, -/+, ....
         std::vector<std::pair<double, int> > pass1;
         for (int i = 0; i < 2*n; i++) {
-            pass1.push_back(std::make_pair(fabs(lrp[i]), i));
+            pass1.push_back(std::make_pair(std::fabs(lrp[i]), i));
         }
 
         std::sort(pass1.begin(), pass1.end());

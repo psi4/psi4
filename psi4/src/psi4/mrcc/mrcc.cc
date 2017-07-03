@@ -63,7 +63,7 @@ void write_oei_to_disk(std::shared_ptr <PsiOutStream> &printer, SharedMatrix moH
     for (int h = 0; h < moH->nirrep(); ++h) {
         for (int m = 0; m < moH->rowdim(h); ++m) {
             for (int n = 0; n <= m; ++n) {
-                if (fabs(moH->get(h, m, n)) > 1.0e-12) {
+                if (std::fabs(moH->get(h, m, n)) > 1.0e-12) {
                     printer->Printf("%28.20E%4d%4d%4d%4d\n", moH->get(h, m, n), m + offset + 1, n + offset + 1, 0, 0);
                 }
             }
@@ -84,7 +84,7 @@ void write_tei_to_disk(std::shared_ptr <PsiOutStream> &printer, int nirrep, dpdb
                 int r = K.params->colorb[h][rs][0];
                 int s = K.params->colorb[h][rs][1];
 
-                if (fabs(K.matrix[h][pq][rs]) > ints_tolerance)
+                if (std::fabs(K.matrix[h][pq][rs]) > ints_tolerance)
                     printer->Printf("%28.20E%4d%4d%4d%4d\n",
                                     K.matrix[h][pq][rs], p + 1, q + 1, r + 1, s + 1);
             }
@@ -259,7 +259,7 @@ public:
                 // It's also normalized differently to Psi's, by a factor of 2.
                 if (r != 0 && s != 0) {
                     if (p >= r && q >= s)
-                        if (fabs(value) > tolerance_)
+                        if (std::fabs(value) > tolerance_)
                             filler(bucket, p - 1, r - 1, q - 1, s - 1, value * 0.5);
                 } else
                     one_particle_->set(abs_mo_to_irrep_[p - 1], abs_mo_to_rel_[p - 1], abs_mo_to_rel_[q - 1], value);
@@ -627,7 +627,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     int exlevel = level["order"].cast<int>();
     std::string fullname = level["fullname"].cast<std::string>();
     bool pertcc = exlevel > 0 ? false : true;
-    exlevel = abs(exlevel);
+    exlevel = std::abs(exlevel);
 
     outfile->Printf("    Loading gradient data for %s.\n\n", fullname.c_str());
 
@@ -690,7 +690,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     int exlevel = level["order"].cast<int>();
     std::string fullname = level["fullname"].cast<std::string>();
     bool pertcc = exlevel > 0 ? false : true;
-    exlevel = abs(exlevel);
+    exlevel = std::abs(exlevel);
 
     outfile->Printf("    Generating inputs for %s.\n\n", fullname.c_str());
 
@@ -895,7 +895,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     outfile->Printf("done.\n  Generating fort.56 input file...");
 
     // Determine energy convergence to pass to MRCC
-    double user_e = fabs(Process::environment.options.get_double("E_CONVERGENCE"));
+    double user_e = std::fabs(Process::environment.options.get_double("E_CONVERGENCE"));
     int e_conv = 0;
 
     if (user_e >= 1.0)

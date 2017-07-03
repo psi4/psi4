@@ -139,8 +139,8 @@ void HF::MOM_start()
         bool si = (i > 0);
         bool sa = (a > 0);
 
-        i = abs(i) - 1;
-        a = abs(a) - 1;
+        i = std::abs(i) - 1;
+        a = std::abs(a) - 1;
 
         if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
 
@@ -624,7 +624,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > pvec;
         pvec.resize(nmo);
         for (int a = 0; a < nmo; a++)
-            pvec[a] = std::make_pair(fabs(p[a]), a);
+            pvec[a] = std::make_pair(std::fabs(p[a]), a);
         sort(pvec.begin(),pvec.end(), std::greater<std::pair<double, int> >());
 
         //outfile->Printf("  P_a sorted:\n");
@@ -712,7 +712,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > pvec;
         pvec.resize(nmo);
         for (int a = 0; a < nmo; a++)
-            pvec[a] = std::make_pair(fabs(p[a]), a);
+            pvec[a] = std::make_pair(std::fabs(p[a]), a);
         sort(pvec.begin(),pvec.end(), std::greater<std::pair<double, int> >());
 
         //outfile->Printf("  P_a sorted:\n");

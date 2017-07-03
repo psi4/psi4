@@ -918,7 +918,7 @@ void HF::form_H()
           double max = 0;
           for(int k=0; k < npoints; k++) {
             statusvalue=fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
-            if(fabs(v) > max) max = fabs(v);
+            if(std::fabs(v) > max) max = std::fabs(v);
 
             basisset_->compute_phi(phi_ao, x, y, z);
             // Transform phi_ao to SO basis
@@ -1061,7 +1061,7 @@ void HF::form_Shalf()
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     const Dimension& dimpi = eigval->dimpi();
-    double min_S = fabs(eigval->get(0,0));
+    double min_S = std::fabs(eigval->get(0,0));
     for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
             if (min_S > eigval->get(h,i))
@@ -1538,7 +1538,7 @@ void HF::check_phases()
     for (int h=0; h<nirrep_; ++h) {
         for (int p = 0; p < Ca_->colspi(h); ++p) {
             for (int mu = 0; mu < Ca_->rowspi(h); ++mu) {
-                if (fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
+                if (std::fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
                     if (Ca_->get(h, mu, p) < 1.0E-3) {
                         Ca_->scale_column(h, p, -1.0);
                     }
@@ -1552,7 +1552,7 @@ void HF::check_phases()
         for (int h=0; h<nirrep_; ++h) {
             for (int p = 0; p < Cb_->colspi(h); ++p) {
                 for (int mu = 0; mu < Cb_->rowspi(h); ++mu) {
-                    if (fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
+                    if (std::fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
                         if (Cb_->get(h, mu, p) < 1.0E-3) {
                             Cb_->scale_column(h, p, -1.0);
                         }
@@ -1901,7 +1901,7 @@ void HF::print_energies()
     Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
     Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
     Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
-    if (fabs(energies_["XC"]) > 1.0e-14) {
+    if (std::fabs(energies_["XC"]) > 1.0e-14) {
         Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
         Process::environment.globals["DFT VV10 ENERGY"] = energies_["VV10"];
         Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = hf_energy +
@@ -1910,7 +1910,7 @@ void HF::print_energies()
     } else {
         Process::environment.globals["HF TOTAL ENERGY"] = hf_energy;
     }
-    if (fabs(energies_["-D"]) > 1.0e-14) {
+    if (std::fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
 

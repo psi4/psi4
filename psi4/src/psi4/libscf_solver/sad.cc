@@ -547,7 +547,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         E += Db->vector_dot(Fb);
         E *= 0.5;
 
-        double deltaE = fabs(E-E_old);
+        double deltaE = std::fabs(E-E_old);
 
         // Build Gradient
         form_gradient(norbs, gradient_a, Fa, Da, S, X);

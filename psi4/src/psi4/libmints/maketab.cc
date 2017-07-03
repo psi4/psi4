@@ -542,9 +542,9 @@ int CharacterTable::make_table()
             so = symop[gi].operate(symop[gj]);
 
             // is so a unit matrix?
-            if (fabs(1.0-so[0][0]) < 1.0e-8 &&
-                    fabs(1.0-so[1][1]) < 1.0e-8 &&
-                    fabs(1.0-so[2][2]) < 1.0e-8) break;
+            if (std::fabs(1.0-so[0][0]) < 1.0e-8 &&
+                std::fabs(1.0-so[1][1]) < 1.0e-8 &&
+                std::fabs(1.0-so[2][2]) < 1.0e-8) break;
         }
 
         if (gj==nirrep_) {

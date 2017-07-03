@@ -413,7 +413,7 @@ void CholeskyDenominator::decompose()
             }
         }
 
-        if (fabs(max_err) < delta_)
+        if (std::fabs(max_err) < delta_)
             break;
 
         int j = max_index / nvir;
@@ -889,16 +889,16 @@ void SAPTCholeskyDenominator::decompose()
         double maxA = 0.0;
         int indA = 0;
         for (int ia = 0; ia < noccA * nvirA; ia++) {
-            if (fabs(maxA) < fabs(schurAp[ia])) {
-                maxA = fabs(schurAp[ia]);
+            if (std::fabs(maxA) < std::fabs(schurAp[ia])) {
+                maxA = std::fabs(schurAp[ia]);
                 indA = ia;
             }
         }
         double maxB = 0.0;
         int indB = 0;
         for (int ia = 0; ia < noccB * nvirB; ia++) {
-            if (fabs(maxA) < fabs(schurBp[ia])) {
-                maxB = fabs(schurBp[ia]);
+            if (std::fabs(maxA) < std::fabs(schurBp[ia])) {
+                maxB = std::fabs(schurBp[ia]);
                 indB = ia;
             }
         }
@@ -1004,13 +1004,13 @@ void SAPTCholeskyDenominator::decompose()
         // Termination condition (schwarz)
         maxA = 0.0;
         for (int ia = 0; ia < noccA * nvirA; ia++) {
-            if (fabs(maxA) < fabs(schurAp[ia]))
-                maxA = fabs(schurAp[ia]);
+            if (std::fabs(maxA) < std::fabs(schurAp[ia]))
+                maxA = std::fabs(schurAp[ia]);
         }
         maxB = 0.0;
         for (int ia = 0; ia < noccB * nvirB; ia++) {
-            if (fabs(maxB) < fabs(schurBp[ia]))
-                maxB = fabs(schurBp[ia]);
+            if (std::fabs(maxB) < std::fabs(schurBp[ia]))
+                maxB = std::fabs(schurBp[ia]);
         }
 
         max_err = sqrt(maxA * maxB);

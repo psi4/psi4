@@ -231,7 +231,7 @@ void ERISieve::integrals()
             double max_val = 0.0;
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    max_val = std::max(max_val, fabs(buffer[p * (nQ * nP * nQ + nQ) + q * (nP * nQ + 1)]));
+                    max_val = std::max(max_val, std::fabs(buffer[p * (nQ * nP * nQ + nQ) + q * (nP * nQ + 1)]));
                 }
             }
             max_ = std::max(max_, max_val);
@@ -266,7 +266,7 @@ void ERISieve::integrals()
             {
 
               double p_exp = mu_shell.exp(p_ind);
-              double p_coef = fabs(mu_shell.coef(p_ind));
+              double p_coef = std::fabs(mu_shell.coef(p_ind));
 
               Vector3 p_center = mu_shell.center();
               p_center *= p_exp;
@@ -275,7 +275,7 @@ void ERISieve::integrals()
               {
 
                 double r_exp = nu_shell.exp(r_ind);
-                double r_coef = fabs(nu_shell.coef(r_ind));
+                double r_coef = std::fabs(nu_shell.coef(r_ind));
 
                 Vector3 r_center = nu_shell.center();
                 r_center *= r_exp;

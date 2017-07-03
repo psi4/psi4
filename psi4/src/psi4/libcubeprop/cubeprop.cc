@@ -155,9 +155,9 @@ void CubeProperties::compute_properties()
                 for (size_t ind = 0; ind < options_["CUBEPROP_ORBITALS"].size(); ind++) {
                     int val = options_["CUBEPROP_ORBITALS"][ind].to_integer();
                     if (val > 0) {
-                        indsa0.push_back(abs(val) - 1);
+                        indsa0.push_back(std::abs(val) - 1);
                     } else {
-                        indsb0.push_back(abs(val) - 1);
+                        indsb0.push_back(std::abs(val) - 1);
                     }
                 }
             }

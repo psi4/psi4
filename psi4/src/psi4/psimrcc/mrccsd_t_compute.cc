@@ -185,7 +185,7 @@ void MRCCSD_T::compute_ooo_triples()
     double oldE  = 1.0;
     double newE  = 0.0;
     tot_triplets++;
-    while(fabs(oldE-newE) > threshold){
+    while(std::fabs(oldE-newE) > threshold){
       tot_cycles++;
       cycle++;
       oldE = newE;
@@ -316,7 +316,7 @@ void MRCCSD_T::compute_OOO_triples()
     int    cycle = 0;
     double oldE  = 1.0;
     double newE  = 0.0;
-    while(fabs(oldE-newE) > threshold){
+    while(std::fabs(oldE-newE) > threshold){
       cycle++;
       oldE = newE;
       newE = 0.0;
@@ -460,7 +460,7 @@ void MRCCSD_T::compute_ooO_triples()
     int    cycle = 0;
     double oldE  = 1.0;
     double newE  = 0.0;
-    while(fabs(oldE-newE) > threshold){
+    while(std::fabs(oldE-newE) > threshold){
       cycle++;
       oldE = newE;
       newE = 0.0;
@@ -616,7 +616,7 @@ void MRCCSD_T::compute_oOO_triples()
     int    cycle = 0;
     double oldE  = 1.0;
     double newE  = 0.0;
-    while(fabs(oldE-newE) > threshold){
+    while(std::fabs(oldE-newE) > threshold){
       cycle++;
       oldE = newE;
       newE = 0.0;
