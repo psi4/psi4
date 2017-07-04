@@ -29,12 +29,9 @@
 #include "x2cint.h"
 
 #include "psi4/libmints/mintshelper.h"
-<<<<<<< HEAD
 #include "psi4/libmints/molecule.h"
 
-=======
 #include "psi4/libmints/matrix.h"
->>>>>>> added and exported functions for kin. energy first derivative in MO basis
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
@@ -63,6 +60,7 @@
 #ifdef USING_dkh
 #include <DKH/DKH_MANGLE.h>
 #define F_DKH DKH_MANGLE_MODULE(dkh_main, dkh, DKH_MAIN, DKH)
+#include <map>
 
 extern "C" {
 void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
@@ -70,7 +68,6 @@ void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_orde
 #endif
 
 namespace psi {
-
 /**
 * IWLWriter functor for use with SO TEIs
 **/
@@ -806,8 +803,6 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
     cartcomp[1] = strdup("Y");
     cartcomp[2] = strdup("Z");
 
-    //std::shared_ptr <TwoBodyAOInt> ints(integral_->eri(1));
-
     std::shared_ptr <BasisSet> bs1 = ints->basis1();
     std::shared_ptr <BasisSet> bs2 = ints->basis2();
     std::shared_ptr <BasisSet> bs3 = ints->basis3();
@@ -833,8 +828,6 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
         for (int Q = 0; Q < bs2->nshell(); Q++) {
             for (int R = 0; R < bs3->nshell(); R++) {
                 for (int S = 0; S < bs4->nshell(); S++) {
-
-                  //ints->compute_shell_deriv1(P, Q, R, S);
 
                   int Psize = bs1->shell(P).nfunction();
                   int Qsize = bs2->shell(Q).nfunction();
@@ -879,6 +872,7 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
                   double Bx, By, Bz;
                   double Cx, Cy, Cz;
                   double Dx, Dy, Dz;
+                  double X=0, Y=0, Z=0;
 
                   // => Coulomb Term <= //
 
@@ -909,172 +903,35 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1_helper(int atom, std::share
                                     By = -(Ay + Cy + Dy);     
                                     Bz = -(Az + Cz + Dz);     
 
-
-                               //    if (Pcenter == atom)  {
-                               //   grad[0]->set(i, j, buffer[0 * stride + delta]);
-                               //   grad[1]->set(i, j, buffer[1 * stride + delta]);
-                               //   grad[2]->set(i, j, buffer[2 * stride + delta]);
-                               //   }
-                               //    if (Rcenter == atom)  {
-                               //   grad[0]->set(i, j, buffer[3 * stride + delta]);
-                               //   grad[1]->set(i, j, buffer[4 * stride + delta]);
-                               //   grad[2]->set(i, j, buffer[5 * stride + delta]);
-                               //   }
-
-                               //    if (Scenter == atom)  {
-                               //   grad[0]->set(i, j, buffer[6 * stride + delta]);
-                               //   grad[1]->set(i, j, buffer[7 * stride + delta]);
-                               //   grad[2]->set(i, j, buffer[8 * stride + delta]);
-                               //   }
-
-                               //    if (Qcenter == atom)  {
-                               //   grad[0]->set(i, j, -grad[0]->get(i,j));
-                               //   grad[0]->add(i, j, -grad[0]->get(i,j));
-                               //   grad[0]->add(i, j, -grad[0]->get(i,j));
-
-                               //   grad[1]->set(i, j, -grad[1]->get(i,j));
-                               //   grad[1]->add(i, j, -grad[1]->get(i,j));
-                               //   grad[1]->add(i, j, -grad[1]->get(i,j));
-                               //   
-                               //   grad[2]->set(i, j, -grad[2]->get(i,j));
-                               //   grad[2]->add(i, j, -grad[2]->get(i,j));
-                               //   grad[2]->add(i, j, -grad[2]->get(i,j));
-                               //   }
-
-                               // Single terms
-                                    if (Pc == A && Qc != A && Rc != A && Sc != A) {
-                                        grad[0]->set(i, j, Ax);
-                                        grad[1]->set(i, j, Ay);
-                                        grad[2]->set(i, j, Az);    
-                                    }
-                                    else if (Pc != A && Qc == A && Rc != A && Sc != A) {
-                                        grad[0]->set(i, j, Bx);
-                                        grad[1]->set(i, j, By);
-                                        grad[2]->set(i, j, Bz);  
-                                    }
-                                    else if (Pc != A && Qc != A && Rc == A && Sc != A) {
-                                        grad[0]->set(i, j, Cx);
-                                        grad[1]->set(i, j, Cy);
-                                        grad[2]->set(i, j, Cz);  
-                                    }
-                                    else if (Pc != A && Qc != A && Rc != A && Sc == A){
-                                        grad[0]->set(i, j, Dx);
-                                        grad[1]->set(i, j, Dy);
-                                        grad[2]->set(i, j, Dz);  
+                                   if (Pcenter == atom)  {
+                                        X += Ax;
+                                        Y += Ay;
+                                        Z += Az;
                                     }
 
-                                    // Pcair terms
-
-                                    else if (Pc == A && Qc == A && Rc != A && Sc != A) {
-
-                                        double AB_x = Ax + Bx;
-                                        double AB_y = Ay + By;
-                                        double AB_z = Az + Bz;
-
-                                        grad[0]->set(i, j, AB_x);
-                                        grad[1]->set(i, j, AB_y);
-                                        grad[2]->set(i, j, AB_z);  
+                                   if (Qcenter == atom)  {
+                                        X += Bx;
+                                        Y += By;
+                                        Z += Bz;
                                     }
-                                    else if (Pc == A && Qc != A && Rc == A && Sc != A) {
-                                        double AC_x = Ax + Cx;
-                                        double AC_y = Ay + Cy;
-                                        double AC_z = Az + Cz;
-
-                                        grad[0]->set(i, j, AC_x);
-                                        grad[1]->set(i, j, AC_y);
-                                        grad[2]->set(i, j, AC_z); 
+                                
+                                   if (Rcenter == atom)  {
+                                        X += Cx;
+                                        Y += Cy;
+                                        Z += Cz;
                                     }
-                                    else if (Pc == A && Qc != A && Rc != A && Sc == A) {
-                                        double AD_x = Ax + Dx;
-                                        double AD_y = Ay + Dy;
-                                        double AD_z = Az + Dz;
-
-                                        grad[0]->set(i, j, AD_x);
-                                        grad[1]->set(i, j, AD_y);
-                                        grad[2]->set(i, j, AD_z); 
-                                    }
-                                    else if (Pc != A && Qc == A && Rc == A && Sc != A) {
-                                        double BC_x = Bx + Cx;
-                                        double BC_y = By + Cy;
-                                        double BC_z = Bz + Cz;
-                                    
-                                        grad[0]->set(i, j, BC_x);
-                                        grad[1]->set(i, j, BC_y);
-                                        grad[2]->set(i, j, BC_z);
-                                    }
-                                    else if (Pc != A && Qc == A && Rc != A && Sc == A) {
-                                        double BD_x = Bx + Dx;
-                                        double BD_y = By + Dy;
-                                        double BD_z = Bz + Dz;
-                                    
-                                        grad[0]->set(i, j, BD_x);
-                                        grad[1]->set(i, j, BD_y);
-                                        grad[2]->set(i, j, BD_z);
-                                    }
-                                    else if (Pc != A && Qc != A && Rc == A && Sc == A) {
-                                        double CD_x = Cx + Dx;
-                                        double CD_y = Cy + Dy;
-                                        double CD_z = Cz + Dz;
-                                    
-                                        grad[0]->set(i, j, CD_x);
-                                        grad[1]->set(i, j, CD_y);
-                                        grad[2]->set(i, j, CD_z);
+                                        
+                                   if (Scenter == atom)  {
+                                        X += Dx;
+                                        Y += Dy;
+                                        Z += Dz;
                                     }
 
-                                    // Ariplet terms
-                                    else if (Pc != A && Qc == A && Rc == A && Sc == A) {
-                                        double BCD_x = Bx + Cx + Dx;
-                                        double BCD_y = By + Cy + Dy;
-                                        double BCD_z = Bz + Cz + Dz;
-                                    
-                                        grad[0]->set(i, j, BCD_x);
-                                        grad[1]->set(i, j, BCD_y);
-                                        grad[2]->set(i, j, BCD_z);
-                                    }
-                                    else if (Pc == A && Qc != A && Rc == A && Sc == A) {
-                                        double ACD_x = Ax + Cx + Dx;
-                                        double ACD_y = Ay + Cy + Dy;
-                                        double ACD_z = Az + Cz + Dz;
-                                    
-                                        grad[0]->set(i, j, ACD_x);
-                                        grad[1]->set(i, j, ACD_y);
-                                        grad[2]->set(i, j, ACD_z);
-                                    }
-                                    else if (Pc == A && Qc == A && Rc != A && Sc == A) {
-                                        double ABD_x = Ax + Bx + Dx;
-                                        double ABD_y = Ay + By + Dy;
-                                        double ABD_z = Az + Bz + Dz;
+                                  grad[0]->set(i, j, X);
+                                  grad[1]->set(i, j, Y);
+                                  grad[2]->set(i, j, Z);
 
-                                        grad[0]->set(i, j, ABD_x);
-                                        grad[1]->set(i, j, ABD_y);
-                                        grad[2]->set(i, j, ABD_z);
-                                    }
-
-
-                                  else if (Pc == A && Qc == A && Rc == A && Sc != A) {
-                                        double ABC_x = Ax + Bx + Cx;
-                                        double ABC_y = Ay + By + Cy;
-                                        double ABC_z = Az + Bz + Cz;
-
-                                        grad[0]->set(i, j, ABC_x);
-                                        grad[1]->set(i, j, ABC_y);
-                                        grad[2]->set(i, j, ABC_z);
-                                    };
-
-                                    // Qcuartet terms
-
-                               //     else if (Pc == A && Qc == A && Rc == A && Sc == A) {
-                               //         double ABCD_x = Ax + Bx + Cx + Dx;
-                               //         double ABCD_y = Ay + By + Cy + Dy;
-                               //         double ABCD_z = Az + Bz + Cz + Dz;
-                               //     
-                               //         grad[0]->set(i, j, ABCD_x);
-                               //         grad[1]->set(i, j, ABCD_y);
-                               //         grad[2]->set(i, j, ABCD_z);
-                               //     };
-
-
-
+                                  X=0, Y=0, Z=0;
                                   delta++;
 
                              }
@@ -1447,13 +1304,6 @@ std::vector<SharedMatrix> MintsHelper::mo_potential_energy_deriv1(int atom, Shar
 }
 
 
-/* ao_overlap_deriv1_helper
-   ao_overlap_deriv1
-   ao_overlap_deriv1
-   mo_overlap_deriv1
-   mo_overlap_deriv1
-*/
-
 std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::shared_ptr<OneBodyAOInt> Sint)
 {
         char lbl[32];
@@ -1495,31 +1345,11 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                       continue;
 
                 Sint->compute_shell_deriv1(P,Q);
-                //const double* ref = buffer;
                 int offset = 0;
 
-                //for (int A = 0; A < natom; A++) {
-                //    const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-                //    const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-                //    const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
-                //    for (int p = 0; p < nP; p++) {
-                //        for (int q = 0; q < nQ; q++) {
-                //            double Vval = perm * Dp[p + oP][q + oQ];
-                //            Vp[A][0] += Vval * (*ref0++);
-                //            Vp[A][1] += Vval * (*ref1++);
-                //            Vp[A][2] += Vval * (*ref2++);
-                //        }
-                //    }
-
-                    const double* ref0 = &buffer[3 * atom * nP * nQ + 0 * nP * nQ];
-                    const double* ref1 = &buffer[3 * atom * nP * nQ + 1 * nP * nQ];
-                    const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
-
-                    for (int p = 0; p < nP; p++) 
-                        for (int q = 0; q < nQ; q++) {
-                            Vp[0]->add(p+oP, q+oQ,(ref0++));
-                            Vp[1]->add(p+oP, q+oQ,(*ref1++));
-                            Vp[2]->add(p+oP, q+oQ,(*ref2++));
+                const double* ref0 = &buffer[3 * atom * nP * nQ + 0 * nP * nQ];
+                const double* ref1 = &buffer[3 * atom * nP * nQ + 1 * nP * nQ];
+                const double* ref2 = &buffer[3 * atom * nP * nQ + 2 * nP * nQ];
 
                 if(aP == atom){
                 // Px
@@ -1564,7 +1394,6 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_deriv1_helper(int atom, std::s
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         grad[2]->add(p+oP, q+oQ, buffer[p*nQ + q + offset]);
->>>>>>> first deriv. of 1 and 2 electron integrals added now,
                     }
                   }
                 }
