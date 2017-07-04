@@ -3,8 +3,8 @@ import numpy as np
 import random
 
 mol = psi4.geometry("""
-C
-C 1 20
+H
+H 1 20
 """)
 
 primary = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ")
@@ -108,31 +108,6 @@ dfh_Qmo.append(dfh.get_tensor("Qmo6"))
 for i in range(6):
     psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "Algorithm: STORE, AO_CORE = FALSE, MO_CORE = FALSE" )     #TEST
 
-# test transposes:
-Qmo[2] = np.einsum("Qpq->pQq", Qmo[2])
-Qmo[3] = np.einsum("Qpq->pQq", Qmo[3])
-Qmo[4] = np.einsum("Qpq->pqQ", Qmo[4])
-Qmo[5] = np.einsum("Qpq->pqQ", Qmo[5])
-
-# tranpose necessary tensors
-dfh.transpose("Qmo3", (1, 0, 2))
-dfh.transpose("Qmo4", (1, 0, 2))
-dfh.transpose("Qmo5", (1, 2, 0))
-dfh.transpose("Qmo6", (1, 2, 0))
-
-# grab transformed integrals
-dfh_Qmo = []
-dfh_Qmo.append(dfh.get_tensor("Qmo1"))
-dfh_Qmo.append(dfh.get_tensor("Qmo2"))
-dfh_Qmo.append(dfh.get_tensor("Qmo3"))
-dfh_Qmo.append(dfh.get_tensor("Qmo4"))
-dfh_Qmo.append(dfh.get_tensor("Qmo5"))
-dfh_Qmo.append(dfh.get_tensor("Qmo6"))
-
-# am i right?
-for i in range(6):
-    psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "SAME as ^ with transposes" )     #TEST
-
 # Let's use new orbital spaces
 C1.np[:] = 1 #np.random.random()
 C2.np[:] = 2 #np.random.random()
@@ -177,9 +152,66 @@ dfh_Qmo[5] = (dfh.get_tensor("Qmo6"))
 # am i right?
 for i in range(6):
     psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "SAME as ^ with new orbital spaces" )     #TEST
+# test some tranposes, both in transform and after
+del dfh
+
+# redeclare
+dfh = psi4.core.DF_Helper(primary, aux)
+
+# tweak options
+dfh.set_method("STORE")
+dfh.set_memory(mem)
+dfh.set_AO_core(False)
+dfh.set_MO_core(False)
+dfh.set_MO_hint(c4)
+
+# build
+dfh.initialize()
+
+# set spaces
+dfh.add_space("C1", C1)
+dfh.add_space("C2", C2)
+dfh.add_space("C3", C3)
+dfh.add_space("C4", C4)
+
+# add transformations
+dfh.add_transformation("Qmo1", "C1", "C2")      # best on left  (Q|bw)
+dfh.add_transformation("Qmo2", "C3", "C2")      # best on right (Q|wb)
+dfh.add_transformation("Qmo3", "C4", "C2")      # best on right (w|Qb)
+dfh.add_transformation("Qmo4", "C1", "C4")      # best on left  (b|Qw)
+dfh.add_transformation("Qmo5", "C3", "C1", "pqQ")      # best on right (wb|Q)
+dfh.add_transformation("Qmo6", "C3", "C3", "pqQ")      # best on left  (bw|Q)
+
+# test transposes:
+Qmo[2] = np.einsum("Qpq->pQq", Qmo[2])
+Qmo[3] = np.einsum("Qpq->pQq", Qmo[3])
+Qmo[4] = np.einsum("Qpq->pqQ", Qmo[4])
+Qmo[5] = np.einsum("Qpq->pqQ", Qmo[5])
+
+# invoke transformations
+dfh.transform()
+
+# tranpose necessary tensors
+dfh.transpose("Qmo3", (1, 0, 2))
+dfh.transpose("Qmo4", (1, 0, 2))
+
+# grab transformed integrals
+dfh_Qmo = []
+dfh_Qmo.append(dfh.get_tensor("Qmo1"))
+dfh_Qmo.append(dfh.get_tensor("Qmo2"))
+dfh_Qmo.append(dfh.get_tensor("Qmo3"))
+dfh_Qmo.append(dfh.get_tensor("Qmo4"))
+dfh_Qmo.append(dfh.get_tensor("Qmo5"))
+dfh_Qmo.append(dfh.get_tensor("Qmo6"))
+
+
+## am i right?
+for i in range(6):
+    psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "SAME as ^ with transposes" )     #TEST
 
 # okay, let's try with all other disc/core options ---------------------------------------------------------------------
 # destoy the original instance!
+
 del dfh
 
 # redeclare
@@ -206,11 +238,15 @@ dfh.add_transformation("Qmo1", "C1", "C2")      # best on left  (Q|bw)
 dfh.add_transformation("Qmo2", "C3", "C2")      # best on right (Q|wb)
 dfh.add_transformation("Qmo3", "C4", "C2")      # best on right (w|Qb)
 dfh.add_transformation("Qmo4", "C1", "C4")      # best on left  (b|Qw)
-dfh.add_transformation("Qmo5", "C3", "C1")      # best on right (wb|Q)
-dfh.add_transformation("Qmo6", "C3", "C3")      # best on left  (bw|Q)
+dfh.add_transformation("Qmo5", "C3", "C1", "pqQ")      # best on right (wb|Q)
+dfh.add_transformation("Qmo6", "C3", "C3", "pqQ")      # best on left  (bw|Q)
 
 # invoke transformations
 dfh.transform()
+
+# tranpose necessary tensors
+dfh.transpose("Qmo3", (1, 0, 2))
+dfh.transpose("Qmo4", (1, 0, 2))
 
 # grab transformed integrals
 dfh_Qmo[0] = (dfh.get_tensor("Qmo1"))
@@ -220,9 +256,16 @@ dfh_Qmo[3] = (dfh.get_tensor("Qmo4"))
 dfh_Qmo[4] = (dfh.get_tensor("Qmo5"))
 dfh_Qmo[5] = (dfh.get_tensor("Qmo6"))
 
+
 # am i right?
 for i in range(6):
-    psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "Algorithm: STORE, AO_CORE = FALSE, MO_CORE = TRUE" )     #TEST
+    psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "Algorithm: STORE, AO_CORE = FALSE, MO_CORE = TRUE + tranposes" )     #TEST
+
+# transpose back:
+Qmo[2] = np.einsum("pQq->Qpq", Qmo[2])
+Qmo[3] = np.einsum("pQq->Qpq", Qmo[3])
+Qmo[4] = np.einsum("pqQ->Qpq", Qmo[4])
+Qmo[5] = np.einsum("pqQ->Qpq", Qmo[5])
 
 # again!
 # destoy the original instance!

@@ -53,7 +53,6 @@ class DF_Helper {
 public:
 
     DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
-    static std::shared_ptr<DF_Helper> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
     ~DF_Helper();
 
     // user options, must set before calling build() ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -245,7 +244,7 @@ protected:
 
     // spaces and transformation maps
     std::map<std::string, std::tuple<SharedMatrix, size_t>> spaces_;
-    std::map<std::string, std::tuple<std::string, std::string, std::string>> transf_;
+    std::map<std::string, std::tuple<std::string, std::string, size_t>> transf_;
     std::map<std::string, std::vector<double>> transf_core_;
 
     // transformation machinery
@@ -286,7 +285,7 @@ protected:
     std::map<std::string, std::string> AO_files_;
     std::vector<size_t> AO_file_sizes_;
     std::vector<std::string> AO_names_;
-    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2);
+    void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
     void AO_filename_maker(size_t i);
     void check_transformation_name(std::string);
     void check_transformation_tuple(std::string name, std::pair<size_t, size_t> t0, 
