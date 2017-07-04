@@ -10,7 +10,8 @@ set d_convergence 9
 activate(sodium)
 set basis STO-3G
 set reference rhf
-set guess core
+set guess sad
+set sad_frac_occ true
 cation_e = energy('scf')
 compare_values(cation_e, -159.78459593607246, 9, "Singlet cation energy")             #TEST
 

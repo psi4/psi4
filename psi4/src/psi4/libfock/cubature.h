@@ -184,18 +184,12 @@ protected:
 
     /// Master builder methods
     void buildGridFromOptions();
-    void buildGridFromFile();
 
 public:
 
     /// Constructor to use for autogeneration
     PseudospectralGrid(std::shared_ptr<Molecule> molecule,
                        std::shared_ptr<BasisSet> primary,
-                       Options& options);
-    /// Construtor to use for semiautomatic generation with grid file
-    PseudospectralGrid(std::shared_ptr<Molecule> molecule,
-                       std::shared_ptr<BasisSet> primary,
-                       const std::string& filename,
                        Options& options);
     virtual ~PseudospectralGrid();
 
@@ -299,18 +293,10 @@ protected:
 
     // ==> Unique Lebedev Grids (statically stored) <== //
 
-    /// Unique Lebedev grids, accessed by number of points
-    static std::map<int, std::shared_ptr<SphericalGrid> > lebedev_npoints_;
-    /// Unique Lebedev grids, accessed by order (integrating to 2 * order + 1)
-    static std::map<int, std::shared_ptr<SphericalGrid> > lebedev_orders_;
     /// Grid npoints to order map
     static std::map<int, int> lebedev_mapping_;
     /// Initialize the above arrays with the unique Lebedev grids
     static void initialize_lebedev();
-    /// Build a Lebedev grid given a valid number of points
-    static std::shared_ptr<SphericalGrid> build_lebedev(int npoints);
-    /// Perform Lebedev grid reccurence
-    static int lebedev_reccurence(int type, int start, double a, double b, double v, SphericalGrid* leb);
     /// Print valid Lebedev grids and error out (throws)
     static void lebedev_error();
 
@@ -328,9 +314,6 @@ public:
     virtual ~SphericalGrid();
 
     /// Master build routines
-    static std::shared_ptr<SphericalGrid> build_npoints(const std::string& scheme, int npoints);
-    static std::shared_ptr<SphericalGrid> build_order(const std::string& scheme, int order);
-    /// Hack build routine (TODO: Remove ASAP)
     static std::shared_ptr<SphericalGrid> build(const std::string& scheme, int npoints, const MassPoint* points);
 
     // ==> Accessors <== //
@@ -358,16 +341,7 @@ public:
     /// Reflection
     void print(std::string out_fname = "outfile", int level = 1) const;
 
-    // ==> Unique Lebedev Grids (statically stored) <== //
 
-    /// Unique Lebedev grids, accessed by number of points
-    static std::map<int, std::shared_ptr<SphericalGrid> >& lebedev_npoints();
-    /// Unique Lebedev grids, accessed by order (integrating to 2 * order + 1)
-    static std::map<int, std::shared_ptr<SphericalGrid> >& lebedev_orders();
-    /// Next largest valid Lebedev grid npoints, or -1 if guess is larger than biggest Lebedev grid
-    static int lebedev_next_npoints(int npoints_guess);
-    /// Next largest valid Lebedev grid order, or -1 if guess is larger than biggest Lebedev grid
-    static int lebedev_next_order(int order_guess);
 };
 
 class BlockOPoints {
