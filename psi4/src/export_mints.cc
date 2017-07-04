@@ -223,6 +223,7 @@ void export_mints(py::module& m)
     py::class_<Dimension>(m, "Dimension", "docstring")
         .def(py::init<int>())
         .def(py::init<int, const std::string&>())
+        .def(py::init<const std::vector<int>&>())
         .def("print_out", &Dimension::print, "docstring")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
         .def("n", &Dimension::n,
@@ -252,37 +253,45 @@ void export_mints(py::module& m)
         .def("dim", &Vector::dim, "docstring")
         .def("nirrep", &Vector::nirrep, "docstring")
         .def("array_interface", [](Vector& v) {
-            // Dont ask, hopefully pybind11 will work on this
+
+            // Build a list of NumPy views, used for the .np and .nph accessors.Vy
             py::list ret;
 
             // If we set a NumPy shape
             if (v.numpy_shape().size()) {
-                if (v.nirrep() > 1){
-                    throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
+                if (v.nirrep() > 1) {
+                    throw PSIEXCEPTION(
+                        "Vector::array_interface numpy shape with more than one irrep is not "
+                        "valid.");
                 }
 
-                py::dict interface;
-                interface["typestr"] = py::format_descriptor<double>::format();
-                interface["data"] = py::make_tuple((long)v.pointer(0), false);
-                interface["shape"] = v.numpy_shape();
-                ret.append(interface);
+                // Cast the NumPy shape vector
+                std::vector<size_t> shape;
+                for (int val : v.numpy_shape()){
+                    shape.push_back((size_t)val);
+                }
+
+                // Build the array
+                py::array arr(shape, v.pointer(0), py::cast(&v));
+                ret.append(arr);
 
             } else {
                 for (size_t h = 0; h < v.nirrep(); h++) {
-                    py::dict interface;
-                    interface["typestr"] = py::format_descriptor<double>::format();
-                    if (v.dim(h) == 0) {
-                        interface["data"] = py::make_tuple(0, false);
-                    } else {
-                        interface["data"] = py::make_tuple((long)(v.pointer(h)), false);
+                    // Hmm, sometimes we need to handle empty ptr's correctly
+                    double* ptr = nullptr;
+                    if (v.dim(h) != 0) {
+                        ptr = v.pointer(h);
                     }
-                    interface["shape"] = py::make_tuple(v.dim(h));
-                    ret.append(interface);
+
+                    // Build the array
+                    std::vector<size_t> shape{(size_t)v.dim(h)};
+                    py::array arr(shape, ptr, py::cast(&v));
+                    ret.append(arr);
                 }
             }
 
             return ret;
-        });
+        }, py::return_value_policy::reference_internal);
 
     typedef void (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "docstring")
@@ -406,37 +415,44 @@ void export_mints(py::module& m)
         .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring")
         .def("rotate_columns", &Matrix::rotate_columns, "docstring")
         .def("array_interface", [](Matrix& m) {
-            // Dont ask, hopefully pybind11 will work on this
+
+            // Build a list of NumPy views, used for the .np and .nph accessors.Vy
             py::list ret;
 
             // If we set a NumPy shape
             if (m.numpy_shape().size()) {
-                if (m.nirrep() > 1){
-                    throw PSIEXCEPTION("Vector::array_interface numpy shape with more than one irrep is not valid.");
+                if (m.nirrep() > 1) {
+                    throw PSIEXCEPTION(
+                        "Vector::array_interface numpy shape with more than one irrep is not "
+                        "valid.");
                 }
 
-                py::dict interface;
-                interface["typestr"] = py::format_descriptor<double>::format();
-                interface["data"] = py::make_tuple((long)(m.pointer(0)[0]), false);
-                interface["shape"] = m.numpy_shape();
-                ret.append(interface);
+                // Cast the NumPy shape vector
+                std::vector<size_t> shape;
+                for (int val : m.numpy_shape()) {
+                    shape.push_back((size_t)val);
+                }
+
+                // Build the array
+                py::array arr(shape, m.pointer(0)[0], py::cast(&m));
+                ret.append(arr);
 
             } else {
                 for (size_t h = 0; h < m.nirrep(); h++) {
-                    py::dict interface;
-                    interface["typestr"] = py::format_descriptor<double>::format();
-                    if ((m.rowdim(h) == 0) || (m.coldim(h) == 0)) {
-                        interface["data"] = py::make_tuple(0, false);
-                    } else {
-                        interface["data"] = py::make_tuple((long)(m.pointer(h)[0]), false);
+                    // Hmm, sometimes we need to overload to nullptr
+                    double* ptr = nullptr;
+                    if ((m.rowdim(h) * m.coldim(h)) != 0) {
+                        ptr = m.pointer(h)[0];
                     }
-                    interface["shape"] = py::make_tuple(m.rowdim(h), m.coldim(h));
-                    ret.append(interface);
+
+                    // Build the array
+                    py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h)}, ptr, py::cast(&m));
+                    ret.append(arr);
                 }
             }
 
             return ret;
-        });
+    }, py::return_value_policy::reference_internal);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())

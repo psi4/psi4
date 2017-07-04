@@ -51,6 +51,8 @@ PsiOutStream::PsiOutStream(std::string fname, std::ios_base::openmode mode) {
         is_cout_ = false;
     }
 
+    // This is sort of big, but vsnprintf does not appear to work correctly on all OS's.
+    // Im looking at YOU CentOS
     buffer_.resize(512000);
 }
 
@@ -61,8 +63,7 @@ PsiOutStream::~PsiOutStream() {
 }
 
 void PsiOutStream::Printf(const char* format, ...) {
-    // We don't know how long the fully expanded string is so lets guess our average print is about
-    // a line
+    // We can check if the buffer is large enough
     va_list args;
     va_start(args, format);
     int left = vsnprintf(buffer_.data(), buffer_.size(), format, args);
@@ -81,10 +82,10 @@ void PsiOutStream::Printf(const char* format, ...) {
     // Everything is cool
 
     va_end(args);
-    (*stream_) << buffer_.data();
+    (*stream_) << buffer_.data() << std::flush;
 }
 void PsiOutStream::Printf(std::string fp) {
-    (*stream_) << fp;
+    (*stream_) << fp << std::flush;
 }
 
 } // End Psi Namespace

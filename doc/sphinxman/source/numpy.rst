@@ -97,12 +97,6 @@ Secondly, these objects have a ``.np`` attribute for easy access to the underlyi
 
 this operation is identical to the above.
 
-.. warning:: The following will lead to reference errors: ``view =
-   psi4.Matrix(3, 3).np``. Here, the Python garbage collection deletes the Matrix
-   object, the view then points to deleted data resulting in the view effectively
-   reading random data. As a general rule, never assign the ``.nph`` or ``.np``
-   accessors.
-
 
 |PSIfour| Data Objects with Irreps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
