@@ -862,8 +862,34 @@ bool Timer_thread::merge_move(Timer_Structure *another) {
 
 Timer_Structure root_timer(nullptr, "");
 std::vector<std::list<Timer_Structure *>> on_timers;
+//Timer_Structure* parallel_start_ptr;
 time_t timer_start, timer_end;
 static omp_lock_t lock_timer;
+
+std::string formatTimeNumberPrint(double time, size_t sig_fig = 4, size_t width = 10) {
+    std::string s = std::to_string(time);
+    size_t l;
+    std::string append_front = "";
+    size_t dot_index = s.find('.');
+    if (dot_index != std::string::npos){
+        if (dot_index >= sig_fig) {
+            s = s.substr(0, dot_index);
+        } else if (time >= 1.0) {
+            s = s.substr(0, sig_fig + 1);
+        } else {
+            size_t sig_start = s.find_first_not_of('0',dot_index + 1);
+            l = s.length();
+            if (l - sig_start > sig_fig) {
+                s = s.substr(0, sig_start + sig_fig);
+            }
+        }
+    }
+    l = s.length();
+    if (l < width) {
+        append_front.resize(width - l, ' ');
+    }
+    return append_front + s;
+}
 
 void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, int align_key_width) {
     std::string key = timer.get_key();
@@ -874,32 +900,16 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
     switch (timer.get_status()) {
         case ON:
         case OFF:
-            if (timer.get_n_calls() > 1) {
-                if (wtime < 10.0) {
-                    printer->Printf("%s: %10.2fu %10.2fs %10.6fw %6d calls\n", key.c_str(),
-                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
-                } else {
-                    printer->Printf("%s: %10.2fu %10.2fs %10.2fw %6d calls\n", key.c_str(),
-                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
-                }
-            } else {
-                if (wtime < 10.0) {
-                    printer->Printf("%s: %10.2fu %10.2fs %10.8fw %6d call\n", key.c_str(),
-                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
-                } else {
-                    printer->Printf("%s: %10.2fu %10.2fs %10.2fw %6d call\n", key.c_str(),
-                                    timer.get_utime(), timer.get_stime(), wtime, timer.get_n_calls());
-                }
-            }
+            printer->Printf("%s: %su %ss %sw %6d calls\n", key.c_str(),
+                            formatTimeNumberPrint(timer.get_utime()).c_str(),
+                            formatTimeNumberPrint(timer.get_stime()).c_str(),
+                            formatTimeNumberPrint(wtime).c_str(),
+                            timer.get_n_calls());
             break;
         case PARALLEL:
-            if (wtime < 10.0) {
-                printer->Printf("%s:                         %10.6fp %6d calls\n", key.c_str(),
-                                wtime, timer.get_n_calls());
-            } else {
-                printer->Printf("%s:                         %10.2fp %6d calls\n", key.c_str(),
-                                wtime, timer.get_n_calls());
-            }
+            printer->Printf("%s: %sp                         %6d calls\n", key.c_str(),
+                            formatTimeNumberPrint(wtime).c_str(),
+                            timer.get_n_calls());
         default:
             break;
     }
@@ -926,6 +936,8 @@ void timer_init(void) {
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;
     extern std::vector<std::list<Timer_Structure *>> on_timers;
+//    extern Timer_Structure* parallel_start_ptr;
+//    parallel_start_ptr = nullptr;
     timer_start = time(NULL);
     root_timer.turn_on();
     std::list<Timer_Structure *> thread_0_list;
@@ -987,6 +999,7 @@ void timer_done(void) {
 void timer_on(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
     extern std::vector<std::list<Timer_Structure *>> on_timers;
+//    extern Timer_Structure* parallel_start_ptr;
     Timer_Structure *top_timer_ptr = nullptr;
     Timer_Structure *thread_0_top = on_timers[0].back();
     if (thread_rank == 0) {
@@ -1007,7 +1020,8 @@ void timer_on(std::string key, int thread_rank) {
                 if (thread_0_top->get_key() == key) {
                     top_timer_ptr = thread_0_top;
                     break;
-                } else {
+                }
+                else {
                     Timer_Structure *temp = thread_0_top->find_child(key);
                     if (temp != nullptr) {
                         top_timer_ptr = temp;
@@ -1046,6 +1060,7 @@ void timer_on(std::string key, int thread_rank) {
 void timer_off(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
     extern std::vector<std::list<Timer_Structure *>> on_timers;
+//    extern Timer_Structure* parallel_start_ptr;
     Timer_Structure *timer_ptr = nullptr;
     if (on_timers[thread_rank].empty()) {
         std::string str = "Timer ";
