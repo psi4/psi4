@@ -681,8 +681,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                     v_rho_a_rho_b[i] += alpha_ * fv2_rho2[3 * i + 1];
                     v_rho_b_rho_b[i] += alpha_ * fv2_rho2[3 * i + 2];
 
-                    // v2gamma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd,
-                    // dd_dd)
+                    // v2gamma2(6)     = (uu_uu, uu_ud, uu_dd, ud_ud, ud_dd, dd_dd)
                     v_gamma_aa_gamma_aa[i] += alpha_ * fv2_gamma2[6 * i];
                     v_gamma_aa_gamma_ab[i] += alpha_ * fv2_gamma2[6 * i + 1];
                     v_gamma_aa_gamma_bb[i] += alpha_ * fv2_gamma2[6 * i + 2];
@@ -692,9 +691,10 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
 
                     // v2rhogamma(6)   = (u_uu, u_ud, u_dd, d_uu, d_ud, d_dd)
                     v_rho_a_gamma_aa[i] += alpha_ * fv2_rhogamma[6 * i];
+                    v_rho_a_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 1];
                     v_rho_a_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 2];
-                    v_rho_b_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 3];
-                    v_rho_b_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 4];
+                    v_rho_b_gamma_aa[i] += alpha_ * fv2_rhogamma[6 * i + 3];
+                    v_rho_b_gamma_ab[i] += alpha_ * fv2_rhogamma[6 * i + 4];
                     v_rho_b_gamma_bb[i] += alpha_ * fv2_rhogamma[6 * i + 5];
                 }
 
