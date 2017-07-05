@@ -2052,7 +2052,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_bk_x[P];
                     tmp_val += 2.0 * v2_val_aa * rho_ax[P];
                     tmp_val += v2_val_ab * rho_bx[P];
-                    tmp_val *= w[P];
+                    tmp_val *= 1.0 * w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tap[P], 1);
 
