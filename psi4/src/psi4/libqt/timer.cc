@@ -95,6 +95,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 #ifdef _OPENMP
 #include <omp.h>
 #else
@@ -121,7 +122,6 @@ typedef int omp_lock_t;
 namespace psi {
 
 using clock = std::chrono::high_resolution_clock;
-
 
 enum Timer_Status { OFF, ON, PARALLEL };
 
@@ -205,14 +205,14 @@ class Timer_thread {
         return false;
     }
     bool merge_move(Timer_Structure *another);
-    bool clear() {
-        if (status_ != OFF) {
-            return true;
-        }
-        n_calls_ = 0;
-        wtime_ = clock::duration::zero();
-        return false;
-    }
+    //    bool clear() {
+    //        if (status_ != OFF) {
+    //            return true;
+    //        }
+    //        n_calls_ = 0;
+    //        wtime_ = clock::duration::zero();
+    //        return false;
+    //    }
     Timer_thread &operator+=(const Timer_thread &rhs) {
         switch (status_) {
             case ON:
@@ -390,6 +390,26 @@ class Timer_Structure {
         }
         return false;
     }
+    bool isOff() {
+        size_t thread_size = 0;
+        switch (status_) {
+            case ON:
+                return false;
+            case OFF:
+                return true;
+            case PARALLEL:
+                thread_size = thread_timers_.size();
+                for (size_t thread_rank = 0; thread_rank < thread_size; ++thread_rank) {
+                    if (thread_timers_[thread_rank].get_status() != OFF) {
+                        return false;
+                    }
+                }
+                return true;
+            default:
+                break;
+        }
+        return false;
+    }
     bool is_empty() {
         size_t thread_size;
         switch (status_) {
@@ -411,6 +431,39 @@ class Timer_Structure {
                 break;
             default:
                 return false;
+        }
+        for (auto child_iter = children_.begin(), end_iter = children_.end(); child_iter != end_iter; ++child_iter) {
+            if (!child_iter->is_empty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool is_empty(int thread_rank) {
+        if (thread_rank == 0) {
+            switch (status_) {
+                case ON:
+                    return false;
+                case OFF:
+                    if (n_calls_ != 0) return false;
+                    if (utime_ != 0) return false;
+                    if (stime_ != 0) return false;
+                    if (wtime_ != clock::duration::zero()) return false;
+                    break;
+                case PARALLEL:
+                    if (!thread_timers_[0].is_empty()) {
+                        return false;
+                    }
+                    break;
+                default:
+                    return false;
+            }
+        } else {
+            if (status_ == PARALLEL) {
+                if (!thread_timers_[thread_rank].is_empty()) {
+                    return false;
+                }
+            }
         }
         for (auto child_iter = children_.begin(), end_iter = children_.end(); child_iter != end_iter; ++child_iter) {
             if (!child_iter->is_empty()) {
@@ -459,6 +512,34 @@ class Timer_Structure {
     double get_stime() const { return stime_; }
     void set_stime(double stime) { stime_ = stime; }
     clock::time_point get_wall_start() const { return wall_start_; }
+    clock::time_point get_wall_start(int thread_rank) const {
+        switch (status_) {
+            case ON:
+            case OFF:
+                if (thread_rank != 0) {
+                    std::string str = "Timer ";
+                    str += key_;
+                    str += " on thread ";
+                    str += std::to_string(thread_rank);
+                    str += " has never been turned on.";
+                    throw PsiException(str, __FILE__, __LINE__);
+                }
+                return wall_start_;
+            case PARALLEL:
+                if (thread_timers_.size() <= thread_rank) {
+                    std::string str = "Timer ";
+                    str += key_;
+                    str += " on thread ";
+                    str += std::to_string(thread_rank);
+                    str += " has never been turned on.";
+                    throw PsiException(str, __FILE__, __LINE__);
+                }
+                return thread_timers_[thread_rank].get_wall_start();
+            default:
+                break;
+        }
+        return wall_start_;
+    }
     void set_wall_start(clock::time_point wall_start) { wall_start_ = wall_start; }
     clock::duration get_wtime() const { return wtime_; }
     void set_wtime(clock::duration wtime) { wtime_ = wtime; }
@@ -473,8 +554,16 @@ class Timer_Structure {
         }
         return wtime_;
     }
-    const std::vector<Timer_thread> &get_threads() const { return thread_timers_; }
+    std::vector<Timer_thread> &get_threads() { return thread_timers_; }
     const std::list<Timer_Structure> &get_children() const { return children_; }
+    bool all_children_off() {
+        for (auto child_iter = children_.begin(), end_iter = children_.end(); child_iter != end_iter; ++child_iter) {
+            if (!child_iter->isOff()) {
+                return false;
+            }
+        }
+        return true;
+    }
     Timer_Structure *find_child(const std::string &key) {
         auto end_iter = children_.end();
         for (auto child = children_.begin(); child != end_iter; ++child) {
@@ -513,8 +602,12 @@ class Timer_Structure {
         return false;
     }
     Timer_Structure *get_parent() const { return parent_ptr_; }
+    void set_parent(Timer_Structure *parent_ptr) { parent_ptr_ = parent_ptr; }
     bool merge_move(Timer_Structure *another, int thread_rank = 0) {
         if (another == this) return false;
+        if (another->is_empty(thread_rank)) {
+            return another->is_empty();
+        }
         size_t thread_size = 0, another_thread_size = 0;
         switch (status_) {
             case ON:
@@ -525,9 +618,9 @@ class Timer_Structure {
                     switch (another->status_) {
                         case ON:
                             if (status_ == ON) {
-                                str = "Timer ";
+                                str = "Both timer with key ";
                                 str += another->key_;
-                                str += " is still on and cannot be merged.";
+                                str += " are on and cannot be merged.";
                                 throw PsiException(str, __FILE__, __LINE__);
                             } else {
                                 status_ = ON;
@@ -688,59 +781,165 @@ class Timer_Structure {
         }
         return false;
     }
-    void clear(int thread_rank = 0) {
-        size_t thread_size = 0;
+    void merge_move_all(Timer_Structure *another) {
+        if (another == this) return;
+        size_t thread_size = 0, another_thread_size = 0;
+        std::string str;
+        Timer_thread thread_0_timer(status_, n_calls_, wall_start_, wtime_);
         switch (status_) {
             case ON:
-                if (thread_rank == 0) {
-                    std::string str = "Timer ";
-                    str += key_;
-                    str += " is still on and cannot be cleared.";
-                    throw PsiException(str, __FILE__, __LINE__);
-                } else {
-                    std::string str = "Timer ";
-                    str += key_;
-                    str += " on thread ";
-                    str += std::to_string(thread_rank);
-                    str += " has never been turned on.";
-                    throw PsiException(str, __FILE__, __LINE__);
-                }
             case OFF:
-                if (thread_rank == 0) {
-                    n_calls_ = 0;
-                    utime_ = 0;
-                    stime_ = 0;
-                    wtime_ = clock::duration::zero();
-                } else {
-                    std::string str = "Timer ";
-                    str += key_;
-                    str += " on thread ";
-                    str += std::to_string(thread_rank);
-                    str += " has never been turned on.";
-                    throw PsiException(str, __FILE__, __LINE__);
+                switch (another->status_) {
+                    case ON:
+                        if (status_ == ON) {
+                            str = "Both timer with key ";
+                            str += another->key_;
+                            str += " are on and cannot be merged.";
+                            throw PsiException(str, __FILE__, __LINE__);
+                        } else {
+                            status_ = ON;
+                            another->status_ = OFF;
+                            wall_start_ = another->wall_start_;
+                            ontime_ = another->ontime_;
+                        }
+                    case OFF:
+                        n_calls_ += another->n_calls_;
+                        another->n_calls_ = 0;
+                        utime_ += another->utime_;
+                        another->utime_ = 0;
+                        stime_ += another->stime_;
+                        another->stime_ = 0;
+                        wtime_ += another->wtime_;
+                        another->wtime_ = clock::duration::zero();
+                        break;
+                    case PARALLEL:
+                        another_thread_size = another->thread_timers_.size();
+                        thread_timers_.push_back(thread_0_timer);
+                        if (thread_timers_[0].merge_move(&(another->thread_timers_[0]))) {
+                            str = "Both timer with key ";
+                            str += key_;
+                            str += " on thread 0";
+                            str += " are on and cannot be merged.";
+                            throw PsiException(str, __FILE__, __LINE__);
+                        }
+                        for (size_t i = 1; i < another_thread_size; ++i) {
+                            thread_timers_.push_back(another->thread_timers_[i]);
+                        }
+                        status_ = PARALLEL;
+                        break;
+                    default:
+                        break;
                 }
+                break;
             case PARALLEL:
-                thread_size = thread_timers_.size();
-                if (thread_rank >= thread_size) {
-                    std::string str = "Timer ";
-                    str += key_;
-                    str += " on thread ";
-                    str += std::to_string(thread_rank);
-                    str += " has never been turned on.";
-                    throw PsiException(str, __FILE__, __LINE__);
+                switch (another->status_) {
+                    case ON:
+                    case OFF:
+                        if (thread_timers_[0].merge_move(another)) {
+                            std::string str = "Both timer with key ";
+                            str += key_;
+                            str += " on thread ";
+                            str += std::to_string(0);
+                            str += " are on and cannot be merged.";
+                            throw PsiException(str, __FILE__, __LINE__);
+                        }
+                        break;
+                    case PARALLEL:
+                        another_thread_size = another->thread_timers_.size();
+                        thread_size = thread_timers_.size();
+                        if (thread_size <= another_thread_size) {
+                            for (size_t i = 0; i < thread_size; ++i) {
+                                if (thread_timers_[i].merge_move(&(another->thread_timers_[i]))) {
+                                    std::string str = "Both timer with key ";
+                                    str += key_;
+                                    str += " on thread ";
+                                    str += std::to_string(i);
+                                    str += " are on and cannot be merged.";
+                                    throw PsiException(str, __FILE__, __LINE__);
+                                }
+                            }
+                            for (size_t i = thread_size; i < another_thread_size; ++i) {
+                                thread_timers_.push_back(another->thread_timers_[i]);
+                            }
+                        } else {
+                            for (size_t i = 0; i < another_thread_size; ++i) {
+                                if (thread_timers_[i].merge_move(&(another->thread_timers_[i]))) {
+                                    std::string str = "Both timer with key ";
+                                    str += key_;
+                                    str += " on thread ";
+                                    str += std::to_string(i);
+                                    str += " are on and cannot be merged.";
+                                    throw PsiException(str, __FILE__, __LINE__);
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                if (thread_timers_[thread_rank].clear()) {
-                    std::string str = "Timer ";
-                    str += key_;
-                    str += " on thread ";
-                    str += std::to_string(thread_rank);
-                    str += " is still on and cannot be cleared.";
-                    throw PsiException(str, __FILE__, __LINE__);
-                }
+                break;
             default:
                 break;
         }
+        for (auto child_iter = another->children_.begin(), end_iter = another->children_.end(); child_iter != end_iter;
+             ++child_iter) {
+            get_child(child_iter->key_)->merge_move_all(&(*child_iter));
+        }
+        another->children_.clear();
     }
+    //    void clear(int thread_rank = 0) {
+    //        size_t thread_size = 0;
+    //        switch (status_) {
+    //            case ON:
+    //                if (thread_rank == 0) {
+    //                    std::string str = "Timer ";
+    //                    str += key_;
+    //                    str += " is still on and cannot be cleared.";
+    //                    throw PsiException(str, __FILE__, __LINE__);
+    //                } else {
+    //                    std::string str = "Timer ";
+    //                    str += key_;
+    //                    str += " on thread ";
+    //                    str += std::to_string(thread_rank);
+    //                    str += " has never been turned on.";
+    //                    throw PsiException(str, __FILE__, __LINE__);
+    //                }
+    //            case OFF:
+    //                if (thread_rank == 0) {
+    //                    n_calls_ = 0;
+    //                    utime_ = 0;
+    //                    stime_ = 0;
+    //                    wtime_ = clock::duration::zero();
+    //                } else {
+    //                    std::string str = "Timer ";
+    //                    str += key_;
+    //                    str += " on thread ";
+    //                    str += std::to_string(thread_rank);
+    //                    str += " has never been turned on.";
+    //                    throw PsiException(str, __FILE__, __LINE__);
+    //                }
+    //            case PARALLEL:
+    //                thread_size = thread_timers_.size();
+    //                if (thread_rank >= thread_size) {
+    //                    std::string str = "Timer ";
+    //                    str += key_;
+    //                    str += " on thread ";
+    //                    str += std::to_string(thread_rank);
+    //                    str += " has never been turned on.";
+    //                    throw PsiException(str, __FILE__, __LINE__);
+    //                }
+    //                if (thread_timers_[thread_rank].clear()) {
+    //                    std::string str = "Timer ";
+    //                    str += key_;
+    //                    str += " on thread ";
+    //                    str += std::to_string(thread_rank);
+    //                    str += " is still on and cannot be cleared.";
+    //                    throw PsiException(str, __FILE__, __LINE__);
+    //                }
+    //            default:
+    //                break;
+    //        }
+    //    }
     Timer_Structure &operator+=(const Timer_Structure &rhs) {
         size_t thread_size, rhs_thread_size;
         switch (status_) {
@@ -860,9 +1059,8 @@ bool Timer_thread::merge_move(Timer_Structure *another) {
     return false;
 }
 
-Timer_Structure root_timer(nullptr, "");
+Timer_Structure root_timer(nullptr, ""), parallel_timer(nullptr, "No@timer#should$be^named&like*this!(Parallel)");
 std::vector<std::list<Timer_Structure *>> on_timers;
-//Timer_Structure* parallel_start_ptr;
 time_t timer_start, timer_end;
 static omp_lock_t lock_timer;
 
@@ -871,13 +1069,13 @@ std::string formatTimeNumberPrint(double time, size_t sig_fig = 4, size_t width 
     size_t l;
     std::string append_front = "";
     size_t dot_index = s.find('.');
-    if (dot_index != std::string::npos){
+    if (dot_index != std::string::npos) {
         if (dot_index >= sig_fig) {
             s = s.substr(0, dot_index);
         } else if (time >= 1.0) {
             s = s.substr(0, sig_fig + 1);
         } else {
-            size_t sig_start = s.find_first_not_of('0',dot_index + 1);
+            size_t sig_start = s.find_first_not_of('0', dot_index + 1);
             l = s.length();
             if (l - sig_start > sig_fig) {
                 s = s.substr(0, sig_start + sig_fig);
@@ -902,14 +1100,12 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
         case OFF:
             printer->Printf("%s: %su %ss %sw %6d calls\n", key.c_str(),
                             formatTimeNumberPrint(timer.get_utime()).c_str(),
-                            formatTimeNumberPrint(timer.get_stime()).c_str(),
-                            formatTimeNumberPrint(wtime).c_str(),
+                            formatTimeNumberPrint(timer.get_stime()).c_str(), formatTimeNumberPrint(wtime).c_str(),
                             timer.get_n_calls());
             break;
         case PARALLEL:
             printer->Printf("%s: %sp                         %6d calls\n", key.c_str(),
-                            formatTimeNumberPrint(wtime).c_str(),
-                            timer.get_n_calls());
+                            formatTimeNumberPrint(wtime).c_str(), timer.get_n_calls());
         default:
             break;
     }
@@ -925,6 +1121,56 @@ void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStre
     }
 }
 
+bool empty_parallel() {
+    extern std::vector<std::list<Timer_Structure *>> on_timers;
+    extern Timer_Structure parallel_timer;
+    size_t on_timer_size = on_timers.size();
+    if (on_timers[0].back() != &parallel_timer) {
+        return false;
+    }
+    for (size_t i = 1; i < on_timer_size; ++i) {
+        if (on_timers[i].size() != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void print_status(std::string key, int thread_rank, Timer_Status operation) {
+    extern std::vector<std::list<Timer_Structure *>> on_timers;
+    extern Timer_Structure root_timer, parallel_timer;
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat", std::ostream::app));
+    printer->Printf("\nRoot Timer:\n");
+    print_nested_timer(root_timer, printer, "");
+    if (parallel_timer.get_parent() != nullptr) {
+        printer->Printf("\nParallel Timer: Parent(%s)\n", parallel_timer.get_parent()->get_key().c_str());
+    } else {
+        printer->Printf("\nParallel Timer: Parent(nullptr)\n");
+    }
+    print_nested_timer(parallel_timer, printer, "");
+    printer->Printf("\n");
+    size_t on_timer_size = on_timers.size();
+    for (size_t i = 0; i < on_timer_size; ++i) {
+        printer->Printf("\n%d:", i);
+        for (auto iter = on_timers[i].begin(), iter_end = on_timers[i].end(); iter != iter_end; ++iter) {
+            printer->Printf(" - %s", (*iter)->get_key().c_str());
+        }
+    }
+    printer->Printf("\n\n");
+    switch (operation) {
+        case ON:
+            printer->Printf("timer_on(%s,%d)", key.c_str(), thread_rank);
+            break;
+        case OFF:
+            printer->Printf("timer_off(%s,%d)", key.c_str(), thread_rank);
+            break;
+        default:
+            break;
+    }
+    printer->Printf("\n\n");
+    printer->Printf("\n\n");
+}
+
 /*!
 ** timer_init(): Initialize the linked list of timers
 **
@@ -936,8 +1182,6 @@ void timer_init(void) {
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;
     extern std::vector<std::list<Timer_Structure *>> on_timers;
-//    extern Timer_Structure* parallel_start_ptr;
-//    parallel_start_ptr = nullptr;
     timer_start = time(NULL);
     root_timer.turn_on();
     std::list<Timer_Structure *> thread_0_list;
@@ -962,7 +1206,7 @@ void timer_done(void) {
     gethostname(host, 40);
 
     /* Dump the timing data to timer.dat and free the timers */
-    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat",std::ostream::app));
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat", std::ostream::app));
     printer->Printf("\n");
     printer->Printf("Host: %s\n", host);
     free(host);
@@ -998,8 +1242,9 @@ void timer_done(void) {
 */
 void timer_on(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
+    //    print_status(key, thread_rank, ON);
     extern std::vector<std::list<Timer_Structure *>> on_timers;
-//    extern Timer_Structure* parallel_start_ptr;
+    extern Timer_Structure parallel_timer;
     Timer_Structure *top_timer_ptr = nullptr;
     Timer_Structure *thread_0_top = on_timers[0].back();
     if (thread_rank == 0) {
@@ -1016,23 +1261,126 @@ void timer_on(std::string key, int thread_rank) {
             on_timers.resize(thread_rank + 1);
         }
         if (on_timers[thread_rank].empty()) {
-            while (thread_0_top != nullptr) {
-                if (thread_0_top->get_key() == key) {
-                    top_timer_ptr = thread_0_top;
+            Timer_Structure *temp_timer_ptr = thread_0_top, *parallel_start_ptr = nullptr, *branch_start_ptr = nullptr;
+            while (temp_timer_ptr != nullptr) {
+                if (temp_timer_ptr->get_key() == key) {
+                    parallel_start_ptr = temp_timer_ptr;
                     break;
-                }
-                else {
-                    Timer_Structure *temp = thread_0_top->find_child(key);
+                } else if (branch_start_ptr == nullptr) {
+                    Timer_Structure *temp = temp_timer_ptr->find_child(key);
                     if (temp != nullptr) {
-                        top_timer_ptr = temp;
-                        break;
+                        branch_start_ptr = temp;
                     }
                 }
-                thread_0_top = thread_0_top->get_parent();
+                temp_timer_ptr = temp_timer_ptr->get_parent();
             }
-            if (top_timer_ptr == nullptr) {
-                top_timer_ptr = on_timers[0].back()->get_child(key);
+            if (parallel_start_ptr != nullptr) {
+                std::list<std::string> stack_keys;
+                temp_timer_ptr = thread_0_top;
+                bool parallel_timer_in_flag = false;
+                while (temp_timer_ptr->get_key() != key) {
+                    if (temp_timer_ptr->get_key() != parallel_timer.get_key()) {
+                        stack_keys.push_front(temp_timer_ptr->get_key());
+                    } else {
+                        parallel_timer_in_flag = true;
+                    }
+                    temp_timer_ptr = temp_timer_ptr->get_parent();
+                }
+                if (parallel_timer_in_flag or parallel_timer.get_parent() == nullptr) {
+                    stack_keys.push_front(key);
+                    auto parallel_start_iter = std::find(on_timers[0].begin(), on_timers[0].end(), parallel_start_ptr);
+                    auto thread_0_iter = parallel_start_iter;
+                    auto thread_0_end_iter = on_timers[0].end();
+                    Timer_Structure *root_timer_ptr = parallel_start_ptr->get_parent();
+                    Timer_Structure temp_timer(root_timer_ptr, key);
+                    temp_timer_ptr = &temp_timer;
+                    temp_timer_ptr->set_status(PARALLEL);
+                    temp_timer_ptr->get_threads().push_back(Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
+                    (*thread_0_iter)->turn_off(0);
+                    ++thread_0_iter;
+                    const std::string &parallel_timer_key = parallel_timer.get_key();
+                    while (thread_0_iter != thread_0_end_iter and (*thread_0_iter)->get_key() != parallel_timer_key) {
+                        temp_timer_ptr = temp_timer_ptr->get_child((*thread_0_iter)->get_key());
+                        temp_timer_ptr->set_status(PARALLEL);
+                        temp_timer_ptr->get_threads().push_back(
+                            Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
+                        (*thread_0_iter)->turn_off(0);
+                        ++thread_0_iter;
+                    }
+                    temp_timer_ptr->merge_move(&parallel_timer, 0);
+                    parallel_timer.get_child(temp_timer.get_key())->merge_move(&temp_timer, 0);
+                    parallel_timer.set_parent(root_timer_ptr);
+                    on_timers[0].erase(parallel_start_iter, on_timers[0].end());
+                    on_timers[0].push_back(&parallel_timer);
+                    Timer_Structure *on_child_ptr = &parallel_timer;
+                    for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
+                         ++stack_iter) {
+                        on_child_ptr = on_child_ptr->get_child(*stack_iter);
+                        on_timers[0].push_back(on_child_ptr);
+                    }
+                }
+            } else if (branch_start_ptr != nullptr) {
+                std::list<std::string> stack_keys;
+                Timer_Structure *branch_parent = branch_start_ptr->get_parent();
+                temp_timer_ptr = thread_0_top;
+                bool parallel_timer_in_flag = false;
+                if (temp_timer_ptr == branch_parent and parallel_timer.get_parent() == nullptr) {
+                    parallel_timer.set_parent(thread_0_top);
+                    thread_0_top = &parallel_timer;
+                    on_timers[0].push_back(thread_0_top);
+                }
+                if (temp_timer_ptr != branch_parent) {
+                    while (temp_timer_ptr->get_parent() != branch_parent) {
+                        if (temp_timer_ptr->get_key() != parallel_timer.get_key()) {
+                            stack_keys.push_front(temp_timer_ptr->get_key());
+                        } else {
+                            parallel_timer_in_flag = true;
+                        }
+                        temp_timer_ptr = temp_timer_ptr->get_parent();
+                    }
+                }
+                if (parallel_timer_in_flag or parallel_timer.get_parent() == nullptr) {
+                    auto parallel_start_iter = std::find(on_timers[0].begin(), on_timers[0].end(), branch_parent);
+                    ++parallel_start_iter;
+                    stack_keys.push_front((*parallel_start_iter)->get_key());
+                    auto thread_0_iter = parallel_start_iter;
+                    auto thread_0_end_iter = on_timers[0].end();
+                    Timer_Structure *root_timer_ptr = branch_parent;
+                    Timer_Structure temp_timer(root_timer_ptr, stack_keys.front());
+                    temp_timer_ptr = &temp_timer;
+                    temp_timer_ptr->set_status(PARALLEL);
+                    temp_timer_ptr->get_threads().push_back(Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
+                    (*thread_0_iter)->turn_off(0);
+                    ++thread_0_iter;
+                    const std::string &parallel_timer_key = parallel_timer.get_key();
+                    while (thread_0_iter != thread_0_end_iter and (*thread_0_iter)->get_key() != parallel_timer_key) {
+                        temp_timer_ptr = temp_timer_ptr->get_child((*thread_0_iter)->get_key());
+                        temp_timer_ptr->set_status(PARALLEL);
+                        temp_timer_ptr->get_threads().push_back(
+                            Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
+                        (*thread_0_iter)->turn_off(0);
+                        ++thread_0_iter;
+                    }
+                    temp_timer_ptr->merge_move(&parallel_timer, 0);
+                    parallel_timer.get_child(temp_timer.get_key())->merge_move(&temp_timer, 0);
+                    parallel_timer.set_parent(root_timer_ptr);
+                    on_timers[0].erase(parallel_start_iter, on_timers[0].end());
+                    on_timers[0].push_back(&parallel_timer);
+                    Timer_Structure *on_child_ptr = &parallel_timer;
+                    for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
+                         ++stack_iter) {
+                        on_child_ptr = on_child_ptr->get_child(*stack_iter);
+                        on_timers[0].push_back(on_child_ptr);
+                    }
+                }
+            } else {
+                if (parallel_timer.get_parent() == nullptr) {
+                    parallel_timer.set_parent(thread_0_top);
+                    thread_0_top = &parallel_timer;
+                    on_timers[0].push_back(thread_0_top);
+                }
             }
+            top_timer_ptr = parallel_timer.get_child(key);
             top_timer_ptr->turn_on(thread_rank);
             on_timers[thread_rank].push_back(top_timer_ptr);
         } else {
@@ -1059,8 +1407,9 @@ void timer_on(std::string key, int thread_rank) {
 */
 void timer_off(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
+    //    print_status(key, thread_rank, OFF);
     extern std::vector<std::list<Timer_Structure *>> on_timers;
-//    extern Timer_Structure* parallel_start_ptr;
+    extern Timer_Structure parallel_timer;
     Timer_Structure *timer_ptr = nullptr;
     if (on_timers[thread_rank].empty()) {
         std::string str = "Timer ";
@@ -1099,21 +1448,53 @@ void timer_off(std::string key, int thread_rank) {
             throw PsiException(str, __FILE__, __LINE__);
         }
         timer_ptr->turn_off(thread_rank);
-        auto on_child_iter = timer_iter;
-        ++on_child_iter;
-        Timer_Structure *on_child_ptr = *(on_child_iter);
-        Timer_Structure *parent_ptr = timer_ptr->get_parent();
-        Timer_Structure *parent_on_child_ptr = parent_ptr->get_child(on_child_ptr->get_key());
-        if (parent_on_child_ptr->merge_move(on_child_ptr, thread_rank)) {
-            timer_ptr->remove_child(on_child_ptr);
+        const std::string &parallel_key = parallel_timer.get_key();
+        auto stack_end = stack_keys.end();
+        if (thread_rank == 0 and std::find(stack_keys.begin(), stack_keys.end(), parallel_key) != stack_end) {
+            Timer_Structure *root_timer_ptr = timer_ptr->get_parent();
+            Timer_Structure temp_timer(root_timer_ptr, key);
+            timer_ptr = &temp_timer;
+            timer_ptr->set_status(PARALLEL);
+            timer_ptr->get_threads().push_back(Timer_thread());
+            for (auto stack_iter = stack_keys.begin(); (*stack_iter) != parallel_key; ++stack_iter) {
+                timer_ptr = timer_ptr->get_child(*stack_iter);
+                root_timer_ptr = root_timer_ptr->get_child(*stack_iter);
+                timer_ptr->set_status(PARALLEL);
+                timer_ptr->get_threads().push_back(Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
+                root_timer_ptr->turn_off(0);
+            }
+            timer_ptr->merge_move(&parallel_timer, 0);
+            parallel_timer.get_child(temp_timer.get_key())->merge_move(&temp_timer, 0);
+            on_timers[0].erase(timer_iter, on_timers[0].end());
+            on_timers[0].push_back(&parallel_timer);
+            Timer_Structure *on_child_ptr = &parallel_timer;
+            for (auto stack_iter = stack_keys.begin(); stack_iter != stack_end; ++stack_iter) {
+                if ((*stack_iter) != parallel_key) {
+                    on_child_ptr = on_child_ptr->get_child(*stack_iter);
+                    on_timers[0].push_back(on_child_ptr);
+                }
+            }
+        } else {
+            auto on_child_iter = timer_iter;
+            ++on_child_iter;
+            Timer_Structure *on_child_ptr = *(on_child_iter);
+            Timer_Structure *parent_ptr = timer_ptr->get_parent();
+            Timer_Structure *parent_on_child_ptr = parent_ptr->get_child(on_child_ptr->get_key());
+            if (parent_on_child_ptr->merge_move(on_child_ptr, thread_rank)) {
+                timer_ptr->remove_child(on_child_ptr);
+            }
+            on_timers[thread_rank].erase(timer_iter, on_timers[thread_rank].end());
+            for (auto stack_iter = stack_keys.begin(); stack_iter != stack_end; ++stack_iter) {
+                on_child_ptr = parent_ptr->get_child(*stack_iter);
+                on_timers[thread_rank].push_back(on_child_ptr);
+                parent_ptr = on_child_ptr;
+            }
         }
-        on_timers[thread_rank].erase(timer_iter, on_timers[thread_rank].end());
-        for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
-             ++stack_iter) {
-            on_child_ptr = parent_ptr->get_child(*stack_iter);
-            on_timers[thread_rank].push_back(on_child_ptr);
-            parent_ptr = on_child_ptr;
-        }
+    }
+    if (parallel_timer.get_parent() != nullptr and empty_parallel()) {
+        parallel_timer.get_parent()->merge_move_all(&parallel_timer);
+        parallel_timer.set_parent(nullptr);
+        on_timers[0].pop_back();
     }
     omp_unset_lock(&lock_timer);
 }
