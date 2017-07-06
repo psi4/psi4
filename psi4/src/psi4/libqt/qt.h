@@ -86,8 +86,10 @@ void mat_print(double **A, int rows, int cols, std::string out_fname);
 
 void timer_init(void);
 void timer_done(void);
-void timer_on(std::string key, int thread_rank = 0);
-void timer_off(std::string key, int thread_rank = 0);
+void timer_on(std::string key);
+void timer_off(std::string key);
+void parallel_timer_on(std::string key, int thread_rank);
+void parallel_timer_off(std::string key, int thread_rank);
 
 void print_block(double *, int, int, FILE *);
 

@@ -1060,7 +1060,8 @@ bool Timer_thread::merge_move(Timer_Structure *another) {
 }
 
 Timer_Structure root_timer(nullptr, ""), parallel_timer(nullptr, "No@timer#should$be^named&like*this!(Parallel)");
-std::vector<std::list<Timer_Structure *>> on_timers;
+std::list<Timer_Structure *> ser_on_timers;
+std::vector<std::list<Timer_Structure *>> par_on_timers;
 time_t timer_start, timer_end;
 static omp_lock_t lock_timer;
 
@@ -1122,14 +1123,10 @@ void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStre
 }
 
 bool empty_parallel() {
-    extern std::vector<std::list<Timer_Structure *>> on_timers;
-    extern Timer_Structure parallel_timer;
-    size_t on_timer_size = on_timers.size();
-    if (on_timers[0].back() != &parallel_timer) {
-        return false;
-    }
-    for (size_t i = 1; i < on_timer_size; ++i) {
-        if (on_timers[i].size() != 0) {
+    extern std::vector<std::list<Timer_Structure *>> par_on_timers;
+    size_t on_timer_size = par_on_timers.size();
+    for (size_t i = 0; i < on_timer_size; ++i) {
+        if (par_on_timers[i].size() != 0) {
             return false;
         }
     }
@@ -1137,7 +1134,8 @@ bool empty_parallel() {
 }
 
 void print_status(std::string key, int thread_rank, Timer_Status operation) {
-    extern std::vector<std::list<Timer_Structure *>> on_timers;
+    extern std::list<Timer_Structure *> ser_on_timers;
+    extern std::vector<std::list<Timer_Structure *>> par_on_timers;
     extern Timer_Structure root_timer, parallel_timer;
     std::shared_ptr<PsiOutStream> printer(new PsiOutStream("timer.dat", std::ostream::app));
     printer->Printf("\nRoot Timer:\n");
@@ -1149,20 +1147,33 @@ void print_status(std::string key, int thread_rank, Timer_Status operation) {
     }
     print_nested_timer(parallel_timer, printer, "");
     printer->Printf("\n");
-    size_t on_timer_size = on_timers.size();
+    printer->Printf("\nser:\n");
+    for (auto iter = ser_on_timers.begin(), iter_end = ser_on_timers.end(); iter != iter_end; ++iter) {
+        printer->Printf(" - %s", (*iter)->get_key().c_str());
+    }
+    printer->Printf("\npar:");
+    size_t on_timer_size = par_on_timers.size();
     for (size_t i = 0; i < on_timer_size; ++i) {
         printer->Printf("\n%d:", i);
-        for (auto iter = on_timers[i].begin(), iter_end = on_timers[i].end(); iter != iter_end; ++iter) {
+        for (auto iter = par_on_timers[i].begin(), iter_end = par_on_timers[i].end(); iter != iter_end; ++iter) {
             printer->Printf(" - %s", (*iter)->get_key().c_str());
         }
     }
     printer->Printf("\n\n");
     switch (operation) {
         case ON:
-            printer->Printf("timer_on(%s,%d)", key.c_str(), thread_rank);
+            if (thread_rank == -1) {
+                printer->Printf("timer_on(%s)", key.c_str());
+            } else {
+                printer->Printf("parallel_timer_on(%s,%d)", key.c_str(), thread_rank);
+            }
             break;
         case OFF:
-            printer->Printf("timer_off(%s,%d)", key.c_str(), thread_rank);
+            if (thread_rank == -1) {
+                printer->Printf("timer_off(%s)", key.c_str());
+            } else {
+                printer->Printf("parallel_timer_off(%s,%d)", key.c_str(), thread_rank);
+            }
             break;
         default:
             break;
@@ -1181,12 +1192,10 @@ void timer_init(void) {
     omp_init_lock(&lock_timer);
     omp_set_lock(&lock_timer);
     extern Timer_Structure root_timer;
-    extern std::vector<std::list<Timer_Structure *>> on_timers;
     timer_start = time(NULL);
     root_timer.turn_on();
-    std::list<Timer_Structure *> thread_0_list;
-    thread_0_list.push_back(&root_timer);
-    on_timers.push_back(thread_0_list);
+    extern std::list<Timer_Structure *> ser_on_timers;
+    ser_on_timers.push_back(&root_timer);
     omp_unset_lock(&lock_timer);
 }
 
@@ -1240,158 +1249,128 @@ void timer_done(void) {
 **
 ** \ingroup QT
 */
-void timer_on(std::string key, int thread_rank) {
+void timer_on(std::string key) {
     omp_set_lock(&lock_timer);
-    //    print_status(key, thread_rank, ON);
-    extern std::vector<std::list<Timer_Structure *>> on_timers;
+//    print_status(key, -1, ON);
     extern Timer_Structure parallel_timer;
+    if (parallel_timer.get_parent() != nullptr) {
+        std::string str = "Unable to turn on serial Timer ";
+        str += key;
+        str += " when parallel timers are not all off.";
+        throw PsiException(str, __FILE__, __LINE__);
+    }
+    extern std::list<Timer_Structure *> ser_on_timers;
     Timer_Structure *top_timer_ptr = nullptr;
-    Timer_Structure *thread_0_top = on_timers[0].back();
-    if (thread_rank == 0) {
-        if (key == thread_0_top->get_key()) {
-            thread_0_top->turn_on(thread_rank);
-        } else {
-            top_timer_ptr = thread_0_top->get_child(key);
-            top_timer_ptr->turn_on(thread_rank);
-            on_timers[0].push_back(top_timer_ptr);
-        }
+    Timer_Structure *top_timer = ser_on_timers.back();
+    if (key == top_timer->get_key()) {
+        top_timer->turn_on();
     } else {
-        size_t thread_size = on_timers.size();
-        if (thread_rank >= thread_size) {
-            on_timers.resize(thread_rank + 1);
+        top_timer_ptr = top_timer->get_child(key);
+        top_timer_ptr->turn_on();
+        ser_on_timers.push_back(top_timer_ptr);
+    }
+    omp_unset_lock(&lock_timer);
+}
+
+/*!
+** timer_off(): Turn off the timer with the name given as an argument.  Can
+** be turned on and off, time will accumulate while on.
+**
+** \param key = Name of timer
+**
+** \ingroup QT
+*/
+void timer_off(std::string key) {
+    omp_set_lock(&lock_timer);
+//    print_status(key, -1, OFF);
+    extern Timer_Structure parallel_timer;
+    extern std::list<Timer_Structure *> ser_on_timers;
+    if (parallel_timer.get_parent() != nullptr) {
+        std::string str = "Unable to turn on serial Timer ";
+        str += key;
+        str += " when parallel timers are not all off.";
+        throw PsiException(str, __FILE__, __LINE__);
+    }
+    Timer_Structure *timer_ptr = nullptr;
+    timer_ptr = ser_on_timers.back();
+    if (key == timer_ptr->get_key()) {
+        timer_ptr->turn_off();
+        ser_on_timers.pop_back();
+    } else {
+        timer_ptr = nullptr;
+        auto timer_iter = ser_on_timers.end();
+        --timer_iter;
+        std::list<std::string> stack_keys;
+        stack_keys.push_front((*timer_iter)->get_key());
+        auto iter_begin = ser_on_timers.begin();
+        while (timer_iter != iter_begin) {
+            --timer_iter;
+            if ((*timer_iter)->get_key() == key) {
+                timer_ptr = *timer_iter;
+                break;
+            } else {
+                stack_keys.push_front((*timer_iter)->get_key());
+            }
         }
-        if (on_timers[thread_rank].empty()) {
-            Timer_Structure *temp_timer_ptr = thread_0_top, *parallel_start_ptr = nullptr, *branch_start_ptr = nullptr;
-            while (temp_timer_ptr != nullptr) {
-                if (temp_timer_ptr->get_key() == key) {
-                    parallel_start_ptr = temp_timer_ptr;
-                    break;
-                } else if (branch_start_ptr == nullptr) {
-                    Timer_Structure *temp = temp_timer_ptr->find_child(key);
-                    if (temp != nullptr) {
-                        branch_start_ptr = temp;
-                    }
-                }
-                temp_timer_ptr = temp_timer_ptr->get_parent();
-            }
-            if (parallel_start_ptr != nullptr) {
-                std::list<std::string> stack_keys;
-                temp_timer_ptr = thread_0_top;
-                bool parallel_timer_in_flag = false;
-                while (temp_timer_ptr->get_key() != key) {
-                    if (temp_timer_ptr->get_key() != parallel_timer.get_key()) {
-                        stack_keys.push_front(temp_timer_ptr->get_key());
-                    } else {
-                        parallel_timer_in_flag = true;
-                    }
-                    temp_timer_ptr = temp_timer_ptr->get_parent();
-                }
-                if (parallel_timer_in_flag or parallel_timer.get_parent() == nullptr) {
-                    stack_keys.push_front(key);
-                    auto parallel_start_iter = std::find(on_timers[0].begin(), on_timers[0].end(), parallel_start_ptr);
-                    auto thread_0_iter = parallel_start_iter;
-                    auto thread_0_end_iter = on_timers[0].end();
-                    Timer_Structure *root_timer_ptr = parallel_start_ptr->get_parent();
-                    Timer_Structure temp_timer(root_timer_ptr, key);
-                    temp_timer_ptr = &temp_timer;
-                    temp_timer_ptr->set_status(PARALLEL);
-                    temp_timer_ptr->get_threads().push_back(Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
-                    (*thread_0_iter)->turn_off(0);
-                    ++thread_0_iter;
-                    const std::string &parallel_timer_key = parallel_timer.get_key();
-                    while (thread_0_iter != thread_0_end_iter and (*thread_0_iter)->get_key() != parallel_timer_key) {
-                        temp_timer_ptr = temp_timer_ptr->get_child((*thread_0_iter)->get_key());
-                        temp_timer_ptr->set_status(PARALLEL);
-                        temp_timer_ptr->get_threads().push_back(
-                            Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
-                        (*thread_0_iter)->turn_off(0);
-                        ++thread_0_iter;
-                    }
-                    temp_timer_ptr->merge_move(&parallel_timer, 0);
-                    parallel_timer.get_child(temp_timer.get_key())->merge_move(&temp_timer, 0);
-                    parallel_timer.set_parent(root_timer_ptr);
-                    on_timers[0].erase(parallel_start_iter, on_timers[0].end());
-                    on_timers[0].push_back(&parallel_timer);
-                    Timer_Structure *on_child_ptr = &parallel_timer;
-                    for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
-                         ++stack_iter) {
-                        on_child_ptr = on_child_ptr->get_child(*stack_iter);
-                        on_timers[0].push_back(on_child_ptr);
-                    }
-                }
-            } else if (branch_start_ptr != nullptr) {
-                std::list<std::string> stack_keys;
-                Timer_Structure *branch_parent = branch_start_ptr->get_parent();
-                temp_timer_ptr = thread_0_top;
-                bool parallel_timer_in_flag = false;
-                if (temp_timer_ptr == branch_parent and parallel_timer.get_parent() == nullptr) {
-                    parallel_timer.set_parent(thread_0_top);
-                    thread_0_top = &parallel_timer;
-                    on_timers[0].push_back(thread_0_top);
-                }
-                if (temp_timer_ptr != branch_parent) {
-                    while (temp_timer_ptr->get_parent() != branch_parent) {
-                        if (temp_timer_ptr->get_key() != parallel_timer.get_key()) {
-                            stack_keys.push_front(temp_timer_ptr->get_key());
-                        } else {
-                            parallel_timer_in_flag = true;
-                        }
-                        temp_timer_ptr = temp_timer_ptr->get_parent();
-                    }
-                }
-                if (parallel_timer_in_flag or parallel_timer.get_parent() == nullptr) {
-                    auto parallel_start_iter = std::find(on_timers[0].begin(), on_timers[0].end(), branch_parent);
-                    ++parallel_start_iter;
-                    stack_keys.push_front((*parallel_start_iter)->get_key());
-                    auto thread_0_iter = parallel_start_iter;
-                    auto thread_0_end_iter = on_timers[0].end();
-                    Timer_Structure *root_timer_ptr = branch_parent;
-                    Timer_Structure temp_timer(root_timer_ptr, stack_keys.front());
-                    temp_timer_ptr = &temp_timer;
-                    temp_timer_ptr->set_status(PARALLEL);
-                    temp_timer_ptr->get_threads().push_back(Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
-                    (*thread_0_iter)->turn_off(0);
-                    ++thread_0_iter;
-                    const std::string &parallel_timer_key = parallel_timer.get_key();
-                    while (thread_0_iter != thread_0_end_iter and (*thread_0_iter)->get_key() != parallel_timer_key) {
-                        temp_timer_ptr = temp_timer_ptr->get_child((*thread_0_iter)->get_key());
-                        temp_timer_ptr->set_status(PARALLEL);
-                        temp_timer_ptr->get_threads().push_back(
-                            Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
-                        (*thread_0_iter)->turn_off(0);
-                        ++thread_0_iter;
-                    }
-                    temp_timer_ptr->merge_move(&parallel_timer, 0);
-                    parallel_timer.get_child(temp_timer.get_key())->merge_move(&temp_timer, 0);
-                    parallel_timer.set_parent(root_timer_ptr);
-                    on_timers[0].erase(parallel_start_iter, on_timers[0].end());
-                    on_timers[0].push_back(&parallel_timer);
-                    Timer_Structure *on_child_ptr = &parallel_timer;
-                    for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
-                         ++stack_iter) {
-                        on_child_ptr = on_child_ptr->get_child(*stack_iter);
-                        on_timers[0].push_back(on_child_ptr);
-                    }
-                }
-            } else {
-                if (parallel_timer.get_parent() == nullptr) {
-                    parallel_timer.set_parent(thread_0_top);
-                    thread_0_top = &parallel_timer;
-                    on_timers[0].push_back(thread_0_top);
-                }
-            }
-            top_timer_ptr = parallel_timer.get_child(key);
+        if (timer_ptr == nullptr) {
+            std::string str = "Timer ";
+            str += key;
+            str += " is not on.";
+            throw PsiException(str, __FILE__, __LINE__);
+        }
+        timer_ptr->turn_off();
+        auto on_child_iter = timer_iter;
+        ++on_child_iter;
+        Timer_Structure *on_child_ptr = *(on_child_iter);
+        Timer_Structure *parent_ptr = timer_ptr->get_parent();
+        Timer_Structure *parent_on_child_ptr = parent_ptr->get_child(on_child_ptr->get_key());
+        if (parent_on_child_ptr->merge_move(on_child_ptr)) {
+            timer_ptr->remove_child(on_child_ptr);
+        }
+        ser_on_timers.erase(timer_iter, ser_on_timers.end());
+        for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
+             ++stack_iter) {
+            on_child_ptr = parent_ptr->get_child(*stack_iter);
+            ser_on_timers.push_back(on_child_ptr);
+            parent_ptr = on_child_ptr;
+        }
+    }
+    omp_unset_lock(&lock_timer);
+}
+
+/*!
+** timer_on(): Turn on the timer with the name given as an argument.  Can
+** be turned on and off, time will accumulate while on.
+**
+** \param key = Name of timer
+**
+** \ingroup QT
+*/
+void parallel_timer_on(std::string key, int thread_rank) {
+    omp_set_lock(&lock_timer);
+//    print_status(key, thread_rank, ON);
+    extern std::list<Timer_Structure *> ser_on_timers;
+    extern std::vector<std::list<Timer_Structure *>> par_on_timers;
+    extern Timer_Structure parallel_timer;
+    if (par_on_timers.size() <= thread_rank) {
+        par_on_timers.resize(thread_rank + 1);
+    }
+    if (parallel_timer.get_parent() == nullptr) {
+        parallel_timer.set_parent(ser_on_timers.back());
+    }
+    Timer_Structure *top_timer_ptr = nullptr;
+    if (par_on_timers[thread_rank].empty()) {
+        top_timer_ptr = parallel_timer.get_child(key);
+        top_timer_ptr->turn_on(thread_rank);
+        par_on_timers[thread_rank].push_back(top_timer_ptr);
+    } else {
+        top_timer_ptr = par_on_timers[thread_rank].back();
+        if (key == top_timer_ptr->get_key()) {
             top_timer_ptr->turn_on(thread_rank);
-            on_timers[thread_rank].push_back(top_timer_ptr);
         } else {
-            top_timer_ptr = on_timers[thread_rank].back();
-            if (key == top_timer_ptr->get_key()) {
-                top_timer_ptr->turn_on(thread_rank);
-            } else {
-                top_timer_ptr = top_timer_ptr->get_child(key);
-                top_timer_ptr->turn_on(thread_rank);
-                on_timers[thread_rank].push_back(top_timer_ptr);
-            }
+            top_timer_ptr = top_timer_ptr->get_child(key);
+            top_timer_ptr->turn_on(thread_rank);
+            par_on_timers[thread_rank].push_back(top_timer_ptr);
         }
     }
     omp_unset_lock(&lock_timer);
@@ -1405,13 +1384,12 @@ void timer_on(std::string key, int thread_rank) {
 **
 ** \ingroup QT
 */
-void timer_off(std::string key, int thread_rank) {
+void parallel_timer_off(std::string key, int thread_rank) {
     omp_set_lock(&lock_timer);
-    //    print_status(key, thread_rank, OFF);
-    extern std::vector<std::list<Timer_Structure *>> on_timers;
+//    print_status(key, thread_rank, OFF);
+    extern std::vector<std::list<Timer_Structure *>> par_on_timers;
     extern Timer_Structure parallel_timer;
-    Timer_Structure *timer_ptr = nullptr;
-    if (on_timers[thread_rank].empty()) {
+    if (par_on_timers[thread_rank].empty()) {
         std::string str = "Timer ";
         str += key;
         str += " on thread ";
@@ -1419,18 +1397,19 @@ void timer_off(std::string key, int thread_rank) {
         str += " has never been turned on.";
         throw PsiException(str, __FILE__, __LINE__);
     }
-    timer_ptr = on_timers[thread_rank].back();
+    Timer_Structure *timer_ptr = nullptr;
+    timer_ptr = par_on_timers[thread_rank].back();
     if (key == timer_ptr->get_key()) {
         timer_ptr->turn_off(thread_rank);
-        on_timers[thread_rank].pop_back();
+        par_on_timers[thread_rank].pop_back();
     } else {
         timer_ptr = nullptr;
-        auto timer_iter = on_timers[thread_rank].end();
+        auto timer_iter = par_on_timers[thread_rank].end();
         --timer_iter;
         std::list<std::string> stack_keys;
         stack_keys.push_front((*timer_iter)->get_key());
-        auto iter_begin = on_timers[thread_rank].begin();
-        for (; timer_iter != iter_begin;) {
+        auto iter_begin = par_on_timers[thread_rank].begin();
+        while (timer_iter != iter_begin) {
             --timer_iter;
             if ((*timer_iter)->get_key() == key) {
                 timer_ptr = *timer_iter;
@@ -1448,53 +1427,25 @@ void timer_off(std::string key, int thread_rank) {
             throw PsiException(str, __FILE__, __LINE__);
         }
         timer_ptr->turn_off(thread_rank);
-        const std::string &parallel_key = parallel_timer.get_key();
-        auto stack_end = stack_keys.end();
-        if (thread_rank == 0 and std::find(stack_keys.begin(), stack_keys.end(), parallel_key) != stack_end) {
-            Timer_Structure *root_timer_ptr = timer_ptr->get_parent();
-            Timer_Structure temp_timer(root_timer_ptr, key);
-            timer_ptr = &temp_timer;
-            timer_ptr->set_status(PARALLEL);
-            timer_ptr->get_threads().push_back(Timer_thread());
-            for (auto stack_iter = stack_keys.begin(); (*stack_iter) != parallel_key; ++stack_iter) {
-                timer_ptr = timer_ptr->get_child(*stack_iter);
-                root_timer_ptr = root_timer_ptr->get_child(*stack_iter);
-                timer_ptr->set_status(PARALLEL);
-                timer_ptr->get_threads().push_back(Timer_thread(ON, 0, clock::now(), clock::duration::zero()));
-                root_timer_ptr->turn_off(0);
-            }
-            timer_ptr->merge_move(&parallel_timer, 0);
-            parallel_timer.get_child(temp_timer.get_key())->merge_move(&temp_timer, 0);
-            on_timers[0].erase(timer_iter, on_timers[0].end());
-            on_timers[0].push_back(&parallel_timer);
-            Timer_Structure *on_child_ptr = &parallel_timer;
-            for (auto stack_iter = stack_keys.begin(); stack_iter != stack_end; ++stack_iter) {
-                if ((*stack_iter) != parallel_key) {
-                    on_child_ptr = on_child_ptr->get_child(*stack_iter);
-                    on_timers[0].push_back(on_child_ptr);
-                }
-            }
-        } else {
-            auto on_child_iter = timer_iter;
-            ++on_child_iter;
-            Timer_Structure *on_child_ptr = *(on_child_iter);
-            Timer_Structure *parent_ptr = timer_ptr->get_parent();
-            Timer_Structure *parent_on_child_ptr = parent_ptr->get_child(on_child_ptr->get_key());
-            if (parent_on_child_ptr->merge_move(on_child_ptr, thread_rank)) {
-                timer_ptr->remove_child(on_child_ptr);
-            }
-            on_timers[thread_rank].erase(timer_iter, on_timers[thread_rank].end());
-            for (auto stack_iter = stack_keys.begin(); stack_iter != stack_end; ++stack_iter) {
-                on_child_ptr = parent_ptr->get_child(*stack_iter);
-                on_timers[thread_rank].push_back(on_child_ptr);
-                parent_ptr = on_child_ptr;
-            }
+        auto on_child_iter = timer_iter;
+        ++on_child_iter;
+        Timer_Structure *on_child_ptr = *(on_child_iter);
+        Timer_Structure *parent_ptr = timer_ptr->get_parent();
+        Timer_Structure *parent_on_child_ptr = parent_ptr->get_child(on_child_ptr->get_key());
+        if (parent_on_child_ptr->merge_move(on_child_ptr, thread_rank)) {
+            timer_ptr->remove_child(on_child_ptr);
+        }
+        par_on_timers[thread_rank].erase(timer_iter, par_on_timers[thread_rank].end());
+        for (auto stack_iter = stack_keys.begin(), stack_end = stack_keys.end(); stack_iter != stack_end;
+             ++stack_iter) {
+            on_child_ptr = parent_ptr->get_child(*stack_iter);
+            par_on_timers[thread_rank].push_back(on_child_ptr);
+            parent_ptr = on_child_ptr;
         }
     }
     if (parallel_timer.get_parent() != nullptr and empty_parallel()) {
         parallel_timer.get_parent()->merge_move_all(&parallel_timer);
         parallel_timer.set_parent(nullptr);
-        on_timers[0].pop_back();
     }
     omp_unset_lock(&lock_timer);
 }
