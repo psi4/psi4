@@ -210,7 +210,7 @@ for ssuper in proc.dft_funcs.superfunctional_list:
 
       # Properties
       if not ssuper.is_c_hybrid():
-            procedures['properties'][ssuper.name().lower()] = proc.run_dft_property
+            procedures['properties'][ssuper.name().lower()] = proc.run_scf_property
 
       # Gradients
       if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
