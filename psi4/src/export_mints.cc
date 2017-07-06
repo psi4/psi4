@@ -244,14 +244,14 @@ void export_mints(py::module& m)
         .def(py::init<const std::string&, const Dimension&>())
         .def_property("name", py::cpp_function(&Vector::name), py::cpp_function(&Vector::set_name),
                       "The name of the Vector. Used in printing.")
-        .def("get", vector_getitem_1(&Vector::get), "docstring")
-        .def("get", vector_getitem_2(&Vector::get), "docstring")
-        .def("set", vector_setitem_1(&Vector::set), "docstring")
-        .def("set", vector_setitem_2(&Vector::set), "docstring")
-        .def("print_out", &Vector::print_out, "docstring")
-        .def("scale", &Vector::scale, "docstring")
-        .def("dim", &Vector::dim, "docstring")
-        .def("nirrep", &Vector::nirrep, "docstring")
+        .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", py::arg("m"))
+        .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"))
+        .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", py::arg("m"), py::arg("val"))
+        .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
+        .def("print_out", &Vector::print_out, "Prints the vector")
+        .def("scale", &Vector::scale, "Scales the elements of a vector by sc", py::arg("sc"))
+        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h" py::arg("h"))
+        .def("nirrep", &Vector::nirrep, "Retruns the number of irreps")
         .def("array_interface", [](Vector& v) {
 
             // Build a list of NumPy views, used for the .np and .nph accessors.Vy
@@ -296,13 +296,13 @@ void export_mints(py::module& m)
     typedef void (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "docstring")
         .def(py::init<int>())
-        .def("get", &IntVector::get, "docstring")
-        .def("set", int_vector_set(&IntVector::set), "docstring")
-        .def("print_out", &IntVector::print_out, "docstring")
-        .def("dim", &IntVector::dim, "docstring")
-        .def("nirrep", &IntVector::nirrep, "docstring");
+        .def("get", &IntVector::get, "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"))
+        .def("set", int_vector_set(&IntVector::set), "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
+        .def("print_out", &IntVector::print_out, "Prints the vector")
+        .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", py::arg("h"))
+        .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
 
-    py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "docstring")
+    py::enum_<diagonalize_order>(m, "DiagonalizeOrder", "Defines ordering of eigenvalues after diagonalization")
         .value("Ascending", ascending)
         .value("Descending", descending)
         .export_values();
@@ -334,86 +334,96 @@ void export_mints(py::module& m)
         .def(py::init<const std::string&, int, int>())
         .def(py::init<const std::string&, const Dimension&, const Dimension&>())
         .def(py::init<const std::string&>())
-        .def("clone", &Matrix::clone, "docstring")
+        .def("clone", &Matrix::clone, "Creates exact copy of the matrix and returns it")
         .def_property("name", py::cpp_function(&Matrix::name), py::cpp_function(&Matrix::set_name),
                       "The name of the Matrix. Used in printing.")
 
         // def("set_name", &Matrix::set_name, "docstring").
         // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
-        .def("print_out", &Matrix::print_out, "docstring")
+        .def("print_out", &Matrix::print_out, "Prints the matrix")
         .def("print_atom_vector", &Matrix::print_atom_vector, py::arg("RMRoutfile") = "outfile",
              "Print the matrix with atom labels, assuming it is an natom X 3 tensor")
-        .def("rows", &Matrix::rowdim, "docstring")
-        .def("cols", &Matrix::coldim, "docstring")
+        .def("rows", &Matrix::rowdim, "Returns the rows in irrep h", py::arg("h") = 0)
+        .def("cols", &Matrix::coldim, "Returns the columns in irrep h", py::arg("h") = 0)
         .def("rowdim", matrix_ret_dimension(&Matrix::rowspi), py::return_value_policy::copy,
-             "docstring")
+             "Returns the rows per irrep array")
         .def("coldim", matrix_ret_dimension(&Matrix::colspi), py::return_value_policy::copy,
-             "docstring")
-        .def("nirrep", &Matrix::nirrep, py::return_value_policy::copy, "docstring")
-        .def("symmetry", &Matrix::symmetry, py::return_value_policy::copy, "docstring")
-        .def("identity", &Matrix::identity, "docstring")
-        .def("copy_lower_to_upper", &Matrix::copy_lower_to_upper, "docstring")
-        .def("copy_upper_to_lower", &Matrix::copy_upper_to_lower, "docstring")
-        .def("zero_lower", &Matrix::zero_lower, "docstring")
-        .def("zero_upper", &Matrix::zero_upper, "docstring")
-        .def("zero", &Matrix::zero, "docstring")
-        .def("zero_diagonal", &Matrix::zero_diagonal, "docstring")
-        .def("trace", &Matrix::trace, "docstring")
+             "Returns the columns per irrep array")
+        .def("nirrep", &Matrix::nirrep, py::return_value_policy::copy, "Returns the number of irreps")
+        .def("symmetry", &Matrix::symmetry, py::return_value_policy::copy, "Returns the overall symmetry of the matrix")
+        .def("identity", &Matrix::identity, "Sets the matrix to the identity")
+        .def("copy_lower_to_upper", &Matrix::copy_lower_to_upper, "Copy the lower triangle to the upper triangle")
+        .def("copy_upper_to_lower", &Matrix::copy_upper_to_lower, "Copy the upper triangle to the lower triangle")
+        .def("zero_lower", &Matrix::zero_lower, "Zero the lower triangle")
+        .def("zero_upper", &Matrix::zero_upper, "Zero the upper triangle")
+        .def("zero", &Matrix::zero, "Zero all elements of the matrix")
+        .def("zero_diagonal", &Matrix::zero_diagonal, "Zero the diagonal of the matrix")
+        .def("trace", &Matrix::trace, "Returns the trace of the matrix")
 
-        .def("transpose_this", &Matrix::transpose_this)
-        .def("transpose", &Matrix::transpose)
-        .def("add", matrix_one(&Matrix::add), "docstring")
-        .def("axpy", &Matrix::axpy, "docstring")
-        .def("subtract", matrix_one(&Matrix::subtract), "docstring")
-        .def("accumulate_product", matrix_two(&Matrix::accumulate_product), "docstring")
-        .def("scale", &Matrix::scale, "docstring")
-        .def("sum_of_squares", &Matrix::sum_of_squares, "docstring")
-        .def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "docstring")
-        .def("rms", &Matrix::rms, "docstring")
-        .def("absmax", &Matrix::absmax, "docstring")
-        .def("scale_row", &Matrix::scale_row, "docstring")
-        .def("scale_column", &Matrix::scale_column, "docstring")
+        .def("transpose_this", &Matrix::transpose_this, "Transpose the matrix in-place")
+        .def("transpose", &Matrix::transpose, "Creates a new matrix that is the transpose of this matrix")
+        .def("add", matrix_one(&Matrix::add), "Adds a matrix to this matrix", py::arg("Matrix"))
+        .def("axpy", &Matrix::axpy, "Add to this matrix another matrix scaled by a", py::arg("a"), py::arg("X"))
+        .def("subtract", matrix_one(&Matrix::subtract), "Substract a matrix from this matrix", py::arg("Matrix"))
+        .def("accumulate_product", matrix_two(&Matrix::accumulate_product), 
+             "Multiplies two arguments and adds the result to this matrix", py::arg("Matrix"), py::arg("Matrix"))
+        .def("scale", &Matrix::scale, "Scales the matrix by the floating point value a", py::arg("a"))
+        .def("sum_of_squares", &Matrix::sum_of_squares, "Returns the sum of the squares of this matrix")
+        .def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "Expands the row dimension by one, \
+              and then orthogonalizes vector v against the current rows \
+              before setting the new row to the orthogonalized copy of v", py::arg("v") )
+        .def("rms", &Matrix::rms, "Returns the rms of this matrix")
+        .def("absmax", &Matrix::absmax, "Returns the absolute maximum value")
+        .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", py::arg("h"), py::arg("m"), py::arg("a"))
+        .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", py::arg("h"), py::arg("n"), py::arg("a"))
         .def("transform", matrix_one(&Matrix::transform), "docstring")
         .def("transform", matrix_two(&Matrix::transform), "docstring")
-        .def("transform", matrix_one(&Matrix::back_transform), "docstring")
+        .def("back_transform", matrix_one(&Matrix::back_transform), "docstring")
         .def("back_transform", matrix_two(&Matrix::back_transform), "docstring")
-        .def("vector_dot", double_matrix_one(&Matrix::vector_dot), "docstring")
+        .def("vector_dot", double_matrix_one(&Matrix::vector_dot), "Returns the vector dot product of this by rhs", py::arg("Matrix"), py::arg("rhs"))
         .def("gemm", matrix_multiply(&Matrix::gemm), "docstring")
-        .def("diagonalize", matrix_diagonalize(&Matrix::diagonalize), "docstring")
-        .def("cholesky_factorize", &Matrix::cholesky_factorize, "docstring")
-        .def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring")
+        .def("diagonalize", matrix_diagonalize(&Matrix::diagonalize), 
+             "Diagonalizes this matrix, space for the eigvectors and eigvalues must be created by caller. Only for symmetric matrices.", 
+             py::arg("eigvectors"), py::arg("eigvalues"), py::arg("order") = ascending)
+        .def("cholesky_factorize", &Matrix::cholesky_factorize, "Computes the Cholesky factorization of a real symmetric positivei definite matrix")
+        .def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "Computes the fully pivoted partial Cholesky factorization \
+              of a real symmetric positive semidefinite matrix, to numerical precision delta", py::arg("delta") = 0.0, py::arg("throw_if_negative") = false)
 
         // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization,
         // CanonicalOrthog()).
         // def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, py::arg("delta")
         // = 0.0, py::arg("eigvec") = SharedMatrix()).
-        .def("schmidt", &Matrix::schmidt)
-        .def("invert", &Matrix::invert, "docstring")
-        .def("general_invert", &Matrix::general_invert, "docstring")
+        .def("schmidt", &Matrix::schmidt, "Calls the libqt schmidt function")
+        .def("invert", &Matrix::invert, "Computes the inverse of a real symmetric positive definite matrix")
+        .def("general_invert", &Matrix::general_invert, "Computes the inverse of any nonsingular matrix using LU factorization")
         .def("pseudoinverse", &Matrix::pseudoinverse, "docstring")
-        .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "docstring")
-        .def("copy", matrix_one(&Matrix::copy), "docstring")
-        .def("power", &Matrix::power, "docstring")
+        .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "Apply matrix of denominators to this matrix", py::arg("Matrix"))
+        .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
+        .def("power", &Matrix::power, "Takes the matrix to the alpha power with precision cutoff", py::arg("alpha"), py::arg("cutoff") = 1.0E-12)
 
         // .def("doublet", &Matrix::doublet, "docstring", py::arg("A"), py::arg("B"),
         //      py::arg("transA") = false, py::arg("transB") = false)
         // .def("triplet", &Matrix::triplet, "docstring", py::arg("A"), py::arg("B"), py::arg("C"),
         //      py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false)
 
-        .def("doublet", &Matrix::doublet, "docstring")
-        .def("triplet", &Matrix::triplet, "docstring")
-        .def("get", matrix_get3(&Matrix::get), "docstring")
-        .def("get", matrix_get2(&Matrix::get), "docstring")
+        .def("doublet", &Matrix::doublet, "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", 
+              py::arg("A"), py::arg("B"), py::arg("transA") = false, py::arg("transB") = false)
+        .def("triplet", &Matrix::triplet, "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
+              py::arg("A"), py::arg("B"), py::arg("C"), py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
+        .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
+        .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"), py::arg("n"))
         .def("set", matrix_set1(&Matrix::set), "docstring")
-        .def("set", matrix_set3(&Matrix::set), "docstring")
-        .def("set", matrix_set4(&Matrix::set), "docstring")
+        .def("set", matrix_set3(&Matrix::set), "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
+        .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
+                                               py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
         .def("project_out", &Matrix::project_out, "docstring")
-        .def("save", matrix_save(&Matrix::save), "docstring")
-        .def("load", matrix_load(&Matrix::load), "docstring")
-        .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring")
-        .def("remove_symmetry", &Matrix::remove_symmetry, "docstring")
-        .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring")
-        .def("rotate_columns", &Matrix::rotate_columns, "docstring")
+        .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix"
+             py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg(saveSubBlocks) = false)  
+        .def("load", matrix_load(&Matrix::load), "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
+        .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
+        .def("remove_symmetry", &Matrix::remove_symmetry, "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("A"), py::arg("transformer")) //what?
+        .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) //what?
+        .def("rotate_columns", &Matrix::rotate_columns, "Rotates columns i and j in irrep h by angle theta", py:arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
         .def("array_interface", [](Matrix& m) {
 
             // Build a list of NumPy views, used for the .np and .nph accessors.Vy
