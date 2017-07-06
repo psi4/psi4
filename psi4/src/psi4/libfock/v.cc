@@ -1577,12 +1577,12 @@ void UV::compute_V(std::vector<SharedMatrix> ret)
             double * v_sigma_bb = vals["V_GAMMA_BB"]->pointer();
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_by[P]), phiy[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_bz[P]), phiz[P], 1, Tap[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bx[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tbp[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_by[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tbp[P], 1);
-                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_bb[P] * rho_bz[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_by[P]), phiy[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_bz[P]), phiz[P], 1, Tap[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_bb[P] * rho_bx[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_bb[P] * rho_by[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tbp[P], 1);
+                C_DAXPY(nlocal, w[P] * (2.0 * v_sigma_bb[P] * rho_bz[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tbp[P], 1);
             }
             // timer_off("V: GGA");
         }
@@ -1915,7 +1915,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     gamma_aak[P] =  rho_ak_x[P] * rho_ax[P];
                     gamma_aak[P] += rho_ak_y[P] * rho_ay[P];
                     gamma_aak[P] += rho_ak_z[P] * rho_az[P];
-                    gamma_aak[P] *= 2;
+                    gamma_aak[P] *= 2.0;
 
                     // Beta
                     rho_bk_x[P] = C_DDOT(nlocal, phi_x[P], 1, Tbp[P], 1);
@@ -1924,7 +1924,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     gamma_bbk[P] =  rho_bk_x[P] * rho_bx[P];
                     gamma_bbk[P] += rho_bk_y[P] * rho_by[P];
                     gamma_bbk[P] += rho_ak_z[P] * rho_bz[P];
-                    gamma_bbk[P] *= 2;
+                    gamma_bbk[P] *= 2.0;
 
                     // Alpha-Beta
                     gamma_abk[P]  = rho_ak_x[P] * rho_bx[P] + rho_bk_x[P] * rho_ax[P];
@@ -1992,10 +1992,10 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     }
 
                     // V beta contributions
-                    if (rho_a[P] > v2_rho_cutoff_){
+                    if (rho_b[P] > v2_rho_cutoff_){
                         tmp_val = v2_rho_b_gamma_aa[P] * gamma_aak[P];
                         tmp_val += v2_rho_b_gamma_ab[P] * gamma_abk[P];
-                        tmp_val += v2_rho_b_gamma_ab[P] * gamma_bbk[P];
+                        tmp_val += v2_rho_b_gamma_bb[P] * gamma_bbk[P];
                         C_DAXPY(nlocal, (0.5 * w[P] * tmp_val), phi[P], 1, Tbp[P], 1);
                     }
 
@@ -2027,7 +2027,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_bk_x[P];
                     tmp_val += 2.0 * v2_val_aa * rho_ax[P];
                     tmp_val += v2_val_ab * rho_bx[P];
-                    tmp_val *= 1.0 * w[P];
+                    tmp_val *= w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tap[P], 1);
 
@@ -2036,7 +2036,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_bk_y[P];
                     tmp_val += 2.0 * v2_val_aa * rho_ay[P];
                     tmp_val += v2_val_ab * rho_by[P];
-                    tmp_val *= 1.0 * w[P];
+                    tmp_val *= w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_y[P], 1, Tap[P], 1);
 
@@ -2045,17 +2045,17 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_bk_z[P];
                     tmp_val += 2.0 * v2_val_aa * rho_az[P];
                     tmp_val += v2_val_ab * rho_bz[P];
-                    tmp_val *= 1.0 * w[P];
+                    tmp_val *= w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tap[P], 1);
 
                     // => Beta W terms <= //
 
-                    // rho_bk
+                    // rho_ak
                     v2_val_bb  = v2_rho_a_gamma_bb[P] * rho_ak[P];
                     v2_val_ab  = v2_rho_a_gamma_ab[P] * rho_ak[P];
 
-                    // rho_ak
+                    // rho_bk
                     v2_val_bb += v2_rho_b_gamma_bb[P] * rho_bk[P];
                     v2_val_ab += v2_rho_b_gamma_ab[P] * rho_bk[P];
 
@@ -2076,7 +2076,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_ak_x[P];
                     tmp_val += 2.0 * v2_val_bb * rho_bx[P];
                     tmp_val += v2_val_ab * rho_ax[P];
-                    tmp_val *= 1.0 * w[P];
+                    tmp_val *= w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_x[P], 1, Tbp[P], 1);
 
@@ -2085,7 +2085,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_ak_y[P];
                     tmp_val += 2.0 * v2_val_bb * rho_by[P];
                     tmp_val += v2_val_ab * rho_ay[P];
-                    tmp_val *= 1.0 * w[P];
+                    tmp_val *= w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_y[P], 1, Tbp[P], 1);
 
@@ -2094,7 +2094,7 @@ void UV::compute_Vx(std::vector<SharedMatrix> Dx, std::vector<SharedMatrix> ret)
                     tmp_val += v_gamma_ab[P] * rho_ak_z[P];
                     tmp_val += 2.0 * v2_val_bb * rho_bz[P];
                     tmp_val += v2_val_ab * rho_az[P];
-                    tmp_val *= 1.0 * w[P];
+                    tmp_val *= w[P];
 
                     C_DAXPY(nlocal, tmp_val, phi_z[P], 1, Tbp[P], 1);
 
