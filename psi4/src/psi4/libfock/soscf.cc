@@ -916,81 +916,44 @@ void DFSOMCSCF::transform(bool approx_only)
     // not ideal FIXME
     SharedMatrix AO_R(new Matrix("AO_R", nao_, nrot));
     SharedMatrix AO_a(new Matrix("AO_a", nao_, aoc_rowdim - nrot));
-    SharedMatrix AO_F(new Matrix("AO_F", nao_, aoc_rowdim));
     
     double** rp = AO_R ->pointer(); 
     double** ap = AO_a ->pointer(); 
-    double** fp = AO_F ->pointer(); 
     
     for(size_t i=0; i<nao_; i++){
         C_DCOPY(nrot, &AO_Cp[i][0], 1, &rp[i][0], 1); 
         C_DCOPY((aoc_rowdim - nrot), &AO_Cp[i][nrot], 1, &ap[i][0], 1); 
-        C_DCOPY(aoc_rowdim, &AO_Cp[i][0], 1, &fp[i][0], 1); 
     }
     
-//    dferi_->clear();
-//    dferi_->set_C(AO_C);
-//    dferi_->add_space("R", 0, nrot);
-//    dferi_->add_space("a", nrot, aoc_rowdim);
-//    dferi_->add_space("F", 0, aoc_rowdim);
-    
-    dfh_ -> add_space("R", AO_R);
-    dfh_ -> add_space("a", AO_a);
-    dfh_ -> add_space("F", AO_F);
+    dfh_->add_space("R", AO_R);
+    dfh_->add_space("a", AO_a);
 
     if (approx_only) {
-        dfh_ -> add_transformation("aaQ", "a", "a");
-        dfh_ -> add_transformation("RaQ", "R", "a");
-//        dferi_->add_pair_space("aaQ", "a", "a");
-//        dferi_->add_pair_space("RaQ", "a", "R", -1.0 / 2.0, true);
+        dfh_->add_transformation("aaQ", "a", "a", "pqQ");
+        dfh_->add_transformation("RaQ", "R", "a", "pqQ");
     } else {
-        dfh_ -> add_transformation("aaQ", "a", "a");
-        dfh_ -> add_transformation("RaQ", "R", "a");
-        dfh_ -> add_transformation("RRQ", "R", "R");
-//        dferi_->add_pair_space("aaQ", "a", "a");
-//        dferi_->add_pair_space("RaQ", "a", "R", -1.0 / 2.0, true);
-//        dferi_->add_pair_space("RRQ", "R", "R");
+        dfh_->add_transformation("aaQ", "a", "a", "pqQ");
+        dfh_->add_transformation("RaQ", "R", "a", "pqQ");
+        dfh_->add_transformation("RRQ", "R", "R", "pqQ");
     }
 
-    dfh_ -> transform();
-    dfh_ -> transpose("aaQ", std::make_tuple(1, 2, 0));
-    dfh_ -> transpose("RaQ", std::make_tuple(1, 2, 0));
-    if(!approx_only)
-        dfh_ -> transpose("RRQ", std::make_tuple(1, 2, 0));
-
-//    if (approx_only){
-//      dferi_->add_pair_space("aaQ", "a", "a");
-//      dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
-//    }
-//    else{
-//      dferi_->add_pair_space("aaQ", "a", "a");
-//      dferi_->add_pair_space("RaQ", "a", "R", -1.0/2.0, true);
-//      dferi_->add_pair_space("RRQ", "R", "R");
-//    }
-//    dferi_->compute();
+    dfh_->transform();
 }
 void DFSOMCSCF::set_act_MO()
 {
     // Build (aa|aa)
-//    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
     int nQ = dfh_->get_naux();
     
-//    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
-//    double* aaQp = aaQ->pointer()[0];
-//    FILE* aaQF = aaQT->file_pointer();
-//    fseek(aaQF,0L,SEEK_SET);
-//    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
-    dfh_ -> fill_tensor("aaQ", aaQ);
+    dfh_->fill_tensor("aaQ", aaQ);
     matrices_["actMO"] = Matrix::doublet(aaQ, aaQ, false, true);
     aaQ.reset();
 }
 SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
 
     timer_on("SOMCSCF: DF-Q matrix");
-//    std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
-    int nQ = dfh_ -> get_naux();
+    int nQ = dfh_->get_naux();
     int nact2 = nact_ * nact_;
     double* TPDMp = TPDM->pointer()[0];
 
@@ -1007,15 +970,10 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
 
 
     // Load aaQ
-//    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     double* aaQp = aaQ->pointer()[0];
-    dfh_ -> fill_tensor("aaQ", aaQ);
-//    FILE* aaQF = aaQT->file_pointer();
-//    fseek(aaQF,0L,SEEK_SET);
-//    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
+    dfh_->fill_tensor("aaQ", aaQ);
     
-
     // d_vwxy I_xyQ -> d_vwQ (Qa^4)
     SharedMatrix vwQ(new Matrix("vwQ", nact_ * nact_, nQ));
     double* vwQp = vwQ->pointer()[0];
@@ -1023,13 +981,9 @@ SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM){
     aaQ.reset();
 
     // Load NaQ
-//    std::shared_ptr<Tensor> NaQT = dfints["RaQ"];
     SharedMatrix NaQ(new Matrix("NaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
-    dfh_ -> fill_tensor("RaQ", NaQ);
-//    FILE* NaQF = NaQT->file_pointer();
-//    fseek(NaQF, 0L, SEEK_SET);
-//    fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
+    dfh_->fill_tensor("RaQ", NaQ);
 
     // d_vwQ I_NwQ -> Q_vN (NQa^2)
     SharedMatrix denQ(new Matrix("Dense Qvn", nact_, nmo_));
@@ -1079,7 +1033,6 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     int nact2 = nact_ * nact_;
     int nact3 = nact2 * nact_;
     double* TPDMp = TPDM->pointer()[0];
- //   std::map<std::string, std::shared_ptr<Tensor> >& dfints = dferi_->ints();
 
     // Check the buffer size
     size_t mem_req = 2 * nmo_ * nQ + nmo_ * nact_ * nQ + nact2 * nQ;
@@ -1093,13 +1046,9 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     }
 
     // Read NaQ
-//    std::shared_ptr<Tensor> NaQT = dfints["RaQ"];
     SharedMatrix NaQ(new Matrix("RaQ", nmo_ * nact_, nQ));
     double* NaQp = NaQ->pointer()[0];
-    dfh_ -> fill_tensor("RaQ", NaQ);
-//    FILE* NaQF = NaQT->file_pointer();
-//    fseek(NaQF,0L,SEEK_SET);
-//    fread(NaQp, sizeof(double), nmo_ * nact_ * nQ, NaQF);
+    dfh_->fill_tensor("RaQ", NaQ);
 
     SharedMatrix xyQ(new Matrix("xyQ", nact_ * nact_, nQ));
     double* xyQp = xyQ->pointer()[0];
@@ -1136,24 +1085,17 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     // Read and gemm in chunks, need to do blocking later
     size_t memory_avail = memory_ - nact_ * nmo_ * nQ;
     size_t chunk_size = memory_avail / (nmo_ * nQ);
- //   std::shared_ptr<Tensor> NNQT = dfints["RRQ"];
 
     SharedMatrix wnQ(new Matrix("nwQ", nact_ * nmo_, nQ));
     double** wnQp = wnQ->pointer();
     SharedMatrix NNQ(new Matrix("RRQ", chunk_size * nmo_, nQ));
     double** NNQp = NNQ->pointer();
-//    FILE* NNQF = NNQT->file_pointer();
-
-    std::tuple<size_t, size_t, size_t> shape = dfh_->get_tensor_shape("RRQ");
-    printf("shape of RRQ: (%d, %d, %d)\n", std::get<0>(shape), std::get<1>(shape), std::get<2>(shape));  
  
     for (int start = 0; start < nmo_; start += chunk_size) {
         int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
         size_t read_start = sizeof(double) * start * nmo_ * nQ;
 
-//        fseek(NNQF, read_start, SEEK_SET);
-//        fread(NNQp[0], sizeof(double), block * nmo_ * nQ, NNQF);
-        dfh_ -> fill_tensor("RRQ", NNQ, std::make_pair(start, start + block - 1), 
+        dfh_->fill_tensor("RRQ", NNQ, std::make_pair(start, start + block - 1), 
             std::make_pair(0, nmo_ - 1), std::make_pair(0, nQ - 1));
 
         C_DGEMM('N', 'N', nact_, nmo_ * nQ, block, 1.0, dUactp[0] + start, nmo_, NNQp[0], nmo_ * nQ,
@@ -1162,13 +1104,9 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     NNQ.reset();
 
     // Read aaQ
-//    std::shared_ptr<Tensor> aaQT = dfints["aaQ"];
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     double* aaQp = aaQ->pointer()[0];
-    dfh_ -> fill_tensor("aaQ", aaQ);
-//    FILE* aaQF = aaQT->file_pointer();
-//    fseek(aaQF,0L,SEEK_SET);
-//    fread(aaQp, sizeof(double), nact_ * nact_ * nQ, aaQF);
+    dfh_->fill_tensor("aaQ", aaQ);
 
     // wnQ,xyQ => tmp_wnxy (wNQ, aaQ) NQa^3
     C_DGEMM('N', 'T', nmo_ * nact_, nact2, nQ, 1.0, wnQp[0], nQ, aaQp, nQ, 0.0, Gnwxyp, nact2);

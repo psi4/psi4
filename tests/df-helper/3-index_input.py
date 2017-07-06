@@ -179,8 +179,8 @@ dfh.add_transformation("Qmo1", "C1", "C2")      # best on left  (Q|bw)
 dfh.add_transformation("Qmo2", "C3", "C2")      # best on right (Q|wb)
 dfh.add_transformation("Qmo3", "C4", "C2")      # best on right (w|Qb)
 dfh.add_transformation("Qmo4", "C1", "C4")      # best on left  (b|Qw)
-dfh.add_transformation("Qmo5", "C3", "C1", "pqQ")      # best on right (wb|Q)
-dfh.add_transformation("Qmo6", "C3", "C3", "pqQ")      # best on left  (bw|Q)
+dfh.add_transformation("Qmo5", "C3", "C1")      # best on right (wb|Q)
+dfh.add_transformation("Qmo6", "C3", "C3")      # best on left  (bw|Q)
 
 # test transposes:
 Qmo[2] = np.einsum("Qpq->pQq", Qmo[2])
@@ -194,6 +194,8 @@ dfh.transform()
 # tranpose necessary tensors
 dfh.transpose("Qmo3", (1, 0, 2))
 dfh.transpose("Qmo4", (1, 0, 2))
+dfh.transpose("Qmo5", (1, 2, 0))
+dfh.transpose("Qmo6", (1, 2, 0))
 
 # grab transformed integrals
 dfh_Qmo = []
@@ -704,4 +706,3 @@ sQmo.append(Qmo[5][:, C3_index[0]:C3_index[1]+1, C3_index[0]:C3_index[1]+1])
 for i in range(6):
     psi4.compare_arrays(np.asarray(dfh_Qmo[i]), sQmo[i], 9, "tensor slicing" )     #TEST
     
-

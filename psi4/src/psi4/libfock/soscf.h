@@ -55,7 +55,6 @@ namespace psi {
 
 /// Forward declare
 class JK;
-class DFERI;
 class IntegralTransform;
 class PSIO;
 
@@ -282,7 +281,7 @@ public:
     /**
      * Initialize the DF SOMCSCF object
      * @param jk      JK object to use.
-     * @param df      DFERI object to use.
+     * @param df      DF_Helper object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
     DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<df_helper::DF_Helper> df, SharedMatrix AOTOSO,
@@ -292,7 +291,6 @@ public:
 
 protected:
 
-    std::shared_ptr<DFERI> dferi_;
     std::shared_ptr<df_helper::DF_Helper> dfh_;
     virtual void transform(bool approx_only);
     virtual void set_act_MO();

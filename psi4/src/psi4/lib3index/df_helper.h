@@ -208,7 +208,7 @@ protected:
     std::vector<size_t> Qshell_aggs_;
 
     // general blocking determination
-    size_t wMO_=0;
+    size_t wMO_=nao_/2;
     std::pair<size_t, size_t> pshell_blocks(const size_t mem, size_t hold_met, size_t symm, std::vector<std::pair<size_t, size_t>>& b);
     std::pair<size_t, size_t> Qshell_blocks(const size_t mem, size_t wtmp, size_t wfinal, std::vector<std::pair<size_t, size_t>>& b);
 

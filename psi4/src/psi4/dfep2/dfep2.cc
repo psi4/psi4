@@ -93,11 +93,13 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     #endif
     
     // ==> Init DF object <== /
-    dfh_ = df_helper::DF_Helper::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_EP2"));
-    dfh_ -> set_method("DIRECT");
-    dfh_ -> set_memory(memory_doubles_);
-    dfh_ -> set_nthreads(num_threads_);
-    dfh_ -> initialize(); 
+    dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(get_basisset("ORBITAL"), 
+        get_basisset("DF_BASIS_SCF")));
+    dfh_->set_method("DIRECT");
+    dfh_->set_MO_core(true);
+    dfh_->set_memory(memory_doubles_);
+    dfh_->set_nthreads(num_threads_);
+    dfh_->initialize(); 
 }
 
 std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(std::vector<std::vector<size_t>> solve_orbs){
@@ -210,20 +212,20 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     // ==> Transform DF integrals <== /
 
     // add spaces
-    dfh_ -> clear();
-    dfh_ -> add_space("i", AO_Cocc_);
-    dfh_ -> add_space("a", AO_Cvir_);
-    dfh_ -> add_space("E", AO_CE   );
+    dfh_->clear();
+    dfh_->add_space("i", AO_Cocc_);
+    dfh_->add_space("a", AO_Cvir_);
+    dfh_->add_space("E", AO_CE   );
 
-    // add transformations
-    dfh_ -> add_transformation("iaQ", "i", "a");
-    dfh_ -> add_transformation("iEQ", "i", "E");
-    dfh_ -> add_transformation("aEQ", "a", "E");
+    //// add transformations
+    dfh_->add_transformation("iaQ", "i", "a", "pqQ");
+    dfh_->add_transformation("iEQ", "i", "E", "pqQ");
+    dfh_->add_transformation("aEQ", "a", "E", "pqQ");
 
-    // compute
-    dfh_ -> transform();
-
-    size_t nQ = dfh_ -> get_naux();
+    //// compute
+    dfh_->transform();
+    
+    size_t nQ = dfh_->get_naux();
 
     // ==> Build ERI's <== /
 
@@ -267,23 +269,16 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         throw PSIEXCEPTION(message.str());
     }
 
-    size_t fstat;
-
 
     // Read in part of the tensors
-    // have to transpose for DGAS format (Qpq -> pqQ)
-    dfh_ -> transpose("aEQ", std::make_tuple(1, 2, 0));
-    dfh_ -> transpose("iEQ", std::make_tuple(1, 2, 0));
-    dfh_ -> transpose("iaQ", std::make_tuple(1, 2, 0));
-
     SharedMatrix aEQ(new Matrix("aEQ", nE * nvir, nQ));
     double* aEQp = aEQ->pointer()[0];
-    dfh_ -> fill_tensor("aEQ", aEQ);
+    dfh_->fill_tensor("aEQ", aEQ);
 
     SharedMatrix iEQ(new Matrix("iEQ", nE * nocc, nQ));
     double* iEQp = iEQ->pointer()[0];
-    dfh_ -> fill_tensor("iEQ", iEQ);
-
+    dfh_->fill_tensor("iEQ", iEQ);
+    
     // Allocate temps
     SharedMatrix block_iaQ(new Matrix(block_size * nvir, nQ));
     SharedMatrix temp_ovvE(new Matrix(block_size * nvir, nvir * nE));
@@ -303,7 +298,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         }
 
         // Read a IA block
-        dfh_ -> fill_tensor("iaQ", block_iaQ, std::make_pair(bstart, bstart + block_size - 1),
+        dfh_->fill_tensor("iaQ", block_iaQ, std::make_pair(bstart, bstart + block_size - 1),
             std::make_pair(0, nvir - 1), std::make_pair(0, nQ - 1));
 
         // Write out OVVE
