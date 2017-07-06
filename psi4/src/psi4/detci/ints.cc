@@ -157,12 +157,11 @@ void CIWavefunction::setup_dfmcscf_ints() {
     dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(get_basisset("ORBITAL"), 
         get_basisset("DF_BASIS_SCF")));
     dfh_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
-    int nrot = get_orbitals("DOCC")->ncol() + get_orbitals("ACT")->ncol() + get_orbitals("VIR")->ncol(); 
     dfh_->set_MO_core(false);
     dfh_->set_method("STORE");
     
+    int nrot = get_orbitals("DOCC")->ncol() + get_orbitals("ACT")->ncol() + get_orbitals("VIR")->ncol(); 
     dfh_->set_MO_hint(nrot);
-    
     dfh_->set_nthreads(num_threads_);
     dfh_->initialize(); 
     

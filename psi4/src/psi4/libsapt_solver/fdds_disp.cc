@@ -40,6 +40,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/lib3index/df_helper.h"
 
 #include <iomanip>
 
@@ -146,7 +147,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     overlap->compute(aux_overlap_);
 
     // ==> Form 3-index object <==
-
+    
     // Build C Stack
     std::vector<SharedMatrix> Cstack_vec;
     Cstack_vec.push_back(matrix_cache_["Cocc_A"]);
@@ -154,33 +155,34 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     Cstack_vec.push_back(matrix_cache_["Cocc_B"]);
     Cstack_vec.push_back(matrix_cache_["Cvir_B"]);
 
-    SharedMatrix Cstack = Matrix::horzcat(Cstack_vec);
-
-    // Build DFERI
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    dferi_ = DFERI::build(primary_, auxiliary_, options);
-    dferi_->clear();
-    dferi_->set_memory(doubles);
-
+    size_t max_MO = 0;
+    for(auto & mat : Cstack_vec)
+        max_MO = std::max(max_MO, (size_t)mat->ncol());
+ 
+    // Build DF_Helper
+    dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, auxiliary_));
+    dfh_->set_memory(doubles);
+    dfh_->set_MO_core(false);
+    dfh_->set_MO_hint(max_MO);
+    dfh_->set_method("STORE");
+    dfh_->set_nthreads(nthread);
+    dfh_->set_metric_pow(0.0);
+    dfh_->initialize(); 
+    
     // Define spaces
-    dferi_->set_C(Cstack);
+    dfh_->add_space("i", Cstack_vec[0]); 
+    dfh_->add_space("a", Cstack_vec[1]);
+    dfh_->add_space("j", Cstack_vec[2]);
+    dfh_->add_space("b", Cstack_vec[3]);
 
-    size_t offset = 0;
-    dferi_->add_space("i", offset, offset + matrix_cache_["Cocc_A"]->colspi()[0]);
-    offset += matrix_cache_["Cocc_A"]->colspi()[0];
+    // add transformations
+    dfh_->add_transformation("iaQ", "i", "a", "pqQ");  
+    dfh_->add_transformation("jbQ", "j", "b", "pqQ");  
 
-    dferi_->add_space("a", offset, offset + matrix_cache_["Cvir_A"]->colspi()[0]);
-    offset += matrix_cache_["Cvir_A"]->colspi()[0];
+    // transform
+    dfh_->transform();
 
-    dferi_->add_space("j", offset, offset + matrix_cache_["Cocc_B"]->colspi()[0]);
-    offset += matrix_cache_["Cocc_B"]->colspi()[0];
-
-    dferi_->add_space("b", offset, offset + matrix_cache_["Cvir_B"]->colspi()[0]);
-    offset += matrix_cache_["Cvir_B"]->colspi()[0];
-
-    dferi_->add_pair_space("iaQ", "i", "a", 0.0, false);
-    dferi_->add_pair_space("jbQ", "j", "b", 0.0, false);
-    dferi_->compute();
 }
 
 FDDS_Dispersion::~FDDS_Dispersion() {}
@@ -460,8 +462,6 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
 
     // printf("dmem:    %zu\n", dmem);
     // printf("bsize:   %zu\n", bsize);
-    FILE* tensor_file = dferi_->ints()[ovQ_tensor_name]->file_pointer();
-    fseek(tensor_file, 0L, SEEK_SET);
 
     SharedMatrix ret(new Matrix("UNC Amplitude", naux, naux));
     SharedMatrix tmp(new Matrix("iaQ tmp", bsize * nvir, naux));
@@ -470,7 +470,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     double** retp = ret->pointer();
 
     size_t rstat, osize;
-    for (size_t block = 0; block < nblocks; block++){
+    for (size_t block = 0, bcount = 0; block < nblocks; block++){
         // printf("Block %zu\n", block);
         if (((block + 1) * bsize) > nocc) {
             osize = nocc - block * bsize;
@@ -478,8 +478,9 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         } else {
             osize = bsize;
         }
-
-        rstat = fread(tmpp[0], sizeof(double), osize * nvir * naux, tensor_file);
+        
+        dfh_->fill_tensor(ovQ_tensor_name, tmp, std::make_pair(bcount, bcount + osize - 1), 
+            std::make_pair(0, nvir - 1), std::make_pair(0, naux - 1));
         size_t shift_i = block * bsize;
 
         # pragma omp parallel for collapse (2)
@@ -492,8 +493,9 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
                 }
             }
         }
-
+    
         ret->gemm(true, false, 1.0, tmp, tmp, 1.0);
+        bcount += osize;
     }
 
     return ret;
