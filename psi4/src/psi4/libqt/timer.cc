@@ -929,31 +929,6 @@ std::vector<std::list<Timer_Structure *>> par_on_timers;
 time_t timer_start, timer_end;
 static omp_lock_t lock_timer;
 
-std::string formatTimeNumberPrint(double time, size_t sig_fig = 4, size_t width = 10) {
-    std::string s = std::to_string(time);
-    size_t l;
-    std::string append_front = "";
-    size_t dot_index = s.find('.');
-    if (dot_index != std::string::npos) {
-        if (dot_index >= sig_fig) {
-            s = s.substr(0, dot_index);
-        } else if (time >= 1.0) {
-            s = s.substr(0, sig_fig + 1);
-        } else {
-            size_t sig_start = s.find_first_not_of('0', dot_index + 1);
-            l = s.length();
-            if (l - sig_start > sig_fig) {
-                s = s.substr(0, sig_start + sig_fig);
-            }
-        }
-    }
-    l = s.length();
-    if (l < width) {
-        append_front.resize(width - l, ' ');
-    }
-    return append_front + s;
-}
-
 void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, int align_key_width) {
     std::string key = timer.get_key();
     if (key.length() < align_key_width) {
@@ -963,14 +938,14 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
     switch (timer.get_status()) {
         case ON:
         case OFF:
-            printer->Printf("%s: %su %ss %sw %6d calls\n", key.c_str(),
-                            formatTimeNumberPrint(timer.get_utime()).c_str(),
-                            formatTimeNumberPrint(timer.get_stime()).c_str(), formatTimeNumberPrint(wtime).c_str(),
+            printer->Printf("%s: %10.3fu %10.3fs %10.3fw %6d calls\n", key.c_str(),
+                            timer.get_utime(),
+                            timer.get_stime(), wtime,
                             timer.get_n_calls());
             break;
         case PARALLEL:
-            printer->Printf("%s: %sp                         %6d calls\n", key.c_str(),
-                            formatTimeNumberPrint(wtime).c_str(), timer.get_n_calls());
+            printer->Printf("%s: %10.3fp                         %6d calls\n", key.c_str(),
+                            wtime, timer.get_n_calls());
         default:
             break;
     }
