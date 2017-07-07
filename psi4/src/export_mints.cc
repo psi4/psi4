@@ -307,7 +307,7 @@ void export_mints(py::module& m)
         .value("Descending", descending)
         .export_values();
 
-    py::enum_<Molecule::GeometryUnits>(m, "GeometryUnits", "docstring")
+    py::enum_<Molecule::GeometryUnits>(m, "GeometryUnits", "The units used to define the geometry")
         .value("Angstrom", Molecule::Angstrom)
         .value("Bohr", Molecule::Bohr)
         .export_values();
@@ -412,7 +412,7 @@ void export_mints(py::module& m)
               py::arg("A"), py::arg("B"), py::arg("C"), py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"), py::arg("n"))
-        .def("set", matrix_set1(&Matrix::set), "docstring")
+        .def("set", matrix_set1(&Matrix::set), "Sets every element of a matrix to val", py::arg("val"))
         .def("set", matrix_set3(&Matrix::set), "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
         .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
                                                py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
@@ -421,8 +421,9 @@ void export_mints(py::module& m)
              py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg(saveSubBlocks) = false)  
         .def("load", matrix_load(&Matrix::load), "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
-        .def("remove_symmetry", &Matrix::remove_symmetry, "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("A"), py::arg("transformer")) //what?
-        .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) //what?
+            // should this take Petite List's sotoao() function as a default?
+        .def("remove_symmetry", &Matrix::remove_symmetry, "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("A"), py::arg("transformer"))
+        .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) 
         .def("rotate_columns", &Matrix::rotate_columns, "Rotates columns i and j in irrep h by angle theta", py:arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
         .def("array_interface", [](Matrix& m) {
 
