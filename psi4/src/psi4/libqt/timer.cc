@@ -243,7 +243,7 @@ class Timer_Structure {
     Timer_Structure *parent_ptr_;
 
    public:
-    Timer_Structure(Timer_Structure *parent, std::string key) : parent_ptr_(parent), key_(key) {
+    Timer_Structure(Timer_Structure *parent, const std::string& key) : parent_ptr_(parent), key_(key) {
         status_ = OFF;
         n_calls_ = 0;
         utime_ = 0;
@@ -951,7 +951,7 @@ void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> pri
     }
 }
 
-void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, std::string indent) {
+void print_nested_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, const std::string& indent) {
     const std::list<Timer_Structure> &children = timer.get_children();
     for (auto child_iter = children.begin(), end_child_iter = children.end(); child_iter != end_child_iter;
          ++child_iter) {
@@ -1040,7 +1040,7 @@ void timer_done(void) {
 **
 ** \ingroup QT
 */
-void timer_on(std::string key) {
+void timer_on(const std::string& key) {
     omp_set_lock(&lock_timer);
     extern Timer_Structure parallel_timer;
     if (parallel_timer.get_parent() != nullptr) {
@@ -1071,7 +1071,7 @@ void timer_on(std::string key) {
 **
 ** \ingroup QT
 */
-void timer_off(std::string key) {
+void timer_off(const std::string& key) {
     omp_set_lock(&lock_timer);
     extern Timer_Structure parallel_timer;
     extern std::list<Timer_Structure *> ser_on_timers;
@@ -1137,7 +1137,7 @@ void timer_off(std::string key) {
 **
 ** \ingroup QT
 */
-void parallel_timer_on(std::string key, int thread_rank) {
+void parallel_timer_on(const std::string& key, int thread_rank) {
     omp_set_lock(&lock_timer);
     extern std::list<Timer_Structure *> ser_on_timers;
     extern std::vector<std::list<Timer_Structure *>> par_on_timers;
@@ -1175,7 +1175,7 @@ void parallel_timer_on(std::string key, int thread_rank) {
 **
 ** \ingroup QT
 */
-void parallel_timer_off(std::string key, int thread_rank) {
+void parallel_timer_off(const std::string& key, int thread_rank) {
     omp_set_lock(&lock_timer);
     extern std::vector<std::list<Timer_Structure *>> par_on_timers;
     extern Timer_Structure parallel_timer;
