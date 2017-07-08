@@ -704,80 +704,90 @@ void export_mints(py::module& m)
         .def(py::init<std::shared_ptr<Wavefunction> >())
 
         // Options and attributes
-        .def("nbf", &MintsHelper::nbf, "docstring")
-        .def("set_print", &MintsHelper::set_print, "docstring")
-        .def("basisset", &MintsHelper::basisset, "docstring")
-        .def("sobasisset", &MintsHelper::sobasisset, "docstring")
-        .def("factory", &MintsHelper::factory, "docstring")
-        .def("cdsalcs", &MintsHelper::cdsalcs, "docstring")
-        .def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring")
-        .def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring")
+        .def("nbf", &MintsHelper::nbf, "Returns the number of basis functions")
+        .def("set_print", &MintsHelper::set_print, "Sets the print level")
+        .def("basisset", &MintsHelper::basisset, "Returns the basis set being used")
+        .def("sobasisset", &MintsHelper::sobasisset, "Returns the SO basis set being used")
+        .def("factory", &MintsHelper::factory, "Returns the Matrix factory being used")
+        .def("cdsalcs", &MintsHelper::cdsalcs, "Returns a CdSalcList object")
+        .def("petite_list", petite_list_0(&MintsHelper::petite_list), 
+             "Returns petite list, which transforms AO basis functions to SO's") //set arguments?
+        .def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring") //Why is this here?
 
         // Integral builders
-        .def("integral", &MintsHelper::integral, "docstring")
-        .def("integrals", &MintsHelper::integrals, "docstring")
+        .def("integral", &MintsHelper::integral, "Integral factory being used")
+        .def("integrals", &MintsHelper::integrals, "Molecular integrals")
         .def("integrals_erf", &MintsHelper::integrals_erf, "docstring")
         .def("integrals_erfc", &MintsHelper::integrals_erfc, "docstring")
-        .def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring")
+        .def("one_electron_integrals", &MintsHelper::one_electron_integrals, "Standard one-electron integrals")
 
         // One-electron
-        .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "docstring")
-        .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "docstring")
-        .def("so_overlap", &MintsHelper::so_overlap, "docstring")
-        .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "docstring")
-        .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "docstring")
-        .def("so_kinetic", &MintsHelper::so_kinetic, "docstring")
-        .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "docstring")
-        .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring")
-        .def("so_potential", &MintsHelper::so_potential, "docstring")
+        .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "AO basis overlap integrals")
+        .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "AO mixed basis overlap integrals")
+        .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals")
+        .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
+        .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
+        .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals")
+        .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
+        .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
+        .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals")
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")
 
         // One-electron properties and
-        .def("ao_pvp", &MintsHelper::ao_pvp, "docstring")
-        .def("ao_dkh", &MintsHelper::ao_dkh, "docstring")
-        .def("so_dkh", &MintsHelper::so_dkh, "docstring")
-        .def("ao_dipole", &MintsHelper::ao_dipole, "docstring")
-        .def("so_dipole", &MintsHelper::so_dipole, "docstring")
-        .def("ao_quadrupole", &MintsHelper::ao_quadrupole, "docstring")
-        .def("so_quadrupole", &MintsHelper::so_quadrupole, "docstring")
-        .def("ao_traceless_quadrupole", &MintsHelper::ao_traceless_quadrupole, "docstring")
-        .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole, "docstring")
-        .def("ao_nabla", &MintsHelper::ao_nabla, "docstring")
-        .def("so_nabla", &MintsHelper::so_nabla, "docstring")
-        .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring")
-        .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring")
+        .def("ao_pvp", &MintsHelper::ao_pvp, "AO pvp integrals")
+        .def("ao_dkh", &MintsHelper::ao_dkh, "AO dkh integrals")
+        .def("so_dkh", &MintsHelper::so_dkh, "SO dkh integrals")
+        .def("ao_dipole", &MintsHelper::ao_dipole, "Vector AO dipole integrals")
+        .def("so_dipole", &MintsHelper::so_dipole, "Vector SO dipole integrals")
+        .def("ao_quadrupole", &MintsHelper::ao_quadrupole, "Vector AO quadrupole integrals")
+        .def("so_quadrupole", &MintsHelper::so_quadrupole, "Vector SO quadrupole integrals")
+        .def("ao_traceless_quadrupole", &MintsHelper::ao_traceless_quadrupole, "Vector AO traceless quadrupole integrals")
+        .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole, "Vector SO tracless quadrupole integrals")
+        .def("ao_nabla", &MintsHelper::ao_nabla, "Vector AO nabla integrals")
+        .def("so_nabla", &MintsHelper::so_nabla, "Vector SO nabla integrals")
+        .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "Vector AO angular momentum integrals")
+        .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "Vector SO angular momentum integrals")
 
         // Two-electron AO
-        .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "docstring")
-        .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "docstring")
-        .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring")
-        .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring")
-        .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "docstring")
-        .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "docstring")
-        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring")
+        .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")
+        .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals",
+              py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
+        .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", py::arg("M"), py::arg("N"), py::arg("P"), py::arg("Q") )
+        .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", py::arg("omega"))
+        .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
+        .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", 
+              py::arg("corr"), py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
+        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring") //doc's in C++ code seem incorrect, labelled as MO..
         .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "docstring")
         .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "docstring")
         .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "docstring")
         .def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring")
         .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring")
-        .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "docstring")
-        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "docstring")
+        .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
+        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", py::arg("bs1"), py::arg("bs2"), py::arg("bs3"))
 
 
         // Two-electron MO and transformers
-        .def("mo_eri", eri(&MintsHelper::mo_eri), "docstring")
-        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "docstring")
-        .def("mo_f12", &MintsHelper::mo_f12, "docstring")
-        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring")
-        .def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring")
-        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring")
-        .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "docstring")
-        .def("mo_transform", &MintsHelper::mo_transform, "docstring")
-        .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "docstring")
+        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", 
+             py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", 
+             py::arg("omega"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals"
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals"
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals"
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals"
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", py::arg("C1"), py::arg("C2"))
+        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory"
+             py::arg("Iso"), py::arg("C1") py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", py::arg("rel_basis"))
 
-        .def("play", &MintsHelper::play, "docstring");
+        .def("play", &MintsHelper::play, "play function");  //???
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
