@@ -2319,9 +2319,9 @@ def run_ccenergy_pcm(name, **kwargs):
     for macroit in range(50):
         core.set_variable('MACROITERATION', macroit)
         ccwfn = core.ccenergy(ref_wfn)
-        core.cchbar(ref_wfn)
-        core.cclambda(ref_wfn)
-        core.ccdensity(ref_wfn)
+        core.cchbar(ccwfn)
+        core.cclambda(ccwfn)
+        core.ccdensity(ccwfn)
         E = core.get_variable('CURRENT ENERGY')
         Ecorr = core.get_variable('CURRENT CORRELATION ENERGY')
         t_micro = int(core.get_variable('T MICROITERATIONS'))
