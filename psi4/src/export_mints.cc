@@ -247,7 +247,8 @@ void export_mints(py::module& m)
         .def("get", vector_getitem_1(&Vector::get), "Returns a single element value located at m", py::arg("m"))
         .def("get", vector_getitem_2(&Vector::get), "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"))
         .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", py::arg("m"), py::arg("val"))
-        .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
+        .def("set", vector_setitem_2(&Vector::set), 
+             "Sets a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
         .def("print_out", &Vector::print_out, "Prints the vector")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", py::arg("sc"))
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h" py::arg("h"))
@@ -297,7 +298,8 @@ void export_mints(py::module& m)
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "docstring")
         .def(py::init<int>())
         .def("get", &IntVector::get, "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"))
-        .def("set", int_vector_set(&IntVector::set), "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
+        .def("set", int_vector_set(&IntVector::set), 
+             "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
         .def("print_out", &IntVector::print_out, "Prints the vector")
         .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", py::arg("h"))
         .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
@@ -399,7 +401,8 @@ void export_mints(py::module& m)
         .def("pseudoinverse", &Matrix::pseudoinverse, "docstring")
         .def("apply_denominator", matrix_one(&Matrix::apply_denominator), "Apply matrix of denominators to this matrix", py::arg("Matrix"))
         .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
-        .def("power", &Matrix::power, "Takes the matrix to the alpha power with precision cutoff", py::arg("alpha"), py::arg("cutoff") = 1.0E-12)
+        .def("power", &Matrix::power, 
+             "Takes the matrix to the alpha power with precision cutoff", py::arg("alpha"), py::arg("cutoff") = 1.0E-12)
 
         // .def("doublet", &Matrix::doublet, "docstring", py::arg("A"), py::arg("B"),
         //      py::arg("transA") = false, py::arg("transB") = false)
@@ -410,21 +413,27 @@ void export_mints(py::module& m)
               py::arg("A"), py::arg("B"), py::arg("transA") = false, py::arg("transB") = false)
         .def("triplet", &Matrix::triplet, "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
               py::arg("A"), py::arg("B"), py::arg("C"), py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
-        .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
+        .def("get", matrix_get3(&Matrix::get), 
+             "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"), py::arg("n"))
         .def("set", matrix_set1(&Matrix::set), "Sets every element of a matrix to val", py::arg("val"))
-        .def("set", matrix_set3(&Matrix::set), "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
+        .def("set", matrix_set3(&Matrix::set), 
+             "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
         .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
                                                py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
         .def("project_out", &Matrix::project_out, "docstring")
         .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix"
              py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg(saveSubBlocks) = false)  
-        .def("load", matrix_load(&Matrix::load), "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
+        .def("load", matrix_load(&Matrix::load), 
+             "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
-            // should this take Petite List's sotoao() function as a default?
-        .def("remove_symmetry", &Matrix::remove_symmetry, "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("A"), py::arg("transformer"))
-        .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) 
-        .def("rotate_columns", &Matrix::rotate_columns, "Rotates columns i and j in irrep h by angle theta", py:arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
+            // shouldn't this take Petite List's sotoao() function as a default argument?
+        .def("remove_symmetry", &Matrix::remove_symmetry, 
+             "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("A"), py::arg("transformer"))
+        .def("symmetrize_gradient", &Matrix::symmetrize_gradient, 
+             "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) 
+        .def("rotate_columns", &Matrix::rotate_columns, 
+             "Rotates columns i and j in irrep h by angle theta", py:arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
         .def("array_interface", [](Matrix& m) {
 
             // Build a list of NumPy views, used for the .np and .nph accessors.Vy
@@ -468,10 +477,12 @@ void export_mints(py::module& m)
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def(py::init<std::shared_ptr<Wavefunction>, char, bool, bool>())
-        .def("set_tpdm_presorted", &Deriv::set_tpdm_presorted, "docstring")
-        .def("set_ignore_reference", &Deriv::set_ignore_reference, "docstring")
+        .def("set_tpdm_presorted", &Deriv::set_tpdm_presorted, 
+             "Is the TPDM already presorted? Default is False", py::arg("val") = false)
+        .def("set_ignore_reference", &Deriv::set_ignore_reference, 
+             "Ignore reference contributions to the gradient? Default is False", py::arg("val") = false)
         .def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed,
-             "docstring")
+             "Is the deriv_density already backtransformed? Default is False", py::arg("val") = false)
         .def("compute", &Deriv::compute, "docstring");
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
@@ -479,25 +490,26 @@ void export_mints(py::module& m)
 
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "docstring")
         .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
-             "docstring")
+             "Returns a new matrix object with default dimensions", py::arg("symmetry") = 0)
         .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
-             "docstring");
+             "Returns a new Matrix object named name with default dimensions", py::arg("mat"), py::arg("name"), py::arg("symmetry") = 0);
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "docstring")
         .def("print_out", &CdSalcList::print, "docstring")
-        .def("matrix", &CdSalcList::matrix, "docstring");
+        .def("matrix", &CdSalcList::matrix, "Return the SALCs")
+        .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return only the SALCS in irrep h", py::arg("h"));
 
     py::class_<GaussianShell, std::shared_ptr<GaussianShell>>(m, "GaussianShell", "docstring")
         .def_property_readonly("nprimitive", py::cpp_function(&GaussianShell::nprimitive),
-                               "docstring")
+                               "The number of primitive gaussians")
         .def_property_readonly("nfunction", py::cpp_function(&GaussianShell::nfunction),
-                               "docstring")
+                               "Total number of basis functions")
         .def_property_readonly("ncartesian", py::cpp_function(&GaussianShell::ncartesian),
-                               "docstring")
-        .def_property_readonly("am", py::cpp_function(&GaussianShell::am), "docstring")
-        .def_property_readonly("amchar", py::cpp_function(&GaussianShell::amchar), "docstring")
-        .def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR), "docstring")
-        .def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter), "docstring")
+                               "Total number of basis functions if this shell was Cartesian")
+        .def_property_readonly("am", py::cpp_function(&GaussianShell::am), "The angular momentum of the given contraction")
+        .def_property_readonly("amchar", py::cpp_function(&GaussianShell::amchar), "The character symbol for the angular momentum of the given contraction")
+        .def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR), "The upper-case character symbol for the angular momentum of the given contraction")
+        .def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter), "Returns atom number this shell is on")
         .def_property("function_index", py::cpp_function(&GaussianShell::function_index),
                       py::cpp_function(&GaussianShell::set_function_index),
                       "Basis function index where this shell starts.")
@@ -508,21 +520,21 @@ void export_mints(py::module& m)
         //            primitives").
         //            add_property("coefs", &GaussianShell::coefs, "The coefficients of all the
         //            primitives").
-        def("is_cartesian", &GaussianShell::is_cartesian, "docstring")
-        .def("is_pure", &GaussianShell::is_pure, "docstring")
+        def("is_cartesian", &GaussianShell::is_cartesian, "Returns true if contraction is Cartesian")
+        .def("is_pure", &GaussianShell::is_pure, "Returns true if contraction is pure")
         .
         //            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
-        def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive")
-        .def("original_coef", &GaussianShell::original_coef, "docstring")
+        def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive", py::arg("prim"))
+        .def("original_coef", &GaussianShell::original_coef, "Return unnormalized coefficient of the pi'th primitive", py::arg("pi"))
         .def("erd_coef", &GaussianShell::erd_coef, "docstring")
-        .def("coef", &GaussianShell::coef, "docstring");
+        .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", py::arg("pi"));
 
     py::enum_<PrimitiveType>(m, "PrimitiveType", "docstring")
         .value("Normalized", Normalized)
         .value("Unnormalized", Unnormalized)
         .export_values();
 
-    py::enum_<GaussianType>(m, "GaussianType", "docstring")
+    py::enum_<GaussianType>(m, "GaussianType", "0 if Cartesian, 1 if Pure")
         .value("Cartesian", Cartesian)
         .value("Pure", Pure)
         .export_values();
@@ -534,8 +546,8 @@ void export_mints(py::module& m)
     py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(m, "OneBodyAOInt",
-                                                                           "docstring");
-    pyOneBodyAOInt.def("compute_shell", &OneBodyAOInt::compute_shell, "docstring")
+                                                                           "Basis class for all one-electron integrals");
+    pyOneBodyAOInt.def("compute_shell", &OneBodyAOInt::compute_shell, "Compute integrals between basis functions in the given shell pair")
         .def_property("origin", py::cpp_function(&OneBodyAOInt::origin),
                       py::cpp_function(&OneBodyAOInt::set_origin),
                       "The origin about which the one body ints are being computed.")
@@ -557,22 +569,22 @@ void export_mints(py::module& m)
     //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
 
     py::class_<OverlapInt, std::shared_ptr<OverlapInt>>(m, "OverlapInt", pyOneBodyAOInt,
-                                                        "docstring");
-    py::class_<DipoleInt, std::shared_ptr<DipoleInt>>(m, "DipoleInt", pyOneBodyAOInt, "docstring");
+                                                        "Computes overlap integrals");
+    py::class_<DipoleInt, std::shared_ptr<DipoleInt>>(m, "DipoleInt", pyOneBodyAOInt, "Computes dipole integrals");
     py::class_<QuadrupoleInt, std::shared_ptr<QuadrupoleInt>>(m, "QuadrupoleInt", pyOneBodyAOInt,
-                                                              "docstring");
+                                                              "Computes quadrupole integrals");
     py::class_<MultipoleInt, std::shared_ptr<MultipoleInt>>(m, "MultipoleInt", pyOneBodyAOInt,
-                                                            "docstring");
+                                                            "Computes arbitrary-order multipole integrals");
     py::class_<TracelessQuadrupoleInt, std::shared_ptr<TracelessQuadrupoleInt>>(
         m, "TracelessQuadrupoleInt", pyOneBodyAOInt, "docstring");
     py::class_<ElectricFieldInt, std::shared_ptr<ElectricFieldInt>>(m, "ElectricFieldInt",
-                                                                    pyOneBodyAOInt, "docstring");
+                                                                    pyOneBodyAOInt, "Computes electric field integrals");
     py::class_<KineticInt, std::shared_ptr<KineticInt>>(m, "KineticInt", pyOneBodyAOInt,
-                                                        "docstring");
+                                                        "Computes kinetic integrals");
     py::class_<PotentialInt, std::shared_ptr<PotentialInt>>(m, "PotentialInt", pyOneBodyAOInt,
-                                                            "docstring");
+                                                            "Computes potential integrals");
     py::class_<PseudospectralInt, std::shared_ptr<PseudospectralInt>>(m, "PseudospectralInt",
-                                                                      pyOneBodyAOInt, "docstring");
+                                                                      pyOneBodyAOInt, "Computes pseudospectral integrals");
     py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt",
                                                                     pyOneBodyAOInt, "docstring");
     py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "docstring");
@@ -581,13 +593,13 @@ void export_mints(py::module& m)
 
     typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
-                                                                           "docstring");
+                                                                           "Two body integral base class");
     pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
-                       "docstring");  // <-- Semicolon
+                       "Compute ERIs between 4 shells");  // <-- Semicolon
 
     py::class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
-                                                                "docstring")
-        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
+                                                                "Computes two-electron repulsion integrals")
+        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells");
 
     py::class_<ERI, std::shared_ptr<ERI>>(m, "ERI", pyTwoBodyAOInt, "docstring");
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "docstring");
@@ -602,17 +614,17 @@ void export_mints(py::module& m)
 
     py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(
         m, "AOShellCombinationsIterator")
-        .def_property_readonly("p", py::cpp_function(&AOShellCombinationsIterator::p), "docstring")
-        .def_property_readonly("q", py::cpp_function(&AOShellCombinationsIterator::q), "docstring")
-        .def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "docstring")
-        .def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "docstring")
+        .def_property_readonly("p", py::cpp_function(&AOShellCombinationsIterator::p), "Returns current P index")
+        .def_property_readonly("q", py::cpp_function(&AOShellCombinationsIterator::q), "Returns current Q index")
+        .def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "Returns current R index")
+        .def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "Returns current S index")
         .def("first", &AOShellCombinationsIterator::first, "docstring")
         .def("next", &AOShellCombinationsIterator::next, "docstring")
         .def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
     py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(
-        m, "ThreeCenterOverlapInt", "docstring")
-        .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring");
+        m, "ThreeCenterOverlapInt", "Three center overalp integrals")
+        .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "Compute the integrals of the form (a|c|b)");
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
@@ -620,10 +632,11 @@ void export_mints(py::module& m)
         .def(py::init<std::shared_ptr<BasisSet>>())
         // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
         // py::return_value_policy<manage_new_object>(), "docstring").
-        .def("shells_iterator", &IntegralFactory::shells_iterator_ptr, "docstring")
-        .def("eri", &IntegralFactory::eri, "docstring", py::arg("deriv") = 0,
+        .def("shells_iterator", &IntegralFactory::shells_iterator_ptr, 
+             "Returns an ERI iterator object, only coded for standard ERIs")
+        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", py::arg("deriv") = 0,
              py::arg("use_shell_pairs") = true)
-        .def("f12", &IntegralFactory::f12, "docstring", py::arg("cf"), py::arg("deriv") = 0,
+        .def("f12", &IntegralFactory::f12, "Returns an f12 integral object", py::arg("cf"), py::arg("deriv") = 0,
              py::arg("use_shell_pairs") = true)
         .def("f12g12", &IntegralFactory::f12g12, "docstring", py::arg("cf"), py::arg("deriv") = 0,
              py::arg("use_shell_pairs") = true)
