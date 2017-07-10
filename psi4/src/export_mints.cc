@@ -253,7 +253,7 @@ void export_mints(py::module& m)
              "Sets a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
         .def("print_out", &Vector::print_out, "Prints the vector")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", py::arg("sc"))
-        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h" py::arg("h"))
+        .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", py::arg("h"))
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("array_interface", [](Vector& v) {
 
@@ -387,12 +387,12 @@ void export_mints(py::module& m)
         .def("vector_dot", double_matrix_one(&Matrix::vector_dot), 
              "Returns the vector dot product of this with rhs", py::arg("Matrix"), py::arg("rhs"))
         .def("gemm", matrix_multiply(&Matrix::gemm), 
-             "Generalized matrix multiplication 
-              argument transa Transpose the left matrix?
-              argument transb Transpose the right matrix?
-              argument alpha Prefactor for the matrix multiplication
-              argument A Left matrix
-              argument B Right matrix
+             "Generalized matrix multiplication \
+              argument transa Transpose the left matrix? \
+              argument transb Transpose the right matrix? \
+              argument alpha Prefactor for the matrix multiplication \
+              argument A Left matrix \
+              argument B Right matrix \
               argument beta Prefactor for the resulting matrix",
               py::arg("transa"),  py::arg("transb"), py::arg("alpha") ,py::arg("A"), py::arg("B"), py::arg("beta") )
         .def("diagonalize", matrix_diagonalize(&Matrix::diagonalize), 
@@ -440,8 +440,8 @@ void export_mints(py::module& m)
         .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
                                                py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
         .def("project_out", &Matrix::project_out, "docstring") //destroyed according to matrix.h file
-        .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix"
-             py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg(saveSubBlocks) = false)  
+        .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix",
+             py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg("saveSubBlocks") = false)  
         .def("load", matrix_load(&Matrix::load), 
              "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
@@ -451,7 +451,7 @@ void export_mints(py::module& m)
         .def("symmetrize_gradient", &Matrix::symmetrize_gradient, 
              "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) 
         .def("rotate_columns", &Matrix::rotate_columns, 
-             "Rotates columns i and j in irrep h by angle theta", py:arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
+             "Rotates columns i and j in irrep h by angle theta", py::arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
         .def("array_interface", [](Matrix& m) {
 
             // Build a list of NumPy views, used for the .np and .nph accessors.Vy
@@ -796,16 +796,16 @@ void export_mints(py::module& m)
              py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
         .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", 
              py::arg("omega"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals"
+        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals",
              py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals"
+        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals",
              py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals"
+        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals",
              py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals"
+        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals",
              py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
         .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", py::arg("C1"), py::arg("C2"))
-        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory"
+        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory",
              py::arg("Iso"), py::arg("C1") py::arg("C2"), py::arg("C3"), py::arg("C4"))
         .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", py::arg("rel_basis"))
 
