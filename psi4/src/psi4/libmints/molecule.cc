@@ -1331,7 +1331,7 @@ std::string Molecule::create_psi4_string_from_molecule() const
             sprintf(buffer, "    no_com\n");
             ss << buffer;
         }
-        if (fix_orientation_ == true) {
+        if (fix_orientation_) {
             sprintf(buffer, "    no_reorient\n");
             ss << buffer;
         }
@@ -1455,7 +1455,7 @@ void Molecule::update_geometry()
         move_to_com();
 
     // If the no_reorient command was given, don't reorient
-    if (fix_orientation_ == false) {
+    if (!fix_orientation_) {
         // Now we need to rotate the geometry to its symmetry frame
         // to align the axes correctly for the point group
         // symmetry_frame looks for the highest point group so that we can align
@@ -3090,10 +3090,21 @@ int Molecule::get_anchor_atom(const std::string &str, const std::string &line)
 
 void Molecule::set_variable(const std::string &str, double val)
 {
+
+    // This is a weird thing if were not z-matrix
+    if (!zmat_ && (move_to_com_ || !fix_orientation_)) {
+        outfile->Printf(
+            "Molecule: Setting a variable updates the molecular geometry, for\n"
+            "          cartesian molecules this can lead to surprising behaviour.\n"
+            "          Freezing COM and orientation to prevent this.\n");
+        move_to_com_ = false;
+        fix_orientation_ = true;
+    }
+
     lock_frame_ = false;
     geometry_variables_[str] = val;
 
-    outfile->Printf("Setting geometry variable %s to %f\n", str.c_str(), val);
+    outfile->Printf("Molecule: Setting geometry variable %s to %f\n", str.c_str(), val);
     try {
         update_geometry();
     }
