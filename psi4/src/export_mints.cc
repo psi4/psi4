@@ -439,7 +439,7 @@ void export_mints(py::module& m)
              "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
         .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
                                                py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
-        .def("project_out", &Matrix::project_out, "docstring") //destroyed
+        .def("project_out", &Matrix::project_out, "docstring") //destroyed according to matrix.h file
         .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix"
              py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg(saveSubBlocks) = false)  
         .def("load", matrix_load(&Matrix::load), 
@@ -501,7 +501,7 @@ void export_mints(py::module& m)
              "Ignore reference contributions to the gradient? Default is False", py::arg("val") = false)
         .def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed,
              "Is the deriv_density already backtransformed? Default is False", py::arg("val") = false)
-        .def("compute", &Deriv::compute, "docstring");
+        .def("compute", &Deriv::compute, "Compute the gradient");
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
@@ -513,7 +513,7 @@ void export_mints(py::module& m)
              "Returns a new Matrix object named name with default dimensions", 
              py::arg("mat"), py::arg("name"), py::arg("symmetry") = 0);
 
-    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "docstring")
+    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations")
         .def("print_out", &CdSalcList::print, "Print the SALC")
         .def("matrix", &CdSalcList::matrix, "Return the SALCs")
         .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return only the SALCS in irrep h", py::arg("h"));
@@ -1131,9 +1131,10 @@ void export_mints(py::module& m)
         .def("move_atom", &BasisSet::move_atom, "Translate a given atom by a given amount.  Does not affect the underlying molecule object.")
         .def("max_function_per_shell", &BasisSet::max_function_per_shell, "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring"); 
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring"); // what is this 
 
-    py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring")
+    py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", 
+        "An SOBasis object describes the transformation from an atomic orbital basis to a symmetry orbital basis.")
         .def("petite_list", &SOBasisSet::petite_list, "Return the PetiteList object used in creating this SO basis");
 
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(m, "ExternalPotential",
