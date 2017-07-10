@@ -705,4 +705,7 @@ sQmo.append(Qmo[5][:, C3_index[0]:C3_index[1]+1, C3_index[0]:C3_index[1]+1])
 # am i right?
 for i in range(6):
     psi4.compare_arrays(np.asarray(dfh_Qmo[i]), sQmo[i], 9, "tensor slicing" )     #TEST
-    
+   
+# test for general tensor writing/getting
+test_tensor = np.random.random((c4, c3, naux))
+ 

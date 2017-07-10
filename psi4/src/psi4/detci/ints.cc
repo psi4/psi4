@@ -294,7 +294,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     }
 
     // => Compute DF ints <= //
-    dfh_->clear();
+    dfh_->clear_all();
 
     // not ideal FIXME
     SharedMatrix AO_R(new Matrix("AO_R", nao, nrot));

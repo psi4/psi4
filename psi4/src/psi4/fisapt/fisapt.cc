@@ -46,6 +46,7 @@
 #include "psi4/libcubeprop/csg.h"
 #include "psi4/libfilesystem/path.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/lib3index/df_helper.h"
 
 
 #ifdef _OPENMP
@@ -1908,7 +1909,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     if (do_print) {
         outfile->Printf("  ==> Dispersion <==\n\n");
     }
-
+    
     // => Auxiliary Basis Set <= //
     std::shared_ptr<BasisSet> auxiliary = reference_->get_basisset("DF_BASIS_SAPT");
 
@@ -2082,11 +2083,6 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
 
     // => Memory <= //
 
-    // => Integrals from the THCE <= //
-
-    std::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,options_);
-    df->clear();
-
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Cocc0A);
     Cs.push_back(Cvir0A);
@@ -2100,37 +2096,49 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     Cs.push_back(Cs3);
     Cs.push_back(Ca4);
     Cs.push_back(Cb4);
-    std::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
-    Cs.clear();
 
-    df->set_C(Call);
-    df->set_memory(doubles_ - Call->nrow() * Call->ncol());
+    size_t max_MO = 0, ncol = 0;
+    for(auto & mat : Cs){
+        max_MO = std::max(max_MO, (size_t)mat->ncol());
+        ncol += (size_t)mat->ncol();
+    }
 
-    int offset = 0;
-    df->add_space("a",offset,offset+Cocc0A->colspi()[0]); offset += Cocc0A->colspi()[0];
-    df->add_space("r",offset,offset+Cvir0A->colspi()[0]); offset += Cvir0A->colspi()[0];
-    df->add_space("b",offset,offset+Cocc0B->colspi()[0]); offset += Cocc0B->colspi()[0];
-    df->add_space("s",offset,offset+Cvir0B->colspi()[0]); offset += Cvir0B->colspi()[0];
-    df->add_space("r1",offset,offset+Cr1->colspi()[0]); offset += Cr1->colspi()[0];
-    df->add_space("s1",offset,offset+Cs1->colspi()[0]); offset += Cs1->colspi()[0];
-    df->add_space("a2",offset,offset+Ca2->colspi()[0]); offset += Ca2->colspi()[0];
-    df->add_space("b2",offset,offset+Cb2->colspi()[0]); offset += Cb2->colspi()[0];
-    df->add_space("r3",offset,offset+Cr3->colspi()[0]); offset += Cr3->colspi()[0];
-    df->add_space("s3",offset,offset+Cs3->colspi()[0]); offset += Cs3->colspi()[0];
-    df->add_space("a4",offset,offset+Ca4->colspi()[0]); offset += Ca4->colspi()[0];
-    df->add_space("b4",offset,offset+Cb4->colspi()[0]); offset += Cb4->colspi()[0];
+    // => Get integrals from DF_Helper <= //
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
+        df_helper::DF_Helper(primary_, auxiliary));
+    dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
+    dfh->set_MO_core(false);
+    dfh->set_MO_hint(max_MO);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nT);
+    dfh->initialize(); 
+    
+    dfh->add_space("a", Cs[0]);
+    dfh->add_space("r", Cs[1]);
+    dfh->add_space("b", Cs[2]);
+    dfh->add_space("s", Cs[3]);
+    dfh->add_space("r1", Cs[4]);
+    dfh->add_space("s1", Cs[5]);
+    dfh->add_space("a2", Cs[6]);
+    dfh->add_space("b2", Cs[7]);
+    dfh->add_space("r3", Cs[8]);
+    dfh->add_space("s3", Cs[9]);
+    dfh->add_space("a4", Cs[10]);
+    dfh->add_space("b4", Cs[11]);
 
-    df->add_pair_space("Aar", "a", "r");
-    df->add_pair_space("Abs", "b", "s");
-    df->add_pair_space("Bas", "a", "s1");
-    df->add_pair_space("Bbr", "b", "r1");
-    df->add_pair_space("Cas", "a2","s");
-    df->add_pair_space("Cbr", "b2","r");
-    df->add_pair_space("Dar", "a", "r3");
-    df->add_pair_space("Dbs", "b", "s3");
-    df->add_pair_space("Ear", "a4","r");
-    df->add_pair_space("Ebs", "b4","s");
+    dfh->add_transformation("Aar", "a", "r" , "pqQ");
+    dfh->add_transformation("Abs", "b", "s" , "pqQ");
+    dfh->add_transformation("Bas", "a", "s1", "pqQ");
+    dfh->add_transformation("Bbr", "b", "r1", "pqQ");
+    dfh->add_transformation("Cas", "a2","s" , "pqQ");
+    dfh->add_transformation("Cbr", "b2","r" , "pqQ");
+    dfh->add_transformation("Dar", "a", "r3", "pqQ");
+    dfh->add_transformation("Dbs", "b", "s3", "pqQ");
+    dfh->add_transformation("Ear", "a4","r" , "pqQ");
+    dfh->add_transformation("Ebs", "b4","s" , "pqQ");
 
+    dfh->transform();
+    
     Cr1.reset();
     Cs1.reset();
     Ca2.reset();
@@ -2139,25 +2147,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     Cs3.reset();
     Ca4.reset();
     Cb4.reset();
-    Call.reset();
-
-    df->print_header();
-    df->compute();
-
-    std::map<std::string, std::shared_ptr<Tensor> >& ints = df->ints();
-
-    std::shared_ptr<Tensor> AarT = ints["Aar"];
-    std::shared_ptr<Tensor> AbsT = ints["Abs"];
-    std::shared_ptr<Tensor> BasT = ints["Bas"];
-    std::shared_ptr<Tensor> BbrT = ints["Bbr"];
-    std::shared_ptr<Tensor> CasT = ints["Cas"];
-    std::shared_ptr<Tensor> CbrT = ints["Cbr"];
-    std::shared_ptr<Tensor> DarT = ints["Dar"];
-    std::shared_ptr<Tensor> DbsT = ints["Dbs"];
-    std::shared_ptr<Tensor> EarT = ints["Ear"];
-    std::shared_ptr<Tensor> EbsT = ints["Ebs"];
-
-    df.reset();
+    Cs.clear();
+    dfh->clear_spaces();
 
     // => Blocking <= //
 
@@ -2225,72 +2216,39 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     double*  erp  = eps_vir0A->pointer();
     double*  esp  = eps_vir0B->pointer();
 
-    // => File Pointers <= //
-
-    FILE* Aarf = AarT->file_pointer();
-    FILE* Absf = AbsT->file_pointer();
-    FILE* Basf = BasT->file_pointer();
-    FILE* Bbrf = BbrT->file_pointer();
-    FILE* Casf = CasT->file_pointer();
-    FILE* Cbrf = CbrT->file_pointer();
-    FILE* Darf = DarT->file_pointer();
-    FILE* Dbsf = DbsT->file_pointer();
-    FILE* Earf = EarT->file_pointer();
-    FILE* Ebsf = EbsT->file_pointer();
-
     // => Slice D + E -> D <= //
 
-    std::shared_ptr<Tensor> FarT(new DiskTensor("Far", DarT->dimensions(), DarT->sizes()));
-    FILE* Farf = FarT->file_pointer();
-    fseek(Darf,0L,SEEK_SET);
-    fseek(Earf,0L,SEEK_SET);
-    fseek(Farf,0L,SEEK_SET);
+    dfh->add_disk_tensor("Far", std::make_tuple(na, nr, nQ));
+
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
-        size_t statusvalue=fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
-        statusvalue=fread(Aarp[0],sizeof(double),nablock*nrQ,Earf);
+
+        dfh->fill_tensor("Dar", Dar, std::make_pair(astart, astart + nablock - 1)); 
+        dfh->fill_tensor("Ear", Aar, std::make_pair(astart, astart + nablock - 1)); 
+
         double* D2p = Darp[0];
         double* A2p = Aarp[0];
         for (long int arQ = 0L; arQ < nablock * nrQ; arQ++) {
             (*D2p++) += (*A2p++);
         }
-        fwrite(Darp[0],sizeof(double),nablock*nrQ,Farf);
+        dfh->write_disk_tensor("Far", Dar, std::make_pair(astart, astart + nablock - 1)); 
     }
-    fseek(Darf,0L,SEEK_SET);
-    fseek(Farf,0L,SEEK_SET);
-    for (int astart = 0; astart < na; astart += max_a) {
-        int nablock = (astart + max_a >= na ? na - astart : max_a);
-        size_t statusvalue=fread(Darp[0],sizeof(double),nablock*nrQ,Farf);
-        fwrite(Darp[0],sizeof(double),nablock*nrQ,Darf);
-    }
-    EarT.reset();
-    FarT.reset();
-
-    std::shared_ptr<Tensor> FbsT(new DiskTensor("Fbs", DbsT->dimensions(), DbsT->sizes()));
-    FILE* Fbsf = FbsT->file_pointer();
-    fseek(Dbsf,0L,SEEK_SET);
-    fseek(Ebsf,0L,SEEK_SET);
-    fseek(Fbsf,0L,SEEK_SET);
+  
+    dfh->add_disk_tensor("Fbs", std::make_tuple(na, nr, nQ));
+    
     for (int bstart = 0; bstart < nb; bstart += max_b) {
         int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
-        size_t statusvalue=fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
-        statusvalue=fread(Absp[0],sizeof(double),nbblock*nsQ,Ebsf);
+
+        dfh->fill_tensor("Dbs", Dbs, std::make_pair(bstart, bstart + nbblock - 1)); 
+        dfh->fill_tensor("Ebs", Abs, std::make_pair(bstart, bstart + nbblock - 1)); 
+
         double* D2p = Dbsp[0];
         double* A2p = Absp[0];
         for (long int bsQ = 0L; bsQ < nbblock * nsQ; bsQ++) {
             (*D2p++) += (*A2p++);
         }
-        fwrite(Dbsp[0],sizeof(double),nbblock*nsQ,Fbsf);
+        dfh->write_disk_tensor("Fbs", Dbs, std::make_pair(bstart, bstart + nbblock - 1)); 
     }
-    fseek(Dbsf,0L,SEEK_SET);
-    fseek(Fbsf,0L,SEEK_SET);
-    for (int bstart = 0; bstart < nb; bstart += max_b) {
-        int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
-        size_t statusvalue=fread(Dbsp[0],sizeof(double),nbblock*nsQ,Fbsf);
-        fwrite(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
-    }
-    EbsT.reset();
-    FbsT.reset();
 
     // => Targets <= //
 
@@ -2299,29 +2257,21 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
 
     // ==> Master Loop <== //
 
-    fseek(Aarf,0L,SEEK_SET);
-    fseek(Basf,0L,SEEK_SET);
-    fseek(Casf,0L,SEEK_SET);
-    fseek(Darf,0L,SEEK_SET);
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
 
-        size_t statusvalue=fread(Aarp[0],sizeof(double),nablock*nrQ,Aarf);
-        statusvalue=fread(Basp[0],sizeof(double),nablock*nsQ,Basf);
-        statusvalue=fread(Casp[0],sizeof(double),nablock*nsQ,Casf);
-        statusvalue=fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
-
-        fseek(Absf,0L,SEEK_SET);
-        fseek(Bbrf,0L,SEEK_SET);
-        fseek(Cbrf,0L,SEEK_SET);
-        fseek(Dbsf,0L,SEEK_SET);
+        dfh->fill_tensor("Aar", Aar, std::make_pair(astart, astart + nablock - 1)); 
+        dfh->fill_tensor("Bas", Bas, std::make_pair(astart, astart + nablock - 1)); 
+        dfh->fill_tensor("Cas", Cas, std::make_pair(astart, astart + nablock - 1)); 
+        dfh->fill_tensor("Far", Dar, std::make_pair(astart, astart + nablock - 1)); 
+        
         for (int bstart = 0; bstart < nb; bstart += max_b) {
             int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
-            statusvalue=fread(Absp[0],sizeof(double),nbblock*nsQ,Absf);
-            statusvalue=fread(Bbrp[0],sizeof(double),nbblock*nrQ,Bbrf);
-            statusvalue=fread(Cbrp[0],sizeof(double),nbblock*nrQ,Cbrf);
-            statusvalue=fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
+            dfh->fill_tensor("Abs", Abs, std::make_pair(bstart, bstart + nbblock - 1)); 
+            dfh->fill_tensor("Bbr", Bbr, std::make_pair(bstart, bstart + nbblock - 1)); 
+            dfh->fill_tensor("Cbr", Cbr, std::make_pair(bstart, bstart + nbblock - 1)); 
+            dfh->fill_tensor("Fbs", Dbs, std::make_pair(bstart, bstart + nbblock - 1)); 
 
             long int nab = nablock * nbblock;
 
@@ -2768,56 +2718,43 @@ void FISAPT::felst()
 
     // => a <-> b <= //
 
-    std::shared_ptr<BasisSet> jkfit = reference_->get_basisset("DF_BASIS_SCF");
-    size_t nQ = jkfit->nbf();
+    int nT = 1;
+    #ifdef _OPENMP
+        nT = Process::environment.get_n_threads();
+    #endif
+    
+    // => Get integrals from DF_Helper <= //
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
+        df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    dfh->set_memory(doubles_);
+    dfh->set_MO_core(false);
+    dfh->set_MO_hint(std::max(na, nb));
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nT);
+    dfh->initialize(); 
 
-    std::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
-    df->clear();
+    dfh->add_space("a", matrices_["Locc0A"]);
+    dfh->add_space("b", matrices_["Locc0B"]);
 
-    std::vector<std::shared_ptr<Matrix> > Cs;
-    Cs.push_back(matrices_["Locc0A"]);
-    Cs.push_back(matrices_["Locc0B"]);
-    std::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
-    Cs.clear();
+    dfh->add_transformation("Aaa", "a", "a", "pqQ");
+    dfh->add_transformation("Abb", "b", "b", "pqQ");
 
-    df->set_C(Call);
-    df->set_memory(doubles_);
+    dfh->transform();
 
-    size_t offset = 0;
-    df->add_space("a",offset,offset+na); offset += na;
-    df->add_space("b",offset,offset+nb); offset += nb;
-
-    df->add_pair_space("Aaa", "a", "a");
-    df->add_pair_space("Abb", "b", "b");
-
-    df->print_header();
-    df->compute();
-
-    std::map<std::string, std::shared_ptr<Tensor> >& ints = df->ints();
-    std::shared_ptr<Tensor> AaaT = ints["Aaa"];
-    std::shared_ptr<Tensor> AbbT = ints["Abb"];
-
-    df.reset();
-
+    size_t nQ = dfh->get_naux();
     std::shared_ptr<Matrix> QaC(new Matrix("QaC", na, nQ));
     double** QaCp = QaC->pointer();
-    FILE* Aaaf = AaaT->file_pointer();
-    fseek(Aaaf,0L,SEEK_SET);
     for (size_t a = 0; a < na; a++) {
-        fseek(Aaaf,(a * na + a) * nQ * sizeof(double), SEEK_SET);
-        size_t statusvalue=fread(QaCp[a], sizeof(double), nQ, Aaaf);
+        dfh->fill_tensor("Aaa", QaCp[a], std::make_pair(a, a), 
+            std::make_pair(a, a), std::make_pair(0, nQ - 1));
     }
-    AaaT.reset();
 
     std::shared_ptr<Matrix> QbC(new Matrix("QbC", nb, nQ));
     double** QbCp = QbC->pointer();
-    FILE* Abbf = AbbT->file_pointer();
-    fseek(Abbf,0L,SEEK_SET);
     for (size_t b = 0; b < nb; b++) {
-        fseek(Abbf,(b * nb + b) * nQ * sizeof(double), SEEK_SET);
-        size_t statusvalue=fread(QbCp[b], sizeof(double), nQ, Abbf);
+    dfh->fill_tensor("Abb", QbCp[b], std::make_pair(b, b), 
+            std::make_pair(b, b), std::make_pair(0, nQ - 1));
     }
-    AbbT.reset();
 
     std::shared_ptr<Matrix> Elst10_3 = Matrix::doublet(QaC,QbC,false,true);
     double** Elst10_3p = Elst10_3->pointer();
@@ -2931,40 +2868,40 @@ void FISAPT::fexch()
 
     // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
 
-    std::shared_ptr<BasisSet> jkfit = reference_->get_basisset("DF_BASIS_SCF");
-    int nQ = jkfit->nbf();
-
-    std::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
-    df->clear();
-
+    int nT = 1;
+    #ifdef _OPENMP
+        nT = Process::environment.get_n_threads();
+    #endif
+    
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(LoccA);
     Cs.push_back(CvirA);
     Cs.push_back(LoccB);
     Cs.push_back(CvirB);
-    std::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
-    Cs.clear();
+    
+    size_t max_MO = 0;
+    for(auto & mat : Cs)
+        max_MO = std::max(max_MO, (size_t)mat->ncol());
+    
+    // => Get integrals from DF_Helper <= //
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
+        df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    dfh->set_memory(doubles_);
+    dfh->set_MO_core(false);
+    dfh->set_MO_hint(max_MO);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nT);
+    dfh->initialize(); 
+    
+    dfh->add_space("a", Cs[0]);
+    dfh->add_space("r", Cs[1]);
+    dfh->add_space("b", Cs[2]);
+    dfh->add_space("s", Cs[3]);
 
-    df->set_C(Call);
-    df->set_memory(doubles_);
+    dfh->add_transformation("Aar", "a", "r", "pqQ");
+    dfh->add_transformation("Abs", "b", "s", "pqQ");
 
-    int offset = 0;
-    df->add_space("a",offset,offset+na); offset+=na;
-    df->add_space("r",offset,offset+nr); offset+=nr;
-    df->add_space("b",offset,offset+nb); offset+=nb;
-    df->add_space("s",offset,offset+ns); offset+=ns;
-
-    df->add_pair_space("Aar", "a", "r");
-    df->add_pair_space("Abs", "b", "s");
-
-    df->print_header();
-    df->compute();
-
-    std::map<std::string, std::shared_ptr<Tensor> >& ints = df->ints();
-    std::shared_ptr<Tensor> AarT = ints["Aar"];
-    std::shared_ptr<Tensor> AbsT = ints["Abs"];
-
-    df.reset();
+    dfh->transform();
 
     // ==> Electrostatic Potentials <== //
 
@@ -3020,6 +2957,7 @@ void FISAPT::fexch()
     //E_exch1->print();
     //E_exch2->print();
 
+    size_t nQ = dfh->get_naux();
     std::shared_ptr<Matrix> TrQ(new Matrix("TrQ",nr,nQ));
     double** TrQp = TrQ->pointer();
     std::shared_ptr<Matrix> TsQ(new Matrix("TsQ",ns,nQ));
@@ -3029,37 +2967,30 @@ void FISAPT::fexch()
     std::shared_ptr<Matrix> TaQ(new Matrix("TaQ",na,nQ));
     double** TaQp = TaQ->pointer();
 
-    std::shared_ptr<Tensor> BabT = DiskTensor::build("BabT","na",na,"nb",nb,"nQ",nQ,false,false);
-    FILE* Aarf = AarT->file_pointer();
-    FILE* Babf = BabT->file_pointer();
-    fseek(Babf,0L,SEEK_SET);
-    fseek(Aarf,0L,SEEK_SET);
+    dfh->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
+    
     for (int a = 0; a < na; a++) {
-        size_t statusvalue=fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
+        dfh->fill_tensor("Aar", TrQ, std::make_pair(a, a));
         C_DGEMM('N','N',nb,nQ,nr,1.0,Sbrp[0],nr,TrQp[0],nQ,0.0,TbQp[0],nQ);
-        fwrite(TbQp[0],sizeof(double),nb*nQ,Babf);
+        dfh->write_disk_tensor("Bab", TrQ, std::make_pair(a, a)); 
     }
 
-    std::shared_ptr<Tensor> BbaT = DiskTensor::build("BbaT","nb",nb,"na",na,"nQ",nQ,false,false);
-    FILE* Absf = AbsT->file_pointer();
-    FILE* Bbaf = BbaT->file_pointer();
-    fseek(Bbaf,0L,SEEK_SET);
-    fseek(Absf,0L,SEEK_SET);
+    dfh->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
+    
     for (int b = 0; b < nb; b++) {
-        size_t statusvalue=fread(TsQp[0],sizeof(double),ns*nQ,Absf);
+        dfh->fill_tensor("Abs", TsQ, std::make_pair(b, b));
         C_DGEMM('N','N',na,nQ,ns,1.0,Sasp[0],ns,TsQp[0],nQ,0.0,TaQp[0],nQ);
-        fwrite(TaQp[0],sizeof(double),na*nQ,Bbaf);
+        dfh->write_disk_tensor("Bba", TrQ, std::make_pair(b, b)); 
     }
 
     std::shared_ptr<Matrix> E_exch3(new Matrix("E_exch [a <x-x> b]", na, nb));
     double** E_exch3p = E_exch3->pointer();
 
-    fseek(Babf,0L,SEEK_SET);
     for (int a = 0; a < na; a++) {
-        size_t statusvalue=fread(TbQp[0],sizeof(double),nb*nQ,Babf);
+        dfh->fill_tensor("Bab", TbQ, std::make_pair(a, a));
         for (int b = 0; b < nb; b++) {
-            fseek(Bbaf,(b*na+a)*(size_t)nQ*sizeof(double),SEEK_SET);
-            statusvalue=fread(TaQp[0],sizeof(double),nQ,Bbaf);
+            dfh->fill_tensor("Bba", TaQ, std::make_pair(b, b),
+                std::make_pair(a, a), std::make_pair(0, nQ - 1));
             E_exch3p[a][b] -= 2.0 * C_DDOT(nQ,TbQp[b],1,TaQp[0],1);
         }
     }
@@ -3183,56 +3114,54 @@ void FISAPT::find()
         fwrite(Varp[0],sizeof(double),na*nr,WBarf);
     }
 
-    // ==> DF ERI Setup (JKFIT Type, in Full Basis) <== //
+    // ==> DF_Helper Setup (JKFIT Type, in Full Basis) <== //
 
-    std::shared_ptr<BasisSet> jkfit = reference_->get_basisset("DF_BASIS_SCF");
-    size_t nQ = jkfit->nbf();
-
-    std::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,options_);
-    df->clear();
-
+    int nT = 1;
+    #ifdef _OPENMP
+        nT = Process::environment.get_n_threads();
+    #endif
+    
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Cocc_A);
     Cs.push_back(Cvir_A);
     Cs.push_back(Cocc_B);
     Cs.push_back(Cvir_B);
-    std::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
-    Cs.clear();
+    
+    size_t max_MO = 0;
+    for(auto & mat : Cs)
+        max_MO = std::max(max_MO, (size_t)mat->ncol());
+    
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
+        df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    dfh->set_memory(doubles_);
+    dfh->set_MO_core(false);
+    dfh->set_MO_hint(max_MO);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nT);
+    dfh->initialize(); 
+    size_t nQ = dfh->get_naux();
 
-    df->set_C(Call);
-    df->set_memory(doubles_);
+    dfh->add_space("a", Cs[0]);
+    dfh->add_space("r", Cs[1]);
+    dfh->add_space("b", Cs[2]);
+    dfh->add_space("s", Cs[3]);
 
-    int offset = 0;
-    df->add_space("a",offset,offset+na); offset += na;
-    df->add_space("r",offset,offset+nr); offset += nr;
-    df->add_space("b",offset,offset+nb); offset += nb;
-    df->add_space("s",offset,offset+ns); offset += ns;
+    dfh->add_transformation("Aar", "a", "r", "pqQ");
+    dfh->add_transformation("Abs", "b", "s", "pqQ");
 
-    df->add_pair_space("Aar", "a", "r");
-    df->add_pair_space("Abs", "b", "s");
-
-    df->print_header();
-    df->compute();
-
-    std::map<std::string, std::shared_ptr<Tensor> >& ints = df->ints();
-    std::shared_ptr<Tensor> AarT = ints["Aar"];
-    std::shared_ptr<Tensor> AbsT = ints["Abs"];
-
-    df.reset();
-
+    dfh->transform();
+    
     // => Electronic Part (Massive PITA) <= //
 
     double** RaCp = matrices_["Vlocc0A"]->pointer();
     double** RbDp = matrices_["Vlocc0B"]->pointer();
 
-    FILE* Absf = AbsT->file_pointer();
-    fseek(Absf,0L,SEEK_SET);
     std::shared_ptr<Matrix> TsQ(new Matrix("TsQ",ns,nQ));
     std::shared_ptr<Matrix> T1As(new Matrix("T1As",na,ns));
     double** TsQp = TsQ->pointer();
     double** T1Asp = T1As->pointer();
     for (size_t b = 0; b < nb; b++) {
-        size_t statusvalue=fread(TsQp[0],sizeof(double),ns*nQ,Absf);
+        dfh->fill_tensor("Abs", TsQ, std::make_pair(b, b)); 
         C_DGEMM('N','T',na,ns,nQ,2.0,RaCp[0],nQ,TsQp[0],nQ,0.0,T1Asp[0],ns);
         for (size_t a = 0; a < na; a++) {
             fseek(WAbsf,nA*nb*ns*sizeof(double) + a*nb*ns*sizeof(double) + b*ns*sizeof(double),SEEK_SET);
@@ -3240,14 +3169,12 @@ void FISAPT::find()
         }
     }
 
-    FILE* Aarf = AarT->file_pointer();
-    fseek(Aarf,0L,SEEK_SET);
     std::shared_ptr<Matrix> TrQ(new Matrix("TrQ",nr,nQ));
     std::shared_ptr<Matrix> T1Br(new Matrix("T1Br",nb,nr));
     double** TrQp = TrQ->pointer();
     double** T1Brp = T1Br->pointer();
     for (size_t a = 0; a < na; a++) {
-        size_t statusvalue=fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
+        dfh->fill_tensor("Aar", TrQ, std::make_pair(a, a)); 
         C_DGEMM('N','T',nb,nr,nQ,2.0,RbDp[0],nQ,TrQp[0],nQ,0.0,T1Brp[0],nr);
         for (size_t b = 0; b < nb; b++) {
             fseek(WBarf,nB*na*nr*sizeof(double) + b*na*nr*sizeof(double) + a*nr*sizeof(double),SEEK_SET);
@@ -3948,7 +3875,7 @@ void FISAPT::fdisp()
     VRas.reset();
     VSbr.reset();
 
-    // => Integrals from the THCE <= //
+    // => Integrals from DF_Helper <= //
 
     std::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,options_);
     df->clear();
@@ -3966,38 +3893,47 @@ void FISAPT::fdisp()
     Cs.push_back(Cs3);
     Cs.push_back(Ca4);
     Cs.push_back(Cb4);
-    std::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
-    Cs.clear();
 
-    df->set_C(Call);
-    df->set_memory(doubles_ - Call->nrow() * Call->ncol());
+    size_t max_MO = 0, ncol = 0;
+    for(auto & mat : Cs){
+        max_MO = std::max(max_MO, (size_t)mat->ncol());
+        ncol += (size_t)mat->ncol();
+    }
+    
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
+        df_helper::DF_Helper(primary_, auxiliary));
+    dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
+    dfh->set_MO_core(false);
+    dfh->set_MO_hint(max_MO);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nT);
+    dfh->initialize(); 
+    
+    dfh->add_space("a", Cs[0]);
+    dfh->add_space("r", Cs[1]);
+    dfh->add_space("b", Cs[2]);
+    dfh->add_space("s", Cs[3]);
+    dfh->add_space("r1", Cs[4]);
+    dfh->add_space("s1", Cs[5]);
+    dfh->add_space("a2", Cs[6]);
+    dfh->add_space("b2", Cs[7]);
+    dfh->add_space("r3", Cs[8]);
+    dfh->add_space("s3", Cs[9]);
+    dfh->add_space("a4", Cs[10]);
+    dfh->add_space("b4", Cs[11]);
 
-    int offset = 0;
-    df->add_space("a",offset,offset+Caocc_A->colspi()[0]); offset += Caocc_A->colspi()[0];
-    df->add_space("r",offset,offset+Cavir_A->colspi()[0]); offset += Cavir_A->colspi()[0];
-    df->add_space("b",offset,offset+Caocc_B->colspi()[0]); offset += Caocc_B->colspi()[0];
-    df->add_space("s",offset,offset+Cavir_B->colspi()[0]); offset += Cavir_B->colspi()[0];
-    df->add_space("r1",offset,offset+Cr1->colspi()[0]); offset += Cr1->colspi()[0];
-    df->add_space("s1",offset,offset+Cs1->colspi()[0]); offset += Cs1->colspi()[0];
-    df->add_space("a2",offset,offset+Ca2->colspi()[0]); offset += Ca2->colspi()[0];
-    df->add_space("b2",offset,offset+Cb2->colspi()[0]); offset += Cb2->colspi()[0];
-    df->add_space("r3",offset,offset+Cr3->colspi()[0]); offset += Cr3->colspi()[0];
-    df->add_space("s3",offset,offset+Cs3->colspi()[0]); offset += Cs3->colspi()[0];
-    df->add_space("a4",offset,offset+Ca4->colspi()[0]); offset += Ca4->colspi()[0];
-    df->add_space("b4",offset,offset+Cb4->colspi()[0]); offset += Cb4->colspi()[0];
+    dfh->add_transformation("Aar", "r" , "a" , "pqQ");
+    dfh->add_transformation("Abs", "s" , "b" , "pqQ");
+    dfh->add_transformation("Bas", "s1", "a" , "pqQ");
+    dfh->add_transformation("Bbr", "r1", "b" , "pqQ");
+    dfh->add_transformation("Cas", "s" , "a2", "pqQ");
+    dfh->add_transformation("Cbr", "r" , "b2", "pqQ");
+    dfh->add_transformation("Dar", "r3", "a" , "pqQ");
+    dfh->add_transformation("Dbs", "s3", "b" , "pqQ");
+    dfh->add_transformation("Ear", "r" , "a4", "pqQ");
+    dfh->add_transformation("Ebs", "s" , "b4", "pqQ");
 
-    // Disk stuff is all transposed for ab exposure, but transforms down to a or b first for speed
-
-    df->add_pair_space("Aar", "a",  "r",  -1.0/2.0, true);
-    df->add_pair_space("Abs", "b",  "s",  -1.0/2.0, true);
-    df->add_pair_space("Bas", "a",  "s1", -1.0/2.0, true);
-    df->add_pair_space("Bbr", "b",  "r1", -1.0/2.0, true);
-    df->add_pair_space("Cas", "a2", "s",  -1.0/2.0, true);
-    df->add_pair_space("Cbr", "b2", "r",  -1.0/2.0, true);
-    df->add_pair_space("Dar", "a",  "r3", -1.0/2.0, true);
-    df->add_pair_space("Dbs", "b",  "s3", -1.0/2.0, true);
-    df->add_pair_space("Ear", "a4", "r",  -1.0/2.0, true);
-    df->add_pair_space("Ebs", "b4", "s",  -1.0/2.0, true);
+    dfh->transform();
 
     Cr1.reset();
     Cs1.reset();
@@ -4007,26 +3943,9 @@ void FISAPT::fdisp()
     Cs3.reset();
     Ca4.reset();
     Cb4.reset();
-    Call.reset();
-
-    df->print_header();
-    df->compute();
-
-    std::map<std::string, std::shared_ptr<Tensor> >& ints = df->ints();
-
-    std::shared_ptr<Tensor> AarT = ints["Aar"];
-    std::shared_ptr<Tensor> AbsT = ints["Abs"];
-    std::shared_ptr<Tensor> BasT = ints["Bas"];
-    std::shared_ptr<Tensor> BbrT = ints["Bbr"];
-    std::shared_ptr<Tensor> CasT = ints["Cas"];
-    std::shared_ptr<Tensor> CbrT = ints["Cbr"];
-    std::shared_ptr<Tensor> DarT = ints["Dar"];
-    std::shared_ptr<Tensor> DbsT = ints["Dbs"];
-    std::shared_ptr<Tensor> EarT = ints["Ear"];
-    std::shared_ptr<Tensor> EbsT = ints["Ebs"];
-
-    df.reset();
-
+    Cs.clear();
+    dfh->clear_spaces();
+    
     // => Blocking <= //
 
     long int overhead = 0L;
@@ -4099,72 +4018,39 @@ void FISAPT::fdisp()
     double*  erp  = eps_avir_A->pointer();
     double*  esp  = eps_avir_B->pointer();
 
-    // => File Pointers <= //
-
-    FILE* Aarf = AarT->file_pointer();
-    FILE* Absf = AbsT->file_pointer();
-    FILE* Basf = BasT->file_pointer();
-    FILE* Bbrf = BbrT->file_pointer();
-    FILE* Casf = CasT->file_pointer();
-    FILE* Cbrf = CbrT->file_pointer();
-    FILE* Darf = DarT->file_pointer();
-    FILE* Dbsf = DbsT->file_pointer();
-    FILE* Earf = EarT->file_pointer();
-    FILE* Ebsf = EbsT->file_pointer();
-
     // => Slice D + E -> D <= //
 
-    std::shared_ptr<Tensor> FarT(new DiskTensor("Far", DarT->dimensions(), DarT->sizes()));
-    FILE* Farf = FarT->file_pointer();
-    fseek(Darf,0L,SEEK_SET);
-    fseek(Earf,0L,SEEK_SET);
-    fseek(Farf,0L,SEEK_SET);
+    dfh->add_disk_tensor("Far", std::make_tuple(nr, na, nQ));
+    
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
-        size_t statusvalue=fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
-        statusvalue=fread(Aarp[0],sizeof(double),nrblock*naQ,Earf);
+        
+        dfh->fill_tensor("Dar", Dar, std::make_pair(rstart, rstart + nrblock - 1)); 
+        dfh->fill_tensor("Ear", Aar, std::make_pair(rstart, rstart + nrblock - 1)); 
+        
         double* D2p = Darp[0];
         double* A2p = Aarp[0];
         for (long int arQ = 0L; arQ < nrblock * naQ; arQ++) {
             (*D2p++) += (*A2p++);
         }
-        fwrite(Darp[0],sizeof(double),nrblock*naQ,Farf);
+        dfh->write_disk_tensor("Far", Dar, std::make_pair(rstart, rstart + nrblock - 1)); 
     }
-    fseek(Darf,0L,SEEK_SET);
-    fseek(Farf,0L,SEEK_SET);
-    for (int rstart = 0; rstart < nr; rstart += max_r) {
-        int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
-        size_t statusvalue=fread(Darp[0],sizeof(double),nrblock*naQ,Farf);
-        fwrite(Darp[0],sizeof(double),nrblock*naQ,Darf);
-    }
-    EarT.reset();
-    FarT.reset();
 
-    std::shared_ptr<Tensor> FbsT(new DiskTensor("Fbs", DbsT->dimensions(), DbsT->sizes()));
-    FILE* Fbsf = FbsT->file_pointer();
-    fseek(Dbsf,0L,SEEK_SET);
-    fseek(Ebsf,0L,SEEK_SET);
-    fseek(Fbsf,0L,SEEK_SET);
+    dfh->add_disk_tensor("Fbs", std::make_tuple(ns, nb, nQ));
+    
     for (int sstart = 0; sstart < ns; sstart += max_s) {
         int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
-        size_t statusvalue=fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
-        statusvalue=fread(Absp[0],sizeof(double),nsblock*nbQ,Ebsf);
+        
+        dfh->fill_tensor("Dbs", Dbs, std::make_pair(sstart, sstart + nsblock - 1)); 
+        dfh->fill_tensor("Ebs", Abs, std::make_pair(sstart, sstart + nsblock - 1));
+        
         double* D2p = Dbsp[0];
         double* A2p = Absp[0];
         for (long int bsQ = 0L; bsQ < nsblock * nbQ; bsQ++) {
             (*D2p++) += (*A2p++);
         }
-        fwrite(Dbsp[0],sizeof(double),nsblock*nbQ,Fbsf);
+        dfh->write_disk_tensor("Fbs", Dbs, std::make_pair(sstart, sstart + nsblock - 1)); 
     }
-    fseek(Dbsf,0L,SEEK_SET);
-    fseek(Fbsf,0L,SEEK_SET);
-    for (int sstart = 0; sstart < ns; sstart += max_s) {
-        int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
-        size_t statusvalue=fread(Dbsp[0],sizeof(double),nsblock*nbQ,Fbsf);
-        fwrite(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
-    }
-    EbsT.reset();
-    FbsT.reset();
 
     // => Targets <= //
 
@@ -4195,29 +4081,21 @@ void FISAPT::fdisp()
         scale = sSAPT0_scale_;
     }
 
-    fseek(Aarf,0L,SEEK_SET);
-    fseek(Bbrf,0L,SEEK_SET);
-    fseek(Cbrf,0L,SEEK_SET);
-    fseek(Darf,0L,SEEK_SET);
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
-        size_t statusvalue=fread(Aarp[0],sizeof(double),nrblock*naQ,Aarf);
-        statusvalue=fread(Bbrp[0],sizeof(double),nrblock*nbQ,Bbrf);
-        statusvalue=fread(Cbrp[0],sizeof(double),nrblock*nbQ,Cbrf);
-        statusvalue=fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
+        dfh->fill_tensor("Aar", Aar, std::make_pair(rstart, rstart + nrblock - 1)); 
+        dfh->fill_tensor("Far", Dar, std::make_pair(rstart, rstart + nrblock - 1)); 
+        dfh->fill_tensor("Bbr", Bbr, std::make_pair(rstart, rstart + nrblock - 1)); 
+        dfh->fill_tensor("Cbr", Cbr, std::make_pair(rstart, rstart + nrblock - 1)); 
 
-        fseek(Absf,0L,SEEK_SET);
-        fseek(Basf,0L,SEEK_SET);
-        fseek(Casf,0L,SEEK_SET);
-        fseek(Dbsf,0L,SEEK_SET);
         for (int sstart = 0; sstart < ns; sstart += max_s) {
             int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
-            statusvalue=fread(Absp[0],sizeof(double),nsblock*nbQ,Absf);
-            statusvalue=fread(Basp[0],sizeof(double),nsblock*naQ,Basf);
-            statusvalue=fread(Casp[0],sizeof(double),nsblock*naQ,Casf);
-            statusvalue=fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
+            dfh->fill_tensor("Abs", Abs, std::make_pair(sstart, sstart + nsblock - 1)); 
+            dfh->fill_tensor("Fbs", Dbs, std::make_pair(sstart, sstart + nsblock - 1)); 
+            dfh->fill_tensor("Bas", Bas, std::make_pair(sstart, sstart + nsblock - 1)); 
+            dfh->fill_tensor("Cas", Cas, std::make_pair(sstart, sstart + nsblock - 1)); 
 
             long int nrs = nrblock * nsblock;
 

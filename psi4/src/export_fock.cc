@@ -162,7 +162,8 @@ void export_fock(py::module &m) {
         .def("add_transformation", &df_helper::DF_Helper::add_transformation, py::arg("name"),
              py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
         .def("transform", &df_helper::DF_Helper::transform)
-        .def("clear", &df_helper::DF_Helper::clear)
+        .def("clear_spaces", &df_helper::DF_Helper::clear_spaces)
+        .def("clear_all", &df_helper::DF_Helper::clear_all)
         .def("transpose", &df_helper::DF_Helper::transpose)
         .def("get_space_size", &df_helper::DF_Helper::get_space_size)
         .def("get_tensor_size", &df_helper::DF_Helper::get_tensor_size)

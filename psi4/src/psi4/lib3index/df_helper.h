@@ -117,6 +117,10 @@ public:
     void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
 
+    // only use this one if you now what you're doing!
+    void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1,
+      std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
+    
     // with SharedMatrix returns
     SharedMatrix get_tensor(std::string name);
     SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1);
@@ -125,11 +129,21 @@ public:
     SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
 
+    // Add a 3-index disk tensor with a key and write to it
+    void add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions);
+    void write_disk_tensor(std::string key, SharedMatrix M);    
+    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0); 
+    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, 
+    std::pair<size_t, size_t> a1);
+    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, 
+        std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);    
+
     // tranpose a tensor
     void transpose(std::string name, std::tuple<size_t, size_t, size_t> order);
     
     // clear spaces/transformations
-    void clear();
+    void clear_spaces();
+    void clear_all();
 
     // get sizes, shapes
     size_t get_space_size(std::string key);

@@ -212,7 +212,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     // ==> Transform DF integrals <== /
 
     // add spaces
-    dfh_->clear();
+    dfh_->clear_all();
     dfh_->add_space("i", AO_Cocc_);
     dfh_->add_space("a", AO_Cvir_);
     dfh_->add_space("E", AO_CE   );
@@ -298,8 +298,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         }
 
         // Read a IA block
-        dfh_->fill_tensor("iaQ", block_iaQ, std::make_pair(bstart, bstart + block_size - 1),
-            std::make_pair(0, nvir - 1), std::make_pair(0, nQ - 1));
+        dfh_->fill_tensor("iaQ", block_iaQ, std::make_pair(bstart, bstart + block_size - 1));
 
         // Write out OVVE
         temp_ovvE->gemm(false, true, 1.0, block_iaQ, aEQ, 0.0);

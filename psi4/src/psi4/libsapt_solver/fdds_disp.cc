@@ -479,8 +479,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
             osize = bsize;
         }
         
-        dfh_->fill_tensor(ovQ_tensor_name, tmp, std::make_pair(bcount, bcount + osize - 1), 
-            std::make_pair(0, nvir - 1), std::make_pair(0, naux - 1));
+        dfh_->fill_tensor(ovQ_tensor_name, tmp, std::make_pair(bcount, bcount + osize - 1)); 
         size_t shift_i = block * bsize;
 
         # pragma omp parallel for collapse (2)
