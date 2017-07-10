@@ -806,7 +806,7 @@ void export_mints(py::module& m)
              py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
         .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", py::arg("C1"), py::arg("C2"))
         .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory",
-             py::arg("Iso"), py::arg("C1") py::arg("C2"), py::arg("C3"), py::arg("C4"))
+             py::arg("Iso"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
         .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", py::arg("rel_basis"))
 
         .def("play", &MintsHelper::play, "play function");  //???
