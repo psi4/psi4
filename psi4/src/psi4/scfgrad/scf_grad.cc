@@ -79,14 +79,6 @@ SCFGrad::~SCFGrad()
 void SCFGrad::common_init()
 {
 
-    // if (!reference_wavefunction_) {
-    //     throw PSIEXCEPTION("SCFGrad: Run SCF first");
-    // }
-
-    //if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
-    //    reference_wavefunction_->semicanonicalize();
-
-    //copy(reference_wavefunction_);
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
@@ -161,17 +153,12 @@ SharedMatrix SCFGrad::compute_gradient()
     }
 
     // => Potential/Functional <= //
-    if (options_.get_str("REFERENCE") == "RKS") {
-        potential_->set_D({Da_});
-        // std::vector<SharedMatrix>& C = potential_->C();
-        // C.clear();
-        // C.push_back(Ca_subset("SO", "OCC"));
-    } else if (options_.get_str("REFERENCE") == "UKS") {
-        potential_->set_D({Da_, Db_});
-        // std::vector<SharedMatrix>& C = potential_->C();
-        // C.clear();
-        // C.push_back(Ca_subset("SO", "OCC"));
-        // C.push_back(Cb_subset("SO", "OCC"));
+    if (functional_->needs_xc()) {
+        if (options_.get_str("REFERENCE") == "RKS") {
+            potential_->set_D({Da_});
+        } else {
+            potential_->set_D({Da_, Db_});
+        }
     }
 
     // => Sizings <= //
@@ -711,7 +698,7 @@ SharedMatrix SCFGrad::compute_gradient()
 
     // => XC Gradient <= //
     timer_on("Grad: XC");
-    if (potential_) {
+    if (functional_->needs_xc()) {
         potential_->print_header();
         gradients_["XC"] = potential_->compute_gradient();
     }
@@ -827,21 +814,13 @@ SharedMatrix SCFGrad::compute_hessian()
     std::shared_ptr<SuperFunctional> functional;
     std::shared_ptr<VBase> potential;
 
-    if (options_.get_str("REFERENCE") == "RKS") {
+    if (functional_->needs_xc()) {
         throw PSIEXCEPTION("Missing XC derivates for Hessians");
-        //potential = VBase::build_V(basisset_, options_, "RV");
-        //potential->initialize();
-        //std::vector<SharedMatrix>& C = potential->C();
-        //C.push_back(Ca_subset("SO", "OCC"));
-        //functional = potential->functional();
-    } else if (options_.get_str("REFERENCE") == "UKS") {
-        throw PSIEXCEPTION("Missing XC derivates for Hessians");
-        //potential = VBase::build_V(basisset_, options_, "UV");
-        //potential->initialize();
-        //std::vector<SharedMatrix>& C = potential->C();
-        //C.push_back(Ca_subset("SO", "OCC"));
-        //C.push_back(Cb_subset("SO", "OCC"));
-        //functional = potential->functional();
+        // if (options_.get_str("REFERENCE") == "RKS") {
+        //     potential_->set_D({Da_});
+        // } else {
+        //     potential_->set_D({Da_, Db_});
+        // }
     }
 
     // => Sizings <= //
@@ -1534,7 +1513,7 @@ SharedMatrix SCFGrad::compute_hessian()
             total->add(hessians[hessian_terms[i]]);
         }
     }
-    total->symmetrize_hessian(molecule_);
+    // total->symmetrize_hessian(molecule_);
 
     hessians["Total"] = total;
     hessians["Total"]->set_name("Total Hessian");
