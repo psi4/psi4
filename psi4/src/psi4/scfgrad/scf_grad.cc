@@ -1534,6 +1534,7 @@ SharedMatrix SCFGrad::compute_hessian()
             total->add(hessians[hessian_terms[i]]);
         }
     }
+    total->symmetrize_hessian(molecule_);
 
     hessians["Total"] = total;
     hessians["Total"]->set_name("Total Hessian");
