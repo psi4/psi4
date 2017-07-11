@@ -120,6 +120,10 @@ public:
     // only use this one if you now what you're doing!
     void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
+    void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1,
+      std::pair<size_t, size_t> a2);
+    void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1);
+    void fill_tensor(std::string name, double * b); 
     
     // with SharedMatrix returns
     SharedMatrix get_tensor(std::string name);
@@ -301,10 +305,10 @@ protected:
     std::vector<std::string> AO_names_;
     void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
     void AO_filename_maker(size_t i);
-    void check_transformation_name(std::string);
-    void check_transformation_tuple(std::string name, std::pair<size_t, size_t> t0, 
+    void check_file_key(std::string);
+    void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, 
         std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
-    void check_transformation_matrix(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
+    void check_matrix_size(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
         std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
 
     // tranpose a tensor

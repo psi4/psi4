@@ -1095,7 +1095,7 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
         int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
         size_t read_start = sizeof(double) * start * nmo_ * nQ;
         
-        dfh_->fill_tensor("RRQ", NNQ, std::make_pair(start, start + block - 1)); 
+        dfh_->fill_tensor("RRQ", NNQ, std::make_pair(start, start + block)); 
         C_DGEMM('N', 'N', nact_, nmo_ * nQ, block, 1.0, dUactp[0] + start, nmo_, NNQp[0], nmo_ * nQ,
                 1.0, wnQp[0], nmo_ * nQ);
     }

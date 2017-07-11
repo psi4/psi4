@@ -362,7 +362,7 @@ for i in range(6):
     psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "Algorithm: STORE, AO_CORE = TRUE, MO_CORE = FALSE" )     #TEST
 
 # let's try clearing everything
-dfh.clear()
+dfh.clear_all()
 dfh.set_MO_hint(c4)
 
 # set spaces
@@ -674,16 +674,16 @@ for i in range(6):
     psi4.compare_arrays(np.asarray(dfh_Qmo[i]), Qmo[i], 9, "Algorithm: DIRECT, AO_CORE = FALSE, MO_CORE = TRUE" )     #TEST
 
 # test slicing
-c1_index = random.randint(0, c1-1)
-c2_index = random.randint(0, c2-1)
-c3_index = random.randint(0, c3-1)
-c4_index = random.randint(0, c4-1)
+c1_index = random.randint(0, c1 - 1)
+c2_index = random.randint(0, c2 - 1)
+c3_index = random.randint(0, c3 - 1)
+c4_index = random.randint(0, c4 - 1)
 
-ni = (0, naux-1)
-C1_index = (c1_index, random.randint(c1_index, c1-1))
-C2_index = (c2_index, random.randint(c2_index, c2-1))
-C3_index = (c3_index, random.randint(c3_index, c3-1))
-C4_index = (c4_index, random.randint(c4_index, c4-1))
+ni = (0, naux)
+C1_index = (c1_index, random.randint(c1_index + 1, c1))
+C2_index = (c2_index, random.randint(c2_index + 1, c2))
+C3_index = (c3_index, random.randint(c3_index + 1, c3))
+C4_index = (c4_index, random.randint(c4_index + 1, c4))
 
 # grab sliced integrals
 dfh_Qmo[0] = (dfh.get_tensor("Qmo1", ni, C1_index, C2_index))
@@ -695,12 +695,12 @@ dfh_Qmo[5] = (dfh.get_tensor("Qmo6", ni, C3_index, C3_index))
 
 # slice python side
 sQmo = []
-sQmo.append(Qmo[0][:, C1_index[0]:C1_index[1]+1, C2_index[0]:C2_index[1]+1]) 
-sQmo.append(Qmo[1][:, C3_index[0]:C3_index[1]+1, C2_index[0]:C2_index[1]+1])
-sQmo.append(Qmo[2][:, C4_index[0]:C4_index[1]+1, C2_index[0]:C2_index[1]+1])
-sQmo.append(Qmo[3][:, C1_index[0]:C1_index[1]+1, C4_index[0]:C4_index[1]+1])
-sQmo.append(Qmo[4][:, C3_index[0]:C3_index[1]+1, C1_index[0]:C1_index[1]+1])
-sQmo.append(Qmo[5][:, C3_index[0]:C3_index[1]+1, C3_index[0]:C3_index[1]+1])
+sQmo.append(Qmo[0][:, C1_index[0]:C1_index[1], C2_index[0]:C2_index[1]]) 
+sQmo.append(Qmo[1][:, C3_index[0]:C3_index[1], C2_index[0]:C2_index[1]])
+sQmo.append(Qmo[2][:, C4_index[0]:C4_index[1], C2_index[0]:C2_index[1]])
+sQmo.append(Qmo[3][:, C1_index[0]:C1_index[1], C4_index[0]:C4_index[1]])
+sQmo.append(Qmo[4][:, C3_index[0]:C3_index[1], C1_index[0]:C1_index[1]])
+sQmo.append(Qmo[5][:, C3_index[0]:C3_index[1], C3_index[0]:C3_index[1]])
 
 # am i right?
 for i in range(6):
