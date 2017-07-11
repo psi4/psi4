@@ -424,14 +424,14 @@ void export_mints(py::module& m)
         // .def("triplet", &Matrix::triplet, "docstring", py::arg("A"), py::arg("B"), py::arg("C"),
         //      py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false)
 
-//This wont compile, with and without default bools
-//        .def("doublet", &Matrix::doublet, 
-//             "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", 
-//              py::arg("A"), py::arg("B"), py::arg("transA"), py::arg("transB"))
-//        .def("triplet", &Matrix::triplet, 
-//             "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
-//              py::arg("A"), py::arg("B"), py::arg("C"), 
-//              py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
+//doublet and triplet require def_static since the functions are static type in C++
+        .def_static("doublet", &Matrix::doublet, 
+             "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", 
+              py::arg("A"), py::arg("B"), py::arg("transA") = false, py::arg("transB") = false)
+        .def_static("triplet", &Matrix::triplet, 
+             "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
+              py::arg("A"), py::arg("B"), py::arg("C"), 
+              py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
         .def("get", matrix_get3(&Matrix::get), 
              "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"), py::arg("n"))
@@ -446,7 +446,7 @@ void export_mints(py::module& m)
         .def("load", matrix_load(&Matrix::load), 
              "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
-            // should this take Petite List's sotoao() function as a default argument?
+// should this take Petite List's sotoao() function as a default transfomer argument? has to be set C++ side first i think
         .def("remove_symmetry", &Matrix::remove_symmetry, 
              "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("a"), py::arg("transformer"))
         .def("symmetrize_gradient", &Matrix::symmetrize_gradient, 
@@ -506,10 +506,11 @@ void export_mints(py::module& m)
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
-// This will also not compile
-//    py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
-//        .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
-//             "Returns a new matrix object with default dimensions", py::arg("symmetry"))
+//Something here is wrong. These will not work with py::args defined, not sure why
+    py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
+        .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
+             "Returns a new matrix object with default dimensions");
+//             "Returns a new matrix object with default dimensions", py::arg("symmetry"));
 //        .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
 //             "Returns a new Matrix object named name with default dimensions", 
 //              py::arg("name"), py::arg("symmetry"));
@@ -642,7 +643,7 @@ void export_mints(py::module& m)
         .def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "Returns current R index")
         .def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "Returns current S index")
         .def("first", &AOShellCombinationsIterator::first, "docstring")
-        .def("next", &AOShellCombinationsIterator::next, "docstring") // not documented
+        .def("next", &AOShellCombinationsIterator::next, "docstring") // not documented C++ side
         .def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
     py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(
@@ -734,8 +735,8 @@ void export_mints(py::module& m)
         .def("factory", &MintsHelper::factory, "Returns the Matrix factory being used")
         .def("cdsalcs", &MintsHelper::cdsalcs, "Returns a CdSalcList object")
         .def("petite_list", petite_list_0(&MintsHelper::petite_list), 
-             "Returns petite list, which transforms AO basis functions to SO's") //set arguments?
-        .def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring") //Why is this here?
+             "Returns petite list, which transforms AO basis functions to SO's") 
+        .def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring") //What is this?
 
         // Integral builders
         .def("integral", &MintsHelper::integral, "Integral factory being used")
@@ -793,24 +794,23 @@ void export_mints(py::module& m)
 
 
         // Two-electron MO and transformers
-//        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", 
-//             py::arg("Iso"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", 
-//             py::arg("omega"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals",
-//             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals",
-//             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals",
-//             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals",
-//             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", py::arg("C1"), py::arg("C2"))
-//        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory",
-//             py::arg("Iso"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
-//        .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", py::arg("rel_basis"))
-
-        .def("play", &MintsHelper::play, "play function");  //???
+        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", 
+             py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", 
+             py::arg("omega"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals",
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals",
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals",
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals",
+             py::arg("corr"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", py::arg("C1"), py::arg("C2"))
+        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory",
+             py::arg("Iso"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+        .def("set_rel_basisset", &MintsHelper::set_rel_basisset, "Sets the relativistic basis set", py::arg("rel_basis"))
+        .def("play", &MintsHelper::play, "play function");
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
@@ -1118,7 +1118,7 @@ void export_mints(py::module& m)
         .def("shell_to_basis_function", &BasisSet::shell_to_basis_function, 
              "Given a shell return its first basis function", py::arg("i"))
         .def("shell_to_center", &BasisSet::shell_to_center, 
-             "Return the atomic center for the i'th shell", py::arg("i")) //are shell_to_basis_function and _ao_function the same?
+             "Return the atomic center for the i'th shell", py::arg("i")) //are shell_to_basis_function and shell_to_ao_function the same?
         .def("shell_to_ao_function", &BasisSet::shell_to_ao_function,
              "Return the function number for the first function for the i'th shell", py::arg("i"))
         .def("function_to_shell", &BasisSet::function_to_shell, 
@@ -1132,7 +1132,7 @@ void export_mints(py::module& m)
         .def("move_atom", &BasisSet::move_atom, "Translate a given atom by a given amount.  Does not affect the underlying molecule object.")
         .def("max_function_per_shell", &BasisSet::max_function_per_shell, "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring"); // what is this 
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring"); 
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", 
         "An SOBasis object describes the transformation from an atomic orbital basis to a symmetry orbital basis.")
@@ -1169,11 +1169,11 @@ void export_mints(py::module& m)
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("write", &FCHKWriter::write, "Write wavefunction information to file", py::arg("filename"));
 
-//    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter", "Writes wavefunction information in molden format")
-//        .def(py::init<std::shared_ptr<Wavefunction>>())
-//        .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format",
-//             py::arg("filename"),  py::arg("Ca"),  py::arg("Cb"),  py::arg("Ea"),  py::arg("Eb"),
-//             py::arg("OccA"),   py::arg("OccB"), py::arg("dovirtual")); 
+    py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter", "Writes wavefunction information in molden format")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("write", &MoldenWriter::write, "Writes wavefunction information in molden format",
+             py::arg("filename"),  py::arg("Ca"),  py::arg("Cb"),  py::arg("Ea"),  py::arg("Eb"),
+             py::arg("OccA"),   py::arg("OccB"), py::arg("dovirtual")); 
 
     py::class_<NBOWriter, std::shared_ptr<NBOWriter>>(m, "NBOWriter", "The Natural Bond Orbital Writer")
         .def(py::init<std::shared_ptr<Wavefunction>>())
