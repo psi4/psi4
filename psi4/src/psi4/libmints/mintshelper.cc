@@ -1462,6 +1462,9 @@ SharedMatrix MintsHelper::mo_transform(SharedMatrix Iso, SharedMatrix C1, Shared
     // perturbation eg (12|34) -> (13|24), therefore integrals of type (oo|vv) will not be computed
     // in the optimal order. However, the first transformed index is guaranteed to be the smallest.
 
+    if ((C1->nirrep() + C2->nirrep() + C3->nirrep() + C4->nirrep()) > 4){
+        throw PSIEXCEPTION("MO Transform: Incoming orbitals must be C1 symmetry.");
+    }
     int nso = C1->rowspi()[0];
 
     // Check C dimensions
