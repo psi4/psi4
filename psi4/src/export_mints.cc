@@ -780,12 +780,18 @@ void export_mints(py::module& m)
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
         .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", 
               py::arg("corr"), py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
-        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring") //doc's in C++ code seem incorrect, labelled as MO
-        .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "docstring")
-        .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "docstring")
-        .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "docstring")
-        .def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring")
-        .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring")
+        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), 
+             "AO F12 intgerals", py::arg("corr"))
+        .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), 
+             "AO F12 intgerals", py::arg("corr"), py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
+        .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), 
+             "AO F12 squared integrals", py::arg("corr"))
+        .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared)
+             "AO F12 squared integrals", py::arg("corr"), py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
+        .def("ao_f12g12", &MintsHelper::ao_f12g12, 
+             "AO F12G12 integrals", py::arg("corr"))
+        .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator,
+             "AO F12 double commutator integrals", py::arg("corr"))
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
         .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", py::arg("bs1"), py::arg("bs2"), py::arg("bs3"))
 
