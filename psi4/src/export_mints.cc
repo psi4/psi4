@@ -367,34 +367,34 @@ void export_mints(py::module& m)
         .def("transpose_this", &Matrix::transpose_this, "Transpose the matrix in-place")
         .def("transpose", &Matrix::transpose, "Creates a new matrix that is the transpose of this matrix")
         .def("add", matrix_one(&Matrix::add), "Adds a matrix to this matrix")
-//        .def("axpy", &Matrix::axpy, "Add to this matrix another matrix scaled by a", py::arg("a"))
+        .def("axpy", &Matrix::axpy, "Add to this matrix another matrix scaled by a", py::arg("a"), py::arg("X"))
         .def("subtract", matrix_one(&Matrix::subtract), "Substract a matrix from this matrix")
         .def("accumulate_product", matrix_two(&Matrix::accumulate_product), 
              "Multiplies two arguments and adds the result to this matrix")
-//        .def("scale", &Matrix::scale, "Scales the matrix by the floating point value a", py::arg("a"))
+        .def("scale", &Matrix::scale, "Scales the matrix by the floating point value a", py::arg("a"))
         .def("sum_of_squares", &Matrix::sum_of_squares, "Returns the sum of the squares of this matrix")
-//        .def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "Expands the row dimension by one, \
-//              and then orthogonalizes vector v against the current rows \
-//              before setting the new row to the orthogonalized copy of v", py::arg("v") )
+        .def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "Expands the row dimension by one, \
+              and then orthogonalizes vector v against the current rows \
+              before setting the new row to the orthogonalized copy of v", py::arg("v") )
         .def("rms", &Matrix::rms, "Returns the rms of this matrix")
         .def("absmax", &Matrix::absmax, "Returns the absolute maximum value")
-//        .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", py::arg("h"), py::arg("m"), py::arg("a"))
-//        .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", py::arg("h"), py::arg("n"), py::arg("a"))
- //       .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", py::arg("transformer"))
- //       .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", py::arg("transformer"))
- //       .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer", py::arg("transformer"))
- //       .def("back_transform", matrix_two(&Matrix::back_transform), "Backtransform A with transformer", py::arg("transformer"))
- //       .def("vector_dot", double_matrix_one(&Matrix::vector_dot), 
- //            "Returns the vector dot product of this with rhs", py::arg("rhs"))
-//        .def("gemm", matrix_multiply(&Matrix::gemm), 
-//             "Generalized matrix multiplication \
-//              argument transa Transpose the left matrix? \
-//              argument transb Transpose the right matrix? \
-//              argument alpha Prefactor for the matrix multiplication \
-//              argument A Left matrix \
-//              argument B Right matrix \
-//              argument beta Prefactor for the resulting matrix",
-//              py::arg("transa"),  py::arg("transb"), py::arg("alpha") ,py::arg("A"), py::arg("B"), py::arg("beta") )
+        .def("scale_row", &Matrix::scale_row, "Scales row m of irrep h by a", py::arg("h"), py::arg("m"), py::arg("a"))
+        .def("scale_column", &Matrix::scale_column, "Scales column n of irrep h by a", py::arg("h"), py::arg("n"), py::arg("a"))
+        .def("transform", matrix_one(&Matrix::transform), "Transform this matrix with transformer", py::arg("transformer"))
+        .def("transform", matrix_two(&Matrix::transform), "Transform A with transformer", py::arg("a"), py::arg("transformer"))
+        .def("back_transform", matrix_one(&Matrix::back_transform), "Backtransform this with transformer", py::arg("transformer"))
+        .def("back_transform", matrix_two(&Matrix::back_transform), "Backtransform A with transformer", py::arg("a"),  py::arg("transformer"))
+        .def("vector_dot", double_matrix_one(&Matrix::vector_dot), 
+             "Returns the vector dot product of this with rhs", py::arg("rhs"))
+        .def("gemm", matrix_multiply(&Matrix::gemm), 
+             "Generalized matrix multiplication \
+              argument transa Transpose the left matrix? \
+              argument transb Transpose the right matrix? \
+              argument alpha Prefactor for the matrix multiplication \
+              argument A Left matrix \
+              argument B Right matrix \
+              argument beta Prefactor for the resulting matrix",
+              py::arg("transa"),  py::arg("transb"), py::arg("alpha") ,py::arg("a"), py::arg("b"), py::arg("beta") )
         .def("diagonalize", matrix_diagonalize(&Matrix::diagonalize), 
              "Diagonalizes this matrix, space for the eigvectors and eigvalues must be created by caller. Only for symmetric matrices.", 
              py::arg("eigvectors"), py::arg("eigvalues"), py::arg("order") = ascending)
@@ -413,8 +413,8 @@ void export_mints(py::module& m)
         .def("general_invert", &Matrix::general_invert, "Computes the inverse of any nonsingular matrix using LU factorization")
         .def("pseudoinverse", &Matrix::pseudoinverse, "Computes the matrix which is the conditioned pseudoinverse of this matrix",
              py::arg("condition"), py::arg("nremoved"))
- //       .def("apply_denominator", matrix_one(&Matrix::apply_denominator), 
-//             "Apply matrix of denominators to this matrix", py::arg("Matrix"))
+        .def("apply_denominator", matrix_one(&Matrix::apply_denominator), 
+             "Apply matrix of denominators to this matrix", py::arg("Matrix"))
         .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
         .def("power", &Matrix::power, 
              "Takes the matrix to the alpha power with precision cutoff", py::arg("alpha"), py::arg("cutoff") = 1.0E-12)
@@ -424,34 +424,35 @@ void export_mints(py::module& m)
         // .def("triplet", &Matrix::triplet, "docstring", py::arg("A"), py::arg("B"), py::arg("C"),
         //      py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false)
 
-  //      .def("doublet", &Matrix::doublet, 
- //            "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", 
- //             py::arg("A"), py::arg("B"), py::arg("transA") = false, py::arg("transB") = false)
+//This wont compile, with and without default bools
+//        .def("doublet", &Matrix::doublet, 
+//             "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", 
+//              py::arg("A"), py::arg("B"), py::arg("transA"), py::arg("transB"))
 //        .def("triplet", &Matrix::triplet, 
- //            "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
- //             py::arg("A"), py::arg("B"), py::arg("C"), 
-  //            py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
-//        .def("get", matrix_get3(&Matrix::get), 
-//             "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
-//        .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"), py::arg("n"))
+//             "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand",
+//              py::arg("A"), py::arg("B"), py::arg("C"), 
+//              py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false )
+        .def("get", matrix_get3(&Matrix::get), 
+             "Returns a single element of a matrix in subblock h, row m, col n", py::arg("h"), py::arg("m"), py::arg("n") )
+        .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", py::arg("m"), py::arg("n"))
         .def("set", matrix_set1(&Matrix::set), "Sets every element of a matrix to val", py::arg("val"))
-//        .def("set", matrix_set3(&Matrix::set), 
-//             "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
-//        .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
- //                                              py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
+        .def("set", matrix_set3(&Matrix::set), 
+             "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
+        .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
+                                               py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
         .def("project_out", &Matrix::project_out, "docstring") //destroyed according to matrix.h file
         .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix",
              py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg("saveSubBlocks") = false)  
         .def("load", matrix_load(&Matrix::load), 
              "Loads a block matrix from an ASCII file (see tests/mints3 for format)", py::arg("filename"))
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "Loads a matrix from an ASCII file in MPQC format", py::arg("filename"))
-            // shouldn't this take Petite List's sotoao() function as a default argument?
-   //     .def("remove_symmetry", &Matrix::remove_symmetry, 
-    //         "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("A"), py::arg("transformer"))
+            // should this take Petite List's sotoao() function as a default argument?
+        .def("remove_symmetry", &Matrix::remove_symmetry, 
+             "Remove symmetry from a matrix A with PetiteList::sotoao()", py::arg("a"), py::arg("transformer"))
         .def("symmetrize_gradient", &Matrix::symmetrize_gradient, 
              "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", py::arg("mol")) 
-//        .def("rotate_columns", &Matrix::rotate_columns, 
-//             "Rotates columns i and j in irrep h by angle theta", py::arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
+        .def("rotate_columns", &Matrix::rotate_columns, 
+             "Rotates columns i and j in irrep h by angle theta", py::arg("h"), py::arg("i"), py::arg("j"), py::arg("theta"))
         .def("array_interface", [](Matrix& m) {
 
             // Build a list of NumPy views, used for the .np and .nph accessors.Vy
@@ -505,13 +506,13 @@ void export_mints(py::module& m)
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
-
+// This will also not compile
 //    py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
 //        .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
-//             "Returns a new matrix object with default dimensions", py::arg("symmetry") = 0)
- //       .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
+//             "Returns a new matrix object with default dimensions", py::arg("symmetry"))
+//        .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
 //             "Returns a new Matrix object named name with default dimensions", 
-//             py::arg("mat"), py::arg("name"), py::arg("symmetry") = 0);
+//              py::arg("name"), py::arg("symmetry"));
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations")
         .def("print_out", &CdSalcList::print, "Print the SALC")
@@ -793,7 +794,7 @@ void export_mints(py::module& m)
 
         // Two-electron MO and transformers
 //        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", 
-//             py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
+//             py::arg("Iso"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
 //        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", 
 //             py::arg("omega"), py::arg("C1"), py::arg("C2"), py::arg("C3"), py::arg("C4"))
 //        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals",
