@@ -220,7 +220,7 @@ void export_mints(py::module& m)
     typedef void (Vector::*vector_setitem_n)(const py::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const py::tuple&);
 
-    py::class_<Dimension>(m, "Dimension", "docstring")
+    py::class_<Dimension>(m, "Dimension", "Initialilzes and defines Dimension Objects")
         .def(py::init<int>())
         .def(py::init<int, const std::string&>())
         .def(py::init<const std::vector<int>&>())
@@ -418,13 +418,6 @@ void export_mints(py::module& m)
         .def("copy", matrix_one(&Matrix::copy), "Returns a copy of the matrix")
         .def("power", &Matrix::power, 
              "Takes the matrix to the alpha power with precision cutoff", py::arg("alpha"), py::arg("cutoff") = 1.0E-12)
-
-        // .def("doublet", &Matrix::doublet, "docstring", py::arg("A"), py::arg("B"),
-        //      py::arg("transA") = false, py::arg("transB") = false)
-        // .def("triplet", &Matrix::triplet, "docstring", py::arg("A"), py::arg("B"), py::arg("C"),
-        //      py::arg("transA") = false, py::arg("transB") = false, py::arg("transC") = false)
-
-//doublet and triplet require def_static since the functions are static type in C++
         .def_static("doublet", &Matrix::doublet, 
              "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", 
               py::arg("A"), py::arg("B"), py::arg("transA") = false, py::arg("transB") = false)
@@ -440,7 +433,8 @@ void export_mints(py::module& m)
              "Sets a single element of a matrix to val at row m, col n", py::arg("m"), py::arg("n"), py::arg("val"))
         .def("set", matrix_set4(&Matrix::set), "Sets a single element of a matrix, subblock h, row m, col n, with value val",
                                                py::arg("h"), py::arg("m"), py::arg("n"),  py::arg("val"))
-        .def("project_out", &Matrix::project_out, "docstring") //destroyed according to matrix.h file
+        //destroyed according to matrix.h file
+        //.def("project_out", &Matrix::project_out, "docstring") 
         .def("save", matrix_save(&Matrix::save), "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix",
              py::arg("filename"), py::arg("append") = true, py::arg("saveLowerTriangle") = true, py::arg("saveSubBlocks") = false)  
         .def("load", matrix_load(&Matrix::load), 
@@ -643,7 +637,7 @@ void export_mints(py::module& m)
         .def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "Returns current R index")
         .def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "Returns current S index")
         .def("first", &AOShellCombinationsIterator::first, "docstring")
-        .def("next", &AOShellCombinationsIterator::next, "docstring") // not documented C++ side
+        .def("next", &AOShellCombinationsIterator::next, "docstring") //these are not documented C++ side
         .def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
     py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(
@@ -736,7 +730,10 @@ void export_mints(py::module& m)
         .def("cdsalcs", &MintsHelper::cdsalcs, "Returns a CdSalcList object")
         .def("petite_list", petite_list_0(&MintsHelper::petite_list), 
              "Returns petite list, which transforms AO basis functions to SO's") 
-        .def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring") //What is this?
+        .def("petite_list1", petite_list_1(&MintsHelper::petite_list), 
+             "Returns petite list which transforms AO basis functions to SO's, \
+              setting argument to true is for Cartesian basis, false is for Spherical Harmonic basis", 
+              py::arg("include_pure_transform")) 
 
         // Integral builders
         .def("integral", &MintsHelper::integral, "Integral factory being used")
