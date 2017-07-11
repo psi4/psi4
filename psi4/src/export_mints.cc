@@ -549,7 +549,7 @@ void export_mints(py::module& m)
         //            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
         def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive", py::arg("prim"))
         .def("original_coef", &GaussianShell::original_coef, "Return unnormalized coefficient of the pi'th primitive", py::arg("pi"))
-        .def("erd_coef", &GaussianShell::erd_coef, "docstring")
+        .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", py::arg("pi"))
         .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", py::arg("pi"));
 
     py::enum_<PrimitiveType>(m, "PrimitiveType", "May be Normalized or Unnormalized")
@@ -783,7 +783,7 @@ void export_mints(py::module& m)
         .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", py::arg("corr"))
         .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", 
               py::arg("corr"), py::arg("bs1"), py::arg("bs2"), py::arg("bs3"), py::arg("bs4"))
-        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring") //doc's in C++ code seem incorrect, labelled as MO..
+        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "docstring") //doc's in C++ code seem incorrect, labelled as MO
         .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "docstring")
         .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "docstring")
         .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "docstring")
