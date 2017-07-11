@@ -3326,43 +3326,20 @@ def run_sapt(name, **kwargs):
     else:
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
-    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
-    sapt_dimer.fix_orientation(True)
-    sapt_dimer.fix_com(True)
-
-    # Shifting to C1 so we need to copy the active molecule
-    if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone()
-        sapt_dimer.reset_point_group('c1')
-        sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)
-        sapt_dimer.update_geometry()
-
-    if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
-        raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
-
-    nfrag = sapt_dimer.nfragments()
-    if nfrag != 2:
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
-
-    do_delta_mp2 = True if name.endswith('dmp2') else False
 
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
         sapt_basis = kwargs.pop('sapt_basis')
     sapt_basis = sapt_basis.lower()
 
-    if sapt_basis == 'dimer':
-        monomerA = sapt_dimer.extract_subsets(1, 2)
-        monomerA.set_name('monomerA')
-        monomerB = sapt_dimer.extract_subsets(2, 1)
-        monomerB.set_name('monomerB')
-    elif sapt_basis == 'monomer':
-        monomerA = sapt_dimer.extract_subsets(1)
-        monomerA.set_name('monomerA')
-        monomerB = sapt_dimer.extract_subsets(2)
-        monomerB.set_name('monomerB')
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, sapt_basis)
+
+    if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
+        raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
+
+    do_delta_mp2 = True if name.endswith('dmp2') else False
+
+    # raise Exception("")
 
     ri = core.get_option('SCF', 'SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
@@ -3506,35 +3483,15 @@ def run_sapt_ct(name, **kwargs):
     else:
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
-    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
-    sapt_dimer.fix_orientation(True)
-    sapt_dimer.fix_com(True)
 
-    # Shifting to C1 so we need to copy the active molecule
-    if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone()
-        sapt_dimer.reset_point_group('c1')
-        sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)
-        sapt_dimer.update_geometry()
-
-    if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError('SAPT requires requires \"reference rhf\".')
-
-    nfrag = sapt_dimer.nfragments()
-    if nfrag != 2:
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
-
-    monomerA = sapt_dimer.extract_subsets(1, 2)
-    monomerA.set_name('monomerA')
-    monomerB = sapt_dimer.extract_subsets(2, 1)
-    monomerB.set_name('monomerB')
-    sapt_dimer.update_geometry()
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
     monomerAm = sapt_dimer.extract_subsets(1)
     monomerAm.set_name('monomerAm')
     monomerBm = sapt_dimer.extract_subsets(2)
     monomerBm.set_name('monomerBm')
+
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
+        raise ValidationError('SAPT requires requires \"reference rhf\".')
 
     ri = core.get_option('SCF', 'SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
