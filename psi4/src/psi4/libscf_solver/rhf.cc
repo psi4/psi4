@@ -179,10 +179,8 @@ void RHF::form_V()
 void RHF::form_G()
 {
     if (functional_->needs_xc()) {
-        timer_on("RKS: Form V");
         form_V();
         G_->copy(Va_);
-        timer_off("RKS: Form V");
     } else {
         G_->zero();
     }
