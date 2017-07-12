@@ -537,8 +537,8 @@ void export_mints(py::module& m)
         //            primitives").
         //            add_property("coefs", &GaussianShell::coefs, "The coefficients of all the
         //            primitives").
-        def("is_cartesian", &GaussianShell::is_cartesian, "Returns true if contraction is Cartesian")
-        .def("is_pure", &GaussianShell::is_pure, "Returns true if contraction is pure")
+        def("is_cartesian", &GaussianShell::is_cartesian, "Returns true if the contraction is Cartesian")
+        .def("is_pure", &GaussianShell::is_pure, "Returns true if the contraction is pure, i.e. a spherical harmonic basis function")
         .
         //            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
         def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive", py::arg("prim"))
@@ -642,7 +642,7 @@ void export_mints(py::module& m)
 
     py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(
         m, "ThreeCenterOverlapInt", "Three center overalp integrals")
-        .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "Compute the integrals of the form (a|c|b)");
+        .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "Compute the integrals of the form (a|b|c)");
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "Computes integrals")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
@@ -666,30 +666,30 @@ void export_mints(py::module& m)
              py::arg("deriv") = 0, py::arg("use_shell_pairs") = true)
         .def("erf_complement_eri", &IntegralFactory::erf_complement_eri, "Returns an erf complement ERI integral object (omega integral)",
              py::arg("omega"), py::arg("deriv") = 0, py::arg("use_shell_pairs") = true)
-        .def("ao_overlap", &IntegralFactory::ao_overlap, "Returns a OneBodyInt that computes the overlap integrals", py::arg("deriv") = 0)
-        .def("so_overlap", &IntegralFactory::so_overlap, "Returns a OneBodyInt that computes the overlap integrals", py::arg("deriv") = 0)
-        .def("ao_dipole", &IntegralFactory::ao_dipole, "Returns a OneBodyInt that computes the dipole integrals", py::arg("deriv") = 0)
-        .def("so_dipole", &IntegralFactory::so_dipole, "Returns a OneBodyInt that computes the dipole integrals", py::arg("deriv") = 0)
-        .def("ao_kinetic", &IntegralFactory::ao_kinetic, "Returns a OneBodyInt that computes the kinetic integrals", py::arg("deriv") = 0)
-        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the kinteic integrals", py::arg("deriv") = 0)
-        .def("ao_potential", &IntegralFactory::ao_potential, "Returns a OneBodyInt that computes the nuclear attraction integral", py::arg("deriv") = 0)
-        .def("so_potential", &IntegralFactory::so_potential, "Returns a OneBody Int that computes the nuclear attraction integral", py::arg("deriv") = 0)
-        .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral, "Returns a OneBodyInt that computes the pseudospectral grid integrals",
+        .def("ao_overlap", &IntegralFactory::ao_overlap, "Returns a OneBodyInt that computes the AO overlap integrals", py::arg("deriv") = 0)
+        .def("so_overlap", &IntegralFactory::so_overlap, "Returns a OneBodyInt that computes the SO overlap integrals", py::arg("deriv") = 0)
+        .def("ao_dipole", &IntegralFactory::ao_dipole, "Returns a OneBodyInt that computes the AO dipole integrals", py::arg("deriv") = 0)
+        .def("so_dipole", &IntegralFactory::so_dipole, "Returns a OneBodyInt that computes the SO dipole integrals", py::arg("deriv") = 0)
+        .def("ao_kinetic", &IntegralFactory::ao_kinetic, "Returns a OneBodyInt that computes the AO kinetic integrals", py::arg("deriv") = 0)
+        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the SO kinteic integrals", py::arg("deriv") = 0)
+        .def("ao_potential", &IntegralFactory::ao_potential, "Returns a OneBodyInt that computes the AO nuclear attraction integral", py::arg("deriv") = 0)
+        .def("so_potential", &IntegralFactory::so_potential, "Returns a OneBodyInt that computes the SO nuclear attraction integral", py::arg("deriv") = 0)
+        .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral, "Returns a OneBodyInt that computes the AO pseudospectral grid integrals",
              py::arg("deriv") = 0)
-        .def("so_pseudospectral", &IntegralFactory::so_pseudospectral, "Returns a OneBodyInt that computes the pseudospectral grid integrals",
+        .def("so_pseudospectral", &IntegralFactory::so_pseudospectral, "Returns a OneBodyInt that computes the SO pseudospectral grid integrals",
              py::arg("deriv") = 0)
-        .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the nabla integral", py::arg("deriv") = 0)
-        .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the nabla integral", py::arg("deriv") = 0)
-        .def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum, "Returns a OneBodyInt that computes the angular momentum integral",
+        .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral", py::arg("deriv") = 0)
+        .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral", py::arg("deriv") = 0)
+        .def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum, "Returns a OneBodyInt that computes the AO angular momentum integral",
              py::arg("deriv") = 0)
-        .def("so_angular_momentum", &IntegralFactory::so_angular_momentum, "Returns a OneBodyInt that computes the angular momentum integral",
+        .def("so_angular_momentum", &IntegralFactory::so_angular_momentum, "Returns a OneBodyInt that computes the SO angular momentum integral",
              py::arg("deriv") = 0)
-        .def("ao_quadrupole", &IntegralFactory::ao_quadrupole, "Returns a OneBodyInt that computes the quadrupole integral")
-        .def("so_quadrupole", &IntegralFactory::so_quadrupole, "Returns a OneBodyInt that computes the quadrupole integral")
-        .def("ao_multipoles", &IntegralFactory::ao_multipoles, "Returns a OneBodyInt that computes arbitrary-order multipole integrals", py::arg("order"))
-        .def("so_multipoles", &IntegralFactory::so_multipoles, "Returns a OneBodyInt that computes arbitrary-order multipole integrals", py::arg("order"))
-        .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole, "Returns a OneBodyInt that computes the traceless quadrupole integral")
-        .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole, "Returns a OneBodyInt that computes the traceless quadrupole integral")
+        .def("ao_quadrupole", &IntegralFactory::ao_quadrupole, "Returns a OneBodyInt that computes AO the quadrupole integral")
+        .def("so_quadrupole", &IntegralFactory::so_quadrupole, "Returns a OneBodyInt that computes SO the quadrupole integral")
+        .def("ao_multipoles", &IntegralFactory::ao_multipoles, "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", py::arg("order"))
+        .def("so_multipoles", &IntegralFactory::so_multipoles, "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", py::arg("order"))
+        .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole, "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
+        .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole, "Returns a OneBodyInt that computes the traceless SO quadrupole integral")
         .def("electric_field", &IntegralFactory::electric_field, "Returns a OneBodyInt that computes the electric field")
         .def("electrostatic", &IntegralFactory::electrostatic, "Returns a OneBodyInt that computes the point electrostatic potential")
         .def("overlap_3c", &IntegralFactory::overlap_3c, "Returns a OneBodyInt that computes the 3 center overlap integral");
