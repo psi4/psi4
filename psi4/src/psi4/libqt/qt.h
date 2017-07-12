@@ -90,6 +90,8 @@ void timer_on(const std::string& key);
 void timer_off(const std::string& key);
 void parallel_timer_on(const std::string& key, int thread_rank);
 void parallel_timer_off(const std::string& key, int thread_rank);
+void start_skip_timers();
+void stop_skip_timers();
 
 void print_block(double *, int, int, FILE *);
 
