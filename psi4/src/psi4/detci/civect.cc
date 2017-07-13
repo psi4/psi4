@@ -921,7 +921,11 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
    return(minval);
 }
 
+<<<<<<< HEAD
 void CIvect::blk_copy(size_t i, int offdiag, size_t & offset, int *iac,
+=======
+void CIvect::blk_copy(int i, int offdiag, size_t & offset, int *iac,
+>>>>>>> 282a3a01289a39947c5d370f91502dd778743739
 		      int *ibc, int *iaidx, int *ibidx, double *coeff)
 {
   int j, k, m, n;
@@ -939,6 +943,38 @@ void CIvect::blk_copy(size_t i, int offdiag, size_t & offset, int *iac,
       offset++;
     }
   }
+<<<<<<< HEAD
+=======
+
+  if (offdiag) {
+    if (CI_Params_->Ms0 && ((int) CI_Params_->S % 2)) {
+      for (j=0; j<Ia_size_[i]; j++) {
+	for (k=0; k<Ib_size_[i]; k++) {
+	  /* value switches sign */
+	  coeff[offset] = -blocks_[i][j][k];
+	  iac[offset] = iacode;
+	  ibc[offset] = ibcode;
+	  iaidx[offset] = k;
+	  ibidx[offset] = j;
+	  offset++;
+	}
+      }
+    } else {
+      for (j=0; j<Ia_size_[i]; j++) {
+	for (k=0; k<Ib_size_[i]; k++) {
+	  /* value doesn't switch sign */
+	  coeff[offset] = blocks_[i][j][k];
+	  iac[offset] = iacode;
+	  ibc[offset] = ibcode;
+	  iaidx[offset] = k;
+	  ibidx[offset] = j;
+	  offset++;
+	}
+      }
+    }
+  }
+}
+>>>>>>> 282a3a01289a39947c5d370f91502dd778743739
 
   if (offdiag) {
     if (CI_Params_->Ms0 && ((int) CI_Params_->S % 2)) {

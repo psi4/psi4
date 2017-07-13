@@ -58,38 +58,38 @@ namespace psi { namespace detci {
 #define FLAG_NONBLOCKS
 #define MIN_COEFF 1.0E-13
 
-std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int* orbs_per_irr);
-extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
+    std::string orb2lbl(int orbnum, struct calcinfo *Cinfo, int* orbs_per_irr);
+    extern int str_rel2abs(int relidx, int listnum, struct olsen_graph *Graph);
 
 
-/*
-** PRINT_VEC()
-**
-** Print the Most Important Determinants in the CI vector
-** David Sherrill, February 1995
-*/
-void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
-      int *Iaidx, int *Ibidx, double *coeff)
-{
-   int Ia_abs, Ib_abs;
+    /*
+    ** PRINT_VEC()
+    **
+    ** Print the Most Important Determinants in the CI vector
+    ** David Sherrill, February 1995
+    */
+    void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
+				   int *Iaidx, int *Ibidx, double *coeff)
+    {
+      int Ia_abs, Ib_abs;
 
-   /* print out the list of most important determinants */
-   outfile->Printf("\n   The %d most important determinants:\n\n", nprint) ;
-   for (size_t i=0; i<nprint; i++) {
-      if (fabs(coeff[i]) < MIN_COEFF) continue;
+      /* print out the list of most important determinants */
+      outfile->Printf("\n   The %d most important determinants:\n\n", nprint) ;
+      for (size_t i=0; i<nprint; i++) {
+	if (fabs(coeff[i]) < MIN_COEFF) continue;
 
-      Ia_abs = str_rel2abs(Iaidx[i], Ialist[i], AlphaG_);
-      Ib_abs = str_rel2abs(Ibidx[i], Iblist[i], BetaG_);
+	Ia_abs = str_rel2abs(Iaidx[i], Ialist[i], AlphaG_);
+	Ib_abs = str_rel2abs(Ibidx[i], Iblist[i], BetaG_);
 
-      #ifdef FLAG_NONBLOCKS
-      int found_inblock=0;
-      for (size_t j=0, found_inblock=0; j<H0block_->size; j++) {
-         if (Iaidx[i] == H0block_->alpidx[j] &&
-             Ibidx[i] == H0block_->betidx[j] &&
-             Ialist[i] == H0block_->alplist[j] &&
-             Iblist[i] == H0block_->betlist[j]) {
-	   found_inblock = 1;
-	   break;
+#ifdef FLAG_NONBLOCKS
+	int found_inblock=0;
+	for (size_t j=0, found_inblock=0; j<H0block_->size; j++) {
+	  if (Iaidx[i] == H0block_->alpidx[j] &&
+	      Ibidx[i] == H0block_->betidx[j] &&
+	      Ialist[i] == H0block_->alplist[j] &&
+	      Iblist[i] == H0block_->betlist[j]) {
+            found_inblock = 1;
+            break;
 	  }
 	}
 	outfile->Printf("    %c", found_inblock ? ' ' : '*');
@@ -155,6 +155,7 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
       for(int i = 0; i < (int) Eorder.size(); i++) {
 	mapping[std::get<1>(Eorder[i])] = i;
       }
+<<<<<<< HEAD
 
       // Determinant strings in decreasing coeffient
       std::vector< std::tuple<double, double, std::string> > dets(ndets);
@@ -241,6 +242,94 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
 
       std::ostringstream oss;
 
+=======
+
+      // Determinant strings in decreasing coeffient
+      std::vector< std::tuple<double, double, std::string> > dets(ndets);
+      for (size_t idet=0; idet<ndets; idet++) {
+	struct stringwr *stralp=alplist_[Ialist[idet]] + Iaidx[idet];
+	struct stringwr *strbet=betlist_[Iblist[idet]] + Ibidx[idet];
+	const std::vector<int> & porder=CalcInfo_->act_order;
+	int num_alp_el=AlphaG_->num_el_expl;
+	int num_bet_el=BetaG_->num_el_expl;
+	int num_orb=AlphaG_->num_orb;
+
+	// Alpha and beta strings
+	char sbstr[num_orb+1];
+	for (int i=0;i<num_orb;i++) {
+	  sbstr[i]='0';
+	}
+	sbstr[num_orb]='\0';
+
+	// Fill the strings
+	for (int k=0; k<num_alp_el; k++) {
+	  // Orbital number in CI ordering
+	  int io=stralp->occs[k];
+	  // Translated back into Pitzer order this is
+	  io=porder[io];
+	  // which can finally be put into energy order as
+	  io=mapping[io];
+
+	  if(io<0) {
+	    outfile->Printf( "(dump_vec): io<0\n");
+	  }
+	  if(io>=num_orb) {
+	    outfile->Printf( "(dump_vec): io>=num_orb\n");
+	  }
+	  sbstr[io]='u';
+	}
+	for (int k=0; k<num_bet_el; k++) {
+	  // Orbital number in CI ordering
+	  int io=strbet->occs[k];
+	  // Translated back into Pitzer order this is
+	  io=porder[io];
+	  // which can finally be put into energy order as
+	  io=mapping[io];
+
+	  if(io<0) {
+	    outfile->Printf( "(dump_vec): io<0\n");
+	  }
+	  if(io>=num_orb) {
+	    outfile->Printf( "(dump_vec): io>=num_orb\n");
+	  }
+	  sbstr[io] = (sbstr[io]=='u') ? '2' : 'd';
+	}
+
+	dets[idet]=std::tuple<double, double, std::string>(std::abs(coeff[idet]),coeff[idet],sbstr);
+      }
+      std::sort(dets.begin(), dets.end(), std::greater < std::tuple < double, double, std::string > > ());
+
+      FILE *out=fopen(fname,"w");
+      fprintf(out,"%u %i %i %i\n",ndets,AlphaG_->num_orb,AlphaG_->num_el_expl,BetaG_->num_el_expl) ;
+      for (size_t idet=0; idet<ndets; idet++) {
+	// Print out the entry
+	fprintf(out," % 16.12e %s\n", std::get<1>(dets[idet]), std::get<2>(dets[idet]).c_str());
+      } /* end loop over important determinants */
+      fclose(out);
+
+      outfile->Printf("\n   %d determinants printed to file %s.\n\n", ndets, fname);
+    }
+
+
+
+    /*
+    ** PRINT_CONFIG()
+    **
+    ** Function prints a configuration, given a list of
+    ** alpha and beta string occupancies.
+    **
+    ** David Sherrill, February 1995
+    **
+    */
+    std::string CIWavefunction::print_config(int nbf, int num_alp_el, int num_bet_el,
+					     struct stringwr *stralp, struct stringwr *strbet, int num_drc_orbs)
+    {
+      int j,k;
+      int afound, bfound;
+
+      std::ostringstream oss;
+
+>>>>>>> 282a3a01289a39947c5d370f91502dd778743739
       /* loop over orbitals */
       for (j=0; j<nbf; j++) {
 
