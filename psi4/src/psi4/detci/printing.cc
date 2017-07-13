@@ -41,6 +41,7 @@
 ** University of Georgia
 */
 
+#include <algorithm>
 #include <cstdio>
 #include <cmath>
 #include <cstring>
