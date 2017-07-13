@@ -272,6 +272,7 @@ void export_wavefunction(py::module& m) {
         .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
         .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
         .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
+        .def("dump_vector", &detci::CIWavefunction::dump_vector, "docstring")
         .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
         .def("D_vector", &detci::CIWavefunction::D_vector, "docstring")
         .def("mcscf_object", &detci::CIWavefunction::mcscf_object, "docstring")

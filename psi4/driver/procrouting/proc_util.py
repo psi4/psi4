@@ -179,6 +179,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     # Initial info
     ci_nroots = core.get_option("DETCI", "NUM_ROOTS")
     irrep_labels = ciwfn.molecule().irrep_labels()
+    dump_vectors = core.get_option("DETCI", "DUMP_VECTORS")
 
     # Grab the D-vector
     dvec = ciwfn.D_vector()
@@ -219,6 +220,9 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
 
         # Print CIVector information
         ciwfn.print_vector(dvec, root)
+        # Dump CIVector
+        if(dump_vectors):
+            ciwfn.dump_vector(dvec, root)
 
     # True to keep the file
     dvec.close_io_files(True)

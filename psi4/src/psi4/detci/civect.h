@@ -181,9 +181,12 @@ class CIvect {
     void setarray(const double *a, size_t len);
     void max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
                       double *coeff, int neg_only);
+    void copy(size_t ndet, int *iac, int *ibc, int *iaidx, int *ibidx, double *coeff);
     double blk_max_abs_vals(int i, int offdiag, int nval, int *iac, int *ibc,
                             int *iaidx, int *ibidx, double *coeff,
                             double minval, int neg_only);
+    void blk_copy(size_t i, int offdiag, size_t & offset, int *iac, int *ibc,
+		  int *iaidx, int *ibidx, double *coeff);
     void det2strings(size_t det, int *alp_code, int *bet_code, int *alp_idx,
                      int *bet_idx);
     size_t strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx);
