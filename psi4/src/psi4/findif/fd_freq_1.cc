@@ -103,12 +103,14 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     for (int h = 0; h < Nirrep; ++h)
         Ndisp_all += Ndisp_pi[h];
 
-    outfile->Printf("\n-------------------------------------------------------------\n\n");
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n\n");
 
-    outfile->Printf("  Computing second-derivative from gradients using projected, \n");
-    outfile->Printf("  symmetry-adapted, cartesian coordinates (fd_freq_1).\n\n");
+        outfile->Printf("  Computing second-derivative from gradients using projected, \n");
+        outfile->Printf("  symmetry-adapted, cartesian coordinates (fd_freq_1).\n\n");
 
-    outfile->Printf("  %d gradients passed in, including the reference geometry.\n", (int) len(grad_list));
+        outfile->Printf("  %d gradients passed in, including the reference geometry.\n", (int)len(grad_list));
+    }
 
     // We are passing in the reference geometry at the moment, though we are not using
     // its gradient.  Could be removed later.
@@ -120,7 +122,9 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     }
 
     // *** Generate complete list of gradients from unique ones.
-    outfile->Printf("  Generating complete list of displacements from unique ones.\n\n");
+    if (print_lvl){
+        outfile->Printf("  Generating complete list of displacements from unique ones.\n\n");
+    }
 
     std::shared_ptr <PointGroup> pg = mol->point_group();
     CharacterTable ct = mol->point_group()->char_table();
@@ -173,8 +177,10 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
         for (op_disp = 0; op_disp < order; ++op_disp)
             if (gamma.character(op_disp) == -1)
                 break;
-        outfile->Printf("\tOperation %d takes plus displacements of irrep %s to minus ones.\n",
-                        op_disp + 1, gamma.symbol());
+        if (print_lvl) {
+            outfile->Printf("\tOperation %d takes plus displacements of irrep %s to minus ones.\n", op_disp + 1,
+                            gamma.symbol());
+        }
 
         // Get 3x3 matrix representation of operation.
         SymmetryOperation so = ct.symm_operation(op_disp);
@@ -368,7 +374,9 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     }
 
     // This print function also saves frequencies in wavefunction.
-    print_vibrations(mol, modes);
+    if (print_lvl){
+        print_vibrations(mol, modes);
+    }
 
     // Optionally, save normal modes to file.
     if (options.get_bool("NORMAL_MODES_WRITE")) {
@@ -455,7 +463,9 @@ SharedMatrix fd_freq_1(std::shared_ptr <Molecule> mol, Options &options,
     }
 //  free_block(Hx);
 
-    outfile->Printf("\n-------------------------------------------------------------\n");
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n");
+    }
 
     return mat_Hx;
 }

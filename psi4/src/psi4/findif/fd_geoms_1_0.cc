@@ -45,20 +45,22 @@ namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &options)
 {
 
-    outfile->Printf("\n-------------------------------------------------------------\n\n");
-
-    outfile->Printf("  Using finite-differences of energies to determine gradients (fd_geoms_1_0).\n");
-
+    int print_lvl = options.get_int("PRINT");
     int pts = options.get_int("POINTS");
-    outfile->Printf("\tGenerating geometries for use with %d-point formula.\n", pts);
+    double disp_size = options.get_double("DISP_SIZE");
+
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n\n");
+
+        outfile->Printf("  Using finite-differences of energies to determine gradients (fd_geoms_1_0).\n");
+        outfile->Printf("\tGenerating geometries for use with %d-point formula.\n", pts);
+        outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
+    }
+
     if (pts != 3 && pts != 5)
         throw PsiException("FINDIF: Invalid number of points!", __FILE__, __LINE__);
 
-    double disp_size = options.get_double("DISP_SIZE");
-    outfile->Printf("\tDisplacement size will be %6.2e.\n", disp_size);
-
     int Natom = mol->natom();
-    outfile->Printf("\tNumber of atoms is %d.\n", Natom);
 
     // Get SALCS from libmints
     std::shared_ptr<MatrixFactory> fact;
@@ -66,16 +68,21 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     CdSalcList cdsalc(mol, fact, 0x1, project, project);
 
     int Nsalc = cdsalc.ncd();
-    outfile->Printf("\tNumber of symmetric SALC's is %d.\n", Nsalc);
 
     // Determine number of geometries (1 + # of displacements)
     int Ndisp = 1;
-    if (pts == 3)
+    if (pts == 3) {
         Ndisp += 2 * Nsalc;
-    else if (pts == 5)
+    }
+    else if (pts == 5) {
         Ndisp += 4 * Nsalc;
+    }
 
-    outfile->Printf("\tNumber of displacements (including reference) is %d.\n", Ndisp);
+    if (print_lvl) {
+        outfile->Printf("\tNumber of atoms is %d.\n", Natom);
+        outfile->Printf("\tNumber of symmetric SALC's is %d.\n", Nsalc);
+        outfile->Printf("\tNumber of displacements (including reference) is %d.\n", Ndisp);
+    }
 
     if (options.get_int("PRINT") > 1)
         for (int i = 0; i < cdsalc.ncd(); ++i)
@@ -136,7 +143,9 @@ std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &o
     // put reference geometry list in list
     disp_geoms.push_back(ref_geom);
 
-    outfile->Printf("\n-------------------------------------------------------------\n");
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n");
+    }
 
     return disp_geoms;
 }
