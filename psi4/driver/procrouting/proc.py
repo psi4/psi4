@@ -1059,13 +1059,16 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
     return wfn
 
 
-def scf_helper(name, **kwargs):
+def scf_helper(name, post_scf=True, **kwargs):
     """Function serving as helper to SCF, choosing whether to cast
     up or just run SCF with a standard guess. This preserves
     previous SCF options set by other procedures (e.g., SAPT
     output file types for SCF).
 
     """
+
+    if post_scf:
+        name = "scf"
 
     optstash = p4util.OptionsState(
         ['PUREAM'],
@@ -1965,7 +1968,7 @@ def run_scf(name, **kwargs):
         core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
 
-    scf_wfn = scf_helper(name, **kwargs)
+    scf_wfn = scf_helper(name, post_scf=False, **kwargs)
     returnvalue = core.get_variable('CURRENT ENERGY')
 
     ssuper = scf_wfn.functional()
