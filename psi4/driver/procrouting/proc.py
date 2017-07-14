@@ -2096,7 +2096,6 @@ def run_scf_hessian(name, **kwargs):
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
 
     if "_disp_functor" in dir(ref_wfn):
-        print("I am here\n");
         disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
         ref_wfn.set_array("-D Hessian", disp_hess)
 

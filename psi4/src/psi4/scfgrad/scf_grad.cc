@@ -69,7 +69,10 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
     functional_ = scfwfn->functional();
     potential_ = scfwfn->V_potential();
     if (ref_wfn->arrays().count("-D Gradient")){
-        gradients_["-D"] = ref_wfn->get_array("-D Gradient");
+        gradients_["-D Gradient"] = ref_wfn->get_array("-D Gradient");
+    }
+    if (ref_wfn->arrays().count("-D Hessian")){
+        hessians_["-D Hessian"] = ref_wfn->get_array("-D Hessian");
     }
 
 }
@@ -118,7 +121,7 @@ SharedMatrix SCFGrad::compute_gradient()
     gradient_terms.push_back("Exchange");
     gradient_terms.push_back("Exchange,LR");
     gradient_terms.push_back("XC");
-    gradient_terms.push_back("-D");
+    gradient_terms.push_back("-D Gradient");
     gradient_terms.push_back("Total");
 
     // => Densities <= //
@@ -704,14 +707,6 @@ SharedMatrix SCFGrad::compute_gradient()
     }
     timer_off("Grad: XC");
 
-    // => -D Gradient <= //
-    // py::object
-    // for (auto item : )
-    // gradients_["-D"] = py_grad.cast<SharedMatrix>();
-    // if (functional_ && functional_->dispersion()) {
-    //     gradients_["-D"] = functional_->dispersion()->compute_gradient(basisset_->molecule());
-    // }
-
     // => Total Gradient <= //
     SharedMatrix total = SharedMatrix(gradients_["Nuclear"]->clone());
     total->zero();
@@ -764,8 +759,6 @@ SharedMatrix SCFGrad::compute_hessian()
 
     // => Registers <= //
 
-    std::map<std::string, SharedMatrix> hessians;
-
     std::vector<std::string> hessian_terms;
     hessian_terms.push_back("Nuclear");
     hessian_terms.push_back("Kinetic");
@@ -775,7 +768,7 @@ SharedMatrix SCFGrad::compute_hessian()
     hessian_terms.push_back("Exchange");
     hessian_terms.push_back("Exchange,LR");
     hessian_terms.push_back("XC");
-    hessian_terms.push_back("-D");
+    hessian_terms.push_back("-D Hessian");
     hessian_terms.push_back("Response");
     hessian_terms.push_back("Total");
 
@@ -830,8 +823,8 @@ SharedMatrix SCFGrad::compute_hessian()
     int nbeta = Cb->colspi()[0];
 
     // => Nuclear Hessian <= //
-    hessians["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
-    hessians["Nuclear"]->set_name("Nuclear Hessian");
+    hessians_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv2().clone());
+    hessians_["Nuclear"]->set_name("Nuclear Hessian");
 
     SharedMatrix Zxyz(new Matrix("Zxyz", 1, 4));
 
@@ -840,10 +833,10 @@ SharedMatrix SCFGrad::compute_hessian()
     {
         double** Dp = Dt->pointer();
 
-        hessians["Potential"] = SharedMatrix(hessians["Nuclear"]->clone());
-        hessians["Potential"]->set_name("Potential Hessian");
-        hessians["Potential"]->zero();
-        double** Vp = hessians["Potential"]->pointer();
+        hessians_["Potential"] = SharedMatrix(hessians_["Nuclear"]->clone());
+        hessians_["Potential"]->set_name("Potential Hessian");
+        hessians_["Potential"]->zero();
+        double** Vp = hessians_["Potential"]->pointer();
 
         // Potential energy derivatives
         std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
@@ -1107,7 +1100,7 @@ SharedMatrix SCFGrad::compute_hessian()
             }
         }
         // Symmetrize the result
-        int dim = hessians["Potential"]->rowdim();
+        int dim = hessians_["Potential"]->rowdim();
         for (int row = 0; row < dim; ++row){
             for (int col = 0; col < row; ++col){
                 Vp[row][col] = Vp[col][row] = (Vp[row][col] + Vp[col][row]);
@@ -1122,10 +1115,10 @@ SharedMatrix SCFGrad::compute_hessian()
     {
         double** Dp = Dt->pointer();
 
-        hessians["Kinetic"] = SharedMatrix(hessians["Nuclear"]->clone());
-        hessians["Kinetic"]->set_name("Kinetic Hessian");
-        hessians["Kinetic"]->zero();
-        double** Tp = hessians["Kinetic"]->pointer();
+        hessians_["Kinetic"] = SharedMatrix(hessians_["Nuclear"]->clone());
+        hessians_["Kinetic"]->set_name("Kinetic Hessian");
+        hessians_["Kinetic"]->zero();
+        double** Tp = hessians_["Kinetic"]->pointer();
 
         // Kinetic energy derivatives
         std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
@@ -1255,7 +1248,7 @@ SharedMatrix SCFGrad::compute_hessian()
             }
         }
         // Symmetrize the result
-        int dim = hessians["Kinetic"]->rowdim();
+        int dim = hessians_["Kinetic"]->rowdim();
         for (int row = 0; row < dim; ++row){
             for (int col = 0; col < row; ++col){
                 Tp[row][col] = Tp[col][row] = (Tp[row][col] + Tp[col][row]);
@@ -1295,10 +1288,10 @@ SharedMatrix SCFGrad::compute_hessian()
 
         delete[] temp;
 
-        hessians["Overlap"] = SharedMatrix(hessians["Nuclear"]->clone());
-        hessians["Overlap"]->set_name("Overlap Hessian");
-        hessians["Overlap"]->zero();
-        double** Sp = hessians["Overlap"]->pointer();
+        hessians_["Overlap"] = SharedMatrix(hessians_["Nuclear"]->clone());
+        hessians_["Overlap"]->set_name("Overlap Hessian");
+        hessians_["Overlap"]->zero();
+        double** Sp = hessians_["Overlap"]->pointer();
 
         // Overlap derivatives
         std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
@@ -1428,7 +1421,7 @@ SharedMatrix SCFGrad::compute_hessian()
             }
         }
         // Symmetrize the result
-        int dim = hessians["Overlap"]->rowdim();
+        int dim = hessians_["Overlap"]->rowdim();
         for (int row = 0; row < dim; ++row){
             for (int col = 0; col < row; ++col){
                 Sp[row][col] = Sp[col][row] = (Sp[row][col] + Sp[col][row]);
@@ -1472,19 +1465,19 @@ SharedMatrix SCFGrad::compute_hessian()
 
     std::map<std::string, SharedMatrix>& jk_hessians = jk->hessians();
     if (functional) {
-        hessians["Coulomb"] = jk_hessians["Coulomb"];
+        hessians_["Coulomb"] = jk_hessians["Coulomb"];
         if (functional->is_x_hybrid()) {
-            hessians["Exchange"] = jk_hessians["Exchange"];
-            hessians["Exchange"]->scale(-(functional->x_alpha()));
+            hessians_["Exchange"] = jk_hessians["Exchange"];
+            hessians_["Exchange"]->scale(-(functional->x_alpha()));
         }
         if (functional->is_x_lrc()) {
-            hessians["Exchange,LR"] = jk_hessians["Exchange,LR"];
-            hessians["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
+            hessians_["Exchange,LR"] = jk_hessians["Exchange,LR"];
+            hessians_["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
         }
     } else {
-        hessians["Coulomb"] = jk_hessians["Coulomb"];
-        hessians["Exchange"] = jk_hessians["Exchange"];
-        hessians["Exchange"]->scale(-1.0);
+        hessians_["Coulomb"] = jk_hessians["Coulomb"];
+        hessians_["Exchange"] = jk_hessians["Exchange"];
+        hessians_["Exchange"]->scale(-1.0);
     }
     timer_off("Hess: JK");
 
@@ -1493,43 +1486,43 @@ SharedMatrix SCFGrad::compute_hessian()
     if (functional) {
         potential->print_header();
         throw PSIEXCEPTION("KS Hessians not implemented");
-        //hessians["XC"] = potential->compute_hessian();
+        //hessians_["XC"] = potential->compute_hessian();
     }
     timer_off("Hess: XC");
 
     // => Response Terms (Brace Yourself) <= //
     if (options_.get_str("REFERENCE") == "RHF") {
-        hessians["Response"] = rhf_hessian_response();
+        hessians_["Response"] = rhf_hessian_response();
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
     }
 
     // => Total Hessian <= //
-    SharedMatrix total = SharedMatrix(hessians["Nuclear"]->clone());
+    SharedMatrix total = SharedMatrix(hessians_["Nuclear"]->clone());
     total->zero();
 
     for (int i = 0; i < hessian_terms.size(); i++) {
-        if (hessians.count(hessian_terms[i])) {
-            total->add(hessians[hessian_terms[i]]);
+        if (hessians_.count(hessian_terms[i])) {
+            total->add(hessians_[hessian_terms[i]]);
         }
     }
     // total->symmetrize_hessian(molecule_);
 
-    hessians["Total"] = total;
-    hessians["Total"]->set_name("Total Hessian");
+    hessians_["Total"] = total;
+    hessians_["Total"]->set_name("Total Hessian");
 
     // => Final Printing <= //
     if (print_ > 1) {
         for (int i = 0; i < hessian_terms.size(); i++) {
-            if (hessians.count(hessian_terms[i])) {
-                hessians[hessian_terms[i]]->print();
+            if (hessians_.count(hessian_terms[i])) {
+                printf("%s\n", hessian_terms[i].c_str());
+                hessians_[hessian_terms[i]]->print();
             }
         }
-    } else {
-        hessians["Total"]->print();
     }
+    // hessians_["Total"]->print();
 
-    return hessians["Total"];
+    return hessians_["Total"];
 }
 
 }} // Namespaces

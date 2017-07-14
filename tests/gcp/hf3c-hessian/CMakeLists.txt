@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(gcp-hf3c-gradient "psi;addon")
+add_regression_test(gcp-hf3c-hessian "psi;gcp;addon")

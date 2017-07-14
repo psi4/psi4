@@ -32,6 +32,7 @@ Module to provide lightweight definitions of emperical dispersion terms.
 from psi4 import core
 from psi4.driver.qcdb import interface_dftd3 as dftd3
 from psi4.driver.qcdb import interface_gcp as gcp
+from psi4.driver import p4util
 
 
 class EmpericalDispersion(object):
@@ -215,3 +216,35 @@ class EmpericalDispersion(object):
                                        dashparam=self.dash_params, verbose=False, dertype=1)
         else:
             return self.disp.compute_gradient(molecule)
+
+    def compute_hessian(self, molecule):
+        """
+        #magic (if magic was easy)
+        """
+
+        optstash = p4util.OptionsState(['PRINT'])
+        core.set_global_option('PRINT', 0)
+
+        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
+        core.print_out("       Computing the Hessian through finite difference of gradients.\n\n")
+
+        # Setup the molecule
+        molclone = molecule.clone()
+        molclone.reinterpret_coordentry(False)
+        molclone.fix_orientation(True)
+
+        # Record undisplaced symmetry for projection of diplaced point groups
+        core.set_parent_symmetry(molecule.schoenflies_symbol())
+
+        gradients = []
+        for geom in core.fd_geoms_freq_1(molecule, -1):
+            molclone.set_geometry(geom)
+            molclone.update_geometry()
+            gradients.append(self.compute_gradient(molclone))
+
+        H = core.fd_freq_1(molecule, gradients, -1)
+        # H.print_out()
+        optstash.restore()
+        return H
+
+
