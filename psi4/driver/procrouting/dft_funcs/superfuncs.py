@@ -54,9 +54,12 @@ superfunctionals.update(double_hyb_superfuncs.double_hyb_superfunc_list)
 ## ==> SuperFunctional List <== ##
 
 superfunctional_list = []
+superfunctional_noxc_names = []
 for key in superfunctionals.keys():
     sup = superfunctionals[key](key, 1, 1, True)[0]
     superfunctional_list.append(sup)
+    if not sup.needs_xc():
+        superfunctional_noxc_names.append(sup.name().lower())
 
 ## ==> Dispersion SuperFunctional List <== ##
 

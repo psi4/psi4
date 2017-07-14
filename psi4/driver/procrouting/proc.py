@@ -984,7 +984,7 @@ def select_mp4(name, **kwargs):
         return func(name, **kwargs)
 
 
-def scf_wavefunction_factory(reference, ref_wfn, functional=None):
+def scf_wavefunction_factory(name, ref_wfn, reference):
     """Builds the correct wavefunction from the provided information
     """
 
@@ -994,16 +994,13 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         modified_disp_params = None
 
     # Figure out functional
-    if functional is None:
-        superfunc, disp_type = dft_funcs.build_superfunctional(core.get_option("SCF", "DFT_FUNCTIONAL"),
-                                                               (reference == "RKS"))
-    elif isinstance(functional, core.SuperFunctional):
-        superfunc = functional
+    if isinstance(name, core.SuperFunctional):
+        superfunc = name
         disp_type = False
-    elif isinstance(functional, (str, unicode)):
-        superfunc, disp_type = dft_funcs.build_superfunctional(functional, (reference == "RKS"))
+    elif isinstance(name, str):
+        superfunc, disp_type = dft_funcs.build_superfunctional(name.lower(), (reference in ["RKS", "RHF"]))
     else:
-        raise ValidationError("Functional %s is not understood" % str(functional))
+        raise ValidationError("Functional %s is not understood" % str(name))
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -1019,8 +1016,8 @@ def scf_wavefunction_factory(reference, ref_wfn, functional=None):
         raise ValidationError("SCF: Unknown reference (%s) when building the Wavefunction." % reference)
 
     if disp_type:
-        wfn._disp_functor = empirical_dispersion.EmpericalDispersion(disp_type[0], disp_type[1],
-                                                                              tuple_params = modified_disp_params)
+        wfn._disp_functor = empirical_dispersion.EmpericalDispersion(
+            disp_type[0], disp_type[1], tuple_params=modified_disp_params)
         wfn._disp_functor.print_out()
 
     # Set the DF basis sets
@@ -1092,7 +1089,7 @@ def scf_helper(name, **kwargs):
     read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
-    ref_func = kwargs.pop('functional', None)
+    # ref_func = kwargs.pop('functional', None)
     banner = kwargs.pop('banner', None)
     if ref_wfn is not None:
         raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
@@ -1218,8 +1215,7 @@ def scf_helper(name, **kwargs):
             core.print_out("         " + banner.center(58));
         if cast:
             core.print_out("         " + "SCF Castup computation".center(58));
-        ref_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn,
-                                           functional=ref_func)
+        ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
         core.set_legacy_wavefunction(ref_wfn)
 
         # Compute dftd3
@@ -1269,8 +1265,7 @@ def scf_helper(name, **kwargs):
         core.print_out("\n         ---------------------------------------------------------\n");
         core.print_out("         " + banner.center(58));
 
-    scf_wfn = scf_wavefunction_factory(core.get_option('SCF', 'REFERENCE'), base_wfn,
-                                       functional=ref_func)
+    scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'))
     core.set_legacy_wavefunction(scf_wfn)
 
     fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(scf_molecule.name())))[1]
@@ -1954,16 +1949,66 @@ def run_occ_gradient(name, **kwargs):
 
 
 def run_scf(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a self-consistent-field theory (HF & DFT) calculation.
-
     """
+    Function encoding sequence of PSI module calls for
+    a self-consistent-field theory (HF & DFT) calculation.
+    """
+    optstash_mp2 = p4util.OptionsState(
+        ['DF_BASIS_MP2'],
+        ['DFMP2', 'MP2_OS_SCALE'],
+        ['DFMP2', 'MP2_SS_SCALE'])
 
-    optstash = proc_util.scf_set_reference_local(name)
+    optstash_scf = proc_util.scf_set_reference_local(name)
+
+    # Alter default algorithm
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
 
     scf_wfn = scf_helper(name, **kwargs)
+    returnvalue = core.get_variable('CURRENT ENERGY')
 
-    optstash.restore()
+    ssuper = scf_wfn.functional()
+
+    if ssuper.is_c_hybrid():
+        core.tstart()
+        aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
+                                        core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                        "RIFIT", core.get_global_option('BASIS'),
+                                        puream=-1)
+        scf_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
+        if ssuper.is_c_scs_hybrid():
+            core.set_local_option('DFMP2', 'MP2_OS_SCALE', ssuper.c_os_alpha())
+            core.set_local_option('DFMP2', 'MP2_SS_SCALE', ssuper.c_ss_alpha())
+            dfmp2_wfn = core.dfmp2(scf_wfn)
+            dfmp2_wfn.compute_energy()
+
+            vdh = core.get_variable('SCS-MP2 CORRELATION ENERGY')
+
+        else:
+            dfmp2_wfn = core.dfmp2(scf_wfn)
+            dfmp2_wfn.compute_energy()
+            vdh = ssuper.c_alpha() * core.get_variable('MP2 CORRELATION ENERGY')
+
+        # TODO: delete these variables, since they don't mean what they look to mean?
+        # 'MP2 TOTAL ENERGY',
+        # 'MP2 CORRELATION ENERGY',
+        # 'MP2 SAME-SPIN CORRELATION ENERGY']
+
+        core.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
+        returnvalue += vdh
+        core.set_variable('DFT TOTAL ENERGY', returnvalue)
+        core.set_variable('CURRENT ENERGY', returnvalue)
+        core.print_out('\n\n')
+        core.print_out('    %s Energy Summary\n' % (name.upper()))
+        core.print_out('    -------------------------\n')
+        core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
+        core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
+        core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
+        core.tstop()
+
+    optstash_scf.restore()
+    optstash_mp2.restore()
     return scf_wfn
 
 
@@ -2032,6 +2077,7 @@ def run_scf_gradient(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
+
 def run_scf_hessian(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an SCF hessian calculation.
@@ -2048,7 +2094,14 @@ def run_scf_hessian(name, **kwargs):
     badint = core.get_option('SCF', 'SCF_TYPE') in [ 'CD', 'OUT_OF_CORE']
     if badref or badint:
         raise ValidationError("Only RHF Hessians are currently implemented. SCF_TYPE either CD or OUT_OF_CORE not supported")
+
+    if "_disp_functor" in dir(ref_wfn):
+        print("I am here\n");
+        disp_hess = ref_wfn._disp_functor.compute_hessian(ref_wfn.molecule())
+        ref_wfn.set_array("-D Hessian", disp_hess)
+
     H = core.scfhess(ref_wfn)
+
     ref_wfn.set_hessian(H)
 
     # Temporary freq code.  To be replaced with proper frequency analysis later...
@@ -2441,10 +2494,7 @@ def run_scf_property(name, **kwargs):
         core.set_global_option("SAVE_JK", True)
 
     # Compute the Wavefunction
-    if name in ["scf", "hf"]:
-        scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
-    else:
-        scf_wfn = run_dft(name, scf_do_dipole=False, do_timer=False, **kwargs)
+    scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
@@ -2856,113 +2906,6 @@ def run_adc(name, **kwargs):
     return core.adc(ref_wfn)
 
 
-def run_dft(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a density-functional-theory calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'],
-        ['SCF', 'SCF_TYPE'],
-        ['DF_BASIS_MP2'],
-        ['DFMP2', 'MP2_OS_SCALE'],
-        ['DFMP2', 'MP2_SS_SCALE'])
-
-    # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
-
-    user_ref = core.get_option('SCF', 'REFERENCE')
-    if (user_ref == 'RHF'):
-        core.set_local_option('SCF', 'REFERENCE', 'RKS')
-    elif (user_ref == 'UHF'):
-        core.set_local_option('SCF', 'REFERENCE', 'UKS')
-    elif (user_ref == 'ROHF'):
-        raise ValidationError('ROHF reference for DFT is not available.')
-    elif (user_ref == 'CUHF'):
-        raise ValidationError('CUHF reference for DFT is not available.')
-
-    scf_wfn = run_scf(name, **kwargs)
-    returnvalue = core.get_variable('CURRENT ENERGY')
-
-    for ssuper in dft_funcs.superfunctional_list:
-        if ssuper.name().lower() == name:
-            dfun = ssuper
-
-    if dfun.is_c_hybrid():
-        core.tstart()
-        aux_basis = core.BasisSet.build(scf_wfn.molecule(), "DF_BASIS_MP2",
-                                        core.get_option("DFMP2", "DF_BASIS_MP2"),
-                                        "RIFIT", core.get_global_option('BASIS'),
-                                        puream=-1)
-        scf_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
-        if dfun.is_c_scs_hybrid():
-            core.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
-            core.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
-            dfmp2_wfn = core.dfmp2(scf_wfn)
-            dfmp2_wfn.compute_energy()
-
-            vdh = core.get_variable('SCS-MP2 CORRELATION ENERGY')
-
-        else:
-            dfmp2_wfn = core.dfmp2(scf_wfn)
-            dfmp2_wfn.compute_energy()
-            vdh = dfun.c_alpha() * core.get_variable('MP2 CORRELATION ENERGY')
-
-        # TODO: delete these variables, since they don't mean what they look to mean?
-        # 'MP2 TOTAL ENERGY',
-        # 'MP2 CORRELATION ENERGY',
-        # 'MP2 SAME-SPIN CORRELATION ENERGY']
-
-        core.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
-        returnvalue += vdh
-        core.set_variable('DFT TOTAL ENERGY', returnvalue)
-        core.set_variable('CURRENT ENERGY', returnvalue)
-        core.print_out('\n\n')
-        core.print_out('    %s Energy Summary\n' % (name.upper()))
-        core.print_out('    -------------------------\n')
-        core.print_out('    DFT Reference Energy                  = %22.16lf\n' % (returnvalue - vdh))
-        core.print_out('    Scaled MP2 Correlation                = %22.16lf\n' % (vdh))
-        core.print_out('    @Final double-hybrid DFT total energy = %22.16lf\n\n' % (returnvalue))
-        core.tstop()
-
-    optstash.restore()
-    return scf_wfn
-
-
-def run_dft_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a density-functional-theory gradient calculation.
-
-    """
-    optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'],
-        ['SCF', 'SCF_TYPE'])
-
-    # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name.upper())
-
-    user_ref = core.get_option('SCF', 'REFERENCE')
-    if (user_ref == 'RHF'):
-        core.set_local_option('SCF', 'REFERENCE', 'RKS')
-    elif (user_ref == 'UHF'):
-        core.set_local_option('SCF', 'REFERENCE', 'UKS')
-    elif (user_ref == 'ROHF'):
-        raise ValidationError('ROHF reference for DFT is not available.')
-    elif (user_ref == 'CUHF'):
-        raise ValidationError('CUHF reference for DFT is not available.')
-
-    wfn = run_scf_gradient(name, **kwargs)
-
-    optstash.restore()
-    return wfn
 
 
 def run_detci(name, **kwargs):

@@ -201,7 +201,7 @@ def build_hf_superfunctional(name, npoints, deriv, restricted):
     sup = core.SuperFunctional.blank()
     sup.set_max_points(npoints)
     sup.set_deriv(deriv)
-    sup.set_name('HF')
+    sup.set_name('SCF')
     sup.set_x_alpha(1.0)
 
     sup.allocate()
@@ -273,6 +273,7 @@ hyb_superfunc_list = {
           "wb97x-d"  : build_wb97xd_superfunctional,
           "hf-d"     : build_hfd_superfunctional,
           "hf"       : build_hf_superfunctional,
+          "scf"      : build_hf_superfunctional,
           "hf3c"     : build_hf3c_superfunctional,
 
 }
