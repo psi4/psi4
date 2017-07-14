@@ -177,6 +177,8 @@ Molecule::Molecule() :
         nunique_(0),
         nequiv_(0),
         equiv_(0),
+        zmat_(false),
+        cart_(false),
         atom_to_unique_(0),
         //old_symmetry_frame_(0)
         reinterpret_coordentries_(true),
@@ -215,6 +217,7 @@ Molecule &Molecule::operator=(const Molecule &other)
     multiplicity_specified_ = other.multiplicity_specified_;
     reinterpret_coordentries_ = other.reinterpret_coordentries_;
     zmat_ = other.zmat_;
+    cart_ = other.cart_;
 
     // These are symmetry related variables, and are filled in by the following functions
     pg_ = std::shared_ptr<PointGroup>();
@@ -1095,7 +1098,8 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     zVals.load_values();
     int rTo, aTo, dTo;
     std::string atomSym, atomLabel;
-    bool zmatrix = false;
+    bool has_zmatrix = false;
+    bool has_cart = false;
     double zVal, charge;
     size_t currentFragment = 0;
     efpCount = 0;
@@ -1191,6 +1195,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 
             if (numEntries == 4) {
                 // This is a Cartesian entry
+                has_cart = true;
                 std::shared_ptr <CoordValue> xval(mol->get_coord_value(splitLine[1]));
                 std::shared_ptr <CoordValue> yval(mol->get_coord_value(splitLine[2]));
                 std::shared_ptr <CoordValue> zval(mol->get_coord_value(splitLine[3]));
@@ -1199,12 +1204,12 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
                                                                                           xval, yval, zval)));
             } else if (numEntries == 1) {
                 // This is the first line of a Z-Matrix
-                zmatrix = true;
+                has_zmatrix = true;
                 mol->full_atoms_.push_back(std::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
                                                                                         atomMass, atomSym, atomLabel)));
             } else if (numEntries == 3) {
                 // This is the second line of a Z-Matrix
-                zmatrix = true;
+                has_zmatrix = true;
                 rTo = mol->get_anchor_atom(splitLine[1], *line);
                 if (rTo >= currentAtom)
                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1221,7 +1226,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 //                mol->full_atoms_.back()->print_in_input_format();
             } else if (numEntries == 5) {
                 // This is the third line of a Z-Matrix
-                zmatrix = true;
+                has_zmatrix = true;
                 rTo = mol->get_anchor_atom(splitLine[1], *line);
                 if (rTo >= currentAtom)
                     throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1287,7 +1292,8 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         }
     }
 
-    mol->set_has_zmatrix(zmatrix);
+    mol->set_has_zmatrix(has_zmatrix);
+    mol->set_has_cartesian(has_cart);
 
     if (pubcheminput)
         mol->symmetrize_to_abelian_group(1.0e-3);
@@ -3092,11 +3098,11 @@ void Molecule::set_variable(const std::string &str, double val)
 {
 
     // This is a weird thing if were not z-matrix
-    if (!zmat_ && (move_to_com_ || !fix_orientation_)) {
+    if (cart_ && (move_to_com_ || !fix_orientation_)) {
         outfile->Printf(
-            "Molecule: Setting a variable updates the molecular geometry, for\n"
+            "\nMolecule: Setting a variable updates the molecular geometry, for\n"
             "          cartesian molecules this can lead to surprising behaviour.\n"
-            "          Freezing COM and orientation to prevent this.\n");
+            "          Freezing COM and orientation to prevent this.\n\n");
         move_to_com_ = false;
         fix_orientation_ = true;
     }

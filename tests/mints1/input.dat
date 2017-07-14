@@ -1,6 +1,21 @@
 #! Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but
 #! serves as an example of the many ways to specify geometries in Psi4.
 
+# Freezes geom with cartesian
+molecule h2 {
+He 0  0  0
+He 0  0  d
+units bohr
+}
+
+h2.d = 2
+h2.update_geometry()
+compare_values(2, h2.geometry().np[1, -1], 5, "He2 distance 2")
+
+h2.d = 5
+h2.update_geometry()
+compare_values(5, h2.geometry().np[1, -1], 5, "He2 distance 5")
+
 # DinftyH Symmetry (D2h Abelian)
 molecule C2H2 {
    C 0 0  r1
