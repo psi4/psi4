@@ -2107,11 +2107,10 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
         df_helper::DF_Helper(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
-    dfh->set_MO_core(false);
-    dfh->set_MO_hint(max_MO);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
     dfh->initialize(); 
+    dfh->print_header();    
     
     dfh->add_space("a", Cs[0]);
     dfh->add_space("r", Cs[1]);
@@ -2727,11 +2726,10 @@ void FISAPT::felst()
     std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
         df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
-    dfh->set_MO_core(false);
-    dfh->set_MO_hint(std::max(na, nb));
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
     dfh->initialize(); 
+    dfh->print_header();    
 
     dfh->add_space("a", matrices_["Locc0A"]);
     dfh->add_space("b", matrices_["Locc0B"]);
@@ -2885,11 +2883,10 @@ void FISAPT::fexch()
     std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
         df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
-    dfh->set_MO_core(false);
-    dfh->set_MO_hint(max_MO);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
     dfh->initialize(); 
+    dfh->print_header();    
     
     dfh->add_space("a", Cs[0]);
     dfh->add_space("r", Cs[1]);
@@ -3131,11 +3128,10 @@ void FISAPT::find()
     std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
         df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
-    dfh->set_MO_core(false);
-    dfh->set_MO_hint(max_MO);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
     dfh->initialize(); 
+    dfh->print_header();    
     size_t nQ = dfh->get_naux();
 
     dfh->add_space("a", Cs[0]);
@@ -3874,9 +3870,11 @@ void FISAPT::fdisp()
 
     // => Integrals from DF_Helper <= //
 
-//    std::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,options_);
-
-    std::vector<std::shared_ptr<Matrix> > Cs;
+// I can't without breaking things... FIXME
+std::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,options_);
+// I can't without breaking things... FIXME
+    
+     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Caocc_A);
     Cs.push_back(Cavir_A);
     Cs.push_back(Caocc_B);
@@ -3899,12 +3897,11 @@ void FISAPT::fdisp()
     std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
         df_helper::DF_Helper(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
-    dfh->set_MO_core(false);
-    dfh->set_MO_hint(max_MO);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
     dfh->initialize(); 
-    
+    dfh->print_header();    
+
     dfh->add_space("a", Cs[0]);
     dfh->add_space("r", Cs[1]);
     dfh->add_space("b", Cs[2]);

@@ -71,7 +71,8 @@ public:
     // I can tell you how many doubles the *screened* AOs will require
     size_t get_AO_size() { return big_skips_[nao_]; } 
 
-    // want the AO integrals in core? (defaults to FALSE) (I will adapt blocking to keep memory satisfied)
+    // want the AO integrals in core? (defaults to True) 
+    // (I will adapt blocking  and turn off if necessary to keep memory satisfied)
     void set_AO_core(bool on) {AO_core_ = on;}
     bool get_AO_core() { return AO_core_; }
     
@@ -114,7 +115,11 @@ public:
     void transform();
 
     // => Tensor IO <=
-    // fill a Sharedmatrix
+    // Fill a SharedMatrix with three index pairs.  Slice the same way you do in python. 
+    // Recursive signitures were added if you want a full 3rd index, 2nd and 3rd index, etc.
+    // For example, fill_tensor("ia", M, (0, 15)) will get you ia[0:15, :, :]
+    // I will check to make sure your slice sizes are not larger than the matrix bounds, 
+    // but be prepared for a runtime throw.
     void fill_tensor(std::string name, SharedMatrix M);
     void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1);
     void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
@@ -122,7 +127,10 @@ public:
     void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
       std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
 
-    // return a SharedMatrix returns
+    // return a SharedMatrix, I take care of sizing for you.
+    // I always compound the 2nd and 3rd indices.
+    // For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a 
+    // SharedMatrix of size (15, 25), so be careful if you plan to use Matrix::gemm
     SharedMatrix get_tensor(std::string name);
     SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1);
     SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1,
@@ -178,7 +186,7 @@ protected:
     // => internal holders <=
     std::string method_ = "STORE";
     bool direct_;
-    bool AO_core_ = 0;
+    bool AO_core_ = 1;
     bool MO_core_ = 0;
     size_t nthreads_ = 1;
     double cutoff_ = 1e-12;
@@ -188,7 +196,7 @@ protected:
     bool hold_met_ = false;
     bool JK_hint_ = false;
     bool built = false;    
-    bool transformed_=false;
+    bool transformed_ = false;
     std::pair<size_t, size_t> info_;
     bool ordered_=0;
     std::pair<size_t, size_t> identify_order();
@@ -218,10 +226,6 @@ protected:
     // => shell info and blocking <=
     size_t pshells_;
     size_t Qshells_;
-    std::pair<size_t, size_t> plargest_;
-    std::pair<size_t, size_t> Qlargest_;
-    std::vector<std::pair<size_t, size_t>> psteps_;
-    std::vector<std::pair<size_t, size_t>> Qsteps_;
     std::vector<size_t> pshell_aggs_;
     std::vector<size_t> Qshell_aggs_;
     void prepare_blocking();

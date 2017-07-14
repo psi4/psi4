@@ -163,8 +163,6 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     // Build DF_Helper
     dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, auxiliary_));
     dfh_->set_memory(doubles);
-    dfh_->set_MO_core(false);
-    dfh_->set_MO_hint(max_MO);
     dfh_->set_method("STORE");
     dfh_->set_nthreads(nthread);
     dfh_->set_metric_pow(0.0);

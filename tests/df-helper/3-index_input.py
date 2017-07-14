@@ -12,7 +12,7 @@ aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVDZ-jkfit")
 
 nbf = primary.nbf()
 naux = aux.nbf()
-mem = 50000
+mem = 10000
 
 # form metric
 mints = psi4.core.MintsHelper(primary)
@@ -221,8 +221,8 @@ dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("STORE")
-dfh.set_memory(3*mem)
-dfh.set_AO_core(True)
+dfh.set_memory(mem)
+dfh.set_AO_core(False)
 dfh.set_MO_core(True)
 dfh.set_MO_hint(c4)
 
@@ -279,7 +279,7 @@ dfh = psi4.core.DF_Helper(primary, aux)
 # tweak options
 dfh.set_method("STORE")
 dfh.set_memory(mem)
-dfh.set_AO_core(False)
+dfh.set_AO_core(True)
 dfh.set_MO_core(True)
 dfh.set_MO_hint(c4)
 
@@ -324,7 +324,7 @@ dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("STORE")
-dfh.set_memory(3*mem)
+dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(False)
 dfh.set_MO_hint(c4)
@@ -497,7 +497,7 @@ dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("DIRECT")
-dfh.set_memory(3*mem)
+dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(True)
 dfh.set_MO_hint(c4)
@@ -543,7 +543,7 @@ dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("DIRECT")
-dfh.set_memory(3*mem)
+dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(True)
 dfh.set_MO_hint(c4)
@@ -590,7 +590,7 @@ dfh = psi4.core.DF_Helper(primary, aux)
 
 # tweak options
 dfh.set_method("DIRECT")
-dfh.set_memory(3*mem)
+dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(False)
 dfh.set_MO_hint(c4)

@@ -159,6 +159,7 @@ void export_fock(py::module &m) {
         .def("get_MO_hint", &df_helper::DF_Helper::get_MO_hint)
         .def("add_space", &df_helper::DF_Helper::add_space)
         .def("initialize", &df_helper::DF_Helper::initialize)
+        .def("print_header", &df_helper::DF_Helper::print_header)
         .def("add_transformation", &df_helper::DF_Helper::add_transformation, py::arg("name"),
              py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
         .def("transform", &df_helper::DF_Helper::transform)
