@@ -43,15 +43,8 @@ def scf_set_reference_local(name):
     """
 
     optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'REFERENCE'])
-
-    # We want a blank name so that the custom func is built on call
-    if (name == "SCF") and core.get_option("DFT_CUSTOM_FUNCTIONAL"):
-        name = ""
-
-    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
     # Alter default algorithm
     if not core.has_option_changed('SCF', 'SCF_TYPE'):

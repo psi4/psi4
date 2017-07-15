@@ -54,12 +54,13 @@ superfunctionals.update(double_hyb_superfuncs.double_hyb_superfunc_list)
 ## ==> SuperFunctional List <== ##
 
 superfunctional_list = []
-superfunctional_noxc_names = []
+superfunctional_noxc_names = ["hf"]
 for key in superfunctionals.keys():
     sup = superfunctionals[key](key, 1, 1, True)[0]
     superfunctional_list.append(sup)
     if not sup.needs_xc():
         superfunctional_noxc_names.append(sup.name().lower())
+
 
 ## ==> Dispersion SuperFunctional List <== ##
 
@@ -117,10 +118,8 @@ def build_superfunctional(alias, restricted):
     deriv = 1 # Default depth for now
 
     # Grab out superfunctional
-    if name in ["gen", ""]:
-        sup = (core.get_option("DFT_CUSTOM_FUNCTIONAL"), False)
-        if not isinstance(sup[0], core.SuperFunctional):
-            raise KeyError("SCF: Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL")
+    if isinstance(name, core.SuperFunctional):
+        sup = name
 
     elif name in superfunctionals.keys():
         sup = superfunctionals[name](name, npoints, deriv, restricted)

@@ -994,10 +994,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         modified_disp_params = None
 
     # Figure out functional
-    if isinstance(name, core.SuperFunctional):
-        superfunc = name
-        disp_type = False
-    elif isinstance(name, str):
+    if isinstance(name, str):
         superfunc, disp_type = dft_funcs.build_superfunctional(name.lower(), (reference in ["RKS", "RHF"]))
     else:
         raise ValidationError("Functional %s is not understood" % str(name))

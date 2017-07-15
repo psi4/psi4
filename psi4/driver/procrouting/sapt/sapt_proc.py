@@ -184,7 +184,6 @@ def run_sapt_dft(name, **kwargs):
         dimer_wfn = hf_wfn_dimer
 
     # Set the primary functional
-    core.set_global_option("DFT_FUNCTIONAL", core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL"))
     core.set_local_option('SCF', 'REFERENCE', 'RKS')
 
     # Compute Monomer A wavefunction
@@ -196,7 +195,7 @@ def run_sapt_dft(name, **kwargs):
 
     # Save the JK object
     core.IO.set_default_namespace('monomerA')
-    wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
+    wfn_A = scf_helper(sapt_dft_functional, post_scf=False, molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
     data["DFT MONOMERA"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
@@ -209,7 +208,7 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option("DFT_GRAC_SHIFT", mon_b_shift)
 
     core.IO.set_default_namespace('monomerB')
-    wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
+    wfn_B = scf_helper(sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
     data["DFT MONOMERB"] = core.get_variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)

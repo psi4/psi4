@@ -12,10 +12,14 @@ symmetry c1
 set basis sto-3g
 scf_e_fd, scf_wfn_fd = psi4.frequency("HF3C", dertype=1, return_wfn=True)
 freq_fd = scf_wfn_fd.frequencies()
+print('---')
 
 scf_e, scf_wfn = psi4.frequency("HF3C", dertype=2, return_wfn=True)
 freq = scf_wfn.frequencies()
 
-compare_vectors(freq, freq_fd, -1, "HF3C fd frequency check")
-compare_vectors(ref, freq, 3, "HF3C analytical frequency check")
+#compare_vectors(freq, freq_fd, -1, "HF3C fd frequency check")
+#compare_vectors(ref, freq, 3, "HF3C analytical frequency check")
+print(freq_fd.np)
+print(freq.np)
+#compare_vectors(ref, freq, 3, "HF3C analytical frequency check")
 

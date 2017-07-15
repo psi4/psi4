@@ -72,6 +72,7 @@ SCFGrad::SCFGrad(SharedWavefunction ref_wfn, Options& options) :
         gradients_["-D Gradient"] = ref_wfn->get_array("-D Gradient");
     }
     if (ref_wfn->arrays().count("-D Hessian")){
+        printf("Adding -D to Hessian terms.");
         hessians_["-D Hessian"] = ref_wfn->get_array("-D Hessian");
     }
 
