@@ -927,6 +927,7 @@ Timer_Structure root_timer(nullptr, ""), parallel_timer(nullptr, "");
 std::list<Timer_Structure *> ser_on_timers;
 std::vector<std::list<Timer_Structure *>> par_on_timers;
 time_t timer_start, timer_end;
+bool skip_timers;
 static omp_lock_t lock_timer;
 
 void print_timer(const Timer_Structure &timer, std::shared_ptr<PsiOutStream> printer, int align_key_width) {
@@ -978,14 +979,16 @@ bool empty_parallel() {
 ** \ingroup QT
 */
 void timer_init(void) {
-    extern time_t timer_start;
     omp_init_lock(&lock_timer);
     omp_set_lock(&lock_timer);
+    extern time_t timer_start;
     extern Timer_Structure root_timer;
     timer_start = time(NULL);
     root_timer.turn_on();
     extern std::list<Timer_Structure *> ser_on_timers;
     ser_on_timers.push_back(&root_timer);
+    extern bool skip_timers;
+    skip_timers = false;
     omp_unset_lock(&lock_timer);
 }
 
@@ -1031,6 +1034,20 @@ void timer_done(void) {
     omp_destroy_lock(&lock_timer);
 }
 
+void start_skip_timers() {
+    omp_set_lock(&lock_timer);
+    extern bool skip_timers;
+    skip_timers = true;
+    omp_unset_lock(&lock_timer);
+}
+
+void stop_skip_timers() {
+    omp_set_lock(&lock_timer);
+    extern bool skip_timers;
+    skip_timers = false;
+    omp_unset_lock(&lock_timer);
+}
+
 /*!
 ** timer_on(): Turn on the timer with the name given as an argument.  Can
 ** be turned on and off, time will accumulate while on.
@@ -1042,6 +1059,11 @@ void timer_done(void) {
 */
 void timer_on(const std::string& key) {
     omp_set_lock(&lock_timer);
+    extern bool skip_timers;
+    if (skip_timers) {
+        omp_unset_lock(&lock_timer);
+        return;
+    }
     extern Timer_Structure parallel_timer;
     if (parallel_timer.get_parent() != nullptr) {
         std::string str = "Unable to turn on serial Timer ";
@@ -1073,6 +1095,11 @@ void timer_on(const std::string& key) {
 */
 void timer_off(const std::string& key) {
     omp_set_lock(&lock_timer);
+    extern bool skip_timers;
+    if (skip_timers) {
+        omp_unset_lock(&lock_timer);
+        return;
+    }
     extern Timer_Structure parallel_timer;
     extern std::list<Timer_Structure *> ser_on_timers;
     if (parallel_timer.get_parent() != nullptr) {
@@ -1139,6 +1166,11 @@ void timer_off(const std::string& key) {
 */
 void parallel_timer_on(const std::string& key, int thread_rank) {
     omp_set_lock(&lock_timer);
+    extern bool skip_timers;
+    if (skip_timers) {
+        omp_unset_lock(&lock_timer);
+        return;
+    }
     extern std::list<Timer_Structure *> ser_on_timers;
     extern std::vector<std::list<Timer_Structure *>> par_on_timers;
     extern Timer_Structure parallel_timer;
@@ -1177,6 +1209,11 @@ void parallel_timer_on(const std::string& key, int thread_rank) {
 */
 void parallel_timer_off(const std::string& key, int thread_rank) {
     omp_set_lock(&lock_timer);
+    extern bool skip_timers;
+    if (skip_timers) {
+        omp_unset_lock(&lock_timer);
+        return;
+    }
     extern std::vector<std::list<Timer_Structure *>> par_on_timers;
     extern Timer_Structure parallel_timer;
     if (par_on_timers[thread_rank].empty()) {

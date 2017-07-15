@@ -94,8 +94,10 @@ void SADGuess::compute_guess()
 {
 
     timer_on("SAD Guess");
+    start_skip_timers();
     form_D();
     form_C();
+    stop_skip_timers();
     timer_off("SAD Guess");
 }
 void SADGuess::form_D()
