@@ -48,8 +48,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
 {
   total_time     = time;
@@ -76,11 +74,11 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
     double delta_energy = current_energy-old_energy;
     converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") &&
                  delta_t2_amps < options_.get_double("R_CONVERGENCE") &&
-                 fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
+                 std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
 
 ///    TODO fix this code which is temporarly not working
 //     if(options_get_int("DAMPING_FACTOR")>0){
-//       if(fabs(delta_energy) < moinfo->get_no_damp_convergence()){
+//       if(std::fabs(delta_energy) < moinfo->get_no_damp_convergence()){
 //         double damping_factor = moinfo->get_damping_factor();
 //         damping_factor *= 0.95;
 //         outfile->Printf("\n\t# Scaling damp factor to zero, damping_factor = %lf",moinfo->get_damping_factor());
@@ -122,8 +120,8 @@ void CCMRCC::build_Heff_offdiagonal()
     // Loop over reference j (in a safe way)
     for(int j=0;j<moinfo->get_ref_size(AllRefs);j++){
       if(i!=j){
-        vector<pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(i,j);
-        vector<pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(i,j);
+        std::vector<std::pair<int,int> >  alpha_internal_excitation = moinfo->get_alpha_internal_excitation(i,j);
+        std::vector<std::pair<int,int> >   beta_internal_excitation = moinfo->get_beta_internal_excitation(i,j);
         double                   sign_internal_excitation = moinfo->get_sign_internal_excitation(i,j);
 
         double element = 0.0;

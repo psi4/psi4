@@ -446,8 +446,8 @@ double OCCWave::compute_energy()
       C_pitzerA = Ca_->to_block_matrix();
 
       // write binary data
-      ofstream OutFile1;
-      OutFile1.open("CmoA.psi", ios::out | ios::binary);
+      std::ofstream OutFile1;
+      OutFile1.open("CmoA.psi", std::ios::out | std::ios::binary);
       OutFile1.write( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
       OutFile1.close();
       free_block(C_pitzerA);
@@ -462,8 +462,8 @@ double OCCWave::compute_energy()
           C_pitzerB = Cb_->to_block_matrix();
 
           // write binary data
-          ofstream OutFile2;
-          OutFile2.open("CmoB.psi", ios::out | ios::binary);
+          std::ofstream OutFile2;
+          OutFile2.open("CmoB.psi", std::ios::out | std::ios::binary);
           OutFile2.write( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
           OutFile2.close();
           free_block(C_pitzerB);

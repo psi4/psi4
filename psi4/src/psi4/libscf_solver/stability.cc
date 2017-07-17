@@ -46,8 +46,6 @@
 #include "psi4/liboptions/liboptions.h"
 
 
-using namespace std;
-
 namespace psi{
 
 namespace scf {
@@ -191,7 +189,7 @@ double UStab::compute_energy()
             // Spurious zero eigenvalue due to not enough states
             if (N >= (size_t)stabvecs[N]->dimpi()[h]) continue;
             evec_temp.push_back(tpair[h]);
-            eval_temp.push_back(make_pair(stabvals[N][h], index));
+            eval_temp.push_back(std::make_pair(stabvals[N][h], index));
             index++;
         }
     }
@@ -248,7 +246,7 @@ SharedMatrix UStab::analyze()
         int h = vecs_[i].first->symmetry();
         eval_sym->set(h,eig_dims[h],0,vals_[i]);
         ++eig_dims[h];
-        if ((vals_[i] < unstable_val) && (abs(vals_[i]) > convergence_) ) {
+        if ((vals_[i] < unstable_val) && (std::fabs(vals_[i]) > convergence_) ) {
             if ( vecs_[i].first->symmetry() == 0) {
                 unstable = true;
                 unstable_val = vals_[i];

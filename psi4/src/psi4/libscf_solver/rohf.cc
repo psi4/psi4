@@ -54,7 +54,6 @@
 #include "psi4/libmints/factory.h"
 #define _DEBUG
 
-using namespace std;
 using namespace psi;
 
 
@@ -372,7 +371,7 @@ bool ROHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
         return false;

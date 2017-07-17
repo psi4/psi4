@@ -610,7 +610,7 @@ double ET_AAA(void)
 			}
 
 			/*
-			if(fabs(value_c) > 1e-7) {
+			if(std::fabs(value_c) > 1e-7) {
 			  cnt++;
 			  outfile->Printf( "%d %d %d %d %d %d %20.14f\n", I, J, K, A, B, C, value_c);
 			}

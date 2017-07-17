@@ -37,8 +37,6 @@
 
 #include <cfloat>
 
-using namespace std;
-
 namespace psi {
 
 ERISieve::ERISieve(std::shared_ptr <BasisSet> primary, double sieve) :
@@ -87,7 +85,7 @@ void ERISieve::set_sieve(double sieve)
     for (int MU = 0; MU < nshell_; MU++) {
         for (int NU = 0; NU <= MU; NU++, MUNU++) {
             if (shell_pair_values_[MU * (size_t) nshell_ + NU] >= sieve2_over_max_) {
-                shell_pairs_.push_back(make_pair(MU, NU));
+                shell_pairs_.push_back(std::make_pair(MU, NU));
                 shell_pairs_reverse_[MUNU] = offset;
                 offset++;
             } else {
@@ -101,7 +99,7 @@ void ERISieve::set_sieve(double sieve)
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
             if (function_pair_values_[mu * (size_t) nbf_ + nu] >= sieve2_over_max_) {
-                function_pairs_.push_back(make_pair(mu, nu));
+                function_pairs_.push_back(std::make_pair(mu, nu));
                 function_pairs_reverse_[munu] = offset;
                 offset++;
             } else {
@@ -233,7 +231,7 @@ void ERISieve::integrals()
             double max_val = 0.0;
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    max_val = std::max(max_val, fabs(buffer[p * (nQ * nP * nQ + nQ) + q * (nP * nQ + 1)]));
+                    max_val = std::max(max_val, std::fabs(buffer[p * (nQ * nP * nQ + nQ) + q * (nP * nQ + 1)]));
                 }
             }
             max_ = std::max(max_, max_val);
@@ -268,7 +266,7 @@ void ERISieve::integrals()
             {
 
               double p_exp = mu_shell.exp(p_ind);
-              double p_coef = fabs(mu_shell.coef(p_ind));
+              double p_coef = std::fabs(mu_shell.coef(p_ind));
 
               Vector3 p_center = mu_shell.center();
               p_center *= p_exp;
@@ -277,7 +275,7 @@ void ERISieve::integrals()
               {
 
                 double r_exp = nu_shell.exp(r_ind);
-                double r_coef = fabs(nu_shell.coef(r_ind));
+                double r_coef = std::fabs(nu_shell.coef(r_ind));
 
                 Vector3 r_center = nu_shell.center();
                 r_center *= r_exp;

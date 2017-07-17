@@ -39,8 +39,6 @@
 
 #include <algorithm>
 
-using namespace std;
-
 namespace psi{ namespace dcft{
 /**
  * Forms Tau in the MO basis from the Lambda tensors and transforms it back
@@ -349,8 +347,8 @@ DCFTSolver::print_opdm_RHF()
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
-    sort(aPairs.begin(), aPairs.end(), greater<std::pair<double, int> >());
-    sort(bPairs.begin(), bPairs.end(), greater<std::pair<double, int> >());
+    sort(aPairs.begin(), aPairs.end(), std::greater<std::pair<double, int> >());
+    sort(bPairs.begin(), bPairs.end(), std::greater<std::pair<double, int> >());
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);

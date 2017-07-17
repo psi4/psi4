@@ -38,8 +38,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 void MP2_CCSD::build_Z_intermediates()
 {
   blas->solve("Z_iJaM[aAa][O]{u} = #1234#   tau_oOvV[aA][vV]{u} 2@2 <[ao]|[vv]>");

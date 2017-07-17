@@ -419,7 +419,7 @@ std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize(
         for (int i = 0; i < nocc; i++) {
             std::vector<double> Qs;
             for (int A = 0; A < natom; A++) {
-                Qs.push_back(fabs(Qp[A][i]));
+                Qs.push_back(std::fabs(Qp[A][i]));
             }
             std::sort(Qs.begin(),Qs.end(),std::greater<double>());
             double Qtot = 0.0;
@@ -486,7 +486,7 @@ std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize(
         for (int i = 0; i < nocc; i++) {
             std::vector<double> Qs;
             for (int A = 0; A < natom; A++) {
-                Qs.push_back(fabs(Qp[A][i]));
+                Qs.push_back(std::fabs(Qp[A][i]));
             }
             std::sort(Qs.begin(),Qs.end(),std::greater<double>());
             double Qtot = 0.0;
@@ -503,7 +503,7 @@ std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer2::localize(
             int i = pi_orbs[i2];
             int ind = 0;
             for (int A = 0; A < natom; A++) {
-                if (fabs(Qp[A][i]) >= fabs(Qp[ind][i])) {
+                if (std::fabs(Qp[A][i]) >= std::fabs(Qp[ind][i])) {
                     ind = A;
                 }
             }

@@ -30,7 +30,6 @@
 #include "dfocc.h"
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
@@ -467,7 +466,7 @@ if (do_diis_ == 1) {
    if (rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_pcg) >= tol_pcg);  
+ while(std::fabs(rms_pcg) >= tol_pcg);  
 
     // Converged?
     //r_pcgA->print();
@@ -683,7 +682,7 @@ void DFOCC::zvec_solver_uhf()
    if (rms_r_pcg < tol_pcg || rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_pcg) >= tol_pcg);  
+ while(std::fabs(rms_pcg) >= tol_pcg);  
 
     // memfree
     PvoA.reset();

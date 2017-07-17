@@ -42,8 +42,6 @@
 
 #include <fstream>
 
-using namespace std;
-
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::get_moinfo()
@@ -473,7 +471,7 @@ void DFOCC::mo_coeff_blocks()
 //======================================================================
 void DFOCC::remove_binary_file(int fileno)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();

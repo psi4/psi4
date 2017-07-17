@@ -82,8 +82,8 @@ void MOLECULE::linesearch_step(void) {
   // Find largest change in an internal coordinate
   double max_dq_orig = 0;
   for (int i=0; i<dim; ++i) {
-    if (abs(dq[i]) > max_dq_orig)
-      max_dq_orig = abs(dq[i]);
+    if (std::abs(dq[i]) > max_dq_orig)
+      max_dq_orig = std::abs(dq[i]);
   }
 
   double *dq_orig = init_array(dim);

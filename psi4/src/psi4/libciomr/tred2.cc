@@ -34,7 +34,7 @@
 
 #include <cmath>
 
-#define DSIGN(a,b) ((b) >= 0.0) ? (fabs(a)) : (-fabs(a))
+#define DSIGN(a,b) ((b) >= 0.0) ? (std::fabs(a)) : (-std::fabs(a))
 
 namespace psi {
   
@@ -60,7 +60,7 @@ void tred2(int n, double** a, double* d, double* e, int matz) {
       scale = 0.0;
       if (l) {
         for (k=0; k <= l; k++) {
-          scale += fabs(a[i][k]);
+          scale += std::fabs(a[i][k]);
         }
         if (scale == 0.0) {
           e[i] = a[i][l];

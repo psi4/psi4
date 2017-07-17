@@ -62,9 +62,6 @@
 #include <tuple>
 
 
-
-using namespace std;
-
 namespace psi { namespace scf {
 
 void HF::frac()
@@ -112,7 +109,7 @@ void HF::frac()
 
             // Throw if user requests frac occ above nalpha/nbeta
             int max_i = (i > 0 ? nalpha_: nbeta_);
-            if(abs(i) > max_i) {
+            if(std::abs(i) > max_i) {
                 if (i > 0)
                     nalpha_++;
                 else
@@ -123,7 +120,7 @@ void HF::frac()
             if (val < 0.0)
                 throw PSIEXCEPTION("Fractional Occupation SCF: Psi4 is not configured for positrons. Please annihilate and start again");
 
-            outfile->Printf( "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), abs(i), val);
+            outfile->Printf( "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), std::abs(i), val);
         }
         outfile->Printf( "\n");
 
@@ -176,9 +173,9 @@ void HF::frac()
         int i = options_["FRAC_OCC"][ind].to_integer();
         double val = options_["FRAC_VAL"][ind].to_double();
         bool is_alpha = (i > 0);
-        i = abs(i) - 1; // Back to C ordering
+        i = std::abs(i) - 1; // Back to C ordering
 
-        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i]));
+        int h   = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
@@ -215,9 +212,9 @@ void HF::frac_renormalize()
         int i = options_["FRAC_OCC"][ind].to_integer();
         double val = options_["FRAC_VAL"][ind].to_double();
         bool is_alpha = (i > 0);
-        i = abs(i) - 1; // Back to C ordering
+        i = std::abs(i) - 1; // Back to C ordering
 
-        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i]));
+        int h   = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
@@ -285,7 +282,7 @@ void HF::compute_spin_contamination()
     double nmin = (nbeta < nalpha ? nbeta : nalpha);
     double dS = nmin - dN;
     double nm = (nalpha - nbeta) / 2.0;
-    double S2 = fabs(nm) * (fabs(nm) + 1.0);
+    double S2 = std::fabs(nm) * (std::fabs(nm) + 1.0);
 
     outfile->Printf( "   @Spin Contamination Metric: %17.9E\n", dS);
     outfile->Printf( "   @S^2 Expected:              %17.9E\n", S2);

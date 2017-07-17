@@ -41,8 +41,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 void IDMRPT2::build_F_intermediates()
 {
   build_F_ae_intermediates();

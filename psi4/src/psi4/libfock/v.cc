@@ -1281,7 +1281,7 @@ SharedMatrix RV::compute_hessian()
         // Compute rho, to filter out small values
         for (int P = 0; P < npoints; P++) {
             double rho = C_DDOT(nlocal,phi[P],1,Tp[P],1);
-            if(fabs(rho) < 1E-8){
+            if(std::fabs(rho) < 1E-8){
                 v_rho_a[P] = 0.0;
                 v_rho_aa[P] = 0.0;
             }

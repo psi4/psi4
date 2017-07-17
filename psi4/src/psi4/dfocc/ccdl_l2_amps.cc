@@ -31,8 +31,6 @@
 #include "dfocc.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdiis/diismanager.h"
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 

@@ -31,7 +31,6 @@
 
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace occwave{
 
@@ -118,15 +117,15 @@ class SymBlockVector
   private:
   double **vector_; // Object
   int *dimvec_;      // dimensions per irrep
-  string name_;      // Name of the vector
+  std::string name_;      // Name of the vector
   int nirreps_;     // Number of irreps
 
 
   public:
   SymBlockVector();  //default constructer
-  SymBlockVector(string name);
+  SymBlockVector(std::string name);
   SymBlockVector(int nirreps, int *ins_dimvec);
-  SymBlockVector(string name, int nirreps, int *ins_dimvec);
+  SymBlockVector(std::string name, int nirreps, int *ins_dimvec);
   ~SymBlockVector(); //destructer
 
   int *dimvec();

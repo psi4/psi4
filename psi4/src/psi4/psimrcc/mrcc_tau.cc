@@ -42,8 +42,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 // build_tau_intermediates("tau2[v][voo]{u}","3412");
 // build_tau_intermediates("tau2[o][ovv]{u}","1234");
 

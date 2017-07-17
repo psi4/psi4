@@ -42,7 +42,6 @@
 #include "psi4/libmints/mintshelper.h"
 
 
-using namespace std;
 using namespace psi;
 ;
 
@@ -222,8 +221,8 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     bool SameOcc = true;
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<nmoh[h]; ++n) {
-            mos.push_back(make_pair(Ea->get(h, n), make_pair(h, n)));
-            if(fabs(OccA->get(h,n) - OccB->get(h,n)) > 1e-10)
+            mos.push_back(std::make_pair(Ea->get(h, n), std::make_pair(h, n)));
+            if(std::fabs(OccA->get(h,n) - OccB->get(h,n)) > 1e-10)
                 SameOcc = false;
         }
     }
@@ -249,7 +248,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     if (Ca != Cb || Ea != Eb || !SameOcc) {
         for (int h=0; h<wavefunction_->nirrep(); ++h) {
             for (int n=0; n<nmoh[h]; ++n) {
-                mos.push_back(make_pair(Eb->get(h, n), make_pair(h, n)));
+                mos.push_back(std::make_pair(Eb->get(h, n), std::make_pair(h, n)));
             }
         }
         std::sort(mos.begin(), mos.end());
@@ -564,15 +563,15 @@ void FCHKWriter::write(const std::string &filename)
     reorderedCb->gemm(true, true, 1.0, Cb_ao, transmat, 0.0);
     for(int i = 0; i < reorderedDt->nrow(); ++i)
         for(int j = 0; j < reorderedDt->ncol(); ++j)
-            if(fabs(reorderedDt->get(i,j)) < 1E-12)
+            if(std::fabs(reorderedDt->get(i,j)) < 1E-12)
                 reorderedDt->set(i,j,0.0);
     for(int i = 0; i < reorderedCa->nrow(); ++i)
         for(int j = 0; j < reorderedCa->ncol(); ++j)
-            if(fabs(reorderedCa->get(i,j)) < 1E-12)
+            if(std::fabs(reorderedCa->get(i,j)) < 1E-12)
                 reorderedCa->set(i,j,0.0);
     for(int i = 0; i < reorderedCb->nrow(); ++i)
         for(int j = 0; j < reorderedCb->ncol(); ++j)
-            if(fabs(reorderedCb->get(i,j)) < 1E-12)
+            if(std::fabs(reorderedCb->get(i,j)) < 1E-12)
                 reorderedCb->set(i,j,0.0);
     std::vector<double> shell_coords;
     std::vector<double> coefficients;

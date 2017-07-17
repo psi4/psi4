@@ -37,7 +37,6 @@
 #include "psi4/libmints/shellrotation.h"
 
 ;
-using namespace std;
 
 namespace psi{
 
@@ -127,41 +126,41 @@ OperatorSymmetry::~OperatorSymmetry()
 {
 }
 
-string OperatorSymmetry::form_suffix(int x, int y, int z)
+std::string OperatorSymmetry::form_suffix(int x, int y, int z)
 {
-    string suffix;
+    std::string suffix;
 
     if (x) {
         suffix += "x";
         if (x>1)
-            suffix += to_string(x);
+            suffix += std::to_string(x);
     }
 
     if (y) {
         suffix += "y";
         if (y > 1)
-            suffix += to_string(y);
+            suffix += std::to_string(y);
     }
 
     if (z) {
         suffix += "z";
         if (z > 1)
-            suffix += to_string(z);
+            suffix += std::to_string(z);
     }
 
     return suffix;
 }
 
-string OperatorSymmetry::name_of_component(int i)
+std::string OperatorSymmetry::name_of_component(int i)
 {
     Vector3 components = BasisSet::exp_ao[order_][i];
     return form_suffix(components[0], components[1], components[2]);
 }
 
-vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basename)
+std::vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basename)
 {
-    vector<SharedMatrix > matrices;
-    string name;
+    std::vector<SharedMatrix > matrices;
+    std::string name;
 
     for (int i=0; i<INT_NCART(order_); ++i) {
         name = basename + " " + name_of_component(i);
@@ -266,9 +265,9 @@ MultipoleSymmetry::~MultipoleSymmetry()
 
 
 
-vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &basename, bool ignore_symmetry)
+std::vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &basename, bool ignore_symmetry)
 {
-    vector<SharedMatrix > matrices;
+    std::vector<SharedMatrix > matrices;
 
     int component = 0;
     for(int l = 1; l <= order_; ++l){

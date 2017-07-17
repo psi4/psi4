@@ -38,8 +38,6 @@
 #include "psi4/liboptions/liboptions.h"
 
 using namespace psi;
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 
@@ -261,7 +259,7 @@ else if(wfn_type_ == "DF-OLCCD") outfile->Printf(" %3d     %12.10f  %12.2e   %12
 
     if (wfn_type_ != "DF-OLCCD") {
         if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
-        if (fabs(DE) <= tol_Eod) break;
+        if (std::fabs(DE) <= tol_Eod) break;
     }
 
     if (rms_wog >= DIVERGE) {
@@ -269,7 +267,7 @@ else if(wfn_type_ == "DF-OLCCD") outfile->Printf(" %3d     %12.10f  %12.2e   %12
     }
 
 }
-while(rms_wog >= tol_grad || biggest_mograd >= mograd_max || fabs(DE) >= tol_Eod);
+while(rms_wog >= tol_grad || biggest_mograd >= mograd_max || std::fabs(DE) >= tol_Eod);
 
 if (conver == 1) {
 mo_optimized = 1;

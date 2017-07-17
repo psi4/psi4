@@ -335,11 +335,11 @@ double AngularIntegral::getIntegral(int k, int l, int m, int lam, int mu) const 
 double AngularIntegral::getIntegral(int k, int l, int m, int lam, int mu, int rho, int sigma) const { return omega(k, l, m, lam, lam+mu, rho, rho+sigma); }
 
 bool AngularIntegral::isZero(int k, int l, int m, int lam, int mu, double tolerance) const {
-	if (wDim > 0) return fabs(W(k, l, m, lam, lam+mu)) < tolerance;
+	if (wDim > 0) return std::fabs(W(k, l, m, lam, lam+mu)) < tolerance;
 	else return true;
 }
 bool AngularIntegral::isZero(int k, int l, int m, int lam, int mu, int rho, int sigma, double tolerance) const {
-	if (wDim > 0) return fabs(omega(k, l, m, lam, lam+mu, rho, rho+sigma)) < tolerance;
+	if (wDim > 0) return std::fabs(omega(k, l, m, lam, lam+mu, rho, rho+sigma)) < tolerance;
 	else return true;
 }
 
@@ -500,7 +500,7 @@ void RadialIntegral::type1(int maxL, int N, int offset, const GaussianShell &U, 
             if (test == 0) std::cout << "Failed to converge: \n";
 				
 			// Calculate real spherical harmonic
-			x = fabs(P(a, b)) < 1e-12 ? 0.0 : (za * data.A[2] + zb * data.B[2]) / (p(a, b) * P(a, b));
+			x = std::fabs(P(a, b)) < 1e-12 ? 0.0 : (za * data.A[2] + zb * data.B[2]) / (p(a, b) * P(a, b));
 			Py = (za * data.A[1] + zb * data.B[1]) / p(a, b);
 			Px = (za * data.A[0] + zb * data.B[0]) / p(a, b);
 			phi = atan2(Py, Px);
@@ -746,7 +746,7 @@ void ECPInt::type1(const GaussianShell &U, const GaussianShell &shellA, const Ga
 											m = m1 + m2;
 											C = CA(0, na, k1, l1, m1) * CB(0, nb, k2, l2, m2);
 
-											if ( fabs(C) > 1e-14 ) {
+											if ( std::fabs(C) > 1e-14 ) {
 												ix = k + l + m;
 												lparity = ix % 2;
 												msign = 1 - 2*(l%2);

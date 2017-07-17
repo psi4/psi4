@@ -45,8 +45,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
-
 namespace psi {
 
 Solver::Solver()
@@ -262,7 +260,7 @@ void CGRSolver::setup()
 
             std::vector<std::pair<double, int> > d;
             for (int i = 0; i < n; ++i) {
-                d.push_back(make_pair(diag_->get(h,i),i));
+                d.push_back(std::make_pair(diag_->get(h,i),i));
             }
             std::sort(d.begin(), d.end());
 
@@ -801,7 +799,7 @@ void DLRSolver::guess()
 
         std::vector<std::pair<double, int> > d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h,i),i));
         }
         std::sort(d.begin(), d.end());
 
@@ -1657,7 +1655,7 @@ void DLRXSolver::guess()
 
         std::vector<std::pair<double, int> > d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h,i),i));
         }
         std::sort(d.begin(), d.end());
 
@@ -1806,7 +1804,7 @@ void DLRXSolver::subspaceDiagonalization()
         // Sort to order as -/+, -/+, ....
         std::vector<std::pair<double, int> > pass1;
         for (int i = 0; i < 2*n; i++) {
-            pass1.push_back(make_pair(fabs(lrp[i]), i));
+            pass1.push_back(std::make_pair(std::fabs(lrp[i]), i));
         }
 
         std::sort(pass1.begin(), pass1.end());
@@ -2446,7 +2444,7 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
         }
     }
 
-    return make_pair(pairalpha, pairbeta);
+    return std::make_pair(pairalpha, pairbeta);
 
 }
 
@@ -2576,7 +2574,7 @@ void DLUSolver::guess()
 
         std::vector<std::pair<double, int> > d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h,i),i));
         }
         std::sort(d.begin(), d.end());
 

@@ -243,8 +243,8 @@ in this set of internals. */
                 double val1=0, val2=0;
                 v3d_angle(geom[i], geom[j], geom[k], val1);
                 v3d_angle(geom[j], geom[k], geom[l], val2);
-                val1 = fabs(val1);
-                val2 = fabs(val2);
+                val1 = std::fabs(val1);
+                val2 = std::fabs(val2);
                 if (val1 > .02*_pi && val2 > .02*_pi && val1 <(_pi-.02) && val2 <(_pi-.02)) {
                   TORS *one_tors = new TORS(i, j, k, l);
                   coords.simples.push_back(one_tors);

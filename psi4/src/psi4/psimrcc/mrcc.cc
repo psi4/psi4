@@ -38,8 +38,6 @@
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options):
         CCManyBody(ref_wfn, options),
         options_(options)
@@ -51,14 +49,14 @@ CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options):
   old_energy      = 10.0;
 
   // Parse the CORR_WFN parameter
-  vector<string> theory_levels = split("PT2 CCSD CCSD_T CCSDT-1A CCSDT-1B CCSDT-2 CCSDT-3 CCSDT");
+  std::vector<std::string> theory_levels = split("PT2 CCSD CCSD_T CCSDT-1A CCSDT-1B CCSDT-2 CCSDT-3 CCSDT");
   for(size_t i=0;i<theory_levels.size();++i){
     if(options.get_str("CORR_WFN")==theory_levels[i])
       triples_type = TriplesType(i);
   }
 
   // Parse the COUPLING parameter
-  vector<string> coupling_levels = split("NONE LINEAR QUADRATIC CUBIC");
+  std::vector<std::string> coupling_levels = split("NONE LINEAR QUADRATIC CUBIC");
   for(size_t i=0;i<coupling_levels.size();++i){
     if(options.get_str("COUPLING")==coupling_levels[i]){
       triples_coupling_type = TriplesCouplingType(i);

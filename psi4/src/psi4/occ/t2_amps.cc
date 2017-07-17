@@ -35,9 +35,6 @@
 #include <cmath>
 
 
-using namespace std;
-
-
 namespace psi{ namespace occwave{
 
 void OCCWave::t2_amps()

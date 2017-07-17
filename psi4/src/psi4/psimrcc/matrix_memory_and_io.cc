@@ -57,9 +57,6 @@ namespace psi{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
 
-using namespace std;
-
-
 /*********************************************************
   Memory Allocation Routines
 *********************************************************/

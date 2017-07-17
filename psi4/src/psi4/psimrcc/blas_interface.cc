@@ -44,12 +44,10 @@ namespace psi{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
 
-using namespace std;
-
 void CCBLAS::add_index(const char* cstr)
 {
   // Make sure that the element that we are adding is not present
-  string str(cstr);
+  std::string str(cstr);
   to_lower(str);
   if(indices.find(str)==indices.end()){
     indices.insert(make_pair(str,new CCIndex(str)));
@@ -58,15 +56,15 @@ void CCBLAS::add_index(const char* cstr)
 
 void CCBLAS::add_Matrix(const char* cstr)
 {
-  string str(cstr);
-  vector<string> names = moinfo->get_matrix_names(str);
+  std::string str(cstr);
+  std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(size_t n = 0; n < names.size(); ++n)
     add_Matrix_ref(names[n]);
 }
 
-void CCBLAS::add_Matrix(string str)
+void CCBLAS::add_Matrix(std::string str)
 {
-  vector<string> names = moinfo->get_matrix_names(str);
+  std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(size_t n = 0; n < names.size(); ++n)
     add_Matrix_ref(names[n]);
 }
@@ -80,7 +78,7 @@ void CCBLAS::add_Matrix_ref(std::string& str)
     // Default: assume the [] indexing
     index_pointer[0]=get_index("[]");
     index_pointer[1]=get_index("[]");
-    vector<string> index_string_vec = split_indices(str);
+    std::vector<std::string> index_string_vec = split_indices(str);
     for(size_t i = 0; i < index_string_vec.size(); ++i)
       index_pointer[i]=get_index(index_string_vec[i]);
     matrices.insert(make_pair(str,new CCMatrix(str,index_pointer[0],index_pointer[1])));
@@ -89,7 +87,7 @@ void CCBLAS::add_Matrix_ref(std::string& str)
 
 CCIndex* CCBLAS::get_index(const char* cstr)
 {
-  string str(cstr);
+  std::string str(cstr);
   to_lower(str);
   // Make sure that the element that we are retrieving is present
   IndexMap::iterator iter = indices.find(str);
@@ -100,7 +98,7 @@ CCIndex* CCBLAS::get_index(const char* cstr)
   return(NULL);
 }
 
-CCIndex* CCBLAS::get_index(string& str)
+CCIndex* CCBLAS::get_index(std::string& str)
 {
   to_lower(str);
   // Make sure that the element that we are retrieving is present
@@ -152,18 +150,18 @@ CCMatIrTmp CCBLAS::get_MatIrTmp(CCMatrix* Matrix, int irrep, DiskOpt disk_option
 
 CCMatrix* CCBLAS::get_Matrix(const char* cstr, int reference)
 {
-  string str(cstr);
+  std::string str(cstr);
   append_reference(str,reference);
   return(get_Matrix(str));
 }
 
 CCMatrix* CCBLAS::get_Matrix(const char* cstr)
 {
-  string str(cstr);
+  std::string str(cstr);
   return(get_Matrix(str));
 }
 
-CCMatrix* CCBLAS::get_Matrix(string& str)
+CCMatrix* CCBLAS::get_Matrix(std::string& str)
 {
   // Make sure that the element that we are retrieving is present
   MatrixMap::iterator iter = matrices.find(str);
@@ -173,7 +171,7 @@ CCMatrix* CCBLAS::get_Matrix(string& str)
   return(NULL);
 }
 
-CCMatrix* CCBLAS::get_Matrix(string& str, string& expression)
+CCMatrix* CCBLAS::get_Matrix(std::string& str, std::string& expression)
 {
   // Make sure that the element that we are retrieving is present
   MatrixMap::iterator iter = matrices.find(str);
@@ -186,13 +184,13 @@ CCMatrix* CCBLAS::get_Matrix(string& str, string& expression)
 
 void CCBLAS::set_scalar(const char* cstr,int reference,double value)
 {
-  string str(cstr);
+  std::string str(cstr);
   set_scalar(str,reference,value);
 }
 
-void CCBLAS::set_scalar(string& str,int reference,double value)
+void CCBLAS::set_scalar(std::string& str,int reference,double value)
 {
-  string matrix_str = add_reference(str,reference);
+  std::string matrix_str = add_reference(str,reference);
   // Make sure that the element that we are retrieving is present
   MatrixMap::iterator iter = matrices.find(matrix_str);
   if(iter!=matrices.end()){
@@ -205,13 +203,13 @@ void CCBLAS::set_scalar(string& str,int reference,double value)
 
 double CCBLAS::get_scalar(const char* cstr,int reference)
 {
-  string str(cstr);
+  std::string str(cstr);
   return(get_scalar(str,reference));
 }
 
-double CCBLAS::get_scalar(string& str,int reference)
+double CCBLAS::get_scalar(std::string& str,int reference)
 {
-  string matrix_str(str);
+  std::string matrix_str(str);
   append_reference(matrix_str,reference);
   // Make sure that the element that we are retrieving is present
   MatrixMap::iterator iter = matrices.find(matrix_str);
@@ -223,7 +221,7 @@ double CCBLAS::get_scalar(string& str,int reference)
   return (0.0);
 }
 
-double CCBLAS::get_scalar(string str)
+double CCBLAS::get_scalar(std::string str)
 {
   // Make sure that the element that we are retrieving is present
   MatrixMap::iterator iter = matrices.find(str);

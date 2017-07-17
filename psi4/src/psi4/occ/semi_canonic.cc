@@ -33,8 +33,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
 
-using namespace std;
-
 
 namespace psi{ namespace occwave{
 
@@ -103,7 +101,7 @@ void OCCWave::semi_canonic()
 
 	  Molecule& mol = *reference_wavefunction_->molecule().get();
 	  CharacterTable ct = mol.point_group()->char_table();
-          string pgroup = mol.point_group()->symbol();
+          std::string pgroup = mol.point_group()->symbol();
 
 	  // print occ orb energy
 	  outfile->Printf( "\t  Alpha occupied orbitals\n");
@@ -241,7 +239,7 @@ void OCCWave::semi_canonic()
 
 	  Molecule& mol = *reference_wavefunction_->molecule().get();
 	  CharacterTable ct = mol.point_group()->char_table();
-          string pgroup = mol.point_group()->symbol();
+          std::string pgroup = mol.point_group()->symbol();
 
 	  // print occ orb energy
 	  outfile->Printf( "\t  Beta occupied orbitals\n");

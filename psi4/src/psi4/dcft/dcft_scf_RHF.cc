@@ -42,8 +42,6 @@
 #include <cmath>
 
 
-using namespace std;
-
 namespace psi{ namespace dcft{
 
 /**
@@ -225,7 +223,7 @@ DCFTSolver::process_so_ints_RHF()
           lastBuffer = iwl->last_buffer();
           for(int index = 0; index < iwl->buffer_count(); ++index){
               labelIndex = 4*index;
-              p = abs((int) lblptr[labelIndex++]);
+              p = std::abs((int) lblptr[labelIndex++]);
               q = (int) lblptr[labelIndex++];
               r = (int) lblptr[labelIndex++];
               s = (int) lblptr[labelIndex++];

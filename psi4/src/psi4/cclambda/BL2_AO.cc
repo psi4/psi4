@@ -126,7 +126,7 @@ void BL2_AO(int L_irr)
   lastbuf = InBuf.lastbuf;
 
   for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-    p = abs((int) lblptr[idx++]);
+    p = std::abs((int) lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -142,7 +142,7 @@ void BL2_AO(int L_irr)
     iwl_buf_fetch(&InBuf);
     lastbuf = InBuf.lastbuf;
     for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-      p = abs((int) lblptr[idx++]);
+      p = std::abs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];
@@ -212,7 +212,7 @@ void BL2_AO(int L_irr)
   lastbuf = InBuf.lastbuf;
 
   for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-    p = abs((int) lblptr[idx++]);
+    p = std::abs((int) lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -228,7 +228,7 @@ void BL2_AO(int L_irr)
     iwl_buf_fetch(&InBuf);
     lastbuf = InBuf.lastbuf;
     for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-      p = abs((int) lblptr[idx++]);
+      p = std::abs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];
@@ -298,7 +298,7 @@ void BL2_AO(int L_irr)
   lastbuf = InBuf.lastbuf;
 
   for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-    p = abs((int) lblptr[idx++]);
+    p = std::abs((int) lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -314,7 +314,7 @@ void BL2_AO(int L_irr)
     iwl_buf_fetch(&InBuf);
     lastbuf = InBuf.lastbuf;
     for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-      p = abs((int) lblptr[idx++]);
+      p = std::abs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];

@@ -75,7 +75,7 @@ void CIWavefunction::print_vec(size_t nprint, int *Ialist, int *Iblist,
    /* print out the list of most important determinants */
    outfile->Printf("\n   The %d most important determinants:\n\n", nprint) ;
    for (size_t i=0; i<nprint; i++) {
-      if (fabs(coeff[i]) < MIN_COEFF) continue;
+      if (std::fabs(coeff[i]) < MIN_COEFF) continue;
 
       Ia_abs = str_rel2abs(Iaidx[i], Ialist[i], AlphaG_);
       Ib_abs = str_rel2abs(Ibidx[i], Iblist[i], BetaG_);

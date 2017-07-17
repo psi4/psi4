@@ -37,26 +37,25 @@
 #include <sstream>
 #include <vector>
 
-using namespace std;
 
 namespace psi {
 
 // trim from start
-static inline string &dpd_ltrim(string &s)
+static inline std::string &dpd_ltrim(std::string &s)
 {
-    s.erase(s.begin(), find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
+    s.erase(s.begin(), find_if(s.begin(), s.end(), not1(std::ptr_fun<int, int>(isspace))));
     return s;
 }
 
 // trim from end
-static inline string &dpd_rtrim(string &s)
+static inline std::string &dpd_rtrim(std::string &s)
 {
-    s.erase(find_if(s.rbegin(), s.rend(), not1(ptr_fun<int, int>(isspace))).base(), s.end());
+    s.erase(find_if(s.rbegin(), s.rend(), not1(std::ptr_fun<int, int>(isspace))).base(), s.end());
     return s;
 }
 
 // trim from both ends
-static inline string &dpd_trim(string &s)
+static inline std::string &dpd_trim(std::string &s)
 {
     return dpd_ltrim(dpd_rtrim(s));
 }
@@ -67,22 +66,22 @@ static inline string &dpd_trim(string &s)
  * If no comma is found it assumes the indices are one character in length.
  *
  */
-vector<string> dpd_split(const string &indices)
+std::vector<std::string> dpd_split(const std::string &indices)
 {
-    istringstream f(indices);
-    string s;
-    vector<string> v;
+    std::istringstream f(indices);
+    std::string s;
+    std::vector<std::string> v;
 
-    if (indices.find(",") != string::npos) {
-        while (getline(f, s, ',')) {
-            string trimmed = dpd_trim(s);
+    if (indices.find(",") != std::string::npos) {
+        while (std::getline(f, s, ',')) {
+            std::string trimmed = dpd_trim(s);
             v.push_back(trimmed);
         }
     }
     else {
         // simply split the string up
         for (size_t i = 0; i < indices.size(); ++i)
-            v.push_back(string(1, indices[i]));
+            v.push_back(std::string(1, indices[i]));
     }
 
     return v;

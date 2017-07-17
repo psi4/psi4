@@ -31,8 +31,6 @@
 #include "psi4/libmints/matrix.h"
 
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 void OCCWave::ocepa_response_pdms()

@@ -33,8 +33,6 @@
 #include "psi4/libdiis/diismanager.h"
 
 #include <cmath>
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 

@@ -43,8 +43,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCSort::build_integrals_mrpt2(IntegralTransform *ints)
 {
   trans->read_integrals_mrpt2(ints);
@@ -101,18 +99,18 @@ void CCSort::form_fock_mrpt2(MatrixMap::iterator& iter)
 {
   CCMatrix* Matrix = iter->second;
   if(Matrix->is_fock()){
-    string label     = Matrix->get_label();
+    std::string label     = Matrix->get_label();
     double*** matrix = Matrix->get_matrix();
     short* pq = new short[2];
     const intvec& oa2p = moinfo->get_occ_to_mo();
 
     bool alpha = true;
-    if((label.find("O")!=string::npos) || (label.find("V")!=string::npos) || (label.find("A")!=string::npos) || (label.find("F")!=string::npos)) // NB This was missing the last bit, this might be a problem
+    if((label.find("O")!=std::string::npos) || (label.find("V")!=std::string::npos) || (label.find("A")!=std::string::npos) || (label.find("F")!=std::string::npos)) // NB This was missing the last bit, this might be a problem
       alpha = false;
 
     // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-    vector<int> aocc = moinfo->get_aocc(Matrix->get_reference(),AllRefs);
-    vector<int> bocc = moinfo->get_bocc(Matrix->get_reference(),AllRefs);
+    std::vector<int> aocc = moinfo->get_aocc(Matrix->get_reference(),AllRefs);
+    std::vector<int> bocc = moinfo->get_bocc(Matrix->get_reference(),AllRefs);
     for(int h=0;h<moinfo->get_nirreps();h++){
       for(int i = 0;i<Matrix->get_left_pairpi(h);i++){
         for(int j = 0;j<Matrix->get_right_pairpi(h);j++){

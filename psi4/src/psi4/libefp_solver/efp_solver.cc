@@ -561,11 +561,11 @@ std::shared_ptr<Matrix> EFP::modify_Fock_permanent()
 
             for (size_t i=0; i<natom; i++) {
                 double dx = atoms[i].x - xyz_p[n*3];
-                if ( fabs(dx) > 1e-10 ) continue;
+                if ( std::fabs(dx) > 1e-10 ) continue;
                 double dy = atoms[i].y - xyz_p[n*3+1];
-                if ( fabs(dy) > 1e-10 ) continue;
+                if ( std::fabs(dy) > 1e-10 ) continue;
                 double dz = atoms[i].z - xyz_p[n*3+2];
-                if ( fabs(dz) > 1e-10 ) continue;
+                if ( std::fabs(dz) > 1e-10 ) continue;
 
                 mult_p[20*n] += atoms[i].znuc;
                 break;

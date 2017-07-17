@@ -71,7 +71,6 @@ bool opt_io_is_present(void) {
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
-  using namespace std;
 
   opt_data_stream.open(QCHEM_OPTDATA_FILENAME, fstream::in | fstream::binary);
   if (opt_data_stream.is_open()) {
@@ -130,7 +129,6 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
-  using namespace std;
 
   if ( opt_data_stream.is_open() && (status == OPT_IO_OPEN_OLD))
     return;

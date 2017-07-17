@@ -33,8 +33,6 @@
 #include "psi4/libmints/matrix.h"
 
 #include <cmath>
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 

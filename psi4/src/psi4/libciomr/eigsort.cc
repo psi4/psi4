@@ -83,7 +83,7 @@ void eigsort(double *d, double **v, int n)
     }
   }
   else {
-    n = abs(n);
+    n = std::abs(n);
     for (i=0; i < n-1 ; i++) {
       k=i;
       p=d[i];
@@ -156,7 +156,7 @@ void mosort(double *d, double **v, int *sym, int nso, int nmo)
     }
   }
   else if(nmo < 0) {
-    nmo = abs(nmo);
+    nmo = std::abs(nmo);
     for (i=0; i < nmo-1 ; i++) {
       k=i;
       p=d[i];

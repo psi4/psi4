@@ -113,7 +113,7 @@ int pople(double **A, double *x, int dimen, int /*num_vecs*/, double tolerance,
        for (i=0; i<dimen; i++) {
            Bmat[0][i] = x[i];
            b[i] = x[i];
-           dvec[i] = sqrt(fabs(A[i][i]));
+           dvec[i] = sqrt(std::fabs(A[i][i]));
            b[i] /= dvec[i];
            /*   outfile->Printf("A[%d][%d] = %lf\n",i,i, A[i][i]);
                 outfile->Printf("dvec[%d] = %lf\n",i, dvec[i]);

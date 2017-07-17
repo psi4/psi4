@@ -96,7 +96,7 @@ ADCWfn::compute_energy()
                     //denom = 1;
                     omega_diff = (omega_o-omega[root]) / denom;
                     if(DEBUG_)  printf("%e, %10.7f\n", omega_diff, 1/denom);
-                    if(fabs(omega_diff) < conv_){
+                    if(std::fabs(omega_diff) < conv_){
                         if(DEBUG_){
                             printf("\tpole(%d)[%d] in %d iteration: %10.7lf\n", root, irrep, iter, omega[root]);
                             printf("\tpseudo-perturbative value: %10.7lf\n", poles_[irrep][root].ps_value);
@@ -123,7 +123,7 @@ ADCWfn::compute_energy()
                         sprintf(lbl, "B^(%d)_[%d]12", root, irrep);
                         global_dpd_->file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                         theta = acos(global_dpd_->file2_dot(&B, &V)) * 180.0 / pc_pi;
-                        if((180.0-fabs(theta)) < theta) theta = 180.0 - fabs(theta);
+                        if((180.0-std::fabs(theta)) < theta) theta = 180.0 - std::fabs(theta);
                         global_dpd_->file2_close(&B);
                         outfile->Printf( "\tThe S vector is rotated up to %6.3f (deg.)\n", theta);
                         if(theta > ANGL_TOL_)
@@ -150,11 +150,11 @@ ADCWfn::compute_energy()
                                 C_DGEMM('n', 't', row, row, col,  -1.0, &(V.matrix[sub_irrep][0][0]), col, &(V.matrix[sub_irrep][0][0]), col, 0.0, &(D[0][0]), row);
                                 C_DSYEV('v', 'u', row, &(D[0][0]), row, pop, work, lwork);
                                 for(int i = 0;i < row;i++){
-                                    if(fabs(pop[i]) > CUTOFF_DENS_){
+                                    if(std::fabs(pop[i]) > CUTOFF_DENS_){
                                         lmax.value = D[0][i];
                                         lmax.dpdstate = 0;
                                         for(int j = 0;j < row;j++){
-                                            if(fabs(D[j][i]) > fabs(lmax.value)){
+                                            if(std::fabs(D[j][i]) > std::fabs(lmax.value)){
                                                 lmax.value = D[j][i];
                                                 lmax.dpdstate = j;
                                             }
@@ -201,11 +201,11 @@ ADCWfn::compute_energy()
                                 C_DSYEV('v', 'u', row, &(D[0][0]), row, pop, work, lwork);
 //                                C_DGEMM('n', 'n', nsopi_[sub_irrep], row, row, 1.0, &(C[0][0]), row, &(D[0][0]), row, 0.0, &(Dso[0][0]), row);
                                 for(int i = 0;i < row;i++){
-                                    if(fabs(pop[i]) > CUTOFF_DENS_){
+                                    if(std::fabs(pop[i]) > CUTOFF_DENS_){
                                         lmax.value = D[0][i];
                                         lmax.dpdstate = 0;
                                         for(int j = 0;j < row;j++){
-                                            if(fabs(D[j][i]) > fabs(lmax.value)){
+                                            if(std::fabs(D[j][i]) > std::fabs(lmax.value)){
                                                 lmax.value = D[j][i];
                                                 lmax.dpdstate = j;
                                             }

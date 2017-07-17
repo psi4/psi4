@@ -41,9 +41,6 @@
 #include "moinfo.h"
 
 
-
-using namespace std;
-
 namespace psi {
 
 std::string MOInfo::get_determinant_label(int i)
@@ -120,9 +117,9 @@ void MOInfo::build_model_space()
         generate_combinations(nactv,nactive_ael,alpha_combinations);
         generate_combinations(nactv,nactive_bel,beta_combinations);
         if(alpha_combinations.size()==0)
-            alpha_combinations.push_back(vector<int>(0));
+            alpha_combinations.push_back(std::vector<int>(0));
         if(beta_combinations.size()==0)
-            beta_combinations.push_back(vector<int>(0));
+            beta_combinations.push_back(std::vector<int>(0));
         for(size_t a=0;a<alpha_combinations.size();a++){
             for(size_t b=0;b<beta_combinations.size();b++){
                 int sym = 0; // Symmetry of the determinant
@@ -214,15 +211,15 @@ void MOInfo::make_internal_excitations()
     |m> = (+/-) ... b+ j a+ i |n>
   ****************************************/
     for(size_t m = 0; m < references.size(); ++m){
-        vector<vector<pair<int,int> > > alpha_internals_ref_m;
-        vector<vector<pair<int,int> > >  beta_internals_ref_m;
-        vector<double>                   sign_internals_ref_m;
+        std::vector<std::vector<std::pair<int,int> > > alpha_internals_ref_m;
+        std::vector<std::vector<std::pair<int,int> > >  beta_internals_ref_m;
+        std::vector<double>                   sign_internals_ref_m;
         //       outfile->Printf("\n\n\tReference %s",references[m].get_label().c_str());
         //       outfile->Printf(" gives:");
         for(size_t n=0;n<references.size();n++){
             double sign=1.0;
-            std::vector<pair<int,int> > alpha_operators;
-            std::vector<pair<int,int> > beta_operators;
+            std::vector<std::pair<int,int> > alpha_operators;
+            std::vector<std::pair<int,int> > beta_operators;
             references[m].get_internal_excitations(references[n],sign,alpha_operators,beta_operators);
             alpha_internals_ref_m.push_back(alpha_operators);
             beta_internals_ref_m.push_back(beta_operators);
@@ -242,21 +239,21 @@ void MOInfo::make_internal_excitations()
     }
 }
 
-vector<int> MOInfo::get_determinant(int i)
+std::vector<int> MOInfo::get_determinant(int i)
 {
-    vector<int> occupation(nall * 2,0);
+    std::vector<int> occupation(nall * 2,0);
     for(int p = 0; p < 2 * nall; ++p)
         if(references[i].test(p))
             occupation[p] = 1;
     return occupation;
 }
 
-vector<pair<int,int> > MOInfo::get_alpha_internal_excitation(int i,int j)
+std::vector<std::pair<int,int> > MOInfo::get_alpha_internal_excitation(int i,int j)
 {
     return(alpha_internal_excitations[i][j]);
 }
 
-vector<pair<int,int> > MOInfo::get_beta_internal_excitation(int i,int j)
+std::vector<std::pair<int,int> > MOInfo::get_beta_internal_excitation(int i,int j)
 {
     return(beta_internal_excitations[i][j]);
 }
@@ -300,19 +297,19 @@ int MOInfo::get_ref_size(ReferenceType ref_type)
     return(-1);
 }
 
-vector<string> MOInfo::get_matrix_names(std::string str)
+std::vector<std::string> MOInfo::get_matrix_names(std::string str)
 {
-    vector<string> names;
-    if(str.find("{a}")!=string::npos){
+    std::vector<std::string> names;
+    if(str.find("{a}")!=std::string::npos){
         for(size_t n=0;n<all_refs.size();n++)
             names.push_back(find_and_replace(str,"{a}","{" + to_string(all_refs[n]) +"}"));
-    }else if(str.find("{u}")!=string::npos){
+    }else if(str.find("{u}")!=std::string::npos){
         for(size_t n=0;n<unique_refs.size();n++)
             names.push_back(find_and_replace(str,"{u}","{" + to_string(unique_refs[n]) +"}"));
-    }else if(str.find("{c}")!=string::npos){
+    }else if(str.find("{c}")!=std::string::npos){
         for(size_t n=0;n<closed_shell_refs.size();n++)
             names.push_back(find_and_replace(str,"{c}","{" + to_string(closed_shell_refs[n]) +"}"));
-    }else if(str.find("{o}")!=string::npos){
+    }else if(str.find("{o}")!=std::string::npos){
         for(size_t n=0;n<unique_open_shell_refs.size();n++)
             names.push_back(find_and_replace(str,"{o}","{" + to_string(unique_open_shell_refs[n]) +"}"));
     }else
@@ -320,49 +317,49 @@ vector<string> MOInfo::get_matrix_names(std::string str)
     return(names);
 }
 
-vector<int> MOInfo::get_aocc(int i,ReferenceType ref_type)
+std::vector<int> MOInfo::get_aocc(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_aocc());
 }
 
-vector<int> MOInfo::get_bocc(int i,ReferenceType ref_type)
+std::vector<int> MOInfo::get_bocc(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_bocc());
 }
 
-vector<int> MOInfo::get_avir(int i,ReferenceType ref_type)
+std::vector<int> MOInfo::get_avir(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_avir());
 }
 
-vector<int> MOInfo::get_bvir(int i,ReferenceType ref_type)
+std::vector<int> MOInfo::get_bvir(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_bvir());
 }
 
-vector<bool> MOInfo::get_is_aocc(int i,ReferenceType ref_type)
+std::vector<bool> MOInfo::get_is_aocc(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_is_aocc());
 }
 
-vector<bool> MOInfo::get_is_bocc(int i,ReferenceType ref_type)
+std::vector<bool> MOInfo::get_is_bocc(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_is_bocc());
 }
 
-vector<bool> MOInfo::get_is_avir(int i,ReferenceType ref_type)
+std::vector<bool> MOInfo::get_is_avir(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_is_avir());
 }
 
-vector<bool> MOInfo::get_is_bvir(int i,ReferenceType ref_type)
+std::vector<bool> MOInfo::get_is_bvir(int i,ReferenceType ref_type)
 {
     int i_ref = get_ref_number(i,ref_type);
     return(references[i_ref].get_is_bvir());

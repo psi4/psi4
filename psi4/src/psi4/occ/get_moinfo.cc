@@ -40,7 +40,6 @@
 
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace occwave{
 
@@ -386,8 +385,8 @@ if (reference_ == "RESTRICTED") {
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
 
 	  // read binary data
-	  ifstream InFile1;
-	  InFile1.open("CmoA.psi", ios::in | ios::binary);
+	  std::ifstream InFile1;
+	  InFile1.open("CmoA.psi", std::ios::in | std::ios::binary);
 	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  InFile1.close();
 
@@ -754,14 +753,14 @@ else if (reference_ == "UNRESTRICTED") {
 	  memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
 
 	  // read binary data
-	  ifstream InFile1;
-	  InFile1.open("CmoA.psi", ios::in | ios::binary);
+	  std::ifstream InFile1;
+	  InFile1.open("CmoA.psi", std::ios::in | std::ios::binary);
 	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  InFile1.close();
 
 	  // read binary data
-	  ifstream InFile2;
-	  InFile2.open("CmoB.psi", ios::in | ios::binary);
+	  std::ifstream InFile2;
+	  InFile2.open("CmoB.psi", std::ios::in | std::ios::binary);
 	  InFile2.read( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
 	  InFile2.close();
 

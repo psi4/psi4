@@ -31,7 +31,6 @@
 #include "psi4/psi4-dec.h"
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
@@ -387,7 +386,7 @@ outfile->Printf( "\t----    ---------------    ---------------\n");
    //if (rms_residual < tol_pcg  || rms_pcg < tol_pcg) break;  
 
  }
- while(fabs(rms_pcg) >= tol_pcg || fabs(rms_residual) >= tol_pcg);  
+ while(std::fabs(rms_pcg) >= tol_pcg || std::fabs(rms_residual) >= tol_pcg);  
 
     // Converged?
     outfile->Printf("\n");

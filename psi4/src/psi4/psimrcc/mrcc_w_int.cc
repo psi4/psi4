@@ -42,8 +42,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 void CCMRCC::build_W_intermediates()
 {
   build_W_mnij_intermediates();

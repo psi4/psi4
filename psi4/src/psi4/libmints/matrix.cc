@@ -2364,11 +2364,11 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
             // (Should always be in the Schur complement)
             int imax = 0;
             for (int i = 0; i < n; i++)
-                if (fabs(Dp[i]) > fabs(Dp[imax]))
+                if (std::fabs(Dp[i]) > std::fabs(Dp[imax]))
                     imax = i;
 
             double dmax = Dp[imax];
-            if (fabs(dmax) <= delta)
+            if (std::fabs(dmax) <= delta)
                 break;
 
             if (dmax <= 0.0) {
@@ -2450,7 +2450,7 @@ std::pair <SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
     Dimension Npi(d->nirrep());
     for (int h = 0; h < d->nirrep(); h++) {
         for (int i = 0; i < d->dimpi()[h]; i++) {
-            if (fabs(d->get(h, i)) >= delta) {
+            if (std::fabs(d->get(h, i)) >= delta) {
                 if (d->get(h, i) >= 0) {
                     Ppi[h]++;
                 } else {
@@ -2471,15 +2471,15 @@ std::pair <SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
         int Pcounter = 0;
         int Ncounter = 0;
         for (int i = 0; i < colspi_[h]; i++) {
-            if (fabs(d->get(h, i)) >= delta) {
+            if (std::fabs(d->get(h, i)) >= delta) {
                 if (d->get(h, i) >= 0.0) {
                     // +
-                    double val = sqrt(fabs(d->get(h, i)));
+                    double val = sqrt(std::fabs(d->get(h, i)));
                     C_DAXPY(colspi_[h], val, &Vp[0][i], colspi_[h], &Pp[0][Pcounter], Ppi[h]);
                     Pcounter++;
                 } else {
                     // -
-                    double val = sqrt(fabs(d->get(h, i)));
+                    double val = sqrt(std::fabs(d->get(h, i)));
                     C_DAXPY(colspi_[h], -val, &Vp[0][i], colspi_[h], &Np[0][Ncounter], Npi[h]);
                     Ncounter++;
                 }
@@ -2585,11 +2585,11 @@ Dimension Matrix::power(double alpha, double cutoff)
 
         memcpy(static_cast<void *>(A2[0]), static_cast<void *>(A1[0]), sizeof(double) * n * n);
 
-        double max_a = (fabs(a[n - 1]) > fabs(a[0]) ? fabs(a[n - 1]) : fabs(a[0]));
+        double max_a = (std::fabs(a[n - 1]) > std::fabs(a[0]) ? std::fabs(a[n - 1]) : std::fabs(a[0]));
         int remain = 0;
         for (int i = 0; i < n; i++) {
 
-            if (alpha < 0.0 && fabs(a[i]) < cutoff * max_a)
+            if (alpha < 0.0 && std::fabs(a[i]) < cutoff * max_a)
                 a[i] = 0.0;
             else {
                 a[i] = pow(a[i], alpha);
@@ -2656,7 +2656,7 @@ void Matrix::expm(int m, bool scale)
             for (int i = 0; i < n; i++) {
                 double row = 0.0;
                 for (int j = 0; j < n; j++) {
-                    row += fabs(A[i][j]);
+                    row += std::fabs(A[i][j]);
                 }
                 norm = (norm > row ? norm : row);
             }
@@ -3146,7 +3146,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             int count = 0;
             for (int i = 0; i < sizer; ++i) {
                 for (int j = 0; j <= i; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-12) {
+                    if (std::fabs(fullblock[i][j]) > 1.0e-12) {
                         count++;
                     }
                 }
@@ -3154,7 +3154,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             printer->Printf("%5d\n", count);
             for (int i = 0; i < sizer; ++i) {
                 for (int j = 0; j <= i; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-12) {
+                    if (std::fabs(fullblock[i][j]) > 1.0e-12) {
                         printer->Printf(str_full_format, i, j, fullblock[i][j]);
                     }
                 }
@@ -3164,7 +3164,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             int count = 0;
             for (int i = 0; i < sizer; ++i) {
                 for (int j = 0; j < sizec; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-12) {
+                    if (std::fabs(fullblock[i][j]) > 1.0e-12) {
                         count++;
                     }
                 }
@@ -3172,7 +3172,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             printer->Printf("%5d\n", count);
             for (int i = 0; i < sizer; ++i) {
                 for (int j = 0; j < sizec; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-12) {
+                    if (std::fabs(fullblock[i][j]) > 1.0e-12) {
                         printer->Printf(str_full_format, i, j, fullblock[i][j]);
                     }
                 }
@@ -3186,7 +3186,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < rowspi_[h]; ++i) {
                     for (int j = 0; j <= i; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
+                        if (std::fabs(matrix_[h][i][j]) > 1.0e-12) {
                             count++;
                         }
                     }
@@ -3196,7 +3196,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < rowspi_[h]; ++i) {
                     for (int j = 0; j <= i; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
+                        if (std::fabs(matrix_[h][i][j]) > 1.0e-12) {
                             printer->Printf(str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
@@ -3208,7 +3208,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < rowspi_[h]; ++i) {
                     for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
+                        if (std::fabs(matrix_[h][i][j]) > 1.0e-12) {
                             count++;
                         }
                     }
@@ -3218,7 +3218,7 @@ void Matrix::save(const std::string &filename, bool append, bool saveLowerTriang
             for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < rowspi_[h]; ++i) {
                     for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
+                        if (std::fabs(matrix_[h][i][j]) > 1.0e-12) {
                             printer->Printf(str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
@@ -3626,7 +3626,7 @@ bool Matrix::equal_but_for_row_order(const Matrix *rhs, double TOL)
 
                 int n;
                 for (n = 0; n < colspi()[h ^ symmetry_]; ++n) {
-                    if (fabs(get(h, m, n) - rhs->get(h, m_rhs, n)) > TOL)
+                    if (std::fabs(get(h, m, n) - rhs->get(h, m_rhs, n)) > TOL)
                         break;
                 }
 

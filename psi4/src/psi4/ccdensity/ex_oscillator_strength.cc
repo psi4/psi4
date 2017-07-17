@@ -47,8 +47,6 @@
 #define EXTERN
 #include "globals.h"
 
-using namespace std;
-
 namespace psi { namespace ccdensity {
 #include "psi4/physconst.h"
 
@@ -135,7 +133,7 @@ void ex_oscillator_strength(SharedWavefunction wfn, struct TD_Params *S, struct 
   /*** Transform the SO dipole integrals to the MO basis ***/
 
   MintsHelper mints(wfn->basisset(), Process::environment.options, 0);
-  vector<SharedMatrix> dipole = mints.so_dipole();
+  std::vector<SharedMatrix> dipole = mints.so_dipole();
   MUX_SO = dipole[0]->to_block_matrix();
   MUY_SO = dipole[1]->to_block_matrix();
   MUZ_SO = dipole[2]->to_block_matrix();

@@ -61,7 +61,6 @@
 #include "psi4/libmints/corrtab.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-using namespace std;
 using namespace psi;
 
 ////////////////////////////////////////////////////////////////////////
@@ -173,7 +172,7 @@ int
             }
             nmatch /= subct.order();
             int inmatch = (int)(nmatch+0.5);
-            if (fabs(nmatch-inmatch)>1.0e-6) {
+            if (std::fabs(nmatch-inmatch)>1.0e-6) {
                 delete[] so_to_subso;
                 delete[] subso_to_so;
                 return -4;

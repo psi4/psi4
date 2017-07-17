@@ -58,8 +58,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "rhf.h"
 
-using namespace std;
-
 namespace psi { namespace scf {
 
 RHF::RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func)
@@ -143,8 +141,8 @@ void RHF::save_density_and_energy()
     Eold_ = E_;       // Save previous energy
 }
 
-void forPermutation(int depth, vector<int>& array,
-      vector<int>& indices,int curDepth,vector<vector<int> >& finalindex) {
+void forPermutation(int depth, std::vector<int>& array,
+      std::vector<int>& indices,int curDepth, std::vector<std::vector<int> >& finalindex) {
    int length=array.size();
    if(curDepth == 0) {
         finalindex.push_back(indices);
@@ -259,7 +257,7 @@ bool RHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
        return true;
     }
     else

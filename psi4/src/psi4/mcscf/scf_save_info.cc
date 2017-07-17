@@ -46,8 +46,6 @@
 
 namespace psi{ namespace mcscf{
 
-using namespace std;
-
 void SCF::save_info()
 {
     // No projection of MOs, just yet
@@ -57,10 +55,10 @@ void SCF::save_info()
     int nfrzc = basisset_->n_frozen_core();
     intvec frz;
     for(int h = 0; h < nirreps; ++h) frz.push_back(0);
-    vector<std::pair<double, int> > sorted_evals;
+    std::vector<std::pair<double, int> > sorted_evals;
     for(int h = 0; h < nirreps; ++h)
       for(int i = 0; i < sopi[h]; ++i)
-        sorted_evals.push_back( make_pair(epsilon->get(h,i),h) );
+        sorted_evals.push_back( std::make_pair(epsilon->get(h,i),h) );
     sort(sorted_evals.begin(),sorted_evals.end());
     for(int i = 0; i < nfrzc; ++i)
       frz[sorted_evals[i].second]++;

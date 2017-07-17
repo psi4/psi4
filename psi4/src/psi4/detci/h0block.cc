@@ -194,7 +194,7 @@ int CIWavefunction::H0block_calc(double E)
            tval1 = H0xc0[j] * H0block_->H0b_diag[i][j];
            tval2 = H0xs0[j] * H0block_->H0b_diag[i][j];
            tval3 = H0block_->H0b_eigvals[j] - E;
-           if (fabs(tval3) < HD_MIN) tval3 = 0.0;
+           if (std::fabs(tval3) < HD_MIN) tval3 = 0.0;
            else tval3 = 1.0/tval3;
            tval1 *= tval3;
            tval2 *= tval3;
@@ -342,7 +342,7 @@ void CIWavefunction::H0block_xy(double *x, double *y, double E)
    for (i=0; i<H0block_->size; i++) {
       tval = H0block_->H00[i] - E;
       c = H0block_->c0b[i];
-      if (fabs(tval) < HD_MIN) tval = HD_MIN; /* prevent /0 */
+      if (std::fabs(tval) < HD_MIN) tval = HD_MIN; /* prevent /0 */
       tval = 1.0 / tval;
       tx += c * c * tval;
       ty += c * H0block_->s0b[i] * tval;
@@ -507,11 +507,11 @@ void CIWavefunction::H0block_spin_cpl_chk(void)
       spin_cpl_vals2 = H0block_->spin_cp_vals;
 
     i = H0block_->size-1;
-    diff = fabs(H0block_->H00[i] - spin_cpl_vals2);
+    diff = std::fabs(H0block_->H00[i] - spin_cpl_vals2);
    /* outfile->Printf("diff[%d] = %20.15f\n", i, diff); */
     while (i > 0 && diff < zero) {
       i--;
-      diff = fabs(H0block_->H00[i] - spin_cpl_vals2);
+      diff = std::fabs(H0block_->H00[i] - spin_cpl_vals2);
     /*  outfile->Printf("diff[%d] = %20.15f\n", i, diff); */
     }
 
@@ -544,11 +544,11 @@ void CIWavefunction::H0block_spin_cpl_chk(void)
     }
 
     i = newsize - 1;
-    diff = fabs(H0block_->H00[i] - spin_cpl_vals2);
+    diff = std::fabs(H0block_->H00[i] - spin_cpl_vals2);
    /* outfile->Printf("diff[%d] = %20.15f\n", i, diff); */
-    while (i > 0 && fabs(diff) < zero) {
+    while (i > 0 && std::fabs(diff) < zero) {
       i--;
-      diff = fabs(H0block_->H00[i] - spin_cpl_vals2);
+      diff = std::fabs(H0block_->H00[i] - spin_cpl_vals2);
      /* outfile->Printf("diff[%d] = %20.15f\n", i, diff); */
     }
 
@@ -571,11 +571,11 @@ void CIWavefunction::H0block_spin_cpl_chk(void)
     newsize = H0block_->size + H0block_->coupling_size;
 
     i = newsize - 1;
-    diff = fabs(H0block_->H00[i] - spin_cpl_vals2);
+    diff = std::fabs(H0block_->H00[i] - spin_cpl_vals2);
    /* outfile->Printf("diff[%d] = %20.15f\n", i, diff); */
-    while (i > 0 && fabs(diff) < zero) {
+    while (i > 0 && std::fabs(diff) < zero) {
       i--;
-      diff = fabs(H0block_->H00[i] - spin_cpl_vals2);
+      diff = std::fabs(H0block_->H00[i] - spin_cpl_vals2);
      /* outfile->Printf("diff[%d] = %20.15f\n", i, diff); */
     }
 
@@ -771,7 +771,7 @@ void CIWavefunction::H0block_coupling_calc(double E)
      /* form delta_2 array  (D-E)^-1 r_2 */
      for (i=size; i<size2; i++) {
         tval1 = H0block_->H00[i] - E;
-        if (fabs(tval1) > HD_MIN)
+        if (std::fabs(tval1) > HD_MIN)
           H0block_->c0bp[i] = H0block_->c0b[i]/tval1;
         else H0block_->c0bp[i] = 0.0;
         delta_2[i-size] = H0block_->c0bp[i];
@@ -813,7 +813,7 @@ void CIWavefunction::H0block_coupling_calc(double E)
      /* First delta_2 */
      for (i=size; i<size2; i++) {
         tval1 = H0block_->H00[i] - E;
-        if (fabs(tval1) > HD_MIN)
+        if (std::fabs(tval1) > HD_MIN)
           delta_2[i-size] = gamma_2[i-size]/tval1;
         else delta_2[i-size] = 0.0;
         }

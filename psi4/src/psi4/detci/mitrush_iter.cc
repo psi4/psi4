@@ -375,7 +375,7 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
 
       if (Parameters_->diag_method==METHOD_MITRUSHENKOV &&
           diag_method==METHOD_MITRUSHENKOV && S < S_MAX &&
-          fabs(E_last-E_curr) > MITRUSH_E_DIFF_MIN) {
+          std::fabs(E_last-E_curr) > MITRUSH_E_DIFF_MIN) {
         outfile->Printf( "Taking Mitrushenkov step (S =%10.6lf <%10.6lf)\n",
                  S, S_MAX);
          /* calculate H(i,i-1) = H(i-1,i) */
@@ -497,10 +497,10 @@ void CIWavefunction::mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct 
          last = !last;
         }
 
-      if ((fabs(E - E_last) < conv_e && c1norm < conv_rms) || iter >=maxiter) {
+      if ((std::fabs(E - E_last) < conv_e && c1norm < conv_rms) || iter >=maxiter) {
         outfile->Printf( "Iter %2d  ROOT 1 ECI = %14.9lf", iter, E + enuc);
         outfile->Printf( "    Delta_E %10.3E   Delta_C %10.3E %c\n"
-          ,E-E_last,c1norm,(fabs(E - E_last) < conv_e && c1norm < conv_rms)
+          ,E-E_last,c1norm,(std::fabs(E - E_last) < conv_e && c1norm < conv_rms)
           ? 'c' : ' ');
         evals[0] = E;
         free_matrix(H2x2,2);

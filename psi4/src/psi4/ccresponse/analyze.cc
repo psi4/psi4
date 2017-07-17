@@ -91,7 +91,7 @@ void analyze(const char *pert, int irrep, double omega)
 	    tmp[0], nso, 0.0, T2trans[ij], nso);
 
     for(ab=0; ab<nso*nso; ab++) {
-      value = fabs(log10(fabs(T2trans[ij][ab])));
+      value = std::fabs(log10(std::fabs(T2trans[ij][ab])));
       tot2++;
       if ((value >= max) && (value <= (max+width))) {
 	amp_array[num_div-1]++;
@@ -149,8 +149,8 @@ void analyze(const char *pert, int irrep, double omega)
   tot1 = tot2 = 0;
   for(i=0; i < nocc; i++) {
     for(a=0; a < nso; a++) {
-      /*      value = fabs(log10(fabs(T1trans[i][a]))); */
-      value = log10(fabs(T1.matrix[0][i][a]));
+      /*      value = std::fabs(log10(std::fabs(T1trans[i][a]))); */
+      value = log10(std::fabs(T1.matrix[0][i][a]));
       tot2++;
       if ((value >= max) && (value <= (max+width))) {
 	amp_array[num_div-1]++;

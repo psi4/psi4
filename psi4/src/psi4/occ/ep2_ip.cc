@@ -40,8 +40,6 @@
 #include "defines.h"
 
 
-using namespace std;
-
 
 namespace psi{ namespace occwave{
 
@@ -272,7 +270,7 @@ if (reference_ == "RESTRICTED") {
 
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
-    string pgroup = mol.point_group()->symbol();
+    std::string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
     outfile->Printf( "\tAlpha occupied orbitals\n");
@@ -751,7 +749,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
-    string pgroup = mol.point_group()->symbol();
+    std::string pgroup = mol.point_group()->symbol();
 
     // print alpha occ orb energy
     outfile->Printf( "\tAlpha occupied orbitals\n");

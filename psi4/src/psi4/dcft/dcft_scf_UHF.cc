@@ -43,8 +43,6 @@
 #include <cmath>
 
 
-using namespace std;
-
 namespace psi{ namespace dcft{
 
 
@@ -75,8 +73,8 @@ namespace psi{ namespace dcft{
               double prefactor = 0.0;
               for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
-                  if(fabs(val) > maximumProjection){
-                      maximumProjection = fabs(val);
+                  if(std::fabs(val) > maximumProjection){
+                      maximumProjection = std::fabs(val);
                       bestMO = newMO;
                       prefactor = val < 0.0 ? -1.0 : 1.0;
                   }
@@ -115,8 +113,8 @@ namespace psi{ namespace dcft{
               double prefactor = 0.0;
               for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
-                  if(fabs(val) > bestOverlap){
-                      bestOverlap = fabs(val);
+                  if(std::fabs(val) > bestOverlap){
+                      bestOverlap = std::fabs(val);
                       bestMO = newMO;
                       prefactor = val < 0.0 ? -1.0 : 1.0;
                   }
@@ -194,8 +192,8 @@ namespace psi{ namespace dcft{
               double prefactor = 0.0;
               for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
-                  if(fabs(val) > bestOverlap){
-                      bestOverlap = fabs(val);
+                  if(std::fabs(val) > bestOverlap){
+                      bestOverlap = std::fabs(val);
                       bestMO = newMO;
                       prefactor = val < 0.0 ? -1.0 : 1.0;
                   }
@@ -236,8 +234,8 @@ namespace psi{ namespace dcft{
       std::vector<std::pair<double, int> > bPairs;
       for (int h = 0; h < nirrep_; ++h) {
           for (int i=0; i < nsopi_[h]; ++i){
-              aPairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-              bPairs.push_back(make_pair(epsilon_b_->get(h, i), h));
+              aPairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+              bPairs.push_back(std::make_pair(epsilon_b_->get(h, i), h));
           }
       }
       sort(aPairs.begin(), aPairs.end());
@@ -656,7 +654,7 @@ namespace psi{ namespace dcft{
         lastBuffer = iwl->last_buffer();
         for(int index = 0; index < iwl->buffer_count(); ++index){
             labelIndex = 4*index;
-            p = abs((int) lblptr[labelIndex++]);
+            p = std::abs((int) lblptr[labelIndex++]);
             q = (int) lblptr[labelIndex++];
             r = (int) lblptr[labelIndex++];
             s = (int) lblptr[labelIndex++];
@@ -1324,7 +1322,7 @@ namespace psi{ namespace dcft{
           lastBuffer = iwl->last_buffer();
           for(int index = 0; index < iwl->buffer_count(); ++index){
               labelIndex = 4*index;
-              p = abs((int) lblptr[labelIndex++]);
+              p = std::abs((int) lblptr[labelIndex++]);
               q = (int) lblptr[labelIndex++];
               r = (int) lblptr[labelIndex++];
               s = (int) lblptr[labelIndex++];
@@ -1505,7 +1503,7 @@ namespace psi{ namespace dcft{
           lastBuffer = iwl->last_buffer();
           for(int index = 0; index < iwl->buffer_count(); ++index){
               labelIndex = 4*index;
-              p = abs((int) lblptr[labelIndex++]);
+              p = std::abs((int) lblptr[labelIndex++]);
               q = (int) lblptr[labelIndex++];
               r = (int) lblptr[labelIndex++];
               s = (int) lblptr[labelIndex++];

@@ -163,7 +163,7 @@ int SO::equiv(const SO& so)
 
     // if the overlap == 1.0, they're equal (SO's should have been
     // normalized by now)
-    if (fabs(fabs(c) - 1.0) < 1.0e-3)
+    if (std::fabs(std::fabs(c) - 1.0) < 1.0e-3)
         return 1;
 
     return 0;
@@ -445,7 +445,7 @@ void SOCoefficients::delete_zeros()
     for (iter = coefficients.begin(); iter != coefficients.end();) {
         std::map<int, double>::iterator erase_iter = iter++;
 
-        if (fabs(erase_iter->second) < 1E-10) coefficients.erase(erase_iter);
+        if (std::fabs(erase_iter->second) < 1E-10) coefficients.erase(erase_iter);
     }
 
 }

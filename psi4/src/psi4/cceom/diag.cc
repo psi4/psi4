@@ -780,7 +780,7 @@ timer_off("INIT GUESS");
         outfile->Printf("%22d%15.10lf%11.2e%12.2e",k+1,lambda[k], lambda[k]-lambda_old[k], norm);
 
         /* Check for convergence and add new vector if not converged */
-        if ( (norm > eom_params.residual_tol) || (fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol) ) {
+        if ( (norm > eom_params.residual_tol) || (std::fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol) ) {
           outfile->Printf("%7s\n","N");
 
           if(params.eom_ref == 0) precondition_RHF(&RIA, &RIjAb, lambda[k]);
@@ -916,7 +916,7 @@ timer_off("INIT GUESS");
           vectors_per_root = eom_params.vectors_cc3;
         }
         else if( (params.wfn == "EOM_CC3") && /* can't trust sigmas yet */
-               ( (cc3_stage == 1) || fabs(cc3_eval-cc3_last_converged_eval)>eom_params.eval_tol)) {
+               ( (cc3_stage == 1) || std::fabs(cc3_eval-cc3_last_converged_eval)>eom_params.eval_tol)) {
           /* for CC3: restart one time if no cc3_restarts have yet been done */
           if (cc3_stage == 1) outfile->Printf( "Forcing one restart with sigma recomputation.\n");
           else outfile->Printf("Forcing restart to make sure new sigma vectors give same eigenvalue.\n");

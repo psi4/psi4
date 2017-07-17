@@ -155,7 +155,7 @@ bool GCQuadrature::integrate(std::function<double(double, double*, int)> &f, dou
 			// Check convergence
 			dT = T2n1 - 2.0*Tn;
 			n = 2*n + 1;
-			if (dT*dT <= fabs(T2n1 - Tn12)*tolerance) {
+			if (dT*dT <= std::fabs(T2n1 - Tn12)*tolerance) {
 				converged = true;  
 			} else {
 				Tn12 = 4.0 * Tn; 
@@ -195,13 +195,13 @@ bool GCQuadrature::integrate(std::function<double(double, double*, int)> &f, dou
 		  T2m1 = Tm + Tn - Tn12 + sumTerms(f, params, (2*m - 1)/3, M2, 3);
 			
 			// Check convergence
-			error = 16.0 * fabs(0.5*T2m1 - Tm) / (3.0 * (m + 1)); 
+			error = 16.0 * std::fabs(0.5*T2m1 - Tm) / (3.0 * (m + 1)); 
 			if (error > tolerance) {
 				// Propagate the one-point sequence
 			  T2n1 = Tn + sumTerms(f, params, n, p, 2); 
 				
 				// Check convergence again
-				error = 16.0 * fabs(2.0*T2m1 - 3.0*T2n1) / (18.0 * (n+1) );
+				error = 16.0 * std::fabs(2.0*T2m1 - 3.0*T2n1) / (18.0 * (n+1) );
 				m = 2 * m + 1;
 				n = 2 * n + 1;
 				if ( error < tolerance) {

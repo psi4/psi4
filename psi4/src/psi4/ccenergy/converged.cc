@@ -266,7 +266,7 @@ int CCEnergyWavefunction::converged(double ediff)
   rms = sqrt(rms);
   moinfo_.conv = rms;
 
-  if((rms < params_.convergence) && (fabs(ediff) < params_.e_convergence)) return 1;
+  if((rms < params_.convergence) && (std::fabs(ediff) < params_.e_convergence)) return 1;
   else return 0;
 }
 }} // namespace psi::ccenergy

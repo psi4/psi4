@@ -300,7 +300,7 @@ int FRAG::form_natural_coord_combinations(void) {
 
       // if planar, add oofp angle
       ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_to_T[i][2]], val);
-      if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
+      if (ok && std::fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_to_T[i][2]);
         int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
@@ -338,7 +338,7 @@ int FRAG::form_natural_coord_combinations(void) {
 
       // if planar, add oofp angle for one of the terminal atoms
       ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_no_T[i][0]], val);
-      if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
+      if (ok && std::fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_no_T[i][2]);
         int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
@@ -375,7 +375,7 @@ int FRAG::form_natural_coord_combinations(void) {
 
       // if planar, add oofp angle for one of the terminal atoms
       ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_no_T[i][0]], val);
-      if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
+      if (ok && std::fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_no_T[i][2]);
         int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);
@@ -424,7 +424,7 @@ int FRAG::form_natural_coord_combinations(void) {
 
       // if planar, add oofp angle
       ok = v3d_oofp(geom[bond_to_T[i][0]], geom[i], geom[bond_to_T[i][1]], geom[bond_to_T[i][2]], val);
-      if (ok && fabs(val) < _pi/9) {  // less than 20 degrees?
+      if (ok && std::fabs(val) < _pi/9) {  // less than 20 degrees?
         OOFP *pA = new OOFP(bond_to_T[i][0], i, bond_to_T[i][1], bond_to_T[i][2]);
         int A = find(pA);
         cc_index.push_back(A); cc_coeff.push_back(1.0);

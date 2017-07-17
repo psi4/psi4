@@ -57,9 +57,6 @@
 #include "dfocc.h"
 
 
-using namespace std;
-
-
 namespace psi{ namespace dfoccwave{
 
 void DFOCC::df()

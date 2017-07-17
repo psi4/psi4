@@ -35,9 +35,6 @@
 #include <cmath>
 
 
-using namespace std;
-
-
 namespace psi{ namespace occwave{
 
 void OCCWave::kappa_orb_resp_iter()

@@ -169,8 +169,8 @@ int follow_root(int L, double **alpha, int C_irr) {
   tval = -1.0;
 
   for(i=0;i<L;++i) {
-    if ( fabs(CR_overlap[i]) > tval) {
-      tval = fabs(CR_overlap[i]);
+    if ( std::fabs(CR_overlap[i]) > tval) {
+      tval = std::fabs(CR_overlap[i]);
       j = i;
     }
   }

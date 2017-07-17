@@ -548,14 +548,14 @@ int FRAG::form_delocalized_coord_combinations(void) {
   double evect_threshold = 1e-5; // ??
 
   for (int i=0; i<Nsimples; ++i) {
-    if (fabs(evals[i]) < eval_threshold) {
+    if (std::fabs(evals[i]) < eval_threshold) {
       if (Opt_params.print_lvl > 2)
         oprintf_out("Eigenvector %d removed for low eigenvalue.\n",i+1);
     }
     else {
       // Delete tiny components to get cleaner functions.
       for (int j=0; j<Nsimples; ++j)
-        if (fabs(BBt[i][j]) < evect_threshold)
+        if (std::fabs(BBt[i][j]) < evect_threshold)
           BBt[i][j] = 0.0;
 
       // Make largest component positive.
@@ -571,7 +571,7 @@ int FRAG::form_delocalized_coord_combinations(void) {
       vector<double> one_coeff;
 
       for (int j=0; j<Nsimples; ++j) {
-        if (fabs(BBt[i][j]) > 1.0e-14) {
+        if (std::fabs(BBt[i][j]) > 1.0e-14) {
           one_index.push_back(j);
           one_coeff.push_back(BBt[i][j]);
         }
@@ -931,7 +931,7 @@ int FRAG::principal_axes(GeomType in_geom, double **axes, double *evals) {
 
   int cnt = 0;
   for (int i=0; i<3; ++i) {
-    if (fabs(I_evals[i]) > 1.0e-14) {
+    if (std::fabs(I_evals[i]) > 1.0e-14) {
       evals[cnt] = I_evals[i];
       axes[cnt][0] = I[i][0];
       axes[cnt][1] = I[i][1];

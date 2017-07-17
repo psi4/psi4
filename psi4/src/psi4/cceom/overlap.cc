@@ -138,7 +138,7 @@ int overlap(int C_irr, int current) {
       overlap += global_dpd_->buf4_dot(&R2AB, &R2AB_old);
     }
 
-    outfile->Printf( "State %d --> %5.3f\n", i, fabs(overlap));
+    outfile->Printf( "State %d --> %5.3f\n", i, std::fabs(overlap));
 
     if(params.eom_ref == 0) {
       global_dpd_->file2_close(&R1_old);

@@ -82,7 +82,7 @@ void dgeev_eom(int L, double **G, double *lambda, double **alpha) {
 
   tval = 0.0;
   for (i=0; i<L; ++i) {
-    tval += fabs(evals_i[i]);
+    tval += std::fabs(evals_i[i]);
   }
   if (tval > (eom_params.complex_tol)) {
     outfile->Printf("\nSum of complex part of HBar eigenvalues %20.15f, %10.2e\n",

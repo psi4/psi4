@@ -111,7 +111,7 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
 	A = T1->params->colorb[h^Gia][a];
 	value = T1->matrix[h][i][a];
 	for(m=0; m < length; m++) {
-	  if((fabs(value) - fabs(t1stack[m].value)) > 1e-12) {
+	  if((std::fabs(value) - std::fabs(t1stack[m].value)) > 1e-12) {
 	    onestack_insert(t1stack, value, I, A, m, length);
 	    break;
 	  }
@@ -123,12 +123,12 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
   global_dpd_->file2_mat_close(T1);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
-    if(fabs(t1stack[m].value) > 1e-8) num2print++;
+    if(std::fabs(t1stack[m].value) > 1e-8) num2print++;
 
   if(num2print) outfile->Printf( "%s", label);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
-    if(fabs(t1stack[m].value) > 1e-8)
+    if(std::fabs(t1stack[m].value) > 1e-8)
       outfile->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
@@ -197,7 +197,7 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
 	value = T2->matrix[h][ij][ab];
 
 	for(m=0; m < length; m++) {
-	  if((fabs(value) - fabs(t2stack[m].value)) > 1e-12) {
+	  if((std::fabs(value) - std::fabs(t2stack[m].value)) > 1e-12) {
 	    twostack_insert(t2stack, value, i, j, a, b, m, length);
 	    break;
 	  }
@@ -209,12 +209,12 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
   }
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
-    if(fabs(t2stack[m].value) > 1e-8) num2print++;
+    if(std::fabs(t2stack[m].value) > 1e-8) num2print++;
 
   if(num2print) outfile->Printf( "%s", label);
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
-    if(fabs(t2stack[m].value) > 1e-8)
+    if(std::fabs(t2stack[m].value) > 1e-8)
       outfile->Printf( "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j,
 	      t2stack[m].a, t2stack[m].b, t2stack[m].value);
 

@@ -159,6 +159,7 @@ distribution.
 
     # Linux or Mac or Windows
     # substitute x.x by 2.7|3.5|3.6 for alternate python versions
+    # remove `-c psi4/label/dev` to get stable releases instead of nightly builds
     >>> conda create -n p4env python=x.x psi4 psi4-rt -c psi4/label/dev -c psi4
 
 Activate environment and make the adjustments to :envvar:`PATH` and
@@ -178,6 +179,10 @@ Activate environment and make the adjustments to :envvar:`PATH` and
 * Only reason for ``psi4-rt`` package is to get the QC runtime
   add-ons; could say ``dftd3 gcp v2rdm_casscf`` instead of ``psi4-rt``;
   or leave them out if you don't want them.
+
+* Grab a Miniconda through ``curl -o Miniconda-latest.sh
+  "https://repo.continuum.io/miniconda/Miniconda3-latest-[MacOSX|Linux]-x86_64.sh"``,
+  selecting between Mac and Linux.
 
 
 .. _`faq:updatepsi4`:
@@ -204,6 +209,14 @@ latest development head (roughly nightly).
 
     # if add-on updates required, try
     >>> conda update psi4 -c psi4/label/dev -c psi4
+
+Conda command to install a very specific package, including version,
+build string, and subchannel. The final `-c psi4` represents any
+additional channels or subchannels needed to locate all dependencies.
+
+.. code-block:: bash
+
+    >>> conda install psi4=1.2a1.dev249+623ad64=py36_sse41_0 -c psi4/label/subchannel -c psi4
 
 
 .. _`faq:psi4deps`:

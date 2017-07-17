@@ -248,9 +248,9 @@ ZMatrixEntry::~ZMatrixEntry()
 void
 ZMatrixEntry::set_coordinates(double x, double y, double z)
 {
-    coordinates_[0] = fabs(x) < CLEANUP_THRESH ? 0.0 : x;
-    coordinates_[1] = fabs(y) < CLEANUP_THRESH ? 0.0 : y;
-    coordinates_[2] = fabs(z) < CLEANUP_THRESH ? 0.0 : z;
+    coordinates_[0] = std::fabs(x) < CLEANUP_THRESH ? 0.0 : x;
+    coordinates_[1] = std::fabs(y) < CLEANUP_THRESH ? 0.0 : y;
+    coordinates_[2] = std::fabs(z) < CLEANUP_THRESH ? 0.0 : z;
 
     if(rto_ != 0){
         if(!rto_->is_computed())
@@ -411,7 +411,7 @@ const Vector3& ZMatrixEntry::compute()
         Vector3 eCB = B - C;
         eCB.normalize();
         Vector3 eX, eY;
-        if(fabs(1 - fabs(eCB[0])) < 1.0E-5){
+        if(std::fabs(1 - std::fabs(eCB[0])) < 1.0E-5){
             // CB is collinear with X, start by finding Y
             eY[1] = 1.0;
             eX = eY.perp_unit(eCB);

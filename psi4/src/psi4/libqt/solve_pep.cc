@@ -76,7 +76,7 @@ void solve_2x2_pep(double **H, double S, double *evals, double **evecs)
       outfile->Printf( "(solve_2x2_pep): radical less than 0\n") ;
       return ;
       }
-   else if (fabs(a) < A_MIN) {
+   else if (std::fabs(a) < A_MIN) {
       printf("min a reached\n") ;
       evals[0] = evals[1] = H[1][1] ;
       }

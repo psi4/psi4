@@ -38,8 +38,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 void MP2_CCSD::build_F_intermediates()
 {
   build_F_ae_intermediates();

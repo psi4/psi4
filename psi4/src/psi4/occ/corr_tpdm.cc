@@ -34,8 +34,6 @@
 #include "defines.h"
 
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 void OCCWave::omp2_tpdm_oovv()

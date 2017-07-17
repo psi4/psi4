@@ -160,7 +160,7 @@ void solidharm(size_t l, int m, size_t r2, Matrix& coefmat)
     for (size_t i=1; i<=r2; i++) pureindex += npure(l+2*i);
 //    printf("pureindex = %d\n", pureindex);
 
-    size_t absm = abs(m);
+    size_t absm = std::abs(m);
 
     // this overflows 32bits for l=9
     uint64_t norm2num = factoverfact(l+absm,l);

@@ -325,7 +325,7 @@ void PKManager::integrals_buffering(const double *buffer, size_t P, size_t Q,
         size_t idx = bfiter.index();
 
         double val = buffer[idx];
-        if(fabs(val) > cutoff_) {
+        if(std::fabs(val) > cutoff_) {
 //DEBUG#pragma omp critical
 //DEBUG{
 //DEBUG            if(INDEX2(k,l) == 0) {
@@ -355,7 +355,7 @@ void PKManager::integrals_buffering_wK(const double *buffer, size_t P, size_t Q,
         size_t idx = bfiter.index();
 
         double val = buffer[idx];
-        if(fabs(val) > cutoff_) {
+        if(std::fabs(val) > cutoff_) {
 //DEBUG#pragma omp critical
 //DEBUG{
 //DEBUG            if(INDEX2(k,l) == 0) {

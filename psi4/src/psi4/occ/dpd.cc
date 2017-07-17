@@ -37,8 +37,6 @@
 
 #include <cmath>
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 /********************************************************************************************/
@@ -659,7 +657,7 @@ void SymBlockMatrix::write(PSIO* psio, int itap, bool saveSubBlocks)
     if (saveSubBlocks) {
         for (int h=0; h<nirreps_; h++) {
            std::string str(name_);
-            str += " Irrep " + to_string(h);
+            str += " Irrep " + std::to_string(h);
 
             // Write the sub-blocks
             if (colspi_[h] > 0 && rowspi_[h] > 0)
@@ -770,7 +768,7 @@ void SymBlockMatrix::read_oooo(std::shared_ptr<psi::PSIO> psio, int itap, int *m
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN.labels()[fi+1];
         int k = ERIIN.labels()[fi+2];
         int l = ERIIN.labels()[fi+3];
@@ -820,7 +818,7 @@ void SymBlockMatrix::read_oovv(std::shared_ptr<psi::PSIO> psio, int itap, int no
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN.labels()[fi+1];
         int a = ERIIN.labels()[fi+2];
         int b = ERIIN.labels()[fi+3];
@@ -868,7 +866,7 @@ SymBlockVector::SymBlockVector()
     dimvec_ = NULL;
 }
 
-SymBlockVector::SymBlockVector(string name)
+SymBlockVector::SymBlockVector(std::string name)
 {
     vector_ = NULL;
     dimvec_ = NULL;
@@ -886,7 +884,7 @@ SymBlockVector::SymBlockVector(int nirreps, int *ins_dimvec)
     memalloc();
 }//
 
-SymBlockVector::SymBlockVector(string name, int nirreps, int *ins_dimvec)
+SymBlockVector::SymBlockVector(std::string name, int nirreps, int *ins_dimvec)
 {
     vector_ = NULL;
     nirreps_ = nirreps;

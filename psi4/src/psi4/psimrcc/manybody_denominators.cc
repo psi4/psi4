@@ -53,8 +53,6 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 /**
  * Generates the MP denominators
  * \f[ \Delta_{ij...}^{ab...}(\mu) = f_{ii}(\mu) + f_{jj}(\mu) + ... - f_{aa}(\mu) - f_{bb}(\mu) - ... \f]
@@ -71,9 +69,9 @@ void CCManyBody::generate_denominators()
   MatrixMap& matrix_map = blas->get_MatrixMap();
   MatrixMap::iterator end_iter = matrix_map.end();
   for(MatrixMap::iterator iter=matrix_map.begin();iter!=end_iter;++iter){
-    string str = iter->first;
+    std::string str = iter->first;
 
-    if(str.find("d1")!=string::npos){
+    if(str.find("d1")!=std::string::npos){
 
       // Load the temporary matrix
       CCMatTmp MatTmp  = blas->get_MatTmp(str,( keep_denominators_in_core ? none : dump));
@@ -82,8 +80,8 @@ void CCManyBody::generate_denominators()
       // Get the reference number
       int reference = MatTmp->get_reference();
 
-      vector<string> spl_str = split_indices(str);
-      string ind;
+      std::vector<std::string> spl_str = split_indices(str);
+      std::string ind;
       for(size_t i = 0; i < spl_str.size(); ++i){
         ind += spl_str[i];
       }
@@ -116,7 +114,7 @@ void CCManyBody::generate_denominators()
       CCMatTmp f_ff_Matrix = blas->get_MatTmp("fock[ff]",reference,( keep_denominators_in_core ? none : dump));
       CCMatTmp f_FF_Matrix = blas->get_MatTmp("fock[FF]",reference,( keep_denominators_in_core ? none : dump));
 
-      vector<CCMatrix*> f_Matrix;
+      std::vector<CCMatrix*> f_Matrix;
       int k = 0;
       for(size_t l = 0; l < ind.size(); ++l){
         switch(ind[l]){
@@ -177,7 +175,7 @@ void CCManyBody::generate_denominators()
       delete[] ia;
     } // End "if d1"
 
-    if(str.find("d2")!=string::npos){
+    if(str.find("d2")!=std::string::npos){
       // Load the temporary matrix
       CCMatTmp MatTmp  = blas->get_MatTmp(str,( keep_denominators_in_core ? none : dump));
       double*** matrix = MatTmp->get_matrix();
@@ -185,8 +183,8 @@ void CCManyBody::generate_denominators()
       // Get the reference number
       int reference = MatTmp->get_reference();
 
-      vector<string> spl_str = split_indices(str);
-      string ind;
+      std::vector<std::string> spl_str = split_indices(str);
+      std::string ind;
       for(size_t i = 0; i < spl_str.size(); ++i){
         ind += spl_str[i];
       }
@@ -219,7 +217,7 @@ void CCManyBody::generate_denominators()
       CCMatTmp f_ff_Matrix = blas->get_MatTmp("fock[ff]",reference,( keep_denominators_in_core ? none : dump));
       CCMatTmp f_FF_Matrix = blas->get_MatTmp("fock[FF]",reference,( keep_denominators_in_core ? none : dump));
 
-      vector<CCMatrix*> f_Matrix;
+      std::vector<CCMatrix*> f_Matrix;
       int k = 0;
       for(size_t l = 0; l < ind.size(); ++l){
         switch(ind[l]){

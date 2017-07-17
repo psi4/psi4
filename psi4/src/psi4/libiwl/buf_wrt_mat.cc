@@ -97,7 +97,7 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
 
             value = mat[R][S];
 
-            if (ij >= kl && fabs(value) > cutoff_) {
+            if (ij >= kl && std::fabs(value) > cutoff_) {
                 idx = 4 * idx_;
                 lblptr[idx++] = (Label) MAX0(ptr,qtr);
                 lblptr[idx++] = (Label) MIN0(ptr,qtr);
@@ -118,7 +118,7 @@ void IWL::write_matrix(int ptr, int qtr, double **mat, int rfirst, int rlast,
                     printer->Printf( ">%d %d %d %d [%d] [%d] = %20.10f\n",
                     ptr, qtr, rtr, str, ij, kl, value);
 
-            } /* end if (fabs(value) > Buf->cutoff) ... */
+            } /* end if (std::fabs(value) > Buf->cutoff) ... */
         } /* end loop over s */
     } /* end loop over r */
 }

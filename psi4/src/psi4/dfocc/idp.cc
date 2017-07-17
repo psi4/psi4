@@ -32,7 +32,6 @@
 #include "psi4/libciomr/libciomr.h"
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 

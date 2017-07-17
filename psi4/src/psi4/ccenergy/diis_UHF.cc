@@ -292,10 +292,10 @@ void CCEnergyWavefunction::diis_UHF(int iter)
   B[nvector][nvector] = 0;
 
   /* Find the maximum value in B and scale all its elements */
-  maximum = fabs(B[0][0]);
+  maximum = std::fabs(B[0][0]);
   for(p=0; p < nvector; p++)
     for(q=0; q < nvector; q++)
-      if(fabs(B[p][q]) > maximum) maximum = fabs(B[p][q]);
+      if(std::fabs(B[p][q]) > maximum) maximum = std::fabs(B[p][q]);
 
   for(p=0; p < nvector; p++)
     for(q=0; q < nvector; q++)

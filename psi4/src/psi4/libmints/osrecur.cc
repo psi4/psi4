@@ -261,7 +261,7 @@ void ObaraSaikaTwoCenterEFPRecursion::calculate_f(double *F, int n, double t)
             num = num*t2;
             term1 = num/df[m2+2*i+2];
             sum += term1;
-        } while (fabs(term1) > EPS && i < MAX_FAC);
+        } while (std::fabs(term1) > EPS && i < MAX_FAC);
         F[n] = sum*et;
         for(m=n-1;m>=0;m--){
             F[m] = (t2*F[m+1] + et)/(2*m+1);
@@ -970,7 +970,7 @@ void ObaraSaikaTwoCenterVIRecursion::calculate_f(double *F, int n, double t)
             num = num*t2;
             term1 = num/df[m2+2*i+2];
             sum += term1;
-        } while (fabs(term1) > EPS && i < MAX_FAC);
+        } while (std::fabs(term1) > EPS && i < MAX_FAC);
         F[n] = sum*et;
         for(m=n-1;m>=0;m--){
             F[m] = (t2*F[m+1] + et)/(2*m+1);

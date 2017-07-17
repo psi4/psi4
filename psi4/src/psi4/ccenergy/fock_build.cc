@@ -78,7 +78,7 @@ void CCEnergyWavefunction::rhf_fock_build(double **fock, double  **D)
     valptr = InBuf.values;
 
     for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-      p = abs((int) lblptr[idx++]);
+      p = std::abs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];
@@ -225,7 +225,7 @@ void CCEnergyWavefunction::uhf_fock_build(double **fock_a, double **fock_b, doub
     valptr = InBuf.values;
 
     for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-      p = abs((int) lblptr[idx++]);
+      p = std::abs((int) lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];

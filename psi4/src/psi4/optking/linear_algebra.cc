@@ -235,14 +235,14 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant) {
   for (i=0;i<dim;++i)
     det *= evals[i];
 
-  if (!redundant && fabs(det) < 1E-10)
+  if (!redundant && std::fabs(det) < 1E-10)
     throw(INTCO_EXCEPT("symm_matrix_inv : Non-generalized inverse of matrix failed"));
 
   double ** A_inv = init_matrix(dim, dim);
 
   if (redundant) {
     for (i=0;i<dim;++i)
-      if (fabs(evals[i]) > Opt_params.redundant_eval_tol)
+      if (std::fabs(evals[i]) > Opt_params.redundant_eval_tol)
         A_inv[i][i] = 1.0/evals[i];
   }
   else {
@@ -319,7 +319,7 @@ void array_scm(double *v1, double a, int n) {
 double array_abs_max(double *v1, int n) {
   double max = 0.0;
   for (int i=0; i<n; ++i)
-    if (fabs(v1[i]) > max) max = fabs(v1[i]);
+    if (std::fabs(v1[i]) > max) max = std::fabs(v1[i]);
   return max;
 }
 
@@ -345,7 +345,7 @@ void matrix_root(double **A, int dim, bool inverse) {
 
   if (inverse) {
     for(int k=0; k<dim; k++)
-      if(fabs(A_evals[k]) > Opt_params.redundant_eval_tol)
+      if(std::fabs(A_evals[k]) > Opt_params.redundant_eval_tol)
         A_evals[k] = 1.0/A_evals[k];
   }
 

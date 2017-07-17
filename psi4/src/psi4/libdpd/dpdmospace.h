@@ -34,9 +34,6 @@
 #include <string>
 #include "psi4/libmints/dimension.h"
 
-//Bad, no, don't do this...
-//using namespace std;
-
 namespace psi {
 
 std::vector<std::string> dpd_split(const std::string &indices);

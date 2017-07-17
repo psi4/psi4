@@ -224,7 +224,7 @@ void DF_Helper::prepare_sparsity()
                     onu = primary_->shell(NU).function_index() + nu;
                     if (omu>=onu) {
                         index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
-                        val = fabs(buffer[rank][index]);
+                        val = std::fabs(buffer[rank][index]);
                         if (shell_prints[MU*pshells_+NU] <= val){
                             shell_prints[MU*pshells_+NU]=val;
                             shell_prints[NU*pshells_+MU]=val;

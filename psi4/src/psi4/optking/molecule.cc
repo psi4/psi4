@@ -56,8 +56,6 @@
 
 namespace opt {
 
-using namespace std;
-
 // if allocate_fragment, then read the number of atoms and allocate memory for
 //   a fragment of that size.  Otherwise, this is an empty constructor.
 

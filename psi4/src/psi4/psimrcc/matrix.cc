@@ -43,8 +43,6 @@ namespace psi{
     extern MOInfo *moinfo;
     extern MemoryManager* memory_manager;
 
-using namespace std;
-
 double CCMatrix::fraction_of_memory_for_buffer = 0.05;
 
 CCMatrix::CCMatrix(std::string& str,CCIndex* left_index,CCIndex* right_index)
@@ -53,13 +51,13 @@ fock(false),integral(false),chemist_notation(false),antisymmetric(false),out_of_
 {
   nirreps = moinfo->get_nirreps();
 
-  if(str.find("(")!=string::npos || str.find("<")!=string::npos)
+  if(str.find("(")!=std::string::npos || str.find("<")!=std::string::npos)
     integral = true;
-  if(str.find("(")!=string::npos)
+  if(str.find("(")!=std::string::npos)
     chemist_notation = true;
-  if(label.find(":")!=string::npos)
+  if(label.find(":")!=std::string::npos)
     antisymmetric = true;
-  if(str.find("fock")!=string::npos)
+  if(str.find("fock")!=std::string::npos)
     fock = true;
 
   // Copy the pairpi arrays from the CCIndex object
@@ -84,9 +82,9 @@ fock(false),integral(false),chemist_notation(false),antisymmetric(false),out_of_
   index_label = compute_index_label();
 
   // Parse the curly braces to get the reference
-  string::size_type left_curly  = str.find("{");
-  string::size_type right_curly = str.find("}");
-  if(left_curly!=string::npos && right_curly!=string::npos) // TODO add check on the size of the string
+  std::string::size_type left_curly  = str.find("{");
+  std::string::size_type right_curly = str.find("}");
+  if(left_curly!=std::string::npos && right_curly!=std::string::npos) // TODO add check on the size of the string
     reference  = to_integer(str.substr(left_curly + 1, right_curly - left_curly - 1));
 }
 
@@ -270,13 +268,13 @@ void CCMatrix::element_by_element_addition(double factor,CCMatrix* B_Matrix,int 
   }
 }
 
-void CCMatrix::tensor_product(string& reindexing,double factor,CCMatrix* B_Matrix,CCMatrix* C_Matrix)
+void CCMatrix::tensor_product(std::string& reindexing,double factor,CCMatrix* B_Matrix,CCMatrix* C_Matrix)
 {
   short* reindexing_array = new short[4];
 
   intpairvec pairs;
   for(int i=0;i<reindexing.size();i++)
-    pairs.push_back(make_pair(to_integer(reindexing.substr(i, 1)),i));
+    pairs.push_back(std::make_pair(to_integer(reindexing.substr(i, 1)),i));
   sort(pairs.begin(),pairs.end());
   for(int i = 0; i< reindexing.size(); i++)
     reindexing_array[i]=pairs[i].second;
@@ -374,7 +372,7 @@ L200:
     printer->Printf(")  ");
 
     for (j=ii-1; j < nn; j++) {
-      if(fabs(mat[i][j]) < 100.0)
+      if(std::fabs(mat[i][j]) < 100.0)
         printer->Printf("%12.7f",mat[i][j]);
       else
         printer->Printf("    infinity");
@@ -402,9 +400,9 @@ double CCMatrix::get_scalar()
   return(matrix[0][0][0]);
 }
 
-string CCMatrix::compute_index_label()
+std::string CCMatrix::compute_index_label()
 {
-  string label;
+  std::string label;
   int left_indices = left->get_label().size();
   if(left_indices>2)
     label += left->get_label().substr(1,left_indices-2);

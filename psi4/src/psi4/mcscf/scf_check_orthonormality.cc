@@ -43,13 +43,13 @@ void SCF::check_orthonormality()
   double    diagonal = 0.0;
   for(int h = 0; h < nirreps; ++h)
     for(int i = 0; i < sopi[h]; ++i)
-      diagonal += fabs(CSC->get(h,i,i));
+      diagonal += std::fabs(CSC->get(h,i,i));
 
   double offdiagonal = 0.0;
   for(int h = 0; h < nirreps; ++h)
     for(int i = 0; i < sopi[h]; ++i)
       for(int j = i + 1; j < sopi[h]; ++j)
-        offdiagonal += fabs(CSC->get(h,i,j));
+        offdiagonal += std::fabs(CSC->get(h,i,j));
 
   if((offdiagonal > 1.0e-8) || ((diagonal-double(nso)) > 1.0e-8)){
     outfile->Printf("\n\n  Warning: CSC has an orthonormality index of %lf",offdiagonal);

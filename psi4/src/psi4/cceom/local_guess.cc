@@ -113,7 +113,7 @@ void local_guess(void)
     for(a=0; a < local.pairdom_nrlen[ii]; a++) {
       value = local.eps_vir[ii][a] - fii;
       for(m=0; m < nroot; m++) {
-	if((fabs(value) < fabs(stack[m].value)) ) {
+	if((std::fabs(value) < std::fabs(stack[m].value)) ) {
 	  stack_insert(stack, value, i, a, m, nroot);
 	  break;
 	}

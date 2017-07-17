@@ -32,9 +32,6 @@
 #include "occwave.h"
 
 
-using namespace std;
-
-
 namespace psi{ namespace occwave{
 
 void OCCWave::omp3_t2_1st_sc()

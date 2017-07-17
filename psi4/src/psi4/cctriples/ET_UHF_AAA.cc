@@ -752,7 +752,7 @@ double ET_UHF_AAA(void)
 			VABC[Gab][ab][c] -= t_kc * D_jiba + f_kc * t_jiba;
 		      }
 
-// 		      if(fabs(WABC[Gab][ab][c]) > 1e-7)
+// 		      if(std::fabs(WABC[Gab][ab][c]) > 1e-7)
 // 			outfile->Printf( "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,WABC[Gab][ab][c]);
 
 		      /* Sum V and W into V */

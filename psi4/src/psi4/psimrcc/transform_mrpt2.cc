@@ -56,8 +56,6 @@ namespace psi{ namespace psimrcc{
 
 extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCTransform::read_integrals_mrpt2(IntegralTransform *ints)
 {
     read_oei_mo_integrals_mrpt2();

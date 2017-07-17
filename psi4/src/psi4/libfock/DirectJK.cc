@@ -55,7 +55,6 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
-using namespace std;
 using namespace psi;
 
 namespace psi {

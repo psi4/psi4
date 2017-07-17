@@ -52,8 +52,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
-
 namespace psi {
 
 namespace fisapt {
@@ -4599,7 +4597,7 @@ void FISAPTSCF::compute_energy()
         outfile->Printf("    Iter %3d: %24.16E %11.3E %11.3E %s\n", iter, E, Ediff, Gnorm,
             (diised ? "DIIS" : ""));
 
-        if (fabs(Ediff) < Etol && fabs(Gnorm) < Gtol) {
+        if (std::fabs(Ediff) < Etol && std::fabs(Gnorm) < Gtol) {
             converged = true;
             break;
         }

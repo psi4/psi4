@@ -259,7 +259,7 @@ IntegralTransform::generate_oei()
     int lastbuf   = iwl->last_buffer();
     for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
         int labelIndex = 4*index;
-        int p = abs((int) lblptr[labelIndex++]);
+        int p = std::abs((int) lblptr[labelIndex++]);
         int q = (int) lblptr[labelIndex++];
         int r = (int) lblptr[labelIndex++];
         int s = (int) lblptr[labelIndex++];
@@ -274,7 +274,7 @@ IntegralTransform::generate_oei()
         lastbuf = iwl->last_buffer();
         for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
             int labelIndex = 4*index;
-            int p = abs((int) lblptr[labelIndex++]);
+            int p = std::abs((int) lblptr[labelIndex++]);
             int q = (int) lblptr[labelIndex++];
             int r = (int) lblptr[labelIndex++];
             int s = (int) lblptr[labelIndex++];

@@ -47,8 +47,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 IDMRPT2::IDMRPT2(SharedWavefunction ref_wfn, Options &options):CCManyBody(ref_wfn, options)
 {
   triples_type = pt2;
@@ -88,7 +86,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
   // Compute the shifted denominators
   for(int n=0;n<moinfo->get_nunique();n++){
     int m = moinfo->get_ref_number(n,UniqueRefs);
-    string shift = to_string(cas_energy-Heff[m][m]);
+    std::string shift = to_string(cas_energy-Heff[m][m]);
     blas->solve("d'1[o][v]{" + to_string(m) + "} += " + shift);
     blas->solve("d'1[O][V]{" + to_string(m) + "} += " + shift);
     blas->solve("d'2[oo][vv]{" + to_string(m) + "} += " + shift);
@@ -124,7 +122,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
     // Compute the energy
     current_energy=c_H_c(moinfo->get_nrefs(),Heff_mrpt2,zeroth_order_eigenvector);
     delta_energy = current_energy - old_energy;
-    converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
+    converged = (std::fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
     outfile->Printf("\n    @PT %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
     old_energy=current_energy;
 
@@ -312,13 +310,13 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater)
 {
   for(int i=0;i<moinfo->get_nunique();i++){
     int unique_i = moinfo->get_ref_number(i,UniqueRefs);
-    string i_str = to_string(unique_i);
+    std::string i_str = to_string(unique_i);
     // Form the coupling terms
     for(int j=0;j<moinfo->get_nrefs();j++){
       int unique_j = moinfo->get_ref_number(j);
-      string j_str = to_string(unique_j);
+      std::string j_str = to_string(unique_j);
       double term = zeroth_order_eigenvector[j]/zeroth_order_eigenvector[unique_i];
-      if(fabs(term)>1.0e5) term = 0.0;
+      if(std::fabs(term)>1.0e5) term = 0.0;
       blas->set_scalar("factor_mk",unique_j,Heff[unique_i][j]*term);
       if(unique_i!=j){
         if(j==unique_j){
@@ -338,9 +336,9 @@ void IDMRPT2::update_amps_mkpt2(Updater* updater)
     // Add the contribution from the other references
     for(int j=0;j<moinfo->get_nrefs();j++){
       int unique_j = moinfo->get_ref_number(j);
-      string j_str = to_string(unique_j);
+      std::string j_str = to_string(unique_j);
       double term = zeroth_order_eigenvector[j]/zeroth_order_eigenvector[unique_i];
-      if(fabs(term)>1.0e5) term = 0.0;
+      if(std::fabs(term)>1.0e5) term = 0.0;
       blas->set_scalar("factor_mk",unique_j,Heff[unique_i][j]*term);
       if(unique_i!=j){
         if(j==unique_j){

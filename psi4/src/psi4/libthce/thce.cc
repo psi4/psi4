@@ -42,7 +42,6 @@
 #endif
 
 using namespace psi;
-using namespace std;
 
 namespace psi {
 
@@ -195,7 +194,7 @@ void THCE::delete_tensor(const std::string& name)
 long int Tensor::unique_id = 0;
 
 Tensor::Tensor(const std::string& name,
-        std::vector<string>& dimensions,
+        std::vector<std::string>& dimensions,
         std::vector<int>& sizes) :
     name_(name), dimensions_(dimensions), sizes_(sizes)
 {
@@ -576,7 +575,7 @@ void Tensor::slice(std::shared_ptr<Tensor> A, std::vector<std::tuple<bool,int,in
 }
 
 CoreTensor::CoreTensor(const std::string& name,
-        std::vector<string>& dimensions, std::vector<int>& sizes,
+        std::vector<std::string>& dimensions, std::vector<int>& sizes,
         double* data,
         bool trust) :
         Tensor(name,dimensions,sizes),
@@ -1369,7 +1368,7 @@ void CoreTensor::contract(std::shared_ptr<Tensor> A, std::shared_ptr<Tensor> B, 
 }
 
 DiskTensor::DiskTensor(const std::string& name,
-        std::vector<string>& dimensions, std::vector<int>& sizes,
+        std::vector<std::string>& dimensions, std::vector<int>& sizes,
         bool save, bool load) : Tensor(name,dimensions,sizes), save_(save)
 {
     if (load) {

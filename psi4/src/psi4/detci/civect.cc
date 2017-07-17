@@ -823,10 +823,10 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
       for (k=0; k<Ib_size_[i]; k++) {
          value = blocks_[i][j][k];
          if ((value > 0.0) && (neg_only)) continue;
-         abs_value = fabs(value);
-         if (abs_value >= fabs(minval)) {
+         abs_value = std::fabs(value);
+         if (abs_value >= std::fabs(minval)) {
             for (m=0; m<nval; m++) {
-               if (abs_value > fabs(coeff[m])) {
+               if (abs_value > std::fabs(coeff[m])) {
                   for (n=nval-1; n>m; n--) {
                      coeff[n] = coeff[n-1];
                      iac[n] = iac[n-1];
@@ -850,7 +850,7 @@ double CIvect::blk_max_abs_vals(int i, int offdiag, int nval, int *iac,
                 (!neg_only)) value = -value;
             if (abs_value >= minval) {
                for (m=0; m<nval; m++) {
-                  if (abs_value > fabs(coeff[m])) {
+                  if (abs_value > std::fabs(coeff[m])) {
                      for (n=nval-1; n>m; n--) {
                         coeff[n] = coeff[n-1];
                         iac[n] = iac[n-1];
@@ -2106,7 +2106,7 @@ int CIvect::schmidt_add2(CIvect &c, int first_vec, int last_vec,
       }
 
    for (i=first_vec; i<=last_vec; i++) {
-      tval = fabs(dotval[i]);
+      tval = std::fabs(dotval[i]);
       if (tval>*ovlpmax) *ovlpmax = tval;
       }
 
@@ -3675,7 +3675,7 @@ double CIvect::compute_follow_overlap(int troot, int ncoef, double *coef,
     tval += blocks_[blk][a][b] * coef[i];
   }
 
-  tval = fabs(tval);
+  tval = std::fabs(tval);
   return(tval);
 
 }

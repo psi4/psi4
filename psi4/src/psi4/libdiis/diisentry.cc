@@ -37,8 +37,6 @@
 #include "psi4/psifiles.h"
 #include <sstream>
 
-using namespace std;
-
 
 namespace psi{
 
@@ -58,7 +56,7 @@ DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
     _rmsError = sqrt(sumSQ / _errorVectorSize);
     _dotProducts[_ID] = sumSQ;
     _knownDotProducts[_ID] = true;
-    stringstream s;
+    std::stringstream s;
     s << _label << ":entry " << ID;
     _label = s.str();
 }
@@ -82,7 +80,7 @@ DIISEntry::close_psi_file()
 void
 DIISEntry::dump_vector_to_disk()
 {
-    string label = _label + " vector";
+    std::string label = _label + " vector";
     open_psi_file();
     _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char*)_vector, _vectorSize*sizeof(double));
     free_vector_memory();
@@ -94,7 +92,7 @@ DIISEntry::read_vector_from_disk()
 {
     if (_vector == NULL) {
         _vector = new double[_vectorSize];
-        string label = _label + " vector";
+        std::string label = _label + " vector";
         open_psi_file();
         _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char*)_vector, _vectorSize*sizeof(double));
     }
@@ -104,7 +102,7 @@ DIISEntry::read_vector_from_disk()
 void
 DIISEntry::dump_error_vector_to_disk()
 {
-    string label = _label + " error";
+    std::string label = _label + " error";
     open_psi_file();
     _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char*)_errorVector, _errorVectorSize*sizeof(double));
     free_error_vector_memory();
@@ -116,7 +114,7 @@ DIISEntry::read_error_vector_from_disk()
 {
     if (_errorVector == NULL) {
         _errorVector = new double[_errorVectorSize];
-        string label = _label + " error";
+        std::string label = _label + " error";
         open_psi_file();
         _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char*)_errorVector, _errorVectorSize*sizeof(double));
     }

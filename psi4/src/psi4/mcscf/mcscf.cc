@@ -62,8 +62,6 @@ namespace mcscf{
 
 MemoryManager* memory_manager = 0;
 
-using namespace std;
-
 /**
  * The main function
  * @param argc

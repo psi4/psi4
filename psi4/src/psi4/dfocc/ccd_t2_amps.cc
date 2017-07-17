@@ -32,8 +32,6 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libmints/matrix.h"
 
-using namespace std;//Do you even have something from the std namespace?
-
 
 namespace psi{ namespace dfoccwave{
 

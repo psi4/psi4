@@ -46,8 +46,6 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCOperation::setup_contractions()
 {
   Timer PartA;

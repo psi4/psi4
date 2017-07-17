@@ -52,7 +52,6 @@
 
 
 
-using namespace std;
 using namespace psi;
 
 namespace psi {
@@ -83,16 +82,16 @@ namespace psi {
           int num_steps = 0;
           int total;
           double b2a3 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
-          ifstream input;
+          std::ifstream input;
           input.open("potential.dx");
           if (!input.good()) throw PSIEXCEPTION("Error opening potential.dx.");
           while (!input.eof())
           {
             char buf[512];
             input.getline(buf, 512);
-            stringstream cppbuf(buf);
-            string token;
-            vector <string> tokens;
+            std::stringstream cppbuf(buf);
+            std::string token;
+            std::vector <std::string> tokens;
             while(cppbuf >> token) tokens.push_back(token);
             if(tokens.size()) { // skip blank lines
 

@@ -46,7 +46,6 @@
 #include <omp.h>
 #endif
 
-using namespace std;
 using namespace psi;
 
 namespace psi {
@@ -115,7 +114,7 @@ void DiskJK::compute_JK()
             lastBuffer = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 labelIndex = 4*index;
-                pabs  = abs((int) lblptr[labelIndex++]);
+                pabs  = std::abs((int) lblptr[labelIndex++]);
                 qabs  = (int) lblptr[labelIndex++];
                 rabs  = (int) lblptr[labelIndex++];
                 sabs  = (int) lblptr[labelIndex++];
@@ -289,7 +288,7 @@ void DiskJK::compute_JK()
             lastBuffer = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 labelIndex = 4*index;
-                pabs  = abs((int) lblptr[labelIndex++]);
+                pabs  = std::abs((int) lblptr[labelIndex++]);
                 qabs  = (int) lblptr[labelIndex++];
                 rabs  = (int) lblptr[labelIndex++];
                 sabs  = (int) lblptr[labelIndex++];
@@ -477,7 +476,7 @@ void DiskJK::compute_JK()
             lastBuffer = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 labelIndex = 4*index;
-                pabs  = abs((int) lblptr[labelIndex++]);
+                pabs  = std::abs((int) lblptr[labelIndex++]);
                 qabs  = (int) lblptr[labelIndex++];
                 rabs  = (int) lblptr[labelIndex++];
                 sabs  = (int) lblptr[labelIndex++];

@@ -61,7 +61,7 @@ int DPD::contract222(dpdfile2 *X, dpdfile2 *Y, dpdfile2 *Z, int target_X,
     file2_mat_init(Y);
     file2_mat_rd(Y);
     file2_mat_init(Z);
-    if(fabs(beta) > 0.0) file2_mat_rd(Z);
+    if(std::fabs(beta) > 0.0) file2_mat_rd(Z);
 
     if(target_X == 0) { Xtrans = 0; numlinks = X->params->coltot; symlink = GX; }
     else if(target_X == 1) { Xtrans = 1; numlinks = X->params->rowtot; symlink = 0; }

@@ -37,15 +37,13 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 /**
  * Read and compute an expression
  * @param cstr
  */
 void CCBLAS::solve(const char* cstr)
 {
-  string str(cstr);
+  std::string str(cstr);
   solve(str);
 }
 
@@ -53,7 +51,7 @@ void CCBLAS::solve(const char* cstr)
  * Read and compute an expression
  * @param str
  */
-void CCBLAS::solve(string str)
+void CCBLAS::solve(std::string str)
 {
   append(str);
   compute();
@@ -65,7 +63,7 @@ void CCBLAS::solve(string str)
  */
 void CCBLAS::append(const char* cstr)
 {
-  string str(cstr);
+  std::string str(cstr);
   append(str);
 }
 
@@ -73,7 +71,7 @@ void CCBLAS::append(const char* cstr)
  * Read and store expressions without computing them
  * @param str
  */
-void CCBLAS::append(string str)
+void CCBLAS::append(std::string str)
 {
   // Main driver for solving expressions
   int noperations_added = 0;
@@ -81,7 +79,7 @@ void CCBLAS::append(string str)
     outfile->Printf("\n\nYou have requested the following operation :\n\t\"%s\"",str.c_str());
     outfile->Printf("\n\nCCBLAS::append() has parsed the following:");
   )
-  vector<string> names = moinfo->get_matrix_names(str);
+  std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(int n=0;n<names.size();n++){
     noperations_added+=parse(names[n]);
   }
@@ -232,9 +230,9 @@ void CCBLAS::compute()
  */
 void CCBLAS::append_zero_two_diagonal(const char* cstr)
 {
-  string str(cstr);
+  std::string str(cstr);
   // To zero diagonals of things like "Fae[v][v]{u}"
-  vector<string> names = moinfo->get_matrix_names(str);
+  std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(int n=0;n<names.size();n++){
     CCMatrix* Matrix = get_Matrix(names[n]);
     CCOperation op(0.0,"","","zero_two_diagonal",Matrix,NULL,NULL,work[0],buffer[0]);

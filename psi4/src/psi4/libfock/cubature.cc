@@ -49,7 +49,6 @@
 #include <ctype.h>
 #include <assert.h>
 
-using namespace std;
 using namespace psi;
 
 namespace {
@@ -2053,12 +2052,12 @@ void RadialGridMgr::getChebychevRoots(int n, double r[], double w[])
 double RadialGridMgr::maxRowSumNorm(int n, double a[], double b[])
 {
     if (n == 1)
-        return fabs(a[0]);
+        return std::fabs(a[0]);
 
-    double norm = fabs(a[0]) + fabs(b[0]);
+    double norm = std::fabs(a[0]) + std::fabs(b[0]);
     for (int i = 1; i < n-1; i++)
-        norm = fmax(norm, fabs(a[i]) + fabs(b[i]) + fabs(b[i-1]));
-    norm = fmax(norm, fabs(a[n-1]) + fabs(b[n-2]));
+        norm = fmax(norm, std::fabs(a[i]) + std::fabs(b[i]) + std::fabs(b[i-1]));
+    norm = fmax(norm, std::fabs(a[n-1]) + std::fabs(b[n-2]));
     return norm;
 }
 
@@ -2083,7 +2082,7 @@ void RadialGridMgr::GolombWelsch(int n, double a[], double b[], double q[])
     double lambda, lambd1, lambd2, rho;
     lambda = lambd1 = lambd2 = rho = norm;
     for (int m = n-1; m >= 0; ) {
-        if (fabs(b[m-1]) <= eps) {
+        if (std::fabs(b[m-1]) <= eps) {
             // Golomb and Welsch set t[i] = a[i] and w[i] = muzero*q[i]*q[i] here;
             // I do it elsewhere to avoid an overflow for high-order Laguerre grids.
             rho = fmin(lambd1, lambd2);
@@ -2094,7 +2093,7 @@ void RadialGridMgr::GolombWelsch(int n, double a[], double b[], double q[])
         // Set `k' equal to the largest number below m-1
         // for which b[i] is approximately zero.
         int k = 0;
-        for (int i = m - 2; i >= 0 && fabs(b[i]) > eps; i--)
+        for (int i = m - 2; i >= 0 && std::fabs(b[i]) > eps; i--)
             k = i;
 
         int m1 = m - 1;
@@ -2105,7 +2104,7 @@ void RadialGridMgr::GolombWelsch(int n, double a[], double b[], double q[])
         lambd2 = 0.5*(aa+copysign(det, aa));
         lambd1 = (a[m1]*a[m] - b2)/lambd2;
         double eigmax = fmax(lambd1, lambd2);
-        if (8*fabs(eigmax-rho) <= fabs(eigmax))
+        if (8*std::fabs(eigmax-rho) <= std::fabs(eigmax))
             lambda = rho = eigmax;
         else
             rho = eigmax;
@@ -2193,7 +2192,7 @@ void RadialGridMgr::getLaguerreRoots(int n, double r[], double w[])
             w[i] = wr * wr * exp(r[i]);
         } else {
             // Sometimes exp(r[i]) overflows
-            w[i] = exp(r[i] + 2*log(fabs(wr)));
+            w[i] = exp(r[i] + 2*log(std::fabs(wr)));
         }
     }
 }
@@ -2953,11 +2952,11 @@ class OrientationMgr
 
     // Floating-point comparisons
 #define EPSILON 1e-10
-    static inline bool fequ(double a, double b) { return fabs(a - b) < EPSILON; }
+    static inline bool fequ(double a, double b) { return std::fabs(a - b) < EPSILON; }
     static inline bool fless(double a, double b) { return a < b + EPSILON; } // We are assured that fequ(a, b) implies !fless(a, b)
-    static inline bool fequ2(double a, double b) { return fabs(a - b) < EPSILON*EPSILON; }
+    static inline bool fequ2(double a, double b) { return std::fabs(a - b) < EPSILON*EPSILON; }
     static inline bool fvIsZero(LVector v) { return fequ(v.x, 0) && fequ(v.y, 0) && fequ(v.z, 0); }
-    static inline bool fvequ(LVector v, LVector w) { return fabs(v.x - w.x) < EPSILON && fabs(v.y - w.y) < EPSILON && fabs(v.z - w.z) < EPSILON; }
+    static inline bool fvequ(LVector v, LVector w) { return std::fabs(v.x - w.x) < EPSILON && std::fabs(v.y - w.y) < EPSILON && std::fabs(v.z - w.z) < EPSILON; }
     static inline bool fperp(LVector v, LVector w) { return fequ(vdot(v, w), 0); }
 #undef EPSILON
 
@@ -3087,12 +3086,12 @@ void OrientationMgr::diagonalize(LMatrix const& M, LMatrix *Q_out, LVector *D_ou
     double** Ip = I.pointer();
     // Clean matrix by setting tiny values arising from numerical errors to zero
     // to prevent generation of weird eigenvectors
-    Ip[0][0]            = (fabs(M.xx) < EPSILON ? 0.0 : M.xx);
-    Ip[1][1]            = (fabs(M.yy) < EPSILON ? 0.0 : M.yy);
-    Ip[2][2]            = (fabs(M.zz) < EPSILON ? 0.0 : M.zz);
-    Ip[1][0] = Ip[0][1] = (fabs(M.xy) < EPSILON ? 0.0 : M.xy);
-    Ip[2][0] = Ip[0][2] = (fabs(M.xz) < EPSILON ? 0.0 : M.xz);
-    Ip[2][1] = Ip[1][2] = (fabs(M.yz) < EPSILON ? 0.0 : M.yz);
+    Ip[0][0]            = (std::fabs(M.xx) < EPSILON ? 0.0 : M.xx);
+    Ip[1][1]            = (std::fabs(M.yy) < EPSILON ? 0.0 : M.yy);
+    Ip[2][2]            = (std::fabs(M.zz) < EPSILON ? 0.0 : M.zz);
+    Ip[1][0] = Ip[0][1] = (std::fabs(M.xy) < EPSILON ? 0.0 : M.xy);
+    Ip[2][0] = Ip[0][2] = (std::fabs(M.xz) < EPSILON ? 0.0 : M.xz);
+    Ip[2][1] = Ip[1][2] = (std::fabs(M.yz) < EPSILON ? 0.0 : M.yz);
     Matrix VV("Eigenvectors", 3, 3);
     Vector DD("Eigenvalues", 3);
     I.diagonalize(&VV, &DD); // Note: This line ONLY works for symmetric matrices!
@@ -3489,7 +3488,7 @@ private:
     static double         flat(double /*rho*/, double /*alpha*/) { return 1; }
     static double     p_slater(double rho, double /*alpha*/) { return rho * exp(1 - rho); }
     static double     d_slater(double rho, double alpha) { double pslater = p_slater(rho, alpha); return pslater*pslater; }
-    static double   log_slater(double rho, double alpha) { return exp(-alpha * fabs(log(rho))); }
+    static double   log_slater(double rho, double alpha) { return exp(-alpha * std::fabs(log(rho))); }
     static double   p_gaussian(double rho, double /*alpha*/) { return rho * exp((1-rho*rho) / 2.0); } // Note: The original implementation had (1 - R*rho) instead of (1 - rho*rho)
     static double   d_gaussian(double rho, double /*alpha*/) { return rho*rho * exp(1-rho*rho); }
     static double log_gaussian(double rho, double alpha) { return exp(-alpha * log(rho) * log(rho)); }
@@ -3746,7 +3745,7 @@ void BasisExtents::computeExtents()
         for (int K = 0; K < nprim; K++) {
             if (alpha_max > alpha[K]) {
                 alpha_max = alpha[K];
-                norm_max = fabs(norm[K]);
+                norm_max = std::fabs(norm[K]);
             }
         }
 
@@ -3762,9 +3761,9 @@ void BasisExtents::computeExtents()
             // Compute Or
             Or = 0.0;
             for (int K = 0; K < nprim; K++) {
-                Or += fabs(norm[K]) * pow(Rr,l) * exp(-alpha[K] * Rr * Rr);
+                Or += std::fabs(norm[K]) * pow(Rr,l) * exp(-alpha[K] * Rr * Rr);
             }
-            Or = fabs(Or) - delta_;
+            Or = std::fabs(Or) - delta_;
 
             // Move further right
             if (Or > 0.0)
@@ -3779,16 +3778,16 @@ void BasisExtents::computeExtents()
             // Compute Ol
             Ol = 0.0;
             for (int K = 0; K < nprim; K++) {
-                Ol += fabs(norm[K]) * pow(Rl,l) * exp(-alpha[K] * Rl * Rl);
+                Ol += std::fabs(norm[K]) * pow(Rl,l) * exp(-alpha[K] * Rl * Rl);
             }
-            Ol = fabs(Ol) - delta_;
+            Ol = std::fabs(Ol) - delta_;
 
             // Move further left
             if (Ol < 0.0)
                 Rl /= 2.0;
 
             // Check if we missed the positive bit in the middle somehow
-            if (fabs(Rl) == 0.0) {
+            if (std::fabs(Rl) == 0.0) {
                 throw PSIEXCEPTION("BasisExtents: Left root of basis cutoffs found the nuclear cusp.\n"
                     "This is very bad.");
             }
@@ -3801,9 +3800,9 @@ void BasisExtents::computeExtents()
             Rc = 0.5 * (Rl + Rr);
             Oc = 0.0;
             for (int K = 0; K < nprim; K++) {
-                Oc += fabs(norm[K]) * pow(Rc,l) * exp(-alpha[K] * Rc * Rc);
+                Oc += std::fabs(norm[K]) * pow(Rc,l) * exp(-alpha[K] * Rc * Rc);
             }
-            Oc = fabs(Oc) - delta_;
+            Oc = std::fabs(Oc) - delta_;
 
             if (Oc > 0.0) {
                 Rl = Rc;
@@ -3813,7 +3812,7 @@ void BasisExtents::computeExtents()
                 Or = Oc;
             }
             // My MechE profs would disapprove of this cutoff.
-        } while (fabs(Rr - Rl) > 1.0E-8 * Rl && fabs(Oc) != 0.0);
+        } while (std::fabs(Rr - Rl) > 1.0E-8 * Rl && std::fabs(Oc) != 0.0);
 
         // Assign the calculated value
         Rp[P] = Rc;
