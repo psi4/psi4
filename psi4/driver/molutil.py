@@ -311,6 +311,12 @@ def geometry(geom, name="default"):
     molecule = core.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 
+    # Attempt to go ahead and construct the molecule
+    try:
+        molecule.update_geometry()
+    except:
+        pass
+
     activate(molecule)
 
     return molecule

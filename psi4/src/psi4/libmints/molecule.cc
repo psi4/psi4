@@ -535,6 +535,11 @@ void Molecule::move_to_com()
 
 Matrix Molecule::geometry() const
 {
+    if (!natom()){
+        throw PSIEXCEPTION(
+            "Molecule::geometry(): molecule does not contain any atoms. Try calling `molecule.update_geometry()\n"
+            "     to ensure the molecule is properly constructed.");
+    }
     Matrix geom(natom(), 3);
     for (int i = 0; i < natom(); ++i) {
         geom(i, 0) = x(i);
