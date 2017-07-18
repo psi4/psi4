@@ -2,7 +2,7 @@
 #! between cfour and psi4
 
 
-print '    <<<  UHF  >>>'
+print('    <<<  UHF  >>>')
 
 cfour {
 ROHF-MP2 energy calculation 

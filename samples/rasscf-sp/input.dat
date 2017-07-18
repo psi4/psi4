@@ -20,6 +20,14 @@ molecule mol {
    H  1 1.00 2 103.1
 }
 
+scf_e, scf_wfn = psi4.energy("SCF", return_wfn=True)
 
-rasscf_energy = energy('RASSCF')
+set icore 1
+rasscf_energy, rasscf_wfn = energy('RASSCF', ref_wfn=scf_wfn, return_wfn=True)
+
+set icore 0
+rasscf_energy = energy('RASSCF', ref_wfn=rasscf_wfn)
+
+set icore 2
+rasscf_energy = energy('RASSCF', ref_wfn=rasscf_wfn)
 

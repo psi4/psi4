@@ -17,13 +17,11 @@ set {
 }
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
-ref_vals = [
+CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST
              [ 0.0000000000, -0.0655653749, -0.0499834310],  # 
              [ 0.0000000000,  0.0000000000,  0.0999668620],  # CFOUR RESULTS
              [ 0.0000000000,  0.0655653749, -0.0499834310]   #
-           ]
-CFOUR_GRAD = psi4.Matrix(3, 3)
-CFOUR_GRAD.set(ref_vals)
+           ])
 compare_matrices(analytic, CFOUR_GRAD, 8, "1. RHF-CCSD(T) gradient comparison with CFOUR") #TEST
 
 molecule N2{
@@ -41,10 +39,8 @@ set {
 }
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
-ref_vals = [                                                        
+CFOUR_GRAD = psi4.Matrix.from_list([                                      #TEST
              [  0.000000000000,     0.000000000000,     0.0013878869],  #TEST   CFOUR RESULTS
              [  0.000000000000,     0.000000000000,    -0.0013878869]   #TEST   CFOUR RESULTS
-	   ]
-CFOUR_GRAD = psi4.Matrix(2, 3)
-CFOUR_GRAD.set(ref_vals)
+	   ])
 compare_matrices(analytic, CFOUR_GRAD, 8, "2. RHF-CCSD(T) gradient comparison with CFOUR") #TEST

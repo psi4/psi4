@@ -1,6 +1,5 @@
 #! CEPA cc-pVDZ gradient for the NO radical
 
-ref.set(ref_vals)
 
 molecule no {
 0 2

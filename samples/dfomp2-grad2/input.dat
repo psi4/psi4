@@ -1,6 +1,5 @@
 #! OMP2 cc-pVDZ energy for the NO molecule.
 
-ref.set(ref_vals)
 
 molecule {
 0 2

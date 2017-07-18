@@ -3,7 +3,7 @@
 #! that are updated during the potential energy surface scan, and then the same procedure is performed
 #! using polar coordinates, converted to Cartesian coordinates.
 
-memory 250 mb
+memory 650 mb
 
 
 

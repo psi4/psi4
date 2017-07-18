@@ -1,5 +1,7 @@
 #! Translating psi4 options to cfour, part i
 
+from psi4.driver.procrouting.interface_cfour import P4C4_INFO
+
 molecule {
 O
 H 1 R

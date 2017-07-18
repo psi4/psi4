@@ -1,29 +1,21 @@
 #! DCFT DC-06 gradient for the O2 molecule with cc-pVDZ basis set
 
-ref_vals_dc06 = [                                                             #TEST
+ref_dc06 = psi4.Matrix.from_list([                                            #TEST
                 [ 0.000000000000,     0.000000000000,    -0.065140460923],    #TEST
                 [ 0.000000000000,     0.000000000000,     0.065140460923]     #TEST
-                ]                                                             #TEST
-ref_vals_odc06= [                                                             #TEST
+                ])                                                            #TEST
+ref_odc06 = psi4.Matrix.from_list([                                           #TEST
                 [ 0.000000000000,     0.000000000000,    -0.056944434749],    #TEST
                 [ 0.000000000000,     0.000000000000,     0.056944434749]     #TEST
-                ]                                                             #TEST
-ref_vals_odc12= [                                                             #TEST
+                ])                                                            #TEST
+ref_odc12 = psi4.Matrix.from_list([                                           #TEST
                 [ 0.000000000000,     0.000000000000,    -0.070863321661],    #TEST
                 [ 0.000000000000,     0.000000000000,     0.070863321661]     #TEST
-                ]                                                             #TEST
-ref_vals_odc13= [                                                             #TEST
+                ])                                                            #TEST
+ref_odc13 = psi4.Matrix.from_list([                                           #TEST
                 [ 0.000000000000,     0.000000000000,    -0.077544709375 ],   #TEST
                 [ 0.000000000000,     0.000000000000,     0.077544709375 ]    #TEST
-                ]                                                             #TEST
-ref_dc06 = psi4.Matrix(2, 3)                                                  #TEST
-ref_odc06= psi4.Matrix(2, 3)                                                  #TEST
-ref_odc12= psi4.Matrix(2, 3)                                                  #TEST
-ref_odc13= psi4.Matrix(2, 3)                                                  #TEST
-ref_dc06.set(ref_vals_dc06)                                                   #TEST
-ref_odc06.set(ref_vals_odc06)                                                 #TEST
-ref_odc12.set(ref_vals_odc12)                                                 #TEST
-ref_odc13.set(ref_vals_odc13)                                                 #TEST
+                ])                                                            #TEST
 
 molecule o2 {
 0 3

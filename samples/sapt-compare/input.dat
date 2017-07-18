@@ -3,9 +3,6 @@
 
 memory 1250 mb
 
-Eref = {"SAPT ELST ENERGY":  -0.00007808151, # TEST
-        "SAPT EXCH ENERGY":   0.00030618033, # TEST
-        "SAPT IND ENERGY":    0.00000124532} # TEST
 
 molecule dimer {
   O -2.930978458   -0.216411437    0.000000000
@@ -25,25 +22,16 @@ set {
     e_convergence 1e-8
     d_convergence 1e-8
 
-    sapt_dft_grac_shift_a 0.000000000001
-    sapt_dft_grac_shift_b 0.000000000001
     SAPT_DFT_FUNCTIONAL HF
 }
 
 energy('sapt0', molecule=dimer)
-sapt_dft_vars = psi4.core.get_variables()
+
+energy('fisapt0', molecule=dimer)
 
 energy('sapt(dft)', molecule=dimer)
-sapt0_vars = psi4.core.get_variables()
 
-# set reference RHF
-# energy('fisapt0', molecule=dimer)
-# fisapt0_vars = psi4.core.get_variables()
 
-keys = ["SAPT ELST ENERGY", "SAPT EXCH ENERGY", "SAPT IND ENERGY", "SAPT DISP ENERGY"] 
 
-for k in keys:
-    compare_values(sapt_dft_vars[k], sapt0_vars[k], 5, "SAPT(DFT) " + k)
-    #compare_values(fisapt0_vars[k], sapt0_vars[k], "F-SAPT " + k)
 
 

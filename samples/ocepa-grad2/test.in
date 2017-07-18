@@ -1,11 +1,9 @@
 #! OCEPA cc-pVDZ gradient for the NO radical
 
-ref_vals = [                                                       #TEST
-             [ 0.000000000000,  0.000000000000,  0.007482806046],  #TEST
-             [ 0.000000000000,  0.000000000000, -0.007482806046]   #TEST
-           ]                                                       #TEST
-ref = psi4.Matrix(2, 3)                                          #TEST
-ref.set(ref_vals)
+ref = psi4.Matrix.from_list([                                 #TEST
+        [ 0.000000000000,  0.000000000000,  0.007482806046],  #TEST
+        [ 0.000000000000,  0.000000000000, -0.007482806046]   #TEST
+      ])                                                       #TEST
 
 molecule no {
 0 2

@@ -19,13 +19,10 @@ set {
 }
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
-ref_vals = [
              [ 0.00000000000000,     0.00000000000000,    -0.02788939642641],  # FINITE DIFFERENCE 5 POINT FORMULA
              [ 0.00000000000000,    -0.00904503210340,     0.01394469821321],
              [ 0.00000000000000,     0.00904503210340,     0.01394469821321]
-           ]
-fin_diff = psi4.Matrix(3, 3)
-fin_diff.set(ref_vals)
+           ])
 
 molecule N2 {
 0 1
@@ -43,11 +40,8 @@ set {
 }
 
 analytic, wfn = gradient('ccsd(t)', return_wfn=True)
-ref_vals = [                                                        
              [  0.000000000000,     0.000000000000,     0.03761157104212],  # FINITE DIFFERENCE 5 POINT FORMULA
              [  0.000000000000,     0.000000000000,    -0.03761157104212]  
-	   ]
-fin_diff = psi4.Matrix(2, 3)                                                
-fin_diff.set(ref_vals)
+	   ])
 
 

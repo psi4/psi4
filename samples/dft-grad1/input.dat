@@ -1,7 +1,5 @@
 #! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 
-ref_bp86d2 = [
-
 
 molecule {
   0 1

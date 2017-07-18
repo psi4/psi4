@@ -1,6 +1,6 @@
 #! single-point CCSD(T)/qz2p on NH2 with ecc
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 UHF-CCSD(T) energy calculation  using xecc
@@ -27,7 +27,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 banner('UHF-CCSD(T) energy calculation  using xecc')
 
@@ -58,7 +58,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 banner('UHF-CCSD(T) energy calculation  using xecc')
 

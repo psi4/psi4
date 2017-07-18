@@ -1,12 +1,9 @@
 #! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 
-ref_bp86d2 = [
+ref = psi4.Matrix.from_list([                                 #TEST
              [  0.000471372941,    -0.006768222864,     0.000000000000],  #TEST
              [  0.000447936019,    -0.006988081177,    -0.000000000000],  #TEST
-             [ -0.000919105947,     0.013753536153,    -0.000000000000]]  #TEST
-
-ref = psi4.Matrix(3, 3)                                                 #TEST
-ref.set(ref_bp86d2)                                                       #TEST
+             [ -0.000919105947,     0.013753536153,    -0.000000000000]]) #TEST
 
 molecule {
   0 1

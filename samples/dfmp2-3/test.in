@@ -1,6 +1,6 @@
 #! DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
 
-ref_vals = [                                                 #TEST
+ref = psi4.Matrix.from_list([                                #TEST
              [ 0.0040014655,  0.0000000000,  0.0069307508],  #TEST
              [-0.0040014655,  0.0000000000,  0.0069307508],  #TEST
              [-0.0080028871,  0.0000000000,  0.0000000000],  #TEST
@@ -13,9 +13,8 @@ ref_vals = [                                                 #TEST
              [-0.0047224616,  0.0000000000, -0.0081795432],  #TEST
              [ 0.0047224616,  0.0000000000, -0.0081795432],  #TEST
              [ 0.0094449331,  0.0000000000,  0.0000000000]   #TEST
-           ]                                                 #TEST
-ref = psi4.Matrix(12, 3)                                   #TEST
-ref.set(ref_vals)                                            #TEST
+           ])                                                #TEST
+
 molecule {
     C         -0.694303272975    -0.000000000000    -1.202568545351
     C          0.694303272975     0.000000000000    -1.202568545351

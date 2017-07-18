@@ -1,27 +1,21 @@
 #! Various gradients for a strained helium dimer and water molecule
 import numpy as np
 
-lref_scf_dz =   [[ 0.0,  0.0,   0.01233095],  #TEST
-                 [ 0.0,  0.0,  -0.01233095]]  #TEST
-lref_scf_tz =   [[ 0.0,  0.0,   0.01246097],  #TEST
-                 [ 0.0,  0.0,  -0.01246097]]  #TEST
-lref_scf_dtz =  [[ 0.0,  0.0,   0.01249265],  #TEST
-                 [ 0.0,  0.0,  -0.01249265]]  #TEST
-lref_scf_dtqz = [[ 0.0,  0.0,   0.01244412],  #TEST
-                 [ 0.0,  0.0,  -0.01244412]]  #TEST
-
-lref_mp2_dtz =  [[ 0.0,  0.0,   0.01155124],  #TEST
-                 [ 0.0,  0.0,  -0.01155124]]  #TEST
-ref_scf_dz =  psi4.Matrix(2, 3)                                                #TEST
-ref_scf_dz.set(lref_scf_dz)                                                    #TEST
-ref_scf_tz =  psi4.Matrix(2, 3)                                                #TEST
-ref_scf_tz.set(lref_scf_tz)                                                    #TEST
-ref_scf_dtz = psi4.Matrix(2, 3)                                                #TEST
-ref_scf_dtz.set(lref_scf_dtz)                                                  #TEST
-ref_scf_dtqz = psi4.Matrix(2, 3)                                               #TEST
-ref_scf_dtqz.set(lref_scf_dtqz)                                                #TEST
-ref_mp2_dtz = psi4.Matrix(2, 3)                                                #TEST
-ref_mp2_dtz.set(lref_mp2_dtz)                                                  #TEST
+ref_scf_dz = psi4.core.Matrix.from_list(     #TEST
+               [[ 0.0,  0.0,   0.01233095],  #TEST
+                [ 0.0,  0.0,  -0.01233095]]) #TEST
+ref_scf_tz = psi4.core.Matrix.from_list(     #TEST
+               [[ 0.0,  0.0,   0.01246097],  #TEST
+                [ 0.0,  0.0,  -0.01246097]]) #TEST
+ref_scf_dtz = psi4.core.Matrix.from_list(    #TEST
+               [[ 0.0,  0.0,   0.01249265],  #TEST
+                [ 0.0,  0.0,  -0.01249265]]) #TEST
+ref_scf_dtqz = psi4.core.Matrix.from_list(   #TEST
+               [[ 0.0,  0.0,   0.01244412],  #TEST
+                [ 0.0,  0.0,  -0.01244412]]) #TEST
+ref_mp2_dtz = psi4.core.Matrix.from_list(    #TEST
+               [[ 0.0,  0.0,   0.01155124],  #TEST
+                [ 0.0,  0.0,  -0.01155124]]) #TEST
 
 nucenergy_ref = 1.17594935242
 

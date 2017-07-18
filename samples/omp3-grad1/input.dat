@@ -1,6 +1,5 @@
 #! OMP3 cc-pVDZ gradient for the H2O molecule.
 
-ref.set(ref_vals)
 
 molecule h2o {
 0 1
