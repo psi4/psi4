@@ -19,8 +19,14 @@ cisd_energy, cisd_wfn = energy("CISD", return_wfn=True)
 
 
 set {
+    icore 0
     restricted_docc [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
 }
 casscf_energy = energy('casscf', ref_wfn=cisd_wfn)
 
+set icore 1
+casscf_energy = energy('casscf', ref_wfn=cisd_wfn)
+
+set icore 2
+casscf_energy = energy('casscf', ref_wfn=cisd_wfn)

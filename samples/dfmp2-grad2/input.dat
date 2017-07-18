@@ -1,6 +1,5 @@
 #! DF-MP2 cc-pVDZ gradient for the NO molecule.
 
-ref.set(ref_vals)
 
 molecule {
 0 2

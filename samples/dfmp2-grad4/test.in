@@ -1,11 +1,9 @@
 #! DF-MP2 cc-pVDZ gradient for the NO molecule.
 
-ref_vals = [                                                             #TEST
-             [ 0.000000000000,    0.00000000000000,    -0.19535686123490],  #TEST
-             [ 0.000000000000,    0.00000000000000,     0.19535686123490]   #TEST
-           ]                                                             #TEST
-ref = psi4.Matrix(2, 3)                                                #TEST
-ref.set(ref_vals)
+ref = psi4.Matrix.from_list([                                        #TEST
+        [ 0.000000000000,    0.00000000000000,    -0.19535686123490],  #TEST
+        [ 0.000000000000,    0.00000000000000,     0.19535686123490]   #TEST
+      ])                                                            #TEST
 
 molecule {
 0 2

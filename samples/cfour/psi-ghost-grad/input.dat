@@ -4,7 +4,6 @@
 
 
 
-
 molecule watdim {
 0 1
 H  -1.934259   0.762503   0.000000
@@ -41,13 +40,19 @@ set mp2_type conv
 set scf_type pk
 
 activate(watdim)
-optimize('c4-mp2')
+try:
+    optimize('c4-mp2')
+except psi4.ConvergenceError:
+    pass
 
 clean()
 opt_clean()
 
 activate(methdim)
-optimize('c4-mp2')
+try:
+    optimize('c4-mp2')
+except psi4.ConvergenceError:
+    pass
 
 opt_clean()
 

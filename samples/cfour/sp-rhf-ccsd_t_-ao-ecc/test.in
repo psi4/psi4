@@ -1,6 +1,6 @@
 #! single-point CCSD(T)/qc2p on water with ecc, aobasis
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 CCSD(T) energy calculation using AO algorithms for ABCD terms with ECC
@@ -31,7 +31,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O
@@ -56,7 +56,7 @@ energy('cfour')
 compare_values(-76.062748460117, get_variable('scf total energy'), 6, 'SCF')  #TEST
 compare_values(-0.270191667216, get_variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
 
-print '        <<< Thorough Psi4 format >>>'
+print('        <<< Thorough Psi4 format >>>')
 
 molecule {
 O
@@ -83,7 +83,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 O

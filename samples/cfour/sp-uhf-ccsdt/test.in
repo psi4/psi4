@@ -1,6 +1,6 @@
 #! single-point CCSDT/qz2p on NH2
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 UHF-CCSDT energy calculation 
@@ -31,7 +31,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 banner('UHF-CCSDT energy calculation ')
 
@@ -66,7 +66,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 banner('UHF-CCSDT energy calculation ')
 

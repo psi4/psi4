@@ -22,7 +22,6 @@ compare_arrays(np_mat1, mat1.np, 9, "Implicit Non-irreped Array conversion")    
 
 for h in range(mat2.nirrep()):
     compare_arrays(np_mat2[h], mat2.nph[h], 9, "Implicit Irreped (%d) Array conversion" % h)     #TEST
-# Explicit should fail
 
 np_mat1_view = mat1.to_array(copy=False)
 np_mat2_view = mat2.to_array(copy=False)
@@ -190,6 +189,15 @@ residual = sum(np.sum(x) for x in tmp)
 
 compare_values(0, residual, 9, "View pointers are correctly assigned.")     #TEST
 
+tmp = []
+for n in range(1000):
+    view = Matrix(3, 3).np
+    view[:] = 1
+    tmp.append(view)
+residual = sum(np.sum(x) for x in tmp)
+
+compare_values(9000, residual, 9, "Object lifetimes are correctly tied together.")     #TEST
+
 
 # Try out JSON serialization
 json_data = irreped_vec.to_serial()
@@ -206,6 +214,7 @@ B = psi4.core.Matrix.from_array(np.random.rand(3, 5))
 C = psi4.core.Matrix.from_array(np.random.rand(5, 5))
 D = psi4.core.Matrix.from_array(np.random.rand(5, 2))
 
+### Make sure chain dot works
 numpy_result = np.dot(A, B).dot(C).dot(D)
 psi_result = psi4.core.Matrix.chain_dot(A, B, C, D)
 compare_arrays(numpy_result, psi_result, 9, "Chain dot test 1.")     #TEST

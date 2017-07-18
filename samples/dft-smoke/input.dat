@@ -1,0 +1,19 @@
+#! DFT Functional Smoke Test
+
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+
+set basis 6-31g
+set dft_spherical_points 230
+set dft_radial_points 75
+set scf_type df
+
+for k, v in test_dict.items():
+    ret = energy(k)
+    compare_values(v, ret, 5, "RKS 0 1  %10s Energy" % k)

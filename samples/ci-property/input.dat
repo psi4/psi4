@@ -40,3 +40,4 @@ fci_energy = prop('FCI', properties=props)
 
 
 
+set DETCI NAT_ORBS true

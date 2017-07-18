@@ -2,7 +2,7 @@
 #! between cfour and psi4
 
 
-print '    <<<  ROHF  >>>'
+print('    <<<  ROHF  >>>')
 
 cfour {
 ROHF-MP2 energy calculation 

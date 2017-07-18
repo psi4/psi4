@@ -1,6 +1,6 @@
 #! single-point CC3/qz2p on NH2
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 UHF-CC3 energy calculation 
@@ -26,7 +26,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 banner('UHF-CC3 energy calculation')
 
@@ -56,7 +56,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Thorough Psi4 format >>>'
+print('        <<< Thorough Psi4 format >>>')
 
 molecule {
 0 2
@@ -83,7 +83,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 banner('UHF-CC3 energy calculation')
 

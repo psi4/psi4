@@ -2,7 +2,6 @@
 import numpy as np
 
 
-
 nucenergy_ref = 1.17594935242
 
 molecule he_dimer {
