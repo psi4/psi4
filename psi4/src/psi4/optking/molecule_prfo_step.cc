@@ -60,6 +60,7 @@ void MOLECULE::prfo_step(void) {
   int Nintco = Ncoord();
   int rfo_root; // ultimately, should be array of roots to maximize
   int cnt_i;
+  double *rfo_u = init_array(Nintco); // unit vector in step direction
 
   oprintf_out("\tTaking PRFO optimization step.\n");
 
@@ -248,15 +249,23 @@ void MOLECULE::prfo_step(void) {
   // try to get but with a single extrapolated energy change
 
   double rfo_dqnorm = sqrt( array_dot(dq, dq, Nintco) );
-  double rfo_g = -1 * array_dot(fq, dq, Nintco);
+  array_copy(dq, rfo_u, Nintco);
+  array_normalize(rfo_u, Nintco);
 
-  oprintf_out("\tNorm of target step-size %10.5lf\n", rfo_dqnorm);
+  double rfo_g = -1 * array_dot(fq, rfo_u, Nintco);
+
+  //oprintf_out("\tNorm of target step-size %10.5lf\n", rfo_dqnorm);
 
   double rfo_h = 0;
   for (int i=0; i<Nintco; ++i)
-    rfo_h += dq[i] * array_dot(Horig[i], dq, Nintco);
+    rfo_h += rfo_u[i] * array_dot(Horig[i], rfo_u, Nintco);
 
   double DE_projected = DE_rfo_energy(rfo_dqnorm, rfo_g, rfo_h);
+
+  oprintf_out("\t|RFO target step|  :  %18.10f\n", rfo_dqnorm);
+  oprintf_out("\tRFO gradient       :  %18.10f\n", rfo_g);
+  oprintf_out("\tRFO hessian        :  %18.10f\n", rfo_h);
+  oprintf_out("\tProjected Delta(E) :  %18.10f\n", DE_projected);
 
 //calculating the projected energy change
 /*
@@ -317,8 +326,9 @@ double rfo_dqnorm_min;
   symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
-  p_Opt_data->save_step_info(DE_projected, dq, rfo_dqnorm, rfo_g, rfo_h);
+  p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
 
+  free_array(rfo_u);
 
   return;
 }
