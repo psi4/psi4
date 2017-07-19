@@ -3870,11 +3870,7 @@ void FISAPT::fdisp()
 
     // => Integrals from DF_Helper <= //
 
-// I can't without breaking things... FIXME
-std::shared_ptr<DFERI> df = DFERI::build(primary_,auxiliary,options_);
-// I can't without breaking things... FIXME
-    
-     std::vector<std::shared_ptr<Matrix> > Cs;
+    std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Caocc_A);
     Cs.push_back(Cavir_A);
     Cs.push_back(Caocc_B);
