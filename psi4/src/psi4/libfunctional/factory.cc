@@ -31,10 +31,12 @@
  PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
  #include <memory>
  PRAGMA_WARNING_POP
+#include "functional.h"
 #include "libxc/xc.h"
 #include "psi4/psi4-dec.h"
-#include "functional.h"
 #include "LibXCfunctional.h"
+#include "psi4/libpsi4util/exception.h"
+
 
 namespace psi {
 

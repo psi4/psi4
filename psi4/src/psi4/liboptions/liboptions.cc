@@ -43,10 +43,12 @@
 
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libpsi4util/libpsi4util.h" // Needed for Ref counting, string splitting, and conversions
-#include "psi4/libpsi4util/ref.h" // Needed for Ref counting, string splitting, and conversions
 #include "psi4/pragma.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 #include <memory>
 
+#include <typeinfo>
 #include "psi4/pybind11.h"
 
 #include "psi4/psi4-dec.h"
@@ -83,6 +85,7 @@ void DataType::to_upper(std::string& str)
 
 void DataType::add_choices(std::string str)
 {
+    printf("I am here!\n");
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
@@ -96,7 +99,7 @@ bool DataType::is_array() const
     return false;
 }
 
-unsigned int DataType::size() const
+size_t DataType::size() const
 {
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
@@ -171,11 +174,6 @@ double DataType::to_double() const
     throw DataTypeException("don't know how to convert to a double");
 }
 
-py::list DataType::to_list() const
-{
-    throw DataTypeException("don't know how to convert to a list");
-}
-
 void DataType::assign(DataType*)
 {
     throw DataTypeException("assign(DataType*) failure");
@@ -211,7 +209,7 @@ Data& DataType::operator[](std::string)
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
 
-Data& DataType::operator[](unsigned int)
+Data& DataType::operator[](size_t)
 {
     throw NOT_IMPLEMENTED_EXCEPTION();
 }
@@ -461,7 +459,7 @@ void StringDataType::assign(std::string s)
     to_upper(s);
     if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (unsigned int i=0; i<choices_.size(); ++i)
+        for (size_t i=0; i<choices_.size(); ++i)
             if (s == choices_[i])
                 wrong_input = false;
         if (wrong_input)
@@ -546,7 +544,7 @@ void IStringDataType::assign(std::string s)
 {
     if (choices_.size() > 0) {
         bool wrong_input = true;
-        for (unsigned int i=0; i<choices_.size(); ++i)
+        for (size_t i=0; i<choices_.size(); ++i)
             if (s == choices_[i])
                 wrong_input = false;
         if (wrong_input)
@@ -564,9 +562,10 @@ void IStringDataType::assign(std::string s)
 Data::Data()
 { }
 
-Data::Data(DataType *t)
-    : ptr_(t)
-{ }
+Data::Data(DataType *t){
+   ptr_= std::shared_ptr<DataType>(t);
+
+}
 
 Data::Data(const Data& copy)
 {
@@ -593,7 +592,7 @@ bool Data::is_array() const
     return ptr_->is_array();
 }
 
-unsigned int Data::size() const
+size_t Data::size() const
 {
     return ptr_->size();
 }
@@ -705,17 +704,17 @@ void Data::reset()
 
 DataType* Data::get() const
 {
-    return ptr_.pointer();
+    return ptr_.get();
 }
 
 Data& Data::operator[](int i)
 {
-    return (*(ptr_.pointer()))[i];
+    return (*(ptr_.get()))[i];
 }
 
 Data& Data::operator[](std::string s)
 {
-    return (*(ptr_.pointer()))[s];
+    return (*(ptr_.get()))[s];
 }
 
 // ArrayType
@@ -758,7 +757,7 @@ void ArrayType::assign(DataType* data)
     array_.push_back(Data(data));
 }
 
-Data& ArrayType::operator[](unsigned int i)
+Data& ArrayType::operator[](size_t i)
 {
     if (i >= array_.size())
         throw IndexException("out of range");
@@ -768,7 +767,7 @@ Data& ArrayType::operator[](unsigned int i)
 
 Data& ArrayType::operator[](std::string s)
 {
-    unsigned int i = static_cast<unsigned int>(std::strtod(s.c_str(), NULL));
+    size_t i = static_cast<size_t>(std::strtod(s.c_str(), NULL));
     if (i >= array_.size())
         throw IndexException("out of range");
     changed();
@@ -780,7 +779,7 @@ bool ArrayType::is_array() const
     return true;
 }
 
-unsigned int ArrayType::size() const
+size_t ArrayType::size() const
 {
     return array_.size();
 }
@@ -788,7 +787,7 @@ unsigned int ArrayType::size() const
 std::string ArrayType::to_string() const
 {
     std::string str = "[ ";
-    for (unsigned int i=0; i<array_.size(); ++i) {
+    for (size_t i=0; i<array_.size(); ++i) {
         str += array_[i].to_string();
         if (i != array_.size() - 1)
             str += ", ";
@@ -862,7 +861,7 @@ bool MapType::is_array() const
     return true;
 }
 
-unsigned int MapType::size() const
+size_t MapType::size() const
 {
     return keyvals_.size();
 }
@@ -1043,12 +1042,6 @@ void Options::set_str_i(const std::string & module, const std::string &key, std:
     locals_[module][key].changed();
 }
 
-void Options::set_python(const std::string & module, const std::string &key, const py::object &p)
-{
-    locals_[module][key] = new PythonDataType(p);
-    locals_[module][key].changed();
-}
-
 void Options::set_array(const std::string &module, const std::string& key)
 {
     locals_[module][key] = Data(new ArrayType);
@@ -1073,12 +1066,6 @@ void Options::set_global_double(const std::string &key, double d)
 void Options::set_global_str(const std::string &key, const std::string &s)
 {
     get_global(key).assign(s);
-}
-
-void Options::set_global_python(const std::string &key, const py::object &p)
-{
-    globals_[key] = Data(new PythonDataType(p));
-    globals_[key].changed();
 }
 
 void Options::set_global_array(const std::string& key)
@@ -1277,7 +1264,7 @@ Data& Options::use(std::string& key)
             std::map<std::string, Data>::iterator it = locals_[current_module_].begin();
             std::map<std::string, Data>::iterator endit = locals_[current_module_].end();
             for (; it != endit; ++it){
-                unsigned int distance = edit_distance(it->first,key);
+                size_t distance = edit_distance(it->first,key);
                 if (distance < 3){
                     choices.push_back(it->first);
                 }
@@ -1288,7 +1275,7 @@ Data& Options::use(std::string& key)
             std::map<std::string, Data>::iterator it = globals_.begin();
             std::map<std::string, Data>::iterator endit = globals_.end();
             for (; it != endit; ++it){
-                unsigned int distance = edit_distance(it->first,key);
+                size_t distance = edit_distance(it->first,key);
                 if (distance < 3){
                     choices.push_back(it->first);
                 }
@@ -1354,7 +1341,7 @@ std::string Options::get_str(std::string key) {
 int* Options::get_int_array(std::string key)
 {
     int *array = new int[use(key).size()];
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array[i] = use(key)[i].to_integer();
     }
     return array;
@@ -1362,7 +1349,7 @@ int* Options::get_int_array(std::string key)
 
 void Options::fill_int_array(std::string key, int* empty_array)
 {
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         empty_array[i] = use(key)[i].to_integer();
     }
 }
@@ -1370,7 +1357,7 @@ void Options::fill_int_array(std::string key, int* empty_array)
 std::vector<int> Options::get_int_vector(std::string key)
 {
     std::vector<int> array;
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array.push_back(use(key)[i].to_integer());
     }
     return array;
@@ -1379,7 +1366,7 @@ std::vector<int> Options::get_int_vector(std::string key)
 double* Options::get_double_array(std::string key)
 {
     double *array = new double[use(key).size()];
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array[i] = use(key)[i].to_double();
     }
     return array;
@@ -1388,7 +1375,7 @@ double* Options::get_double_array(std::string key)
 std::vector<double> Options::get_double_vector(std::string key)
 {
     std::vector<double> array;
-    for (unsigned int i=0; i<use(key).size(); ++i) {
+    for (size_t i=0; i<use(key).size(); ++i) {
         array.push_back(use(key)[i].to_double());
     }
     return array;

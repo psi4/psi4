@@ -27,14 +27,17 @@
  */
 
 #include "dcft.h"
-#include <cmath>
+#include "defines.h"
+
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 
-#include "defines.h"
+#include <cmath>
 
 
 
@@ -328,13 +331,13 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
         new_total_energy_ = scf_energy_ + lambda_energy_;
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
-        energyConverged_ = fabs(new_total_energy_ - old_total_energy_) < energy_threshold_;
+        energyConverged_ = std::fabs(new_total_energy_ - old_total_energy_) < energy_threshold_;
         if (options_.get_str("ALGORITHM") == "TWOSTEP") {
             outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     nLambdaIterations, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                     new_total_energy_, diisString.c_str());
         }
-        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
+        if (std::fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
 
     }
 
@@ -412,11 +415,11 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
         // Compute the DCFT energy
         new_total_energy_ = scf_energy_ + lambda_energy_;
         // Check convergence of the total DCFT energy
-        energyConverged_ = fabs(new_total_energy_ - old_total_energy_) < energy_threshold_;
+        energyConverged_ = std::fabs(new_total_energy_ - old_total_energy_) < energy_threshold_;
         outfile->Printf( "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                 nSCFCycles, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                 new_total_energy_, diisString.c_str());
-        if (fabs(orbitals_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
+        if (std::fabs(orbitals_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
 
     }
     orbitalsDone_ = nSCFCycles == 1;
@@ -531,7 +534,7 @@ DCFTSolver::run_simult_dcft()
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_cumulant_residual();
-        if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
+        if (std::fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         // Update density cumulant tensor
@@ -541,7 +544,7 @@ DCFTSolver::run_simult_dcft()
         // Add lambda energy to the DCFT total energy
         new_total_energy_ += lambda_energy_;
         // Check convergence of the total DCFT energy
-        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
+        energyConverged_ = std::fabs(old_total_energy_ - new_total_energy_) < energy_threshold_;
         if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
             //Store the DIIS vectors
             dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;

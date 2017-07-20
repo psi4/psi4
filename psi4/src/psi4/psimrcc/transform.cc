@@ -58,8 +58,6 @@ namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
 
-using namespace std;
-
 CCTransform::CCTransform() : fraction_of_memory_for_presorting(0.75)
 {
   blas->add_index("[s>=s]");

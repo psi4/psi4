@@ -39,12 +39,15 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/sieve.h"
 #include "psi4/lib3index/dftensor.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
 
+#include <unistd.h>
 #ifdef _OPENMP
     #include <omp.h>
 #endif
@@ -221,7 +224,7 @@ void DF_Helper::prepare_sparsity()
                     onu = primary_->shell(NU).function_index() + nu;
                     if (omu>=onu) {
                         index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
-                        val = fabs(buffer[rank][index]);
+                        val = std::fabs(buffer[rank][index]);
                         if (shell_prints[MU*pshells_+NU] <= val){
                             shell_prints[MU*pshells_+NU]=val;
                             shell_prints[NU*pshells_+MU]=val;

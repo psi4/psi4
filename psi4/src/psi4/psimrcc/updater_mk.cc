@@ -138,7 +138,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
                 //        double term = heff->get_right_eigenvector(j) * heff->get_right_eigenvector(unique_i) /
                 //                      (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
                 //
-                //        if(fabs(term) > 100.0) {
+                //        if(std::fabs(term) > 100.0) {
                 //          outfile->Printf("\n  Warning: c_nu/c_mu = %e ."
                 //              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
                 //        }
@@ -180,7 +180,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
                 //        double term = heff->get_right_eigenvector(j) * heff->get_right_eigenvector(unique_i) /
                 //                      (std::pow(heff->get_right_eigenvector(unique_i),2.0) + std::pow(omega,2.0));
                 //
-                //        if(fabs(term) > 100.0) {
+                //        if(std::fabs(term) > 100.0) {
                 //          outfile->Printf("\n  Warning: c_nu/c_mu = %e ."
                 //              "\n  1) turn on Tikhonow regularization or increase omega (TIKHONOW_OMEGA > 0)",term);
                 //        }

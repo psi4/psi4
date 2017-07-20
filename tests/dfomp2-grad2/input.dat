@@ -1,11 +1,9 @@
 #! OMP2 cc-pVDZ energy for the NO molecule.
 
-ref_vals = [                                                             #TEST
-             [ 0.000000000000,    0.00000000000000,     0.04866593217844],  #TEST
-             [ 0.000000000000,    0.00000000000000,    -0.04866593217844]   #TEST
-           ]                                                             #TEST
-ref = psi4.Matrix(2, 3)                                                #TEST
-ref.set(ref_vals)
+ref = psi4.Matrix.from_list([                                        #TEST
+        [ 0.000000000000,    0.00000000000000,     0.04866593217844],  #TEST
+        [ 0.000000000000,    0.00000000000000,    -0.04866593217844]   #TEST
+      ])                                                            #TEST
 
 molecule {
 0 2

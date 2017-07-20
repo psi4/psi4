@@ -31,6 +31,7 @@
 
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "index.h"
 #include "matrix.h"
@@ -38,8 +39,6 @@
 namespace psi{
 
     namespace psimrcc{
-
-using namespace std;
 
 
 //////////////////////////////////////////////////////////////////////////////

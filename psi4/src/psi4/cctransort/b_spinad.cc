@@ -28,6 +28,9 @@
 
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsio/psio.hpp"
+
+#include <cmath>
+
 namespace psi { namespace cctransort {
 
 void b_spinad(std::shared_ptr<PSIO> psio)
@@ -76,7 +79,7 @@ void b_spinad(std::shared_ptr<PSIO> psio)
 
   int rows_per_bucket = dpd_memfree()/(Bs.params->coltot[0] + nvirt);
   if(rows_per_bucket > Bs.params->rowtot[0]) rows_per_bucket = Bs.params->rowtot[0];
-  int nbuckets = (int) ceil((double) Bs.params->rowtot[0]/(double) rows_per_bucket);
+  int nbuckets = (int) std::ceil((double) Bs.params->rowtot[0]/(double) rows_per_bucket);
   int rows_left = Bs.params->rowtot[0] % rows_per_bucket;
 
   global_dpd_->buf4_mat_irrep_init_block(&Bs, 0, rows_per_bucket);

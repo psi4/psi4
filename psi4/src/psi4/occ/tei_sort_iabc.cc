@@ -33,7 +33,6 @@
 
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace occwave{
 
@@ -61,7 +60,7 @@ void OCCWave::tei_sort_iabc()
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN.labels()[fi+1];
         int k = ERIIN.labels()[fi+2];
         int l = ERIIN.labels()[fi+3];
@@ -70,8 +69,8 @@ void OCCWave::tei_sort_iabc()
 
         // Make sure we are dealing with the (ia|bc) type integrals
         if (i < nooA && j >= nooA && k>= nooA && l >= nooA) {
-            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "NULL", 0);
-            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "NULL", 0);
+            iwl_buf_wrt_val(&AA, i, k, j, l, value, 0, "outfile", 0);
+            if (k > l) iwl_buf_wrt_val(&AA, i, l, j, k, value, 0, "outfile", 0);
         }
 
    }
@@ -106,7 +105,7 @@ void OCCWave::tei_sort_iabc()
    {
 
         int i = ERIIN2.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int j = ERIIN2.labels()[fi+1];
         int k = ERIIN2.labels()[fi+2];
         int l = ERIIN2.labels()[fi+3];

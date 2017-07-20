@@ -45,8 +45,6 @@
 #define EXTERN
 #include "globals.h"
 
-using namespace std;
-
 namespace psi { namespace ccdensity {
 
 void transp(MintsHelper &mints, double sign)
@@ -61,7 +59,7 @@ void transp(MintsHelper &mints, double sign)
   scf_qt = moinfo.scf_qt;
 
   /*** Transform the SO nabla integrals to the MO basis ***/
-  vector<SharedMatrix> dipole = mints.so_nabla();
+  std::vector<SharedMatrix> dipole = mints.so_nabla();
   for(int i=0; i < 3; i++) dipole[i]->scale(-1.0 * sign);
   NX_SO = dipole[0]->to_block_matrix();
   NY_SO = dipole[1]->to_block_matrix();

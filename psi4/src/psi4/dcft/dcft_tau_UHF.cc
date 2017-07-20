@@ -27,6 +27,8 @@
  */
 
 #include "dcft.h"
+#include "defines.h"
+
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.hpp"
@@ -34,9 +36,10 @@
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdiis/diismanager.h"
-#include "defines.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
 
-using namespace std;
+#include <algorithm>
 
 namespace psi{ namespace dcft{
 
@@ -781,8 +784,8 @@ DCFTSolver::print_opdm()
         }
     }
 
-    sort(aPairs.begin(), aPairs.end(), greater<std::pair<double, int> >());
-    sort(bPairs.begin(), bPairs.end(), greater<std::pair<double, int> >());
+    sort(aPairs.begin(), aPairs.end(), std::greater<std::pair<double, int> >());
+    sort(bPairs.begin(), bPairs.end(), std::greater<std::pair<double, int> >());
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);

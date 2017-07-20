@@ -115,7 +115,7 @@ public:
     virtual SharedMatrix compute_gradient(std::shared_ptr<Molecule> m);
     virtual SharedMatrix compute_hessian(std::shared_ptr<Molecule> m);
 
-    virtual void print(std::string OutFileRMR = "outfile", int level = 1) const;
+    virtual void print(std::string out_fname = "outfile", int level = 1) const;
     void py_print() const { print("outfile", 1); }
 };
 

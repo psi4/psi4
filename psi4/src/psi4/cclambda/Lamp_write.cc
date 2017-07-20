@@ -33,6 +33,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -143,7 +144,7 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, std::string out)
 	A = L1->params->colorb[h^Gia][a];
 	value = L1->matrix[h][i][a];
 	for(m=0; m < length; m++) {
-	  if((fabs(value) - fabs(t1stack[m].value)) > 1e-12) {
+	  if((std::fabs(value) - std::fabs(t1stack[m].value)) > 1e-12) {
 	    onestack_insert(t1stack, value, I, A, m, length);
 	    break;
 	  }
@@ -155,12 +156,12 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, std::string out)
   global_dpd_->file2_mat_close(L1);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
-    if(fabs(t1stack[m].value) > 1e-8) num2print++;
+    if(std::fabs(t1stack[m].value) > 1e-8) num2print++;
 
   if(num2print) outfile->Printf( "%s", label);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
-    if(fabs(t1stack[m].value) > 1e-8)
+    if(std::fabs(t1stack[m].value) > 1e-8)
       outfile->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
@@ -229,7 +230,7 @@ void amp_write_L2(dpdbuf4 *L2, int length, const char *label, std::string out)
 	value = L2->matrix[h][ij][ab];
 
 	for(m=0; m < length; m++) {
-	  if((fabs(value) - fabs(t2stack[m].value)) > 1e-12) {
+	  if((std::fabs(value) - std::fabs(t2stack[m].value)) > 1e-12) {
 	    twostack_insert(t2stack, value, i, j, a, b, m, length);
 	    break;
 	  }
@@ -241,12 +242,12 @@ void amp_write_L2(dpdbuf4 *L2, int length, const char *label, std::string out)
   }
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
-    if(fabs(t2stack[m].value) > 1e-8) num2print++;
+    if(std::fabs(t2stack[m].value) > 1e-8) num2print++;
 
   if(num2print) outfile->Printf( "%s", label);
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
-    if(fabs(t2stack[m].value) > 1e-8)
+    if(std::fabs(t2stack[m].value) > 1e-8)
       outfile->Printf( "\t%3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j,
 	      t2stack[m].a, t2stack[m].b, t2stack[m].value);
 

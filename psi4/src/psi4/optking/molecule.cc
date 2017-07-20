@@ -39,7 +39,8 @@
 #include "linear_algebra.h"
 #include "atom_data.h"
 #include "psi4/optking/physconst.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -54,8 +55,6 @@
 #endif
 
 namespace opt {
-
-using namespace std;
 
 // if allocate_fragment, then read the number of atoms and allocate memory for
 //   a fragment of that size.  Otherwise, this is an empty constructor.

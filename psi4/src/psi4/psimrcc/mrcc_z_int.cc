@@ -40,8 +40,6 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
 
-using namespace std;
-
 void CCMRCC::build_Z_intermediates()
 {
   // I am rewriting

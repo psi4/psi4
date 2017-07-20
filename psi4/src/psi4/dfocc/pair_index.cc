@@ -34,7 +34,6 @@
 #include "dfocc.h"
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
@@ -372,7 +371,7 @@ int DFOCC::ai_pair_idxAA(int a, int i)
 //====================================
 //   MO Rotation Block
 //====================================
-int DFOCC::get_rotation_block(string rotblock)
+int DFOCC::get_rotation_block(std::string rotblock)
 {
    int index;
 

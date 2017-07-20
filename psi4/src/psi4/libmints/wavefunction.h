@@ -31,13 +31,12 @@
 
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/dimension.h"
 
-#include "psi4/pybind11.h"
 #include <stddef.h>
 #include <vector>
 #include <memory>
+#include <map>
 
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
@@ -76,6 +75,7 @@ class Options;
 class SOBasisSet;
 class PSIO;
 class OrbitalSpace;
+class ExternalPotential;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -92,9 +92,6 @@ protected:
 
     /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
-
-    /// The ECP basis set
-    std::shared_ptr<BasisSet> ecpbasisset_;
 
     /// Primary basis set for SO integrals
     std::shared_ptr<SOBasisSet> sobasisset_;
@@ -123,9 +120,9 @@ protected:
     long int memory_;
 
     /// Debug flag
-    unsigned int debug_;
+    size_t debug_;
     /// Print flag
-    unsigned int print_;
+    size_t print_;
 
     /// Total alpha and beta electrons
     int nalpha_, nbeta_;
@@ -172,7 +169,6 @@ protected:
 
     /// Core Hamiltonian matrix
     SharedMatrix H_;
-    SharedMatrix Horig_;
 
     /// Alpha MO coefficients
     SharedMatrix Ca_;
@@ -193,13 +189,9 @@ protected:
     SharedMatrix Fb_;
 
     /// Alpha orbital eneriges
-    std::shared_ptr<Vector> epsilon_a_;
+    SharedVector epsilon_a_;
     /// Beta orbital energies
-    std::shared_ptr<Vector> epsilon_b_;
-
-    // Callback routines to Python
-    std::vector<void*> precallbacks_;
-    std::vector<void*> postcallbacks_;
+    SharedVector epsilon_b_;
 
     /// If a gradient is available it will be here:
     SharedMatrix gradient_;
@@ -207,27 +199,30 @@ protected:
     /// If a Hessian is available it will be here:
     SharedMatrix hessian_;
 
-    /// The TPDM contribution to the gradient
-    std::shared_ptr<Matrix> tpdm_gradient_contribution_;
-
     /// Helpers for C/D/epsilon transformers
-    SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
+    SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon,
+                                 const std::string& basis, const std::string& subset);
     SharedMatrix F_subset_helper(SharedMatrix F, SharedMatrix C, const std::string& basis);
-    SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
-    std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
+    SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi,
+                                       const std::string& basis, const std::string& subset);
+    std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi,
+                                                    const std::string& subset);
 
     /// If atomic point charges are available they will be here
     std::shared_ptr<std::vector<double>> atomic_point_charges_;
 
     /// If frequencies are available, they will be here:
-    std::shared_ptr<Vector> frequencies_;
+    SharedVector frequencies_;
 
     /// If normal modes are available, they will be here:
-    std::shared_ptr<Vector> normalmodes_;
+    SharedVector normalmodes_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
+
+    // The external potenital
+    std::shared_ptr<ExternalPotential> external_pot_;
 
     // Collection of variables
     std::map<std::string, double> variables_;
@@ -243,11 +238,6 @@ public:
     Wavefunction(std::shared_ptr<Molecule> molecule,
                  std::shared_ptr<BasisSet> basis,
                  Options& options);
-
-    /// Constructor for an entirely new wavefunction with an existing basis
-    Wavefunction(std::shared_ptr<Molecule> molecule,
-                 std::shared_ptr<BasisSet> basis,
-                 std::shared_ptr<BasisSet> ecpbasis);
 
     /// Constructor for an entirely new wavefunction with an existing basis and global options
     Wavefunction(std::shared_ptr<Molecule> molecule,
@@ -305,8 +295,6 @@ public:
     std::shared_ptr<IntegralFactory> integral() const;
     /// Returns the basis set object that pertains to this wavefunction.
     std::shared_ptr<BasisSet> basisset() const;
-    /// Returns this wavefunction's ECP basisset
-    std::shared_ptr<BasisSet> ecpbasisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     std::shared_ptr<SOBasisSet> sobasisset() const;
 
@@ -387,13 +375,11 @@ public:
     /// Returns the (SO basis) beta Fock matrix
     SharedMatrix Fb() const;
     /// Returns the alpha orbital energies
-    std::shared_ptr<Vector> epsilon_a() const;
+    SharedVector epsilon_a() const;
     /// Returns the beta orbital energies
-    std::shared_ptr<Vector> epsilon_b() const;
+    SharedVector epsilon_b() const;
     /// Returns the SO basis Lagrangian
-    std::shared_ptr<Matrix> Lagrangian() const;
-    /// The two particle density matrix contribution to the gradient
-    virtual std::shared_ptr<Matrix> tpdm_gradient_contribution() const;
+    SharedMatrix Lagrangian() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
 
@@ -517,7 +503,7 @@ public:
        return atomic_point_charges_;
     }
     /// Returns the atomic point charges in Vector form for python output.
-    std::shared_ptr<Vector> get_atomic_point_charges() const;
+    SharedVector get_atomic_point_charges() const;
 
     /// Sets the atomic point charges
     void set_atomic_point_charges(const std::shared_ptr<std::vector<double>>& apcs){
@@ -525,14 +511,14 @@ public:
     }
 
     /// Returns the frequencies
-    std::shared_ptr<Vector> frequencies() const;
+    SharedVector frequencies() const;
     /// Set the frequencies for the wavefunction
-    void set_frequencies(std::shared_ptr<Vector>& freqs);
+    void set_frequencies(SharedVector& freqs);
 
     /// Returns the normalmodes
-    std::shared_ptr<Vector> normalmodes() const;
+    SharedVector normalmodes() const;
     /// Set the normalmodes for the wavefunction
-    void set_normalmodes(std::shared_ptr<Vector>& norms);
+    void set_normalmodes(SharedVector& norms);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }
@@ -541,13 +527,16 @@ public:
     const std::string& name() const { return name_; }
 
     // Set the print flag level
-    void set_print(unsigned int print) { print_ = print; }
+    void set_print(size_t print) { print_ = print; }
 
     // Set the debug flag level
-    void set_debug(unsigned int debug) { debug_ = debug; }
+    void set_debug(size_t debug) { debug_ = debug; }
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
+
+    // Set the external potential
+    void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
 
     /// Get and set variables dictionary
     double get_variable(const std::string key);

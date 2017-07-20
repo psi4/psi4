@@ -29,8 +29,11 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/sobasis.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/orbitalspace.h"
+#include "psi4/libmints/extern.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
@@ -65,8 +68,6 @@ void export_wavefunction(py::module& m) {
                                                             py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>>())
-        .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>,
-                      std::shared_ptr<BasisSet>>())
         .def("reference_wavefunction", &Wavefunction::reference_wavefunction, "Returns the reference wavefunction.")
         .def("set_reference_wavefunction", &Wavefunction::set_reference_wavefunction, "docstring")
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy),
@@ -110,7 +111,6 @@ void export_wavefunction(py::module& m) {
         .def("S", &Wavefunction::S, "Returns the One-electron Overlap Matrix.")
         .def("aotoso", &Wavefunction::aotoso,
              "Returns the Atomic Orbital to Symmetry Orbital transformer.")
-        .def("ecpbasisset", &Wavefunction::ecpbasisset, "Returns the current ECP basis.")
         .def("basisset", &Wavefunction::basisset, "Returns the current orbital basis.")
         .def("sobasisset", &Wavefunction::sobasisset, "Returns the symmetry orbitals basis.")
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
@@ -158,6 +158,7 @@ void export_wavefunction(py::module& m) {
              "Computes the gradient of the Wavefunction")
         .def("compute_hessian", &Wavefunction::compute_hessian,
              "Computes the Hessian of the Wavefunction.")
+        .def("set_external_potential", &Wavefunction::set_external_potential, "Sets the requested external potential.")
         .def("set_variable", &Wavefunction::set_variable, "Sets the requested internal variable.")
         .def("get_variable", &Wavefunction::get_variable,
              "Returns the requested internal variable.")

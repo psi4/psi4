@@ -35,7 +35,7 @@
 #include <cstring>
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 void DPD::file4_cache_init(void)
@@ -133,7 +133,7 @@ DPD::file4_cache_last(void)
     return(NULL);
 }
 
-int DPD::file4_cache_add(dpdfile4 *File, unsigned int priority)
+int DPD::file4_cache_add(dpdfile4 *File, size_t priority)
 {
     int h, dpdnum;
     dpd_file4_cache_entry *this_entry;
@@ -311,7 +311,7 @@ void DPD::file4_cache_print(std::string out)
 {
     int total_size=0;
     std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-             std::shared_ptr<OutFile>(new OutFile(out)));
+             std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
     dpd_file4_cache_entry *this_entry;
 
     this_entry = dpd_main.file4_cache;

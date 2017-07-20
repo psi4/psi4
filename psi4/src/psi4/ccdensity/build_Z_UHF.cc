@@ -33,12 +33,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <cmath>
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/exception.h"
-#include <cmath>
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -168,7 +170,7 @@ void build_Z_UHF(void)
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) {
-        if(fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
+        if(std::fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
         else D.matrix[h][a][i] = Z[count];
         count++;
       }
@@ -182,7 +184,7 @@ void build_Z_UHF(void)
   for(h=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) {
-        if(fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
+        if(std::fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
         else D.matrix[h][a][i] = Z[count];
         count++;
       }

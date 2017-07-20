@@ -73,7 +73,7 @@ int DPD::contract422(dpdbuf4 *X, dpdfile2 *Y, dpdfile2 *Z, int trans_Y,
     file2_mat_init(Y);
     file2_mat_rd(Y);
     file2_mat_init(Z);
-    if(fabs(beta) > 0.0) file2_mat_rd(Z);
+    if(std::fabs(beta) > 0.0) file2_mat_rd(Z);
 
 #ifdef DPD_DEBUG
     if(trans_Z) { zrow = Z->params->coltot; zcol = Z->params->rowtot; }

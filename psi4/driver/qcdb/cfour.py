@@ -50,7 +50,8 @@ def harvest_output(outtext):
     pass_coord = []
     pass_grad = []
 
-    for outpass in re.split(r'--invoking executable xjoda', outtext, re.MULTILINE):
+    #for outpass in re.split(r'--invoking executable xjoda', outtext, re.MULTILINE):
+    for outpass in re.split(r'JODA beginning optimization cycle', outtext, re.MULTILINE):
         psivar, c4coord, c4grad = harvest_outfile_pass(outpass)
         pass_psivar.append(psivar)
         pass_coord.append(c4coord)
@@ -116,13 +117,22 @@ def harvest_outfile_pass(outtext):
         print('matched scf2')
         psivar['SCF TOTAL ENERGY'] = mobj.group(1)
 
+    if 'SCF TOTAL ENERGY' not in psivar:
+        # can be too greedy and match across scf cycles
+        mobj = re.search(
+            r'^\s+' + r'(?:SCF has converged.)' + r'\s*$' +
+            r'(?:.*?)' +
+            r'^\s+' + r'(?:\d+)' + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$',
+            outtext, re.MULTILINE | re.DOTALL)
+        if mobj:
+            print('matched scf3')
+            psivar['SCF TOTAL ENERGY'] = mobj.group(1)
+
     mobj = re.search(
-        r'^\s+' + r'(?:SCF has converged.)' + r'\s*$' +
-        r'(?:.*?)' +
-        r'^\s+' + r'(?:\d+)' + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$',
-        outtext, re.MULTILINE | re.DOTALL)
+        r'^\s+' + r'(?:E\(ROHF\)=)' + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE)
     if mobj:
-        print('matched scf3')
+        print('matched scf4')
         psivar['SCF TOTAL ENERGY'] = mobj.group(1)
 
     # Process MP2
@@ -329,6 +339,24 @@ def harvest_outfile_pass(outtext):
         psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(4)
 
     mobj = re.search(
+        r'^\s+' + r'(?:HF-SCF energy)' + r'\s+' + NUMBER + r'\s*' +
+        r'(?:.*?)' +
+        r'^\s+' + r'(?:CCSD energy)' + r'\s+' + NUMBER + r'\s*' +
+        r'(?:.*?)' +
+        r'^\s+' + r'(?:E4T \+ E5ST)' + r'\s+' + NUMBER + r'\s*' +
+        r'(?:.*?)' +
+        r'^\s*(?:-+)\s*' +
+        r'^\s+' + r'(?:CCSD\(T\) energy)' + r'\s+' + NUMBER + r'\s*$',
+        outtext, re.MULTILINE | re.DOTALL)
+    if mobj:
+        print('matched ccsd(t) ecc v2')
+        psivar['SCF TOTAL ENERGY'] = mobj.group(1)
+        psivar['CCSD TOTAL ENERGY'] = mobj.group(2)
+        psivar['(T) CORRECTION ENERGY'] = mobj.group(3)
+        psivar['CCSD(T) CORRELATION ENERGY'] = Decimal(mobj.group(4)) - Decimal(mobj.group(1))
+        psivar['CCSD(T) TOTAL ENERGY'] = mobj.group(4)
+
+    mobj = re.search(
         r'^\s+' + r'(?:CCSD energy)' + r'\s+' + NUMBER + r'\s*' +
         r'^\s*(?:-+)\s*' +
         r'^\s+' + r'(?:CCSD\(T\) energy)' + r'\s+' + NUMBER + r'\s*$',
@@ -359,6 +387,7 @@ def harvest_outfile_pass(outtext):
         r'^\s+' + r'(?P<fullCC>(?P<iterCC>CC(?:\w+))(?:\(T\))?)' + r'\s+(?:energy will be calculated.)\s*' +
         r'(?:.*?)' +
         r'^\s+' + r'Amplitude equations converged in' + r'\s*\d+\s*' + r'iterations.\s*' +
+        r'(?:.*?)' +
         r'^\s+' + r'The AA contribution to the correlation energy is:\s+' + NUMBER + r'\s+a.u.\s*' +
         r'^\s+' + r'The BB contribution to the correlation energy is:\s+' + NUMBER + r'\s+a.u.\s*' +
         r'^\s+' + r'The AB contribution to the correlation energy is:\s+' + NUMBER + r'\s+a.u.\s*' +
@@ -435,6 +464,7 @@ def harvest_outfile_pass(outtext):
     if 'SCF TOTAL ENERGY' in psivar:
         psivar['CURRENT REFERENCE ENERGY'] = psivar['SCF TOTAL ENERGY']
         psivar['CURRENT ENERGY'] = psivar['SCF TOTAL ENERGY']
+        psivar['HF TOTAL ENERGY'] = psivar['SCF TOTAL ENERGY']
 
     if 'MP2 TOTAL ENERGY' in psivar and 'MP2 CORRELATION ENERGY' in psivar:
         psivar['CURRENT CORRELATION ENERGY'] = psivar['MP2 CORRELATION ENERGY']
@@ -809,7 +839,7 @@ def muster_modelchem(name, dertype):
 
     if lowername == 'cfour':
         pass
-    elif lowername == 'c4-scf':
+    elif lowername in ['c4-scf', 'c4-hf']:
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'SCF'
 
     elif lowername == 'c4-mp2':
@@ -868,6 +898,7 @@ def cfour_list():
     val = []
     val.append('cfour')
     val.append('c4-scf')
+    val.append('c4-hf')
     val.append('c4-mp2')
     val.append('c4-mp3')
     val.append('c4-mp4(sdq)')
@@ -888,6 +919,7 @@ def cfour_gradient_list():
     val = []
     val.append('cfour')
     val.append('c4-scf')
+    val.append('c4-hf')
     val.append('c4-mp2')
     val.append('c4-mp3')
     val.append('c4-mp4(sdq)')
@@ -909,50 +941,52 @@ def cfour_psivar_list():
     """
     VARH = {}
     VARH['c4-scf'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY'}
+                         'c4-scf': 'SCF TOTAL ENERGY'}
+    VARH['c4-hf'] = {
+                          'c4-hf': 'HF TOTAL ENERGY'}
     VARH['c4-mp2'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY'}
     VARH['c4-mp3'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                      'c4-mp2.5corl': 'MP2.5 CORRELATION ENERGY',
-                        'c4-mp3corl': 'MP3 CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                       'c4-mp2.5': 'MP2.5 TOTAL ENERGY',
+                         'c4-mp3': 'MP3 TOTAL ENERGY'}
     VARH['c4-mp4(sdq)'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                      'c4-mp2.5corl': 'MP2.5 CORRELATION ENERGY',
-                        'c4-mp3corl': 'MP3 CORRELATION ENERGY',
-                   'c4-mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                       'c4-mp2.5': 'MP2.5 TOTAL ENERGY',
+                         'c4-mp3': 'MP3 TOTAL ENERGY',
+                    'c4-mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY'}
     VARH['c4-mp4'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                      'c4-mp2.5corl': 'MP2.5 CORRELATION ENERGY',
-                        'c4-mp3corl': 'MP3 CORRELATION ENERGY',
-                   'c4-mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY',
-                        'c4-mp4corl': 'MP4(SDTQ) CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                       'c4-mp2.5': 'MP2.5 TOTAL ENERGY',
+                         'c4-mp3': 'MP3 TOTAL ENERGY',
+                    'c4-mp4(sdq)': 'MP4(SDQ) TOTAL ENERGY',
+                         'c4-mp4': 'MP4(SDTQ) TOTAL ENERGY'}
     VARH['c4-cc2'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                        'c4-cc2corl': 'CC2 CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                         'c4-cc2': 'CC2 TOTAL ENERGY'}
     VARH['c4-ccsd'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                       'c4-ccsdcorl': 'CCSD CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                        'c4-ccsd': 'CCSD TOTAL ENERGY'}
     VARH['c4-cc3'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                        'c4-cc3corl': 'CC3 CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                         'c4-cc3': 'CC3 TOTAL ENERGY'}
     VARH['c4-ccsd(t)'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                       'c4-ccsdcorl': 'CCSD CORRELATION ENERGY',
-                    'c4-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                        'c4-ccsd': 'CCSD TOTAL ENERGY',
+                     'c4-ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
     VARH['c4-ccsdt'] = {
-                         'c4-scftot': 'SCF TOTAL ENERGY',
-                        'c4-mp2corl': 'MP2 CORRELATION ENERGY',
-                       'c4-ccsdcorl': 'CCSD CORRELATION ENERGY',
-                      'c4-ccsdtcorl': 'CCSDT CORRELATION ENERGY'}
+                          'c4-hf': 'HF TOTAL ENERGY',
+                         'c4-mp2': 'MP2 TOTAL ENERGY',
+                        'c4-ccsd': 'CCSD TOTAL ENERGY',
+                       'c4-ccsdt': 'CCSDT TOTAL ENERGY'}
 
     return VARH
 

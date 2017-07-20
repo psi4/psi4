@@ -49,12 +49,12 @@
 #include "psi4/lib3index/cholesky.h"
 
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
-using namespace std;
 using namespace psi;
 
 namespace psi {
@@ -578,7 +578,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints,
     }
 
     if (bench_) {
-       std::shared_ptr<OutFile> printer(new OutFile("bench.dat",APPEND));
+       std::shared_ptr<PsiOutStream> printer(new PsiOutStream("bench.dat",std::ostream::app));
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf( "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
@@ -678,12 +678,12 @@ void DirectJK::compute_JK()
     /**
     sieve_->set_sieve(cutoff_);
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    unsigned long int nMN = shell_pairs.size();
-    unsigned long int nMNRS = nMN * nMN;
+    size_t nMN = shell_pairs.size();
+    size_t nMNRS = nMN * nMN;
     int nthread = eri_.size();
 
     #pragma omp parallel for schedule(dynamic,30) num_threads(nthread)
-    for (unsigned long int index = 0L; index < nMNRS; ++index) {
+    for (size_t index = 0L; index < nMNRS; ++index) {
 
         int thread = 0;
         #ifdef _OPENMP
@@ -692,8 +692,8 @@ void DirectJK::compute_JK()
 
         const double* buffer = eri_[thread]->buffer();
 
-        unsigned long int MN = index / nMN;
-        unsigned long int RS = index % nMN;
+        size_t MN = index / nMN;
+        size_t RS = index % nMN;
         if (MN < RS) continue;
 
         int M = shell_pairs[MN].first;

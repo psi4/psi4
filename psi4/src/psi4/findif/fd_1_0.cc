@@ -38,6 +38,7 @@
 #include "psi4/libmints/writer.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/cdsalclist.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/pybind11.h"
 
@@ -52,8 +53,7 @@ SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
 
-    py::object pyExtern = dynamic_cast<PythonDataType *>(options["EXTERN"].get())->to_python();
-    bool project = !pyExtern && !options.get_bool("PERTURB_H");
+    bool project = !options.get_bool("EXTERN") && !options.get_bool("PERTURB_H");
     CdSalcList cdsalc(mol, fact, 0x1, project, project);
     int Nsalc = cdsalc.ncd();
 

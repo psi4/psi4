@@ -39,7 +39,7 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi { namespace cctriples {
 
 double ET_UHF_BBB(void)
@@ -122,7 +122,7 @@ double ET_UHF_BBB(void)
 	    }
 	  }
 	}
-  std::shared_ptr<OutFile> printer(new OutFile("ijk.dat",TRUNCATE));
+  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("ijk.dat",std::ostream::trunc));
   //ffile(&ijkfile,"ijk.dat",0);
   printer->Printf("Spin Case: BBB\n");
   printer->Printf("Number of IJK combintions: %d\n", nijk);
@@ -751,7 +751,7 @@ double ET_UHF_BBB(void)
 		      }
 
 		      /*
-		      if(fabs(VABC[Gab][ab][c]) > 1e-7)
+		      if(std::fabs(VABC[Gab][ab][c]) > 1e-7)
 			outfile->Printf( "%d %d %d %d %d %d %20.15f\n", I,J,K,A,B,C,VABC[Gab][ab][c]);
 		      */
 

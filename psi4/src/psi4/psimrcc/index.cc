@@ -38,6 +38,7 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/memory_manager.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "index.h"
 
@@ -47,8 +48,6 @@ namespace psi{
 
 extern MemoryManager* memory_manager;
 extern MOInfo *moinfo;
-
-using namespace std;
 
 CCIndex::CCIndex(std::string str):
   label(str),nelements(0), greater_than_or_equal(false), greater_than(false), ntuples(0), tuples(0),
@@ -93,7 +92,7 @@ void CCIndex::init()
     }
   }
   for(int i=0;i<nelements;i++){
-    first_mos.push_back(vector<int>(nirreps,0));
+    first_mos.push_back(std::vector<int>(nirreps,0));
     dimension.push_back(0);
   }
   for(int i=0;i<nelements;i++){
@@ -227,7 +226,7 @@ void CCIndex::make_two_index()
   }
 
   // [X>=Y]
-  if(label.find(">=")!=string::npos){
+  if(label.find(">=")!=std::string::npos){
     greater_than_or_equal = true;
     ntuples               = 0;
     for(int h=0;h<nirreps;h++){
@@ -255,7 +254,7 @@ void CCIndex::make_two_index()
       last.push_back(ntuples);
       tuplespi.push_back(last[h]-first[h]);
     }
-  }else if(label.find(">")!=string::npos){
+  }else if(label.find(">")!=std::string::npos){
     greater_than          = true;
     ntuples               = 0;
     for(int h=0;h<nirreps;h++){
@@ -321,7 +320,7 @@ void CCIndex::make_two_index()
 
 void CCIndex::make_three_index()
 {
-  if(label.find(">")!=string::npos){
+  if(label.find(">")!=std::string::npos){
     outfile->Printf("\n\n\tThe CCIndex class cannot handle restricted loops for triplets!!!\n\n");
 
     exit(1);
@@ -421,7 +420,7 @@ void CCIndex::make_three_index()
 void CCIndex::print()
 {
   outfile->Printf("\n\n---------------------------------");
-  outfile->Printf("\n\tPair Type %s has %lu elements",label.c_str(),(unsigned long) ntuples);
+  outfile->Printf("\n\tPair Type %s has %lu elements",label.c_str(),(size_t) ntuples);
   outfile->Printf("\n---------------------------------");
   int index=0;
   for(int h=0;h<nirreps;h++){

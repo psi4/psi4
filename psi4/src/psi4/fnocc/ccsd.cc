@@ -26,24 +26,26 @@
  * @END LICENSE
  */
 
+#include "blas.h"
+#include "ccsd.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#include"psi4/libqt/qt.h"
-#include<sys/times.h>
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/lib3index/3index.h"
+
+#include <sys/times.h>
+#include <unistd.h>
 #ifdef _OPENMP
     #include<omp.h>
 #else
     #define omp_get_wtime() 0.0
 #endif
-
-#include"blas.h"
-#include"ccsd.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/basisset_parser.h"
-#include "psi4/lib3index/3index.h"
 
 using namespace psi;
 
@@ -199,6 +201,9 @@ double CoupledCluster::compute_energy() {
         Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
         Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = eccsd_ss;
         Process::environment.globals["CCSD TOTAL ENERGY"] = eccsd + escf;
+        /* updates the wavefunction for checkpointing */
+        energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
+        name_ = "CCSD";
      }else{
         Process::environment.globals["QCISD CORRELATION ENERGY"] = eccsd;
         Process::environment.globals["QCISD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
@@ -472,8 +477,8 @@ PsiReturnType CoupledCluster::CCSDIterations() {
       //}else {
       //    double min = 1.0e9;
       //    for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
-      //        if ( fabs( diisvec[j-1] ) < min ) {
-      //            min = fabs( diisvec[j-1] );
+      //        if ( std::fabs( diisvec[j-1] ) < min ) {
+      //            min = std::fabs( diisvec[j-1] );
       //            replace_diis_iter = j;
       //        }
       //    }
@@ -490,7 +495,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
       iter++;
 
       // energy and amplitude convergence check
-      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
+      if (std::fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
   }
 
   // stop timing iterations

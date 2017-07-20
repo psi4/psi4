@@ -41,8 +41,9 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/writer_file_prefix.h"
+#include "psi4/libpsi4util/process.h"
 
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 using SharedMatrix=std::shared_ptr<Matrix>;
@@ -122,7 +123,7 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
   outfile->Printf( "\tFrequencies in cm^-1; force constants in au.\n");
 
   for(int i=0; i<modes.size(); ++i) { // print descending order
-    if (fabs(cm_convert * sqrt(k_convert * fabs(modes[i]->km))) < 5.0) continue;
+    if (std::fabs(cm_convert * sqrt(k_convert * std::fabs(modes[i]->km))) < 5.0) continue;
     outfile->Printf("\n");
     if (modes[i]->km < 0.0)
       outfile->Printf( "   Frequency:      %8.2fi\n", cm_convert * sqrt(-k_convert * modes[i]->km));
@@ -157,7 +158,7 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
 {
     std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
-    std::shared_ptr <OutFile> printer(new OutFile(normal_modes_fname, TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream(normal_modes_fname, std::ostream::trunc));
 
     printer->Printf("[Molden Format]\n[FREQ]\n");
     for(int i = 0; i < modes.size(); ++i) { // print descending order

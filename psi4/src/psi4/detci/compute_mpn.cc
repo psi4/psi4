@@ -41,9 +41,6 @@
 
 /* #define DEBUG */
 
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
@@ -51,10 +48,15 @@
 #include "psi4/detci/ci_tol.h"
 #include "psi4/detci/civect.h"
 #include "psi4/detci/ciwave.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
 
 namespace psi { namespace detci {
 
-extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
+extern void print_vec(size_t nprint, int *Iacode, int *Ibcode,
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,

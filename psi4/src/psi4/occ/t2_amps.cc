@@ -32,8 +32,7 @@
 #include "defines.h"
 #include "occwave.h"
 
-
-using namespace std;
+#include <cmath>
 
 
 namespace psi{ namespace occwave{
@@ -201,7 +200,7 @@ if (reference_ == "RESTRICTED") {
     rms_t2 = 0.0;
     rms_t2 = global_dpd_->buf4_dot_self(&R);
     global_dpd_->buf4_close(&R);
-    rms_t2 = sqrt(rms_t2) / nElements;
+    rms_t2 = std::sqrt(rms_t2) / nElements;
 
     // Reset
     global_dpd_->buf4_copy(&Tnew, PSIF_OCC_DPD, "T2 <OO|VV>");
@@ -749,7 +748,7 @@ else if (reference_ == "UNRESTRICTED") {
         rms_t2AA = 0.0;
         rms_t2AA = global_dpd_->buf4_dot_self(&R);
         global_dpd_->buf4_close(&R);
-        rms_t2AA = sqrt(rms_t2AA) / nElements;
+        rms_t2AA = std::sqrt(rms_t2AA) / nElements;
     }
     else {
         rms_t2AA = 0.0;
@@ -779,7 +778,7 @@ else if (reference_ == "UNRESTRICTED") {
         rms_t2BB = 0.0;
         rms_t2BB = global_dpd_->buf4_dot_self(&R);
         global_dpd_->buf4_close(&R);
-        rms_t2BB = sqrt(rms_t2BB) / nElements;
+        rms_t2BB = std::sqrt(rms_t2BB) / nElements;
     }
     else {
         rms_t2BB = 0.0;
@@ -809,7 +808,7 @@ else if (reference_ == "UNRESTRICTED") {
         rms_t2AB = 0.0;
         rms_t2AB = global_dpd_->buf4_dot_self(&R);
         global_dpd_->buf4_close(&R);
-        rms_t2AB = sqrt(rms_t2AA) / nElements;
+        rms_t2AB = std::sqrt(rms_t2AA) / nElements;
     }
     else {
         rms_t2AB = 0.0;

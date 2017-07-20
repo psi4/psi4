@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "dpd.h"
 
 namespace psi {
@@ -98,7 +99,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
 
     if(Ztrans) trans4_init(&Zt, Z);
 
-    /*  if(fabs(beta) > 0.0) dpd_buf4_scm(Z, beta); */
+    /*  if(std::fabs(beta) > 0.0) dpd_buf4_scm(Z, beta); */
     buf4_scm(Z, beta);
 
 #ifdef DPD_DEBUG
@@ -169,7 +170,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
         if(incore) {
             /*       dpd_buf4_scm(Z, beta); */
             buf4_mat_irrep_init(Z, hzbuf);
-            if(fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, hzbuf);
+            if(std::fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, hzbuf);
             if(Ztrans) {
                 trans4_mat_irrep_init(&Zt, hzbuf);
                 trans4_mat_irrep_rd(&Zt, hzbuf);
@@ -356,7 +357,7 @@ int DPD::contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
 
                 buf4_mat_irrep_row_zero(Z, hzbuf, pq);
 
-                if(fabs(beta) > 0.0)
+                if(std::fabs(beta) > 0.0)
                     buf4_mat_irrep_row_rd(Z, hzbuf, pq);
 
                 for(Gs=0; Gs < nirreps; Gs++) {

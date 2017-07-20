@@ -1,9 +1,7 @@
 #! geometries from a variety of input formats. references from psi4,
 #! testing whether geometry strings read identically for psi4/cfour
 
-import qcdb
-print 'mem'
-print get_memory()
+print('mem', get_memory())
 
 
 set cfour_calc_level scf

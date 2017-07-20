@@ -32,6 +32,8 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 
+#include <vector>
+#include <string>
 #include <map>
 
 namespace psi {

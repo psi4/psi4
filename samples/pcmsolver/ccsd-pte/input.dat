@@ -3,8 +3,6 @@
 nucenergy = 0.0000000000000000 # TEST 
 scf_polenergy = -0.6908724085545570 # TEST
 scf_totalenergy = -199.515074015114 # TEST
-pte_correnergy = -0.002501910865185 # TEST
-pte_totalenergy = -199.517575925979429 # TEST
 
 molecule Mg
 {

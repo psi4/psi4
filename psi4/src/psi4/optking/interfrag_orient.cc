@@ -220,7 +220,7 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
     v3d_eAB(ref_B[0], ref_B_final[1], e12b); /* v B1->B2_final */
     B_angle = acos(v3d_dot(e12b,e12));
 
-    if (fabs(B_angle) > 1.0e-7) {
+    if (std::fabs(B_angle) > 1.0e-7) {
       v3d_cross_product(e12,e12b,erot);
 
       /* Move B to put B1 at origin */
@@ -254,7 +254,7 @@ bool INTERFRAG::orient_fragment(double *dq, double *fq) {
     v3d_tors(ref_B[2], ref_B[0], ref_B[1], ref_B_final[2], B_angle);
 
     //oprintf_out("B_angle: %15.10lf\n",B_angle);
-    if (fabs(B_angle) > 1.0e-10) {
+    if (std::fabs(B_angle) > 1.0e-10) {
 
       // Move B to put B2 at origin
       for (xyz=0; xyz<3; ++xyz)

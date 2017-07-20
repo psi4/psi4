@@ -30,6 +30,8 @@
 #include "sapt0.h"
 #include "sapt2.h"
 
+#include <cmath>
+
 namespace psi { namespace sapt {
 
 void SAPT::zero_disk(int file, const char *array, int rows, int columns)
@@ -305,7 +307,7 @@ SAPTDFInts SAPT0::set_A_AA()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_AA;
 
@@ -343,7 +345,7 @@ SAPTDFInts SAPT0::set_B_BB()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_BB;
 
@@ -381,7 +383,7 @@ SAPTDFInts SAPT0::set_A_AR()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_AR;
 
@@ -416,7 +418,7 @@ SAPTDFInts SAPT0::set_B_BS()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_BS;
 
@@ -451,7 +453,7 @@ SAPTDFInts SAPT0::set_A_AB()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_AB;
 
@@ -487,7 +489,7 @@ SAPTDFInts SAPT0::set_B_AB()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_AB;
 
@@ -643,7 +645,7 @@ SAPTDFInts SAPT0::set_A_RB()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_RB;
 
@@ -679,7 +681,7 @@ SAPTDFInts SAPT0::set_B_RB()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_RB;
 
@@ -715,7 +717,7 @@ SAPTDFInts SAPT0::set_A_AS()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_AS;
 
@@ -751,7 +753,7 @@ SAPTDFInts SAPT0::set_B_AS()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_AS;
 
@@ -827,7 +829,7 @@ SAPTDFInts SAPT0::set_act_A_AR()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_AR;
 
@@ -862,7 +864,7 @@ SAPTDFInts SAPT0::set_act_B_BS()
 
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
+  enuc = std::sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_BS;
 
@@ -1093,7 +1095,7 @@ SAPTDFInts SAPT0::set_Q14_AR()
 
 double** SAPT2::get_AA_ints(const int dress, int foccA, int foccAp)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
       foccA,noccA_,foccAp,noccA_);
@@ -1115,7 +1117,7 @@ double** SAPT2::get_AA_ints(const int dress, int foccA, int foccAp)
 
 double** SAPT2::get_diag_AA_ints(const int dress)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = block_matrix(noccA_,ndf_+3);
 
@@ -1136,7 +1138,7 @@ double** SAPT2::get_diag_AA_ints(const int dress)
 
 double** SAPT2::get_BB_ints(const int dress, int foccB, int foccBp)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       foccB,noccB_,foccBp,noccB_);
@@ -1158,7 +1160,7 @@ double** SAPT2::get_BB_ints(const int dress, int foccB, int foccBp)
 
 double** SAPT2::get_diag_BB_ints(const int dress)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = block_matrix(noccB_,ndf_+3);
 
@@ -1179,7 +1181,7 @@ double** SAPT2::get_diag_BB_ints(const int dress)
 
 double** SAPT2::get_AB_ints(const int dress, int foccA, int foccB)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",
       foccA,noccA_,foccB,noccB_);
@@ -1208,7 +1210,7 @@ double** SAPT2::get_AB_ints(const int dress, int foccA, int foccB)
 
 double** SAPT2::get_AR_ints(const int dress, int foccA)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
       foccA,noccA_,0,nvirA_);
@@ -1226,7 +1228,7 @@ double** SAPT2::get_AR_ints(const int dress, int foccA)
 
 double** SAPT2::get_BS_ints(const int dress, int foccB)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
       foccB,noccB_,0,nvirB_);
@@ -1244,7 +1246,7 @@ double** SAPT2::get_BS_ints(const int dress, int foccB)
 
 double** SAPT2::get_RR_ints(const int dress)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = block_matrix(nvirA_*nvirA_,ndf_+3);
 
@@ -1267,7 +1269,7 @@ double** SAPT2::get_RR_ints(const int dress)
 
 double** SAPT2::get_SS_ints(const int dress)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = block_matrix(nvirB_*nvirB_,ndf_+3);
 
@@ -1290,7 +1292,7 @@ double** SAPT2::get_SS_ints(const int dress)
 
 double** SAPT2::get_AS_ints(const int dress, int foccA)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",
       foccA,noccA_,0,nvirB_);
@@ -1319,7 +1321,7 @@ double** SAPT2::get_AS_ints(const int dress, int foccA)
 
 double** SAPT2::get_RB_ints(const int dress, int foccB)
 {
-  double enuc = sqrt(enuc_/((double) NA_*NB_));
+  double enuc = std::sqrt(enuc_/((double) NA_*NB_));
 
   double **A = get_DF_ints(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",
       0,nvirA_,foccB,noccB_);

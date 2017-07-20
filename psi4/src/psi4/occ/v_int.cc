@@ -32,9 +32,6 @@
 #include "occwave.h"
 
 
-using namespace std;
-
-
 namespace psi{ namespace occwave{
 
 void OCCWave::v_int()

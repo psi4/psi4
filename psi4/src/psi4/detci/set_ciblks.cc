@@ -331,12 +331,12 @@ void CIWavefunction::set_ciblks()
    CIblks_->offset[0] = 0;
    for (i=1; i<nblocks; i++) {
       CIblks_->offset[i] = CIblks_->offset[i-1] +
-         (BIGINT) CIblks_->Ia_size[i-1] *
-         (BIGINT) CIblks_->Ib_size[i-1];
+         (size_t) CIblks_->Ia_size[i-1] *
+         (size_t) CIblks_->Ib_size[i-1];
       }
    CIblks_->vectlen = CIblks_->offset[nblocks-1] +
-                    (BIGINT) CIblks_->Ia_size[nblocks-1] *
-                    (BIGINT) CIblks_->Ib_size[nblocks-1];
+                    (size_t) CIblks_->Ia_size[nblocks-1] *
+                    (size_t) CIblks_->Ib_size[nblocks-1];
 
    if (print_) {
      outfile->Printf(
@@ -372,8 +372,8 @@ void CIWavefunction::set_ciblks()
         outfile->Printf("Block %3d: Alp=%3d, Bet=%3d  Size = %4d x %4d = %ld\n",
                 blk, CIblks_->Ia_code[blk], CIblks_->Ib_code[blk],
                 CIblks_->Ia_size[blk], CIblks_->Ib_size[blk],
-                (unsigned long) CIblks_->Ia_size[blk] *
-                (unsigned long) CIblks_->Ib_size[blk]);
+                (size_t) CIblks_->Ia_size[blk] *
+                (size_t) CIblks_->Ib_size[blk]);
 
      };
    };

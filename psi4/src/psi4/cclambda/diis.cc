@@ -192,7 +192,8 @@ void diis(int iter, int L_irr)
         outfile->Printf("E[%d][%d] = %20.15lf\n",p,i,vector[0][i]);
       */
 
-      dot_arr(vector[0], vector[0], vector_length, &product);
+      // dot_arr(vector[0], vector[0], vector_length, &product);
+      product = C_DDOT(vector_length, vector[0], 1, vector[0], 1);
 
       B[p][p] = product;
 
@@ -203,7 +204,8 @@ void diis(int iter, int L_irr)
         psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[1],
                   vector_length*sizeof(double), start, &end);
 
-        dot_arr(vector[1], vector[0], vector_length, &product);
+        // dot_arr(vector[1], vector[0], vector_length, &product);
+        product = C_DDOT(vector_length, vector[1], 1, vector[0], 1);
 
         B[p][q] = B[q][p] = product;
       }
@@ -218,10 +220,10 @@ void diis(int iter, int L_irr)
     B[nvector][nvector] = 0;
 
     /* Find the maximum value in B and scale all its elements */
-    maximum = fabs(B[0][0]);
+    maximum = std::fabs(B[0][0]);
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++)
-        if(fabs(B[p][q]) > maximum) maximum = fabs(B[p][q]);
+        if(std::fabs(B[p][q]) > maximum) maximum = std::fabs(B[p][q]);
 
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++)
@@ -485,7 +487,8 @@ void diis(int iter, int L_irr)
 
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++) {
-        dot_arr(vector[p], vector[q], vector_length, &product);
+        // dot_arr(vector[p], vector[q], vector_length, &product);
+        product = C_DDOT(vector_length, vector[p], 1, vector[q], 1);
         B[p][q] = product;
       }
 
@@ -497,10 +500,10 @@ void diis(int iter, int L_irr)
     B[nvector][nvector] = 0;
 
     /* Find the maximum value in B and scale all its elements */
-    maximum = fabs(B[0][0]);
+    maximum = std::fabs(B[0][0]);
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++)
-        if(fabs(B[p][q]) > maximum) maximum = fabs(B[p][q]);
+        if(std::fabs(B[p][q]) > maximum) maximum = std::fabs(B[p][q]);
 
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++)
@@ -777,7 +780,8 @@ void diis(int iter, int L_irr)
 
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++) {
-        dot_arr(vector[p], vector[q], vector_length, &product);
+        // dot_arr(vector[p], vector[q], vector_length, &product);
+        product = C_DDOT(vector_length, vector[p], 1, vector[q], 1);
         B[p][q] = product;
       }
 
@@ -789,10 +793,10 @@ void diis(int iter, int L_irr)
     B[nvector][nvector] = 0;
 
     /* Find the maximum value in B and scale all its elements */
-    maximum = fabs(B[0][0]);
+    maximum = std::fabs(B[0][0]);
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++)
-        if(fabs(B[p][q]) > maximum) maximum = fabs(B[p][q]);
+        if(std::fabs(B[p][q]) > maximum) maximum = std::fabs(B[p][q]);
 
     for(p=0; p < nvector; p++)
       for(q=0; q < nvector; q++)

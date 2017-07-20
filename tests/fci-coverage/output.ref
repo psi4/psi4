@@ -1,0 +1,2029 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. in press (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 30 June 2017 12:54PM
+
+    Process ID:  89347
+    PSIDATADIR: /Users/daniel/Gits/dgaspsi/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! 6-31G H2O Test for coverage
+
+refnuc   =  0.40000000000 #TEST
+refscf   = -5.71032085230 #TEST
+refci    = -5.74032427777 #TEST
+refcorr  = refci - refscf    #TEST
+
+molecule h2o {
+He  0  0 -5
+He  0  0  5
+units bohr
+}
+
+set {
+  basis 6-31G
+  scf_type out_of_core
+}
+
+scf_energy, scf_wfn = energy("SCF", return_wfn=True)
+#compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+#compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
+
+# Test major methods
+set DIAG_METHOD SEM
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+compare_values(refci, thisenergy,  7, "SEM DAVIDSON CI energy") #TEST
+
+set UPDATE OLSEN
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+compare_values(refci, thisenergy,  7, "SEM OLSEN CI energy") #TEST
+
+set DIAG_METHOD RSP
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+compare_values(refci, thisenergy,  7, "RSP CI energy") #TEST
+
+set DIAG_METHOD DAVIDSON
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+compare_values(refci, thisenergy,  7, "DAVIDSON CI energy") #TEST
+
+# Test preconditioners
+precons = ["LANCZOS", "DAVIDSON", "GEN_DAVIDSON", "H0BLOCK", "ITER_INV", "EVANGELISTI"]
+#precons = ["LANCZOS", "DAVIDSON", "GEN_DAVIDSON", "H0BLOCK", "H0BLOCK_INV",
+#           "ITER_INV", "H0BLOCK_COUPLING", "EVANGELISTI"]
+
+set DIAG_METHOD SEM
+set UPDATE DAVIDSON
+for precon in precons:
+    psi4.set_options({"PRECONDITIONER" : precon})
+    thisenergy = energy('fci', ref_wfn=scf_wfn)
+    compare_values(refci, thisenergy,  7, "SEM PRECON(%s) CI energy" % precon) #TEST
+
+hd_kaves = ["EVANGELISTI", "HD_KAVE", "ORB_ENER", "LEININGER", "Z_KAVE"]
+#hd_kaves = ["EVANGELISTI", "HD_EXACT", "HD_KAVE", "ORB_ENER", "LEININGER", "Z_KAVE"]
+for hd_kave in hd_kaves:
+    psi4.set_options({"HD_AVG" : hd_kave})
+    thisenergy = energy('fci', ref_wfn=scf_wfn)
+    compare_values(refci, thisenergy,  7, "SEM Hd(%s) CI energy" % hd_kave) #TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on Daniels-MacBook-Pro.local
+*** at Fri Jun 30 12:54:16 2017
+
+   => Loading Basis Set <=
+
+    Name: 6-31G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-2 entry HE         line    30 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/6-31g.gbs 
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity in the molecule input block.
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -5.000000000000     4.002603254150
+          HE          0.000000000000     0.000000000000     5.000000000000     4.002603254150
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B =      0.30080  C =      0.30080 [cm^-1]
+  Rotational constants: A = ************  B =   9017.83709  C =   9017.83709 [MHz]
+  Nuclear repulsion =    0.400000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is OUT_OF_CORE.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G
+    Blend: 6-31G
+    Number of shells: 4
+    Number of basis function: 4
+    Number of Cartesian functions: 4
+    Spherical Harmonics?: false
+    Max angular momentum: 0
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         2       2       0       0       0       0
+     B1g        0       0       0       0       0       0
+     B2g        0       0       0       0       0       0
+     B3g        0       0       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        2       2       0       0       0       0
+     B2u        0       0       0       0       0       0
+     B3u        0       0       0       0       0       0
+   -------------------------------------------------------
+    Total       4       4       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               375
+    Schwarz Cutoff:          1E-12
+
+  Minimum eigenvalue in the overlap matrix is 3.6585209201E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   0:    -5.71032085230135   -5.71032e+00   1.49884e-06 
+   @RHF iter   1:    -5.71032085230958   -8.22364e-12   1.09465e-07 
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.914127     1B1u   -0.914126  
+
+    Virtual:                                                              
+
+       2Ag     1.399857     2B1u    1.399862  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+
+  Energy converged.
+
+  @RHF Final Energy:    -5.71032085230958
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.4000000000000000
+    One-Electron Energy =                  -8.5641353700173539
+    Two-Electron Energy =                   2.4538145177077757
+    Total Energy =                         -5.7103208523095779
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on Daniels-MacBook-Pro.local at Fri Jun 30 12:54:16 2017
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324262311   -5.7976E-07   2.7549E-04  
+   @CI  3:     0     -5.740324277770   -1.5459E-08   9.1975E-06 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277770311
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277770311
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002074  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002074  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002074  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002074  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000004  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000004  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM DAVIDSON CI energy............................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = OLSEN
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+Determinant of H0block is too small.
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+Determinant of H0block is too small.
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4709E-03  
+Determinant of H0block is too small.
+   @CI  2:     0     -5.740324276448   -5.9390E-07   5.2359E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276447760
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276447760
+
+   The 20 most important determinants:
+
+    *   1   -0.995669  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032802  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002062  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002062  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002062  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002062  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM OLSEN CI energy...............................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      RSP      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = OLSEN
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =        0      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    Exact Diagonalization Algorithm
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277802418
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277802418
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032806  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032806  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032806  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032801  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002076  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002076  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002076  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  14    0.002076  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  15    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  16    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  17   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  18   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  19   -0.000004  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+    *  20   -0.000004  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	RSP CI energy.....................................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = OLSEN
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+Determinant of H0block is too small.
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+Determinant of H0block is too small.
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4709E-03  
+Determinant of H0block is too small.
+   @CI  2:     0     -5.740324276448   -5.9390E-07   5.2359E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276447760
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276447760
+
+   The 20 most important determinants:
+
+    *   1   -0.995669  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032802  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002062  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002062  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002062  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002062  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	DAVIDSON CI energy................................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER =  LANCZOS      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323627830   -1.2820E-04   1.5623E-03  
+   @CI  2:     0     -5.740324253977   -6.2615E-07   3.2689E-04  
+   @CI  3:     0     -5.740324276800   -2.2823E-08   4.4715E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276799955
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276799955
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032806  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032806  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032806  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032806  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002064  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002064  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002064  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002064  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000135  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000135  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000135  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000135  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000005  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000005  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM PRECON(LANCZOS) CI energy.....................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = DAVIDSON      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324262311   -5.7976E-07   2.7549E-04  
+   @CI  3:     0     -5.740324277770   -1.5459E-08   9.1975E-06 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277770311
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277770311
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002074  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002074  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002074  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002074  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000004  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000004  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM PRECON(DAVIDSON) CI energy....................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = GEN_DAVIDSON  UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324275139   -5.9259E-07   1.1469E-04  
+   @CI  3:     0     -5.740324277802   -2.6631E-09   1.8241E-07 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277802410
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277802410
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032806  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032806  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032806  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032801  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002076  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002076  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002076  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002076  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000004  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000004  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM PRECON(GEN_DAVIDSON) CI energy................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = GEN_DAVIDSON  UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324275139   -5.9259E-07   1.1469E-04  
+   @CI  3:     0     -5.740324277802   -2.6631E-09   1.8241E-07 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277802412
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277802412
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032806  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032806  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032806  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032801  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002076  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002076  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002076  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002076  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000004  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000004  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM PRECON(H0BLOCK) CI energy.....................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = ITER_INV      UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324275139   -5.9259E-07   1.1469E-04  
+   @CI  3:     0     -5.740324277802   -2.6631E-09   1.8241E-07 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277802412
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277802412
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032806  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032806  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032806  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032801  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002076  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002076  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002076  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002076  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000004  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000004  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM PRECON(ITER_INV) CI energy....................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = EVANGELISTI   UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324276433   -5.9388E-07   5.1924E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276432622
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276432622
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032802  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002062  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002062  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002062  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002062  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000136  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000136  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000136  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000136  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM PRECON(EVANGELISTI) CI energy.................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = EVANGELISTI   UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = EVANGELISTI
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682552   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324276433   -5.9388E-07   5.1924E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276432622
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276432622
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032802  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002062  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002062  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002062  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002062  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000136  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000136  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000136  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000136  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM Hd(EVANGELISTI) CI energy.....................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = EVANGELISTI   UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = HD_KAVE
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019559
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195590369   -6.1402E+00   2.9768E-02  
+   @CI  1:     0     -5.740323679220   -1.2809E-04   1.4758E-03  
+   @CI  2:     0     -5.740324275771   -5.9655E-07   7.4278E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324275770893
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324275770893
+
+   The 20 most important determinants:
+
+    *   1   -0.995669  (    2,    2)  1AgX 1B1uX 
+    *   2   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   3   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   4   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   5   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   6    0.032802  (    0,    0)  1AgX 2AgX 
+    *   7    0.032802  (    1,    1)  1B1uX 2B1uX 
+    *   8    0.032799  (    3,    3)  1B1uX 2AgX 
+    *   9    0.032799  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002061  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002061  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002061  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002061  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000139  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000139  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000139  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000139  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM Hd(HD_KAVE) CI energy.........................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = EVANGELISTI   UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = ORB_ENER
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.71032085
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.710320852310   -6.1103E+00   3.2197E-01  
+   @CI  1:     0     -5.740162805038   -2.9842E-02   3.0761E-02  
+   @CI  2:     0     -5.740320990530   -1.5819E-04   2.9416E-03  
+   @CI  3:     0     -5.740324269754   -3.2792E-06   2.0333E-04  
+   @CI  4:     0     -5.740324277801   -8.0476E-09   2.0896E-06 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324277801292
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324277801292
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032806  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032806  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032806  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032806  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032801  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032801  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002076  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002076  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002076  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002076  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000137  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000137  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000137  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000137  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000005  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000005  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM Hd(ORB_ENER) CI energy........................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = EVANGELISTI   UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = LEININGER
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323682531   -1.2826E-04   1.4654E-03  
+   @CI  2:     0     -5.740324276434   -5.9390E-07   5.1951E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276433602
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276433602
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032805  (    0,    0)  1AgX 2AgX 
+    *   3   -0.032805  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   4   -0.032805  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   5    0.032805  (    1,    1)  1B1uX 2B1uX 
+    *   6    0.032802  (    3,    3)  1B1uX 2AgX 
+    *   7   -0.032802  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   8   -0.032802  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *   9    0.032802  (    4,    4)  1AgX 2B1uX 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002062  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002062  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002062  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002062  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000136  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000136  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000136  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000136  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM Hd(LEININGER) CI energy.......................................PASSED
+
+         ---------------------------------------------------------
+                          Configuration Interaction
+                            (a 'D E T C I' module)
+
+                 C. David Sherrill, Daniel G. A. Smith, and
+                              Matt L. Leininger
+         ---------------------------------------------------------
+
+
+   ==> Parameters <==
+
+    EX LEVEL       =        4      H0 BLOCKSIZE  =     1000
+    VAL EX LEVEL   =        0      H0 GUESS SIZE =     1000
+    H0COUPLINGSIZE =        0      H0 COUPLING   =       NO
+    MAXITER        =       24      NUM PRINT     =       20
+    NUM ROOTS      =        1      ICORE         =        1
+    PRINT LVL      =        1      FCI           =      YES
+    R CONV         = 1.00e-04      MIXED         =      YES
+    E CONV         = 1.00e-06      MIXED4        =      YES
+    R4S            =       NO      REPL OTF      =       NO
+    DIAG METHOD    =      SEM      FOLLOW ROOT   =        0
+    PRECONDITIONER = EVANGELISTI   UPDATE        = DAVIDSON
+    S              =   0.0000      Ms0           =      YES
+    GUESS VECTOR   =  H0BLOCK      OPENTYPE      =     NONE
+    COLLAPSE SIZE  =        1      HD AVG        = ???
+    MAX NUM VECS   =       25      REF SYM       =     AUTO
+    IOPEN        =       NO
+
+    EX ALLOW       =  1  1  1  1 
+    STATE AVERAGE  =  0(1.00) 
+
+   ==> CI Orbital and Space information <==
+
+   ------------------------------------------------------------------------------
+               Space    Total    Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u
+   ------------------------------------------------------------------------------
+                 Nso        4     2     0     0     0     0     2     0     0
+                 Nmo        4     2     0     0     0     0     2     0     0
+               Ndocc        2     1     0     0     0     0     1     0     0
+               Nsocc        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+                                   CI Spaces
+   ------------------------------------------------------------------------------
+        Dropped DOCC        0     0     0     0     0     0     0     0     0
+              Active        4     2     0     0     0     0     2     0     0
+        Dropped UOCC        0     0     0     0     0     0     0     0     0
+   ------------------------------------------------------------------------------
+
+   ==> Setting up CI strings <==
+
+    There are 6 alpha and 6 beta strings
+    The CI space requires 20 (2.00E+01) determinants and 2 blocks
+
+   ==> Transforming CI integrals <==
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (nn|nn) nbuckets = 1
+	Transforming the one-electron integrals and constructing Fock matrices
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	First half integral transformation complete.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+   ==> Starting CI iterations <==
+
+    H0 Block Eigenvalue =  -5.74019543
+
+    Simultaneous Expansion Method (Block Davidson Method)
+    Using 1 initial trial vectors
+
+     Iter   Root       Total Energy       Delta E      C RMS
+
+   @CI  0:     0     -5.740195427501   -6.1402E+00   2.9761E-02  
+   @CI  1:     0     -5.740323688416   -1.2826E-04   1.4546E-03  
+   @CI  2:     0     -5.740324276477   -5.8806E-07   6.1078E-05 c
+
+   ==> Energetics <==
+
+    SCF energy =            0.000000000000000
+    Total CI energy =      -5.740324276477399
+
+   ==> FCI root 0 information <==
+
+    FCI Root 0 energy =    -5.740324276477399
+
+   The 20 most important determinants:
+
+    *   1   -0.995668  (    2,    2)  1AgX 1B1uX 
+    *   2    0.032807  (    0,    0)  1AgX 2AgX 
+    *   3    0.032807  (    1,    1)  1B1uX 2B1uX 
+    *   4   -0.032804  (    0,    1)  1AgA 1B1uB 2AgA 2B1uB 
+    *   5   -0.032804  (    1,    0)  1AgB 1B1uA 2AgB 2B1uA 
+    *   6    0.032804  (    3,    3)  1B1uX 2AgX 
+    *   7    0.032804  (    4,    4)  1AgX 2B1uX 
+    *   8   -0.032801  (    3,    4)  1AgB 1B1uA 2AgA 2B1uB 
+    *   9   -0.032801  (    4,    3)  1AgA 1B1uB 2AgB 2B1uA 
+    *  10   -0.004323  (    5,    5)  2AgX 2B1uX 
+    *  11   -0.002064  (    2,    3)  1AgA 1B1uX 2AgB 
+    *  12   -0.002064  (    3,    2)  1AgB 1B1uX 2AgA 
+    *  13    0.002064  (    2,    4)  1AgX 1B1uA 2B1uB 
+    *  14    0.002064  (    4,    2)  1AgX 1B1uB 2B1uA 
+    *  15    0.000133  (    3,    5)  1B1uA 2AgX 2B1uB 
+    *  16    0.000133  (    5,    3)  1B1uB 2AgX 2B1uA 
+    *  17   -0.000133  (    4,    5)  1AgA 2AgB 2B1uX 
+    *  18   -0.000133  (    5,    4)  1AgB 2AgA 2B1uX 
+    *  19   -0.000003  (    2,    5)  1AgA 1B1uA 2AgB 2B1uB 
+    *  20   -0.000003  (    5,    2)  1AgB 1B1uB 2AgA 2B1uA 
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+	SEM Hd(Z_KAVE) CI energy..........................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

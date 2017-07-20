@@ -30,12 +30,14 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libefp_solver/efp_solver.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libfilesystem/path.h"
 #ifdef USING_libefp
 #include <efp.h>
@@ -559,11 +561,11 @@ std::shared_ptr<Matrix> EFP::modify_Fock_permanent()
 
             for (size_t i=0; i<natom; i++) {
                 double dx = atoms[i].x - xyz_p[n*3];
-                if ( fabs(dx) > 1e-10 ) continue;
+                if ( std::fabs(dx) > 1e-10 ) continue;
                 double dy = atoms[i].y - xyz_p[n*3+1];
-                if ( fabs(dy) > 1e-10 ) continue;
+                if ( std::fabs(dy) > 1e-10 ) continue;
                 double dz = atoms[i].z - xyz_p[n*3+2];
-                if ( fabs(dz) > 1e-10 ) continue;
+                if ( std::fabs(dz) > 1e-10 ) continue;
 
                 mult_p[20*n] += atoms[i].znuc;
                 break;

@@ -38,7 +38,7 @@
 #include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "qt.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 namespace psi {
 
 #define SMALL_DET 1.0E-10
@@ -67,7 +67,7 @@ namespace psi {
 double invert_matrix(double **a, double **y, int N, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    double  d, *col, *colptr;
    int i, j;
    int *indx ;
@@ -78,10 +78,10 @@ double invert_matrix(double **a, double **y, int N, std::string out)
    ludcmp(a,N,indx,&d) ;
    for (j=0; j<N; j++) d *= a[j][j];
 
-   /* outfile->Printf("detH0 in invert = %lf\n", fabs(d));
+   /* outfile->Printf("detH0 in invert = %lf\n", std::fabs(d));
     */
 
-    if (fabs(d) < SMALL_DET) {
+    if (std::fabs(d) < SMALL_DET) {
       printer->Printf("Warning (invert_matrix): Determinant is %g\n", d);
       printf("Warning (invert_matrix): Determinant is %g\n", d);
 
@@ -98,7 +98,7 @@ double invert_matrix(double **a, double **y, int N, std::string out)
    free(col);
    free(indx);
 
-   d = fabs(d);
+   d = std::fabs(d);
    return(d);
 }
 

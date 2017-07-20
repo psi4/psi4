@@ -39,7 +39,7 @@
 #define ID(x) _ints->DPD_ID(x)
 
 #ifndef INDEX
-#define INDEX(i,j) (i > j ? i * (i + 1) / 2 + j : j + (j + 1) / 2 + i)
+#define INDEX(i,j) (((i)>(j)) ? (((i)*((i)+1)/2)+(j)) : (((j)*((j)+1)/2)+(i)))
 #endif
 
 #endif	/* _DEFINES_H */

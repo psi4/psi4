@@ -33,10 +33,12 @@
 */
 
 #include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
 #include <cstdio>
 #include <cmath>
-#include "psi4/psi4-dec.h"
-#define DSIGN(a,b) (((b) >= 0.0) ? (fabs(a)) : (-fabs(a)))
+#define DSIGN(a,b) (((b) >= 0.0) ? (std::fabs(a)) : (-std::fabs(a)))
 
 namespace psi {
 
@@ -68,11 +70,11 @@ void tqli(int n, double *d, double **z, double *e, int matz, double toler)
          iter = 0;
 L1:
          for (m=l; m < n-1;m++) {
-            dd = fabs(d[m]) + fabs(d[m+1]);
+            dd = std::fabs(d[m]) + std::fabs(d[m+1]);
 #if 0
-            if (fabs(e[m])+dd == dd) goto L2;
+            if (std::fabs(e[m])+dd == dd) goto L2;
 #else
-            if (fabs(e[m]) < toler) goto L2;
+            if (std::fabs(e[m]) < toler) goto L2;
 #endif
             }
          m=n-1;
@@ -95,7 +97,7 @@ L2:
             for (i=m-1; i >= l; i--) {
                f = s*e[i];
                b = c*e[i];
-               if (fabs(f) >= fabs(g)) {
+               if (std::fabs(f) >= std::fabs(g)) {
                   c = g/f;
                   r = sqrt(c*c + 1.0);
                   e[i+1] = f*r;

@@ -262,10 +262,10 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
                             }
 
                             int ijsym = iiirrep^jjirrep;
-                            unsigned int ijrow = D->params->rowidx[iiabs][jjabs];
-                            unsigned int ijcol = D->params->colidx[iiabs][jjabs];
-                            unsigned int klrow = D->params->rowidx[kkabs][llabs];
-                            unsigned int klcol = D->params->colidx[kkabs][llabs];
+                            size_t ijrow = D->params->rowidx[iiabs][jjabs];
+                            size_t ijcol = D->params->colidx[iiabs][jjabs];
+                            size_t klrow = D->params->rowidx[kkabs][llabs];
+                            size_t klcol = D->params->colidx[kkabs][llabs];
                             // We know that ijkl is totally symmetric, so klsym
                             // must be the same as ijsym
                             if((ijsym == irrep) && (ijrow >= first_row) && (ijrow < last_row)){

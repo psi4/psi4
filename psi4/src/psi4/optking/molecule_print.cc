@@ -39,7 +39,7 @@
 #include "linear_algebra.h"
 #include "atom_data.h"
 #include "psi4/optking/physconst.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -53,8 +53,6 @@
 #endif
 
 namespace opt {
-
-using namespace std;
 
 void MOLECULE::print_geom_out(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)

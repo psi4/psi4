@@ -26,6 +26,12 @@
  * @END LICENSE
  */
 
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
+#include <pybind11/pytypes.h>
+#include <pybind11/stl_bind.h>
+
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/deriv.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integralparameters.h"
@@ -35,9 +41,9 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/sobasis.h"
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/local.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/mintshelper.h"
@@ -66,6 +72,125 @@
 #include <string>
 
 using namespace psi;
+namespace py = pybind11;
+
+/** Returns a new basis set object
+ * Constructs a basis set from the parsed information
+ *
+ * @param mol           Psi4 molecule
+ * @param py::dict      Python dictionary containing the basis information
+ * @param forced_puream Force puream or not
+**/
+std::shared_ptr<BasisSet>
+construct_basisset_from_pydict(const std::shared_ptr <Molecule> &mol, py::dict &pybs, const int forced_puream){
+
+    std::string key = pybs["key"].cast<std::string>();
+    std::string name = pybs["name"].cast<std::string>();
+    std::string label = pybs["blend"].cast<std::string>();
+
+    // Handle mixed puream signals and seed parser with the resolution
+    int native_puream = pybs["puream"].cast<int>();
+    int user_puream = (Process::environment.options.get_global("PUREAM").has_changed()) ?
+                ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian) : -1;
+    GaussianType shelltype;
+    if (user_puream == -1)
+        shelltype = static_cast<GaussianType>(forced_puream == -1 ? native_puream : forced_puream);
+    else
+        shelltype = static_cast<GaussianType>(user_puream);
+
+    mol->set_basis_all_atoms(name, key);
+
+    // Map of GaussianShells: basis_atom_shell[basisname][atomlabel] = gaussian_shells
+    typedef std::map <std::string, std::map<std::string, std::vector <ShellInfo>>> map_ssv;
+    map_ssv basis_atom_shell;
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    py::list basisinfo = pybs["shell_map"].cast<py::list>();
+    if(len(basisinfo) == 0)
+        throw PSIEXCEPTION("Empty information being used to construct BasisSet.");
+    for(int atom = 0; atom < py::len(basisinfo); ++atom){
+        std::vector<ShellInfo> vec_shellinfo;
+        py::list atominfo = basisinfo[atom].cast<py::list>();
+        std::string atomlabel = atominfo[0].cast<std::string>();
+        std::string hash = atominfo[1].cast<std::string>();
+        for(int atomshells = 2; atomshells < py::len(atominfo); ++atomshells){
+            // Each shell entry has p primitives that look like
+            // [ angmom, [ [ e1, c1 ], [ e2, c2 ], ...., [ ep, cp ] ] ]
+            py::list shellinfo = atominfo[atomshells].cast<py::list>();
+            int am = shellinfo[0].cast<int>();
+            std::vector<double> coefficients;
+            std::vector<double> exponents;
+            int nprim = (pybind11::len(shellinfo)) - 1; // The leading entry is the angular momentum
+            for (int primitive = 1; primitive <= nprim; primitive++) {
+                py::list primitiveinfo = shellinfo[primitive].cast<py::list>();
+                exponents.push_back(primitiveinfo[0].cast<double>());
+                coefficients.push_back(primitiveinfo[1].cast<double>());
+            }
+            vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, shelltype, Unnormalized));
+        }
+        mol->set_shell_by_label(atomlabel, hash, key);
+        basis_atom_shell[name][atomlabel] = vec_shellinfo;
+    }
+
+    /*
+     * Handle the ECP terms, if needed
+     */
+    map_ssv basis_atom_ecpshell;
+    std::map< std::string, std::map<std::string, int>> basis_atom_ncore;
+    // basisname is uniform; fill map with key/value (gbs entry) pairs of elements from pybs['shell_map']
+    int totalncore = 0;
+    if(pybs.contains("ecp_shell_map")) {
+        py::list ecpbasisinfo = pybs["ecp_shell_map"].cast<py::list>();
+        for(int atom = 0; atom < py::len(ecpbasisinfo); ++atom){
+            std::vector<ShellInfo> vec_shellinfo;
+            py::list atominfo = ecpbasisinfo[atom].cast<py::list>();
+            std::string atomlabel = atominfo[0].cast<std::string>();
+            std::string hash = atominfo[1].cast<std::string>();
+            int ncore = atominfo[2].cast<int>();
+            for(int atomshells = 3; atomshells < py::len(atominfo); ++atomshells){
+                // Each shell entry has p primitives that look like
+                // [ angmom, [ [ e1, c1, r1 ], [ e2, c2, r2 ], ...., [ ep, cp, rp ] ] ]
+                py::list shellinfo = atominfo[atomshells].cast<py::list>();
+                int am = shellinfo[0].cast<int>();
+                std::vector<double> coefficients;
+                std::vector<double> exponents;
+                std::vector<int> ns;
+                int nprim = (pybind11::len(shellinfo)) - 1; // The leading entry is the angular momentum
+                for (int primitive = 1; primitive <= nprim; primitive++) {
+                    py::list primitiveinfo = shellinfo[primitive].cast<py::list>();
+                    exponents.push_back(primitiveinfo[0].cast<double>());
+                    coefficients.push_back(primitiveinfo[1].cast<double>());
+                    ns.push_back(primitiveinfo[2].cast<int>());
+                }
+                vec_shellinfo.push_back(ShellInfo(am, coefficients, exponents, ns));
+            }
+            basis_atom_ncore[name][atomlabel] = ncore;
+            basis_atom_ecpshell[name][atomlabel] = vec_shellinfo;
+            totalncore += ncore;
+        }
+    }
+
+    mol->update_geometry();  // update symmetry with basisset info
+
+    std::shared_ptr <BasisSet> basisset(new BasisSet(key, mol, basis_atom_shell, basis_atom_ecpshell));
+
+    // Modify the nuclear charges, to account for the ECP.
+    if(totalncore){
+        for(int atom=0; atom<mol->natom(); ++atom){
+            const std::string &basis = mol->basis_on_atom(atom);
+            const std::string &label = mol->label(atom);
+            int ncore = basis_atom_ncore[basis][label];
+            int Z = mol->true_atomic_number(atom) - ncore;
+            mol->set_nuclear_charge(atom, Z);
+            basisset->set_n_ecp_core(label, ncore);
+        }
+    }
+
+    basisset->set_name(name);
+    basisset->set_key(key);
+    basisset->set_target(label);
+
+    return basisset;
+}
 
 
 void export_mints(py::module& m)
@@ -98,6 +223,7 @@ void export_mints(py::module& m)
     py::class_<Dimension>(m, "Dimension", "docstring")
         .def(py::init<int>())
         .def(py::init<int, const std::string&>())
+        .def(py::init<const std::vector<int>&>())
         .def("print_out", &Dimension::print, "docstring")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
         .def("n", &Dimension::n,
@@ -125,35 +251,47 @@ void export_mints(py::module& m)
         .def("print_out", &Vector::print_out, "docstring")
         .def("scale", &Vector::scale, "docstring")
         .def("dim", &Vector::dim, "docstring")
-        .def("__getitem__", vector_getitem_1(&Vector::pyget), "docstring")
-        .def("__setitem__", vector_setitem_1(&Vector::pyset), "docstring")
-        .def("__getitem__", vector_getitem_n(&Vector::pyget), "docstring")
-        .def("__setitem__", vector_setitem_n(&Vector::pyset), "docstring")
         .def("nirrep", &Vector::nirrep, "docstring")
         .def("array_interface", [](Vector& v) {
-            // Dont ask, hopefully pybind11 will work on this
+
+            // Build a list of NumPy views, used for the .np and .nph accessors.Vy
             py::list ret;
-            std::vector<py::buffer_info> buff_vec(v.array_interface());
-            std::string typestr = "<";
-            {
-                std::stringstream sstr;
-                sstr << (int)sizeof(double);
-                typestr += "f" + sstr.str();
+
+            // If we set a NumPy shape
+            if (v.numpy_shape().size()) {
+                if (v.nirrep() > 1) {
+                    throw PSIEXCEPTION(
+                        "Vector::array_interface numpy shape with more than one irrep is not "
+                        "valid.");
+                }
+
+                // Cast the NumPy shape vector
+                std::vector<size_t> shape;
+                for (int val : v.numpy_shape()){
+                    shape.push_back((size_t)val);
+                }
+
+                // Build the array
+                py::array arr(shape, v.pointer(0), py::cast(&v));
+                ret.append(arr);
+
+            } else {
+                for (size_t h = 0; h < v.nirrep(); h++) {
+                    // Hmm, sometimes we need to handle empty ptr's correctly
+                    double* ptr = nullptr;
+                    if (v.dim(h) != 0) {
+                        ptr = v.pointer(h);
+                    }
+
+                    // Build the array
+                    std::vector<size_t> shape{(size_t)v.dim(h)};
+                    py::array arr(shape, ptr, py::cast(&v));
+                    ret.append(arr);
+                }
             }
 
-            for (auto const& buff : v.array_interface()) {
-                py::dict interface;
-                interface["typestr"] = py::str(typestr);
-                interface["data"] = py::make_tuple((long)buff.ptr, false);
-                py::list shape;
-                for (auto const& s : buff.shape) {
-                    shape.append(py::int_(s));
-                }
-                interface["shape"] = shape;
-                ret.append(interface);
-            }
             return ret;
-        });
+        }, py::return_value_policy::reference_internal);
 
     typedef void (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "docstring")
@@ -190,7 +328,8 @@ void export_mints(py::module& m)
     typedef void (Matrix::*matrix_load)(const std::string&);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
 
-    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr())
+    py::class_<Matrix, std::shared_ptr<Matrix>>(m, "Matrix", "docstring", py::dynamic_attr(),
+                                                py::buffer_protocol())
         .def(py::init<int, int>())
         .def(py::init<const std::string&, int, int>())
         .def(py::init<const std::string&, const Dimension&, const Dimension&>())
@@ -268,10 +407,7 @@ void export_mints(py::module& m)
         .def("set", matrix_set1(&Matrix::set), "docstring")
         .def("set", matrix_set3(&Matrix::set), "docstring")
         .def("set", matrix_set4(&Matrix::set), "docstring")
-        .def("set", &Matrix::set_by_python_list, "docstring")
         .def("project_out", &Matrix::project_out, "docstring")
-        .def("__getitem__", &Matrix::pyget, "docstring")
-        .def("__setitem__", &Matrix::pyset, "docstring")
         .def("save", matrix_save(&Matrix::save), "docstring")
         .def("load", matrix_load(&Matrix::load), "docstring")
         .def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring")
@@ -279,29 +415,44 @@ void export_mints(py::module& m)
         .def("symmetrize_gradient", &Matrix::symmetrize_gradient, "docstring")
         .def("rotate_columns", &Matrix::rotate_columns, "docstring")
         .def("array_interface", [](Matrix& m) {
-            // Dont ask, hopefully pybind11 will work on this
+
+            // Build a list of NumPy views, used for the .np and .nph accessors.Vy
             py::list ret;
-            std::vector<py::buffer_info> buff_vec(m.array_interface());
-            std::string typestr = "<";
-            {
-                std::stringstream sstr;
-                sstr << (int)sizeof(double);
-                typestr += "f" + sstr.str();
+
+            // If we set a NumPy shape
+            if (m.numpy_shape().size()) {
+                if (m.nirrep() > 1) {
+                    throw PSIEXCEPTION(
+                        "Vector::array_interface numpy shape with more than one irrep is not "
+                        "valid.");
+                }
+
+                // Cast the NumPy shape vector
+                std::vector<size_t> shape;
+                for (int val : m.numpy_shape()) {
+                    shape.push_back((size_t)val);
+                }
+
+                // Build the array
+                py::array arr(shape, m.pointer(0)[0], py::cast(&m));
+                ret.append(arr);
+
+            } else {
+                for (size_t h = 0; h < m.nirrep(); h++) {
+                    // Hmm, sometimes we need to overload to nullptr
+                    double* ptr = nullptr;
+                    if ((m.rowdim(h) * m.coldim(h)) != 0) {
+                        ptr = m.pointer(h)[0];
+                    }
+
+                    // Build the array
+                    py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h)}, ptr, py::cast(&m));
+                    ret.append(arr);
+                }
             }
 
-            for (auto const& buff : m.array_interface()) {
-                py::dict interface;
-                interface["typestr"] = py::str(typestr);
-                interface["data"] = py::make_tuple((long)buff.ptr, false);
-                py::list shape;
-                for (auto const& s : buff.shape) {
-                    shape.append(py::int_(s));
-                }
-                interface["shape"] = shape;
-                ret.append(interface);
-            }
             return ret;
-        });
+    }, py::return_value_policy::reference_internal);
 
     py::class_<Deriv, std::shared_ptr<Deriv>>(m, "Deriv", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>>())
@@ -367,7 +518,7 @@ void export_mints(py::module& m)
 
     py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")
         .def(py::init<int, const std::vector<double>&, const std::vector<double>&, GaussianType,
-                      int, const Vector3&, int, PrimitiveType>());
+                      PrimitiveType>());
 
     py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 
@@ -453,10 +604,8 @@ void export_mints(py::module& m)
         .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "docstring");
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet> >())
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
         .def(py::init<std::shared_ptr<BasisSet>>())
         // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
         // py::return_value_policy<manage_new_object>(), "docstring").
@@ -523,7 +672,6 @@ void export_mints(py::module& m)
         std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
 
     typedef SharedMatrix (MintsHelper::*oneelectron)();
-    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis_ecp)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>,
                                                                  std::shared_ptr<BasisSet>);
 
@@ -559,7 +707,7 @@ void export_mints(py::module& m)
         .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "docstring")
         .def("so_potential", &MintsHelper::so_potential, "docstring")
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
-        .def("ao_ecp", oneelectron_mixed_basis_ecp(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
+        .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
         .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")
 
         // One-electron properties and
@@ -858,10 +1006,6 @@ void export_mints(py::module& m)
         .def("sotoao", &PetiteList::sotoao, "docstring")
         .def("print", &PetiteList::print, "docstring");
 
-    py::class_<BasisSetParser, std::shared_ptr<BasisSetParser>>(m, "BasisSetParser", "docstring");
-    py::class_<Gaussian94BasisSetParser, std::shared_ptr<Gaussian94BasisSetParser>, BasisSetParser>(
-        m, "Gaussian94BasisSetParser", "docstring");
-
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
     typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
@@ -872,6 +1016,7 @@ void export_mints(py::module& m)
 
     py::class_<BasisSet, std::shared_ptr<BasisSet>>(m, "BasisSet", "docstring")
         .def(py::init<const std::string&, std::shared_ptr<Molecule>,
+                      std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&,
                       std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>&>())
         .def("name", &BasisSet::name, "Callback handle, may represent string or function")
         .def("blend", &BasisSet::target, "Plus-separated string of [basisname] values")
@@ -894,8 +1039,10 @@ void export_mints(py::module& m)
         .def("shell", no_center_version(&BasisSet::shell), py::return_value_policy::copy,
              "docstring")
         .def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy, "docstring")
-        .def("ncore", ncore_no_args(&BasisSet::ncore), "Returns the total number of core electrons for this ECP.")
-        .def("ncore", ncore_one_arg(&BasisSet::ncore), "Returns the number of core electrons associated with the specified atom type for this ECP.")
+        .def("n_frozen_core", &BasisSet::n_frozen_core, "Returns the number of frozen core electrons, accounting for the presence of any ECPs.")
+        .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core), "Returns the total number of core electrons associated with all ECPs in this basis.")
+        .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core), "Returns the number of core electrons associated with any ECP on the specified atom type for this basis set.")
+        .def("has_ECP", &BasisSet::has_ECP, "Whether this basis set object has an ECP associated with it.")
         .def("max_am", &BasisSet::max_am, "Returns maximum angular momentum used")
         .def("has_puream", &BasisSet::has_puream, "Spherical harmonics?")
         .def("shell_to_basis_function", &BasisSet::shell_to_basis_function, "docstring")
@@ -910,8 +1057,7 @@ void export_mints(py::module& m)
         .def("move_atom", &BasisSet::move_atom, "Translate a given atom by a given amount.  Does not affect the underlying molecule object.")
         .def("max_function_per_shell", &BasisSet::max_function_per_shell, "docstring")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "docstring")
-        .def_static("construct_from_pydict", &BasisSet::construct_from_pydict, "docstring")
-        .def_static("construct_ecp_from_pydict", &BasisSet::construct_ecp_from_pydict, "docstring");
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(m, "SOBasisSet", "docstring")
         .def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -967,7 +1113,7 @@ void export_mints(py::module& m)
 
     py::class_<CorrelationFactor, std::shared_ptr<CorrelationFactor>>(m, "CorrelationFactor",
                                                                       "docstring")
-        .def(py::init<unsigned int>())
+        .def(py::init<size_t>())
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>>())
         .def("set_params", &CorrelationFactor::set_params, "docstring");
 

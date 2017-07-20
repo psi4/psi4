@@ -37,6 +37,9 @@
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
 
 #include "defines.h"
 #include "dfocc.h"
@@ -47,7 +50,6 @@
 #endif
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 

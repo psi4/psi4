@@ -43,11 +43,10 @@
 #include <sstream>
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include "psi4/libparallel/parallel.h"
 
 namespace psi {
 
-void PSIO::rename_file(unsigned int old_unit, unsigned int new_unit) {
+void PSIO::rename_file(size_t old_unit, size_t new_unit) {
   char*old_name,*new_name;
   /* Get the file name prefix */
   get_filename(old_unit, &old_name);
@@ -65,8 +64,8 @@ void PSIO::rename_file(unsigned int old_unit, unsigned int new_unit) {
   char*new_full_path =
       (char*)malloc((strlen(new_path)+strlen(new_name)+80)*sizeof(char));
 
-  sprintf(old_full_path, "%s%s.%u", old_path, old_name, old_unit);
-  sprintf(new_full_path, "%s%s.%u", new_path, new_name, new_unit);
+  sprintf(old_full_path, "%s%s.%zu", old_path, old_name, old_unit);
+  sprintf(new_full_path, "%s%s.%zu", new_path, new_name, new_unit);
 
   /* move the file.  i don't know how to do this without a system call */
   char*systemcall =

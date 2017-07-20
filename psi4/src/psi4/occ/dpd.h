@@ -31,7 +31,6 @@
 
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace occwave{
 
@@ -83,7 +82,7 @@ class SymBlockMatrix
   double get(int h, int m, int n);
   double *to_lower_triangle();
   double **to_block_matrix();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void print();
   void set_to_identity();
   void gemm(bool transa, bool transb, double alpha, const SymBlockMatrix* a, const SymBlockMatrix* b, double beta);
@@ -118,15 +117,15 @@ class SymBlockVector
   private:
   double **vector_; // Object
   int *dimvec_;      // dimensions per irrep
-  string name_;      // Name of the vector
+  std::string name_;      // Name of the vector
   int nirreps_;     // Number of irreps
 
 
   public:
   SymBlockVector();  //default constructer
-  SymBlockVector(string name);
+  SymBlockVector(std::string name);
   SymBlockVector(int nirreps, int *ins_dimvec);
-  SymBlockVector(string name, int nirreps, int *ins_dimvec);
+  SymBlockVector(std::string name, int nirreps, int *ins_dimvec);
   ~SymBlockVector(); //destructer
 
   int *dimvec();
@@ -149,7 +148,7 @@ class SymBlockVector
   void set(double *Avec);
   double get(int h, int m);
   double *to_vector();
-  void print(std::string OutFileRMR);
+  void print(std::string out_fname);
   void print();
   void set_to_unit();
   void gemv(bool transa, double alpha, SymBlockMatrix* A, SymBlockVector* X, double beta);

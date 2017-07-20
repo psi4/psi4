@@ -46,6 +46,7 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "debugging.h"
 #include "matrix.h"
@@ -55,9 +56,6 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
-
-using namespace std;
-
 
 /*********************************************************
   Memory Allocation Routines

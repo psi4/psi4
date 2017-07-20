@@ -34,7 +34,7 @@
 #include "frag.h"
 #include "interfrag.h"
 #include "v3d.h" // for H_guess
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include <sstream>
 
 #include "print.h"
@@ -44,7 +44,6 @@
 namespace opt {
 
 using namespace v3d;
-using namespace std;
 
 // constructor for given weight linear combination reference points
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
@@ -713,7 +712,7 @@ void INTERFRAG::print_intco_dat(std::string psi_fp, FILE *qc_fp, int off_A, int 
 
 // TODO - fix this up later
 std::string INTERFRAG::get_coord_definition(int coord_index, int off_A, int off_B) const {
-  ostringstream iss;
+  std::ostringstream iss;
   iss << "Coordinate " << coord_index + 1;
   iss << "\n";
   for (int i=0; i<ndA; ++i) {

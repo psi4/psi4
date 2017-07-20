@@ -36,7 +36,7 @@
 
 namespace psi {
 
-psio_tocentry*PSIO::toclast(unsigned int unit) {
+psio_tocentry*PSIO::toclast(size_t unit) {
   psio_tocentry *this_entry = psio_unit[unit].toc;
 
   while (this_entry->next != NULL)

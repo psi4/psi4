@@ -47,12 +47,11 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "moinfo.h"
 
-
-
-using namespace std;
 
 namespace psi {
 
@@ -127,8 +126,8 @@ void MOInfo::read_info()
     mopi           = convert_int_array_to_vector(nirreps, ref_wfn.nmopi());
     SharedMatrix matCa = ref_wfn.Ca();
     scf            = block_matrix(nso, nmo);
-    unsigned int soOffset = 0;
-    unsigned int moOffset = 0;
+    size_t soOffset = 0;
+    size_t moOffset = 0;
     for(int h = 0; h < nirreps; ++h){
         for(int so = 0; so < sopi[h]; ++so){
             for(int mo = 0; mo < mopi[h]; ++mo){
@@ -150,13 +149,13 @@ void MOInfo::read_info()
     // Determine the wave function irrep
     // The defalut irrep is 0 (A)
     wfn_sym = 0;
-    string wavefunction_sym_str = options.get_str("WFN_SYM");
+    std::string wavefunction_sym_str = options.get_str("WFN_SYM");
     bool wfn_sym_found = false;
 
     std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
     if(old_pg){
         for(int h = 0; h < nirreps; ++h){
-            string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
+            std::string irr_label_str = old_pg->char_table().gamma(h).symbol_ns();
             trim_spaces(irr_label_str);
             to_upper(irr_label_str);
             if(wavefunction_sym_str == irr_label_str){
@@ -172,7 +171,7 @@ void MOInfo::read_info()
         }
     }else{
         for(int h = 0; h < nirreps; ++h){
-            string irr_label_str = irr_labs[h];
+            std::string irr_label_str = irr_labs[h];
             trim_spaces(irr_label_str);
             to_upper(irr_label_str);
             if(wavefunction_sym_str == irr_label_str){
@@ -350,7 +349,7 @@ void MOInfo::read_mo_spaces()
     nvir        = nactv + nextr;
 
     bool active_space_problem = false;
-    string error_msg;
+    std::string error_msg;
     if(nactv < nactive_ael){
         error_msg += "\n  - the number of active orbitals (nactv = " + to_string(nactv) + ")";
         error_msg += " is smaller than the number of active alpha electrons (nactive_ael =" + to_string(nactive_ael) +")",

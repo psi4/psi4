@@ -49,8 +49,6 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 /**
  * This is the core of the CCBLAS class. Computes the expression in the CCOperation class.
  */

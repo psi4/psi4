@@ -71,9 +71,9 @@ void s2_block_vfci(struct stringwr **alplist, struct stringwr **betlist,
                    int nlists, int nas, int nbs, int Ia_list, int Ja_list,
                    int Ja_list_nas) {
   struct stringwr *Ia, *Ka;
-  unsigned int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
-  unsigned int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
-  unsigned int *Iaridx, *Karidx;
+  size_t Ia_idx, Ib_idx, Ka_idx, Ja_idx;
+  size_t Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
+  size_t *Iaridx, *Karidx;
   int *Iaij, *Kaij;
   signed char *Iasgn, *Kasgn;
   int ij, kl, ijkl;
@@ -173,9 +173,9 @@ void s2_block_vras(struct stringwr **alplist, struct stringwr **betlist,
                    int nlists, int nas, int nbs, int Ia_list, int Ja_list,
                    int Ja_list_nas) {
   struct stringwr *Ia, *Ka;
-  unsigned int Ia_idx, Ib_idx, Ka_idx, Ja_idx;
-  unsigned int Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
-  unsigned int *Iaridx, *Karidx;
+  size_t Ia_idx, Ib_idx, Ka_idx, Ja_idx;
+  size_t Iacnt, Kacnt, Ka_list, Ia_ex, Ka_ex;
+  size_t *Iaridx, *Karidx;
   int *Iaij, *Kaij, *Iaoij, *Kaoij;
   signed char *Iasgn, *Kasgn;
   int ij, kl, ijkl, oij, okl;

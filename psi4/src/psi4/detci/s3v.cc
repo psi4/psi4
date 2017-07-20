@@ -70,11 +70,11 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
                     int Jb_sym, double **Cprime, double *F, double *V,
                     double *Sgn, int *L, int *R, int norbs, int *orbsym) {
   struct stringwr *Ia;
-  unsigned int Ia_ex;
+  size_t Ia_ex;
   int ij, i, j, t, kl, I, J, RJ;
   double tval, VS, *CprimeI0, *CI0;
   int jlen, Jacnt, *Iaij, Ia_idx;
-  unsigned int *Iaridx;
+  size_t *Iaridx;
   signed char *Iasgn;
   double *Tptr;
   int npthreads, rc, status;
@@ -150,11 +150,11 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist, double **C,
                 double **Cprime, double *F, double *V, double *Sgn, int *L,
                 int *R, int norbs, int *orbsym) {
   struct stringwr *Ia;
-  unsigned int Ia_ex;
+  size_t Ia_ex;
   int ij, i, j, kl, ijkl, I, J, RJ;
   double tval, VS, *CprimeI0, *CI0;
   int jlen, Ia_idx, Jacnt, *Iaij;
-  unsigned int *Iaridx;
+  size_t *Iaridx;
   signed char *Iasgn;
   double *Tptr;
 
@@ -224,7 +224,7 @@ int form_ilist(struct stringwr *alplist, int Ja_list, int nas, int kl, int *L,
   int inum = 0, Ia_idx, Ia_ex, Iacnt, ij;
   int *Iaij;
   struct stringwr *Ia;
-  unsigned int *Iaridx;
+  size_t *Iaridx;
   signed char *Iasgn;
 
   /* loop over Ia */

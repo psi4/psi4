@@ -36,6 +36,7 @@
  PRAGMA_WARNING_POP
 #include "psi4/libpsio/aiohandler.h"
 
+#include <cmath>
 
 
 namespace psi { namespace sapt {
@@ -266,7 +267,7 @@ void SAPT0::ind20rA_B()
     E = 2.0*C_DDOT(noccA_*nvirA_,tAR_new,1,&(wBAR_[0][0]),1);
 
     conv = C_DDOT(noccA_*nvirA_,R_old,1,R_old,1);
-    conv = sqrt(conv);
+    conv = std::sqrt(conv);
     dE = E_old-E;
 
     iter++;
@@ -278,9 +279,9 @@ void SAPT0::ind20rA_B()
     }
     E_old = E;
   }
-  while((conv > d_conv_ || fabs(dE) > e_conv_) && iter < maxiter_);
+  while((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
 
-  if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
+  if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
     if (print_)
       outfile->Printf("\n    CHF Iterations converged\n\n");
     }
@@ -461,7 +462,7 @@ void SAPT0::ind20rB_A()
     E = 2.0*C_DDOT(noccB_*nvirB_,tBS_new,1,&(wABS_[0][0]),1);
 
     conv = C_DDOT(noccB_*nvirB_,R_old,1,R_old,1);
-    conv = sqrt(conv);
+    conv = std::sqrt(conv);
     dE = E_old-E;
 
     iter++;
@@ -473,9 +474,9 @@ void SAPT0::ind20rB_A()
     }
     E_old = E;
   }
-  while((conv > d_conv_ || fabs(dE) > e_conv_) && iter < maxiter_);
+  while((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
 
-  if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
+  if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
     if (print_)
       outfile->Printf("\n    CHF Iterations converged\n\n");
     }
@@ -700,7 +701,7 @@ void SAPT0::ind20rA_B_aio()
     E = 2.0*C_DDOT(noccA_*nvirA_,tAR_new,1,&(wBAR_[0][0]),1);
 
     conv = C_DDOT(noccA_*nvirA_,R_old,1,R_old,1);
-    conv = sqrt(conv);
+    conv = std::sqrt(conv);
     dE = E_old-E;
 
     iter++;
@@ -712,9 +713,9 @@ void SAPT0::ind20rA_B_aio()
     }
     E_old = E;
   }
-  while((conv > d_conv_ || fabs(dE) > e_conv_) && iter < maxiter_);
+  while((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
 
-  if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
+  if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
     if (print_)
       outfile->Printf("\n    CHF Iterations converged\n\n");
     }
@@ -939,7 +940,7 @@ void SAPT0::ind20rB_A_aio()
     E = 2.0*C_DDOT(noccB_*nvirB_,tBS_new,1,&(wABS_[0][0]),1);
 
     conv = C_DDOT(noccB_*nvirB_,R_old,1,R_old,1);
-    conv = sqrt(conv);
+    conv = std::sqrt(conv);
     dE = E_old-E;
 
     iter++;
@@ -951,9 +952,9 @@ void SAPT0::ind20rB_A_aio()
     }
     E_old = E;
   }
-  while((conv > d_conv_ || fabs(dE) > e_conv_) && iter < maxiter_);
+  while((conv > d_conv_ || std::fabs(dE) > e_conv_) && iter < maxiter_);
 
-  if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
+  if ((conv <= d_conv_) && (std::fabs(dE) <= e_conv_)) {
     if (print_)
       outfile->Printf("\n    CHF Iterations converged\n\n");
     }

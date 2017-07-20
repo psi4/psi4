@@ -33,6 +33,8 @@
 #include "psi4/libmints/writer.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
@@ -49,6 +51,7 @@
 //Header above allows to obtain "filename.moleculename" with psi::get_writer_file_prefix(std::string name)
 
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <iostream>
 #include <fstream>
 
@@ -60,8 +63,6 @@
 #include <chemps2/CASPT2.h>
 #include <chemps2/Lapack.h>
 
-using namespace std;
-
 // This allows us to be lazy in getting the spaces in DPD calls
 #define ID(x) ints->DPD_ID(x)
 
@@ -69,7 +70,7 @@ using namespace std;
 
 namespace psi{ namespace dmrg{
 
-int chemps2_groupnumber(const string SymmLabel){
+int chemps2_groupnumber(const std::string SymmLabel){
 
     int SyGroup = 0;
     bool stopFindGN = false;
@@ -79,11 +80,11 @@ int chemps2_groupnumber(const string SymmLabel){
         else { SyGroup++; }
     } while (( !stopFindGN ) && ( SyGroup < magic_number_max_groups_chemps2 ));
 
-    (*outfile) << "Psi4 symmetry group was found to be <" << SymmLabel.c_str() << ">." << endl;
+    (*outfile->stream()) << "Psi4 symmetry group was found to be <" << SymmLabel.c_str() << ">." << std::endl;
     if ( SyGroup >= magic_number_max_groups_chemps2 ){
-        (*outfile) << "CheMPS2 did not recognize this symmetry group name. CheMPS2 only knows:" << endl;
+        (*outfile->stream()) << "CheMPS2 did not recognize this symmetry group name. CheMPS2 only knows:" << std::endl;
         for (int cnt=0; cnt<magic_number_max_groups_chemps2; cnt++){
-            (*outfile) << "   <" << (CheMPS2::Irreps::getGroupName(cnt)).c_str() << ">" << endl;
+            (*outfile->stream()) << "   <" << (CheMPS2::Irreps::getGroupName(cnt)).c_str() << ">" << std::endl;
         }
         throw PSIEXCEPTION("CheMPS2 did not recognize the symmetry group name!");
     }
@@ -482,10 +483,10 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     const int dmrg_max_iter           = options.get_int("DMRG_SCF_MAX_ITER");
     const int dmrg_which_root         = options.get_int("DMRG_EXCITATION");
     const bool dmrg_state_avg         = options.get_bool("DMRG_SCF_STATE_AVG");
-    const string dmrg_active_space    = options.get_str("DMRG_SCF_ACTIVE_SPACE");
+    const std::string dmrg_active_space    = options.get_str("DMRG_SCF_ACTIVE_SPACE");
     const bool dmrg_loc_random        = options.get_bool("DMRG_LOCAL_INIT");
     const bool dmrg_caspt2            = options.get_bool("DMRG_CASPT2_CALC");
-    const string dmrg_caspt2_orb      = options.get_str("DMRG_CASPT2_ORBS");
+    const std::string dmrg_caspt2_orb      = options.get_str("DMRG_CASPT2_ORBS");
     const bool PSEUDOCANONICAL        = ( dmrg_caspt2_orb.compare("PSEUDOCANONICAL") == 0 ) ? true : false;
     const double dmrg_ipea            = options.get_double("DMRG_CASPT2_IPEA");
     const double dmrg_imag_shift      = options.get_double("DMRG_CASPT2_IMAG");
@@ -565,20 +566,20 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
        nvirtual[cnt] = orbspi[cnt] - frozen_docc[cnt] - active[cnt];
        if ( nvirtual[cnt] < 0 ){ virtualsOK = false; }
     }
-    (*outfile) << "wfn_irrep   = " << wfn_irrep << endl;
-    (*outfile) << "wfn_multp   = " << wfn_multp << endl;
-    (*outfile) << "numOrbitals = [ " << orbspi[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile) << " , " << orbspi[cnt];      } (*outfile) << " ]" << endl;
-    (*outfile) << "R(O)HF DOCC = [ " << docc[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile) << " , " << docc[cnt];        } (*outfile) << " ]" << endl;
-    (*outfile) << "R(O)HF SOCC = [ " << socc[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile) << " , " << socc[cnt];        } (*outfile) << " ]" << endl;
-    (*outfile) << "frozen_docc = [ " << frozen_docc[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile) << " , " << frozen_docc[cnt]; } (*outfile) << " ]" << endl;
-    (*outfile) << "active      = [ " << active[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile) << " , " << active[cnt];      } (*outfile) << " ]" << endl;
-    (*outfile) << "virtual     = [ " << nvirtual[0];
-    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile) << " , " << nvirtual[cnt];    } (*outfile) << " ]" << endl;
+    (*outfile->stream()) << "wfn_irrep   = " << wfn_irrep << std::endl;
+    (*outfile->stream()) << "wfn_multp   = " << wfn_multp << std::endl;
+    (*outfile->stream()) << "numOrbitals = [ " << orbspi[0];
+    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << orbspi[cnt];      } (*outfile->stream()) << " ]" << std::endl;
+    (*outfile->stream()) << "R(O)HF DOCC = [ " << docc[0];
+    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << docc[cnt];        } (*outfile->stream()) << " ]" << std::endl;
+    (*outfile->stream()) << "R(O)HF SOCC = [ " << socc[0];
+    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << socc[cnt];        } (*outfile->stream()) << " ]" << std::endl;
+    (*outfile->stream()) << "frozen_docc = [ " << frozen_docc[0];
+    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << frozen_docc[cnt]; } (*outfile->stream()) << " ]" << std::endl;
+    (*outfile->stream()) << "active      = [ " << active[0];
+    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << active[cnt];      } (*outfile->stream()) << " ]" << std::endl;
+    (*outfile->stream()) << "virtual     = [ " << nvirtual[0];
+    for (int cnt=1; cnt<nirrep; cnt++){ (*outfile->stream()) << " , " << nvirtual[cnt];    } (*outfile->stream()) << " ]" << std::endl;
     if ( !virtualsOK ){ throw PSIEXCEPTION("For at least one irrep: frozen_docc[ irrep ] + active[ irrep ] > numOrbitals[ irrep ]!"); }
 
     /*******************************************
@@ -604,12 +605,12 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     int nElectrons = 0;
     for (int cnt=0; cnt<nirrep; cnt++){ nElectrons += 2 * docc[cnt] + socc[cnt]; }
-    (*outfile) << "nElectrons  = " << nElectrons << endl;
+    (*outfile->stream()) << "nElectrons  = " << nElectrons << std::endl;
 
     // Number of electrons in the active space
     int nDMRGelectrons = nElectrons;
     for (int cnt=0; cnt<nirrep; cnt++){ nDMRGelectrons -= 2 * frozen_docc[cnt]; }
-    (*outfile) << "nEl. active = " << nDMRGelectrons << endl;
+    (*outfile->stream()) << "nEl. active = " << nDMRGelectrons << std::endl;
 
     // Create the CheMPS2::Hamiltonian --> fill later
     int * orbitalIrreps = new int[ nOrbDMRG ];
@@ -672,17 +673,17 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     ints->set_keep_dpd_so_ints( true );
     //ints->set_print(6);
 
-    (*outfile) << "###########################################################" << endl;
-    (*outfile) << "###                                                     ###" << endl;
-    (*outfile) << "###                       DMRG-SCF                      ###" << endl;
-    (*outfile) << "###                                                     ###" << endl;
-    (*outfile) << "###            CheMPS2 by Sebastian Wouters             ###" << endl;
-    (*outfile) << "###        https://github.com/SebWouters/CheMPS2        ###" << endl;
-    (*outfile) << "###   Comput. Phys. Commun. 185 (6), 1501-1514 (2014)   ###" << endl;
-    (*outfile) << "###                                                     ###" << endl;
-    (*outfile) << "###########################################################" << endl;
-    (*outfile) << endl;
-    (*outfile) << "Number of variables in the x-matrix = " << unitary->getNumVariablesX() << endl;
+    (*outfile->stream()) << "###########################################################" << std::endl;
+    (*outfile->stream()) << "###                                                     ###" << std::endl;
+    (*outfile->stream()) << "###                       DMRG-SCF                      ###" << std::endl;
+    (*outfile->stream()) << "###                                                     ###" << std::endl;
+    (*outfile->stream()) << "###            CheMPS2 by Sebastian Wouters             ###" << std::endl;
+    (*outfile->stream()) << "###        https://github.com/SebWouters/CheMPS2        ###" << std::endl;
+    (*outfile->stream()) << "###   Comput. Phys. Commun. 185 (6), 1501-1514 (2014)   ###" << std::endl;
+    (*outfile->stream()) << "###                                                     ###" << std::endl;
+    (*outfile->stream()) << "###########################################################" << std::endl;
+    (*outfile->stream()) << std::endl;
+    (*outfile->stream()) << "Number of variables in the x-matrix = " << unitary->getNumVariablesX() << std::endl;
 
     //Convergence variables
     double gradNorm = 1.0;
@@ -705,7 +706,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     const int sizeWorkMem      = ( nOrbDMRG_pow4 > unitary_worksize ) ? nOrbDMRG_pow4 : unitary_worksize;
     const int tot_dmrg_power6  = nOrbDMRG_pow4 * nOrbDMRG * nOrbDMRG;
     double * mem1 = new double[ sizeWorkMem ];
-    double * mem2 = new double[ ( PSEUDOCANONICAL ) ? sizeWorkMem : max( sizeWorkMem, tot_dmrg_power6 ) ];
+    double * mem2 = new double[ ( PSEUDOCANONICAL ) ? sizeWorkMem : std::max( sizeWorkMem, tot_dmrg_power6 ) ];
 
     CheMPS2::EdmistonRuedenberg * theLocalizer = NULL;
     if ( dmrg_active_space.compare("LOC")==0 ){ theLocalizer = new CheMPS2::EdmistonRuedenberg( HamDMRG->getVmat(), iHandler->getGroupNumber() ); }
@@ -744,18 +745,18 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
             std::ofstream capturing;
             std::streambuf * cout_buffer;
-            string chemps2filename = outfile_name + ".chemps2";
-            (*outfile) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << endl;
-            capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
-            cout_buffer = cout.rdbuf( capturing.rdbuf() );
+            std::string chemps2filename = outfile_name + ".chemps2";
+            (*outfile->stream()) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << std::endl;
+            capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
+            cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
             unitary->updateUnitary(mem1, mem2, theupdate, true, true); //multiply = compact = true
             if (( dmrg_do_diis ) && ( updateNorm <= dmrg_diis_branch )){
                 if ( dmrg_active_space.compare("NO")==0 ){
-                    cout << "DIIS has started. Active space not rotated to NOs anymore!" << endl;
+                    std::cout << "DIIS has started. Active space not rotated to NOs anymore!" << std::endl;
                 }
                 if ( dmrg_active_space.compare("LOC")==0 ){
-                    cout << "DIIS has started. Active space not rotated to localized orbitals anymore!" << endl;
+                    std::cout << "DIIS has started. Active space not rotated to localized orbitals anymore!" << std::endl;
                 }
                 if (theDIIS == NULL){
                     theDIIS = new CheMPS2::DIIS( theDIISvectorParamSize, unitary->getNumVariablesX(), dmrg_num_vec_diis );
@@ -768,13 +769,13 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
                 unitary->updateUnitary(mem1, mem2, theDIISparameterVector, false, false); //multiply = compact = false
             }
 
-            cout.rdbuf(cout_buffer);
+            std::cout.rdbuf(cout_buffer);
             capturing.close();
             std::ifstream copying;
-            copying.open( chemps2filename , ios::in ); // read only
+            copying.open( chemps2filename , std::ios::in ); // read only
             if (copying.is_open()){
-                string line;
-                while( getline( copying, line ) ){ (*outfile) << line << endl; }
+                std::string line;
+                while( getline( copying, line ) ){ (*outfile->stream()) << line << std::endl; }
                 copying.close();
             }
             system(("rm " + chemps2filename).c_str());
@@ -794,23 +795,23 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
             std::ofstream capturing;
             std::streambuf * cout_buffer;
-            string chemps2filename = outfile_name + ".chemps2";
-            (*outfile) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << endl;
-            capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
-            cout_buffer = cout.rdbuf( capturing.rdbuf() );
+            std::string chemps2filename = outfile_name + ".chemps2";
+            (*outfile->stream()) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << std::endl;
+            capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
+            cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
             theLocalizer->Optimize( mem1, mem2, dmrg_loc_random );
             theLocalizer->FiedlerExchange(maxlinsize, mem1, mem2);
             CheMPS2::CASSCF::fillLocalizedOrbitalRotations(theLocalizer->getUnitary(), iHandler, mem1);
             unitary->rotateActiveSpaceVectors(mem1, mem2);
 
-            cout.rdbuf(cout_buffer);
+            std::cout.rdbuf(cout_buffer);
             capturing.close();
             std::ifstream copying;
-            copying.open( chemps2filename , ios::in ); // read only
+            copying.open( chemps2filename , std::ios::in ); // read only
             if (copying.is_open()){
-                string line;
-                while( getline( copying, line ) ){ (*outfile) << line << endl; }
+                std::string line;
+                while( getline( copying, line ) ){ (*outfile->stream()) << line << std::endl; }
                 copying.close();
             }
             system(("rm " + chemps2filename).c_str());
@@ -819,7 +820,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
             buildQmatOCC( theQmatOCC, iHandler, work1, work2, wfn->Ca(), myJK, wfn );
             buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
-            (*outfile) << "Rotated the active space to localized orbitals, sorted according to the exchange matrix." << endl;
+            (*outfile->stream()) << "Rotated the active space to localized orbitals, sorted according to the exchange matrix." << std::endl;
 
         }
 
@@ -827,16 +828,16 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         {
             std::ofstream capturing;
             std::streambuf * cout_buffer;
-            string chemps2filename = outfile_name + ".chemps2";
-            (*outfile) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << endl;
-            capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
-            cout_buffer = cout.rdbuf( capturing.rdbuf() );
+            std::string chemps2filename = outfile_name + ".chemps2";
+            (*outfile->stream()) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << std::endl;
+            capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
+            cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
             for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] = 0.0; } //Clear the 2-RDM (to allow for state-averaged calculations)
-            const string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
+            const std::string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
             CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, mps_chkpt, psi4TMPpath);
             for (int state = -1; state < dmrg_which_root; state++){
-                if (state > -1){ theDMRG->newExcitation( fabs( Energy ) ); }
+                if (state > -1){ theDMRG->newExcitation( std::fabs( Energy ) ); }
                 Energy = theDMRG->Solve();
                 if ( dmrg_state_avg ){ // When SA-DMRGSCF: 2DM += current 2DM
                     theDMRG->calc2DMandCorrelations();
@@ -857,13 +858,13 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             }
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
 
-            cout.rdbuf(cout_buffer);
+            std::cout.rdbuf(cout_buffer);
             capturing.close();
             std::ifstream copying;
-            copying.open( chemps2filename , ios::in ); // read only
+            copying.open( chemps2filename , std::ios::in ); // read only
             if (copying.is_open()){
-                string line;
-                while( getline( copying, line ) ){ (*outfile) << line << endl; }
+                std::string line;
+                while( getline( copying, line ) ){ (*outfile->stream()) << line << std::endl; }
                 copying.close();
             }
             system(("rm " + chemps2filename).c_str());
@@ -876,7 +877,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
             buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
             buildQmatOCC( theQmatOCC, iHandler, work1, work2, wfn->Ca(), myJK, wfn );
-            (*outfile) << "Rotated the active space to natural orbitals, sorted according to the NOON." << endl;
+            (*outfile->stream()) << "Rotated the active space to natural orbitals, sorted according to the NOON." << std::endl;
         }
 
         if (dmrg_max_iter == nIterations){
@@ -891,22 +892,22 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         {
             std::ofstream capturing;
             std::streambuf * cout_buffer;
-            string chemps2filename = outfile_name + ".chemps2";
-            (*outfile) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << endl;
-            capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
-            cout_buffer = cout.rdbuf( capturing.rdbuf() );
+            std::string chemps2filename = outfile_name + ".chemps2";
+            (*outfile->stream()) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << std::endl;
+            capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
+            cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
             CheMPS2::CASSCF::buildFmat( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler, theRotatedTEI, DMRG2DM, DMRG1DM);
             CheMPS2::CASSCF::buildWtilde(wmattilde, theTmatrix, theQmatOCC, theQmatACT, iHandler, theRotatedTEI, DMRG2DM, DMRG1DM);
             CheMPS2::CASSCF::augmentedHessianNR(theFmatrix, wmattilde, iHandler, unitary, theupdate, &updateNorm, &gradNorm);
 
-            cout.rdbuf(cout_buffer);
+            std::cout.rdbuf(cout_buffer);
             capturing.close();
             std::ifstream copying;
-            copying.open( chemps2filename , ios::in ); // read only
+            copying.open( chemps2filename , std::ios::in ); // read only
             if (copying.is_open()){
-                string line;
-                while( getline( copying, line ) ){ (*outfile) << line << endl; }
+                std::string line;
+                while( getline( copying, line ) ){ (*outfile->stream()) << line << std::endl; }
                 copying.close();
             }
             system(("rm " + chemps2filename).c_str());
@@ -919,11 +920,11 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     if ((( dmrg_molden ) || (( dmrg_caspt2 ) && ( PSEUDOCANONICAL ))) && ( nIterations > 0 )){
 
-        (*outfile) << "################################################" << endl;
-        (*outfile) << "###                                          ###" << endl;
-        (*outfile) << "###   Rotation to pseudocanonical orbitals   ###" << endl;
-        (*outfile) << "###                                          ###" << endl;
-        (*outfile) << "################################################" << endl;
+        (*outfile->stream()) << "################################################" << std::endl;
+        (*outfile->stream()) << "###                                          ###" << std::endl;
+        (*outfile->stream()) << "###   Rotation to pseudocanonical orbitals   ###" << std::endl;
+        (*outfile->stream()) << "###                                          ###" << std::endl;
+        (*outfile->stream()) << "################################################" << std::endl;
         CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
         CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
         CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, NULL, NULL );
@@ -975,12 +976,12 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     if ( dmrg_density_ao ){
 
-        (*outfile) << "############################" << endl;
-        (*outfile) << "###                      ###" << endl;
-        (*outfile) << "###   DMRG 1-RDM in AO   ###" << endl;
-        (*outfile) << "###                      ###" << endl;
-        (*outfile) << "############################" << endl;
-        (*outfile) << "Please check the molden file for AO basis function information." << endl;
+        (*outfile->stream()) << "############################" << std::endl;
+        (*outfile->stream()) << "###                      ###" << std::endl;
+        (*outfile->stream()) << "###   DMRG 1-RDM in AO   ###" << std::endl;
+        (*outfile->stream()) << "###                      ###" << std::endl;
+        (*outfile->stream()) << "############################" << std::endl;
+        (*outfile->stream()) << "Please check the molden file for AO basis function information." << std::endl;
         SharedMatrix AO_RDM = print_rdm_ao( iHandler, DMRG1DM, work1, wfn->Ca(), wfn );
         AO_RDM->print("outfile");
 
@@ -988,11 +989,11 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
     if (( dmrg_caspt2 ) && ( nIterations > 0 )){
 
-        (*outfile) << "###########################" << endl;
-        (*outfile) << "###                     ###" << endl;
-        (*outfile) << "###     DMRG-CASPT2     ###" << endl;
-        (*outfile) << "###                     ###" << endl;
-        (*outfile) << "###########################" << endl;
+        (*outfile->stream()) << "###########################" << std::endl;
+        (*outfile->stream()) << "###                     ###" << std::endl;
+        (*outfile->stream()) << "###     DMRG-CASPT2     ###" << std::endl;
+        (*outfile->stream()) << "###                     ###" << std::endl;
+        (*outfile->stream()) << "###########################" << std::endl;
 
         buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
 
@@ -1002,16 +1003,16 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         {
             std::ofstream capturing;
             std::streambuf * cout_buffer;
-            string chemps2filename = outfile_name + ".chemps2";
-            (*outfile) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << endl;
-            capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
-            cout_buffer = cout.rdbuf( capturing.rdbuf() );
+            std::string chemps2filename = outfile_name + ".chemps2";
+            (*outfile->stream()) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << std::endl;
+            capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
+            cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
             for (int cnt = 0; cnt < nOrbDMRG_pow4; cnt++){ DMRG2DM[ cnt ] = 0.0; } //Clear the 2-RDM (to allow for state-averaged calculations)
-            const string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
+            const std::string psi4TMPpath = PSIOManager::shared_object()->get_default_path();
             CheMPS2::DMRG * theDMRG = new CheMPS2::DMRG(Prob, OptScheme, false, psi4TMPpath); // Rotated orbital space --> do not use checkpoint
             for (int state = -1; state < dmrg_which_root; state++){
-                if (state > -1){ theDMRG->newExcitation( fabs( Energy ) ); }
+                if (state > -1){ theDMRG->newExcitation( std::fabs( Energy ) ); }
                 const double E_CASSCF = theDMRG->Solve();
                 if ((state == -1) && (dmrg_which_root > 0)){ theDMRG->activateExcitations( dmrg_which_root ); }
             }
@@ -1048,20 +1049,20 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             if (CheMPS2::DMRG_storeRenormOptrOnDisk){ theDMRG->deleteStoredOperators(); }
             delete theDMRG;
 
-            cout.rdbuf(cout_buffer);
+            std::cout.rdbuf(cout_buffer);
             capturing.close();
             std::ifstream copying;
-            copying.open( chemps2filename , ios::in ); // read only
+            copying.open( chemps2filename , std::ios::in ); // read only
             if (copying.is_open()){
-                string line;
-                while( getline( copying, line ) ){ (*outfile) << line << endl; }
+                std::string line;
+                while( getline( copying, line ) ){ (*outfile->stream()) << line << std::endl; }
                 copying.close();
             }
             system(("rm " + chemps2filename).c_str());
        }
 
        if ( PSEUDOCANONICAL == false ){
-           (*outfile) << "CASPT2 : Deviation from pseudocanonical = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << endl;
+           (*outfile->stream()) << "CASPT2 : Deviation from pseudocanonical = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << std::endl;
            CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
            CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, three_dm, contract ); // 2-RDM, 3-RDM, and trace( Fock * cu(4)-4-RDM )
            CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, NULL, NULL, NULL );
@@ -1076,27 +1077,27 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
        fillRotatedTEI_coulomb(  ints, OAorbs_ptr, theRotatedTEI, iHandler, psio, wfn );
        fillRotatedTEI_exchange( ints, OAorbs_ptr, Vorbs_ptr,  theRotatedTEI, iHandler, psio );
 
-       (*outfile) << "CASPT2 : Norm F - F_pseudocan = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << endl;
+       (*outfile->stream()) << "CASPT2 : Norm F - F_pseudocan = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << std::endl;
        double E_CASPT2 = 0.0;
        {
             std::ofstream capturing;
             std::streambuf * cout_buffer;
-            string chemps2filename = outfile_name + ".chemps2";
-            (*outfile) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << endl;
-            capturing.open( chemps2filename.c_str() , ios::trunc ); // truncate
-            cout_buffer = cout.rdbuf( capturing.rdbuf() );
+            std::string chemps2filename = outfile_name + ".chemps2";
+            (*outfile->stream()) << "CheMPS2 output is temporarily written to the file " << chemps2filename << " and will be copied here." << std::endl;
+            capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
+            cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
             CheMPS2::CASPT2 * myCASPT2 = new CheMPS2::CASPT2( iHandler, theRotatedTEI, theTmatrix, theFmatrix, DMRG1DM, DMRG2DM, three_dm, contract, dmrg_ipea );
             E_CASPT2 = myCASPT2->solve( dmrg_imag_shift );
             delete myCASPT2;
 
-            cout.rdbuf(cout_buffer);
+            std::cout.rdbuf(cout_buffer);
             capturing.close();
             std::ifstream copying;
-            copying.open( chemps2filename , ios::in ); // read only
+            copying.open( chemps2filename , std::ios::in ); // read only
             if (copying.is_open()){
-                string line;
-                while( getline( copying, line ) ){ (*outfile) << line << endl; }
+                std::string line;
+                while( getline( copying, line ) ){ (*outfile->stream()) << line << std::endl; }
                 copying.close();
             }
             system(("rm " + chemps2filename).c_str());

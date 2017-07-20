@@ -26,11 +26,14 @@
  * @END LICENSE
  */
 
+#include "scf_grad.h"
+#include "jk_grad.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/liboptions/liboptions_python.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
@@ -40,8 +43,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
-#include "scf_grad.h"
-#include "jk_grad.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <algorithm>
 
@@ -49,9 +51,9 @@
 
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
-using namespace std;
 using namespace psi;
 
 
@@ -338,16 +340,12 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_off("Grad: V");
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    if (pyExtern) {
-        std::shared_ptr<ExternalPotential> external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
-        if (external) {
-            gradient_terms.push_back("External Potential");
-            timer_on("Grad: External");
-            gradients_["External Potential"] = external->computePotentialGradients(basisset_, Dt);
-            timer_off("Grad: External");
-        }  // end external
-    }
+    if (external_pot_) {
+        gradient_terms.push_back("External Potential");
+        timer_on("Grad: External");
+        gradients_["External Potential"] = external_pot_->computePotentialGradients(basisset_, Dt);
+        timer_off("Grad: External");
+    }  // end external
 
     // => Perturbation Gradient <= //
     if(options_.get_bool("PERTURB_H")) {
@@ -581,7 +579,7 @@ SharedMatrix SCFGrad::compute_gradient()
         double* eps_ap = eps_a->pointer();
         double* eps_bp = eps_b->pointer();
 
-        double* temp = new double[nso * (ULI) nalpha];
+        double* temp = new double[nso * (size_t) nalpha];
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
@@ -675,7 +673,7 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_on("Grad: JK");
 
     std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(1, basisset_, basissets_["DF_BASIS_SCF"]);
-    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
+    jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);
@@ -1300,7 +1298,7 @@ SharedMatrix SCFGrad::compute_hessian()
         double* eps_ap = eps_a->pointer();
         double* eps_bp = eps_b->pointer();
 
-        double* temp = new double[nso * (ULI) nalpha];
+        double* temp = new double[nso * (size_t) nalpha];
 
         ::memset((void*) temp, '\0', sizeof(double) * nso * nalpha);
         for (int i = 0; i < nalpha; i++) {
@@ -1464,7 +1462,7 @@ SharedMatrix SCFGrad::compute_hessian()
     timer_on("Hess: JK");
 
     std::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2, basisset_, basissets_["DF_BASIS_SCF"]);
-    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
+    jk->set_memory((size_t) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);

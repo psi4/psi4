@@ -33,10 +33,13 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/physconst.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -115,9 +118,9 @@ void polar(void)
       }
 
     if (params.wfn == "CC2")
-      outfile->Printf( "\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n                 CC2 Dipole Polarizability (Length Gauge) [(e^2 a0^2)/E_h]:\n");
     else
-      outfile->Printf( "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
+      outfile->Printf( "\n                 CCSD Dipole Polarizability (Length Gauge) [(e^2 a0^2)/E_h]:\n");
     outfile->Printf( "  -------------------------------------------------------------------------\n");
     if(params.omega[i] != 0.0)
       omega_nm = (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]);

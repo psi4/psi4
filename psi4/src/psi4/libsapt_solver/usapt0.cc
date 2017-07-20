@@ -30,14 +30,17 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
 
 using namespace psi;
-using namespace std;
 
 namespace psi{ 
 
@@ -54,7 +57,7 @@ USAPT0::USAPT0(SharedWavefunction d,
     bench_ = options_.get_int("BENCH");
     coupled_ind_ = options_.get_bool("COUPLED_INDUCTION");
 // Get memory and convert it into words.
-    memory_ = (unsigned long int)(Process::environment.get_memory() * options_.get_double("SAPT_MEM_FACTOR") * 0.125);
+    memory_ = (size_t)(Process::environment.get_memory() * options_.get_double("SAPT_MEM_FACTOR") * 0.125);
 
     cpks_maxiter_ = options_.get_int("MAXITER");
     cpks_delta_ = options_.get_double("D_CONVERGENCE");
@@ -467,7 +470,7 @@ void USAPT0::fock_terms()
     if (jk_memory < 0L) {
         throw PSIEXCEPTION("Too little static memory for USAPT::fock_terms");
     }
-    jk->set_memory((unsigned long int )jk_memory);
+    jk->set_memory((size_t )jk_memory);
 
     // ==> Generalized Fock Source Terms [Elst/Exch] <== //
 
@@ -2309,7 +2312,7 @@ void USAPT0::mp2_terms()
     fseek(Bb_asf,0L,SEEK_SET);
     fseek(Cb_asf,0L,SEEK_SET);
     fseek(Db_arf,0L,SEEK_SET);
-    for (int astart = 0; astart < max(naa, nba); astart += maxa_a) {
+    for (int astart = 0; astart < std::max(naa, nba); astart += maxa_a) {
         int na_ablock = (astart + maxa_a >= naa ? naa - astart : maxa_a);
         int nb_ablock = (astart + maxb_a >= nba ? nba - astart : maxb_a);
 
@@ -2336,7 +2339,7 @@ void USAPT0::mp2_terms()
         fseek(Bb_brf,0L,SEEK_SET);
         fseek(Cb_brf,0L,SEEK_SET);
         fseek(Db_bsf,0L,SEEK_SET);
-        for (int bstart = 0; bstart < max(nab, nbb); bstart += maxa_b) {
+        for (int bstart = 0; bstart < std::max(nab, nbb); bstart += maxa_b) {
             int na_bblock = (bstart + maxa_b >= nab ? nab - bstart : maxa_b);
             int nb_bblock = (bstart + maxb_b >= nbb ? nbb - bstart : maxb_b);
 

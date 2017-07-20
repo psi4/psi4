@@ -97,7 +97,7 @@ double SCF::energy(int cycle,double old_energy)
         ci_grad[I] += H_tcscf[I][J] * ci[J];
       }
       ci_grad[I] -= old_energy * ci[I];
-      norm_ci_grad += fabs(ci_grad[I]);
+      norm_ci_grad += std::fabs(ci_grad[I]);
     }
 
     double*  eigenvalues;
@@ -109,7 +109,7 @@ double SCF::energy(int cycle,double old_energy)
 
     total_energy = eigenvalues[root];
 
-    if(fabs(old_energy - total_energy) < 1.0e-5){
+    if(std::fabs(old_energy - total_energy) < 1.0e-5){
     for(int I = 0 ; I < nci; ++I)
       ci[I] = eigenvectors[I][root];
     }

@@ -62,7 +62,7 @@ double calc_d2(double *target, double lambda, double *Hd, int size, int precon)
       tval = lambda - Hd[i];
       if (precon == PRECON_LANCZOS) tval = 1.0;
 
-      if (fabs(tval) > HD_MIN){ 
+      if (std::fabs(tval) > HD_MIN){ 
          tval2 = (target[i] /= tval);
          norm += tval2 * tval2;
       }

@@ -35,6 +35,8 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/basisset.h"
 
+#include <cstring>
+
 namespace psi { namespace sapt {
 
 SAPT::SAPT(SharedWavefunction Dimer, SharedWavefunction MonomerA,
@@ -135,7 +137,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   ghostsA.push_back(1);
   std::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
     ghostsA);
-  foccA_ = monomerA->nfrozen_core(MonomerA->ecpbasisset(), options_.get_str("FREEZE_CORE"));
+  foccA_ = MonomerA->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), monomerA);
 
   std::vector<int> realsB;
   realsB.push_back(1);
@@ -143,7 +145,7 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB)
   ghostsB.push_back(0);
   std::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
     ghostsB);
-  foccB_ = monomerB->nfrozen_core(MonomerB->ecpbasisset(), options_.get_str("FREEZE_CORE"));
+  foccB_ = MonomerB->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), monomerB);
 
   natomsA_ = 0;
   natomsB_ = 0;

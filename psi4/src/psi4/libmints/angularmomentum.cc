@@ -26,15 +26,15 @@
  * @END LICENSE
  */
 
-#include <memory>
-#include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/angularmomentum.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/physconst.h"
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#include <memory>
+#include <stdexcept>
 
 using namespace psi;
 

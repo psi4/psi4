@@ -327,8 +327,6 @@ private:
 	RadialIntegral radInts;
 	/// The angular integrals, which can be reused over all ECP centers
 	AngularIntegral angInts;
-	/// The ECP basis
-    std::shared_ptr<BasisSet> basis;
 	
 	/// Worker functions for calculating binomial expansion coefficients
 	double calcC(int a, int m, double A) const;
@@ -351,7 +349,7 @@ public:
 	  * @param basis - reference to the ECP basis set
 	  * @paramm maxLB - the maximum angular momentum in the orbital basis
 	  */
-    ECPInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
+    ECPInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     virtual ~ECPInt();
 	
 };

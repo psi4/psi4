@@ -38,16 +38,16 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/cholesky.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "jk.h"
 
 #include <sstream>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-using namespace std;
 using namespace psi;
 
 namespace psi {
@@ -90,12 +90,12 @@ void CDJK::initialize_JK_core()
     std::shared_ptr<CholeskyERI> Ch (new CholeskyERI(std::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
     Ch->choleskify();
     ncholesky_  = Ch->Q();
-    ULI three_memory = ncholesky_ * ntri;
-    ULI nbf = primary_->nbf();
+    size_t three_memory = ncholesky_ * ntri;
+    size_t nbf = primary_->nbf();
 
     ///Kinda silly to check for memory after you perform CD.
     ///Most likely redundant as cholesky also checks for memory.
-    if ( memory_  < ((ULI)sizeof(double) * three_memory + (ULI)sizeof(double)* ncholesky_ * nbf * nbf))
+    if ( memory_  < ((size_t)sizeof(double) * three_memory + (size_t)sizeof(double)* ncholesky_ * nbf * nbf))
         throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
 
     std::shared_ptr<Matrix> L = Ch->L();

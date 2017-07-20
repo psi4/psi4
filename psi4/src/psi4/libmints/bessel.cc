@@ -167,7 +167,7 @@ void BesselFunction::calculate(const double z, int maxL, std::vector<double> &va
 		int index = floor(z * scale + 0.5);
 		double dz = z - index/scale; // z - z0
 		
-		if (fabs(dz) < 1e-12) { // z is one of the tabulated points
+		if (std::fabs(dz) < 1e-12) { // z is one of the tabulated points
 			for (int l = 0; l <= maxL; l++) values[l] = K[index][l];
 		} else {
 			// Determine the necessary derivatives from

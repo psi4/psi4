@@ -35,6 +35,7 @@
 #include <cstdlib> /* was libc.h */
 /* gcc 2.7.0 doesn't like #include <cstring> */
 #include "psi4/detci/slaterd.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "psi4/psi4-dec.h"
 
@@ -51,8 +52,8 @@ extern void common_orbs(int *same_alpha, int *same_beta, int cnt_alpha,
    int *cnt_beta_socc);
 
 
-void SlaterDeterminant::set(unsigned int na, unsigned char *alpoccs,
-      unsigned int nb, unsigned char *betoccs)
+void SlaterDeterminant::set(size_t na, unsigned char *alpoccs,
+      size_t nb, unsigned char *betoccs)
 {
    int i;
 

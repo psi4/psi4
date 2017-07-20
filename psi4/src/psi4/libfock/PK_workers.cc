@@ -467,7 +467,7 @@ void PKWorker::next_quartet() {
 }
 
 PKWrkrReord::PKWrkrReord(std::shared_ptr<BasisSet> primary, SharedSieve sieve, std::shared_ptr<AIOHandler> AIO,
-                         int target_file, size_t buffer_size, unsigned int nbuffer) :
+                         int target_file, size_t buffer_size, size_t nbuffer) :
     PKWorker(primary,sieve,AIO,target_file,buffer_size) {
 
     set_nbuf(nbuffer);
@@ -534,7 +534,7 @@ PKWrkrReord::~PKWrkrReord() {
 
 }
 
-void PKWrkrReord::allocate_wK(size_t bufsize, unsigned int buf_per_thread) {
+void PKWrkrReord::allocate_wK(size_t bufsize, size_t buf_per_thread) {
     // We want to deallocate the previous J and K buffers
     // Make sure the corresponding integrals are written to disk
     for(int i = 0; i < nbuf(); ++i) {
@@ -618,9 +618,9 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
     // Compute initial ijkl index for current buffer
 
     // Vector of batch number to which we want to write
-    std::vector<unsigned int> target_batches;
+    std::vector<size_t> target_batches;
 
-    for (unsigned int i = 0; i < min_ind.size(); ++i) {
+    for (size_t i = 0; i < min_ind.size(); ++i) {
         if (offset() >= min_ind[i] && offset() < max_ind[i]) {
             target_batches.push_back(i);
             continue;
@@ -648,7 +648,7 @@ void PKWrkrReord::write(std::vector<size_t> min_ind, std::vector<size_t> max_ind
 
     // And now we write to the file in the appropriate entries
     for (int i = 0; i < target_batches.size(); ++i) {
-        unsigned int b = target_batches[i];
+        size_t b = target_batches[i];
         labels_J_[buf_].push_back(get_label_J(b));
         size_t start = std::max(offset(), min_ind[b]);
         size_t stop = std::min(max_idx() + 1, max_ind[b]);
@@ -692,9 +692,9 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
     // Compute initial ijkl index for current buffer
 
     // Vector of batch number to which we want to write
-    std::vector<unsigned int> target_batches;
+    std::vector<size_t> target_batches;
 
-    for (unsigned int i = 0; i < min_ind.size(); ++i) {
+    for (size_t i = 0; i < min_ind.size(); ++i) {
         if (offset() >= min_ind[i] && offset() < max_ind[i]) {
             target_batches.push_back(i);
             continue;
@@ -721,7 +721,7 @@ void PKWrkrReord::write_wK(std::vector<size_t> min_ind, std::vector<size_t> max_
 
     // And now we write to the file in the appropriate entries
     for (int i = 0; i < target_batches.size(); ++i) {
-        unsigned int b = target_batches[i];
+        size_t b = target_batches[i];
         labels_wK_[buf_].push_back(get_label_wK(b));
         size_t start = std::max(offset(), min_ind[b]);
         size_t stop = std::min(max_idx() + 1, max_ind[b]);
@@ -947,7 +947,7 @@ void PKWrkrIWL::fill_values_wK(double val, size_t i, size_t j, size_t k, size_t 
     }
 }
 
-bool PKWrkrIWL::pop_value(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+bool PKWrkrIWL::pop_value(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
     IWLAsync_PK* buf;
     if(bufid < nbuf()) {
         buf = IWL_J_[bufid];
@@ -961,7 +961,7 @@ bool PKWrkrIWL::pop_value(unsigned int bufid, double &val, size_t &i, size_t &j,
     return true;
 }
 
-bool PKWrkrIWL::pop_value_wK(unsigned int bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
+bool PKWrkrIWL::pop_value_wK(size_t bufid, double &val, size_t &i, size_t &j, size_t &k, size_t &l) {
     IWLAsync_PK* buf = IWL_wK_[bufid];
     if(buf->nints() == 0) {
         return false;
@@ -970,7 +970,7 @@ bool PKWrkrIWL::pop_value_wK(unsigned int bufid, double &val, size_t &i, size_t 
     return true;
 }
 
-void PKWrkrIWL::insert_value(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+void PKWrkrIWL::insert_value(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) {
     IWLAsync_PK* buf;
     if(bufid < nbuf()) {
         buf = IWL_J_[bufid];
@@ -983,7 +983,7 @@ void PKWrkrIWL::insert_value(unsigned int bufid, double val, size_t i, size_t j,
     }
 }
 
-void PKWrkrIWL::insert_value_wK(unsigned int bufid, double val, size_t i, size_t j, size_t k, size_t l) {
+void PKWrkrIWL::insert_value_wK(size_t bufid, double val, size_t i, size_t j, size_t k, size_t l) {
     IWLAsync_PK* buf = IWL_wK_[bufid];
     buf->fill_values(val,i,j,k,l);
     if(buf->nints() == buf->maxints()) {
@@ -1073,7 +1073,7 @@ void IWLAsync_PK::pop_value(double &val, size_t &i, size_t &j, size_t &k, size_t
 }
 
 void IWLAsync_PK::flush() {
-    unsigned int nints = nints_;
+    size_t nints = nints_;
     while(nints_ < ints_per_buf_) {
         fill_values(0.0,0,0,0,0);
     }

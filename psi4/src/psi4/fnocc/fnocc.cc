@@ -26,11 +26,13 @@
  * @END LICENSE
  */
 
-#include"ccsd.h"
-#include"frozen_natural_orbitals.h"
+#include "ccsd.h"
+#include "frozen_natural_orbitals.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
+#include "psi4/liboptions/liboptions.h"
+
 
 namespace psi{ namespace fnocc{
 
@@ -70,9 +72,11 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
       if ( !options.get_bool("RUN_CEPA") ) {
           std::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
           ccsd->compute_energy();
+          return ccsd;
       } else {
           std::shared_ptr<CoupledPair> cepa (new CoupledPair(wfn,options));
           cepa->compute_energy();
+          return cepa;
       }
 
   }else {
@@ -112,10 +116,11 @@ SharedWavefunction fnocc(SharedWavefunction ref_wfn, Options &options) {
 
       tstop();
 
+      return ccsd;
 
   }
 
-  return wfn;
+  //return wfn;
 } // end fnocc
 
 }} // end namespaces

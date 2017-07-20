@@ -27,18 +27,20 @@
  */
 
 /** Standard library includes */
-#include <fstream>
+
+#include "dfocc.h"
+
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-#include "dfocc.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/molecule.h"
 
-using namespace std;
+#include <fstream>
 
 namespace psi{ namespace dfoccwave{
 
@@ -469,7 +471,7 @@ void DFOCC::mo_coeff_blocks()
 //======================================================================
 void DFOCC::remove_binary_file(int fileno)
 {
-      ostringstream convert;
+      std::ostringstream convert;
       convert << fileno;
       std::string scr = PSIOManager::shared_object()->get_default_path();
       std::string pid_ = psio_getpid();

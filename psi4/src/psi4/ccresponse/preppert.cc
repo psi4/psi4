@@ -46,8 +46,6 @@
 #define EXTERN
 #include "globals.h"
 
-using namespace std;
-
 namespace psi { namespace ccresponse {
 
 void sort_pert(const char *pert, double **pertints, int irrep);
@@ -69,10 +67,10 @@ void preppert(std::shared_ptr<BasisSet> primary)
   char lbl[32];
 
   MintsHelper mints(primary, Process::environment.options, 0);
-  vector<SharedMatrix> dipole = mints.so_dipole();
-  vector<SharedMatrix> nabla = mints.so_nabla();
-  vector<SharedMatrix> angmom = mints.so_angular_momentum();
-  vector<SharedMatrix> trquad = mints.so_traceless_quadrupole();
+  std::vector<SharedMatrix> dipole = mints.so_dipole();
+  std::vector<SharedMatrix> nabla = mints.so_nabla();
+  std::vector<SharedMatrix> angmom = mints.so_angular_momentum();
+  std::vector<SharedMatrix> trquad = mints.so_traceless_quadrupole();
 
   int nso = moinfo.nso;
   int nmo = moinfo.nmo;

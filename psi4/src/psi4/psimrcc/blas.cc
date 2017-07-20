@@ -27,7 +27,7 @@
  */
 
 #include <algorithm>
-
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
@@ -45,8 +45,6 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
-
-using namespace std;
 
 CCBLAS::CCBLAS(Options &options):
         options_(options),
@@ -96,7 +94,7 @@ void CCBLAS::allocate_work()
 
   work_size = 0;
   for(int h=0;h<moinfo->get_nirreps();h++){
-    vector<size_t> dimension;
+    std::vector<size_t> dimension;
     dimension.push_back(oo_pair->get_pairpi(h));
     dimension.push_back(vv_pair->get_pairpi(h));
     dimension.push_back(ff_pair->get_pairpi(h));
@@ -256,13 +254,13 @@ void CCBLAS::add_indices()
 
 void CCBLAS::print(const char* cstr)
 {
-  string str(cstr);
-  vector<string> names = moinfo->get_matrix_names(str);
+  std::string str(cstr);
+  std::vector<std::string> names = moinfo->get_matrix_names(str);
   for(size_t n = 0; n < names.size(); ++n)
     print_ref(names[n]);
 }
 
-void CCBLAS::print_ref(string& str)
+void CCBLAS::print_ref(std::string& str)
 {
   get_Matrix(str)->print();
 }
@@ -320,39 +318,39 @@ int CCBLAS::compute_storage_strategy()
   size_t others_memory        = 0;
 
   outfile->Printf("\n    Input memory                           = %14lu bytes",
-                  (unsigned long)memory_manager->get_MaximumAllowedMemory());
+                  (size_t)memory_manager->get_MaximumAllowedMemory());
   outfile->Printf("\n    Free memory                            = %14lu bytes",
-                  (unsigned long)available_memory);
+                  (size_t)available_memory);
   outfile->Printf("\n    Free memory available for matrices     = %14lu bytes (%3.0f%%)",
-                  (unsigned long)storage_memory,fraction_for_in_core*100.0);
+                  (size_t)storage_memory,fraction_for_in_core*100.0);
 
   // Gather the memory requirements for all the CCMAtrix object
   // and divide the integrals from all the other matrices.
   // At the same time compute the memory requirements for
   // a fully in-core algorithm.
-  vector<pair<size_t,pair<CCMatrix*,int> > > integrals;
-  vector<pair<size_t,pair<CCMatrix*,int> > > fock;
-  vector<pair<size_t,pair<CCMatrix*,int> > > others;
+  std::vector<std::pair<size_t,std::pair<CCMatrix*,int> > > integrals;
+  std::vector<std::pair<size_t,std::pair<CCMatrix*,int> > > fock;
+  std::vector<std::pair<size_t,std::pair<CCMatrix*,int> > > others;
   for(MatrixMap::iterator it=matrices.begin();it!=matrices.end();++it){
     for(int h=0;h<moinfo->get_nirreps();++h){
       size_t block_memory = it->second->get_memorypi2(h);
       if(it->second->is_integral()){
-        integrals.push_back(make_pair(block_memory,make_pair(it->second,h)));
+        integrals.push_back(std::make_pair(block_memory,std::make_pair(it->second,h)));
         integrals_memory += block_memory;
       }else if(it->second->is_fock()){
-        fock.push_back(make_pair(block_memory,make_pair(it->second,h)));
+        fock.push_back(std::make_pair(block_memory,std::make_pair(it->second,h)));
         fock_memory += block_memory;
       }else{
-        others.push_back(make_pair(block_memory,make_pair(it->second,h)));
+        others.push_back(std::make_pair(block_memory,std::make_pair(it->second,h)));
         others_memory += block_memory;
       }
       fully_in_core_memory += block_memory;
     }
   }
-  outfile->Printf("\n    Memory required by fock matrices       = %14lu bytes",(unsigned long)fock_memory);
-  outfile->Printf("\n    Memory required by integrals           = %14lu bytes",(unsigned long)integrals_memory);
-  outfile->Printf("\n    Memory required by other matrices      = %14lu bytes",(unsigned long)others_memory);
-  outfile->Printf("\n    Memory required for in-core algorithm  = %14lu bytes",(unsigned long)fully_in_core_memory);
+  outfile->Printf("\n    Memory required by fock matrices       = %14lu bytes",(size_t)fock_memory);
+  outfile->Printf("\n    Memory required by integrals           = %14lu bytes",(size_t)integrals_memory);
+  outfile->Printf("\n    Memory required by other matrices      = %14lu bytes",(size_t)others_memory);
+  outfile->Printf("\n    Memory required for in-core algorithm  = %14lu bytes",(size_t)fully_in_core_memory);
 
   // Check if you may use a fully in core algorithm
   full_in_core = false;

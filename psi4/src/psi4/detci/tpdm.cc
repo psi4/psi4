@@ -128,7 +128,7 @@ std::vector<SharedMatrix> CIWavefunction::tpdm(SharedCIVector Ivec, SharedCIVect
     if (transp_tmp == nullptr || transp_tmp2 == nullptr) {
      outfile->Printf("(tpdm): Trouble with malloc'ing transp_tmp\n");
     }
-    unsigned long bufsz = Ivec->get_max_blk_size();
+    size_t bufsz = Ivec->get_max_blk_size();
     transp_tmp[0] = init_array(bufsz);
     transp_tmp2[0] = init_array(bufsz);
     if (transp_tmp[0] == nullptr || transp_tmp2[0] == nullptr) {
@@ -469,7 +469,7 @@ void CIWavefunction::tpdm_block(struct stringwr **alplist,
   int Kbcnt, Kacnt, Kb_ex, Ka_ex, Kb_list, Ka_list, Kb_idx, Ka_idx;
   struct stringwr *Jb, *Ja, *Kb, *Ka;
   signed char *Jbsgn, *Jasgn, *Kbsgn, *Kasgn;
-  unsigned int *Jbridx, *Jaridx, *Kbridx, *Karidx;
+  size_t *Jbridx, *Jaridx, *Kbridx, *Karidx;
   double C1, C2, Ib_sgn, Ia_sgn, Kb_sgn, Ka_sgn, tval;
   int i, j, k, l, ij, kl, ijkl, oij, okl, *Jboij, *Jaoij, *Kboij, *Kaoij;
 

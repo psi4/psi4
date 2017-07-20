@@ -31,8 +31,8 @@
 #include "dfocc.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libmints/matrix.h"
-using namespace std;
 
+#include <cmath>
 
 namespace psi{ namespace dfoccwave{
 
@@ -172,7 +172,7 @@ do
     }
 
 }
-while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
+while(std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2 || rms_t1 >= tol_t2);
 
 
 if (conver == 1) {

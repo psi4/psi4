@@ -53,8 +53,6 @@
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 /*!
     \fn CCTransform::read_oei_integrals()
  */

@@ -26,15 +26,17 @@
  * @END LICENSE
  */
 
-
-#include "psi4/libqt/qt.h"
-#include "psi4/psi4-dec.h"
 #include "solver.h"
 #include "points.h"
 #include "hamiltonian.h"
 #include "jk.h"
+
+#include "psi4/libqt/qt.h"
+#include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cmath>
 #include <sstream>
@@ -42,8 +44,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-using namespace std;
 
 namespace psi {
 
@@ -135,9 +135,9 @@ void CGRSolver::print_header() const
         outfile->Printf( "   Maximum iterations = %9d\n\n", maxiter_);
     }
 }
-unsigned long int CGRSolver::memory_estimate()
+size_t CGRSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -260,7 +260,7 @@ void CGRSolver::setup()
 
             std::vector<std::pair<double, int> > d;
             for (int i = 0; i < n; ++i) {
-                d.push_back(make_pair(diag_->get(h,i),i));
+                d.push_back(std::make_pair(diag_->get(h,i),i));
             }
             std::sort(d.begin(), d.end());
 
@@ -696,9 +696,9 @@ void DLRSolver::print_header() const
         outfile->Printf( "   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
 }
-unsigned long int DLRSolver::memory_estimate()
+size_t DLRSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -799,7 +799,7 @@ void DLRSolver::guess()
 
         std::vector<std::pair<double, int> > d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h,i),i));
         }
         std::sort(d.begin(), d.end());
 
@@ -1550,9 +1550,9 @@ void DLRXSolver::print_header() const
         outfile->Printf( "   Maximum iterations      = %11d\n\n", maxiter_);
     }
 }
-unsigned long int DLRXSolver::memory_estimate()
+size_t DLRXSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -1655,7 +1655,7 @@ void DLRXSolver::guess()
 
         std::vector<std::pair<double, int> > d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h,i),i));
         }
         std::sort(d.begin(), d.end());
 
@@ -1804,7 +1804,7 @@ void DLRXSolver::subspaceDiagonalization()
         // Sort to order as -/+, -/+, ....
         std::vector<std::pair<double, int> > pass1;
         for (int i = 0; i < 2*n; i++) {
-            pass1.push_back(make_pair(fabs(lrp[i]), i));
+            pass1.push_back(std::make_pair(std::fabs(lrp[i]), i));
         }
 
         std::sort(pass1.begin(), pass1.end());
@@ -2287,9 +2287,9 @@ void DLUSolver::print_header() const
 
 /*// Commented implementation below is from DLR solver but this function
 // is never called in the DLU solver.
-unsigned long int DLUSolver::memory_estimate()
+size_t DLUSolver::memory_estimate()
 {
-    unsigned long int dimension = 0L;
+    size_t dimension = 0L;
     if (!diag_) diag_ = H_->diagonal();
     for (int h = 0; h < diag_->nirrep(); h++) {
         dimension += diag_->dimpi()[h];
@@ -2444,7 +2444,7 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > DLUSolver::expand_p
         }
     }
 
-    return make_pair(pairalpha, pairbeta);
+    return std::make_pair(pairalpha, pairbeta);
 
 }
 
@@ -2574,7 +2574,7 @@ void DLUSolver::guess()
 
         std::vector<std::pair<double, int> > d;
         for (int i = 0; i < n; ++i) {
-            d.push_back(make_pair(diag_->get(h,i),i));
+            d.push_back(std::make_pair(diag_->get(h,i),i));
         }
         std::sort(d.begin(), d.end());
 

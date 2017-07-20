@@ -4,6 +4,7 @@
 #set cfour_basis 4-31g
 
 
+
 set geom_maxiter 3
 set basis 6-31g
 set scf_type pk
@@ -17,7 +18,10 @@ r1 = 1.0
 r2 = 1.7
 a1 = 110.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -34,7 +38,10 @@ molecule NH3  {
   aXNH = 115.0
   a1 = 120.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -45,7 +52,10 @@ molecule HCCCl  {
   C  0 0  1.1
   Cl 0 0  2.6
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -58,7 +68,10 @@ molecule C2H2 {
   r1 = 0.65
   r2 = 1.75
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -69,7 +82,10 @@ molecule N2 {
   r = 1.1
 }
 
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -96,7 +112,10 @@ molecule CHFClBr  {
   Br 2 1.0 1 105.0 3 -120.0
 }
 set basis 3-21g
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 set basis 6-31g
@@ -109,7 +128,10 @@ molecule CH2ClBr  {
   H  2 1.0 1 105.0 3  120.0
   H  2 1.0 1 105.0 3 -120.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -122,7 +144,10 @@ molecule CH2ClBr  {
   H  2 1.0 1 105.0 3 -D1
     D1 = 120.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -132,7 +157,10 @@ molecule HOCl  {
   O 1 1.0
   Cl 2 1.7 1 110.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -152,7 +180,10 @@ molecule C4H4Cl2F2  {
   F    -1.913713787211    -3.739567959534     0.258534542158
   F     1.913713787211     3.739567959534    -0.258534542158
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -168,7 +199,10 @@ molecule HOOH_dimer  {
   H  -0.9911262285   1.7979226333  -0.1465182515
   units au
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -179,7 +213,10 @@ molecule HOOH  {
   O 2 1.5 1 110.0
   H 3 1.0 2 110.0 1 60.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -204,7 +241,10 @@ molecule H2O  {
   O 1 1.0
   H 2 1.0 1 109.5
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -217,7 +257,10 @@ molecule CH2F2  {
   H     1.7084139850   0.0000000000   2.1841068002
   H    -1.7084139850  -0.0000000000   2.1841068002
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -232,7 +275,10 @@ molecule NH3  {
   rNH = 0.95
   aXNH = 115.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -263,7 +309,10 @@ molecule N2H2  {
   aHNN = 140.0
 }
 set guess gwh
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 set guess sad
@@ -302,7 +351,10 @@ molecule TFCOT {
   H       -0.878010      2.418132      1.029595
   H        2.418132      0.878010     -1.029595
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -334,7 +386,10 @@ molecule Li_H2O_4_p  {
    xlioh1=-40.0
    xlioh2=135.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -351,7 +406,10 @@ molecule ethylene_cation  {
   aHCC = 122.0
   D    = 45.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -366,7 +424,10 @@ molecule ethane_gauche  {
   H 2 1.0 3 110.0 1  120.0
   H 2 1.0 3 110.0 1 -120.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -397,7 +458,10 @@ molecule allene  {
   H  2.0  1.0  0.0
   H  2.0 -1.0  0.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -412,7 +476,10 @@ molecule ethane_staggered  {
   H 2 1.0 3 110.0 1  120.0
   H 2 1.0 3 110.0 1 -120.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -429,7 +496,10 @@ molecule singlet_ethylene  {
     aHCC = 122.0
     D    = 0.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -444,7 +514,10 @@ molecule ethane_eclipsed  {
   H 2 1.0 3 110.0 1  120.0
   H 2 1.0 3 110.0 1 -120.0
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -471,7 +544,10 @@ molecule CH4  {
    H 1 r 2 TDA 4 120
    r = 1.09
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -486,7 +562,10 @@ molecule SF6  {
   F 2 r 5 90.0 1 180.0 
   r = 1.8
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 
@@ -508,7 +587,10 @@ molecule Ih  {
   He  -x   0  -1
   x = 1.618033988749894848
 }
-opt('c4-scf')
+try:
+    opt('c4-scf')
+except psi4.ConvergenceError:
+    pass
 clean()
 opt_clean()
 

@@ -53,6 +53,7 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
 
 // PSI C++
 #include "psi4/libpsio/psio.hpp"
@@ -67,7 +68,6 @@
 
 // PSI FILES
 
-using namespace std;
 using namespace psi;
 
 namespace psi{

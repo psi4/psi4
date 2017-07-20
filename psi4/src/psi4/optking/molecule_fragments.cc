@@ -40,6 +40,7 @@
 #include "v3d.h"
 #include "atom_data.h"
 #include "psi4/optking/physconst.h"
+#include "psi4/libpsi4util/process.h"
 #include "cov_radii.h"
 
 #include "print.h"
@@ -194,7 +195,7 @@ void MOLECULE::fragmentize(void) {
           for (std::size_t f1_atom=0; f1_atom<fatoms[f1].size(); ++f1_atom) {
             for (std::size_t f2_atom=0; f2_atom<fatoms[f2].size(); ++f2_atom) {
               tval = v3d_dist(geom[fatoms[f1][f1_atom]], geom[fatoms[f2][f2_atom]]);
-              if (fabs(tval - min) < 1.0e-14) {
+              if (std::fabs(tval - min) < 1.0e-14) {
                 i = fatoms[f1][f1_atom];
                 j = fatoms[f2][f2_atom];
                 fragments[0]->connect(i,j);

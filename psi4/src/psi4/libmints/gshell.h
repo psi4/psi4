@@ -79,11 +79,6 @@ protected:
     std::vector<double> original_coef_;
     /// The type of shell this object encodes
     ShellType shelltype_;
-    /// Atom number this shell goes to. Needed when indexing integral derivatives.
-    int nc_;
-    /// Atomic center number in the Molecule
-    Vector3 center_;
-    int start_;
 
     /// How many cartesian functions? (1=s, 3=p, 6=d, ...)
     int ncartesian_;
@@ -112,46 +107,28 @@ public:
      *  @param e An array of exponent values.
      *  @param n An array of r exponents for ECPs.
      *  @param c An array of contraction coefficients.
-     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
-     *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
-     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
      */
     ShellInfo(int am,
               const std::vector<double>& c,
               const std::vector<double>& e,
-              const std::vector<int>& n,
-              int nc,
-              const Vector3& center,
-              int start);
+              const std::vector<int>& n);
 
     /** Constructor; use this version for regular Gaussian basis sets.
      *  @param e An array of exponent values.
      *  @param am Angular momentum.
      *  @param pure Pure spherical harmonics, or Cartesian.
      *  @param c An array of contraction coefficients.
-     *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
-     *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
-     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
      *  @param pt Is the shell already normalized?
      */
     ShellInfo(int am,
               const std::vector<double>& c,
               const std::vector<double>& e,
               GaussianType pure,
-              int nc,
-              const Vector3& center,
-              int start,
               PrimitiveType pt = Normalized);
 
     /** Handles calling primitive_normalization and contraction_normalization for you. */
     void normalize_shell();
     void erd_normalize_shell();
-
-    /// Make a copy of the ShellInfo.
-    ShellInfo copy();
-
-    /// Make a copy of the ShellInfo.
-    ShellInfo copy(int nc, const Vector3& c);
 
     /// The type of shell this object encodes information for.
     ShellType shell_type() const { return shelltype_; }
@@ -171,12 +148,6 @@ public:
     bool is_cartesian() const       { return !puream_; }
     /// Returns true if contraction is pure
     bool is_pure() const            { return puream_; }
-
-    /// Returns the center of the Molecule this shell is on
-    const Vector3& center() const;
-    /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
-    int ncenter() const             { return nc_; }
-
     /// Returns the exponent of the given primitive
     double exp(int prim) const      { return exp_[prim]; }
     /// Return coefficient of pi'th primitive
@@ -199,10 +170,6 @@ public:
 
     /// Normalize the angular momentum component
     static double normalize(int l, int m, int n);
-
-    /// Basis function index where this shell starts.
-    int function_index() const      { return start_; }
-    void set_function_index(int i)  { start_ = i; }
 
     ///True if two ShellInfo instances are exactly equal
     bool operator==(const ShellInfo& RHS)const;
@@ -272,6 +239,7 @@ protected:
 public:
     /** Constructor; Use this version for regular Gaussian basis sets.
      *  @param shelltype The type of shell this structure describes
+     *  @param nprimitive The number of primitives in this shell.
      *  @param am Angular momentum.
      *  @param pure Pure spherical harmonics, or Cartesian.
      *  @param oc An array of contraction coefficients.
@@ -296,24 +264,21 @@ public:
     /** Constructor; use this version for ECPs.
      *  @param shelltype The type of shell this structure describes
      *  @param am Angular momentum.
-     *  @param pure Pure spherical harmonics, or Cartesian.
+     *  @param nprimitive The number of primitives in this shell.
      *  @param oc An array of contraction coefficients.
      *  @param e An array of exponent values.
      *  @param n An array of r exponent values for ECPs.
      *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning BasisSet molecule_. Used in integral derivatives for indexing.
      *  @param center The x, y, z position of the shell. This is passed to reduce the number of calls to the molecule.
-     *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
      */
     GaussianShell(ShellType shelltype,
                   int am,
                   int nprimitive,
-                  const double *oc,
+                  const double *c,
                   const double *e,
                   const int *n,
-                  GaussianType pure,
                   int nc,
-                  const double* center,
-                  int start);
+                  const double* center);
     ///Builds and empty GShell
     GaussianShell() {}
 

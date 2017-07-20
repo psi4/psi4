@@ -96,7 +96,7 @@ inline void v3d_cross_product(const double *u, const double *v, double *X) {
 
 // check to see if two vectors are parallel, i.e., is |A.B| close to 1
 inline bool v3d_is_parallel(const double *A, const double *B) {
-  if ( fabs( fabs(v3d_dot(A,B)) - 1.0e0) > PARALLEL_LIMIT )
+  if ( std::fabs( std::fabs(v3d_dot(A,B)) - 1.0e0) > PARALLEL_LIMIT )
     return false;
   else
     return true;

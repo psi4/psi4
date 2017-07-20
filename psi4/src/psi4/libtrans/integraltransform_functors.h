@@ -29,9 +29,14 @@
 #ifndef INTEGRALTRANSFORM_FUNCTORS_H
 #define INTEGRALTRANSFORM_FUNCTORS_H
 
+#include "integraltransform.h"
+
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+
 
 namespace psi{
 
@@ -572,7 +577,7 @@ void iwl_integrals(IWL* iwl, DPDFunctor &dpd, FockFunctor &fock)
         lastBuffer = iwl->last_buffer();
         for(int index = 0; index < iwl->buffer_count(); ++index){
             labelIndex = 4*index;
-            p = abs((int) lblptr[labelIndex++]);
+            p = std::abs((int) lblptr[labelIndex++]);
             q = (int) lblptr[labelIndex++];
             r = (int) lblptr[labelIndex++];
             s = (int) lblptr[labelIndex++];

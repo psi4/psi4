@@ -32,8 +32,7 @@
 #include "occwave.h"
 #include "defines.h"
 
-
-using namespace std;
+#include <cmath>
 
 
 namespace psi{ namespace occwave{
@@ -153,7 +152,7 @@ if (reference_ == "RESTRICTED") {
     else if (lineq == "FLIN") {
          double det = 0.0;
          Aorb->lineq_flin(zvectorA, &det);
-         if (fabs(det) < DIIS_MIN_DET) {
+         if (std::fabs(det) < DIIS_MIN_DET) {
              outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
              outfile->Printf( "Determinant is %6.3E\n", det);
 
@@ -455,8 +454,8 @@ else if (reference_ == "UNRESTRICTED") {
     else if (lineq == "FLIN") {
          double det = 0.0;
          Aorb->lineq_flin(zvector, &det);
-         if (fabs(det) < DIIS_MIN_DET) {
-         //if (fabs(det) < 1e-2) {
+         if (std::fabs(det) < DIIS_MIN_DET) {
+         //if (std::fabs(det) < 1e-2) {
              outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
              outfile->Printf( "Determinant is %6.3E\n", det);
 

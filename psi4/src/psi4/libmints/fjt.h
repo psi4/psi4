@@ -81,7 +81,7 @@ class Taylor_Fjt : public Fjt {
 public:
     static const int max_interp_order = 8;
 
-    Taylor_Fjt(unsigned int jmax, double accuracy);
+    Taylor_Fjt(size_t jmax, double accuracy);
     virtual ~Taylor_Fjt();
     /// Implements Fjt::values()
     double *values(int J, double T);

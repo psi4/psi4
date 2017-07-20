@@ -34,10 +34,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
+
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -138,6 +141,7 @@ void get_params( Options& options)
     params.connect_xi = options.get_bool("XI_CONNECT");
 
   params.write_nos = options.get_bool("WRITE_NOS");
+  params.debug_ = options.get_int("DEBUG");
 
   outfile->Printf( "\n\tInput parameters:\n");
   outfile->Printf( "\t-----------------\n");

@@ -26,24 +26,26 @@
  * @END LICENSE
  */
 
+#include "blas.h"
+#include "ccsd.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
-#include"psi4/libqt/qt.h"
-#include<sys/times.h>
+#include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/lib3index/3index.h"
+
+#include <sys/times.h>
+#include <unistd.h>
 #ifdef _OPENMP
     #include<omp.h>
 #else
     #define omp_get_wtime() 0.0
 #endif
-
-#include"blas.h"
-#include"ccsd.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/basisset_parser.h"
-#include "psi4/lib3index/3index.h"
 
 using namespace psi;
 
@@ -336,8 +338,8 @@ PsiReturnType CoupledPair::CEPAIterations(){
       //}else {
       //    double min = 1.0e9;
       //    for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
-      //        if ( fabs( diisvec[j-1] ) < min ) {
-      //            min = fabs( diisvec[j-1] );
+      //        if ( std::fabs( diisvec[j-1] ) < min ) {
+      //            min = std::fabs( diisvec[j-1] );
       //            replace_diis_iter = j;
       //        }
       //    }
@@ -357,7 +359,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
 
-      if (fabs(dume - Eold) < e_conv && nrm < r_conv) break;
+      if (std::fabs(dume - Eold) < e_conv && nrm < r_conv) break;
   }
   times(&total_tmstime);
   time_t time_stop = time(NULL);

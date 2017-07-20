@@ -52,7 +52,7 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
             if not key:
                 key = 'BASIS'
             target = core.get_global_option(key)
-    
+
         if target in horde:
             return horde[target]
         return target
@@ -87,16 +87,7 @@ def pybuild_basis(mol, key=None, target=None, fitrole='ORBITAL', other=None, pur
     if basisdict['key'] is None:
         basisdict['key'] = 'BASIS'
     psibasis = core.BasisSet.construct_from_pydict(mol, basisdict, puream)
-    ecpbasis = None
-    if 'ecp_shell_map' in basisdict:
-        ecpbasis = core.BasisSet.construct_ecp_from_pydict(mol, basisdict, puream)
-
-    if key == 'BASIS':
-        # For orbitals basis sets, we need to return ECP also
-        return psibasis, ecpbasis
-    else:
-        # There is no ECP basis for auxilliary basis sets
-        return psibasis
+    return psibasis
 
 core.BasisSet.build = pybuild_basis
 
@@ -105,16 +96,13 @@ core.BasisSet.build = pybuild_basis
 @staticmethod
 def pybuild_wavefunction(mol, basis=None):
     if basis is None:
-        basis, ecpbasis = core.BasisSet.build(mol)
+        basis = core.BasisSet.build(mol)
     elif (sys.version_info[0] == 2) and isinstance(basis, (str, unicode)):
-        basis, ecpbasis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis = core.BasisSet.build(mol, "ORBITAL", basis)
     elif (sys.version_info[0] > 2) and isinstance(basis, str):
-        basis, ecpbasis = core.BasisSet.build(mol, "ORBITAL", basis)
+        basis = core.BasisSet.build(mol, "ORBITAL", basis)
 
-    if ecpbasis:
-        wfn = core.Wavefunction(mol, basis, ecpbasis)
-    else:
-        wfn = core.Wavefunction(mol, basis)
+    wfn = core.Wavefunction(mol, basis)
     return wfn
 
 core.Wavefunction.build = pybuild_wavefunction
@@ -345,3 +333,27 @@ core.OEProp.valid_methods = [
     'MAYER_INDICES', 'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
     'NO_OCCUPATIONS'
 ]
+
+## Option helpers
+
+def py_psi_set_global_option_python(key, EXTERN):
+    """
+    This is a fairly hacky way to get around EXTERN issues. Effectively we are routing this option Python side through attributes until the general Options overhaul.
+    """
+    if (key != "EXTERN"):
+        raise ValidationError("Options: set_global_option_python does not recognize keyword %s" % key)
+
+    if EXTERN == None:
+        core.EXTERN = None
+        core.set_global_option("EXTERN", False)
+    elif isinstance(EXTERN, core.ExternalPotential):
+        # Well this is probably the worst hack I have done, thats saying something
+        core.EXTERN = EXTERN
+        core.set_global_option("EXTERN", True)
+    else:
+        raise ValidationError("Options: set_global_option_python can either be a NULL or External Potential object")
+
+
+core.set_global_option_python = py_psi_set_global_option_python
+
+

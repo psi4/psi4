@@ -27,13 +27,11 @@
  */
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
@@ -48,6 +46,7 @@
 #include "psi4/libmints/corrtab.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -66,23 +65,15 @@ double fac[MAX_FAC];
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
                            std::shared_ptr<BasisSet> basis,
                            Options &options) :
-        options_(options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
+        options_(options), basisset_(basis), molecule_(molecule)
 {
     common_init();
 }
 
 Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule,
-                           std::shared_ptr<BasisSet> basis,
-                           std::shared_ptr<BasisSet> ecpbasis) :
-        options_(Process::environment.options), basisset_(basis), ecpbasisset_(ecpbasis), molecule_(molecule)
+                           std::shared_ptr<BasisSet> basis) :
+        options_(Process::environment.options), basisset_(basis), molecule_(molecule)
 {
-    common_init();
-}
-
-Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basis) :
-        options_(Process::environment.options), basisset_(basis), molecule_(molecule), ecpbasisset_(nullptr)
-{
-
     common_init();
 }
 
@@ -105,7 +96,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
 
     name_ = other->name_;
     basisset_ = other->basisset_;
-    ecpbasisset_ = other->ecpbasisset_;
     basissets_ = other->basissets_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
@@ -156,7 +146,10 @@ void Wavefunction::shallow_copy(const Wavefunction *other)
 
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
-    tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
+    external_pot_ = other->external_pot_;
+
+    variables_ = other->variables_;
+    arrays_ = other->arrays_;
 }
 
 void Wavefunction::deep_copy(SharedWavefunction other)
@@ -175,12 +168,8 @@ void Wavefunction::deep_copy(const Wavefunction *other)
     name_ = other->name_;
     molecule_ = std::shared_ptr<Molecule>(new Molecule(other->molecule_->clone()));
     basisset_ = other->basisset_;
-    ecpbasisset_ = other->ecpbasisset_;
     basissets_ = other->basissets_; // Still cannot copy basissets
-    if(ecpbasisset_)
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_, ecpbasisset_));
-    else
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
     factory_ = std::shared_ptr<MatrixFactory>(new MatrixFactory);
     factory_->init_with(other->nsopi_, other->nsopi_);
@@ -230,17 +219,27 @@ void Wavefunction::deep_copy(const Wavefunction *other)
 
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
-    if (other->tpdm_gradient_contribution_)
-        tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_->clone();
 
+    // Not sure...
+    external_pot_ = other->external_pot_;
+
+    // Copy assignment
+    variables_ = other->variables_;
+
+    // Need to explicitly call copy
+    for (auto const &kv : other->arrays_) {
+        arrays_[kv.first] = kv.second->clone();
+    }
 }
 
 void Wavefunction::common_init()
 {
     Wavefunction::initialize_singletons();
-    if (!basisset_)
-        throw PSIEXCEPTION("You can't initialize a Wavefunction that doesn't "
-                                   "have a basis set");
+    if (!basisset_) {
+        throw PSIEXCEPTION(
+            "You can't initialize a Wavefunction that doesn't "
+            "have a basis set");
+    }
 
     // Check the point group of the molecule. If it is not set, set it.
     if (!molecule_->point_group()) {
@@ -248,10 +247,7 @@ void Wavefunction::common_init()
     }
 
     // Create an SO basis...we need the point group for this part.
-    if(ecpbasisset_)
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_, ecpbasisset_));
-    else
-        integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    integral_ = std::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     sobasisset_ = std::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
 
     std::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
@@ -304,8 +300,9 @@ void Wavefunction::common_init()
 
     // Determine the number of electrons in the system
     int nelectron = 0;
-    for (int i = 0; i < molecule_->natom(); ++i)
-        nelectron += (int) molecule_->Z(i);
+    for (int i = 0; i < molecule_->natom(); ++i) {
+        nelectron += (int)molecule_->Z(i);
+    }
     nelectron -= molecule_->molecular_charge();
 
     // If the user told us the multiplicity, read it from the input
@@ -317,14 +314,16 @@ void Wavefunction::common_init()
             multiplicity = 2;
             molecule_->set_multiplicity(2);
             // There are an odd number of electrons
-            outfile->Printf("    There are an odd number of electrons - assuming doublet.\n"
-                                    "    Specify the multiplicity in the molecule input block.\n\n");
+            outfile->Printf(
+                "    There are an odd number of electrons - assuming doublet.\n"
+                "    Specify the multiplicity in the molecule input block.\n\n");
         } else {
             multiplicity = 1;
             molecule_->set_multiplicity(1);
             // There are an even number of electrons
-            outfile->Printf("    There are an even number of electrons - assuming singlet.\n"
-                                    "    Specify the multiplicity in the molecule input block.\n\n");
+            outfile->Printf(
+                "    There are an even number of electrons - assuming singlet.\n"
+                "    Specify the multiplicity in the molecule input block.\n\n");
         }
     }
 
@@ -349,16 +348,14 @@ void Wavefunction::common_init()
     nalpha_ = nbeta_ + multiplicity - 1;
 }
 
-Dimension Wavefunction::map_irreps(const Dimension& dimpi)
-{
+Dimension Wavefunction::map_irreps(const Dimension &dimpi) {
     std::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
     // If the parent symmetry hasn't been set, no displacements have been made
     if (!full) return dimpi;
     std::shared_ptr<PointGroup> sub = molecule_->point_group();
 
     // If the point group between the full and sub are the same return
-    if (full->symbol() == sub->symbol())
-        return dimpi;
+    if (full->symbol() == sub->symbol()) return dimpi;
 
     // Build the correlation table between full, and subgroup
     CorrelationTable corrtab(full, sub);
@@ -371,30 +368,33 @@ Dimension Wavefunction::map_irreps(const Dimension& dimpi)
     return mapped_dimpi;
 }
 
-void Wavefunction::initialize_singletons()
-{
+void Wavefunction::initialize_singletons() {
     static bool done = false;
 
-    if (done)
-        return;
+    if (done) return;
 
     ioff[0] = 0;
-    for (size_t i = 1; i < MAX_IOFF; ++i)
+    for (size_t i = 1; i < MAX_IOFF; ++i) {
         ioff[i] = ioff[i - 1] + i;
+    }
 
     df[0] = 1.0;
     df[1] = 1.0;
     df[2] = 1.0;
-    for (int i = 3; i < MAX_DF; ++i)
+    for (int i = 3; i < MAX_DF; ++i) {
         df[i] = (i - 1) * df[i - 2];
+    }
 
-    for (int i = 0; i < MAX_BC; ++i)
-        for (int j = 0; j <= i; ++j)
+    for (int i = 0; i < MAX_BC; ++i) {
+        for (int j = 0; j <= i; ++j) {
             bc[i][j] = combinations(i, j);
+        }
+    }
 
     fac[0] = 1.0;
-    for (int i = 1; i < MAX_FAC; ++i)
+    for (int i = 1; i < MAX_FAC; ++i) {
         fac[i] = i * fac[i - 1];
+    }
 
     done = true;
 }
@@ -424,26 +424,20 @@ std::shared_ptr<BasisSet> Wavefunction::basisset() const
     return basisset_;
 }
 
-std::shared_ptr<BasisSet> Wavefunction::ecpbasisset() const
-{
-    return ecpbasisset_;
-}
-
-std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label)
-{
+std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) {
     // This may be slightly confusing, but better than changing this in 800 other places
-    if (label == "ORBITAL"){
+    if (label == "ORBITAL") {
         return basisset_;
-    } else if (basissets_.count(label) == 0){
+    } else if (basissets_.count(label) == 0) {
         outfile->Printf("Could not find requested basisset (%s).", label.c_str());
-        throw PSIEXCEPTION("Wavefunction::get_basisset: Requested basis set (" + label + ") was not set!\n");
+        throw PSIEXCEPTION("Wavefunction::get_basisset: Requested basis set (" + label +
+                           ") was not set!\n");
     } else {
         return basissets_[label];
     }
 }
-void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis)
-{
-    if (label == "ORBITAL"){
+void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
+    if (label == "ORBITAL") {
         throw PSIEXCEPTION("Cannot set the ORBITAL basis after the Wavefunction is built!");
     } else {
         basissets_[label] = basis;
@@ -484,8 +478,7 @@ void Wavefunction::set_frzvpi(const Dimension &frzvpi) {
     }
 }
 
-SharedMatrix Wavefunction::Ca() const
-{
+SharedMatrix Wavefunction::Ca() const {
     if (!Ca_) {
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
@@ -496,8 +489,7 @@ SharedMatrix Wavefunction::Ca() const
     return Ca_;
 }
 
-SharedMatrix Wavefunction::Cb() const
-{
+SharedMatrix Wavefunction::Cb() const {
     if (!Cb_) {
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
@@ -967,22 +959,17 @@ SharedMatrix Wavefunction::Fb() const
     return Fb_;
 }
 
-std::shared_ptr<Matrix> Wavefunction::Lagrangian() const
+SharedMatrix Wavefunction::Lagrangian() const
 {
     return Lagrangian_;
 }
 
-std::shared_ptr<Matrix> Wavefunction::tpdm_gradient_contribution() const
-{
-    throw PSIEXCEPTION("This type of wavefunction has not defined a TPDM gradient contribution!");
-}
-
-std::shared_ptr<Vector> Wavefunction::epsilon_a() const
+SharedVector Wavefunction::epsilon_a() const
 {
     return epsilon_a_;
 }
 
-std::shared_ptr<Vector> Wavefunction::epsilon_b() const
+SharedVector Wavefunction::epsilon_b() const
 {
     return epsilon_b_;
 }
@@ -1022,22 +1009,22 @@ void Wavefunction::set_hessian(SharedMatrix &hess)
     hessian_ = hess;
 }
 
-std::shared_ptr<Vector> Wavefunction::frequencies() const
+SharedVector Wavefunction::frequencies() const
 {
     return frequencies_;
 }
 
-std::shared_ptr<Vector> Wavefunction::normalmodes() const
+SharedVector Wavefunction::normalmodes() const
 {
     return normalmodes_;
 }
 
-void Wavefunction::set_frequencies(std::shared_ptr<Vector> &freqs)
+void Wavefunction::set_frequencies(SharedVector &freqs)
 {
     frequencies_ = freqs;
 }
 
-void Wavefunction::set_normalmodes(std::shared_ptr<Vector> &norms)
+void Wavefunction::set_normalmodes(SharedVector &norms)
 {
     normalmodes_ = norms;
 }
@@ -1046,30 +1033,29 @@ void Wavefunction::save() const
 {
 }
 
-std::shared_ptr<Vector> Wavefunction::get_atomic_point_charges() const
+SharedVector Wavefunction::get_atomic_point_charges() const
 {
     std::shared_ptr<std::vector<double>> q = atomic_point_charges();
 
     int n = molecule_->natom();
-    std::shared_ptr<Vector> q_vector(new Vector(n));
-    for (int i = 0; i < n; ++i)
+    SharedVector q_vector(new Vector(n));
+    for (int i = 0; i < n; ++i){
         q_vector->set(i, (*q)[i]);
+    }
     return q_vector;
 }
-double Wavefunction::get_variable(std::string label)
-{
+double Wavefunction::get_variable(std::string label) {
     std::string uc_label = label;
-    std::transform(uc_label.begin(), uc_label.end(), uc_label.begin(), ::toupper);
 
-    if (variables_.count(uc_label) == 0){
-        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable " + label + " was not set!\n");
+    if (variables_.count(uc_label) == 0) {
+        throw PSIEXCEPTION("Wavefunction::get_variable: Requested variable " + label +
+                           " was not set!\n");
     } else {
         return variables_[uc_label];
     }
 }
-SharedMatrix Wavefunction::get_array(std::string label)
-{
-    if (arrays_.count(label) == 0){
+SharedMatrix Wavefunction::get_array(std::string label) {
+    if (arrays_.count(label) == 0) {
         throw PSIEXCEPTION("Wavefunction::get_array: Requested array " + label + " was not set!\n");
     } else {
         return arrays_[label];

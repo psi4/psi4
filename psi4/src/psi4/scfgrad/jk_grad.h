@@ -31,10 +31,14 @@
 
 #include "psi4/libmints/typedefs.h"
 #include <map>
+#include <vector>
 
 namespace psi {
 
 class ERISieve;
+class BasisSet;
+class PSIO;
+class TwoBodyAOInt;
 
 namespace scfgrad {
 
@@ -48,7 +52,7 @@ protected:
     /// Bench flag, defaults to 0
     int bench_;
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
-    unsigned long int memory_;
+    size_t memory_;
     /// Number of OpenMP threads (defaults to 1 in no OpenMP, Process::environment.get_n_threads() otherwise)
     int omp_num_threads_;
     /// Integral cutoff (defaults to 0.0)
@@ -111,7 +115,7 @@ public:
      * integral generation objects typically ignore this)
      * @param memory maximum number of doubles to allocate
      */
-    void set_memory(unsigned long int memory) { memory_ = memory; }
+    void set_memory(size_t memory) { memory_ = memory; }
     /**
      * Maximum number of OpenMP threads to use. It may be necessary
      * to clamp this to some value smaller than the total number of
@@ -184,11 +188,11 @@ protected:
     void build_Amn_x_lr_terms();
 
     /// File number for Alpha (Q|mn) tensor
-    unsigned int unit_a_;
+    size_t unit_a_;
     /// File number for Beta (Q|mn) tensor
-    unsigned int unit_b_;
+    size_t unit_b_;
     /// File number for J tensors
-    unsigned int unit_c_;
+    size_t unit_c_;
 
 public:
     DFJKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
@@ -211,17 +215,17 @@ public:
      * Which file number should the Alpha (Q|mn) integrals go in
      * @param unit Unit number
      */
-    void set_unit_a(unsigned int unit) { unit_a_ = unit; }
+    void set_unit_a(size_t unit) { unit_a_ = unit; }
     /**
      * Which file number should the Beta (Q|mn) integrals go in
      * @param unit Unit number
      */
-    void set_unit_b(unsigned int unit) { unit_b_ = unit; }
+    void set_unit_b(size_t unit) { unit_b_ = unit; }
     /**
      * Which file number should the J tensors go in
      * @param unit Unit number
      */
-    void set_unit_c(unsigned int unit) { unit_c_ = unit; }
+    void set_unit_c(size_t unit) { unit_c_ = unit; }
 
     /**
      * What number of threads to compute integrals on

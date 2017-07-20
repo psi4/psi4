@@ -21,24 +21,28 @@
  *@END LICENSE
  */
 
+#include "PKmanagers.h"
+#include "PK_workers.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
-#include "PKmanagers.h"
-#include "PK_workers.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/aiohandler.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
 namespace psi {
@@ -223,10 +227,10 @@ void PKManager::compute_integrals(bool wK) {
 //DEBUG        outfile->Printf("Starting task %d\n", i);
         if(!wK) {  // Computing usual integrals
             for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
-                unsigned int P = buf->P();
-                unsigned int Q = buf->Q();
-                unsigned int R = buf->R();
-                unsigned int S = buf->S();
+                size_t P = buf->P();
+                size_t Q = buf->Q();
+                size_t R = buf->R();
+                size_t S = buf->S();
                 //Sort shells based on AM to save ERI some work doing permutation resorting
                 if (primary()->shell(P).am() < primary()->shell(Q).am()) {
                     std::swap(P,Q);
@@ -253,10 +257,10 @@ void PKManager::compute_integrals(bool wK) {
         } else {  // Computing range-separated integrals
             buf->set_do_wK(true);
             for(buf->first_quartet(i); buf->more_work(); buf->next_quartet()) {
-                unsigned int P = buf->P();
-                unsigned int Q = buf->Q();
-                unsigned int R = buf->R();
-                unsigned int S = buf->S();
+                size_t P = buf->P();
+                size_t Q = buf->Q();
+                size_t R = buf->R();
+                size_t S = buf->S();
                 //Sort shells based on AM to save ERI some work doing permutation resorting
                 if (primary()->shell(P).am() < primary()->shell(Q).am()) {
                     std::swap(P,Q);
@@ -305,8 +309,8 @@ void PKManager::compute_integrals_wK() {
     compute_integrals(true);
 }
 
-void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsigned int Q,
-                                    unsigned int R, unsigned int S) {
+void PKManager::integrals_buffering(const double *buffer, size_t P, size_t Q,
+                                    size_t R, size_t S) {
     int thread = 0;
 #ifdef _OPENMP
     thread = omp_get_thread_num();
@@ -321,7 +325,7 @@ void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsign
         size_t idx = bfiter.index();
 
         double val = buffer[idx];
-        if(fabs(val) > cutoff_) {
+        if(std::fabs(val) > cutoff_) {
 //DEBUG#pragma omp critical
 //DEBUG{
 //DEBUG            if(INDEX2(k,l) == 0) {
@@ -335,8 +339,8 @@ void PKManager::integrals_buffering(const double *buffer, unsigned int P, unsign
 
 }
 
-void PKManager::integrals_buffering_wK(const double *buffer, unsigned int P, unsigned int Q,
-                                    unsigned int R, unsigned int S) {
+void PKManager::integrals_buffering_wK(const double *buffer, size_t P, size_t Q,
+                                    size_t R, size_t S) {
     int thread = 0;
 #ifdef _OPENMP
     thread = omp_get_thread_num();
@@ -351,7 +355,7 @@ void PKManager::integrals_buffering_wK(const double *buffer, unsigned int P, uns
         size_t idx = bfiter.index();
 
         double val = buffer[idx];
-        if(fabs(val) > cutoff_) {
+        if(std::fabs(val) > cutoff_) {
 //DEBUG#pragma omp critical
 //DEBUG{
 //DEBUG            if(INDEX2(k,l) == 0) {
@@ -1181,7 +1185,7 @@ void PKMgrYoshimine::write() {
     SharedPKWrkr buftarget;
     for(int t = 1; t < nthreads(); ++t) {
         buftarget = buffer(t);
-        unsigned int nbufs = buftarget->nbuf();
+        size_t nbufs = buftarget->nbuf();
         // Factor 2 to get buffers for J and K
         for(int buf = 0; buf < 2 * nbufs; ++buf) {
             while(buftarget->pop_value(buf,val,i,j,k,l)) {
@@ -1205,7 +1209,7 @@ void PKMgrYoshimine::write_wK() {
     SharedPKWrkr buftarget;
     for(int t = 1; t < nthreads(); ++t) {
         buftarget = buffer(t);
-        unsigned int nbufs = buftarget->nbuf();
+        size_t nbufs = buftarget->nbuf();
         // Get through all wK buffers
         for(int buf = 0; buf < nbufs; ++buf) {
             while(buftarget->pop_value_wK(buf,val,i,j,k,l)) {

@@ -39,6 +39,11 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libfock/v.h"
@@ -50,6 +55,9 @@
 #include "stability.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/vector.h"
 
 namespace psi { namespace scf {
 
@@ -87,8 +95,8 @@ void UHF::common_init()
     Db_old_ = SharedMatrix(factory_->create_matrix("Old beta SCF density"));
     Dt_old_ = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
-    Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
-    Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
+    Ca_     = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
+    Cb_     = SharedMatrix(factory_->create_matrix("beta MO coefficients (C)"));
     Ga_     = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_     = SharedMatrix(factory_->create_matrix("G beta"));
     Va_     = SharedMatrix(factory_->create_matrix("V alpha"));
@@ -100,7 +108,9 @@ void UHF::common_init()
     wKb_    = SharedMatrix(factory_->create_matrix("wK beta"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_a_->set_name("alpha orbital energies");
     epsilon_b_ = SharedVector(factory_->create_vector());
+    epsilon_b_->set_name("beta orbital energies");
 
     same_a_b_dens_ = false;
     same_a_b_orbs_ = false;
@@ -234,7 +244,7 @@ bool UHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
         return false;

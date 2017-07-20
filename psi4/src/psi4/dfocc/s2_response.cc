@@ -31,10 +31,10 @@
 #include "defines.h"
 #include "dfocc.h"
 
+#include <cmath>
+
 
 using namespace psi;
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 
@@ -126,10 +126,10 @@ void DFOCC::s2_response()
 
     value2 = 1.0 + (4.0*s2_resp);
     value3 = 1.0 + (4.0*s2_proj);
-    s_qn_resp = 0.5 * (sqrt(value2) - 1.0);
-    s_qn_proj = 0.5 * (sqrt(value3) - 1.0);
-    mult_resp = sqrt(value2);
-    mult_proj = sqrt(value3);
+    s_qn_resp = 0.5 * (std::sqrt(value2) - 1.0);
+    s_qn_proj = 0.5 * (std::sqrt(value3) - 1.0);
+    mult_resp = std::sqrt(value2);
+    mult_proj = std::sqrt(value3);
 
     // Print
     outfile->Printf("\t<S**2>_reference (a.u.): %12.8f\n", s2_ref);
@@ -311,12 +311,12 @@ void DFOCC::s2_lagrangian()
     value2 = 1.0 + (4.0*s2_resp);
     value3 = 1.0 + (4.0*s2_proj);
     value4 = 1.0 + (4.0*s2_lag);
-    s_qn_resp = 0.5 * (sqrt(value2) - 1.0);
-    s_qn_proj = 0.5 * (sqrt(value3) - 1.0);
-    s_qn_lag = 0.5 * (sqrt(value4) - 1.0);
-    mult_resp = sqrt(value2);
-    mult_proj = sqrt(value3);
-    mult_lag = sqrt(value4);
+    s_qn_resp = 0.5 * (std::sqrt(value2) - 1.0);
+    s_qn_proj = 0.5 * (std::sqrt(value3) - 1.0);
+    s_qn_lag = 0.5 * (std::sqrt(value4) - 1.0);
+    mult_resp = std::sqrt(value2);
+    mult_proj = std::sqrt(value3);
+    mult_lag = std::sqrt(value4);
 
     // Print
     outfile->Printf("\t<S**2>_reference (a.u.)  : %12.8f\n", s2_ref);

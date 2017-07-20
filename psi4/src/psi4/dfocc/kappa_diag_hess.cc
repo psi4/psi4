@@ -29,8 +29,9 @@
 #include "defines.h"
 #include "dfocc.h"
 
+#include <cmath>
+
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
@@ -217,7 +218,7 @@ if (reference_ == "RESTRICTED") {
         // find biggest_kappa 
 	biggest_kappaA=0;            
 	for (int i=0; i<nidpA;i++) { 
-	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
+	    if (std::fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=std::fabs(kappaA->get(i));
 	}
 
         // Scale
@@ -231,9 +232,9 @@ if (reference_ == "RESTRICTED") {
 	  biggest_kappaA=0;            
 	  for (int i=0; i<nidpA;i++) 
 	  { 
-	      if (fabs(kappaA->get(i)) > biggest_kappaA)
+	      if (std::fabs(kappaA->get(i)) > biggest_kappaA)
 	      {
-		  biggest_kappaA = fabs(kappaA->get(i));
+		  biggest_kappaA = std::fabs(kappaA->get(i));
 	      }
 	  }
 	}
@@ -270,12 +271,12 @@ else if (reference_ == "UNRESTRICTED") {
         // find biggest_kappa 
 	biggest_kappaA=0;            
 	for (int i=0; i<nidpA;i++) { 
-	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
+	    if (std::fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=std::fabs(kappaA->get(i));
 	}
 	
 	biggest_kappaB=0;            
 	for (int i=0; i<nidpB;i++){ 
-	    if (fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=fabs(kappaB->get(i));
+	    if (std::fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=std::fabs(kappaB->get(i));
 	}
 	
         // Scale
@@ -293,9 +294,9 @@ else if (reference_ == "UNRESTRICTED") {
 	  biggest_kappaA=0;            
 	  for (int i=0; i<nidpA;i++) 
 	  { 
-	      if (fabs(kappaA->get(i)) > biggest_kappaA)
+	      if (std::fabs(kappaA->get(i)) > biggest_kappaA)
 	      {
-		  biggest_kappaA = fabs(kappaA->get(i));
+		  biggest_kappaA = std::fabs(kappaA->get(i));
 	      }
 	  }
 	}
@@ -305,9 +306,9 @@ else if (reference_ == "UNRESTRICTED") {
 	  biggest_kappaB=0;            
 	  for (int i=0; i<nidpB;i++) 
 	  { 
-	      if (fabs(kappaB->get(i)) > biggest_kappaB)
+	      if (std::fabs(kappaB->get(i)) > biggest_kappaB)
 	      {
-		  biggest_kappaB=fabs(kappaB->get(i));
+		  biggest_kappaB=std::fabs(kappaB->get(i));
 	      }
 	  }
 	}

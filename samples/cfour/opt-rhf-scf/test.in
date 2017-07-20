@@ -1,6 +1,6 @@
 #! optimization HF/svp on water
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 Geometry optimization of H2O at HF-SCF level
@@ -26,7 +26,7 @@ clean()
 clean_variables()
 cfour {}  # clear literal block since running sequentially
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 memory 600 mb
 

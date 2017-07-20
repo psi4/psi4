@@ -34,6 +34,7 @@
 #include <cstdio>
 #include <string>
 #include <cmath>
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
@@ -427,7 +428,7 @@ void diagSS(int C_irr) {
 		      lambda[k]-lambda_old[k], norm);
 
       if ( (norm > eom_params.residual_tol_SS) ||
-	   (fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol_SS) ) {
+	   (std::fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol_SS) ) {
         if (pf) outfile->Printf("%7s\n","N");
 	/*
 	  if (params.eom_ref == 0) precondition_SS_RHF(&RIA, lambda[k]);
@@ -516,7 +517,7 @@ void precondition_SS(dpdfile2 *RIA, dpdfile2 *Ria, double eval)
     for(i=0; i < RIA->params->rowtot[h]; i++)
       for(a=0; a < RIA->params->coltot[h^C_irr]; a++) {
         tval = eval - DIA.matrix[h][i][a];
-        if (fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
+        if (std::fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
       }
   global_dpd_->file2_mat_wrt(RIA);
   global_dpd_->file2_mat_close(RIA);
@@ -533,7 +534,7 @@ void precondition_SS(dpdfile2 *RIA, dpdfile2 *Ria, double eval)
     for(i=0; i < Ria->params->rowtot[h]; i++)
       for(a=0; a < Ria->params->coltot[h^C_irr]; a++) {
         tval = eval - Dia.matrix[h][i][a];
-        if (fabs(tval) > 0.0001) Ria->matrix[h][i][a] /= tval;
+        if (std::fabs(tval) > 0.0001) Ria->matrix[h][i][a] /= tval;
       }
   global_dpd_->file2_mat_wrt(Ria);
   global_dpd_->file2_mat_close(Ria);
@@ -617,7 +618,7 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
 
       for(a=0; a < local.pairdom_nrlen[ii]; a++) {
 	tval = eval + local.eps_occ[i] - local.eps_vir[ii][a];
-	if(fabs(tval) > 0.0001) T1bar[a] /= tval;
+	if(std::fabs(tval) > 0.0001) T1bar[a] /= tval;
 	/* else T1bar[a] = 0.0; */
       }
 
@@ -661,7 +662,7 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
       for(i=0; i < RIA->params->rowtot[h]; i++)
 	for(a=0; a < RIA->params->coltot[h^C_irr]; a++) {
 	  tval = eval - DIA.matrix[h][i][a];
-	  if (fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
+	  if (std::fabs(tval) > 0.0001) RIA->matrix[h][i][a] /= tval;
 	}
     global_dpd_->file2_mat_wrt(RIA);
     global_dpd_->file2_mat_close(RIA);

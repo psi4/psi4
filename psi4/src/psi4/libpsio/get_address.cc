@@ -41,9 +41,9 @@ namespace psi {
    ** \ingroup PSIO
    */
 
-  psio_address psio_get_address(psio_address start, ULI shift) {
+  psio_address psio_get_address(psio_address start, size_t shift) {
     psio_address address;
-    ULI bytes_left;
+    size_t bytes_left;
 
     bytes_left = PSIO_PAGELEN - start.offset; /* Bytes remaining on fpage */
 

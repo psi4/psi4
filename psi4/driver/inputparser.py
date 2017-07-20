@@ -757,7 +757,7 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(basis_block, process_basis_block, temp)
 
     # Process literal blocks by substituting back in
-    lit_block = re.compile(r'literals_psi4_yo-(\d*\d)')
+    lit_block = re.compile(r'literals_psi4_yo-(\w{8})')
     temp = re.sub(lit_block, process_literal_blocks, temp)
 
     future_imports = []

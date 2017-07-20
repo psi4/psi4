@@ -26,8 +26,9 @@
  * @END LICENSE
  */
 
+#include "psi4/fisapt/fisapt.h"
+#include "psi4/fisapt/local2.h"
 
-#include "psi4/libmints/local.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
 #include "psi4/libfock/jk.h"
@@ -38,19 +39,18 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/fisapt/fisapt.h"
 #include "psi4/libcubeprop/csg.h"
-#include "psi4/fisapt/local2.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/process.h"
+
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-using namespace std;
 
 namespace psi {
 
@@ -809,8 +809,8 @@ void FISAPT::freeze_core()
     //std::shared_ptr<Molecule> molA = mol->extract_subsets({0},{});
     //std::shared_ptr<Molecule> molB = mol->extract_subsets({1},{});
 
-    int nfocc0A = molA->nfrozen_core(reference_->ecpbasisset(), options_.get_str("FREEZE_CORE"));
-    int nfocc0B = molB->nfrozen_core(reference_->ecpbasisset(), options_.get_str("FREEZE_CORE"));
+    int nfocc0A = reference_->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), molA);
+    int nfocc0B = reference_->basisset()->n_frozen_core(options_.get_str("FREEZE_CORE"), molB);
 
     int nbf =   matrices_["Cocc0A"]->rowspi()[0];
     int nocc0A = matrices_["Cocc0A"]->colspi()[0];
@@ -3544,7 +3544,7 @@ void FISAPT::find()
         if (jk_memory < 0L) {
             throw PSIEXCEPTION("Too little static memory for FISAPT::induction");
         }
-        jk->set_memory((unsigned long int )jk_memory);
+        jk->set_memory((size_t )jk_memory);
         jk->set_do_J(true);
         jk->set_do_K(true);
         jk->initialize();
@@ -4597,7 +4597,7 @@ void FISAPTSCF::compute_energy()
         outfile->Printf("    Iter %3d: %24.16E %11.3E %11.3E %s\n", iter, E, Ediff, Gnorm,
             (diised ? "DIIS" : ""));
 
-        if (fabs(Ediff) < Etol && fabs(Gnorm) < Gtol) {
+        if (std::fabs(Ediff) < Etol && std::fabs(Gnorm) < Gtol) {
             converged = true;
             break;
         }

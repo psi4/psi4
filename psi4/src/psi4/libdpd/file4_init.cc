@@ -34,6 +34,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "psi4/libpsio/psio.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "dpd.h"
 
 namespace psi {
@@ -57,7 +58,7 @@ int DPD::file4_init(dpdfile4 *File, int filenum, int irrep, int pqnum,
 {
     int i;
     int maxrows, rowtot, coltot;
-    unsigned int priority;
+    size_t priority;
     dpd_file4_cache_entry *this_entry;
     psio_address irrep_ptr;
 

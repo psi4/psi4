@@ -27,7 +27,7 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
 #include <cmath>
 #include "adc.h"
@@ -48,7 +48,7 @@ void
 ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    struct onestack *t1stack;
     int Gia = B->my_irrep;
 
@@ -67,7 +67,7 @@ ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
                 int A = B->params->colorb[h^Gia][a];
                 double value = B->matrix[h][i][a];
                 for(int m = 0;m < length;m++){
-                    if((fabs(value)-fabs(t1stack[m].value)) > 1e-12){
+                    if((std::fabs(value)-std::fabs(t1stack[m].value)) > 1e-12){
                         onestack_insert(t1stack, value, I, A, m, length);
                         break;
                     }
@@ -78,7 +78,7 @@ ADCWfn::amps_write(dpdfile2 *B, int length, std::string out)
     global_dpd_->file2_mat_close(B);
 
     for(int m = 0;m < ((numt1 < length) ? numt1 : length);m++){
-        if(fabs(t1stack[m].value) > 1e-6){
+        if(std::fabs(t1stack[m].value) > 1e-6){
             printer->Printf( "\t        %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
         }
     }

@@ -45,8 +45,6 @@ namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
 
-using namespace std;
-
 /**
  * Builds the integral matrices on disk using an out-of-core algorithm
  */
@@ -71,9 +69,9 @@ void CCSort::build_integrals_out_of_core()
 
   outfile->Printf("\n\n  Sorting integrals:");
   outfile->Printf("\n    Memory available                       = %14lu bytes",
-                  (unsigned long)memory_manager->get_FreeMemory());
+                  (size_t)memory_manager->get_FreeMemory());
   outfile->Printf("\n    Memory available for sorting           = %14lu bytes (%.1f%%)",
-                  (unsigned long)ccintegrals_memory,fraction_of_memory_for_sorting*100.0);
+                  (size_t)ccintegrals_memory,fraction_of_memory_for_sorting*100.0);
 
 
   while(mat_it!=mat_end){
@@ -113,7 +111,7 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& ma
       while(mat_irrep < moinfo->get_nirreps() && !out_of_memory){
         size_t block_memory = Matrix->get_memorypi2(mat_irrep);
         if(block_memory < ccintegrals_memory){
-          to_be_processed.push_back(make_pair(Matrix,mat_irrep));
+          to_be_processed.push_back(std::make_pair(Matrix,mat_irrep));
           // Allocate the matrix, this will also take care of MOInfo::allocated_memory
           Matrix->allocate_block(mat_irrep);
           ccintegrals_memory -= block_memory;
@@ -122,7 +120,7 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& ma
         }else{
           if(blocks_added == 0){
             outfile->Printf("\n    Matrix: %s irrep %d does not fit into memory",Matrix->get_label().c_str(),mat_irrep);
-            outfile->Printf("\n            memory required = %14lu bytes",(unsigned long)block_memory);
+            outfile->Printf("\n            memory required = %14lu bytes",(size_t)block_memory);
 
           }
           out_of_memory = true;
@@ -171,18 +169,18 @@ void CCSort::form_fock_one_out_of_core(MatrixBlks& to_be_processed)
 void CCSort::form_fock_out_of_core(CCMatrix* Matrix, int h)
 {
   if(Matrix->is_fock()){
-    string label     = Matrix->get_label();
+    std::string label     = Matrix->get_label();
     double*** matrix = Matrix->get_matrix();
     short* pq = new short[2];
     const intvec& oa2p = moinfo->get_occ_to_mo();
 
     bool alpha = true;
-    if((label.find("O")!=string::npos) || (label.find("V")!=string::npos) || (label.find("A")!=string::npos) || (label.find("F")!=string::npos)) // NB This was missing the last bit, this might be a problem
+    if((label.find("O")!=std::string::npos) || (label.find("V")!=std::string::npos) || (label.find("A")!=std::string::npos) || (label.find("F")!=std::string::npos)) // NB This was missing the last bit, this might be a problem
       alpha = false;
 
     // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-    vector<int> aocc = moinfo->get_aocc(Matrix->get_reference(),AllRefs);
-    vector<int> bocc = moinfo->get_bocc(Matrix->get_reference(),AllRefs);
+    std::vector<int> aocc = moinfo->get_aocc(Matrix->get_reference(),AllRefs);
+    std::vector<int> bocc = moinfo->get_bocc(Matrix->get_reference(),AllRefs);
 
     for(size_t i = 0; i < Matrix->get_left_pairpi(h); ++i)
       for(size_t j = 0; j < Matrix->get_right_pairpi(h); ++j){

@@ -31,9 +31,9 @@
 #include "dfocc.h"
 #include "psi4/libciomr/libciomr.h"
 
-using namespace psi;
-using namespace std;
+#include <cmath>
 
+using namespace psi;
 
 namespace psi{ namespace dfoccwave{
 
@@ -168,7 +168,7 @@ do
     // find biggest_mograd
     biggest_mogradA=0;
     for (int i=0; i<nidpA;i++){
-      if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
+      if (std::fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=std::fabs(wogA->get(i));
     }
 
     // rms
@@ -207,12 +207,12 @@ do
     // find biggest_mograd
     biggest_mogradA=0;
     for (int i=0; i<nidpA;i++){
-      if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
+      if (std::fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=std::fabs(wogA->get(i));
     }
 
     biggest_mogradB=0;
     for (int i=0; i<nidpB;i++){
-      if (fabs(wogB->get(i)) > biggest_mogradB)  biggest_mogradB=fabs(wogB->get(i));
+      if (std::fabs(wogB->get(i)) > biggest_mogradB)  biggest_mogradB=std::fabs(wogB->get(i));
     }
 
     // rms
@@ -251,7 +251,7 @@ outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e \n",itr_occ,Eref,D
     }
 
     if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
-    if (fabs(DE) <= tol_Eod) break;
+    if (std::fabs(DE) <= tol_Eod) break;
 
     if (rms_wog >= DIVERGE) {
         throw PSIEXCEPTION("QCHF iterations are diverging");
@@ -459,7 +459,7 @@ void DFOCC::gwh()
 
      // Form S^(-1/2)
      for (int p = 0; p < nso_; p++) {
-          DiagS->set(p, 1/sqrt(DiagS->get(p)));
+          DiagS->set(p, 1/std::sqrt(DiagS->get(p)));
      }
 
      for (int p = 0; p < nso_; p++) {
@@ -644,7 +644,7 @@ if (reference_ == "RESTRICTED") {
         // find biggest_kappa
 	biggest_kappaA=0;
 	for (int i=0; i<nidpA;i++) {
-	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
+	    if (std::fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=std::fabs(kappaA->get(i));
 	}
 
         // Scale
@@ -658,9 +658,9 @@ if (reference_ == "RESTRICTED") {
 	  biggest_kappaA=0;
 	  for (int i=0; i<nidpA;i++)
 	  {
-	      if (fabs(kappaA->get(i)) > biggest_kappaA)
+	      if (std::fabs(kappaA->get(i)) > biggest_kappaA)
 	      {
-		  biggest_kappaA = fabs(kappaA->get(i));
+		  biggest_kappaA = std::fabs(kappaA->get(i));
 	      }
 	  }
 	}
@@ -844,12 +844,12 @@ else if (reference_ == "UNRESTRICTED") {
         // find biggest_kappa
 	biggest_kappaA=0;
 	for (int i=0; i<nidpA;i++) {
-	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
+	    if (std::fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=std::fabs(kappaA->get(i));
 	}
 
 	biggest_kappaB=0;
 	for (int i=0; i<nidpB;i++){
-	    if (fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=fabs(kappaB->get(i));
+	    if (std::fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=std::fabs(kappaB->get(i));
 	}
 
         // Scale
@@ -867,9 +867,9 @@ else if (reference_ == "UNRESTRICTED") {
 	  biggest_kappaA=0;
 	  for (int i=0; i<nidpA;i++)
 	  {
-	      if (fabs(kappaA->get(i)) > biggest_kappaA)
+	      if (std::fabs(kappaA->get(i)) > biggest_kappaA)
 	      {
-		  biggest_kappaA = fabs(kappaA->get(i));
+		  biggest_kappaA = std::fabs(kappaA->get(i));
 	      }
 	  }
 	}
@@ -879,9 +879,9 @@ else if (reference_ == "UNRESTRICTED") {
 	  biggest_kappaB=0;
 	  for (int i=0; i<nidpB;i++)
 	  {
-	      if (fabs(kappaB->get(i)) > biggest_kappaB)
+	      if (std::fabs(kappaB->get(i)) > biggest_kappaB)
 	      {
-		  biggest_kappaB=fabs(kappaB->get(i));
+		  biggest_kappaB=std::fabs(kappaB->get(i));
 	      }
 	  }
 	}

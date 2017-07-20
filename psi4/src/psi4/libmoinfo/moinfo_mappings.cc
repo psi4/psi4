@@ -29,9 +29,6 @@
 #include "moinfo.h"
 
 
-
-using namespace std;
-
 namespace psi {
 
 /*!

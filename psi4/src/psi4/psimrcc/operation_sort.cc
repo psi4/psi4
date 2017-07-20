@@ -42,8 +42,6 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCOperation::sort()
 {
   sort(B_Matrix->get_left(),B_Matrix->get_right(),B_Matrix->get_matrix(),factor);

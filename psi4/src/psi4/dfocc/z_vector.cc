@@ -30,8 +30,9 @@
 #include "defines.h"
 #include "dfocc.h"
 
+#include <cmath>
+
 using namespace psi;
-using namespace std;
 
 namespace psi{ namespace dfoccwave{
 
@@ -64,7 +65,7 @@ if (reference_ == "RESTRICTED") {
     else if (lineq == "FLIN") {
          double det = 0.0;
          Aorb->lineq_flin(zvectorA, &det);
-         if (fabs(det) < DIIS_MIN_DET) {
+         if (std::fabs(det) < DIIS_MIN_DET) {
              outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
              outfile->Printf( "Determinant is %6.3E\n", det);
 
@@ -127,7 +128,7 @@ else if (reference_ == "UNRESTRICTED") {
     else if (lineq == "FLIN") {
          double det = 0.0;
          Aorb->lineq_flin(zvector, &det);
-         if (fabs(det) < DIIS_MIN_DET) {
+         if (std::fabs(det) < DIIS_MIN_DET) {
              outfile->Printf( "Warning!!! MO Hessian matrix is near-singular\n");
              outfile->Printf( "Determinant is %6.3E\n", det);
 

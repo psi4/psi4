@@ -33,9 +33,6 @@
 #include <string>
 #include <memory>
 
-#include "psi4/libparallel/PsiOutStream.h"
-#include "psi4/libparallel/process.h"
-
 ///This is all defined in python.cc initialize
 namespace psi {
 
@@ -47,10 +44,10 @@ namespace psi {
     extern std::string restart_id; // Does not have a default
 
     enum PsiReturnType {Success, Failure, Balk, EndLoop};
-    
+
     // Very useful regex for matching floating point numbers
     #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
-    
+
     void die_if_not_converged();
 
 }//End namespace psi

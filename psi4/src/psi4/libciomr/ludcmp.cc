@@ -46,7 +46,7 @@ void ludcmp(double** a,int n,int* indx,double* d)
       for (i=0; i < n ; i++) {
          big=0.0;
          for (j=0; j < n; j++) {
-            if ((temp=fabs(a[i][j])) > big) big=temp;
+            if ((temp=std::fabs(a[i][j])) > big) big=temp;
             }
          if (big == 0.0) {
             *d = 0.0;
@@ -65,7 +65,7 @@ void ludcmp(double** a,int n,int* indx,double* d)
             sum=a[i][j];
             for (k=0; k < j ; k++) sum -= a[i][k]*a[k][j];
             a[i][j] = sum;
-            if ((dum=vv[i]*fabs(sum)) >= big) {
+            if ((dum=vv[i]*std::fabs(sum)) >= big) {
                big = dum;
                imax = i;
                }

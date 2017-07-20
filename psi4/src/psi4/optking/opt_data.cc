@@ -36,6 +36,7 @@
 #include "print.h"
 #define EXTERN
 #include "globals.h"
+#include "psi4/libpsi4util/process.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
  #include <cmath>
@@ -202,11 +203,11 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
       oprintf_out( "\n");
   
       oprintf_out( "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
-        DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
-        max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
-        rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
-        max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
-        rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
+        DE, (Opt_params.i_max_DE ? ((std::fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
+        max_force, (Opt_params.i_max_force ? ((std::fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+        rms_force, (Opt_params.i_rms_force ? ((std::fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+        max_disp, (Opt_params.i_max_disp ? ((std::fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+        rms_disp, (Opt_params.i_rms_disp ? ((std::fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
   
       oprintf_out( "  ---------------------------------------------------------------------------------------------\n\n");
   }
@@ -227,7 +228,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
          (  // For un-modified Q-Chem or Molpro (Baker) criteria, if forces and either energy change or displacement met, convergence!
                (Opt_params.i_untampered) 
             && ( (Opt_params.general_conv == "QCHEM") || (Opt_params.general_conv == "MOLPRO") )
-            && ( (max_force < Opt_params.conv_max_force) && ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)) )
+            && ( (max_force < Opt_params.conv_max_force) && ((std::fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)) )
          )
       || (  // For un-modified Gaussian criteria, if max/rms forces/disp met or flat potential forces met, convergence!
                (Opt_params.i_untampered) 
@@ -238,7 +239,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
                  || (rms_force * 100 < Opt_params.conv_rms_force) )
          )
       || (  // Otherwise, for all criteria, if criterion not active or criterion met, convergence!
-            (!(Opt_params.i_max_DE) || (fabs(DE) < Opt_params.conv_max_DE)) &&
+            (!(Opt_params.i_max_DE) || (std::fabs(DE) < Opt_params.conv_max_DE)) &&
             (!(Opt_params.i_max_force) || (max_force < Opt_params.conv_max_force)) &&
             (!(Opt_params.i_rms_force) || (rms_force < Opt_params.conv_rms_force)) &&
             (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
@@ -246,7 +247,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
          )
       || (
             (Opt_params.opt_type == OPT_PARAMS::IRC) &&
-            (!(Opt_params.i_max_DE) || (fabs(DE) < Opt_params.conv_max_DE)) &&
+            (!(Opt_params.i_max_DE) || (std::fabs(DE) < Opt_params.conv_max_DE)) &&
             (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
             (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
          )
@@ -263,7 +264,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // convergence test is forces and either energy change or displacement
   if ((max_force < Opt_params.conv_max_force) &&
-      ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
+      ((std::fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
     return true; // structure is optimized!
   }
   else 
@@ -370,7 +371,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       break;
     }
  
-    if ( (fabs(gq) < Opt_params.H_update_den_tol) ||(fabs(qq) < Opt_params.H_update_den_tol) ) {
+    if ( (std::fabs(gq) < Opt_params.H_update_den_tol) ||(std::fabs(qq) < Opt_params.H_update_den_tol) ) {
       oprintf_out("\tDenominators (dg)(dq) or (dq)(dq) are very small.\n");
       oprintf_out("\t Skipping Hessian update for step %d.\n", i_step+1);
       continue;
@@ -503,10 +504,10 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   
       for (int i=0; i<Nintco; ++i) {
         for (int j=0; j<Nintco; ++j) {
-          double val = fabs(scale_limit*H[i][j]);
+          double val = std::fabs(scale_limit*H[i][j]);
           max = ((val > max_limit) ? val : max_limit);
   
-        if (fabs(H_new[i][j]) < max)
+        if (std::fabs(H_new[i][j]) < max)
           H[i][j] += H_new[i][j];
         else // limit change to max
           H[i][j] += max * sign_of_double(H_new[i][j]);

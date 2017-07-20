@@ -35,6 +35,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+
 #include "occwave.h"
 
 using namespace psi;
@@ -220,13 +224,13 @@ if (reference_ == "RESTRICTED") {
         cost_iabc_ = 0;
         cost_abcd_ = 0;
         for(int h=0; h < nirrep_; h++) {
-            cost_iabc_ += (ULI)ov_pairpiAA[h] * (ULI)vv_pairpiAA[h];
-            cost_abcd_ += (ULI)vv_pairpiAA[h] * (ULI)vv_pairpiAA[h];
+            cost_iabc_ += (size_t)ov_pairpiAA[h] * (size_t)vv_pairpiAA[h];
+            cost_abcd_ += (size_t)vv_pairpiAA[h] * (size_t)vv_pairpiAA[h];
         }
-        cost_iabc_ /= (ULI)1024 * (ULI)1024;
-        cost_abcd_ /= (ULI)1024 * (ULI)1024;
-        cost_iabc_ *= (ULI)sizeof(double);
-        cost_abcd_ *= (ULI)sizeof(double);
+        cost_iabc_ /= (size_t)1024 * (size_t)1024;
+        cost_abcd_ /= (size_t)1024 * (size_t)1024;
+        cost_iabc_ *= (size_t)sizeof(double);
+        cost_abcd_ *= (size_t)sizeof(double);
 
         // print
     if (wfn_type_ == "OMP2") {
@@ -442,8 +446,8 @@ double OCCWave::compute_energy()
       C_pitzerA = Ca_->to_block_matrix();
 
       // write binary data
-      ofstream OutFile1;
-      OutFile1.open("CmoA.psi", ios::out | ios::binary);
+      std::ofstream OutFile1;
+      OutFile1.open("CmoA.psi", std::ios::out | std::ios::binary);
       OutFile1.write( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
       OutFile1.close();
       free_block(C_pitzerA);
@@ -458,8 +462,8 @@ double OCCWave::compute_energy()
           C_pitzerB = Cb_->to_block_matrix();
 
           // write binary data
-          ofstream OutFile2;
-          OutFile2.open("CmoB.psi", ios::out | ios::binary);
+          std::ofstream OutFile2;
+          OutFile2.open("CmoB.psi", std::ios::out | std::ios::binary);
           OutFile2.write( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
           OutFile2.close();
           free_block(C_pitzerB);
@@ -589,7 +593,7 @@ void OCCWave::mem_release()
         delete oo_pairidxAA;
         delete vv_pairidxAA;
 
-    Ca_.reset();
+    //Ca_.reset();
     Ca_ref.reset();
     Hso.reset();
     Tso.reset();

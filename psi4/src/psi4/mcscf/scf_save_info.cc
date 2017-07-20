@@ -26,26 +26,25 @@
  * @END LICENSE
  */
 
-#include <utility>
-#include <algorithm>
-#include <cstdio>
+#include "scf.h"
 
-#include <cmath>
-
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/psifiles.h"
-
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/process.h"
 
-#include "scf.h"
+#include <utility>
+#include <algorithm>
+#include <cstdio>
+#include <cmath>
 
 namespace psi{ namespace mcscf{
-
-using namespace std;
 
 void SCF::save_info()
 {
@@ -53,13 +52,13 @@ void SCF::save_info()
     nmo_ = nso_;
 
     // figure out how many frozen orbitals per irrep
-    int nfrzc = molecule_->nfrozen_core(ecpbasisset_);
+    int nfrzc = basisset_->n_frozen_core();
     intvec frz;
     for(int h = 0; h < nirreps; ++h) frz.push_back(0);
-    vector<std::pair<double, int> > sorted_evals;
+    std::vector<std::pair<double, int> > sorted_evals;
     for(int h = 0; h < nirreps; ++h)
       for(int i = 0; i < sopi[h]; ++i)
-        sorted_evals.push_back( make_pair(epsilon->get(h,i),h) );
+        sorted_evals.push_back( std::make_pair(epsilon->get(h,i),h) );
     sort(sorted_evals.begin(),sorted_evals.end());
     for(int i = 0; i < nfrzc; ++i)
       frz[sorted_evals[i].second]++;

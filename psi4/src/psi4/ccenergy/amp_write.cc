@@ -37,7 +37,7 @@
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
 #include "ccwave.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi { namespace ccenergy {
 
@@ -57,8 +57,8 @@ void onestack_insert(struct onestack *stack, double value, int i, int a,
     int level, int stacklen);
 void twostack_insert(struct twostack *stack, double value, int i, int j,
     int a, int b, int level, int stacklen);
-void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string OutFileRMR);
-void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string OutFileRMR);
+void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out_fname);
+void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out_fname);
 
 void CCEnergyWavefunction::amp_write(void)
 {
@@ -116,7 +116,7 @@ void CCEnergyWavefunction::amp_write(void)
 void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int m, h, nirreps, Gia;
   int i, I, a, A, numt1;
   int num2print=0;
@@ -143,7 +143,7 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
 	A = T1->params->colorb[h][a];
 	value = T1->matrix[h][i][a];
 	for(m=0; m < length; m++) {
-	  if((fabs(value) - fabs(t1stack[m].value)) > 1e-12) {
+	  if((std::fabs(value) - std::fabs(t1stack[m].value)) > 1e-12) {
 	    onestack_insert(t1stack, value, I, A, m, length);
 	    break;
 	  }
@@ -155,12 +155,12 @@ void amp_write_T1(dpdfile2 *T1, int length, const char *label, std::string out)
   global_dpd_->file2_mat_close(T1);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
-    if(fabs(t1stack[m].value) > 1e-8) num2print++;
+    if(std::fabs(t1stack[m].value) > 1e-8) num2print++;
 
   if(num2print) printer->Printf( "%s", label);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
-    if(fabs(t1stack[m].value) > 1e-8)
+    if(std::fabs(t1stack[m].value) > 1e-8)
       printer->Printf( "            %3d %3d %20.10f\n", t1stack[m].i, t1stack[m].a, t1stack[m].value);
 
   free(t1stack);
@@ -197,7 +197,7 @@ void onestack_insert(struct onestack *stack, double value, int i, int a, int lev
 void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    int m, h, nirreps, Gijab, numt2;
   int ij, ab, i, j, a, b;
   int num2print=0;
@@ -231,7 +231,7 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
 	value = T2->matrix[h][ij][ab];
 
 	for(m=0; m < length; m++) {
-	  if((fabs(value) - fabs(t2stack[m].value)) > 1e-12) {
+	  if((std::fabs(value) - std::fabs(t2stack[m].value)) > 1e-12) {
 	    twostack_insert(t2stack, value, i, j, a, b, m, length);
 	    break;
 	  }
@@ -243,12 +243,12 @@ void amp_write_T2(dpdbuf4 *T2, int length, const char *label, std::string out)
   }
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
-    if(fabs(t2stack[m].value) > 1e-8) num2print++;
+    if(std::fabs(t2stack[m].value) > 1e-8) num2print++;
 
   if(num2print) printer->Printf( "%s", label);
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)
-    if(fabs(t2stack[m].value) > 1e-8)
+    if(std::fabs(t2stack[m].value) > 1e-8)
       printer->Printf( "    %3d %3d %3d %3d %20.10f\n", t2stack[m].i, t2stack[m].j,
 	      t2stack[m].a, t2stack[m].b, t2stack[m].value);
 

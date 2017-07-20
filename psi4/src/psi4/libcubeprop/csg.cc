@@ -34,15 +34,20 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/potential.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+
 #include "csg.h"
 
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
 namespace psi {
@@ -232,7 +237,6 @@ void CubicScalarGrid::print_header()
     outfile->Printf("\n");
 
     primary_->print();
-    outfile->Flush();
 }
 void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const std::string& type)
 {
@@ -276,7 +280,6 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name)
     if (filesystem::path(filepath_).make_absolute().is_directory() == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath_.c_str());
-        outfile->Flush();
         exit(Failure);
     }
 
@@ -575,7 +578,7 @@ void CubicScalarGrid::add_LOL(double* v, std::shared_ptr<Matrix> D)
             double tau_LSDA = C * pow(0.5 * rhop[P], 5.0 / 3.0);
             double tau_EX   = taup[P];
             double t = tau_LSDA / tau_EX;
-            double v2 = (fabs(tau_EX / tau_LSDA) < 1.0E-15 ? 1.0 : t / (1.0 + t));
+            double v2 = (std::fabs(tau_EX / tau_LSDA) < 1.0E-15 ? 1.0 : t / (1.0 + t));
             v[P + offset] += v2;
         }
         offset += npoints;
@@ -607,7 +610,7 @@ void CubicScalarGrid::add_ELF(double* v, std::shared_ptr<Matrix> D)
             double D_EX   = tau_EX - 0.25 * gamp[P] / rhop[P];
             double D_LSDA = tau_LSDA;
             double B = D_EX / D_LSDA;
-            double v2 = (fabs(D_LSDA / D_EX) < 1.0E-15 ? 0.0 : 1.0 / (1.0 + B * B));
+            double v2 = (std::fabs(D_LSDA / D_EX) < 1.0E-15 ? 0.0 : 1.0 / (1.0 + B * B));
             v[P + offset] += v2;
         }
         offset += npoints;

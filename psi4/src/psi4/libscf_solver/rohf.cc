@@ -39,6 +39,11 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libfock/jk.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -49,7 +54,6 @@
 #include "psi4/libmints/factory.h"
 #define _DEBUG
 
-using namespace std;
 using namespace psi;
 
 
@@ -78,8 +82,9 @@ void ROHF::common_init()
     moFeff_  = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
     soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
-    Ca_      = SharedMatrix(factory_->create_matrix("C"));
+    Ca_      = SharedMatrix(factory_->create_matrix("alpha MO coefficients (C)"));
     Cb_      = Ca_;
+    Cb_->set_name("beta MO coefficients (C)");
     Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
     Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
@@ -95,7 +100,9 @@ void ROHF::common_init()
     moFb_    = SharedMatrix(factory_->create_matrix("MO beta Fock Matrix (MO basis)"));
 
     epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_a_->set_name("alpha orbital energies");
     epsilon_b_ = epsilon_a_;
+    epsilon_b_->set_name("beta orbital energies");
     same_a_b_dens_ = false;
     same_a_b_orbs_ = true;
 
@@ -364,7 +371,7 @@ bool ROHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
         return false;
@@ -1312,7 +1319,7 @@ bool ROHF::stability_analysis()
             if(npairs == 0) continue;
 
             // Store the row indices, for convenience
-            unsigned int rank = 0;
+            size_t rank = 0;
             double **U = block_matrix(npairs, npairs);
             for(int ia = 0; ia < npairs; ++ia){
                 int iabs = Aab.params->roworb[h][ia][0];

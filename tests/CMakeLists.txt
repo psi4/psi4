@@ -57,12 +57,12 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dft-freq dft-grad1 dft-grad2 dft-pbe0-2 dft-psivar dft-b3lyp dft1 dft-vv10 
                   dft1-alt dft2 dft3 docs-bases docs-dft extern1 extern2
                   fsapt1 fsapt2 isapt1 isapt2
-                  fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 
+                  fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 fci-coverage 
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
                   fnocc3 fnocc4 frac ghosts gibbs matrix1 mcscf1 mcscf2 mcscf3 
-                  mints1 mints2 mints3 mints4 mints5 mints6 mints8 
-                  mints9 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
+                  mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark 
+                  mints9 mints10 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
                   mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
                   mp2-property mpn-bh nbody-he-cluster numpy-array-interface 
                   ocepa-freq1 ocepa-grad1 ocepa-grad2 ocepa1 ocepa2 ocepa3 
@@ -85,7 +85,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
-                  options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1
+                  options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")

@@ -34,6 +34,7 @@
 
 #ifdef _OPENMP
   #include <omp.h>
+  #include "psi4/libpsi4util/process.h"
 #endif
 
 #ifdef USING_LAPACK_MKL
@@ -50,6 +51,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 
 namespace psi { namespace sapt {

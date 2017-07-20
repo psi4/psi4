@@ -44,21 +44,26 @@
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/petitelist.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 #include "psi4/libfock/jk.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
 #include "hf.h"
 #include "sad.h"
 
 
-using namespace std;
 using namespace psi;
 
 namespace psi { namespace scf {
@@ -88,8 +93,10 @@ void SADGuess::compute_guess()
 {
 
     timer_on("SAD Guess");
+    start_skip_timers();
     form_D();
     form_C();
+    stop_skip_timers();
     timer_off("SAD Guess");
 }
 void SADGuess::form_D()
@@ -100,7 +107,7 @@ void SADGuess::form_D()
     // Transform Neutral D from AO to SO basis
     Da_ = SharedMatrix(new Matrix("Da SAD",AO2SO_->colspi(),AO2SO_->colspi()));
 
-    double* temp = new double[AO2SO_->rowspi()[0] * (ULI) AO2SO_->max_ncol()];
+    double* temp = new double[AO2SO_->rowspi()[0] * (size_t) AO2SO_->max_ncol()];
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nao = AO2SO_->rowspi()[h];
         int nso = AO2SO_->colspi()[h];
@@ -495,7 +502,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         throw PSIEXCEPTION(msg.str());
     }
 
-    jk->set_memory((ULI)(0.5 * (Process::environment.get_memory() / 8L)));
+    jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1)
         jk->print_header();
@@ -542,7 +549,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         E += Db->vector_dot(Fb);
         E *= 0.5;
 
-        double deltaE = fabs(E-E_old);
+        double deltaE = std::fabs(E-E_old);
 
         // Build Gradient
         form_gradient(norbs, gradient_a, Fa, Da, S, X);

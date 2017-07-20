@@ -38,7 +38,7 @@
 #include "v3d.h"
 #include "psi4/optking/physconst.h"
 #include "linear_algebra.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "print.h"
 #define EXTERN
 #include "globals.h"
@@ -46,7 +46,6 @@
 namespace opt {
 
 using namespace v3d;
-using namespace std;
 
 // constructor - makes sure A<C
 BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE_COORDINATE(bend_type, 3, freeze_in) {
@@ -264,7 +263,7 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
 
 
 void BEND::print(std::string psi_fp, FILE *qc_fp, GeomType geom, int off) const {
-  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  std::ostringstream iss(std::ostringstream::out); // create stream; allow output to it
   iss << get_definition_string(off);
 
   double val = value(geom);
@@ -276,7 +275,7 @@ void BEND::print(std::string psi_fp, FILE *qc_fp, GeomType geom, int off) const 
 
 // function to return string of coordinate definition
 std::string BEND::get_definition_string(int off) const {
-  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  std::ostringstream iss(std::ostringstream::out); // create stream; allow output to it
 
   if (_bend_type == 0)
     iss << "B(";
@@ -285,13 +284,13 @@ std::string BEND::get_definition_string(int off) const {
   else
     iss << "l(";
 
-  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << std::flush ;
   return iss.str();
 }
 
 void BEND::print_disp(std::string psi_fp, FILE *qc_fp, const double q_old, const double f_q,
     const double dq, const double q_new, int atom_offset) const {
-  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  std::ostringstream iss(std::ostringstream::out); // create stream; allow output to it
   if (s_frozen) iss << "*";
 
   if (_bend_type == 0)
@@ -301,7 +300,7 @@ void BEND::print_disp(std::string psi_fp, FILE *qc_fp, const double q_old, const
   else
     iss << "l(";
 
-  iss << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << "," << s_atom[2]+atom_offset+1 << ")" << flush ;
+  iss << s_atom[0]+atom_offset+1 << "," << s_atom[1]+atom_offset+1 << "," << s_atom[2]+atom_offset+1 << ")" << std::flush ;
 
   oprintf(psi_fp, qc_fp, "%-15s = %13.6lf%13.6lf%13.6lf%13.6lf\n",
     iss.str().c_str(), q_old/_pi*180.0, f_q*_hartree2aJ*_pi/180.0,

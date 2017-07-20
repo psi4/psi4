@@ -1,6 +1,6 @@
 #! single-point  CCSD(T)/qz2p on NH2 with aobasis
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 ROHF-CCSD(T) energy calculation using partial AO algorithms 
@@ -30,7 +30,7 @@ clean()
 clean_variables()
 cfour {}
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
 molecule {
 0 2

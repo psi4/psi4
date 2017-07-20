@@ -29,11 +29,9 @@
 #include <vector>
 #include "psi4/libmints/dimension.h"
 
-using namespace std;
-
 namespace psi { namespace cctransort {
 
-vector<int> pitzer2qt(vector<Dimension> &spaces)
+std::vector<int> pitzer2qt(std::vector<Dimension> &spaces)
 {
   int nirreps = spaces[0].n();
 
@@ -43,7 +41,7 @@ vector<int> pitzer2qt(vector<Dimension> &spaces)
       total[h] += spaces[i][h];
   int nmo = total.sum();
 
-  vector<int> order(nmo);
+  std::vector<int> order(nmo);
   order.assign(nmo, 0);
 
   Dimension offset(nirreps);

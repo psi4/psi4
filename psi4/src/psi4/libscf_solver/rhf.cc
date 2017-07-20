@@ -40,13 +40,16 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libfock/v.h"
@@ -54,8 +57,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
 #include "rhf.h"
-
-using namespace std;
 
 namespace psi { namespace scf {
 
@@ -84,9 +85,10 @@ void RHF::common_init()
     // Allocate matrix memory
     Fa_        = SharedMatrix(factory_->create_matrix("F"));
     Fb_        = Fa_;
-    Ca_        = SharedMatrix(factory_->create_matrix("C"));
+    Ca_        = SharedMatrix(factory_->create_matrix("MO coefficients (C)"));
     Cb_        = Ca_;
     epsilon_a_ = SharedVector(factory_->create_vector());
+    epsilon_a_->set_name("orbital energies");
     epsilon_b_ = epsilon_a_;
     Da_        = SharedMatrix(factory_->create_matrix("SCF density"));
     Db_        = Da_;
@@ -139,8 +141,8 @@ void RHF::save_density_and_energy()
     Eold_ = E_;       // Save previous energy
 }
 
-void forPermutation(int depth, vector<int>& array,
-      vector<int>& indices,int curDepth,vector<vector<int> >& finalindex) {
+void forPermutation(int depth, std::vector<int>& array,
+      std::vector<int>& indices,int curDepth, std::vector<std::vector<int> >& finalindex) {
    int length=array.size();
    if(curDepth == 0) {
         finalindex.push_back(indices);
@@ -255,7 +257,7 @@ bool RHF::test_convergency()
     double ediff = E_ - Eold_;
 
     // Drms was computed earlier
-    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
+    if (std::fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_){
        return true;
     }
     else

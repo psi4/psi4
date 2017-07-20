@@ -38,14 +38,11 @@
 #include <vector>
 
 #include "linear_algebra.h"
-#include "molecule.h"
 #include "print.h"
 
 #include "io.h"
 
 namespace opt {
-
-using namespace std;
 
 // data for one optimization step
 class IRC_POINT {
@@ -126,7 +123,7 @@ class IRC_DATA {
 
     // free memory
     ~IRC_DATA() {
-      for (ULI i=0; i<steps.size(); ++i)
+      for (size_t i=0; i<steps.size(); ++i)
         delete steps[i];
       steps.clear();
     }

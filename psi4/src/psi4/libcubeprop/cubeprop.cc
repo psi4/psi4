@@ -30,10 +30,14 @@
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libfilesystem/path.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "cubeprop.h"
 #include "csg.h"
@@ -99,7 +103,6 @@ void CubeProperties::print_header()
 {
     outfile->Printf( "  ==> One Electron Grid Properties (v2.0) <==\n\n");
     grid_->print_header();
-    outfile->Flush();
 }
 void CubeProperties::compute_properties()
 {
@@ -113,7 +116,6 @@ void CubeProperties::compute_properties()
     if (filesystem::path(filepath).make_absolute().is_directory() == false) {
         printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
         outfile->Printf("Filepath \"%s\" is not valid.  Please create this directory.\n",filepath.c_str());
-        outfile->Flush();
         exit(Failure);
     }
 
@@ -153,9 +155,9 @@ void CubeProperties::compute_properties()
                 for (size_t ind = 0; ind < options_["CUBEPROP_ORBITALS"].size(); ind++) {
                     int val = options_["CUBEPROP_ORBITALS"][ind].to_integer();
                     if (val > 0) {
-                        indsa0.push_back(abs(val) - 1);
+                        indsa0.push_back(std::abs(val) - 1);
                     } else {
-                        indsb0.push_back(abs(val) - 1);
+                        indsb0.push_back(std::abs(val) - 1);
                     }
                 }
             }

@@ -47,8 +47,6 @@
 
 namespace opt {
 
-using namespace std;
-
 // data for one optimization step
 class STEP_DATA {
 

@@ -487,7 +487,7 @@ void SAPT0::df_integrals()
         for(int x=0;x<numx;x++) {
           int index = ( ( (w*numx + x) * numw + w) * numx + x);
           tei = ao_buffer[index];
-          if(fabs(tei) > max) max = fabs(tei);
+          if(std::fabs(tei) > max) max = std::fabs(tei);
         }
       }
       Schwartz[PQ] = max;
@@ -515,7 +515,7 @@ void SAPT0::df_integrals()
 
     for(int w=0;w<numw;w++) {
       tei = df_buffer[w];
-      if(fabs(tei) > max) max = fabs(tei);
+      if(std::fabs(tei) > max) max = std::fabs(tei);
     }
     DFSchwartz[P] = max;
   }
@@ -1002,7 +1002,7 @@ void SAPT0::df_integrals_aio()
         for(int x=0;x<numx;x++) {
           int index = ( ( (w*numx + x) * numw + w) * numx + x);
           tei = ao_buffer[index];
-          if(fabs(tei) > max) max = fabs(tei);
+          if(std::fabs(tei) > max) max = std::fabs(tei);
         }
       }
       Schwartz[PQ] = max;
@@ -1030,7 +1030,7 @@ void SAPT0::df_integrals_aio()
 
     for(int w=0;w<numw;w++) {
       tei = df_buffer[w];
-      if(fabs(tei) > max) max = fabs(tei);
+      if(std::fabs(tei) > max) max = std::fabs(tei);
     }
     DFSchwartz[P] = max;
   }
@@ -1648,7 +1648,7 @@ void SAPT0::oo_df_integrals()
         for(int x=0;x<numx;x++) {
           int index = ( ( (w*numx + x) * numw + w) * numx + x);
           tei = ao_buffer[index];
-          if(fabs(tei) > max) max = fabs(tei);
+          if(std::fabs(tei) > max) max = std::fabs(tei);
         }
       }
       Schwartz[PQ] = max;
@@ -1676,7 +1676,7 @@ void SAPT0::oo_df_integrals()
 
     for(int w=0;w<numw;w++) {
       tei = df_buffer[w];
-      if(fabs(tei) > max) max = fabs(tei);
+      if(std::fabs(tei) > max) max = std::fabs(tei);
     }
     DFSchwartz[P] = max;
   }

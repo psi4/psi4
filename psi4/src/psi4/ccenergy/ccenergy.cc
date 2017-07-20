@@ -34,24 +34,29 @@
 **  CCENERGY: Program to calculate coupled cluster energies.
 */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-#include <sys/types.h>
-#include <unistd.h>
+#include "Params.h"
+#include "MOInfo.h"
+#include "Local.h"
+#include "ccwave.h"
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
-#include <sys/types.h>
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/psifiles.h"
-#include "Params.h"
-#include "MOInfo.h"
-#include "Local.h"
-#include "ccwave.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 namespace psi { namespace ccenergy {
 
@@ -509,6 +514,7 @@ double CCEnergyWavefunction::compute_energy()
 #endif
 
     energy_ = moinfo_.ecc + moinfo_.eref;
+    name_  = "CCSD";
     Process::environment.globals["CURRENT ENERGY"] = moinfo_.ecc+moinfo_.eref;
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = moinfo_.ecc;
     //Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;

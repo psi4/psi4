@@ -41,7 +41,6 @@
 #include "psi4/physconst.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/liboptions/liboptions_python.h"
@@ -49,6 +48,8 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
+#include "psi4/libdiis/diismanager.h"
+#include "psi4/libdiis/diisentry.h"
 
 #ifdef USING_PCMSolver
 #include "psi4/libpsipcm/psipcm.h"
@@ -56,7 +57,7 @@
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/basisset_parser.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/matrix.h"
@@ -78,9 +79,7 @@ namespace psi { namespace scf {
 HF::HF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> func,
        Options &options, std::shared_ptr<PSIO> psio)
     : Wavefunction(options),
-      functional_(func),
-      nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6) {
+      functional_(func) {
     shallow_copy(ref_wfn);
     psio_ = psio;
     common_init();
@@ -151,55 +150,59 @@ void HF::common_init()
         input_docc_ = true;
         // Map the symmetry of the input DOCC, to account for displacements
         std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if(old_pg){
-            // This is one of a series of displacements;  check the dimension against the parent point group
+        if (old_pg) {
+            // This is one of a series of displacements;  check the dimension against the parent
+            // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
-	    if(options_["DOCC"].size() != full_nirreps)
-	        throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            Dimension temp_docc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h) {
-                temp_docc[h] = options_["DOCC"][h].to_integer();
-	    }
-            doccpi_ = map_irreps(temp_docc);
-        }else{
-            // This is a normal calculation; check the dimension against the current point group then read
-            if(options_["DOCC"].size() != nirreps)
+            if (options_["DOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h) {
-	      doccpi_[h] = options_["DOCC"][h].to_integer();
-	    }
+            Dimension temp_docc(full_nirreps);
+            for (int h = 0; h < full_nirreps; ++h) {
+                temp_docc[h] = options_["DOCC"][h].to_integer();
+            }
+            doccpi_ = map_irreps(temp_docc);
+        } else {
+            // This is a normal calculation; check the dimension against the current point group
+            // then read
+            if (options_["DOCC"].size() != nirreps)
+                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            for (int h = 0; h < nirreps; ++h) {
+                doccpi_[h] = options_["DOCC"][h].to_integer();
+            }
         }
-    } // else take the reference wavefunctions doccpi
+    }  // else take the reference wavefunctions doccpi
 
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
         // Map the symmetry of the input SOCC, to account for displacements
         std::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
-        if(old_pg){
-            // This is one of a series of displacements;  check the dimension against the parent point group
+        if (old_pg) {
+            // This is one of a series of displacements;  check the dimension against the parent
+            // point group
             size_t full_nirreps = old_pg->char_table().nirrep();
-            if(options_["SOCC"].size() != full_nirreps)
+            if (options_["SOCC"].size() != full_nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
             Dimension temp_socc(full_nirreps);
-            for(int h = 0; h < full_nirreps; ++h) {
+            for (int h = 0; h < full_nirreps; ++h) {
                 temp_socc[h] = options_["SOCC"][h].to_integer();
-	    }
+            }
             soccpi_ = map_irreps(temp_socc);
-        }else{
-            // This is a normal calculation; check the dimension against the current point group then read
-            if(options_["SOCC"].size() != nirreps)
+        } else {
+            // This is a normal calculation; check the dimension against the current point group
+            // then read
+            if (options_["SOCC"].size() != nirreps)
                 throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
-            for(int h = 0; h < nirreps; ++h) {
+            for (int h = 0; h < nirreps; ++h) {
                 soccpi_[h] = options_["SOCC"][h].to_integer();
-	    }
+            }
         }
-    } // else take the reference wavefunctions soccpi
+    }  // else take the reference wavefunctions soccpi
 
     // Check that we have enough basis functions
     for(int h = 0; h < nirreps; ++h) {
       if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
-	throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+    throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
       }
     }
 
@@ -507,7 +510,7 @@ void HF::integrals()
     // Tell the JK to print
     jk_->set_print(print_);
     // Give the JK 75% of the memory
-    jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
+    jk_->set_memory((size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
 
     // DFT sometimes needs custom stuff
     // K matrices
@@ -721,23 +724,34 @@ void HF::find_occupation()
     } else {
         std::vector<std::pair<double, int> > pairs_a;
         std::vector<std::pair<double, int> > pairs_b;
-        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+        for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i){
                 pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+            }
         }
-        for (int h=0; h<epsilon_b_->nirrep(); ++h) {
-            for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-                pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
+        sort(pairs_a.begin(), pairs_a.end());
+
+        // Do we need to sort beta?
+        if (multiplicity_ == 1) {
+            pairs_b = pairs_a;
+
+        } else {
+            for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
+                for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i){
+                    pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
+                }
+            }
+            sort(pairs_b.begin(), pairs_b.end());
         }
-        sort(pairs_a.begin(),pairs_a.end());
-        sort(pairs_b.begin(),pairs_b.end());
 
         if(!input_docc_ && !input_socc_){
+
+            // Alpha
             memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
             for (int i=0; i<nalpha_; ++i)
                 nalphapi_[pairs_a[i].second]++;
-        }
-        if(!input_docc_ && !input_socc_){
+
+            // Beta
             memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
             for (int i=0; i<nbeta_; ++i)
                 nbetapi_[pairs_b[i].second]++;
@@ -829,10 +843,9 @@ void HF::print_header()
     outfile->Printf( "  ==> Primary Basis <==\n\n");
 
     basisset_->print_by_level("outfile", print_);
-    if(ecpbasisset_)
-        ecpbasisset_->print_by_level("outfile", print_);
-
 }
+
+
 void HF::print_preiterations()
 {
     CharacterTable ct = molecule_->point_group()->char_table();
@@ -905,7 +918,7 @@ void HF::form_H()
           double max = 0;
           for(int k=0; k < npoints; k++) {
             statusvalue=fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
-            if(fabs(v) > max) max = fabs(v);
+            if(std::fabs(v) > max) max = std::fabs(v);
 
             basisset_->compute_phi(phi_ao, x, y, z);
             // Transform phi_ao to SO basis
@@ -985,15 +998,11 @@ void HF::form_H()
     } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
-    py::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
-    std::shared_ptr<ExternalPotential> external;
-    if (pyExtern)
-        external = pyExtern.cast<std::shared_ptr<ExternalPotential>>();
-    if (external) {
+    if (external_pot_) {
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && H_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
+        SharedMatrix Vprime = external_pot_->computePotentialMatrix(basisset_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
@@ -1003,8 +1012,8 @@ void HF::form_H()
         }
 
         if (print_) {
-            external->set_print(print_);
-            external->print();
+            external_pot_->set_print(print_);
+            external_pot_->print();
         }
         if (print_ > 3)
             Vprime->print();
@@ -1012,7 +1021,7 @@ void HF::form_H()
 
 
         // Extra nuclear repulsion
-        double enuc2 = external->computeNuclearEnergy(molecule_);
+        double enuc2 = external_pot_->computeNuclearEnergy(molecule_);
         if (print_) {
                outfile->Printf( "  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
                outfile->Printf( "  Additional nuclear repulsion = %20.15f\n", enuc2);
@@ -1052,7 +1061,7 @@ void HF::form_Shalf()
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     const Dimension& dimpi = eigval->dimpi();
-    double min_S = fabs(eigval->get(0,0));
+    double min_S = std::fabs(eigval->get(0,0));
     for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
             if (min_S > eigval->get(h,i))
@@ -1126,12 +1135,12 @@ void HF::form_Shalf()
         if (print_)
             outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
 
-	// Double check occupation vectors
-	for(int h = 0; h < eigval->nirrep(); ++h) {
-	  if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
-	    throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
-	  }
-	}
+        // Double check occupation vectors
+        for(int h = 0; h < eigval->nirrep(); ++h) {
+          if(doccpi_[h]+soccpi_[h] > nmopi_[h]) {
+            throw PSIEXCEPTION("Not enough molecular orbitals to satisfy requested occupancies");
+          }
+        }
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nmopi_);
@@ -1172,7 +1181,7 @@ void HF::compute_fcpi()
         if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
             nfzc = options_.get_int("NUM_FROZEN_DOCC");
         } else {
-            nfzc = molecule_->nfrozen_core(ecpbasisset_, options_.get_str("FREEZE_CORE"));
+            nfzc = basisset_->n_frozen_core();
         }
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;
@@ -1529,7 +1538,7 @@ void HF::check_phases()
     for (int h=0; h<nirrep_; ++h) {
         for (int p = 0; p < Ca_->colspi(h); ++p) {
             for (int mu = 0; mu < Ca_->rowspi(h); ++mu) {
-                if (fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
+                if (std::fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
                     if (Ca_->get(h, mu, p) < 1.0E-3) {
                         Ca_->scale_column(h, p, -1.0);
                     }
@@ -1543,7 +1552,7 @@ void HF::check_phases()
         for (int h=0; h<nirrep_; ++h) {
             for (int p = 0; p < Cb_->colspi(h); ++p) {
                 for (int mu = 0; mu < Cb_->rowspi(h); ++mu) {
-                    if (fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
+                    if (std::fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
                         if (Cb_->get(h, mu, p) < 1.0E-3) {
                             Cb_->scale_column(h, p, -1.0);
                         }
@@ -1581,7 +1590,7 @@ void HF::initialize()
     }
 
     if(attempt_number_ == 1){
-        std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0, ecpbasisset_));
+        std::shared_ptr<MintsHelper> mints (new MintsHelper(basisset_, options_, 0));
         if ((options_.get_str("RELATIVISTIC") == "X2C") ||
             (options_.get_str("RELATIVISTIC") == "DKH")) {
             mints->set_rel_basisset(get_basisset("BASIS_RELATIVISTIC"));
@@ -1892,7 +1901,7 @@ void HF::print_energies()
     Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
     Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
     Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
-    if (fabs(energies_["XC"]) > 1.0e-14) {
+    if (std::fabs(energies_["XC"]) > 1.0e-14) {
         Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
         Process::environment.globals["DFT VV10 ENERGY"] = energies_["VV10"];
         Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = hf_energy +
@@ -1901,7 +1910,7 @@ void HF::print_energies()
     } else {
         Process::environment.globals["HF TOTAL ENERGY"] = hf_energy;
     }
-    if (fabs(energies_["-D"]) > 1.0e-14) {
+    if (std::fabs(energies_["-D"]) > 1.0e-14) {
         Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
 

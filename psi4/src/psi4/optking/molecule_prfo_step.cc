@@ -107,7 +107,7 @@ void MOLECULE::prfo_step(void) {
     double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
     double max_overlap = 0;
     for (int i=0; i<Nintco; ++i) {
-      double tval = fabs (array_dot(H_diag[i], rfo_old_evect, Nintco));
+      double tval = std::fabs (array_dot(H_diag[i], rfo_old_evect, Nintco));
       if (tval > max_overlap) {
         max_overlap = tval;
         rfo_root = i;
@@ -192,8 +192,8 @@ void MOLECULE::prfo_step(void) {
   //Normalize all eigenvectors.
   for (int i=0; i<mu+1; ++i) {
     // how big is dividing going to make it?
-    double tval = abs( array_abs_max(rfo_max[i], mu) / rfo_max[i][mu] );
-    if (fabs(tval) < Opt_params.rfo_normalization_max) {
+    double tval = std::abs( array_abs_max(rfo_max[i], mu) / rfo_max[i][mu] );
+    if (std::fabs(tval) < Opt_params.rfo_normalization_max) {
       for (int j=0; j<mu+1; ++j)
         rfo_max[i][j] /= rfo_max[i][mu];
     }
@@ -205,8 +205,8 @@ void MOLECULE::prfo_step(void) {
 
   //rfo_min contains normalized eigenvectors as rows
   for (int i=0; i<Nintco-mu+1; ++i) {
-    double tval = abs( array_abs_max(rfo_min[i], Nintco-mu) / rfo_min[i][Nintco-mu] );
-    if (fabs(tval) < Opt_params.rfo_normalization_max) {
+    double tval = std::abs( array_abs_max(rfo_min[i], Nintco-mu) / rfo_min[i][Nintco-mu] );
+    if (std::fabs(tval) < Opt_params.rfo_normalization_max) {
       for (int j=0;j<Nintco-mu+1;++j)
         rfo_min[i][j] /= rfo_min[i][Nintco-mu];
     }

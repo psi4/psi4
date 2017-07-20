@@ -29,6 +29,9 @@
 #include <string.h>
 #include "dimension.h"
 #include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+
 #include <string.h>
 
 namespace psi {
@@ -202,10 +205,10 @@ bool Slice::validate_slice(){
         std::string msg = "Invalid Slice: begin and end Dimension objects have different size.";
         throw PSIEXCEPTION(msg);
     }
-    // Check that
+    // Check that begin[h] >= 0 and end[h] >= begin[h]
     for (int h = 0, max_h = begin_.n(); h < max_h; h++){
-        valid = false;
         if (begin_[h] < 0){
+            valid = false;
             std::string msg = "Invalid Slice: element "
                     + std::to_string(h)
                     + " of begin Dimension object is less than zero ("
@@ -213,6 +216,7 @@ bool Slice::validate_slice(){
             throw PSIEXCEPTION(msg);
         }
         if (end_[h] < begin_[h]){
+            valid = false;
             std::string msg = "Invalid Slice: element "
                     + std::to_string(h)
                     + " of (end - begin) Dimension object is less than zero ("

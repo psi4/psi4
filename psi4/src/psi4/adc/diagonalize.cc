@@ -27,7 +27,7 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -75,7 +75,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
     for(int I = 0;I < rpi_[irrep];I++) lambda_o[I] = omega_guess_->get(irrep, I);
     shift_denom4(irrep, omega_in);
 
-    std::shared_ptr<OutFile> printer(new OutFile("iter.dat",APPEND));
+    std::shared_ptr<PsiOutStream> printer(new PsiOutStream("iter.dat",std::ostream::app));
 
     timer_on("SEM");
     while(converged < rpi_[irrep] && iter < sem_max_){
@@ -205,7 +205,7 @@ ADCWfn::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, do
             printer->Printf("----     ---------------- -------    --------- ----------\n");
 
             for(int k = 0;k < rpi_[irrep];k++){
-                double diff = fabs(lambda[k]-lambda_o[k]);
+                double diff = std::fabs(lambda[k]-lambda_o[k]);
                 if(diff < cutoff && residual_ok[k]){
                     conv[k] = 1;
                     converged++;

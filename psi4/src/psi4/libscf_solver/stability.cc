@@ -28,7 +28,6 @@
 
 #include "stability.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "psi4/libpsio/psio.hpp"
@@ -38,10 +37,14 @@
 #include "psi4/libfock/solver.h"
 #include "psi4/libfock/hamiltonian.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/physconst.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
 
-
-using namespace std;
 
 namespace psi{
 
@@ -186,7 +189,7 @@ double UStab::compute_energy()
             // Spurious zero eigenvalue due to not enough states
             if (N >= (size_t)stabvecs[N]->dimpi()[h]) continue;
             evec_temp.push_back(tpair[h]);
-            eval_temp.push_back(make_pair(stabvals[N][h], index));
+            eval_temp.push_back(std::make_pair(stabvals[N][h], index));
             index++;
         }
     }
@@ -243,7 +246,7 @@ SharedMatrix UStab::analyze()
         int h = vecs_[i].first->symmetry();
         eval_sym->set(h,eig_dims[h],0,vals_[i]);
         ++eig_dims[h];
-        if ((vals_[i] < unstable_val) && (abs(vals_[i]) > convergence_) ) {
+        if ((vals_[i] < unstable_val) && (std::fabs(vals_[i]) > convergence_) ) {
             if ( vecs_[i].first->symmetry() == 0) {
                 unstable = true;
                 unstable_val = vals_[i];
@@ -305,7 +308,7 @@ void UStab::preiterations()
             } else {
                 jk_ = JK::build_JK(basis_, BasisSet::zero_ao_basis_set(), options_);
             }
-            unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+            size_t effective_memory = (size_t)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();
         }

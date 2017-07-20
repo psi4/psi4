@@ -87,7 +87,7 @@ void ael(struct RHO_Params *rho_params)
     /* compute the ith AEL */
     ael = 0.0;
     for (j=0; j<dim; ++j) {
-      ael += 0.5 * fabs( rho_x[j][k] - rho_g[j][k] );
+      ael += 0.5 * std::fabs( rho_x[j][k] - rho_g[j][k] );
     }
     outfile->Printf( "\tAEL %d: %10.7lf\n", i, ael);
   }

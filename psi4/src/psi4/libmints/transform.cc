@@ -109,7 +109,7 @@ void SphericalTransform::init()
 //                outfile->Printf( "cart1 = %d, p+pureindex=%d\n", cart1, p+pureindex);
                 double coef = coefmat(cart1, p+pureindex);
 
-                if (fabs(coef) > 1.0e-16) {
+                if (std::fabs(coef) > 1.0e-16) {
                     SphericalTransformComponent component;
                     component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);
@@ -172,7 +172,7 @@ void ISphericalTransform::init()
 
                 double coef = coefmat(cart1, p+pureindex);
 
-                if (fabs(coef) > 1.0e-16) {
+                if (std::fabs(coef) > 1.0e-16) {
                     SphericalTransformComponent component;
                     component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);

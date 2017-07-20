@@ -26,12 +26,13 @@
  * @END LICENSE
  */
 
+#include "thce.h"
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
-#include "thce.h"
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <unistd.h>
 #include <tuple>
@@ -41,7 +42,6 @@
 #endif
 
 using namespace psi;
-using namespace std;
 
 namespace psi {
 
@@ -54,7 +54,7 @@ THCE::~THCE()
 void THCE::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    if (level >= 0) {
         printer->Printf("  ==> THCE <==\n\n");
 
@@ -194,7 +194,7 @@ void THCE::delete_tensor(const std::string& name)
 long int Tensor::unique_id = 0;
 
 Tensor::Tensor(const std::string& name,
-        std::vector<string>& dimensions,
+        std::vector<std::string>& dimensions,
         std::vector<int>& sizes) :
     name_(name), dimensions_(dimensions), sizes_(sizes)
 {
@@ -575,7 +575,7 @@ void Tensor::slice(std::shared_ptr<Tensor> A, std::vector<std::tuple<bool,int,in
 }
 
 CoreTensor::CoreTensor(const std::string& name,
-        std::vector<string>& dimensions, std::vector<int>& sizes,
+        std::vector<std::string>& dimensions, std::vector<int>& sizes,
         double* data,
         bool trust) :
         Tensor(name,dimensions,sizes),
@@ -692,7 +692,7 @@ std::shared_ptr<Tensor> CoreTensor::build(const std::string& name,
 void CoreTensor::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     if (level >= 0) {
         printer->Printf( "  => CoreTensor %s <=\n\n", name_.c_str());
@@ -1368,7 +1368,7 @@ void CoreTensor::contract(std::shared_ptr<Tensor> A, std::shared_ptr<Tensor> B, 
 }
 
 DiskTensor::DiskTensor(const std::string& name,
-        std::vector<string>& dimensions, std::vector<int>& sizes,
+        std::vector<std::string>& dimensions, std::vector<int>& sizes,
         bool save, bool load) : Tensor(name,dimensions,sizes), save_(save)
 {
     if (load) {
@@ -1465,7 +1465,7 @@ std::shared_ptr<Tensor> DiskTensor::build(const std::string& name,
 void DiskTensor::print(std::string out, int level) const
 {
    std::shared_ptr<psi::PsiOutStream> printer=(out=="outfile"?outfile:
-            std::shared_ptr<OutFile>(new OutFile(out)));
+            std::shared_ptr<PsiOutStream>(new PsiOutStream(out)));
    if (level >= 0) {
         printer->Printf( "  => DiskTensor %s <=\n\n", name_.c_str());
         printer->Printf( "    File    = %s\n", filename().c_str());

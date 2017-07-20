@@ -27,11 +27,13 @@
  */
 
 #include "integraltransform.h"
+
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
-
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libiwl/iwl.hpp"
+
 #define EXTERN
 #include "psi4/libdpd/dpd.gbl"
 
@@ -144,7 +146,7 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
 
     for(int p = 0; p < m; ++p){
         for(int q = 0; q <= p; ++q){
-            unsigned long int pq = INDEX((p + offset), (q + offset));
+            size_t pq = INDEX((p + offset), (q + offset));
             TMP0[p][q] = TMP0[q][p] = input[pq];
         }
     }
@@ -257,7 +259,7 @@ IntegralTransform::generate_oei()
     int lastbuf   = iwl->last_buffer();
     for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
         int labelIndex = 4*index;
-        int p = abs((int) lblptr[labelIndex++]);
+        int p = std::abs((int) lblptr[labelIndex++]);
         int q = (int) lblptr[labelIndex++];
         int r = (int) lblptr[labelIndex++];
         int s = (int) lblptr[labelIndex++];
@@ -272,7 +274,7 @@ IntegralTransform::generate_oei()
         lastbuf = iwl->last_buffer();
         for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
             int labelIndex = 4*index;
-            int p = abs((int) lblptr[labelIndex++]);
+            int p = std::abs((int) lblptr[labelIndex++]);
             int q = (int) lblptr[labelIndex++];
             int r = (int) lblptr[labelIndex++];
             int s = (int) lblptr[labelIndex++];

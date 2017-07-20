@@ -32,6 +32,7 @@
 #include "psi4/libmints/wavefunction.h"
 #include"psi4/libqt/qt.h"
 #include<sys/times.h>
+#include <unistd.h>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/mintshelper.h"
 #ifdef _OPENMP
@@ -43,7 +44,6 @@
 #include"blas.h"
 #include"ccsd.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/basisset_parser.h"
 #include "psi4/lib3index/3index.h"
 
 using namespace psi;
@@ -102,6 +102,9 @@ double DFCoupledCluster::compute_energy() {
   Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = eccsd_ss;
   Process::environment.globals["CCSD TOTAL ENERGY"] = eccsd + escf;
   Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;
+  /* updates the wavefunction for checkpointing */
+  energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
+  name_ = "DF-CCSD";
 
   if (options_.get_bool("COMPUTE_TRIPLES")){
       long int o = ndoccact;
@@ -358,8 +361,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       //}else {
       //    double min = 1.0e9;
       //    for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
-      //        if ( fabs( diisvec[j-1] ) < min ) {
-      //            min = fabs( diisvec[j-1] );
+      //        if ( std::fabs( diisvec[j-1] ) < min ) {
+      //            min = std::fabs( diisvec[j-1] );
       //            replace_diis_iter = j;
       //        }
       //    }
@@ -380,7 +383,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       }
 
       // energy and amplitude convergence check
-      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
+      if (std::fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
   }
 
   times(&total_tmstime);

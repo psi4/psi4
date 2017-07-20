@@ -7,8 +7,7 @@
 #   upon updating EFP potentials a couple years ago, so
 #   assuming ok, and copying in a new ref. --LAB
 
-ref_efp = [
-
+refEFP = psi4.Matrix.from_list([
 
 molecule efp_spec {
 efp h2o

@@ -31,6 +31,8 @@
 
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+
 #include <map>
 #include <tuple>
 

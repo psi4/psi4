@@ -40,7 +40,7 @@
 
 namespace psi {
 
-void PSIO::get_filename(unsigned int unit, char **name, bool remove_namespace) {
+void PSIO::get_filename(size_t unit, char **name, bool remove_namespace) {
   std::string kval;
   std::string dot(".");
   std::string ns = dot + pid_;

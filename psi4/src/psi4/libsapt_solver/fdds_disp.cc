@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/local.h"
 #include "psi4/libthce/thce.h"
 #include "psi4/libthce/lreri.h"
 #include "psi4/libqt/qt.h"
@@ -36,9 +35,12 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libpsi4util/exception.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/libsapt_solver/fdds_disp.h"
 #include "psi4/libmints/3coverlap.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
+
 #include <iomanip>
 
 // OMP
@@ -138,7 +140,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
 
     // ==> Form Aux overlap <==
 
-    IntegralFactory factory(auxiliary_, auxiliary_);
+    IntegralFactory factory(auxiliary_);
     std::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
     aux_overlap_ = SharedMatrix(new Matrix("Auxiliary Overlap", naux, naux));
     overlap->compute(aux_overlap_);

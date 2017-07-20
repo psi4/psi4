@@ -32,6 +32,7 @@
 */
 #include <cstdio>
 #include <cmath>
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -189,7 +190,7 @@ double LR_overlap_RHF(int IRR, int L_index, int R_index) {
   global_dpd_->buf4_close(&R2);
   global_dpd_->buf4_close(&L2);
 
-  if (fabs(overlap2 - overlap3) > 1E-14) {
+  if (std::fabs(overlap2 - overlap3) > 1E-14) {
     outfile->Printf("Bad anti-symmetry detected in RHF quantities\n");
     outfile->Printf("error: %15.10lf\n",overlap2-overlap3);
   }

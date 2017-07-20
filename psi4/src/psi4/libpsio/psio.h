@@ -39,54 +39,54 @@ namespace psi {
   int psio_ipv1_config(void);
   int psio_state(void);
   int psio_done(void);
-  void psio_error(unsigned int unit, unsigned int errval);
-  int psio_open(unsigned int unit, int status);
-  int psio_close(unsigned int unit, int keep);
+  void psio_error(size_t unit, size_t errval);
+  int psio_open(size_t unit, int status);
+  int psio_close(size_t unit, int keep);
   std::string psio_getpid(void);
 
-  unsigned int psio_get_numvols_default(void);
-  int psio_get_volpath_default(unsigned int volume, char **path);
+  size_t psio_get_numvols_default(void);
+  int psio_get_volpath_default(size_t volume, char **path);
   int psio_get_filename_default(char **name);
-  psio_address psio_get_address(psio_address start, ULI shift);
+  psio_address psio_get_address(psio_address start, size_t shift);
   psio_address psio_get_global_address(psio_address entry_start,
                                        psio_address rel_address);
-  int psio_volseek(psio_vol *vol, ULI page, ULI offset, ULI numvols);
-  //ULI psio_get_length(psio_address sadd, psio_address eadd);
-  psio_address psio_get_entry_end(unsigned int unit, const char *key);
+  int psio_volseek(psio_vol *vol, size_t page, size_t offset, size_t numvols);
+  //size_t psio_get_length(psio_address sadd, psio_address eadd);
+  psio_address psio_get_entry_end(size_t unit, const char *key);
 
-  int psio_tocwrite(unsigned int unit);
-  int psio_tocread(unsigned int unit);
-  void psio_tocprint(unsigned int unit, FILE *output);
-  psio_tocentry *psio_tocscan(unsigned int unit, const char *key);
-  bool psio_tocentry_exists(unsigned int unit, const char *key);
-  psio_tocentry *psio_toclast(unsigned int unit);
-  int psio_tocclean(unsigned int unit, const char *key);
+  int psio_tocwrite(size_t unit);
+  int psio_tocread(size_t unit);
+  void psio_tocprint(size_t unit, FILE *output);
+  psio_tocentry *psio_tocscan(size_t unit, const char *key);
+  bool psio_tocentry_exists(size_t unit, const char *key);
+  psio_tocentry *psio_toclast(size_t unit);
+  int psio_tocclean(size_t unit, const char *key);
 
-  int psio_write(unsigned int unit, const char *key, char *buffer, ULI size,
+  int psio_write(size_t unit, const char *key, char *buffer, size_t size,
                  psio_address sadd, psio_address *eadd);
-  int psio_read(unsigned int unit, const char *key, char *buffer, ULI size,
+  int psio_read(size_t unit, const char *key, char *buffer, size_t size,
                 psio_address sadd, psio_address *eadd);
-  int psio_write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
-  int psio_read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
-  int psio_write_block(unsigned int unit, const char *key, char *buffer, ULI blksiz,
-                       ULI start_blk, ULI end_blk);
-  int psio_read_block(unsigned int unit, const char *key, char *buffer, ULI blksiz,
-                      ULI start_blk, ULI end_blk);
-  int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
+  int psio_write_entry(size_t unit, const char *key, char *buffer, size_t size);
+  int psio_read_entry(size_t unit, const char *key, char *buffer, size_t size);
+  int psio_write_block(size_t unit, const char *key, char *buffer, size_t blksiz,
+                       size_t start_blk, size_t end_blk);
+  int psio_read_block(size_t unit, const char *key, char *buffer, size_t blksiz,
+                      size_t start_blk, size_t end_blk);
+  int psio_rw(size_t unit, char *buffer, psio_address address, size_t size,
               int wrt);
-  int psio_zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols);
+  int psio_zero_disk(size_t unit, const char *key, size_t rows, size_t cols);
 
-  int psio_open_check(unsigned int unit);
+  int psio_open_check(size_t unit);
 
-  unsigned long int psio_rd_toclen(unsigned int unit);
-  void psio_wt_toclen(unsigned int unit, ULI toclen);
+  size_t psio_rd_toclen(size_t unit);
+  void psio_wt_toclen(size_t unit, size_t toclen);
 
   int psio_set_filescfg_kwd(const char* kwdgrp, const char* kwd, int unit,
                             const char* kwdval);
   const char* psio_get_filescfg_kwd(const char* kwdgrp, const char* kwd,
                                     int unit);
 
-  bool psio_tocdel(unsigned int unit, const char *key);
+  bool psio_tocdel(size_t unit, const char *key);
 }
 
 #endif    /* #ifndef PSIO_H */

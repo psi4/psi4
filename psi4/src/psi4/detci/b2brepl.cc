@@ -32,12 +32,13 @@
   \brief Contains code to do block-to-block single replacement lists
 */
 
-#include <cstdio>
-#include <cstdlib>
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/detci/structs.h"
+
+#include <cstdio>
+#include <cstdlib>
 
 namespace psi { namespace detci {
 
@@ -130,7 +131,7 @@ void b2brepl(unsigned char **occs, int *Jcnt, int **Jij, int **Joij,
    D_n4 = J_n4 - I_n4;
 
    /* are these ok? */
-   if (abs(D_n1) + abs(D_n2) + abs(D_n3) + abs(D_n4) > 2)
+   if (std::abs(D_n1) + std::abs(D_n2) + std::abs(D_n3) + std::abs(D_n4) > 2)
       return;
 
    /* get ijsym */

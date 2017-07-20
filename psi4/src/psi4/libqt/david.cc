@@ -176,7 +176,7 @@ int david(double **A, int N, int M, double *eps, double **v,
 	  f[k][I] += alpha[i][k] * (sigma[I][i] - lambda[k] * b[i][I]);
 	}
 	denom = lambda[k] - A[I][I];
-	if(fabs(denom) > 1e-6) f[k][I] /= denom;
+	if(std::fabs(denom) > 1e-6) f[k][I] /= denom;
 	else f[k][I] = 0.0;
       }
 
@@ -232,7 +232,7 @@ int david(double **A, int N, int M, double *eps, double **v,
 	printf("---- -------------------- ------- ----------\n");
       }
       for(k=0; k < M; k++) {
-	diff = fabs(lambda[k] - lambda_old[k]);
+	diff = std::fabs(lambda[k] - lambda_old[k]);
 	if(diff < cutoff) {
 	  conv[k] = 1;
 	  converged++;

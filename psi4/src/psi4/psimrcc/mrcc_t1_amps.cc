@@ -45,8 +45,6 @@ extern FILE* outfile;
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
 
-using namespace std;
-
 void CCMRCC::build_t1_amplitudes()
 {
   build_t1_ia_amplitudes();

@@ -1,7 +1,6 @@
 #! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 
 
-
 molecule {
   1 2
   N    -0.0034118    3.5353926    0.0000000

@@ -165,8 +165,8 @@ void MOLECULE::rfo_step(void) {
     // During the course of an optimization some evects may appear that are bogus leads
     // - the root following can avoid them.
     for (i=0; i<dim+1; ++i) {
-      tval = abs( array_abs_max(SRFO[i], dim)/ SRFO[i][dim] ); // how big is dividing going to make it?
-      if (fabs(tval) < Opt_params.rfo_normalization_max) { // same check occurs below for acceptability
+      tval = std::abs( array_abs_max(SRFO[i], dim)/ SRFO[i][dim] ); // how big is dividing going to make it?
+      if (std::fabs(tval) < Opt_params.rfo_normalization_max) { // same check occurs below for acceptability
         for (j=0;j<dim+1;++j)
           SRFO[i][j] /= SRFO[i][dim];
       }
@@ -192,8 +192,8 @@ void MOLECULE::rfo_step(void) {
           ++rfo_root;
         }
         else {
-          tval = abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] );
-          if (fabs(tval) > Opt_params.rfo_normalization_max) { // matching test in code above
+          tval = std::abs( array_abs_max(SRFO[rfo_root], dim)/ SRFO[rfo_root][dim] );
+          if (std::fabs(tval) > Opt_params.rfo_normalization_max) { // matching test in code above
             if (iter == 0)
               oprintf_out("\tRejecting RFO root %d because normalization gives large value.\n", rfo_root+1);
             symm_rfo_step = false;
@@ -273,7 +273,7 @@ void MOLECULE::rfo_step(void) {
     // get norm |dq| and unit vector in the step direction
     dqtdq = array_dot(dq, dq, dim);
 
-    if (fabs(alpha) > Opt_params.rsrfo_alpha_max) { // don't call it converged if alpha explodes, and give up
+    if (std::fabs(alpha) > Opt_params.rsrfo_alpha_max) { // don't call it converged if alpha explodes, and give up
       converged = false;
       iter = max_projected_rfo_iter - 1;
     }

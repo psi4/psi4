@@ -27,7 +27,7 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
+#include "psi4/pybind11.h"
 #include "psi4/liboptions/liboptions.h"
 
 #include "psi4/libscf_solver/rohf.h"
@@ -41,7 +41,7 @@
 #include "psi4/libfock/apps.h"
 #include "psi4/libqt/qt.h"
 #include <vector>
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/fnocc/frozen_natural_orbitals.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -56,14 +56,14 @@ namespace mrcc {
 
 namespace {
 
-void write_oei_to_disk(std::shared_ptr <OutFile> &printer, SharedMatrix moH)
+void write_oei_to_disk(std::shared_ptr <PsiOutStream> &printer, SharedMatrix moH)
 {
     // Walk through moH and save the non-zero values
     int offset = 0;
     for (int h = 0; h < moH->nirrep(); ++h) {
         for (int m = 0; m < moH->rowdim(h); ++m) {
             for (int n = 0; n <= m; ++n) {
-                if (fabs(moH->get(h, m, n)) > 1.0e-12) {
+                if (std::fabs(moH->get(h, m, n)) > 1.0e-12) {
                     printer->Printf("%28.20E%4d%4d%4d%4d\n", moH->get(h, m, n), m + offset + 1, n + offset + 1, 0, 0);
                 }
             }
@@ -72,7 +72,7 @@ void write_oei_to_disk(std::shared_ptr <OutFile> &printer, SharedMatrix moH)
     }
 }
 
-void write_tei_to_disk(std::shared_ptr <OutFile> &printer, int nirrep, dpdbuf4 &K, double ints_tolerance)
+void write_tei_to_disk(std::shared_ptr <PsiOutStream> &printer, int nirrep, dpdbuf4 &K, double ints_tolerance)
 {
     for (int h = 0; h < nirrep; ++h) {
         global_dpd_->buf4_mat_irrep_init(&K, h);
@@ -84,7 +84,7 @@ void write_tei_to_disk(std::shared_ptr <OutFile> &printer, int nirrep, dpdbuf4 &
                 int r = K.params->colorb[h][rs][0];
                 int s = K.params->colorb[h][rs][1];
 
-                if (fabs(K.matrix[h][pq][rs]) > ints_tolerance)
+                if (std::fabs(K.matrix[h][pq][rs]) > ints_tolerance)
                     printer->Printf("%28.20E%4d%4d%4d%4d\n",
                                     K.matrix[h][pq][rs], p + 1, q + 1, r + 1, s + 1);
             }
@@ -259,7 +259,7 @@ public:
                 // It's also normalized differently to Psi's, by a factor of 2.
                 if (r != 0 && s != 0) {
                     if (p >= r && q >= s)
-                        if (fabs(value) > tolerance_)
+                        if (std::fabs(value) > tolerance_)
                             filler(bucket, p - 1, r - 1, q - 1, s - 1, value * 0.5);
                 } else
                     one_particle_->set(abs_mo_to_irrep_[p - 1], abs_mo_to_rel_[p - 1], abs_mo_to_rel_[q - 1], value);
@@ -627,7 +627,7 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction wave, Options &options, c
     int exlevel = level["order"].cast<int>();
     std::string fullname = level["fullname"].cast<std::string>();
     bool pertcc = exlevel > 0 ? false : true;
-    exlevel = abs(exlevel);
+    exlevel = std::abs(exlevel);
 
     outfile->Printf("    Loading gradient data for %s.\n\n", fullname.c_str());
 
@@ -690,7 +690,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     int exlevel = level["order"].cast<int>();
     std::string fullname = level["fullname"].cast<std::string>();
     bool pertcc = exlevel > 0 ? false : true;
-    exlevel = abs(exlevel);
+    exlevel = std::abs(exlevel);
 
     outfile->Printf("    Generating inputs for %s.\n\n", fullname.c_str());
 
@@ -732,7 +732,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
 
     outfile->Printf("\n");
     //FILE* fort55 = fopen("fort.55", "w");
-    std::shared_ptr <OutFile> printer(new OutFile("fort.55", TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream("fort.55", std::ostream::trunc));
     printer->Printf("%22d%22d\n", nbf, nelectron);
 
     // Print out orbital symmetries
@@ -895,7 +895,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
     outfile->Printf("done.\n  Generating fort.56 input file...");
 
     // Determine energy convergence to pass to MRCC
-    double user_e = fabs(Process::environment.options.get_double("E_CONVERGENCE"));
+    double user_e = std::fabs(Process::environment.options.get_double("E_CONVERGENCE"));
     int e_conv = 0;
 
     if (user_e >= 1.0)
@@ -960,7 +960,7 @@ PsiReturnType mrcc_generate_input(SharedWavefunction ref_wfn, Options &options, 
         for (int n = 0; n < active_socc[h]; ++n)
             symm ^= h;
     symm += 1; // stupid 1 based fortran
-    printer = std::shared_ptr<OutFile>(new OutFile("fort.56", TRUNCATE));
+    printer = std::shared_ptr<PsiOutStream>(new PsiOutStream("fort.56", std::ostream::trunc));
     //FILE* fort56 = fopen("fort.56", "w");
     printer->Printf("%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d%6d%6d      0      0%6d     0     0    0.00    0%6lu\n",
                     exlevel,                                         // # 1

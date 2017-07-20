@@ -33,15 +33,18 @@
  *      Author: jturney
  */
 
-#include "psi4/libtrans/integraltransform.h"
-#include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/sointegral_twobody.h"
 #include "psi4/libmints/deriv.h"
-#include "psi4/libparallel/mpi_wrapper.h"
-#include "psi4/libparallel/local.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/sointegral_onebody.h"
+
+#include "psi4/libtrans/integraltransform.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,8 +94,6 @@ public:
         for (int i=1; i<nthread; ++i) {
             result[0]->add(result[i]);
         }
-        // Do MPI global summation
-        result[0]->sum();
         delete [] tpdm_buffer_;
         delete [] buffer_sizes_;
     }
@@ -173,8 +174,6 @@ public:
         for (int i=1; i<nthread; ++i) {
             result[0]->add(result[i]);
         }
-        // Do MPI global summation
-        result[0]->sum();
     }
 
     void load_tpdm(size_t /*id*/) {}
@@ -262,8 +261,6 @@ public:
         for (int i=1; i<nthread; ++i) {
             result_vec_[0]->add(result_vec_[i]);
         }
-        // Do MPI global summation
-        result_vec_[0]->sum();
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -387,8 +384,6 @@ public:
         // Do summation over threads
         for (int i=1; i<nthread; ++i)
             result[0]->add(result[i]);
-        // Do MPI global summation
-        result[0]->sum();
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -585,7 +580,6 @@ SharedMatrix Deriv::compute()
                 ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, Da, Da_ref);
                 so_eri.compute_integrals_deriv1(functor);
                 functor.finalize();
-                tpdm_contr_ = wfn_->tpdm_gradient_contribution();
             }
             else
                 throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");

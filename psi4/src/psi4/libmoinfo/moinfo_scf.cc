@@ -35,12 +35,11 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include "moinfo_scf.h"
 
-
-
-using namespace std;
 
 namespace psi {
 
@@ -52,9 +51,9 @@ MOInfoSCF::MOInfoSCF(Wavefunction& ref_wfn_, Options& options_, bool silent_)
     // The first irrep is 0
     bool wfn_sym_found = false;
     wfn_sym = 0;
-    string wavefunction_sym_str = options.get_str("WFN_SYM");
+    std::string wavefunction_sym_str = options.get_str("WFN_SYM");
     for(int h = 0; h < nirreps; ++h){
-        string irr_label_str = irr_labs[h];
+        std::string irr_label_str = irr_labs[h];
         to_upper(irr_label_str);
         trim_spaces(irr_label_str);
         if(wavefunction_sym_str == irr_label_str){

@@ -320,7 +320,7 @@ bool FRAG::apply_fixed_constraints(string R_string, string B_string, string D_st
 
 template <typename T>
 T StringToNumber ( const string & Text ) {
-  stringstream ss(Text);
+  std::stringstream ss(Text);
   T result;
   return ss >> result ? result : -1;
 }
@@ -335,7 +335,7 @@ std::vector<int> split_to_ints(string &str) {
 
   char delim = ' ';
   std::stringstream ss(str);
-  string item;
+  std::string item;
   std::vector<int> elems;
 
   while (std::getline(ss, item, delim)) {
@@ -403,7 +403,7 @@ std::vector<frozen_cart> split_to_frozen_cart(string &str) {
 
   char delim = ' ';
   std::stringstream ss(str);
-  string item;
+  std::string item;
   bool new_entry = true;
 
   while (std::getline(ss, item, delim)) {

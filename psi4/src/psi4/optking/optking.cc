@@ -35,13 +35,13 @@
 #include <fstream>
 #include <iostream>
 #include "globals.h"
+#include "psi4/liboptions/liboptions.h"
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
   #include "psi4/libpsi4util/exception.h"
-  #include "psi4/libparallel/parallel.h"
 #endif
 
 // Define the return types for optking.
@@ -92,7 +92,6 @@ OptReturnType optking(psi::Options & options) {
 OptReturnType optking(void) {
 #endif
 
-  using namespace std;
   using namespace opt;
 
   open_output_dat();   // assign output.dat file pointer
@@ -114,7 +113,7 @@ OptReturnType optking(void) {
   //  Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
 
   // try to open old internal coordinates
-  std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
+  std::ifstream if_intco(FILENAME_INTCO_DAT, std::ios_base::in);
 
   if (if_intco.is_open()) { // old internal coordinates are present
 

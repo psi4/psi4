@@ -34,8 +34,6 @@
 #include "dpd.h"
 
 
-using namespace std;
-
 namespace psi{ namespace occwave{
 
 void OCCWave::gfock()
@@ -162,7 +160,7 @@ else if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
    {
 
         int i = ERIIN.labels()[fi];
-            i = abs(i);
+            i = std::abs(i);
         int e = ERIIN.labels()[fi+1];
         int a = ERIIN.labels()[fi+2];
         int f = ERIIN.labels()[fi+3];
@@ -229,7 +227,7 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
    {
 
         int m = ERIIN.labels()[fi];
-            m = abs(m);
+            m = std::abs(m);
         int a = ERIIN.labels()[fi+1];
         int e = ERIIN.labels()[fi+2];
         int f = ERIIN.labels()[fi+3];

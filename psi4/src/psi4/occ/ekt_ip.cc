@@ -36,8 +36,6 @@
 #include "occwave.h"
 
 
-using namespace std;
-
 
 namespace psi{ namespace occwave{
 
@@ -247,7 +245,7 @@ void OCCWave::ekt_ip()
 
     Molecule& mol = *reference_wavefunction_->molecule().get();
     CharacterTable ct = mol.point_group()->char_table();
-    string pgroup = mol.point_group()->symbol();
+    std::string pgroup = mol.point_group()->symbol();
 
  // print alpha IPs
  if (print_ < 2) {

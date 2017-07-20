@@ -61,8 +61,6 @@ namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
     extern MemoryManager *memory_manager;
 
-using namespace std;
-
 /**
  * Read at least one block of the two electron MO integrals from an iwl buffer assuming Pitzer ordering and store them in the packed array tei_mo
  */

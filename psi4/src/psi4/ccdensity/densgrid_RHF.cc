@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/ParallelPrinter.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/basisset.h"
@@ -218,7 +217,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   int zsteps = (int) ((zmax - zmin)/step_size + 1);
 
   // Prep .dx file
-  std::shared_ptr<OutFile> printer(new OutFile("density.dx",TRUNCATE));
+  std::shared_ptr<PsiOutStream> printer(new PsiOutStream("density.dx",std::ostream::trunc));
   printer->Printf( "#  Output from Psi4 calculation\n");
   printer->Printf( "#  Electronic density (in e/ang^3) for: \n");
   printer->Printf( "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
@@ -267,7 +266,7 @@ y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
   printer->Printf( "\n");
   printer->Printf( "end");
 
-  std::shared_ptr<OutFile> printer2(new OutFile("molecule.dx",TRUNCATE));
+  std::shared_ptr<PsiOutStream> printer2(new PsiOutStream("molecule.dx",std::ostream::trunc));
 
   printer2->Printf("%d\n", molecule->natom());
   printer2->Printf("Initial atomic coordinates\n");

@@ -35,6 +35,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "dpd.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 
@@ -165,7 +166,7 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
             buf4_mat_irrep_init(Y, Hy);
             buf4_mat_irrep_rd(Y, Hy);
             buf4_mat_irrep_init(Z, Hz);
-            if(fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, Hz);
+            if(std::fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, Hz);
 
             if(Z->params->rowtot[Hz] && Z->params->coltot[Hz^GZ] && numlinks[Hx^symlink]) {
                 C_DGEMM(Xtrans?'t':'n', Ytrans?'t':'n',
@@ -195,7 +196,7 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
             buf4_mat_irrep_init(Y, Hy);
             buf4_mat_irrep_rd(Y, Hy);
             buf4_mat_irrep_init(Z, Hz);
-            if(fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, Hz);
+            if(std::fabs(beta) > 0.0) buf4_mat_irrep_rd(Z, Hz);
 
             for(n=0; n < nbuckets; n++) {
 

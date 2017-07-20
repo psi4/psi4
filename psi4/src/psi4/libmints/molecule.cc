@@ -43,6 +43,9 @@
 #include "psi4/masses.h"
 #include "psi4/physconst.h"
 #include "psi4/libmints/element_to_Z.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <cmath>
 #include <cstdio>
@@ -57,7 +60,7 @@
 #include <sstream>
 #include <regex>
 
-#include "psi4/libparallel/ParallelPrinter.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace {
 // the third parameter of from_string() should be
@@ -135,12 +138,12 @@ void if_to_invert_axis(const Vector3 &v1, int &must_invert, int &should_invert, 
 
     for (xyz = 0; xyz < 3; xyz++) {
 
-        vabs = fabs(v1[xyz]);
+        vabs = std::fabs(v1[xyz]);
 
         if (vabs < ZERO)
             nzero++;
 
-        if (vabs > fabs(maxproj)) {
+        if (vabs > std::fabs(maxproj)) {
             maxproj = v1[xyz];
         }
 
@@ -280,20 +283,21 @@ void Molecule::clear()
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(int Z, double x, double y, double z,
-                        const char *label, double mass, double charge, int /*lineno*/)
-{
+void Molecule::add_atom(int Z, double x, double y, double z, std::string label, double mass,
+                        double charge) {
     lock_frame_ = false;
     Vector3 temp(x, y, z);
-    std::string l(label);
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
-        full_atoms_.push_back(std::shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(x)),
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(y)),
-                                                                             std::shared_ptr<CoordValue>(new NumberValue(z)))));
-        if (strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(full_atoms_.back());
+        full_atoms_.push_back(std::shared_ptr<CoordEntry>(
+            new CartesianEntry(full_atoms_.size(), Z, charge, mass, label, label,
+                               std::shared_ptr<CoordValue>(new NumberValue(x)),
+                               std::shared_ptr<CoordValue>(new NumberValue(y)),
+                               std::shared_ptr<CoordValue>(new NumberValue(z)))));
+        if ((label != "X") && (label != "x")) {
+            atoms_.push_back(full_atoms_.back());
+        }
     } else {
         throw PSIEXCEPTION("Molecule::add_atom: Adding atom on top of an existing atom.");
     }
@@ -305,7 +309,7 @@ double Molecule::mass(int atom) const
     if (atoms_[atom]->mass() != 0.0)
         ret = atoms_[atom]->mass();
     else {
-        if (fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
+        if (std::fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
             outfile->Printf("WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n");
 
         outfile->Printf("WARNING: Mass was not set in the atom object for atom %d\n", atom + 1);
@@ -550,8 +554,7 @@ Matrix Molecule::full_geometry() const
     return geom;
 }
 
-void Molecule::set_geometry(double **geom)
-{
+void Molecule::set_geometry(double **geom) {
     lock_frame_ = false;
     bool dummy_found = false;
     for (int i = 0; i < nallatom(); ++i) {
@@ -566,10 +569,13 @@ void Molecule::set_geometry(double **geom)
         atoms_.clear();
         int count = 0;
         std::vector<int> fragment_changes;
-        for (size_t i = 0; i < fragments_.size(); ++i)
+
+        for (size_t i = 0; i < fragments_.size(); ++i) {
             fragment_changes.push_back(0);
+        }
+
         for (int i = 0; i < nallatom(); ++i) {
-            std::shared_ptr <CoordEntry> at = full_atoms_[i];
+            std::shared_ptr<CoordEntry> at = full_atoms_[i];
 
             if (at->symbol() == "X") {
                 // Find out which fragment this atom is removed from, then bail
@@ -582,8 +588,9 @@ void Molecule::set_geometry(double **geom)
                     }
                 }
                 if (!found)
-                    throw PSIEXCEPTION("Problem converting ZMatrix coordinates to Cartesians."
-                                               "Try again, without dummy atoms.");
+                    throw PSIEXCEPTION(
+                        "Problem converting ZMatrix coordinates to Cartesians."
+                        "Try again, without dummy atoms.");
                 continue;
             }
 
@@ -593,33 +600,30 @@ void Molecule::set_geometry(double **geom)
             double mass = at->mass();
             std::string symbol = at->symbol();
             std::string label = at->label();
-            std::shared_ptr <CoordEntry> new_atom(
-                    new CartesianEntry(entrynum,
-                                       zval,
-                                       charge,
-                                       mass,
-                                       symbol,
-                                       label,
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][0] / input_units_to_au_)),
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][1] / input_units_to_au_)),
-                                       std::shared_ptr<CoordValue>(new NumberValue(geom[count][2] / input_units_to_au_))
-                    ));
+            std::shared_ptr<CoordEntry> new_atom(new CartesianEntry(
+                entrynum, zval, charge, mass, symbol, label,
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][0] / input_units_to_au_)),
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][1] / input_units_to_au_)),
+                std::shared_ptr<CoordValue>(new NumberValue(geom[count][2] / input_units_to_au_))));
+
             // Copy over all known basis sets
-            const std::map <std::string, std::string> &basissets = at->basissets();
+            const std::map<std::string, std::string> &basissets = at->basissets();
             std::map<std::string, std::string>::const_iterator bs = basissets.begin();
-            for (; bs != basissets.end(); ++bs)
+            for (; bs != basissets.end(); ++bs) {
                 new_atom->set_basisset(bs->second, bs->first);
+            }
+
             // Copy over all known basis hashes
-            const std::map <std::string, std::string> &shells = at->shells();
+            const std::map<std::string, std::string> &shells = at->shells();
             std::map<std::string, std::string>::const_iterator sh = shells.begin();
-            for (; sh != shells.end(); ++sh)
+            for (; sh != shells.end(); ++sh) {
                 new_atom->set_shell(sh->second, sh->first);
+            }
             atoms_.push_back(new_atom);
             count++;
         }
         full_atoms_.clear();
-        for (size_t i = 0; i < atoms_.size(); ++i)
-            full_atoms_.push_back(atoms_[i]);
+        for (size_t i = 0; i < atoms_.size(); ++i) full_atoms_.push_back(atoms_[i]);
         // Now change the bounds of each fragment, to reflect the missing dummy atoms
         int cumulative_count = 0;
         for (size_t frag = 0; frag < fragments_.size(); ++frag) {
@@ -637,8 +641,7 @@ void Molecule::set_geometry(double **geom)
     }
 }
 
-void Molecule::set_full_geometry(double **geom)
-{
+void Molecule::set_full_geometry(double **geom) {
     lock_frame_ = false;
     for (int i = 0; i < nallatom(); ++i) {
         full_atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
@@ -679,41 +682,6 @@ void Molecule::rotate_full(const Matrix &R)
     new_geom.gemm(false, false, 1.0, geom, R, 0.0);
 
     set_full_geometry(new_geom);
-}
-
-int Molecule::nfrozen_core(std::shared_ptr<BasisSet> ecpbasis, const std::string &depth)
-{
-    std::string local = depth;
-    if (depth.empty())
-        local = Process::environment.options.get_str("FREEZE_CORE");
-
-    if (local == "FALSE") {
-        return 0;
-    } else if (local == "TRUE") {
-        int nfzc = 0;
-        // Freeze the number of core electrons corresponding to the
-        // nearest previous noble gas atom.  This means that the 4p block
-        // will still have 3d electrons active.  Alkali earth atoms will
-        // have one valence electron in this scheme.
-        for (int A = 0; A < natom(); A++) {
-            // If this center as an ECP present, move along.
-            if(ecpbasis)
-                if(ecpbasis->ncore(label(A)))
-                    continue;
-            if (Z(A) > 2) nfzc += 1;
-            if (Z(A) > 10) nfzc += 4;
-            if (Z(A) > 18) nfzc += 4;
-            if (Z(A) > 36) nfzc += 9;
-            if (Z(A) > 54) nfzc += 9;
-            if (Z(A) > 86) nfzc += 16;
-            if (Z(A) > 108) {
-                throw PSIEXCEPTION("Invalid atomic number");
-            }
-        }
-        return nfzc;
-    } else {
-        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
-    }
 }
 
 void Molecule::init_with_xyz(const std::string &xyzfilename)
@@ -929,9 +897,9 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
 
     // Collect EFP fragments in forward order
-    unsigned int efp_nfrag = 0;
+    size_t efp_nfrag = 0;
     std::vector <std::string> efp_fnames;
-    for (unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if (std::regex_search(lines[lineNumber], reMatches, efpFileMarker_)) {
             efp_fnames.push_back(reMatches[1].str());
             efp_nfrag++;
@@ -948,7 +916,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         double *coords = NULL;
         coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
         double *pcoords = coords;
-        unsigned int currentFragment = efp_nfrag - 1;
+        size_t currentFragment = efp_nfrag - 1;
         std::vector <std::string> splitLine;
 
         // Force no reorient
@@ -1035,14 +1003,14 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
         throw PSIEXCEPTION("No geometry specified");
 
     // Now go through the rest of the lines looking for fragment markers
-    unsigned int firstAtom = 0;
-    unsigned int atomCount = 0;
-    unsigned int efpCount = 0;
+    size_t firstAtom = 0;
+    size_t atomCount = 0;
+    size_t efpCount = 0;
 
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
-    for (unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+    for (size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
         if (pubchemerror)
             outfile->Printf("%s\n", lines[lineNumber].c_str());
         if (std::regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
@@ -1129,7 +1097,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
     std::string atomSym, atomLabel;
     bool zmatrix = false;
     double zVal, charge;
-    unsigned int currentFragment = 0;
+    size_t currentFragment = 0;
     efpCount = 0;
 
     // Store coordinates, atom by atom
@@ -1139,7 +1107,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
             // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
 #ifdef USING_libefp
-            unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
+            size_t efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
 
             double *frag_atom_Z = Process::environment.get_efp()->get_frag_atom_Z(efpCount);
 
@@ -1149,7 +1117,7 @@ std::shared_ptr <Molecule> Molecule::create_molecule_from_string(const std::stri
 
             double *frag_atom_coord = Process::environment.get_efp()->get_frag_atom_coord(efpCount);
 
-            for (unsigned int at = 0; at < efp_natom; at++) {
+            for (size_t at = 0; at < efp_natom; at++) {
                 // NOTE: Currently getting zVal & atomSym from libefp (no consistency check) and
                 // mass from psi4 through zVal. May want to reshuffle this.
                 zVal = frag_atom_Z[at];
@@ -1531,12 +1499,11 @@ void Molecule::deactivate_all_fragments()
     }
 }
 
-void Molecule::set_active_fragments(py::list reals)
+void Molecule::set_active_fragments(std::vector<int> reals)
 {
     lock_frame_ = false;
-    for (int i = 0; i < py::len(reals); ++i) {
-        int fragment = reals[i].cast<int>();
-        fragment_types_[fragment - 1] = Real;
+    for (int i = 0; i < reals.size(); ++i) {
+        fragment_types_[reals[i] - 1] = Real;
     }
 }
 
@@ -1546,12 +1513,11 @@ void Molecule::set_active_fragment(int fragment)
     fragment_types_[fragment - 1] = Real;
 }
 
-void Molecule::set_ghost_fragments(py::list ghosts)
+void Molecule::set_ghost_fragments(std::vector<int> ghosts)
 {
     lock_frame_ = false;
-    for (int i = 0; i < py::len(ghosts); ++i) {
-        int fragment = ghosts[i].cast<int>();
-        fragment_types_[fragment - 1] = Ghost;
+    for (int i = 0; i < ghosts.size(); ++i) {
+        fragment_types_[ghosts[i] - 1] = Ghost;
     }
 }
 
@@ -1561,42 +1527,32 @@ void Molecule::set_ghost_fragment(int fragment)
     fragment_types_[fragment - 1] = Ghost;
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_1(py::list reals,
-                                                          py::list ghosts)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_1(std::vector<int> reals,
+                                                         std::vector<int> ghosts) {
     std::vector<int> realVec;
-    for (int i = 0; i < py::len(reals); ++i)
-        realVec.push_back(reals[i].cast<int>() - 1);
+    for (int i = 0; i < reals.size(); ++i) realVec.push_back(reals[i] - 1);
 
     std::vector<int> ghostVec;
-    for (int i = 0; i < py::len(ghosts); ++i)
-        ghostVec.push_back(ghosts[i].cast<int>() - 1);
+    for (int i = 0; i < ghosts.size(); ++i) ghostVec.push_back(ghosts[i] - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_2(py::list reals,
-                                                          int ghost)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_2(std::vector<int> reals, int ghost) {
     std::vector<int> realVec;
-    for (int i = 0; i < py::len(reals); ++i)
-        realVec.push_back(reals[i].cast<int>() - 1);
+    for (int i = 0; i < reals.size(); ++i) realVec.push_back(reals[i] - 1);
 
     std::vector<int> ghostVec;
-    if (ghost >= 1)
-        ghostVec.push_back(ghost - 1);
+    if (ghost >= 1) ghostVec.push_back(ghost - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_3(int reals,
-                                                          py::list ghost)
-{
+std::shared_ptr<Molecule> Molecule::py_extract_subsets_3(int reals, std::vector<int> ghost) {
     std::vector<int> realVec;
     realVec.push_back(reals - 1);
     std::vector<int> ghostVec;
-    for (int i = 0; i < py::len(ghost); ++i)
-        ghostVec.push_back(ghost[i].cast<int>() - 1);
+    for (int i = 0; i < ghost.size(); ++i) ghostVec.push_back(ghost[i] - 1);
 
     return extract_subsets(realVec, ghostVec);
 }
@@ -1613,7 +1569,7 @@ std::shared_ptr <Molecule> Molecule::py_extract_subsets_4(int reals,
     return extract_subsets(realVec, ghostVec);
 }
 
-std::shared_ptr <Molecule> Molecule::py_extract_subsets_5(py::list reals)
+std::shared_ptr <Molecule> Molecule::py_extract_subsets_5(std::vector<int> reals)
 {
     return py_extract_subsets_2(reals, -1);
 }
@@ -1943,7 +1899,7 @@ void Molecule::save_xyz_file(const std::string &filename, bool save_ghosts) cons
 {
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
-    std::shared_ptr <OutFile> printer(new OutFile(filename, TRUNCATE));
+    std::shared_ptr <PsiOutStream> printer(new PsiOutStream(filename, std::ostream::trunc));
 
     int N = natom();
     if (!save_ghosts) {
@@ -2035,7 +1991,7 @@ Matrix *Molecule::inertia_tensor() const
     // Check the elements for zero and make them a hard zero.
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            if (fabs(tensor->get(i, j)) < ZERO)
+            if (std::fabs(tensor->get(i, j)) < ZERO)
                 tensor->set(i, j, 0.0);
         }
     }
@@ -2115,7 +2071,7 @@ RotorType Molecule::rotor_type(double zero_tol) const
     int degen = 0;
     for (int i = 0; i < 2; i++) {
         for (int j = i + 1; j < 3 && degen < 2; j++) {
-            abs = fabs(rot_const[i] - rot_const[j]);
+            abs = std::fabs(rot_const[i] - rot_const[j]);
             tmp = (rot_const[i] > rot_const[j]) ? rot_const[i] : rot_const[j];
             if (abs > 1.0E-14)
                 rel = abs / tmp;
@@ -2199,9 +2155,9 @@ enum AxisName
 static AxisName like_world_axis(Vector3 &axis, const Vector3 &worldxaxis, const Vector3 &worldyaxis, const Vector3 &worldzaxis)
 {
     AxisName like;
-    double xlikeness = fabs(axis.dot(worldxaxis));
-    double ylikeness = fabs(axis.dot(worldyaxis));
-    double zlikeness = fabs(axis.dot(worldzaxis));
+    double xlikeness = std::fabs(axis.dot(worldxaxis));
+    double ylikeness = std::fabs(axis.dot(worldyaxis));
+    double zlikeness = std::fabs(axis.dot(worldzaxis));
     if ((xlikeness - ylikeness) > 1.0e-12 && (xlikeness - zlikeness) > 1.0e-12) {
         like = XAxis;
         if (axis.dot(worldxaxis) < 0) axis = -axis;
@@ -2235,9 +2191,9 @@ void Molecule::is_linear_planar(bool &linear, bool &planar, double tol) const
     for (i = 2; i < natom(); ++i) {
         Vector3 tmp = xyz(i) - A;
         tmp.normalize();
-        if (fabs(BA.dot(tmp)) < min_BAdotCA) {
+        if (std::fabs(BA.dot(tmp)) < min_BAdotCA) {
             CA = tmp;
-            min_BAdotCA = fabs(BA.dot(tmp));
+            min_BAdotCA = std::fabs(BA.dot(tmp));
         }
     }
     if (min_BAdotCA >= 1.0 - tol) {
@@ -2257,7 +2213,7 @@ void Molecule::is_linear_planar(bool &linear, bool &planar, double tol) const
     BAxCA.normalize();
     for (i = 2; i < natom(); ++i) {
         Vector3 tmp = xyz(i) - A;
-        if (fabs(tmp.dot(BAxCA)) > tol) {
+        if (std::fabs(tmp.dot(BAxCA)) > tol) {
             planar = false;
             return;
         }
@@ -2338,7 +2294,7 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                 if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                 Vector3 B = xyz(j) - com;
                 // the atoms must be the same distance from the com
-                if (fabs(AdotA - B.dot(B)) > tol) continue;
+                if (std::fabs(AdotA - B.dot(B)) > tol) continue;
                 Vector3 axis = A + B;
                 // atoms colinear with the com don't work
                 if (axis.norm() < tol) continue;
@@ -2382,13 +2338,13 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
-                    if (fabs(AdotA - B.dot(B)) > tol) continue;
+                    if (std::fabs(AdotA - B.dot(B)) > tol) continue;
                     Vector3 axis = A + B;
                     // atoms colinear with the com don't work
                     if (axis.norm() < tol) continue;
                     axis.normalize();
                     // if axis is not perp continue
-                    if (fabs(axis.dot(c2axis)) > tol) continue;
+                    if (std::fabs(axis.dot(c2axis)) > tol) continue;
                     if (is_axis(com, axis, 2, tol)) {
                         have_c2axisperp = true;
                         c2axisperp = axis;
@@ -2454,7 +2410,7 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                     if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
-                    if (fabs(AdotA - B.dot(B)) > tol) continue;
+                    if (std::fabs(AdotA - B.dot(B)) > tol) continue;
                     Vector3 inplane = B + A;
                     double norm_inplane = inplane.norm();
                     if (norm_inplane < tol) continue;
@@ -2519,7 +2475,7 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
                     Vector3 B = xyz(j) - com;
                     double BdotB = B.dot(B);
                     // the atoms must be the same distance from the com
-                    if (fabs(AdotA - BdotB) > tol) continue;
+                    if (std::fabs(AdotA - BdotB) > tol) continue;
                     Vector3 perp = B - A;
                     double norm_perp = perp.norm();
                     if (norm_perp < tol) continue;
@@ -2538,9 +2494,9 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
     if (have_sigma) {
         // try to make the sign of the oop vec correspond to one of
         // the world axes
-        double xlikeness = fabs(sigma.dot(worldxaxis));
-        double ylikeness = fabs(sigma.dot(worldyaxis));
-        double zlikeness = fabs(sigma.dot(worldzaxis));
+        double xlikeness = std::fabs(sigma.dot(worldxaxis));
+        double ylikeness = std::fabs(sigma.dot(worldyaxis));
+        double zlikeness = std::fabs(sigma.dot(worldzaxis));
 
         if (xlikeness > ylikeness && xlikeness > zlikeness) {
             if (sigma.dot(worldxaxis) < 0) sigma = -sigma;
@@ -2572,19 +2528,19 @@ std::shared_ptr <Matrix> Molecule::symmetry_frame(double tol)
 
 #define NOISY_ZERO 1.0e-8
     // Clean up our z axis
-    if (fabs(zaxis[0]) < NOISY_ZERO)
+    if (std::fabs(zaxis[0]) < NOISY_ZERO)
         zaxis[0] = 0.0;
-    if (fabs(zaxis[1]) < NOISY_ZERO)
+    if (std::fabs(zaxis[1]) < NOISY_ZERO)
         zaxis[1] = 0.0;
-    if (fabs(zaxis[2]) < NOISY_ZERO)
+    if (std::fabs(zaxis[2]) < NOISY_ZERO)
         zaxis[2] = 0.0;
 
     // Clean up our x axis
-    if (fabs(xaxis[0]) < NOISY_ZERO)
+    if (std::fabs(xaxis[0]) < NOISY_ZERO)
         xaxis[0] = 0.0;
-    if (fabs(xaxis[1]) < NOISY_ZERO)
+    if (std::fabs(xaxis[1]) < NOISY_ZERO)
         xaxis[1] = 0.0;
-    if (fabs(xaxis[2]) < NOISY_ZERO)
+    if (std::fabs(xaxis[2]) < NOISY_ZERO)
         xaxis[2] = 0.0;
 #undef NOISY_ZERO
 
@@ -2896,7 +2852,7 @@ void Molecule::form_symmetry_information(double tol)
                 Vector3 aj(xyz(unique));
                 if (np.distance(aj) < tol
                     && Z(unique) == Z(i)
-                    && fabs(mass(unique) - mass(i)) < tol) {
+                    && std::fabs(mass(unique) - mass(i)) < tol) {
                     i_is_unique = 0;
                     i_equiv = j;
                     break;
@@ -2932,7 +2888,7 @@ void Molecule::form_symmetry_information(double tol)
             int nzero = 0;
             for (int k = 0; k < 3; ++k) {
                 double tmp = equiv_[i][j];
-                if (fabs(xyz(tmp, k)) < ztol)
+                if (std::fabs(xyz(tmp, k)) < ztol)
                     nzero++;
             }
             if (nzero > maxzero) {
@@ -3339,9 +3295,9 @@ void Molecule::set_full_point_group(double zero_tol)
         // outfile->Printf("I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 
         int unique_axis = 1;
-        if (fabs(I_evals[0] - I_evals[1]) < zero_tol)
+        if (std::fabs(I_evals[0] - I_evals[1]) < zero_tol)
             unique_axis = 2;
-        else if (fabs(I_evals[1] - I_evals[2]) < zero_tol)
+        else if (std::fabs(I_evals[1] - I_evals[2]) < zero_tol)
             unique_axis = 0;
 
         // Compute angle between unique axis and the z-axis
@@ -3351,15 +3307,15 @@ void Molecule::set_full_point_group(double zero_tol)
                          I_evects->get(2, unique_axis));
 
         dot = z_axis.dot(old_axis);
-        if (fabs(dot - 1) < 1.0e-10)
+        if (std::fabs(dot - 1) < 1.0e-10)
             phi = 0.0;
-        else if (fabs(dot + 1) < 1.0e-10)
+        else if (std::fabs(dot + 1) < 1.0e-10)
             phi = pc_pi;
         else
             phi = acos(dot);
 
         // Rotate geometry to put unique axis on the z-axis, if it isn't already.
-        if (fabs(phi) > 1.0e-14) {
+        if (std::fabs(phi) > 1.0e-14) {
             rot_axis = z_axis.cross(old_axis);
             test_mat = geom.matrix_3d_rotation(rot_axis, phi, false);
             //outfile->Printf( "Rotating by %lf to get principal axis on z-axis.\n", phi);
@@ -3381,7 +3337,7 @@ void Molecule::set_full_point_group(double zero_tol)
         // Check for sigma_h (xy plane).
         bool op_sigma_h = false;
         for (i = 0; i < natom(); ++i) {
-            if (fabs(geom(i, 2)) < zero_tol)
+            if (std::fabs(geom(i, 2)) < zero_tol)
                 continue; // atom is in xy plane
             else {
                 Vector3 test_atom(geom(i, 0), geom(i, 1), -1 * geom(i, 2));
@@ -3397,7 +3353,7 @@ void Molecule::set_full_point_group(double zero_tol)
         int pivot_atom_i = -1;
         for (i = 0; i < natom(); ++i) {
             double dist_from_z = sqrt(geom(i, 0) * geom(i, 0) + geom(i, 1) * geom(i, 1));
-            if (fabs(dist_from_z) > zero_tol) {
+            if (std::fabs(dist_from_z) > zero_tol) {
                 pivot_atom_i = i;
                 break;
             }
@@ -3410,15 +3366,15 @@ void Molecule::set_full_point_group(double zero_tol)
 
         xy_point.normalize();
         dot = y_axis.dot(xy_point);
-        if (fabs(dot - 1) < 1.0e-10)
+        if (std::fabs(dot - 1) < 1.0e-10)
             phi = 0.0;
-        else if (fabs(dot + 1) < 1.0e-10)
+        else if (std::fabs(dot + 1) < 1.0e-10)
             phi = pc_pi;
         else
             phi = acos(dot);
 
         bool is_D = false;
-        if (fabs(phi) > 1.0e-14) {
+        if (std::fabs(phi) > 1.0e-14) {
             test_mat = geom.matrix_3d_rotation(z_axis, phi, false);
             //outfile->Printf( "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
             geom.copy(test_mat);
@@ -3427,7 +3383,7 @@ void Molecule::set_full_point_group(double zero_tol)
         // Check for sigma_v (yz plane).
         bool op_sigma_v = false;
         for (i = 0; i < natom(); ++i) {
-            if (fabs(geom(i, 0)) < zero_tol)
+            if (std::fabs(geom(i, 0)) < zero_tol)
                 continue; // atom is in yz plane
             else {
                 Vector3 test_atom(-1 * geom(i, 0), geom(i, 1), geom(i, 2));
@@ -3454,7 +3410,7 @@ void Molecule::set_full_point_group(double zero_tol)
                 if (Z(i) != Z(j)) continue; // ensure same atomic number
 
                 Vector3 B(geom(j, 0), geom(j, 1), geom(j, 2)); // ensure same distance from com
-                if (fabs(AdotA - B.dot(B)) > 1.0e-6) continue; // loose check
+                if (std::fabs(AdotA - B.dot(B)) > 1.0e-6) continue; // loose check
 
                 // Use sum of atom vectors as axis if not 0.
                 Vector3 axis = A + B;
@@ -3462,7 +3418,7 @@ void Molecule::set_full_point_group(double zero_tol)
                 axis.normalize();
 
                 // Check if axis is perpendicular to z-axis.
-                if (fabs(axis.dot(z_axis)) > 1.0e-6) continue;
+                if (std::fabs(axis.dot(z_axis)) > 1.0e-6) continue;
 
                 // Do the thorough check for C2.
                 if (matrix_3d_rotation_Cn(geom, axis, false, zero_tol, 2) == 2)

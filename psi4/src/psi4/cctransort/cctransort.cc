@@ -27,7 +27,6 @@
  */
 
 #include "psi4/psi4-dec.h"
-#include "psi4/libparallel/parallel.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
@@ -38,7 +37,8 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdpd/dpd.h"
-
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
 
 using std::vector;
 namespace psi{ namespace cctransort {
@@ -431,13 +431,13 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
   psio->close(PSIF_CC_INFO, 1);
   outfile->Printf(  "\tFrozen core energy     =  %20.14f\n", efzc);
 
-  if(nfzc && (fabs(efzc) < 1e-7)) {
+  if(nfzc && (std::fabs(efzc) < 1e-7)) {
     outfile->Printf( "\tCCSORT Error: Orbitals are frozen in input,\n");
     outfile->Printf( "\tbut frozen core energy is small!\n");
     outfile->Printf( "\tCalculation will be aborted...\n");
     exit(PSI_RETURN_FAILURE);
   }
-  else if(!nfzc && fabs(efzc)) {
+  else if(!nfzc && std::fabs(efzc)) {
     outfile->Printf( "\tCCSORT Warning: No orbitals are frozen,\n");
     outfile->Printf( "\tbut the frozen-core energy in wfn is non-zero.\n");
     outfile->Printf( "\tCalculation will continue with zero efzc...\n");

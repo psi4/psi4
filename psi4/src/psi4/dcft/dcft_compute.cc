@@ -27,12 +27,16 @@
  */
 
 #include "dcft.h"
-#include <cmath>
+#include "defines.h"
+
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsio/psio.hpp"
-#include "defines.h"
+
+#include <cmath>
 
 
 

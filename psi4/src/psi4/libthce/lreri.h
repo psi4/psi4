@@ -56,7 +56,7 @@ protected:
     /// Bench flag
     int bench_;
     /// Memory in doubles
-    unsigned long int memory_;
+    size_t memory_;
 
     // => Basis Set <= //
 
@@ -118,7 +118,7 @@ public:
     /// Set the bench flag
     void set_bench(int bench) { bench_ = bench; }
     /// Set the allowed memory in doubles
-    void set_memory(unsigned long int memory) { memory_ = memory; }
+    void set_memory(size_t memory) { memory_ = memory; }
 
 };
 

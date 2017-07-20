@@ -29,9 +29,11 @@
 #ifndef _psi_src_lib_libmints_helper_h
 #define _psi_src_lib_libmints_helper_h
 
-#include <vector>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/multipolesymmetry.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <vector>
 
 namespace psi {
 
@@ -57,7 +59,6 @@ private:
     std::shared_ptr<IntegralFactory> integral_;
     std::shared_ptr<BasisSet> basisset_;
     std::shared_ptr<SOBasisSet> sobasis_;
-    std::shared_ptr<BasisSet> ecpbasis_;
     std::shared_ptr<TwoBodyAOInt> eriInts_;
     std::shared_ptr<BasisSet> rel_basisset_;
     int print_;
@@ -87,12 +88,12 @@ private:
 public:
 
     void init_helper(std::shared_ptr<Wavefunction> wavefunction = std::shared_ptr<Wavefunction>());
-    void init_helper(std::shared_ptr<BasisSet> basis, std::shared_ptr<BasisSet> ecpbasis = nullptr);
+    void init_helper(std::shared_ptr<BasisSet> basis);
 
     /// Constructor, using basisset
     MintsHelper(std::shared_ptr<BasisSet> basis,
                 Options& options = Process::environment.options,
-                int print = 0,  std::shared_ptr<BasisSet> ecpbasis = nullptr);
+                int print = 0);
 
     /// Constructor, using wavefunction
     MintsHelper(std::shared_ptr<Wavefunction> wavefunction);
@@ -125,8 +126,6 @@ public:
     std::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.
     std::shared_ptr<SOBasisSet> sobasisset() const;
-    /// ECP basis set being used.
-    std::shared_ptr<BasisSet> ecpbasisset() const;
     /// Matrix factory being used
     std::shared_ptr<MatrixFactory> factory() const;
     /// Integral factory being used
@@ -228,7 +227,7 @@ public:
     SharedMatrix ao_potential(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO ECP Integrals
     SharedMatrix ao_ecp();
-    SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    SharedMatrix ao_ecp(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     /// AO pVp Integrals
     SharedMatrix ao_pvp();
     /// AO DKH Integrals

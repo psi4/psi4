@@ -35,6 +35,7 @@
 #include <cmath>
 #include "psi4/libqt/qt.h"
 #include "dpd.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 
 namespace psi {
 
@@ -79,10 +80,10 @@ int DPD::contract442(dpdbuf4 *X, dpdbuf4 *Y, dpdfile2 *Z, int target_X,
     if((target_X == 1) || (target_X == 2)) trans4_init(&Xt, X);
     if((target_Y == 1) || (target_Y == 2)) trans4_init(&Yt, Y);
 
-    /*  if(fabs(beta) > 0.0) dpd_file2_scm(Z, beta); */
+    /*  if(std::fabs(beta) > 0.0) dpd_file2_scm(Z, beta); */
     file2_scm(Z, beta);
     file2_mat_init(Z);
-    /*  if(fabs(beta) > 0.0) dpd_file2_mat_rd(Z); */
+    /*  if(std::fabs(beta) > 0.0) dpd_file2_mat_rd(Z); */
     file2_mat_rd(Z);
 
 #ifdef DPD_DEBUG

@@ -32,8 +32,6 @@
 #include "occwave.h"
 
 
-using namespace std;
-
 
 namespace psi{ namespace occwave{
 

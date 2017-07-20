@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include "jk_grad.h"
 
 #include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
@@ -33,13 +34,17 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
-#include "jk_grad.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
+
 #ifdef _OPENMP
 #include <omp.h>
+#include "psi4/libpsi4util/process.h"
 #endif
 
 using namespace psi;
@@ -242,13 +247,13 @@ void DFJKGrad::build_Amn_terms()
 
     int max_rows;
     int maxP = auxiliary_->max_function_per_shell();
-    ULI row_cost = 0L;
-    row_cost += nso * (ULI) nso;
+    size_t row_cost = 0L;
+    row_cost += nso * (size_t) nso;
     if (do_K_ || do_wK_) {
-        row_cost += nso * (ULI) na;
-        row_cost += na * (ULI) na;
+        row_cost += nso * (size_t) na;
+        row_cost += na * (size_t) na;
     }
-    ULI rows = memory_ / row_cost;
+    size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
     max_rows = (int) rows;
@@ -287,12 +292,12 @@ void DFJKGrad::build_Amn_terms()
     double** Aijp;
 
     if (true) {
-        Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (ULI) nso));
+        Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (size_t) nso));
         Amnp = Amn->pointer();
     }
     if (do_K_ || do_wK_) {
-        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
-        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
+        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
+        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
@@ -371,18 +376,18 @@ void DFJKGrad::build_Amn_terms()
 
         // > (A|mn) D_mn -> c_A < //
         if (do_J_) {
-            C_DGEMV('N',np,nso*(ULI)nso,1.0,Amnp[0],nso*(ULI)nso,Dtp[0],1,0.0,&cp[pstart],1);
+            C_DGEMV('N',np,nso*(size_t)nso,1.0,Amnp[0],nso*(size_t)nso,Dtp[0],1,0.0,&cp[pstart],1);
         }
 
         // > Alpha < //
         if (do_K_ || do_wK_) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(ULI)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+            C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (ULI) na * na],na);
+                C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (size_t) na * na],na);
             }
 
             // > Stripe < //
@@ -392,12 +397,12 @@ void DFJKGrad::build_Amn_terms()
         // > Beta < //
         if (!restricted && (do_K_ || do_wK_)) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(ULI)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Amip[0],na);
+            C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Amip[0],na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',nb,nb,nso,1.0,Amip[p],na,Cbp[0],nb,0.0,&Aijp[0][p * (ULI) nb * nb],nb);
+                C_DGEMM('T','N',nb,nb,nso,1.0,Amip[p],na,Cbp[0],nb,0.0,&Aijp[0][p * (size_t) nb * nb],nb);
             }
 
             // > Stripe < //
@@ -429,11 +434,11 @@ void DFJKGrad::build_Amn_lr_terms()
 
     int max_rows;
     int maxP = auxiliary_->max_function_per_shell();
-    ULI row_cost = 0L;
-    row_cost += nso * (ULI) nso;
-    row_cost += nso * (ULI) na;
-    row_cost += na * (ULI) na;
-    ULI rows = memory_ / row_cost;
+    size_t row_cost = 0L;
+    row_cost += nso * (size_t) nso;
+    row_cost += nso * (size_t) na;
+    row_cost += na * (size_t) na;
+    size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
     max_rows = (int) rows;
@@ -463,9 +468,9 @@ void DFJKGrad::build_Amn_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (ULI) nso));
-    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
-    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
+    Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (size_t) nso));
+    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
+    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
 
     Amnp = Amn->pointer();
     Amip = Ami->pointer();
@@ -545,12 +550,12 @@ void DFJKGrad::build_Amn_lr_terms()
         // > Alpha < //
         if (true) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(ULI)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+            C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (ULI) na * na],na);
+                C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (size_t) na * na],na);
             }
 
             // > Stripe < //
@@ -560,12 +565,12 @@ void DFJKGrad::build_Amn_lr_terms()
         // > Beta < //
         if (!restricted) {
             // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N','N',np*(ULI)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Amip[0],na);
+            C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Amip[0],na);
 
             // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
             for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',nb,nb,nso,1.0,Amip[p],na,Cbp[0],nb,0.0,&Aijp[0][p * (ULI) nb * nb],nb);
+                C_DGEMM('T','N',nb,nb,nso,1.0,Amip[p],na,Cbp[0],nb,0.0,&Aijp[0][p * (size_t) nb * nb],nb);
             }
 
             // > Stripe < //
@@ -609,10 +614,10 @@ void DFJKGrad::build_AB_inv_terms()
         return;
 
     int max_cols;
-    ULI effective_memory = memory_ - 1L * naux * naux;
-    ULI col_cost = 2L * naux;
-    ULI cols = effective_memory / col_cost;
-    cols = (cols > na * (ULI) na ? na * (ULI) na : cols);
+    size_t effective_memory = memory_ - 1L * naux * naux;
+    size_t col_cost = 2L * naux;
+    size_t cols = effective_memory / col_cost;
+    cols = (cols > na * (size_t) na ? na * (size_t) na : cols);
     cols = (cols < na ? na : cols);
     max_cols = (int) cols;
 
@@ -625,12 +630,12 @@ void DFJKGrad::build_AB_inv_terms()
     if (true) {
         psio_address next_Aija = PSIO_ZERO;
 
-        for (long int ij = 0L; ij < na *(ULI) na; ij += max_cols) {
-            int ncols = (ij + max_cols >= na * (ULI) na ? na * (ULI) na - ij : max_cols);
+        for (long int ij = 0L; ij < na *(size_t) na; ij += max_cols) {
+            int ncols = (ij + max_cols >= na * (size_t) na ? na * (size_t) na - ij : max_cols);
 
             // > Read < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) na * na + ij));
+                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
                 psio_->read(unit_a_,"(A|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
             }
 
@@ -639,7 +644,7 @@ void DFJKGrad::build_AB_inv_terms()
 
             // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) na * na + ij));
+                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
                 psio_->write(unit_a_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
             }
 
@@ -650,12 +655,12 @@ void DFJKGrad::build_AB_inv_terms()
     if (!restricted) {
         psio_address next_Aijb = PSIO_ZERO;
 
-        for (long int ij = 0L; ij < nb *(ULI) nb; ij += max_cols) {
-            int ncols = (ij + max_cols >= nb * (ULI) nb ? nb * (ULI) nb - ij : max_cols);
+        for (long int ij = 0L; ij < nb *(size_t) nb; ij += max_cols) {
+            int ncols = (ij + max_cols >= nb * (size_t) nb ? nb * (size_t) nb - ij : max_cols);
 
             // > Read < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) nb * nb + ij));
+                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
                 psio_->read(unit_b_,"(A|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
             }
 
@@ -664,7 +669,7 @@ void DFJKGrad::build_AB_inv_terms()
 
             // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) nb * nb + ij));
+                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
                 psio_->write(unit_b_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
             }
 
@@ -678,12 +683,12 @@ void DFJKGrad::build_AB_inv_terms()
     if (true) {
         psio_address next_Aija = PSIO_ZERO;
 
-        for (long int ij = 0L; ij < na *(ULI) na; ij += max_cols) {
-            int ncols = (ij + max_cols >= na * (ULI) na ? na * (ULI) na - ij : max_cols);
+        for (long int ij = 0L; ij < na *(size_t) na; ij += max_cols) {
+            int ncols = (ij + max_cols >= na * (size_t) na ? na * (size_t) na - ij : max_cols);
 
             // > Read < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) na * na + ij));
+                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
                 psio_->read(unit_a_,"(A|w|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
             }
 
@@ -692,7 +697,7 @@ void DFJKGrad::build_AB_inv_terms()
 
             // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) na * na + ij));
+                next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) na * na + ij));
                 psio_->write(unit_a_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
             }
 
@@ -703,12 +708,12 @@ void DFJKGrad::build_AB_inv_terms()
     if (!restricted) {
         psio_address next_Aijb = PSIO_ZERO;
 
-        for (long int ij = 0L; ij < nb *(ULI) nb; ij += max_cols) {
-            int ncols = (ij + max_cols >= nb * (ULI) nb ? nb * (ULI) nb - ij : max_cols);
+        for (long int ij = 0L; ij < nb *(size_t) nb; ij += max_cols) {
+            int ncols = (ij + max_cols >= nb * (size_t) nb ? nb * (size_t) nb - ij : max_cols);
 
             // > Read < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) nb * nb + ij));
+                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
                 psio_->read(unit_b_,"(A|w|ij)",(char*) Aijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
             }
 
@@ -717,7 +722,7 @@ void DFJKGrad::build_AB_inv_terms()
 
             // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
-                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) nb * nb + ij));
+                next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (size_t) nb * nb + ij));
                 psio_->write(unit_b_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
             }
 
@@ -743,17 +748,17 @@ void DFJKGrad::build_UV_terms()
     // => Memory Constraints <= //
 
     int max_rows;
-    ULI effective_memory = memory_ - 1L * naux * naux;
-    ULI row_cost = 2L * na * (ULI) na;
-    ULI rows = memory_ / row_cost;
+    size_t effective_memory = memory_ - 1L * naux * naux;
+    size_t row_cost = 2L * na * (size_t) na;
+    size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < 1L ? 1L : rows);
     max_rows = (int) rows;
 
     // => Temporary Buffers <= //
 
-    SharedMatrix Aij(new Matrix("Aij", max_rows, na*(ULI)na));
-    SharedMatrix Bij(new Matrix("Bij", max_rows, na*(ULI)na));
+    SharedMatrix Aij(new Matrix("Aij", max_rows, na*(size_t)na));
+    SharedMatrix Bij(new Matrix("Bij", max_rows, na*(size_t)na));
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
 
@@ -770,7 +775,7 @@ void DFJKGrad::build_UV_terms()
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
                 psio_->read(unit_a_,"(A|ij)",(char*) Bijp[0], sizeof(double)*nQ*na*na, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,na*(ULI)na,1.0,Aijp[0],na*(ULI)na,Bijp[0],na*(ULI)na,0.0,&Vp[P][Q],naux);
+                C_DGEMM('N','T',nP,nQ,na*(size_t)na,1.0,Aijp[0],na*(size_t)na,Bijp[0],na*(size_t)na,0.0,&Vp[P][Q],naux);
             }
         }
     }
@@ -785,7 +790,7 @@ void DFJKGrad::build_UV_terms()
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
                 psio_->read(unit_b_,"(A|ij)",(char*) Bijp[0], sizeof(double)*nQ*nb*nb, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,nb*(ULI)nb,1.0,Aijp[0],nb*(ULI)nb,Bijp[0],nb*(ULI)nb,1.0,&Vp[P][Q],naux);
+                C_DGEMM('N','T',nP,nQ,nb*(size_t)nb,1.0,Aijp[0],nb*(size_t)nb,Bijp[0],nb*(size_t)nb,1.0,&Vp[P][Q],naux);
             }
         }
     } else {
@@ -809,7 +814,7 @@ void DFJKGrad::build_UV_terms()
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
                 psio_->read(unit_a_,"(A|w|ij)",(char*) Bijp[0], sizeof(double)*nQ*na*na, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,na*(ULI)na,1.0,Aijp[0],na*(ULI)na,Bijp[0],na*(ULI)na,0.0,&Vp[P][Q],naux);
+                C_DGEMM('N','T',nP,nQ,na*(size_t)na,1.0,Aijp[0],na*(size_t)na,Bijp[0],na*(size_t)na,0.0,&Vp[P][Q],naux);
             }
         }
     }
@@ -824,7 +829,7 @@ void DFJKGrad::build_UV_terms()
                 int nQ = (Q + max_rows >= naux ? naux - Q : max_rows);
                 psio_->read(unit_b_,"(A|w|ij)",(char*) Bijp[0], sizeof(double)*nQ*nb*nb, next_Bij, &next_Bij);
 
-                C_DGEMM('N','T',nP,nQ,nb*(ULI)nb,1.0,Aijp[0],nb*(ULI)nb,Bijp[0],nb*(ULI)nb,1.0,&Vp[P][Q],naux);
+                C_DGEMM('N','T',nP,nQ,nb*(size_t)nb,1.0,Aijp[0],nb*(size_t)nb,Bijp[0],nb*(size_t)nb,1.0,&Vp[P][Q],naux);
             }
         }
     } else {
@@ -1037,14 +1042,14 @@ void DFJKGrad::build_Amn_x_terms()
     int max_rows;
     if (do_K_ || do_wK_) {
         int maxP = auxiliary_->max_function_per_shell();
-        ULI row_cost = 0L;
-        row_cost += nso * (ULI) nso;
+        size_t row_cost = 0L;
+        row_cost += nso * (size_t) nso;
         if (do_wK_) {
-            row_cost += nso * (ULI) nso;
+            row_cost += nso * (size_t) nso;
         }
-        row_cost += nso * (ULI) na;
-        row_cost += na * (ULI) na;
-        ULI rows = memory_ / row_cost;
+        row_cost += nso * (size_t) na;
+        row_cost += na * (size_t) na;
+        size_t rows = memory_ / row_cost;
         rows = (rows > naux ? naux : rows);
         rows = (rows < maxP ? maxP : rows);
         max_rows = (int) rows;
@@ -1089,15 +1094,15 @@ void DFJKGrad::build_Amn_x_terms()
     double** Aijp;
 
     if (do_K_ || do_wK_) {
-        Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (ULI) nso));
-        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
-        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
+        Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (size_t) nso));
+        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
+        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
         Jmnp = Jmn->pointer();
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
     if (do_wK_) {
-        Kmn = SharedMatrix(new Matrix("Kmn", max_rows, nso * (ULI) nso));
+        Kmn = SharedMatrix(new Matrix("Kmn", max_rows, nso * (size_t) nso));
         Kmnp = Kmn->pointer();
     }
 
@@ -1164,11 +1169,11 @@ void DFJKGrad::build_Amn_x_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (ULI) na * na],na,0.0,Amip[P],na);
+                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
+            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
         }
 
         // > Beta < //
@@ -1180,11 +1185,11 @@ void DFJKGrad::build_Amn_x_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (ULI) nb * nb],nb,0.0,Amip[P],na);
+                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
+            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
         }
 
         // => K_mn^A <= //
@@ -1198,11 +1203,11 @@ void DFJKGrad::build_Amn_x_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (ULI) na * na],na,0.0,Amip[P],na);
+                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Kmnp[0], nso);
+            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Kmnp[0], nso);
         }
 
         // > Beta < //
@@ -1214,11 +1219,11 @@ void DFJKGrad::build_Amn_x_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (ULI) nb * nb],nb,0.0,Amip[P],na);
+                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Kmnp[0], nso);
+            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Kmnp[0], nso);
         }
 
         // > Integrals < //
@@ -1387,11 +1392,11 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
     int max_rows;
     int maxP = auxiliary_->max_function_per_shell();
-    ULI row_cost = 0L;
-    row_cost += nso * (ULI) nso;
-    row_cost += nso * (ULI) na;
-    row_cost += na * (ULI) na;
-    ULI rows = memory_ / row_cost;
+    size_t row_cost = 0L;
+    row_cost += nso * (size_t) nso;
+    row_cost += nso * (size_t) na;
+    row_cost += na * (size_t) na;
+    size_t rows = memory_ / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
     max_rows = (int) rows;
@@ -1421,9 +1426,9 @@ void DFJKGrad::build_Amn_x_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (ULI) nso));
-    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
-    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
+    Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (size_t) nso));
+    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (size_t) na));
+    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (size_t) na));
     Jmnp = Jmn->pointer();
     Amip = Ami->pointer();
     Aijp = Aij->pointer();
@@ -1478,11 +1483,11 @@ void DFJKGrad::build_Amn_x_lr_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (ULI) na * na],na,0.0,Amip[P],na);
+                C_DGEMM('N','N',nso,na,na,1.0,Cap[0],na,&Aijp[0][P * (size_t) na * na],na,0.0,Amip[P],na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
+            C_DGEMM('N','T',np * (size_t) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
         }
 
         // > Beta < //
@@ -1494,11 +1499,11 @@ void DFJKGrad::build_Amn_x_lr_terms()
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
             for (int P = 0; P < np; P++) {
-                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (ULI) nb * nb],nb,0.0,Amip[P],na);
+                C_DGEMM('N','N',nso,nb,nb,1.0,Cbp[0],nb,&Aijp[0][P* (size_t) nb * nb],nb,0.0,Amip[P],na);
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
+            C_DGEMM('N','T',np * (size_t) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
         }
 
         // > Integrals < //
@@ -1716,13 +1721,13 @@ void DFJKGrad::compute_hessian()
                     }
                 }
                 // c[A] = (A|mn) D[m][n]
-                C_DGEMV('N', np, nso*(ULI)nso, 1.0, Amnp[0], nso*(ULI)nso, Dtp[0], 1, 0.0, cp, 1);
+                C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
                 // (A|mj) = (A|mn) C[n][j]
-                C_DGEMM('N','N',np*(ULI)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
+                C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
                 // (A|ij) = (A|mj) C[m][i]
                 #pragma omp parallel for
                 for (int p = 0; p < np; p++) {
-                    C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (ULI) na * na],na);
+                    C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (size_t) na * na],na);
                 }
 
             }
@@ -1734,7 +1739,7 @@ void DFJKGrad::compute_hessian()
     // B[B][i,j] = Minv[A][B] (A|ij)
     C_DGEMM('n','n', np, na*na, np, 1.0, PQp[0], np, Aijp[0], na*na, 0.0, Bijp[0], na*na);
     // B[B][i,n] = B[B][i,j] C[n][j]
-    C_DGEMM('N', 'T', np*(ULI)na, nso, na, 1.0, Bijp[0], na, Cap[0], na, 0.0, Bimp[0], nso);
+    C_DGEMM('N', 'T', np*(size_t)na, nso, na, 1.0, Bijp[0], na, Cap[0], na, 0.0, Bimp[0], nso);
     // B[B][m,n] = C[m][i] B[B][i,n]
     #pragma omp parallel for
     for (int p = 0; p < np; p++) {

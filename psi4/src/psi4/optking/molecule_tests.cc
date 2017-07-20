@@ -52,8 +52,6 @@
 
 namespace opt {
 
-using namespace std;
-
 // test the analytic B matrix (and displacement code) by comparing
 // analytic DqDx to finite-difference DqDx
 void MOLECULE::test_B(void) {
@@ -125,8 +123,8 @@ void MOLECULE::test_B(void) {
   int max_error_intco = -1;
   for (int i=0; i<Nintco; ++i)
     for (int j=0; j<3*Natom; ++j)
-      if ( fabs(B_analytic[i][j] - B_fd[i][j]) > max_error ) {
-        max_error = fabs(B_analytic[i][j] - B_fd[i][j]);
+      if ( std::fabs(B_analytic[i][j] - B_fd[i][j]) > max_error ) {
+        max_error = std::fabs(B_analytic[i][j] - B_fd[i][j]);
         max_error_intco = i;
       }
 
@@ -218,8 +216,8 @@ void MOLECULE::test_derivative_B(void) {
     double max_error = 0.0;
     for (int ii=0; ii<3*Natom; ++ii)
       for (int j=0; j<3*Natom; ++j)
-        if ( fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]) > max_error )
-          max_error = fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]);
+        if ( std::fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]) > max_error )
+          max_error = std::fabs(dq2dx2_analytic[ii][j] - dq2dx2_fd[ii][j]);
 
     oprintf_out("Maximum difference is %.1e. ", max_error);
     if (max_error > MAX_ERROR) {

@@ -2,7 +2,7 @@
 #! between cfour and psi4
 
 
-print '    <<<  RHF  >>>'
+print('    <<<  RHF  >>>')
 
 cfour {
 MP2 single-point energy calculation

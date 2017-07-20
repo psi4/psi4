@@ -28,6 +28,8 @@
 
 #include "dcft.h"
 #include "defines.h"
+
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -808,7 +810,7 @@ DCFTSolver::check_n_representability()
     for(int h = 0; h < nirrep_; ++h){
         int nOcc = naoccpi_[h];
         int nVir = navirpi_[h];
-        unsigned long int dim = nmopi_[h];
+        size_t dim = nmopi_[h];
 
         global_dpd_->buf4_mat_irrep_init(&Laa, h);
         global_dpd_->buf4_mat_irrep_init(&Lab, h);
@@ -836,11 +838,11 @@ DCFTSolver::check_n_representability()
         for(int ij = 0; ij < Laa.params->rowtot[h]; ++ij){
             int i = Laa.params->roworb[h][ij][0];
             int j = Laa.params->roworb[h][ij][1];
-            unsigned long int IJ = i * dim + j;
+            size_t IJ = i * dim + j;
             for(int ab = 0; ab < Laa.params->coltot[h]; ++ab){
                 int a = Laa.params->colorb[h][ab][0] + nOcc;
                 int b = Laa.params->colorb[h][ab][1] + nOcc;
-                unsigned long int AB = a * dim + b;
+                size_t AB = a * dim + b;
                 TPDMaa[AB][IJ] = TPDMaa[IJ][AB] = Laa.matrix[h][ij][ab];
             }
         }
@@ -849,11 +851,11 @@ DCFTSolver::check_n_representability()
         for(int ij = 0; ij < Laa.params->rowtot[h]; ++ij){
             int i = Laa.params->roworb[h][ij][0];
             int j = Laa.params->roworb[h][ij][1];
-            unsigned long int IJ = i * dim + j;
+            size_t IJ = i * dim + j;
             for(int kl = 0; kl < Laa.params->rowtot[h]; ++kl){
                 int k = Laa.params->roworb[h][kl][0];
                 int l = Laa.params->roworb[h][kl][1];
-                unsigned long int KL = k * dim + l;
+                size_t KL = k * dim + l;
                 double AAval = 0.0;
                 double ABval = 0.0;
                 for(int ab = 0; ab < Laa.params->coltot[h]; ++ab){
@@ -869,11 +871,11 @@ DCFTSolver::check_n_representability()
         for(int ab = 0; ab < Laa.params->coltot[h]; ++ab){
             int a = Laa.params->colorb[h][ab][0] + nOcc;
             int b = Laa.params->colorb[h][ab][1] + nOcc;
-            unsigned long int AB = a * dim + b;
+            size_t AB = a * dim + b;
             for(int cd = 0; cd < Laa.params->coltot[h]; ++cd){
                 int c = Laa.params->colorb[h][cd][0] + nOcc;
                 int d = Laa.params->colorb[h][cd][1] + nOcc;
-                unsigned long int CD = c * dim + d;
+                size_t CD = c * dim + d;
                 double AAval = 0.0;
                 double ABval = 0.0;
                 for(int ij = 0; ij < Laa.params->rowtot[h]; ++ij){
@@ -889,22 +891,22 @@ DCFTSolver::check_n_representability()
             int I = i;
             for(int a = 0; a < nVir; ++a){
                 int A = a + nOcc;
-                unsigned long int IA = I * dim + A;
-                unsigned long int AI = A * dim + I;
+                size_t IA = I * dim + A;
+                size_t AI = A * dim + I;
                 for(int j = 0; j < nOcc; ++j){
                     int J = j;
                     for(int b = 0; b < nVir; ++b){
                         int B = b + nOcc;
-                        unsigned long int JB = J * dim + B;
-                        unsigned long int BJ = B * dim + J;
+                        size_t JB = J * dim + B;
+                        size_t BJ = B * dim + J;
                         double AAval = 0.0;
                         double ABval = 0.0;
                         for(int k = 0; k < nOcc; ++k){
-                            unsigned long int ik = i * nOcc + k;
-                            unsigned long int jk = j * nOcc + k;
+                            size_t ik = i * nOcc + k;
+                            size_t jk = j * nOcc + k;
                             for(int c = 0; c < nVir; ++c){
-                                unsigned long int ac = a * nVir + c;
-                                unsigned long int bc = b * nVir + c;
+                                size_t ac = a * nVir + c;
+                                size_t bc = b * nVir + c;
                                 AAval += Laa.matrix[h][ik][bc] * Laa.matrix[h][jk][ac];
                                 AAval += Lab.matrix[h][ik][bc] * Lab.matrix[h][jk][ac];
                                 ABval += Laa.matrix[h][ik][bc] * Laa.matrix[h][jk][ac];

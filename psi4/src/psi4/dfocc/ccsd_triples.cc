@@ -31,8 +31,6 @@
 #include "dfocc.h"
 
 using namespace psi;
-using namespace std;
-
 
 namespace psi{ namespace dfoccwave{
 
@@ -144,7 +142,7 @@ void DFOCC::ccsd_canonic_triples()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -158,7 +156,7 @@ void DFOCC::ccsd_canonic_triples()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -172,7 +170,7 @@ void DFOCC::ccsd_canonic_triples()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -186,7 +184,7 @@ void DFOCC::ccsd_canonic_triples()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -200,7 +198,7 @@ void DFOCC::ccsd_canonic_triples()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -376,7 +374,7 @@ void DFOCC::ccsd_canonic_triples_hm()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -390,7 +388,7 @@ void DFOCC::ccsd_canonic_triples_hm()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -404,7 +402,7 @@ void DFOCC::ccsd_canonic_triples_hm()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -418,7 +416,7 @@ void DFOCC::ccsd_canonic_triples_hm()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -432,7 +430,7 @@ void DFOCC::ccsd_canonic_triples_hm()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -581,7 +579,7 @@ void DFOCC::ccsd_canonic_triples_disk()
 	J1->expand23(navirA, navirA, navirA, Jt);
 
 	// write
-	psio_address addr = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	psio_address addr = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
 	J1->write(psio_, PSIF_DFOCC_INTS, addr, &addr);
     }
     */
@@ -607,23 +605,23 @@ void DFOCC::ccsd_canonic_triples_disk()
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Read J[i](a,bc)
-	//psio_address addr1 = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	//psio_address addr1 = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
 	//J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
-	J1->myread(PSIF_DFOCC_IABC, (ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	J1->myread(PSIF_DFOCC_IABC, (size_t)(i*navirA*navirA*navirA)*sizeof(double));
 
         for(long int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Read J[j](a,bc)
-	    //psio_address addr2 = psio_get_address(PSIO_ZERO,(ULI)(j*navirA*navirA*navirA)*sizeof(double));
+	    //psio_address addr2 = psio_get_address(PSIO_ZERO,(size_t)(j*navirA*navirA*navirA)*sizeof(double));
 	    //J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
-	    J2->myread(PSIF_DFOCC_IABC, (ULI)(j*navirA*navirA*navirA)*sizeof(double));
+	    J2->myread(PSIF_DFOCC_IABC, (size_t)(j*navirA*navirA*navirA)*sizeof(double));
 
             for(long int k = 0 ; k <= j; ++k){
 	        // Read J[k](a,bc)
-	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(ULI)(k*navirA*navirA*navirA)*sizeof(double));
+	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(size_t)(k*navirA*navirA*navirA)*sizeof(double));
 	        //J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
-	        J3->myread(PSIF_DFOCC_IABC, (ULI)(k*navirA*navirA*navirA)*sizeof(double));
+	        J3->myread(PSIF_DFOCC_IABC, (size_t)(k*navirA*navirA*navirA)*sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -643,7 +641,7 @@ void DFOCC::ccsd_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -657,7 +655,7 @@ void DFOCC::ccsd_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -671,7 +669,7 @@ void DFOCC::ccsd_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -685,7 +683,7 @@ void DFOCC::ccsd_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -699,7 +697,7 @@ void DFOCC::ccsd_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -861,7 +859,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
 	J1->expand23(navirA, navirA, navirA, Jt);
 
 	// write
-	psio_address addr = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	psio_address addr = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
 	J1->write(psio_, PSIF_DFOCC_INTS, addr, &addr);
     }
     */
@@ -888,23 +886,23 @@ void DFOCC::ccsdl_canonic_triples_disk()
         double Di = FockA->get(i + nfrzc, i + nfrzc);
 
 	// Read J[i](a,bc)
-	//psio_address addr1 = psio_get_address(PSIO_ZERO,(ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	//psio_address addr1 = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
 	//J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
-	J1->myread(PSIF_DFOCC_IABC, (ULI)(i*navirA*navirA*navirA)*sizeof(double));
+	J1->myread(PSIF_DFOCC_IABC, (size_t)(i*navirA*navirA*navirA)*sizeof(double));
 
         for(long int j = 0 ; j <= i; ++j){
 	    double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
 	    // Read J[j](a,bc)
-	    //psio_address addr2 = psio_get_address(PSIO_ZERO,(ULI)(j*navirA*navirA*navirA)*sizeof(double));
+	    //psio_address addr2 = psio_get_address(PSIO_ZERO,(size_t)(j*navirA*navirA*navirA)*sizeof(double));
 	    //J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
-	    J2->myread(PSIF_DFOCC_IABC, (ULI)(j*navirA*navirA*navirA)*sizeof(double));
+	    J2->myread(PSIF_DFOCC_IABC, (size_t)(j*navirA*navirA*navirA)*sizeof(double));
 
             for(long int k = 0 ; k <= j; ++k){
 	        // Read J[k](a,bc)
-	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(ULI)(k*navirA*navirA*navirA)*sizeof(double));
+	        //psio_address addr3 = psio_get_address(PSIO_ZERO,(size_t)(k*navirA*navirA*navirA)*sizeof(double));
 	        //J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
-	        J3->myread(PSIF_DFOCC_IABC, (ULI)(k*navirA*navirA*navirA)*sizeof(double));
+	        J3->myread(PSIF_DFOCC_IABC, (size_t)(k*navirA*navirA*navirA)*sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -924,7 +922,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -938,7 +936,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -952,7 +950,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -966,7 +964,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -980,7 +978,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        W->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        W->axpy((size_t)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -1007,7 +1005,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        WL->axpy((ULI)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        WL->axpy((size_t)navirA, a*navirA*navirA + b, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -1021,7 +1019,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        WL->axpy((ULI)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        WL->axpy((size_t)navirA, b*navirA*navirA + a*navirA, 1, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -1035,7 +1033,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        WL->axpy((ULI)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        WL->axpy((size_t)navirA, b*navirA*navirA + a, navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -1049,7 +1047,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        WL->axpy((ULI)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        WL->axpy((size_t)navirA, a*navirA + b, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 
@@ -1063,7 +1061,7 @@ void DFOCC::ccsdl_canonic_triples_disk()
                 #pragma omp parallel for
                 for(long int a = 0 ; a < navirA; ++a){
                     for(long int b = 0 ; b < navirA; ++b){
-		        WL->axpy((ULI)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
+		        WL->axpy((size_t)navirA, b*navirA + a, navirA*navirA, V, a*navirA*navirA + b*navirA, 1, 1.0);
 		    }
 		}
 

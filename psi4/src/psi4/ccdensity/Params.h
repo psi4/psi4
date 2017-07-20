@@ -59,6 +59,7 @@ struct Params {
   int prop_all;
   std::string gauge;
   bool write_nos;
+  int debug_;
 
   /* these are used by Xi and twopdm code */
   int G_irr; 

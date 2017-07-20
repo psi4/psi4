@@ -1,6 +1,6 @@
 #! optimization CCSD(T)/dzp on water
 
-print '        <<< Literal ZMAT to Cfour >>>'
+print('        <<< Literal ZMAT to Cfour >>>')
 
 cfour {
 Geometry optimization of H2O at CCSD(T) level
@@ -25,9 +25,9 @@ clean()
 clean_variables()
 cfour {}  # clear literal block since running sequentially
 
-print '        <<< Translation of ZMAT to Psi4 format to Cfour >>>'
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
 
-memory 200 mb
+memory 600 mb
 
 molecule {
 O
