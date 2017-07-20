@@ -1114,7 +1114,7 @@ def scf_helper(name, **kwargs):
 
     if cast:
 
-        # A use can set "BASIS_GUESS" to True and we default to 3-21G
+        # A user can set "BASIS_GUESS" to True and we default to 3-21G
         if cast is True:
             guessbasis = '3-21G'
         else:
@@ -1225,7 +1225,7 @@ def scf_helper(name, **kwargs):
         # Compute dftd3
         if "_disp_functor" in dir(ref_wfn):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
-            ref_wfn.set_variables("-D Energy", disp_energy)
+            ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
 
     # broken clean-up
