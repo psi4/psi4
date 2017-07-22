@@ -153,3 +153,9 @@ compare_values(ref_pbe_d2[0], get_variable('DISPERSION CORRECTION ENERGY'), 7, '
 eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 compare_values(ref_pbe_d2[0], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')      #TEST
 
+print_stdout('  cast-up, -D correction from C-side')                                                         #TEST
+set basis_guess sto-3g
+energy('b3lyp-d3bj')
+compare_values(ref_pbe_d3bj[2], get_variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D3 (calling dftd3 -bj)')      #TEST
+
+
