@@ -671,7 +671,7 @@ void export_mints(py::module& m)
         .def("ao_dipole", &IntegralFactory::ao_dipole, "Returns a OneBodyInt that computes the AO dipole integrals", py::arg("deriv") = 0)
         .def("so_dipole", &IntegralFactory::so_dipole, "Returns a OneBodyInt that computes the SO dipole integrals", py::arg("deriv") = 0)
         .def("ao_kinetic", &IntegralFactory::ao_kinetic, "Returns a OneBodyInt that computes the AO kinetic integrals", py::arg("deriv") = 0)
-        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the SO kinteic integrals", py::arg("deriv") = 0)
+        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the SO kinetic integrals", py::arg("deriv") = 0)
         .def("ao_potential", &IntegralFactory::ao_potential, "Returns a OneBodyInt that computes the AO nuclear attraction integral", py::arg("deriv") = 0)
         .def("so_potential", &IntegralFactory::so_potential, "Returns a OneBodyInt that computes the SO nuclear attraction integral", py::arg("deriv") = 0)
         .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral, "Returns a OneBodyInt that computes the AO pseudospectral grid integrals",
