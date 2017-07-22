@@ -224,7 +224,7 @@ void export_mints(py::module& m)
         .def(py::init<int>())
         .def(py::init<int, const std::string&>())
         .def(py::init<const std::vector<int>&>())
-        .def("print_out", &Dimension::print, "Print out the dimension object")
+        .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
         .def("n", &Dimension::n,
              // py::return_value_policy<copy_const_reference>(),
@@ -251,7 +251,7 @@ void export_mints(py::module& m)
              py::arg("m"), py::arg("val"))
         .def("set", vector_setitem_2(&Vector::set), 
              "Sets a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
-        .def("print_out", &Vector::print_out, "Prints the vector")
+        .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", py::arg("sc"))
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", py::arg("h"))
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
@@ -301,8 +301,8 @@ void export_mints(py::module& m)
         .def(py::init<int>())
         .def("get", &IntVector::get, "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"))
         .def("set", int_vector_set(&IntVector::set), 
-             "Returns a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
-        .def("print_out", &IntVector::print_out, "Prints the vector")
+             "Sets a single element value located at m in irrep h", py::arg("h"), py::arg("m"), py::arg("val"))
+        .def("print_out", &IntVector::print_out, "Prints the vector to the output file")
         .def("dim", &IntVector::dim, "Returns the number of dimensions per irrep h", py::arg("h"))
         .def("nirrep", &IntVector::nirrep, "Returns the number of irreps");
 
@@ -344,7 +344,7 @@ void export_mints(py::module& m)
 
         // def("set_name", &Matrix::set_name, "docstring").
         // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
-        .def("print_out", &Matrix::print_out, "Prints the matrix")
+        .def("print_out", &Matrix::print_out, "Prints the matrix to the output file")
         .def("print_atom_vector", &Matrix::print_atom_vector, py::arg("RMRoutfile") = "outfile",
              "Print the matrix with atom labels, assuming it is an natom X 3 tensor")
         .def("rows", &Matrix::rowdim, "Returns the rows in irrep h", py::arg("h") = 0)
@@ -510,7 +510,7 @@ void export_mints(py::module& m)
 //              py::arg("name"), py::arg("symmetry"));
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations")
-        .def("print_out", &CdSalcList::print, "Print the SALC")
+        .def("print_out", &CdSalcList::print, "Print the SALC to the output file")
         .def("matrix", &CdSalcList::matrix, "Return the SALCs")
         .def("matrix_irrep", &CdSalcList::matrix_irrep, "Return only the SALCS in irrep h", py::arg("h"));
 
@@ -641,7 +641,7 @@ void export_mints(py::module& m)
         .def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
     py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(
-        m, "ThreeCenterOverlapInt", "Three center overalp integrals")
+        m, "ThreeCenterOverlapInt", "Three center overlap integrals")
         .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "Compute the integrals of the form (a|b|c)");
 
     py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "Computes integrals")
@@ -886,7 +886,7 @@ void export_mints(py::module& m)
         .def("basisset", &OrbitalSpace::basisset, "The AO basis set used to create C")
         .def("integral", &OrbitalSpace::integral, "The integral factory used to create C")
         .def("dim", &OrbitalSpace::dim, "MO dimensions")
-        .def("print_out", &OrbitalSpace::print, "Print information about the orbital space")
+        .def("print_out", &OrbitalSpace::print, "Print information about the orbital space to the output file")
         .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space, 
                     "Given two spaces, it projects out one space from the other and returns the new spaces \
                     The first argument (orb_space) is the space to project out. The returned space will be orthogonal to this \
@@ -997,11 +997,11 @@ void export_mints(py::module& m)
              "Sets the specified fragment arg2 to be Ghost")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Tests to see if an atom is at the position arg2 with a given tolerance arg3")
-        .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units")
+        .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
         .def("print_out_in_bohr", &Molecule::print_in_bohr,
-             "Prints the molecule in Cartesians in Bohr")
+             "Prints the molecule in Cartesians in Bohr to output file")
         .def("print_out_in_angstrom", &Molecule::print_in_angstrom,
-             "Prints the molecule in Cartesians in Angstroms")
+             "Prints the molecule in Cartesians in Angstroms to output file")
         .def("print_cluster", &Molecule::print_cluster,
              "Prints the molecule in Cartesians in input units adding fragment separators")
         .def("rotational_constants", &Molecule::rotational_constants,
@@ -1054,7 +1054,7 @@ void export_mints(py::module& m)
         .def("print_bond_angles", &Molecule::print_bond_angles,
              "Print the bond angle geometrical parameters")
         .def("print_out_of_planes", &Molecule::print_out_of_planes,
-             "Print the out-of-plane angle geometrical parameters")
+             "Print the out-of-plane angle geometrical parameters to output file")
         .def("irrep_labels",
              [](Molecule& mol) {
                  std::vector<std::string> ret;
@@ -1109,9 +1109,9 @@ void export_mints(py::module& m)
              "Returns total number of primitives in all contractions")
         .def("nshell", &BasisSet::nshell, "Returns number of shells")
         .def("shell", no_center_version(&BasisSet::shell), py::return_value_policy::copy,
-             "Return the si'th Gaussain shell", py::arg("si"))
+             "Return the si'th Gaussian shell", py::arg("si"))
         .def("shell", center_version(&BasisSet::shell), py::return_value_policy::copy, 
-             "Return the si'th Gaussain shell on center", py::arg("center"), py::arg("si"))
+             "Return the si'th Gaussian shell on center", py::arg("center"), py::arg("si"))
         .def("n_frozen_core", &BasisSet::n_frozen_core, "Returns the number of frozen core electrons, accounting for the presence of any ECPs.")
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core), "Returns the total number of core electrons associated with all ECPs in this basis.")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core), "Returns the number of core electrons associated with any ECP on the specified atom type for this basis set.")
@@ -1197,7 +1197,7 @@ void export_mints(py::module& m)
                                                                       "docstring")
         .def(py::init<size_t>())
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>>())
-        .def("set_params", &CorrelationFactor::set_params, "Set coefficient and exponent", py::arg("coeff"), py::arg("exponenet"));
+        .def("set_params", &CorrelationFactor::set_params, "Set coefficient and exponent", py::arg("coeff"), py::arg("exponent"));
 
     py::class_<FittedSlaterCorrelationFactor, CorrelationFactor>(m, "FittedSlaterCorrelationFactor",
                                                                  "docstring")
@@ -1205,7 +1205,7 @@ void export_mints(py::module& m)
         .def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
     py::class_<CorrelationTable, std::shared_ptr<CorrelationTable>>(m, "CorrelationTable",
-                                                                    "Provides a corrlation table between two point groups")
+                                                                    "Provides a correlation table between two point groups")
         .def(py::init<std::shared_ptr<PointGroup>, std::shared_ptr<PointGroup>>())
         .def("group", &CorrelationTable::group, "Returns higher order point group")
         .def("subgroup", &CorrelationTable::subgroup, "Returns lower order pointgroup")
