@@ -136,7 +136,7 @@ void OCCWave::common_init()
     }
     else {
         double temp;
-        temp = 2.0 - 0.5 * log10(tol_Eod); // I think (U.B) this is the desirable map balancing accuracy and efficiency.
+        temp = 2.0 - 0.5 * std::log10(tol_Eod); // I think (U.B) this is the desirable map balancing accuracy and efficiency.
         //temp = 3.0 - 0.5 * log10(tol_Eod); // Lori's old map leads unecessary iterations for the omp2-2 test case.
         //temp = 1.74 - 0.71 * log10(tol_Eod); //OLD map for wfn != OMP2
         if (temp < 5.0) {
@@ -154,7 +154,7 @@ void OCCWave::common_init()
     }
     else {
         double temp2;
-        temp2 = -log10(tol_grad) - 1.5;
+        temp2 = -std::log10(tol_grad) - 1.5;
         if (temp2 > 4.0) {
             temp2 = 4.0;
         }

@@ -130,7 +130,7 @@ void DFOCC::common_init()
     }
     else {
         double temp;
-        temp = (-0.9 * log10(tol_Eod)) - 1.6;
+        temp = (-0.9 * std::log10(tol_Eod)) - 1.6;
         if (temp < 4.0) {
             temp = 4.0;
         }
@@ -146,7 +146,7 @@ void DFOCC::common_init()
     }
     else {
         double temp2;
-        temp2 = (-0.8 * log10(tol_grad)) - 0.5;
+        temp2 = (-0.8 * std::log10(tol_grad)) - 0.5;
         if (temp2 < 3.0) {
             temp2 = 3.0;
         }
