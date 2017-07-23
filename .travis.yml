@@ -146,7 +146,7 @@ install:
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp psi4-rt -c psi4/label/dev -c psi4
+- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp dftd3 gcp -c psi4/label/dev -c psi4
 - source activate p4env
 - conda list
 before_script:
@@ -189,4 +189,3 @@ branches:
   - master
   - 1.1.x
   - 1.0.x
-  - libxc
