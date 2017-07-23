@@ -27,7 +27,7 @@
  */
 
 #include <fstream>
-#include <math.h>
+#include <cmath>
 
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"

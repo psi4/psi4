@@ -27,7 +27,7 @@
  */
 
 #include <fstream>
-#include <math.h>
+#include <cmath>
 #include "psi4/libqt/qt.h"
 #include "dfocc.h"
 #include "defines.h"
