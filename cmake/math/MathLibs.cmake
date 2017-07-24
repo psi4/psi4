@@ -172,7 +172,11 @@ endif()
 
 # LAB Jul 2017: Because gcc thinks that if OpenMP is on, then implicitly one _must_ want their
 #   libgomp, when we'd actually prefer libiomp5 that doesn't give nthread-dependent energies.
-if(ENABLE_OPENMP AND (MKL_COMPILER_BINDINGS MATCHES GNU))
+#   MKL advisor says: Mac: iomp5 for icpc, clang, gcc; Linux: iomp5 for icpc, gomp or iomp5 for gcc
+#   We suppress gomp across the board for Mac/gcc, Linux/gcc, Linux/icpc (uses gcc under the hood
+#   and we want gcc-based plugins to inherit iomp5 properly).
+if(ENABLE_OPENMP AND ((MKL_COMPILER_BINDINGS MATCHES GNU) OR
+                      ((UNIX AND NOT APPLE) AND (MKL_COMPILER_BINDINGS MATCHES Intel))))
     set(_extras "-fno-openmp")
 else()
     set(_extras)

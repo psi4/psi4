@@ -503,10 +503,10 @@ void export_mints(py::module& m)
 //Something here is wrong. These will not work with py::args defined, not sure why
     py::class_<MatrixFactory, std::shared_ptr<MatrixFactory>>(m, "MatrixFactory", "Creates Matrix objects")
         .def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix),
-             "Returns a new matrix object with default dimensions");
+             "Returns a new matrix object with default dimensions")
 //             "Returns a new matrix object with default dimensions", py::arg("symmetry"));
-//        .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
-//             "Returns a new Matrix object named name with default dimensions", 
+        .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
+             "Returns a new Matrix object named name with default dimensions");
 //              py::arg("name"), py::arg("symmetry"));
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(m, "CdSalcList", "Class for generating symmetry adapted linear combinations")

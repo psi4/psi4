@@ -29,7 +29,7 @@ matrix:
         - gfortran
     env:
       - CXX_COMPILER='clang++-3.6'
-      - PYTHON_VER='3.5'
+      - PYTHON_VER='3.6'
       - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
@@ -139,18 +139,14 @@ before_install:
   - df -h
   - ulimit -a
 install:
-- if [[ "$PYTHON_VER" == "2.7" ]]; then
-    wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-  else
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  fi
+- wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
 - conda info -a
-- conda create -q -n p4env python=$PYTHON_VER numpy cmake dftd3 libint=1.2.0 libxc gdma libefp -c psi4 -c psi4/label/dev -c psi4/label/test
+- conda create -q -n p4env python=$PYTHON_VER numpy cmake ci-psi4-lt psi4-lt-mp dftd3 gcp -c psi4/label/dev -c psi4
 - source activate p4env
 - conda list
 before_script:
@@ -171,13 +167,19 @@ before_script:
     -DCMAKE_BUILD_TYPE=${BUILD_TYPE} 
     -DCMAKE_PREFIX_PATH=${HOME}/miniconda/envs/p4env
     -DPYTHON_EXECUTABLE="${HOME}/miniconda/envs/p4env/bin/python"
-    -DENABLE_gdma=ON
+    -DENABLE_CheMPS2=OFF
     -DENABLE_dkh=ON
+    -DENABLE_libefp=ON
+    -DENABLE_erd=ON
+    -DENABLE_gdma=ON
+    -DENABLE_PCMSolver=ON
+    -DENABLE_simint=ON
     -DENABLE_PLUGIN_TESTING=ON
     -DCMAKE_INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/Install
 - cd build
 - ../.scripts/travis_build.sh
 script:
+- ./stage/${TRAVIS_BUILD_DIR}/Install/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 - python ../.scripts/travis_run_test.py
 - python ../.scripts/travis_print_failing.py
 
@@ -185,5 +187,5 @@ script:
 branches:
   only:
   - master
+  - 1.1.x
   - 1.0.x
-  - libxc
