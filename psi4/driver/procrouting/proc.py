@@ -2441,7 +2441,7 @@ def run_scf_property(name, **kwargs):
         core.set_global_option("SAVE_JK", True)
 
     # Compute the Wavefunction
-    if name == "scf":
+    if name in ["scf", "hf"]:
         scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
     else:
         scf_wfn = run_dft(name, scf_do_dipole=False, do_timer=False, **kwargs)
@@ -3327,10 +3327,7 @@ def run_sapt(name, **kwargs):
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
 
-    sapt_basis = 'dimer'
-    if 'sapt_basis' in kwargs:
-        sapt_basis = kwargs.pop('sapt_basis')
-    sapt_basis = sapt_basis.lower()
+    sapt_basis = kwargs.pop('sapt_basis', 'dimer')
 
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, sapt_basis)
 

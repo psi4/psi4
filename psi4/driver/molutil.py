@@ -315,7 +315,8 @@ def geometry(geom, name="default"):
     try:
         molecule.update_geometry()
     except:
-        pass
+        core.print_out("Molecule: geometry: Molecule is not complete, please use 'update_geometry'\n"
+                       "                    once all variables are set.\n")
 
     activate(molecule)
 
