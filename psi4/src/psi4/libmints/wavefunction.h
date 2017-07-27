@@ -32,6 +32,7 @@
 #include "typedefs.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/dimension.h"
+#include "psi4/findif/findif.h"
 
 #include <stddef.h>
 #include <vector>
@@ -215,7 +216,7 @@ protected:
     SharedVector frequencies_;
 
     /// If normal modes are available, they will be here:
-    SharedVector normalmodes_;
+    std::vector<std::shared_ptr<findif::VIBRATION>> normalmodes_;
 
     /// Same orbs or dens
     bool same_a_b_dens_;
@@ -509,16 +510,42 @@ public:
     void set_atomic_point_charges(const std::shared_ptr<std::vector<double>>& apcs){
        atomic_point_charges_=apcs;
     }
+    
+    /// Returns NO occupations
+    std::vector<std::vector< std::tuple<double, int, int> >> no_occupations()const{
+        return no_occupations_;
+    }
+    
+    /// Returns the NO occupations in vector form for python output
+    std::vector<std::vector< std::tuple<double, int, int> >> get_no_occupations() const;
+    
+    /// Sets the NO occupations
+    void set_no_occupations(const std::vector<std::vector< std::tuple<double, int, int> >> no_ocs){
+        no_occupations_=no_ocs;
+    }
 
     /// Returns the frequencies
     SharedVector frequencies() const;
     /// Set the frequencies for the wavefunction
-    void set_frequencies(SharedVector& freqs);
-
-    /// Returns the normalmodes
-    SharedVector normalmodes() const;
+    void set_frequencies(std::shared_ptr<Vector>& freqs);
+    
+    
+    /// Returns the normodes
+    std::vector<std::shared_ptr<findif::VIBRATION>> normalmodes() const{
+        return normalmodes_;
+    }
+    
+    /// Returns the normalmodes in vector form for python output
+    std::vector<std::shared_ptr<findif::VIBRATION>> get_normalmodes() const;
+    
+    /// Returns the atomic displacements for python output
+    std::vector<Vector>get_normalmodes_displacements() const;
+    
     /// Set the normalmodes for the wavefunction
-    void set_normalmodes(SharedVector& norms);
+    void set_normalmodes(std::vector<std::shared_ptr<findif::VIBRATION>>& modes){
+        normalmodes_= modes;
+    }
+    
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

@@ -38,6 +38,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/cdsalclist.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/physconst.h"
 
 #include "psi4/pybind11.h"
@@ -60,7 +61,7 @@ namespace findif {
 int iE0(std::vector<int> &Ndisp_pi, std::vector <std::vector<int>> &salcs_pi, int pts,
         int irrep, int ii, int jj, int disp_i, int disp_j);
 
-SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
+SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, std::shared_ptr<Wavefunction> wfn, Options &options,
                        const py::list &python_energies, int freq_irrep_only)
 {
     int pts = options.get_int("POINTS");
@@ -152,7 +153,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     char **irrep_lbls = mol->irrep_labels();
     double **H_irr[8]; // hessian by irrep block
 
-    std::vector < VIBRATION * > modes;
+    std::vector <std::shared_ptr<VIBRATION>> modes;
 
     for (int h = 0; h < Nirrep; ++h) {
 
@@ -258,16 +259,15 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
         }
 
         for (int i = 0; i < salcs_pi[h].size(); ++i) {
-            double *v = init_array(3 * Natom);
+            std::shared_ptr<VIBRATION> vib = std::make_shared<VIBRATION>(h, 3 * Natom, evals[i]);
             for (int x = 0; x < 3 * Natom; ++x)
-                v[x] = normal_irr[x][i];
-            VIBRATION *vib = new VIBRATION(h, evals[i], v);
+                vib->lx->set( x, normal_irr[x][i]);
             modes.push_back(vib);
         }
 
-        free(evals);
-        free_block(evects);
-        free_block(normal_irr);
+        //free(evals);
+        //free_block(evects);
+        //free_block(normal_irr);
     }
 
     // This print function also saves frequencies in wavefunction.
@@ -275,12 +275,8 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
 
     // Optionally, save normal modes to file.
     if (options.get_bool("NORMAL_MODES_WRITE")) {
-        save_normal_modes(mol, modes);
+        save_normal_modes(mol, wfn, modes);
     }
-
-    for (int i = 0; i < modes.size(); ++i)
-        delete modes[i];
-    modes.clear();
 
     // Build complete hessian for transformation to cartesians
     double **H = block_matrix(Nsalc_all, Nsalc_all);

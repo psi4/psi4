@@ -37,6 +37,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/typedefs.h"
 #include "psi4/pybind11.h"
+#include "psi4/libmints/vector.h"
 
 namespace psi {
 class Molecule;
@@ -47,44 +48,46 @@ namespace findif {
 // functions to generate displacements
 std::vector< SharedMatrix > fd_geoms_1_0(std::shared_ptr<Molecule> mol, Options &options);
 // std::vector< SharedMatrix > fd_geoms_2_0(Options &options);
-std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Options &options, int irrep=-1);
-std::vector< SharedMatrix > fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options, int irrep=-1);
+std::vector< SharedMatrix > fd_geoms_freq_0(std::shared_ptr<Molecule> mol, Options &options, int irrep= -1);
+std::vector< SharedMatrix > fd_geoms_freq_1(std::shared_ptr<Molecule> mol, Options &options, int irrep= -1);
 std::vector< SharedMatrix > atomic_displacements(std::shared_ptr<Molecule> mol, Options &options);
 
 // functions to carry out finite-differences
 SharedMatrix fd_1_0(std::shared_ptr<Molecule> mol, Options &options, const py::list& energies);
 //PsiReturnType fd_2_0(std::shared_ptr<Molecule> mol, Options &options, const py::list& energies);
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, Options &options,
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, Options &options,
                       const py::list& energies, int irrep=-1);
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, Options &options,
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, Options &options,
                       const py::list& E_list, int irrep=-1);
 
 // class to accumulate and print vibrations
 class VIBRATION {
   int irrep;       // irrep
-  double km;    // force constant
-  double *lx;   // normal mode in mass-weighted cartesians
+  double km;// force constant
+  //double *lx;   // normal mode in mass-weighted cartesians
   double cm;    // harmonic frequency in wavenumbers
 
   public:
+    SharedVector lx;
     friend PsiReturnType fd_freq_0(Options &options, const py::list& energies, int irrep);
     friend PsiReturnType fd_freq_1(Options &options, const py::list& gradients, int irrep);
-    friend bool ascending(const VIBRATION *, const VIBRATION *);
-    friend void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes);
+    friend bool ascending(const std::shared_ptr<VIBRATION>, const std::shared_ptr<VIBRATION>);
+    friend void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<std::shared_ptr<VIBRATION>> modes);
 
     double get_km() {return km;}
     double get_cm() {return cm;}
-    double get_lx(int i) {return lx[i];}
+    //double get_lx(int i) {return lx[i];}
+    //int size_lx() {return sizeof(lx);}
 
-    VIBRATION(int irrep_in, double km_in, double *lx_in) { irrep = irrep_in; km = km_in; lx = lx_in; }
-    ~VIBRATION() { free(lx); }
+    VIBRATION(int irrep_in, int natoms_3_x, double km_in) { irrep = irrep_in; km = km_in;  lx = std::shared_ptr<Vector>(new Vector(natoms_3_x)); }
+    // ~VIBRATION() { ~lx(); }
 };
 
 // function to print vibrations
-void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes);
+void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<std::shared_ptr<VIBRATION>> modes);
 
 // to order vibrations
-bool ascending(const VIBRATION *vib1, const VIBRATION *vib2);
+bool ascending(const std::shared_ptr<findif::VIBRATION> vib1, const std::shared_ptr<findif::VIBRATION> vib2);
 
 // for displacing along a salc
 void displace_cart(std::shared_ptr<Molecule> mol, SharedMatrix geom, const CdSalcList & salclist,
@@ -102,7 +105,8 @@ void displace_atom(SharedMatrix geom, const int atom, const int coord,
 
 // save gemetry and normal modes to files
 void save_normal_modes(std::shared_ptr<Molecule> mol,
-                       std::vector<VIBRATION *> modes);
+                       std::shared_ptr<Wavefunction> wfn,
+                       std::vector<std::shared_ptr<VIBRATION>> modes);
 
 
 template <class T>

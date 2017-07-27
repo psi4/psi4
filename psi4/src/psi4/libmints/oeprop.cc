@@ -1147,6 +1147,7 @@ void OEProp::compute_esp_at_nuclei()
 {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
+    std::shared_ptr<std::vector<double>> nesps(new std::vector<double>(mol->natom()));
     std::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
 
     int nbf = basisset_->nbf();
