@@ -170,14 +170,14 @@ PsiReturnType mrcc_load_ccdensities(SharedWavefunction, Options&, const py::dict
 // Finite difference functions
 namespace findif {
 std::vector<SharedMatrix> fd_geoms_1_0(std::shared_ptr<Molecule>, Options&);
-std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep = -1);
-std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep = -1);
+std::vector<SharedMatrix> fd_geoms_freq_0(std::shared_ptr<Molecule>, Options&, int irrep);
+std::vector<SharedMatrix> fd_geoms_freq_1(std::shared_ptr<Molecule>, Options&, int irrep);
 std::vector<SharedMatrix> atomic_displacements(std::shared_ptr<Molecule>, Options&);
 
 SharedMatrix fd_1_0(std::shared_ptr<Molecule>, Options&, const py::list&);
-SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep = -1);
-SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, Options&, const py::list&, int irrep = -1);
-SharedMatrix displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
+SharedMatrix fd_freq_0(std::shared_ptr<Molecule>, std::shared_ptr<Wavefunction>, Options&, const py::list&, int irrep);
+SharedMatrix fd_freq_1(std::shared_ptr<Molecule>, std::shared_ptr<Wavefunction>, Options&, const py::list&, int irrep);
+void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size);
 }
 
 // CC functions
@@ -342,19 +342,19 @@ SharedMatrix py_psi_fd_1_0(std::shared_ptr<Molecule> mol, const py::list& energi
     return findif::fd_1_0(mol, Process::environment.options, energies);
 }
 
-SharedMatrix py_psi_fd_freq_0(std::shared_ptr<Molecule> mol, const py::list& energies, int irrep) {
+SharedMatrix py_psi_fd_freq_0(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, const py::list& energies, int irrep) {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_0(mol, Process::environment.options, energies, irrep);
+    return findif::fd_freq_0(mol, wfn, Process::environment.options, energies, irrep);
 }
 
-SharedMatrix py_psi_fd_freq_1(std::shared_ptr<Molecule> mol, const py::list& grads, int irrep) {
+SharedMatrix py_psi_fd_freq_1(std::shared_ptr<Molecule> mol, std::shared_ptr<Wavefunction> wfn, const py::list& grads, int irrep) {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_1(mol, Process::environment.options, grads, irrep);
+    return findif::fd_freq_1(mol, wfn, Process::environment.options, grads, irrep);
 }
 
-SharedMatrix py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
+void py_psi_displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign,
                                   const double disp_size) {
-    return findif::displace_atom(geom, atom, coord, sign, disp_size);
+    findif::displace_atom(geom, atom, coord, sign, disp_size);
 }
 
 SharedWavefunction py_psi_dcft(SharedWavefunction ref_wfn) {

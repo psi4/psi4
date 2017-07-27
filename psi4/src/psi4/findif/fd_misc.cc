@@ -42,6 +42,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/writer_file_prefix.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libmints/wavefunction.h"
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 
@@ -49,7 +50,7 @@ namespace psi {
 using SharedMatrix=std::shared_ptr<Matrix>;
 namespace findif {
 
-bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
+bool ascending(const std::shared_ptr<VIBRATION> vib1, const std::shared_ptr<VIBRATION> vib2) {
   if (vib1->km < vib2->km)
     return true;
   else
@@ -57,7 +58,7 @@ bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
 }
 
 // function to print out (frequencies and normal modes) vector of vibrations
-void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes) {
+void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<std::shared_ptr<VIBRATION>> modes) {
 
   std::vector<std::string> irrep_lbls = mol->irrep_labels();
   int Natom = mol->natom();
@@ -69,12 +70,21 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
   const double cm_convert = 1.0/(2.0 * pc_pi * pc_c * 100.0);
 
   for (int i=0; i<modes.size(); ++i) {
-    if(modes[i]->km < 0.0)
+    outfile->Printf("modes %d is %f\n" , i , modes[i]->km);
+      if(modes[i]->km < 0.0){
+      outfile->Printf("<print if statement >modes %d is %f\n" , i , modes[i]->km);
       modes[i]->cm = -1*cm_convert * sqrt(-k_convert * modes[i]->km);
-    else
+      }
+              else {
+      outfile->Printf("<print if statement >modes %d is %f\n" , i , modes[i]->km);
       modes[i]->cm =    cm_convert * sqrt( k_convert * modes[i]->km);
+              }
   }
 
+  for (int i=0; i<modes.size(); ++i)
+    outfile->Printf("modes %d is %f\n" , i , modes[i]->km);
+  
+    
   // Sort modes by increasing eigenvalues.
   sort(modes.begin(), modes.end(), ascending);
 
@@ -105,7 +115,7 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
     freq_vector->set(i, modes[i]->cm);
     for (int a=0; a<Natom; ++a) {
         for (int xyz=0; xyz<3; xyz++) {
-            nm_vector->set(count, modes[i]->lx[3*a+xyz]);
+            nm_vector->set(count, modes[i]->lx->get(3*a+xyz));
             count++;
         }
     }
@@ -139,7 +149,6 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
       outfile->Printf( "  %s \t", mol->symbol(a).c_str() );
 
       for (int xyz=0; xyz<3; ++xyz)
-        outfile->Printf( "%8.3f", modes[i]->lx[3*a+xyz]);
 
       outfile->Printf("%15.6f", mol->mass(a));
 
@@ -152,8 +161,9 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 
 }
 
-void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)
+void save_normal_modes(std::shared_ptr<Molecule> mol,std::shared_ptr<Wavefunction> wfn, std::vector<std::shared_ptr<VIBRATION>> modes)
 {
+    wfn->set_normalmodes(modes);
     std::string normal_modes_fname = get_writer_file_prefix(mol->name()) + ".molden_normal_modes";
     auto printer = std::make_shared<PsiOutStream>(normal_modes_fname, std::ostream::trunc);
 
@@ -177,13 +187,13 @@ void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> m
         double norm2 = 0.0;
         for (int a = 0; a < Natom; a++) {
             for (int xyz = 0; xyz < 3; ++xyz){
-                norm2 += std::pow(modes[i]->get_lx(3 * a + xyz),2.0);
+                norm2 += std::pow(modes[i]->lx->get(3 * a + xyz),2.0);
             }
         }
         double scaling_factor = 1.0 / std::sqrt(norm2);
         for (int a = 0; a < Natom; a++) {
             for (int xyz = 0; xyz < 3; ++xyz){
-                double scaled_mode = scaling_factor * modes[i]->get_lx(3 * a + xyz);
+                double scaled_mode = scaling_factor * modes[i]->lx->get(3 * a + xyz);
                 printer->Printf(" %.6f",scaled_mode);
             }
             printer->Printf("\n");
