@@ -1,4 +1,4 @@
-/*
+ /*
  * @BEGIN LICENSE
  *
  * Psi4: an open-source quantum chemistry software package
@@ -125,12 +125,18 @@ void export_wavefunction(py::module& m) {
         .def("frequencies", &Wavefunction::frequencies, "Returns the frequencies of the Hessian.")
         .def("set_frequencies", &Wavefunction::set_frequencies,
              "Sets the frequencies of the Hessian.")
+        .def("esp_at_nuclei", &Wavefunction::get_esp_at_nuclei,
+             "returns electrostatic potentials at nuclei")
+        .def("mo_extents", &Wavefunction::get_mo_extents,
+             "returns the wavefunction's electronic orbital extents.")
         .def("atomic_point_charges", &Wavefunction::get_atomic_point_charges,
              "Returns the set atomic point charges.")
         .def("get_dipole_field_strength", &Wavefunction::get_dipole_field_strength,
              "Returns a vector of length 3, containing the x,y, and z dipole field strengths.")
-        .def("normalmodes", &Wavefunction::normalmodes,
+        .def("normalmodes", &Wavefunction::get_normalmodes,
              "Returns the normal modes of the Wavefunction.")
+        .def("normalmode_displacements", &Wavefunction::get_normalmodes_displacements,
+             "Returns the displacements for normalmodes")
         .def("set_name", &Wavefunction::set_name,
              "Sets the level of theory this wavefunction corresponds to.")
         .def("name", &Wavefunction::name, py::return_value_policy::copy,
@@ -210,7 +216,10 @@ void export_wavefunction(py::module& m) {
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
         .def("semicanonicalize", &scf::HF::semicanonicalize,
              "Semicanonicalizes the orbitals for ROHF.");
-
+    
+    py::class_<findif::VIBRATION, std::shared_ptr<findif::VIBRATION>>(m, "VIBRATION" , "docstring")
+        .def(py::init<int, int, double>());
+    
     py::class_<scf::RHF, std::shared_ptr<scf::RHF>, scf::HF>(m, "RHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
         .def("c1_deep_copy", &scf::RHF::c1_deep_copy,
