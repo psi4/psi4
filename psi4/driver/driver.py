@@ -988,6 +988,15 @@ def optimize(name, **kwargs):
         custom_gradient = False
 
     return_wfn = kwargs.pop('return_wfn', False)
+    return_history = kwargs.pop('return_history', False)
+
+
+#Be sure to add wavefunction functionality later once the deep copy issues are worked out
+    if return_history:
+        step_energies      = []
+        step_gradients     = []
+        step_coordinates   = []
+        #        step_wavefunctions = []
 
     # For CBS wrapper, need to set retention on INTCO file
     if custom_gradient or ('/' in lowername):
@@ -1056,6 +1065,13 @@ def optimize(name, **kwargs):
 
         # above, used to be getting energy as last of energy list from gradient()
         # thisenergy below should ultimately be testing on wfn.energy()
+
+        # Record optimization steps
+        # Add wavefunctions later
+        if return_history:
+            step_energies.append(thisenergy)
+            step_coordinates.append(moleculeclone.geometry())
+            step_gradients.append(G.clone())
 
         # S/R: Quit after getting new displacements or if forming gradient fails
         if opt_mode == 'sow':
@@ -1132,8 +1148,19 @@ def optimize(name, **kwargs):
 
             optstash.restore()
 
-            if return_wfn:
+            if return_history:
+                history = { 'energy'        : step_energies ,
+                            'gradient'      : step_gradients ,
+                            'coordinates'   : step_coordinates #,
+            #                'wavefunctions' : step_wavefunctions
+                          }
+
+            if return_wfn and return_history:
+                return (thisenergy, wfn, history)
+            elif return_wfn and not return_history:
                 return (thisenergy, wfn)
+            elif return_history and not return_wfn:
+                return (thisenergy, history)
             else:
                 return thisenergy
 
