@@ -1183,7 +1183,9 @@ void OEProp::compute_esp_at_nuclei()
                 atom1+1, mol->label(atom1).c_str(), nuc+elec);
         /*- Process::environment.globals["ESP AT CENTER n"] -*/
         Process::environment.globals[s.str()] = nuc+elec;
+        (*nesps)[atom1] = nuc+elec;
     }
+    wfn_->set_esp_at_nuclei(nesps);
     outfile->Printf( " ---------------------------------------------\n");
 }
 
@@ -1395,7 +1397,13 @@ void OEProp::compute_mo_extents()
         Ca = Ca_ao();
         Cb = Cb_ao();
     }
-
+    
+    std::vector<SharedVector> mo_es;
+    mo_es.push_back(SharedVector(new Vector("<x^2>", basisset_->nbf())));
+    mo_es.push_back(SharedVector(new Vector("<y^2>", basisset_->nbf())));
+    mo_es.push_back(SharedVector(new Vector("<z^2>", basisset_->nbf())));
+    mo_es.push_back(SharedVector(new Vector("<r^2>", basisset_->nbf())));
+    
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> ao_Dpole;
     std::vector<SharedMatrix> ao_Qpole;
@@ -1513,6 +1521,10 @@ void OEProp::compute_mo_extents()
                     std::fabs(quadrupole[1]->get(0, i)),
                     std::fabs(quadrupole[2]->get(0, i)),
                     std::fabs(xx + yy + zz));
+                    mo_es[0]->set(0,i,quadrupole[0]->get(0, i));
+                    mo_es[1]->set(0,i,quadrupole[1]->get(0, i));
+                    mo_es[2]->set(0,i,quadrupole[2]->get(0, i));
+                    mo_es[3]->set(0,i,fabs(xx + yy + zz));
         }
 
         outfile->Printf( "\n");
@@ -1522,6 +1534,7 @@ void OEProp::compute_mo_extents()
         // TODO: Both alpha and beta orbitals are reported separately
         // This helps identify symmetry breaking
     }
+    wfn_->set_mo_extents(mo_es);
 }
 
 void OEProp::compute_mulliken_charges()
@@ -1695,6 +1708,8 @@ void OEProp::compute_mayer_indices()
     outfile->Printf( "\n\n  Mayer Bond Indices:\n\n");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
+    
+    SharedMatrix bis;
 
     int nbf = basisset_->nbf();
 
@@ -1796,7 +1811,8 @@ void OEProp::compute_mayer_indices()
         outfile->Printf( "  Atomic Valences: \n");
         MBI_valence->print();
     }
-
+    
+    wfn_->set_array("MAYER_INDICES", MBI_total);
 
 }
 void OEProp::compute_wiberg_lowdin_indices()
@@ -1806,7 +1822,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 //    We may wanna get rid of these if we have NAOs...
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
-
+    
     int nbf = basisset_->nbf();
 
     SharedMatrix Da;
@@ -1910,6 +1926,7 @@ void OEProp::compute_wiberg_lowdin_indices()
         outfile->Printf( "  Atomic Valences: \n");
         WBI_valence->print();
     }
+    wfn_->set_array("WIBERG_LOWDIN_INDICES", WBI_total);
 }
 
 void OEProp::compute_no_occupations()
@@ -1917,8 +1934,12 @@ void OEProp::compute_no_occupations()
     std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
     outfile->Printf( "  Natural Orbital Occupations:\n\n");
+    
+    // Terminally, it will be [metric_a , metric_b, metric] or [metric] depending on same_dens
+    std::vector<std::vector<std::tuple<double, int, int> >> metrics;
 
     if (!same_dens_) {
+        
 
         SharedVector Oa;
         SharedVector Ob;
@@ -1938,7 +1959,9 @@ void OEProp::compute_no_occupations()
                 metric_a.push_back(std::tuple<double,int,int>(Oa->get(h,i), i ,h));
             }
         }
-
+        
+        metrics.push_back(metric_a);
+        
         std::sort(metric_a.begin(), metric_a.end(), std::greater<std::tuple<double,int,int> >());
         int offset_a = wfn_->nalpha();
         int start_occ_a = offset_a - max_noon_;
@@ -1966,6 +1989,8 @@ void OEProp::compute_no_occupations()
                 metric_b.push_back(std::tuple<double,int,int>(Ob->get(h,i), i ,h));
             }
         }
+        
+        metrics.push_back(metric_b);
 
         std::sort(metric_b.begin(), metric_b.end(), std::greater<std::tuple<double,int,int> >());
 
@@ -2000,6 +2025,8 @@ void OEProp::compute_no_occupations()
             metric.push_back(std::tuple<double,int,int>(Ot->get(h,i), i ,h));
         }
     }
+    
+    metrics.push_back(metric);
 
     std::sort(metric.begin(), metric.end(), std::greater<std::tuple<double,int,int> >());
 
@@ -2022,7 +2049,9 @@ void OEProp::compute_no_occupations()
         }
     }
     outfile->Printf( "\n");
-
+    
+    wfn_->set_no_occupations(metrics);
+    
     //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
 
 }
