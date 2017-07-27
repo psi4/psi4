@@ -129,6 +129,8 @@ void export_wavefunction(py::module& m) {
              "returns the wavefunction's electronic orbital extents.")
         .def("atomic_point_charges", &Wavefunction::get_atomic_point_charges,
              "Returns the set atomic point charges.")
+        .def("no_occupations", &Wavefunction::get_no_occupations,
+             "returns the natural orbital occupations on the wavefunction.")
         .def("normalmodes", &Wavefunction::get_normalmodes,
              "Returns the normal modes of the Wavefunction.")
         .def("normalmode_displacements", &Wavefunction::get_normalmodes_displacements,
