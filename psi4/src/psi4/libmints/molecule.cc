@@ -535,7 +535,15 @@ void Molecule::move_to_com()
 
 Matrix Molecule::geometry() const
 {
-    if (!natom()){
+
+    int natoms = natom();
+
+// Ugh, supposedly this is going to be overhauled soon. Blame Lori!
+#ifdef USING_libefp
+    if (Process::environment.get_efp()->get_frag_count() > 0) natoms++;
+#endif // USING_libefp
+
+    if (!natoms){
         throw PSIEXCEPTION(
             "Molecule::geometry(): molecule does not contain any atoms. Try calling `molecule.update_geometry()\n"
             "     to ensure the molecule is properly constructed.");
