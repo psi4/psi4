@@ -149,6 +149,7 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<std::shared_ptr
       outfile->Printf( "  %s \t", mol->symbol(a).c_str() );
 
       for (int xyz=0; xyz<3; ++xyz)
+        outfile->Printf( "%8.3f", modes[i]->lx->get(3*a+xyz));
 
       outfile->Printf("%15.6f", mol->mass(a));
 

@@ -133,6 +133,8 @@ void export_wavefunction(py::module& m) {
              "Returns the set atomic point charges.")
         .def("get_dipole_field_strength", &Wavefunction::get_dipole_field_strength,
              "Returns a vector of length 3, containing the x,y, and z dipole field strengths.")
+        .def("no_occupations", &Wavefunction::get_no_occupations,
+             "returns the natural orbital occupations on the wavefunction.")
         .def("normalmodes", &Wavefunction::get_normalmodes,
              "Returns the normal modes of the Wavefunction.")
         .def("normalmode_displacements", &Wavefunction::get_normalmodes_displacements,

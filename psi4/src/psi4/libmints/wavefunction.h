@@ -219,9 +219,18 @@ protected:
     std::vector<std::vector<int>> subset_occupation(const Dimension& noccpi,
                                                     const std::string& subset) const;
 
+    /// Should nuclear electrostatic potentials be available, they will be here
+    std::shared_ptr<std::vector<double>> esp_at_nuclei_;
+    
+    /// Should molecular orbital extents be available, they will be here
+    std::vector<SharedVector> mo_extents_;
+    
     /// If atomic point charges are available they will be here
     std::shared_ptr<std::vector<double>> atomic_point_charges_;
-
+    
+    /// Should natural orbital occupations be available, they will be here
+    std::vector<std::vector< std::tuple<double, int, int> >> no_occupations_;
+    
     /// If frequencies are available, they will be here:
     SharedVector frequencies_;
 
@@ -569,6 +578,32 @@ public:
     /// Set the Hessian for the wavefunction
     void set_hessian(SharedMatrix& hess);
 
+    /// Returns electrostatic potentials at nuclei
+    std::shared_ptr<std::vector<double>> esp_at_nuclei()const{
+        return esp_at_nuclei_;
+    }
+    
+    /// Returns electrostatic potentials at nuclei in Vector form for python output
+    std::shared_ptr<Vector> get_esp_at_nuclei() const;
+    
+    /// Sets the electrostatic potentials at nuclei
+    void set_esp_at_nuclei(const std::shared_ptr<std::vector<double>>& nesps){
+        esp_at_nuclei_=nesps;
+    }
+    
+    /// Returns Molecular orbital extents
+    std::vector<SharedVector> mo_extents()const{
+        return mo_extents_;
+    }
+    
+    /// Returns Molecular orbital extents in Vector form for python output.
+    std::vector<SharedVector> get_mo_extents() const;
+    
+    /// Sets molecular orbital extents
+    void set_mo_extents(const std::vector<SharedVector> mo_es){
+        mo_extents_ = mo_es;
+    }
+    
     /// Returns the atomic point charges
     std::shared_ptr<std::vector<double>> atomic_point_charges()const{
        return atomic_point_charges_;
