@@ -3215,7 +3215,7 @@ std::map<std::string, std::shared_ptr<Matrix> > DirectJKGrad::compute2(std::vect
     double **Kp = Khess[0]->pointer();
     for (int row = 0; row < dim; ++row){
         for (int col = 0; col < row; ++col){
-            Jp[row][col] = Jp[col][row] = (Jp[row][col] + Jp[col][row]);
+            //Jp[row][col] = Jp[col][row] = (Jp[row][col] + Jp[col][row]);
             Kp[row][col] = Kp[col][row] = (Kp[row][col] + Kp[col][row]);
         }
     }
