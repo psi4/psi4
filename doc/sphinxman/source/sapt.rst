@@ -577,6 +577,29 @@ the dimer-centered basis set.  Hence, monomer-centered basis SAPT
 computations are not recommended. The open-shell SAPT0 code is not
 compatible yet with monomer-centered computations.
 
+Computations with Mid-bonds
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+SAPT computations with midbonds can be accomplished by adding a third ghost
+monomer to the computation.  For example ::
+
+    molecule dimer {
+        0 1
+        He 0  0  5
+        --
+        0 1
+        He 0  0 -5
+        --
+        0 1
+        @He 0  0  0
+    }
+
+
+Here the functions of the third monomer will be added to the virtual space of
+the entire computation. Note that an error will be thrown if each atom in the
+third monomer is not a ghost to prevent confusion with three-body SAPT which is
+not currently supported by Psi4.
+
 
 Interpreting SAPT Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^

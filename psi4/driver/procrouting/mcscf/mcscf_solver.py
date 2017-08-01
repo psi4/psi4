@@ -33,12 +33,11 @@ import numpy as np
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import qcdb
+from psi4.driver.p4util import solvers
 
 from .augmented_hessian import ah_iteration
-from . import diis_helper
 from .. import proc_util
 
-#np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype):
     core.print_out("%s %2d:  % 18.12f   % 1.4e  %1.2e  %1.2e  %3d  %3d  %s\n" %
@@ -98,7 +97,7 @@ def mcscf_solver(ref_wfn):
     orb_grad_rms = 1.e-3
 
     # Grab needed objects
-    diis_obj = diis_helper.DIIS_helper(mcscf_diis_max_vecs)
+    diis_obj = solvers.DIIS(mcscf_diis_max_vecs)
     mcscf_obj = ciwfn.mcscf_object()
 
     # Execute the rotate command

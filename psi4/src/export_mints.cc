@@ -1199,8 +1199,8 @@ void export_mints(py::module& m)
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>>())
         .def("set_params", &CorrelationFactor::set_params, "Set coefficient and exponent", py::arg("coeff"), py::arg("exponent"));
 
-    py::class_<FittedSlaterCorrelationFactor, CorrelationFactor>(m, "FittedSlaterCorrelationFactor",
-                                                                 "docstring")
+    py::class_<FittedSlaterCorrelationFactor, std::shared_ptr<FittedSlaterCorrelationFactor>, CorrelationFactor>(
+        m, "FittedSlaterCorrelationFactor", "docstring")
         .def(py::init<double>())
         .def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
