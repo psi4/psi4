@@ -314,7 +314,7 @@ void set_params(void)
       Opt_params.conv_max_disp  = 6.0e-5;  Opt_params.i_max_disp = true;
       Opt_params.conv_rms_disp  = 4.0e-5;  Opt_params.i_rms_disp = true;
     }
-    else if (Opt_params.general_conv == "INTERFRAG_GAU_TIGHT") {
+    else if (Opt_params.general_conv == "INTERFRAG_TIGHT") {
       Opt_params.i_untampered = true;
       Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
       Opt_params.conv_max_force = 1.5e-5;  Opt_params.i_max_force = true;
