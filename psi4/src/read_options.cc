@@ -2419,7 +2419,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE
       or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
       unless |optking__flexible_g_convergence| is also on.      See Table :ref:`Geometry Convergence <table:optkingconv>` for details. -*/
-      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
+      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
       /*- Convergence criterion for geometry optmization: maximum force
       (internal coordinates, atomic units). -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
