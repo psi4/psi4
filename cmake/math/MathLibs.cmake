@@ -184,7 +184,8 @@ endif()
 
 if(NOT ENABLE_GENERIC)
     # prefer mkl_rt.so as covers most situations
-    set(MKL_BLAS_LIBS mkl_rt ${_mkl_omp} ${_extras} pthread m dl)
+    #set(MKL_BLAS_LIBS mkl_rt ${_mkl_omp} ${_extras} pthread m dl)
+    set(MKL_BLAS_LIBS mkl_rt pthread m dl)
 endif()
 # miro: for MKL 10.0.1.014
 set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_start_group} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core mkl_def mkl_mc ${_blacs_lib}  ${_end_group} guide       pthread m dl)
