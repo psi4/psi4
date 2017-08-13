@@ -410,6 +410,8 @@ with Table :ref:`Geometry Convergence <table:optkingconv>`.
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
     | MOLPRO [#fb]_ [#fe]_        | :math:`1.0 \times 10^{-6}` | :math:`3.0 \times 10^{-4}` |                            | :math:`3.0 \times 10^{-4}` |                            |
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
+    | INTERFRAG_TIGHT [#fg]_      | :math:`1.0 \times 10^{-6}` | :math:`1.5 \times 10^{-5}` | :math:`1.0 \times 10^{-5}` | :math:`6.0 \times 10^{-4}` | :math:`4.0 \times 10^{-4}` |
+    +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
     | GAU_TIGHT [#fc]_ [#ff]_     |                            | :math:`1.5 \times 10^{-5}` | :math:`1.0 \times 10^{-5}` | :math:`6.0 \times 10^{-5}` | :math:`4.0 \times 10^{-5}` |
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
     | GAU_VERYTIGHT [#ff]_        |                            | :math:`2.0 \times 10^{-6}` | :math:`1.0 \times 10^{-6}` | :math:`6.0 \times 10^{-6}` | :math:`4.0 \times 10^{-6}` | 
@@ -426,6 +428,9 @@ with Table :ref:`Geometry Convergence <table:optkingconv>`.
          **Max Disp**, and **RMS Disp**) are fulfilled. To help with flat 
          potential surfaces, alternate convergence achieved when 100\ :math:`\times`\ *rms force* is less 
          than **RMS Force** criterion.
+.. [#fg] Compensates for difficulties in converging geometry optmizations of supermolecular complexes 
+         tightly, where large *rms disp* and *max disp* may result from flat potential surfaces even when
+         *max force* and/or *rms force* are small.
 
 For ultimate control, specifying a value for any of the five monitored options activates that
 criterium and overwrites/appends it to the criteria set by |optking__g_convergence|.
