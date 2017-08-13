@@ -141,10 +141,11 @@ void CIWavefunction::setup_dfmcscf_ints() {
     } else {
         jk_ = JK::build_JK(basisset_, BasisSet::zero_ao_basis_set(), options_);
     }
+    
     jk_->set_do_J(true);
     jk_->set_do_K(true);
-    jk_->initialize();
     jk_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
+    jk_->initialize();
     jk_->print_header();
 
     int num_threads_ = 1;
@@ -157,7 +158,9 @@ void CIWavefunction::setup_dfmcscf_ints() {
     dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(get_basisset("ORBITAL"), 
         get_basisset("DF_BASIS_SCF")));
     dfh_->set_memory(Process::environment.get_memory() * 0.8 / sizeof(double));
-    dfh_->set_method("STORE");
+    dfh_->set_MO_core(false);
+    dfh_->set_AO_core(false);
+    dfh_->set_method("DIRECT");
     dfh_->set_nthreads(num_threads_);
     dfh_->initialize(); 
     
@@ -250,10 +253,12 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     int nrot = Cocc->ncol() + Cact->ncol() + Cvir->ncol();
     int aoc_rowdim = nrot + Cact->ncol();
    
+    SharedMatrix AO_R(new Matrix("AO_R", nao, nrot));
+    SharedMatrix AO_a(new Matrix("AO_a", nao, aoc_rowdim - nrot));
+    
+    double** rp = AO_R ->pointer(); 
+    double** ap = AO_a ->pointer(); 
 
-    SharedMatrix AO_C = SharedMatrix(new Matrix("AO_C", nao, aoc_rowdim));
-
-    double** AO_Cp = AO_C->pointer();
     for (int h = 0, offset = 0, offset_act = 0; h < nirrep_; h++) {
         int hnso = AO2SO_->colspi()[h];
         if (hnso == 0) continue;
@@ -266,43 +271,31 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
         if (noccpih) {
             double** CSOp = Cocc->pointer(h);
             C_DGEMM('N', 'N', nao, noccpih, hnso, 1.0, Up[0], hnso, CSOp[0],
-                    noccpih, 0.0, &AO_Cp[0][offset], aoc_rowdim);
+                    noccpih, 0.0, &rp[0][offset], nrot);
             offset += noccpih;
         }
         // active
         if (nactpih) {
             double** CSOp = Cact->pointer(h);
             C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0],
-                    nactpih, 0.0, &AO_Cp[0][offset], aoc_rowdim);
+                    nactpih, 0.0, &rp[0][offset], nrot);
             offset += nactpih;
 
             C_DGEMM('N', 'N', nao, nactpih, hnso, 1.0, Up[0], hnso, CSOp[0],
-                    nactpih, 0.0, &AO_Cp[0][offset_act + nrot], aoc_rowdim);
+                    nactpih, 0.0, &ap[0][offset_act], aoc_rowdim - nrot);
             offset_act += nactpih;
         }
         // virtual
         if (nvirpih) {
             double** CSOp = Cvir->pointer(h);
             C_DGEMM('N', 'N', nao, nvirpih, hnso, 1.0, Up[0], hnso, CSOp[0],
-                    nvirpih, 0.0, &AO_Cp[0][offset], aoc_rowdim);
+                    nvirpih, 0.0, &rp[0][offset], nrot);
             offset += nvirpih;
         }
     }
 
     // => Compute DF ints <= //
     dfh_->clear_all();
-
-    // not ideal FIXME
-    SharedMatrix AO_R(new Matrix("AO_R", nao, nrot));
-    SharedMatrix AO_a(new Matrix("AO_a", nao, aoc_rowdim - nrot));
-    
-    double** rp = AO_R ->pointer(); 
-    double** ap = AO_a ->pointer(); 
-    
-    for(size_t i=0; i<nao; i++){
-        C_DCOPY(nrot, &AO_Cp[i][0], 1, &rp[i][0], 1); 
-        C_DCOPY((aoc_rowdim - nrot), &AO_Cp[i][nrot], 1, &ap[i][0], 1); 
-    }
 
     dfh_->add_space("R", AO_R);
     dfh_->add_space("a", AO_a);

@@ -62,11 +62,6 @@ DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
     naux_ = aux_    ->nbf();
     wMO_ = nao_ / 2;
     prepare_blocking();
-
-    // prepare sparsity masks
-    timer_on("DF_Helper~ prepare sparsity ");
-    prepare_sparsity();
-    timer_off("DF_Helper~ prepare sparsity ");
 }
 DF_Helper::~DF_Helper()
 {
@@ -159,7 +154,12 @@ void DF_Helper::initialize()
     // if metric power is not zero, prepare it
     if(!(std::fabs(mpower_ - 0.0) < 1e-13))
         (hold_met_ ? prepare_metric_core() : prepare_metric());
-
+    
+    // prepare sparsity masks
+    timer_on("DF_Helper~ prepare sparsity ");
+    prepare_sparsity();
+    timer_off("DF_Helper~ prepare sparsity ");
+    
     // shut off AO core if necessary
     if(memory_ * 0.8 < big_skips_[nao_]){
         AO_core_ = false; 
@@ -169,6 +169,8 @@ void DF_Helper::initialize()
         ann << big_skips_[nao_] / 0.9 * 8 / 1e9 << "GB), but it only got (" << memory_ * 8 / 1e9 << "GB)\n"; 
         outfile->Printf(ann.str().c_str());
     }
+
+    print_header();
 
     // prepare AOs for STORE directive
     if(AO_core_)
@@ -389,7 +391,7 @@ void DF_Helper::prepare_AO()
         size_t end   = pshell_aggs_[stop+1]-1;
         size_t block_size = end-begin+1;
         size_t size = big_skips_[end+1]-big_skips_[begin];
-        
+
         // compute
         compute_AO_p(start, stop, Mp, eri);
 
@@ -630,7 +632,7 @@ return std::make_tuple(largest, block_size, wcleft, wcright);
 }
 FILE* DF_Helper::stream_check(std::string filename, std::string op)
 {
-    timer_on("stream checks               ");
+    //timer_on("stream checks             ");
     if(file_status_.find(filename) == file_status_.end()){
         //outfile->Printf("file not found: %s\n", filename.c_str());
         file_status_[filename].op = op;
@@ -638,16 +640,16 @@ FILE* DF_Helper::stream_check(std::string filename, std::string op)
     }
     else{
         if(op.compare(file_status_[filename].op)){
-    timer_on("stream change               ");
+    //timer_on("stream change           ");
             //outfile->Printf("changing......: %s\n", filename.c_str());
             file_status_[filename].op = op;
             fflush(file_status_[filename].fp);
             fclose(file_status_[filename].fp);
             file_status_[filename].fp = fopen(filename.c_str(), op.c_str());
-    timer_off("stream change               ");
+    //timer_off("stream change           ");
         }
     }
-    timer_off("stream checks               ");
+    //timer_off("stream checks             ");
 return file_status_[filename].fp;
 }
 void DF_Helper::put_tensor(std::string file, double* b, std::pair<size_t, size_t> i0,
@@ -1594,7 +1596,7 @@ void DF_Helper::transform_core()
             double* Bpt = std::get<0>(spaces_[bspace])->pointer()[0];
 
             // form tmp, thread over spM (nao)
-            timer_on("DF_Helper~transform - first ");
+            timer_on("First contraction         ");
             #pragma omp parallel for firstprivate(nao, naux, bsize, block_size) private(rank) schedule(guided) num_threads(nthreads)
             for(size_t k=0; k<nao_; k++){
 
@@ -1616,7 +1618,7 @@ void DF_Helper::transform_core()
                 C_DGEMM('N', 'N', block_size, bsize, sp_size, 1.0,
                   &Mp[jump], sp_size, &C_buffers[rank][0], bsize, 0.0, &Tp[k*block_size*bsize], bsize);
             }
-            timer_off("DF_Helper~transform - first ");
+            timer_off("First contraction         ");
 
             // to completion per transformation
             for(size_t k=0; k<strides_[i]; k++){
@@ -1629,10 +1631,10 @@ void DF_Helper::transform_core()
                 double* Wp = std::get<0>(I)->pointer()[0];
 
                 // (wp)(p|Qb)->(w|Qb)
-                timer_on("DF_Helper~transform - second");
+                timer_on("Second contraction        ");
                 C_DGEMM('T', 'N', wsize, block_size*bsize, nao_, 1.0, Wp, wsize,
                   Tp, block_size*bsize, 0.0, Fp, block_size*bsize);
-                timer_off("DF_Helper~transform - second");
+                timer_off("Second contraction        ");
 
                 // Transpose in memory for convenient formats
                 size_t st1 = bsize * wsize;
@@ -1642,9 +1644,9 @@ void DF_Helper::transform_core()
                 // final in-core MO pointer
                 double* Lp = transf_core_[order_[count+k]].data();
                 
+                timer_on("Transpose - (w|Qb)->(bw|Q)");
                 if(bspace.compare(left)==0){ // (w|Qb)->(Q|bw)
                     
-                    timer_on("DF_Helper~transform - transp");
                     if(std::get<2>(transf_[order_[count + k]])){ // (w|Qb)->(bw|Q)
                         
                         #pragma omp parallel for num_threads(nthreads_) 
@@ -1655,7 +1657,6 @@ void DF_Helper::transform_core()
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
                     
                     } else { // (w|Qb)->(Q|bw)
                         
@@ -1667,12 +1668,10 @@ void DF_Helper::transform_core()
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
                     }
                 
                 } else {    
                     
-                    timer_on("DF_Helper~transform - transp");
                     if(std::get<2>(transf_[order_[count + k]])){ // // (w|Qb)->(wbQ)
                         
                         #pragma omp parallel for num_threads(nthreads_) 
@@ -1683,7 +1682,6 @@ void DF_Helper::transform_core()
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
                     
                     } else { // (w|Qb)->(Q|wb)
 
@@ -1696,9 +1694,10 @@ void DF_Helper::transform_core()
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
+                    
                     }
                 }
+                timer_off("Transpose - (w|Qb)->(bw|Q)");
             }
         }
     }
@@ -1766,8 +1765,6 @@ void DF_Helper::transform_disk() {
     std::pair<size_t, size_t> Qlargest = Qshell_blocks_for_transform(memory_, wtmp, wfinal, Qsteps);
     size_t max_block = std::get<1>(Qlargest);
     
-    timer_on("DF_Helper~transform - setup ");
-    
     // prepare eri buffers
     size_t nthread = nthreads_;
     std::vector<std::vector<double>> C_buffers(nthreads_);
@@ -1803,7 +1800,6 @@ void DF_Helper::transform_disk() {
     }
     else
         Mp = Ppq_.data();      
-    timer_off("DF_Helper~transform - setup ");
 
     // transform in steps
     for (size_t j = 0, bcount = 0, block_size; j < Qsteps.size(); j++, bcount += block_size) {
@@ -1820,14 +1816,15 @@ void DF_Helper::transform_disk() {
         //outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
         // get AO chunk according to directives
-        timer_on("DF_Helper~transform - grab  ");
+        timer_on("DF_Helper~transform - grab");
         if(AO_core_)
             Mp = Ppq_.data();      
-        else if(direct_)
+        else if(direct_){
             compute_AO_Q(start, stop, Mp, eri);
+        }
         else
             grab_AO(start, stop, Mp);
-        timer_off("DF_Helper~transform - grab  ");
+        timer_off("DF_Helper~transform - grab");
     
         // stride through best spaces
         for(size_t i=0, count=0; i<bspace_.size(); count += strides_[i], i++){
@@ -1836,8 +1833,8 @@ void DF_Helper::transform_disk() {
             std::string bspace = bspace_[i];
             size_t bsize = std::get<1>(spaces_[bspace]);
             double* Bpt = std::get<0>(spaces_[bspace])->pointer()[0];
-
-            timer_on("DF_Helper~transform - first ");
+            
+            timer_on("First contraction         ");
         // form temp, thread over spM (nao)
         #pragma omp parallel for firstprivate(nao, naux, bsize, block_size) private(rank) schedule(guided) \
                                       num_threads(nthreads_)
@@ -1861,7 +1858,7 @@ void DF_Helper::transform_disk() {
                 C_DGEMM('N', 'N', block_size, bsize, sp_size, 1.0, &Mp[jump], sp_size,
                         &C_buffers[rank][0], bsize, 0.0, &Tp[k * block_size * bsize], bsize);
             }
-            timer_off("DF_Helper~transform - first ");
+            timer_off("First contraction         ");
 
             // to completion per transformation
             for (size_t k = 0; k < strides_[i]; k++) {
@@ -1874,10 +1871,10 @@ void DF_Helper::transform_disk() {
                 double* Wp = std::get<0>(I)->pointer()[0];
 
                 // (wp)(p|Qb)->(w|Qb)
-                timer_on("DF_Helper~transform - second");
+                timer_on("Second contraction        ");
                 C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp,
                         block_size * bsize, 0.0, Fp, block_size * bsize);
-                timer_off("DF_Helper~transform - second");
+                timer_off("Second contraction        ");
 
                 // setup putf
                 std::string putf = (!direct_ ? std::get<1>(files_[order_[count + k]])
@@ -1890,9 +1887,9 @@ void DF_Helper::transform_disk() {
                 size_t st2 = bsize * block_size;
                 size_t st3 = wsize * block_size;
                 
+                timer_on("Transpose - (w|Qb)->(bw|Q)");
                 if (bspace.compare(left) == 0) { 
                 
-                    timer_on("DF_Helper~transform - transp");
                     if(std::get<2>(transf_[order_[count + k]])){ // (w|Qb)->(bw|Q)
                         
                         #pragma omp parallel for num_threads(nthreads_) 
@@ -1903,8 +1900,8 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
-                        timer_on("DF_Helper~transform - write ");
+                        timer_off("Transpose - (w|Qb)->(bw|Q)");
+                        timer_on("Puting MO to disk         ");
                         put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1),
                                              std::make_pair(begin, end), "wb");
                     
@@ -1918,16 +1915,15 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
-                        timer_on("DF_Helper~transform - write ");
+                        timer_off("Transpose - (w|Qb)->(bw|Q)");
+                        timer_on("Puting MO to disk         ");
                         put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, bsize - 1),
                                              std::make_pair(0, wsize - 1), op);
                     }
-                    timer_off("DF_Helper~transform - write ");
+                    timer_off("Puting MO to disk         ");
                 
                 } else {    
                     
-                    timer_on("DF_Helper~transform - transp");
                     if(std::get<2>(transf_[order_[count + k]])){ // // (w|Qb)->(wbQ)
                         
                         #pragma omp parallel for num_threads(nthreads_) 
@@ -1938,8 +1934,8 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
-                        timer_on("DF_Helper~transform - write ");
+                        timer_off("Transpose - (w|Qb)->(bw|Q)");
+                        timer_on("Puting MO to disk         ");
                         put_tensor(putf, Np, std::make_pair(0, wsize - 1), std::make_pair(0, bsize - 1),
                                              std::make_pair(begin, end), "wb");
                     
@@ -1954,12 +1950,12 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                         }
-                        timer_off("DF_Helper~transform - transp");
-                        timer_on("DF_Helper~transform - write ");
+                        timer_off("Transpose - (w|Qb)->(bw|Q)");
+                        timer_on("Puting MO to disk         ");
                         put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, wsize - 1),
                                          std::make_pair(0, bsize - 1), op);
                     }
-                    timer_off("DF_Helper~transform - write ");
+                    timer_off("Puting MO to disk         ");
                 }
             }
         }
@@ -2695,8 +2691,6 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     if (!direct_ && !AO_core_)
         stream_check(AO_files_[AO_names_[1]], "rb");
 
-    timer_on("DF_Helper~transform - setup ");
-    
     int rank = 0;
     std::vector<std::vector<double>> C_buffers(nthreads_);
     std::vector<double*> C_bufsp;
@@ -2749,8 +2743,6 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
     std::vector<SharedMatrix> D;
     compute_D(D, Cleft, Cright);
 
-    timer_off("DF_Helper~transform - setup ");
-
     // transform in steps (blocks of Q)
     for (size_t j = 0, bcount = 0; j < Qsteps.size(); j++) {
         
@@ -2766,13 +2758,13 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
         //outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
         
         // get AO chunk according to directive
-        timer_on("DF_Helper~transform - grab  ");
+        timer_on("DF_Helper~transform - grab");
         if(direct_){
             compute_AO_Q(start, stop, Mp, eri);
         }
         else if(!AO_core_)
             grab_AO(start, stop, Mp);
-        timer_off("DF_Helper~transform - grab  ");
+        timer_off("DF_Helper~transform - grab");
 
         timer_on("DF_Helper~JK        -   J   ");
         compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
@@ -2879,7 +2871,7 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
         timer_on("DF_Helper~JK       - Junpack");
         // unpack from sparse to dense
         for(size_t k=0; k<nao; k++){
-            for(size_t m=k+1, count=0; m<nao; m++){ // assumes diagonal exists to avoid if, this is always true? FIXME
+            for(size_t m=k+1, count=0; m<nao; m++){ // assumes diagonal exists to avoid if  FIXME
                 if(schwarz_fun_mask_[k*nao+m]){
                     count++;
                     Jp[k*nao+m] += T2p[k*align_size+count];

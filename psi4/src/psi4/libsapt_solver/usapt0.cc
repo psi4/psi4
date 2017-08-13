@@ -1976,10 +1976,7 @@ void USAPT0::mp2_terms()
 
     // => Memory <= //
 
-    // => Integrals from the THCE <= //
-
-    std::shared_ptr<DFERI> df = DFERI::build(primary_,mp2fit_,Process::environment.options);
-    df->clear();
+    // => Integrals from DF_Helper <= //
 
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Caocca_A_);

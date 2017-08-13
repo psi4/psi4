@@ -147,6 +147,7 @@ void export_fock(py::module &m) {
         .def("get_memory", &df_helper::DF_Helper::get_memory)
         .def("set_method", &df_helper::DF_Helper::set_method)
         .def("get_method", &df_helper::DF_Helper::get_method)
+        .def("get_AO_size", &df_helper::DF_Helper::get_AO_size)
         .def("set_nthreads", &df_helper::DF_Helper::set_nthreads)
         .def("hold_met", &df_helper::DF_Helper::hold_met)
         .def("set_schwarz_cutoff", &df_helper::DF_Helper::set_schwarz_cutoff)
