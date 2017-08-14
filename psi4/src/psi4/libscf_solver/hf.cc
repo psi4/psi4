@@ -1242,7 +1242,7 @@ void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::p
 
 void HF::print_orbitals()
 {
-    char **labels = molecule_->irrep_labels();
+    std::vector<std::string> labels = molecule_->irrep_labels();
 
         outfile->Printf( "    Orbital Energies (a.u.)\n    -----------------------\n\n");
 
@@ -1264,9 +1264,9 @@ void HF::print_orbitals()
                 orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occ.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
+                occ.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
+                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
 
         }
         std::sort(occ.begin(), occ.end());
@@ -1295,9 +1295,9 @@ void HF::print_orbitals()
                 orb_orderA[orb_eA[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
+                occA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderA[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                virA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
+                virA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderA[a] + 1)));
 
             std::vector<std::pair<double, int> > orb_eB;
             for (int a = 0; a < nmopi_[h]; a++)
@@ -1309,9 +1309,9 @@ void HF::print_orbitals()
                 orb_orderB[orb_eB[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                occB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
+                occB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderB[a] + 1)));
             for (int a = nbetapi_[h]; a < nmopi_[h]; a++)
-                virB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
+                virB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderB[a] + 1)));
 
         }
         std::sort(occA.begin(), occA.end());
@@ -1342,11 +1342,11 @@ void HF::print_orbitals()
                 orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                docc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
+                docc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
             for (int a = nbetapi_[h] ; a < nalphapi_[h]; a++)
-                socc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
+                socc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
             for (int a = nalphapi_[h] ; a < nmopi_[h]; a++)
-                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
+                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
 
         }
         std::sort(docc.begin(), docc.end());
@@ -1360,11 +1360,6 @@ void HF::print_orbitals()
     }else{
         throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
     }
-
-    for(int h = 0; h < nirrep_; ++h)
-        free(labels[h]);
-    free(labels);
-
 
     outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
@@ -1929,10 +1924,10 @@ void HF::print_energies()
 void HF::print_occupation()
 {
 
-        char **labels = molecule_->irrep_labels();
+        std::vector<std::string> labels = molecule_->irrep_labels();
         std::string reference = options_.get_str("REFERENCE");
         outfile->Printf( "          ");
-        for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h]); outfile->Printf( "\n");
+        for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h].c_str()); outfile->Printf( "\n");
         outfile->Printf( "    DOCC [ ");
         for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", doccpi_[h]);
         outfile->Printf( " %4d ]\n", doccpi_[nirrep_-1]);
@@ -1951,7 +1946,6 @@ void HF::print_occupation()
             outfile->Printf( " %4d ]\n", nbetapi_[nirrep_-1]);
         }
 
-        for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
         outfile->Printf("\n");
 
 }
@@ -2082,11 +2076,11 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
     std::sort(vec.begin(), vec.end());
     std::vector<std::pair<double, int> >::const_iterator iter = vec.begin();
     outfile->Printf( "    ");
-    char** irrep_labels = molecule_->irrep_labels();
+    std::vector<std::string> irrep_labels = molecule_->irrep_labels();
     int count = 0;
     for(; iter != vec.end(); ++iter){
         ++count;
-        outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second], iter->first);
+        outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second].c_str(), iter->first);
         if(count == 4){
             outfile->Printf( "\n    ");
             count = 0;
@@ -2099,9 +2093,6 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
     else
         outfile->Printf( "\n");
 
-    for(int h = 0; h < nirrep_; ++h)
-        free(irrep_labels[h]);
-    free(irrep_labels);
 }
 bool HF::stability_analysis()
 {

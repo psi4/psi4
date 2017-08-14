@@ -74,7 +74,7 @@ ADCWfn::rhf_prepare_tensors()
     global_dpd_->buf4_sort_axpy(&V, PSIF_ADC, prqs, ID("[O,V]"), ID("[O,V]"), "A1234", 2.0);
     global_dpd_->buf4_close(&V);
     global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
-    char **irrep_      = molecule_->irrep_labels();
+    std::vector<std::string> irrep_      = molecule_->irrep_labels();
     for(int h = 0;h < nirrep_;h++){
         global_dpd_->buf4_mat_irrep_init(&Aovov, h);
         global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
@@ -91,7 +91,7 @@ ADCWfn::rhf_prepare_tensors()
         lambda = block_matrix(Aovov.params->rowtot[h], rpi_[h]);
         if(rpi_[h]) david(Aovov.matrix[h], Aovov.params->coltot[h], rpi_[h], omega, lambda, 1e-14, 0);
         for(int root = 0;root < rpi_[h];root++){
-            if(DEBUG_) printf("%d%3s, %10.7f\n", root+1, irrep_[h], omega[root]);
+            if(DEBUG_) printf("%d%3s, %10.7f\n", root+1, irrep_[h].c_str(), omega[root]);
             omega_guess_->set(h,root, omega[root]);
             sprintf(lbl, "B^(%d)_[%d]12", root, h);
             global_dpd_->file2_init(&B, PSIF_ADC, h, ID('O'), ID('V'), lbl);
@@ -107,7 +107,7 @@ ADCWfn::rhf_prepare_tensors()
             }
             global_dpd_->file2_mat_wrt(&B);
             global_dpd_->file2_mat_close(&B);
-            outfile->Printf( "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h], omega[root], omega[root]*pc_hartree2ev);
+            outfile->Printf( "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h].c_str(), omega[root], omega[root]*pc_hartree2ev);
             outfile->Printf( "\t---------------------------------------------\n");
             int nprint;
             if(nxspi_[h] < num_amps_) nprint = nxspi_[h];

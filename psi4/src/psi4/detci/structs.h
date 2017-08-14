@@ -359,7 +359,7 @@ struct calcinfo {
    int num_bet;          /* number of beta electrons */
    int num_alp_expl;     /* number of alpha electrons explicitly treated */
    int num_bet_expl;     /* number of beta electrons explicitly treated */
-   char **labels;        /* labels for irreps */
+   std::vector<std::string> labels;   /* labels for irreps */
    int *orbsym;          /* irrep for each orbital */
    std::vector<int> reorder;         /* map Pitzer-ordered orbitals to our ordering */
    std::vector<int> order;           /* map our ordering back to Pitzer ordering */

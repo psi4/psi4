@@ -74,8 +74,8 @@ ADCWfn::compute_energy()
     bool first;
     int iter = 0;
     double denom;
-    std::string state_top = "ADC ROOT ";
-    char **irrep_      = molecule_->irrep_labels();
+    std::string state_top             = "ADC ROOT ";
+    std::vector<std::string> irrep_   = molecule_->irrep_labels();
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     psio_->open(PSIF_ADC_SEM,      PSIO_OPEN_OLD);
@@ -108,7 +108,7 @@ ADCWfn::compute_energy()
 
                         sprintf(lbl, "V^(%d)_[%d]12", root, irrep);
                         global_dpd_->file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                        outfile->Printf( "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*pc_hartree2ev);
+                        outfile->Printf( "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep].c_str(), omega[root], omega[root]*pc_hartree2ev);
                         outfile->Printf( "\tNon-iterative: %10.7f (a.u.), %10.7f (eV)\n", poles_[irrep][root].ps_value, poles_[irrep][root].ps_value*pc_hartree2ev);
                         outfile->Printf( "\t         Occ Vir        Coefficient\n");
                         outfile->Printf( "\t---------------------------------------------\n");

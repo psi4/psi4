@@ -249,7 +249,7 @@ void get_rho_params(Options& options)
   for(i=0; i<params.nstates; i++) {
     outfile->Printf("\t%5s     %d%3s %15.10lf %12.8lf\n",
             (rho_params[i].R_ground ? "Yes":"No"),
-            rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
+            rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr].c_str(),
             rho_params[i].cceom_energy,
             rho_params[i].R0);
   }

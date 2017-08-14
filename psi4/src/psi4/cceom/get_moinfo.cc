@@ -283,9 +283,6 @@ void cleanup(void)
 //    free(moinfo.fruocc);
 //    free(moinfo.frdocc);
     for(i=0; i < moinfo.nirreps; i++)
-        free(moinfo.irr_labs[i]);
-    free(moinfo.irr_labs);
-    for(i=0; i < moinfo.nirreps; i++)
         free(moinfo.irr_labs_lowercase[i]);
     free(moinfo.irr_labs_lowercase);
     if(params.ref == 2) {

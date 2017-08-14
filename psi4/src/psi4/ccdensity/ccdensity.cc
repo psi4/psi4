@@ -535,8 +535,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
 
           //- <Lx|O|Ry> (y>x)
           outfile->Printf("\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (LEFT) Transition Density ***\n\n",
-                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
-                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep].c_str(),
+                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep].c_str());
           ex_td_setup(td_params[state1],td_params[state2]);
           outfile->Printf("\t\t*** LTD Setup complete.\n");
 
@@ -548,8 +548,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
 
           //- <Ly|O|Rx> (y>x)
           outfile->Printf("\n\t*** Computing <%d%2s|X{pq}}|%d%2s> (RIGHT) Transition Density ***\n\n",
-                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep],
-                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep]);
+                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep].c_str(),
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep].c_str());
           ex_td_setup(td_params[state2],td_params[state1]);
           outfile->Printf("\t\t*** RTD Setup complete.\n");
 
@@ -557,8 +557,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options& options)
           ex_tdensity('r',td_params[state2],td_params[state1]);
 
           outfile->Printf("\n\t*** %d%s -> %d%s transition densities complete.\n",
-                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep],
-                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep]);
+                td_params[state1].root+1,moinfo.labels[td_params[state1].irrep].c_str(),
+                td_params[state2].root+1,moinfo.labels[td_params[state2].irrep].c_str());
 
           //ex_oscillator_strength(&(td_params[j]),&(td_params[i+1]), &xtd_data);
           ex_oscillator_strength(ref_wfn, &(td_params[state1]),&(td_params[state2]), &xtd_data);

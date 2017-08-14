@@ -112,7 +112,7 @@ void CCMatrix::print()
   outfile->Printf("\n\n\t\t\t\t\t%s Matrix\n",label.c_str());
   for(int i=0;i<nirreps;i++){
     if(left->get_pairpi(i) * right->get_pairpi(i)){
-      outfile->Printf("\nBlock %d (%s,%s)",i,moinfo->get_irr_labs(i),moinfo->get_irr_labs(i));
+      outfile->Printf("\nBlock %d (%s,%s)",i,moinfo->get_irr_labs(i).c_str(),moinfo->get_irr_labs(i).c_str());
       print_dpdmatrix(i,"outfile");
     }
   }

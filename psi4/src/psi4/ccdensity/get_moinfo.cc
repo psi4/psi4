@@ -304,9 +304,6 @@ void cleanup(void)
     //  free(moinfo.uoccpi);
     //  free(moinfo.fruocc);
     //  free(moinfo.frdocc);
-    for(i=0; i < moinfo.nirreps; i++)
-        free(moinfo.labels[i]);
-    free(moinfo.labels);
 
     if(params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
         free(moinfo.occ_sym);

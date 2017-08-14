@@ -789,40 +789,37 @@ DCFTSolver::print_opdm()
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);
-    char **irrepLabels = molecule_->irrep_labels();
+    std::vector<std::string> irrepLabels = molecule_->irrep_labels();
 
     outfile->Printf( "\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), aPairs[i].first);
         if (count % 4 == 3 && i != nalpha_)
             outfile->Printf( "\n\t\t");
     }
     outfile->Printf( "\n\n\t\tBeta occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
         int irrep = bPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep].c_str(), bPairs[i].first);
         if (count % 4 == 3 && i != nbeta_)
             outfile->Printf( "\n\t\t");
     }
     outfile->Printf( "\n\n\t\tAlpha virtual orbitals\n\t\t");
     for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), aPairs[i].first);
         if (count % 4 == 3 && i != nmo_)
             outfile->Printf( "\n\t\t");
     }
     outfile->Printf( "\n\n\t\tBeta virtual orbitals\n\t\t");
     for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = bPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep].c_str(), bPairs[i].first);
         if (count % 4 == 3 && i != nmo_)
             outfile->Printf( "\n\t\t");
     }
     outfile->Printf( "\n\n");
-    for (int h = 0; h < nirrep_; ++h)
-        free(irrepLabels[h]);
-    free(irrepLabels);
     free(aIrrepCount);
     free(bIrrepCount);
 }

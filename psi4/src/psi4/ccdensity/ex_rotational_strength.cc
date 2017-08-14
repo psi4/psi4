@@ -72,7 +72,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
   transdip(mints);
 
   outfile->Printf("\n\tLength-Gauge Rotational Strength for %d%3s to %d%3s Transition\n",S->root+1,
-          moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
+          moinfo.labels[S->irrep].c_str(), U->root+1, moinfo.labels[U->irrep].c_str());
   outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
   lt_x = lt_y = lt_z = 0.0;
@@ -157,7 +157,7 @@ void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_P
 
 
   outfile->Printf("\n\tVelocity-Gauge Rotational Strength for %d%3s\n",S->root+1,
-          moinfo.labels[S->irrep], U->root+1, moinfo.labels[U->irrep]);
+          moinfo.labels[S->irrep].c_str(), U->root+1, moinfo.labels[U->irrep].c_str());
   outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
   lt_x = lt_y = lt_z = 0.0;

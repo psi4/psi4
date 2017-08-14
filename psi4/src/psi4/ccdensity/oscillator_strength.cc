@@ -209,7 +209,7 @@ void oscillator_strength(SharedWavefunction wfn, struct TD_Params *S)
   free_block(MUZ_SO);
 
   outfile->Printf("\n\tOscillator Strength for %d%3s\n",S->root+1,
-          moinfo.labels[S->irrep]);
+          moinfo.labels[S->irrep].c_str());
   outfile->Printf("\t                              X    \t       Y    \t       Z\n");
 
   if((params.ref == 0) || (params.ref == 1)) {

@@ -173,7 +173,7 @@ void get_eom_params(SharedWavefunction ref_wfn, Options &options)
   outfile->Printf( "\t-----------------\n");
   outfile->Printf( "\tStates sought per irrep     =");
   for(int i = 0; i < moinfo.nirreps; ++i)
-    outfile->Printf( " %s %d,", moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
+    outfile->Printf( " %s %d,", moinfo.irr_labs[i].c_str(), eom_params.states_per_irrep[i]);
 
   outfile->Printf("\n");
   outfile->Printf( "\tMax. number of iterations   = %5d\n", eom_params.max_iter);
@@ -186,7 +186,7 @@ void get_eom_params(SharedWavefunction ref_wfn, Options &options)
   outfile->Printf( "\tResidual vector toleranceSS = %5.1e\n", eom_params.residual_tol_SS);
   outfile->Printf( "\tComplex tolerance           = %5.1e\n", eom_params.complex_tol);
   outfile->Printf( "\tRoot for properties         = %5d\n", eom_params.prop_root + 1);
-  outfile->Printf( "\tSym of state for properties = %6s\n", moinfo.irr_labs[eom_params.prop_sym]);
+  outfile->Printf( "\tSym of state for properties = %6s\n", moinfo.irr_labs[eom_params.prop_sym].c_str());
   outfile->Printf( "\tGuess vectors taken from    = %s\n", eom_params.guess.c_str());
   outfile->Printf( "\tRestart EOM CC3             = %s\n", eom_params.restart_eom_cc3?"YES":"NO");
   outfile->Printf( "\tCollapse with last vector   = %s\n", eom_params.collapse_with_last ? "YES":"NO");

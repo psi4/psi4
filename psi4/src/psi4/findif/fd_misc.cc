@@ -59,7 +59,7 @@ bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
 // function to print out (frequencies and normal modes) vector of vibrations
 void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes) {
 
-  char **irrep_lbls = mol->irrep_labels();
+  std::vector<std::string> irrep_lbls = mol->irrep_labels();
   int Natom = mol->natom();
 
   // compute harmonic frequencies, +/- in wavenumbers
@@ -85,9 +85,9 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
 
   for(int i=0; i<modes.size(); ++i) {
     if(modes[i]->cm < 0.0)
-      outfile->Printf( "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep], -modes[i]->cm);
+      outfile->Printf( "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep].c_str(), -modes[i]->cm);
     else
-      outfile->Printf( "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep], modes[i]->cm);
+      outfile->Printf( "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep].c_str(), modes[i]->cm);
   }
 
   outfile->Printf(   "\t-----------------------------------------------\n");
@@ -150,9 +150,6 @@ void print_vibrations(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> mo
   // awkward, but need nirrep to free labels
   int Nirrep = mol->point_group()->char_table().nirrep();
 
-  for (int i=0; i<Nirrep; ++i)
-    free(irrep_lbls[i]);
-  free(irrep_lbls);
 }
 
 void save_normal_modes(std::shared_ptr<Molecule> mol, std::vector<VIBRATION *> modes)

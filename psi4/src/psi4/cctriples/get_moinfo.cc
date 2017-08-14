@@ -243,9 +243,9 @@ void cleanup(void)
 //    free(moinfo.uoccpi);
 //    free(moinfo.fruocc);
 //    free(moinfo.frdocc);
-    for(i=0; i < moinfo.nirreps; i++)
-        free(moinfo.labels[i]);
-    free(moinfo.labels);
+    //for(i=0; i < moinfo.nirreps; i++)
+    //    free(moinfo.labels[i]);
+    //free(moinfo.labels);
     if(params.ref == 2) {
         free(moinfo.aoccpi);
         free(moinfo.boccpi);

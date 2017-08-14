@@ -243,9 +243,9 @@ double CCLambdaWavefunction::compute_energy()
       }
 
       outfile->Printf("\tSymmetry of left-hand state: %s\n",
-              moinfo.labels[ moinfo.sym^(pL_params[i].irrep) ]);
+              moinfo.labels[ moinfo.sym^(pL_params[i].irrep) ].c_str());
       outfile->Printf("\tSymmetry of left-hand eigenvector: %s\n",
-              moinfo.labels[(pL_params[i].irrep)]);
+              moinfo.labels[(pL_params[i].irrep)].c_str());
 
       denom(pL_params[i]); /* uses L_params.cceom_energy for excited states */
       init_amps(pL_params[i]); /* uses denominators for initial zeta guess */
