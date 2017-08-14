@@ -170,8 +170,6 @@ void DF_Helper::initialize()
         outfile->Printf(ann.str().c_str());
     }
 
-    print_header();
-
     // prepare AOs for STORE directive
     if(AO_core_)
         prepare_AO_core(); 
@@ -183,7 +181,7 @@ void DF_Helper::initialize()
 }
 void DF_Helper::print_header()
 {
-    outfile->Printf("\n    ==> DF_Helper - excellent density fitting <==\n");
+    outfile->Printf("\n    ==> DF_Helper <==\n");
     outfile->Printf("      nao           = %zu\n", nao_);
     outfile->Printf("      naux          = %zu\n", naux_);
     outfile->Printf("      Scwarz cutoff = %E\n", cutoff_);
