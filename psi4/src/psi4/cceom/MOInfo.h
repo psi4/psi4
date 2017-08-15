@@ -51,7 +51,6 @@ struct MOInfo {
   int *fruocc;           /* no. of frozen unoccupied orbitals per irrep */
   int nvirt;             /* total no. of (active) virtual orbitals */
   std::vector<std::string> irr_labs;         /* irrep labels */
-//TMS  char **irr_labs;         /* irrep labels */
   char **irr_labs_lowercase; /* irrep labels */
   int *occpi;            /* no. of occupied orbs. (incl. open) per irrep */
   int *aoccpi;           /* no. of alpha occupied orbs. (incl. open) per irrep */

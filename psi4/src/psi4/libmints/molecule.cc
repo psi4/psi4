@@ -2927,19 +2927,13 @@ std::string Molecule::sym_label()
     return pg_->symbol();
 }
 
-//char **Molecule::irrep_labels()
 std::vector<std::string> Molecule::irrep_labels()
 {
     if (pg_ == NULL) set_point_group(find_point_group());
     int nirreps = pg_->char_table().nirrep();
     std::vector<std::string> irreplabel;
-    //char **irreplabel = (char **) malloc(sizeof(char *) * nirreps);
     for (int i = 0; i < nirreps; i++) {
-        //irreplabel[i] = (char *) malloc(sizeof(char) * 5);
-        //::memset(irreplabel[i], 0, sizeof(char) * 5);
-        ////strcpy(irreplabel[i],pg_->char_table().gamma(i).symbol());
-        //strcpy(irreplabel[i], pg_->char_table().gamma(i).symbol_ns());
-        irreplabel[i]=pg_->char_table().gamma(i).symbol_ns();
+        irreplabel.push_back(pg_->char_table().gamma(i).symbol_ns());
     }
     return irreplabel;
 }
