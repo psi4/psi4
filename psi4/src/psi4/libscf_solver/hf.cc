@@ -1226,18 +1226,16 @@ void HF::compute_fvpi()
     }
 }
 
-void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
+void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<std::string, int> > > orbs)
 {
-
         outfile->Printf( "    %-70s\n\n    ", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
-            outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
+            outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first.c_str(), orbs[i].first);
             if (count++ % 3 == 2 && count != orbs.size())
                 outfile->Printf( "\n    ");
         }
         outfile->Printf( "\n\n");
-
 }
 
 void HF::print_orbitals()
@@ -1249,8 +1247,8 @@ void HF::print_orbitals()
     std::string reference = options_.get_str("REFERENCE");
     if((reference == "RHF") || (reference == "RKS")){
 
-        std::vector<std::pair<double, std::pair<const char*, int> > > occ;
-        std::vector<std::pair<double, std::pair<const char*, int> > > vir;
+        std::vector<std::pair<double, std::pair<std::string, int> > > occ;
+        std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
         for (int h = 0; h < nirrep_; h++) {
 
@@ -1264,9 +1262,9 @@ void HF::print_orbitals()
                 orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occ.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
+                occ.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
+                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
 
         }
         std::sort(occ.begin(), occ.end());
@@ -1278,10 +1276,10 @@ void HF::print_orbitals()
     }else if((reference == "UHF") || (reference == "UKS") ||
         (reference == "CUHF")){
 
-        std::vector<std::pair<double, std::pair<const char*, int> > > occA;
-        std::vector<std::pair<double, std::pair<const char*, int> > > virA;
-        std::vector<std::pair<double, std::pair<const char*, int> > > occB;
-        std::vector<std::pair<double, std::pair<const char*, int> > > virB;
+        std::vector<std::pair<double, std::pair<std::string, int> > > occA;
+        std::vector<std::pair<double, std::pair<std::string, int> > > virA;
+        std::vector<std::pair<double, std::pair<std::string, int> > > occB;
+        std::vector<std::pair<double, std::pair<std::string, int> > > virB;
 
         for (int h = 0; h < nirrep_; h++) {
 
@@ -1295,9 +1293,9 @@ void HF::print_orbitals()
                 orb_orderA[orb_eA[a].second] = a;
 
             for (int a = 0; a < nalphapi_[h]; a++)
-                occA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderA[a] + 1)));
+                occA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                virA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderA[a] + 1)));
+                virA.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_orderA[a] + 1)));
 
             std::vector<std::pair<double, int> > orb_eB;
             for (int a = 0; a < nmopi_[h]; a++)
@@ -1309,9 +1307,9 @@ void HF::print_orbitals()
                 orb_orderB[orb_eB[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                occB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderB[a] + 1)));
+                occB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
             for (int a = nbetapi_[h]; a < nmopi_[h]; a++)
-                virB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h].c_str(),orb_orderB[a] + 1)));
+                virB.push_back(std::make_pair(epsilon_b_->get(h,a), std::make_pair(labels[h],orb_orderB[a] + 1)));
 
         }
         std::sort(occA.begin(), occA.end());
@@ -1326,9 +1324,9 @@ void HF::print_orbitals()
 
     }else if(reference == "ROHF"){
 
-        std::vector<std::pair<double, std::pair<const char*, int> > > docc;
-        std::vector<std::pair<double, std::pair<const char*, int> > > socc;
-        std::vector<std::pair<double, std::pair<const char*, int> > > vir;
+        std::vector<std::pair<double, std::pair<std::string, int> > > docc;
+        std::vector<std::pair<double, std::pair<std::string, int> > > socc;
+        std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
         for (int h = 0; h < nirrep_; h++) {
 
@@ -1342,11 +1340,11 @@ void HF::print_orbitals()
                 orb_order[orb_e[a].second] = a;
 
             for (int a = 0; a < nbetapi_[h]; a++)
-                docc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
+                docc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nbetapi_[h] ; a < nalphapi_[h]; a++)
-                socc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
+                socc.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nalphapi_[h] ; a < nmopi_[h]; a++)
-                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h].c_str(),orb_order[a] + 1)));
+                vir.push_back(std::make_pair(epsilon_a_->get(h,a), std::make_pair(labels[h],orb_order[a] + 1)));
 
         }
         std::sort(docc.begin(), docc.end());
@@ -1363,7 +1361,9 @@ void HF::print_orbitals()
 
     outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
+
 }
+
 
 void HF::guess()
 {

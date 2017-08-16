@@ -293,7 +293,7 @@ protected:
 
     /// Prints the orbitals energies and symmetries (helper method)
     void print_orbitals(const char* header, std::vector<std::pair<double,
-                        std::pair<const char*, int> > > orbs);
+                        std::pair< std::string, int> > > orbs);
 
     /// Prints the orbitals in arbitrary order (works with MOM)
     void print_orbitals();
