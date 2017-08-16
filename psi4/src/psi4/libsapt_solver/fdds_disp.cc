@@ -26,8 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libthce/thce.h"
-#include "psi4/libthce/lreri.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/vector.h"

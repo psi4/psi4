@@ -146,6 +146,12 @@ public:
     std::pair<size_t, size_t> a1);
     void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, 
         std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);    
+    void write_disk_tensor(std::string key, double * b);    
+    void write_disk_tensor(std::string key, double * b, std::pair<size_t, size_t> a0); 
+    void write_disk_tensor(std::string key, double * b, std::pair<size_t, size_t> a0, 
+    std::pair<size_t, size_t> a1);
+    void write_disk_tensor(std::string key, double * b, std::pair<size_t, size_t> a0, 
+        std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);    
 
     // only use this one if you now what you're doing -- I do not bound check!
     void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1,

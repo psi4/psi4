@@ -29,8 +29,6 @@
 #include "psi4/fisapt/fisapt.h"
 #include "psi4/fisapt/local2.h"
 
-#include "psi4/libthce/thce.h"
-#include "psi4/libthce/lreri.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
@@ -3066,12 +3064,26 @@ void FISAPT::find()
     std::shared_ptr<Vector> eps_vir_A = vectors_["eps_vir0A"];
     std::shared_ptr<Vector> eps_vir_B = vectors_["eps_vir0B"];
 
+    // => DF_Helper = DF + disk tensors <= //
+    
+    int nT = 1;
+    #ifdef _OPENMP
+        nT = Process::environment.get_n_threads();
+    #endif
+    
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
+        df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    dfh->set_memory(doubles_);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nT);
+    dfh->initialize(); 
+    dfh->print_header();    
+    size_t nQ = dfh->get_naux();
+    
     // => ESPs <= //
 
-    std::shared_ptr<Tensor> WBarT = DiskTensor::build("WBar", "nB", nB + nb, "na", na, "nr", nr, false, false);
-    FILE* WBarf = WBarT->file_pointer();
-    std::shared_ptr<Tensor> WAbsT = DiskTensor::build("WAbs", "nA", nA + na, "nb", nb, "ns", ns, false, false);
-    FILE* WAbsf = WAbsT->file_pointer();
+    dfh->add_disk_tensor("WBar", std::make_tuple(nB + nb, na, nr));    
+    dfh->add_disk_tensor("WAbs", std::make_tuple(nA + na, nb, ns));    
 
     // => Nuclear Part (PITA) <= //
 
@@ -3091,8 +3103,7 @@ void FISAPT::find()
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B,Vtemp2,Cvir_B,true,false,false);
-        double** Vbsp = Vbs->pointer();
-        fwrite(Vbsp[0],sizeof(double),nb*ns,WAbsf);
+        dfh->write_disk_tensor("WAbs", Vbs, std::make_pair(A, A + 1)); 
     }
 
     double* ZBp = vectors_["ZB"]->pointer();
@@ -3104,17 +3115,11 @@ void FISAPT::find()
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A,Vtemp2,Cvir_A,true,false,false);
-        double** Varp = Var->pointer();
-        fwrite(Varp[0],sizeof(double),na*nr,WBarf);
+        dfh->write_disk_tensor("WBar", Var, std::make_pair(B, B + 1)); 
     }
 
     // ==> DF_Helper Setup (JKFIT Type, in Full Basis) <== //
 
-    int nT = 1;
-    #ifdef _OPENMP
-        nT = Process::environment.get_n_threads();
-    #endif
-    
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Cocc_A);
     Cs.push_back(Cvir_A);
@@ -3125,15 +3130,6 @@ void FISAPT::find()
     for(auto & mat : Cs)
         max_MO = std::max(max_MO, (size_t)mat->ncol());
     
-    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new 
-        df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
-    dfh->set_memory(doubles_);
-    dfh->set_method("DIRECT");
-    dfh->set_nthreads(nT);
-    dfh->initialize(); 
-    dfh->print_header();    
-    size_t nQ = dfh->get_naux();
-
     dfh->add_space("a", Cs[0]);
     dfh->add_space("r", Cs[1]);
     dfh->add_space("b", Cs[2]);
@@ -3157,8 +3153,7 @@ void FISAPT::find()
         dfh->fill_tensor("Abs", TsQ, std::make_pair(b, b + 1)); 
         C_DGEMM('N','T',na,ns,nQ,2.0,RaCp[0],nQ,TsQp[0],nQ,0.0,T1Asp[0],ns);
         for (size_t a = 0; a < na; a++) {
-            fseek(WAbsf,nA*nb*ns*sizeof(double) + a*nb*ns*sizeof(double) + b*ns*sizeof(double),SEEK_SET);
-            fwrite(T1Asp[a],sizeof(double),ns,WAbsf);
+            dfh->write_disk_tensor("WAbs", T1Asp[a], std::make_pair(nA + a, nA + a + 1), std::make_pair(b, b + 1));
         }
     }
 
@@ -3170,8 +3165,7 @@ void FISAPT::find()
         dfh->fill_tensor("Aar", TrQ, std::make_pair(a, a + 1)); 
         C_DGEMM('N','T',nb,nr,nQ,2.0,RbDp[0],nQ,TrQp[0],nQ,0.0,T1Brp[0],nr);
         for (size_t b = 0; b < nb; b++) {
-            fseek(WBarf,nB*na*nr*sizeof(double) + b*na*nr*sizeof(double) + a*nr*sizeof(double),SEEK_SET);
-            fwrite(T1Brp[b],sizeof(double),nr,WBarf);
+            dfh->write_disk_tensor("WBar", T1Brp[b], std::make_pair(nB + b, nB + b + 1), std::make_pair(a, a + 1));
         }
     }
 
@@ -3317,11 +3311,10 @@ void FISAPT::find()
 
     // ==> A <- B Uncoupled <== //
 
-    fseek(WBarf,0L,SEEK_SET);
     for (int B = 0; B < nB + nb; B++) {
 
         // ESP
-        size_t statusvalue=fread(wBp[0],sizeof(double),na*nr,WBarf);
+        dfh->fill_tensor("WBar", wB, std::make_pair(B, B + 1));
 
         // Uncoupled amplitude
         for (int a = 0; a < na; a++) {
@@ -3357,11 +3350,10 @@ void FISAPT::find()
 
     // ==> B <- A Uncoupled <== //
 
-    fseek(WAbsf,0L,SEEK_SET);
     for (int A = 0; A < nA + na; A++) {
 
         // ESP
-        size_t statusvalue=fread(wAp[0],sizeof(double),nb*ns,WAbsf);
+        dfh->fill_tensor("WAbs", wA, std::make_pair(A, A + 1));
 
         // Uncoupled amplitude
         for (int b = 0; b < nb; b++) {
@@ -3474,13 +3466,10 @@ void FISAPT::find()
 
         int nC = std::max(nA + na,nB + nb);
 
-        fseek(WBarf,0L,SEEK_SET);
-        fseek(WAbsf,0L,SEEK_SET);
-
         for (int C = 0; C < nC; C++) {
 
-            if (C < nB + nb) size_t statusvalue=fread(wBp[0],sizeof(double),na*nr,WBarf);
-            if (C < nA + na) size_t statusvalue=fread(wAp[0],sizeof(double),nb*ns,WAbsf);
+            if (C < nB + nb) dfh->fill_tensor("WBar", wB, std::make_pair(C, C + 1));
+            if (C < nA + na) dfh->fill_tensor("WAbs", wB, std::make_pair(C, C + 1));
 
             outfile->Printf("    Responses for (A <- Source B = %3d) and (B <- Source A = %3d)\n\n",
                     (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));

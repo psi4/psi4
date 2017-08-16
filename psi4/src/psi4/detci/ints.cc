@@ -60,8 +60,6 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libthce/thce.h"
-#include "psi4/libthce/lreri.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/soscf.h"
 #include "psi4/libmints/basisset.h"

@@ -2205,7 +2205,7 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::pair<size_t, size_t> t
 }
 
 
-// Write to a disk tensor
+// Add a disk tensor
 void DF_Helper::add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions)
 {
     if (files_.count(key)) {
@@ -2216,6 +2216,8 @@ void DF_Helper::add_disk_tensor(std::string key, std::tuple<size_t, size_t, size
 
     filename_maker(key, std::get<0>(dimensions), std::get<1>(dimensions), std::get<2>(dimensions));
 }
+
+// Write to a disk tensor from Sharedmatrix
 void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M)
 {
     check_file_key(key);
@@ -2260,6 +2262,49 @@ void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::pair<siz
     put_tensor(std::get<1>(files_[key]), M->pointer()[0], i0, i1, i2, op);
 }
 
+// Write to a disk tensor from pointer, be careful!
+void DF_Helper::write_disk_tensor(std::string key, double* b)
+{
+    check_file_key(key);
+    std::string filename = std::get<1>(files_[key]);
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
+    write_disk_tensor(key, b, std::make_pair(0, std::get<0>(sizes)), 
+        std::make_pair(0, std::get<1>(sizes)), std::make_pair(0, std::get<2>(sizes)));
+}    
+void DF_Helper::write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0) 
+{
+    check_file_key(key);
+    std::string filename = std::get<1>(files_[key]);
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
+    write_disk_tensor(key, b, a0, 
+        std::make_pair(0, std::get<1>(sizes)), std::make_pair(0, std::get<2>(sizes)));
+}
+void DF_Helper::write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0, 
+    std::pair<size_t, size_t> a1)
+{
+    check_file_key(key);
+    std::string filename = std::get<1>(files_[key]);
+    std::tuple<size_t, size_t, size_t> sizes;
+    sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
+    write_disk_tensor(key, b, a0, a1, std::make_pair(0, std::get<2>(sizes)));
+}
+void DF_Helper::write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0, 
+    std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2)    
+{
+    // being pythonic ;)
+    std::pair<size_t, size_t> i0 = std::make_pair(std::get<0>(a0), std::get<1>(a0) - 1);     
+    std::pair<size_t, size_t> i1 = std::make_pair(std::get<0>(a1), std::get<1>(a1) - 1);     
+    std::pair<size_t, size_t> i2 = std::make_pair(std::get<0>(a2), std::get<1>(a2) - 1);     
+
+    check_file_key(key);
+    check_file_tuple(key, i0, i1, i2);
+    
+    // you write over transformed integrals or you write new disk tensors
+    std::string op = (transf_.count(key) ? "r+b" : "ab");
+    put_tensor(std::get<1>(files_[key]), b, i0, i1, i2, op);
+}
 
 void DF_Helper::check_file_key(std::string name){
     if (files_.find(name) == files_.end()) {

@@ -32,9 +32,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 
-#include "psi4/libthce/thce.h"
-#include "psi4/libthce/lreri.h"
-
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"

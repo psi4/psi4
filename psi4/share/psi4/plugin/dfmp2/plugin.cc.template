@@ -36,12 +36,11 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libthce/lreri.h"
-#include "psi4/libthce/thce.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libmints/molecule.h"
+#include "psi4/lib3index/df_helper.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -108,17 +107,21 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     // => Setup DF Integrals <= //
 
-    std::shared_ptr<DFERI> df = DFERI::build(primary, auxiliary, options, ref_wfn);
-    df->add_pair_space("B", "ACTIVE_OCC", "ACTIVE_VIR");
+    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(new
+    df_helper::DF_Helper(primary, auxiliary));
+    dfh->set_memory(memory / 8L);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nthreads);
+    dfh->initialize();
+    
+    dfh->print_header();
 
-    df->set_memory(memory / 8L);
-    df->print_header();
-    df->compute();
-
-    std::shared_ptr<Tensor> B = df->ints()["B"];
-
-    FILE* Bf = B->file_pointer();
-    df.reset();
+    dfh->add_space("ACTIVE_OCC", Caocc);
+    dfh->add_space("ACTIVE_VIR", Cavir);
+    
+    dfh->add_transformation("B", "ACTIVE_OCC", "ACTIVE_VIR", "pqQ");
+    
+    dfh->transform();
 
     // => DFMP2 Energy Evaluation <= //
 
@@ -151,9 +154,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     for (int istart = 0; istart < no; istart += max_o) {
         int ni = (istart + max_o >= no ? no - istart : max_o);
-
-        fseek(Bf,istart * nvQ * sizeof(double), SEEK_SET);
-        fread(Biap[0], sizeof(double), ni * nvQ, Bf);
+        dfh->fill_tensor("B", Bia, std::make_pair(istart, istart + ni));
 
         for (int jstart = 0; jstart < no; jstart += max_o) {
             int nj = (jstart + max_o >= no ? no - jstart : max_o);
@@ -163,8 +164,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
             if (istart == jstart) {
                 Bjb->copy(Bia);
             } else {
-                fseek(Bf,jstart * nvQ * sizeof(double), SEEK_SET);
-                fread(Bjbp[0], sizeof(double), nj * nvQ, Bf);
+                dfh->fill_tensor("B", Bjb, std::make_pair(jstart, jstart + nj));    
             }
 
 #pragma omp parallel for reduction(+: E_MP2J, E_MP2K) num_threads(nthreads)
