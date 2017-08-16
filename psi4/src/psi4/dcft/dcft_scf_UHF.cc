@@ -297,9 +297,6 @@ namespace psi{ namespace dcft{
           Ca_->print();
           Cb_->print();
       }
-      //for (int h = 0; h < nirrep_; ++h)
-      //    delete [] irrepLabels[h];
-      //delete[] irrepLabels;
       delete[] aIrrepCount;
       delete[] bIrrepCount;
   }

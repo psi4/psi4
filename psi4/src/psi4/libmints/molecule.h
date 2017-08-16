@@ -490,7 +490,6 @@ public:
     std::string sym_label();
     /// Returns the irrep labels
     std::vector<std::string> irrep_labels();
-    //char** irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }
 
     /**
