@@ -1055,6 +1055,7 @@ void export_mints(py::module& m)
              "Print the bond angle geometrical parameters")
         .def("print_out_of_planes", &Molecule::print_out_of_planes,
              "Print the out-of-plane angle geometrical parameters to output file")
+        .def("irrep_labels", &Molecule::irrep_labels, "Returns Irreducible Representation symmetry labels")
         .def_property("units", py::cpp_function(&Molecule::units),
                       py::cpp_function(&Molecule::set_units),
                       "Units (Angstrom or Bohr) used to define the geometry")
