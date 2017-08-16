@@ -54,8 +54,8 @@ void ex_td_print(std::vector<struct XTD_Params> xtd_list)
   for(i=0; i<xtd_list.size(); i++) {
     //outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %12.1lf\n",
     outfile->Printf("\t  %d%s->%d%s %7.3lf %9.1lf %7.1lf %10.6lf %8.4lf %8.4lf %8.4lf  %7.6E\n",
-            xtd_list[i].root1+1,moinfo.labels[xtd_list[i].irrep1],
-            xtd_list[i].root2+1,moinfo.labels[xtd_list[i].irrep2],
+            xtd_list[i].root1+1,moinfo.labels[xtd_list[i].irrep1].c_str(),
+            xtd_list[i].root2+1,moinfo.labels[xtd_list[i].irrep2].c_str(),
             xtd_list[i].cceom_energy*pc_hartree2ev,
             xtd_list[i].cceom_energy*pc_hartree2wavenumbers,
             1/(xtd_list[i].cceom_energy*_hartree2nm),

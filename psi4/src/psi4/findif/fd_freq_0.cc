@@ -149,7 +149,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     // SharedMatrix rot_trans_out = salc_list.matrix_projected_out();
     //int num_projected_out = rot_trans_out->nrow();
 
-    char **irrep_lbls = mol->irrep_labels();
+    std::vector<std::string> irrep_lbls = mol->irrep_labels();
     double **H_irr[8]; // hessian by irrep block
 
     std::vector < VIBRATION * > modes;
@@ -227,7 +227,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
         } // i, salc_i
 
         if (print_lvl >= 3) {
-            outfile->Printf("\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
+            outfile->Printf("\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h].c_str());
             outfile->Printf("symmetry-adapted cartesian coordinates.\n");
             mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), "outfile");
         }
@@ -253,7 +253,7 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
                 dim, 0, normal_irr[0], dim);
 
         if (print_lvl >= 3) {
-            outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+            outfile->Printf("\n\tNormal coordinates (non-mass-weighted) for irrep %s:\n", irrep_lbls[h].c_str());
             eivout(normal_irr, evals, 3 * Natom, dim, "outfile");
         }
 

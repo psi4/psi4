@@ -31,6 +31,9 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+#include <vector>
+
 namespace psi { namespace cclambda {
 
 struct MOInfo {
@@ -47,7 +50,7 @@ struct MOInfo {
   int *frdocc;        /* no. of frozen core orbitals per irrep */
   int *fruocc;        /* no. of frozen unoccupied orbitals per irrep */
   int nvirt;          /* total no. of (active) virtual orbitals */
-  char **labels;      /* irrep labels */
+  std::vector<std::string> labels;      /* irrep labels */
   int *occpi;         /* no. of occupied orbs. (incl. open) per irrep */
   int *aoccpi;        /* no. of alpha occupied orbs. (incl. open) per irrep */
   int *boccpi;        /* no. of beta occupied orbs. (incl. open) per irrep */

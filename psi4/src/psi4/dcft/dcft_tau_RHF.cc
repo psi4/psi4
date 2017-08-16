@@ -352,26 +352,23 @@ DCFTSolver::print_opdm_RHF()
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);
-    char **irrepLabels = molecule_->irrep_labels();
+    std::vector<std::string> irrepLabels = molecule_->irrep_labels();
 
     outfile->Printf( "\n\tOrbital occupations:\n\t\tDoubly occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], 2 * aPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
         if (count % 4 == 3 && i != nalpha_)
             outfile->Printf( "\n\t\t");
     }
     outfile->Printf( "\n\n\t\tVirtual orbitals\n\t\t");
     for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = aPairs[i].second;
-        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], 2 * aPairs[i].first);
+        outfile->Printf( "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), 2 * aPairs[i].first);
         if (count % 4 == 3 && i != nmo_)
             outfile->Printf( "\n\t\t");
     }
     outfile->Printf( "\n\n");
-    for (int h = 0; h < nirrep_; ++h)
-        free(irrepLabels[h]);
-    free(irrepLabels);
     free(aIrrepCount);
     free(bIrrepCount);
 

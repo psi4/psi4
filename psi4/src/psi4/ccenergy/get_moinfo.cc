@@ -359,9 +359,6 @@ void CCEnergyWavefunction::cleanup(void)
 //    free(moinfo.uoccpi);
     //  free(moinfo.fruocc);
     //  free(moinfo.frdocc);
-    for(i=0; i < moinfo_.nirreps; i++)
-        free(moinfo_.labels[i]);
-    free(moinfo_.labels);
     if(params_.ref == 2) {
         free(moinfo_.aoccpi);
         free(moinfo_.boccpi);

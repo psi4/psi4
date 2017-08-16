@@ -138,7 +138,7 @@ void MOInfoSCF::print_mo()
     for(int i=nirreps;i<8;i++)
         outfile->Printf("     ");
     for(int i=0;i<nirreps;i++)
-        outfile->Printf("  %s",irr_labs[i]);
+        outfile->Printf("  %s",irr_labs[i].c_str());
     outfile->Printf(" Total");
     outfile->Printf("\n  ----------------------------------------------------------------------------");
     print_mo_space(nso,sopi,"Total                         ");

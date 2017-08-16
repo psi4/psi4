@@ -31,6 +31,9 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+#include <vector>
+
 namespace psi { namespace ccresponse {
 
 struct MOInfo {
@@ -52,7 +55,7 @@ struct MOInfo {
   int *fruocc;        /* no. of frozen unoccupied orbitals per irrep */
   int nvirt;          /* total no. of (active) virtual orbitals */
   int *actpi;         /* no. of active orbitals per irrep */
-  char **labels;      /* irrep labels */
+  std::vector<std::string> labels;      /* irrep labels */
   int *pitzer2qt;     /* Pitzer -> QT reordering array */
   int *qt2pitzer;     /* QT -> Pitzer reordering array */
   int *occpi;         /* no. of occupied orbs. (incl. open) per irrep */

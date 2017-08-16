@@ -315,10 +315,6 @@ void cleanup(void)
 //    free(moinfo.frdocc);
     free(moinfo.actpi);
 
-    for(i=0; i < moinfo.nirreps; i++)
-        free(moinfo.labels[i]);
-    free(moinfo.labels);
-
     free(moinfo.MU);
     free(moinfo.L);
     free(moinfo.P);

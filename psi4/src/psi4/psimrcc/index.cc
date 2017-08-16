@@ -425,7 +425,7 @@ void CCIndex::print()
   int index=0;
   for(int h=0;h<nirreps;h++){
     if(tuplespi[h]>0)
-      outfile->Printf("\n\t%s",moinfo->get_irr_labs(h));
+      outfile->Printf("\n\t%s",moinfo->get_irr_labs(h).c_str());
     for(size_t tuple = 0; tuple < tuplespi[h]; ++tuple){
       outfile->Printf("\n\t\t( ");
       for(int k=0;k<nelements;k++)

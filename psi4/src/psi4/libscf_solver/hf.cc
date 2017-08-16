@@ -1226,31 +1226,29 @@ void HF::compute_fvpi()
     }
 }
 
-void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
+void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<std::string, int> > > orbs)
 {
-
         outfile->Printf( "    %-70s\n\n    ", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
-            outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
+            outfile->Printf( "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first.c_str(), orbs[i].first);
             if (count++ % 3 == 2 && count != orbs.size())
                 outfile->Printf( "\n    ");
         }
         outfile->Printf( "\n\n");
-
 }
 
 void HF::print_orbitals()
 {
-    char **labels = molecule_->irrep_labels();
+    std::vector<std::string> labels = molecule_->irrep_labels();
 
         outfile->Printf( "    Orbital Energies (a.u.)\n    -----------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
     if((reference == "RHF") || (reference == "RKS")){
 
-        std::vector<std::pair<double, std::pair<const char*, int> > > occ;
-        std::vector<std::pair<double, std::pair<const char*, int> > > vir;
+        std::vector<std::pair<double, std::pair<std::string, int> > > occ;
+        std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
         for (int h = 0; h < nirrep_; h++) {
 
@@ -1278,10 +1276,10 @@ void HF::print_orbitals()
     }else if((reference == "UHF") || (reference == "UKS") ||
         (reference == "CUHF")){
 
-        std::vector<std::pair<double, std::pair<const char*, int> > > occA;
-        std::vector<std::pair<double, std::pair<const char*, int> > > virA;
-        std::vector<std::pair<double, std::pair<const char*, int> > > occB;
-        std::vector<std::pair<double, std::pair<const char*, int> > > virB;
+        std::vector<std::pair<double, std::pair<std::string, int> > > occA;
+        std::vector<std::pair<double, std::pair<std::string, int> > > virA;
+        std::vector<std::pair<double, std::pair<std::string, int> > > occB;
+        std::vector<std::pair<double, std::pair<std::string, int> > > virB;
 
         for (int h = 0; h < nirrep_; h++) {
 
@@ -1326,9 +1324,9 @@ void HF::print_orbitals()
 
     }else if(reference == "ROHF"){
 
-        std::vector<std::pair<double, std::pair<const char*, int> > > docc;
-        std::vector<std::pair<double, std::pair<const char*, int> > > socc;
-        std::vector<std::pair<double, std::pair<const char*, int> > > vir;
+        std::vector<std::pair<double, std::pair<std::string, int> > > docc;
+        std::vector<std::pair<double, std::pair<std::string, int> > > socc;
+        std::vector<std::pair<double, std::pair<std::string, int> > > vir;
 
         for (int h = 0; h < nirrep_; h++) {
 
@@ -1361,14 +1359,11 @@ void HF::print_orbitals()
         throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
     }
 
-    for(int h = 0; h < nirrep_; ++h)
-        free(labels[h]);
-    free(labels);
-
-
     outfile->Printf( "    Final Occupation by Irrep:\n");
     print_occupation();
+
 }
+
 
 void HF::guess()
 {
@@ -1929,10 +1924,10 @@ void HF::print_energies()
 void HF::print_occupation()
 {
 
-        char **labels = molecule_->irrep_labels();
+        std::vector<std::string> labels = molecule_->irrep_labels();
         std::string reference = options_.get_str("REFERENCE");
         outfile->Printf( "          ");
-        for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h]); outfile->Printf( "\n");
+        for(int h = 0; h < nirrep_; ++h) outfile->Printf( " %4s ", labels[h].c_str()); outfile->Printf( "\n");
         outfile->Printf( "    DOCC [ ");
         for(int h = 0; h < nirrep_-1; ++h) outfile->Printf( " %4d,", doccpi_[h]);
         outfile->Printf( " %4d ]\n", doccpi_[nirrep_-1]);
@@ -1951,7 +1946,6 @@ void HF::print_occupation()
             outfile->Printf( " %4d ]\n", nbetapi_[nirrep_-1]);
         }
 
-        for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
         outfile->Printf("\n");
 
 }
@@ -2082,11 +2076,11 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
     std::sort(vec.begin(), vec.end());
     std::vector<std::pair<double, int> >::const_iterator iter = vec.begin();
     outfile->Printf( "    ");
-    char** irrep_labels = molecule_->irrep_labels();
+    std::vector<std::string> irrep_labels = molecule_->irrep_labels();
     int count = 0;
     for(; iter != vec.end(); ++iter){
         ++count;
-        outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second], iter->first);
+        outfile->Printf( "%4s %-10.6f", irrep_labels[iter->second].c_str(), iter->first);
         if(count == 4){
             outfile->Printf( "\n    ");
             count = 0;
@@ -2099,9 +2093,6 @@ void HF::print_stability_analysis(std::vector<std::pair<double, int> > &vec)
     else
         outfile->Printf( "\n");
 
-    for(int h = 0; h < nirrep_; ++h)
-        free(irrep_labels[h]);
-    free(irrep_labels);
 }
 bool HF::stability_analysis()
 {

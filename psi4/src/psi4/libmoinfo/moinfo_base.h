@@ -58,8 +58,8 @@ public:
 
   double      get_nuclear_energy()               const {return(nuclear_energy);}
 
-  char**      get_irr_labs()                     const {return(irr_labs);}
-  char*       get_irr_labs(int i)                const {return(irr_labs[i]);}
+  std::vector<std::string>  get_irr_labs()       const {return(irr_labs);}
+  std::string get_irr_labs(int i)                const {return(irr_labs[i]);}
 
   int         get_nirreps()                      const {return(nirreps);}
   int         get_nso()                          const {return(nso);}
@@ -118,7 +118,7 @@ protected:
   double**    scf;                                   // MO coefficients
   double***   scf_irrep;                             // MO coefficients
 
-  char**      irr_labs;
+  std::vector<std::string>   irr_labs;
 };
 
 }

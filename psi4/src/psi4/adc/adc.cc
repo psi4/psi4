@@ -45,7 +45,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) :
     shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
 
-    char **irreps_      = molecule_->irrep_labels();
+    std::vector<std::string> irreps_      = molecule_->irrep_labels();
     aoccpi_             = new int[nirrep_];
     boccpi_             = new int[nirrep_];
     avirpi_             = new int[nirrep_];
@@ -94,7 +94,7 @@ ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) :
     outfile->Printf(     "\t*****************************************************\n");
     for(int h = 0; h < nirrep_; h++){
         outfile->Printf( "\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n",
-                irreps_[h], frzcpi_[h], doccpi_[h], soccpi_[h],
+                irreps_[h].c_str(), frzcpi_[h], doccpi_[h], soccpi_[h],
                 aoccpi_[h], avirpi_[h], boccpi_[h], bvirpi_[h], frzvpi_[h]);
     }
     outfile->Printf(     "\t*****************************************************\n\n");

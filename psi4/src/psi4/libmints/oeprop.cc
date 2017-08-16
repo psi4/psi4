@@ -1485,7 +1485,7 @@ void OEProp::compute_mo_extents()
             quadrupole[2]->set(0, i, std::fabs(sumz));
         }
 #endif
-        char** labels = basisset_->molecule()->irrep_labels();
+        std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
         std::vector<std::tuple<double,int,int> > metric;
         for (int h = 0; h < epsilon_a_->nirrep(); h++) {
             for (int i = 0; i < epsilon_a_->dimpi()[h]; i++) {
@@ -1506,7 +1506,7 @@ void OEProp::compute_mo_extents()
                    zz = quadrupole[2]->get(0, i);
             outfile->Printf( "    %4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
                     i,
-                    labels[h],
+                    labels[h].c_str(),
                     n,
                     std::fabs(quadrupole[0]->get(0, i)),
                     std::fabs(quadrupole[1]->get(0, i)),
@@ -1515,8 +1515,6 @@ void OEProp::compute_mo_extents()
         }
 
         outfile->Printf( "\n");
-        for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-
 
     } else {
 
@@ -1915,7 +1913,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 
 void OEProp::compute_no_occupations()
 {
-    char** labels = basisset_->molecule()->irrep_labels();
+    std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
 
     outfile->Printf( "  Natural Orbital Occupations:\n\n");
 
@@ -1951,11 +1949,11 @@ void OEProp::compute_no_occupations()
         for (int index = start_occ_a; index < stop_vir_a; index++) {
             if (index < offset_a) {
                 outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
-                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])],
+                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
                 std::get<0>(metric_a[index]));
             } else {
                 outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
-                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])],
+                std::get<1>(metric_a[index])+1,labels[std::get<2>(metric_a[index])].c_str(),
                 std::get<0>(metric_a[index]));
             }
         }
@@ -1980,11 +1978,11 @@ void OEProp::compute_no_occupations()
         for (int index = start_occ_b; index < stop_vir_b; index++) {
             if (index < offset_b) {
                 outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
-                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])],
+                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
                 std::get<0>(metric_b[index]));
             } else {
                 outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
-                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])],
+                std::get<1>(metric_b[index])+1,labels[std::get<2>(metric_b[index])].c_str(),
                 std::get<0>(metric_b[index]));
             }
         }
@@ -2014,11 +2012,11 @@ void OEProp::compute_no_occupations()
     for (int index = start_occ; index < stop_vir; index++) {
         if (index < offset) {
             outfile->Printf( "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
-            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])],
+            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
             std::get<0>(metric[index]));
         } else {
             outfile->Printf( "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
-            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])],
+            std::get<1>(metric[index])+1,labels[std::get<2>(metric[index])].c_str(),
             std::get<0>(metric[index]));
         }
     }
