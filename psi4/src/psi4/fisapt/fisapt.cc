@@ -2220,15 +2220,15 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
 
-        dfh->fill_tensor("Dar", Dar, std::make_pair(astart, astart + nablock)); 
-        dfh->fill_tensor("Ear", Aar, std::make_pair(astart, astart + nablock)); 
+        dfh->fill_tensor("Dar", Dar, {astart, astart + nablock}); 
+        dfh->fill_tensor("Ear", Aar, {astart, astart + nablock}); 
 
         double* D2p = Darp[0];
         double* A2p = Aarp[0];
         for (long int arQ = 0L; arQ < nablock * nrQ; arQ++) {
             (*D2p++) += (*A2p++);
         }
-        dfh->write_disk_tensor("Far", Dar, std::make_pair(astart, astart + nablock)); 
+        dfh->write_disk_tensor("Far", Dar, {astart, astart + nablock}); 
     }
   
     dfh->add_disk_tensor("Fbs", std::make_tuple(na, nr, nQ));
@@ -2236,15 +2236,15 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     for (int bstart = 0; bstart < nb; bstart += max_b) {
         int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
-        dfh->fill_tensor("Dbs", Dbs, std::make_pair(bstart, bstart + nbblock)); 
-        dfh->fill_tensor("Ebs", Abs, std::make_pair(bstart, bstart + nbblock)); 
+        dfh->fill_tensor("Dbs", Dbs, {bstart, bstart + nbblock}); 
+        dfh->fill_tensor("Ebs", Abs, {bstart, bstart + nbblock}); 
 
         double* D2p = Dbsp[0];
         double* A2p = Absp[0];
         for (long int bsQ = 0L; bsQ < nbblock * nsQ; bsQ++) {
             (*D2p++) += (*A2p++);
         }
-        dfh->write_disk_tensor("Fbs", Dbs, std::make_pair(bstart, bstart + nbblock)); 
+        dfh->write_disk_tensor("Fbs", Dbs, {bstart, bstart + nbblock}); 
     }
 
     // => Targets <= //
@@ -2257,18 +2257,18 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache,
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
 
-        dfh->fill_tensor("Aar", Aar, std::make_pair(astart, astart + nablock)); 
-        dfh->fill_tensor("Bas", Bas, std::make_pair(astart, astart + nablock)); 
-        dfh->fill_tensor("Cas", Cas, std::make_pair(astart, astart + nablock)); 
-        dfh->fill_tensor("Far", Dar, std::make_pair(astart, astart + nablock)); 
+        dfh->fill_tensor("Aar", Aar, {astart, astart + nablock}); 
+        dfh->fill_tensor("Bas", Bas, {astart, astart + nablock}); 
+        dfh->fill_tensor("Cas", Cas, {astart, astart + nablock}); 
+        dfh->fill_tensor("Far", Dar, {astart, astart + nablock}); 
         
         for (int bstart = 0; bstart < nb; bstart += max_b) {
             int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
-            dfh->fill_tensor("Abs", Abs, std::make_pair(bstart, bstart + nbblock)); 
-            dfh->fill_tensor("Bbr", Bbr, std::make_pair(bstart, bstart + nbblock)); 
-            dfh->fill_tensor("Cbr", Cbr, std::make_pair(bstart, bstart + nbblock)); 
-            dfh->fill_tensor("Fbs", Dbs, std::make_pair(bstart, bstart + nbblock)); 
+            dfh->fill_tensor("Abs", Abs, {bstart, bstart + nbblock}); 
+            dfh->fill_tensor("Bbr", Bbr, {bstart, bstart + nbblock}); 
+            dfh->fill_tensor("Cbr", Cbr, {bstart, bstart + nbblock}); 
+            dfh->fill_tensor("Fbs", Dbs, {bstart, bstart + nbblock}); 
 
             long int nab = nablock * nbblock;
 
@@ -2741,13 +2741,13 @@ void FISAPT::felst()
     std::shared_ptr<Matrix> QaC(new Matrix("QaC", na, nQ));
     double** QaCp = QaC->pointer();
     for (size_t a = 0; a < na; a++) {
-        dfh->fill_tensor("Aaa", QaCp[a], std::make_pair(a, a + 1), std::make_pair(a, a + 1));
+        dfh->fill_tensor("Aaa", QaCp[a], {a, a + 1}, {a, a + 1});
     }
 
     std::shared_ptr<Matrix> QbC(new Matrix("QbC", nb, nQ));
     double** QbCp = QbC->pointer();
     for (size_t b = 0; b < nb; b++) {
-        dfh->fill_tensor("Abb", QbCp[b], std::make_pair(b, b + 1), std::make_pair(b, b + 1));
+        dfh->fill_tensor("Abb", QbCp[b], {b, b + 1}, {b, b + 1});
     }
 
     std::shared_ptr<Matrix> Elst10_3 = Matrix::doublet(QaC,QbC,false,true);
@@ -2963,26 +2963,26 @@ void FISAPT::fexch()
     dfh->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
     
     for (int a = 0; a < na; a++) {
-        dfh->fill_tensor("Aar", TrQ, std::make_pair(a, a + 1));
+        dfh->fill_tensor("Aar", TrQ, {a, a + 1});
         C_DGEMM('N','N',nb,nQ,nr,1.0,Sbrp[0],nr,TrQp[0],nQ,0.0,TbQp[0],nQ);
-        dfh->write_disk_tensor("Bab", TrQ, std::make_pair(a, a + 1)); 
+        dfh->write_disk_tensor("Bab", TrQ, {a, a + 1}); 
     }
 
     dfh->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
     
     for (int b = 0; b < nb; b++) {
-        dfh->fill_tensor("Abs", TsQ, std::make_pair(b, b + 1));
+        dfh->fill_tensor("Abs", TsQ, {b, b + 1});
         C_DGEMM('N','N',na,nQ,ns,1.0,Sasp[0],ns,TsQp[0],nQ,0.0,TaQp[0],nQ);
-        dfh->write_disk_tensor("Bba", TrQ, std::make_pair(b, b + 1)); 
+        dfh->write_disk_tensor("Bba", TrQ, {b, b + 1}); 
     }
 
     std::shared_ptr<Matrix> E_exch3(new Matrix("E_exch [a <x-x> b]", na, nb));
     double** E_exch3p = E_exch3->pointer();
 
     for (int a = 0; a < na; a++) {
-        dfh->fill_tensor("Bab", TbQ, std::make_pair(a, a + 1));
+        dfh->fill_tensor("Bab", TbQ, {a, a + 1});
         for (int b = 0; b < nb; b++) {
-            dfh->fill_tensor("Bba", TaQ, std::make_pair(b, b + 1), std::make_pair(a, a + 1));
+            dfh->fill_tensor("Bba", TaQ, {b, b + 1}, {a, a + 1});
             E_exch3p[a][b] -= 2.0 * C_DDOT(nQ,TbQp[b],1,TaQp[0],1);
         }
     }
@@ -3103,7 +3103,7 @@ void FISAPT::find()
         Zxyz2p[0][3] = mol->z(A);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B,Vtemp2,Cvir_B,true,false,false);
-        dfh->write_disk_tensor("WAbs", Vbs, std::make_pair(A, A + 1)); 
+        dfh->write_disk_tensor("WAbs", Vbs, {A, A + 1}); 
     }
 
     double* ZBp = vectors_["ZB"]->pointer();
@@ -3115,7 +3115,7 @@ void FISAPT::find()
         Zxyz2p[0][3] = mol->z(B);
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A,Vtemp2,Cvir_A,true,false,false);
-        dfh->write_disk_tensor("WBar", Var, std::make_pair(B, B + 1)); 
+        dfh->write_disk_tensor("WBar", Var, {B, B + 1}); 
     }
 
     // ==> DF_Helper Setup (JKFIT Type, in Full Basis) <== //
@@ -3150,10 +3150,10 @@ void FISAPT::find()
     double** TsQp = TsQ->pointer();
     double** T1Asp = T1As->pointer();
     for (size_t b = 0; b < nb; b++) {
-        dfh->fill_tensor("Abs", TsQ, std::make_pair(b, b + 1)); 
+        dfh->fill_tensor("Abs", TsQ, {b, b + 1}); 
         C_DGEMM('N','T',na,ns,nQ,2.0,RaCp[0],nQ,TsQp[0],nQ,0.0,T1Asp[0],ns);
         for (size_t a = 0; a < na; a++) {
-            dfh->write_disk_tensor("WAbs", T1Asp[a], std::make_pair(nA + a, nA + a + 1), std::make_pair(b, b + 1));
+            dfh->write_disk_tensor("WAbs", T1Asp[a], {nA + a, nA + a + 1}, {b, b + 1});
         }
     }
 
@@ -3162,10 +3162,10 @@ void FISAPT::find()
     double** TrQp = TrQ->pointer();
     double** T1Brp = T1Br->pointer();
     for (size_t a = 0; a < na; a++) {
-        dfh->fill_tensor("Aar", TrQ, std::make_pair(a, a + 1)); 
+        dfh->fill_tensor("Aar", TrQ, {a, a + 1}); 
         C_DGEMM('N','T',nb,nr,nQ,2.0,RbDp[0],nQ,TrQp[0],nQ,0.0,T1Brp[0],nr);
         for (size_t b = 0; b < nb; b++) {
-            dfh->write_disk_tensor("WBar", T1Brp[b], std::make_pair(nB + b, nB + b + 1), std::make_pair(a, a + 1));
+            dfh->write_disk_tensor("WBar", T1Brp[b], {nB + b, nB + b + 1}, {a, a + 1});
         }
     }
 
@@ -3314,7 +3314,7 @@ void FISAPT::find()
     for (int B = 0; B < nB + nb; B++) {
 
         // ESP
-        dfh->fill_tensor("WBar", wB, std::make_pair(B, B + 1));
+        dfh->fill_tensor("WBar", wB, {B, B + 1});
 
         // Uncoupled amplitude
         for (int a = 0; a < na; a++) {
@@ -3353,7 +3353,7 @@ void FISAPT::find()
     for (int A = 0; A < nA + na; A++) {
 
         // ESP
-        dfh->fill_tensor("WAbs", wA, std::make_pair(A, A + 1));
+        dfh->fill_tensor("WAbs", wA, {A, A + 1});
 
         // Uncoupled amplitude
         for (int b = 0; b < nb; b++) {
@@ -3468,8 +3468,8 @@ void FISAPT::find()
 
         for (int C = 0; C < nC; C++) {
 
-            if (C < nB + nb) dfh->fill_tensor("WBar", wB, std::make_pair(C, C + 1));
-            if (C < nA + na) dfh->fill_tensor("WAbs", wB, std::make_pair(C, C + 1));
+            if (C < nB + nb) dfh->fill_tensor("WBar", wB, {C, C + 1});
+            if (C < nA + na) dfh->fill_tensor("WAbs", wB, {C, C + 1});
 
             outfile->Printf("    Responses for (A <- Source B = %3d) and (B <- Source A = %3d)\n\n",
                     (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));
@@ -4003,15 +4003,15 @@ void FISAPT::fdisp()
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
         
-        dfh->fill_tensor("Dar", Dar, std::make_pair(rstart, rstart + nrblock)); 
-        dfh->fill_tensor("Ear", Aar, std::make_pair(rstart, rstart + nrblock)); 
+        dfh->fill_tensor("Dar", Dar, {rstart, rstart + nrblock}); 
+        dfh->fill_tensor("Ear", Aar, {rstart, rstart + nrblock}); 
         
         double* D2p = Darp[0];
         double* A2p = Aarp[0];
         for (long int arQ = 0L; arQ < nrblock * naQ; arQ++) {
             (*D2p++) += (*A2p++);
         }
-        dfh->write_disk_tensor("Far", Dar, std::make_pair(rstart, rstart + nrblock)); 
+        dfh->write_disk_tensor("Far", Dar, {rstart, rstart + nrblock}); 
     }
 
     dfh->add_disk_tensor("Fbs", std::make_tuple(ns, nb, nQ));
@@ -4019,15 +4019,15 @@ void FISAPT::fdisp()
     for (int sstart = 0; sstart < ns; sstart += max_s) {
         int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
         
-        dfh->fill_tensor("Dbs", Dbs, std::make_pair(sstart, sstart + nsblock)); 
-        dfh->fill_tensor("Ebs", Abs, std::make_pair(sstart, sstart + nsblock));
+        dfh->fill_tensor("Dbs", Dbs, {sstart, sstart + nsblock}); 
+        dfh->fill_tensor("Ebs", Abs, {sstart, sstart + nsblock});
         
         double* D2p = Dbsp[0];
         double* A2p = Absp[0];
         for (long int bsQ = 0L; bsQ < nsblock * nbQ; bsQ++) {
             (*D2p++) += (*A2p++);
         }
-        dfh->write_disk_tensor("Fbs", Dbs, std::make_pair(sstart, sstart + nsblock)); 
+        dfh->write_disk_tensor("Fbs", Dbs, {sstart, sstart + nsblock}); 
     }
 
     // => Targets <= //
@@ -4062,18 +4062,18 @@ void FISAPT::fdisp()
     for (int rstart = 0; rstart < nr; rstart += max_r) {
         int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
-        dfh->fill_tensor("Aar", Aar, std::make_pair(rstart, rstart + nrblock)); 
-        dfh->fill_tensor("Far", Dar, std::make_pair(rstart, rstart + nrblock)); 
-        dfh->fill_tensor("Bbr", Bbr, std::make_pair(rstart, rstart + nrblock)); 
-        dfh->fill_tensor("Cbr", Cbr, std::make_pair(rstart, rstart + nrblock)); 
+        dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock}); 
+        dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock}); 
+        dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock}); 
+        dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock}); 
 
         for (int sstart = 0; sstart < ns; sstart += max_s) {
             int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
-            dfh->fill_tensor("Abs", Abs, std::make_pair(sstart, sstart + nsblock)); 
-            dfh->fill_tensor("Fbs", Dbs, std::make_pair(sstart, sstart + nsblock)); 
-            dfh->fill_tensor("Bas", Bas, std::make_pair(sstart, sstart + nsblock)); 
-            dfh->fill_tensor("Cas", Cas, std::make_pair(sstart, sstart + nsblock)); 
+            dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock}); 
+            dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock}); 
+            dfh->fill_tensor("Bas", Bas, {sstart, sstart + nsblock}); 
+            dfh->fill_tensor("Cas", Cas, {sstart, sstart + nsblock}); 
 
             long int nrs = nrblock * nsblock;
 

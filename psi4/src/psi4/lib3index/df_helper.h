@@ -119,41 +119,40 @@ class DF_Helper {
     // I will check to make sure your slice sizes are not larger than the matrix bounds,
     // but be prepared for a runtime throw.
     void fill_tensor(std::string name, SharedMatrix M);
-    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1);
-    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);
-    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
-                     std::pair<size_t, size_t> a3);
-
+    void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1);
+    void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2);
+    void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,
+        std::vector<size_t> a3);
+    
+    // only use this one if you now what you're doing -- I do not bound check!
+    void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2, std::vector<size_t> a3);
+    void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2);
+    void fill_tensor(std::string name, double* b, std::vector<size_t> a1);
+    void fill_tensor(std::string name, double* b);
+    
     // return a SharedMatrix, I take care of sizing for you.
     // I always compound the 2nd and 3rd indices.
     // For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a
     // SharedMatrix of size (15, 25), so be careful if you plan to use Matrix::gemm
     SharedMatrix get_tensor(std::string name);
-    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1);
-    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);
-    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
-                            std::pair<size_t, size_t> a3);
+    SharedMatrix get_tensor(std::string name, std::vector<size_t> a1);
+    SharedMatrix get_tensor(std::string name, std::vector<size_t> a1, std::vector<size_t> a2);
+    SharedMatrix get_tensor(std::string name, std::vector<size_t> a1, std::vector<size_t> a2, std::vector<size_t> a3);
 
     // Add a 3-index disk tensor, write to it, or write over a transformed tensor
     void add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions);
-    void write_disk_tensor(std::string key, SharedMatrix M);
-    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0);
-    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1);
-    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1,
-                           std::pair<size_t, size_t> a2);
-    void write_disk_tensor(std::string key, double* b);
-    void write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0);
-    void write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1);
-    void write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1,
-                           std::pair<size_t, size_t> a2);
 
-    // only use this one if you now what you're doing -- I do not bound check!
-    void fill_tensor(std::string name, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
-                     std::pair<size_t, size_t> a3);
-    void fill_tensor(std::string name, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);
-    void fill_tensor(std::string name, double* b, std::pair<size_t, size_t> a1);
-    void fill_tensor(std::string name, double* b);
+    void write_disk_tensor(std::string name, SharedMatrix M);
+    void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1);
+    void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2);
+    void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,std::vector<size_t> a3); 
 
+    void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2, std::vector<size_t> a3);
+    void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2);
+    void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1);
+    void write_disk_tensor(std::string name, double* b);
+
+    
     // tranpose a tensor *after* it has been written
     void transpose(std::string name, std::tuple<size_t, size_t, size_t> order);
 
@@ -281,6 +280,7 @@ class DF_Helper {
     // => FILE IO machinery <=
     void put_tensor(std::string file, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
                     std::pair<size_t, size_t> a3, std::string op);
+    
     void put_tensor(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
                     const size_t stop2, std::string op);
     void get_tensor_(std::string file, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,

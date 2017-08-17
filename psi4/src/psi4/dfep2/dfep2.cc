@@ -295,7 +295,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         }
 
         // Read a IA block
-        dfh_->fill_tensor("iaQ", block_iaQ, std::make_pair(bstart, bstart + block_size));
+        dfh_->fill_tensor("iaQ", block_iaQ, {bstart, bstart + block_size});
 
         // Write out OVVE
         temp_ovvE->gemm(false, true, 1.0, block_iaQ, aEQ, 0.0);
