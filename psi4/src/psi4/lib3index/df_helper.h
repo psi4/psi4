@@ -46,59 +46,57 @@ class Matrix;
 class ERISieve;
 class TwoBodyAOInt;
 
-namespace df_helper{
+namespace df_helper {
 
 class DF_Helper {
-
-public:
-
+   public:
     DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
     ~DF_Helper();
 
     // => user options - set these before calling initialize() <=
     // workflow method (store or direct) (defaults to STORE)
-    void set_method(std::string met) { method_ = met;}
+    void set_method(std::string met) { method_ = met; }
     std::string get_method() { return method_; }
-    
+
     // number of threads (defaults to 1)
-    void set_nthreads(size_t threads) { nthreads_ = threads;}
+    void set_nthreads(size_t threads) { nthreads_ = threads; }
     size_t get_nthreads() { return nthreads_; }
-    
+
     // memory in doubles (defaults to 256,000,000) (2.048GB)
-    void set_memory(size_t mem) { memory_ = mem;}
+    void set_memory(size_t mem) { memory_ = mem; }
     size_t get_memory() { return memory_; }
 
     // I can tell you how many doubles the *screened* AOs will require
-    size_t get_AO_size() { return big_skips_[nao_]; } 
+    size_t get_AO_size() { return big_skips_[nao_]; }
 
-    // want the AO integrals in core? (defaults to True) 
+    // want the AO integrals in core? (defaults to True)
     // (I will adapt blocking  and turn off if necessary to keep memory satisfied)
-    void set_AO_core(bool on) {AO_core_ = on;}
+    void set_AO_core(bool on) { AO_core_ = on; }
     bool get_AO_core() { return AO_core_; }
-    
+
     // Do you want the MO integrals in core? (defaults to FALSE) (not my responsiblity to keep track of)
-    void set_MO_core(bool on) {MO_core_ = on;}
+    void set_MO_core(bool on) { MO_core_ = on; }
     bool get_MO_core() { return MO_core_; }
-    
+
     // schwarz cutoff (defaults to 1e-12)
-    void set_schwarz_cutoff(double cutoff) { cutoff_ = cutoff;}
+    void set_schwarz_cutoff(double cutoff) { cutoff_ = cutoff; }
     double get_schwarz_cutoff() { return cutoff_; }
-    
-    // metric power (defaults to -0.5)  
-    void set_metric_pow(double pow) { mpower_ = pow;}
-    double get_metric_pow() { return mpower_;}
+
+    // metric power (defaults to -0.5)
+    void set_metric_pow(double pow) { mpower_ = pow; }
+    double get_metric_pow() { return mpower_; }
 
     // Want the metric to be held in core? (defaults to FALSE) (I will adapt blocking to keep memory satisfied)
-    void hold_met(bool hold) {hold_met_ = hold;}
-    bool get_hold_met() { return hold_met_;}
+    void hold_met(bool hold) { hold_met_ = hold; }
+    bool get_hold_met() { return hold_met_; }
 
     // Tell me the worst MO size to improve blocking. (defaults to 0.5*AO_SIZE, must specify if greater!)
-    void set_MO_hint(size_t wMO) {wMO_ = wMO;}
-    size_t get_MO_hint() { return wMO_;}
-    
+    void set_MO_hint(size_t wMO) { wMO_ = wMO; }
+    size_t get_MO_hint() { return wMO_; }
+
     // Enhanced memory use if (for every Cleft = Cright) in JK builds. (defaults to FALSE!)
-    void set_JK_hint(bool hint) {JK_hint_ = hint;}
-    size_t get_JK_hint() { return JK_hint_;}
+    void set_JK_hint(bool hint) { JK_hint_ = hint; }
+    size_t get_JK_hint() { return JK_hint_; }
     // => end user options <=
 
     // Initialize the object
@@ -115,55 +113,50 @@ public:
     void transform();
 
     // => Tensor IO <=
-    // Fill a SharedMatrix with three index pairs.  Slice the same way you do in python. 
+    // Fill a SharedMatrix with three index pairs.  Slice the same way you do in python.
     // Recursive signitures were added if you want a full 3rd index, 2nd and 3rd index, etc.
     // For example, fill_tensor("ia", M, (0, 15)) will get you ia[0:15, :, :]
-    // I will check to make sure your slice sizes are not larger than the matrix bounds, 
+    // I will check to make sure your slice sizes are not larger than the matrix bounds,
     // but be prepared for a runtime throw.
     void fill_tensor(std::string name, SharedMatrix M);
     void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1);
-    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2);
-    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
+    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);
+    void fill_tensor(std::string name, SharedMatrix M, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
+                     std::pair<size_t, size_t> a3);
 
     // return a SharedMatrix, I take care of sizing for you.
     // I always compound the 2nd and 3rd indices.
-    // For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a 
+    // For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a
     // SharedMatrix of size (15, 25), so be careful if you plan to use Matrix::gemm
     SharedMatrix get_tensor(std::string name);
     SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1);
-    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2);
-    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
+    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);
+    SharedMatrix get_tensor(std::string name, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
+                            std::pair<size_t, size_t> a3);
 
     // Add a 3-index disk tensor, write to it, or write over a transformed tensor
     void add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions);
-    void write_disk_tensor(std::string key, SharedMatrix M);    
-    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0); 
-    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, 
-    std::pair<size_t, size_t> a1);
-    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, 
-        std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);    
-    void write_disk_tensor(std::string key, double * b);    
-    void write_disk_tensor(std::string key, double * b, std::pair<size_t, size_t> a0); 
-    void write_disk_tensor(std::string key, double * b, std::pair<size_t, size_t> a0, 
-    std::pair<size_t, size_t> a1);
-    void write_disk_tensor(std::string key, double * b, std::pair<size_t, size_t> a0, 
-        std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);    
+    void write_disk_tensor(std::string key, SharedMatrix M);
+    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0);
+    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1);
+    void write_disk_tensor(std::string key, SharedMatrix M, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1,
+                           std::pair<size_t, size_t> a2);
+    void write_disk_tensor(std::string key, double* b);
+    void write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0);
+    void write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1);
+    void write_disk_tensor(std::string key, double* b, std::pair<size_t, size_t> a0, std::pair<size_t, size_t> a1,
+                           std::pair<size_t, size_t> a2);
 
     // only use this one if you now what you're doing -- I do not bound check!
-    void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
-    void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2);
-    void fill_tensor(std::string name, double * b, std::pair<size_t, size_t> a1);
-    void fill_tensor(std::string name, double * b); 
-    
+    void fill_tensor(std::string name, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
+                     std::pair<size_t, size_t> a3);
+    void fill_tensor(std::string name, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2);
+    void fill_tensor(std::string name, double* b, std::pair<size_t, size_t> a1);
+    void fill_tensor(std::string name, double* b);
+
     // tranpose a tensor *after* it has been written
     void transpose(std::string name, std::tuple<size_t, size_t, size_t> order);
-    
+
     // clear spaces or spaces and transformations
     void clear_spaces();
     void clear_all();
@@ -175,11 +168,10 @@ public:
     size_t get_naux() { return naux_; }
 
     // => Build JK <=
-    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
-        std::vector<SharedMatrix> J, std::vector<SharedMatrix> K); 
+    void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
+                  std::vector<SharedMatrix> K);
 
-protected:
-
+   protected:
     // => basis sets <=
     std::shared_ptr<BasisSet> primary_;
     std::shared_ptr<BasisSet> aux_;
@@ -201,10 +193,10 @@ protected:
     double mpower_ = -0.5;
     bool hold_met_ = false;
     bool JK_hint_ = false;
-    bool built = false;    
+    bool built = false;
     bool transformed_ = false;
     std::pair<size_t, size_t> info_;
-    bool ordered_=0;
+    bool ordered_ = 0;
     std::pair<size_t, size_t> identify_order();
     void print_order();
     size_t wMO_;
@@ -216,9 +208,12 @@ protected:
     // => AO building machinery <=
     void prepare_AO();
     void prepare_AO_core();
-    void compute_AO_Q(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    void compute_AO_p_symm(const size_t start, const size_t stop, double* Mp, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_AO_Q(const size_t start, const size_t stop, double* Mp,
+                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_AO_p(const size_t start, const size_t stop, double* Mp,
+                      std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_AO_p_symm(const size_t start, const size_t stop, double* Mp,
+                           std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
     void contract_metric_AO_core_symm(double* Qpq, double* metp, size_t begin, size_t end);
     void grab_AO(const size_t start, const size_t stop, double* Mp);
 
@@ -237,8 +232,10 @@ protected:
     void prepare_blocking();
 
     // => generalized blocking <=
-    std::pair<size_t, size_t> pshell_blocks_for_AO_build(const size_t mem, size_t symm, std::vector<std::pair<size_t, size_t>>& b);
-    std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal, std::vector<std::pair<size_t, size_t>>& b);
+    std::pair<size_t, size_t> pshell_blocks_for_AO_build(const size_t mem, size_t symm,
+                                                         std::vector<std::pair<size_t, size_t>>& b);
+    std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
+                                                          std::vector<std::pair<size_t, size_t>>& b);
 
     // => Schwarz Screening <=
     std::vector<size_t> schwarz_fun_mask_;
@@ -272,27 +269,28 @@ protected:
     std::vector<std::string> order_;
     std::vector<std::string> bspace_;
     std::vector<size_t> strides_;
-    
-    // => FILE IO maintenence <= 
-    struct stream{
+
+    // => FILE IO maintenence <=
+    struct stream {
         FILE* fp;
-        std::string op;};
+        std::string op;
+    };
     std::map<std::string, stream> file_status_;
     FILE* stream_check(std::string filename, std::string op);
 
-    // => FILE IO machinery <= 
-    void put_tensor(std::string file, double* b, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3, std::string op);
-    void put_tensor(std::string file, double* b, const size_t start1,
-      const size_t stop1, const size_t start2, const size_t stop2, std::string op);
-    void get_tensor_(std::string file, double* b, std::pair<size_t, size_t> a1,
-      std::pair<size_t, size_t> a2, std::pair<size_t, size_t> a3);
-    void get_tensor_(std::string file, double* b,  const size_t start1,
-      const size_t stop1, const size_t start2, const size_t stop2);
+    // => FILE IO machinery <=
+    void put_tensor(std::string file, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
+                    std::pair<size_t, size_t> a3, std::string op);
+    void put_tensor(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
+                    const size_t stop2, std::string op);
+    void get_tensor_(std::string file, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
+                     std::pair<size_t, size_t> a3);
+    void get_tensor_(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
+                     const size_t stop2);
     void put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op);
     void get_tensor_AO(std::string file, double* Mp, size_t size, size_t start);
 
-    // => internal handlers for FILE IO <= 
+    // => internal handlers for FILE IO <=
     std::map<std::string, std::tuple<std::string, std::string>> files_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> sizes_;
     std::map<std::string, std::tuple<size_t, size_t, size_t>> tsizes_;
@@ -302,30 +300,32 @@ protected:
     void filename_maker(std::string name, size_t a0, size_t a1, size_t a2, size_t op = 0);
     void AO_filename_maker(size_t i);
     void check_file_key(std::string);
-    void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, 
-        std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
-    void check_matrix_size(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0,
-        std::pair<size_t, size_t> t1, std::pair<size_t, size_t> t2);
+    void check_file_tuple(std::string name, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
+                          std::pair<size_t, size_t> t2);
+    void check_matrix_size(std::string name, SharedMatrix M, std::pair<size_t, size_t> t0, std::pair<size_t, size_t> t1,
+                           std::pair<size_t, size_t> t2);
 
-    // => transpose a tensor <= 
+    // => transpose a tensor <=
     void transpose_core(std::string name, std::tuple<size_t, size_t, size_t> order);
     void transpose_disk(std::string name, std::tuple<size_t, size_t, size_t> order);
 
     // => JK <=
-    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, 
-        std::vector<SharedMatrix> J, std::vector<SharedMatrix> K); 
+    void compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
+                    std::vector<SharedMatrix> K);
     void compute_D(std::vector<SharedMatrix>& D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
-    void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
-        double* T1p, double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
-    void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, 
-        double* T1p, double* T2p, std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
-    void compute_K(std::vector<SharedMatrix> Cleft, 
-        std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K, double* Tp, double* Jtmp,    
-        double* Mp, size_t bcount, size_t block_size, std::vector<std::vector<double>> C_buffers, std::vector<SharedMatrix> D, std::vector<SharedMatrix> J);
-    std::tuple<size_t,size_t,size_t,size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b, std::vector<SharedMatrix> Cleft, 
-        std::vector<SharedMatrix> Cright);
+    void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
+                   std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
+    void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
+                        std::vector<std::vector<double>> D_buffers, size_t bcount, size_t block_size);
+    void compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
+                   double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
+                   std::vector<std::vector<double>> C_buffers, std::vector<SharedMatrix> D,
+                   std::vector<SharedMatrix> J);
+    std::tuple<size_t, size_t, size_t, size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b,
+                                                                          std::vector<SharedMatrix> Cleft,
+                                                                          std::vector<SharedMatrix> Cright);
 
-}; // End DF Helper class
-
-}}//end df_helper/psi4 namespace
+};  // End DF Helper class
+}
+}  // end df_helper/psi4 namespace
 #endif
