@@ -122,14 +122,15 @@ class DF_Helper {
     void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1);
     void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2);
     void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,
-        std::vector<size_t> a3);
-    
+                     std::vector<size_t> a3);
+
     // only use this one if you now what you're doing -- I do not bound check!
-    void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2, std::vector<size_t> a3);
+    void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
+                     std::vector<size_t> a3);
     void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2);
     void fill_tensor(std::string name, double* b, std::vector<size_t> a1);
     void fill_tensor(std::string name, double* b);
-    
+
     // return a SharedMatrix, I take care of sizing for you.
     // I always compound the 2nd and 3rd indices.
     // For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a
@@ -145,14 +146,15 @@ class DF_Helper {
     void write_disk_tensor(std::string name, SharedMatrix M);
     void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1);
     void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2);
-    void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,std::vector<size_t> a3); 
+    void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,
+                           std::vector<size_t> a3);
 
-    void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2, std::vector<size_t> a3);
+    void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
+                           std::vector<size_t> a3);
     void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2);
     void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1);
     void write_disk_tensor(std::string name, double* b);
 
-    
     // tranpose a tensor *after* it has been written
     void transpose(std::string name, std::tuple<size_t, size_t, size_t> order);
 
@@ -280,7 +282,7 @@ class DF_Helper {
     // => FILE IO machinery <=
     void put_tensor(std::string file, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,
                     std::pair<size_t, size_t> a3, std::string op);
-    
+
     void put_tensor(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
                     const size_t stop2, std::string op);
     void get_tensor_(std::string file, double* b, std::pair<size_t, size_t> a1, std::pair<size_t, size_t> a2,

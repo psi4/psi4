@@ -154,7 +154,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     for (int istart = 0; istart < no; istart += max_o) {
         int ni = (istart + max_o >= no ? no - istart : max_o);
-        dfh->fill_tensor("B", Bia, std::make_pair(istart, istart + ni));
+        dfh->fill_tensor("B", Bia, {istart, istart + ni});
 
         for (int jstart = 0; jstart < no; jstart += max_o) {
             int nj = (jstart + max_o >= no ? no - jstart : max_o);
@@ -164,7 +164,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
             if (istart == jstart) {
                 Bjb->copy(Bia);
             } else {
-                dfh->fill_tensor("B", Bjb, std::make_pair(jstart, jstart + nj));    
+                dfh->fill_tensor("B", Bjb, {jstart, jstart + nj});    
             }
 
 #pragma omp parallel for reduction(+: E_MP2J, E_MP2K) num_threads(nthreads)

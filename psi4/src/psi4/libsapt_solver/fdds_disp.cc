@@ -44,21 +44,17 @@
 
 // OMP
 #ifdef _OPENMP
-    #include <omp.h>
+#include <omp.h>
 #endif
 
 namespace psi {
 
 namespace sapt {
 
-FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
-                                 std::shared_ptr<BasisSet> auxiliary,
+FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  std::map<std::string, SharedMatrix> matrix_cache,
                                  std::map<std::string, SharedVector> vector_cache)
-    : primary_(primary),
-      auxiliary_(auxiliary),
-      matrix_cache_(matrix_cache),
-      vector_cache_(vector_cache) {
+    : primary_(primary), auxiliary_(auxiliary), matrix_cache_(matrix_cache), vector_cache_(vector_cache) {
     Options& options = Process::environment.options;
 
     // ==> Check incoming cache <==
@@ -70,8 +66,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
         }
     }
 
-    std::vector<std::string> vector_cache_check = {"eps_occ_A", "eps_vir_A", "eps_occ_B",
-                                                   "eps_vir_B"};
+    std::vector<std::string> vector_cache_check = {"eps_occ_A", "eps_vir_A", "eps_occ_B", "eps_vir_B"};
     for (auto key : vector_cache_check) {
         if (vector_cache_.find(key) == vector_cache_.end()) {
             outfile->Printf("FDDS_Dispersion: Missing vector_cache key %s\n", key.c_str());
@@ -118,7 +113,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
             metric_ints[thread]->compute_shell(MU, 0, NU, 0);
 
             size_t index = 0;
-// #pragma simd collapse(2)
+            // #pragma simd collapse(2)
             for (size_t mu = 0; mu < nummu; ++mu) {
                 size_t omu = auxiliary_->shell(MU).function_index() + mu;
 
@@ -145,7 +140,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
     overlap->compute(aux_overlap_);
 
     // ==> Form 3-index object <==
-    
+
     // Build C Stack
     std::vector<SharedMatrix> Cstack_vec;
     Cstack_vec.push_back(matrix_cache_["Cocc_A"]);
@@ -155,36 +150,33 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary,
 
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
     size_t max_MO = 0;
-    for(auto & mat : Cstack_vec)
-        max_MO = std::max(max_MO, (size_t)mat->ncol());
- 
+    for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
+
     // Build DF_Helper
     dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, auxiliary_));
     dfh_->set_memory(doubles);
     dfh_->set_method("STORE");
     dfh_->set_nthreads(nthread);
     dfh_->set_metric_pow(0.0);
-    dfh_->initialize(); 
-    
+    dfh_->initialize();
+
     // Define spaces
-    dfh_->add_space("i", Cstack_vec[0]); 
+    dfh_->add_space("i", Cstack_vec[0]);
     dfh_->add_space("a", Cstack_vec[1]);
     dfh_->add_space("j", Cstack_vec[2]);
     dfh_->add_space("b", Cstack_vec[3]);
 
     // add transformations
-    dfh_->add_transformation("iaQ", "i", "a", "pqQ");  
-    dfh_->add_transformation("jbQ", "j", "b", "pqQ");  
+    dfh_->add_transformation("iaQ", "i", "a", "pqQ");
+    dfh_->add_transformation("jbQ", "j", "b", "pqQ");
 
     // transform
     dfh_->transform();
-
 }
 
 FDDS_Dispersion::~FDDS_Dispersion() {}
 
-std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedMatrix> densities){
-
+std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedMatrix> densities) {
     // Perform the contraction
     // (PQS) (S|R)^-1 (R|pq) Dpq -> PQ
 
@@ -221,7 +213,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     // Check on memory real quick
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
     size_t mem_size = nbf2 * auxiliary_->max_nprimitive() * nthread;
-    if (mem_size > doubles){
+    if (mem_size > doubles) {
         std::stringstream message;
         double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
         message << "FDDS Dispersion requires at least nbf^2 * max_ang * nthread of memory." << std::endl;
@@ -231,19 +223,18 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
 
     // Build result and temp vectors
     std::vector<SharedVector> aux_dens;
-    for (size_t i = 0; i < densities.size(); i++){
+    for (size_t i = 0; i < densities.size(); i++) {
         aux_dens.push_back(SharedVector(new Vector(naux)));
     }
 
     std::vector<SharedMatrix> collapse_temp;
-    for (size_t i = 0; i < nthread; i++){
+    for (size_t i = 0; i < nthread; i++) {
         collapse_temp.push_back(SharedMatrix(new Matrix(auxiliary_->max_function_per_shell(), nbf2)));
     }
 
-    // Do the contraction
+// Do the contraction
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
     for (size_t Rshell = 0; Rshell < auxiliary_->nshell(); Rshell++) {
-
         size_t thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
@@ -256,8 +247,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
         size_t index_r = auxiliary_->shell(Rshell).function_index();
 
         // Loop over our PQ shells
-        for (auto PQshell : df_pairs){
-
+        for (auto PQshell : df_pairs) {
             size_t Pshell = PQshell.first;
             size_t Qshell = PQshell.second;
 
@@ -270,9 +260,9 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
             size_t index_q = primary_->shell(Qshell).function_index();
 
             size_t index = 0;
-            for (size_t r = 0; r < num_r; r++){
-                for (size_t p = index_p; p < index_p + num_p; p++){
-                    for (size_t q = index_q; q < index_q + num_q; q++){
+            for (size_t r = 0; r < num_r; r++) {
+                for (size_t p = index_p; p < index_p + num_p; p++) {
+                    for (size_t q = index_q; q < index_q + num_q; q++) {
                         tempp[r][p * nbf + q] = tempp[r][q * nbf + p] = df_buff[thread][index++];
                     }
                 }
@@ -285,7 +275,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
                     (aux_dens[i]->pointer() + index_r), 1);
         }
 
-    } // End Rshell
+    }  // End Rshell
 
     // Clear a few temps
     collapse_temp.clear();
@@ -334,7 +324,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-    for (size_t PQi = 0; PQi < aux_pairs.size(); PQi++){
+    for (size_t PQi = 0; PQi < aux_pairs.size(); PQi++) {
         size_t thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
@@ -377,8 +367,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
                 for (size_t q = 0; q < num_q; q++) {
                     size_t abs_q = index_q + q;
 
-                    retp[abs_p][abs_q] = retp[abs_q][abs_p] =
-                        2.0 * C_DDOT(naux, tempp[p * num_q + q], 1, dens, 1);
+                    retp[abs_p][abs_q] = retp[abs_q][abs_p] = 2.0 * C_DDOT(naux, tempp[p * num_q + q], 1, dens, 1);
                 }
             }
         }
@@ -387,8 +376,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     return ret;
 }
 
-SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double omega){
-
+SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double omega) {
     // ==> Configuration <==
     SharedVector eps_occ, eps_vir;
     std::string ovQ_tensor_name;
@@ -417,10 +405,8 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     if (mem_size > doubles) {
         std::stringstream message;
         double mem_gb = ((double)(mem_size) / 0.8 * sizeof(double));
-        message << "FDDS Dispersion requires at least naux * nvir + naux * naux of memory."
-                << std::endl;
-        message << "       After taxes this is " << std::setprecision(2) << mem_gb
-                << " GB of memory.";
+        message << "FDDS Dispersion requires at least naux * nvir + naux * naux of memory." << std::endl;
+        message << "       After taxes this is " << std::setprecision(2) << mem_gb << " GB of memory.";
         throw PSIEXCEPTION(message.str());
     }
 
@@ -431,13 +417,13 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     double* eoccp = eps_occ->pointer();
     double* evirp = eps_vir->pointer();
 
-    # pragma omp parallel for
+#pragma omp parallel for
     for (size_t i = 0; i < nocc; i++) {
         for (size_t a = 0; a < nvir; a++) {
             double val = -1.0 * (eoccp[i] - evirp[a]);
             double tmp = 4.0 * val / (val * val + omega * omega);
             // Lets see how stable this is, should be fine
-            if (tmp < 1.e-14){
+            if (tmp < 1.e-14) {
                 ampp[i][a] = 0.0;
             } else {
                 ampp[i][a] = std::pow(tmp, 0.5);
@@ -451,7 +437,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
 
     size_t dmem = doubles - naux * naux - nvir * nocc;
     size_t bsize = dmem / (naux * nvir);
-    if (bsize > nocc){
+    if (bsize > nocc) {
         bsize = nocc;
     }
     size_t nblocks = 1 + ((nocc - 1) / bsize);
@@ -466,7 +452,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     double** retp = ret->pointer();
 
     size_t rstat, osize;
-    for (size_t block = 0, bcount = 0; block < nblocks; block++){
+    for (size_t block = 0, bcount = 0; block < nblocks; block++) {
         // printf("Block %zu\n", block);
         if (((block + 1) * bsize) > nocc) {
             osize = nocc - block * bsize;
@@ -474,28 +460,26 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
         } else {
             osize = bsize;
         }
-        
-        dfh_->fill_tensor(ovQ_tensor_name, tmp, {bcount, bcount + osize}); 
+
+        dfh_->fill_tensor(ovQ_tensor_name, tmp, {bcount, bcount + osize});
         size_t shift_i = block * bsize;
 
-        # pragma omp parallel for collapse (2)
-        for (size_t i = 0; i < osize; i++){
-            for (size_t a = 0; a < nvir; a++){
-                double val =  ampp[i + shift_i][a];
-                # pragma omp simd
-                for (size_t Q = 0; Q < naux; Q++){
+#pragma omp parallel for collapse(2)
+        for (size_t i = 0; i < osize; i++) {
+            for (size_t a = 0; a < nvir; a++) {
+                double val = ampp[i + shift_i][a];
+#pragma omp simd
+                for (size_t Q = 0; Q < naux; Q++) {
                     tmpp[i * nvir + a][Q] *= val;
                 }
             }
         }
-    
+
         ret->gemm(true, false, 1.0, tmp, tmp, 1.0);
         bcount += osize;
     }
 
     return ret;
-
 }
-
-}} // End namespace
-
+}
+}  // End namespace

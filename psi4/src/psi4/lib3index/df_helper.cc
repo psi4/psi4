@@ -1824,7 +1824,6 @@ void DF_Helper::transform_disk() {
 
 // Fill using a pointer, be cautious of bounds!!
 void DF_Helper::fill_tensor(std::string name, double* b) {
-    
     check_file_key(name);
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
@@ -1833,7 +1832,6 @@ void DF_Helper::fill_tensor(std::string name, double* b) {
     fill_tensor(name, b, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
 void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1) {
-    
     check_file_key(name);
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
@@ -1842,7 +1840,6 @@ void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1)
     fill_tensor(name, b, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
 void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2) {
-    
     check_file_key(name);
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
@@ -1851,19 +1848,18 @@ void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1,
     fill_tensor(name, b, a1, a2, {0, std::get<2>(sizes)});
 }
 void DF_Helper::fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
-    std::vector<size_t> a3) {
-    
-    if(a1.size() != 2){
+                            std::vector<size_t> a3) {
+    if (a1.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 0 tensor indexing vector has " << a1.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    if(a2.size() != 2){
+    if (a2.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 1 tensor indexing vector has " << a2.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    if(a3.size() != 2){
+    if (a3.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 2 tensor indexing vector has " << a3.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
@@ -1887,7 +1883,6 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M) {
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     fill_tensor(name, M, {0, std::get<0>(sizes)}, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
-
 }
 void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1) {
     std::string filename = std::get<1>(files_[name]);
@@ -1895,7 +1890,6 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
     fill_tensor(name, M, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
-
 }
 void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {
     std::string filename = std::get<1>(files_[name]);
@@ -1905,36 +1899,35 @@ void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t
     fill_tensor(name, M, a1, a2, {0, std::get<2>(sizes)});
 }
 void DF_Helper::fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> t0, std::vector<size_t> t1,
-    std::vector<size_t> t2) {
-
+                            std::vector<size_t> t2) {
     std::string filename = std::get<1>(files_[name]);
     // has this integral been transposed?
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
-    if(t0.size() != 2){
+    if (t0.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 0 tensor indexing vector has " << t0.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    if(t1.size() != 2){
+    if (t1.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 1 tensor indexing vector has " << t1.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    if(t2.size() != 2){
+    if (t2.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 2 tensor indexing vector has " << t2.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    
+
     // be pythonic - adjust stops
-    size_t sta0 =t0[0];
-    size_t sto0 =t0[1] - 1;
-    size_t sta1 =t1[0];
-    size_t sto1 =t1[1] - 1;
-    size_t sta2 =t2[0];
-    size_t sto2 =t2[1] - 1;
+    size_t sta0 = t0[0];
+    size_t sto0 = t0[1] - 1;
+    size_t sta1 = t1[0];
+    size_t sto1 = t1[1] - 1;
+    size_t sta2 = t2[0];
+    size_t sto2 = t2[1] - 1;
 
     std::pair<size_t, size_t> i0 = std::make_pair(sta0, sto0);
     std::pair<size_t, size_t> i1 = std::make_pair(sta1, sto1);
@@ -1992,36 +1985,36 @@ SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> a1, std
 
     return get_tensor(name, a1, a2, {0, std::get<2>(sizes)});
 }
-SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> t0, std::vector<size_t> t1, std::vector<size_t> t2) {
-    
+SharedMatrix DF_Helper::get_tensor(std::string name, std::vector<size_t> t0, std::vector<size_t> t1,
+                                   std::vector<size_t> t2) {
     // has this integral been transposed?
     std::string filename = std::get<1>(files_[name]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
 
-    if(t0.size() != 2){
+    if (t0.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 0 tensor indexing vector has " << t0.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    if(t1.size() != 2){
+    if (t1.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 1 tensor indexing vector has " << t1.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    if(t2.size() != 2){
+    if (t2.size() != 2) {
         std::stringstream error;
         error << "DF_Helper:fill_tensor:  axis 2 tensor indexing vector has " << t2.size() << " elements!";
         throw PSIEXCEPTION(error.str().c_str());
     }
-    
+
     // be pythonic - adjust stops
-    size_t sta0 =t0[0];
-    size_t sto0 =t0[1] - 1;
-    size_t sta1 =t1[0];
-    size_t sto1 =t1[1] - 1;
-    size_t sta2 =t2[0];
-    size_t sto2 =t2[1] - 1;
+    size_t sta0 = t0[0];
+    size_t sto0 = t0[1] - 1;
+    size_t sta1 = t1[0];
+    size_t sto1 = t1[1] - 1;
+    size_t sta2 = t2[0];
+    size_t sto2 = t2[1] - 1;
 
     std::pair<size_t, size_t> i0 = std::make_pair(sta0, sto0);
     std::pair<size_t, size_t> i1 = std::make_pair(sta1, sto1);
@@ -2085,18 +2078,15 @@ void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<s
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, M, a1, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a1, 
-    std::vector<size_t> a2) {
-    
+void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, M, a1, a2, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a0, 
-    std::vector<size_t> a1, std::vector<size_t> a2) {
-    
+void DF_Helper::write_disk_tensor(std::string key, SharedMatrix M, std::vector<size_t> a0, std::vector<size_t> a1,
+                                  std::vector<size_t> a2) {
     // being pythonic ;)
     std::pair<size_t, size_t> i0 = std::make_pair(a0[0], a0[1] - 1);
     std::pair<size_t, size_t> i1 = std::make_pair(a1[0], a1[1] - 1);
@@ -2126,18 +2116,15 @@ void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, b, a0, {0, std::get<1>(sizes)}, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, 
-    std::vector<size_t> a1) {
-    
+void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, std::vector<size_t> a1) {
     check_file_key(key);
     std::string filename = std::get<1>(files_[key]);
     std::tuple<size_t, size_t, size_t> sizes;
     sizes = (tsizes_.find(filename) != tsizes_.end() ? tsizes_[filename] : sizes_[filename]);
     write_disk_tensor(key, b, a0, a1, {0, std::get<2>(sizes)});
 }
-void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, 
-    std::vector<size_t> a1, std::vector<size_t> a2) {
-    
+void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t> a0, std::vector<size_t> a1,
+                                  std::vector<size_t> a2) {
     // being pythonic ;)
     std::pair<size_t, size_t> i0 = std::make_pair(a0[0], a0[1] - 1);
     std::pair<size_t, size_t> i1 = std::make_pair(a1[0], a1[1] - 1);
@@ -2354,7 +2341,7 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     for (size_t i = 0; i < M0; i++) {
         current += M1 * M2;
         count++;
-        if (current * 2 > + memory_ + 10000000 || i == M0 - 1) { //FIXME
+        if (current * 2 > +memory_ + 10000000 || i == M0 - 1) {  // FIXME
             if (count == 1 && i != M0 - 1) {
                 std::stringstream error;
                 error << "DF_Helper:transpose_disk: not enough memory.";
@@ -2414,7 +2401,6 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     std::string op = "ab";
 
     for (size_t m = 0; m < steps.size(); m++) {
-        
         size_t start = std::get<0>(steps[m]);
         size_t stop = std::get<1>(steps[m]);
         M0 = stop - start + 1;

@@ -258,5 +258,5 @@ for i in range(len(Cright)):
 for i in range(len(Cright)):
     psi4.compare_arrays(np.asarray(Ks[i]), K[i], 9, "K builds - AO_CORE = TRUE, JK_HINT = TRUE" )     #TEST
 for i in range(len(Cright)):
-    psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - AO_CORE = TRUE, JK_HINT = TRUE" )     #TEST
+    psi4.compare_arrays(np.asarray(Js[i]), J[i], 9, "J builds - AO_CORE = TRUE, JK_HINT = TRUE" ) #TEST
 
