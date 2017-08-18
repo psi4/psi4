@@ -55,10 +55,12 @@ def format_option_for_cfour(opt, val):
                         text += '/'
         else:
             # option is plain 1D array
-            for n in range(len(val)):
-                text += str(val[n])
-                if n < (len(val) - 1):
-                    text += '-'
+            if opt == 'CFOUR_ESTATE_SYM':
+                # [3, 1, 0, 2] --> 3/1/0/2
+                text += '/'.join(map(str, val))
+            else:
+                # [3, 1, 0, 2] --> 3-1-0-2
+                text += '-'.join(map(str, val))
 
     # Transform booleans into integers
     elif str(val) == 'True':
