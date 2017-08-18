@@ -2,6 +2,30 @@
 *******************************************************************************
 
 
+Thursday, August 17, 2017 -- CDS
+
+[36] In the course of an application to CaH+, I noticed some odd energies
+using the cc-pCV5Z basis set.  I checked EMSL and found that the Ca basis
+in Psi4 had the correct information for d-h functions, but had incorrect
+information for s and p functions.  When Peterson developed this basis
+set, he found linear dependencies between the additional tight core-correlating
+functions for s and p and the original s and p functions from cc-pV5Z.
+To eliminate these dependencies, he restructured the s and p space and it
+is no longer the original cc-pV5Z s & p space plus some additional tight
+functions.
+
+Note: The information on EMSL for cc-pCV5Z for Ca is INCORRECT as of 8/17/17
+(it lacks tight d-f functions).  The correct basis set was retrieved 
+directly from Kirk Peterson's website.  Incorrect info at EMSL was 
+confirmed by Peterson.
+
+Took the opportunity to verify Ca basis sets for cc-pVXZ via Q-Chem
+and EMSL.  cc-pCVXZ (X=D-Q) are verified in Psi4 vs EMSL.
+
+*******************************************************************************
+*******************************************************************************
+
+
 Saturday, June 10, 2017 -- LAB
 
 [35] In response to issue in [34] of cc-pwCV5Z for Na & Mg not being
