@@ -547,7 +547,14 @@ std::string BasisSet::print_detail_cfour() const
         for (int am = 0; am <= max_am_center; am++) {
             // Write exponents for each shell
             for (size_t ep = 0; ep < exp_per_am[am].size(); ep++) {
-                sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
+                if (exp_per_am[am][ep] >= 10000000.0)
+                    sprintf(buffer, "%13.4f ", exp_per_am[am][ep]);
+                else if (exp_per_am[am][ep] >= 1000000.0)
+                    sprintf(buffer, "%13.5f ", exp_per_am[am][ep]);
+                else if (exp_per_am[am][ep] >= 100000.0)
+                    sprintf(buffer, "%13.6f ", exp_per_am[am][ep]);
+                else
+                    sprintf(buffer, "%14.7f", exp_per_am[am][ep]);
                 ss << buffer;
                 if (((ep + 1) % 5 == 0) || ((ep + 1) == exp_per_am[am].size())) {
                     sprintf(buffer, "\n");
