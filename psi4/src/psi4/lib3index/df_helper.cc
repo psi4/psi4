@@ -182,7 +182,8 @@ void DF_Helper::print_header() {
     outfile->Printf("      hold metric   = %d\n", (int)hold_met_);
     outfile->Printf("      metric power  = %E\n", mpower_);
     outfile->Printf("  Fitting condition = %E\n", condition_);
-    outfile->Printf("  Mask sparsity (%) = (%f)\n", 100. * (1.0 - (double)small_skips_[nao_] / (double)(nao_ * nao_)));
+    outfile->Printf("  Mask sparsity (%%) = (%f)\n", 100. * (1.0 - (double)small_skips_[nao_] / (double)(nao_ * nao_)));
+    outfile->Printf("\n\n");
 }
 void DF_Helper::prepare_sparsity() {
     // prep info vectors
@@ -1729,7 +1730,7 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                             timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Puting MO to disk");
+                            timer_on("Putting MO to disk");
                             put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1),
                                        std::make_pair(begin, end), "wb");
 
@@ -1744,11 +1745,10 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                             timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Puting MO to disk");
+                            timer_on("Putting MO to disk");
                             put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, bsize - 1),
                                        std::make_pair(0, wsize - 1), op);
                         }
-                        timer_off("Puting MO to disk");
 
                     } else {
                         if (std::get<2>(transf_[order_[count + k]])) {  // // (w|Qb)->(wbQ)
@@ -1762,7 +1762,7 @@ void DF_Helper::transform_disk() {
                                 }
                             }
                             timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Puting MO to disk");
+                            timer_on("Putting MO to disk");
                             put_tensor(putf, Np, std::make_pair(0, wsize - 1), std::make_pair(0, bsize - 1),
                                        std::make_pair(begin, end), "wb");
 
@@ -1782,8 +1782,8 @@ void DF_Helper::transform_disk() {
                             put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, wsize - 1),
                                        std::make_pair(0, bsize - 1), op);
                         }
-                        timer_off("Putting MO to disk");
                     }
+                    timer_off("Putting MO to disk");
                 }
             }
         }
@@ -2134,7 +2134,7 @@ void DF_Helper::write_disk_tensor(std::string key, double* b, std::vector<size_t
     check_file_tuple(key, i0, i1, i2);
 
     // you write over transformed integrals or you write new disk tensors
-    std::string op = (transf_.count(key) ? "r+b" : "ab");
+    std::string op = (transf_.count(key) ? "r+b" : "wb");
     put_tensor(std::get<1>(files_[key]), b, i0, i1, i2, op);
 }
 
@@ -2336,12 +2336,11 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     size_t M2 = std::get<2>(sizes_[filename]);
 
     size_t current = 0, count = 0, largest = 0;
-    ;
     std::vector<std::pair<size_t, size_t>> steps;
     for (size_t i = 0; i < M0; i++) {
         current += M1 * M2;
         count++;
-        if (current * 2 > +memory_ + 10000000 || i == M0 - 1) {  // FIXME
+        if (current * 2 > + memory_ || i == M0 - 1) {  // FIXME
             if (count == 1 && i != M0 - 1) {
                 std::stringstream error;
                 error << "DF_Helper:transpose_disk: not enough memory.";
@@ -2398,13 +2397,14 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     std::string new_file = "newfilefortransposition";
     filename_maker(new_file, std::get<0>(sizes), std::get<1>(sizes), std::get<2>(sizes));
     std::string new_filename = std::get<1>(files_[new_file]);
-    std::string op = "ab";
 
     for (size_t m = 0; m < steps.size(); m++) {
+
+        std::string op = (m ? "r+b" : "wb");
         size_t start = std::get<0>(steps[m]);
         size_t stop = std::get<1>(steps[m]);
         M0 = stop - start + 1;
-
+        
         // grab
         get_tensor_(filename, Mp, start, stop, 0, M1 * M2 - 1);
 
