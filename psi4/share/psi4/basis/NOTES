@@ -4,6 +4,11 @@
 
 Tuesday, August 22, 2017 -- LAB
 
+[38] Someone added Ga-Kr to 6-31G* on EMSL, but in usual fashion,
+didn't define 6-31G or 6-31G**. Decomposed into valence and polarization
+according to http://onlinelibrary.wiley.com/doi/10.1002/jcc.1058/epdf
+and composed the requisite basis sets.
+
 [37] Extended the non-additive basis treatment described in [35] for
 pwCVXZ to pCVXZ, defining partial-basis-cc-pcvxz files and encoding
 Note 212.
