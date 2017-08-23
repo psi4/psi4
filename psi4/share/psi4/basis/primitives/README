@@ -53,7 +53,8 @@ Brief Instructions for Updating Files:
 Automation is really only for the Dunning basis sets. For others, use emsl_manipulate.pl directly.
 
 [1]   Update any of the primitives (basis-, corevalence-, tight-, diffuse-, hold-, molpro-,
-      partial-, etc.) as needed. These come directly from EMSL.
+      partial-, etc.) as needed. These come directly from EMSL. Make sure element symbol starts
+      in first column.
 
 [2]   Make the necessary hand edits to hold- files. Detailed instructions for first generation are 
       found in NOTES. Changes should only be necessary if their dependent basis sets from EMSL changed.
@@ -61,7 +62,7 @@ Automation is really only for the Dunning basis sets. For others, use emsl_manip
 [3]   Run make_dunning.pl to generate the basis sets proper. dual adzp will be carried along but
       these need to be edited by hand to actually make changes.
 
-[4]   Run `dunning_prepend_and_checknew.pl` to add spherical to the top of the file and show if the basis
+[4]   Run `dunning_prepend_and_checknew.py` to add spherical to the top of the file and show if the basis
       is any different from its current form (presently set to one directories up- change as needed).
       Blue is new, yellow is changed, red is deleted.
 

@@ -8,6 +8,10 @@
 !            J. Chem. Phys. 109, 1223 (1998)
 !            Note: He and Ne are unpublished basis sets taken from Gaussian.
 !   
+!  6-31G*  EMSL  Basis Set Exchange Library   8/22/17 2:17 PM
+! Ga - Kr: V. Rassolov, J.A. Pople, M. Ratner, P.C. Redfern, L.A. Curtiss, J.
+! Comp. Chem. 22, 976 (2001)
+!
 
 
 ****
@@ -131,5 +135,28 @@ Zn     0
 F   1   1.00
       0.8000000              1.0000000        
 ****
-
+Ga     0 
+D   1   1.00
+      0.2289000              1.0000000        
+****
+Ge     0 
+D   1   1.00
+      0.2772000              1.0000000        
+****
+As     0 
+D   1   1.00
+      0.3277000              1.0000000        
+****
+Se     0 
+D   1   1.00
+      0.3810000              1.0000000        
+****
+Br     0 
+D   1   1.00
+      0.4366000              1.0000000        
+****
+Kr     0 
+D   1   1.00
+      0.4948000              1.0000000        
+****
 
