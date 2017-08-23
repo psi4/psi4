@@ -2161,8 +2161,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 
     dfh->add_disk_tensor("Far", std::make_tuple(na, nr, nQ));
 
-    for (int astart = 0; astart < na; astart += max_a) {
-        int nablock = (astart + max_a >= na ? na - astart : max_a);
+    for (size_t astart = 0; astart < na; astart += max_a) {
+        size_t nablock = (astart + max_a >= na ? na - astart : max_a);
 
         dfh->fill_tensor("Dar", Dar, {astart, astart + nablock});
         dfh->fill_tensor("Ear", Aar, {astart, astart + nablock});
@@ -2177,8 +2177,8 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 
     dfh->add_disk_tensor("Fbs", std::make_tuple(na, nr, nQ));
 
-    for (int bstart = 0; bstart < nb; bstart += max_b) {
-        int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
+    for (size_t bstart = 0; bstart < nb; bstart += max_b) {
+        size_t nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
         dfh->fill_tensor("Dbs", Dbs, {bstart, bstart + nbblock});
         dfh->fill_tensor("Ebs", Abs, {bstart, bstart + nbblock});
@@ -2198,16 +2198,16 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
 
     // ==> Master Loop <== //
 
-    for (int astart = 0; astart < na; astart += max_a) {
-        int nablock = (astart + max_a >= na ? na - astart : max_a);
+    for (size_t astart = 0; astart < na; astart += max_a) {
+        size_t nablock = (astart + max_a >= na ? na - astart : max_a);
 
         dfh->fill_tensor("Aar", Aar, {astart, astart + nablock});
         dfh->fill_tensor("Bas", Bas, {astart, astart + nablock});
         dfh->fill_tensor("Cas", Cas, {astart, astart + nablock});
         dfh->fill_tensor("Far", Dar, {astart, astart + nablock});
 
-        for (int bstart = 0; bstart < nb; bstart += max_b) {
-            int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
+        for (size_t bstart = 0; bstart < nb; bstart += max_b) {
+            size_t nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
             dfh->fill_tensor("Abs", Abs, {bstart, bstart + nbblock});
             dfh->fill_tensor("Bbr", Bbr, {bstart, bstart + nbblock});
@@ -2876,7 +2876,7 @@ void FISAPT::fexch() {
 
     dfh->add_disk_tensor("Bab", std::make_tuple(na, nb, nQ));
 
-    for (int a = 0; a < na; a++) {
+    for (size_t a = 0; a < na; a++) {
         dfh->fill_tensor("Aar", TrQ, {a, a + 1});
         C_DGEMM('N', 'N', nb, nQ, nr, 1.0, Sbrp[0], nr, TrQp[0], nQ, 0.0, TbQp[0], nQ);
         dfh->write_disk_tensor("Bab", TrQ, {a, a + 1});
@@ -2884,7 +2884,7 @@ void FISAPT::fexch() {
 
     dfh->add_disk_tensor("Bba", std::make_tuple(nb, na, nQ));
 
-    for (int b = 0; b < nb; b++) {
+    for (size_t b = 0; b < nb; b++) {
         dfh->fill_tensor("Abs", TsQ, {b, b + 1});
         C_DGEMM('N', 'N', na, nQ, ns, 1.0, Sasp[0], ns, TsQp[0], nQ, 0.0, TaQp[0], nQ);
         dfh->write_disk_tensor("Bba", TrQ, {b, b + 1});
@@ -2893,9 +2893,9 @@ void FISAPT::fexch() {
     std::shared_ptr<Matrix> E_exch3(new Matrix("E_exch [a <x-x> b]", na, nb));
     double** E_exch3p = E_exch3->pointer();
 
-    for (int a = 0; a < na; a++) {
+    for (size_t a = 0; a < na; a++) {
         dfh->fill_tensor("Bab", TbQ, {a, a + 1});
-        for (int b = 0; b < nb; b++) {
+        for (size_t b = 0; b < nb; b++) {
             dfh->fill_tensor("Bba", TaQ, {b, b + 1}, {a, a + 1});
             E_exch3p[a][b] -= 2.0 * C_DDOT(nQ, TbQp[b], 1, TaQp[0], 1);
         }
@@ -3220,7 +3220,7 @@ void FISAPT::find() {
 
     // ==> A <- B Uncoupled <== //
 
-    for (int B = 0; B < nB + nb; B++) {
+    for (size_t B = 0; B < nB + nb; B++) {
         // ESP
         dfh->fill_tensor("WBar", wB, {B, B + 1});
 
@@ -3257,7 +3257,7 @@ void FISAPT::find() {
 
     // ==> B <- A Uncoupled <== //
 
-    for (int A = 0; A < nA + na; A++) {
+    for (size_t A = 0; A < nA + na; A++) {
         // ESP
         dfh->fill_tensor("WAbs", wA, {A, A + 1});
 
@@ -3369,7 +3369,7 @@ void FISAPT::find() {
 
         int nC = std::max(nA + na, nB + nb);
 
-        for (int C = 0; C < nC; C++) {
+        for (size_t C = 0; C < nC; C++) {
             if (C < nB + nb) dfh->fill_tensor("WBar", wB, {C, C + 1});
             if (C < nA + na) dfh->fill_tensor("WAbs", wB, {C, C + 1});
 
@@ -3909,8 +3909,8 @@ void FISAPT::fdisp() {
 
     dfh->add_disk_tensor("Far", std::make_tuple(nr, na, nQ));
 
-    for (int rstart = 0; rstart < nr; rstart += max_r) {
-        int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+    for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+        size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
         dfh->fill_tensor("Dar", Dar, {rstart, rstart + nrblock});
         dfh->fill_tensor("Ear", Aar, {rstart, rstart + nrblock});
@@ -3925,8 +3925,8 @@ void FISAPT::fdisp() {
 
     dfh->add_disk_tensor("Fbs", std::make_tuple(ns, nb, nQ));
 
-    for (int sstart = 0; sstart < ns; sstart += max_s) {
-        int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+    for (size_t sstart = 0; sstart < ns; sstart += max_s) {
+        size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
         dfh->fill_tensor("Dbs", Dbs, {sstart, sstart + nsblock});
         dfh->fill_tensor("Ebs", Abs, {sstart, sstart + nsblock});
@@ -3968,16 +3968,16 @@ void FISAPT::fdisp() {
         scale = sSAPT0_scale_;
     }
 
-    for (int rstart = 0; rstart < nr; rstart += max_r) {
-        int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+    for (size_t rstart = 0; rstart < nr; rstart += max_r) {
+        size_t nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
         dfh->fill_tensor("Aar", Aar, {rstart, rstart + nrblock});
         dfh->fill_tensor("Far", Dar, {rstart, rstart + nrblock});
         dfh->fill_tensor("Bbr", Bbr, {rstart, rstart + nrblock});
         dfh->fill_tensor("Cbr", Cbr, {rstart, rstart + nrblock});
 
-        for (int sstart = 0; sstart < ns; sstart += max_s) {
-            int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+        for (size_t sstart = 0; sstart < ns; sstart += max_s) {
+            size_t nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
             dfh->fill_tensor("Abs", Abs, {sstart, sstart + nsblock});
             dfh->fill_tensor("Fbs", Dbs, {sstart, sstart + nsblock});

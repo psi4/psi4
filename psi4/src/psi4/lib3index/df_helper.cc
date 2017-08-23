@@ -344,27 +344,29 @@ void DF_Helper::prepare_AO() {
         size_t block_size = end - begin + 1;
         size_t size = big_skips_[end + 1] - big_skips_[begin];
 
+        
         // compute
+        timer_on("DFH: Total Workflow");
+        timer_on("DFH: AO Construction");
         compute_AO_p(start, stop, Mp, eri);
-
-// loop and contract
+        timer_off("DFH: AO Construction");
+        timer_on("DFH: AO-Met. Contraction");
+        
+        // loop and contract
 #pragma omp parallel for num_threads(nthreads_) schedule(guided)
         for (size_t j = 0; j < block_size; j++) {
             size_t mi = small_skips_[begin + j];
             size_t skips = big_skips_[begin + j] - big_skips_[begin];
             C_DGEMM('N', 'N', naux_, mi, naux_, 1.0, metp, naux_, &Mp[skips], mi, 0.0, &Fp[skips], mi);
         }
+        
+        timer_off("DFH: AO-Met. Contraction");
+        timer_off("DFH: Total Workflow");
 
         // put
         put_tensor_AO(putf, Fp, size, count, op);
         count += size;
     }
-
-    // retired this workflow
-    //    // contract metric
-    //    timer_on("DF_Helper~metric contraction");
-    //    contract_metric_AO(Mp);
-    //    timer_off("DF_Helper~metric contraction");
 }
 void DF_Helper::prepare_AO_core() {
     // prepare eris
@@ -1089,7 +1091,9 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
             size_t bs = end - begin + 1;
 
             get_tensor_(getf, Mp, begin, end, 0, a1 * a2 - 1);
+            timer_on("DFH: Total Workflow");
             C_DGEMM('N', 'N', bs * a1, a2, a2, 1.0, Mp, a2, metp, a2, 0.0, Fp, a2);
+            timer_off("DFH: Total Workflow");
             put_tensor(putf, Fp, begin, end, 0, a1 * a2 - 1, op);
         }
     } else {
@@ -1121,7 +1125,9 @@ void DF_Helper::contract_metric(std::string file, double* metp, double* Mp, doub
             size_t bs = end - begin + 1;
 
             get_tensor_(getf, Mp, 0, a0 - 1, begin * a2, (end + 1) * a2 - 1);
+            timer_on("DFH: Total Workflow");
             C_DGEMM('N', 'N', a0, bs * a2, a0, 1.0, metp, a0, Mp, bs * a2, 0.0, Fp, bs * a2);
+            timer_off("DFH: Total Workflow");
             put_tensor(putf, Fp, 0, a0 - 1, begin * a2, (end + 1) * a2 - 1, op);
         }
     }
@@ -1656,7 +1662,9 @@ void DF_Helper::transform_disk() {
             if (AO_core_)
                 Mp = Ppq_.data();
             else if (direct_) {
+                timer_on("DFH: Total Workflow");
                 compute_AO_Q(start, stop, Mp, eri);
+                timer_off("DFH: Total Workflow");
             } else
                 grab_AO(start, stop, Mp);
             timer_off("DFH: Grabbing AOs");
@@ -1668,6 +1676,7 @@ void DF_Helper::transform_disk() {
                 size_t bsize = std::get<1>(spaces_[bspace]);
                 double* Bpt = std::get<0>(spaces_[bspace])->pointer()[0];
 
+                timer_on("DFH: Total Workflow");
                 timer_on("DFH: First Contraction");
 // form temp, thread over spM (nao)
 #pragma omp parallel for firstprivate(nao, naux, bsize, \
@@ -1692,6 +1701,7 @@ void DF_Helper::transform_disk() {
                             0.0, &Tp[k * block_size * bsize], bsize);
                 }
                 timer_off("DFH: First Contraction");
+                timer_off("DFH: Total Workflow");
 
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
@@ -1703,10 +1713,12 @@ void DF_Helper::transform_disk() {
                     double* Wp = std::get<0>(I)->pointer()[0];
 
                     // (wp)(p|Qb)->(w|Qb)
+                    timer_on("DFH: Total Workflow");
                     timer_on("DFH: Second Contraction");
                     C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
                     timer_off("DFH: Second Contraction");
+                    timer_off("DFH: Total Workflow");
 
                     // setup putf
                     std::string putf =
