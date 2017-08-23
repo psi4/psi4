@@ -3006,7 +3006,7 @@ void FISAPT::find() {
     std::shared_ptr<Matrix> Vtemp2(new Matrix("Vtemp2", nn, nn));
 
     double* ZAp = vectors_["ZA"]->pointer();
-    for (int A = 0; A < nA; A++) {
+    for (size_t A = 0; A < nA; A++) {
         Vtemp2->zero();
         Zxyz2p[0][0] = ZAp[A];
         Zxyz2p[0][1] = mol->x(A);
@@ -3018,7 +3018,7 @@ void FISAPT::find() {
     }
 
     double* ZBp = vectors_["ZB"]->pointer();
-    for (int B = 0; B < nB; B++) {
+    for (size_t B = 0; B < nB; B++) {
         Vtemp2->zero();
         Zxyz2p[0][0] = ZBp[B];
         Zxyz2p[0][1] = mol->x(B);

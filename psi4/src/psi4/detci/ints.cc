@@ -298,7 +298,7 @@ void CIWavefunction::transform_dfmcscf_ints(bool approx_only) {
     onel_ints_from_jk();
 
     // => Compute twoel ints <= //
-    int nQ = dfh_->get_naux();
+    size_t nQ = dfh_->get_naux();
     SharedMatrix aaQ(new Matrix("aaQ", nact * nact, nQ));
     double* aaQp = aaQ->pointer()[0];
     dfh_->fill_tensor("aaQ", aaQ);
@@ -706,7 +706,7 @@ void CIWavefunction::read_dpd_ci_ints() {
 }
 void CIWavefunction::rotate_dfmcscf_twoel_ints(SharedMatrix Uact, SharedVector twoel_out) {
     // => Rotate twoel ints <= //
-    int nQ = dfh_->get_naux();
+    size_t nQ = dfh_->get_naux();
     int nrot = CalcInfo_->num_rot_orbs;
     int nact = CalcInfo_->num_ci_orbs;
     int nav = nact + CalcInfo_->num_rsv_orbs;

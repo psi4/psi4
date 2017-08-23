@@ -897,7 +897,7 @@ void DFSOMCSCF::transform(bool approx_only) {
 }
 void DFSOMCSCF::set_act_MO() {
     // Build (aa|aa)
-    int nQ = dfh_->get_naux();
+    size_t nQ = dfh_->get_naux();
 
     SharedMatrix aaQ(new Matrix("aaQ", nact_ * nact_, nQ));
     dfh_->fill_tensor("aaQ", aaQ);
@@ -907,7 +907,7 @@ void DFSOMCSCF::set_act_MO() {
 SharedMatrix DFSOMCSCF::compute_Q(SharedMatrix TPDM) {
     timer_on("SOMCSCF: DF-Q matrix");
 
-    int nQ = dfh_->get_naux();
+    size_t nQ = dfh_->get_naux();
     int nact2 = nact_ * nact_;
     double* TPDMp = TPDM->pointer()[0];
 
@@ -979,7 +979,7 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
         dUact = Uact->to_block_sharedmatrix();
     }
 
-    int nQ = dfh_->get_naux();
+    size_t nQ = dfh_->get_naux();
     int nact2 = nact_ * nact_;
     int nact3 = nact2 * nact_;
     double* TPDMp = TPDM->pointer()[0];
@@ -1041,9 +1041,8 @@ SharedMatrix DFSOMCSCF::compute_Qk(SharedMatrix TPDM, SharedMatrix U, SharedMatr
     SharedMatrix NNQ(new Matrix("RRQ", chunk_size * nmo_, nQ));
     double** NNQp = NNQ->pointer();
 
-    for (int start = 0; start < nmo_; start += chunk_size) {
-        int block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
-        size_t read_start = sizeof(double) * start * nmo_ * nQ;
+    for (size_t start = 0; start < nmo_; start += chunk_size) {
+        size_t block = (start + chunk_size > nmo_ ? nmo_ - start : chunk_size);
 
         dfh_->fill_tensor("RRQ", NNQ, {start, start + block});
         C_DGEMM('N', 'N', nact_, nmo_ * nQ, block, 1.0, dUactp[0] + start, nmo_, NNQp[0], nmo_ * nQ, 1.0, wnQp[0],
