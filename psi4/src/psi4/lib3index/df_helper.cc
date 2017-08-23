@@ -133,7 +133,9 @@ void DF_Helper::filename_maker(std::string name, size_t a0, size_t a1, size_t a2
     sizes_[filename] = sizes;
 }
 void DF_Helper::initialize() {
-    timer_on("DF_Helper~-- build-------");
+    
+    timer_on("DFH: initialize()");
+    
     // have the algorithm specified before init
     if (method_.compare("DIRECT") && method_.compare("STORE")) {
         std::stringstream error;
@@ -146,9 +148,9 @@ void DF_Helper::initialize() {
     if (!(std::fabs(mpower_ - 0.0) < 1e-13)) (hold_met_ ? prepare_metric_core() : prepare_metric());
 
     // prepare sparsity masks
-    timer_on("DF_Helper~ prepare sparsity");
+    timer_on("DFH: sparsity prep");
     prepare_sparsity();
-    timer_off("DF_Helper~ prepare sparsity");
+    timer_off("DFH: sparsity prep");
 
     // shut off AO core if necessary
     if (memory_ * 0.8 < big_skips_[nao_]) {
@@ -167,7 +169,7 @@ void DF_Helper::initialize() {
         prepare_AO();
 
     built = true;
-    timer_off("DF_Helper~-- build-------");
+    timer_off("DFH: initialize()");
 }
 void DF_Helper::print_header() {
     outfile->Printf("\n    ==> DF_Helper <==\n");
@@ -409,21 +411,21 @@ void DF_Helper::prepare_AO_core() {
             size_t end = pshell_aggs_[stop + 1] - 1;
 
             // compute
-            timer_on("DF_Helper~AO Construction");
+            timer_on("DFH: AO Construction");
             compute_AO_p_symm(start, stop, Mp, eri);
-            timer_off("DF_Helper~AO Construction");
+            timer_off("DFH: AO Construction");
 
             // contract metric
-            timer_on("DF_Helper~Metric Contr.");
+            timer_on("DFH: AO-Met. Contraction");
             contract_metric_AO_core_symm(Mp, metp, begin, end);
-            timer_off("DF_Helper~Metric Contr.");
+            timer_off("DFH: AO-Met. Contraction");
         }
         // no more need for metrics
         if (hold_met_) metrics_.clear();
     } else {
-        timer_on("DF_Helper~AO construction");
+        timer_on("DFH: AO Construction");
         compute_AO_p(0, pshells_ - 1, &Ppq_[0], eri);
-        timer_off("DF_Helper~AO construction");
+        timer_off("DFH: AO Construction");
     }
     // outfile->Printf("\n    ==> End AO Blocked Construction <==");
 }
@@ -960,11 +962,11 @@ void DF_Helper::grab_AO(const size_t start, const size_t stop, double* Mp) {
     }
 }
 void DF_Helper::prepare_metric_core() {
-    timer_on("DF_Helper~metric construct");
+    timer_on("DFH: metric contrsuction");
     std::shared_ptr<FittingMetric> Jinv(new FittingMetric(aux_, true));
     Jinv->form_fitting_metric();
     metrics_[1.0] = Jinv->get_metric();
-    timer_off("DF_Helper~metric construct");
+    timer_off("DFH: metric contrsuction");
 }
 double* DF_Helper::metric_prep_core(double pow) {
     bool on = false;
@@ -978,11 +980,11 @@ double* DF_Helper::metric_prep_core(double pow) {
     }
     if (!on) {
         power = pow;
-        timer_on("DF_Helper~metric power");
+        timer_on("DFH: metric power");
         SharedMatrix J = metrics_[1.0];
         J->power(power, condition_);
         metrics_[power] = J;
-        timer_off("DF_Helper~metric power");
+        timer_off("DFH: metric power");
     }
     return metrics_[power]->pointer()[0];
 }
@@ -1337,9 +1339,9 @@ void DF_Helper::print_order() {
     outfile->Printf("\n\n     ==> DF_Helper:--End Transformations Information <==\n\n");
 }
 void DF_Helper::transform() {
-    timer_on("DF_Helper~transform");
+    timer_on("DFH: transform()");
     (MO_core_ ? transform_core() : transform_disk());
-    timer_off("DF_Helper~transform");
+    timer_off("DFH: transform()");
     transformed_ = true;
 }
 void DF_Helper::transform_core() {
@@ -1423,14 +1425,14 @@ void DF_Helper::transform_core() {
             // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
             // get AO chunk according to directives
-            timer_on("Grabbing AOs");
+            timer_on("DFH: Grabbing AOs");
             if (AO_core_)
                 Mp = Ppq_.data();
             else if (direct_)
                 compute_AO_Q(start, stop, Mp, eri);
             else
                 grab_AO(start, stop, Mp);
-            timer_off("Grabbing AOs");
+            timer_off("DFH: Grabbing AOs");
 
             // stride through best spaces
             for (size_t i = 0, count = 0; i < bspace_.size(); count += strides_[i], i++) {
@@ -1440,7 +1442,7 @@ void DF_Helper::transform_core() {
                 double* Bpt = std::get<0>(spaces_[bspace])->pointer()[0];
 
                 // form tmp, thread over spM (nao)
-                timer_on("First Contraction");
+                timer_on("DFH: First Contraction");
 #pragma omp parallel for firstprivate(nao, naux, bsize, block_size) private(rank) schedule(guided) num_threads(nthreads)
                 for (size_t k = 0; k < nao_; k++) {
                     // truncate transformation matrix according to fun_mask
@@ -1461,7 +1463,7 @@ void DF_Helper::transform_core() {
                     C_DGEMM('N', 'N', block_size, bsize, sp_size, 1.0, &Mp[jump], sp_size, &C_buffers[rank][0], bsize,
                             0.0, &Tp[k * block_size * bsize], bsize);
                 }
-                timer_off("First Contraction");
+                timer_off("DFH: First Contraction");
 
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
@@ -1473,10 +1475,10 @@ void DF_Helper::transform_core() {
                     double* Wp = std::get<0>(I)->pointer()[0];
 
                     // (wp)(p|Qb)->(w|Qb)
-                    timer_on("Second Contraction");
+                    timer_on("DFH: Second Contraction");
                     C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
-                    timer_off("Second Contraction");
+                    timer_off("DFH: Second Contraction");
 
                     // Transpose in memory for convenient formats
                     size_t st1 = bsize * wsize;
@@ -1486,7 +1488,7 @@ void DF_Helper::transform_core() {
                     // final in-core MO pointer
                     double* Lp = transf_core_[order_[count + k]].data();
 
-                    timer_on("Transpose - (w|Qb)->(bw|Q)");
+                    timer_on("DFH: (w|Qb)->(bw|Q)");
                     if (bspace.compare(left) == 0) {  // (w|Qb)->(Q|bw)
 
                         if (std::get<2>(transf_[order_[count + k]])) {  // (w|Qb)->(bw|Q)
@@ -1537,7 +1539,7 @@ void DF_Helper::transform_core() {
                             }
                         }
                     }
-                    timer_off("Transpose - (w|Qb)->(bw|Q)");
+                    timer_off("DFH: (w|Qb)->(bw|Q)");
                 }
             }
         }
@@ -1650,14 +1652,14 @@ void DF_Helper::transform_disk() {
             // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
             // get AO chunk according to directives
-            timer_on("Grabbing AOs");
+            timer_on("DFH: Grabbing AOs");
             if (AO_core_)
                 Mp = Ppq_.data();
             else if (direct_) {
                 compute_AO_Q(start, stop, Mp, eri);
             } else
                 grab_AO(start, stop, Mp);
-            timer_off("Grabbing AOs");
+            timer_off("DFH: Grabbing AOs");
 
             // stride through best spaces
             for (size_t i = 0, count = 0; i < bspace_.size(); count += strides_[i], i++) {
@@ -1666,7 +1668,7 @@ void DF_Helper::transform_disk() {
                 size_t bsize = std::get<1>(spaces_[bspace]);
                 double* Bpt = std::get<0>(spaces_[bspace])->pointer()[0];
 
-                timer_on("First Contraction");
+                timer_on("DFH: First Contraction");
 // form temp, thread over spM (nao)
 #pragma omp parallel for firstprivate(nao, naux, bsize, \
                                       block_size) private(rank) schedule(guided) num_threads(nthreads_)
@@ -1689,7 +1691,7 @@ void DF_Helper::transform_disk() {
                     C_DGEMM('N', 'N', block_size, bsize, sp_size, 1.0, &Mp[jump], sp_size, &C_buffers[rank][0], bsize,
                             0.0, &Tp[k * block_size * bsize], bsize);
                 }
-                timer_off("First Contraction");
+                timer_off("DFH: First Contraction");
 
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
@@ -1701,10 +1703,10 @@ void DF_Helper::transform_disk() {
                     double* Wp = std::get<0>(I)->pointer()[0];
 
                     // (wp)(p|Qb)->(w|Qb)
-                    timer_on("Second Contraction");
+                    timer_on("DFH: Second Contraction");
                     C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
-                    timer_off("Second Contraction");
+                    timer_off("DFH: Second Contraction");
 
                     // setup putf
                     std::string putf =
@@ -1717,7 +1719,7 @@ void DF_Helper::transform_disk() {
                     size_t st2 = bsize * block_size;
                     size_t st3 = wsize * block_size;
 
-                    timer_on("Transpose - (w|Qb)->(bw|Q)");
+                    timer_on("DFH: (w|Qb)->(bw|Q)");
                     if (bspace.compare(left) == 0) {
                         if (std::get<2>(transf_[order_[count + k]])) {  // (w|Qb)->(bw|Q)
 
@@ -1729,8 +1731,8 @@ void DF_Helper::transform_disk() {
                                     }
                                 }
                             }
-                            timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Putting MO to disk");
+                            timer_off("DFH: (w|Qb)->(bw|Q)");
+                            timer_on("DFH: MO to disk");
                             put_tensor(putf, Np, std::make_pair(0, bsize - 1), std::make_pair(0, wsize - 1),
                                        std::make_pair(begin, end), "wb");
 
@@ -1744,8 +1746,8 @@ void DF_Helper::transform_disk() {
                                     }
                                 }
                             }
-                            timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Putting MO to disk");
+                            timer_off("DFH: (w|Qb)->(bw|Q)");
+                            timer_on("DFH: MO to disk");
                             put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, bsize - 1),
                                        std::make_pair(0, wsize - 1), op);
                         }
@@ -1761,8 +1763,8 @@ void DF_Helper::transform_disk() {
                                     }
                                 }
                             }
-                            timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Putting MO to disk");
+                            timer_off("DFH: (w|Qb)->(bw|Q)");
+                            timer_on("DFH: MO to disk");
                             put_tensor(putf, Np, std::make_pair(0, wsize - 1), std::make_pair(0, bsize - 1),
                                        std::make_pair(begin, end), "wb");
 
@@ -1777,13 +1779,13 @@ void DF_Helper::transform_disk() {
                                     }
                                 }
                             }
-                            timer_off("Transpose - (w|Qb)->(bw|Q)");
-                            timer_on("Putting MO to disk");
+                            timer_off("DFH: (w|Qb)->(bw|Q)");
+                            timer_on("DFH: MO to disk");
                             put_tensor(putf, Np, std::make_pair(begin, end), std::make_pair(0, wsize - 1),
                                        std::make_pair(0, bsize - 1), op);
                         }
                     }
-                    timer_off("Putting MO to disk");
+                    timer_off("DFH: MO to disk");
                 }
             }
         }
@@ -2510,9 +2512,9 @@ std::tuple<size_t, size_t, size_t> DF_Helper::get_tensor_shape(std::string name)
 }
 void DF_Helper::build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
                          std::vector<SharedMatrix> K) {
-    timer_on("DF_Helper~JK-build");
+    timer_on("DFH: build_JK()");
     compute_JK(Cleft, Cright, J, K);
-    timer_off("DF_Helper~JK-build");
+    timer_off("DFH: build_JK()");
 }
 void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
                            std::vector<SharedMatrix> J, std::vector<SharedMatrix> K) {
@@ -2617,20 +2619,20 @@ void DF_Helper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMa
         // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
         // get AO chunk according to directive
-        timer_on("DF_Helper~Grabbing AOs");
+        timer_on("DFH: Grabbing AOs");
         if (direct_) {
             compute_AO_Q(start, stop, Mp, eri);
         } else if (!AO_core_)
             grab_AO(start, stop, Mp);
-        timer_off("DF_Helper~Grabbing AOs");
+        timer_off("DFH: Grabbing AOs");
 
-        timer_on("DF_Helper~JK  -   J   ");
+        timer_on("DFH: compute_J");
         compute_J_symm(D, J, Mp, T1p, T2p, C_buffers, bcount, block_size);
-        timer_off("DF_Helper~JK  -   J   ");
+        timer_off("DFH: compute_J");
 
-        timer_on("DF_Helper~JK  -   K   ");
+        timer_on("DFH: compute_K");
         compute_K(Cleft, Cright, K, T1p, T2p, Mp, bcount, block_size, C_buffers, J, D);
-        timer_off("DF_Helper~JK  -   K   ");
+        timer_off("DFH: compute_K");
 
         bcount += block_size;
     }
@@ -2674,13 +2676,10 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
         // cache alignment
         size_t align_size = (naux % 8 ? naux + 8 - naux % 8 : naux);
 
-        timer_on("DF_Helper~JK -  Jzero");
 // initialize Tmp (pQ)
 #pragma omp parallel for simd num_threads(nthreads_)
         for (size_t k = 0; k < nthreads_ * align_size; k++) T1p[k] = 0.0;
-        timer_off("DF_Helper~JK -  Jzero");
 
-        timer_on("DF_Helper~JK - Jfirst");
 #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
             size_t si = small_skips_[k];
@@ -2703,14 +2702,11 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
             C_DGEMV('N', block_size, mi, 1.0, &Mp[jump + skip], si, &D_buffers[rank][0], 1, 1.0,
                     &T1p[rank * align_size], 1);
         }
-        timer_off("DF_Helper~JK - Jfirst");
-        timer_on("DF_Helper~JK - Jreduce");
+        
         // reduce
         for (size_t k = 1; k < nthreads_; k++) {
             for (size_t l = 0; l < naux; l++) T1p[l] += T1p[k * align_size + l];
         }
-        timer_off("DF_Helper~JK - Jreduce");
-        timer_on("DF_Helper~JK - Jcomple");
 
         // align cache to reduce false sharing
         align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
@@ -2724,8 +2720,7 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * si : (big_skips_[k] * block_size) / naux);
             C_DGEMV('T', block_size, mi, 1.0, &Mp[jump + skip], si, T1p, 1, 0.0, &T2p[k * align_size], 1);
         }
-        timer_off("DF_Helper~JK - Jcomple");
-        timer_on("DF_Helper~JK - Junpack");
+        
         // unpack from sparse to dense
         for (size_t k = 0; k < nao; k++) {
             for (size_t m = k + 1, count = 0; m < nao; m++) {  // assumes diagonal exists to avoid if  FIXME
@@ -2737,7 +2732,6 @@ void DF_Helper::compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMa
             }
         }
         for (size_t k = 0; k < nao; k++) Jp[k * nao + k] += T2p[k * align_size];
-        timer_off("DF_Helper~JK - Junpack");
     }
 }
 void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p,
@@ -2754,13 +2748,10 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
         // cache alignment
         size_t align_size = (naux % 8 ? naux + 8 - naux % 8 : naux);
 
-        timer_on("DF_Helper~JK -  Jzero");
-// initialize Tmp (pQ)
+        // initialize Tmp (pQ)
 #pragma omp parallel for simd num_threads(nthreads_)
         for (size_t k = 0; k < nthreads_ * align_size; k++) T1p[k] = 0.0;
-        timer_off("DF_Helper~JK -  Jzero");
 
-        timer_on("DF_Helper~JK - Jfirst");
 #pragma omp parallel for firstprivate(nao, naux, block_size) private(rank) schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
             size_t sp_size = small_skips_[k];
@@ -2780,27 +2771,21 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
             C_DGEMV('N', block_size, sp_size, 1.0, &Mp[jump], sp_size, &D_buffers[rank][0], 1, 1.0,
                     &T1p[rank * align_size], 1);
         }
-        timer_off("DF_Helper~JK - Jfirst");
-        timer_on("DF_Helper~JK - Jreduce");
         // reduce
         for (size_t k = 1; k < nthreads_; k++) {
             for (size_t l = 0; l < naux; l++) T1p[l] += T1p[k * align_size + l];
         }
-        timer_off("DF_Helper~JK - Jreduce");
-        timer_on("DF_Helper~JK - Jcomple");
 
         // align cache to reduce false sharing
         align_size = (nao % 8 ? nao + (8 - nao % 8) : nao);
 
-// complete pruned J
+        // complete pruned J
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao; k++) {
             size_t sp_size = small_skips_[k];
             size_t jump = (AO_core_ ? big_skips_[k] + bcount * sp_size : (big_skips_[k] * block_size) / naux);
             C_DGEMV('T', block_size, sp_size, 1.0, &Mp[jump], sp_size, T1p, 1, 0.0, &T2p[k * align_size], 1);
         }
-        timer_off("DF_Helper~JK - Jcomple");
-        timer_on("DF_Helper~JK - Junpack");
         // unpack from sparse to dense
         for (size_t k = 0; k < nao; k++) {
             for (size_t m = 0, count = -1; m < nao; m++) {
@@ -2810,7 +2795,6 @@ void DF_Helper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix>
                 }
             }
         }
-        timer_off("DF_Helper~JK - Junpack");
     }
 }
 void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright,
@@ -2833,7 +2817,6 @@ void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         size_t rem = block_size * cleft;
         size_t align_size = (rem % 8 ? rem + (8 - rem % 8) : rem);
 
-        timer_on("DF_Helper~JK -  Ktmp1");
 // form temp, thread over spM (nao)
 #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nao_; k++) {
@@ -2854,9 +2837,7 @@ void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
             C_DGEMM('N', 'N', block_size, cleft, sp_size, 1.0, &Mp[jump], sp_size, &C_buffers[rank][0], cleft, 0.0,
                     &Tp[k * align_size], cleft);
         }
-        timer_off("DF_Helper~JK -  Ktmp1");
         if (!JK_hint_ && (Cleft[i] != Cright[i])) {
-            timer_on("DF_Helper~JK -  Ktmp1");
 #pragma omp parallel for private(rank) schedule(guided) num_threads(nthreads_)
             for (size_t k = 0; k < nao_; k++) {
                 size_t sp_size = small_skips_[k];
@@ -2876,14 +2857,9 @@ void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
                 C_DGEMM('N', 'N', block_size, cright, sp_size, 1.0, &Mp[jump], sp_size, &C_buffers[rank][0], cright,
                         0.0, &T2p[k * align_size], cright);
             }
-            timer_off("DF_Helper~JK -  Ktmp1");
-            timer_on("DF_Helper~JK - Kfinal");
             C_DGEMM('N', 'T', nao, nao, cleft * block_size, 1.0, Tp, align_size, T2p, align_size, 1.0, Kp, nao);
-            timer_off("DF_Helper~JK - Kfinal");
         } else {
-            timer_on("DF_Helper~JK - Kfinal");
             C_DGEMM('N', 'T', nao, nao, cleft * block_size, 1.0, Tp, align_size, Tp, align_size, 1.0, Kp, nao);
-            timer_off("DF_Helper~JK - Kfinal");
         }
     }
 }

@@ -2159,32 +2159,32 @@ void USAPT0::mp2_terms() {
 
     //  Here we could read more slices in memory, or just move that to the master loop directly.
 
-    for (int astart = 0; astart < naa; astart += 2L * maxa_a) {
-        int nablock = (astart + maxa_a >= naa ? naa - astart : maxa_a);
+    for (size_t astart = 0; astart < naa; astart += 2L * maxa_a) {
+        size_t nablock = (astart + maxa_a >= naa ? naa - astart : maxa_a);
         dfh->fill_tensor("Da_ar", Da_ar, {astart, astart + nablock});
         dfh->fill_tensor("Ea_ar", Aa_ar, {astart, astart + nablock});
         C_DAXPY(nablock * narQ, 1.0, Aa_arp[0], 1, Da_arp[0], 1);
         dfh->write_disk_tensor("Da_ar", Da_ar, {astart, astart + nablock});
     }
 
-    for (int astart = 0; astart < nba; astart += 2L * maxb_a) {
-        int nablock = (astart + maxb_a >= nba ? nba - astart : maxb_a);
+    for (size_t astart = 0; astart < nba; astart += 2L * maxb_a) {
+        size_t nablock = (astart + maxb_a >= nba ? nba - astart : maxb_a);
         dfh->fill_tensor("Db_ar", Db_ar, {astart, astart + nablock});
         dfh->fill_tensor("Eb_ar", Ab_ar, {astart, astart + nablock});
         C_DAXPY(nablock * nbrQ, 1.0, Ab_arp[0], 1, Db_arp[0], 1);
         dfh->write_disk_tensor("Db_ar", Db_ar, {astart, astart + nablock});
     }
 
-    for (int bstart = 0; bstart < nab; bstart += 2L * maxa_b) {
-        int nbblock = (bstart + maxa_b >= nab ? nab - bstart : maxa_b);
+    for (size_t bstart = 0; bstart < nab; bstart += 2L * maxa_b) {
+        size_t nbblock = (bstart + maxa_b >= nab ? nab - bstart : maxa_b);
         dfh->fill_tensor("Da_bs", Da_bs, {bstart, bstart + nbblock});
         dfh->fill_tensor("Ea_bs", Aa_bs, {bstart, bstart + nbblock});
         C_DAXPY(nbblock * nasQ, 1.0, Aa_bsp[0], 1, Da_bsp[0], 1);
         dfh->write_disk_tensor("Da_bs", Da_bs, {bstart, bstart + nbblock});
     }
 
-    for (int bstart = 0; bstart < nbb; bstart += 2L * maxb_b) {
-        int nbblock = (bstart + maxb_b >= nbb ? nbb - bstart : maxb_b);
+    for (size_t bstart = 0; bstart < nbb; bstart += 2L * maxb_b) {
+        size_t nbblock = (bstart + maxb_b >= nbb ? nbb - bstart : maxb_b);
         dfh->fill_tensor("Db_bs", Db_bs, {bstart, bstart + nbblock});
         dfh->fill_tensor("Eb_bs", Ab_bs, {bstart, bstart + nbblock});
         C_DAXPY(nbblock * nbsQ, 1.0, Ab_bsp[0], 1, Db_bsp[0], 1);
@@ -2198,9 +2198,9 @@ void USAPT0::mp2_terms() {
 
     // ==> Master Loop <== //
 
-    for (int aastart = 0, bastart = 0; aastart < max(naa, nba); aastart += maxa_a, bastart += maxb_a) {
-        int na_ablock = (aastart + maxa_a >= naa ? naa - aastart : maxa_a);
-        int nb_ablock = (aastart + maxb_a >= nba ? nba - aastart : maxb_a);
+    for (size_t aastart = 0, bastart = 0; aastart < max(naa, nba); aastart += maxa_a, bastart += maxb_a) {
+        size_t na_ablock = (aastart + maxa_a >= naa ? naa - aastart : maxa_a);
+        size_t nb_ablock = (aastart + maxb_a >= nba ? nba - aastart : maxb_a);
 
         if (na_ablock > 0) {
             dfh->fill_tensor("Aa_ar", Aa_ar, {aastart, aastart + na_ablock});
@@ -2216,9 +2216,9 @@ void USAPT0::mp2_terms() {
             dfh->fill_tensor("Db_ar", Db_ar, {bastart, bastart + nb_ablock});
         }
 
-        for (int abstart = 0, bbstart = 0; abstart < max(nab, nbb); abstart += maxa_b, bbstart += maxb_b) {
-            int na_bblock = (abstart + maxa_b >= nab ? nab - abstart : maxa_b);
-            int nb_bblock = (abstart + maxb_b >= nbb ? nbb - abstart : maxb_b);
+        for (size_t abstart = 0, bbstart = 0; abstart < max(nab, nbb); abstart += maxa_b, bbstart += maxb_b) {
+            size_t na_bblock = (abstart + maxa_b >= nab ? nab - abstart : maxa_b);
+            size_t nb_bblock = (abstart + maxb_b >= nbb ? nbb - abstart : maxb_b);
 
             if (na_bblock > 0) {
                 dfh->fill_tensor("Aa_bs", Aa_bs, {abstart, abstart + na_bblock});
