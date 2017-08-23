@@ -152,12 +152,12 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     // => Form energy contributions <= //
 
-    for (int istart = 0; istart < no; istart += max_o) {
-        int ni = (istart + max_o >= no ? no - istart : max_o);
+    for (size_t istart = 0; istart < no; istart += max_o) {
+        size_t ni = (istart + max_o >= no ? no - istart : max_o);
         dfh->fill_tensor("B", Bia, {istart, istart + ni});
 
-        for (int jstart = 0; jstart < no; jstart += max_o) {
-            int nj = (jstart + max_o >= no ? no - jstart : max_o);
+        for (size_t jstart = 0; jstart < no; jstart += max_o) {
+            size_t nj = (jstart + max_o >= no ? no - jstart : max_o);
 
             if (jstart > istart) break;
 

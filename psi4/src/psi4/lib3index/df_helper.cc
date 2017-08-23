@@ -1677,6 +1677,7 @@ void DF_Helper::transform_disk() {
                 double* Bpt = std::get<0>(spaces_[bspace])->pointer()[0];
 
                 timer_on("DFH: Total Workflow");
+                timer_on("DFH: Total Transform");
                 timer_on("DFH: First Contraction");
 // form temp, thread over spM (nao)
 #pragma omp parallel for firstprivate(nao, naux, bsize, \
@@ -1701,6 +1702,7 @@ void DF_Helper::transform_disk() {
                             0.0, &Tp[k * block_size * bsize], bsize);
                 }
                 timer_off("DFH: First Contraction");
+                timer_off("DFH: Total Transform");
                 timer_off("DFH: Total Workflow");
 
                 // to completion per transformation
@@ -1714,10 +1716,12 @@ void DF_Helper::transform_disk() {
 
                     // (wp)(p|Qb)->(w|Qb)
                     timer_on("DFH: Total Workflow");
+                    timer_on("DFH: Total Transform");
                     timer_on("DFH: Second Contraction");
                     C_DGEMM('T', 'N', wsize, block_size * bsize, nao_, 1.0, Wp, wsize, Tp, block_size * bsize, 0.0, Fp,
                             block_size * bsize);
                     timer_off("DFH: Second Contraction");
+                    timer_off("DFH: Total Transform");
                     timer_off("DFH: Total Workflow");
 
                     // setup putf
