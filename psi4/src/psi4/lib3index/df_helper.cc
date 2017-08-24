@@ -2358,7 +2358,7 @@ void DF_Helper::transpose_disk(std::string name, std::tuple<size_t, size_t, size
     for (size_t i = 0; i < M0; i++) {
         current += M1 * M2;
         count++;
-        if (current * 2 > + memory_ || i == M0 - 1) {  // FIXME
+        if ((current * 2 > memory_) || (i == M0 - 1)) {  // 
             if (count == 1 && i != M0 - 1) {
                 std::stringstream error;
                 error << "DF_Helper:transpose_disk: not enough memory.";
