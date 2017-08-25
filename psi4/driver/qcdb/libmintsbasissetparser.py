@@ -195,7 +195,11 @@ class Gaussian94BasisSetParser(object):
                     # or:    H_ECP    O_ECP ...     0
                     if atom_ecp.match(line):
                         ecp_msg = """line %5d""" % (lineno)
-                        symbol_to_am = { 0:0, 1:1, 2:2, 3:3, "s":0, "S":0, "p":1, "P":1, "d":2, "D":2, "f":3, "F":3 }
+                        symbol_to_am = {0: 0,   's': 0,   'S': 0,
+                                        1: 1,   'p': 1,   'P': 1,
+                                        2: 2,   'd': 2,   'D': 2,
+                                        3: 3,   'f': 3,   'F': 3,
+                                        4: 4,   'g': 4,   'G': 4}
                         # This is an ECP spec like "KR-ECP    3     28"
                         matchobj = atom_ecp.match(line)
                         sl = line.split()

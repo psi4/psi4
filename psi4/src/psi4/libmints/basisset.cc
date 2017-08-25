@@ -700,6 +700,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     nao_ = 0;
     nbf_ = 0;
     n_ecp_shells_ = 0;
+    n_ecp_primitive_ = 0;
     for (int n = 0; n < natom; ++n) {
         const std::shared_ptr <CoordEntry> &atom = molecule_->atom_entry(n);
         std::string basis = atom->basisset(basistype);
