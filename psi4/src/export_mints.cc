@@ -765,11 +765,16 @@ void export_mints(py::module& m)
         .def("ao_quadrupole", &MintsHelper::ao_quadrupole, "Vector AO quadrupole integrals")
         .def("so_quadrupole", &MintsHelper::so_quadrupole, "Vector SO quadrupole integrals")
         .def("ao_traceless_quadrupole", &MintsHelper::ao_traceless_quadrupole, "Vector AO traceless quadrupole integrals")
-        .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole, "Vector SO tracless quadrupole integrals")
+        .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole, "Vector SO traceless quadrupole integrals")
         .def("ao_nabla", &MintsHelper::ao_nabla, "Vector AO nabla integrals")
         .def("so_nabla", &MintsHelper::so_nabla, "Vector SO nabla integrals")
         .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "Vector AO angular momentum integrals")
         .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "Vector SO angular momentum integrals")
+        .def("ao_efp_multipole_potential", &MintsHelper::ao_efp_multipole_potential,
+            "Vector AO EFP multipole integrals",
+            py::arg("origin")=std::vector<double> {0, 0, 0}, py::arg("deriv") = 0)
+        .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
+            py::arg("origin")=std::vector<double> {0, 0, 0}, py::arg("deriv") = 0)
 
         // Two-electron AO
         .def("ao_eri", normal_eri(&MintsHelper::ao_eri), "AO ERI integrals")

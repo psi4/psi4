@@ -478,7 +478,7 @@ public:
     virtual OneBodySOInt* so_efp_multipole_potential(int deriv=0);
 
     /// Returns an OneBodyInt that computes the electric field
-    virtual OneBodyAOInt *electric_field();
+    virtual OneBodyAOInt *electric_field(int deriv=0);
 
     /// Returns an OneBodyInt that computes the point electrostatic potential
     virtual OneBodyAOInt *electrostatic();

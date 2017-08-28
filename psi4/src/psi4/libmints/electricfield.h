@@ -64,7 +64,7 @@ public:
     virtual ~ElectricFieldInt();
 
     //! Does the method provide first derivatives?
-    bool has_deriv1() { return true; }
+    bool has_deriv1() { return false; }
 
     static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
     static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
