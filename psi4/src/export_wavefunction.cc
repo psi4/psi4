@@ -212,6 +212,16 @@ void export_wavefunction(py::module& m) {
         .def("finalize_E", &scf::HF::finalize_E, "Computes the final SCF energy.")
         .def("occupation_a", &scf::HF::occupation_a, "Returns the Alpha occupation numbers.")
         .def("occupation_b", &scf::HF::occupation_b, "Returns the Beta occupation numbers.")
+        .def("save_density_and_energy", &scf::HF::save_density_and_energy, "docstring")
+        .def("reset_occupation", &scf::HF::reset_occupation, "docstring")
+        .def("compute_E", &scf::HF::compute_E, "docstring")
+        .def("rms_density_error", &scf::HF::rms_density_error, "docstring")
+        .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
+        .def("test_convergency", &scf::HF::test_convergency, "docstring")
+        .def("find_occupation", &scf::HF::find_occupation, "docstring")
+        .def("diis", &scf::HF::diis, "docstring")
+        .def("damp_update", &scf::HF::damp_update, "docstring")
+        .def("Eold", &scf::HF::Eold, "docstring")
         .def("semicanonicalize", &scf::HF::semicanonicalize,
              "Semicanonicalizes the orbitals for ROHF.");
 
