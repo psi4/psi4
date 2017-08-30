@@ -262,9 +262,6 @@ protected:
     /// Common initializer
     void common_init();
 
-    /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
-    void find_occupation();
-
     /// Maximum overlap method for prevention of oscillation/excited state SCF
     void MOM();
     /// Start the MOM algorithm (requires one iteration worth of setup)
@@ -321,29 +318,14 @@ protected:
     /// The number of iterations need to reach convergence
     int iterations_needed_;
 
-    /// Compute energy for the iteration.
-    virtual double compute_E() = 0;
-
-    /// Save the current density and energy.
-    virtual void save_density_and_energy() = 0;
-
     /// Check MO phases
     void check_phases();
 
     /// SAD Guess and propagation
     void compute_SAD_guess();
 
-    /// Reset to regular occupation from the fractional occupation
-    void reset_occupation();
-
     /// Form the guess (gaurantees C, D, and E)
     virtual void guess();
-
-    /** Applies damping to the density update */
-    virtual void damp_update();
-
-    /** Applies second-order convergence acceleration */
-    virtual int soscf_update();
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
     virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, std::shared_ptr<Vector>& eps);
@@ -354,20 +336,11 @@ protected:
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
 
-    /** Test convergence of the wavefunction */
-    virtual bool test_convergency() { return false; }
-
     /** Compute/print spin contamination information (if unrestricted) **/
     virtual void compute_spin_contamination();
 
     /** Saves information to the checkpoint file */
     virtual void save_information() {}
-
-    /** Compute the orbital gradient */
-    virtual void compute_orbital_gradient(bool) {}
-
-    /** Performs DIIS extrapolation */
-    virtual bool diis() { return false; }
 
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
@@ -407,6 +380,36 @@ public:
     ///  This function should be called once orbitals are ready for energy/property computations,
     /// usually after iterations() is called.
     virtual double finalize_E();
+
+    /// Return the previous energy.
+    virtual double Eold() { return Eold_; }
+
+    /// Save the current density and energy.
+    virtual void save_density_and_energy() = 0;
+
+    /// Reset to regular occupation from the fractional occupation
+    void reset_occupation();
+
+    /// Compute energy for the iteration.
+    virtual double compute_E() = 0;
+
+    /** Test convergence of the wavefunction */
+    virtual bool test_convergency() { return false; }
+
+    /** Applies second-order convergence acceleration */
+    virtual int soscf_update();
+
+    /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
+    void find_occupation();
+
+    /** Performs DIIS extrapolation */
+    virtual bool diis() { return false; }
+
+    /** Compute the orbital gradient */
+    virtual void compute_orbital_gradient(bool) {}
+
+    /** Applies damping to the density update */
+    virtual void damp_update();
 
     /// Base class Wavefunction requires this function. Here it is simply a wrapper around
     /// initialize(), iterations(), finalize_E(). It returns the SCF energy computed by
