@@ -8,246 +8,270 @@ import numpy
 @classmethod
 def scf_iterate(self):
 
-    reference = psi4.core.get_option("REFERENCE")
+    reference = psi4.core.get_option('SCF', "REFERENCE")
 
-    MOM_performed_ = False
-    diis_performed_ = False
+    MOM_performed = False
+    diis_performed = False
+    frac_performed = False  # revisit
+    reset_occ = True if (psi4.core.get_option('SCF', 'GUESS') == 'SAD') else False
+    # todo reset_occ was ripped out of nice logic so revisit
+    print_lvl = psi4.core.get_option('SCF', "PRINT")
 
-    df = psi4.core.get_option("SCF_TYPE") == "DF"
 
-    psi4.core.print_out( "  ==> Iterations <==\n\n");
-    psi4.core.print_out( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", df  "   " : "");
+    # First, did the user request a different number of diis vectors?
+    min_diis_vectors = psi4.core.get_option('SCF', "DIIS_MIN_VECS")
+    max_diis_vectors = psi4.core.get_option('SCF', "DIIS_MAX_VECS")
+    diis_start = psi4.core.get_option('SCF', "DIIS_START")
+    diis_enabled = psi4.core.get_option('SCF', "DIIS")
+    # Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
+    if min_diis_vectors < 2:
+        diis_enabled = False
 
+    # damping?
+    damping_enabled = psi4.core.has_changed('SCF', 'DAMPING_PERCENTAGE')
+    if damping_enabled:
+        damping_percentage = psi4.core.get_option('SCF', "DAMPING_PERCENTAGE") / 100.0
+        if damping_percentage < 0.0 or damping_percentage > 1.0:
+            raise ValidationError("DAMPING_PERCENTAGE must be between 0 and 100.")
+        damping_convergence = psi4.core.get_option('SCF', "DAMPING_CONVERGENCE")
 
-    // SCF iterations
-    iteration = 0
-    self.save_density_and_energy()
+    df = psi4.core.get_option('SCF', "SCF_TYPE") == "DF"
 
-    Horig = self.H().clone()
-    # self.H().copy(Horig)
-    # self.H().axpy(1.0, Vefp)
+    psi4.core.print_out( "  ==> Iterations <==\n\n")
+    psi4.core.print_out( "%s                        Total Energy        Delta E     RMS |[F,P]|\n\n", "   " if df else "")
 
-# #ifdef USING_libefp
-#         // add efp contribution to Fock matrix
-#         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-#             H_->copy(Horig_);
-#             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
-#             H_->add(Vefp);
-#         }
-# #endif
+    # Iterate !
+    # SCF iterations
+    for iteration in range(psi4.core.get_option('SCF', 'MAXITER')):
 
-        E_ = 0.0;
+        self.save_density_and_energy()
+    
+    # #ifdef USING_libefp
+        #Horig = self.H().clone()
+        # self.H().copy(Horig)
+        # self.H().axpy(1.0, Vefp)
+    
+    #         // add efp contribution to Fock matrix
+    #         if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+    #             H_->copy(Horig_);
+    #             std::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock_induced();
+    #             H_->add(Vefp);
+    #         }
+    # #endif
+    
+        SCFE = 0.0
+    
+        psi4.core.timer_on("HF: Form G")
+        self.form_G()
+        psi4.core.timer_off("HF: Form G")
+    
+        # Reset fractional SAD occupation
+        if (iteration == 0) and reset_occ:
+            self.reset_occupation()
 
-        psi4.core.timer_on("HF: Form G");
-        self.form_G();
-        psi4.core.timer_off("HF: Form G");
+        psi4.core.timer_on("HF: Form F")
+        self.form_F()
+        psi4.core.timer_off("HF: Form F")
 
-        // Reset fractional SAD occupation
-        if ((iteration_ == 0) && reset_occ_){
-            reset_occupation();
-        }
+        if print_lvl > 3:
+            self.Fa().print_out()
+            self.Fb().print_out()
 
-        timer_on("HF: Form F");
-        form_F();
-        timer_off("HF: Form F");
+        SCFE += self.compute_E()
 
-        if (print_>3) {
-            Fa_->print("outfile");
-            Fb_->print("outfile");
-        }
-
-        E_ += compute_E();
-
-#ifdef USING_libefp
-        // add efp contribution to energy
-        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
-            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
-            E_ += efp_wfn_dependent_energy;
-        }
-#endif
-
-#ifdef USING_PCMSolver
-        // The PCM potential must be added to the Fock operator *after* the
-        // energy computation, not in form_F()
-        if(pcm_enabled_) {
-          // Prepare the density
-          SharedMatrix D_pcm(Da_->clone());
-          if(same_a_b_orbs()) {
-            D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
-          } else {
-            D_pcm->add(Db_);
-          }
-
-          // Compute the PCM charges and polarization energy
-          double epcm = 0.0;
-          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
-            epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
-          } else {
-            epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
-          }
-          energies_["PCM Polarization"] = epcm;
-          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-          E_ += epcm;
-
-          // Add the PCM potential to the Fock matrix
-          SharedMatrix V_pcm;
-          V_pcm = hf_pcm_->compute_V();
-          if (same_a_b_orbs()) {
-            Fa_->add(V_pcm);
-          } else {
-            Fa_->add(V_pcm);
-            Fb_->add(V_pcm);
-          }
-        } else {
-          energies_["PCM Polarization"] = 0.0;
-          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
-        }
-#endif
+##ifdef USING_libefp
+#        // add efp contribution to energy
+#        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
+#            double efp_wfn_dependent_energy = Process::environment.get_efp()->scf_energy_update();
+#            E_ += efp_wfn_dependent_energy;
+#        }
+##endif
+#
+##ifdef USING_PCMSolver
+#        // The PCM potential must be added to the Fock operator *after* the
+#        // energy computation, not in form_F()
+#        if(pcm_enabled_) {
+#          // Prepare the density
+#          SharedMatrix D_pcm(Da_->clone());
+#          if(same_a_b_orbs()) {
+#            D_pcm->scale(2.0); // PSI4's density doesn't include the occupation
+#          } else {
+#            D_pcm->add(Db_);
+#          }
+#
+#          // Compute the PCM charges and polarization energy
+#          double epcm = 0.0;
+#          if (options_.get_str("PCM_SCF_TYPE") == "TOTAL") {
+#            epcm = hf_pcm_->compute_E(D_pcm, PCM::Total);
+#          } else {
+#            epcm = hf_pcm_->compute_E(D_pcm, PCM::NucAndEle);
+#          }
+#          energies_["PCM Polarization"] = epcm;
+#          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+#          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+#          E_ += epcm;
+#
+#          // Add the PCM potential to the Fock matrix
+#          SharedMatrix V_pcm;
+#          V_pcm = hf_pcm_->compute_V();
+#          if (same_a_b_orbs()) {
+#            Fa_->add(V_pcm);
+#          } else {
+#            Fa_->add(V_pcm);
+#            Fb_->add(V_pcm);
+#          }
+#        } else {
+#          energies_["PCM Polarization"] = 0.0;
+#          variables_["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+#          Process::environment.globals["PCM POLARIZATION ENERGY"] = energies_["PCM Polarization"];
+#        }
+##endif
         std::string status = "";
 
-        // We either do SOSCF or DIIS
-        bool did_soscf = false;
-        if (soscf_enabled_ && (Drms_ < soscf_r_start_) && (iteration_ > 3)) {
-            compute_orbital_gradient(false);
-            diis_performed_ = false;
+        # We either do SOSCF or DIIS
+    #print_lvl = psi4.core.get_option('SCF', "PRINT")  # PY
+    #soscf_enabled_ = options_.get_bool("SOSCF");       # C++
+    # soscf_r_start_ = options_.get_double("SOSCF_START_CONVERGENCE");
+        did_soscf = False
+        soscf_enabled = psi4.core.get_option('SCF', 'SOSCF')
+        soscf_r_start = psi4.core.get_option('SCF', 'SOSCF_START_CONVERGENCE')
+        if (soscf_enabled and
+            (self.rms_density_error() < soscf_r_start) and
+            (iteration > 3)):
+
+            self.compute_orbital_gradient(False)
+            diis_performed = False
             std::string base_name;
-            if (functional_->needs_xc()) {
-                base_name = "SOKS, nmicro = ";
-            } else {
-                base_name = "SOSCF, nmicro = ";
-            }
+            if self.functional().needs_xc():
+                base_name = "SOKS, nmicro = "
+            else:
+                base_name = "SOSCF, nmicro = "
 
-            if (!test_convergency()) {
-                int nmicro = soscf_update();
-                if (nmicro > 0) {  // If zero the soscf call bounced for some reason
-                    find_occupation();
+            if not self.test_convergency():
+                nmicro = self.soscf_update()
+                if nmicro > 0:
+                    # If zero the soscf call bounced for some reason
+                    self.find_occupation()
                     status += base_name + psi::to_string(nmicro);
-                    did_soscf = true;  // Stops DIIS
-                } else {
-                    if (print_) {
-                        outfile->Printf(
-                            "Did not take a SOSCF step, using normal convergence methods\n");
-                    }
-                    did_soscf = false;  // Back to DIIS
-                }
-            } else {
-                // We need to ensure orthogonal orbitals and set epsilon
+                    did_soscf = True  # Stops DIIS
+                else:
+                    if print_lvl:
+                        core.print_out("Did not take a SOSCF step, using normal convergence methods\n")
+                    did_soscf = False  # Back to DIIS
+                
+            else:
+                # We need to ensure orthogonal orbitals and set epsilon
                 status += base_name + "conv";
-                timer_on("HF: Form C");
-                form_C();
-                timer_off("HF: Form C");
-                did_soscf = true;  // Stops DIIS
-            }
-        }  // End SOSCF block
+                psi4.core.timer_on("HF: Form C")
+                self.form_C()
+                psi4.core.timer_off("HF: Form C")
+                did_soscf = True  # Stops DIIS
 
-        if (!did_soscf){ // Normal convergence procedures if we do not do SOSCF
+        if not did_soscf:
+            # Normal convergence procedures if we do not do SOSCF
 
-            timer_on("HF: DIIS");
-            bool add_to_diis_subspace = false;
-            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-                add_to_diis_subspace = true;
+            psi4.core.timer_on("HF: DIIS")
+            add_to_diis_subspace = False
+            if (diis_enabled and (iteration > 0) and
+                (iteration >= diis_start)):
+                add_to_diis_subspace = True
 
-            compute_orbital_gradient(add_to_diis_subspace);
+            self.compute_orbital_gradient(add_to_diis_subspace)
 
-            if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
-                diis_performed_ = diis();
-            } else {
-                diis_performed_ = false;
-            }
-            timer_off("HF: DIIS");
+            if (diis_enabled and
+                (iteration >= diis_start + min_diis_vectors - 1)):
+                diis_performed = self.diis()
+            else:
+                diis_performed = False
 
-            if (print_>4 && diis_performed_) {
-                outfile->Printf("  After DIIS:\n");
-                Fa_->print("outfile");
-                Fb_->print("outfile");
-            }
+            psi4.core.timer_off("HF: DIIS")
 
-            timer_on("HF: Form C");
-            form_C();
-            timer_off("HF: Form C");
-        }
+            if (print_lvl > 4) and diis_performed:
+                psi4.core.print_out("  After DIIS:\n")
+                self.Fa().print_out()
+                self.Fb().print_out()
 
-        // If we're too well converged, or damping wasn't enabled, do DIIS
-        damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
+            psi4.core.timer_on("HF: Form C")
+            self.form_C()
+            psi4.core.timer_off("HF: Form C")
 
-        if(diis_performed_){
-            if(status != "") status += "/";
-            status += "DIIS";
-        }
-        if(MOM_performed_){
-            if(status != "") status += "/";
-            status += "MOM";
-        }
-        if(damping_performed_){
-            if(status != "") status += "/";
-            status += "DAMP";
-        }
-        if(frac_performed_){
-            if(status != "") status += "/";
-            status += "FRAC";
-        }
+        # If we're too well converged, or damping wasn't enabled, do DIIS
+        damping_performed = (damping_enabled and (iteration > 1) and 
+                            (self.rms_density_error() > damping_convergence))
 
-        timer_on("HF: Form D");
-        form_D();
-        timer_off("HF: Form D");
+        if diis_performed:
+            if(status != ""):
+                status += "/"
+            status += "DIIS"
 
-        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
+        if MOM_performed:
+            if(status != ""):
+                status += "/"
+            status += "MOM"
 
-        // After we've built the new D, damp the update if
-        if(damping_performed_) damp_update();
+        if damping_performed:
+            if(status != ""):
+                status += "/"
+            status += "DAMP"
 
-        if (print_ > 3){
-            Ca_->print("outfile");
-            Cb_->print("outfile");
-            Da_->print("outfile");
-            Db_->print("outfile");
-        }
+        if frac_performed:
+            if(status != ""):
+                status += "/"
+            status += "FRAC"
 
-        converged_ = test_convergency();
+        psi4.core.timer_on("HF: Form D")
+        self.form_D()
+        psi4.core.timer_off("HF: Form D")
 
-        df = (options_.get_str("SCF_TYPE") == "DF");
+        psi4.core.set_variable("SCF ITERATION ENERGY", SCFE)
 
+        # After we've built the new D, damp the update if
+        if damping_performed:
+            self.damp_update()
 
-        outfile->Printf( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
-                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
+        if print_lvl > 3:
+            self.Ca().print_out()
+            self.Cb().print_out()
+            self.Da().print_out()
+            self.Db().print_out()
 
+        converged = self.test_convergency()
 
-        // If a an excited MOM is requested but not started, don't stop yet
-        if (MOM_excited_ && !MOM_started_) converged_ = false;
+        df = psi4.core.get_option('SCF', "SCF_TYPE") == "DF"
 
-        // If a fractional occupation is requested but not started, don't stop yet
-        if (frac_enabled_ && !frac_performed_) converged_ = false;
+        psi4.core.print_out( "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
+            "DF-" if df else "",
+           reference, iteration + 1, SCFE, SCFE - self.Eold(),
+            self.rms_density_error(), status)
 
-        // If a DF Guess environment, reset the JK object, and keep running
-        if (converged_ && options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT")) {
-            outfile->Printf( "\n  DF guess converged.\n\n"); // Be cool dude.
-            converged_ = false;
-            if(initialized_diis_manager_)
-                diis_manager_->reset_subspace();
-            scf_type_ = old_scf_type_;
-            options_.set_str("SCF","SCF_TYPE",old_scf_type_);
-            old_scf_type_ = "DF";
-            integrals();
-        }
+        # If a an excited MOM is requested but not started, don't stop yet
+        #if (MOM_excited_ && !MOM_started_) converged_ = false;
+        # revisit TODO
 
-        // Call any postiteration callbacks
-//        call_postiteration_callbacks();
+        # If a fractional occupation is requested but not started, don't stop yet
+        #if (frac_enabled_ && !frac_performed_) converged_ = false;
 
-    } while (!converged_ && iteration_ < maxiter_ );
+        #// If a DF Guess environment, reset the JK object, and keep running
+        #if (converged_ && options_.get_bool("DF_SCF_GUESS") && (old_scf_type_ == "DIRECT")) {
+        #    outfile->Printf( "\n  DF guess converged.\n\n"); // Be cool dude.
+        #    converged_ = false;
+        #    if(initialized_diis_manager_)
+        #        diis_manager_->reset_subspace();
+        #    scf_type_ = old_scf_type_;
+        #    options_.set_str("SCF","SCF_TYPE",old_scf_type_);
+        #    old_scf_type_ = "DF";
+        #    integrals();
+        #}
+
+        # Call any postiteration callbacks
+        if converged:
+            break
 
     return True
-
-
 
 psi4.core.RHF.py_iterate = scf_iterate
 psi4.core.UHF.py_iterate = scf_iterate
 psi4.core.ROHF.py_iterate = scf_iterate
 psi4.core.CUHF.py_iterate = scf_iterate
-
-
-
-
 
 
