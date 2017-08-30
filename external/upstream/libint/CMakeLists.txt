@@ -9,7 +9,7 @@ else()
     message(STATUS "Suitable Libint could not be located, ${Magenta}Building Libint${ColourReset} instead.")
     ExternalProject_Add(libint_external
         GIT_REPOSITORY https://github.com/evaleev/libint
-        GIT_TAG 3f14ff0  # v1.2.1 release-1-2-1
+        GIT_TAG 024738cf # v1.2.1 release-1-2-1
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -27,8 +27,7 @@ else()
                    -DMERGE_LIBDERIV_INCLUDEDIR=ON
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-        DESTDIR=${CMAKE_BINARY_DIR}/stage)
+        INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
     set(Libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint CACHE PATH "path to internally built LibintConfig.cmake" FORCE)
 endif()

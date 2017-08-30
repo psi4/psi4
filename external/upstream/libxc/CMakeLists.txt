@@ -27,8 +27,7 @@ else()
                    -DLIBC_INTERJECT=${LIBC_INTERJECT}
                    -DBUILD_TESTING=OFF
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-        DESTDIR=${CMAKE_BINARY_DIR}/stage)
+        INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
     set(Libxc_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libxc CACHE PATH "path to internally built LibxcConfig.cmake" FORCE)
 endif()

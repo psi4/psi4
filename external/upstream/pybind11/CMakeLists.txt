@@ -16,8 +16,7 @@ else()
                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}  # ditto
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
                    -DPYBIND11_TEST=OFF
-        INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-        DESTDIR=${CMAKE_BINARY_DIR}/stage)
+        INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
     set(pybind11_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/pybind11 CACHE PATH "path to internally built pybind11Config.cmake" FORCE)
 endif()

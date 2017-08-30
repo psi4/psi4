@@ -223,8 +223,7 @@ ExternalProject_Add(psi4-core
               -DDESTDIR=${CMAKE_BINARY_DIR}/stage
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
    BUILD_ALWAYS 1
-   INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-                   DESTDIR=${CMAKE_BINARY_DIR}/stage)
+   INSTALL_COMMAND DESTDIR=${CMAKE_BINARY_DIR}/stage ${CMAKE_MAKE_PROGRAM} install)
 
 add_subdirectory(external/downstream)
 add_subdirectory(doc)
