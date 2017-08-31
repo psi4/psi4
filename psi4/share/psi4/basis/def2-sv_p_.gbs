@@ -2321,7 +2321,7 @@ F  1  1.00
    .41806            1.0000000
 F  1  1.00
     2.1           1.0000000000
-
+****
 
 !  Def2-ECP  EMSL  Basis Set Exchange Library   4/24/17 11:32 AM
 ! Elements                             References
@@ -2332,8 +2332,6 @@ F  1  1.00
 ! Rb(ecp-28), Cs(ecp-46): T.Leininger, A.Nicklass, W.Kuechle, H.Stoll, M.Dolg, A.Bergner, Chem. Phys. Lett., 1996, 255, 274?280.
 ! Sr(ecp-28), Ba(ecp-46): M. Kaupp, P. V. Schleyer, H. Stoll and H. Preuss, J. Chem. Phys., 1991, 94, 1360?1366.
 ! 
-
-****
 
 RB     0
 RB-ECP     3     28

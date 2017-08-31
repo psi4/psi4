@@ -240,6 +240,10 @@ public:
     std::vector<SharedMatrix > ao_quadrupole();
     /// Vector AO Traceless Quadrupole Integrals
     std::vector<SharedMatrix > ao_traceless_quadrupole();
+    /// AO EFP Multipole Potential Integrals
+    std::vector<SharedMatrix> ao_efp_multipole_potential(const std::vector<double>& origin={0., 0., 0.}, int deriv=0);
+    /// Electric Field Integrals
+    std::vector<SharedMatrix> electric_field(const std::vector<double>& origin={0., 0., 0.}, int deriv=0);
     /// Vector AO Angular Momentum Integrals
     std::vector<SharedMatrix > ao_angular_momentum();
     /// Vector AO Nabla Integrals

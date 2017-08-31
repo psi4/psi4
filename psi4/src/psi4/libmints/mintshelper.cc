@@ -1429,6 +1429,59 @@ std::vector <SharedMatrix> MintsHelper::ao_traceless_quadrupole()
     return quadrupole;
 }
 
+std::vector <SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double>& origin, int deriv)
+{
+    if (origin.size() != 3)
+        throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+
+    std::vector <SharedMatrix> mult;
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Charge 0", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Dipole X", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Dipole Y", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Dipole Z", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole XXX", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole YYY", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole ZZZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole XXY", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole XXZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole XYY", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole YYZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole XZZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole YZZ", basisset_->nbf(), basisset_->nbf())));
+    mult.push_back(SharedMatrix(new Matrix("AO EFP Octupole XYZ", basisset_->nbf(), basisset_->nbf())));
+
+    std::shared_ptr <OneBodyAOInt> ints(integral_->ao_efp_multipole_potential(deriv));
+    ints->set_origin(v3origin);
+    ints->compute(mult);
+
+    return mult;
+}
+
+std::vector <SharedMatrix> MintsHelper::electric_field(const std::vector<double>& origin, int deriv)
+{
+    if (origin.size() != 3)
+        throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+
+    std::vector <SharedMatrix> field;
+    field.push_back(SharedMatrix(new Matrix("Ex integrals", basisset_->nbf(), basisset_->nbf())));
+    field.push_back(SharedMatrix(new Matrix("Ey integrals", basisset_->nbf(), basisset_->nbf())));
+    field.push_back(SharedMatrix(new Matrix("Ez integrals", basisset_->nbf(), basisset_->nbf())));
+
+    std::shared_ptr<OneBodyAOInt> ints(integral_->electric_field(deriv));
+    ints->set_origin(v3origin);
+    ints->compute(field);
+
+    return field;
+}
+
 std::vector <SharedMatrix> MintsHelper::ao_nabla()
 {
     // Create a vector of matrices with the proper symmetry

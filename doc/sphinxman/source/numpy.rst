@@ -49,7 +49,7 @@ various helper functions as detailed in this section.  A quick overview NumPy
 functionality can be found `here
 <https://docs.scipy.org/doc/numpy-dev/user/quickstart.html>`_.  In addition,
 numerous example of hybrid NumPy and Psi4 can be found at the `Psi4Numpy
-project <https://github.com/dgasmith/psi4numpy`_.  Currently only the Matrix
+project <https://github.com/dgasmith/psi4numpy>`_.  Currently only the Matrix
 and Vector objects support NumPy interfacing. Let us begin with a simple
 conversion from these objects to a NumPy array::
 
