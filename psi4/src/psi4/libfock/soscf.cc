@@ -813,7 +813,7 @@ void SOMCSCF::zero_ras(SharedMatrix vector) {
 /// End SOMCSCF class
 
 /// DFSOMCSCF class
-DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<df_helper::DF_Helper> df, SharedMatrix AOTOSO,
+DFSOMCSCF::DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DF_Helper> df, SharedMatrix AOTOSO,
                      SharedMatrix H)
     : SOMCSCF(jk, AOTOSO, H) {
     dfh_ = df;

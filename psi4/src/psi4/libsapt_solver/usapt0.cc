@@ -1962,8 +1962,7 @@ void USAPT0::mp2_terms() {
         ncol += (size_t)mat->ncol();
     }
 
-    std::shared_ptr<df_helper::DF_Helper> dfh =
-        std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, mp2fit_));
+    auto dfh (std::make_shared<DF_Helper>(primary_, mp2fit_));
     dfh->set_memory(memory_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);

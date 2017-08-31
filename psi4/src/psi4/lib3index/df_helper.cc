@@ -52,7 +52,6 @@
 #endif
 
 namespace psi {
-namespace df_helper {
 
 DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux) {
     primary_ = primary;
@@ -2878,6 +2877,5 @@ void DF_Helper::compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
             C_DGEMM('N', 'T', nao, nao, cleft * block_size, 1.0, Tp, align_size, Tp, align_size, 1.0, Kp, nao);
         }
     }
-}
 }
 }  // End namespaces

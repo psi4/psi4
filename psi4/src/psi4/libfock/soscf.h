@@ -57,10 +57,7 @@ namespace psi {
 class JK;
 class IntegralTransform;
 class PSIO;
-
-namespace df_helper {
 class DF_Helper;
-}
 
 class SOMCSCF {
 
@@ -284,14 +281,14 @@ public:
      * @param df      DF_Helper object to use.
      * @param H       Core hamiltonian in the SO basis.
      */
-    DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<df_helper::DF_Helper> df, SharedMatrix AOTOSO,
+    DFSOMCSCF(std::shared_ptr<JK> jk, std::shared_ptr<DF_Helper> df, SharedMatrix AOTOSO,
             SharedMatrix H);
 
     virtual ~DFSOMCSCF();
 
 protected:
 
-    std::shared_ptr<df_helper::DF_Helper> dfh_;
+    std::shared_ptr<DF_Helper> dfh_;
     virtual void transform(bool approx_only);
     virtual void set_act_MO();
     virtual SharedMatrix compute_Q(SharedMatrix TPDM);

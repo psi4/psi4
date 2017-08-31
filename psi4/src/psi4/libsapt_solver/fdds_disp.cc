@@ -153,7 +153,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
     // Build DF_Helper
-    dfh_ = std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, auxiliary_));
+    dfh_ = std::make_shared<DF_Helper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
     dfh_->set_method("STORE");
     dfh_->set_nthreads(nthread);

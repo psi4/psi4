@@ -2046,8 +2046,7 @@ void FISAPT::disp(std::map<std::string, SharedMatrix> matrix_cache, std::map<std
     }
 
     // => Get integrals from DF_Helper <= //
-    std::shared_ptr<df_helper::DF_Helper> dfh =
-        std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, auxiliary));
+    auto dfh (std::make_shared<DF_Helper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2635,8 +2634,7 @@ void FISAPT::felst() {
 #endif
 
     // => Get integrals from DF_Helper <= //
-    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(
-        new df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh (std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2792,8 +2790,7 @@ void FISAPT::fexch() {
     for (auto& mat : Cs) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
     // => Get integrals from DF_Helper <= //
-    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(
-        new df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh (std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -2982,8 +2979,7 @@ void FISAPT::find() {
     nT = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<df_helper::DF_Helper> dfh = std::shared_ptr<df_helper::DF_Helper>(
-        new df_helper::DF_Helper(primary_, reference_->get_basisset("DF_BASIS_SCF")));
+    auto dfh (std::make_shared<DF_Helper>(primary_, reference_->get_basisset("DF_BASIS_SCF")));
     dfh->set_memory(doubles_);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);
@@ -3788,8 +3784,7 @@ void FISAPT::fdisp() {
         ncol += (size_t)mat->ncol();
     }
 
-    std::shared_ptr<df_helper::DF_Helper> dfh =
-        std::shared_ptr<df_helper::DF_Helper>(new df_helper::DF_Helper(primary_, auxiliary));
+    auto dfh (std::make_shared<DF_Helper>(primary_, auxiliary));
     dfh->set_memory(doubles_ - Cs[0]->nrow() * ncol);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nT);

@@ -135,44 +135,44 @@ void export_fock(py::module &m) {
     py::class_<DiskSOMCSCF, std::shared_ptr<DiskSOMCSCF>, SOMCSCF>(m, "DiskSOMCSCF", "docstring");
 
     // DF Helper
-    typedef SharedMatrix (df_helper::DF_Helper::*take_string)(std::string);
-    typedef SharedMatrix (df_helper::DF_Helper::*tensor_access3)(
+    typedef SharedMatrix (DF_Helper::*take_string)(std::string);
+    typedef SharedMatrix (DF_Helper::*tensor_access3)(
         std::string, std::vector<size_t>, std::vector<size_t>, std::vector<size_t>);
 
-    py::class_<df_helper::DF_Helper, std::shared_ptr<df_helper::DF_Helper>>(m, "DF_Helper",
+    py::class_<DF_Helper, std::shared_ptr<DF_Helper>>(m, "DF_Helper",
                                                                             "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>())
-        .def("set_memory", &df_helper::DF_Helper::set_memory)
-        .def("get_memory", &df_helper::DF_Helper::get_memory)
-        .def("set_method", &df_helper::DF_Helper::set_method)
-        .def("get_method", &df_helper::DF_Helper::get_method)
-        .def("get_AO_size", &df_helper::DF_Helper::get_AO_size)
-        .def("set_nthreads", &df_helper::DF_Helper::set_nthreads)
-        .def("hold_met", &df_helper::DF_Helper::hold_met)
-        .def("set_schwarz_cutoff", &df_helper::DF_Helper::set_schwarz_cutoff)
-        .def("get_schwarz_cutoff", &df_helper::DF_Helper::get_schwarz_cutoff)
-        .def("set_AO_core", &df_helper::DF_Helper::set_AO_core)
-        .def("get_AO_core", &df_helper::DF_Helper::get_AO_core)
-        .def("set_MO_core", &df_helper::DF_Helper::set_MO_core)
-        .def("get_MO_core", &df_helper::DF_Helper::get_MO_core)
-        .def("set_MO_hint", &df_helper::DF_Helper::set_MO_hint)
-        .def("get_MO_hint", &df_helper::DF_Helper::get_MO_hint)
-        .def("add_space", &df_helper::DF_Helper::add_space)
-        .def("initialize", &df_helper::DF_Helper::initialize)
-        .def("print_header", &df_helper::DF_Helper::print_header)
-        .def("add_transformation", &df_helper::DF_Helper::add_transformation, py::arg("name"),
+        .def("set_memory", &DF_Helper::set_memory)
+        .def("get_memory", &DF_Helper::get_memory)
+        .def("set_method", &DF_Helper::set_method)
+        .def("get_method", &DF_Helper::get_method)
+        .def("get_AO_size", &DF_Helper::get_AO_size)
+        .def("set_nthreads", &DF_Helper::set_nthreads)
+        .def("hold_met", &DF_Helper::hold_met)
+        .def("set_schwarz_cutoff", &DF_Helper::set_schwarz_cutoff)
+        .def("get_schwarz_cutoff", &DF_Helper::get_schwarz_cutoff)
+        .def("set_AO_core", &DF_Helper::set_AO_core)
+        .def("get_AO_core", &DF_Helper::get_AO_core)
+        .def("set_MO_core", &DF_Helper::set_MO_core)
+        .def("get_MO_core", &DF_Helper::get_MO_core)
+        .def("set_MO_hint", &DF_Helper::set_MO_hint)
+        .def("get_MO_hint", &DF_Helper::get_MO_hint)
+        .def("add_space", &DF_Helper::add_space)
+        .def("initialize", &DF_Helper::initialize)
+        .def("print_header", &DF_Helper::print_header)
+        .def("add_transformation", &DF_Helper::add_transformation, py::arg("name"),
              py::arg("key1"), py::arg("key2"), py::arg("order") = "Qpq")
-        .def("transform", &df_helper::DF_Helper::transform)
-        .def("clear_spaces", &df_helper::DF_Helper::clear_spaces)
-        .def("clear_all", &df_helper::DF_Helper::clear_all)
-        .def("transpose", &df_helper::DF_Helper::transpose)
-        .def("get_space_size", &df_helper::DF_Helper::get_space_size)
-        .def("get_tensor_size", &df_helper::DF_Helper::get_tensor_size)
-        .def("get_tensor_shape", &df_helper::DF_Helper::get_tensor_shape)
-        .def("get_tensor", take_string(&df_helper::DF_Helper::get_tensor))
-        .def("get_tensor", tensor_access3(&df_helper::DF_Helper::get_tensor))
-        .def("set_JK_hint", &df_helper::DF_Helper::set_JK_hint)
-        .def("build_JK", &df_helper::DF_Helper::build_JK);
+        .def("transform", &DF_Helper::transform)
+        .def("clear_spaces", &DF_Helper::clear_spaces)
+        .def("clear_all", &DF_Helper::clear_all)
+        .def("transpose", &DF_Helper::transpose)
+        .def("get_space_size", &DF_Helper::get_space_size)
+        .def("get_tensor_size", &DF_Helper::get_tensor_size)
+        .def("get_tensor_shape", &DF_Helper::get_tensor_shape)
+        .def("get_tensor", take_string(&DF_Helper::get_tensor))
+        .def("get_tensor", tensor_access3(&DF_Helper::get_tensor))
+        .def("set_JK_hint", &DF_Helper::set_JK_hint)
+        .def("build_JK", &DF_Helper::build_JK);
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

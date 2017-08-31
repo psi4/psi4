@@ -90,8 +90,7 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
 #endif
 
     // ==> Init DF object <== /
-    dfh_ = std::shared_ptr<df_helper::DF_Helper>(
-        new df_helper::DF_Helper(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF")));
+    dfh_ = std::make_shared<DF_Helper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
     dfh_->set_method("DIRECT");
     dfh_->set_memory(memory_doubles_);
     dfh_->set_nthreads(num_threads_);

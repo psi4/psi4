@@ -46,8 +46,6 @@ class Matrix;
 class ERISieve;
 class TwoBodyAOInt;
 
-namespace df_helper {
-
 class DF_Helper {
    public:
     DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
@@ -328,6 +326,5 @@ class DF_Helper {
                                                                           std::vector<SharedMatrix> Cright);
 
 };  // End DF Helper class
-}
-}  // end df_helper/psi4 namespace
+}  // psi4 namespace
 #endif
