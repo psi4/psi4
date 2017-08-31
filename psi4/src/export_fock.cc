@@ -155,8 +155,6 @@ void export_fock(py::module &m) {
         .def("get_AO_core", &DF_Helper::get_AO_core)
         .def("set_MO_core", &DF_Helper::set_MO_core)
         .def("get_MO_core", &DF_Helper::get_MO_core)
-        .def("set_MO_hint", &DF_Helper::set_MO_hint)
-        .def("get_MO_hint", &DF_Helper::get_MO_hint)
         .def("add_space", &DF_Helper::add_space)
         .def("initialize", &DF_Helper::initialize)
         .def("print_header", &DF_Helper::print_header)

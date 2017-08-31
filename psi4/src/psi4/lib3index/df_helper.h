@@ -88,7 +88,7 @@ class DF_Helper {
     /// sizes of the AO integrals is greater than 90% of the memory 
     /// it controlls.
     ///
-    void set_AO_core(bool core) { AO_core_ = on; }
+    void set_AO_core(bool core) { AO_core_ = core; }
     bool get_AO_core() { return AO_core_; }
 
     /// 
@@ -97,7 +97,7 @@ class DF_Helper {
     /// DF_Helper will not keep track of this memory. 
     /// If a seg fault occurs, the MOs were bigger than you thought! 
     ///
-    void set_MO_core(bool core) { MO_core_ = on; }
+    void set_MO_core(bool core) { MO_core_ = core; }
     bool get_MO_core() { return MO_core_; }
 
     /// schwarz screening cutoff (defaults to 1e-12)
