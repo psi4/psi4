@@ -105,7 +105,6 @@ dfh = psi4.core.DF_Helper(primary, aux)
 dfh.set_method("STORE")
 dfh.set_memory(memory)
 dfh.set_AO_core(False)
-dfh.set_MO_hint(24)
 
 # build
 dfh.initialize()
@@ -149,7 +148,6 @@ dfh = psi4.core.DF_Helper(primary, aux)
 dfh.set_method("STORE")
 dfh.set_memory(int(1.6*memory))
 dfh.set_AO_core(True)
-dfh.set_MO_hint(24)
 
 # build
 dfh.initialize()
@@ -189,7 +187,6 @@ dfh = psi4.core.DF_Helper(primary, aux)
 dfh.set_method("STORE")
 dfh.set_memory(int(1.6*memory))
 dfh.set_AO_core(True)
-dfh.set_MO_hint(24)
 dfh.set_JK_hint(True)
 
 # build

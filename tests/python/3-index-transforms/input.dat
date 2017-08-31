@@ -73,7 +73,6 @@ dfh.set_method("STORE")
 dfh.set_memory(mem)
 dfh.set_AO_core(False)
 dfh.set_MO_core(False)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -163,7 +162,6 @@ dfh.set_method("STORE")
 dfh.set_memory(mem)
 dfh.set_AO_core(False)
 dfh.set_MO_core(False)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -224,7 +222,6 @@ dfh.set_method("STORE")
 dfh.set_memory(mem)
 dfh.set_AO_core(False)
 dfh.set_MO_core(True)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -281,7 +278,6 @@ dfh.set_method("STORE")
 dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(True)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -327,7 +323,6 @@ dfh.set_method("STORE")
 dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(False)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -363,7 +358,6 @@ for i in range(6):
 
 # let's try clearing everything
 dfh.clear_all()
-dfh.set_MO_hint(c4)
 
 # set spaces
 dfh.add_space("C1", C1)
@@ -406,7 +400,6 @@ dfh.set_method("DIRECT")
 dfh.set_memory(mem)
 dfh.set_AO_core(False)
 dfh.set_MO_core(False)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -453,7 +446,6 @@ dfh.set_method("DIRECT")
 dfh.set_memory(mem)
 dfh.set_AO_core(False)
 dfh.set_MO_core(False)
-dfh.set_MO_hint(c4)
 dfh.hold_met(True)
 
 # build
@@ -500,7 +492,6 @@ dfh.set_method("DIRECT")
 dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(True)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -546,7 +537,6 @@ dfh.set_method("DIRECT")
 dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(True)
-dfh.set_MO_hint(c4)
 dfh.hold_met(True)
 
 # build
@@ -593,7 +583,6 @@ dfh.set_method("DIRECT")
 dfh.set_memory(mem)
 dfh.set_AO_core(True)
 dfh.set_MO_core(False)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
@@ -639,7 +628,6 @@ dfh.set_method("DIRECT")
 dfh.set_memory(mem)
 dfh.set_AO_core(False)
 dfh.set_MO_core(True)
-dfh.set_MO_hint(c4)
 
 # build
 dfh.initialize()
