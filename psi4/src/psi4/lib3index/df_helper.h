@@ -272,7 +272,6 @@ class DF_Helper {
     bool ordered_ = 0;
     std::pair<size_t, size_t> identify_order();
     void print_order();
-    size_t wMO_;
 
     // => in-core machinery <=
     std::vector<double> Ppq_;
