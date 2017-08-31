@@ -107,7 +107,7 @@ SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
 
     // => Setup DF Integrals <= //
 
-    auto dfh (std::make_shared<DF_Helper>(primary_, auxiliary));
+    auto dfh (std::make_shared<DF_Helper>(primary, auxiliary));
     dfh->set_memory(memory / 8L);
     dfh->set_method("DIRECT");
     dfh->set_nthreads(nthreads);

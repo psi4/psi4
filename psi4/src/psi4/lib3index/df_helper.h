@@ -51,122 +51,196 @@ class DF_Helper {
     DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> aux);
     ~DF_Helper();
 
-    // => user options - set these before calling initialize() <=
-    // workflow method (store or direct) (defaults to STORE)
-    void set_method(std::string met) { method_ = met; }
+    /// 
+    /// Specify workflow for transforming and contracting integrals
+    /// @param method (STORE or DIRECT) to indicate workflow
+    /// DIRECT: pre-transform integrals before metric contraction 
+    /// STORE: contract and save AO integrals before transforming 
+    /// (defaults to STORE)
+    ///
+    void set_method(std::string method) { method_ = method; }
     std::string get_method() { return method_; }
 
-    // number of threads (defaults to 1)
-    void set_nthreads(size_t threads) { nthreads_ = threads; }
+    /// 
+    /// Tells DF_Helper how many threads to spawn in parallel regions
+    /// @param nthreads specifies number of threads to use
+    /// oversubcription is possible
+    ///
+    void set_nthreads(size_t nthreads) { nthreads_ = nthreads; }
     size_t get_nthreads() { return nthreads_; }
 
-    // memory in doubles (defaults to 256,000,000) (2.048GB)
-    void set_memory(size_t mem) { memory_ = mem; }
+    /// 
+    /// Indicates the memory (in doubles) DF_Helper gets to control
+    /// @doubles specifies number of doubles given for memory 
+    /// defaults to 256,000,000 (2.04GB)
+    ///
+    void set_memory(size_t doubles) { memory_ = doubles; }
     size_t get_memory() { return memory_; }
 
-    // I can tell you how many doubles the *screened* AOs will require
+    /// Returns the number of doubles in the *screened* AO integrals
     size_t get_AO_size() { return big_skips_[nao_]; }
-
-    // want the AO integrals in core? (defaults to True)
-    // (I will adapt blocking  and turn off if necessary to keep memory satisfied)
-    void set_AO_core(bool on) { AO_core_ = on; }
+    
+    /// 
+    /// Sets the AO integrals to in-core. (Defaults to TRUE)
+    /// @param core True to indicate in-core
+    /// DF_Helper will keep track of this memory.
+    /// NOTE: DF_Helper will automatically revert to on-disk if the 
+    /// sizes of the AO integrals is greater than 90% of the memory 
+    /// it controlls.
+    ///
+    void set_AO_core(bool core) { AO_core_ = on; }
     bool get_AO_core() { return AO_core_; }
 
-    // Do you want the MO integrals in core? (defaults to FALSE) (not my responsiblity to keep track of)
-    void set_MO_core(bool on) { MO_core_ = on; }
+    /// 
+    /// Sets the MO integrals to in-core. (Defaults to FALSE)
+    /// @param core True to indicate in-core
+    /// DF_Helper will not keep track of this memory. 
+    /// If a seg fault occurs, the MOs were bigger than you thought! 
+    ///
+    void set_MO_core(bool core) { MO_core_ = on; }
     bool get_MO_core() { return MO_core_; }
 
-    // schwarz cutoff (defaults to 1e-12)
+    /// schwarz screening cutoff (defaults to 1e-12)
     void set_schwarz_cutoff(double cutoff) { cutoff_ = cutoff; }
     double get_schwarz_cutoff() { return cutoff_; }
 
-    // metric power (defaults to -0.5)
+    /// fitting metric power (defaults to -0.5)
     void set_metric_pow(double pow) { mpower_ = pow; }
     double get_metric_pow() { return mpower_; }
 
-    // Want the metric to be held in core? (defaults to FALSE) (I will adapt blocking to keep memory satisfied)
+    /// 
+    /// Sets the fitting metric to be held in core (defaults to FALSE)
+    /// @param hold TRUE if metrics are to be held in core.
+    /// Memory contraints adapt accordingly.
+    ///
     void hold_met(bool hold) { hold_met_ = hold; }
     bool get_hold_met() { return hold_met_; }
 
-    // Tell me the worst MO size to improve blocking. (defaults to 0.5*AO_SIZE, must specify if greater!)
-    void set_MO_hint(size_t wMO) { wMO_ = wMO; }
-    size_t get_MO_hint() { return wMO_; }
-
-    // Enhanced memory use if (for every Cleft = Cright) in JK builds. (defaults to FALSE!)
+    /// 
+    /// Enahnces memory usage if all Cleft = Cright in JK builds
+    /// @param hint TRUE if all Cleft = Cright
+    /// Only use if equality is ALWAYS true. Redundant computations
+    /// are always avoided
+    ///
     void set_JK_hint(bool hint) { JK_hint_ = hint; }
     size_t get_JK_hint() { return JK_hint_; }
-    // => end user options <=
 
-    // Initialize the object
+    /// Initialize the object
     void initialize();
+    
+    /// print tons of useful info
     void print_header();
 
-    // Add transformation space with key
-    void add_space(std::string key, SharedMatrix M);
+    /// 
+    /// Add transformation space with key
+    /// @param key used to access space orbitals
+    /// @param space orbital space matrix
+    ///
+    void add_space(std::string key, SharedMatrix space);
 
-    // add transformation with name using two space keys
+    /// 
+    /// Add transformation with name using two space keys
+    /// @param name used to access transformed integrals
+    /// @param key1 left oribtal space
+    /// @param key2 right oribtal space
+    /// @param order for direct builds of "Qpq" and "pqQ" forms only
+    ///
     void add_transformation(std::string name, std::string key1, std::string key2, std::string order = "Qpq");
 
-    // invoke transformations
+    /// invoke transformations
     void transform();
 
     // => Tensor IO <=
-    // Fill a SharedMatrix with three index pairs.  Slice the same way you do in python.
-    // Recursive signitures were added if you want a full 3rd index, 2nd and 3rd index, etc.
-    // For example, fill_tensor("ia", M, (0, 15)) will get you ia[0:15, :, :]
-    // I will check to make sure your slice sizes are not larger than the matrix bounds,
-    // but be prepared for a runtime throw.
+    // many ways to access the 3-index tensors.
+
+    ///
+    /// Fill a SharedMatrix with three index pairs.  Slice the same way you do in python.
+    /// @param name name of transformation to be accessed
+    /// @param M SharedMatrix you want to be filled
+    /// Recursive signitures were added if you want a full 3rd index, 2nd and 3rd index, etc.
+    /// For example, fill_tensor("ia", M, (0, 15)) will get you ia[0:15, :, :]
+    /// I will check to make sure your slice sizes are not larger than the matrix bounds,
+    /// but be prepared for a runtime throw.
+    ///
     void fill_tensor(std::string name, SharedMatrix M);
     void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1);
     void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2);
     void fill_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,
                      std::vector<size_t> a3);
 
-    // only use this one if you now what you're doing -- I do not bound check!
+    ///
+    /// Fill a buffer with three index pairs. Same concept as fill_tensor.
+    /// @param name name of transformation to be accessed
+    /// @param b pointer to allocated memory
+    /// Be cautious, this function does not bound check your buffer against the tuples provied.
+    ///
     void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
                      std::vector<size_t> a3);
     void fill_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2);
     void fill_tensor(std::string name, double* b, std::vector<size_t> a1);
     void fill_tensor(std::string name, double* b);
 
-    // return a SharedMatrix, I take care of sizing for you.
-    // I always compound the 2nd and 3rd indices.
-    // For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a
-    // SharedMatrix of size (15, 25), so be careful if you plan to use Matrix::gemm
+    /// 
+    /// return a SharedMatrix, I take care of sizing for you.
+    /// @param name name of transformation to be accessed
+    /// I always compound the 2nd and 3rd indices.
+    /// For example, get_tensor("ia", (0:15), (0:5), (0:5)) will return a
+    /// SharedMatrix of size (15, 25), so be careful if you plan to use Matrix::gemm
+    ///
     SharedMatrix get_tensor(std::string name);
     SharedMatrix get_tensor(std::string name, std::vector<size_t> a1);
     SharedMatrix get_tensor(std::string name, std::vector<size_t> a1, std::vector<size_t> a2);
     SharedMatrix get_tensor(std::string name, std::vector<size_t> a1, std::vector<size_t> a2, std::vector<size_t> a3);
 
-    // Add a 3-index disk tensor, write to it, or write over a transformed tensor
+    ///
+    /// Add a 3-index disk tensor (that is not a transformation)
+    /// @param name name of tensor - used to be accessed later
+    /// @param dimensions shape of tensor
+    ///
     void add_disk_tensor(std::string key, std::tuple<size_t, size_t, size_t> dimensions);
 
+    ///
+    /// Write to a 3-index disk tensor from a SharedMatrix
+    /// Can be a transformation if you want to overwrite one.
+    /// @param name name of tensor - used to be accessed later
+    /// @param M SharedMatrix with contents to write to disk tensor
+    /// Bound checks are performed
+    ///
     void write_disk_tensor(std::string name, SharedMatrix M);
     void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1);
     void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2);
     void write_disk_tensor(std::string name, SharedMatrix M, std::vector<size_t> a1, std::vector<size_t> a2,
                            std::vector<size_t> a3);
 
+    ///
+    /// Write to a 3-index disk tensor from a buffer 
+    /// Can be a transformation if you want to overwrite one.
+    /// @param name name of tensor - used to be accessed later
+    /// @param M SharedMatrix with contents to write to disk tensor
+    /// No bound checking on buffer is performed, use caution!
+    ///
     void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2,
                            std::vector<size_t> a3);
     void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1, std::vector<size_t> a2);
     void write_disk_tensor(std::string name, double* b, std::vector<size_t> a1);
     void write_disk_tensor(std::string name, double* b);
 
-    // tranpose a tensor *after* it has been written
+    /// tranpose a tensor *after* it has been written
     void transpose(std::string name, std::tuple<size_t, size_t, size_t> order);
 
-    // clear spaces or spaces and transformations
+    /// clear spaces 
     void clear_spaces();
+    
+    /// clears spaces and transformations
     void clear_all();
 
-    // get sizes, shapes
+    /// get sizes, shapes of tensors
     size_t get_space_size(std::string key);
     size_t get_tensor_size(std::string key);
     std::tuple<size_t, size_t, size_t> get_tensor_shape(std::string key);
     size_t get_naux() { return naux_; }
 
-    // => Build JK <=
+    /// builds J/K
     void build_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> J,
                   std::vector<SharedMatrix> K);
 

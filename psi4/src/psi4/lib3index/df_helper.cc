@@ -58,7 +58,6 @@ DF_Helper::DF_Helper(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet
     aux_ = aux;
     nao_ = primary_->nbf();
     naux_ = aux_->nbf();
-    wMO_ = nao_ / 2;
     prepare_blocking();
 }
 DF_Helper::~DF_Helper() {
@@ -1185,16 +1184,7 @@ void DF_Helper::add_space(std::string key, SharedMatrix M) {
             throw PSIEXCEPTION(error.str().c_str());
         }
     }
-    //    else if(wMO_ < a1 && !direct_){
-    //            std::stringstream error;
-    //            error << "DF_Helper:add_space: illegal space ("<< key <<"), new space is larger than the "   <<
-    //            "worst MO size -(" << wMO_ << "<" << a1 << ")- specified at the time when initialize() was " <<
-    //            "called, use set_MO_hint() before calling initialize()";
-    //            throw PSIEXCEPTION(error.str().c_str());
-    //    }
-    //    else
     sorted_spaces_.push_back(std::make_pair(key, a1));
-
     spaces_[key] = std::make_tuple(M, a1);
 }
 void DF_Helper::add_transformation(std::string name, std::string key1, std::string key2, std::string order) {
