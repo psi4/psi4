@@ -34,7 +34,7 @@
 namespace psi {
 
 // Forward declare
-class DFERI;
+class DF_Helper;
 
 namespace dfep2 {
 
@@ -52,7 +52,7 @@ class DFEP2Wavefunction : public Wavefunction {
     std::vector<std::tuple<double, size_t, size_t>> orbital_order_;
 
     // Integrals
-    std::shared_ptr<DFERI> dferi_;
+    std::shared_ptr<DF_Helper> dfh_;
 
     // Options
     double conv_thresh_;

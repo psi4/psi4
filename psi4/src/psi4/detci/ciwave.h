@@ -41,11 +41,11 @@
 namespace psi {
 class Options;
 class JK;
-class DFERI;
 class IntegralTransform;
 class MOSpace;
 typedef std::shared_ptr<Matrix> SharedMatrix;
 class SOMCSCF;
+class DF_Helper;
 
 // Well this is not ideal
 struct _SlaterDetSet;
@@ -341,7 +341,7 @@ private:
     std::shared_ptr<IntegralTransform> ints_; // Non-DF
     std::shared_ptr<MOSpace> rot_space_;
     std::shared_ptr<MOSpace> act_space_;
-    std::shared_ptr<DFERI> dferi_; // DF
+    std::shared_ptr<DF_Helper> dfh_; // DF
     std::shared_ptr<JK> jk_;
     std::shared_ptr<SOMCSCF> somcscf_;
 
