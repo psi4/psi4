@@ -31,7 +31,6 @@
 #include "defines.h"
 #include "dfocc.h"
 
-
 using namespace psi;
 
 namespace psi{ namespace dfoccwave{
@@ -59,7 +58,8 @@ void DFOCC::prepare4grad()
 
     outfile->Printf("\tComputing the orbital gradient...\n");
     mograd();
-    effective_mograd();
+    if (wfn_type_ == "DF-CCSD(T)") effective_mograd_sc();
+    else effective_mograd();
     timer_on("Z-vector");
     z_vector_pcg();
     timer_off("Z-vector");
@@ -557,6 +557,7 @@ if (reference_ == "RESTRICTED") {
     //=========================
     G1->add_vo(ZvoA, 2.0, 1.0);
     G1->add_ov(ZovA, 2.0, 1.0);
+    //G1->print();
 
     //=========================
     // Seprable TPDM & GFM
@@ -614,6 +615,7 @@ if (reference_ == "RESTRICTED") {
     }
     Zq.reset();
     Gsep->write(psio_, PSIF_DFOCC_DENS);
+    //Gsep->print();
     Gsep.reset();
 
     // Z intermediate VO Block
@@ -659,6 +661,7 @@ if (reference_ == "RESTRICTED") {
     Gsep->subtract(Z2);
     Z2.reset();
     Gsep->dirprd123(Jc, ZovA, 2.0, 1.0);
+    //Gsep->print();
     Gsep->write(psio_, PSIF_DFOCC_DENS);
     Gsep.reset();
 
@@ -677,6 +680,15 @@ if (reference_ == "RESTRICTED") {
               GF->add(a + noccA, i, 2.0 * ZvoA->get(a, i) * FockA->get(a + noccA, a + noccA));
 	 }
     }
+    //GF->print();
+
+    // print
+    /*
+    Z = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+    Z->read(psio_, PSIF_DFOCC_DENS, true, true);
+    Z->print();
+    Z.reset();
+    */
 
 }// end if (reference_ == "RESTRICTED")
 

@@ -33,12 +33,12 @@
 #include "psi4/libdiis/diismanager.h"
 
 namespace psi{ namespace dfoccwave{
-
+  
 void DFOCC::ccsdl_l2_amps()
 {
 
     // defs
-    SharedTensor2d K, I, M, L, Lnew, T, U, Tau, W, X, Y, Z;
+    SharedTensor2d K, I, M, L, Lnew, T, U, Tau, W, X, Y, Z, tL2;
 
     // l_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = l_i^a Ft_jb
@@ -54,7 +54,7 @@ void DFOCC::ccsdl_l2_amps()
     X->contract(false, false, naoccA, naoccA * navirA * navirA, naoccA, FtijA, l2, -1.0, 1.0);
 
     // l_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
-    // X(ia,jb) = -\sum_{m} l_m^a W_ijmb
+    // X(ia,jb) = -\sum_{m} l_m^a W_ijmb 
     W = SharedTensor2d(new Tensor2d("WL (MN|IE)", naoccA, naoccA, naoccA, navirA));
     //W->read(psio_, PSIF_DFOCC_AMPS);
     ccsdl_Wmnie_direct(W);
@@ -92,7 +92,7 @@ void DFOCC::ccsdl_l2_amps()
 
     // l_ij^ab <= <ij|ab>
     Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    Lnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0);
+    Lnew->gemm(true, false, bQiaA, bQiaA, 1.0, 0.0); 
 
     // Contributions of X
     Lnew->axpy(X, 2.0);
@@ -128,17 +128,23 @@ void DFOCC::ccsdl_l2_amps()
     // Denom
     Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Lnew->read_symm(psio_, PSIF_DFOCC_AMPS);
+    if (wfn_type_ == "DF-CCSD(T)") {
+	tL2 = SharedTensor2d(new Tensor2d("(T)L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+	tL2->read_symm(psio_, PSIF_DFOCC_AMPS);
+        Lnew->axpy(tL2, 1.0);
+	tL2.reset();
+    }
     Lnew->apply_denom_chem(nfrzc, noccA, FockA);
 
     // Reset T1
-    rms_t1 = l1newA->rms(l1A);
+    rms_t1 = l1newA->rms(l1A); 
     SharedTensor2d Rl1A = SharedTensor2d(new Tensor2d("RL1 <I|A>", naoccA, navirA));
     Rl1A->copy(l1newA);
     Rl1A->subtract(l1A);
     l1A->copy(l1newA);
 
     // Reset T2
-    rms_t2 = Lnew->rms(l2);
+    rms_t2 = Lnew->rms(l2); 
     // Error vector
     Tau = SharedTensor2d(new Tensor2d("RL2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     Tau->copy(Lnew);
@@ -175,7 +181,7 @@ void DFOCC::ccsdl_l2_amps()
     // Form Tau(ia,jb) = L(ia,jb) + l(ia) * l(jb)
     Tau = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
     ccsdl_tau_amps(Tau,l2);
-
+ 
     // Energy
     U = SharedTensor2d(new Tensor2d("2*Tau(ia,jb) - Tau(ib,ja)", naoccA, navirA, naoccA, navirA));
     U->sort(1432, Tau, 1.0, 0.0);
@@ -196,7 +202,7 @@ void DFOCC::ccsdl_l2_amps()
 
 //======================================================================
 //    CCSD: Tau_ij^ab = l_ij^ab + l_i^a l_j^b
-//======================================================================
+//======================================================================             
 void DFOCC::ccsdl_tau_amps(SharedTensor2d &U, SharedTensor2d &T)
 {
     U->dirprd224(l1A, l1A);

@@ -130,7 +130,13 @@ protected:
     void effective_gfm();
     void effective_pdm_gfm();
     void effective_mograd();
+    void effective_mograd_sc();
     void fc_grad_terms();
+    void z_vector_oo();
+    void z_vector_vv();
+    void oo_grad_terms();
+    void vv_grad_terms();
+
     void z_vector_fc();
     void oeprop();
     void s2_response();
@@ -508,6 +514,7 @@ protected:
     void ccsd_pdm_3index_intr();
     void ccsd_pdm_yQia();
     void ccsd_opdm();
+    void ccsd_diagonal_opdm();
     void ccsd_tpdm();
 
     // CCSD(T)
@@ -516,6 +523,8 @@ protected:
     void ccsd_canonic_triples_disk();
     void ccsd_t_manager();
     void ccsd_t_manager_cd();
+    void ccsd_canonic_triples_grad();
+    void ccsd_canonic_triples_grad2();
 
     // Lambda-CCSD(T)
     void ccsdl_canonic_triples_disk();
@@ -947,7 +956,10 @@ protected:
 
      // DF OPDM
      SharedTensor2d G1c_ij;
+     SharedTensor2d G1c_ia;
      SharedTensor2d G1c_ab;
+     SharedTensor1d G1c_ii;
+     SharedTensor1d G1c_aa;
      SharedTensor2d G1c_oo;
      SharedTensor2d G1c_ov;
      SharedTensor2d G1c_vo;
@@ -1063,6 +1075,10 @@ protected:
      SharedTensor2d ZklB;            // AOCC-FC Zvector in matrix form
      SharedTensor2d ZlkA;            // FC-AOCC Zvector in matrix form
      SharedTensor2d ZlkB;            // FC-AOCC Zvector in matrix form
+     SharedTensor2d ZcdA;            // FV-AVIR Zvector in matrix form
+     SharedTensor2d ZcdB;            // FV-AVIR Zvector in matrix form
+     SharedTensor2d ZdcA;            // AVIR-FV Zvector in matrix form
+     SharedTensor2d ZdcB;            // AVIR-FV Zvector in matrix form
      SharedTensor2d WvoA;            // Effective MO gradient VO block
      SharedTensor2d WvoB;            // Effective MO gradient VO block
 

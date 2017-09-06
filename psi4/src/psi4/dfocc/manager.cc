@@ -26,21 +26,19 @@
  * @END LICENSE
  */
 
-#include "dfocc.h"
-
-#include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsi4util/process.h"
-
 #include <cmath>
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
+#include "dfocc.h"
 
 using namespace psi;
 
 namespace psi{ namespace dfoccwave{
-
+  
 //======================================================================
 //             OMP2 Manager
-//======================================================================
+//======================================================================             
 void DFOCC::omp2_manager()
 {
         time4grad = 0;// means I will not compute the gradient
@@ -82,7 +80,7 @@ void DFOCC::omp2_manager()
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
+ 
         // DF-HF B(Q,ab)
         cost_ampAA = 0;
         cost_ampAA = nQ_ref * nvir2AA;
@@ -105,7 +103,7 @@ void DFOCC::omp2_manager()
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
+ 
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
         cost_ampAA = nQ * navirA * navirA;
@@ -144,7 +142,7 @@ void DFOCC::omp2_manager()
         outfile->Printf("\tMinimum required memory for amplitudes: %9.2lf MB \n", cost_amp);
      }  // end else if (reference_ == "UNRESTRICTED")
 
-        // Fock
+        // Fock 
         fock();
 
         // QCHF
@@ -156,10 +154,10 @@ void DFOCC::omp2_manager()
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -177,7 +175,7 @@ void DFOCC::omp2_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp2;
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -208,20 +206,20 @@ void DFOCC::omp2_manager()
 	idp();
 	mograd();
         occ_iterations();
-
+	
         // main if
         if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "FALSE") {
            orbs_already_opt = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
-	   else if (conver == 0) {
+	   else if (conver == 0) { 
                     outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
 	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
 	   outfile->Printf("\tTransforming MOs to the semicanonical basis... \n");
-
+	   
 	   semi_canonic();
 	   outfile->Printf("\tSwitching to the standard DF-MP2 computation... \n");
-
+	   
            trans_corr();
            trans_ref();
            fock();
@@ -236,7 +234,7 @@ void DFOCC::omp2_manager()
                gfock_oo();
                gfock_vv();
            }
-        }// end main if
+        }// end main if 
 
         else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
@@ -248,7 +246,7 @@ void DFOCC::omp2_manager()
         ref_energy();
 	mp2_energy();
         if (orbs_already_opt == 1) Emp2L = Emp2;
-
+	
 	outfile->Printf("\n");
 	outfile->Printf("\tComputing MP2 energy using optimized MOs... \n");
 	outfile->Printf("\t======================================================================= \n");
@@ -266,7 +264,7 @@ void DFOCC::omp2_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Emp2 - Escf);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 
 	outfile->Printf("\n");
 	outfile->Printf("\t======================================================================= \n");
@@ -283,7 +281,7 @@ void DFOCC::omp2_manager()
 	outfile->Printf("\tDF-OMP2 Total Energy (a.u.)        : %20.14f\n", Emp2L);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
-
+	
 
 	// Set the global variables with the energies
 	Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
@@ -299,7 +297,7 @@ void DFOCC::omp2_manager()
         Process::environment.globals["SOS-OMP2 CORRELATION ENERGY"] =  Esosmp2 - Escf;
         Process::environment.globals["SCSN-OMP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
 
-        // if scs on
+        // if scs on	
 	if (do_scs == "TRUE") {
 	    if (scs_type_ == "SCS") {
 	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
@@ -311,17 +309,17 @@ void DFOCC::omp2_manager()
 	       Process::environment.globals["CURRENT CORRELATION ENERGY"] = Escsnmp2 - Escf;
             }
 	}
-
-        // else if sos on
+    
+        // else if sos on	
 	else if (do_sos == "TRUE") {
 	     if (sos_type_ == "SOS") {
 	         Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
   	         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Esosmp2 - Escf;
              }
 	}
-
+ 
 	//if (natorb == "TRUE") nbo();
-	//if (occ_orb_energy == "TRUE") semi_canonic();
+	//if (occ_orb_energy == "TRUE") semi_canonic(); 
 
         // OEPROP
         if (oeprop_ == "TRUE") oeprop();
@@ -334,14 +332,14 @@ void DFOCC::omp2_manager()
         if (dertype == "FIRST") dfgrad();
 
 	// Save MOs to wfn
-	save_mo_to_wfn();
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
-}// end omp2_manager
+}// end omp2_manager 
 
 //======================================================================
 //             MP2 Manager
-//======================================================================
+//======================================================================             
 void DFOCC::mp2_manager()
 {
         time4grad = 0;// means i will not compute the gradient
@@ -368,7 +366,7 @@ void DFOCC::mp2_manager()
             }
         }
         outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
-
+        
         timer_off("DF CC Integrals");
 
      if (reference_ == "RESTRICTED") {
@@ -391,7 +389,7 @@ void DFOCC::mp2_manager()
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\n\tMemory requirement for B-HF (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
+ 
         // DF-HF B(Q,ab)
         cost_ampAA = 0;
         cost_ampAA = nQ_ref * nvir2AA;
@@ -415,7 +413,7 @@ void DFOCC::mp2_manager()
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
+ 
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
         cost_ampAA = nQ * navirA * navirA;
@@ -458,23 +456,23 @@ void DFOCC::mp2_manager()
         if (qchf_ == "TRUE") qchf();
 
         // ROHF REF
-        //outfile->Printf("\tI am here.\n");
+        //outfile->Printf("\tI am here.\n"); 
         if (reference == "ROHF") t1_1st_sc();
         if (dertype == "NONE" && oeprop_ == "FALSE" && ekt_ip_ == "FALSE" && comput_s2_ == "FALSE") mp2_direct();
         else {
              fock();
              if (mp2_amp_type_ == "DIRECT") mp2_direct();
-             else {
+             else { 
 	         t2_1st_sc();
                  mp2_energy();
              }
         }
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -492,7 +490,7 @@ void DFOCC::mp2_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp2;
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -509,10 +507,9 @@ void DFOCC::mp2_manager()
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        /* updates the wavefunction for checkpointing */
-        energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
-        name_ = "DF-MP2";
-
+	/* updates the wavefunction for checkpointing */
+	energy_ = Process::environment.globals["MP2 TOTAL ENERGY"];
+	name_ = "DF-MP2";
 
         // S2
         //if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED" && dertype == "NONE") s2_response();
@@ -523,22 +520,22 @@ void DFOCC::mp2_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") {
             outfile->Printf("\n\tComputing unrelaxed response density matrices...\n");
-
+            
  	    omp2_opdm();
 	    omp2_tpdm();
 	    //mp2l_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
 
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end mp2_manager
+}// end mp2_manager 
 
 //======================================================================
 //             CCSD Manager
-//======================================================================
+//======================================================================             
 void DFOCC::ccsd_manager()
 {
 
@@ -603,7 +600,7 @@ void DFOCC::ccsd_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
         /*
-        if ((cost_5amp+cost_df) <= memory_mb) {
+        if ((cost_5amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_5amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_5amp+cost_df);
              nincore_amp = 5;
@@ -611,14 +608,14 @@ void DFOCC::ccsd_manager()
              df_ints_incore = true;
         }
         */
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -626,14 +623,14 @@ void DFOCC::ccsd_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -732,7 +729,7 @@ void DFOCC::ccsd_manager()
      }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -750,10 +747,10 @@ void DFOCC::ccsd_manager()
         if (reference == "ROHF") t1_1st_sc();
         if (t2_incore) ccsd_mp2();
         else ccsd_mp2_low();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -771,7 +768,7 @@ void DFOCC::ccsd_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -800,18 +797,18 @@ void DFOCC::ccsd_manager()
 	outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Eccsd;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd - Escf;
 	Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = Eccsd - Escf;
 
-    /* updates the wavefunction for checkpointing */        
+        /* updates the wavefunction for checkpointing */        
         energy_ = Process::environment.globals["CCSD TOTAL ENERGY"];
         name_ = "DF-CCSD";
 
-        // CCSDL
+        // CCSDL 
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
 	    // memalloc
             if (dertype == "FIRST") {
@@ -850,14 +847,14 @@ void DFOCC::ccsd_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end ccsd_manager
+}// end ccsd_manager 
 
 //======================================================================
 //             CCSD(T) Manager
-//======================================================================
+//======================================================================             
 void DFOCC::ccsd_t_manager()
 {
 
@@ -922,14 +919,14 @@ void DFOCC::ccsd_t_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -937,14 +934,14 @@ void DFOCC::ccsd_t_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -1035,7 +1032,7 @@ void DFOCC::ccsd_t_manager()
             outfile->Printf("\n\tI will use an INCORE algorithm for (ia|bc) in (T)! \n");
             outfile->Printf("\tMemory requirement for (T) correction : %9.2lf MB \n", cost_triples_iabc);
 	}
-
+       
         // Mem alloc for DF ints
         if (df_ints_incore) {
             bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
@@ -1084,7 +1081,7 @@ void DFOCC::ccsd_t_manager()
      }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -1102,10 +1099,10 @@ void DFOCC::ccsd_t_manager()
         if (reference == "ROHF") t1_1st_sc();
         if (t2_incore) ccsd_mp2();
         else ccsd_mp2_low();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -1123,7 +1120,7 @@ void DFOCC::ccsd_t_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -1161,29 +1158,39 @@ void DFOCC::ccsd_t_manager()
 	pt_title();
         outfile->Printf("\tComputing (T) correction...\n");
         timer_on("(T)");
-        if (triples_iabc_type_ == "DISK") ccsd_canonic_triples_disk();
-	else if (triples_iabc_type_ == "AUTO") {
-	    if (do_triples_hm) ccsd_canonic_triples_hm();
-	    else ccsd_canonic_triples();
-        }
-        else if (triples_iabc_type_ == "INCORE") ccsd_canonic_triples_hm();
-        else if (triples_iabc_type_ == "DIRECT") ccsd_canonic_triples();
-        else if (triples_iabc_type_ == "DISK") ccsd_canonic_triples_disk();
+        if (dertype == "FIRST") {
+	    //ccsd_canonic_triples_grad();
+	    ccsd_canonic_triples_grad2();
+	}
+	else {
+             if (triples_iabc_type_ == "DISK") ccsd_canonic_triples_disk();
+	     else if (triples_iabc_type_ == "AUTO") {
+	              if (do_triples_hm) ccsd_canonic_triples_hm();
+	              else ccsd_canonic_triples();
+             }
+             else if (triples_iabc_type_ == "INCORE") ccsd_canonic_triples_hm();
+             else if (triples_iabc_type_ == "DIRECT") ccsd_canonic_triples();
+             else if (triples_iabc_type_ == "DISK") ccsd_canonic_triples_disk();
+	}
         timer_off("(T)");
 	outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
 	outfile->Printf("\tDF-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
+        if (dertype == "FIRST") {
+            tstop();
+            tstart();
+	}
 
 	Process::environment.globals["CURRENT ENERGY"] = Eccsd_t;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_t - Escf;
 	Process::environment.globals["CCSD(T) TOTAL ENERGY"] = Eccsd_t;
 	Process::environment.globals["(T) CORRECTION ENERGY"] = E_t;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["CCSD(T) TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["CCSD(T) TOTAL ENERGY"];
         name_ = "DF-CCSD(T)";
 
-	/*
-        // CCSDL
+        // CCSDL 
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
 	    // memalloc
             if (dertype == "FIRST") {
@@ -1197,30 +1204,34 @@ void DFOCC::ccsd_t_manager()
             if (t2_incore) ccsdl_iterations();
             else throw PSIEXCEPTION("There is NOT enough memory for Lambda equations!");
             timer_off("CCSDL");
+            tstop();
+            tstart();
         }
 
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+            pdm_title();
+
 	    // memalloc
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
 	    G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
 
             outfile->Printf("\tComputing unrelaxed response density matrices...\n");
- 	    ccsd_opdm();
+ 	    //ccsd_opdm();
+	    ccsd_diagonal_opdm();
 	    ccsd_tpdm();
 	    //ccl_energy();
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
-	*/
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end ccsd_t_manager
+}// end ccsd_t_manager 
 
 //======================================================================
 //             Lambda-CCSD(T) Manager
-//======================================================================
+//======================================================================             
 void DFOCC::ccsdl_t_manager()
 {
 
@@ -1285,7 +1296,7 @@ void DFOCC::ccsdl_t_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
         /*
-        if ((cost_5amp+cost_df) <= memory_mb) {
+        if ((cost_5amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_5amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_5amp+cost_df);
              nincore_amp = 5;
@@ -1293,14 +1304,14 @@ void DFOCC::ccsdl_t_manager()
              df_ints_incore = true;
         }
         */
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -1308,14 +1319,14 @@ void DFOCC::ccsdl_t_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -1462,7 +1473,7 @@ void DFOCC::ccsdl_t_manager()
      }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -1480,10 +1491,10 @@ void DFOCC::ccsdl_t_manager()
         if (reference == "ROHF") t1_1st_sc();
         if (t2_incore) ccsd_mp2();
         else ccsd_mp2_low();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -1501,7 +1512,7 @@ void DFOCC::ccsdl_t_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -1533,7 +1544,7 @@ void DFOCC::ccsdl_t_manager()
 	Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
         Process::environment.globals["CCSD CORRELATION ENERGY"] = Eccsd - Escf;
 
-        // CCSDL
+        // CCSDL 
         timer_on("CCSDL");
         if (t2_incore) {
             tstop();
@@ -1561,8 +1572,9 @@ void DFOCC::ccsdl_t_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccsd_at - Escf;
 	Process::environment.globals["CCSD(AT) TOTAL ENERGY"] = Eccsd_at;
 	Process::environment.globals["(AT) CORRECTION ENERGY"] = E_at;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["CCSD(AT) TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["CCSD(AT) TOTAL ENERGY"];
         name_ = "DF-CCSD(AT)";
 
 	/*
@@ -1583,15 +1595,15 @@ void DFOCC::ccsdl_t_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 	*/
 
-}// end ccsdl_t_manager
+}// end ccsdl_t_manager 
 
 //======================================================================
 //             CCD Manager
-//======================================================================
+//======================================================================             
 void DFOCC::ccd_manager()
 {
 
@@ -1649,7 +1661,7 @@ void DFOCC::ccd_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
         /*
-        if ((cost_5amp+cost_df) <= memory_mb) {
+        if ((cost_5amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_5amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_5amp+cost_df);
              nincore_amp = 5;
@@ -1657,14 +1669,14 @@ void DFOCC::ccd_manager()
              df_ints_incore = true;
         }
         */
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -1672,14 +1684,14 @@ void DFOCC::ccd_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -1715,7 +1727,7 @@ void DFOCC::ccd_manager()
 	    do_ppl_hm = true;
             outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
 	}
-
+        
         // Mem alloc for DF ints
         if (df_ints_incore) {
             bQijA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
@@ -1755,7 +1767,7 @@ void DFOCC::ccd_manager()
      }// else if (reference_ == "UNRESTRICTED")
 
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -1773,10 +1785,10 @@ void DFOCC::ccd_manager()
         if (reference == "ROHF") t1_1st_sc();
         if (t2_incore) ccd_mp2();
         else ccd_mp2_low();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -1794,7 +1806,7 @@ void DFOCC::ccd_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -1823,17 +1835,18 @@ void DFOCC::ccd_manager()
 	outfile->Printf("\tDF-CCD Total Energy (a.u.)         : %20.14f\n", Eccd);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Eccd;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Eccd - Escf;
 	Process::environment.globals["CCD TOTAL ENERGY"] = Eccd;
         Process::environment.globals["CCD CORRELATION ENERGY"] = Eccd - Escf;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["CCD TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["CCD TOTAL ENERGY"];
         name_ = "DF-CCD";
 
-        // CCDL
+        // CCDL 
         if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
             // memalloc
             if (dertype == "FIRST") {
@@ -1869,14 +1882,14 @@ void DFOCC::ccd_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end ccd_manager
+}// end ccd_manager 
 
 //======================================================================
 //             OMP3 Manager
-//======================================================================
+//======================================================================             
 void DFOCC::omp3_manager()
 {
 
@@ -1935,14 +1948,14 @@ void DFOCC::omp3_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -1950,14 +1963,14 @@ void DFOCC::omp3_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -1978,11 +1991,11 @@ void DFOCC::omp3_manager()
         cost_ampAA2 *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
-
+ 
         // QCHF
         if (qchf_ == "TRUE") qchf();
 
-        // Fock
+        // Fock 
         fock();
 
         // ROHF REF
@@ -1995,10 +2008,10 @@ void DFOCC::omp3_manager()
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -2016,7 +2029,7 @@ void DFOCC::omp3_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -2034,7 +2047,7 @@ void DFOCC::omp3_manager()
         timer_off("MP3");
 
 	outfile->Printf("\n");
-	outfile->Printf("\tComputing DF-MP3 energy using SCF MOs (Canonical DF-MP3)... \n");
+	outfile->Printf("\tComputing DF-MP3 energy using SCF MOs (Canonical DF-MP3)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -2048,14 +2061,14 @@ void DFOCC::omp3_manager()
 	outfile->Printf("\tDF-MP3 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
         EcorrL=Emp3L-Escf;
 	Emp3L_old=Emp3;
 
-        // Malloc for PDMs
+        // Malloc for PDMs 
 	gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
 	if (reference_ == "RESTRICTED") {
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
@@ -2080,12 +2093,12 @@ void DFOCC::omp3_manager()
 	idp();
 	mograd();
         occ_iterations();
-
+	
         // main if
         if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
-	   else if (conver == 0) {
+	   else if (conver == 0) { 
                     outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
 	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
@@ -2109,7 +2122,7 @@ void DFOCC::omp3_manager()
                gfock_cc_oo();
                gfock_cc_vv();
            }
-        }// end main if
+        }// end main if 
 
         else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
@@ -2120,9 +2133,9 @@ void DFOCC::omp3_manager()
 
   if (conver == 1) {
         if (orbs_already_opt == 1) Emp3L = Emp3;
-
+	
 	outfile->Printf("\n");
-	outfile->Printf("\tComputing DF-MP3 energy using optimized MOs... \n");
+	outfile->Printf("\tComputing DF-MP3 energy using optimized MOs... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -2157,8 +2170,9 @@ void DFOCC::omp3_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 	Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["OMP3 TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["OMP3 TOTAL ENERGY"];
         name_ = "DF-OMP3";
 
         // OEPROP
@@ -2168,16 +2182,16 @@ void DFOCC::omp3_manager()
         if (dertype == "FIRST") dfgrad();
 
 	// Save MOs to wfn
-	save_mo_to_wfn();
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 
 
-}// end omp3_manager
+}// end omp3_manager 
 
 //======================================================================
 //             MP3 Manager
-//======================================================================
+//======================================================================             
 void DFOCC::mp3_manager()
 {
 
@@ -2232,14 +2246,14 @@ void DFOCC::mp3_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -2247,14 +2261,14 @@ void DFOCC::mp3_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -2275,7 +2289,7 @@ void DFOCC::mp3_manager()
         cost_ampAA2 *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
-
+        
         // Mem alloc for DF ints
 	/*
         if (df_ints_incore) {
@@ -2295,7 +2309,7 @@ void DFOCC::mp3_manager()
 	*/
 
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -2313,10 +2327,10 @@ void DFOCC::mp3_manager()
 	    t1_1st_sc();
 	}
 	mp3_t2_1st_sc();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -2334,7 +2348,7 @@ void DFOCC::mp3_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -2368,15 +2382,16 @@ void DFOCC::mp3_manager()
 	outfile->Printf("\tDF-MP3 Total Energy (a.u.)         : %20.14f\n", Emp3);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp3;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
 	Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["MP3 TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["MP3 TOTAL ENERGY"];
         name_ = "DF-MP3";
 
         // Compute Analytic Gradients
@@ -2402,14 +2417,14 @@ void DFOCC::mp3_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end mp3_manager
+}// end mp3_manager 
 
 //======================================================================
 //             OMP2.5 Manager
-//======================================================================
+//======================================================================             
 void DFOCC::omp2_5_manager()
 {
         time4grad = 0;// means I will not compute the gradient
@@ -2467,14 +2482,14 @@ void DFOCC::omp2_5_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -2482,14 +2497,14 @@ void DFOCC::omp2_5_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -2510,8 +2525,8 @@ void DFOCC::omp2_5_manager()
         cost_ampAA2 *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
-
-        // Fock
+ 
+        // Fock 
         fock();
 
         // QCHF
@@ -2527,10 +2542,10 @@ void DFOCC::omp2_5_manager()
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -2548,7 +2563,7 @@ void DFOCC::omp2_5_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -2566,7 +2581,7 @@ void DFOCC::omp2_5_manager()
         timer_off("MP3");
 
 	outfile->Printf("\n");
-	outfile->Printf("\tComputing DF-MP2.5 energy using SCF MOs (Canonical DF-MP2.5)... \n");
+	outfile->Printf("\tComputing DF-MP2.5 energy using SCF MOs (Canonical DF-MP2.5)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -2579,14 +2594,14 @@ void DFOCC::omp2_5_manager()
 	outfile->Printf("\tDF-MP2.5 Correlation Energy (a.u.) : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", Emp3);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
         EcorrL=Emp3L-Escf;
 	Emp3L_old=Emp3;
 
-        // Malloc for PDMs
+        // Malloc for PDMs 
 	gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
 	if (reference_ == "RESTRICTED") {
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
@@ -2611,12 +2626,12 @@ void DFOCC::omp2_5_manager()
 	idp();
 	mograd();
         occ_iterations();
-
+	
         // main if
         if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
-	   else if (conver == 0) {
+	   else if (conver == 0) { 
                     outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
 	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
@@ -2640,7 +2655,7 @@ void DFOCC::omp2_5_manager()
                gfock_cc_oo();
                gfock_cc_vv();
            }
-        }// end main if
+        }// end main if 
 
         else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
@@ -2651,9 +2666,9 @@ void DFOCC::omp2_5_manager()
 
   if (conver == 1) {
         if (orbs_already_opt == 1) Emp3L = Emp3;
-
+	
 	outfile->Printf("\n");
-	outfile->Printf("\tComputing DF-MP2.5 energy using optimized MOs... \n");
+	outfile->Printf("\tComputing DF-MP2.5 energy using optimized MOs... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -2687,8 +2702,9 @@ void DFOCC::omp2_5_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L - Escf;
 	Process::environment.globals["OMP2.5 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["OMP2.5 TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["OMP2.5 TOTAL ENERGY"];
         name_ = "DF-OMP2.5";
 
         // OEPROP
@@ -2698,16 +2714,16 @@ void DFOCC::omp2_5_manager()
         if (dertype == "FIRST") dfgrad();
 
 	// Save MOs to wfn
-	save_mo_to_wfn();
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 
 
-}// end omp2_5_manager
+}// end omp2_5_manager 
 
 //======================================================================
 //             MP2.5 Manager
-//======================================================================
+//======================================================================             
 void DFOCC::mp2_5_manager()
 {
 
@@ -2762,14 +2778,14 @@ void DFOCC::mp2_5_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -2777,14 +2793,14 @@ void DFOCC::mp2_5_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -2805,9 +2821,9 @@ void DFOCC::mp2_5_manager()
         cost_ampAA2 *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
-
+        
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -2825,10 +2841,10 @@ void DFOCC::mp2_5_manager()
 	    t1_1st_sc();
 	}
 	mp3_t2_1st_sc();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -2846,7 +2862,7 @@ void DFOCC::mp2_5_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -2879,15 +2895,16 @@ void DFOCC::mp2_5_manager()
 	outfile->Printf("\tDF-MP2.5 Total Energy (a.u.)       : %20.14f\n", Emp3);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Emp3;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
 	Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
         Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
 	Emp3L=Emp3;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["MP2.5 TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["MP2.5 TOTAL ENERGY"];
         name_ = "DF-MP2.5";
 
         // Compute Analytic Gradients
@@ -2913,14 +2930,14 @@ void DFOCC::mp2_5_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end mp2_5_manager
+}// end mp2_5_manager 
 
 //======================================================================
 //             OLCCD Manager
-//======================================================================
+//======================================================================             
 void DFOCC::olccd_manager()
 {
 
@@ -2979,14 +2996,14 @@ void DFOCC::olccd_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -2994,14 +3011,14 @@ void DFOCC::olccd_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -3023,7 +3040,7 @@ void DFOCC::olccd_manager()
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
 
-        // Fock
+        // Fock 
         fock();
 
         // QCHF
@@ -3040,10 +3057,10 @@ void DFOCC::olccd_manager()
 	ElccdL=Emp2;
         EcorrL=Emp2-Escf;
 	ElccdL_old=Emp2;
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy using SCF MOs (Canonical DF-MP2)... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -3061,7 +3078,7 @@ void DFOCC::olccd_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -3073,7 +3090,7 @@ void DFOCC::olccd_manager()
         Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
         Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA+Emp2BB;
 
-        // Malloc for PDMs
+        // Malloc for PDMs 
 	gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
 	if (reference_ == "RESTRICTED") {
 	    G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
@@ -3098,13 +3115,13 @@ void DFOCC::olccd_manager()
 	mograd();
         occ_iterations();
 	Elccd=ElccdL;
-
+	
         // main if
         if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
 	   mo_optimized = 1;
 	   if (conver == 1) outfile->Printf("\n\tOrbitals are optimized now.\n");
-	   else if (conver == 0) {
+	   else if (conver == 0) { 
                     outfile->Printf("\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
 	            outfile->Printf("\tI will consider the present orbitals as optimized.\n");
            }
@@ -3127,7 +3144,7 @@ void DFOCC::olccd_manager()
                gfock_cc_oo();
                gfock_cc_vv();
            }
-        }// end main if
+        }// end main if 
 
         else if (rms_wog <= tol_grad && std::fabs(DE) >= tol_Eod && regularization == "TRUE") {
 	   outfile->Printf("\tOrbital gradient converged, but energy did not... \n");
@@ -3138,9 +3155,9 @@ void DFOCC::olccd_manager()
 
   if (conver == 1) {
         if (orbs_already_opt == 1) ElccdL = Elccd;
-
+	
 	outfile->Printf("\n");
-	outfile->Printf("\tComputing DF-LCCD energy using optimized MOs... \n");
+	outfile->Printf("\tComputing DF-LCCD energy using optimized MOs... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -3171,8 +3188,9 @@ void DFOCC::olccd_manager()
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = ElccdL - Escf;
 	Process::environment.globals["OLCCD TOTAL ENERGY"] = ElccdL;
         Process::environment.globals["OLCCD CORRELATION ENERGY"] = ElccdL - Escf;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["OLCCD TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["OLCCD TOTAL ENERGY"];
         name_ = "DF-OLCCD";
 
         // OEPROP
@@ -3182,15 +3200,15 @@ void DFOCC::olccd_manager()
         if (dertype == "FIRST") dfgrad();
 
 	// Save MOs to wfn
-	save_mo_to_wfn();
+	save_mo_to_wfn(); 
 
   }// end if (conver == 1)
 
-}// end olccd_manager
+}// end olccd_manager 
 
 //======================================================================
 //             LCCD Manager
-//======================================================================
+//======================================================================             
 void DFOCC::lccd_manager()
 {
 
@@ -3245,14 +3263,14 @@ void DFOCC::lccd_manager()
         cost_4amp = 4.0 * cost_ampAA;
         cost_5amp = 5.0 * cost_ampAA;
 
-        if ((cost_4amp+cost_df) <= memory_mb) {
+        if ((cost_4amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
              outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp+cost_df);
              nincore_amp = 4;
              t2_incore = true;
              df_ints_incore = true;
         }
-        else if ((cost_3amp+cost_df) <= memory_mb) {
+        else if ((cost_3amp+cost_df) <= memory_mb) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              //outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
@@ -3260,14 +3278,14 @@ void DFOCC::lccd_manager()
              t2_incore = false;
              df_ints_incore = false;
         }
-        else if (cost_3amp < memory_mb && cost_df < memory_mb ) {
+        else if (cost_3amp < memory_mb && cost_df < memory_mb ) { 
              outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
              outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
              nincore_amp = 3;
              t2_incore = false;
              df_ints_incore = false;
         }
-        else {
+        else { 
              outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
              outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp+cost_df-memory_mb);
              throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
@@ -3290,7 +3308,7 @@ void DFOCC::lccd_manager()
         outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
 
         // memalloc for density intermediates
-        if (qchf_ == "TRUE" || dertype == "FIRST") {
+        if (qchf_ == "TRUE" || dertype == "FIRST") { 
             g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
             g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
             g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
@@ -3308,10 +3326,10 @@ void DFOCC::lccd_manager()
 	    t1_1st_sc();
 	}
 	lccd_t2_1st_sc();
-
+	
 	outfile->Printf("\n");
-	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
-	else outfile->Printf("\tComputing DF-MP2 energy ... \n");
+	if (reference == "ROHF") outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n"); 
+	else outfile->Printf("\tComputing DF-MP2 energy ... \n"); 
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
 	outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
@@ -3329,7 +3347,7 @@ void DFOCC::lccd_manager()
 	outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
 	outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
 	outfile->Printf("\t======================================================================= \n");
-
+	
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
 	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
@@ -3360,15 +3378,16 @@ void DFOCC::lccd_manager()
 	outfile->Printf("\tDF-LCCD Total Energy (a.u.)        : %20.14f\n", Elccd);
 	outfile->Printf("\t======================================================================= \n");
 	outfile->Printf("\n");
-
+	
 	Process::environment.globals["CURRENT ENERGY"] = Elccd;
         Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = Elccd - Escf;
 	Process::environment.globals["LCCD TOTAL ENERGY"] = Elccd;
         Process::environment.globals["LCCD CORRELATION ENERGY"] = Elccd - Escf;
 	ElccdL = Elccd;
-    /* updates the wavefunction for checkpointing */        
-	    energy_ = Process::environment.globals["LCCD TOTAL ENERGY"];
+
+        /* updates the wavefunction for checkpointing */        
+	energy_ = Process::environment.globals["LCCD TOTAL ENERGY"];
         name_ = "DF-LCCD";
 
         // Compute Analytic Gradients
@@ -3394,14 +3413,14 @@ void DFOCC::lccd_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip();
-        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+        }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
-}// end lccd_manager
+}// end lccd_manager 
 
 //======================================================================
 //             HF Manager
-//======================================================================
+//======================================================================             
 void DFOCC::qchf_manager()
 {
         time4grad = 0;// means i will not compute the gradient
@@ -3427,7 +3446,7 @@ void DFOCC::qchf_manager()
         g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
 	*/
         //outfile->Printf("\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
-
+        
 
      if (reference_ == "RESTRICTED") {
         // memory requirements
@@ -3437,7 +3456,7 @@ void DFOCC::qchf_manager()
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
-
+ 
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
         cost_ampAA = nQ_ref * navirA * navirA;
@@ -3465,7 +3484,7 @@ void DFOCC::qchf_manager()
         // QCHF
         qchf();
 
-}// end qchf_manager
+}// end qchf_manager 
 
 
 }} // End Namespaces

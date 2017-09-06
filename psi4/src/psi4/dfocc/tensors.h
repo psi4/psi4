@@ -38,7 +38,6 @@
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 #define idx_asym(i,j) ((i>j) ? ((i*(i-1)/2)+j) : ((j*(j-1)/2)+i))
 
-
 using namespace psi;
 
 namespace psi{
@@ -80,7 +79,9 @@ class Tensor1d
   void memalloc();
   void zero();
   void print();
-  void print(std::string out_fname);
+  void print(std::string OutFileRMR);
+  void print(const char *outfile);
+  void print(FILE *out);
   void release();
   void set(int i, double value);
   void set(double *vec);
@@ -157,8 +158,11 @@ class Tensor2d
   void memalloc();
   void zero();
   void zero_diagonal();
+  void zero_off_diagonal();
   void print();
-  void print(std::string out_fname);
+  void print(std::string OutFileRMR);
+  void print(const char *outfile);
+  void print(FILE *out);
   void release();
   void set(int i, int j, double value);
   void set(double **A);
@@ -469,6 +473,8 @@ class Tensor2d
 	     bool delete_b, int t_b1, int t_b2, int f_b1, int f_b2, SharedTensor2d& B,
 	     double alpha, double beta);
   void cont444(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
+  // Tensors A and B will be Deleted!
+  void cont444(std::string idx_c, std::string idx_a, std::string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq) = \sum_{rst} A(pr,st) B(rs,tq)
   void cont442(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_a, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta);
   // C(pq,rs) = \sum_{t} A(pq,rt) B(t,s)
@@ -567,7 +573,7 @@ class Tensor2i
   void zero();
   void zero_diagonal();
   void print();
-  void print(std::string out_fname);
+  void print(std::string OutFileRMR);
   void release();
   void set(int i, int j, int value);
   void set(int **A);

@@ -201,8 +201,8 @@ void DFOCC::common_init()
     pair_index();
 
     // Frozen virtual
-    if (nfrzv > 0 && dertype == "FIRST") {
-        throw PSIEXCEPTION("Frozen virtual gradients are not available.");
+    if (nfrzv > 0 && dertype == "FIRST" && wfn_type_ != "DF-CCSD(T)") {
+	throw PSIEXCEPTION("Frozen virtual gradients are not available for this method.");
     }
     if (nfrzv > 0 && orb_opt_ == "TRUE") {
         throw PSIEXCEPTION("Frozen virtual approximation is not available for orbital-optimized methods.");
@@ -386,7 +386,7 @@ void DFOCC::title()
    else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE") outfile->Printf("                    CD-LCCD   \n");
    else if (wfn_type_ == "QCHF") outfile->Printf("                      QCHF   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
-   outfile->Printf("              Latest Revision April 17, 2016\n") ;
+   outfile->Printf("              Latest Revision April 16, 2017\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -406,7 +406,7 @@ void DFOCC::title_grad()
    outfile->Printf("            A General Analytic Gradients Code   \n");
    outfile->Printf("               for Density-Fitted Methods       \n");
    outfile->Printf("                   by Ugur Bozkaya\n") ;
-   outfile->Printf("              Latest Revision October 7, 2015\n") ;
+   outfile->Printf("              Latest Revision December 19, 2016\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -426,7 +426,7 @@ void DFOCC::lambda_title()
    else if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-CCSD(AT)") outfile->Printf("                       DF-CCSD-Lambda   \n");
    else if (wfn_type_ == "DF-CCD") outfile->Printf("                       DF-CCD-Lambda   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
-   outfile->Printf("              Latest Revision September 4, 2015\n") ;
+   outfile->Printf("              Latest Revision May 31, 2016\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -444,7 +444,7 @@ void DFOCC::pt_title()
    if (wfn_type_ == "DF-CCSD(T)") outfile->Printf("                       DF-CCSD(T)   \n");
    else if (wfn_type_ == "DF-CCD(T)") outfile->Printf("                       DF-CCD(T)   \n");
    outfile->Printf("              Program Written by Ugur Bozkaya\n") ;
-   outfile->Printf("              Latest Revision September 9, 2015\n") ;
+   outfile->Printf("              Latest Revision April 16, 2017\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");
@@ -481,7 +481,7 @@ void DFOCC::pdm_title()
    outfile->Printf("              Particle Density Matrix Code   \n");
    outfile->Printf("               for Density-Fitted Methods       \n");
    outfile->Printf("                   by Ugur Bozkaya\n") ;
-   outfile->Printf("              Latest Revision August 17, 2015\n") ;
+   outfile->Printf("              Latest Revision December 19, 2016\n") ;
    outfile->Printf("\n");
    outfile->Printf(" ============================================================================== \n");
    outfile->Printf(" ============================================================================== \n");

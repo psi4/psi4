@@ -31,6 +31,8 @@
 #include "dfocc.h"
 
 using namespace psi;
+using namespace std;
+
 
 namespace psi{ namespace dfoccwave{
 
@@ -383,11 +385,13 @@ void DFOCC::mp3_WmbejT2AA()
     X->gemm(false, false, U, W, 1.0, 0.0);
     U.reset();
     W.reset();
-    /* Experimental: The following works too.
+    /*
+    // Experimental: The following two examples work, too.
     T = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     T->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
     X = SharedTensor2d(new Tensor2d("X (IA|JB)", naoccA, navirA, naoccA, navirA));
-    X->cont444("IAJB", "IMAE", "MEJB", true, false, T, W, 1.0, 0.0);
+    //X->cont444("IAJB", "IMAE", "MEJB", true, false, T, W, 1.0, 0.0);
+    //X->cont444("IAJB", "IMAE", "MEJB", T, W, 1.0, 0.0);
     */
     Tnew = SharedTensor2d(new Tensor2d("New T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);

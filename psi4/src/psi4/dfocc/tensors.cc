@@ -27,24 +27,20 @@
  */
 
 // Latest revision on April 38, 2013.
-
-#include "tensors.h"
-
+#include <stdio.h>
+#include <fstream>
+#include <cmath>
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libiwl/iwl.hpp"
+#include "tensors.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 
-#include <stdio.h>
-#include <fstream>
-#include <cmath>
-
 namespace psi{ namespace dfoccwave{
-
 
 /********************************************************************************************/
 /************************** 1d array ********************************************************/
@@ -128,6 +124,32 @@ void Tensor1d::print(std::string out_fname)
     printer->Printf(" %3d %10.7f \n",p,A1d_[p]);
   }
 }//
+
+void Tensor1d::print(FILE *out)
+{
+  if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+  for (int p=0; p<dim1_; p++){
+    fprintf(out," %3d %10.7f \n",p,A1d_[p]);
+  }
+  fflush(out);
+}//
+
+void Tensor1d::print(const char *outfile)
+{
+   // Open the file
+   std::ofstream out(outfile, std::ios::app);
+   out.precision(6);
+
+  if (name_.length()) out << "\n ## %s ##\n" << name_.c_str();
+  for (int p=0; p<dim1_; p++){
+    out << " %3d %10.7f \n" << p << A1d_[p];
+  }
+
+  //Close output file
+  out.close();
+}//
+
+
 
 void Tensor1d::set(int i, double value)
 {
@@ -697,6 +719,15 @@ void Tensor2d::zero_diagonal()
    }
 }//
 
+void Tensor2d::zero_off_diagonal()
+{
+    for (int i=0; i<dim1_; i++) {
+         for (int j=0; j<dim2_; j++) {
+	      if (i != j) A2d_[i][j] = 0.0;
+          }
+    }
+}//
+
 void Tensor2d::print()
 {
   if (A2d_) {
@@ -714,6 +745,73 @@ void Tensor2d::print(std::string out_fname)
       if (name_.length()) printer->Printf( "\n ## %s ##\n", name_.c_str());
       print_mat(A2d_,dim1_,dim2_,out_fname);
   }
+}//
+
+/*
+void Tensor2d::print(FILE *out)
+{
+  if (A2d_) {
+      if (name_.length()) fprintf(out, "\n ## %s ##\n", name_.c_str());
+      print_mat(A2d_,dim1_,dim2_,out);
+      fflush(out);
+  }
+}//
+*/
+
+void Tensor2d::print(const char *outfile)
+{
+   // Open the file
+   std::ofstream out(outfile, std::ios::app);
+   out.precision(6);
+   if (name_.length()) out << "\n ## %s ##\n" << name_.c_str();
+
+   int m = dim1_;
+   int n = dim2_;
+
+   int num_frames = int(n/10);
+   int num_frames_rem = n%10; //adding one for changing 0->1 start
+   int num_frame_counter = 0;
+  //for each frame
+  for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
+    out << "\n";
+    for(int j=10*num_frame_counter+1;j<10*num_frame_counter+11;j++){
+       if(j==10*num_frame_counter+1){ out << "%18d" << j; }
+       else{ out << "        %5d" << j; }
+    }
+    out << "\n\n";
+
+    for(int k=1; k<=m; ++k){
+      for(int j=10*num_frame_counter+1;j<10*num_frame_counter+12;j++){
+         if(j==10*num_frame_counter+1){ printf("%5d",k);} // printf left here
+         else{ out << " %12.7f" << A2d_[k-1][j-2]; }
+      }
+      out << "\n";
+    }
+  }
+
+// ALREADY DID THE FULL FRAMES BY THIS POINT
+// NEED TO TAKE CARE OF THE REMAINDER
+if(num_frames_rem != 0){
+  out << "\n";
+  for(int j=10*num_frame_counter+1;j<=n;j++){
+       if(j==10*num_frame_counter+1){ out << "%18d" << j; }
+       else{ out << "        %5d" << j; }
+  }
+  out << "\n\n";
+
+  for(int k=1; k<=m; ++k){
+    for(int j=10*num_frame_counter+1;j<n+2;j++){
+         if(j==10*num_frame_counter+1){ out << "%5d" << k; }
+         else{ out << " %12.7f" << A2d_[k-1][j-2]; }
+      }
+      out << "\n";
+    }
+  }
+  out << "\n\n";
+
+  //Close output file
+  out.close();
+
 }//
 
 void Tensor2d::set(int i, int j, double value)
@@ -5012,6 +5110,236 @@ void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, 
 	temp2.reset();
 
 
+}//
+
+void Tensor2d::cont444(std::string idx_c, std::string idx_a, std::string idx_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)
+{
+
+    char ta, tb;
+    int nca, ncb, ncc;
+    int m, n, k;
+    int r1, r2, c1, c2;
+    int rr1, rr2, cc1, cc2;
+    int dim_t, dim_u;
+    int t_a1, t_a2, f_a1, f_a2;
+    int t_b1, t_b2, f_b1, f_b2;
+    int d1_a, d2_a, d3_a, d4_a; // Dimensions of sorted A tensor
+    int d1_b, d2_b, d3_b, d4_b;
+    int sort_a, sort_b;
+
+	// Find free indices (pq) for A
+	// f_a1
+	if (idx_a[0] == idx_c[0]) {
+	    f_a1 = 1;
+	    d1_a = A->d1_;
+	}
+	else if (idx_a[1] == idx_c[0]) {
+	    f_a1 = 2;
+	    d1_a = A->d2_;
+	}
+	else if (idx_a[2] == idx_c[0]) {
+	    f_a1 = 3;
+	    d1_a = A->d3_;
+	}
+	else if (idx_a[3] == idx_c[0]) {
+	    f_a1 = 4;
+	    d1_a = A->d4_;
+	}
+
+	// f_a2
+	if (idx_a[0] == idx_c[1]) {
+	    f_a2 = 1;
+	    d2_a = A->d1_;
+	}
+	else if (idx_a[1] == idx_c[1]) {
+	    f_a2 = 2;
+	    d2_a = A->d2_;
+	}
+	else if (idx_a[2] == idx_c[1]) {
+	    f_a2 = 3;
+	    d2_a = A->d3_;
+	}
+	else if (idx_a[3] == idx_c[1]) {
+	    f_a2 = 4;
+	    d2_a = A->d4_;
+	}
+
+	// Find target indices (tu) for A
+	// t_a1
+	if (f_a1 == 1 && f_a2 == 2) {
+	    t_a1 = 3;
+	    t_a2 = 4;
+	    d3_a = A->d3_;
+	    d4_a = A->d4_;
+	}
+	else if (f_a1 == 1 && f_a2 == 3) {
+	    t_a1 = 2;
+	    t_a2 = 4;
+	    d3_a = A->d2_;
+	    d4_a = A->d4_;
+	}
+	else if (f_a1 == 1 && f_a2 == 4) {
+	    t_a1 = 2;
+	    t_a2 = 3;
+	    d3_a = A->d2_;
+	    d4_a = A->d3_;
+	}
+	else if (f_a1 == 2 && f_a2 == 3) {
+	    t_a1 = 1;
+	    t_a2 = 4;
+	    d3_a = A->d1_;
+	    d4_a = A->d4_;
+	}
+	else if (f_a1 == 2 && f_a2 == 4) {
+	    t_a1 = 1;
+	    t_a2 = 3;
+	    d3_a = A->d1_;
+	    d4_a = A->d3_;
+	}
+	else if (f_a1 == 3 && f_a2 == 4) {
+	    t_a1 = 1;
+	    t_a2 = 2;
+	    d3_a = A->d1_;
+	    d4_a = A->d2_;
+	}
+	else if (f_a1 == 2 && f_a2 == 1) {
+	    t_a1 = 3;
+	    t_a2 = 4;
+	    d3_a = A->d3_;
+	    d4_a = A->d4_;
+	}
+	else if (f_a1 == 3 && f_a2 == 1) {
+	    t_a1 = 2;
+	    t_a2 = 4;
+	    d3_a = A->d2_;
+	    d4_a = A->d4_;
+	}
+	else if (f_a1 == 4 && f_a2 == 1) {
+	    t_a1 = 2;
+	    t_a2 = 3;
+	    d3_a = A->d2_;
+	    d4_a = A->d3_;
+	}
+	else if (f_a1 == 3 && f_a2 == 2) {
+	    t_a1 = 1;
+	    t_a2 = 4;
+	    d3_a = A->d1_;
+	    d4_a = A->d4_;
+	}
+	else if (f_a1 == 4 && f_a2 == 2) {
+	    t_a1 = 1;
+	    t_a2 = 3;
+	    d3_a = A->d1_;
+	    d4_a = A->d3_;
+	}
+	else if (f_a1 == 4 && f_a2 == 3) {
+	    t_a1 = 1;
+	    t_a2 = 2;
+	    d3_a = A->d1_;
+	    d4_a = A->d2_;
+	}
+	//outfile->Printf("\tf_a1, f_a2, t_a1, t_a2: %1d, %1d, %1d, %1d  \n", f_a1,f_a2,t_a1,t_a2);
+
+	// Sort A(..,..) to A(pq,tu)
+	sort_a = (f_a1*1000) + (f_a2*100) + (t_a1*10) + t_a2; 
+        SharedTensor2d temp1 = SharedTensor2d(new Tensor2d("temp1", d1_a, d2_a, d3_a, d4_a));
+	temp1->sort(sort_a, A, 1.0, 0.0);
+	A.reset();
+	//temp1->print();
+
+	// Find target (tu) & free (rs) indices for B
+	// f_b1
+	if (idx_b[0] == idx_c[2]) {
+	    f_b1 = 1;
+	    d3_b = B->d1_;
+	}
+	else if (idx_b[1] == idx_c[2]) {
+	    f_b1 = 2;
+	    d3_b = B->d2_;
+	}
+	else if (idx_b[2] == idx_c[2]) {
+	    f_b1 = 3;
+	    d3_b = B->d3_;
+	}
+	else if (idx_b[3] == idx_c[2]) {
+	    f_b1 = 4;
+	    d3_b = B->d4_;
+	}
+
+	// f_b2
+	if (idx_b[0] == idx_c[3]) {
+	    f_b2 = 1;
+	    d4_b = B->d1_;
+	}
+	else if (idx_b[1] == idx_c[3]) {
+	    f_b2 = 2;
+	    d4_b = B->d2_;
+	}
+	else if (idx_b[2] == idx_c[3]) {
+	    f_b2 = 3;
+	    d4_b = B->d3_;
+	}
+	else if (idx_b[3] == idx_c[3]) {
+	    f_b2 = 4;
+	    d4_b = B->d4_;
+	}
+
+	// t_b1
+	if (idx_b[0] == idx_a[t_a1-1]) {
+	    t_b1 = 1;
+	    d1_b = B->d1_;
+	}
+	else if (idx_b[1] == idx_a[t_a1-1]) {
+	    t_b1 = 2;
+	    d1_b = B->d2_;
+	}
+	else if (idx_b[2] == idx_a[t_a1-1]) {
+	    t_b1 = 3;
+	    d1_b = B->d3_;
+	}
+	else if (idx_b[3] == idx_a[t_a1-1]) {
+	    t_b1 = 4;
+	    d1_b = B->d4_;
+	}
+
+	// t_b2
+	if (idx_b[0] == idx_a[t_a2-1]) {
+	    t_b2 = 1;
+	    d2_b = B->d1_;
+	}
+	else if (idx_b[1] == idx_a[t_a2-1]) {
+	    t_b2 = 2;
+	    d2_b = B->d2_;
+	}
+	else if (idx_b[2] == idx_a[t_a2-1]) {
+	    t_b2 = 3;
+	    d2_b = B->d3_;
+	}
+	else if (idx_b[3] == idx_a[t_a2-1]) {
+	    t_b2 = 4;
+	    d2_b = B->d4_;
+	}
+	//outfile->Printf("\tf_b1, f_b2, t_b1, t_b2: %1d, %1d, %1d, %1d  \n", f_b1,f_b2,t_b1,t_b2);
+
+	// Sort B(..,..) to B(tu,rs)
+	sort_b = (t_b1*1000) + (t_b2*100) + (f_b1*10) + f_b2; 
+        SharedTensor2d temp2 = SharedTensor2d(new Tensor2d("temp2", d1_b, d2_b, d3_b, d4_b));
+	temp2->sort(sort_b, B, 1.0, 0.0);
+	B.reset();
+	//temp2->print();
+
+        ta = 'n';
+        tb = 'n';
+        m = dim1_;
+        n = dim2_;
+        k = temp1->dim2();
+        nca = k; // lda
+        ncb = n; // ldb
+        ncc = n; // ldc
+
+        C_DGEMM(ta, tb, m, n, k, alpha, &(temp1->A2d_[0][0]), nca, &(temp2->A2d_[0][0]), ncb, beta, &(A2d_[0][0]), ncc);
+	temp1.reset();
+	temp2.reset();
 }//
 
 void Tensor2d::cont343(std::string idx_c, std::string idx_a, std::string idx_b, bool delete_b, SharedTensor2d& A, SharedTensor2d& B, double alpha, double beta)

@@ -31,31 +31,40 @@
 #include "defines.h"
 #include "dfocc.h"
 
-
 using namespace psi;
 
 namespace psi{ namespace dfoccwave{
-
+  
 void DFOCC::ccsd_opdm()
-{
+{   
 
     SharedTensor2d T, U, X;
     timer_on("opdm");
 //if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
-    T = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
-    T->symmetrize(GtijA);
+    T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
+    U = SharedTensor2d(new Tensor2d("U Intermediate <I|J>", naoccA, naoccA));
+    U->copy(GtijA);
+    if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ij, 1.0); 
+    T->symmetrize(U);
+    U.reset();
     T->scale(-2.0);
     G1c_oo->set_act_oo(nfrzc, naoccA, T);
     T.reset();
 
     //  G1_ab = -(G_ab + G_ba)
-    T = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
-    T->symmetrize(GtabA);
+    T = SharedTensor2d(new Tensor2d("T Intermediate <A|B>", navirA, navirA));
+    U = SharedTensor2d(new Tensor2d("U Intermediate <A|B>", navirA, navirA));
+    U->copy(GtabA);
+    if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ab, 1.0); 
+    T->symmetrize(U);
+    U.reset();
     T->scale(-2.0);
     G1c_vv->set_act_vv(T);
     T.reset();
+    //G1c_vv->print();
+    //Jc->print();
 
     // G1_ia = t_i^a + l_i^a
     T = SharedTensor2d(new Tensor2d("Corr OPDM <I|A>", naoccA, navirA));
@@ -79,6 +88,14 @@ void DFOCC::ccsd_opdm()
 
     // G1_ia += \sum(e) t_i^e G_ea
     T->gemm(false, false, t1A, GabA, 1.0, 1.0);
+    
+    // (T) Contribution
+    if (wfn_type_ == "DF-CCSD(T)") {
+	T->axpy(G1c_ia, 1.0); 
+        G1c_ij.reset();
+        G1c_ia.reset();
+        G1c_ab.reset();
+    }
 
     // set OV block
     G1c_ov->set_act_ov(nfrzc, T);
@@ -96,13 +113,13 @@ void DFOCC::ccsd_opdm()
 
     // Build G1
     G1->copy(G1c);
-    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
+    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); 
 
   if(print_ > 2) {
     G1->print();
     double trace = G1->trace();
     outfile->Printf("\t trace: %12.12f \n", trace);
-
+    
   }
 
 //}// end if (reference_ == "RESTRICTED")
@@ -112,4 +129,69 @@ void DFOCC::ccsd_opdm()
     timer_off("opdm");
 } // end ccsd_opdm
 
+//=======================================================
+//       Diagonal OPDM
+//=======================================================
+void DFOCC::ccsd_diagonal_opdm()
+{   
+
+    SharedTensor2d T, U, X;
+    timer_on("opdm");
+//if (reference_ == "RESTRICTED") {
+
+    // G1_ij = -(G_ij + G_ji)
+    T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
+    U = SharedTensor2d(new Tensor2d("U Intermediate <I|J>", naoccA, naoccA));
+    U->copy(GtijA);
+    T->symmetrize(U);
+    U.reset();
+    T->scale(-2.0);
+    G1c_oo->set_act_oo(nfrzc, naoccA, T);
+    G1c_oo->zero_off_diagonal();
+    T.reset();
+
+    //  G1_ab = -(G_ab + G_ba)
+    T = SharedTensor2d(new Tensor2d("T Intermediate <A|B>", navirA, navirA));
+    U = SharedTensor2d(new Tensor2d("U Intermediate <A|B>", navirA, navirA));
+    U->copy(GtabA);
+    T->symmetrize(U);
+    U.reset();
+    T->scale(-2.0);
+    G1c_vv->set_act_vv(T);
+    G1c_vv->zero_off_diagonal();
+    T.reset();
+
+    // (T) Contribution
+    if (wfn_type_ == "DF-CCSD(T)") {
+        for (int i = 0; i < naoccA; i++) G1c_oo->add(i+nfrzc, i+nfrzc, G1c_ii->get(i)); 
+        for (int a = 0; a < navirA; a++) G1c_vv->add(a, a, G1c_aa->get(a)); 
+        G1c_ii.reset();
+        G1c_aa.reset();
+    }
+
+    // Build G1c
+    G1c->set_oo(G1c_oo);
+    G1c->set_vv(noccA, G1c_vv);
+    //G1c->print();
+
+    // Build G1
+    G1->copy(G1c);
+    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); 
+
+  if(print_ > 2) {
+    G1->print();
+    double trace = G1->trace();
+    outfile->Printf("\t trace: %12.12f \n", trace);
+    
+  }
+
+//}// end if (reference_ == "RESTRICTED")
+
+//else if (reference_ == "UNRESTRICTED") {
+//}// else if (reference_ == "UNRESTRICTED")
+    timer_off("opdm");
+} // end ccsd_diagonal_opdm
+
 }} // End Namespaces
+
+
