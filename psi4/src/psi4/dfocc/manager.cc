@@ -331,6 +331,9 @@ void DFOCC::omp2_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
 
+        // EKT-IP
+        if (ekt_ip_ == "TRUE") ekt_ip();
+
 	// Save MOs to wfn
 	save_mo_to_wfn(); 
 
@@ -527,7 +530,7 @@ void DFOCC::mp2_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
@@ -809,9 +812,9 @@ void DFOCC::ccsd_manager()
         name_ = "DF-CCSD";
 
         // CCSDL 
-        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+        if (dertype == "FIRST" || cc_lambda_ == "TRUE" || ekt_ip_ == "TRUE") {
 	    // memalloc
-            if (dertype == "FIRST") {
+            if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
                 GtijA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <I|J>", naoccA, naoccA));
                 GtabA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <A|B>", navirA, navirA));
                 L1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC L1_Q", nQ));
@@ -847,7 +850,7 @@ void DFOCC::ccsd_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end ccsd_manager 
@@ -1158,7 +1161,7 @@ void DFOCC::ccsd_t_manager()
 	pt_title();
         outfile->Printf("\tComputing (T) correction...\n");
         timer_on("(T)");
-        if (dertype == "FIRST") {
+        if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    //ccsd_canonic_triples_grad();
 	    ccsd_canonic_triples_grad2();
 	}
@@ -1191,9 +1194,9 @@ void DFOCC::ccsd_t_manager()
         name_ = "DF-CCSD(T)";
 
         // CCSDL 
-        if (dertype == "FIRST" || cc_lambda_ == "TRUE") {
+        if (dertype == "FIRST" || cc_lambda_ == "TRUE" || ekt_ip_ == "TRUE") {
 	    // memalloc
-            if (dertype == "FIRST") {
+            if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
                 GtijA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <I|J>", naoccA, naoccA));
                 GtabA = SharedTensor2d(new Tensor2d("Gtilde Intermediate <A|B>", navirA, navirA));
                 L1c = SharedTensor1d(new Tensor1d("DF_BASIS_CC L1_Q", nQ));
@@ -1224,7 +1227,7 @@ void DFOCC::ccsd_t_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end ccsd_t_manager 
@@ -1882,7 +1885,7 @@ void DFOCC::ccd_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end ccd_manager 
@@ -2181,6 +2184,9 @@ void DFOCC::omp3_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
 
+        // EKT-IP
+        if (ekt_ip_ == "TRUE") ekt_ip();
+
 	// Save MOs to wfn
 	save_mo_to_wfn(); 
 
@@ -2417,7 +2423,7 @@ void DFOCC::mp3_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end mp3_manager 
@@ -2713,6 +2719,9 @@ void DFOCC::omp2_5_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
 
+	// EKT-IP
+	if (ekt_ip_ == "TRUE") ekt_ip();
+	
 	// Save MOs to wfn
 	save_mo_to_wfn(); 
 
@@ -2930,7 +2939,7 @@ void DFOCC::mp2_5_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end mp2_5_manager 
@@ -3199,6 +3208,9 @@ void DFOCC::olccd_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") dfgrad();
 
+	// EKT-IP
+	if (ekt_ip_ == "TRUE") ekt_ip();
+
 	// Save MOs to wfn
 	save_mo_to_wfn(); 
 
@@ -3413,7 +3425,7 @@ void DFOCC::lccd_manager()
             prepare4grad();
             if (oeprop_ == "TRUE") oeprop();
             if (dertype == "FIRST") dfgrad();
-            //if (ekt_ip_ == "TRUE") ekt_ip(); 
+            if (ekt_ip_ == "TRUE") ekt_ip(); 
         }// if (dertype == "FIRST" || ekt_ip_ == "TRUE") 
 
 }// end lccd_manager 

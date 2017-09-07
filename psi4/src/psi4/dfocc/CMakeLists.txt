@@ -1,7 +1,7 @@
 set(sources_list
 approx_diag_mohess_oo.cc  fock.cc                   mp2_direct.cc
 approx_diag_mohess_vo.cc  fock_so.cc                occ_iterations.cc
-get_moinfo.cc
+get_moinfo.cc             ekt.cc                    properties.cc
 cc_energy.cc              gfock_oo.cc               omp2_opdm.cc
 ccl_energy.cc             gfock_ov.cc               omp2_tpdm.cc
 cd_ints.cc                gfock_vo.cc               pair_index.cc

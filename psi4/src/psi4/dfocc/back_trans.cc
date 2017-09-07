@@ -30,7 +30,6 @@
 #include "psi4/libqt/qt.h"
 #include "defines.h"
 #include "dfocc.h"
-#include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
 
 
@@ -418,43 +417,6 @@ else if (reference_ == "UNRESTRICTED") {
     //outfile->Printf("\tBacktransformation is done.\n");
     //
 } // end back_trans
-
-//=========================
-// OEPROP
-//=========================
-void DFOCC::oeprop()
-{
-    outfile->Printf("\tComputing one-electron properties...\n");
-
-    timer_on("oeprop");
-    SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
-    SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
-    if (reference_ == "RESTRICTED") {
-        G1->to_shared_matrix(Da_);
-        Da_->scale(0.5);
-        Db_->copy(Da_);
-    }
-
-    else if (reference_ == "UNRESTRICTED") {
-        G1A->to_shared_matrix(Da_);
-        G1B->to_shared_matrix(Db_);
-    }
-
-    // Compute oeprop
-    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
-    oe->set_Da_mo(Da_);
-    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
-    oe->add("DIPOLE");
-    oe->add("QUADRUPOLE");
-    oe->add("MULLIKEN_CHARGES");
-    oe->add("NO_OCCUPATIONS");
-    oe->set_title(wfn_type_);
-    oe->compute();
-    Da_.reset();
-    Db_.reset();
-
-    timer_off("oeprop");
-} // end oeprop
 
 //======================================================================
 //    CCSD: Back Trans
