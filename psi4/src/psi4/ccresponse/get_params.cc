@@ -224,12 +224,12 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options)
   outfile->Printf( "\tModel III        =    %s\n", params.sekino ? "Yes" : "No");
   outfile->Printf( "\tLinear Model     =    %s\n", params.linear ? "Yes" : "No");
   outfile->Printf( "\tABCD             =    %s\n", params.abcd.c_str());
-  outfile->Printf( "\tIrrep X          =    %s\n", moinfo.labels[moinfo.mu_irreps[0]]);
-  outfile->Printf( "\tIrrep Y          =    %s\n", moinfo.labels[moinfo.mu_irreps[1]]);
-  outfile->Printf( "\tIrrep Z          =    %s\n", moinfo.labels[moinfo.mu_irreps[2]]);
-  outfile->Printf( "\tIrrep RX         =    %s\n", moinfo.labels[moinfo.l_irreps[0]]);
-  outfile->Printf( "\tIrrep RY         =    %s\n", moinfo.labels[moinfo.l_irreps[1]]);
-  outfile->Printf( "\tIrrep RZ         =    %s\n", moinfo.labels[moinfo.l_irreps[2]]);
+  outfile->Printf( "\tIrrep X          =    %s\n", moinfo.labels[moinfo.mu_irreps[0]].c_str());
+  outfile->Printf( "\tIrrep Y          =    %s\n", moinfo.labels[moinfo.mu_irreps[1]].c_str());
+  outfile->Printf( "\tIrrep Z          =    %s\n", moinfo.labels[moinfo.mu_irreps[2]].c_str());
+  outfile->Printf( "\tIrrep RX         =    %s\n", moinfo.labels[moinfo.l_irreps[0]].c_str());
+  outfile->Printf( "\tIrrep RY         =    %s\n", moinfo.labels[moinfo.l_irreps[1]].c_str());
+  outfile->Printf( "\tIrrep RZ         =    %s\n", moinfo.labels[moinfo.l_irreps[2]].c_str());
   /*  Only length gauge calculations for polarizabilities */
   if (params.prop == "POLARIZABILITY")
   outfile->Printf( "\tGauge            =    LENGTH\n");

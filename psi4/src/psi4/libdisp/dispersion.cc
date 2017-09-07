@@ -248,7 +248,11 @@ double Dispersion::compute_energy(std::shared_ptr <Molecule> m)
     if (Damping_type_ == Damping_TT) {
 
         // -DAS dispersion only involves inter-fragment terms
-        if (m->nactive_fragments() == 1) return 0.0;
+        if (m->nactive_fragments() == 1) {
+		//Just in case, since auto fragment is not called 
+    		outfile->Printf("\n    Only one fragment provided, no empirical dispersion will be added.\n\n");
+		return 0.0;
+	}
 
         // need a check if there is only one active fragment ...
 

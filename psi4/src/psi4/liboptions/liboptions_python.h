@@ -30,8 +30,8 @@
 #define _psi_src_lib_liboptions_python_h
 
 #include "liboptions.h"
-
 #include "psi4/pybind11.h"
+#include "psi4/pragma.h"
 
 namespace psi {
 
@@ -46,14 +46,11 @@ public:
     virtual std::string type() const;
 
     const py::object& to_python() const;
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverloaded-virtual"
-#endif
+
+    PRAGMA_WARNING_PUSH
+    PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
     void assign(const py::object& p);
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+    PRAGMA_WARNING_POP
 };
 
 }

@@ -80,7 +80,7 @@ void CCEnergyWavefunction::analyze(void)
 	    tmp[0], nso, 0.0, T2trans[ij], nso);
 
     for(ab=0; ab<nso*nso; ab++) {
-      value = std::fabs(log10(std::fabs(T2trans[ij][ab])));
+      value = std::fabs(std::log10(std::fabs(T2trans[ij][ab])));
       tot2++;
       if ((value >= max) && (value <= (max+width))) {
 	amp_array[num_div-1]++;
@@ -135,7 +135,7 @@ void CCEnergyWavefunction::analyze(void)
   for(i=0; i < nocc; i++) {
     for(a=0; a < nso; a++) {
       /*      value = std::fabs(log10(std::fabs(T1trans[i][a]))); */
-      value = log10(std::fabs(T1.matrix[0][i][a]));
+      value = std::log10(std::fabs(T1.matrix[0][i][a]));
       tot2++;
       if ((value >= max) && (value <= (max+width))) {
 	amp_array[num_div-1]++;

@@ -29,8 +29,6 @@
 #include "psi4/dfep2/dfep2.h"
 
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libthce/thce.h"
-#include "psi4/libthce/lreri.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/psifiles.h"
@@ -41,6 +39,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/aiohandler.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/lib3index/df_helper.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -51,7 +50,8 @@
 #include <omp.h>
 #endif
 
-namespace psi { namespace dfep2 {
+namespace psi {
+namespace dfep2 {
 
 DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(Process::environment.options) {
@@ -65,14 +65,10 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     outfile->Printf("                            by Daniel G. A. Smith\n");
     outfile->Printf("         ---------------------------------------------------------\n\n");
 
-
     conv_thresh_ = options_.get_double("EP2_CONVERGENCE");
     max_iter_ = options_.get_int("EP2_MAXITER");
     debug_ = options_.get_int("DEBUG");
     memory_doubles_ = (size_t)(0.1 * (double)Process::environment.get_memory());
-
-    dferi_ = DFERI::build(get_basisset("ORBITAL"), get_basisset("DF_BASIS_EP2"), options_);
-    dferi_->print_header();
 
     AO_C_ = Ca_subset("AO", "ALL");
     AO_Cocc_ = Ca_subset("AO", "OCC");
@@ -86,53 +82,55 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
             orbital_order_.push_back(std::tuple<double, size_t, size_t>(epsilon_a_->get(h, i), h, i));
         }
     }
-    std::sort(orbital_order_.begin(), orbital_order_.end(),
-              std::less<std::tuple<double, size_t, size_t>>());
+    std::sort(orbital_order_.begin(), orbital_order_.end(), std::less<std::tuple<double, size_t, size_t>>());
 
     num_threads_ = 1;
-    #ifdef _OPENMP
-        num_threads_ = omp_get_max_threads();
-    #endif
+#ifdef _OPENMP
+    num_threads_ = omp_get_max_threads();
+#endif
+
+    // ==> Init DF object <== /
+    dfh_ = std::make_shared<DF_Helper>(get_basisset("ORBITAL"), get_basisset("DF_BASIS_SCF"));
+    dfh_->set_method("DIRECT");
+    dfh_->set_memory(memory_doubles_);
+    dfh_->set_nthreads(num_threads_);
+    dfh_->initialize();
 }
 
-std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(std::vector<std::vector<size_t>> solve_orbs){
-
+std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(
+    std::vector<std::vector<size_t>> solve_orbs) {
     // ==> Figure out which orbitals to compute <== /
     std::vector<std::tuple<size_t, size_t, size_t, size_t>> orb_positions;
 
     size_t nE = 0;
     size_t nfound = 0;
-    for (size_t h = 0; h < solve_orbs.size(); h++){
+    for (size_t h = 0; h < solve_orbs.size(); h++) {
         nE += solve_orbs[h].size();
     }
 
-    if (solve_orbs.size() != nirrep_){
+    if (solve_orbs.size() != nirrep_) {
         throw PSIEXCEPTION("EP2: Size of solve_orbs does not match the number of irreps!");
     }
 
     std::vector<size_t> h_rel_index(nirrep_);
 
-    for (size_t k = 0; k < orbital_order_.size(); k++){
+    for (size_t k = 0; k < orbital_order_.size(); k++) {
         size_t h = std::get<1>(orbital_order_[k]);
         size_t current_i = std::get<2>(orbital_order_[k]);
 
         if (nfound == nE) break;
 
-        for (const size_t& i: solve_orbs[h]){
-
-            if (i == current_i){
-
+        for (const size_t& i : solve_orbs[h]) {
+            if (i == current_i) {
                 orb_positions.push_back(std::make_tuple(k, h, i, h_rel_index[h]));
                 h_rel_index[h]++;
                 nfound++;
             }
 
-            if (i > nmopi_[h]){
+            if (i > nmopi_[h]) {
                 throw PSIEXCEPTION("EP2: Orbital number is larger than the number of orbitals in the irrep!");
             }
-
         }
-
     }
     outfile->Printf("  ==> Algorithm <==\n\n");
     outfile->Printf("  Number of orbitals:     %8zu\n", nE);
@@ -144,17 +142,15 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         outfile->Printf("\n\nNsolve %zu\n", nE);
         outfile->Printf("Nfound %zu\n", nfound);
         for (size_t i = 0; i < orb_positions.size(); i++) {
-            outfile->Printf("orb_pos: %zu irrep: %zu irrep_pos: %zu\n",
-                            std::get<0>(orb_positions[i]), std::get<1>(orb_positions[i]),
-                            std::get<2>(orb_positions[i]));
+            outfile->Printf("orb_pos: %zu irrep: %zu irrep_pos: %zu\n", std::get<0>(orb_positions[i]),
+                            std::get<1>(orb_positions[i]), std::get<2>(orb_positions[i]));
         }
         outfile->Printf("\n\n");
     }
 
-    if (nE != nfound){
+    if (nE != nfound) {
         throw PSIEXCEPTION("EP2: AO -> SO mapping failed, did not find all orbitals to compute");
     }
-
 
     // ==> Set the epsilon vectors <== /
     size_t nocc = AO_Cocc_->colspi()[0];
@@ -171,15 +167,14 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     }
 
     std::vector<double> eps_occ(nocc);
-    for (size_t i = 0; i < nocc; i++){
+    for (size_t i = 0; i < nocc; i++) {
         eps_occ[i] = AO_epsp[i];
     }
 
     std::vector<double> eps_vir(nvir);
-    for (size_t i = 0; i < nvir; i++){
+    for (size_t i = 0; i < nvir; i++) {
         eps_vir[i] = AO_epsp[nocc + i];
     }
-
 
     // ==> Build the solve orbitals <== /
     SharedMatrix AO_CE(new Matrix("Solve orbitals", AO_C_->rowspi()[0], nE));
@@ -189,8 +184,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     int ce_start = 0;
     for (size_t k = 0; k < orb_positions.size(); k++) {
         int orb_copy = std::get<0>(orb_positions[k]);
-        C_DCOPY(AO_C_->rowspi()[0], (AO_Cp[0] + orb_copy), AO_C_->colspi()[0],
-                (AO_CEp[0] + ce_start), nE);
+        C_DCOPY(AO_C_->rowspi()[0], (AO_Cp[0] + orb_copy), AO_C_->colspi()[0], (AO_CEp[0] + ce_start), nE);
         ce_start++;
     }
     // AO_C_->print();
@@ -204,20 +198,21 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
     // ==> Transform DF integrals <== /
 
-    dferi_->clear();
-    dferi_->set_C(C_Full);
-    dferi_->add_space("i", 0, nocc);
-    dferi_->add_space("a", nocc, nocc + nvir);
-    dferi_->add_space("E", nocc + nvir, nocc + nvir + nE);
+    // add spaces
+    dfh_->clear_all();
+    dfh_->add_space("i", AO_Cocc_);
+    dfh_->add_space("a", AO_Cvir_);
+    dfh_->add_space("E", AO_CE);
 
-    dferi_->add_pair_space("iaQ", "i", "a");
-    // dferi_->add_pair_space("aiQ", "i", "a", -0.5, true);
-    dferi_->add_pair_space("iEQ", "i", "E");
-    dferi_->add_pair_space("aEQ", "a", "E");
-    dferi_->compute();
+    //// add transformations
+    dfh_->add_transformation("iaQ", "i", "a", "pqQ");
+    dfh_->add_transformation("iEQ", "i", "E", "pqQ");
+    dfh_->add_transformation("aEQ", "a", "E", "pqQ");
 
-    std::map<std::string, std::shared_ptr<Tensor>>& dfints = dferi_->ints();
-    size_t nQ = dferi_->size_Q();
+    //// compute
+    dfh_->transform();
+
+    size_t nQ = dfh_->get_naux();
 
     // ==> Build ERI's <== /
 
@@ -241,7 +236,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
     size_t nblocks = 1 + ((nocc - 1) / block_size);
 
-    if (debug_ > 1){
+    if (debug_ > 1) {
         outfile->Printf("\n\n");
         outfile->Printf("memory_doubles_ %zu\n", memory_doubles_);
         outfile->Printf("free_doubles    %zu\n", free_doubles);
@@ -252,7 +247,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         outfile->Printf("\n\n");
     }
 
-    if (block_size < 1){
+    if (block_size < 1) {
         std::stringstream message;
         double mem_gb = ((double)(E_tensor_size + I_block_sizes) / 1.e10);
         message << "DF-EP2 requires at least is nvir^2 * number solve orbitals in memory." << std::endl;
@@ -261,50 +256,35 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         throw PSIEXCEPTION(message.str());
     }
 
-    size_t fstat;
-
-
     // Read in part of the tensors
-    std::shared_ptr<Tensor> aEQT = dfints["aEQ"];
     SharedMatrix aEQ(new Matrix("aEQ", nE * nvir, nQ));
     double* aEQp = aEQ->pointer()[0];
-    FILE* aEQF = aEQT->file_pointer();
-    fseek(aEQF, 0L, SEEK_SET);
-    fstat = fread(aEQp, sizeof(double), nE * nvir * nQ, aEQF);
+    dfh_->fill_tensor("aEQ", aEQ);
 
-    std::shared_ptr<Tensor> iEQT = dfints["iEQ"];
     SharedMatrix iEQ(new Matrix("iEQ", nE * nocc, nQ));
     double* iEQp = iEQ->pointer()[0];
-    FILE* iEQF = iEQT->file_pointer();
-    fseek(iEQF, 0L, SEEK_SET);
-    fstat = fread(iEQp, sizeof(double), nE * nocc * nQ, iEQF);
+    dfh_->fill_tensor("iEQ", iEQ);
 
     // Allocate temps
     SharedMatrix block_iaQ(new Matrix(block_size * nvir, nQ));
     SharedMatrix temp_ovvE(new Matrix(block_size * nvir, nvir * nE));
     SharedMatrix temp_ovoE(new Matrix(block_size * nvir, nocc * nE));
 
-    // Pointer to read from
-    std::shared_ptr<Tensor> iaQT = dfints["iaQ"];
-    FILE* iaQF = iaQT->file_pointer();
-    double* block_iaQp = block_iaQ->pointer()[0];
-    fseek(iaQF, 0L, SEEK_SET);
-
     psio_address ovvE_addr = psio_get_address(PSIO_ZERO, 0);
     psio_address ovoE_addr = psio_get_address(PSIO_ZERO, 0);
     psio_address vooE_addr = psio_get_address(PSIO_ZERO, 0);
 
-    for (size_t block = 0; block < nblocks; block++){
+    for (size_t block = 0; block < nblocks; block++) {
         size_t bstart = block * block_size;
 
         // Make sure we dont read past the line
-        if ((bstart + block_size) > nocc){
+        if ((bstart + block_size) > nocc) {
             block_size = nocc - block * block_size;
             block_iaQ->zero();
         }
 
         // Read a IA block
-        fstat = fread(block_iaQp, sizeof(double), block_size * nvir * nQ, iaQF);
+        dfh_->fill_tensor("iaQ", block_iaQ, {bstart, bstart + block_size});
 
         // Write out OVVE
         temp_ovvE->gemm(false, true, 1.0, block_iaQ, aEQ, 0.0);
@@ -314,17 +294,15 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         // Write out VOOE
         temp_ovoE->gemm(false, true, 1.0, block_iaQ, iEQ, 0.0);
         double** temp_ovoEp = temp_ovoE->pointer();
-        for (size_t a = 0; a < nvir; a++){
+        for (size_t a = 0; a < nvir; a++) {
             size_t local_i = 0;
-            for (size_t i = bstart; i < bstart + block_size; i++){
-                psio_address vooE_addr =
-                    psio_get_address(PSIO_ZERO, sizeof(double) * (a * nocc + i) * nocc * nE);
+            for (size_t i = bstart; i < bstart + block_size; i++) {
+                psio_address vooE_addr = psio_get_address(PSIO_ZERO, sizeof(double) * (a * nocc + i) * nocc * nE);
                 psio_->write(unit_, "EP2 I_vooE Integrals", (char*)temp_ovoEp[local_i * nvir + a],
                              sizeof(double) * nocc * nE, vooE_addr, &vooE_addr);
                 local_i++;
             }
         }
-
     }
     // Blow away the temp tensors
     block_iaQ.reset();
@@ -332,7 +310,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     temp_ovoE.reset();
     aEQ.reset();
     iEQ.reset();
-
 
     // ==> More Sizing <== /
 
@@ -347,8 +324,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     size_t aaE_nblocks = 1 + ((nocc - 1) / aaE_size);
     size_t ooE_nblocks = 1 + ((nvir - 1) / ooE_size);
 
-
-    if (debug_ > 1){
+    if (debug_ > 1) {
         outfile->Printf("\n\n");
         outfile->Printf("aaE_size %zu\n", aaE_size);
         outfile->Printf("ooE_size    %zu\n", ooE_size);
@@ -357,12 +333,11 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         outfile->Printf("\n\n");
     }
 
-
     // ==> Iterate <== /
     outfile->Printf("  ==> Iterations <==\n\n");
-    outfile->Printf( "   --------------------------------------------\n");
-    outfile->Printf( "    Iter   Residual RMS      Max RMS    Remain\n");
-    outfile->Printf( "   --------------------------------------------\n");
+    outfile->Printf("   --------------------------------------------\n");
+    outfile->Printf("    Iter   Residual RMS      Max RMS    Remain\n");
+    outfile->Printf("   --------------------------------------------\n");
 
     std::vector<double> Eold(nE);
     std::vector<double> Esigma(nE);
@@ -375,18 +350,16 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     size_t rank = 0;
 
     for (size_t iter = 0; iter < max_iter_; iter++) {
-
         // Reset data for loop
         for (size_t i = 0; i < nE; i++) {
             Esigma[i] = 0.0;
             Ederiv[i] = 0.0;
             Eold[i] = Enew[i];
-            for (size_t j = 0; j < num_threads_; j++){
+            for (size_t j = 0; j < num_threads_; j++) {
                 deriv_temps[j][i] = 0.0;
                 sigma_temps[j][i] = 0.0;
             }
         }
-
 
         // => Excitations <= //
         // sigma <= (Eabi - Ebai) * Eabi / (E - v - v + o)
@@ -395,23 +368,23 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         SharedMatrix I_ovvE(new Matrix(aaE_size * nvir, nvir * nE));
         double** I_ovvEp = I_ovvE->pointer();
 
-        for (size_t i_block = 0; i_block < aaE_nblocks; i_block++){
+        for (size_t i_block = 0; i_block < aaE_nblocks; i_block++) {
             size_t i_start = aaE_size * i_block;
             size_t ib_size = aaE_size;
-            if ((i_start + aaE_size) > nocc){
+            if ((i_start + aaE_size) > nocc) {
                 ib_size = nocc - i_start;
             }
 
-            psio_->read(unit_, "EP2 I_ovvE Integrals", (char*)I_ovvEp[0],
-                        (sizeof(double) * ib_size * nvir * nvir * nE), ovvE_addr, &ovvE_addr);
+            psio_->read(unit_, "EP2 I_ovvE Integrals", (char*)I_ovvEp[0], (sizeof(double) * ib_size * nvir * nvir * nE),
+                        ovvE_addr, &ovvE_addr);
 
-            #pragma omp parallel for private(rank) schedule(dynamic,1) collapse(2) num_threads(num_threads_)
+#pragma omp parallel for private(rank) schedule(dynamic, 1) collapse(2) num_threads(num_threads_)
             for (size_t i = 0; i < ib_size; i++) {
                 for (size_t a = 0; a < nvir; a++) {
-                    #ifdef _OPENMP
-                        rank = omp_get_thread_num();
-                    #endif
-                    # pragma omp simd collapse(2)
+#ifdef _OPENMP
+                    rank = omp_get_thread_num();
+#endif
+#pragma omp simd collapse(2)
                     for (size_t b = 0; b < nvir; b++) {
                         for (size_t e = 0; e < nE; e++) {
                             double Eabi = I_ovvEp[i * nvir + b][a * nE + e];
@@ -435,23 +408,23 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         SharedMatrix I_vooE(new Matrix(ooE_size * nocc, nocc * nE));
         double** I_vooEp = I_vooE->pointer();
 
-        for (size_t a_block = 0; a_block < ooE_nblocks; a_block++){
+        for (size_t a_block = 0; a_block < ooE_nblocks; a_block++) {
             size_t a_start = ooE_size * a_block;
             size_t ab_size = ooE_size;
-            if ((a_start + ooE_size) > nvir){
+            if ((a_start + ooE_size) > nvir) {
                 ab_size = nvir - a_start;
             }
 
-            psio_->read(unit_, "EP2 I_vooE Integrals", (char*)I_vooEp[0],
-                        sizeof(double) * ab_size * nocc * nocc * nE, vooE_addr, &vooE_addr);
+            psio_->read(unit_, "EP2 I_vooE Integrals", (char*)I_vooEp[0], sizeof(double) * ab_size * nocc * nocc * nE,
+                        vooE_addr, &vooE_addr);
 
-            #pragma omp parallel for private(rank) schedule(dynamic,1) collapse(2) num_threads(num_threads_)
+#pragma omp parallel for private(rank) schedule(dynamic, 1) collapse(2) num_threads(num_threads_)
             for (size_t a = 0; a < ab_size; a++) {
                 for (size_t i = 0; i < nocc; i++) {
-                    #ifdef _OPENMP
-                        rank = omp_get_thread_num();
-                    #endif
-                    # pragma omp simd collapse(2)
+#ifdef _OPENMP
+                    rank = omp_get_thread_num();
+#endif
+#pragma omp simd collapse(2)
                     for (size_t j = 0; j < nocc; j++) {
                         for (size_t e = 0; e < nE; e++) {
                             double Eija = I_vooEp[a * nocc + j][i * nE + e];
@@ -470,7 +443,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
 
         // Sum up thread data
         for (size_t i = 0; i < nE; i++) {
-            for (size_t j = 0; j < num_threads_; j++){
+            for (size_t j = 0; j < num_threads_; j++) {
                 Ederiv[i] += deriv_temps[j][i];
                 Esigma[i] += sigma_temps[j][i];
             }
@@ -496,7 +469,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
             if (Eerror[i] > max_error) {
                 max_error = Eerror[i];
             }
-
         }
         mean_error /= (double)nE;
         // printf("\n");
@@ -514,7 +486,7 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
         }
         // printf("\n");
     }
-    outfile->Printf( "   --------------------------------------------\n\n");
+    outfile->Printf("   --------------------------------------------\n\n");
     psio->close(unit_, 0);
 
     // Build output array and remap symmetry
@@ -532,7 +504,6 @@ std::vector<std::vector<std::pair<double, double>>> DFEP2Wavefunction::compute(s
     }
 
     return ret;
-
 }
-
-}}
+}
+}

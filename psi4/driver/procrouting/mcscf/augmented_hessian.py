@@ -33,7 +33,6 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
 
-# np.set_printoptions(precision=5, linewidth=200, threshold=2000, suppress=True)
 
 def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=True):
     """
@@ -101,7 +100,7 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         # Solve Gv = lSv
         v, L = np.linalg.eigh(S)
         mask = v > (np.min(np.abs(v)) * 1.e-10)
-        invL = L[:, mask] * (v[mask] ** -0.5)
+        invL = L[:, mask] * (v[mask]**-0.5)
 
         # Solve in S basis, rotate back
         evals, evecs = np.linalg.eigh(np.dot(invL.T, G).dot(invL))
@@ -143,13 +142,13 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
         new_dx.axpy(lam, orb_grad)
         new_dx.axpy(old_val * lam, new_guess)
 
-        norm_dx = (new_dx.sum_of_squares() / orb_grad_ssq) ** 0.5
+        norm_dx = (new_dx.sum_of_squares() / orb_grad_ssq)**0.5
 
         if print_micro:
             core.print_out("      AH microiter %2d   % 18.12e   % 6.4e   % 6.4e\n" % (microi, evals[idx],
-                                    diff_val / evals[idx], norm_dx))
+                                                                                      diff_val / evals[idx], norm_dx))
 
-        if abs(old_val - wlast) < tol and norm_dx < (tol ** 0.5):
+        if abs(old_val - wlast) < tol and norm_dx < (tol**0.5):
             converged = True
             break
 
@@ -173,4 +172,3 @@ def ah_iteration(mcscf_obj, tol=1e-3, max_iter=15, lindep=1e-14, print_micro=Tru
     new_guess.scale(-1.0)
 
     return converged, microi, new_guess
-

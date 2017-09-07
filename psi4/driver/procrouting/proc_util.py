@@ -222,3 +222,59 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
 
     # True to keep the file
     dvec.close_io_files(True)
+
+
+def prepare_sapt_molecule(sapt_dimer, sapt_basis):
+    """
+    Prepares a dimer molecule for a SAPT computations. Returns the dimer, monomerA, and monomerB.
+    """
+
+    # Shifting to C1 so we need to copy the active molecule
+    sapt_dimer = sapt_dimer.clone()
+    if sapt_dimer.schoenflies_symbol() != 'c1':
+        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+        sapt_dimer.reset_point_group('c1')
+        sapt_dimer.fix_orientation(True)
+        sapt_dimer.fix_com(True)
+        sapt_dimer.update_geometry()
+    else:
+        sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
+        sapt_dimer.fix_orientation(True)
+        sapt_dimer.fix_com(True)
+
+    nfrag = sapt_dimer.nfragments()
+
+    if nfrag == 3:
+        # Midbond case
+        if sapt_basis == 'monomer':
+            raise ValidationError("SAPT basis cannot both be monomer centered and have midbond functions.")
+
+        midbond = sapt_dimer.extract_subsets(3)
+        ztotal = 0
+        for n in range(midbond.natom()):
+            ztotal += midbond.Z(n)
+
+        if ztotal > 0:
+            raise ValidationError("SAPT third monomr must be a midbond function (all ghosts).")
+
+        ghosts = ([2, 3], [1, 3])
+    elif nfrag == 2:
+        # Classical dimer case
+        ghosts = (2, 1)
+    else:
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
+
+    if sapt_basis == 'dimer':
+        monomerA = sapt_dimer.extract_subsets(1, ghosts[0])
+        monomerA.set_name('monomerA')
+        monomerB = sapt_dimer.extract_subsets(2, ghosts[1])
+        monomerB.set_name('monomerB')
+    elif sapt_basis == 'monomer':
+        monomerA = sapt_dimer.extract_subsets(1)
+        monomerA.set_name('monomerA')
+        monomerB = sapt_dimer.extract_subsets(2)
+        monomerB.set_name('monomerB')
+    else:
+        raise ValidationError("SAPT basis %s not recognized" % sapt_basis)
+
+    return (sapt_dimer, monomerA, monomerB)

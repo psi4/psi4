@@ -109,7 +109,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
 
   int nirreps = ref->nirrep();
   int nmo = ref->nmo();
-  char **labels = ref->molecule()->irrep_labels();
+  std::vector<std::string> labels = ref->molecule()->irrep_labels();
   double enuc = ref->molecule()->nuclear_repulsion_energy();
   double escf;
   if(ref->reference_wavefunction()) {
@@ -347,7 +347,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options& options)
             "\t-----\t-----\t------\t------\t------\t------\t------\n");
   for(int i=0; i < nirreps; i++) {
     outfile->Printf("\t %s\t   %d\t    %d\t    %d\t    %d\t    %d\t    %d\n",
-                    labels[i],nmopi[i],frzcpi[i],clsdpi[i],openpi[i],uoccpi[i],frzvpi[i]);
+                    labels[i].c_str(),nmopi[i],frzcpi[i],clsdpi[i],openpi[i],uoccpi[i],frzvpi[i]);
   }
 
   // Transformation

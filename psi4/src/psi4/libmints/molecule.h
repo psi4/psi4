@@ -175,6 +175,8 @@ protected:
     bool lock_frame_;
     /// Whether this molecule has at least one zmatrix entry
     bool zmat_;
+    /// Whether this molecule has at least one cartesian entry
+    bool cart_;
 
 public:
 //****AVC****//
@@ -487,7 +489,7 @@ public:
     /// Returns the symmetry label
     std::string sym_label();
     /// Returns the irrep labels
-    char** irrep_labels();
+    std::vector<std::string> irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }
 
     /**
@@ -615,6 +617,8 @@ public:
     /// The multiplicity of each fragment
     const std::vector<int>& fragment_multiplicities() const { return fragment_multiplicities_; }
 
+    /// Sets whether this molecule contains at least one cartesian entry
+    void set_has_cartesian(bool tf) { cart_ = tf; }
     /// Sets whether this molecule contains at least one zmatrix entry
     void set_has_zmatrix(bool tf) { zmat_ = tf; }
     /// Whether this molecule has at least one zmatrix entry

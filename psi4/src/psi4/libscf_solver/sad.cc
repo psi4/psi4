@@ -384,7 +384,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     // Factional occupation
     SharedVector occ_a, occ_b;
-    if (options_.get_double("SAD_FRAC_OCC")){
+    if (options_.get_bool("SAD_FRAC_OCC")){
         int nfzc = 0, nact = 0;
         if (Z <= 2){
             nfzc = 0;

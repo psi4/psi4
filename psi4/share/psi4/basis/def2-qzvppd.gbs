@@ -4734,6 +4734,7 @@ P  1  1.00
  0.15768923099E-01   1.0000000000
 D  1  1.00
  0.59685507179E-01   1.0000000000
+****
 
 
 !  Def2-ECP  EMSL  Basis Set Exchange Library   4/24/17 11:32 AM
@@ -4746,7 +4747,6 @@ D  1  1.00
 ! Sr(ecp-28), Ba(ecp-46): M. Kaupp, P. V. Schleyer, H. Stoll and H. Preuss, J. Chem. Phys., 1991, 94, 1360?1366.
 ! 
 
-****
 
 RB     0
 RB-ECP     3     28

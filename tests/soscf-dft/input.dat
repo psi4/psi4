@@ -21,11 +21,15 @@ svwn_triplet_energy = -149.58484859711837  #TEST
 compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'SVWN N iter')  #TEST
 compare_values(svwn_triplet_energy, svwn_uhf_energy, 6, 'SVWN Triplet Energy')  #TEST
 
-# pbe_uhf_energy = energy('PBE')
-# pbe_triplet_energy = -149.58484859711837  #TEST
-# compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'PBE N iter')  #TEST
-# compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'PBE Triplet Energy')  #TEST
-# raise Exception()
+pbe_uhf_energy = energy('pbe')
+pbe_triplet_energy = -150.1929673167713588  #TEST
+compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'PBE N iter')  #TEST
+compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'PBE Triplet Energy')  #TEST
+
+pbe_uhf_energy = energy('wB97X-D')
+pbe_triplet_energy = -150.2859202265797478  #TEST
+compare_values(psi4.get_variable("SCF N ITERS") < 8, True, 6, 'wB97X-D N iter')  #TEST
+compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'wB97X-D Triplet Energy')  #TEST
 
 #### RHF Singlet Oxygen energy, singlet
 molecule mol {

@@ -31,6 +31,9 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+#include <vector>
+
 namespace psi { namespace ccdensity {
 
 struct MOInfo {
@@ -44,7 +47,7 @@ struct MOInfo {
     int *uoccpi;        /* no. of unoccupied orbitals per irrep excl. fruocc */
     int *frdocc;        /* no. of frozen core orbitals per irrep */
     int *fruocc;        /* no. of frozen unoccupied orbitals per irrep */
-    char **labels;      /* irrep labels */
+    std::vector<std::string> labels;      /* irrep labels */
     int nfzc;           /* total no. of frozen core orbitals */
     int nfzv;           /* total no. of frozen virtual orbitals */
     int nclsd;          /* total no. of closd shells excl. frdocc */

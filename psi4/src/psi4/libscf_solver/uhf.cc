@@ -977,17 +977,17 @@ void UHF::compute_nos()
     start_occ = (start_occ < 0 ? 0 : start_occ);
     int stop_vir = offset + max_num + 1;
     stop_vir = (int)((size_t)stop_vir >= metric.size() ? metric.size() : stop_vir);
-    char** labels = basisset_->molecule()->irrep_labels();
+    std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
     outfile->Printf( "\n  UHF NO Occupations:\n");
     for (int index = start_occ; index < stop_vir; index++) {
       if (index < offset) {
         outfile->Printf( "  HONO-%-2d: %4d%3s %9.7f\n", offset- index - 1,
-        std::get<2>(metric[index])+1,labels[std::get<1>(metric[index])],
+        std::get<2>(metric[index])+1,labels[std::get<1>(metric[index])].c_str(),
         std::get<0>(metric[index]));
       }
       else {
         outfile->Printf( "  LUNO+%-2d: %4d%3s %9.7f\n", index - offset,
-        std::get<2>(metric[index])+1,labels[std::get<1>(metric[index])],
+        std::get<2>(metric[index])+1,labels[std::get<1>(metric[index])].c_str(),
         std::get<0>(metric[index]));
       }
     }

@@ -392,20 +392,17 @@ void RCIS::print_wavefunctions()
     outfile->Printf("  %5s %11s %14s %14s\n",
         "State", "Description", "dE (H)", "dE (eV)");
     outfile->Printf("  -----------------------------------------------\n");
-    char** labels = basisset_->molecule()->irrep_labels();
+    std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
     for (size_t i = 0; i < states_.size(); i++) {
         double E = std::get<0>(states_[i]);
         int    j = std::get<1>(states_[i]);
         int    m = std::get<2>(states_[i]);
         int    h = std::get<3>(states_[i]);
         outfile->Printf("  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
-            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, pc_hartree2ev * E);
+            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(), E, pc_hartree2ev * E);
     }
     outfile->Printf("  -----------------------------------------------\n");
     outfile->Printf( "\n");
-
-    for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
-
 
     if (debug_ > 1) {
         if (singlets_.size()) {
@@ -439,7 +436,7 @@ void RCIS::print_amplitudes()
     outfile->Printf("  %5s %11s %20s %11s\n",
         "State", "Description", "Excitation", "Amplitude");
     outfile->Printf("  --------------------------------------------------\n");
-    char** labels = basisset_->molecule()->irrep_labels();
+    std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
     for (size_t i = 0; i < states_.size(); i++) {
 //        double E = std::get<0>(states_[i]);
         int    j = std::get<1>(states_[i]);
@@ -474,25 +471,24 @@ void RCIS::print_amplitudes()
             std::sort(amps.begin(), amps.end());
             std::reverse(amps.begin(), amps.end());
             outfile->Printf("  %-5d %1s%-5d(%3s) %5d%-3s -> %5d%-3s %11.3E\n",
-                i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h],
-                std::get<1>(amps[0]) + 1, labels[std::get<2>(amps[0])],
-                std::get<3>(amps[0]) + 1, labels[std::get<4>(amps[0])],
+                i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(),
+                std::get<1>(amps[0]) + 1, labels[std::get<2>(amps[0])].c_str(),
+                std::get<3>(amps[0]) + 1, labels[std::get<4>(amps[0])].c_str(),
                 std::get<0>(amps[0]));
             for (size_t index = 1; index < amps.size(); index++) {
                 outfile->Printf("                    %5d%-3s -> %5d%-3s %11.3E\n",
-                    std::get<1>(amps[index]) + 1, labels[std::get<2>(amps[index])],
-                    std::get<3>(amps[index]) + 1, labels[std::get<4>(amps[index])],
+                    std::get<1>(amps[index]) + 1, labels[std::get<2>(amps[index])].c_str(),
+                    std::get<3>(amps[index]) + 1, labels[std::get<4>(amps[index])].c_str(),
                     std::get<0>(amps[index]));
             }
         } else {
             outfile->Printf("  %-5d %1s%-5d(%3s) %s\n",
-                i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], "No Significant Amplitudes");
+                i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(), "No Significant Amplitudes");
         }
 
         outfile->Printf("  --------------------------------------------------\n");
     }
     outfile->Printf( "\n");
-    for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
 void RCIS::print_transitions()
 {
@@ -515,7 +511,7 @@ void RCIS::print_transitions()
     outfile->Printf("  %5s %11s %11s %11s %11s %14s\n",
         "State", "Description", "mu_x", "mu_y", "mu_z", "f");
     outfile->Printf("  --------------------------------------------------------------------\n");
-    char** labels = basisset_->molecule()->irrep_labels();
+    std::vector<std::string> labels = basisset_->molecule()->irrep_labels();
     for (size_t i = 0; i < states_.size(); i++) {
 
         double E = std::get<0>(states_[i]);
@@ -542,11 +538,10 @@ void RCIS::print_transitions()
         double f = 2.0 / 3.0 * E * (mu[0] * mu[0] + mu[1] * mu[1] + mu[2] * mu[2]);
 
         outfile->Printf("  %-5d %1s%-5d(%3s) %11.3E %11.3E %11.3E %14.6E\n",
-            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], mu[0],mu[1],mu[2],f);
+            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(), mu[0],mu[1],mu[2],f);
     }
     outfile->Printf("  --------------------------------------------------------------------\n");
     outfile->Printf( "\n");
-    for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
 void RCIS::print_densities()
 {

@@ -31,6 +31,9 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+#include <vector>
+
 namespace psi { namespace cchbar {
 
 struct MOInfo {
@@ -42,7 +45,7 @@ struct MOInfo {
   int *uoccpi;        /* no. of unoccupied orbitals per irrep excl. fruocc */
   int *frdocc;        /* no. of frozen core orbitals per irrep */
   int *fruocc;        /* no. of frozen unoccupied orbitals per irrep */
-  char **labels;      /* irrep labels */
+  std::vector<std::string> labels;      /* irrep labels */
   int *occ_sym;       /* relative occupied index symmetry */
   int *aocc_sym;      /* relative alpha occupied index symmetry */
   int *bocc_sym;      /* relative beta occupied index symmetry */

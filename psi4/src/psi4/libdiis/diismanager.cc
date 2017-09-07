@@ -369,7 +369,7 @@ DIISManager::extrapolate(int numQuantities, ...)
     double *coefficients = init_array(dimension);
     double *force = init_array(dimension);
 
-    timer_on("DIISManager::extrapolate: bMatrix setup");
+    timer_on("bMatrix setup");
 
     for(int i = 0; i < _subspace.size(); ++i){
         coefficients[i] = 0.0;
@@ -396,8 +396,8 @@ DIISManager::extrapolate(int numQuantities, ...)
     force[_subspace.size()] = 1.0;
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
 
-    timer_off("DIISManager::extrapolate: bMatrix setup");
-    timer_on("DIISManager::extrapolate: bMatrix pseudoinverse");
+    timer_off("bMatrix setup");
+    timer_on("bMatrix pseudoinverse");
 
     // => Balance <= //
 
@@ -439,9 +439,9 @@ DIISManager::extrapolate(int numQuantities, ...)
         coefficients[i] *= Sp[i];
     }
 
-    timer_off("DIISManager::extrapolate: bMatrix pseudoinverse");
+    timer_off("bMatrix pseudoinverse");
 
-    timer_on("DIISManager::extrapolate: form new data");
+    timer_on("New vector");
 
     dpdfile2 *file2;
     dpdbuf4 *buf4;
@@ -533,7 +533,7 @@ DIISManager::extrapolate(int numQuantities, ...)
         va_end(args);
     }
 
-    timer_off("DIISManager::extrapolate: form new data");
+    timer_off("New vector");
 
     if(print > 2) outfile->Printf( "\n");
     free(coefficients);

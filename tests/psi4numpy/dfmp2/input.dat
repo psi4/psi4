@@ -42,7 +42,6 @@ aux = BasisSet.build(wfn.molecule(), "DF_BASIS_MP2",
 print("Initializing DF_Helper object.")
 dfobj = DF_Helper(wfn.basisset(), aux)
 dfobj.set_method("DIRECT")
-dfobj.set_MO_hint(wfn.basisset().nbf())
 dfobj.initialize()
 
 

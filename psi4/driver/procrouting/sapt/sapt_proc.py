@@ -33,6 +33,7 @@ from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
 from psi4.driver.procrouting.proc import scf_helper
+from psi4.driver.procrouting import proc_util
 
 from . import sapt_jk_terms
 from .sapt_util import print_sapt_hf_summary, print_sapt_dft_summary
@@ -64,16 +65,7 @@ def run_sapt_dft(name, **kwargs):
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
 
-    # Shifting to C1 so we need to copy the active molecule
-    if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
-    # Make sure the geometry doesnt shift or rotate
-    sapt_dimer = sapt_dimer.clone()
-    sapt_dimer.reset_point_group('c1')
-    sapt_dimer.fix_orientation(True)
-    sapt_dimer.fix_com(True)
-    sapt_dimer.update_geometry()
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
 
     # Grab overall settings
     mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
@@ -112,15 +104,6 @@ def run_sapt_dft(name, **kwargs):
     if (core.get_option('SCF', 'REFERENCE') != 'RHF'):
         raise ValidationError('SAPT(DFT) currently only supports restricted references.')
 
-    nfrag = sapt_dimer.nfragments()
-    if nfrag != 2:
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' %
-                              (nfrag))
-
-    monomerA = sapt_dimer.extract_subsets(1, 2)
-    monomerA.set_name('monomerA')
-    monomerB = sapt_dimer.extract_subsets(2, 1)
-    monomerB.set_name('monomerB')
 
     core.IO.set_default_namespace('dimer')
     data = {}

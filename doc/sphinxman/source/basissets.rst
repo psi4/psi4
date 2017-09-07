@@ -314,8 +314,13 @@ brackets. ::
 Copy the section into a |PSIfour| input file and surround it with the
 command ``basis {...}``, as shown below.  Multiple basis sets can be
 specified by adding additional sections within the surrounding brackets.
-Use ``assign`` statements to actually request the basis set. (See
-:srcsample:`mints2` for an example.) ::
+Use ``assign`` statements to actually request the basis set.  This
+``basis {...}`` section replaces the usual ``set basis XXX`` line.
+In a more complex input, if the user needs to call the user-defined
+basis by name, this can be achieved using the syntax ``basis mybas {...}``,
+and then the basis can be recalled later as ``set basis mybas``.
+To use a custom basis set as described in this section, it must be 
+defined prior to its use in a function that performs a computation. ::
 
    basis {
 
@@ -331,6 +336,9 @@ Use ``assign`` statements to actually request the basis set. (See
    [addl]
    ...
    }
+
+The test case :srcsample:`mints2` provides a complete example of 
+user-specified basis sets.
 
 .. _`sec:basissets-ecps`:
 

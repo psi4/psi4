@@ -1421,7 +1421,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_MAXITER", 50);
     /*- SCF type of SAD guess !expert -*/
     options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF");
-    /*- Auxiliary basis for the SAD guess !expert -*/
+    /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
     options.add_bool("SAD_FRAC_OCC", false);
     /*- Auxiliary basis for the SAD guess !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
@@ -2419,7 +2419,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE
       or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
       unless |optking__flexible_g_convergence| is also on.      See Table :ref:`Geometry Convergence <table:optkingconv>` for details. -*/
-      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
+      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT INTERFRAG_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
       /*- Convergence criterion for geometry optmization: maximum force
       (internal coordinates, atomic units). -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
@@ -3324,8 +3324,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       1,2,3,4,5,6,7,8,9,10,55,58,59,60,61,62,63 and 64 being dropped. For
       UHF calculations, the appropriate orbitals are deleted for both spin
       cases. No dropped virtual MOs are currently allowed for gradient or
-      property calculations. -*/
-      options.add_str("CFOUR_DROPMO", "");
+      property calculations.
+      **Psi4 Interface:** The array above is specified in PSI as
+      (white space tolerant) [1,2,3,4,5,6,7,8,9,10,55,58,59,60,61,62,63,64]. -*/
+      options.add("CFOUR_DROPMO", new ArrayType());
 
       //EA_CALC
       //experimental use
@@ -3442,7 +3444,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       for, three in the first block, one in the second block, and two in
       the fourth block. It is also important to note that the ``%excite*``
       input, if present, takes precedence over this keyword.
-      Default: All zeros. -*/
+      Default: All zeros.
+      **Psi4 Interface:** The array above is specified in PSI as
+      (white space tolerant) [3,1,0,2]. -*/
       options.add("CFOUR_ESTATE_SYM", new ArrayType());
 
       /*- Specifies whether just the excitation energies (OFF, =0) or in

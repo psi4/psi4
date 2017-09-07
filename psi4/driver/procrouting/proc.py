@@ -1114,7 +1114,7 @@ def scf_helper(name, **kwargs):
 
     if cast:
 
-        # A use can set "BASIS_GUESS" to True and we default to 3-21G
+        # A user can set "BASIS_GUESS" to True and we default to 3-21G
         if cast is True:
             guessbasis = '3-21G'
         else:
@@ -1225,7 +1225,7 @@ def scf_helper(name, **kwargs):
         # Compute dftd3
         if "_disp_functor" in dir(ref_wfn):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
-            ref_wfn.set_variables("-D Energy", disp_energy)
+            ref_wfn.set_variable("-D Energy", disp_energy)
         ref_wfn.compute_energy()
 
     # broken clean-up
@@ -2391,77 +2391,6 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
-def run_dft_property(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    DFT calculations. This is a simple alias to :py:func:`~proc.run_scf`
-    since DFT properties all handled through oeprop.
-
-    """
-
-    core.tstart()
-    optstash = proc_util.dft_set_reference_local(name)
-
-    properties = kwargs.pop('properties')
-
-    # What response do we need?
-    response_list_vals = list(response.scf_response.property_dicts)
-    oeprop_list_vals = core.OEProp.valid_methods
-
-    oe_properties = []
-    linear_response = []
-    unknown_property = []
-    for prop in properties:
-
-        prop = prop.upper()
-        if prop in response_list_vals:
-            linear_response.append(prop)
-        elif (prop in oeprop_list_vals) or ("MULTIPOLE(" in prop):
-            oe_properties.append(prop)
-        else:
-            unknown_property.append(prop)
-
-    # Throw if we dont know what something is
-    if len(unknown_property):
-        complete_options = oeprop_list_vals + response_list_vals
-        alt_method_name = p4util.text.find_approximate_string_matches(unknown_property[0],
-                                                         complete_options, 2)
-        alternatives = ""
-        if len(alt_method_name) > 0:
-            alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
-
-        raise ValidationError("SCF Property: Feature '%s' is not recognized. %s" % (unknown_property[0], alternatives))
-
-    # Validate OEProp
-    proc_util.oeprop_validator(oe_properties)
-
-    if len(linear_response):
-        optstash_jk = p4util.OptionsState(["SAVE_JK"])
-        core.set_global_option("SAVE_JK", True)
-
-    # Compute the Wavefunction
-    scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
-
-    # Run OEProp
-    oe = core.OEProp(scf_wfn)
-    oe.set_title(name.upper())
-    for prop in oe_properties:
-        oe.add(prop.upper())
-    oe.compute()
-    scf_wfn.oeprop = oe
-
-    # Run Linear Respsonse
-    if len(linear_response):
-        core.prepare_options_for_module("SCF")
-        ret = response.scf_response.cpscf_linear_response(scf_wfn, *linear_response,
-                                                            conv_tol = core.get_global_option("SOLVER_CONVERGENCE"),
-                                                            max_iter = core.get_global_option("SOLVER_MAXITER"),
-                                                            print_lvl = (core.get_global_option("PRINT") + 1))
-        optstash_jk.restore()
-
-    core.tstop()
-    optstash.restore()
-    return scf_wfn
-
 
 def run_scf_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2504,14 +2433,18 @@ def run_scf_property(name, **kwargs):
         raise ValidationError("SCF Property: Feature '%s' is not recognized. %s" % (unknown_property[0], alternatives))
 
     # Validate OEProp
-    proc_util.oeprop_validator(oe_properties)
+    if len(oe_properties):
+        proc_util.oeprop_validator(oe_properties)
 
     if len(linear_response):
         optstash_jk = p4util.OptionsState(["SAVE_JK"])
         core.set_global_option("SAVE_JK", True)
 
     # Compute the Wavefunction
-    scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
+    if name in ["scf", "hf"]:
+        scf_wfn = run_scf(name, scf_do_dipole=False, do_timer=False, **kwargs)
+    else:
+        scf_wfn = run_dft(name, scf_do_dipole=False, do_timer=False, **kwargs)
 
     # Run OEProp
     oe = core.OEProp(scf_wfn)
@@ -3393,43 +3326,17 @@ def run_sapt(name, **kwargs):
     else:
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
-    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
-    sapt_dimer.fix_orientation(True)
-    sapt_dimer.fix_com(True)
 
-    # Shifting to C1 so we need to copy the active molecule
-    if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone()
-        sapt_dimer.reset_point_group('c1')
-        sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)
-        sapt_dimer.update_geometry()
+    sapt_basis = kwargs.pop('sapt_basis', 'dimer')
+
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, sapt_basis)
 
     if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
         raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
-    nfrag = sapt_dimer.nfragments()
-    if nfrag != 2:
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
-
     do_delta_mp2 = True if name.endswith('dmp2') else False
 
-    sapt_basis = 'dimer'
-    if 'sapt_basis' in kwargs:
-        sapt_basis = kwargs.pop('sapt_basis')
-    sapt_basis = sapt_basis.lower()
-
-    if sapt_basis == 'dimer':
-        monomerA = sapt_dimer.extract_subsets(1, 2)
-        monomerA.set_name('monomerA')
-        monomerB = sapt_dimer.extract_subsets(2, 1)
-        monomerB.set_name('monomerB')
-    elif sapt_basis == 'monomer':
-        monomerA = sapt_dimer.extract_subsets(1)
-        monomerA.set_name('monomerA')
-        monomerB = sapt_dimer.extract_subsets(2)
-        monomerB.set_name('monomerB')
+    # raise Exception("")
 
     ri = core.get_option('SCF', 'SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
@@ -3573,35 +3480,15 @@ def run_sapt_ct(name, **kwargs):
     else:
         core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
         sapt_dimer = ref_wfn.molecule()
-    sapt_dimer.update_geometry()  # make sure since mol from wfn, kwarg, or P::e
-    sapt_dimer.fix_orientation(True)
-    sapt_dimer.fix_com(True)
 
-    # Shifting to C1 so we need to copy the active molecule
-    if sapt_dimer.schoenflies_symbol() != 'c1':
-        core.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
-        sapt_dimer = sapt_dimer.clone()
-        sapt_dimer.reset_point_group('c1')
-        sapt_dimer.fix_orientation(True)
-        sapt_dimer.fix_com(True)
-        sapt_dimer.update_geometry()
-
-    if core.get_option('SCF', 'REFERENCE') != 'RHF':
-        raise ValidationError('SAPT requires requires \"reference rhf\".')
-
-    nfrag = sapt_dimer.nfragments()
-    if nfrag != 2:
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
-
-    monomerA = sapt_dimer.extract_subsets(1, 2)
-    monomerA.set_name('monomerA')
-    monomerB = sapt_dimer.extract_subsets(2, 1)
-    monomerB.set_name('monomerB')
-    sapt_dimer.update_geometry()
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
     monomerAm = sapt_dimer.extract_subsets(1)
     monomerAm.set_name('monomerAm')
     monomerBm = sapt_dimer.extract_subsets(2)
     monomerBm.set_name('monomerBm')
+
+    if core.get_option('SCF', 'REFERENCE') != 'RHF':
+        raise ValidationError('SAPT requires requires \"reference rhf\".')
 
     ri = core.get_option('SCF', 'SCF_TYPE')
     df_ints_io = core.get_option('SCF', 'DF_INTS_IO')

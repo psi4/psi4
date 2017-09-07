@@ -113,10 +113,10 @@ if(ENABLE_OPENMP)
         set(_thread_lib mkl_pgi_thread)
     endif()
     if(MKL_COMPILER_BINDINGS MATCHES GNU)
-        set(_thread_lib mkl_gnu_thread)
+        set(_thread_lib mkl_intel_thread)
     endif()
     if(MKL_COMPILER_BINDINGS MATCHES Clang)
-        set(_thread_lib mkl_gnu_thread)
+        set(_thread_lib mkl_intel_thread)
     endif()
     set(_mkl_omp iomp5)
 else()
@@ -170,9 +170,21 @@ else()
     set(_end_group)
 endif()
 
+# LAB Jul 2017: Because gcc thinks that if OpenMP is on, then implicitly one _must_ want their
+#   libgomp, when we'd actually prefer libiomp5 that doesn't give nthread-dependent energies.
+#   MKL advisor says: Mac: iomp5 for icpc, clang, gcc; Linux: iomp5 for icpc, gomp or iomp5 for gcc
+#   We suppress gomp across the board for Mac/gcc, Linux/gcc, Linux/icpc (uses gcc under the hood
+#   and we want gcc-based plugins to inherit iomp5 properly).
+if(ENABLE_OPENMP AND ((MKL_COMPILER_BINDINGS MATCHES GNU) OR
+                      ((UNIX AND NOT APPLE) AND (MKL_COMPILER_BINDINGS MATCHES Intel))))
+    set(_extras "-fno-openmp")
+else()
+    set(_extras)
+endif()
 
 if(NOT ENABLE_GENERIC)
     # prefer mkl_rt.so as covers most situations
+    #set(MKL_BLAS_LIBS mkl_rt ${_mkl_omp} ${_extras} pthread m dl)
     set(MKL_BLAS_LIBS mkl_rt pthread m dl)
 endif()
 # miro: for MKL 10.0.1.014
@@ -201,3 +213,4 @@ unset(_scalapack_lib)
 unset(_blacs_lib)
 unset(_start_group)
 unset(_end_group)
+unset(_extras)
