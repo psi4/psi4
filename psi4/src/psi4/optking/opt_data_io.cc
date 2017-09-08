@@ -83,13 +83,14 @@ bool opt_io_is_present(void) {
   return file_present;
 }
 
-void opt_io_remove(void) {
+void opt_io_remove(bool force) {
 #if defined(OPTKING_PACKAGE_PSI)
   // check retention setting in .psi4rc - maybe the user likes file 1 !
-  if (! psi::_default_psio_manager_->get_specific_retention(1)) {
+  if (! psi::_default_psio_manager_->get_specific_retention(1) || force) {
     if (!psio_open_check(PSI_OPTDATA_FILE_NUM)) // if not open, open it
       psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
     psio_close(PSI_OPTDATA_FILE_NUM, 0);        // close and delete it
+    oprintf_out("\tRemoving binary optimization data file.\n");
   }
 
 #elif defined(OPTKING_PACKAGE_QCHEM)

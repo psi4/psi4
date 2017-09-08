@@ -554,7 +554,7 @@ OptReturnType optking(void) {
 
       delete p_Opt_data;
       opt_intco_dat_remove(); // rm intco definitions
-      opt_io_remove();        // rm optimization data
+      opt_io_remove(true);        // rm optimization data
 
       //if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
       //  exc.override_fragment_mode = true;
