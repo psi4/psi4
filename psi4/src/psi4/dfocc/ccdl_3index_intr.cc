@@ -32,17 +32,16 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccdl_3index_intr()
-{
-
+void DFOCC::ccdl_3index_intr() {
     // defs
     SharedTensor2d K, L, T, U, Tau, V, V2, Vij, Vai, X, Y, Z;
 
     // L(Q,ia) = \sum_{jb} b_jb^Q Ut_ij^ab = \sum_{jb} b(Q,jb) Ut(jb,ia)
     U = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U,l2);
+    ccsd_u2_amps(U, l2);
     T = SharedTensor2d(new Tensor2d("L2 (Q|IA)", nQ, naoccA, navirA));
     T->gemm(false, false, bQiaA, U, 1.0, 0.0);
     T->write(psio_, PSIF_DFOCC_AMPS);
@@ -57,12 +56,12 @@ void DFOCC::ccdl_3index_intr()
     U.reset();
     L = SharedTensor2d(new Tensor2d("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     L->sort(1324, l2, 1.0, 0.0);
-    //GijA->contract442(1, 1, U, l2, 1.0, 0.0);
-    GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 1.0, 0.0);
+    // GijA->contract442(1, 1, U, l2, 1.0, 0.0);
+    GijA->contract(false, true, naoccA, naoccA, naoccA * navirA * navirA, T, L, 1.0, 0.0);
 
     // G_ae = -\sum_{m,n,f} U_mn^ef L_mn^af = L(mn,fa) U(mn,fe)
-    //GabA->contract442(2, 2, l2, U, -1.0, 0.0);
-    GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -1.0, 0.0);
+    // GabA->contract442(2, 2, l2, U, -1.0, 0.0);
+    GabA->contract(true, false, navirA, navirA, naoccA * naoccA * navirA, L, T, -1.0, 0.0);
     T.reset();
     L.reset();
 
@@ -85,7 +84,7 @@ void DFOCC::ccdl_3index_intr()
     // V_ijkl = \sum_{ef} T_ij^ef L_kl^ef
     t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    //t2.reset();
+    // t2.reset();
     U = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     U->sort(1324, t2, 1.0, 0.0);
     L = SharedTensor2d(new Tensor2d("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
@@ -99,7 +98,7 @@ void DFOCC::ccdl_3index_intr()
     // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) b_mn^Q = B(Q,mn) Y(mn,ij)
     X = SharedTensor2d(new Tensor2d("X <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
     // X_imjn = 2*V_imjn - V_imnj
-    X->tei_cs1_anti_symm(V,V);
+    X->tei_cs1_anti_symm(V, V);
     V.reset();
     // Y_mnij = X_imjn
     Y = SharedTensor2d(new Tensor2d("Y <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
@@ -113,10 +112,10 @@ void DFOCC::ccdl_3index_intr()
     // Build V_iajb
     // V_iajb = 1/2 \sum_{me} T'(ib,me) L'(me,ja)
     T = SharedTensor2d(new Tensor2d("T2p (IB|JA)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(T,t2);
+    ccsd_t2_prime_amps(T, t2);
     t2.reset();
     L = SharedTensor2d(new Tensor2d("L2p (IB|JA)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(L,l2);
+    ccsd_t2_prime_amps(L, l2);
     X = SharedTensor2d(new Tensor2d("X (IB|JA)", naoccA, navirA, naoccA, navirA));
     X->gemm(false, false, T, L, 0.5, 0.0);
     T.reset();
@@ -151,7 +150,7 @@ void DFOCC::ccdl_3index_intr()
     t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     L = SharedTensor2d(new Tensor2d("L2p (IB|JA)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(L,l2);
+    ccsd_t2_prime_amps(L, l2);
     X->gemm(false, false, t2, L, 0.5, 1.0);
     t2.reset();
     L.reset();
@@ -176,7 +175,8 @@ void DFOCC::ccdl_3index_intr()
     Vai->write(psio_, PSIF_DFOCC_AMPS);
     Vai.reset();
 
-    //outfile->Printf("\t3indices done.\n");
+    // outfile->Printf("\t3indices done.\n");
 
-}// end ccdl_3index_intr
-}} // End Namespaces
+}  // end ccdl_3index_intr
+}  // namespace dfoccwave
+}  // namespace psi

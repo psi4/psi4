@@ -216,6 +216,21 @@ and cholesky-decomposed coupled-cluster singles and doubles method
   U. Bozkaya,   *J. Chem. Phys.* **144**, 144108 (2016).
   (doi: `10.1063/1.4945706 <http://dx.doi.org/10.1063/1.4945706>`_).
 
+Implementation of analytic gradients for the density-fitted 
+coupled-cluster singles and doubles method
+
+* "Analytic energy gradients for the coupled-cluster singles and doubles method with
+  the density-fitting approximation," 
+  U. Bozkaya and C. D. Sherrill,   *J. Chem. Phys.* **144**, 174103 (2016).
+  (doi: `10.1063/1.4948318 <http://dx.doi.org/10.1063/1.4948318>`_).
+
+Implementation of analytic gradients for the density-fitted 
+coupled-cluster singles and doubles with perturbative triples method
+
+* "Analytic energy gradients for the coupled-cluster singles and doubles 
+  with perturbative triples method with the density-fitting approximation," 
+  U. Bozkaya and C. D. Sherrill,   *J. Chem. Phys.* **147**, 044104 (2017).
+  (doi: `10.1063/1.4994918 <http://dx.doi.org/10.1063/1.4994918>`_).
  
 Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -595,7 +610,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CCSD [#f10]_            | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF      | CONV           | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
+    | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF      | CONV/DF [#f8]_ | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+

@@ -32,11 +32,10 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccd_F_intr_low()
-{
-
+void DFOCC::ccd_F_intr_low() {
     // defs
     SharedTensor2d K, T, U, Tau;
 
@@ -55,7 +54,8 @@ void DFOCC::ccd_F_intr_low()
     K.reset();
     Tau.reset();
 
-    //outfile->Printf("\tF int done.\n");
-}// end ccd_F_intr_low
+    // outfile->Printf("\tF int done.\n");
+}  // end ccd_F_intr_low
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

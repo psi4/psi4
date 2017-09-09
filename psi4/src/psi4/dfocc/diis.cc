@@ -34,79 +34,79 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new, SharedTensor1d &errvec_new)
-{ 
+void DFOCC::diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new,
+                 SharedTensor1d &errvec_new) {
+    /********************************************************************************************/
+    /************************** memalloc ********************************************************/
+    /********************************************************************************************/
+    SharedTensor2d Bmat = SharedTensor2d(new Tensor2d("DIIS B Matrix", nvar, nvar));
+    SharedTensor1d Cvec = SharedTensor1d(new Tensor1d("DIIS C Vector", nvar));
+    SharedTensor1d vrow = SharedTensor1d(new Tensor1d("DIIS vrow", dimvec));
+    SharedTensor1d vcol = SharedTensor1d(new Tensor1d("DIIS vcol", dimvec));
 
-/********************************************************************************************/
-/************************** memalloc ********************************************************/
-/********************************************************************************************/ 
-        SharedTensor2d Bmat = SharedTensor2d(new Tensor2d("DIIS B Matrix", nvar, nvar));
-        SharedTensor1d Cvec = SharedTensor1d(new Tensor1d("DIIS C Vector", nvar));
-        SharedTensor1d vrow = SharedTensor1d(new Tensor1d("DIIS vrow", dimvec));
-        SharedTensor1d vcol = SharedTensor1d(new Tensor1d("DIIS vcol", dimvec));
-
-/********************************************************************************************/
-/************************** Form B matrix ***************************************************/
-/********************************************************************************************/
-        // num_vecs/num_vecs part
-	for(int i = 0; i < num_vecs; i++){
-          vrow->row_vector(errvecs, i); 
-	  for(int j = 0; j < num_vecs; j++){
-            vcol->row_vector(errvecs, j); 
-            double value = vrow->dot(vcol); 
+    /********************************************************************************************/
+    /************************** Form B matrix ***************************************************/
+    /********************************************************************************************/
+    // num_vecs/num_vecs part
+    for (int i = 0; i < num_vecs; i++) {
+        vrow->row_vector(errvecs, i);
+        for (int j = 0; j < num_vecs; j++) {
+            vcol->row_vector(errvecs, j);
+            double value = vrow->dot(vcol);
             Bmat->set(i, j, value);
-	  }
-	}
+        }
+    }
 
-	for(int i = 0; i < num_vecs; i++){
-          Bmat->set(nvar - 1, i, -1.0);
-          Bmat->set(i, nvar - 1, -1.0);
-	}
-	
-        Bmat->set(nvar - 1, nvar - 1, 0.0);
-         
-	// level shift
-	if (level_shift == "TRUE") {
-	  //for(int i = 0; i < num_vecs; i++) Bmat->set(i, i, -lshift_parameter);// this also works
-	  for(int i = 0; i < num_vecs; i++) Bmat->set(i, i, Bmat->get(i, i) * (1 + lshift_parameter) ); 
-	}
-	
-        // Form the c vector
-	Cvec->set(nvar - 1,  -1.0);
-	
-/********************************************************************************************/
-/************************** Solve LINEQ *****************************************************/
-/********************************************************************************************/
-         if (lineq == "CDGESV") Bmat->cdgesv(Cvec);
-         else if (lineq == "FLIN") {
-            double det = 0.0;      
-            Bmat->lineq_flin(Cvec, &det);
-            if (std::fabs(det) < DIIS_MIN_DET) { 
-               outfile->Printf( "Warning!!! Diis matrix is near-singular\n");
-               outfile->Printf( "Determinant is %6.3E\n", det);
-               
-            }
-          }
-          else if (lineq == "POPLE") Bmat->lineq_pople(Cvec, num_vecs, cutoff);
-       
-/********************************************************************************************/
-/************************** Extrapolate *****************************************************/
-/********************************************************************************************/
-	for(int i = 0; i < dimvec; i++){
-          double sum1 = 0.0;
-          double sum2 = 0.0;
-	  for(int j = 0; j < num_vecs; j++){    
-	    sum1 += Cvec->get(j) * vecs->get(j,i);
-            sum2 += Cvec->get(j) * errvecs->get(j,i);
-	  }  
-          vec_new->set(i, sum1);
-          errvec_new->set(i, sum2);
-	}
+    for (int i = 0; i < num_vecs; i++) {
+        Bmat->set(nvar - 1, i, -1.0);
+        Bmat->set(i, nvar - 1, -1.0);
+    }
 
-/********************************************************************************************/
-/********************************************************************************************/
+    Bmat->set(nvar - 1, nvar - 1, 0.0);
 
+    // level shift
+    if (level_shift == "TRUE") {
+        // for(int i = 0; i < num_vecs; i++) Bmat->set(i, i, -lshift_parameter);// this also works
+        for (int i = 0; i < num_vecs; i++) Bmat->set(i, i, Bmat->get(i, i) * (1 + lshift_parameter));
+    }
+
+    // Form the c vector
+    Cvec->set(nvar - 1, -1.0);
+
+    /********************************************************************************************/
+    /************************** Solve LINEQ *****************************************************/
+    /********************************************************************************************/
+    if (lineq == "CDGESV")
+        Bmat->cdgesv(Cvec);
+    else if (lineq == "FLIN") {
+        double det = 0.0;
+        Bmat->lineq_flin(Cvec, &det);
+        if (std::fabs(det) < DIIS_MIN_DET) {
+            outfile->Printf("Warning!!! Diis matrix is near-singular\n");
+            outfile->Printf("Determinant is %6.3E\n", det);
+        }
+    } else if (lineq == "POPLE")
+        Bmat->lineq_pople(Cvec, num_vecs, cutoff);
+
+    /********************************************************************************************/
+    /************************** Extrapolate *****************************************************/
+    /********************************************************************************************/
+    for (int i = 0; i < dimvec; i++) {
+        double sum1 = 0.0;
+        double sum2 = 0.0;
+        for (int j = 0; j < num_vecs; j++) {
+            sum1 += Cvec->get(j) * vecs->get(j, i);
+            sum2 += Cvec->get(j) * errvecs->get(j, i);
+        }
+        vec_new->set(i, sum1);
+        errvec_new->set(i, sum2);
+    }
+
+    /********************************************************************************************/
+    /********************************************************************************************/
 }
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

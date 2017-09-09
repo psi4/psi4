@@ -32,11 +32,10 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsd_t1_amps()
-{
-
+void DFOCC::ccsd_t1_amps() {
     // defs
     SharedTensor2d K, T1, T, U, Tau;
 
@@ -48,7 +47,7 @@ void DFOCC::ccsd_t1_amps()
 
     // t_i^a <= \sum_{m,e} u_im^ae Fme
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U,t2);
+    ccsd_u2_amps(U, t2);
     t1newA->gemv(false, U, FiaA, 1.0, 1.0);
     U.reset();
 
@@ -78,13 +77,14 @@ void DFOCC::ccsd_t1_amps()
     Tau.reset();
 
     // Denom
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int a = 0 ; a < navirA; ++a){
+    for (int i = 0; i < naoccA; ++i) {
+        for (int a = 0; a < navirA; ++a) {
             double value = FockA->get(i + nfrzc, i + nfrzc) - FockA->get(a + noccA, a + noccA);
             t1newA->set(i, a, t1newA->get(i, a) / value);
         }
     }
-    //t1newA->print();
+    // t1newA->print();
 
-}// end ccsd_t1_amps
-}} // End Namespaces
+}  // end ccsd_t1_amps
+}  // namespace dfoccwave
+}  // namespace psi

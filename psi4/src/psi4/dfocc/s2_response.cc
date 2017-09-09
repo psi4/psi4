@@ -33,14 +33,12 @@
 
 #include <cmath>
 
-
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::s2_response()
-{
-
+void DFOCC::s2_response() {
     outfile->Printf("\tComputing <S**2>...\n");
 
     timer_on("s2_response");
@@ -98,8 +96,10 @@ void DFOCC::s2_response()
     // Compute amplitude contribution
     T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
-    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AB_ump2_direct(T);
-    else T->read(psio_, PSIF_DFOCC_AMPS);
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
+        t2AB_ump2_direct(T);
+    else
+        T->read(psio_, PSIF_DFOCC_AMPS);
     T2->sort(1423, T, 1.0, 0.0);
     T.reset();
 
@@ -124,8 +124,8 @@ void DFOCC::s2_response()
     double mult_resp = 0.0;
     double mult_proj = 0.0;
 
-    value2 = 1.0 + (4.0*s2_resp);
-    value3 = 1.0 + (4.0*s2_proj);
+    value2 = 1.0 + (4.0 * s2_resp);
+    value3 = 1.0 + (4.0 * s2_proj);
     s_qn_resp = 0.5 * (std::sqrt(value2) - 1.0);
     s_qn_proj = 0.5 * (std::sqrt(value3) - 1.0);
     mult_resp = std::sqrt(value2);
@@ -140,16 +140,13 @@ void DFOCC::s2_response()
     outfile->Printf("\tSpin mult. (resp)      : %12.8f\n", mult_resp);
     outfile->Printf("\tSpin mult. (proj)      : %12.8f\n", mult_proj);
 
-
     timer_off("s2_response");
-} // s2_response
+}  // s2_response
 
 //=========================
 // <S**2> Lagrangian
 //=========================
-void DFOCC::s2_lagrangian()
-{
-
+void DFOCC::s2_lagrangian() {
     outfile->Printf("\tComputing <S**2>_lagrangian...\n");
 
     timer_on("s2_lagrangian");
@@ -196,17 +193,17 @@ void DFOCC::s2_lagrangian()
     // S_Vo
     SharedTensor2d SvoAB = SharedTensor2d(new Tensor2d("S <V|o>", nvirA, noccB));
     for (int a = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccB; i++) {
-              SvoAB->set(a, i, SmoAB->get(a + noccA, i));
-         }
+        for (int i = 0; i < noccB; i++) {
+            SvoAB->set(a, i, SmoAB->get(a + noccA, i));
+        }
     }
 
     // S_vO
     SharedTensor2d SvoBA = SharedTensor2d(new Tensor2d("S <v|O>", nvirB, noccA));
     for (int a = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccA; i++) {
-              SvoBA->set(a, i, SmoBA->get(a + noccB, i));
-         }
+        for (int i = 0; i < noccA; i++) {
+            SvoBA->set(a, i, SmoBA->get(a + noccB, i));
+        }
     }
 
     //=========================
@@ -231,8 +228,10 @@ void DFOCC::s2_lagrangian()
     // Compute amplitude contribution
     T = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
     T2 = SharedTensor2d(new Tensor2d("T2_1 (Ib,jA)", naoccA, navirB, naoccB, navirA));
-    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") t2AB_ump2_direct(T);
-    else T->read(psio_, PSIF_DFOCC_AMPS);
+    if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
+        t2AB_ump2_direct(T);
+    else
+        T->read(psio_, PSIF_DFOCC_AMPS);
     T->read(psio_, PSIF_DFOCC_AMPS);
     T2->sort(1423, T, 1.0, 0.0);
     T.reset();
@@ -252,7 +251,7 @@ void DFOCC::s2_lagrangian()
     SiaAB.reset();
     s2_proj += value;
     s2_resp += 0.5 * value;
-    //s2_lag += 2.0 * value;
+    // s2_lag += 2.0 * value;
     s2_lag += value;
 
     //=========================
@@ -262,26 +261,26 @@ void DFOCC::s2_lagrangian()
     SharedTensor2d SGS;
     SGS = SharedTensor2d(new Tensor2d("SGS <O|O>", noccA, noccA));
     SGS->triple_gemm(SooAB, G1c_ooB, SooBA);
-    //s2_lag -= SGS->trace();
+    // s2_lag -= SGS->trace();
     s2_lag -= 0.5 * SGS->trace();
 
     // <S**2> -= \sum_{I,e,f} S_If Gc_fe S_eI
     SGS->zero();
     SGS->triple_gemm(SovAB, G1c_vvB, SvoBA);
-    //s2_lag -= SGS->trace();
+    // s2_lag -= SGS->trace();
     s2_lag -= 0.5 * SGS->trace();
     SGS.reset();
 
     // <S**2> -= \sum_{i,M,N} S_iN Gc_NM S_Mi
     SGS = SharedTensor2d(new Tensor2d("SGS <o|o>", noccB, noccB));
     SGS->triple_gemm(SooBA, G1c_ooA, SooAB);
-    //s2_lag -= SGS->trace();
+    // s2_lag -= SGS->trace();
     s2_lag -= 0.5 * SGS->trace();
 
     // <S**2> -= \sum_{i,E,F} S_iF Gc_FE S_Ei
     SGS->zero();
     SGS->triple_gemm(SovBA, G1c_vvA, SvoAB);
-    //s2_lag -= SGS->trace();
+    // s2_lag -= SGS->trace();
     s2_lag -= 0.5 * SGS->trace();
     SGS.reset();
 
@@ -292,8 +291,8 @@ void DFOCC::s2_lagrangian()
     SovBA.reset();
     SvoAB.reset();
     SvoBA.reset();
-    //SaiAB.reset();
-    //SaiBA.reset();
+    // SaiAB.reset();
+    // SaiBA.reset();
 
     //=========================
     // Comput Multiplicities
@@ -308,9 +307,9 @@ void DFOCC::s2_lagrangian()
     double mult_proj = 0.0;
     double mult_lag = 0.0;
 
-    value2 = 1.0 + (4.0*s2_resp);
-    value3 = 1.0 + (4.0*s2_proj);
-    value4 = 1.0 + (4.0*s2_lag);
+    value2 = 1.0 + (4.0 * s2_resp);
+    value3 = 1.0 + (4.0 * s2_proj);
+    value4 = 1.0 + (4.0 * s2_lag);
     s_qn_resp = 0.5 * (std::sqrt(value2) - 1.0);
     s_qn_proj = 0.5 * (std::sqrt(value3) - 1.0);
     s_qn_lag = 0.5 * (std::sqrt(value4) - 1.0);
@@ -330,8 +329,8 @@ void DFOCC::s2_lagrangian()
     outfile->Printf("\tSpin mult. (proj)        : %12.8f\n", mult_proj);
     outfile->Printf("\tSpin mult. (lagr)        : %12.8f\n", mult_lag);
 
-
     timer_off("s2_lagrangian");
-} // s2_lagrangian
+}  // s2_lagrangian
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

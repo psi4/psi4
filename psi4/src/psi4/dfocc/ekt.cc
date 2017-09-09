@@ -32,13 +32,14 @@
 #include <cmath>
 #include "ekt.h"
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
 /********************************************************************************************/
 /************************** 1d array ********************************************************/
 /********************************************************************************************/
-Ektip::Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, const SharedTensor2d& Gamma, double scale_gf, double scale_ps)
-{
+Ektip::Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, const SharedTensor2d& Gamma,
+             double scale_gf, double scale_ps) {
     name_ = name;
     nocc_ = nocc;
     norb_ = norb;
@@ -70,10 +71,9 @@ Ektip::Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, 
     // compute ekt
     compute_ektip();
 
-}//
+}  //
 
-Ektip::~Ektip()
-{
+Ektip::~Ektip() {
     GF_.reset();
     G1_.reset();
     Uvec_.reset();
@@ -89,10 +89,9 @@ Ektip::~Ektip()
     diagG1_.reset();
     ps_vec_.reset();
     ps_occ_.reset();
-}//
+}  //
 
-void Ektip::compute_ektip()
-{
+void Ektip::compute_ektip() {
     // scale
     GF_->scale(scale_);
 
@@ -123,16 +122,16 @@ void Ektip::compute_ektip()
 
     // Make sure all eigenvalues are positive
     for (int i = 0; i < norb_; ++i) {
-         if (diagG1_->get(i) < 0.0) diagG1_->set(i, -1.0*diagG1_->get(i));
+        if (diagG1_->get(i) < 0.0) diagG1_->set(i, -1.0 * diagG1_->get(i));
     }
 
     // Form g^(-1/2)
     for (int i = 0; i < norb_; ++i) {
-         diagG1_->set(i, 1/std::sqrt(diagG1_->get(i)));
+        diagG1_->set(i, 1 / std::sqrt(diagG1_->get(i)));
     }
 
     for (int i = 0; i < norb_; ++i) {
-         G1half_->set(i, i, diagG1_->get(i));
+        G1half_->set(i, i, diagG1_->get(i));
     }
 
     temp_->gemm(false, true, G1half_, Uvec_, 1.0, 0.0);
@@ -153,49 +152,48 @@ void Ektip::compute_ektip()
     // scale for RHF ref where G_pq = G_PQ + G_pq
     PS_->scale(scale2_);
     for (int i = 0; i < norb_; ++i) {
-         ps_vec_->set(i, PS_->get(i,i));
+        ps_vec_->set(i, PS_->get(i, i));
     }
 
     // Sort pole strength
     // Sort to descending order
     for (int i = 0; i < norb_; ++i) {
-         for(int j = norb_-1; j > i; --j) {
-             if (ps_vec_->get(j-1) < ps_vec_->get(j)) {
-                 double dum = eorb_->get(j-1);
-                 eorb_->set(j-1, eorb_->get(j));
-                 eorb_->set(j,dum);
+        for (int j = norb_ - 1; j > i; --j) {
+            if (ps_vec_->get(j - 1) < ps_vec_->get(j)) {
+                double dum = eorb_->get(j - 1);
+                eorb_->set(j - 1, eorb_->get(j));
+                eorb_->set(j, dum);
 
-                 double dum2 = ps_vec_->get(j-1);
-                 ps_vec_->set(j-1, ps_vec_->get(j));
-                 ps_vec_->set(j,dum2);
-             }
-         }
+                double dum2 = ps_vec_->get(j - 1);
+                ps_vec_->set(j - 1, ps_vec_->get(j));
+                ps_vec_->set(j, dum2);
+            }
+        }
     }
 
     // Re-Sort occupied orbitals to energy order
     // Copy
     for (int i = 0; i < nocc_; ++i) {
-         eocc_->set(i, eorb_->get(i));
-         ps_occ_->set(i, ps_vec_->get(i));
+        eocc_->set(i, eorb_->get(i));
+        ps_occ_->set(i, ps_vec_->get(i));
     }
 
     // Sort to ascending order
     for (int i = 0; i < nocc_; ++i) {
-         for(int j = nocc_-1; j > i; --j) {
-             if (eocc_->get(j-1) > eocc_->get(j)) {
-                 double dum = eocc_->get(j-1);
-                 eocc_->set(j-1, eocc_->get(j));
-                 eocc_->set(j,dum);
+        for (int j = nocc_ - 1; j > i; --j) {
+            if (eocc_->get(j - 1) > eocc_->get(j)) {
+                double dum = eocc_->get(j - 1);
+                eocc_->set(j - 1, eocc_->get(j));
+                eocc_->set(j, dum);
 
-                 double dum2 = ps_occ_->get(j-1);
-                 ps_occ_->set(j-1, ps_occ_->get(j));
-                 ps_occ_->set(j,dum2);
-             }
-         }
+                double dum2 = ps_occ_->get(j - 1);
+                ps_occ_->set(j - 1, ps_occ_->get(j));
+                ps_occ_->set(j, dum2);
+            }
+        }
     }
 
-}//
+}  //
 
-
-}} // End Namespaces
-
+}  // namespace dfoccwave
+}  // namespace psi

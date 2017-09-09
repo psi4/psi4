@@ -32,24 +32,24 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccd_3index_intr()
-{
-
+void DFOCC::ccd_3index_intr() {
     // defs
     SharedTensor2d T, U;
 
     // T(Q,ia) = \sum_{jb} b_jb^Q u_ij^ab = \sum_{jb} b(Q,jb) U(jb,ia)
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U,t2);
+    ccsd_u2_amps(U, t2);
     T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
     T->gemm(false, false, bQiaA, U, 1.0, 0.0);
     U.reset();
     T->write(psio_, PSIF_DFOCC_AMPS);
     T.reset();
 
-    //outfile->Printf("\t3indices done.\n");
+    // outfile->Printf("\t3indices done.\n");
 
-}// end ccd_3index_intr
-}} // End Namespaces
+}  // end ccd_3index_intr
+}  // namespace dfoccwave
+}  // namespace psi

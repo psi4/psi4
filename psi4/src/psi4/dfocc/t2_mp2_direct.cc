@@ -33,10 +33,10 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::t2_rmp2_direct(SharedTensor2d& T)
-{
+void DFOCC::t2_rmp2_direct(SharedTensor2d& T) {
     SharedTensor2d K;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order
@@ -45,13 +45,12 @@ void DFOCC::t2_rmp2_direct(SharedTensor2d& T)
     T->copy(K);
     T->apply_denom_chem(nfrzc, noccA, FockA);
     timer_off("T2_MP2");
-} // end t2_rmp2_direct
+}  // end t2_rmp2_direct
 
 //=======================================================
 // U(ia,jb) = 2*T(ia,jb) - T(ib,ja): T(ia,jb)= T_ij^ab
 //=======================================================
-void DFOCC::u2_rmp2_direct(SharedTensor2d& T, SharedTensor2d& U)
-{
+void DFOCC::u2_rmp2_direct(SharedTensor2d& T, SharedTensor2d& U) {
     SharedTensor2d K;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order
@@ -65,13 +64,12 @@ void DFOCC::u2_rmp2_direct(SharedTensor2d& T, SharedTensor2d& U)
     U->scale(-1.0);
     U->axpy(T, 2.0);
     timer_off("T2_MP2");
-} // end u2_rmp2_direct
+}  // end u2_rmp2_direct
 
 //=======================================================
 // U(ia,jb) = 2*T(ia,jb) - T(ib,ja): T(ia,jb)= T_ij^ab
 //=======================================================
-void DFOCC::u2_rmp2_direct(SharedTensor2d& U)
-{
+void DFOCC::u2_rmp2_direct(SharedTensor2d& U) {
     SharedTensor2d K, T;
     timer_on("T2_MP2");
     // Build amplitudes in Mulliken order
@@ -87,13 +85,12 @@ void DFOCC::u2_rmp2_direct(SharedTensor2d& U)
     U->axpy(T, 2.0);
     T.reset();
     timer_off("T2_MP2");
-} // end u2_rmp2_direct
+}  // end u2_rmp2_direct
 
 //=======================================================
 //          T2AA
 //=======================================================
-void DFOCC::t2AA_ump2_direct(SharedTensor2d& T)
-{
+void DFOCC::t2AA_ump2_direct(SharedTensor2d& T) {
     SharedTensor2d K, L, M;
     timer_on("T2AA_MP2");
     L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
@@ -107,13 +104,12 @@ void DFOCC::t2AA_ump2_direct(SharedTensor2d& T)
     T->copy(K);
     T->apply_denom(nfrzc, noccA, FockA);
     timer_off("T2AA_MP2");
-} // end t2AA_ump2_direct
+}  // end t2AA_ump2_direct
 
 //=======================================================
 //          T2BB
 //=======================================================
-void DFOCC::t2BB_ump2_direct(SharedTensor2d& T)
-{
+void DFOCC::t2BB_ump2_direct(SharedTensor2d& T) {
     SharedTensor2d K, L, M;
     timer_on("T2BB_MP2");
     L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB));
@@ -127,13 +123,12 @@ void DFOCC::t2BB_ump2_direct(SharedTensor2d& T)
     T->copy(K);
     T->apply_denom(nfrzc, noccB, FockB);
     timer_off("T2BB_MP2");
-} // end t2BB_ump2_direct
+}  // end t2BB_ump2_direct
 
 //=======================================================
 //          T2AB
 //=======================================================
-void DFOCC::t2AB_ump2_direct(SharedTensor2d& T)
-{
+void DFOCC::t2AB_ump2_direct(SharedTensor2d& T) {
     SharedTensor2d K, L;
     timer_on("T2AB_MP2");
     L = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB));
@@ -144,6 +139,7 @@ void DFOCC::t2AB_ump2_direct(SharedTensor2d& T)
     T->copy(K);
     T->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
     timer_off("T2AB_MP2");
-} // end t2AB_ump2_direct
+}  // end t2AB_ump2_direct
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

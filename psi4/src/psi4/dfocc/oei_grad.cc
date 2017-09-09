@@ -46,36 +46,34 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::oei_grad()
-{
-
-/********************************************************************************************/
-/************************** Gradient ********************************************************/
-/********************************************************************************************/
-    //outfile->Printf("\tComputing analytic gradients...\n");
+void DFOCC::oei_grad() {
+    /********************************************************************************************/
+    /************************** Gradient ********************************************************/
+    /********************************************************************************************/
+    // outfile->Printf("\tComputing analytic gradients...\n");
     //
 
     // Pointers
     double** Dp = G1ao->to_block_matrix();
     double** Wp = GFao->to_block_matrix();
 
-/********************************************************************************************/
-/************************** Nuclear Gradient ************************************************/
-/********************************************************************************************/
+    /********************************************************************************************/
+    /************************** Nuclear Gradient ************************************************/
+    /********************************************************************************************/
     // => Nuclear Gradient <= //
     gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
     gradients["Nuclear"]->set_name("Nuclear Gradient");
     gradients["Nuclear"]->print_atom_vector();
 
-/********************************************************************************************/
-/************************** Kinetic Gradient ************************************************/
-/********************************************************************************************/
+    /********************************************************************************************/
+    /************************** Kinetic Gradient ************************************************/
+    /********************************************************************************************/
     // => Kinetic Gradient <= //
     timer_on("Grad: T");
     {
-
         gradients["Kinetic"] = SharedMatrix(gradients["Nuclear"]->clone());
         gradients["Kinetic"]->set_name("Kinetic Gradient");
         gradients["Kinetic"]->zero();
@@ -87,8 +85,7 @@ void DFOCC::oei_grad()
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
-
-                Tint->compute_shell_deriv1(P,Q);
+                Tint->compute_shell_deriv1(P, Q);
 
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
@@ -149,9 +146,9 @@ void DFOCC::oei_grad()
     gradients["Kinetic"]->print_atom_vector();
     timer_off("Grad: T");
 
-/********************************************************************************************/
-/************************** Potential Gradient **********************************************/
-/********************************************************************************************/
+    /********************************************************************************************/
+    /************************** Potential Gradient **********************************************/
+    /********************************************************************************************/
     // => Potential Gradient <= //
     timer_on("Grad: V");
     {
@@ -161,9 +158,9 @@ void DFOCC::oei_grad()
 
         // Thread count
         int threads = 1;
-        #ifdef _OPENMP
-            threads = Process::environment.get_n_threads();
-        #endif
+#ifdef _OPENMP
+        threads = Process::environment.get_n_threads();
+#endif
 
         // Potential derivatives
         std::vector<std::shared_ptr<OneBodyAOInt> > Vint;
@@ -174,25 +171,24 @@ void DFOCC::oei_grad()
         }
 
         // Lower Triangle
-        std::vector<std::pair<int,int> > PQ_pairs;
+        std::vector<std::pair<int, int> > PQ_pairs;
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
-                PQ_pairs.push_back(std::pair<int,int>(P,Q));
+                PQ_pairs.push_back(std::pair<int, int>(P, Q));
             }
         }
 
-        #pragma omp parallel for schedule(dynamic) num_threads(threads)
+#pragma omp parallel for schedule(dynamic) num_threads(threads)
         for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-
             int P = PQ_pairs[PQ].first;
             int Q = PQ_pairs[PQ].second;
 
             int thread = 0;
-            #ifdef _OPENMP
-                thread = omp_get_thread_num();
-            #endif
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
 
-            Vint[thread]->compute_shell_deriv1(P,Q);
+            Vint[thread]->compute_shell_deriv1(P, Q);
             const double* buffer = Vint[thread]->buffer();
 
             int nP = basisset_->shell(P).nfunction();
@@ -229,9 +225,9 @@ void DFOCC::oei_grad()
     gradients["Potential"]->print_atom_vector();
     timer_off("Grad: V");
 
-/********************************************************************************************/
-/************************** Overlap Gradient ************************************************/
-/********************************************************************************************/
+    /********************************************************************************************/
+    /************************** Overlap Gradient ************************************************/
+    /********************************************************************************************/
     // => Overlap Gradient <= //
     timer_on("Grad: S");
     {
@@ -246,8 +242,7 @@ void DFOCC::oei_grad()
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
-
-                Sint->compute_shell_deriv1(P,Q);
+                Sint->compute_shell_deriv1(P, Q);
 
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
@@ -311,14 +306,12 @@ void DFOCC::oei_grad()
     // mem free
     free_block(Dp);
     free_block(Wp);
-/********************************************************************************************/
-/********************************************************************************************/
-/********************************************************************************************/
+    /********************************************************************************************/
+    /********************************************************************************************/
+    /********************************************************************************************/
 
-//outfile->Printf("\toei_grad is done. \n");
-}// end
+    // outfile->Printf("\toei_grad is done. \n");
+}  // end
 
-
-}} // End Namespaces
-
-
+}  // namespace dfoccwave
+}  // namespace psi

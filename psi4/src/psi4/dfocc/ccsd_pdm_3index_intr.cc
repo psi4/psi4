@@ -32,11 +32,10 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsd_pdm_3index_intr()
-{
-
+void DFOCC::ccsd_pdm_3index_intr() {
     // defs
     SharedTensor2d K, L, T, U, Tau, V, V2, Vij, Vai, Vab, X, Y, Z;
     SharedTensor2d Vijka, Vijak;
@@ -56,7 +55,7 @@ void DFOCC::ccsd_pdm_3index_intr()
 
     // L(Q,ia) = \sum_{jb} b_jb^Q Ut_ij^ab = \sum_{jb} b(Q,jb) Ut(jb,ia)
     U = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U,l2);
+    ccsd_u2_amps(U, l2);
     T = SharedTensor2d(new Tensor2d("L2 (Q|IA)", nQ, naoccA, navirA));
     T->gemm(false, false, bQiaA, U, 1.0, 0.0);
     T->write(psio_, PSIF_DFOCC_AMPS);
@@ -83,10 +82,10 @@ void DFOCC::ccsd_pdm_3index_intr()
     U.reset();
     L = SharedTensor2d(new Tensor2d("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
     L->sort(1324, l2, 1.0, 0.0);
-    GijA->contract(false, true, naoccA, naoccA, naoccA*navirA*navirA, T, L, 1.0, 0.0);
+    GijA->contract(false, true, naoccA, naoccA, naoccA * navirA * navirA, T, L, 1.0, 0.0);
 
     // G_ae = -\sum_{m,n,f} U_mn^ef L_mn^af = L(mn,fa) U(mn,fe)
-    GabA->contract(true, false, navirA, navirA, naoccA*naoccA*navirA, L, T, -1.0, 0.0);
+    GabA->contract(true, false, navirA, navirA, naoccA * naoccA * navirA, L, T, -1.0, 0.0);
     T.reset();
     L.reset();
 
@@ -134,8 +133,8 @@ void DFOCC::ccsd_pdm_3index_intr()
     t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     Tau = SharedTensor2d(new Tensor2d("Tau (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_tau_amps(Tau,t2);
-    //t2.reset();
+    ccsd_tau_amps(Tau, t2);
+    // t2.reset();
     U = SharedTensor2d(new Tensor2d("Tau <IJ|AB>", naoccA, naoccA, navirA, navirA));
     U->sort(1324, Tau, 1.0, 0.0);
     Tau.reset();
@@ -155,7 +154,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     // V_ij^Q = \sum_{mn} (2*V_imjn - V_imnj) b_mn^Q = B(Q,mn) Y(mn,ij)
     X = SharedTensor2d(new Tensor2d("X <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
     // X_imjn = 2*V_imjn - V_imnj
-    X->tei_cs1_anti_symm(V,V);
+    X->tei_cs1_anti_symm(V, V);
     V.reset();
     // Y_mnij = X_imjn
     Y = SharedTensor2d(new Tensor2d("Y <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
@@ -181,10 +180,10 @@ void DFOCC::ccsd_pdm_3index_intr()
     // Build V_iajb
     // V_iajb = 1/2 \sum_{me} T'(ib,me) L'(me,ja)
     T = SharedTensor2d(new Tensor2d("T2p (IB|JA)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(T,t2);
+    ccsd_t2_prime_amps(T, t2);
     t2.reset();
     L = SharedTensor2d(new Tensor2d("L2p (IB|JA)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(L,l2);
+    ccsd_t2_prime_amps(L, l2);
     X = SharedTensor2d(new Tensor2d("X (IB|JA)", naoccA, navirA, naoccA, navirA));
     X->gemm(false, false, T, L, 0.5, 0.0);
     T.reset();
@@ -200,7 +199,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     X = SharedTensor2d(new Tensor2d("X (EI|KA)", navirA, naoccA, naoccA, navirA));
     X->sort(2134, V, 1.0, 0.0);
     Y = SharedTensor2d(new Tensor2d("V (JI|KA)", naoccA, naoccA, naoccA, navirA));
-    Y->contract(false, false, naoccA, naoccA*naoccA*navirA, navirA, t1A, X, 1.0, 0.0);
+    Y->contract(false, false, naoccA, naoccA * naoccA * navirA, navirA, t1A, X, 1.0, 0.0);
     X.reset();
     Vijka = SharedTensor2d(new Tensor2d("V (IJ|KA)", naoccA, naoccA, naoccA, navirA));
     Vijka->sort(2134, Y, 1.0, 0.0);
@@ -242,7 +241,6 @@ void DFOCC::ccsd_pdm_3index_intr()
     Vab->write(psio_, PSIF_DFOCC_AMPS);
     Vab.reset();
 
-
     // Build V_iabj
     // V_iabj = -1/2 \sum_{me} U(ib,me) L(me,ja)
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
@@ -254,7 +252,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     L = SharedTensor2d(new Tensor2d("L2p (IB|JA)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(L,l2);
+    ccsd_t2_prime_amps(L, l2);
     X->gemm(false, false, t2, L, 0.5, 1.0);
     t2.reset();
     L.reset();
@@ -269,7 +267,7 @@ void DFOCC::ccsd_pdm_3index_intr()
     X = SharedTensor2d(new Tensor2d("X (EI|AK)", navirA, naoccA, navirA, naoccA));
     X->sort(2134, V, 1.0, 0.0);
     Y = SharedTensor2d(new Tensor2d("V (JI|AK)", naoccA, naoccA, navirA, naoccA));
-    Y->contract(false, false, naoccA, naoccA*naoccA*navirA, navirA, t1A, X, 1.0, 0.0);
+    Y->contract(false, false, naoccA, naoccA * naoccA * navirA, navirA, t1A, X, 1.0, 0.0);
     X.reset();
     Vijak = SharedTensor2d(new Tensor2d("V (IJ|AK)", naoccA, naoccA, navirA, naoccA));
     Vijak->sort(2134, Y, 1.0, 0.0);
@@ -332,12 +330,11 @@ void DFOCC::ccsd_pdm_3index_intr()
     // Build L_ijka
     // L_ijka = \sum{e} L(ja,ie) T(k,e)
     X = SharedTensor2d(new Tensor2d("X <JA|IK>", naoccA, navirA, naoccA, naoccA));
-    X->contract(false, true, naoccA*navirA*naoccA, naoccA, navirA, l2, t1A, 1.0, 0.0);
+    X->contract(false, true, naoccA * navirA * naoccA, naoccA, navirA, l2, t1A, 1.0, 0.0);
     L = SharedTensor2d(new Tensor2d("L <IJ|KA>", naoccA, naoccA, naoccA, navirA));
     L->sort(3142, X, 1.0, 0.0);
     X.reset();
-    //L->write(psio_, PSIF_DFOCC_AMPS);
-
+    // L->write(psio_, PSIF_DFOCC_AMPS);
 
     /*
     // Build tEta_ia^Q = \sum(ef) L'_ieaf b_ef^Q
@@ -395,54 +392,53 @@ void DFOCC::ccsd_pdm_3index_intr()
     Y = SharedTensor2d(new Tensor2d("Eta2[I] (Q|A)", nQ, navirA));
     Z = SharedTensor2d(new Tensor2d("Eta2 (Q|IA)", nQ, naoccA, navirA));
     // Main loop
-    for(int i = 0 ; i < naoccA; ++i){
-
-            // Form (+)L[i](e, m>=n)
-            #pragma omp parallel for
-            for(int e = 0 ; e < navirA; ++e){
-                int ie = ia_idxAA->get(i,e);
-                for(int m = 0 ; m < naoccA; ++m){
-                    for(int n = 0 ; n <= m; ++n){
-                        int mn = ij_idxAA->get(m,n);
-                        int nm = ij_idxAA->get(n,m);
-                        int mn2 = index2(m,n);
-                        double value1 = 0.5 * ( L->get(mn, ie) + L->get(nm, ie) );
-                        double value2 = 0.5 * ( L->get(mn, ie) - L->get(nm, ie) );
-                        Vs->set(e, mn2, value1);
-                        Va->set(e, mn2, value2);
-                    }
+    for (int i = 0; i < naoccA; ++i) {
+// Form (+)L[i](e, m>=n)
+#pragma omp parallel for
+        for (int e = 0; e < navirA; ++e) {
+            int ie = ia_idxAA->get(i, e);
+            for (int m = 0; m < naoccA; ++m) {
+                for (int n = 0; n <= m; ++n) {
+                    int mn = ij_idxAA->get(m, n);
+                    int nm = ij_idxAA->get(n, m);
+                    int mn2 = index2(m, n);
+                    double value1 = 0.5 * (L->get(mn, ie) + L->get(nm, ie));
+                    double value2 = 0.5 * (L->get(mn, ie) - L->get(nm, ie));
+                    Vs->set(e, mn2, value1);
+                    Va->set(e, mn2, value2);
                 }
             }
+        }
 
-            // Form S[i](e, a>=f) = \sum_{m>=n} U'(m>=n,a>=f) L[i](e, m>=n)
-            S->gemm(false, false, Vs, Ts, 1.0, 0.0);
-            A->gemm(false, false, Va, Ta, 1.0, 0.0);
+        // Form S[i](e, a>=f) = \sum_{m>=n} U'(m>=n,a>=f) L[i](e, m>=n)
+        S->gemm(false, false, Vs, Ts, 1.0, 0.0);
+        A->gemm(false, false, Va, Ta, 1.0, 0.0);
 
-            // Form S(ie,af) & A(ie,af)-->X[i](a,ef)
-            #pragma omp parallel for
-            for(int e = 0 ; e < navirA; ++e){
-                for(int a = 0 ; a < navirA; ++a){
-                    for(int f = 0 ; f < navirA; ++f){
-                        int ef = ab_idxAA->get(e,f);
-                        int af = index2(a,f);
-                        int perm = ( a > f ) ? 1 : -1;
-                        double value = S->get(e,af) + (perm * A->get(e,af));
-                        X->set(a, ef, value);
-                    }
+// Form S(ie,af) & A(ie,af)-->X[i](a,ef)
+#pragma omp parallel for
+        for (int e = 0; e < navirA; ++e) {
+            for (int a = 0; a < navirA; ++a) {
+                for (int f = 0; f < navirA; ++f) {
+                    int ef = ab_idxAA->get(e, f);
+                    int af = index2(a, f);
+                    int perm = (a > f) ? 1 : -1;
+                    double value = S->get(e, af) + (perm * A->get(e, af));
+                    X->set(a, ef, value);
                 }
             }
+        }
 
-	    // Eta2[i](Q,a) = \sum(ef) b(Q,ef) * X[i](a,ef)
-            Y->gemm(false, true, bQabA, X, 1.0, 0.0);
+        // Eta2[i](Q,a) = \sum(ef) b(Q,ef) * X[i](a,ef)
+        Y->gemm(false, true, bQabA, X, 1.0, 0.0);
 
-	    // Form Eta2
-            #pragma omp parallel for
-            for(int Q = 0 ; Q < nQ; ++Q){
-                for(int a = 0 ; a < navirA; ++a){
-                    int ia = ia_idxAA->get(i,a);
-		    Z->set(Q, ia, Y->get(Q,a));
-                }
+// Form Eta2
+#pragma omp parallel for
+        for (int Q = 0; Q < nQ; ++Q) {
+            for (int a = 0; a < navirA; ++a) {
+                int ia = ia_idxAA->get(i, a);
+                Z->set(Q, ia, Y->get(Q, a));
             }
+        }
     }
     Vs.reset();
     Va.reset();
@@ -463,54 +459,53 @@ void DFOCC::ccsd_pdm_3index_intr()
     Y = SharedTensor2d(new Tensor2d("Eta2[A] (Q|B)", nQ, navirA));
     Z = SharedTensor2d(new Tensor2d("Eta2 (Q|AB)", nQ, navirA, navirA));
     // Main loop
-    for(int a = 0 ; a < navirA; ++a){
-
-            // Form (+)L[a](m, k>=n)
-            #pragma omp parallel for
-            for(int m = 0 ; m < naoccA; ++m){
-                int ma = ia_idxAA->get(m,a);
-                for(int k = 0 ; k < naoccA; ++k){
-                    for(int n = 0 ; n <= k; ++n){
-                        int kn = ij_idxAA->get(k,n);
-                        int nk = ij_idxAA->get(n,k);
-                        int kn2 = index2(k,n);
-                        double value1 = 0.5 * ( L->get(kn, ma) + L->get(nk, ma) );
-                        double value2 = 0.5 * ( L->get(kn, ma) - L->get(nk, ma) );
-                        Vs->set(m, kn2, value1);
-                        Va->set(m, kn2, value2);
-                    }
+    for (int a = 0; a < navirA; ++a) {
+// Form (+)L[a](m, k>=n)
+#pragma omp parallel for
+        for (int m = 0; m < naoccA; ++m) {
+            int ma = ia_idxAA->get(m, a);
+            for (int k = 0; k < naoccA; ++k) {
+                for (int n = 0; n <= k; ++n) {
+                    int kn = ij_idxAA->get(k, n);
+                    int nk = ij_idxAA->get(n, k);
+                    int kn2 = index2(k, n);
+                    double value1 = 0.5 * (L->get(kn, ma) + L->get(nk, ma));
+                    double value2 = 0.5 * (L->get(kn, ma) - L->get(nk, ma));
+                    Vs->set(m, kn2, value1);
+                    Va->set(m, kn2, value2);
                 }
             }
+        }
 
-            // Form S[a](m, e>=b) = \sum_{k>=n} U'(k>=n,e>=b) L[a](m, k>=n)
-            S->gemm(false, false, Vs, Ts, 1.0, 0.0);
-            A->gemm(false, false, Va, Ta, 1.0, 0.0);
+        // Form S[a](m, e>=b) = \sum_{k>=n} U'(k>=n,e>=b) L[a](m, k>=n)
+        S->gemm(false, false, Vs, Ts, 1.0, 0.0);
+        A->gemm(false, false, Va, Ta, 1.0, 0.0);
 
-            // Form S(ma,eb) & A(ma,eb)-->X[a](b,me)
-            #pragma omp parallel for
-            for(int m = 0 ; m < naoccA; ++m){
-                for(int e = 0 ; e < navirA; ++e){
-                    int me = ia_idxAA->get(m,e);
-                    for(int b = 0 ; b < navirA; ++b){
-                        int eb = index2(e,b);
-                        int perm = ( e > b ) ? 1 : -1;
-                        double value = S->get(m,eb) + (perm * A->get(m,eb));
-                        X->set(b, me, value);
-                    }
+// Form S(ma,eb) & A(ma,eb)-->X[a](b,me)
+#pragma omp parallel for
+        for (int m = 0; m < naoccA; ++m) {
+            for (int e = 0; e < navirA; ++e) {
+                int me = ia_idxAA->get(m, e);
+                for (int b = 0; b < navirA; ++b) {
+                    int eb = index2(e, b);
+                    int perm = (e > b) ? 1 : -1;
+                    double value = S->get(m, eb) + (perm * A->get(m, eb));
+                    X->set(b, me, value);
                 }
             }
+        }
 
-	    // Eta2[a](Q,b) = \sum(me) b(Q,me) * X[a](b,me)
-            Y->gemm(false, true, bQiaA, X, 1.0, 0.0);
+        // Eta2[a](Q,b) = \sum(me) b(Q,me) * X[a](b,me)
+        Y->gemm(false, true, bQiaA, X, 1.0, 0.0);
 
-	    // Form Eta2
-            #pragma omp parallel for
-            for(int Q = 0 ; Q < nQ; ++Q){
-                for(int b = 0 ; b < navirA; ++b){
-                    int ab = ab_idxAA->get(a,b);
-		    Z->set(Q, ab, Y->get(Q,b));
-                }
+// Form Eta2
+#pragma omp parallel for
+        for (int Q = 0; Q < nQ; ++Q) {
+            for (int b = 0; b < navirA; ++b) {
+                int ab = ab_idxAA->get(a, b);
+                Z->set(Q, ab, Y->get(Q, b));
             }
+        }
     }
     Vs.reset();
     Va.reset();
@@ -525,7 +520,7 @@ void DFOCC::ccsd_pdm_3index_intr()
 
     // Z_ij^Q = \sum_{me} (2*L_imje - L_mije) t_me^Q
     X = SharedTensor2d(new Tensor2d("X <IM|JE>", naoccA, naoccA, naoccA, navirA));
-    X->tei_cs2_anti_symm(L,L);
+    X->tei_cs2_anti_symm(L, L);
     L.reset();
     // Y_meij = X_imje
     Y = SharedTensor2d(new Tensor2d("Y <ME|IJ>", naoccA, navirA, naoccA, naoccA));
@@ -567,15 +562,14 @@ void DFOCC::ccsd_pdm_3index_intr()
     Z->write(psio_, PSIF_DFOCC_AMPS);
     Z.reset();
 
-    //outfile->Printf("\t3indices done.\n");
+    // outfile->Printf("\t3indices done.\n");
 
-}// end ccsd_pdm_3index_intr
+}  // end ccsd_pdm_3index_intr
 
 //======================================================================
 //    Build y_ia^Q
 //======================================================================
-void DFOCC::ccsd_pdm_yQia()
-{
+void DFOCC::ccsd_pdm_yQia() {
     // defs
     SharedTensor2d K, L, T, U, Tau, V, V2, X, Y, Y2, Z;
     SharedTensor2d Yt, Yp;
@@ -598,16 +592,16 @@ void DFOCC::ccsd_pdm_yQia()
 
     // build T_mi^ae + 2 * T_m^a * T_i^e
     T = SharedTensor2d(new Tensor2d("T2p (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_t2_prime_amps(T,t2);
+    ccsd_t2_prime_amps(T, t2);
     t2.reset();
-    #pragma omp parallel for
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int j = 0 ; j < naoccA; ++j){
-            for(int a = 0 ; a < navirA; ++a){
-                int ia = ia_idxAA->get(i,a);
-                for(int b = 0 ; b < navirA; ++b){
-                    int jb = ia_idxAA->get(j,b);
-                    T->add(ia, jb, 2.0 * t1A->get(i,b) * t1A->get(j,a) );
+#pragma omp parallel for
+    for (int i = 0; i < naoccA; ++i) {
+        for (int j = 0; j < naoccA; ++j) {
+            for (int a = 0; a < navirA; ++a) {
+                int ia = ia_idxAA->get(i, a);
+                for (int b = 0; b < navirA; ++b) {
+                    int jb = ia_idxAA->get(j, b);
+                    T->add(ia, jb, 2.0 * t1A->get(i, b) * t1A->get(j, a));
                 }
             }
         }
@@ -633,18 +627,18 @@ void DFOCC::ccsd_pdm_yQia()
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
     U->read_symm(psio_, PSIF_DFOCC_AMPS);
 
-    // Build Vt_iabj = V_iabj - T_i^b * L_j^a
-    // build U_im^ae - 2 * T_m^a * T_i^e
-    #pragma omp parallel for
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int j = 0 ; j < naoccA; ++j){
-            for(int a = 0 ; a < navirA; ++a){
-                int ia = ia_idxAA->get(i,a);
-                for(int b = 0 ; b < navirA; ++b){
-                    int jb = ia_idxAA->get(j,b);
-                    int bj = ai_idxAA->get(b,j);
-                    U->subtract(ia, jb, 2.0 * t1A->get(i,b) * t1A->get(j,a) );
-                    V->subtract(ia, bj, t1A->get(i,b) * l1A->get(j,a) );
+// Build Vt_iabj = V_iabj - T_i^b * L_j^a
+// build U_im^ae - 2 * T_m^a * T_i^e
+#pragma omp parallel for
+    for (int i = 0; i < naoccA; ++i) {
+        for (int j = 0; j < naoccA; ++j) {
+            for (int a = 0; a < navirA; ++a) {
+                int ia = ia_idxAA->get(i, a);
+                for (int b = 0; b < navirA; ++b) {
+                    int jb = ia_idxAA->get(j, b);
+                    int bj = ai_idxAA->get(b, j);
+                    U->subtract(ia, jb, 2.0 * t1A->get(i, b) * t1A->get(j, a));
+                    V->subtract(ia, bj, t1A->get(i, b) * l1A->get(j, a));
                 }
             }
         }
@@ -689,15 +683,15 @@ void DFOCC::ccsd_pdm_yQia()
     s1->gemm(false, false, Sij, t1A, 1.0, 0.0);
     Sij.reset();
 
-    // Yt_ijab += 3/2 (t_i^a * s_j^b + t_j^b * t_i^a)
-    #pragma omp parallel for
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int j = 0 ; j < naoccA; ++j){
-            int ij = ij_idxAA->get(i,j);
-            for(int a = 0 ; a < navirA; ++a){
-                for(int b = 0 ; b < navirA; ++b){
-                    int ab = ab_idxAA->get(a,b);
-		    double value = ( t1A->get(i,a) * s1->get(j,b) ) + ( t1A->get(j,b) * s1->get(i,a) );
+// Yt_ijab += 3/2 (t_i^a * s_j^b + t_j^b * t_i^a)
+#pragma omp parallel for
+    for (int i = 0; i < naoccA; ++i) {
+        for (int j = 0; j < naoccA; ++j) {
+            int ij = ij_idxAA->get(i, j);
+            for (int a = 0; a < navirA; ++a) {
+                for (int b = 0; b < navirA; ++b) {
+                    int ab = ab_idxAA->get(a, b);
+                    double value = (t1A->get(i, a) * s1->get(j, b)) + (t1A->get(j, b) * s1->get(i, a));
                     Yt->add(ij, ab, 1.5 * value);
                 }
             }
@@ -735,7 +729,7 @@ void DFOCC::ccsd_pdm_yQia()
 
     // X_imae = 2*Yt_imae - Yp_imea
     X = SharedTensor2d(new Tensor2d("X <IM|AE>", naoccA, naoccA, navirA, navirA));
-    X->tei_cs1_anti_symm(Yt,Yp);
+    X->tei_cs1_anti_symm(Yt, Yp);
     Yt.reset();
     Yp.reset();
     // Y(me,ia) = X(im,ae)
@@ -749,6 +743,7 @@ void DFOCC::ccsd_pdm_yQia()
     Z->write(psio_, PSIF_DFOCC_AMPS);
     Z.reset();
 
-}// end ccsd_pdm_yQia
+}  // end ccsd_pdm_yQia
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

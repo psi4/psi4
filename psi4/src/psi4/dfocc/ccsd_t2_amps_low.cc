@@ -32,11 +32,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdiis/diismanager.h"
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsd_t2_amps_low()
-{
-
+void DFOCC::ccsd_t2_amps_low() {
     // defs
     SharedTensor2d K, I, T, Tnew, U, Tau, W, X, Y;
 
@@ -96,10 +95,10 @@ void DFOCC::ccsd_t2_amps_low()
     ccsd_WmbejT2_low();
 
     // WijamT2
-    //if (itr_occ > 1) ccsd_WijamT2_low();
+    // if (itr_occ > 1) ccsd_WijamT2_low();
 
     // WabefT2
-    //ccsd_WabefT2_low();
+    // ccsd_WabefT2_low();
     ccsd_Wabef2T2_low();
 
     // Denom
@@ -127,10 +126,10 @@ void DFOCC::ccsd_t2_amps_low()
     if (do_diis_ == 0) T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
     // DIIS
-    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
     Tau->to_matrix(RT2);
     Tau.reset();
-    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
     T->to_matrix(T2);
     T.reset();
     std::shared_ptr<Matrix> RT1(new Matrix("RT1", naoccA, navirA));
@@ -194,5 +193,6 @@ void DFOCC::ccsd_t2_amps_low()
     K.reset();
     Eccsd = Escf + Ecorr;
 
-}// end ccsd_t2_amps_low
-}} // End Namespaces
+}  // end ccsd_t2_amps_low
+}  // namespace dfoccwave
+}  // namespace psi

@@ -35,15 +35,14 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
 class Ektip;
 typedef std::shared_ptr<Ektip> SharedEktip;
 
-class Ektip
-{
-
-  private:
+class Ektip {
+   private:
     std::string name_;
 
     int nocc_;
@@ -80,9 +79,10 @@ class Ektip
     // ektip
     void compute_ektip();
 
-  public:
-    Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, const SharedTensor2d& Gamma, double scale_gf, double scale_ps);
-    ~Ektip(); 		   	   
+   public:
+    Ektip(std::string name, int nocc, int norb, const SharedTensor2d& GFock, const SharedTensor2d& Gamma,
+          double scale_gf, double scale_ps);
+    ~Ektip();
 
     // Return occupied energies
     SharedTensor1d eocc() const { return eocc_; }
@@ -95,10 +95,8 @@ class Ektip
 
     // Return all pole strengths
     SharedTensor1d ps() const { return ps_vec_; }
-
 };
 
-}} // End Namespaces
-#endif // _dfocc_ekt_h_
-
-
+}  // namespace dfoccwave
+}  // namespace psi
+#endif  // _dfocc_ekt_h_

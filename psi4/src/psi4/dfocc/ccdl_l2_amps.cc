@@ -32,14 +32,12 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdiis/diismanager.h"
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccdl_l2_amps()
-{
-
+void DFOCC::ccdl_l2_amps() {
     // defs
     SharedTensor2d K, I, L, Lnew, T, U, Tau, W, X, Y, Z;
-
 
     // l_ij^ab <= X(ia,jb) + X(jb,a) = 2Xt(ia,jb)
     // X(ia,jb) = \sum_{e} l_ij^ae F_eb = \sum_{e} L(ia,je) F_eb
@@ -88,11 +86,14 @@ void DFOCC::ccdl_l2_amps()
 
     // WabefL2
     if (Wabef_type_ == "AUTO") {
-	if (!do_ppl_hm) ccdl_WabefL2();
-	else ccsdl_WabefL2_high_mem();
-    }
-    else if (Wabef_type_ == "LOW_MEM") ccdl_WabefL2();
-    else if (Wabef_type_ == "HIGH_MEM") ccsdl_WabefL2_high_mem();
+        if (!do_ppl_hm)
+            ccdl_WabefL2();
+        else
+            ccsdl_WabefL2_high_mem();
+    } else if (Wabef_type_ == "LOW_MEM")
+        ccdl_WabefL2();
+    else if (Wabef_type_ == "HIGH_MEM")
+        ccsdl_WabefL2_high_mem();
 
     // Denom
     Lnew = SharedTensor2d(new Tensor2d("New L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
@@ -109,10 +110,10 @@ void DFOCC::ccdl_l2_amps()
     Lnew.reset();
 
     // DIIS
-    std::shared_ptr<Matrix> RL2(new Matrix("RL2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> RL2(new Matrix("RL2", naoccA * navirA, naoccA * navirA));
     Tau->to_matrix(RL2);
     Tau.reset();
-    std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
     l2->to_matrix(L2);
 
     // add entry
@@ -139,8 +140,9 @@ void DFOCC::ccdl_l2_amps()
     EccdL = Escf + EcorrL;
 
     // print
-    //l2->print();
+    // l2->print();
 
-}// end ccdl_l2_amps
+}  // end ccdl_l2_amps
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

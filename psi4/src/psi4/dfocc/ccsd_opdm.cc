@@ -33,20 +33,19 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
-  
-void DFOCC::ccsd_opdm()
-{   
+namespace psi {
+namespace dfoccwave {
 
+void DFOCC::ccsd_opdm() {
     SharedTensor2d T, U, X;
     timer_on("opdm");
-//if (reference_ == "RESTRICTED") {
+    // if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
     T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
     U = SharedTensor2d(new Tensor2d("U Intermediate <I|J>", naoccA, naoccA));
     U->copy(GtijA);
-    if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ij, 1.0); 
+    if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ij, 1.0);
     T->symmetrize(U);
     U.reset();
     T->scale(-2.0);
@@ -57,14 +56,14 @@ void DFOCC::ccsd_opdm()
     T = SharedTensor2d(new Tensor2d("T Intermediate <A|B>", navirA, navirA));
     U = SharedTensor2d(new Tensor2d("U Intermediate <A|B>", navirA, navirA));
     U->copy(GtabA);
-    if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ab, 1.0); 
+    if (wfn_type_ == "DF-CCSD(T)") U->axpy(G1c_ab, 1.0);
     T->symmetrize(U);
     U.reset();
     T->scale(-2.0);
     G1c_vv->set_act_vv(T);
     T.reset();
-    //G1c_vv->print();
-    //Jc->print();
+    // G1c_vv->print();
+    // Jc->print();
 
     // G1_ia = t_i^a + l_i^a
     T = SharedTensor2d(new Tensor2d("Corr OPDM <I|A>", naoccA, navirA));
@@ -88,10 +87,10 @@ void DFOCC::ccsd_opdm()
 
     // G1_ia += \sum(e) t_i^e G_ea
     T->gemm(false, false, t1A, GabA, 1.0, 1.0);
-    
+
     // (T) Contribution
     if (wfn_type_ == "DF-CCSD(T)") {
-	T->axpy(G1c_ia, 1.0); 
+        T->axpy(G1c_ia, 1.0);
         G1c_ij.reset();
         G1c_ia.reset();
         G1c_ab.reset();
@@ -109,35 +108,32 @@ void DFOCC::ccsd_opdm()
     G1c->set_ov(G1c_ov);
     G1c->set_vo(G1c_vo);
     G1c->set_vv(noccA, G1c_vv);
-    //G1c->print();
+    // G1c->print();
 
     // Build G1
     G1->copy(G1c);
-    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); 
+    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
 
-  if(print_ > 2) {
-    G1->print();
-    double trace = G1->trace();
-    outfile->Printf("\t trace: %12.12f \n", trace);
-    
-  }
+    if (print_ > 2) {
+        G1->print();
+        double trace = G1->trace();
+        outfile->Printf("\t trace: %12.12f \n", trace);
+    }
 
-//}// end if (reference_ == "RESTRICTED")
+    //}// end if (reference_ == "RESTRICTED")
 
-//else if (reference_ == "UNRESTRICTED") {
-//}// else if (reference_ == "UNRESTRICTED")
+    // else if (reference_ == "UNRESTRICTED") {
+    //}// else if (reference_ == "UNRESTRICTED")
     timer_off("opdm");
-} // end ccsd_opdm
+}  // end ccsd_opdm
 
 //=======================================================
 //       Diagonal OPDM
 //=======================================================
-void DFOCC::ccsd_diagonal_opdm()
-{   
-
+void DFOCC::ccsd_diagonal_opdm() {
     SharedTensor2d T, U, X;
     timer_on("opdm");
-//if (reference_ == "RESTRICTED") {
+    // if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
     T = SharedTensor2d(new Tensor2d("T Intermediate <I|J>", naoccA, naoccA));
@@ -163,8 +159,8 @@ void DFOCC::ccsd_diagonal_opdm()
 
     // (T) Contribution
     if (wfn_type_ == "DF-CCSD(T)") {
-        for (int i = 0; i < naoccA; i++) G1c_oo->add(i+nfrzc, i+nfrzc, G1c_ii->get(i)); 
-        for (int a = 0; a < navirA; a++) G1c_vv->add(a, a, G1c_aa->get(a)); 
+        for (int i = 0; i < naoccA; i++) G1c_oo->add(i + nfrzc, i + nfrzc, G1c_ii->get(i));
+        for (int a = 0; a < navirA; a++) G1c_vv->add(a, a, G1c_aa->get(a));
         G1c_ii.reset();
         G1c_aa.reset();
     }
@@ -172,26 +168,24 @@ void DFOCC::ccsd_diagonal_opdm()
     // Build G1c
     G1c->set_oo(G1c_oo);
     G1c->set_vv(noccA, G1c_vv);
-    //G1c->print();
+    // G1c->print();
 
     // Build G1
     G1->copy(G1c);
-    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0); 
+    for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
 
-  if(print_ > 2) {
-    G1->print();
-    double trace = G1->trace();
-    outfile->Printf("\t trace: %12.12f \n", trace);
-    
-  }
+    if (print_ > 2) {
+        G1->print();
+        double trace = G1->trace();
+        outfile->Printf("\t trace: %12.12f \n", trace);
+    }
 
-//}// end if (reference_ == "RESTRICTED")
+    //}// end if (reference_ == "RESTRICTED")
 
-//else if (reference_ == "UNRESTRICTED") {
-//}// else if (reference_ == "UNRESTRICTED")
+    // else if (reference_ == "UNRESTRICTED") {
+    //}// else if (reference_ == "UNRESTRICTED")
     timer_off("opdm");
-} // end ccsd_diagonal_opdm
+}  // end ccsd_diagonal_opdm
 
-}} // End Namespaces
-
-
+}  // namespace dfoccwave
+}  // namespace psi

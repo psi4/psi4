@@ -32,17 +32,16 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsd_3index_intr()
-{
-
+void DFOCC::ccsd_3index_intr() {
     // defs
     SharedTensor2d K, T, U, Tau;
 
     // T(Q,ia) = \sum_{jb} b_jb^Q u_ij^ab = \sum_{jb} b(Q,jb) U(jb,ia)
     U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U,t2);
+    ccsd_u2_amps(U, t2);
     T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
     T->gemm(false, false, bQiaA, U, 1.0, 0.0);
     U.reset();
@@ -66,7 +65,7 @@ void DFOCC::ccsd_3index_intr()
 
     // Tau(Q,ia) = \sum_{mf} (2*Tau_im^af - Tau_mi^af) b_mf^Q
     Tau = SharedTensor2d(new Tensor2d("Tau2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_tau_tilde_amps(Tau,t2);
+    ccsd_tau_tilde_amps(Tau, t2);
     U = SharedTensor2d(new Tensor2d("2*Tau2(IA,JB) - Tau2(IB,JA)", naoccA, navirA, naoccA, navirA));
     U->sort(1432, Tau, 1.0, 0.0);
     U->scale(-1.0);
@@ -130,7 +129,8 @@ void DFOCC::ccsd_3index_intr()
     K.reset();
     Tau->write(psio_, PSIF_DFOCC_AMPS);
     Tau.reset();
-    //outfile->Printf("\t3indices done.\n");
+    // outfile->Printf("\t3indices done.\n");
 
-}// end ccsd_3index_intr
-}} // End Namespaces
+}  // end ccsd_3index_intr
+}  // namespace dfoccwave
+}  // namespace psi

@@ -29,12 +29,10 @@
 #include "dfocc.h"
 #include "psi4/libciomr/libciomr.h"
 
+namespace psi {
+namespace dfoccwave {
 
-
-namespace psi{ namespace dfoccwave {
-
-SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options)
-{
+SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options) {
     // Start the timers
     tstart();
 
@@ -46,4 +44,5 @@ SharedWavefunction dfoccwave(SharedWavefunction ref_wfn, Options &options)
 
     return dfocc_wfn;
 }
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

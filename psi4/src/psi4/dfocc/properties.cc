@@ -35,10 +35,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/physconst.h"
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::oeprop()
-{
+void DFOCC::oeprop() {
     outfile->Printf("\tComputing one-electron properties...\n");
 
     timer_on("oeprop");
@@ -69,76 +69,71 @@ void DFOCC::oeprop()
     Db_.reset();
 
     timer_off("oeprop");
-} // end oeprop
+}  // end oeprop
 
 //======================================================================
 //    EKT-IP
 //======================================================================
-void DFOCC::ekt_ip()
-{
+void DFOCC::ekt_ip() {
     outfile->Printf("\tComputing EKT IPs...\n");
 
     SharedTensor2d G;
     SharedTensor1d eigA, eigB, psA, psB;
 
     timer_on("ekt");
-if (reference_ == "RESTRICTED") {
+    if (reference_ == "RESTRICTED") {
+        // malloc
+        eigA = SharedTensor1d(new Tensor1d("epsilon <I|J>", noccA));
+        psA = SharedTensor1d(new Tensor1d("alpha occupied pole strength vector", noccA));
 
-    // malloc
-    eigA = SharedTensor1d(new Tensor1d("epsilon <I|J>", noccA));
-    psA = SharedTensor1d(new Tensor1d("alpha occupied pole strength vector", noccA));
+        // Call EKT
+        SharedEktip ektA = SharedEktip(new Ektip("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5));
 
-    // Call EKT
-    SharedEktip ektA = SharedEktip(new Ektip("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5));
-
-    // Print IPs
-    outfile->Printf("\n\tEKT Ionization Potentials (Alpha Spin Case) \n");
-    outfile->Printf("\t------------------------------------------------------------------- \n");
-
-
-    // print alpha IPs
-    if (print_ < 2) {
-	// get only occupieds
-        eigA = ektA->eocc();
-        psA = ektA->psocc();
-
-        outfile->Printf( "\tState    -IP (a.u.)       IP (eV)        Pole Strength \n");
+        // Print IPs
+        outfile->Printf("\n\tEKT Ionization Potentials (Alpha Spin Case) \n");
         outfile->Printf("\t------------------------------------------------------------------- \n");
-        for (int i = 0; i < noccA; ++i){
-	     outfile->Printf("\t%3d %15.6f %15.6f %15.6f \n", i+1, eigA->get(i), -eigA->get(i)*pc_hartree2ev, psA->get(i));
-        }
-        outfile->Printf("\t------------------------------------------------------------------- \n");
-    }// end if
 
-    else if (print_ >= 2) {
-	// get all
-        eigA = ektA->eorb();
-        psA = ektA->ps();
+        // print alpha IPs
+        if (print_ < 2) {
+            // get only occupieds
+            eigA = ektA->eocc();
+            psA = ektA->psocc();
 
-        outfile->Printf( "\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
-        outfile->Printf("\t------------------------------------------------------------------- \n");
-        for (int i = 0; i < noccA; ++i){
-	     outfile->Printf("\t%3d %15.6f %15.6f %15.6f \n", i+1, eigA->get(i), -eigA->get(i)*pc_hartree2ev, psA->get(i));
-        }
-        outfile->Printf("\t------------------------------------------------------------------- \n");
-    }// end else if
+            outfile->Printf("\tState    -IP (a.u.)       IP (eV)        Pole Strength \n");
+            outfile->Printf("\t------------------------------------------------------------------- \n");
+            for (int i = 0; i < noccA; ++i) {
+                outfile->Printf("\t%3d %15.6f %15.6f %15.6f \n", i + 1, eigA->get(i), -eigA->get(i) * pc_hartree2ev,
+                                psA->get(i));
+            }
+            outfile->Printf("\t------------------------------------------------------------------- \n");
+        }  // end if
 
+        else if (print_ >= 2) {
+            // get all
+            eigA = ektA->eorb();
+            psA = ektA->ps();
 
-    // delete
-    ektA.reset();
-    eigA.reset();
-    psA.reset();
+            outfile->Printf("\tState    Symmetry   -IP (a.u.)       IP (eV)        Pole Strength \n");
+            outfile->Printf("\t------------------------------------------------------------------- \n");
+            for (int i = 0; i < noccA; ++i) {
+                outfile->Printf("\t%3d %15.6f %15.6f %15.6f \n", i + 1, eigA->get(i), -eigA->get(i) * pc_hartree2ev,
+                                psA->get(i));
+            }
+            outfile->Printf("\t------------------------------------------------------------------- \n");
+        }  // end else if
 
-}// end if (reference_ == "RESTRICTED")
+        // delete
+        ektA.reset();
+        eigA.reset();
+        psA.reset();
 
-else if (reference_ == "UNRESTRICTED") {
+    }  // end if (reference_ == "RESTRICTED")
 
-}// else if (reference_ == "UNRESTRICTED")
+    else if (reference_ == "UNRESTRICTED") {
+    }  // else if (reference_ == "UNRESTRICTED")
     timer_off("ekt");
-    //outfile->Printf("\tekt is done.\n");
-} // properties.cc
+    // outfile->Printf("\tekt is done.\n");
+}  // properties.cc
 
-}} // End Namespaces
-
-
-
+}  // namespace dfoccwave
+}  // namespace psi
