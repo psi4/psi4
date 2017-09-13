@@ -206,16 +206,10 @@ class EmpericalDispersion(object):
     def compute_gradient(self, molecule):
         if self.disp_type == 'gr':
             if self.alias in ['HF3C', 'PBEH3C']:
-                import numpy as np
-                # print(np.around(molecule.geometry().np, 5))
                 dashd_part = dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
                                              dashparam=self.dash_params, verbose=False, dertype=1)
                 gcp_part = gcp.run_gcp(molecule, self.alias.lower(), verbose=False, dertype=1)
                 dashd_part.add(gcp_part)
-                # print("I am here!")
-                dashd_part.np[:] = 0
-                # print(np.around(molecule.geometry().np, 5))
-                # print(dashd_part.np)
                 return dashd_part
             else:
                 return dftd3.run_dftd3(molecule, dashlvl=self.dtype.lower().replace('-', ''),
@@ -246,7 +240,7 @@ class EmpericalDispersion(object):
         gradients = []
         for geom in core.fd_geoms_freq_1(molecule, -1):
             molclone.set_geometry(geom)
-            # molclone.update_geometry()
+            molclone.update_geometry()
             gradients.append(self.compute_gradient(molclone))
 
         H = core.fd_freq_1(molecule, gradients, -1)
