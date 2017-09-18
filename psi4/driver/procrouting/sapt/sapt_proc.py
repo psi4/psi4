@@ -46,7 +46,6 @@ __all__ = ['run_sapt_dft']
 def run_sapt_dft(name, **kwargs):
     optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'],
                                    ['SCF', 'REFERENCE'],
-                                   ['SCF', 'DFT_FUNCTIONAL'],
                                    ['SCF', 'DFT_GRAC_SHIFT'],
                                    ['SCF', 'SAVE_JK'])
 

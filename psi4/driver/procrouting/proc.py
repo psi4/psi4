@@ -1088,7 +1088,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
-        raise ValidationError("Cannot supply a SCF wavefunction a ref_wfn.")
+        raise ValidationError("Cannot seed an SCF calculation with a reference wavefunction ('ref_wfn' kwarg).")
 
     # SCF Banner data
     banner = kwargs.pop('banner', None)
@@ -1888,7 +1888,6 @@ def run_occ(name, **kwargs):
 def run_occ_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a conventional integral (O)MPN computation
-
     """
     optstash = p4util.OptionsState(
         ['OCC', 'ORB_OPT'],
@@ -1958,8 +1957,7 @@ def run_occ_gradient(name, **kwargs):
 
 
 def run_scf(name, **kwargs):
-    """
-    Function encoding sequence of PSI module calls for
+    """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.
     """
     optstash_mp2 = p4util.OptionsState(
@@ -1968,7 +1966,7 @@ def run_scf(name, **kwargs):
         ['DFMP2', 'MP2_SS_SCALE'])
 
     dft_func = False
-    if "dft_functional" in list(kwargs):
+    if "dft_functional" in kwargs:
         dft_func = True
 
     optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)

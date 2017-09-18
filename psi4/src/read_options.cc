@@ -1428,9 +1428,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
-    /*- The DFT combined functional name, e.g. B3LYP to use a python reference to a
-        custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
-    options.add_str("DFT_FUNCTIONAL", "HF");
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
