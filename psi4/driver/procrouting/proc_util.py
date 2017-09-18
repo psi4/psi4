@@ -37,7 +37,7 @@ from . import dft_funcs
 
 import numpy as np
 
-def scf_set_reference_local(name):
+def scf_set_reference_local(name, is_dft=False):
     """
     Figures out the correct SCF reference to set locally
     """
@@ -52,7 +52,7 @@ def scf_set_reference_local(name):
 
     # Alter reference name if needed
     user_ref = core.get_option('SCF', 'REFERENCE')
-    if name not in dft_funcs.superfunctional_noxc_names:
+    if (name not in dft_funcs.superfunctional_noxc_names) or (is_dft):
         if (user_ref == 'RHF'):
             core.set_local_option('SCF', 'REFERENCE', 'RKS')
         elif (user_ref == 'UHF'):

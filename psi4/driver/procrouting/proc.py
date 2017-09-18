@@ -994,10 +994,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference):
         modified_disp_params = None
 
     # Figure out functional
-    if isinstance(name, str):
-        superfunc, disp_type = dft_funcs.build_superfunctional(name.lower(), (reference in ["RKS", "RHF"]))
-    else:
-        raise ValidationError("Functional %s is not understood" % str(name))
+    superfunc, disp_type = dft_funcs.build_superfunctional(name, (reference in ["RKS", "RHF"]))
 
     # Build the wavefunction
     core.prepare_options_for_module("SCF")
@@ -1081,7 +1078,8 @@ def scf_helper(name, post_scf=True, **kwargs):
         ['BASIS'],
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
-        ['SCF', 'DF_INTS_IO'])
+        ['SCF', 'DF_INTS_IO'],
+    )
 
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
@@ -1089,13 +1087,24 @@ def scf_helper(name, post_scf=True, **kwargs):
     read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
-    # ref_func = kwargs.pop('functional', None)
-    banner = kwargs.pop('banner', None)
     if ref_wfn is not None:
-        raise Exception("Cannot supply a SCF wavefunction a ref_wfn.")
+        raise ValidationError("Cannot supply a SCF wavefunction a ref_wfn.")
 
+    # SCF Banner data
+    banner = kwargs.pop('banner', None)
+
+    # Did we pass in a DFT functional?
+    dft_func = kwargs.pop('dft_functional', None)
+    if dft_func is not None:
+        if name.lower() != "scf":
+            raise ValidationError("dft_functional was supplied to SCF, but method name was not SCF ('%s')" % name)
+        name = dft_func
+
+
+    # Setup the timer
     if do_timer:
         core.tstart()
+
     # Second-order SCF requires non-symmetric density matrix support
     if core.get_option('SCF', 'SOSCF'):
         proc_util.check_non_symmetric_jk_density("Second-order SCF")
@@ -1958,7 +1967,11 @@ def run_scf(name, **kwargs):
         ['DFMP2', 'MP2_OS_SCALE'],
         ['DFMP2', 'MP2_SS_SCALE'])
 
-    optstash_scf = proc_util.scf_set_reference_local(name)
+    dft_func = False
+    if "dft_functional" in list(kwargs):
+        dft_func = True
+
+    optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
     # Alter default algorithm
     if not core.has_option_changed('SCF', 'SCF_TYPE'):

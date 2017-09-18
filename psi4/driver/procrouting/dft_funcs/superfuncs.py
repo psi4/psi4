@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """
 Module to provide lightweight definitions of functionals and
 SuperFunctionals
@@ -60,7 +59,6 @@ for key in superfunctionals.keys():
     superfunctional_list.append(sup)
     if not sup.needs_xc():
         superfunctional_noxc_names.append(sup.name().lower())
-
 
 ## ==> Dispersion SuperFunctional List <== ##
 
@@ -108,28 +106,43 @@ for dashlvl in ['d3', 'd3m', 'd3zero', 'd3mzero', 'd3bj', 'd3mbj']:
     sup.set_name(sup.name() + '-' + dashlvl.upper())
     superfunctional_list.append(sup)
 
-
 ## ==> SuperFunctional Builder <== ##
 
-def build_superfunctional(alias, restricted):
-    name = alias.lower()
 
-    npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS");
-    deriv = 1 # Default depth for now
+def build_superfunctional(name, restricted):
+    npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS")
+    deriv = 1  # Default depth for now
 
-    # Grab out superfunctional
-    if isinstance(name, core.SuperFunctional):
-        sup = name
+    # We are a XC generating function
 
-    elif name in superfunctionals.keys():
+    if hasattr(name, '__call__'):
+        custom_error = "SCF: Custom functional type must either be a SuperFunctional or a tuple of (SuperFunctional, (base_name, dashparam))."
+        sfunc = name("name", npoints, deriv, restricted)
+
+        # Without Dispersion
+        if isinstance(sfunc, core.SuperFunctional):
+            sup = (sfunc, False)
+        # With Dispersion
+        elif isinstance(sup[0], core.SuperFunctional):
+            sup = sfunc
+            # Can we validate dispersion?
+        else:
+            raise ValidationError(custom_error)
+
+        # Double check that the SuperFunctional is correctly sized (why dont we always do this?)
+        sup[0].set_max_points(npoints)
+        sup[0].set_deriv(deriv)
+        sup[0].allocate()
+
+    # Normal string based data
+    elif name.lower() in superfunctionals.keys():
         sup = superfunctionals[name](name, npoints, deriv, restricted)
 
     elif name.upper() in superfunctionals.keys():
         sup = superfunctionals[name.upper()](name, npoints, deriv, restricted)
 
-
-
-    elif any(name.endswith(al) for al in dftd3.full_dash_keys):
+    # Check if we are dispersion
+    elif any(name.lower().endswith(al) for al in dftd3.full_dash_keys):
 
         # Odd hack for b97-d
         if 'b97-d' in name:
@@ -153,7 +166,7 @@ def build_superfunctional(alias, restricted):
             dashparam = 'd3mzero'
 
         if base_name not in superfunctionals.keys():
-            raise KeyError("SCF: Functional (%s) with base (%s) not found!" % (alias, base_name))
+            raise ValidationError("SCF: Functional (%s) with base (%s) not found!" % (alias, base_name))
 
         func = superfunctionals[base_name](base_name, npoints, deriv, restricted)[0]
 
@@ -161,8 +174,7 @@ def build_superfunctional(alias, restricted):
         sup = (func, (base_name, dashparam))
 
     else:
-        raise KeyError("SCF: Functional (%s) not found!" % alias)
-
+        raise ValidationError("SCF: Functional (%s) not found!" % alias)
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
@@ -180,13 +192,14 @@ def build_superfunctional(alias, restricted):
 
     # Check SCF_TYPE
     if sup[0].is_x_lrc() and (core.get_option("SCF", "SCF_TYPE") not in ["DIRECT", "DF", "OUT_OF_CORE", "PK"]):
-        raise KeyError("SCF: SCF_TYPE (%s) not supported for range-seperated functionals."
-                        % core.get_option("SCF", "SCF_TYPE"))
+        raise ValidationError(
+            "SCF: SCF_TYPE (%s) not supported for range-seperated functionals." % core.get_option("SCF", "SCF_TYPE"))
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
 
     return sup
+
 
 def test_ccl_functional(functional, ccl_functional):
 
@@ -201,31 +214,34 @@ def test_ccl_functional(functional, ccl_functional):
     points = []
     point = {}
 
-    rho_line = re.compile(r'^\s*rhoa=\s*(-?\d+\.\d+E[+-]\d+)\s*rhob=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmaaa=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmaab=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmabb=\s*(-?\d+\.\d+E[+-]\d+)\s*')
+    rho_line = re.compile(
+        r'^\s*rhoa=\s*(-?\d+\.\d+E[+-]\d+)\s*rhob=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmaaa=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmaab=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmabb=\s*(-?\d+\.\d+E[+-]\d+)\s*'
+    )
     val_line = re.compile(r'^\s*(\w*)\s*=\s*(-?\d+\.\d+E[+-]\d+)')
 
-    aliases = { 'zk'            : 'v',
-                'vrhoa'         : 'v_rho_a',
-                'vrhob'         : 'v_rho_b',
-                'vsigmaaa'      : 'v_gamma_aa',
-                'vsigmaab'      : 'v_gamma_ab',
-                'vsigmabb'      : 'v_gamma_bb',
-                'v2rhoa2'       : 'v_rho_a_rho_a',
-                'v2rhoab'       : 'v_rho_a_rho_b',
-                'v2rhob2'       : 'v_rho_b_rho_b',
-                'v2rhoasigmaaa' : 'v_rho_a_gamma_aa',
-                'v2rhoasigmaab' : 'v_rho_a_gamma_ab',
-                'v2rhoasigmabb' : 'v_rho_a_gamma_bb',
-                'v2rhobsigmaaa' : 'v_rho_b_gamma_aa',
-                'v2rhobsigmaab' : 'v_rho_b_gamma_ab',
-                'v2rhobsigmabb' : 'v_rho_b_gamma_bb',
-                'v2sigmaaa2'    : 'v_gamma_aa_gamma_aa',
-                'v2sigmaaaab'   : 'v_gamma_aa_gamma_ab',
-                'v2sigmaaabb'   : 'v_gamma_aa_gamma_bb',
-                'v2sigmaab2'    : 'v_gamma_ab_gamma_ab',
-                'v2sigmaabbb'   : 'v_gamma_ab_gamma_bb',
-                'v2sigmabb2'    : 'v_gamma_bb_gamma_bb',
-              }
+    aliases = {
+        'zk': 'v',
+        'vrhoa': 'v_rho_a',
+        'vrhob': 'v_rho_b',
+        'vsigmaaa': 'v_gamma_aa',
+        'vsigmaab': 'v_gamma_ab',
+        'vsigmabb': 'v_gamma_bb',
+        'v2rhoa2': 'v_rho_a_rho_a',
+        'v2rhoab': 'v_rho_a_rho_b',
+        'v2rhob2': 'v_rho_b_rho_b',
+        'v2rhoasigmaaa': 'v_rho_a_gamma_aa',
+        'v2rhoasigmaab': 'v_rho_a_gamma_ab',
+        'v2rhoasigmabb': 'v_rho_a_gamma_bb',
+        'v2rhobsigmaaa': 'v_rho_b_gamma_aa',
+        'v2rhobsigmaab': 'v_rho_b_gamma_ab',
+        'v2rhobsigmabb': 'v_rho_b_gamma_bb',
+        'v2sigmaaa2': 'v_gamma_aa_gamma_aa',
+        'v2sigmaaaab': 'v_gamma_aa_gamma_ab',
+        'v2sigmaaabb': 'v_gamma_aa_gamma_bb',
+        'v2sigmaab2': 'v_gamma_ab_gamma_ab',
+        'v2sigmaabbb': 'v_gamma_ab_gamma_bb',
+        'v2sigmabb2': 'v_gamma_bb_gamma_bb',
+    }
 
     for line in lines:
 
@@ -285,18 +301,19 @@ def test_ccl_functional(functional, ccl_functional):
 
     tasks = ['v', 'v_rho_a', 'v_rho_b', 'v_gamma_aa', 'v_gamma_ab', 'v_gamma_bb']
     mapping = {
-            'v': v,
-            'v_rho_a': v_rho_a,
-            'v_rho_b': v_rho_b,
-            'v_gamma_aa': v_gamma_aa,
-            'v_gamma_ab': v_gamma_ab,
-            'v_gamma_bb': v_gamma_bb,
-        }
+        'v': v,
+        'v_rho_a': v_rho_a,
+        'v_rho_b': v_rho_b,
+        'v_gamma_aa': v_gamma_aa,
+        'v_gamma_ab': v_gamma_ab,
+        'v_gamma_bb': v_gamma_bb,
+    }
 
     super.print_detail(3)
     index = 0
     for point in points:
-        core.print_out('rho_a= %11.3E, rho_b= %11.3E, gamma_aa= %11.3E, gamma_ab= %11.3E, gamma_bb= %11.3E\n' % (rho_a[index], rho_b[index], gamma_aa[index], gamma_ab[index], gamma_bb[index]))
+        core.print_out('rho_a= %11.3E, rho_b= %11.3E, gamma_aa= %11.3E, gamma_ab= %11.3E, gamma_bb= %11.3E\n' %
+                       (rho_a[index], rho_b[index], gamma_aa[index], gamma_ab[index], gamma_bb[index]))
 
         for task in tasks:
             v_ref = point[task]
@@ -312,7 +329,8 @@ def test_ccl_functional(functional, ccl_functional):
                 passed = 'FAILED'
                 check = False
 
-            core.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon, passed))
+            core.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon,
+                                                                              passed))
 
         index = index + 1
 
