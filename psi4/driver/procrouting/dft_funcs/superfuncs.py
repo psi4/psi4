@@ -136,7 +136,7 @@ def build_superfunctional(name, restricted):
 
     # Normal string based data
     elif name.lower() in superfunctionals.keys():
-        sup = superfunctionals[name](name, npoints, deriv, restricted)
+        sup = superfunctionals[name.lower()](name, npoints, deriv, restricted)
 
     elif name.upper() in superfunctionals.keys():
         sup = superfunctionals[name.upper()](name, npoints, deriv, restricted)
