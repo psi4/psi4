@@ -179,6 +179,9 @@ def build_superfunctional(name, restricted):
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
 
+    # Lock and unlock the functional
+    sup[0].set_lock(False)
+
     # Set options
     if core.has_option_changed("SCF", "DFT_OMEGA") and sup[0].is_x_lrc():
         sup[0].set_x_omega(core.get_option("SCF", "DFT_OMEGA"))
@@ -197,6 +200,8 @@ def build_superfunctional(name, restricted):
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
+
+    sup[0].set_lock(True)
 
     return sup
 

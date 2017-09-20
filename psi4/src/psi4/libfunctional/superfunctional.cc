@@ -325,9 +325,6 @@ void SuperFunctional::print(std::string out, int level) const {
     }
 }
 void SuperFunctional::can_edit() {
-    if (libxc_xc_func_) {
-        throw PSIEXCEPTION("Cannot set parameter on full LibXC XC builds\n");
-    }
     if (locked_) {
         throw PSIEXCEPTION("The SuperFunctional is locked and cannot be edited.\n");
     }

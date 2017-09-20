@@ -52,3 +52,19 @@ func_call = energy('SCF', dft_functional=build_pbe0_superfunctional) #TEST
 compare_values(reference_pbe0, func_call, 6, "PBE0 by dft_functional function")  #TEST
 
 
+reference_wpbe_4 = -75.27504649361146 #TEST
+reference_wpbe_5 = -75.68905614289174 #TEST
+reference_wpbe_6 = -76.06252941761247 #TEST
+
+set dft_omega 0.4
+func_call = energy('SCF', dft_functional="wPBE") #TEST
+compare_values(reference_wpbe_4, func_call, 6, "wPBE0 omega=0.4")  #TEST
+
+set dft_omega 0.5
+func_call = energy('SCF', dft_functional="wPBE") #TEST
+compare_values(reference_wpbe_5, func_call, 6, "wPBE0 omega=0.5")  #TEST
+
+set dft_omega 0.6
+func_call = energy('SCF', dft_functional="wPBE") #TEST
+compare_values(reference_wpbe_6, func_call, 6, "wPBE0 omega=0.6")  #TEST
+
