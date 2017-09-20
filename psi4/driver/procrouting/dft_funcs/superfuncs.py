@@ -184,7 +184,12 @@ def build_superfunctional(name, restricted):
 
     # Set options
     if core.has_option_changed("SCF", "DFT_OMEGA") and sup[0].is_x_lrc():
-        sup[0].set_x_omega(core.get_option("SCF", "DFT_OMEGA"))
+        omega = core.get_option("SCF", "DFT_OMEGA")
+        sup[0].set_x_omega(omega)
+
+        # We also need to loop through all of the exchange functionals
+        for x_func in sup[0].x_functionals():
+            x_func.set_omega(omega)
     if core.has_option_changed("SCF", "DFT_OMEGA_C") and sup[0].is_c_lrc():
         sup[0].set_c_omega(core.get_option("SCF", "DFT_OMEGA_C"))
 
