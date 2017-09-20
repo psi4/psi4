@@ -163,8 +163,10 @@ void LibXCFunctional::set_omega(double omega) {
         xc_gga_x_hjs_set_params(&xc_functional_, omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
         xc_functional_.cam_omega = omega;
+        xc_lda_x_set_params(xc_functional_.func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
         xc_functional_.cam_omega = omega;
+        xc_lda_x_set_params(xc_functional_.func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
     } else {
         outfile->Printf("LibXCfunctional: set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
         throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");

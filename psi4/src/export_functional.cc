@@ -88,6 +88,7 @@ void export_functional(py::module &m) {
         .def("is_x_hybrid", &SuperFunctional::is_x_hybrid, "Requires exact exchange?")
         .def("is_c_hybrid", &SuperFunctional::is_c_hybrid, "Requires MP2 correlation?")
         .def("is_c_scs_hybrid", &SuperFunctional::is_c_scs_hybrid, "Requires SCS-MP2 correlation?")
+        .def("is_libxc_func", &SuperFunctional::is_libxc_func, "A full SuperFunctional definition from LibXC.")
         .def("set_name", &SuperFunctional::set_name, "Sets the SuperFunctional name.")
         .def("set_description", &SuperFunctional::set_description, "Sets the SuperFunctional description.")
         .def("set_citation", &SuperFunctional::set_citation, "Sets the SuperFunctional citation.")
