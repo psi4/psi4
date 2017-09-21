@@ -53,7 +53,7 @@ def kwargs_lower(kwargs):
     # items() inefficient on Py2 but this is small dict
     for key, value in kwargs.items():
         lkey = key.lower()
-        if lkey in ['subset']:  # only kw for which case matters
+        if lkey in ['subset', 'banner']:  # only kw for which case matters
             lvalue = value
         else:
             try:

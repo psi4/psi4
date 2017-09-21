@@ -55,12 +55,13 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf dft-grac dft-dsd 
                   dft-freq dft-grad1 dft-grad2 dft-pbe0-2 dft-psivar dft-b3lyp dft1 dft-vv10 
-                  dft1-alt dft2 dft3 docs-bases docs-dft extern1 extern2
+                  dft1-alt dft2 dft3 dft-omega docs-bases docs-dft extern1 extern2
                   fsapt1 fsapt2 isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 fci-coverage 
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
-                  fnocc3 fnocc4 frac ghosts gibbs matrix1 mcscf1 mcscf2 mcscf3 
+                  fnocc3 fnocc4 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
+                  mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper 
                   mints9 mints10 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
                   mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
