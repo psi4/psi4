@@ -166,7 +166,7 @@ def build_superfunctional(name, restricted):
             dashparam = 'd3mzero'
 
         if base_name not in superfunctionals.keys():
-            raise ValidationError("SCF: Functional (%s) with base (%s) not found!" % (alias, base_name))
+            raise ValidationError("SCF: Functional (%s) with base (%s) not found!" % (name, base_name))
 
         func = superfunctionals[base_name](base_name, npoints, deriv, restricted)[0]
 
@@ -174,7 +174,7 @@ def build_superfunctional(name, restricted):
         sup = (func, (base_name, dashparam))
 
     else:
-        raise ValidationError("SCF: Functional (%s) not found!" % alias)
+        raise ValidationError("SCF: Functional (%s) not found!" % name)
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc() or sup[0].is_c_lrc()):
         raise ValidationError("INTEGRAL_PACKAGE ERD does not play nicely with omega ERI's, so stopping.")
