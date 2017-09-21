@@ -282,7 +282,7 @@ def frac_traverse(name, **kwargs):
     return E
 
 
-def frac_nuke(molecule, **kwargs):
+def frac_nuke(name, **kwargs):
     """Pull all the electrons out, one at a time"""
     optstash = p4util.OptionsState(
         ['SCF', 'GUESS'],
@@ -296,8 +296,19 @@ def frac_nuke(molecule, **kwargs):
 
     kwargs = p4util.kwargs_lower(kwargs)
 
-    # The molecule is required, and should be the neutral species
+    # Make sure the molecule the user provided is the active one, and neutral
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+
+    if molecule.molecular_charge() != 0:
+        raise ValidationError("""frac_nuke requires neutral molecule to start.""")
+    if molecule.schoenflies_symbol() != 'c1':
+        core.print_out("""  Requested procedure `frac_nuke` does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+    molecule = molecule.clone()
+    molecule.reset_point_group('c1')
+    molecule.update_geometry()
+
     charge0 = molecule.molecular_charge()
     mult0 = molecule.multiplicity()
 
@@ -343,7 +354,7 @@ def frac_nuke(molecule, **kwargs):
     stats = []
 
     # Run one SCF to burn things in
-    E, wfn= driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
+    E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
 
     # Determine HOMO
     eps_a = wfn.epsilon_a()
@@ -391,10 +402,10 @@ def frac_nuke(molecule, **kwargs):
 
             if HOMO > 0:
                 eps = wfn.epsilon_a()
-                potentials.append(eps.get(HOMO - 1))
+                potentials.append(eps.np[HOMO - 1])
             else:
                 eps = wfn.epsilon_b()
-                potentials.append(eps.get(-HOMO - 1))
+                potentials.append(eps.np[-HOMO - 1])
 
             Ns.append(Nintegral + occ - 1.0)
             energies.append(E)
@@ -419,8 +430,8 @@ def frac_nuke(molecule, **kwargs):
         elif Nb == 0:
             HOMO = Na
         else:
-            E_a = eps_a.get(int(Na - 1))
-            E_b = eps_b[int(Nb - 1)]
+            E_a = eps_a.np[int(Na - 1)]
+            E_b = eps_b.np[int(Nb - 1)]
             if E_a >= E_b:
                 HOMO = Na
             else:
@@ -463,10 +474,6 @@ def frac_nuke(molecule, **kwargs):
         fh.write("""    %6s %6s %6s %6s %6s %6s\n""" % ('N', 'Na', 'Nb', 'Charge', 'Mult', 'HOMO'))
         for line in stats:
             fh.write(line)
-
-    # Properly, should clone molecule but since not returned and easy to unblemish,
-    molecule.set_molecular_charge(charge0)
-    molecule.set_multiplicity(mult0)
 
     optstash.restore()
     return E

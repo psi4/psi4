@@ -659,7 +659,7 @@ for something like::
     # A useful optional argument is nmax, the total number of electrons to
     # strip out of the molecule, in this case, 2.
     # Many optional arguments are available, see the python file
-    frac_nuke('wb97', molecule=h2o, nmax = 2)
+    frac.frac_nuke('wb97', molecule=h2o, nmax = 2)
 
 Dispersion Corrections
 ~~~~~~~~~~~~~~~~~~~~~~
