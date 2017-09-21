@@ -37,21 +37,79 @@ from psi4.driver import driver
 from psi4.driver.p4util.exceptions import *
 
 
-def frac_traverse(molecule, **kwargs):
-    """Scan from +1 electron to -1 electron"""
+def frac_traverse(name, **kwargs):
+    """Scan electron occupancy from +1 electron to -1.
 
+    Parameters
+    ----------
+    name : string, functional function
+        DFT functional string name or function defining functional
+        whose omega is to be optimized.
+    molecule : :ref:`molecule <op_py_molecule>`, optional
+        Target molecule (neutral) for which omega is to be tuned, if not last defined.
+    cation_mult : int, optional
+        Multiplicity of cation, if not neutral multiplicity + 1.
+    anion_mult : int, optional
+        Multiplicity of anion, if not neutral multiplicity + 1.
+    frac_start : int, optional
+        Iteration at which to start frac procedure when not reading previous
+        guess. Defaults to 25.
+    HOMO_occs : list, optional
+        Occupations to step through for cation, by default `[1 - 0.1 * x for x in range(11)]`.
+    LUMO_occs : list, optional
+        Occupations to step through for anion, by default `[1 - 0.1 * x for x in range(11)]`.
+    HOMO : int, optional
+        Index of HOMO.
+    LUMO : int, optional
+        Index of LUMO.
+    frac_diis : bool, optional
+        Do use DIIS for non-1.0-occupied points?
+    neutral_guess : bool, optional
+        Do use neutral orbitals as guess for the anion?
+    hf_guess: bool, optional
+        Do use UHF guess before UKS?
+    continuous_guess : bool, optional
+        Do carry along guess rather than reguessing at each occupation?
+    filename : str, optional
+        Result filename, if not name of molecule.
+
+    Returns
+    -------
+    dict
+        Dictionary associating SCF energies with occupations.
+
+    """
+    optstash = p4util.OptionsState(
+        ['SCF', 'GUESS'],
+        ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'REFERENCE'],
+        ["SCF", "FRAC_START"],
+        ["SCF", "FRAC_RENORMALIZE"],
+        #["SCF", "FRAC_LOAD"],
+        ["SCF", "FRAC_OCC"],
+        ["SCF", "FRAC_VAL"],
+        ["SCF", "FRAC_DIIS"])
     kwargs = p4util.kwargs_lower(kwargs)
 
-    # The molecule is required, and should be the neutral species
+    # Make sure the molecule the user provided is the active one, and neutral
+    molecule = kwargs.pop('molecule', core.get_active_molecule())
     molecule.update_geometry()
+
+    if molecule.molecular_charge() != 0:
+        raise ValidationError("""frac_traverse requires neutral molecule to start.""")
+    if molecule.schoenflies_symbol() != 'c1':
+        core.print_out("""  Requested procedure `frac_traverse` does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+    molecule = molecule.clone()
+    molecule.reset_point_group('c1')
+    molecule.update_geometry()
+
     charge0 = molecule.molecular_charge()
     mult0 = molecule.multiplicity()
 
     chargep = charge0 + 1
     chargem = charge0 - 1
 
-    # By default, the multiplicity of the cation/anion are mult0 + 1
-    # These are overridden with the cation_mult and anion_mult kwargs
     multp = kwargs.get('cation_mult', mult0 + 1)
     multm = kwargs.get('anion_mult', mult0 + 1)
 
@@ -79,7 +137,7 @@ def frac_traverse(molecule, **kwargs):
 
     # By default, burn-in with UHF first, if UKS
     hf_guess = False
-    if core.get_global_option('REFERENCE') == 'UKS':
+    if core.get_local_option('SCF', 'REFERENCE') == 'UKS':
         hf_guess = kwargs.get('hf_guess', True)
 
     # By default, re-guess at each N
@@ -96,16 +154,15 @@ def frac_traverse(molecule, **kwargs):
 
     # => Run the neutral for its orbitals, if requested <= #
 
-    old_df_ints_io = core.get_global_option("DF_INTS_IO")
-    core.set_global_option("DF_INTS_IO", "SAVE")
+    core.set_local_option("SCF", "DF_INTS_IO", "SAVE")
 
-    old_guess = core.get_global_option("GUESS")
+    old_guess = core.get_local_option("SCF", "GUESS")
     if (neutral_guess):
         if (hf_guess):
-            core.set_global_option("REFERENCE","UHF")
-        driver.energy('scf', dft_functional=name)
-        core.set_global_option("GUESS", "READ")
-        core.set_global_option("DF_INTS_IO", "LOAD")
+            core.set_local_option("SCF", "REFERENCE", "UHF")
+        driver.energy('scf', dft_functional=name, molecule=molecule, **kwargs)
+        core.set_local_option("SCF", "GUESS", "READ")
+        core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
     # => Run the anion first <= #
 
@@ -114,20 +171,20 @@ def frac_traverse(molecule, **kwargs):
 
     # => Burn the anion in with hf, if requested <= #
     if hf_guess:
-        core.set_global_option("REFERENCE","UHF")
+        core.set_local_option("SCF", "REFERENCE","UHF")
         driver.energy('scf', dft_functional=name, molecule=molecule, **kwargs)
-        core.set_global_option("REFERENCE","UKS")
-        core.set_global_option("GUESS", "READ")
-        core.set_global_option("DF_INTS_IO", "SAVE")
+        core.set_local_option("SCF", "REFERENCE", "UKS")
+        core.set_local_option("SCF", "GUESS", "READ")
+        core.set_local_option("SCF", "DF_INTS_IO", "SAVE")
 
-    core.set_global_option("FRAC_START", frac_start)
-    core.set_global_option("FRAC_RENORMALIZE", True)
-    core.set_global_option("FRAC_LOAD", False)
+    core.set_local_option("SCF", "FRAC_START", frac_start)
+    core.set_local_option("SCF", "FRAC_RENORMALIZE", True)
+    # NYI core.set_local_option("SCF", "FRAC_LOAD", False)
 
     for occ in LUMO_occs:
 
-        core.set_global_option("FRAC_OCC", [LUMO])
-        core.set_global_option("FRAC_VAL", [occ])
+        core.set_local_option("SCF", "FRAC_OCC", [LUMO])
+        core.set_local_option("SCF", "FRAC_VAL", [occ])
 
         E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
         C = 1
@@ -146,11 +203,11 @@ def frac_traverse(molecule, **kwargs):
         energies.append(E)
         convs.append(C)
 
-        core.set_global_option("FRAC_START", 2)
-        core.set_global_option("FRAC_LOAD", True)
-        core.set_global_option("GUESS", "READ")
-        core.set_global_option("FRAC_DIIS", frac_diis)
-        core.set_global_option("DF_INTS_IO", "LOAD")
+        core.set_local_option("SCF", "FRAC_START", 2)
+        #core.set_local_option("SCF", "FRAC_LOAD", True)
+        core.set_local_option("SCF", "GUESS", "READ")
+        core.set_local_option("SCF", "FRAC_DIIS", frac_diis)
+        core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
 
     # => Run the neutral next <= #
@@ -161,22 +218,22 @@ def frac_traverse(molecule, **kwargs):
     # Burn the neutral in with hf, if requested <= #
 
     if not continuous_guess:
-        core.set_global_option("GUESS", old_guess)
+        core.set_local_option("SCF", "GUESS", old_guess)
         if hf_guess:
-            core.set_global_option("FRAC_START", 0)
-            core.set_global_option("REFERENCE", "UHF")
+            core.set_local_option("SCF", "FRAC_START", 0)
+            core.set_local_option("SCF", "REFERENCE", "UHF")
             driver.energy('scf', dft_functional=name, molecule=molecule, **kwargs)
-            core.set_global_option("REFERENCE", "UKS")
-            core.set_global_option("GUESS", "READ")
-        core.set_global_option("FRAC_LOAD", False)
+            core.set_local_option("SCF", "REFERENCE", "UKS")
+            core.set_local_option("SCF", "GUESS", "READ")
+        # NYI core.set_local_option("SCF", "FRAC_LOAD", False)
 
-    core.set_global_option("FRAC_START", frac_start)
-    core.set_global_option("FRAC_RENORMALIZE", True)
+    core.set_local_option("SCF", "FRAC_START", frac_start)
+    core.set_local_option("SCF", "FRAC_RENORMALIZE", True)
 
     for occ in HOMO_occs:
 
-        core.set_global_option("FRAC_OCC", [HOMO])
-        core.set_global_option("FRAC_VAL", [occ])
+        core.set_local_option("SCF", "FRAC_OCC", [HOMO])
+        core.set_local_option("SCF", "FRAC_VAL", [occ])
 
         E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
         C = 1
@@ -195,13 +252,11 @@ def frac_traverse(molecule, **kwargs):
         energies.append(E)
         convs.append(C)
 
-        core.set_global_option("FRAC_START", 2)
-        core.set_global_option("FRAC_LOAD", True)
-        core.set_global_option("GUESS", "READ")
-        core.set_global_option("FRAC_DIIS", frac_diis)
-        core.set_global_option("DF_INTS_IO", "LOAD")
-
-    core.set_global_option("DF_INTS_IO", old_df_ints_io)
+        core.set_local_option("SCF", "FRAC_START", 2)
+        # NYI core.set_local_option("SCF", "FRAC_LOAD", True)
+        core.set_local_option("SCF", "GUESS", "READ")
+        core.set_local_option("SCF", "FRAC_DIIS", frac_diis)
+        core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
     # => Print the results out <= #
     E = {}
@@ -222,15 +277,21 @@ def frac_traverse(molecule, **kwargs):
         for k in range(len(occs)):
             fh.write("""    %11.3E %24.16E %24.16E %11d\n""" % (occs[k], energies[k], potentials[k], convs[k]))
 
-    # Properly, should clone molecule but since not returned and easy to unblemish,
-    molecule.set_molecular_charge(charge0)
-    molecule.set_multiplicity(mult0)
-
+    optstash.restore()
     return E
 
 
 def frac_nuke(molecule, **kwargs):
     """Pull all the electrons out, one at a time"""
+    optstash = p4util.OptionsState(
+        ['SCF', 'GUESS'],
+        ['SCF', 'DF_INTS_IO'],
+        ["SCF", "FRAC_START"],
+        ["SCF", "FRAC_RENORMALIZE"],
+        # NYI ["SCF", "FRAC_LOAD"],
+        ["SCF", "FRAC_OCC"],
+        ["SCF", "FRAC_VAL"],
+        ["SCF", "FRAC_DIIS"])
 
     kwargs = p4util.kwargs_lower(kwargs)
 
@@ -272,7 +333,7 @@ def frac_nuke(molecule, **kwargs):
     stats_filename = root + '.stats.dat'
 
     # => Traverse <= #
-    core.set_global_option("DF_INTS_IO", "SAVE")
+    core.set_local_option("SCF", "DF_INTS_IO", "SAVE")
 
     Ns = []
     energies = []
@@ -308,9 +369,9 @@ def frac_nuke(molecule, **kwargs):
     charge += 1
     mult = Na - Nb + 1
 
-    core.set_global_option("DF_INTS_IO", "LOAD")
-    core.set_global_option("FRAC_START", frac_start)
-    core.set_global_option("FRAC_RENORMALIZE", True)
+    core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
+    core.set_local_option("SCF", "FRAC_START", frac_start)
+    core.set_local_option("SCF", "FRAC_RENORMALIZE", True)
 
     # Nuke 'em Rico!
     for Nintegral in range(N, Nmin, -1):
@@ -318,8 +379,8 @@ def frac_nuke(molecule, **kwargs):
         # Nuke the current HOMO
         for occ in foccs:
 
-            core.set_global_option("FRAC_OCC", [HOMO])
-            core.set_global_option("FRAC_VAL", [occ])
+            core.set_local_option("SCF", "FRAC_OCC", [HOMO])
+            core.set_local_option("SCF", "FRAC_VAL", [occ])
 
             E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
             C = 1
@@ -338,10 +399,10 @@ def frac_nuke(molecule, **kwargs):
             energies.append(E)
             convs.append(C)
 
-            core.set_global_option("FRAC_START", 2)
-            core.set_global_option("FRAC_LOAD", True)
-            core.set_global_option("FRAC_DIIS", frac_diis)
-            core.set_global_option("GUESS", "READ")
+            core.set_local_option("SCF", "FRAC_START", 2)
+            # NYI core.set_local_option("SCF", "FRAC_LOAD", True)
+            core.set_local_option("SCF", "FRAC_DIIS", frac_diis)
+            core.set_local_option("SCF", "GUESS", "READ")
 
         # Set the next charge/mult
         molecule.set_molecular_charge(charge)
@@ -373,7 +434,7 @@ def frac_nuke(molecule, **kwargs):
         charge += 1
         mult = Na - Nb + 1
 
-    core.set_global_option("DF_INTS_IO", "NONE")
+    core.set_local_option("SCF", "DF_INTS_IO", "NONE")
 
     # => Print the results out <= #
     E = {}
@@ -406,6 +467,7 @@ def frac_nuke(molecule, **kwargs):
     molecule.set_molecular_charge(charge0)
     molecule.set_multiplicity(mult0)
 
+    optstash.restore()
     return E
 
 

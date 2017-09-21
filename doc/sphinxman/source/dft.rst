@@ -632,43 +632,34 @@ Two python macros exist for this code. The first is :py:func:`~frac.frac_travers
 used to investigate the fractional occupation behavior within one electron above
 and below the neutral. An example is::
 
-    memory 512 MB
-    from frac import *
-
     molecule h2o {
-    0 1
-    O   
-    H 1 1.0 
+    0 1  # must be neutral
+    O
+    H 1 1.0
     H 1 1.0 2 104.5
-    symmetry c1  # FRAC jobs must be run in C1 symmetry
+    # FRAC jobs will be be run in C1 symmetry
     }
 
     set {
     reference uks  # UKS, as we need to do all kinds of weird stuff
     basis aug-cc-pvdz  # Augmented functions are very important on the anion side
     scf_type df
-    dft_functional wb97
     }
 
-    # Argument is the molecule object. 
+    # Argument is functional.
     # Many optional arguments are available, see the python file
-    frac_traverse(h2o)
+    frac_traverse('wb97', molecule=h2o)
 
 The other macro is :py:func:`~frac.frac_nuke`, which strips several electrons out of the
 system to gather information on the MSIE over a range of orbitals. The input is
 identical to the above, except that the :py:func:`~frac.frac_traverse` call is substituted
 for something like::
 
-    # Argument is the molecule object. 
+    # Argument is the functional.
     # A useful optional argument is nmax, the total number of electrons to
     # strip out of the molecule, in this case, 2.
     # Many optional arguments are available, see the python file
-    frac_nuke(h2o, nmax = 2)
-
-Note: this feature is new/powerful enough that we have several papers pending on
-it, and are interested in expanding this work. If you would like to publish
-results using this code, please contact Rob Parrish to make arrangements for
-collaboration. 
+    frac_nuke('wb97', molecule=h2o, nmax = 2)
 
 Dispersion Corrections
 ~~~~~~~~~~~~~~~~~~~~~~
