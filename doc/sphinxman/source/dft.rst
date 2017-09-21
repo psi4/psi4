@@ -589,25 +589,23 @@ perform IP fitting, one simply calls the :py:func:`~frac.ip_fitting` Python macr
 setting up a standard LRC UKS computation. A representative example is::
 
     memory 512 MB
-    from frac import *
 
     molecule h2o {
-    0 1
-    O   
-    H 1 1.0 
+    0 1  # must be neutral
+    O
+    H 1 1.0
     H 1 1.0 2 104.5
-    symmetry c1  # IP fitting must be run in C1 symmetry
+    # IP fitting runs in C1 symmetry
     }
 
     set {
     reference uks  # UKS, as we need to do neutral/cation
     basis cc-pvdz
     scf_type df
-    dft_functional wb97
     }
 
-    # Arguments are molecule object, minimum omega, maximum omega 
-    ip_fitting(h2o, 0.4, 2.0)
+    # Optional arguments are minimum omega, maximum omega, molecule object
+    omega = ip_fitting('wb97', 0.4, 2.0, molecule=h2o)
 
 This performs IP fitting on water for wB97/cc-pVDZ with density fitting. A
 number of neutral and cation single-point computations are run at various values

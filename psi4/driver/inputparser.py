@@ -775,6 +775,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from psi4.core import *\n'
     imports += 'from psi4.driver.diatomic import anharmonicity\n'
     imports += 'from psi4.driver.gaussian_n import *\n'
+    imports += 'from psi4.driver.frac import ip_fitting\n'
     imports += 'from psi4.driver.aliases import *\n'
     imports += 'from psi4.driver.driver_cbs import *\n'
     imports += 'from psi4.driver.wrapper_database import database, db, DB_RGT, DB_RXN\n'
