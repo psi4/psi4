@@ -26,8 +26,9 @@
 # @END LICENSE
 #
 
-from __future__ import absolute_import
 from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 import math
@@ -497,6 +498,7 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
 
     """
     optstash = p4util.OptionsState(
+        ['SCF', 'REFERENCE'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
         ['SCF', 'DFT_OMEGA'],
@@ -511,6 +513,10 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     if 'read' in kwargs:
         read = True
         read180 = kwargs['read']
+
+    if core.get_option('SCF', 'REFERENCE') != 'UKS':
+        core.print_out("""  Requested procedure `ip_fitting` runs further calculations with UKS reference.\n""")
+        core.set_local_option('SCF', 'REFERENCE', 'UKS')
 
     # Make sure the molecule the user provided is the active one, and neutral
     molecule = kwargs.pop('molecule', core.get_active_molecule())
@@ -549,6 +555,9 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
                            banner='IP Fitting SCF: Burn-in', **kwargs)
     core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
+    if not wfn.functional().is_x_lrc():
+        raise ValidationError("""Not sensible to optimize omega for non-long-range-correction functional.""")
+
     # Determine HOMO, to determine mult1
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
@@ -557,8 +566,8 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     elif Nb == 0:
         HOMO = Na
     else:
-        E_a = eps_a.get(int(Na - 1))
-        E_b = eps_b.get(int(Nb - 1))
+        E_a = eps_a.np[int(Na - 1)]
+        E_b = eps_b.np[int(Nb - 1)]
         if E_a >= E_b:
             HOMO = Na
         else:
@@ -596,10 +605,10 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
     if Nb == 0:
-        E_HOMO = eps_a.get(int(Na - 1))
+        E_HOMO = eps_a.np[int(Na - 1)]
     else:
-        E_a = eps_a.get(int(Na - 1))
-        E_b = eps_b.get(int(Nb - 1))
+        E_a = eps_a.np[int(Na - 1)]
+        E_b = eps_b.np[int(Nb - 1)]
         E_HOMO = max(E_a, E_b)
     E_HOMOr = E_HOMO
     core.IO.change_file_namespace(180, "ot", "neutral")
@@ -620,8 +629,7 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     delta_r = IPr - kIPr
 
     if IPr > kIPr:
-        message = ("""\n***IP Fitting Error: Right Omega limit should have kIP > IP: {} !> {}""".format(kIPr, IPr))
-        raise ValidationError(message)
+        raise ValidationError("""\n***IP Fitting Error: Right Omega limit should have kIP > IP: {} !> {}""".format(kIPr, IPr))
 
     omegas.append(omega_r)
     types.append('Right Limit')
@@ -647,10 +655,10 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
     if Nb == 0:
-        E_HOMO = eps_a.get(int(Na - 1))
+        E_HOMO = eps_a.np[int(Na - 1)]
     else:
-        E_a = eps_a.get(int(Na - 1))
-        E_b = eps_b.get(int(Nb - 1))
+        E_a = eps_a.np[int(Na - 1)]
+        E_b = eps_b.np[int(Nb - 1)]
         E_HOMO = max(E_a, E_b)
     E_HOMOl = E_HOMO
     core.IO.change_file_namespace(180, "ot", "neutral")
@@ -670,8 +678,7 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     delta_l = IPl - kIPl
 
     if IPl < kIPl:
-        message = ("""\n***IP Fitting Error: Left Omega limit should have kIP < IP: {} !< {}""".format(kIPl, IPl))
-        raise ValidationError(message)
+        raise ValidationError("""\n***IP Fitting Error: Left Omega limit should have kIP < IP: {} !< {}""".format(kIPl, IPl))
 
     omegas.append(omega_l)
     types.append('Left Limit')
@@ -704,10 +711,10 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
         eps_a = wfn.epsilon_a()
         eps_b = wfn.epsilon_b()
         if Nb == 0:
-            E_HOMO = eps_a.get(int(Na - 1))
+            E_HOMO = eps_a.np[int(Na - 1)]
         else:
-            E_a = eps_a.get(int(Na - 1))
-            E_b = eps_b.get(int(Nb - 1))
+            E_a = eps_a.np[int(Na - 1)]
+            E_b = eps_b.np[int(Nb - 1)]
             E_HOMO = max(E_a, E_b)
         core.IO.change_file_namespace(180, "ot", "neutral")
 
