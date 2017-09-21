@@ -23,5 +23,5 @@ bench_data = [                                  # TEST
     ["EP2 3B1 ENERGY",            0.14333736]]  # TEST
 
 for k, v in bench_data:                         # TEST
-    compare_values(v, get_variable(k), 5, k)    # TEST
+    compare_values(v, get_variable(k), 4, k)    # TEST
 

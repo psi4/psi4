@@ -1,4 +1,4 @@
-#! SAPT2+3(CCD) aug-cc-pVDZ computation of the water dimer interaction energy, 
+#! SAPT2+3(CCD) aug-cc-pVDZ+midbond computation of the water dimer interaction energy, 
 #! using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
 
 memory 1 GB
@@ -13,7 +13,10 @@ H  -0.599677   0.040712   0.000000
 O   1.350625   0.111469   0.000000
 H   1.680398  -0.373741  -0.758561
 H   1.680398  -0.373741   0.758561
+--
+@He 0.321738   0.016205   0.000000
 }
+
 
 set {
 basis aug-cc-pvdz
@@ -26,48 +29,21 @@ nat_orbs_t3 true
 
 energy('sapt2+3(ccd)')
 
-Eref = [  #TEST
--0.01306509072,  #TEST
- 0.01341768624,  #TEST
--0.00391313510,  #TEST
--0.00358358119,  #TEST
--0.00858408936,  #TEST
--0.00672343851,  #TEST
--0.00733405078,  #TEST
--0.00700901577,  #TEST
--0.00718054690,  #TEST
--0.00729762464,  #TEST
--0.00697258964,  #TEST
--0.00714412076]  #TEST
+ref_dict = { #TEST
+    "SAPT ELST ENERGY" : -0.0130799218, #TEST
+    "SAPT EXCH ENERGY" :  0.0134281026, #TEST
+    "SAPT IND ENERGY" : -0.0039857670, #TEST
+    "SAPT DISP ENERGY" : -0.0039040389, #TEST
+    "SAPT0 TOTAL ENERGY" : -0.0088460989, #TEST
+    "SAPT2 TOTAL ENERGY" : -0.0070471173, #TEST
+    "SAPT2+ TOTAL ENERGY" : -0.0077595114, #TEST
+    "SAPT2+(3) TOTAL ENERGY" : -0.0073764424, #TEST
+    "SAPT2+3 TOTAL ENERGY" : -0.0075701074, #TEST
+    "SAPT2+(CCD) TOTAL ENERGY" : -0.0077310292, #TEST
+    "SAPT2+(3)(CCD) TOTAL ENERGY" : -0.0073479602, #TEST
+    "SAPT2+3(CCD) TOTAL ENERGY" : -0.0075416252, #TEST
+} #TEST
 
-Labels = [
-'SAPT Elst',
-'SAPT Exch',
-'SAPT Ind',
-'SAPT Disp',
-'SAPT0 Total',
-'SAPT2 Total',
-'SAPT2+ Total',
-'SAPT2+(3) Total',
-'SAPT2+3 Total',
-'SAPT2+(CCD) Total',
-'SAPT2+(3)(CCD) Total',
-'SAPT2+3(CCD) Total']
 
-Echeck = [];
-
-Echeck.append(psi4.get_variable("SAPT ELST ENERGY"))
-Echeck.append(psi4.get_variable("SAPT EXCH ENERGY"))
-Echeck.append(psi4.get_variable("SAPT IND ENERGY"))
-Echeck.append(psi4.get_variable("SAPT DISP ENERGY"))
-Echeck.append(psi4.get_variable("SAPT0 TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2 TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2+ TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2+(3) TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2+3 TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2+(CCD) TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2+(3)(CCD) TOTAL ENERGY"))
-Echeck.append(psi4.get_variable("SAPT2+3(CCD) TOTAL ENERGY"))
-
-for k in range(0, len(Labels)):  #TEST
-    compare_values(Eref[k], Echeck[k], 6, Labels[k])  #TEST
+for key, ref in ref_dict.items():  #TEST
+    compare_values(ref, psi4.get_variable(key), 6, key)  #TEST
