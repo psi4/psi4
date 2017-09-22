@@ -213,7 +213,7 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
     if (xc_func_name_ == "XC_LDA_X") {
         if (vsize == 3) {
             // (XC(func_type) *p, FLOAT alpha, int relativistic, FLOAT omega);
-            xc_lda_x_set_params(xc_functional_.get(), values[0], (int)values[1], values[2]);
+            //xc_lda_x_set_params(xc_functional_.get(), values[0], (int)values[1], values[2]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_B86") {
@@ -309,6 +309,14 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
             // ((XC(func_type) *p, FLOAT beta, FLOAT d, FLOAT C0_0, FLOAT C0_1, FLOAT C0_2, FLOAT
             // C0_3);
             xc_mgga_c_pkzb_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3],
+                                      values[4], values[5]);
+            failed = false;
+        }
+    } else if (xc_func_name_ == "XC_MGGA_C_PKZB") {
+        if (vsize == 6) {
+            // ((XC(func_type) *p, FLOAT beta, FLOAT d, FLOAT C0_0, FLOAT C0_1, FLOAT C0_2, FLOAT
+            // C0_3);
+            xc_mgga_c_pkzb_set_params(&xc_functional_, values[0], values[1], values[2], values[3],
                                       values[4], values[5]);
             failed = false;
         }
