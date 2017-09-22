@@ -100,3 +100,7 @@ eneyne.run_dftd3('b3lyp', 'd3', {'s6': 1.0,  's8': 0.722, 'sr6': 1.217, 'alpha6'
 eneyne.run_dftd3('b3lyp', 'd', {'s6': 0.75})
 eneyne.run_dftd3('b3lyp', 'd2', {'s6': 0.75})
 
+set basis_guess sto-3g
+energy('b3lyp-d3bj')
+
+

@@ -18,8 +18,9 @@ set {
 
 svwn_uhf_energy = energy('SVWN')
 
-# pbe_uhf_energy = energy('PBE')
-# raise Exception()
+pbe_uhf_energy = energy('pbe')
+
+pbe_uhf_energy = energy('wB97X-D')
 
 #### RHF Singlet Oxygen energy, singlet
 molecule mol {
