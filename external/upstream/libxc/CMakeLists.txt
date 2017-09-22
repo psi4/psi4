@@ -12,8 +12,10 @@ else()
     include(ExternalProject)
     message(STATUS "Suitable Libxc could not be located, ${Magenta}Building Libxc${ColourReset} instead.")
     ExternalProject_Add(libxc_external
-        GIT_REPOSITORY https://github.com/loriab/libxc
-        GIT_TAG master
+        #DOWNLOAD_COMMAND ""
+        #SOURCE_DIR "/home/psilocaluser/gits/libxc"
+        GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
+        GIT_TAG 55e6a #master until master stable wrt xc_funcs.h
         #GIT_TAG v3.0.0  # TODO tag when stable
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}

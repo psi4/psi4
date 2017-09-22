@@ -79,8 +79,8 @@ std::shared_ptr<SuperFunctional> SuperFunctional::blank() {
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
     // Only allow build from full XC kernals
-    if (name.find("_XC_") == std::string::npos) {
-        throw PSIEXCEPTION("XC_build requires full _XC_ functional names");
+    if (name.find("XC_") == std::string::npos) {
+        throw PSIEXCEPTION("XC_build requires full XC_ functional names");
     }
 
     // Build the superfuncitonal
