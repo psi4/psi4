@@ -184,6 +184,8 @@ The desired image in this case is called "AlphaMOs.tga", and looks like	this:
 Script Options
 --------------
 
+The help for ``vmd_cube.py`` can be obtained from the console::
+
     >>> ./vmd_cube.py --help
     usage: vmd_cube.py [-h] [--color1 [<integer>]] [--color2 [<integer>]]
                        [--iso [<isovalue>]] [--rx [<angle>]] [--ry [<angle>]]
