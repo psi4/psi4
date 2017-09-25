@@ -40,7 +40,7 @@ from .sapt_util import print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms
 
 # Only export the run_ scripts
-__all__ = ['run_sapt_dft', 'sapt_dft']
+__all__ = ['run_sapt_dft', 'sapt_dft', 'run_sf_sapt']
 
 
 def run_sapt_dft(name, **kwargs):
@@ -367,3 +367,76 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
     return data
+
+
+def run_sf_sapt(name, **kwargs):
+    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_FUNCTIONAL'],
+                                   ['SCF', 'DFT_GRAC_SHIFT'], ['SCF', 'SAVE_JK'])
+
+    core.tstart()
+
+    # Alter default algorithm
+    if not core.has_option_changed('SCF', 'SCF_TYPE'):
+        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    core.prepare_options_for_module("SAPT")
+
+    # Get the molecule of interest
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        sapt_dimer = kwargs.pop('molecule', core.get_active_molecule())
+    else:
+        core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
+        sapt_dimer = ref_wfn.molecule()
+
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
+
+    # Print out the title and some information
+    core.print_out("\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("         " + "Spin-Flip SAPT Procedure".center(58) + "\n")
+    core.print_out("\n")
+    core.print_out("         " + "by Daniel G. A. Smith and Konrad Patkowski".center(58) + "\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("\n")
+
+    core.print_out("  ==> Algorithm <==\n\n")
+    core.print_out("   JK Algorithm            %12s\n" % core.get_option("SCF", "SCF_TYPE"))
+    core.print_out("\n")
+    core.print_out("   Required computations:\n")
+    core.print_out("     HF  (Monomer A)\n")
+    core.print_out("     HF  (Monomer B)\n")
+    core.print_out("\n")
+
+    if (core.get_option('SCF', 'REFERENCE') != 'ROHF'):
+        raise ValidationError('Spin-Flip SAPT currently only supports restricted open-shell references.')
+
+    # Run the two monomer computations
+    core.IO.set_default_namespace('dimer')
+    data = {}
+
+    if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
+        core.set_global_option('DF_INTS_IO', 'SAVE')
+
+    # # Compute dimer wavefunction
+    hf_cache = {}
+
+    hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SF-SAPT: HF Monomer A", **kwargs)
+    hf_data["wfn_a"] = core.get_variable("CURRENT ENERGY")
+
+    core.set_global_option("SAVE_JK", True)
+    hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SF-SAPT: HF Monomer B", **kwargs)
+    hf_data["wfn_b"] = core.get_variable("CURRENT ENERGY")
+    core.set_global_option("SAVE_JK", False)
+
+    # Print out final data
+    core.print_out("\n")
+    # core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
+
+    # Copy data back into globals
+    # for k, v in data.items():
+    #     core.set_variable(k, v)
+
+    core.tstop()
+
+    return dimer_wfn
