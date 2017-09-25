@@ -29,6 +29,7 @@
 import numpy as np
 
 from psi4 import core
+from psi4.driver import constants
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.molutil import *
@@ -36,7 +37,7 @@ from psi4.driver.procrouting.proc import scf_helper
 from psi4.driver.procrouting import proc_util
 
 from . import sapt_jk_terms
-from .sapt_util import print_sapt_hf_summary, print_sapt_dft_summary
+from .sapt_util import print_sapt_var, print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms
 from . import sapt_sf_terms
 
@@ -447,20 +448,30 @@ def run_sf_sapt(name, **kwargs):
     core.print_out("         ---------------------------------------------------------\n")
     core.print_out("\n")
 
-    sapt_sf_terms.compute_sapt_sf(sapt_dimer, sapt_jk, wfn_A, wfn_B)
-    print("""
--2.19593479538e-05
-2.33478810333e-08
-0.000129837744038
-""")
+    sf_data = sapt_sf_terms.compute_sapt_sf(sapt_dimer, sapt_jk, wfn_A, wfn_B)
 
-    # Print out final data
-    # core.print_out("\n")
-    # core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
-    # Copy data back into globals
-    # for k, v in data.items():
-    #     core.set_variable(k, v)
+    # Print the results
+    core.print_out("   Spin-Flip SAPT Results\n")
+    core.print_out("  " + "-" * 103 + "\n")
+
+    print_vars = ["Elst10", "Exch10(S^2)", "Exch10(S^2) [diagonal]", "Exch10(S^2) [off-diagonal]"]
+    for key in print_vars:
+        value = sf_data[key]
+        print_vals = (key, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kcalmol)
+        string = "    %-26s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]\n" % print_vals
+        core.print_out(string)
+    core.print_out("  " + "-" * 103 + "\n\n")
+
+
+    # Set variables
+    core.set_variable("SAPT ELST ENERGY", sf_data["Elst10"])
+    core.set_variable("SAPT EXCH ENERGY", sf_data["Exch10(S^2)"])
+
+    dimer_wfn = core.Wavefunction.build(sapt_dimer, wfn_A.basisset())
+    for k, v in sf_data.items():
+        dimer_wfn.set_variable(k, v)
+        core.set_variable("E " + k, v)
 
     core.tstop()
 

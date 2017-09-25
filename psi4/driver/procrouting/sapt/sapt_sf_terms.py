@@ -131,8 +131,9 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     Computes Elst and Spin-Flip SAPT0 for ROHF wavefunctions
     """
 
-    core.print_out("\n  ==> Preparing SF-SAPT Data Cache <== \n\n")
-    jk.print_header()
+    if do_print:
+        core.print_out("\n  ==> Preparing SF-SAPT Data Cache <== \n\n")
+        jk.print_header()
 
     ### Build intermediates
 
@@ -173,8 +174,10 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     num_el_B = (2 * ndocc_B + nsocc_B)
 
     ### Build JK Terms
-    core.print_out("\n  ==> Computing required JK matrices <== \n\n")
+    if do_print:
+        core.print_out("\n  ==> Computing required JK matrices <== \n\n")
 
+    # Writen so that we can reorganize order to save on DF-JK cost.
     pairs = [("ii", Ci, None, Ci),
              ("ij", Ci, _chain_dot(Ci.T, S, Cj), Cj),
              ("jj", Cj, None, Cj),
@@ -196,7 +199,8 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     K = {key: val for key, val in zip(names, tmp_K)}
 
     ### Compute Terms
-    core.print_out("\n  ==> Computing Spin-Flip Exchange and Electostatics <== \n\n")
+    if do_print:
+        core.print_out("\n  ==> Computing Spin-Flip Exchange and Electostatics <== \n\n")
 
     w_A = V_A + 2 * J["ii"] + J["aa"]
     w_B = V_B + 2 * J["jj"] + J["bb"]
@@ -238,11 +242,11 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     elst_ijij = 4 * (two_el_repulsion + attractive_a + attractive_b + nuclear_repulsion)
 
     elst = elst_abab + elst_ibib + elst_jaja + elst_ijij
-    print(print_sapt_var("Elst,10", elst))
+    # print(print_sapt_var("Elst,10", elst))
 
     ### Start diagonal exchange
 
-    exch_diag = 0
+    exch_diag = 0.0
     exch_diag -= np.vdot(Pj, 2 * K["ii"] + K["aa"])
     exch_diag -= np.vdot(Pb, K["ii"])
     exch_diag -= np.vdot(_chain_dot(Pi, S, Pj), (h_Aa + h_Ab + h_Ba + h_Bb))
@@ -265,11 +269,11 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
 
     exch_diag -= np.vdot(_chain_dot(Pa, S, Pj), K["aj"])
     exch_diag -= np.vdot(_chain_dot(Pi, S, Pb), K["ib"])
-    print(print_sapt_var("Exch10,offdiagonal", exch_diag))
+    # print(print_sapt_var("Exch10,offdiagonal", exch_diag))
 
     ### Start off-diagonal exchange
 
-    exch_offdiag = 0
+    exch_offdiag = 0.0
     exch_offdiag -= np.vdot(Pb, K["aa"])
     exch_offdiag -= np.vdot(_chain_dot(Pa, S, Pb), (h_Aa + h_Bb))
     exch_offdiag += np.vdot(_chain_dot(Pa, S, Pj), K["bb"])
@@ -287,7 +291,14 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     exch_offdiag -= 2.0 * np.vdot(_chain_dot(Pa, S, Pj), K["ib"])
 
     exch_offdiag -= np.vdot(_chain_dot(Pa, S, Pb), K["ab"])
-    print(print_sapt_var("Exch10,off-diagonal", exch_offdiag))
-    print(print_sapt_var("Exch10(S^2)", exch_offdiag + exch_diag))
-    # print("Exch10,diagonal", print_sapt_var(elst))
-    print(exch_offdiag)
+    # print(print_sapt_var("Exch10,off-diagonal", exch_offdiag))
+    # print(print_sapt_var("Exch10(S^2)", exch_offdiag + exch_diag))
+
+    ret_values = {
+        "Elst10": elst,
+        "Exch10(S^2) [diagonal]": exch_diag,
+        "Exch10(S^2) [off-diagonal]": exch_offdiag,
+        "Exch10(S^2)": exch_offdiag + exch_diag,
+    }
+
+    return ret_values
