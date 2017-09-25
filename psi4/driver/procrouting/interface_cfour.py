@@ -146,6 +146,8 @@ def run_cfour(name, **kwargs):
                 ':' + os.environ.get("PSIDATADIR") + '/basis',
         'GENBAS_PATH': os.environ.get("PSIDATADIR") + '/basis',
         'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
+        'MKL_NUM_THREADS':  os.environ.get('MKL_NUM_THREADS'),
+        'OMP_NUM_THREADS':  os.environ.get('OMP_NUM_THREADS'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
 
@@ -201,12 +203,12 @@ def run_cfour(name, **kwargs):
     print('output in', current_directory + '/' + core.outfile_name())
     pathfill = '' if os.path.isabs(core.outfile_name()) else current_directory + os.path.sep
 
-    # Handle user's OMP_NUM_THREADS and CFOUR_OMP_NUM_THREADS
-    omp_num_threads_found = 'OMP_NUM_THREADS' in os.environ
-    if omp_num_threads_found == True:
-        omp_num_threads_user = os.environ['OMP_NUM_THREADS']
+    # Handle threading
+    #   OMP_NUM_THREADS from env is in lenv from above
+    #   threads from psi4 -n (core.get_num_threads()) is ignored
+    #   CFOUR_OMP_NUM_THREADS psi4 option takes precedence, handled below
     if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
-        os.environ['OMP_NUM_THREADS'] = str(core.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
+        lenv['OMP_NUM_THREADS'] = str(core.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
 
     #print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")
     # Call executable xcfour, directing cfour output to the psi4 output file
@@ -227,11 +229,6 @@ def run_cfour(name, **kwargs):
         core.print_out(data)
         c4out += data
     internal_p4c4_info['output'] = c4out
-
-    # Restore user's OMP_NUM_THREADS
-    if omp_num_threads_found == True:
-        if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
-            os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
     c4files = {}
     core.print_out('\n')
