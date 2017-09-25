@@ -352,6 +352,9 @@ void export_mints(py::module& m) {
         .def(py::init<const std::vector<int>&>())
         .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
+        .def("sum", &Dimension::sum, "Gets the sum of the values in the dimension object")
+        .def("max", &Dimension::max, "Gets the maximum value from the dimension object")
+        .def("zero", &Dimension::zero, "Zeros all values in the dimension object")
         .def("n", &Dimension::n,
              // py::return_value_policy<copy_const_reference>(),
              py::return_value_policy::copy, "The order of the dimension")
