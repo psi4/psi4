@@ -679,6 +679,17 @@ void HF::finalize()
 
 }
 
+void HF::set_jk(std::shared_ptr<JK> jk) {
+    // Cheap basis check
+    int jk_nbf = jk->basisset()->nbf();
+    int hf_nbf = basisset_->nbf();
+    if (hf_nbf != jk_nbf) {
+        throw PSIEXCEPTION("Tried setting a JK object whos number of basis functions does not match HF's!");
+    }
+
+    jk_ = jk;
+}
+
 void HF::semicanonicalize()
 {
     throw PSIEXCEPTION("This type of wavefunction cannot be semicanonicalized!");

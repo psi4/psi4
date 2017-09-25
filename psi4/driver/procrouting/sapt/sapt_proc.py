@@ -111,7 +111,6 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
     # # Compute dimer wavefunction
-    hf_cache = {}
     hf_wfn_dimer = None
     if do_delta_hf:
         if (core.get_global_option('SCF_TYPE') == 'DF'):
@@ -123,15 +122,21 @@ def run_sapt_dft(name, **kwargs):
 
         if (core.get_global_option('SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+
         hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SAPT(DFT): delta HF Monomer A", **kwargs)
         hf_data["HF MONOMER A"] = core.get_variable("CURRENT ENERGY")
-
 
         core.set_global_option("SAVE_JK", True)
         if (core.get_global_option('SCF_TYPE') == 'DF'):
             core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+
         hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SAPT(DFT): delta HF Monomer B", **kwargs)
         hf_data["HF MONOMER B"] = core.get_variable("CURRENT ENERGY")
+        core.set_global_option("SAVE_JK", False)
+
+        # Grab JK object and set to A (so we do not save many JK objects)
+        sapt_jk = hf_wfn_B.jk()
+        hf_wfn_A.set_jk(sapt_jk)
         core.set_global_option("SAVE_JK", False)
 
         # Move it back to monomer A
@@ -146,9 +151,7 @@ def run_sapt_dft(name, **kwargs):
         core.print_out("         ---------------------------------------------------------\n")
         core.print_out("\n")
 
-        # Build cache and JK
-        sapt_jk = hf_wfn_B.jk()
-
+        # Build cache
         hf_cache = sapt_jk_terms.build_sapt_jk_cache(hf_wfn_A, hf_wfn_B, sapt_jk, True)
 
         # Electostatics
@@ -176,6 +179,8 @@ def run_sapt_dft(name, **kwargs):
 
         data["Delta HF Correction"] = core.get_variable("SAPT(DFT) Delta HF")
         sapt_jk.finalize()
+
+        del hf_wfn_A, hf_wfn_B, sapt_jk
 
     if hf_wfn_dimer is None:
         dimer_wfn = core.Wavefunction.build(sapt_dimer, core.get_global_option("BASIS"))
@@ -212,6 +217,11 @@ def run_sapt_dft(name, **kwargs):
     wfn_B = scf_helper(
         sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
     data["DFT MONOMERB"] = core.get_variable("CURRENT ENERGY")
+
+    # Save JK object
+    sapt_jk = wfn_B.jk()
+    wfn_A.set_jk(sapt_jk)
+    core.set_global_option("SAVE_JK", False)
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
 
@@ -322,6 +332,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     if data is None:
         data = {}
 
+    # Build SAPT cache
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
 
     # Electostatics
