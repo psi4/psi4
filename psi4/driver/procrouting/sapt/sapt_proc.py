@@ -38,9 +38,11 @@ from psi4.driver.procrouting import proc_util
 from . import sapt_jk_terms
 from .sapt_util import print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms
+from . import sapt_sf_terms
 
 # Only export the run_ scripts
 __all__ = ['run_sapt_dft', 'sapt_dft', 'run_sf_sapt']
+
 
 
 def run_sapt_dft(name, **kwargs):
@@ -429,19 +431,31 @@ def run_sf_sapt(name, **kwargs):
     if (core.get_option('SCF', 'SCF_TYPE') == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
-    # # Compute dimer wavefunction
-    hf_cache = {}
-
-    hf_wfn_A = scf_helper("SCF", molecule=monomerA, banner="SF-SAPT: HF Monomer A", **kwargs)
-    hf_data["wfn_a"] = core.get_variable("CURRENT ENERGY")
+    # Compute dimer wavefunction
+    wfn_A = scf_helper("SCF", molecule=monomerA, banner="SF-SAPT: HF Monomer A", **kwargs)
 
     core.set_global_option("SAVE_JK", True)
-    hf_wfn_B = scf_helper("SCF", molecule=monomerB, banner="SF-SAPT: HF Monomer B", **kwargs)
-    hf_data["wfn_b"] = core.get_variable("CURRENT ENERGY")
+    wfn_B = scf_helper("SCF", molecule=monomerB, banner="SF-SAPT: HF Monomer B", **kwargs)
+    sapt_jk = wfn_B.jk()
     core.set_global_option("SAVE_JK", False)
 
-    # Print out final data
     core.print_out("\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("         " + "Spin-Flip SAPT Exchange and Electrostatics".center(58) + "\n")
+    core.print_out("\n")
+    core.print_out("         " + "by Daniel G. A. Smith and Konrad Patkowski".center(58) + "\n")
+    core.print_out("         ---------------------------------------------------------\n")
+    core.print_out("\n")
+
+    sapt_sf_terms.compute_sapt_sf(sapt_dimer, sapt_jk, wfn_A, wfn_B)
+    print("""
+-2.19593479538e-05
+2.33478810333e-08
+0.000129837744038
+""")
+
+    # Print out final data
+    # core.print_out("\n")
     # core.print_out(print_sapt_dft_summary(data, "SAPT(DFT)"))
 
     # Copy data back into globals
