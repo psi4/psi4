@@ -2,6 +2,7 @@ dist: xenial
 language: cpp
 sudo: false
 python: 3.6.5
+ruby: 2.5.3
 before_cache:
   - conda deactivate
   - conda remove --name p4env --all
@@ -33,6 +34,7 @@ matrix:
         packages:
         - liblapack-dev
         - clang-3.6
+        - clang-format-3.6
         - libhdf5-serial-dev
         - gfortran
     env:
@@ -41,6 +43,7 @@ matrix:
       - C_COMPILER='clang-3.6'
       - Fortran_COMPILER='gfortran'
       - BUILD_TYPE='release'
+      - RUN_DANGER=true
 
   #- os: linux
   #  compiler: clang
@@ -145,6 +148,11 @@ before_script:
 - ${CXX_COMPILER} --version
 - ${Fortran_COMPILER} --version
 - ${C_COMPILER} --version
+- |
+  if [[ "${RUN_DANGER}" = true ]]; then
+    bundle install --gemfile=.github/Gemfile
+    BUNDLE_GEMFILE=.github/Gemfile bundle exec danger --dangerfile=.github/Dangerfile
+  fi
     # * can't use conda dist of the more complicated lib pkgs (e.g., CheMPS2, PCMSolver, v2rdm)
     #   b/c their c++ symbols don't mix with the different Travis compilers. for other
     #   reasons, pkgs are being compiled less statically, sad for CI.

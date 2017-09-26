@@ -1,0 +1,62 @@
+# Adapted from https://github.com/capistrano/danger/blob/master/Dangerfile
+# Q: What is a Dangerfile, anyway? A: See http://danger.systems/
+
+# ------------------------------------------------------------------------------
+# Additional pull request data
+# ------------------------------------------------------------------------------
+pr_number = github.pr_json["number"]
+pr_url = github.pr_json["_links"]["html"]["href"]
+# Sometimes its a README fix, or something like that
+declared_trivial = (github.pr_title + github.pr_body).include?("#trivial")
+
+# Just to let people know
+warn("PR is classed as Work in Progress") if github.pr_title.include? "[WIP]"
+
+# Ensure a clean commits history
+if git.commits.any? { |c| c.message =~ /^Merge branch '#{github.branch_for_base}'/ }
+  fail('Please rebase to get rid of the merge commits in this PR')
+end
+
+# Check code style with clang-format
+code_style_validation.check validator: 'clang-format-3.6',
+                            file_extensions: ['.h', '.cc'],
+                            ignore_file_patterns: [/^external\//]
+
+# ------------------------------------------------------------------------------
+# What changed?
+# ------------------------------------------------------------------------------
+# Was any code modified in the psi4, cmake and external directories?
+has_code_changes = !git.modified_files.grep(/^(psi4|cmake|external)/).empty?
+# Was any code modified in the tests directory?
+has_test_changes = !git.modified_files.grep(/^tests/).empty?
+# Was documentation added?
+has_doc_changes = !git.modified_files.grep(/^doc/).empty?
+
+# ------------------------------------------------------------------------------
+# You've made changes to psi4|cmake|external,
+# but didn't write any tests?
+# ------------------------------------------------------------------------------
+if has_code_changes && !has_test_changes
+  if %w(tests).any? { |dir| Dir.exist?(dir) }
+    warn("There are code changes, but no corresponding tests. "\
+         "Please include tests if this PR introduces any modifications in "\
+         "behavior.",
+         :sticky => false)
+  else
+    markdown <<-MARKDOWN
+Thanks for the PR! This project lacks automated tests, which makes reviewing and approving PRs somewhat difficult. Please make sure that your contribution has not broken backwards compatibility or introduced any risky changes.
+
+MARKDOWN
+  end
+end
+
+# ------------------------------------------------------------------------------
+# You've made nontrivial changes to psi4|cmake|external,
+# but didn't write any docs?
+# ------------------------------------------------------------------------------
+doc_changes_recommended = git.insertions > 15
+if has_code_changes && !has_doc_changes && doc_changes_recommended && !declared_trivial
+  warn("Consider adding supporting documentation to this change. Documentation sources can be found in the `doc` directory.")
+end
+
+lgtm.check_lgtm
