@@ -24,7 +24,7 @@ compare_dict = { #TEST
     "SAPT ELST ENERGY":                 -0.02368051, #TEST
     "E Elst10":                         -0.02368051, #TEST
     "SAPT EXCH ENERGY":                  0.14186858, #TEST
-    "E Exch10(S^2)":                     0.14186858, #TEST
+    "E Exch10(S^2) [highspin]":          0.14186858, #TEST
     "E Exch10(S^2) [diagonal]":          0.00010209, #TEST
     "E Exch10(S^2) [off-diagonal]":      0.14176648, #TEST
 } #TEST

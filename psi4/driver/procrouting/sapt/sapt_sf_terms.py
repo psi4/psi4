@@ -27,6 +27,7 @@
 #
 
 import numpy as np
+from collections import OrderedDict
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
@@ -294,11 +295,11 @@ def compute_sapt_sf(dimer, jk, wfn_A, wfn_B, do_print=True):
     # print(print_sapt_var("Exch10,off-diagonal", exch_offdiag))
     # print(print_sapt_var("Exch10(S^2)", exch_offdiag + exch_diag))
 
-    ret_values = {
+    ret_values = OrderedDict({
         "Elst10": elst,
         "Exch10(S^2) [diagonal]": exch_diag,
         "Exch10(S^2) [off-diagonal]": exch_offdiag,
-        "Exch10(S^2)": exch_offdiag + exch_diag,
-    }
+        "Exch10(S^2) [highspin]": exch_offdiag + exch_diag,
+    })
 
     return ret_values

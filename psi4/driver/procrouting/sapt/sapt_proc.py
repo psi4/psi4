@@ -384,8 +384,11 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
 
 def run_sf_sapt(name, **kwargs):
-    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_FUNCTIONAL'],
-                                   ['SCF', 'DFT_GRAC_SHIFT'], ['SCF', 'SAVE_JK'])
+    optstash = p4util.OptionsState(['SCF', 'SCF_TYPE'],
+                                   ['SCF', 'REFERENCE'],
+                                   ['SCF', 'DFT_FUNCTIONAL'],
+                                   ['SCF', 'DFT_GRAC_SHIFT'],
+                                   ['SCF', 'SAVE_JK'])
 
     core.tstart()
 
@@ -439,7 +442,6 @@ def run_sf_sapt(name, **kwargs):
     wfn_B = scf_helper("SCF", molecule=monomerB, banner="SF-SAPT: HF Monomer B", **kwargs)
     sapt_jk = wfn_B.jk()
     core.set_global_option("SAVE_JK", False)
-
     core.print_out("\n")
     core.print_out("         ---------------------------------------------------------\n")
     core.print_out("         " + "Spin-Flip SAPT Exchange and Electrostatics".center(58) + "\n")
@@ -450,23 +452,20 @@ def run_sf_sapt(name, **kwargs):
 
     sf_data = sapt_sf_terms.compute_sapt_sf(sapt_dimer, sapt_jk, wfn_A, wfn_B)
 
-
     # Print the results
     core.print_out("   Spin-Flip SAPT Results\n")
     core.print_out("  " + "-" * 103 + "\n")
 
-    print_vars = ["Elst10", "Exch10(S^2)", "Exch10(S^2) [diagonal]", "Exch10(S^2) [off-diagonal]"]
-    for key in print_vars:
+    for key, value in sf_data.items():
         value = sf_data[key]
         print_vals = (key, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kcalmol)
         string = "    %-26s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]\n" % print_vals
         core.print_out(string)
     core.print_out("  " + "-" * 103 + "\n\n")
 
-
     # Set variables
     core.set_variable("SAPT ELST ENERGY", sf_data["Elst10"])
-    core.set_variable("SAPT EXCH ENERGY", sf_data["Exch10(S^2)"])
+    core.set_variable("SAPT EXCH ENERGY", sf_data["Exch10(S^2) [highspin]"])
 
     dimer_wfn = core.Wavefunction.build(sapt_dimer, wfn_A.basisset())
     for k, v in sf_data.items():
