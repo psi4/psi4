@@ -1144,6 +1144,7 @@ def optimize(name, **kwargs):
             molecule.set_geometry(moleculeclone.geometry())
             core.clean()
             optstash.restore()
+            raise ConvergenceError("""geometry optimization""", n - 1)
             return thisenergy
 
         core.print_out('\n    Structure for next step:\n')

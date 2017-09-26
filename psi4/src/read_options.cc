@@ -3209,7 +3209,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computation command (*e.g.*, when ``energy('c4-ccsd')`` requested
       but not when ``energy('cfour')`` requested). Value can always be set
       explicitly. -*/
-      options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC MRCC EXTERNAL");
+      options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC NCC MRCC EXTERNAL");
 
       /*- Specifies the molecular charge.
       **Psi4 Interface:** Keyword set from active molecule. -*/
