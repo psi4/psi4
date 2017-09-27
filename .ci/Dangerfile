@@ -58,5 +58,3 @@ doc_changes_recommended = git.insertions > 15
 if has_code_changes && !has_doc_changes && doc_changes_recommended && !declared_trivial
   warn("Consider adding supporting documentation to this change. Documentation sources can be found in the `doc` directory.")
 end
-
-lgtm.check_lgtm

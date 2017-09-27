@@ -2,5 +2,4 @@
 source "https://rubygems.org"
 
 gem "danger"
-gem "danger-lgtm"
 gem 'danger-code_style_validation', :git => 'https://github.com/robertodr/danger-code_style_validation.git', :branch => 'pass-exe'
