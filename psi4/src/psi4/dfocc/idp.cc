@@ -33,398 +33,393 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::idp()
-{
-     int dim, block;
+void DFOCC::idp() {
+    int dim, block;
 
-if (reference_ == "RESTRICTED") {
-    // Form IDPs
-    nidpA=0;
+    if (reference_ == "RESTRICTED") {
+        // Form IDPs
+        nidpA = 0;
 
-    // All V-O 
-    if (nfrzc == 0 && nfrzv == 0) nidpA += nvirA * noccA; 
+        // All V-O
+        if (nfrzc == 0 && nfrzv == 0) nidpA += nvirA * noccA;
 
-    // All V-O, AOCC-FC 
-    else if (nfrzc > 0 && nfrzv == 0) {
-             nidpA += nvirA * noccA; 
-             nidpA += naoccA * nfrzc; 
-    }
+        // All V-O, AOCC-FC
+        else if (nfrzc > 0 && nfrzv == 0) {
+            nidpA += nvirA * noccA;
+            nidpA += naoccA * nfrzc;
+        }
 
-    // All V-O, AOCC-FC, FV-AVIR 
-    else if (nfrzc > 0 && nfrzv > 0) {
-             nidpA += nvirA * noccA; 
-             nidpA += naoccA * nfrzc; 
-             nidpA += navirA * nfrzv; 
-    }
+        // All V-O, AOCC-FC, FV-AVIR
+        else if (nfrzc > 0 && nfrzv > 0) {
+            nidpA += nvirA * noccA;
+            nidpA += naoccA * nfrzc;
+            nidpA += navirA * nfrzv;
+        }
 
-    outfile->Printf("\n\tNumber of independent-pairs: %3d\n", nidpA);
-      
-    
-    if (nidpA > 0) {
-      idp_returnA = 1;
-      wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
-      kappaA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector of current step", nidpA));
-      kappa_newA = SharedTensor1d(new Tensor1d("Alpha new orb rot params vector of current step", nidpA));
-      kappa_barA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector with respect to scf MOs", nidpA));
-      wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
-      idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
-      idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+        outfile->Printf("\n\tNumber of independent-pairs: %3d\n", nidpA);
 
-      // set idpA 
-      dim=0;
+        if (nidpA > 0) {
+            idp_returnA = 1;
+            wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
+            kappaA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector of current step", nidpA));
+            kappa_newA = SharedTensor1d(new Tensor1d("Alpha new orb rot params vector of current step", nidpA));
+            kappa_barA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector with respect to scf MOs", nidpA));
+            wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
+            idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
+            idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
 
-      // V-O 
-      if (nfrzc == 0 && nfrzv == 0) { 
-          for(int a = 0; a < nvirA; a++){
-	      for(int i = 0; i < noccA; i++){
-	          idprowA->set(dim, a + noccA);
-	          idpcolA->set(dim, i);
-	          dim++;  
-	      }
-          }
-      }
+            // set idpA
+            dim = 0;
 
-      // All V-O, AOCC-FC 
-      else if (nfrzc > 0 && nfrzv == 0) {
-          // AOCC-FC
-	  for(int i = 0; i < naoccA; i++){
-	      for(int j = 0; j < nfrzc; j++){
-	          idprowA->set(dim, i + nfrzc);
-	          idpcolA->set(dim, j);
-	          dim++;  
-	      }
-          }
+            // V-O
+            if (nfrzc == 0 && nfrzv == 0) {
+                for (int a = 0; a < nvirA; a++) {
+                    for (int i = 0; i < noccA; i++) {
+                        idprowA->set(dim, a + noccA);
+                        idpcolA->set(dim, i);
+                        dim++;
+                    }
+                }
+            }
 
-          // V-O
-          for(int a = 0; a < nvirA; a++){
-	      for(int i = 0; i < noccA; i++){
-	          idprowA->set(dim, a + noccA);
-	          idpcolA->set(dim, i);
-	          dim++;  
-	      }
-          }
-      }
+            // All V-O, AOCC-FC
+            else if (nfrzc > 0 && nfrzv == 0) {
+                // AOCC-FC
+                for (int i = 0; i < naoccA; i++) {
+                    for (int j = 0; j < nfrzc; j++) {
+                        idprowA->set(dim, i + nfrzc);
+                        idpcolA->set(dim, j);
+                        dim++;
+                    }
+                }
 
-      // All V-O, AOCC-FC, FV-AVIR 
-      else if (nfrzc > 0 && nfrzv > 0) {
-          // AOCC-FC
-	  for(int i = 0; i < naoccA; i++){
-	      for(int j = 0; j < nfrzc; j++){
-	          idprowA->set(dim, i + nfrzc);
-	          idpcolA->set(dim, j);
-	          dim++;  
-	      }
-          }
+                // V-O
+                for (int a = 0; a < nvirA; a++) {
+                    for (int i = 0; i < noccA; i++) {
+                        idprowA->set(dim, a + noccA);
+                        idpcolA->set(dim, i);
+                        dim++;
+                    }
+                }
+            }
 
-          // V-O
-          for(int a = 0; a < nvirA; a++){
-	      for(int i = 0; i < noccA; i++){
-	          idprowA->set(dim, a + noccA);
-	          idpcolA->set(dim, i);
-	          dim++;  
-	      }
-          }
+            // All V-O, AOCC-FC, FV-AVIR
+            else if (nfrzc > 0 && nfrzv > 0) {
+                // AOCC-FC
+                for (int i = 0; i < naoccA; i++) {
+                    for (int j = 0; j < nfrzc; j++) {
+                        idprowA->set(dim, i + nfrzc);
+                        idpcolA->set(dim, j);
+                        dim++;
+                    }
+                }
 
-          // FV-AVIR
-          for(int a = 0; a < nfrzv; a++){
-              for(int b = 0; b < nvirA; b++){
-	          idprowA->set(dim, a + npop);
-	          idpcolA->set(dim, b + noccA);
-	          dim++;  
-	      }
-          }
-      }
+                // V-O
+                for (int a = 0; a < nvirA; a++) {
+                    for (int i = 0; i < noccA; i++) {
+                        idprowA->set(dim, a + noccA);
+                        idpcolA->set(dim, i);
+                        dim++;
+                    }
+                }
 
-      if (print_ > 2){
-         for(int i = 0; i < nidpA; i++){
-             outfile->Printf("\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
-	     
-         }
-      }
-    }// end if nidpA != 0
+                // FV-AVIR
+                for (int a = 0; a < nfrzv; a++) {
+                    for (int b = 0; b < nvirA; b++) {
+                        idprowA->set(dim, a + npop);
+                        idpcolA->set(dim, b + noccA);
+                        dim++;
+                    }
+                }
+            }
 
-    else if (nidpA == 0) {
+            if (print_ > 2) {
+                for (int i = 0; i < nidpA; i++) {
+                    outfile->Printf("\ti, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+                }
+            }
+        }  // end if nidpA != 0
+
+        else if (nidpA == 0) {
             outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
             tstop();
             exit(EXIT_SUCCESS);
-    }
-     
-}// end if (reference_ == "RESTRICTED") 
+        }
 
-else if (reference_ == "UNRESTRICTED") {
-    // Form IDPs
-    nidpA=0;
-    nidpB=0;
+    }  // end if (reference_ == "RESTRICTED")
 
-    // All V-O 
-    if (nfrzc == 0 && nfrzv == 0) { 
-        nidpA += nvirA * noccA; 
-        nidpB += nvirB * noccB; 
-    }
+    else if (reference_ == "UNRESTRICTED") {
+        // Form IDPs
+        nidpA = 0;
+        nidpB = 0;
 
-    // All V-O, AOCC-FC 
-    else if (nfrzc > 0 && nfrzv == 0) {
-             nidpA += nvirA * noccA; 
-             nidpA += naoccA * nfrzc; 
-             nidpB += nvirB * noccB; 
-             nidpB += naoccB * nfrzc; 
-    }
+        // All V-O
+        if (nfrzc == 0 && nfrzv == 0) {
+            nidpA += nvirA * noccA;
+            nidpB += nvirB * noccB;
+        }
 
-    // All V-O, AOCC-FC, FV-AVIR 
-    else if (nfrzc > 0 && nfrzv > 0) {
-             nidpA += nvirA * noccA; 
-             nidpA += naoccA * nfrzc; 
-             nidpA += navirA * nfrzv; 
-             nidpB += nvirB * noccB; 
-             nidpB += naoccB * nfrzc; 
-             nidpB += navirB * nfrzv; 
-    }
+        // All V-O, AOCC-FC
+        else if (nfrzc > 0 && nfrzv == 0) {
+            nidpA += nvirA * noccA;
+            nidpA += naoccA * nfrzc;
+            nidpB += nvirB * noccB;
+            nidpB += naoccB * nfrzc;
+        }
 
-    outfile->Printf("\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
-      
+        // All V-O, AOCC-FC, FV-AVIR
+        else if (nfrzc > 0 && nfrzv > 0) {
+            nidpA += nvirA * noccA;
+            nidpA += naoccA * nfrzc;
+            nidpA += navirA * nfrzv;
+            nidpB += nvirB * noccB;
+            nidpB += naoccB * nfrzc;
+            nidpB += navirB * nfrzv;
+        }
 
-    if (nidpA == 0 && nidpB == 0) {
-        outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
-        tstop();
-        exit(EXIT_SUCCESS);
-    }
-    
-     if (nidpA > 0) {
-      idp_returnA = 1;
-      wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
-      kappaA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector of current step", nidpA));
-      kappa_newA = SharedTensor1d(new Tensor1d("Alpha new orb rot params vector of current step", nidpA));
-      kappa_barA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector with respect to scf MOs", nidpA));
-      wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
-      idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
-      idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+        outfile->Printf("\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
+        outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
 
-      // set idpA 
-      dim=0;
+        if (nidpA == 0 && nidpB == 0) {
+            outfile->Printf("\tThere is not any non-redundant orbital rotation pair! \n");
+            tstop();
+            exit(EXIT_SUCCESS);
+        }
 
-      // V-O 
-      if (nfrzc == 0 && nfrzv == 0) { 
-          for(int a = 0; a < nvirA; a++){
-	      for(int i = 0; i < noccA; i++){
-	          idprowA->set(dim, a + noccA);
-	          idpcolA->set(dim, i);
-	          dim++;  
-	      }
-          }
-      }
+        if (nidpA > 0) {
+            idp_returnA = 1;
+            wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
+            kappaA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector of current step", nidpA));
+            kappa_newA = SharedTensor1d(new Tensor1d("Alpha new orb rot params vector of current step", nidpA));
+            kappa_barA = SharedTensor1d(new Tensor1d("Alpha orb rot params vector with respect to scf MOs", nidpA));
+            wog_intA = SharedTensor1d(new Tensor1d("Alpha Interpolated MO grad vector", nidpA));
+            idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
+            idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
 
-      // All V-O, AOCC-FC 
-      else if (nfrzc > 0 && nfrzv == 0) {
-          // AOCC-FC
-	  for(int i = 0; i < naoccA; i++){
-	      for(int j = 0; j < nfrzc; j++){
-	          idprowA->set(dim, i + nfrzc);
-	          idpcolA->set(dim, j);
-	          dim++;  
-	      }
-          }
+            // set idpA
+            dim = 0;
 
-          // V-O
-          for(int a = 0; a < nvirA; a++){
-	      for(int i = 0; i < noccA; i++){
-	          idprowA->set(dim, a + noccA);
-	          idpcolA->set(dim, i);
-	          dim++;  
-	      }
-          }
-      }
+            // V-O
+            if (nfrzc == 0 && nfrzv == 0) {
+                for (int a = 0; a < nvirA; a++) {
+                    for (int i = 0; i < noccA; i++) {
+                        idprowA->set(dim, a + noccA);
+                        idpcolA->set(dim, i);
+                        dim++;
+                    }
+                }
+            }
 
-      // All V-O, AOCC-FC, FV-AVIR 
-      else if (nfrzc > 0 && nfrzv > 0) {
-          // AOCC-FC
-	  for(int i = 0; i < naoccA; i++){
-	      for(int j = 0; j < nfrzc; j++){
-	          idprowA->set(dim, i + nfrzc);
-	          idpcolA->set(dim, j);
-	          dim++;  
-	      }
-          }
+            // All V-O, AOCC-FC
+            else if (nfrzc > 0 && nfrzv == 0) {
+                // AOCC-FC
+                for (int i = 0; i < naoccA; i++) {
+                    for (int j = 0; j < nfrzc; j++) {
+                        idprowA->set(dim, i + nfrzc);
+                        idpcolA->set(dim, j);
+                        dim++;
+                    }
+                }
 
-          // V-O
-          for(int a = 0; a < nvirA; a++){
-	      for(int i = 0; i < noccA; i++){
-	          idprowA->set(dim, a + noccA);
-	          idpcolA->set(dim, i);
-	          dim++;  
-	      }
-          }
+                // V-O
+                for (int a = 0; a < nvirA; a++) {
+                    for (int i = 0; i < noccA; i++) {
+                        idprowA->set(dim, a + noccA);
+                        idpcolA->set(dim, i);
+                        dim++;
+                    }
+                }
+            }
 
-          // FV-AVIR
-          for(int a = 0; a < nfrzv; a++){
-              for(int b = 0; b < nvirA; b++){
-	          idprowA->set(dim, a + npop);
-	          idpcolA->set(dim, b + noccA);
-	          dim++;  
-	      }
-          }
-      }
+            // All V-O, AOCC-FC, FV-AVIR
+            else if (nfrzc > 0 && nfrzv > 0) {
+                // AOCC-FC
+                for (int i = 0; i < naoccA; i++) {
+                    for (int j = 0; j < nfrzc; j++) {
+                        idprowA->set(dim, i + nfrzc);
+                        idpcolA->set(dim, j);
+                        dim++;
+                    }
+                }
 
-      if (print_ > 2){
-         for(int i = 0; i < nidpA; i++){
-             outfile->Printf("\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
-	     
-         }
-      }
-    }// end if nidpA != 0
-    
-     if (nidpB > 0) {
-      idp_returnB = 1;
-      wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
-      kappaB = SharedTensor1d(new Tensor1d("Beta orb rot params vector of current step", nidpB));
-      kappa_newB = SharedTensor1d(new Tensor1d("Beta new orb rot params vector of current step", nidpB));
-      kappa_barB = SharedTensor1d(new Tensor1d("Beta orb rot params vector with respect to scf MOs", nidpB));
-      wog_intB = SharedTensor1d(new Tensor1d("Beta Interpolated MO grad vector", nidpB));
-      idprowB = SharedTensor1i(new Tensor1i("Beta IDP Row", nidpB));
-      idpcolB = SharedTensor1i(new Tensor1i("Beta IDP Col", nidpB));
+                // V-O
+                for (int a = 0; a < nvirA; a++) {
+                    for (int i = 0; i < noccA; i++) {
+                        idprowA->set(dim, a + noccA);
+                        idpcolA->set(dim, i);
+                        dim++;
+                    }
+                }
 
-      // set idpB 
-      dim=0;
+                // FV-AVIR
+                for (int a = 0; a < nfrzv; a++) {
+                    for (int b = 0; b < nvirA; b++) {
+                        idprowA->set(dim, a + npop);
+                        idpcolA->set(dim, b + noccA);
+                        dim++;
+                    }
+                }
+            }
 
-      // V-O 
-      if (nfrzc == 0 && nfrzv == 0) { 
-          for(int a = 0; a < nvirB; a++){
-	      for(int i = 0; i < noccB; i++){
-	          idprowB->set(dim, a + noccB);
-	          idpcolB->set(dim, i);
-	          dim++;  
-	      }
-          }
-      }
+            if (print_ > 2) {
+                for (int i = 0; i < nidpA; i++) {
+                    outfile->Printf("\n\t i, idprowA, idpcolA: %3d %3d %3d\n", i, idprowA->get(i), idpcolA->get(i));
+                }
+            }
+        }  // end if nidpA != 0
 
-      // All V-O, AOCC-FC 
-      else if (nfrzc > 0 && nfrzv == 0) {
-          // AOCC-FC
-	  for(int i = 0; i < naoccB; i++){
-	      for(int j = 0; j < nfrzc; j++){
-	          idprowB->set(dim, i + nfrzc);
-	          idpcolB->set(dim, j);
-	          dim++;  
-	      }
-          }
+        if (nidpB > 0) {
+            idp_returnB = 1;
+            wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
+            kappaB = SharedTensor1d(new Tensor1d("Beta orb rot params vector of current step", nidpB));
+            kappa_newB = SharedTensor1d(new Tensor1d("Beta new orb rot params vector of current step", nidpB));
+            kappa_barB = SharedTensor1d(new Tensor1d("Beta orb rot params vector with respect to scf MOs", nidpB));
+            wog_intB = SharedTensor1d(new Tensor1d("Beta Interpolated MO grad vector", nidpB));
+            idprowB = SharedTensor1i(new Tensor1i("Beta IDP Row", nidpB));
+            idpcolB = SharedTensor1i(new Tensor1i("Beta IDP Col", nidpB));
 
-          // V-O
-          for(int a = 0; a < nvirB; a++){
-	      for(int i = 0; i < noccB; i++){
-	          idprowB->set(dim, a + noccB);
-	          idpcolB->set(dim, i);
-	          dim++;  
-	      }
-          }
-      }
+            // set idpB
+            dim = 0;
 
-      // All V-O, AOCC-FC, FV-AVIR 
-      else if (nfrzc > 0 && nfrzv > 0) {
-          // AOCC-FC
-	  for(int i = 0; i < naoccB; i++){
-	      for(int j = 0; j < nfrzc; j++){
-	          idprowB->set(dim, i + nfrzc);
-	          idpcolB->set(dim, j);
-	          dim++;  
-	      }
-          }
+            // V-O
+            if (nfrzc == 0 && nfrzv == 0) {
+                for (int a = 0; a < nvirB; a++) {
+                    for (int i = 0; i < noccB; i++) {
+                        idprowB->set(dim, a + noccB);
+                        idpcolB->set(dim, i);
+                        dim++;
+                    }
+                }
+            }
 
-          // V-O
-          for(int a = 0; a < nvirB; a++){
-	      for(int i = 0; i < noccB; i++){
-	          idprowB->set(dim, a + noccB);
-	          idpcolB->set(dim, i);
-	          dim++;  
-	      }
-          }
+            // All V-O, AOCC-FC
+            else if (nfrzc > 0 && nfrzv == 0) {
+                // AOCC-FC
+                for (int i = 0; i < naoccB; i++) {
+                    for (int j = 0; j < nfrzc; j++) {
+                        idprowB->set(dim, i + nfrzc);
+                        idpcolB->set(dim, j);
+                        dim++;
+                    }
+                }
 
-          // FV-AVIR
-          for(int a = 0; a < nfrzv; a++){
-              for(int b = 0; b < nvirB; b++){
-	          idprowB->set(dim, a + npop);
-	          idpcolB->set(dim, b + noccB);
-	          dim++;  
-	      }
-          }
-      }
+                // V-O
+                for (int a = 0; a < nvirB; a++) {
+                    for (int i = 0; i < noccB; i++) {
+                        idprowB->set(dim, a + noccB);
+                        idpcolB->set(dim, i);
+                        dim++;
+                    }
+                }
+            }
 
-      if (print_ > 2){
-         for(int i = 0; i < nidpB; i++){
-             outfile->Printf("\n\t i, idprowB, idpcolB: %3d %3d %3d\n", i, idprowB->get(i), idpcolB->get(i));
-	     
-         }
-      }
-    }// end if nidpB != 0
-      
-}// end if (reference_ == "UNRESTRICTED") 
+            // All V-O, AOCC-FC, FV-AVIR
+            else if (nfrzc > 0 && nfrzv > 0) {
+                // AOCC-FC
+                for (int i = 0; i < naoccB; i++) {
+                    for (int j = 0; j < nfrzc; j++) {
+                        idprowB->set(dim, i + nfrzc);
+                        idpcolB->set(dim, j);
+                        dim++;
+                    }
+                }
 
-}// end of idp
+                // V-O
+                for (int a = 0; a < nvirB; a++) {
+                    for (int i = 0; i < noccB; i++) {
+                        idprowB->set(dim, a + noccB);
+                        idpcolB->set(dim, i);
+                        dim++;
+                    }
+                }
+
+                // FV-AVIR
+                for (int a = 0; a < nfrzv; a++) {
+                    for (int b = 0; b < nvirB; b++) {
+                        idprowB->set(dim, a + npop);
+                        idpcolB->set(dim, b + noccB);
+                        dim++;
+                    }
+                }
+            }
+
+            if (print_ > 2) {
+                for (int i = 0; i < nidpB; i++) {
+                    outfile->Printf("\n\t i, idprowB, idpcolB: %3d %3d %3d\n", i, idprowB->get(i), idpcolB->get(i));
+                }
+            }
+        }  // end if nidpB != 0
+
+    }  // end if (reference_ == "UNRESTRICTED")
+
+}  // end of idp
 
 //=======================================================
 //          IDP2
-//=======================================================          
-void DFOCC::idp2()
-{
+//=======================================================
+void DFOCC::idp2() {
     outfile->Printf("\n\tForming independent-pairs...\n");
-    
-if (reference_ == "RESTRICTED") {
-    // Form IDPs: All V-O
-    nidpA=0;
-    nidpA = nvirA * noccA; 
-    outfile->Printf("\tNumber of independent-pairs: %3d\n", nidpA);
-      
-    wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
-    idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
-    idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
 
-    int dim = 0;
-    for(int a = 0; a < nvirA; a++){
-        for(int i = 0; i < noccA; i++){
-            idprowA->set(dim, a + noccA);
-            idpcolA->set(dim, i);
-	    dim++;  
-	}
-    }
+    if (reference_ == "RESTRICTED") {
+        // Form IDPs: All V-O
+        nidpA = 0;
+        nidpA = nvirA * noccA;
+        outfile->Printf("\tNumber of independent-pairs: %3d\n", nidpA);
 
-}// end if (reference_ == "RESTRICTED") 
+        wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
+        idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
+        idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
 
-else if (reference_ == "UNRESTRICTED") {
-    // Form IDPs: All V-O
-    nidpA=0;
-    nidpB=0;
-    nidpA = nvirA * noccA; 
-    nidpB = nvirB * noccB; 
-    outfile->Printf("\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
-      
-    wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
-    wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
-    idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
-    idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
-    idprowB = SharedTensor1i(new Tensor1i("Beta IDP Row", nidpB));
-    idpcolB = SharedTensor1i(new Tensor1i("Beta IDP Col", nidpB));
-
-    int dim = 0;
-    for(int a = 0; a < nvirA; a++){
-        for(int i = 0; i < noccA; i++){
-            idprowA->set(dim, a + noccA);
-            idpcolA->set(dim, i);
-	    dim++;  
-	}
-    }
-
-    dim = 0;
-    for(int a = 0; a < nvirB; a++){
-        for(int i = 0; i < noccB; i++){
-	    idprowB->set(dim, a + noccB);
-	    idpcolB->set(dim, i);
-	    dim++;  
+        int dim = 0;
+        for (int a = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++) {
+                idprowA->set(dim, a + noccA);
+                idpcolA->set(dim, i);
+                dim++;
+            }
         }
-    }
 
-}// end if (reference_ == "UNRESTRICTED") 
-}// end of idp2
+    }  // end if (reference_ == "RESTRICTED")
 
-}} // End Namespaces
+    else if (reference_ == "UNRESTRICTED") {
+        // Form IDPs: All V-O
+        nidpA = 0;
+        nidpB = 0;
+        nidpA = nvirA * noccA;
+        nidpB = nvirB * noccB;
+        outfile->Printf("\tNumber of alpha independent-pairs:%3d\n", nidpA);
+        outfile->Printf("\tNumber of beta independent-pairs :%3d\n", nidpB);
+
+        wogA = SharedTensor1d(new Tensor1d("Alpha MO grad vector", nidpA));
+        wogB = SharedTensor1d(new Tensor1d("Beta MO grad vector", nidpB));
+        idprowA = SharedTensor1i(new Tensor1i("Alpha IDP Row", nidpA));
+        idpcolA = SharedTensor1i(new Tensor1i("Alpha IDP Col", nidpA));
+        idprowB = SharedTensor1i(new Tensor1i("Beta IDP Row", nidpB));
+        idpcolB = SharedTensor1i(new Tensor1i("Beta IDP Col", nidpB));
+
+        int dim = 0;
+        for (int a = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++) {
+                idprowA->set(dim, a + noccA);
+                idpcolA->set(dim, i);
+                dim++;
+            }
+        }
+
+        dim = 0;
+        for (int a = 0; a < nvirB; a++) {
+            for (int i = 0; i < noccB; i++) {
+                idprowB->set(dim, a + noccB);
+                idpcolB->set(dim, i);
+                dim++;
+            }
+        }
+
+    }  // end if (reference_ == "UNRESTRICTED")
+}  // end of idp2
+
+}  // namespace dfoccwave
+}  // namespace psi

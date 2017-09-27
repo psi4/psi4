@@ -31,181 +31,178 @@
 #include "defines.h"
 #include "dfocc.h"
 
-
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::combine_ref_sep_tpdm()
-{
-
+void DFOCC::combine_ref_sep_tpdm() {
     SharedTensor2d G, Gref, Gsep;
     timer_on("combine_ref_sep_tpdm");
-if (reference_ == "RESTRICTED") {
+    if (reference_ == "RESTRICTED") {
+        //=========================
+        // General TPDM
+        //=========================
+        G = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|AA)", nQ_ref, nmo_, nmo_));
 
-    //=========================
-    // General TPDM
-    //=========================
-    G = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|AA)", nQ_ref, nmo_, nmo_));
+        //=========================
+        // OO Block: REF
+        //=========================
+        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
+        Gref->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_oo(Gref);
+        // Gref->print();
+        Gref.reset();
 
-    //=========================
-    // OO Block: REF
-    //=========================
-    Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
-    Gref->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_oo(Gref);
-    //Gref->print();
-    Gref.reset();
+        //=========================
+        // OO Block: SEP
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->add3_oo(Gsep, 1.0, 1.0);
+        Gsep.reset();
 
-    //=========================
-    // OO Block: SEP
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->add3_oo(Gsep, 1.0, 1.0);
-    Gsep.reset();
+        //=========================
+        // OV Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_ov(Gsep);
+        Gsep.reset();
 
-    //=========================
-    // OV Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_ov(Gsep);
-    Gsep.reset();
+        //=========================
+        // VO Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_vo(Gsep);
+        Gsep.reset();
 
-    //=========================
-    // VO Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_vo(Gsep);
-    Gsep.reset();
+        //=========================
+        // VV Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
+        G->set3_vv(Gsep, noccA);
+        Gsep.reset();
 
-    //=========================
-    // VV Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
-    G->set3_vv(Gsep, noccA);
-    Gsep.reset();
+        //=========================
+        // Write
+        //=========================
+        G->write(psio_, PSIF_DFOCC_DENS);
+        // G->print();
+        G.reset();
 
-    //=========================
-    // Write
-    //=========================
-    G->write(psio_, PSIF_DFOCC_DENS);
-    //G->print();
-    G.reset();
+    }  // end if (reference_ == "RESTRICTED")
 
-}// end if (reference_ == "RESTRICTED")
+    else if (reference_ == "UNRESTRICTED") {
+        //=========================
+        // General TPDM: Alpha
+        //=========================
+        G = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|AA)", nQ_ref, nmo_ * nmo_));
 
-else if (reference_ == "UNRESTRICTED") {
+        //=========================
+        // OO Block: REF
+        //=========================
+        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
+        Gref->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_oo(Gref);
+        Gref.reset();
 
-    //=========================
-    // General TPDM: Alpha
-    //=========================
-    G = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|AA)", nQ_ref, nmo_ * nmo_));
+        //=========================
+        // OO Block: SEP
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->add3_oo(Gsep, 1.0, 1.0);
+        Gsep.reset();
 
-    //=========================
-    // OO Block: REF
-    //=========================
-    Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
-    Gref->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_oo(Gref);
-    Gref.reset();
+        //=========================
+        // OV Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_ov(Gsep);
+        Gsep.reset();
 
-    //=========================
-    // OO Block: SEP
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->add3_oo(Gsep, 1.0, 1.0);
-    Gsep.reset();
+        //=========================
+        // VO Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VO)", nQ_ref, nvirA, noccA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_vo(Gsep);
+        Gsep.reset();
 
-    //=========================
-    // OV Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_ov(Gsep);
-    Gsep.reset();
+        //=========================
+        // VV Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+        Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
+        G->set3_vv(Gsep, noccA);
+        Gsep.reset();
 
-    //=========================
-    // VO Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VO)", nQ_ref, nvirA, noccA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_vo(Gsep);
-    Gsep.reset();
+        //=========================
+        // Write
+        //=========================
+        G->write(psio_, PSIF_DFOCC_DENS);
+        G->print();
+        G.reset();
 
-    //=========================
-    // VV Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-    Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
-    G->set3_vv(Gsep, noccA);
-    Gsep.reset();
+        //=========================
+        // General TPDM: Beta
+        //=========================
+        G = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|aa)", nQ_ref, nmo_ * nmo_));
 
-    //=========================
-    // Write
-    //=========================
-    G->write(psio_, PSIF_DFOCC_DENS);
-    G->print();
-    G.reset();
+        //=========================
+        // oo Block: REF
+        //=========================
+        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB));
+        Gref->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_oo(Gref);
+        Gref.reset();
 
-    //=========================
-    // General TPDM: Beta
-    //=========================
-    G = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|aa)", nQ_ref, nmo_ * nmo_));
+        //=========================
+        // oo Block: SEP
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->add3_oo(Gsep, 1.0, 1.0);
+        Gsep.reset();
 
-    //=========================
-    // oo Block: REF
-    //=========================
-    Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB));
-    Gref->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_oo(Gref);
-    Gref.reset();
+        //=========================
+        // ov Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB, nvirB));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_ov(Gsep);
+        Gsep.reset();
 
-    //=========================
-    // oo Block: SEP
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->add3_oo(Gsep, 1.0, 1.0);
-    Gsep.reset();
+        //=========================
+        // vo Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vo)", nQ_ref, nvirB, noccB));
+        Gsep->read(psio_, PSIF_DFOCC_DENS);
+        G->set3_vo(Gsep);
+        Gsep.reset();
 
-    //=========================
-    // ov Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB, nvirB));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_ov(Gsep);
-    Gsep.reset();
+        //=========================
+        // vv Block
+        //=========================
+        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
+        Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
+        G->set3_vv(Gsep, noccB);
+        Gsep.reset();
 
-    //=========================
-    // vo Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vo)", nQ_ref, nvirB, noccB));
-    Gsep->read(psio_, PSIF_DFOCC_DENS);
-    G->set3_vo(Gsep);
-    Gsep.reset();
+        //=========================
+        // Write
+        //=========================
+        G->write(psio_, PSIF_DFOCC_DENS);
+        G->print();
+        G.reset();
 
-    //=========================
-    // vv Block
-    //=========================
-    Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-    Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
-    G->set3_vv(Gsep, noccB);
-    Gsep.reset();
-
-    //=========================
-    // Write
-    //=========================
-    G->write(psio_, PSIF_DFOCC_DENS);
-    G->print();
-    G.reset();
-
-}// else if (reference_ == "UNRESTRICTED")
+    }  // else if (reference_ == "UNRESTRICTED")
     timer_off("combine_ref_sep_tpdm");
-} // end combine_ref_sep_tpdm
+}  // end combine_ref_sep_tpdm
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

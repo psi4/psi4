@@ -32,244 +32,240 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::z_vector_cg()
-{ 
-//outfile->Printf("\n z_vector_cg is starting... \n"); 
+void DFOCC::z_vector_cg() {
+    // outfile->Printf("\n z_vector_cg is starting... \n");
     outfile->Printf("\tSolving orbital Z-vector equations...\n");
-    
 
     SharedTensor2d K, L;
 
-if (reference_ == "RESTRICTED") {
-    // Memalloc
-    zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-    zvector = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-    zvec_newA = SharedTensor1d(new Tensor1d("Alpha New Z-Vector", noccA * nvirA));
-    Minv_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG M inverse", noccA * nvirA));
-    sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
-    r_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG r", noccA * nvirA));
-    r_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new r", noccA * nvirA));
-    z_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG z", noccA * nvirA));
-    z_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new z", noccA * nvirA));
-    p_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG p", noccA * nvirA));
-    p_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new p", noccA * nvirA));
-    dr_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG dr", noccA * nvirA));
-    residualA = SharedTensor1d(new Tensor1d("Alpha Residual Vector", noccA * nvirA));
+    if (reference_ == "RESTRICTED") {
+        // Memalloc
+        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
+        zvector = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
+        zvec_newA = SharedTensor1d(new Tensor1d("Alpha New Z-Vector", noccA * nvirA));
+        Minv_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG M inverse", noccA * nvirA));
+        sigma_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG sigma", noccA * nvirA));
+        r_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG r", noccA * nvirA));
+        r_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new r", noccA * nvirA));
+        z_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG z", noccA * nvirA));
+        z_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new z", noccA * nvirA));
+        p_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG p", noccA * nvirA));
+        p_pcg_newA = SharedTensor1d(new Tensor1d("Alpha PCG new p", noccA * nvirA));
+        dr_pcgA = SharedTensor1d(new Tensor1d("Alpha PCG dr", noccA * nvirA));
+        residualA = SharedTensor1d(new Tensor1d("Alpha Residual Vector", noccA * nvirA));
 
-    // Build kappa0 and M 
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
-              zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
-              Minv_pcgA->set(ai, 0.5/value);
-         }
-    }
+        // Build kappa0 and M
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                double value = FockA->get(a + noccA, a + noccA) - FockA->get(i, i);
+                zvectorA->set(ai, -WorbA->get(a + noccA, i) / (2.0 * value));
+                Minv_pcgA->set(ai, 0.5 / value);
+            }
+        }
 
-    // Build S = A kappa_0
-    Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
-    build_rhf_mohess(Aorb);
-    sigma_pcgA->gemv(false, Aorb, zvectorA, 1.0, 0.0);
-    Aorb.reset();
+        // Build S = A kappa_0
+        Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
+        build_rhf_mohess(Aorb);
+        sigma_pcgA->gemv(false, Aorb, zvectorA, 1.0, 0.0);
+        Aorb.reset();
 
-    // Build r0
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              residualA->set(ai, -WorbA->get(a + noccA, i) - sigma_pcgA->get(ai));       
-         }
-    }
-    r_pcgA->copy(residualA);
+        // Build r0
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                residualA->set(ai, -WorbA->get(a + noccA, i) - sigma_pcgA->get(ai));
+            }
+        }
+        r_pcgA->copy(residualA);
 
-    // Build z0
-    z_pcgA->dirprd(Minv_pcgA, r_pcgA);
+        // Build z0
+        z_pcgA->dirprd(Minv_pcgA, r_pcgA);
 
-    // Build p0
-    p_pcgA->copy(z_pcgA);
+        // Build p0
+        p_pcgA->copy(z_pcgA);
 
-    // Call Orbital Response Solver
-    zvector->copy(zvectorA);
-    cg_solver();
-    zvectorA->copy(zvector);
+        // Call Orbital Response Solver
+        zvector->copy(zvectorA);
+        cg_solver();
+        zvectorA->copy(zvector);
 
-    // Memfree
-    zvec_newA.reset(); 
-    Minv_pcgA.reset(); 
-    sigma_pcgA.reset();
-    r_pcgA.reset();
-    r_pcg_newA.reset();
-    z_pcgA.reset();
-    z_pcg_newA.reset();
-    p_pcgA.reset();
-    p_pcg_newA.reset();
-    dr_pcgA.reset();
-    residualA.reset();
-    zvector.reset();
+        // Memfree
+        zvec_newA.reset();
+        Minv_pcgA.reset();
+        sigma_pcgA.reset();
+        r_pcgA.reset();
+        r_pcg_newA.reset();
+        z_pcgA.reset();
+        z_pcg_newA.reset();
+        p_pcgA.reset();
+        p_pcg_newA.reset();
+        dr_pcgA.reset();
+        residualA.reset();
+        zvector.reset();
 
-    // Build Zvo
-    ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              ZvoA->set(a, i, zvectorA->get(ai));
-	 }
-    }
-    //zvectorA->print();
+        // Build Zvo
+        ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                ZvoA->set(a, i, zvectorA->get(ai));
+            }
+        }
+        // zvectorA->print();
 
-    // Build Z_ia = Z_ai
-    ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
-    ZovA = ZvoA->transpose();
+        // Build Z_ia = Z_ai
+        ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
+        ZovA = ZvoA->transpose();
 
-    // If LINEQ FAILED!
-    if (pcg_conver == 0) {
-        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        outfile->Printf("\tI will solve the z-vector equation with a direct method.\n");
-        
-        z_vector();
-        
-    } // end if pcg_conver = 0
+        // If LINEQ FAILED!
+        if (pcg_conver == 0) {
+            outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+            outfile->Printf("\tI will solve the z-vector equation with a direct method.\n");
 
-}// end if (reference_ == "RESTRICTED") 
+            z_vector();
 
-else if (reference_ == "UNRESTRICTED") {
-    nidp_tot = nidpA + nidpB;
+        }  // end if pcg_conver = 0
 
-    // Memalloc
-    zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
-    zvec_newA = SharedTensor1d(new Tensor1d("New UHF Z-Vector", nidp_tot));
-    Minv_pcgA = SharedTensor1d(new Tensor1d("PCG M inverse", nidp_tot));
-    sigma_pcgA = SharedTensor1d(new Tensor1d("PCG sigma", nidp_tot));
-    r_pcgA = SharedTensor1d(new Tensor1d("PCG r", nidp_tot));
-    r_pcg_newA = SharedTensor1d(new Tensor1d("PCG new r", nidp_tot));
-    z_pcgA = SharedTensor1d(new Tensor1d("PCG z", nidp_tot));
-    z_pcg_newA = SharedTensor1d(new Tensor1d("PCG new z", nidp_tot));
-    p_pcgA = SharedTensor1d(new Tensor1d("PCG p", nidp_tot));
-    p_pcg_newA = SharedTensor1d(new Tensor1d("PCG new p", nidp_tot));
-    dr_pcgA = SharedTensor1d(new Tensor1d("PCG dr", nidp_tot));
-    residualA = SharedTensor1d(new Tensor1d("Residual Vector", nidp_tot));
-    zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
-    zvectorB = SharedTensor1d(new Tensor1d("Beta Z-Vector", noccB * nvirB));
+    }  // end if (reference_ == "RESTRICTED")
 
-    // Build kappa0 and M
-    // alpha
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              double value = FockA->get(a + noccA, a + noccA) - FockA->get(i,i);
-              zvector->set(ai, -WorbA->get(a + noccA, i) / (2.0*value));       
-              Minv_pcgA->set(ai, 0.5/value);
-         }
-    }
+    else if (reference_ == "UNRESTRICTED") {
+        nidp_tot = nidpA + nidpB;
 
-    // beta
-    for (int a = 0, ai = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccB; i++, ai++) {
-              double value = FockB->get(a + noccB, a + noccB) - FockB->get(i,i);
-              zvector->set(ai + nidpA, -WorbB->get(a + noccB, i) / (2.0*value));       
-              Minv_pcgA->set(ai + nidpA, 0.5/value);
-         }
-    }
+        // Memalloc
+        zvector = SharedTensor1d(new Tensor1d("UHF Z-Vector", nidp_tot));
+        zvec_newA = SharedTensor1d(new Tensor1d("New UHF Z-Vector", nidp_tot));
+        Minv_pcgA = SharedTensor1d(new Tensor1d("PCG M inverse", nidp_tot));
+        sigma_pcgA = SharedTensor1d(new Tensor1d("PCG sigma", nidp_tot));
+        r_pcgA = SharedTensor1d(new Tensor1d("PCG r", nidp_tot));
+        r_pcg_newA = SharedTensor1d(new Tensor1d("PCG new r", nidp_tot));
+        z_pcgA = SharedTensor1d(new Tensor1d("PCG z", nidp_tot));
+        z_pcg_newA = SharedTensor1d(new Tensor1d("PCG new z", nidp_tot));
+        p_pcgA = SharedTensor1d(new Tensor1d("PCG p", nidp_tot));
+        p_pcg_newA = SharedTensor1d(new Tensor1d("PCG new p", nidp_tot));
+        dr_pcgA = SharedTensor1d(new Tensor1d("PCG dr", nidp_tot));
+        residualA = SharedTensor1d(new Tensor1d("Residual Vector", nidp_tot));
+        zvectorA = SharedTensor1d(new Tensor1d("Alpha Z-Vector", noccA * nvirA));
+        zvectorB = SharedTensor1d(new Tensor1d("Beta Z-Vector", noccB * nvirB));
 
-    // Build sigma
-    Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
-    build_uhf_mohess(Aorb);
-    sigma_pcgA->gemv(false, Aorb, zvector, 1.0, 0.0);
-    Aorb.reset();
+        // Build kappa0 and M
+        // alpha
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                double value = FockA->get(a + noccA, a + noccA) - FockA->get(i, i);
+                zvector->set(ai, -WorbA->get(a + noccA, i) / (2.0 * value));
+                Minv_pcgA->set(ai, 0.5 / value);
+            }
+        }
 
-    // Build r0
-    // alpha
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              residualA->set(ai, -WorbA->get(a + noccA, i));       
-         }
-    }
-    // beta
-    for (int a = 0, ai = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccB; i++, ai++) {
-              residualA->set(ai + nidpA, -WorbB->get(a + noccB, i));       
-         }
-    }
-    residualA->subtract(sigma_pcgA);
-    r_pcgA->copy(residualA);
+        // beta
+        for (int a = 0, ai = 0; a < nvirB; a++) {
+            for (int i = 0; i < noccB; i++, ai++) {
+                double value = FockB->get(a + noccB, a + noccB) - FockB->get(i, i);
+                zvector->set(ai + nidpA, -WorbB->get(a + noccB, i) / (2.0 * value));
+                Minv_pcgA->set(ai + nidpA, 0.5 / value);
+            }
+        }
 
-    // Build z0
-    z_pcgA->dirprd(Minv_pcgA, r_pcgA);
+        // Build sigma
+        Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
+        build_uhf_mohess(Aorb);
+        sigma_pcgA->gemv(false, Aorb, zvector, 1.0, 0.0);
+        Aorb.reset();
 
-    // Build p0
-    p_pcgA->copy(z_pcgA);
+        // Build r0
+        // alpha
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                residualA->set(ai, -WorbA->get(a + noccA, i));
+            }
+        }
+        // beta
+        for (int a = 0, ai = 0; a < nvirB; a++) {
+            for (int i = 0; i < noccB; i++, ai++) {
+                residualA->set(ai + nidpA, -WorbB->get(a + noccB, i));
+            }
+        }
+        residualA->subtract(sigma_pcgA);
+        r_pcgA->copy(residualA);
 
-    // Call Orbital Response Solver
-    cg_solver();
+        // Build z0
+        z_pcgA->dirprd(Minv_pcgA, r_pcgA);
 
-    // Memfree alpha
-    zvec_newA.reset(); 
-    Minv_pcgA.reset(); 
-    sigma_pcgA.reset();
-    r_pcgA.reset();
-    r_pcg_newA.reset();
-    z_pcgA.reset();
-    z_pcg_newA.reset();
-    p_pcgA.reset();
-    p_pcg_newA.reset();
-    dr_pcgA.reset();
-    residualA.reset();
+        // Build p0
+        p_pcgA->copy(z_pcgA);
 
-    // Build zvector for VO block
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-	      zvectorA->set(ai, zvector->get(ai));
-         }
-    }
-    //zvectorA->print();
+        // Call Orbital Response Solver
+        cg_solver();
 
-    // Build zvector for vo block
-    for (int a = 0, ai = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccB; i++, ai++) {
-	      zvectorB->set(ai, zvector->get(ai + nidpA));
-         }
-    }
-    //zvectorB->print();
-    zvector.reset();
+        // Memfree alpha
+        zvec_newA.reset();
+        Minv_pcgA.reset();
+        sigma_pcgA.reset();
+        r_pcgA.reset();
+        r_pcg_newA.reset();
+        z_pcgA.reset();
+        z_pcg_newA.reset();
+        p_pcgA.reset();
+        p_pcg_newA.reset();
+        dr_pcgA.reset();
+        residualA.reset();
 
-    // Build Zvo
-    // Alpha
-    ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              ZvoA->set(a, i, zvectorA->get(ai));
-	 }
-    }
+        // Build zvector for VO block
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                zvectorA->set(ai, zvector->get(ai));
+            }
+        }
+        // zvectorA->print();
 
-    // Build Z_ia = Z_ai
-    ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
-    ZovA = ZvoA->transpose();
+        // Build zvector for vo block
+        for (int a = 0, ai = 0; a < nvirB; a++) {
+            for (int i = 0; i < noccB; i++, ai++) {
+                zvectorB->set(ai, zvector->get(ai + nidpA));
+            }
+        }
+        // zvectorB->print();
+        zvector.reset();
 
-    // Beta
-    ZvoB = SharedTensor2d(new Tensor2d("Zvector <v|o>", nvirB, noccB));
-    for (int a = 0, ai = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccB; i++, ai++) {
-              ZvoB->set(a, i, zvectorB->get(ai));
-	 }
-    }
+        // Build Zvo
+        // Alpha
+        ZvoA = SharedTensor2d(new Tensor2d("Zvector <V|O>", nvirA, noccA));
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                ZvoA->set(a, i, zvectorA->get(ai));
+            }
+        }
 
-    // Build Z_ia = Z_ai
-    ZovB = SharedTensor2d(new Tensor2d("Zvector <o|v>", noccB, nvirB));
-    ZovB = ZvoB->transpose();
+        // Build Z_ia = Z_ai
+        ZovA = SharedTensor2d(new Tensor2d("Zvector <O|V>", noccA, nvirA));
+        ZovA = ZvoA->transpose();
 
-    // If LINEQ FAILED!
-    if (pcg_conver == 0) {
-        outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
-        
-    } 
+        // Beta
+        ZvoB = SharedTensor2d(new Tensor2d("Zvector <v|o>", nvirB, noccB));
+        for (int a = 0, ai = 0; a < nvirB; a++) {
+            for (int i = 0; i < noccB; i++, ai++) {
+                ZvoB->set(a, i, zvectorB->get(ai));
+            }
+        }
 
-}// end if (reference_ == "UNRESTRICTED") 
- //outfile->Printf("\n z_vector_cg done. \n"); 
-}// end z_vector_cg
+        // Build Z_ia = Z_ai
+        ZovB = SharedTensor2d(new Tensor2d("Zvector <o|v>", noccB, nvirB));
+        ZovB = ZvoB->transpose();
+
+        // If LINEQ FAILED!
+        if (pcg_conver == 0) {
+            outfile->Printf("\tWarning!!! PCG did NOT converged in %2d iterations. \n", itr_pcg);
+        }
+
+    }  // end if (reference_ == "UNRESTRICTED")
+       // outfile->Printf("\n z_vector_cg done. \n");
+}  // end z_vector_cg
 
 //=======================================================
 //          CG (RHF)
-//=======================================================          
-void DFOCC::cg_solver()
-{ 
-
+//=======================================================
+void DFOCC::cg_solver() {
     SharedTensor2d K, L;
     itr_pcg = 0;
     double rms_r_pcgA = 0.0;
@@ -277,120 +273,117 @@ void DFOCC::cg_solver()
     double rms_pcg = 0.0;
     double a_pcgA = 0.0;
     double b_pcgA = 0.0;
-    pcg_conver = 1; // assuming pcg will converge
+    pcg_conver = 1;  // assuming pcg will converge
 
-outfile->Printf( "\n\t            PCG Solver \n");
-outfile->Printf( "\t   ------------------------------ \n");
-outfile->Printf( "\tIter     RMS Z Vector        RMS Residual  \n");
-outfile->Printf( "\t----    ---------------    ---------------\n");
+    outfile->Printf("\n\t            PCG Solver \n");
+    outfile->Printf("\t   ------------------------------ \n");
+    outfile->Printf("\tIter     RMS Z Vector        RMS Residual  \n");
+    outfile->Printf("\t----    ---------------    ---------------\n");
 
+    // Head of the loop
+    do {
+        // outfile->Printf( "pcg iter: %3d \n", itr_pcg);
+        // Build sigma
+        if (reference_ == "RESTRICTED") {
+            Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
+            build_rhf_mohess(Aorb);
+            sigma_pcgA->gemv(false, Aorb, p_pcgA, 1.0, 0.0);
+        }
 
- // Head of the loop
- do
- {
+        else if (reference_ == "UNRESTRICTED") {
+            Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
+            build_uhf_mohess(Aorb);
+            sigma_pcgA->gemv(false, Aorb, p_pcgA, 1.0, 0.0);
+        }
 
-    //outfile->Printf( "pcg iter: %3d \n", itr_pcg); 
-    // Build sigma
-    if (reference_ == "RESTRICTED") {
-        Aorb = SharedTensor2d(new Tensor2d("MO Hessian Matrix", nvirA, noccA, nvirA, noccA));
-        build_rhf_mohess(Aorb);
-        sigma_pcgA->gemv(false, Aorb, p_pcgA, 1.0, 0.0);
-    }
+        // Compute line search parameter alpha
+        a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
 
-    else if (reference_ == "UNRESTRICTED") {
-        Aorb = SharedTensor2d(new Tensor2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot));
-        build_uhf_mohess(Aorb);
-        sigma_pcgA->gemv(false, Aorb, p_pcgA, 1.0, 0.0);
-    }
+        // Build kappa-new
+        zvec_newA->zero();
+        zvec_newA->copy(p_pcgA);
+        zvec_newA->scale(a_pcgA);
+        zvec_newA->add(zvector);
 
-    // Compute line search parameter alpha
-    a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
+        // Build r-new
+        r_pcg_newA->zero();
+        r_pcg_newA->copy(sigma_pcgA);
+        r_pcg_newA->scale(-a_pcgA);
+        r_pcg_newA->add(r_pcgA);
 
-   // Build kappa-new
-   zvec_newA->zero();
-   zvec_newA->copy(p_pcgA);
-   zvec_newA->scale(a_pcgA);
-   zvec_newA->add(zvector);
+        // Build z-new
+        z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
 
-   // Build r-new
-   r_pcg_newA->zero();
-   r_pcg_newA->copy(sigma_pcgA);
-   r_pcg_newA->scale(-a_pcgA);
-   r_pcg_newA->add(r_pcgA);
+        // Build line search parameter beta
+        if (pcg_beta_type_ == "FLETCHER_REEVES") {
+            b_pcgA = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
+        }
 
-   // Build z-new
-   z_pcg_newA->dirprd(Minv_pcgA, r_pcg_newA);
+        else if (pcg_beta_type_ == "POLAK_RIBIERE") {
+            dr_pcgA->copy(r_pcg_newA);
+            dr_pcgA->subtract(r_pcgA);
+            b_pcgA = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
+        }
 
-   // Build line search parameter beta
-   if (pcg_beta_type_ == "FLETCHER_REEVES") {
-       b_pcgA = r_pcg_newA->dot(z_pcg_newA) / r_pcgA->dot(z_pcgA);
-   }
+        // Build p-new
+        p_pcg_newA->copy(p_pcgA);
+        p_pcg_newA->scale(b_pcgA);
+        p_pcg_newA->add(z_pcg_newA);
 
-   else if (pcg_beta_type_ == "POLAK_RIBIERE") {
-       dr_pcgA->copy(r_pcg_newA);
-       dr_pcgA->subtract(r_pcgA);
-       b_pcgA = z_pcg_newA->dot(dr_pcgA) / z_pcgA->dot(r_pcgA);
-   }
+        // RMS
+        rms_pcg = 0.0;
+        rms_pcg = zvec_newA->rms(zvector);
+        rms_r_pcgA = r_pcg_newA->rms();
 
-   // Build p-new
-   p_pcg_newA->copy(p_pcgA);
-   p_pcg_newA->scale(b_pcgA);
-   p_pcg_newA->add(z_pcg_newA);
+        // Reset
+        zvector->copy(zvec_newA);
+        r_pcgA->copy(r_pcg_newA);
+        z_pcgA->copy(z_pcg_newA);
+        p_pcgA->copy(p_pcg_newA);
 
-   // RMS 
-   rms_pcg = 0.0;
-   rms_pcg = zvec_newA->rms(zvector);
-   rms_r_pcgA = r_pcg_newA->rms();
+        // Build sigma for kappa
+        sigma_pcgA->gemv(false, Aorb, zvector, 1.0, 0.0);
+        Aorb.reset();
 
-   // Reset
-   zvector->copy(zvec_newA);
-   r_pcgA->copy(r_pcg_newA);
-   z_pcgA->copy(z_pcg_newA);
-   p_pcgA->copy(p_pcg_newA);
+        // Build r0
+        // alpha
+        for (int a = 0, ai = 0; a < nvirA; a++) {
+            for (int i = 0; i < noccA; i++, ai++) {
+                residualA->set(ai, -WorbA->get(a + noccA, i));
+            }
+        }
 
-    // Build sigma for kappa
-    sigma_pcgA->gemv(false, Aorb, zvector, 1.0, 0.0);
-    Aorb.reset();
+        if (reference_ == "UNRESTRICTED") {
+            // beta
+            for (int a = 0, ai = 0; a < nvirB; a++) {
+                for (int i = 0; i < noccB; i++, ai++) {
+                    residualA->set(ai + nidpA, -WorbB->get(a + noccB, i));
+                }
+            }
+        }
+        residualA->subtract(sigma_pcgA);
+        rms_residual = residualA->rms();
 
-    // Build r0
-    // alpha
-    for (int a = 0, ai = 0; a < nvirA; a++) {
-         for (int i = 0; i < noccA; i++, ai++) {
-              residualA->set(ai, -WorbA->get(a + noccA, i));       
-         }
-    }
+        // increment iteration index
+        itr_pcg++;
 
-    if (reference_ == "UNRESTRICTED") {
-    // beta
-    for (int a = 0, ai = 0; a < nvirB; a++) {
-         for (int i = 0; i < noccB; i++, ai++) {
-              residualA->set(ai + nidpA, -WorbB->get(a + noccB, i));       
-         }
-    }}
-    residualA->subtract(sigma_pcgA);
-    rms_residual = residualA->rms();
+        // Print
+        outfile->Printf("\t%3d     %12.2e     %12.2e\n", itr_pcg, rms_pcg, rms_residual);
 
-   // increment iteration index 
-   itr_pcg++;
+        // If we exceed maximum number of iteration, break the loop
+        if (itr_pcg >= pcg_maxiter) {
+            pcg_conver = 0;
+            break;
+        }
 
-   // Print
-   outfile->Printf("\t%3d     %12.2e     %12.2e\n",itr_pcg,rms_pcg,rms_residual);
-   
+        // if (rms_residual < tol_pcg  || rms_pcg < tol_pcg) break;
 
-   // If we exceed maximum number of iteration, break the loop
-   if (itr_pcg >= pcg_maxiter) {
-       pcg_conver = 0;
-       break;
-   }  
-
-   //if (rms_residual < tol_pcg  || rms_pcg < tol_pcg) break;  
-
- }
- while(std::fabs(rms_pcg) >= tol_pcg || std::fabs(rms_residual) >= tol_pcg);  
+    } while (std::fabs(rms_pcg) >= tol_pcg || std::fabs(rms_residual) >= tol_pcg);
 
     // Converged?
     outfile->Printf("\n");
-    
-}// cg_solver
 
-}} // End Namespaces
+}  // cg_solver
+
+}  // namespace dfoccwave
+}  // namespace psi

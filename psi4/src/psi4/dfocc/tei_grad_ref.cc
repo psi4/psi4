@@ -46,34 +46,34 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::tei_grad_ref()
-{
-  //outfile->Printf("\tref_grad is starting... \n");
+void DFOCC::tei_grad_ref() {
+    // outfile->Printf("\tref_grad is starting... \n");
 
-//===========================================================================================
-//========================= Two-electron Gradient:RefSep ====================================
-//===========================================================================================
+    //===========================================================================================
+    //========================= Two-electron Gradient:RefSep ====================================
+    //===========================================================================================
     // Two-electron gradients
     int df_ints_num_threads_ = 1;
-    #ifdef _OPENMP
-        df_ints_num_threads_ = Process::environment.get_n_threads();
-    #endif
+#ifdef _OPENMP
+    df_ints_num_threads_ = Process::environment.get_n_threads();
+#endif
 
     // Read in the basis set informations
     std::shared_ptr<BasisSet> primary_ = get_basisset("ORBITAL");
     std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
-    //auxiliary_->print();
+    // auxiliary_->print();
     int nbasis = primary_->nbf();
 
-//===========================================================================================
-//========================= Metric Gradient:RefSep ==========================================
-//===========================================================================================
+    //===========================================================================================
+    //========================= Metric Gradient:RefSep ==========================================
+    //===========================================================================================
     // Read Gaux_ref
     Gaux_ref = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
-    //Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
+    // Gaux_ref->read(psio_, PSIF_DFOCC_DENS);
     Gaux_ref->read_symm(psio_, PSIF_DFOCC_DENS);
 
     // JPQ_X
@@ -88,7 +88,8 @@ void DFOCC::tei_grad_ref()
     int naux = auxiliary_->nbf();
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::shared_ptr<IntegralFactory> rifactory(
+        new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
@@ -97,30 +98,29 @@ void DFOCC::tei_grad_ref()
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-         Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
+        Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
     }
 
-    std::vector<std::pair<int,int> > PQ_pairs;
+    std::vector<std::pair<int, int> > PQ_pairs;
     for (int P = 0; P < auxiliary_->nshell(); P++) {
         for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int,int>(P,Q));
+            PQ_pairs.push_back(std::pair<int, int>(P, Q));
         }
     }
 
     int nthread_df = df_ints_num_threads_;
-    #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
     for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-
         int P = PQ_pairs[PQ].first;
         int Q = PQ_pairs[PQ].second;
 
         int thread = 0;
-        #ifdef _OPENMP
-            thread = omp_get_thread_num();
-        #endif
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
 
-        Jint[thread]->compute_shell_deriv1(P,0,Q,0);
-        const double* buffer = Jint[thread]->buffer();
+        Jint[thread]->compute_shell_deriv1(P, 0, Q, 0);
+        const double *buffer = Jint[thread]->buffer();
 
         int nP = auxiliary_->shell(P).nfunction();
         int cP = auxiliary_->shell(P).ncartesian();
@@ -133,28 +133,27 @@ void DFOCC::tei_grad_ref()
         int oQ = auxiliary_->shell(Q).function_index();
 
         int ncart = cP * cQ;
-        const double *Px = buffer + 0*ncart;
-        const double *Py = buffer + 1*ncart;
-        const double *Pz = buffer + 2*ncart;
-        const double *Qx = buffer + 3*ncart;
-        const double *Qy = buffer + 4*ncart;
-        const double *Qz = buffer + 5*ncart;
+        const double *Px = buffer + 0 * ncart;
+        const double *Py = buffer + 1 * ncart;
+        const double *Pz = buffer + 2 * ncart;
+        const double *Qx = buffer + 3 * ncart;
+        const double *Qy = buffer + 4 * ncart;
+        const double *Qz = buffer + 5 * ncart;
 
         double perm = (P == Q ? 1.0 : 2.0);
 
-        double** grad_Jp;
+        double **grad_Jp;
         grad_Jp = Jtemps[thread]->pointer();
 
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++) {
-
-                    double Uval = perm * Gaux_ref->get(p + oP, q + oQ);
-                    grad_Jp[aP][0] -= Uval * (*Px);
-                    grad_Jp[aP][1] -= Uval * (*Py);
-                    grad_Jp[aP][2] -= Uval * (*Pz);
-                    grad_Jp[aQ][0] -= Uval * (*Qx);
-                    grad_Jp[aQ][1] -= Uval * (*Qy);
-                    grad_Jp[aQ][2] -= Uval * (*Qz);
+                double Uval = perm * Gaux_ref->get(p + oP, q + oQ);
+                grad_Jp[aP][0] -= Uval * (*Px);
+                grad_Jp[aP][1] -= Uval * (*Py);
+                grad_Jp[aP][2] -= Uval * (*Pz);
+                grad_Jp[aQ][0] -= Uval * (*Qx);
+                grad_Jp[aQ][1] -= Uval * (*Qy);
+                grad_Jp[aQ][2] -= Uval * (*Qz);
 
                 Px++;
                 Py++;
@@ -169,15 +168,15 @@ void DFOCC::tei_grad_ref()
 
     // => Temporary Gradient Reduction <= //
     for (int t = 0; t < df_ints_num_threads_; t++) {
-         gradients["Metric:RefSep"]->add(Jtemps[t]);
+        gradients["Metric:RefSep"]->add(Jtemps[t]);
     }
 
-    //gradients["Metric:RefSep"]->print_atom_vector();
+    // gradients["Metric:RefSep"]->print_atom_vector();
     timer_off("Grad: Metric:RefSep");
 
-//===========================================================================================
-//========================= 3-Index Gradient:RefSep =========================================
-//===========================================================================================
+    //===========================================================================================
+    //========================= 3-Index Gradient:RefSep =========================================
+    //===========================================================================================
     // Read gQso
     gQso_ref = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
     gQso_ref->read(psio_, PSIF_DFOCC_DENS, true, true);
@@ -185,19 +184,18 @@ void DFOCC::tei_grad_ref()
     // (Q | mu nu)^X
     timer_on("Grad: 3-Index:RefSep");
 
-    //int naux = nQ_ref;
+    // int naux = nQ_ref;
     gradients["3-Index:RefSep"] = SharedMatrix(gradients["Nuclear"]->clone());
     gradients["3-Index:RefSep"]->set_name("3-Index:RefSep Gradient");
     gradients["3-Index:RefSep"]->zero();
 
-
     // => Sizing <= //
-    //int natom = primary_->molecule()->natom();
-    //int nso = primary_->nbf();
-    //int naux = auxiliary_->nbf();
+    // int natom = primary_->molecule()->natom();
+    // int nso = primary_->nbf();
+    // int naux = auxiliary_->nbf();
 
     std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int, int> > &shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -219,7 +217,8 @@ void DFOCC::tei_grad_ref()
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::shared_ptr<IntegralFactory> rifactory2(
+        new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
     std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
@@ -228,47 +227,44 @@ void DFOCC::tei_grad_ref()
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps2;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-         Jtemps2.push_back(SharedMatrix(new Matrix("Jtemp2", natom, 3)));
+        Jtemps2.push_back(SharedMatrix(new Matrix("Jtemp2", natom, 3)));
     }
-
 
     // => Master Loop <= //
 
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-
         // > Sizing < //
 
         int Pstart = Pstarts[block];
-        int Pstop  = Pstarts[block+1];
+        int Pstop = Pstarts[block + 1];
         int NP = Pstop - Pstart;
 
         int pstart = auxiliary_->shell(Pstart).function_index();
-        int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
+        int pstop = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop).function_index());
         int np = pstop - pstart;
 
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
-        #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
         for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
-
             int thread = 0;
-            #ifdef _OPENMP
-                thread = omp_get_thread_num();
-            #endif
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
 
-            int P =  PMN / npairs + Pstart;
+            int P = PMN / npairs + Pstart;
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
 
-            eri[thread]->compute_shell_deriv1(P,0,M,N);
+            eri[thread]->compute_shell_deriv1(P, 0, M, N);
 
-            const double* buffer = eri[thread]->buffer();
+            const double *buffer = eri[thread]->buffer();
 
             int nP = auxiliary_->shell(P).nfunction();
             int cP = auxiliary_->shell(P).ncartesian();
             int aP = auxiliary_->shell(P).ncenter();
-            //int oP = auxiliary_->shell(P).function_index() - pstart;// alt-2
+            // int oP = auxiliary_->shell(P).function_index() - pstart;// alt-2
             int oP = auxiliary_->shell(P).function_index();
 
             int nM = primary_->shell(M).nfunction();
@@ -282,36 +278,35 @@ void DFOCC::tei_grad_ref()
             int oN = primary_->shell(N).function_index();
 
             int ncart = cP * cM * cN;
-            const double *Px = buffer + 0*ncart;
-            const double *Py = buffer + 1*ncart;
-            const double *Pz = buffer + 2*ncart;
-            const double *Mx = buffer + 3*ncart;
-            const double *My = buffer + 4*ncart;
-            const double *Mz = buffer + 5*ncart;
-            const double *Nx = buffer + 6*ncart;
-            const double *Ny = buffer + 7*ncart;
-            const double *Nz = buffer + 8*ncart;
+            const double *Px = buffer + 0 * ncart;
+            const double *Py = buffer + 1 * ncart;
+            const double *Pz = buffer + 2 * ncart;
+            const double *Mx = buffer + 3 * ncart;
+            const double *My = buffer + 4 * ncart;
+            const double *Mz = buffer + 5 * ncart;
+            const double *Nx = buffer + 6 * ncart;
+            const double *Ny = buffer + 7 * ncart;
+            const double *Nz = buffer + 8 * ncart;
 
             double perm = (M == N ? 1.0 : 2.0);
 
-            double** grad_Jp;
+            double **grad_Jp;
             grad_Jp = Jtemps2[thread]->pointer();
 
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-
-                            //double Ival = 1.0 * perm * gQso_ref->get(p + oP + pstart, (m + oM) * nso + (n + oN));// alt-2
-                            double Ival = 1.0 * perm * gQso_ref->get(p + oP, (m + oM) * nso + (n + oN));
-                            grad_Jp[aP][0] += Ival * (*Px);
-                            grad_Jp[aP][1] += Ival * (*Py);
-                            grad_Jp[aP][2] += Ival * (*Pz);
-                            grad_Jp[aM][0] += Ival * (*Mx);
-                            grad_Jp[aM][1] += Ival * (*My);
-                            grad_Jp[aM][2] += Ival * (*Mz);
-                            grad_Jp[aN][0] += Ival * (*Nx);
-                            grad_Jp[aN][1] += Ival * (*Ny);
-                            grad_Jp[aN][2] += Ival * (*Nz);
+                        // double Ival = 1.0 * perm * gQso_ref->get(p + oP + pstart, (m + oM) * nso + (n + oN));// alt-2
+                        double Ival = 1.0 * perm * gQso_ref->get(p + oP, (m + oM) * nso + (n + oN));
+                        grad_Jp[aP][0] += Ival * (*Px);
+                        grad_Jp[aP][1] += Ival * (*Py);
+                        grad_Jp[aP][2] += Ival * (*Pz);
+                        grad_Jp[aM][0] += Ival * (*Mx);
+                        grad_Jp[aM][1] += Ival * (*My);
+                        grad_Jp[aM][2] += Ival * (*Mz);
+                        grad_Jp[aN][0] += Ival * (*Nx);
+                        grad_Jp[aN][1] += Ival * (*Ny);
+                        grad_Jp[aN][2] += Ival * (*Nz);
 
                         Px++;
                         Py++;
@@ -331,16 +326,14 @@ void DFOCC::tei_grad_ref()
 
     // => Temporary Gradient Reduction <= //
     for (int t = 0; t < df_ints_num_threads_; t++) {
-         gradients["3-Index:RefSep"]->add(Jtemps2[t]);
+        gradients["3-Index:RefSep"]->add(Jtemps2[t]);
     }
 
-    //gradients["3-Index:RefSep"]->print_atom_vector();
+    // gradients["3-Index:RefSep"]->print_atom_vector();
     timer_off("Grad: 3-Index:RefSep");
 
-//outfile->Printf("\tref_grad is done. \n");
-}// end
+    // outfile->Printf("\tref_grad is done. \n");
+}  // end
 
-
-}} // End Namespaces
-
-
+}  // namespace dfoccwave
+}  // namespace psi

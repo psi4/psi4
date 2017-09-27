@@ -32,11 +32,10 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsd_F_intr_low()
-{
-
+void DFOCC::ccsd_F_intr_low() {
     // defs
     SharedTensor2d K, T, U, Tau;
 
@@ -55,7 +54,7 @@ void DFOCC::ccsd_F_intr_low()
     FijA->contract332(false, true, navirA, K, Tau, 1.0, 1.0);
     K.reset();
     Tau.reset();
-    //FijA->print();
+    // FijA->print();
 
     // VV block
     // F_ae =  \sum_{Q} t_Q b_ae^Q
@@ -72,7 +71,7 @@ void DFOCC::ccsd_F_intr_low()
     FabA->contract(true, false, navirA, navirA, nQ * naoccA, Tau, K, -1.0, 1.0);
     K.reset();
     Tau.reset();
-    //FabA->print();
+    // FabA->print();
 
     // OV block
     // F_me +=  \sum_{Q} t_Q b_me^Q
@@ -86,19 +85,20 @@ void DFOCC::ccsd_F_intr_low()
     FiaA->contract(true, false, naoccA, navirA, nQ * naoccA, T, K, -1.0, 1.0);
     K.reset();
     T.reset();
-    //FiaA->print();
+    // FiaA->print();
 
     // Ft_mi = F_mi + 1/2 \sum_{e} t_i^e F_me
     FtijA->gemm(false, true, FiaA, t1A, 0.5, 0.0);
     FtijA->add(FijA);
-    //FtijA->print();
+    // FtijA->print();
 
     // Ft_ae = F_ae - 1/2 \sum_{m} t_m^a F_me
     FtabA->gemm(true, false, t1A, FiaA, -0.5, 0.0);
     FtabA->add(FabA);
-    //FtabA->print();
+    // FtabA->print();
 
-    //outfile->Printf("\tF int done.\n");
+    // outfile->Printf("\tF int done.\n");
 
-}// end ccsd_F_intr_low
-}} // End Namespaces
+}  // end ccsd_F_intr_low
+}  // namespace dfoccwave
+}  // namespace psi

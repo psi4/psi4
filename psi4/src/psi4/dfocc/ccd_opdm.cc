@@ -31,17 +31,15 @@
 #include "defines.h"
 #include "dfocc.h"
 
-
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccd_opdm()
-{
-
+void DFOCC::ccd_opdm() {
     SharedTensor2d T, U, X;
     timer_on("opdm");
-//if (reference_ == "RESTRICTED") {
+    // if (reference_ == "RESTRICTED") {
 
     // G1_ij = -(G_ij + G_ji)
     T = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
@@ -68,24 +66,24 @@ void DFOCC::ccd_opdm()
     G1c->set_ov(G1c_ov);
     G1c->set_vo(G1c_vo);
     G1c->set_vv(noccA, G1c_vv);
-    //G1c->print();
+    // G1c->print();
 
     // Build G1
     G1->copy(G1c);
     for (int i = 0; i < noccA; i++) G1->add(i, i, 2.0);
 
-  if(print_ > 2) {
-    G1->print();
-    double trace = G1->trace();
-    outfile->Printf("\t trace: %12.12f \n", trace);
+    if (print_ > 2) {
+        G1->print();
+        double trace = G1->trace();
+        outfile->Printf("\t trace: %12.12f \n", trace);
+    }
 
-  }
+    //}// end if (reference_ == "RESTRICTED")
 
-//}// end if (reference_ == "RESTRICTED")
-
-//else if (reference_ == "UNRESTRICTED") {
-//}// else if (reference_ == "UNRESTRICTED")
+    // else if (reference_ == "UNRESTRICTED") {
+    //}// else if (reference_ == "UNRESTRICTED")
     timer_off("opdm");
-} // end ccd_opdm
+}  // end ccd_opdm
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

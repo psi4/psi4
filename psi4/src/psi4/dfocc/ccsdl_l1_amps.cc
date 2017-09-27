@@ -32,16 +32,15 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsdl_l1_amps()
-{
-
+void DFOCC::ccsdl_l1_amps() {
     // defs
-    SharedTensor2d K, L, T1, T, U, Tau, X, Y, Z, W, W2, V;
+    SharedTensor2d K, L, T1, T, U, Tau, X, Y, Z, W, W2, V, tL1;
 
     // l_i^a <= Ftia
-    //FiaA->print();
+    // FiaA->print();
     l1newA->copy(FiaA);
 
     // l_i^a <= \sum_{e} l_i^e Ft_ea
@@ -69,10 +68,10 @@ void DFOCC::ccsdl_l1_amps()
 
     // l_i^a <= -\sum_{mn} G_mn (2*W_mina - W_imna)
     W = SharedTensor2d(new Tensor2d("WL (MN|IE)", naoccA, naoccA, naoccA, navirA));
-    //W->read(psio_, PSIF_DFOCC_AMPS);
+    // W->read(psio_, PSIF_DFOCC_AMPS);
     ccsdl_Wmnie_direct(W);
     X = SharedTensor2d(new Tensor2d("X (MN|IE)", naoccA, naoccA, naoccA, navirA));
-    X->tei_cs2_anti_symm(W,W);
+    X->tei_cs2_anti_symm(W, W);
     W.reset();
     Y = SharedTensor2d(new Tensor2d("Y (IA|MN)", naoccA, navirA, naoccA, naoccA));
     // Y_iamn = X_mina
@@ -83,14 +82,14 @@ void DFOCC::ccsdl_l1_amps()
 
     // l_i^a <= -\sum_{mne} Ut_mn^ae W_iemn
     U = SharedTensor2d(new Tensor2d("Ut2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-    ccsd_u2_amps(U,l2);
+    ccsd_u2_amps(U, l2);
     X = SharedTensor2d(new Tensor2d("X (BI|JA)", navirA, naoccA, naoccA, navirA));
     // X_emna = Ut(ma,ne)
     X->sort(4132, U, 1.0, 0.0);
     U.reset();
     W = SharedTensor2d(new Tensor2d("WL (MB|IJ)", naoccA, navirA, naoccA, naoccA));
     W->read(psio_, PSIF_DFOCC_AMPS);
-    l1newA->contract(false, false, naoccA, navirA, navirA*naoccA*naoccA, W, X, -1.0, 1.0);
+    l1newA->contract(false, false, naoccA, navirA, navirA * naoccA * naoccA, W, X, -1.0, 1.0);
     W.reset();
     X.reset();
 
@@ -99,7 +98,7 @@ void DFOCC::ccsdl_l1_amps()
     L = SharedTensor2d(new Tensor2d("L <IJ|KA>", naoccA, naoccA, naoccA, navirA));
     L->read(psio_, PSIF_DFOCC_AMPS);
     K = SharedTensor2d(new Tensor2d("K <IJ|KA>", naoccA, naoccA, naoccA, navirA));
-    K->tei_cs2_anti_symm(L,L);
+    K->tei_cs2_anti_symm(L, L);
     L.reset();
     Z = SharedTensor2d(new Tensor2d("Z (ME|JB)", naoccA, navirA, naoccA, navirA));
     Z->read(psio_, PSIF_DFOCC_AMPS);
@@ -107,7 +106,7 @@ void DFOCC::ccsdl_l1_amps()
     // X_mnea = Z(na,me)
     X->sort(3142, Z, 1.0, 0.0);
     Z.reset();
-    l1newA->contract(false, false, naoccA, navirA, navirA*naoccA*naoccA, K, X, -1.0, 1.0);
+    l1newA->contract(false, false, naoccA, navirA, navirA * naoccA * naoccA, K, X, -1.0, 1.0);
     X.reset();
 
     // l_i^a <= -\sum_{mne} (2*L_mine - L_imne) Z_nema
@@ -121,7 +120,7 @@ void DFOCC::ccsdl_l1_amps()
     // X_mnea = Z(na,me)
     X->sort(3142, Z, 1.0, 0.0);
     Z.reset();
-    l1newA->contract(false, false, naoccA, navirA, navirA*naoccA*naoccA, Y, X, -1.0, 1.0);
+    l1newA->contract(false, false, naoccA, navirA, navirA * naoccA * naoccA, Y, X, -1.0, 1.0);
     X.reset();
     Y.reset();
 
@@ -192,14 +191,22 @@ void DFOCC::ccsdl_l1_amps()
     T.reset();
     U.reset();
 
+    if (wfn_type_ == "DF-CCSD(T)") {
+        tL1 = SharedTensor2d(new Tensor2d("(T)L <I|A>", naoccA, navirA));
+        tL1->read(psio_, PSIF_DFOCC_AMPS);
+        l1newA->axpy(tL1, 1.0);
+        tL1.reset();
+    }
+
     // Denom
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int a = 0 ; a < navirA; ++a){
+    for (int i = 0; i < naoccA; ++i) {
+        for (int a = 0; a < navirA; ++a) {
             double value = FockA->get(i + nfrzc, i + nfrzc) - FockA->get(a + noccA, a + noccA);
             l1newA->set(i, a, l1newA->get(i, a) / value);
         }
     }
-    //l1newA->print();
+    // l1newA->print();
 
-}// end ccsdl_l1_amps
-}} // End Namespaces
+}  // end ccsdl_l1_amps
+}  // namespace dfoccwave
+}  // namespace psi

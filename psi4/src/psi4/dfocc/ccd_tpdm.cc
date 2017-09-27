@@ -31,19 +31,17 @@
 #include "defines.h"
 #include "dfocc.h"
 
-
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccd_tpdm()
-{
-
+void DFOCC::ccd_tpdm() {
     timer_on("tpdm");
     SharedTensor2d T, U, Tau, G, G2, V, X, Y, Z;
     SharedTensor2d Ts, Ta, Vs, Va, S, A;
 
-//if (reference_ == "RESTRICTED") {
+    // if (reference_ == "RESTRICTED") {
 
     //============================
     // OO-Block Correlation TPDM
@@ -68,7 +66,7 @@ void DFOCC::ccd_tpdm()
     G2->set3_act_oo(nfrzc, G);
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS);
-    if(print_ > 3) G2->print();
+    if (print_ > 3) G2->print();
     G2.reset();
 
     //============================
@@ -98,8 +96,8 @@ void DFOCC::ccd_tpdm()
     G->contract233(false, false, naoccA, navirA, GijA, T, -1.0, 1.0);
 
     // G_ia^Q += \sum(e) T_ie^Q G_ea
-    G->contract(false, false, nQ*naoccA, navirA, navirA, T, GabA, 1.0, 1.0);
-    //G->cont323("IA", "IE", "EA", false, T, GabA, 1.0, 1.0); // it works
+    G->contract(false, false, nQ * naoccA, navirA, navirA, T, GabA, 1.0, 1.0);
+    // G->cont323("IA", "IE", "EA", false, T, GabA, 1.0, 1.0); // it works
     T.reset();
 
     // G_ia^Q += \sum(me) U(ia,me) (G_em^Q - G_me^Q)
@@ -123,14 +121,14 @@ void DFOCC::ccd_tpdm()
     G2->set3_act_ov(nfrzc, naoccA, navirA, nvirA, G);
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS);
-    if(print_ > 3) G2->print();
+    if (print_ > 3) G2->print();
 
     // Form G_vo^Q
     G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VO)", nQ, nvirA, noccA));
     G->swap_3index_col(G2);
     G2.reset();
     G->write(psio_, PSIF_DFOCC_DENS);
-    if(print_ > 3) G->print();
+    if (print_ > 3) G->print();
     G.reset();
 
     //============================
@@ -175,55 +173,53 @@ void DFOCC::ccd_tpdm()
     V = SharedTensor2d(new Tensor2d("V[B] (A,EF)", navirA, navirA, navirA));
     X = SharedTensor2d(new Tensor2d("TPDM[B] (Q|A)", nQ, navirA));
     // Main loop
-    for(int b = 0 ; b < navirA; ++b){
-
-            // Form (+)Tau[b](f, m>=n)
-            #pragma omp parallel for
-            for(int m = 0 ; m < naoccA; ++m){
-                for(int n = 0 ; n <= m; ++n){
-                    int mn2 = index2(m,n);
-                    int mn = n + (m * naoccA);
-                    int nm = m + (n * naoccA);
-                    for(int f = 0 ; f < navirA; ++f){
-                        int bf = f + (b * navirA);
-                        double value1 = 0.5 * ( Tau->get(mn, bf) + Tau->get(nm, bf) );
-                        double value2 = 0.5 * ( Tau->get(mn, bf) - Tau->get(nm, bf) );
-                        Vs->set(f, mn2, value1);
-                        Va->set(f, mn2, value2);
-                    }
+    for (int b = 0; b < navirA; ++b) {
+// Form (+)Tau[b](f, m>=n)
+#pragma omp parallel for
+        for (int m = 0; m < naoccA; ++m) {
+            for (int n = 0; n <= m; ++n) {
+                int mn2 = index2(m, n);
+                int mn = n + (m * naoccA);
+                int nm = m + (n * naoccA);
+                for (int f = 0; f < navirA; ++f) {
+                    int bf = f + (b * navirA);
+                    double value1 = 0.5 * (Tau->get(mn, bf) + Tau->get(nm, bf));
+                    double value2 = 0.5 * (Tau->get(mn, bf) - Tau->get(nm, bf));
+                    Vs->set(f, mn2, value1);
+                    Va->set(f, mn2, value2);
                 }
             }
+        }
 
-            // Form S[b](f,a>=e) = \sum(m>=n) (+)Ut(m>=n,a>=e) * Tau[b](f,m>=n)
-	    S->contract(false, false, navirA, ntri_abAA, ntri_ijAA, Vs, Ts, 1.0, 0.0);
-	    A->contract(false, false, navirA, ntri_abAA, ntri_ijAA, Va, Ta, 1.0, 0.0);
+        // Form S[b](f,a>=e) = \sum(m>=n) (+)Ut(m>=n,a>=e) * Tau[b](f,m>=n)
+        S->contract(false, false, navirA, ntri_abAA, ntri_ijAA, Vs, Ts, 1.0, 0.0);
+        A->contract(false, false, navirA, ntri_abAA, ntri_ijAA, Va, Ta, 1.0, 0.0);
 
-	    // Form V[b](a,ef)
-            #pragma omp parallel for
-            for(int a = 0 ; a < navirA; ++a){
-                for(int e = 0 ; e < navirA; ++e){
-                    int ae = index2(a,e);
-                    for(int f = 0 ; f < navirA; ++f){
-                        int ef = ab_idxAA->get(e,f);
-			int perm1 = ( a > e ) ? 1 : -1;
-			double value = S->get(f,ae) + (perm1 * A->get(f,ae));
-                        V->set(a, ef, value);
-                    }
+// Form V[b](a,ef)
+#pragma omp parallel for
+        for (int a = 0; a < navirA; ++a) {
+            for (int e = 0; e < navirA; ++e) {
+                int ae = index2(a, e);
+                for (int f = 0; f < navirA; ++f) {
+                    int ef = ab_idxAA->get(e, f);
+                    int perm1 = (a > e) ? 1 : -1;
+                    double value = S->get(f, ae) + (perm1 * A->get(f, ae));
+                    V->set(a, ef, value);
                 }
             }
+        }
 
-	    // G2[b](Q,a) = \sum(ef) b(Q,ef) * V[b](a,ef)
-            X->gemm(false, true, bQabA, V, 1.0, 0.0);
+        // G2[b](Q,a) = \sum(ef) b(Q,ef) * V[b](a,ef)
+        X->gemm(false, true, bQabA, V, 1.0, 0.0);
 
-	    // Form G2
-            #pragma omp parallel for
-            for(int Q = 0 ; Q < nQ; ++Q){
-                for(int a = 0 ; a < navirA; ++a){
-                    int ab = ab_idxAA->get(a,b);
-		    G->add(Q, ab, X->get(Q,a));
-                }
+// Form G2
+#pragma omp parallel for
+        for (int Q = 0; Q < nQ; ++Q) {
+            for (int a = 0; a < navirA; ++a) {
+                int ab = ab_idxAA->get(a, b);
+                G->add(Q, ab, X->get(Q, a));
             }
-
+        }
     }
     Tau.reset();
     Ts.reset();
@@ -243,13 +239,14 @@ void DFOCC::ccd_tpdm()
     G2->set3_act_vv(G);
     G.reset();
     G2->write(psio_, PSIF_DFOCC_DENS, true, true);
-    if(print_ > 3) G2->print();
+    if (print_ > 3) G2->print();
     G2.reset();
 
-//}// end if (reference_ == "RESTRICTED")
-//else if (reference_ == "UNRESTRICTED") {
-//}// else if (reference_ == "UNRESTRICTED")
+    //}// end if (reference_ == "RESTRICTED")
+    // else if (reference_ == "UNRESTRICTED") {
+    //}// else if (reference_ == "UNRESTRICTED")
     timer_off("tpdm");
-} // end ccd_tpdm
+}  // end ccd_tpdm
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

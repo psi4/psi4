@@ -287,7 +287,9 @@
 #define PSIF_DFOCC_AMPS        277  /*- DFOCC Amplitudes -*/
 #define PSIF_DFOCC_DENS        278  /*- DFOCC PDMs -*/
 #define PSIF_DFOCC_IABC        279  /*- DFOCC (IA|BC) -*/ 
-#define PSIF_DFOCC_TEMP        280  /*- DFOCC temporary storage -*/
+#define PSIF_DFOCC_ABIC        280  /*- DFOCC <AB|IC> -*/ 
+#define PSIF_DFOCC_MIABC       281  /*- DFOCC M_iabc -*/ 
+#define PSIF_DFOCC_TEMP        282  /*- DFOCC temporary storage -*/
 
 #define PSIF_SAD               300  /*- A SAD file (File for SAD related quantities -*/
 

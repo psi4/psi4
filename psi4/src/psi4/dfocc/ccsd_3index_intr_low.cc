@@ -32,11 +32,10 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::ccsd_3index_intr_low()
-{
-
+void DFOCC::ccsd_3index_intr_low() {
     // defs
     SharedTensor2d K, T, U, Tau;
 
@@ -143,7 +142,8 @@ void DFOCC::ccsd_3index_intr_low()
     K.reset();
     Tau->write(psio_, PSIF_DFOCC_AMPS);
     Tau.reset();
-    //outfile->Printf("\t3indices done.\n");
+    // outfile->Printf("\t3indices done.\n");
 
-}// end ccsd_3index_intr_low
-}} // End Namespaces
+}  // end ccsd_3index_intr_low
+}  // namespace dfoccwave
+}  // namespace psi

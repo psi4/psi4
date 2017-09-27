@@ -873,7 +873,14 @@ def select_ccsd_t__gradient(name, **kwargs):
     # Considering only ccenergy
 
     func = None
-    if reference in ['RHF', 'UHF']:
+    if reference in ['RHF']:
+        if mtd_type == 'CONV':
+             if module in ['', 'CCENERGY']:
+                  func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
+    elif reference == 'UHF':
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
@@ -1611,10 +1618,13 @@ def run_dfocc_gradient(name, **kwargs):
     elif name in ['ccsd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    elif name in ['ccsd(t)']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
+        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
     else:
         raise ValidationError('Unidentified method %s' % (name))
 
-    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd']:
+    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')

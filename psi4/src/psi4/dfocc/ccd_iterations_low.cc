@@ -34,41 +34,39 @@
 
 #include <cmath>
 
+namespace psi {
+namespace dfoccwave {
 
-namespace psi{ namespace dfoccwave{
+void DFOCC::ccd_iterations_low() {
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ================ Performing DF-CCD iterations... ============================= \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+    outfile->Printf("  Iter       E_corr                  DE                 T2 RMS      \n");
+    outfile->Printf("  ----   ----------------      ----------------       ----------    \n");
 
-void DFOCC::ccd_iterations_low()
-{
+    //==========================================================================================
+    //========================= CCD iterations =================================================
+    //==========================================================================================
+    itr_occ = 0;
+    conver = 1;  // Assuming that the iterations will converge
+    Eccd_old = Eccd;
 
-outfile->Printf("\n");
-outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ================ Performing DF-CCD iterations... ============================= \n");
-outfile->Printf(" ============================================================================== \n");
-outfile->Printf("\n");
-outfile->Printf("  Iter       E_corr                  DE                 T2 RMS      \n");
-outfile->Printf("  ----   ----------------      ----------------       ----------    \n");
+    // DIIS
+    if (do_diis_ == 1) {
+        std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
+        if (reference_ == "RESTRICTED") {
+            ccsdDiisManager = std::shared_ptr<DIISManager>(
+                new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
+            ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
+            ccsdDiisManager->set_vector_size(1, DIISEntry::Matrix, T2.get());
+        }
+        T2.reset();
+    }  // if diis true
 
-//==========================================================================================
-//========================= CCD iterations =================================================
-//==========================================================================================
-      itr_occ = 0;
-      conver = 1; // Assuming that the iterations will converge
-      Eccd_old = Eccd;
-
-      // DIIS
-      if (do_diis_ == 1) {
-          std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
-          if (reference_ == "RESTRICTED") {
-              ccsdDiisManager = std::shared_ptr<DIISManager>(new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
-              ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
-              ccsdDiisManager->set_vector_size(1, DIISEntry::Matrix, T2.get());
-          }
-          T2.reset();
-      }// if diis true
-
-// head of loop
-do
-{
+    // head of loop
+    do {
         // iterate
         itr_occ++;
 
@@ -84,47 +82,48 @@ do
 
         // T2 amplitudes
         timer_on("T2 AMPS");
-	ccd_t2_amps_low();
+        ccd_t2_amps_low();
         timer_off("T2 AMPS");
 
         DE = Eccd - Eccd_old;
         Eccd_old = Eccd;
 
-    // RMS
-    if (reference_ == "UNRESTRICTED") {
-	rms_t2=MAX0(rms_t2AA,rms_t2BB);
-	rms_t2=MAX0(rms_t2,rms_t2AB);
+        // RMS
+        if (reference_ == "UNRESTRICTED") {
+            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
+            rms_t2 = MAX0(rms_t2, rms_t2AB);
+        }
+
+        // print
+        outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  \n", itr_occ, Ecorr, DE, rms_t2);
+
+        if (itr_occ >= cc_maxiter) {
+            conver = 0;  // means iterations were NOT converged
+            break;
+        }
+
+        if (rms_t2 >= DIVERGE || rms_t1 >= DIVERGE) {
+            throw PSIEXCEPTION("CCD iterations are diverging");
+        }
+
+    } while (std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
+
+    // delete
+    if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
+
+    if (conver == 1) {
+        outfile->Printf("\n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ===================== DF-CCD ITERATIONS ARE CONVERGED ======================== \n");
+        outfile->Printf(" ============================================================================== \n");
     }
 
-   // print
-   outfile->Printf(" %3d      %12.10f         %12.10f      %12.2e  \n", itr_occ, Ecorr, DE, rms_t2);
-
-    if (itr_occ >= cc_maxiter) {
-      conver = 0; // means iterations were NOT converged
-      break;
+    else if (conver == 0) {
+        outfile->Printf("\n ====================== DF-CCD IS NOT CONVERGED IN %2d ITERATIONS ============= \n",
+                        cc_maxiter);
+        throw PSIEXCEPTION("DF-CCD iterations did not converge");
     }
 
-    if (rms_t2 >= DIVERGE || rms_t1 >= DIVERGE) {
-        throw PSIEXCEPTION("CCD iterations are diverging");
-    }
-
-}
-while(std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
-
-//delete
-if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
-
-if (conver == 1) {
-outfile->Printf("\n");
-outfile->Printf(" ============================================================================== \n");
-outfile->Printf(" ===================== DF-CCD ITERATIONS ARE CONVERGED ======================== \n");
-outfile->Printf(" ============================================================================== \n");
-}
-
-else if (conver == 0) {
-  outfile->Printf("\n ====================== DF-CCD IS NOT CONVERGED IN %2d ITERATIONS ============= \n", cc_maxiter);
-  throw PSIEXCEPTION("DF-CCD iterations did not converge");
-}
-
-}// end ccd_iterations_low
-}} // End Namespaces
+}  // end ccd_iterations_low
+}  // namespace dfoccwave
+}  // namespace psi

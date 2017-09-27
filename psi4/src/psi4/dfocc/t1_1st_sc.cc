@@ -31,18 +31,16 @@
 #include "defines.h"
 #include "dfocc.h"
 
-
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::t1_1st_sc()
-{
-
+void DFOCC::t1_1st_sc() {
     timer_on("1st-order T1");
     // T1A
-    for(int i = 0 ; i < naoccA; ++i){
-        for(int a = 0 ; a < navirA; ++a){
+    for (int i = 0; i < naoccA; ++i) {
+        for (int a = 0; a < navirA; ++a) {
             double value = FockA->get(i + nfrzc, i + nfrzc) - FockA->get(a + noccA, a + noccA);
             t1A->set(i, a, FockA->get(i + nfrzc, a + noccA) / value);
         }
@@ -50,31 +48,32 @@ void DFOCC::t1_1st_sc()
     if (print_ > 2) t1A->print();
 
     // T1B
-    for(int i = 0 ; i < naoccB; ++i){
-        for(int a = 0 ; a < navirB; ++a){
+    for (int i = 0; i < naoccB; ++i) {
+        for (int a = 0; a < navirB; ++a) {
             double value = FockB->get(i + nfrzc, i + nfrzc) - FockB->get(a + noccB, a + noccB);
             t1B->set(i, a, FockB->get(i + nfrzc, a + noccB) / value);
         }
     }
 
-        //Singles-contribution
-        Emp2_t1 = 0.0;
-        //Alpha
-        for(int i = 0 ; i < naoccA; ++i){
-            for(int a = 0 ; a < navirA; ++a){
-                Emp2_t1 += t1A->get(i, a) * FockA->get(a + noccA, i + nfrzc);
-            }
+    // Singles-contribution
+    Emp2_t1 = 0.0;
+    // Alpha
+    for (int i = 0; i < naoccA; ++i) {
+        for (int a = 0; a < navirA; ++a) {
+            Emp2_t1 += t1A->get(i, a) * FockA->get(a + noccA, i + nfrzc);
         }
+    }
 
-        // Beta
-        for(int i = 0 ; i < naoccB; ++i){
-            for(int a = 0 ; a < navirB; ++a){
-                Emp2_t1 += t1B->get(i, a) * FockB->get(a + noccB, i + nfrzc);
-            }
+    // Beta
+    for (int i = 0; i < naoccB; ++i) {
+        for (int a = 0; a < navirB; ++a) {
+            Emp2_t1 += t1B->get(i, a) * FockB->get(a + noccB, i + nfrzc);
         }
+    }
 
     if (print_ > 2) t1B->print();
     timer_off("1st-order T1");
-} // end t1_1st_sc
+}  // end t1_1st_sc
 
-}} // End Namespaces
+}  // namespace dfoccwave
+}  // namespace psi

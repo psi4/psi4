@@ -32,12 +32,10 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libdiis/diismanager.h"
 
+namespace psi {
+namespace dfoccwave {
 
-namespace psi{ namespace dfoccwave{
-
-void DFOCC::ccd_t2_amps_low()
-{
-
+void DFOCC::ccd_t2_amps_low() {
     // defs
     SharedTensor2d K, I, T, Tnew, U, Tau, W, X, Y;
 
@@ -95,10 +93,10 @@ void DFOCC::ccd_t2_amps_low()
     if (do_diis_ == 0) T->write_symm(psio_, PSIF_DFOCC_AMPS);
 
     // DIIS
-    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
     Tau->to_matrix(RT2);
     Tau.reset();
-    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA*navirA, naoccA*navirA));
+    std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
     T->to_matrix(T2);
     T.reset();
 
@@ -142,5 +140,6 @@ void DFOCC::ccd_t2_amps_low()
     K.reset();
     Eccd = Escf + Ecorr;
 
-}// end ccd_t2_amps_low
-}} // End Namespaces
+}  // end ccd_t2_amps_low
+}  // namespace dfoccwave
+}  // namespace psi

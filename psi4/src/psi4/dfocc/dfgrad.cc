@@ -42,14 +42,13 @@
 
 using namespace psi;
 
-namespace psi{ namespace dfoccwave{
+namespace psi {
+namespace dfoccwave {
 
-void DFOCC::dfgrad()
-{
-
-//===========================================================================================
-//============================ Preliminaries ================================================
-//===========================================================================================
+void DFOCC::dfgrad() {
+    //===========================================================================================
+    //============================ Preliminaries ================================================
+    //===========================================================================================
     tstop();
     tstart();
     title_grad();
@@ -58,17 +57,15 @@ void DFOCC::dfgrad()
     if (wfn_type_ == "DF-OMP2") {
         tpdm_tilde();
         back_trans();
-    }
-    else {
+    } else {
         tpdm_tilde_cc();
         back_trans_cc();
     }
 
-//===========================================================================================
-//============================ Gradient =====================================================
-//===========================================================================================
+    //===========================================================================================
+    //============================ Gradient =====================================================
+    //===========================================================================================
     outfile->Printf("\tComputing analytic gradients...\n");
-
 
     gradient_terms.push_back("Nuclear");
     gradient_terms.push_back("Kinetic");
@@ -87,9 +84,9 @@ void DFOCC::dfgrad()
     tei_grad_ref();
     tei_grad_corr();
 
-//===========================================================================================
-//========================= Total Gradient ==================================================
-//===========================================================================================
+    //===========================================================================================
+    //========================= Total Gradient ==================================================
+    //===========================================================================================
     // => Total Gradient <= //
     SharedMatrix total = SharedMatrix(gradients["Nuclear"]->clone());
     total->zero();
@@ -119,8 +116,7 @@ void DFOCC::dfgrad()
     gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
     gradients["Two-Electron"]->add(gradients["Metric:RefSep"]);
     gradients["Two-Electron"]->add(gradients["Metric:Corr"]);
-    gradients["Two-Electron"]->print_atom_vector();//UB
-
+    gradients["Two-Electron"]->print_atom_vector();  // UB
 
     // => Final Printing <= //
     if (print_ > 1) {
@@ -135,9 +131,8 @@ void DFOCC::dfgrad()
 
     gradient_ = total;
 
-//outfile->Printf("\tdfgrad is done. \n");
-}// end dfgrad
+    // outfile->Printf("\tdfgrad is done. \n");
+}  // end dfgrad
 
-}} // End Namespaces
-
-
+}  // namespace dfoccwave
+}  // namespace psi
