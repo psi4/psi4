@@ -41,6 +41,7 @@ from psi4.driver import diatomic
 from psi4.driver import wrapper_database
 from psi4.driver import wrapper_autofrag
 from psi4.driver import json_wrapper
+from psi4.driver import frac
 
 from psi4.driver.driver import *
 

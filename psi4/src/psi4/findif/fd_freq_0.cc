@@ -126,23 +126,28 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     for (int i = 0; i < len(python_energies); ++i)
         E.push_back(python_energies[i].cast<double>());
 
-    outfile->Printf("\n-------------------------------------------------------------\n\n");
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n\n");
 
-    outfile->Printf("  Computing second-derivative from energies using projected, \n");
-    outfile->Printf("  symmetry-adapted, cartesian coordinates (fd_freq_0).\n");
+        outfile->Printf("  Computing second-derivative from energies using projected, \n");
+        outfile->Printf("  symmetry-adapted, cartesian coordinates (fd_freq_0).\n");
 
-    outfile->Printf("\t%d energies passed in, including the reference energy.\n", (int) E.size());
+        outfile->Printf("\t%d energies passed in, including the reference energy.\n", (int) E.size());
+    }
+
     if (E.size() != Ndisp_all + 1) { // last energy is the reference non-displaced energy
         throw PsiException("FINDIF: Incorrect number of energies passed in!", __FILE__, __LINE__);
     }
 
     double energy_ref = E[Ndisp_all];
-    outfile->Printf("\tUsing %d-point formula.\n", pts);
-    outfile->Printf("\tEnergy without displacement: %15.10lf\n", energy_ref);
-    outfile->Printf("\tCheck energies below for precision!\n");
-    for (int i = 0; i < Ndisp_all + 1; ++i)
-        outfile->Printf("\t%5d : %20.10lf\n", i + 1, E[i]);
-    outfile->Printf("\n");
+    if (print_lvl) {
+        outfile->Printf("\tUsing %d-point formula.\n", pts);
+        outfile->Printf("\tEnergy without displacement: %15.10lf\n", energy_ref);
+        outfile->Printf("\tCheck energies below for precision!\n");
+        for (int i = 0; i < Ndisp_all + 1; ++i)
+            outfile->Printf("\t%5d : %20.10lf\n", i + 1, E[i]);
+        outfile->Printf("\n");
+    }
 
     // Determine the number of translation and rotational coordinates projected out
     // and obtain them.  might be needed for cartesian hessian.
@@ -271,7 +276,9 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     }
 
     // This print function also saves frequencies in wavefunction.
-    print_vibrations(mol, modes);
+    if (print_lvl) {
+        print_vibrations(mol, modes);
+    }
 
     // Optionally, save normal modes to file.
     if (options.get_bool("NORMAL_MODES_WRITE")) {
@@ -469,7 +476,9 @@ SharedMatrix fd_freq_0(std::shared_ptr <Molecule> mol, Options &options,
     }
 //  free_block(Hx);
 
-    outfile->Printf("\n-------------------------------------------------------------\n");
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n");
+    }
 
     return mat_Hx;
 }

@@ -161,10 +161,14 @@ void LibXCFunctional::set_omega(double omega) {
         xc_gga_x_wpbeh_set_params(&xc_functional_, omega);
     } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {
         xc_gga_x_hjs_set_params(&xc_functional_, omega);
+    } else if (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") {
+        xc_gga_x_wpbeh_set_params(xc_functional_.func_aux[0], omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
         xc_functional_.cam_omega = omega;
+        xc_lda_x_set_params(xc_functional_.func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
         xc_functional_.cam_omega = omega;
+        xc_lda_x_set_params(xc_functional_.func_aux[0], 4.0/3.0, XC_NON_RELATIVISTIC, omega);
     } else {
         outfile->Printf("LibXCfunctional: set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
         throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");
@@ -206,8 +210,8 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
     } else if (xc_func_name_ == "XC_GGA_X_PW91") {
         if (vsize == 7) {
             // (XC(func_type) *p, FLOAT a, FLOAT b, FLOAT c, FLOAT d, FLOAT f, FLOAT alpha, FLOAT expo);
-            xc_gga_x_pw91_set_params(&xc_functional_, values[0], values[1], values[2], values[3],
-                                     values[4], values[5], values[6]);
+            xc_gga_x_pw91_set_params(&xc_functional_, values[0], values[1], values[2], values[3], values[4], values[5],
+                                     values[6]);
             failed = false;
         }
     } else if (xc_func_name_ == "XC_GGA_X_RPBE") {
@@ -228,8 +232,7 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
             xc_gga_c_lyp_set_params(&xc_functional_, values[0], values[1], values[2], values[3]);
             failed = false;
         }
-    } else if ((xc_func_name_ == "XC_HYB_GGA_XC_HSE03") ||
-               (xc_func_name_ == "XC_HYB_GGA_XC_HSE06")) {
+    } else if ((xc_func_name_ == "XC_HYB_GGA_XC_HSE03") || (xc_func_name_ == "XC_HYB_GGA_XC_HSE06")) {
         if (vsize == 1) {
             // (XC(func_type) *p, FLOAT alpha, FLOAT omega);
             xc_hyb_gga_xc_pbeh_set_params(&xc_functional_, values[0]);
@@ -270,8 +273,7 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
         }
     } else {
         throw PSIEXCEPTION(
-            "LibXCfunctional: set_tweak: There are no known tweaks for this functional, please "
-            "double check "
+            "LibXCfunctional: set_tweak: There are no known tweaks for this functional, please double check "
             "the functional form and add them if required.");
     }
 

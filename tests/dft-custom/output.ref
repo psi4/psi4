@@ -1,0 +1,910 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 (inplace)
+
+                         Git: Rev (inplace)
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 18 September 2017 10:47AM
+
+    Process ID:  21786
+    PSIDATADIR: /Users/daniel/Gits/dgaspsi/psi4/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DFT custom functional test
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+print 2
+basis sto-3g
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+def build_pbe0_superfunctional(name, npoints, deriv, restricted):
+
+    # Build a empty superfunctional
+    sup = core.SuperFunctional.blank()
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0')
+    sup.set_description('    PBE0 Hyb-GGA Exchange-Correlation Functional\n')
+
+    # Add member functionals
+
+    # 100% PBE correlation
+    sup.add_c_functional(core.LibXCFunctional('XC_GGA_C_PBE', restricted))
+
+    # 25% PBE exchange
+    pbe_x = core.LibXCFunctional('XC_GGA_X_PBE', restricted)
+    pbe_x.set_alpha(0.75)
+    sup.add_x_functional(pbe_x)
+
+    # Add 25% exact exchange
+    sup.set_x_alpha(0.25)
+
+    return sup
+
+
+reference_pbe0 = -75.25216293143556 #TEST
+
+dft_call = energy("PBE0") #TEST
+compare_values(reference_pbe0, dft_call, 6, "Reference PBE0")  #TEST
+
+scf_call = energy('SCF', dft_functional="pbe0")  #TEST
+compare_values(reference_pbe0, scf_call, 6, "PBE0 by dft_functional name")  #TEST
+
+func_call = energy('SCF', dft_functional=build_pbe0_superfunctional) #TEST
+compare_values(reference_pbe0, func_call, 6, "PBE0 by dft_functional function")  #TEST
+
+
+--------------------------------------------------------------------------
+
+*** tstart() called on h80adf3e9.dhcp.vt.edu
+*** at Mon Sep 18 10:47:50 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Blend                  = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE0 Hyb-GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., J. Chem. Phys., 105(22), 9982-9985, 1996
+    C. Adamo et. a., J. Chem Phys., 110(13), 6158-6170, 1999
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.7500     XC_GGA_X_PBE
+
+   => Exact (HF) Exchange <=
+
+    0.2500               HF 
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_PBE
+
+   => XC_GGA_X_PBE Functional <=
+
+    Perdew, Burke & Ernzerhof
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   7.500000E-01
+    Omega =   0.000000E+00
+
+   => XC_GGA_C_PBE Functional <=
+
+    Perdew, Burke & Ernzerhof
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             99
+    Spherical Points    =            302
+    Total Points        =          86165
+    Total Blocks        =            797
+    Max Points          =            200
+    Max Functions       =              7
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   323 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+    atoms 2-3 entry H          line    23 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = (STO-3G AUX)
+    Blend                  = DEF2-SVP-JKFIT
+    Total number of shells = 37
+    Number of primitives   = 49
+    Number of AO           = 133
+    Number of SO           = 113
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     14s 10p 6d 2f 1g // 10s 8p 4d 2f 1g 
+       2     H     4s 2p 2d // 2s 2p 2d 
+       3     H     4s 2p 2d // 2s 2p 2d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:   -75.09702251724067   -7.50970e+01   2.83469e-01 
+   @DF-RKS iter   1:   -75.22289200984147   -1.25869e-01   4.28585e-02 
+   @DF-RKS iter   2:   -75.23748168042961   -1.45897e-02   3.25019e-02 DIIS
+   @DF-RKS iter   3:   -75.25216172145001   -1.46800e-02   2.25931e-04 DIIS
+   @DF-RKS iter   4:   -75.25216289385608   -1.17241e-06   4.59847e-05 DIIS
+   @DF-RKS iter   5:   -75.25216293135973   -3.75037e-08   1.60349e-06 DIIS
+   @DF-RKS iter   6:   -75.25216293143556   -7.58291e-11   7.13983e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -18.902782     2A1    -0.940084     1B2    -0.439466  
+       3A1    -0.246857     1B1    -0.154615  
+
+    Virtual:                                                              
+
+       4A1     0.337907     2B2     0.447012  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:   -75.25216293143556
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -121.6878424809361832
+    Two-Electron Energy =                  44.7215325150235117
+    DFT Exchange-Correlation Energy =      -7.0873184954949568
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -75.2521629314355636
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3780
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.6411     Total:     0.6411
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.6295     Total:     1.6295
+
+
+*** tstop() called on h80adf3e9.dhcp.vt.edu at Mon Sep 18 10:47:51 2017
+Module time:
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+	Reference PBE0....................................................PASSED
+
+*** tstart() called on h80adf3e9.dhcp.vt.edu
+*** at Mon Sep 18 10:47:51 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Blend                  = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE0 Hyb-GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., J. Chem. Phys., 105(22), 9982-9985, 1996
+    C. Adamo et. a., J. Chem Phys., 110(13), 6158-6170, 1999
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.7500     XC_GGA_X_PBE
+
+   => Exact (HF) Exchange <=
+
+    0.2500               HF 
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_PBE
+
+   => XC_GGA_X_PBE Functional <=
+
+    Perdew, Burke & Ernzerhof
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   7.500000E-01
+    Omega =   0.000000E+00
+
+   => XC_GGA_C_PBE Functional <=
+
+    Perdew, Burke & Ernzerhof
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             99
+    Spherical Points    =            302
+    Total Points        =          86165
+    Total Blocks        =            797
+    Max Points          =            200
+    Max Functions       =              7
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   323 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+    atoms 2-3 entry H          line    23 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = (STO-3G AUX)
+    Blend                  = DEF2-SVP-JKFIT
+    Total number of shells = 37
+    Number of primitives   = 49
+    Number of AO           = 133
+    Number of SO           = 113
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     14s 10p 6d 2f 1g // 10s 8p 4d 2f 1g 
+       2     H     4s 2p 2d // 2s 2p 2d 
+       3     H     4s 2p 2d // 2s 2p 2d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:   -75.09702251724067   -7.50970e+01   2.83469e-01 
+   @DF-RKS iter   1:   -75.22289200984147   -1.25869e-01   4.28585e-02 
+   @DF-RKS iter   2:   -75.23748168042964   -1.45897e-02   3.25019e-02 DIIS
+   @DF-RKS iter   3:   -75.25216172145004   -1.46800e-02   2.25931e-04 DIIS
+   @DF-RKS iter   4:   -75.25216289385608   -1.17241e-06   4.59847e-05 DIIS
+   @DF-RKS iter   5:   -75.25216293135973   -3.75037e-08   1.60349e-06 DIIS
+   @DF-RKS iter   6:   -75.25216293143556   -7.58291e-11   7.13983e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -18.902782     2A1    -0.940084     1B2    -0.439466  
+       3A1    -0.246857     1B1    -0.154615  
+
+    Virtual:                                                              
+
+       4A1     0.337907     2B2     0.447012  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:   -75.25216293143556
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -121.6878424809361832
+    Two-Electron Energy =                  44.7215325150235117
+    DFT Exchange-Correlation Energy =      -7.0873184954949577
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -75.2521629314355636
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3780
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.6411     Total:     0.6411
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.6295     Total:     1.6295
+
+
+*** tstop() called on h80adf3e9.dhcp.vt.edu at Mon Sep 18 10:47:53 2017
+Module time:
+	user time   =       1.28 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       2.61 seconds =       0.04 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+	PBE0 by dft_functional name.......................................PASSED
+
+*** tstart() called on h80adf3e9.dhcp.vt.edu
+*** at Mon Sep 18 10:47:53 2017
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, Andy Simmonett
+                             and Daniel Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310    15.994914619560
+           H          0.000000000000    -0.790689573744     0.543701060724     1.007825032070
+           H          0.000000000000     0.790689573744     0.543701060724     1.007825032070
+
+  Running in c2v symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.06586  B = 401042.16407  C = 261705.25278 [MHz]
+  Nuclear repulsion =    8.801465529972067
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  -AO BASIS SET INFORMATION:
+    Name                   = STO-3G
+    Blend                  = STO-3G
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DFT Potential <==
+
+   => Composite Functional: PBE0 <= 
+
+    PBE0 Hyb-GGA Exchange-Correlation Functional
+
+
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.7500     XC_GGA_X_PBE
+
+   => Exact (HF) Exchange <=
+
+    0.2500               HF 
+
+   => Correlation Functionals <=
+
+    1.0000     XC_GGA_C_PBE
+
+   => XC_GGA_X_PBE Functional <=
+
+    Perdew, Burke & Ernzerhof
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   7.500000E-01
+    Omega =   0.000000E+00
+
+   => XC_GGA_C_PBE Functional <=
+
+    Perdew, Burke & Ernzerhof
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+   => Molecular Quadrature <=
+
+    Radial Scheme       =       TREUTLER
+    Pruning Scheme      =           FLAT
+    Nuclear Scheme      =       TREUTLER
+
+    BS radius alpha     =              1
+    Pruning alpha       =              1
+    Radial Points       =             99
+    Spherical Points    =            302
+    Total Points        =          86165
+    Total Blocks        =            797
+    Max Points          =            200
+    Max Functions       =              7
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   323 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+    atoms 2-3 entry H          line    23 file /Users/daniel/Gits/dgaspsi/psi4/share/psi4/basis/def2-svp-jkfit.gbs 
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         4       4       0       0       0       0
+     A2         0       0       0       0       0       0
+     B1         1       1       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               375
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  -AO BASIS SET INFORMATION:
+    Name                   = (STO-3G AUX)
+    Blend                  = DEF2-SVP-JKFIT
+    Total number of shells = 37
+    Number of primitives   = 49
+    Number of AO           = 133
+    Number of SO           = 113
+    Maximum AM             = 4
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     14s 10p 6d 2f 1g // 10s 8p 4d 2f 1g 
+       2     H     4s 2p 2d // 2s 2p 2d 
+       3     H     4s 2p 2d // 2s 2p 2d 
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
+  Using Symmetric Orthogonalization.
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RKS iter   0:   -75.09702251724070   -7.50970e+01   2.83469e-01 
+   @DF-RKS iter   1:   -75.22289200984144   -1.25869e-01   4.28585e-02 
+   @DF-RKS iter   2:   -75.23748168042964   -1.45897e-02   3.25019e-02 DIIS
+   @DF-RKS iter   3:   -75.25216172145002   -1.46800e-02   2.25931e-04 DIIS
+   @DF-RKS iter   4:   -75.25216289385605   -1.17241e-06   4.59847e-05 DIIS
+   @DF-RKS iter   5:   -75.25216293135976   -3.75037e-08   1.60349e-06 DIIS
+   @DF-RKS iter   6:   -75.25216293143556   -7.58007e-11   7.13983e-09 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -18.902782     2A1    -0.940084     1B2    -0.439466  
+       3A1    -0.246857     1B1    -0.154615  
+
+    Virtual:                                                              
+
+       4A1     0.337907     2B2     0.447012  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @DF-RKS Final Energy:   -75.25216293143556
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720665
+    One-Electron Energy =                -121.6878424809361974
+    Two-Electron Energy =                  44.7215325150235259
+    DFT Exchange-Correlation Energy =      -7.0873184954949560
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -75.2521629314355636
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3780
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.6411     Total:     0.6411
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.6295     Total:     1.6295
+
+
+*** tstop() called on h80adf3e9.dhcp.vt.edu at Mon Sep 18 10:47:54 2017
+Module time:
+	user time   =       1.27 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       3.91 seconds =       0.07 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+	PBE0 by dft_functional function...................................PASSED
+
+*** Psi4 exiting successfully. Buy a developer a beer!

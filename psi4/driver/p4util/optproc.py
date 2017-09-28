@@ -93,7 +93,6 @@ class OptionsState(object):
     them, then restoring before function return. ::
 
         >>> optstash = OptionsState(
-                ['SCF', 'DFT_FUNCTIONAL'],
                 ['DF_BASIS_SCF'],
                 ['SCF', 'SCF_TYPE'],
                 ['SCF', 'REFERENCE'])

@@ -47,6 +47,7 @@ protected:
     std::shared_ptr<SuperFunctional> functional_;
     std::shared_ptr<VBase> potential_;
     std::map<std::string, SharedMatrix> gradients_;
+    std::map<std::string, SharedMatrix> hessians_;
 
 public:
     SCFGrad(SharedWavefunction ref_wfn, Options& options);

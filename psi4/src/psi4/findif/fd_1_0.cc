@@ -49,6 +49,7 @@ SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::
 {
     int pts = options.get_int("POINTS");
     double disp_size = options.get_double("DISP_SIZE");
+    int print_lvl = options.get_int("PRINT");
 
     int Natom = mol->natom();
     std::shared_ptr <MatrixFactory> fact;
@@ -84,35 +85,40 @@ SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::
             g_q[i] = (E[4 * i] - 8.0 * E[4 * i + 1] + 8.0 * E[4 * i + 2] - E[4 * i + 3]) / (12.0 * disp_size);
     }
 
-    outfile->Printf("\n-------------------------------------------------------------\n\n");
-    outfile->Printf("  Computing gradient from energies (fd_1_0).\n");
-
-    // Print out energies and gradients
     double energy_ref = E[Ndisp - 1];
-    outfile->Printf("\tUsing %d-point formula.\n", pts);
-    outfile->Printf("\tEnergy without displacement: %15.10lf\n", energy_ref);
-    outfile->Printf("\tCheck energies below for precision!\n");
-    outfile->Printf("\tForces are for mass-weighted, symmetry-adapted cartesians (in au).\n");
 
-    int cnt;
-    if (pts == 3) {
-        cnt = -2;
-        outfile->Printf("\n\t Coord      Energy(-)        Energy(+)        Force\n");
-        for (int i = 0; i < Nsalc; ++i) {
-            cnt += 2;
-            outfile->Printf("\t%5d %17.10lf%17.10lf%17.10lf\n", i, E[cnt], E[cnt + 1], g_q[i]);
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n\n");
+        outfile->Printf("  Computing gradient from energies (fd_1_0).\n");
+
+        // Print out energies and gradients
+        outfile->Printf("\tUsing %d-point formula.\n", pts);
+        outfile->Printf("\tEnergy without displacement: %15.10lf\n", energy_ref);
+        outfile->Printf("\tCheck energies below for precision!\n");
+        outfile->Printf("\tForces are for mass-weighted, symmetry-adapted cartesians (in au).\n");
+    }
+
+    if (print_lvl) {
+        int cnt;
+        if (pts == 3) {
+            cnt = -2;
+            outfile->Printf("\n\t Coord      Energy(-)        Energy(+)        Force\n");
+            for (int i = 0; i < Nsalc; ++i) {
+                cnt += 2;
+                outfile->Printf("\t%5d %17.10lf%17.10lf%17.10lf\n", i, E[cnt], E[cnt + 1], g_q[i]);
+            }
+            outfile->Printf("\n");
+        } else if (pts == 5) {
+            cnt = -4;
+            outfile->Printf(
+                    "\n\t Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
+            for (int i = 0; i < Nsalc; ++i) {
+                cnt += 4;
+                outfile->Printf("\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
+                                i, E[cnt], E[cnt + 1], E[cnt + 2], E[cnt + 3], g_q[i]);
+            }
+            outfile->Printf("\n");
         }
-        outfile->Printf("\n");
-    } else if (pts == 5) {
-        cnt = -4;
-        outfile->Printf(
-                "\n\t Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
-        for (int i = 0; i < Nsalc; ++i) {
-            cnt += 4;
-            outfile->Printf("\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
-                            i, E[cnt], E[cnt + 1], E[cnt + 2], E[cnt + 3], g_q[i]);
-        }
-        outfile->Printf("\n");
     }
 
     // Build B matrix of salc coefficients
@@ -148,7 +154,9 @@ SharedMatrix fd_1_0(std::shared_ptr <Molecule> mol, Options &options, const py::
     }
 
     SharedMatrix sgradient(gradient_matrix.clone());
-    outfile->Printf("\n-------------------------------------------------------------\n");
+    if (print_lvl) {
+        outfile->Printf("\n-------------------------------------------------------------\n");
+    }
 
     return sgradient;
 }

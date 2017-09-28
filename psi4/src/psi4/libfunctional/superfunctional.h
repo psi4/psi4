@@ -227,6 +227,7 @@ public:
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
     bool is_c_scs_hybrid() const { return c_os_alpha_ != 0.0 || c_ss_alpha_ != 0.0; }
+    bool is_libxc_func() const { return libxc_xc_func_; }
 
     // => Utility <= //
 

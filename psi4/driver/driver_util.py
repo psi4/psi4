@@ -81,7 +81,7 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
         print('      Setting convergence', end=' ')
     # Set method-dependent scf convergence criteria, check against energy routines
     if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
+        if procedures['energy'][method_name] == proc.run_scf:
             core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
             if verbose >= 2:
                 print(scf_Ec, end=' ')
@@ -94,7 +94,7 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
             print('CUSTOM', core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
 
     if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][method_name] in [proc.run_scf, proc.run_dft]:
+        if procedures['energy'][method_name] == proc.run_scf:
             core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
             if verbose >= 2:
                 print(scf_Dc, end=' ')
@@ -108,12 +108,12 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
 
     # Set post-scf convergence criteria (global will cover all correlated modules)
     if not core.has_global_option_changed('E_CONVERGENCE'):
-        if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
+        if procedures['energy'][method_name] != proc.run_scf:
             core.set_global_option('E_CONVERGENCE', gen_Ec)
             if verbose >= 2:
                 print(gen_Ec, end=' ')
     else:
-        if procedures['energy'][method_name] not in [proc.run_scf, proc.run_dft]:
+        if procedures['energy'][method_name] != proc.run_scf:
             if verbose >= 2:
                 print('CUSTOM', core.get_global_option('E_CONVERGENCE'), end=' ')
 

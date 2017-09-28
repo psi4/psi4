@@ -33,15 +33,16 @@ from psi4.driver.p4util.exceptions import *
 from psi4.driver import p4util
 from psi4 import core
 
+from . import dft_funcs
+
 import numpy as np
 
-def scf_set_reference_local(name):
+def scf_set_reference_local(name, is_dft=False):
     """
     Figures out the correct SCF reference to set locally
     """
 
     optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'REFERENCE'])
 
@@ -49,54 +50,21 @@ def scf_set_reference_local(name):
     if not core.has_option_changed('SCF', 'SCF_TYPE'):
         core.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if name == 'hf':
-        if core.get_option('SCF','REFERENCE') == 'RKS':
-            core.set_local_option('SCF','REFERENCE','RHF')
-        elif core.get_option('SCF','REFERENCE') == 'UKS':
-            core.set_local_option('SCF','REFERENCE','UHF')
-    elif name == 'scf':
-        if core.get_option('SCF','REFERENCE') == 'RKS':
-            if (len(core.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or core.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                core.set_local_option('SCF','REFERENCE','RHF')
-        elif core.get_option('SCF','REFERENCE') == 'UKS':
-            if (len(core.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or core.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-                pass
-            else:
-                core.set_local_option('SCF','REFERENCE','UHF')
-    return optstash
-
-def dft_set_reference_local(name):
-    """
-    Figures out the correct DFT reference to set locally
-    """
-
-    optstash = p4util.OptionsState(
-        ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'],
-        ['SCF', 'SCF_TYPE'],
-        ['DF_BASIS_MP2'],
-        ['DFMP2', 'MP2_OS_SCALE'],
-        ['DFMP2', 'MP2_SS_SCALE'])
-
-    # Alter default algorithm
-    if not core.has_option_changed('SCF', 'SCF_TYPE'):
-        core.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-    core.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
-
+    # Alter reference name if needed
     user_ref = core.get_option('SCF', 'REFERENCE')
-    if (user_ref == 'RHF'):
-        core.set_local_option('SCF', 'REFERENCE', 'RKS')
-    elif (user_ref == 'UHF'):
-        core.set_local_option('SCF', 'REFERENCE', 'UKS')
-    elif (user_ref == 'ROHF'):
-        raise ValidationError('ROHF reference for DFT is not available.')
-    elif (user_ref == 'CUHF'):
-        raise ValidationError('CUHF reference for DFT is not available.')
+    if (name not in dft_funcs.superfunctional_noxc_names) or (is_dft):
+        if (user_ref == 'RHF'):
+            core.set_local_option('SCF', 'REFERENCE', 'RKS')
+        elif (user_ref == 'UHF'):
+            core.set_local_option('SCF', 'REFERENCE', 'UKS')
+        elif (user_ref == 'ROHF'):
+            raise ValidationError('ROHF reference for DFT is not available.')
+        elif (user_ref == 'CUHF'):
+            raise ValidationError('CUHF reference for DFT is not available.')
+    # else we are doing HF and nothing needs to be overloaded
 
     return optstash
+
 
 def oeprop_validator(prop_list):
     """

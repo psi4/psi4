@@ -55,12 +55,13 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-dldf dft-grac dft-dsd 
                   dft-freq dft-grad1 dft-grad2 dft-pbe0-2 dft-psivar dft-b3lyp dft1 dft-vv10 
-                  dft1-alt dft2 dft3 docs-bases docs-dft extern1 extern2
+                  dft1-alt dft2 dft3 dft-omega docs-bases docs-dft extern1 extern2
                   fsapt1 fsapt2 isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2 fci-coverage 
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient 
                   fd-freq-gradient-large fd-gradient freq-isotope fnocc1 fnocc2 
-                  fnocc3 fnocc4 frac ghosts gibbs matrix1 mcscf1 mcscf2 mcscf3 
+                  fnocc3 fnocc4 frac frac-ip-fitting frac-traverse ghosts gibbs matrix1
+                  mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper 
                   mints9 mints10 molden1 molden2 mom mp2-1 mp2-def2 mp2-grad1 mp2-grad2 
                   mp2-module mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
@@ -82,7 +83,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   rasci-ne rasscf-sp sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 
                   sapt7 sapt8 scf-bz2 scf-ecp scf-guess-read1 scf-upcast-custom-basis scf-guess-read2 scf-bs scf1 scf-occ
                   scf2 scf3 scf4 scf5 scf6 scf7 scf-property soscf-large soscf-ref
-                  soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare
+                  soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 zaptn-nh2 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-freq1 dft-jk scf-coverage
