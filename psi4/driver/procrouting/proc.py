@@ -2038,7 +2038,12 @@ def run_scf_gradient(name, **kwargs):
     a SCF gradient calculation.
 
     """
-    optstash = proc_util.scf_set_reference_local(name)
+
+    dft_func = False
+    if "dft_functional" in kwargs:
+        dft_func = True
+
+    optstash = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
