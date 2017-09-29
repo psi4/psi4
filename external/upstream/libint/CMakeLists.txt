@@ -13,7 +13,7 @@ else()
     message(STATUS "Suitable Libint could not be located, ${Magenta}Building Libint${ColourReset} instead.")
     ExternalProject_Add(libint_external
         GIT_REPOSITORY https://github.com/evaleev/libint
-        GIT_TAG 024738cf # v1.2.1 release-1-2-1
+        GIT_TAG 024738c  # v1.2.1+2 release-1-2-1
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

@@ -30,6 +30,7 @@ if(${ENABLE_libefp})
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        -DLIBC_INTERJECT=${LIBC_INTERJECT}
+                       -DINSTALL_DEVEL_HEADERS=ON
                        -DFRAGLIB_UNDERSCORE_L=OFF
                        -DFRAGLIB_DEEP=OFF
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
