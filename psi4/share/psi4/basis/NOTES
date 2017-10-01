@@ -32,6 +32,17 @@ Kupka, T and Lim, C, J. Phys. Chem. A 111 (2007) 1927-1932, DOI: 10.1021/jp06500
 *******************************************************************************
 
 
+Friday, September 29, 2017 -- LAB
+
+[39] @SinaMostafanejad filled in some 5-zeta Dunning holes.   
+        Added Li & Be to cc-pCV5Z (to corevalence-cc-pcv5z, as separable)
+        Added Li & Be to aug-cc-pV5Z (diffuse-aug-cc-pv5z)
+
+
+*******************************************************************************
+*******************************************************************************
+
+
 Tuesday, August 22, 2017 -- LAB
 
 [38] Someone added Ga-Kr to 6-31G* on EMSL, but in usual fashion,
