@@ -47,6 +47,8 @@ Friday, September 29, 2017 -- LAB
         Added Na & Mg to diffuse of aug-cc-pVXZ X=5 (Li & Be added in [39]) (diffuse-aug-cc-pv5z)
         Added Na & Mg to aug-cc-pV(X+d)Z X=DTQ5 (diffuse-aug-cc-pv_xpd_z)
 
+     Propagated diffuse fns to hold-diffuse-[jun|may|apr|mar]-cc-pv[dtq5]z.gbs and _[dtq5]pd_z
+
 [39] @SinaMostafanejad filled in some 5-zeta Dunning holes.   
         Added Li & Be to cc-pCV5Z (to corevalence-cc-pcv5z, as separable)
         Added Li & Be to aug-cc-pV5Z (diffuse-aug-cc-pv5z)
