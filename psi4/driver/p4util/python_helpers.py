@@ -233,6 +233,7 @@ def pcm_helper(block):
     # Setup unique scratch directory and move in, as done for other add-ons
     psioh = core.IOManager.shared_object()
     psio = core.IO.shared_object()
+    curdir = os.getcwd()
     os.chdir(psioh.get_default_path())
     pcm_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
         'pcmsolver.' + str(uuid.uuid4())[:8]
@@ -243,6 +244,7 @@ def pcm_helper(block):
         handle.write(block)
     import pcmsolver
     pcmsolver.parse_pcm_input('pcmsolver.inp')
+    os.chdir(curdir)
 
 
 def filter_comments(string):
