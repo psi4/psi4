@@ -71,7 +71,7 @@ Installation
 * If using |PSIfour| built from source, and anaconda or miniconda has
   already been installed (instructions at :ref:`sec:quickconda`),
   PCMSolver can be obtained through ``conda install pcmsolver``.
-  Then enable it as a feature with :makevar:`ENABLE_CheMPS2`,
+  Then enable it as a feature with :makevar:`ENABLE_PCMSolver`,
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect PCMSolver and activate dependent code.
 
