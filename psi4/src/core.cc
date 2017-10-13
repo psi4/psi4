@@ -1217,7 +1217,9 @@ bool psi4_python_module_initialize()
     Process::environment.options.set_read_globals(false);
 
 #ifdef INTEL_Fortran_ENABLED
-    for_rtl_init_(NULL, NULL);
+    static int argc = 1;
+    static char* argv = (char*) "";
+    for_rtl_init_(&argc, &argv);
 #endif
 
     initialized = true;
