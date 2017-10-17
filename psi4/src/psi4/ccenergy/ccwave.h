@@ -42,26 +42,26 @@ struct dpdbuf4;
 struct iwlbuf;
 }
 
-namespace psi { namespace ccenergy {
+namespace psi {
+namespace ccenergy {
 
-class CCEnergyWavefunction : public Wavefunction
-{
-public:
+class CCEnergyWavefunction : public Wavefunction {
+   public:
     CCEnergyWavefunction(std::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CCEnergyWavefunction();
 
     double compute_energy();
 
-private:
-
+   private:
     /* setup, info and teardown */
     void init();
     void init_io();
     void init_ioff(void);
     void exit_io(void);
     void cleanup(void);
-    void status(const char *, std::string );
+    void status(const char *, std::string);
     void title(void);
+    void rebuild_denom();
 
     /* calculation info */
     void get_moinfo(void);
@@ -108,7 +108,7 @@ private:
     void t2_build(void);
     int converged(double);
 
-    /* PCM */
+/* PCM */
 #ifdef USING_PCMSolver
     void get_t1_rhf(SharedMatrix &_t1);
     void get_t1_rohf(SharedMatrix &_t1_A, SharedMatrix &_t1_B);
@@ -157,9 +157,8 @@ private:
     double rhf_mp2_energy(void);
     void one_step(void);
     void denom(void);
-    void pair_energies(double** epair_aa, double** epair_ab);
-    void print_pair_energies(double* emp2_aa, double* emp2_ab, double* ecc_aa,
-                             double* ecc_ab);
+    void pair_energies(double **epair_aa, double **epair_ab);
+    void print_pair_energies(double *emp2_aa, double *emp2_ab, double *ecc_aa, double *ecc_ab);
 
     void form_df_ints(Options &options, int **cachelist, int *cachefiles, dpd_file4_cache_entry *priority);
 
@@ -181,19 +180,17 @@ private:
     void local_init(void);
     void local_done(void);
 
-
     /* AO basis */
     void BT2_AO(void);
-    void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2,
-                   int nirreps, int **mo_row, int **so_row, int *mospi_left, int *mospi_right,
-                   int *sospi, int type, double alpha, double beta);
+    void halftrans(dpdbuf4 *Buf1, int dpdnum1, dpdbuf4 *Buf2, int dpdnum2, double ***C1, double ***C2, int nirreps,
+                   int **mo_row, int **so_row, int *mospi_left, int *mospi_right, int *sospi, int type, double alpha,
+                   double beta);
     int AO_contribute(struct iwlbuf *InBuf, dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO);
-
 
     double rhf_energy(void);
     double uhf_energy(void);
     double rohf_energy(void);
-    void rhf_fock_build(double **fock, double  **D);
+    void rhf_fock_build(double **fock, double **D);
     void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b);
 
     /* DIIS */
@@ -201,7 +198,7 @@ private:
     void diis_RHF(int);
     void diis_ROHF(int);
     void diis_UHF(int);
-    void diis_invert_B(double** B, double* C, int dimension, double tolerance);
+    void diis_invert_B(double **B, double *C, int dimension, double tolerance);
 
     /* member variables */
     int *ioff_;
@@ -210,7 +207,7 @@ private:
     Local local_;
     dpd_file4_cache_entry *cache_priority_list_;
 };
+}
+}
 
-}}
-
-#endif // CCWAVE_H
+#endif  // CCWAVE_H

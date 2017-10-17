@@ -194,6 +194,10 @@ double CCEnergyWavefunction::compute_energy() {
         if (local_.weakp == "MP2") lmp2();
     }
 
+    if (options_.get_bool("PCM") && (options_.get_str("PCM_CC_TYPE") == "PTED")) {
+        rebuild_denom();
+    }
+
     init_amps();
 
     /* Compute the MP2 energy while we're here */
@@ -204,28 +208,6 @@ double CCEnergyWavefunction::compute_energy() {
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
     }
-
-    outfile->Printf("CCENERGY ----- Print Fock matrix\n");
-    dpdfile2 fIA;
-    global_dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-    global_dpd_->file2_mat_init(&fIA);
-    global_dpd_->file2_mat_rd(&fIA);
-    global_dpd_->file2_mat_print(&fIA, "outfile");
-    global_dpd_->file2_close(&fIA);
-
-    dpdfile2 fAB;
-    global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    global_dpd_->file2_mat_init(&fAB);
-    global_dpd_->file2_mat_rd(&fAB);
-    global_dpd_->file2_mat_print(&fAB, "outfile");
-    global_dpd_->file2_close(&fAB);
-
-    dpdfile2 fIJ;
-    global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    global_dpd_->file2_mat_init(&fIJ);
-    global_dpd_->file2_mat_rd(&fIJ);
-    global_dpd_->file2_mat_print(&fIJ, "outfile");
-    global_dpd_->file2_close(&fIJ);
 
     if (params_.print_mp2_amps) amp_write();
 
@@ -256,6 +238,122 @@ double CCEnergyWavefunction::compute_energy() {
 #ifdef TIME_CCENERGY
         timer_on("F build");
 #endif
+        /* If the user asked for a PCM-CC-PTES calculation, we have to update
+         * the Fock matrix by adding the PCM potential at this point in the
+         * setup of the T equations.
+         * The Fock matrix update is done as in ccdensity.cc, by first saving the
+         * original Fock matrix.
+         */
+        if (options_.get_bool("PCM") && options_.get_str("PCM_CC_TYPE") == "PTES") {
+            // PTES scheme: M. Caricato, JCP, 135, 074113 (2011)
+            //   Build the PCM polarization charges from the t_i^a CC singles amplitudes at the current iteration.
+            //   The polarization charges are then contracted with the electrostatic potential integrals
+            //   to build the PCM potential to be added in the CC T equations.
+            SharedPCM cc_pcm = std::make_shared<PCM>(options_, reference_wavefunction_->psio(), moinfo_.nirreps,
+                                                     reference_wavefunction_->basisset());
+            if (params_.ref == 0) { /** RHF **/
+                SharedMatrix MO_t1_A(new Matrix("MO_t1_A", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                SharedMatrix SO_t1_A(new Matrix("SO_t1_A", moinfo_.nirreps, reference_wavefunction_->nsopi(),
+                                                reference_wavefunction_->nsopi()));
+
+                SharedMatrix MO_PCM_potential(
+                    new Matrix("MO_PCM_potential", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+
+                get_t1_rhf(MO_t1_A);
+
+                SharedMatrix C = reference_wavefunction_->Ca();
+                SO_t1_A->back_transform(MO_t1_A, C);
+
+                // We have to get the 0.5 * (QV) energy contribution
+                double Epcm_correlated = cc_pcm->compute_E(SO_t1_A, PCM::EleOnly);
+                Process::environment.globals["PCM-CC-PTES CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                double E_correlation = moinfo_.ecc;  // Just the CCSD part
+                E_correlation += Epcm_correlated;    // We add the PCM contribution on top
+                Process::environment.globals["CURRENT CORRELATION ENERGY"] =
+                    E_correlation;  // Save into the globals array
+                double E = Process::environment.globals["CURRENT ENERGY"];
+                E += Epcm_correlated;
+                Process::environment.globals["CURRENT ENERGY"] = E;
+                // outfile->Printf("Epol_correlated = %20.12f\n", Epol_correlated);
+                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
+                // We now transform it to MO basis...
+                MO_PCM_potential->transform(SO_PCM_potential, C);
+                // MO_PCM_potential->print();
+                update_F_pcm_rhf(MO_PCM_potential);
+            } else if (params_.ref == 1) { /** ROHF case **/
+                SharedMatrix MO_t1_A(new Matrix("MO_t1_A", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                SharedMatrix MO_t1_B(new Matrix("MO_t1_B", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                SharedMatrix SO_t1_A(new Matrix("SO_t1_A", moinfo_.nirreps, reference_wavefunction_->nsopi(),
+                                                reference_wavefunction_->nsopi()));
+                SharedMatrix SO_t1_B(new Matrix("SO_t1_B", moinfo_.nirreps, reference_wavefunction_->nsopi(),
+                                                reference_wavefunction_->nsopi()));
+
+                SharedMatrix MO_PCM_potential(
+                    new Matrix("MO_PCM_potential", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+
+                get_t1_rohf(MO_t1_A, MO_t1_B);
+
+                SharedMatrix C = reference_wavefunction_->Ca();
+                SO_t1_A->back_transform(MO_t1_A, C);
+                SO_t1_B->back_transform(MO_t1_B, C);
+
+                SO_t1_A->add(SO_t1_B);
+
+                // We have to get the 0.5 * (QV) energy contribution
+                double Epcm_correlated = cc_pcm->compute_E(SO_t1_A, PCM::EleOnly);
+                Process::environment.globals["PCM-CC-PTES CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                double E_correlation = moinfo_.ecc;  // Just the CCSD part
+                E_correlation += Epcm_correlated;    // We add the PCM contribution on top
+                Process::environment.globals["CURRENT CORRELATION ENERGY"] =
+                    E_correlation;  // Save into the globals array
+                double E = Process::environment.globals["CURRENT ENERGY"];
+                E += Epcm_correlated;
+                Process::environment.globals["CURRENT ENERGY"] = E;
+                // outfile->Printf("Epol_correlated = %20.12f\n", Epol_correlated);
+                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
+                // We now transform it to MO basis...
+                MO_PCM_potential->transform(SO_PCM_potential, C);
+                // MO_PCM_potential->print();
+                update_F_pcm_rhf(MO_PCM_potential);
+            } else if (params_.ref == 2) { /** UHF case **/
+                SharedMatrix MO_t1_A(new Matrix("MO_t1_A", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                SharedMatrix MO_t1_B(new Matrix("MO_t1_B", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                SharedMatrix SO_t1_A(new Matrix("SO_t1_A", moinfo_.nirreps, reference_wavefunction_->nsopi(),
+                                                reference_wavefunction_->nsopi()));
+                SharedMatrix SO_t1_B(new Matrix("SO_t1_B", moinfo_.nirreps, reference_wavefunction_->nsopi(),
+                                                reference_wavefunction_->nsopi()));
+
+                get_t1_uhf(MO_t1_A, MO_t1_B);
+
+                SharedMatrix MO_PCM_potential_A(
+                    new Matrix("MO_PCM_potential_A", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                SharedMatrix MO_PCM_potential_B(
+                    new Matrix("MO_PCM_potential_B", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+
+                SharedMatrix Ca = reference_wavefunction_->Ca();
+                SharedMatrix Cb = reference_wavefunction_->Cb();
+                SO_t1_A->back_transform(MO_t1_A, Ca);
+                SO_t1_B->back_transform(MO_t1_B, Cb);
+                SO_t1_A->add(SO_t1_B);
+
+                // We have to get the 0.5 * (QV) energy contribution
+                double Epcm_correlated = cc_pcm->compute_E(SO_t1_A, PCM::EleOnly);
+                Process::environment.globals["PCM-CC-PTES CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                double E_correlation = moinfo_.ecc;  // Just the CCSD part
+                E_correlation += Epcm_correlated;    // We add the PCM contribution on top
+                Process::environment.globals["CURRENT CORRELATION ENERGY"] =
+                    E_correlation;  // Save into the globals array
+                double E = Process::environment.globals["CURRENT ENERGY"];
+                E += Epcm_correlated;
+                Process::environment.globals["CURRENT ENERGY"] = E;
+                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
+                // We now transform it to MO basis...
+                MO_PCM_potential_A->transform(SO_PCM_potential, Ca);
+                MO_PCM_potential_B->transform(SO_PCM_potential, Cb);
+                // MO_PCM_potential->print();
+                update_F_pcm_uhf(MO_PCM_potential_A, MO_PCM_potential_B);
+            }
+        }
 
         Fme_build();
         Fae_build();
@@ -358,32 +456,84 @@ double CCEnergyWavefunction::compute_energy() {
 
             outfile->Printf("\n");
             amp_write();
+            /* What to save in the globals array.
+             * PCM-CC-PTED: the PCM-CC-PTE and PCM-CC-PTE(S) correlation energies,
+             * the PCM-CC-PTE(S) correlated polarization energy. Only at the first MACROiteration.
+             * PCM-CC-PTES: the PCM-CC-PTES correlation energy and correlated polarization energy.
+             * Within this scheme we don't have access to the PTE and PTE(S) quantities.
+             * PCM-CC-PTE(S): the PCM-CC-PTE and PCM-CC-PTE(S) correlation energies,
+             * the PCM-CC-PTE(S) correlated polarization energy.
+             * PCM-CC-PTE: the PCM-CC-PTE correlation energy.
+             */
+            if (options_.get_bool("PCM") &&
+                (options_.get_str("PCM_CC_TYPE") == "PTE(S)" || options_.get_str("PCM_CC_TYPE") == "PTED")) {
+                bool macroiter_0 = (int(Process::environment.globals["MACROITERATION"]) == 0);
+                bool pte_s_calc = (options_.get_str("PCM_CC_TYPE") == "PTE(S)");
+                bool pted_calc = (options_.get_str("PCM_CC_TYPE") == "PTED");
+                SharedMatrix SO_converged_t1_A(new Matrix("SO_converged_t1_A", reference_wavefunction_->nsopi(),
+                                                          reference_wavefunction_->nsopi()));
+                if (pte_s_calc || (pted_calc && macroiter_0)) {
+                    SharedMatrix MO_converged_t1_A(
+                        new Matrix("MO_converged_t1_A", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                    if (params_.ref == 0) { /** RHF **/
+                        get_t1_rhf(MO_converged_t1_A);
+
+                        SharedMatrix C = reference_wavefunction_->Ca();
+                        SO_converged_t1_A->back_transform(MO_converged_t1_A, C);
+                    } else if (params_.ref == 1) { /** ROHF **/
+                        SharedMatrix MO_converged_t1_B(
+                            new Matrix("MO_converged_t1_B", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                        get_t1_rohf(MO_converged_t1_A, MO_converged_t1_B);
+
+                        SharedMatrix C = reference_wavefunction_->Ca();
+                        SharedMatrix SO_converged_t1_A(new Matrix("SO_converged_t1_A", reference_wavefunction_->nsopi(),
+                                                                  reference_wavefunction_->nsopi()));
+                        SharedMatrix SO_converged_t1_B(new Matrix("SO_converged_t1_B", reference_wavefunction_->nsopi(),
+                                                                  reference_wavefunction_->nsopi()));
+                        SO_converged_t1_A->back_transform(MO_converged_t1_A, C);
+                        SO_converged_t1_B->back_transform(MO_converged_t1_B, C);
+
+                        SO_converged_t1_A->add(SO_converged_t1_B);
+                    } else if (params_.ref == 2) { /** UHF **/
+                        SharedMatrix MO_converged_t1_B(
+                            new Matrix("MO_converged_t1_B", moinfo_.nirreps, moinfo_.orbspi, moinfo_.orbspi));
+                        get_t1_uhf(MO_converged_t1_A, MO_converged_t1_B);
+
+                        SharedMatrix Ca = reference_wavefunction_->Ca();
+                        SharedMatrix Cb = reference_wavefunction_->Cb();
+                        SharedMatrix SO_converged_t1_A(new Matrix("SO_converged_t1_A", reference_wavefunction_->nsopi(),
+                                                                  reference_wavefunction_->nsopi()));
+                        SharedMatrix SO_converged_t1_B(new Matrix("SO_converged_t1_B", reference_wavefunction_->nsopi(),
+                                                                  reference_wavefunction_->nsopi()));
+                        SO_converged_t1_A->back_transform(MO_converged_t1_A, Ca);
+                        SO_converged_t1_B->back_transform(MO_converged_t1_B, Cb);
+
+                        SO_converged_t1_A->add(SO_converged_t1_B);
+                    }
+                }
+                // We have to get the 0.5 * (QV) energy contribution
+                std::shared_ptr<PCM> cc_pcm = std::make_shared<PCM>(
+                    options_, reference_wavefunction_->psio(), moinfo_.nirreps, reference_wavefunction_->basisset());
+                double Epcm_correlated = cc_pcm->compute_E(SO_converged_t1_A, PCM::EleOnly);
+                if (pte_s_calc) {
+                    Process::environment.globals["PCM-CC-PTE(S) CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                    double E_correlation = moinfo_.ecc;  // Process::environment.globals["CURRENT CORRELATION ENERGY"];
+                    E_correlation += Epcm_correlated;
+                    Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
+                    double E = moinfo_.eref + moinfo_.ecc;  // Process::environment.globals["CURRENT ENERGY"];
+                    E += Epcm_correlated;
+                    Process::environment.globals["CURRENT ENERGY"] = E;
+                    outfile->Printf("PCM-CC-PTE(S) correlated polarization energy %16.14f\n", Epcm_correlated);
+                } else if (pted_calc && macroiter_0) {
+                    Process::environment.globals["PCM-CC-PTE(S) CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                    double E_correlation = moinfo_.ecc;  // Process::environment.globals["CURRENT CORRELATION ENERGY"];
+                    Process::environment.globals["PCM-CC-PTE CORRELATION ENERGY"] = E_correlation;
+                }
+            }
             if (params_.analyze != 0) analyze();
             break;
         }
-
-        outfile->Printf("Print out T1 _before_ DIIS\n");
-        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-        global_dpd_->file2_print(&t1, "outfile");
-        global_dpd_->file2_close(&t1);
-
-        outfile->Printf("Print out T2 _before_ DIIS\n");
-        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-        global_dpd_->buf4_print(&t2, "outfile", 1);
-        global_dpd_->buf4_close(&t2);
-
         if (params_.diis) diis(moinfo_.iter);
-
-        outfile->Printf("Print out T1 _after_ DIIS\n");
-        global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-        global_dpd_->file2_print(&t1, "outfile");
-        global_dpd_->file2_close(&t1);
-
-        outfile->Printf("Print out T2 _after_ DIIS\n");
-        global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-        global_dpd_->buf4_print(&t2, "outfile", 1);
-        global_dpd_->buf4_close(&t2);
-
         tsave();
         tau_build();
         taut_build();

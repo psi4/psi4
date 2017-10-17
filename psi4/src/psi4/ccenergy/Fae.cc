@@ -92,7 +92,6 @@ void CCEnergyWavefunction::Fae_build(void) {
         */
 
         global_dpd_->file2_mat_wrt(&FAE);
-        global_dpd_->file2_mat_print(&FAE, "outfile");
         global_dpd_->file2_mat_close(&FAE);
         global_dpd_->file2_close(&FAE);
     } else if (params_.ref == 1) { /** ROHF **/

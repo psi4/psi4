@@ -61,10 +61,6 @@ void CCEnergyWavefunction::Fme_build(void) {
         global_dpd_->buf4_close(&D_anti);
         global_dpd_->buf4_close(&D);
 
-        global_dpd_->file2_mat_init(&FME);
-        global_dpd_->file2_mat_rd(&FME);
-        global_dpd_->file2_mat_print(&FME, "outfile");
-        global_dpd_->file2_mat_close(&FME);
         global_dpd_->file2_close(&FME);
     } else if (params_.ref == 1) { /** ROHF **/
 

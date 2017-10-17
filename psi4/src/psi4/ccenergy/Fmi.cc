@@ -82,7 +82,6 @@ void CCEnergyWavefunction::Fmi_build(void) {
         */
 
         global_dpd_->file2_mat_wrt(&FMI);
-        global_dpd_->file2_mat_print(&FMI, "outfile");
         global_dpd_->file2_mat_close(&FMI);
         global_dpd_->file2_close(&FMI);
     } else if (params_.ref == 1) { /** ROHF **/

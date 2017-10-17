@@ -769,27 +769,6 @@ void F_build(void) {
         global_dpd_->file2_close(&FMIt);
     } /** UHF **/
 
-    global_dpd_->file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
-    global_dpd_->file2_mat_init(&FME);
-    global_dpd_->file2_mat_rd(&FME);
-    global_dpd_->file2_mat_print(&FME, "outfile");
-    global_dpd_->file2_mat_close(&FME);
-    global_dpd_->file2_close(&FME);
-
-    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
-    global_dpd_->file2_mat_init(&FAE);
-    global_dpd_->file2_mat_rd(&FAE);
-    global_dpd_->file2_mat_print(&FAE, "outfile");
-    global_dpd_->file2_mat_close(&FAE);
-    global_dpd_->file2_close(&FAE);
-
-    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
-    global_dpd_->file2_mat_init(&FMI);
-    global_dpd_->file2_mat_rd(&FMI);
-    global_dpd_->file2_mat_print(&FMI, "outfile");
-    global_dpd_->file2_mat_close(&FMI);
-    global_dpd_->file2_close(&FMI);
-
     return;
 }
 }

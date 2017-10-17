@@ -319,7 +319,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 MO_PCM_potential->transform(SO_PCM_potential, C);
                 // MO_PCM_potential->print();
                 update_F_pcm_rhf(MO_PCM_potential);
-            } else if (params.ref == 2) { /** UHF case **/
+            } else if (params.ref == 2) /** UHF case **/
+            {
                 SharedMatrix MO_OPDM_A(new Matrix("MO_OPDM_A", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
                 SharedMatrix MO_OPDM_B(new Matrix("MO_OPDM_B", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
 
@@ -947,10 +948,6 @@ void update_F_pcm_rhf(SharedMatrix &MO_PCM_potential) {
     global_dpd_->file2_mat_wrt(&fab2);
     global_dpd_->file2_mat_wrt(&fIA2);
     global_dpd_->file2_mat_wrt(&fia2);
-
-    global_dpd_->file2_mat_print(&fIA2, "outfile");
-    global_dpd_->file2_mat_print(&fAB2, "outfile");
-    global_dpd_->file2_mat_print(&fIJ2, "outfile");
     // Close the original Fock matrix
     global_dpd_->file2_close(&fIJ);
     global_dpd_->file2_close(&fij);
