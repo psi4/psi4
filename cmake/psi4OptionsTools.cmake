@@ -214,7 +214,7 @@ macro(add_skeleton_plugin PLUG TEMPLATE TESTLABELS)
         DEPENDS psi4-core
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CCBD}/${PLUG}
         COMMAND ${PSIEXE} --plugin-name ${PLUG} --plugin-template ${TEMPLATE}
-        COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" cmake -C ${STAGED_INSTALL_PREFIX}/share/cmake/psi4/psi4PluginCache.cmake "-DCMAKE_PREFIX_PATH=${DIR_2_PASS}" .
+        COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" ${CMAKE_COMMAND} -C ${STAGED_INSTALL_PREFIX}/share/cmake/psi4/psi4PluginCache.cmake "-DCMAKE_PREFIX_PATH=${DIR_2_PASS}" -G "${CMAKE_GENERATOR}" .
         COMMAND ${CMAKE_COMMAND} -E chdir "${CCBD}/${PLUG}" ${CMAKE_MAKE_PROGRAM}
         COMMAND ${CMAKE_COMMAND} -E create_symlink ${CCBD}/${PLUG}/input.dat ${CCSD}/input.dat
         COMMAND ${CMAKE_COMMAND} -E create_symlink "${PLUG}/${PLUG}.so" "${PLUG}.so"

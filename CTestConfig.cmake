@@ -13,7 +13,7 @@ set(CTEST_DROP_LOCATION "/cdash/submit.php?project=Psi")
 set(CTEST_DROP_SITE_CDASH TRUE)
 
 if(DEFINED ENV{CTEST_MAKE_NUM_PROCS})
-    set(MAKECOMMAND "make -j$ENV{CTEST_MAKE_NUM_PROCS}" CACHE STRING "Custom make command")
+  set(MAKECOMMAND "${CMAKE_MAKE_PROGRAM} -j$ENV{CTEST_MAKE_NUM_PROCS}" CACHE STRING "Custom make command")
 endif()
 
 # total allowed time for all tests in seconds

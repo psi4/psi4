@@ -82,7 +82,7 @@ metadata.out.py
 # Compilation directories that people use
 obj*
 *objdir
-build
+build*
 debug
 debug_latest
 *.sh
