@@ -49,13 +49,7 @@ class Dimension;
 class Molecule;
 class Vector3;
 
-
-enum diagonalize_order {
-    evals_only_ascending = 0,
-    ascending = 1,
-    evals_only_descending = 2,
-    descending = 3
-};
+enum diagonalize_order { evals_only_ascending = 0, ascending = 1, evals_only_descending = 2, descending = 3 };
 
 /*! \ingroup MINTS
  *  \class Matrix
@@ -64,9 +58,9 @@ enum diagonalize_order {
  * Using a matrix factory makes creating these a breeze.
  */
 class Matrix : public std::enable_shared_from_this<Matrix> {
-protected:
+   protected:
     /// Matrix data
-    double ***matrix_;
+    double*** matrix_;
     /// Number of irreps
     int nirrep_;
     /// Rows per irrep array
@@ -84,20 +78,19 @@ protected:
     void release();
 
     /// Copies data from the passed matrix to this matrix_
-    void copy_from(double ***);
+    void copy_from(double***);
 
     /// allocate a block matrix -- analogous to libciomr's block_matrix
     static double** matrix(int nrow, int ncol);
     /// free a (block) matrix -- analogous to libciomr's free_block
     static void free(double** Block);
 
-    void print_mat(const double *const *const a, int m, int n, std::string out) const;
+    void print_mat(const double* const* const a, int m, int n, std::string out) const;
 
     /// Numpy Shape
     std::vector<int> numpy_shape_;
 
-public:
-
+   public:
     /// Default constructor, zeros everything out
     Matrix();
     /**
@@ -119,7 +112,7 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(int nirrep, const int *rowspi, const int *colspi, int symmetry = 0);
+    Matrix(int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
     /**
      * Constructor, sets name_, and sets up the matrix
      *
@@ -128,14 +121,14 @@ public:
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(const std::string& name, int nirrep, const int *rowspi, const int *colspi, int symmetry = 0);
+    Matrix(const std::string& name, int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
     /**
      * Constructor, forms non-standard matrix.
      * @param nirrep Number of blocks.
      * @param rows Singular value. All blocks have same number of rows.
      * @param colspi Array of length nirreps. Defines blocking scheme for columns.
      */
-    Matrix(int nirrep, int rows, const int *colspi);
+    Matrix(int nirrep, int rows, const int* colspi);
 
     /**
      * Constructor, forms non-standard matrix.
@@ -170,7 +163,7 @@ public:
      *
      * @param inFile dpdfile2 object to replicate (must already be initialized).
      */
-    Matrix(dpdfile2 *inFile);
+    Matrix(dpdfile2* inFile);
 
     /**
      * Constructor using Dimension objects to define order and dimensionality.
@@ -203,7 +196,7 @@ public:
      * @param name Name of the matrix.
      * @param symmetry Overall symmetry of the data.
      */
-    void init(int nirrep, const int *rowspi, const int *colspi, const std::string& name = "", int symmetry = 0);
+    void init(int nirrep, const int* rowspi, const int* colspi, const std::string& name = "", int symmetry = 0);
 
     void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "", int symmetry = 0);
 
@@ -213,9 +206,7 @@ public:
     /**
      * Convenient creation function return SharedMatrix
      */
-    static SharedMatrix create(const std::string& name,
-                               const Dimension& rows,
-                               const Dimension& cols);
+    static SharedMatrix create(const std::string& name, const Dimension& rows, const Dimension& cols);
 
     /**
      * @{
@@ -231,13 +222,13 @@ public:
     * Horizontally concatenate matrices
     * @param mats std::vector of Matrix objects to concatenate
     */
-    static SharedMatrix horzcat(const std::vector<SharedMatrix >& mats);
+    static SharedMatrix horzcat(const std::vector<SharedMatrix>& mats);
 
     /**
     * Vertically concatenate matrices
     * @param mats std::vector of Matrix objects to concatenate
     */
-    static SharedMatrix vertcat(const std::vector<SharedMatrix >& mats);
+    static SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
 
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
@@ -252,13 +243,9 @@ public:
     SharedMatrix matrix_3d_rotation(Vector3 axis, double phi, bool Sn);
 
     /// Copies data to the row specified. Assumes data is of correct length.
-    void copy_to_row(int h, int row, double const * const data);
+    void copy_to_row(int h, int row, double const* const data);
 
-    enum SaveType {
-        Full,
-        SubBlocks,
-        LowerTriangle
-    };
+    enum SaveType { Full, SubBlocks, LowerTriangle };
 
     /**
      * @{
@@ -283,8 +270,8 @@ public:
      * @param fileno File to read from.
      * @param savetype Save information suffixing point group label.
      */
-    void load(psi::PSIO* const psio, size_t fileno, SaveType savetype=LowerTriangle);
-    void load(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype=LowerTriangle);
+    void load(psi::PSIO* const psio, size_t fileno, SaveType savetype = LowerTriangle);
+    void load(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype = LowerTriangle);
     /** @} */
 
     /**
@@ -309,9 +296,11 @@ public:
      * @param filename Name of the file to write to.
      * @param append Append to the file?
      * @param saveLowerTriangle Save only the lower triangle?
-     * @param saveSubBlocks Save three index quantities denoting symmetry block (true), or convert to a full matrix and save that (false)?
+     * @param saveSubBlocks Save three index quantities denoting symmetry block (true), or convert to a full matrix and
+     * save that (false)?
      */
-    void save(const std::string& filename, bool append=true, bool saveLowerTriangle = true, bool saveSubBlocks=false);
+    void save(const std::string& filename, bool append = true, bool saveLowerTriangle = true,
+              bool saveSubBlocks = false);
     /** @} */
 
     /**
@@ -322,8 +311,8 @@ public:
      * @param fileno File to write to.
      * @param savetype Save information suffixing point group label.
      */
-    void save(psi::PSIO* const psio, size_t fileno, SaveType savetype=LowerTriangle);
-    void save(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype=LowerTriangle);
+    void save(psi::PSIO* const psio, size_t fileno, SaveType savetype = LowerTriangle);
+    void save(std::shared_ptr<psi::PSIO>& psio, size_t fileno, SaveType savetype = LowerTriangle);
     /** @} */
 
     /**
@@ -338,7 +327,7 @@ public:
      *
      * @param tri Lower triangle matrix to set to.
      */
-    void set(const double * const tri);
+    void set(const double* const tri);
 
     /**
      * @{
@@ -346,7 +335,7 @@ public:
      *
      * @param sq Double matrix to copy over.
      */
-    void set(const double * const * const sq);
+    void set(const double* const* const sq);
     /** @} */
 
     /**
@@ -356,7 +345,7 @@ public:
      * @param sq Double matrix to copy
      * @param irrep irrep block into which we copy
      */
-    void set(const double * const * const sq, int irrep);
+    void set(const double* const* const sq, int irrep);
     /** @} */
 
     /**
@@ -365,7 +354,7 @@ public:
      *
      * @param sq SimpleMatrix object to set this matrix to.
      */
-    void set(const SimpleMatrix * const sq);
+    void set(const SimpleMatrix* const sq);
     void set(const std::shared_ptr<SimpleMatrix>& sq);
     /** @} */
 
@@ -394,7 +383,7 @@ public:
      *
      * @param vec Vector to apply to the diagonal.
      */
-    void set_diagonal(const Vector * const vec);
+    void set_diagonal(const Vector* const vec);
     void set_diagonal(const Vector& vec);
     void set_diagonal(const std::shared_ptr<Vector>& vec);
     /** @} */
@@ -461,7 +450,7 @@ public:
      * @param cols Columns slice
      * @return SharedMatrix object
      */
-    SharedMatrix get_block(const Slice& rows,const Slice& cols);
+    SharedMatrix get_block(const Slice& rows, const Slice& cols);
 
     /**
      * Set a matrix block
@@ -470,7 +459,7 @@ public:
      * @param cols Columns slice
      * @param block the SharedMatrix object block to set
      */
-    void set_block(const Slice& rows,const Slice& cols,SharedMatrix block);
+    void set_block(const Slice& rows, const Slice& cols, SharedMatrix block);
 
     /**
      * Returns the double** pointer to the h-th irrep block matrix
@@ -485,7 +474,7 @@ public:
      * @return pointer to h-th subblock in block-matrix form
      */
     double** pointer(const int& h = 0) const { return matrix_[h]; }
-    const double** const_pointer(const int& h=0) const { return const_cast<const double**>(matrix_[h]); }
+    const double** const_pointer(const int& h = 0) const { return const_cast<const double**>(matrix_[h]); }
 
     /**
      * Returns the double* pointer to the h-th irrep block matrix
@@ -500,17 +489,19 @@ public:
      * @return pointer to h-th subblock in block-matrix form
      */
     double* get_pointer(const int& h = 0) const {
-        if(rowspi_[h]*(size_t)colspi_[h] > 0)
-           return &(matrix_[h][0][0]);
+        if (rowspi_[h] * (size_t)colspi_[h] > 0)
+            return &(matrix_[h][0][0]);
         else
-           return 0;}
-    const double* get_const_pointer(const int& h=0) const {
-        if(rowspi_[h]*(size_t)colspi_[h] > 0)
-           return const_cast<const double*>(&(matrix_[h][0][0]));
+            return 0;
+    }
+    const double* get_const_pointer(const int& h = 0) const {
+        if (rowspi_[h] * (size_t)colspi_[h] > 0)
+            return const_cast<const double*>(&(matrix_[h][0][0]));
         else
-           return 0;}
+            return 0;
+    }
 
-    size_t size(const int &h=0) const { return colspi_[h] * (size_t)rowspi_[h]; }
+    size_t size(const int& h = 0) const { return colspi_[h] * (size_t)rowspi_[h]; }
 
     /// apply_denominators a matrix to this
     void apply_denominator(const Matrix* const);
@@ -524,7 +515,7 @@ public:
      *
      * @returns the matrix
      */
-    double **to_block_matrix() const;
+    double** to_block_matrix() const;
     /**
      * Returns a copy of the current matrix.
      *
@@ -536,14 +527,14 @@ public:
      *
      * @returns the matrix
      */
-    double *to_lower_triangle() const;
+    double* to_lower_triangle() const;
 
     /**
      * Converts this to a full non-symmetry-block matrix
      *
      * @returns The SimpleMatrix copy of the current matrix.
      */
-    SimpleMatrix *to_simple_matrix() const;
+    SimpleMatrix* to_simple_matrix() const;
 
     /**
      * Sets the name of the matrix, used in print(...) and save(...)
@@ -566,7 +557,7 @@ public:
      * @param outfile File point to use, defaults to Psi4's outfile.
      * @param extra When printing the name of the 'extra' will be printing after the name.
      */
-    void print(std::string outfile = "outfile", const char *extra=NULL) const;
+    void print(std::string outfile = "outfile", const char* extra = NULL) const;
 
     /// Prints the matrix with atom and xyz styling.
     void print_atom_vector(std::string out_fname = "outfile");
@@ -582,7 +573,7 @@ public:
      * @param values Eigenvalues to print associated with eigenvectors.
      * @param out Where to print to, defaults to Psi4's outfile.
      */
-    void eivprint(const Vector * const values, std::string out = "outfile");
+    void eivprint(const Vector* const values, std::string out = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
     void eivprint(const Vector& values, std::string out = "outfile");
     /// Print the matrix with corresponding eigenvalues below each column
@@ -594,57 +585,43 @@ public:
     int coldim(const int& h = 0) const { return colspi_[h]; }
 
     /// Returns the rows per irrep array
-    const Dimension& rowspi() const {
-        return rowspi_;
-    }
+    const Dimension& rowspi() const { return rowspi_; }
     /// Returns the rows per irrep array
-    int rowspi(const int& h) const {
-        return rowdim(h);
-    }
+    int rowspi(const int& h) const { return rowdim(h); }
     /// Returns the columns per irrep array
-    const Dimension& colspi() const {
-        return colspi_;
-    }
+    const Dimension& colspi() const { return colspi_; }
     /// Returns the columns per irrep array
-    int colspi(const int& h) const {
-        return coldim(h);
-    }
+    int colspi(const int& h) const { return coldim(h); }
     /// Returns the number of irreps
-    const int& nirrep() const {
-        return nirrep_;
-    }
+    const int& nirrep() const { return nirrep_; }
 
     /// Returns the total number of rows.
     int nrow() const {
         int rows = 0;
-        for (int h=0; h<nirrep(); ++h)
-            rows += rowdim(h);
+        for (int h = 0; h < nirrep(); ++h) rows += rowdim(h);
         return rows;
     }
 
     /// Returns the total number of columns.
     int ncol() const {
         int cols = 0;
-        for (int h=0; h<nirrep(); ++h)
-            cols += coldim(h);
+        for (int h = 0; h < nirrep(); ++h) cols += coldim(h);
         return cols;
     }
 
     /// Returns the row size of the largest block.
     int max_nrow() const {
         int row = 0;
-        for (int h=0; h<nirrep(); ++h)
-            if (row < rowdim(h))
-                row = rowdim(h);
+        for (int h = 0; h < nirrep(); ++h)
+            if (row < rowdim(h)) row = rowdim(h);
         return row;
     }
 
     /// Returns the column size of the largest block.
     int max_ncol() const {
         int col = 0;
-        for (int h=0; h<nirrep(); ++h)
-            if (col < coldim(h))
-                col = coldim(h);
+        for (int h = 0; h < nirrep(); ++h)
+            if (col < coldim(h)) col = coldim(h);
         return col;
     }
 
@@ -653,9 +630,7 @@ public:
      * For a totally-symmetric matrix this will be 0.
      * The value returned is compatible with bitwise XOR (^) math.
      */
-    const int& symmetry() const {
-        return symmetry_;
-    }
+    const int& symmetry() const { return symmetry_; }
 
     /**
      * Symmetrizes the a gradient like matrix (N, 3) using information
@@ -709,33 +684,31 @@ public:
     double absmax();
     /// Add val to an element of this
     void add(int h, int m, int n, double val) {
-        #ifdef PSIDEBUG
-        if (m > rowspi_[h] || n > colspi_[h^symmetry_]) {
-            outfile->Printf( "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
-                    symmetry_, h, m, n);
+#ifdef PSIDEBUG
+        if (m > rowspi_[h] || n > colspi_[h ^ symmetry_]) {
+            outfile->Printf("out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n", symmetry_, h, m, n);
 
             throw PSIEXCEPTION("What are you doing, Rob?");
         }
-        #endif
+#endif
         matrix_[h][m][n] += val;
     }
     /// Add val to an element of this
     void add(int m, int n, double val) {
-        #ifdef PSIDEBUG
-        if (m > rowspi_[0] || n > colspi_[0^symmetry_]) {
-            outfile->Printf( "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
-                    symmetry_, 0, m, n);
+#ifdef PSIDEBUG
+        if (m > rowspi_[0] || n > colspi_[0 ^ symmetry_]) {
+            outfile->Printf("out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n", symmetry_, 0, m, n);
 
             return;
         }
-        #endif
+#endif
         matrix_[0][m][n] += val;
     }
 
     void element_add_mirror() {
-        for (int h=0; h<nirrep_; ++h) {
-            for (int i=0; i<rowspi_[h]; ++i) {
-                for (int j=0; j<i; ++j) {
+        for (int h = 0; h < nirrep_; ++h) {
+            for (int i = 0; i < rowspi_[h]; ++i) {
+                for (int j = 0; j < i; ++j) {
                     matrix_[h][i][j] = matrix_[h][j][i] = (matrix_[h][i][j] + matrix_[h][j][i]);
                 }
             }
@@ -768,9 +741,7 @@ public:
      * \param F matrix to apply transformation to
      * \param R right transformation matrix (will not be transposed)
      */
-    void transform(const SharedMatrix& L,
-                   const SharedMatrix& F,
-                   const SharedMatrix& R);
+    void transform(const SharedMatrix& L, const SharedMatrix& F, const SharedMatrix& R);
 
     /// @{
     /// Transform a by transformer save result to this
@@ -819,29 +790,15 @@ public:
     /// @{
     /** Raw access to the underlying dgemm call. Saves result to this.
      */
-    void gemm(const char& transa, const char& transb,
-              const std::vector<int>& m,
-              const std::vector<int>& n,
-              const std::vector<int>& k,
-              const double& alpha,
-              const SharedMatrix& a, const std::vector<int>& lda,
-              const SharedMatrix& b, const std::vector<int>& ldb,
-              const double& beta,
-              const std::vector<int>& ldc,
+    void gemm(const char& transa, const char& transb, const std::vector<int>& m, const std::vector<int>& n,
+              const std::vector<int>& k, const double& alpha, const SharedMatrix& a, const std::vector<int>& lda,
+              const SharedMatrix& b, const std::vector<int>& ldb, const double& beta, const std::vector<int>& ldc,
               const std::vector<unsigned long>& offset_a = std::vector<unsigned long>(),
               const std::vector<unsigned long>& offset_b = std::vector<unsigned long>(),
               const std::vector<unsigned long>& offset_c = std::vector<unsigned long>());
-    void gemm(const char& transa, const char& transb,
-              const int& m,
-              const int& n,
-              const int& k,
-              const double& alpha,
-              const SharedMatrix& a, const int& lda,
-              const SharedMatrix& b, const int& ldb,
-              const double& beta,
-              const int& ldc,
-              const unsigned long& offset_a = 0,
-              const unsigned long& offset_b = 0,
+    void gemm(const char& transa, const char& transb, const int& m, const int& n, const int& k, const double& alpha,
+              const SharedMatrix& a, const int& lda, const SharedMatrix& b, const int& ldb, const double& beta,
+              const int& ldc, const unsigned long& offset_a = 0, const unsigned long& offset_b = 0,
               const unsigned long& offset_c = 0);
     /// @}
 
@@ -861,7 +818,8 @@ public:
     * \param transB Transpose the second matrix
     * \param transC Transpose the third matrix
     */
-    static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false, bool transB = false, bool transC = false);
+    static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C,
+                                bool transA = false, bool transB = false, bool transC = false);
 
     /**
      * Simple AXPY call with support for irreps Y = a * X + Y
@@ -885,8 +843,10 @@ public:
     /// @}
 
     /// @{
-    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
-    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
+    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for
+    /// symmetric matrices.
+    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, std::shared_ptr<Vector>& eigvalues,
+                     diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
@@ -903,17 +863,17 @@ public:
 
     ///@{
     /// Matrices/Vectors U (m x k), S (k), V (k x n) to feed to Matrix::svd
-    std::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
+    std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temps();
     ///@}
 
     ///@{
     /// Matrices/Vectors U (m x m), S (k), V (n x n) to feed to Matrix::svd_a
-    std::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_a_temps();
+    std::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_a_temps();
     ///@}
 
     ///@{
     /// Matrix of size (m x n) which is the conditioned pseudoinverse of this (m x n)
-    SharedMatrix pseudoinverse(double condition, int &nremoved);
+    SharedMatrix pseudoinverse(double condition, int& nremoved);
     ///@}
 
     /*! Extract a conditioned orthonormal basis from this SPD matrix
@@ -949,22 +909,22 @@ public:
      * \return L, SharedMatrix, with rows of dimension dimpi and columns of
      * dimension sigpi
      */
-     SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
+    SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
 
-     /*! Computes a low-rank factorization <P,N> such that PP'-NN' \approx A in an optimal sense in the 2-norm.
-     * Columns of P,N are truncated after the singular values fall below delta
-     * P contains columns corresponding to positive eigenvalues, N to columns corresponding to negative eigenvalues/
-     * This is the real Hermitian-indefinite analog of partial Cholesky factorization.
-     *
-     * This algorithm requires memory equivalent to this matrix plus the equivalent eigendecompositon
-     * call via DSYEV
-     *
-     * \param delta maximum allowed 2-norm of the error matrix D,
-     * Defaults to 0.0, in which case the numerically
-     * exact square root is returned.
-     * \return P positive part of square root, with only significant columns included
-     * \return N negative part of square root, with only significant columns included
-     */
+    /*! Computes a low-rank factorization <P,N> such that PP'-NN' \approx A in an optimal sense in the 2-norm.
+    * Columns of P,N are truncated after the singular values fall below delta
+    * P contains columns corresponding to positive eigenvalues, N to columns corresponding to negative eigenvalues/
+    * This is the real Hermitian-indefinite analog of partial Cholesky factorization.
+    *
+    * This algorithm requires memory equivalent to this matrix plus the equivalent eigendecompositon
+    * call via DSYEV
+    *
+    * \param delta maximum allowed 2-norm of the error matrix D,
+    * Defaults to 0.0, in which case the numerically
+    * exact square root is returned.
+    * \return P positive part of square root, with only significant columns included
+    * \return N negative part of square root, with only significant columns included
+    */
     std::pair<SharedMatrix, SharedMatrix> partial_square_root(double delta = 0.0);
 
     /*! Computes the Cholesky factorization of a real symmetric
@@ -1086,7 +1046,7 @@ public:
      *  \param tol is the tolerance.
      *  \returns A Dimension object tell you how many were removed in each irrep.
      */
-    Dimension schmidt_orthog_columns(SharedMatrix S, double tol, double*res=0);
+    Dimension schmidt_orthog_columns(SharedMatrix S, double tol, double* res = 0);
 
     /*!
      * Project out the row vectors in the matrix provided out of this matrix.
@@ -1112,7 +1072,7 @@ public:
     /// @}
 
     /// Writes this to the dpdfile2 given
-    void write_to_dpdfile2(dpdfile2 *outFile);
+    void write_to_dpdfile2(dpdfile2* outFile);
 
     /// @{
     /// Checks matrix equality.
@@ -1127,14 +1087,14 @@ public:
     /// Checks matrix equality, but allows rows to be in a different order.
     /// @param rhs Matrix to compare to.
     /// @returns true if equal, otherwise false.
-    bool equal_but_for_row_order(const Matrix& rhs, double TOL=1.0e-10);
-    bool equal_but_for_row_order(const SharedMatrix& rhs, double TOL=1.0e-10);
-    bool equal_but_for_row_order(const Matrix* rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const Matrix& rhs, double TOL = 1.0e-10);
+    bool equal_but_for_row_order(const SharedMatrix& rhs, double TOL = 1.0e-10);
+    bool equal_but_for_row_order(const Matrix* rhs, double TOL = 1.0e-10);
     /// @}
 
-     /**
-     * Adds accessability to the matrix shape for numpy
-     */
+    /**
+    * Adds accessability to the matrix shape for numpy
+    */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
     std::vector<int> numpy_shape() { return numpy_shape_; }
 
@@ -1148,8 +1108,6 @@ public:
     void rotate_columns(int h, int i, int j, double theta);
     friend class Vector;
 };
-
 }
 
-
-#endif // MATRIX_H
+#endif  // MATRIX_H

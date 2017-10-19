@@ -281,8 +281,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             //   The polarization charges are then contracted with the electrostatic potential integrals
             //   to build the PCM potential to be added in the CC T and Lambda equations.
             SharedPCM cc_pcm = std::make_shared<PCM>(options, ref_wfn->psio(), moinfo.nirreps, ref_wfn->basisset());
-            if (params.ref == 0 || params.ref == 1) /** RHF or ROHF **/
-            {
+            if (params.ref == 0 || params.ref == 1) { /* RHF or ROHF */
                 SharedMatrix MO_OPDM(new Matrix("MO_OPDM", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
                 SharedMatrix MO_PCM_potential(
                     new Matrix("MO_PCM_potential", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
@@ -298,12 +297,9 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                     }
                     offset += moinfo.orbspi[h];
                 }
-                // MO_OPDM->print();
                 SharedMatrix C = ref_wfn->Ca();
                 SharedMatrix SO_OPDM = SharedMatrix(new Matrix("SO_OPDM", ref_wfn->nsopi(), ref_wfn->nsopi()));
                 SO_OPDM->back_transform(MO_OPDM, C);
-                // SO_OPDM->print();
-                // ref_wfn->Da()->print();
                 // We have to get the 0.5 * (QV) energy contribution
                 double Epcm_correlated = cc_pcm->compute_E(SO_OPDM, psi::PCM::EleOnly);
                 Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
@@ -313,14 +309,11 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 double E = Process::environment.globals["CURRENT ENERGY"];
                 E -= Epcm_correlated;
                 Process::environment.globals["CURRENT ENERGY"] = E;
-                // outfile->Printf("Epol_correlated = %20.12f\n", Epol_correlated);
                 SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
                 // We now transform it to MO basis...
                 MO_PCM_potential->transform(SO_PCM_potential, C);
-                // MO_PCM_potential->print();
                 update_F_pcm_rhf(MO_PCM_potential);
-            } else if (params.ref == 2) /** UHF case **/
-            {
+            } else if (params.ref == 2) { /* UHF case */
                 SharedMatrix MO_OPDM_A(new Matrix("MO_OPDM_A", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
                 SharedMatrix MO_OPDM_B(new Matrix("MO_OPDM_B", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
 
@@ -343,7 +336,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                     }
                     offset += moinfo.orbspi[h];
                 }
-                // MO_OPDM->print();
                 SharedMatrix Ca = ref_wfn->Ca();
                 SharedMatrix Cb = ref_wfn->Cb();
                 SharedMatrix SO_OPDM_A = SharedMatrix(new Matrix("SO_OPDM_A", ref_wfn->nsopi(), ref_wfn->nsopi()));
@@ -351,8 +343,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 SO_OPDM_A->back_transform(MO_OPDM_A, Ca);
                 SO_OPDM_B->back_transform(MO_OPDM_B, Cb);
                 SO_OPDM_A->add(SO_OPDM_B);
-                // SO_OPDM->print();
-                // ref_wfn->Da()->print();
                 // We have to get the 0.5 * (QV) energy contribution
                 double Epcm_correlated = cc_pcm->compute_E(SO_OPDM_A, PCM::EleOnly);
                 Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
@@ -362,29 +352,23 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 double E = Process::environment.globals["CURRENT ENERGY"];
                 E -= Epcm_correlated;
                 Process::environment.globals["CURRENT ENERGY"] = E;
-                // outfile->Printf("Epol_correlated = %20.12f\n", Epol_correlated);
                 SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
                 // We now transform it to MO basis...
                 MO_PCM_potential_A->transform(SO_PCM_potential, Ca);
                 MO_PCM_potential_B->transform(SO_PCM_potential, Cb);
-                // MO_PCM_potential->print();
                 update_F_pcm_uhf(MO_PCM_potential_A, MO_PCM_potential_B);
             }
             double Epte = Process::environment.globals["PCM-CC-PTE CORRELATION ENERGY"];
-            double Epte_s = Process::environment.globals["PCM-CC-PTE(S) CORRELATED POLARIZATION ENERGY"];
             outfile->Printf("\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
             outfile->Printf("\tReference energy (file100)            = %20.15f\n", moinfo.eref);
             outfile->Printf("\tPTE correlation energy                = %20.15f\n", Epte);
-            outfile->Printf("\tPTE(S) correlated polarization energy = %20.15f\n", Epte_s);
             outfile->Printf("\tPTED correlated polarization energy   = %20.15f\n",
                             Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"]);
             outfile->Printf("\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
             outfile->Printf("\tPCM-PTE-CCSD correlation energy       = %20.15f\n", Epte);
-            outfile->Printf("\tPCM-PTE(S)-CCSD correlation energy    = %20.15f\n", Epte + Epte_s);
             outfile->Printf("\tPCM-PTED-CCSD correlation energy      = %20.15f\n",
                             Process::environment.globals["CURRENT CORRELATION ENERGY"]);
             outfile->Printf("      * PCM-PTE-CCSD total energy             = %20.15f\n", moinfo.eref + Epte);
-            outfile->Printf("      * PCM-PTE(S)-CCSD total energy          = %20.15f\n", moinfo.eref + Epte + Epte_s);
             outfile->Printf("      * PCM-PTED-CCSD total energy            = %20.15f\n",
                             Process::environment.globals["CURRENT ENERGY"]);
         } /* PCM-CC stuff */

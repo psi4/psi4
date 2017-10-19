@@ -157,7 +157,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Use total or separate potentials and charges in the PCM-SCF step. !expert -*/
     options.add_str("PCM_SCF_TYPE", "TOTAL", "TOTAL SEPARATE");
     /*- PCM-CCSD algorithm type. -*/
-    options.add_str("PCM_CC_TYPE", "PTE", "PTE PTED PTES PTE(S)");
+    options.add_str("PCM_CC_TYPE", "PTE", "PTE PTED");
     /*- The density fitting basis to use in coupled cluster computations. -*/
     options.add_str("DF_BASIS_CC", "");
     /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here.
