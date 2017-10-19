@@ -3,15 +3,15 @@
 
 
 nucenergy = 0.0000000000000000 # TEST
-scf_polenergy = -0.6908724085545570 # TEST
-scf_totalenergy = -199.515074015114 # TEST
+scf_polenergy = -0.6908724085545457 # TEST
+scf_totalenergy = -199.5150740151143793 # TEST
 #! Correlated reference values using cc-pVDZ
 #! after the update of cc-pVDZ basis (commit 0735b1e6)
-pte_correnergy = -0.002507986199683  # TEST
-pte_totalenergy = -199.517582001311979  # TEST
+pte_correnergy = -0.002507986176748 # TEST
+pte_totalenergy = -199.517582001293789 # TEST
 #! Correlated reference values using cc-pVDZ (before update)
-old_pte_correnergy = -0.002501910865185 # TEST
-old_pte_totalenergy = -199.517575925979429 # TEST
+old_pte_correnergy = -0.002501910890186 # TEST
+old_pte_totalenergy = -199.517575926007027 # TEST
 
 molecule Mg
 {

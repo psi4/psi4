@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.2a1.dev367 
+                               Psi4 1.2a1.dev616 
 
-                         Git: Rev {pcm+cc_pte_s} 3f13700 
+                         Git: Rev {pcm+cc_pted} 9d05c05 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -12,16 +12,16 @@
     H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
     P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
     F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
     (doi: 10.1021/acs.jctc.7b00174)
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 21 June 2017 10:03AM
+    Psi4 started on: Wednesday, 18 October 2017 06:17PM
 
-    Process ID:   7343
-    PSIDATADIR: /home/roberto/Workspace/robertodr/psi4/objdir_pcm/stage/usr/local/psi4/share/psi4
+    Process ID:   8888
+    PSIDATADIR: /home/roberto/Workspace/robertodr/psi4/objdir_pted/stage/usr/local/psi4/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -29,6 +29,7 @@
 
 --------------------------------------------------------------------------
 #! coupled-cluster with PCM
+#! Perturbation-to-the-Energy (PTE) algorithm
 
 
 nucenergy = 0.0000000000000000 # TEST
@@ -44,43 +45,43 @@ old_pte_totalenergy = -199.517575925979429 # TEST
 
 molecule Mg
 {
-	symmetry c1
-	Mg 0.00000 0.00000 0.00000
-	2 1
-	units bohr
-	no_reorient
-	no_com
+  symmetry c1
+  Mg 0.00000 0.00000 0.00000
+  2 1
+  units bohr
+  no_reorient
+  no_com
 }
 
 set
 {
-	basis cc-pVDZ
-	scf_type pk
-	pcm true
-	pcm_scf_type total
-	pcm_cc_type pte
+  basis cc-pVDZ
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+  pcm_cc_type pte
 }
 
 pcm =
 {
-	Units = Angstrom
-	Medium
-	{
-		SolverType = IEFPCM
-		Solvent = Water
-	}
-	Cavity
-	{
-		RadiiSet = UFF
-		Type = GePol
-		Scaling = False
-		Area = 1.0
-		Mode = Implicit
-	}
+  Units = Angstrom
+  Medium
+  {
+    SolverType = IEFPCM
+    Solvent = Water
+  }
+  Cavity
+  {
+    RadiiSet = UFF
+    Type = GePol
+    Scaling = False
+    Area = 1.0
+    Mode = Implicit
+  }
 }
 
 energy_pte, wfn = energy('ccsd', return_wfn=True)
-compare_values(Mg.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") # TEST
+compare_values(nucenergy, Mg.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") # TEST
 compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
 compare_values(scf_polenergy, wfn.reference_wavefunction().get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm)") #TEST
 compare_values(pte_totalenergy, energy_pte, 10, "CCSD Total energy (PCM PTE algorithm)") #TEST
@@ -158,30 +159,29 @@ D   1   1.00
 
 set
 {
-	scf_type pk
-	pcm true
-	pcm_scf_type total
-	pcm_cc_type pte
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+  pcm_cc_type pte
 }
 
 energy_pte, wfn = energy('ccsd', return_wfn=True)
-compare_values(Mg.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm, old cc-pVDZ spec)") # TEST
+compare_values(nucenergy, Mg.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm, old cc-pVDZ spec)") # TEST
 compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm, old cc-pVDZ spec)") # TEST
 compare_values(scf_polenergy, wfn.reference_wavefunction().get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm, old cc-pVDZ spec)") #TEST
 compare_values(old_pte_totalenergy, energy_pte, 10, "CCSD Total energy (PCM PTE algorithm, old cc-pVDZ spec)") #TEST
 compare_values(old_pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE algorithm, old cc-pVDZ spec)") # TEST
-
 --------------------------------------------------------------------------
 
-*** tstart() called on merzbob
-*** at Wed Jun 21 10:03:56 2017
+*** tstart() called on minazo
+*** at Wed Oct 18 18:17:01 2017
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry MG         line   353 file /home/roberto/Workspace/robertodr/psi4/objdir_pcm/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry MG         line   353 file /home/roberto/Workspace/robertodr/psi4/objdir_pted/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -247,9 +247,9 @@ compare_values(old_pte_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 1
             "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
    PCMSolver is distributed under the terms of the GNU Lesser General Public License.
 
- * Git last commit hash   : eec3fd6
- * Git last commit date   : Mon Jun 19 14:11:12 2017 -0600
- * Git last commit author : Andy Simmonett
+ * Git last commit hash   : 9d05c056e
+ * Git last commit date   : Wed Oct 18 14:42:40 2017 +0200
+ * Git last commit author : Roberto Di Remigio
 
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
@@ -329,20 +329,20 @@ Permittivity = 78.39
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   PCM polarization energy = -0.69810830098948
-   @RHF iter   1:  -199.21259729881785   -1.99213e+02   4.90283e-02 
-   PCM polarization energy = -0.69088178177823
-   @RHF iter   2:  -199.51217729709140   -2.99580e-01   4.97686e-03 DIIS
-   PCM polarization energy = -0.69087224472920
-   @RHF iter   3:  -199.51507021452446   -2.89292e-03   1.79056e-04 DIIS
+   PCM polarization energy = -0.69810830098947
+   @RHF iter   1:  -199.21259729881808   -1.99213e+02   4.90283e-02 
+   PCM polarization energy = -0.69088178177824
+   @RHF iter   2:  -199.51217729709137   -2.99580e-01   4.97686e-03 DIIS
+   PCM polarization energy = -0.69087224472919
+   @RHF iter   3:  -199.51507021452460   -2.89292e-03   1.79056e-04 DIIS
    PCM polarization energy = -0.69087224885453
-   @RHF iter   4:  -199.51507399967511   -3.78515e-06   1.16130e-05 DIIS
+   @RHF iter   4:  -199.51507399967520   -3.78515e-06   1.16130e-05 DIIS
    PCM polarization energy = -0.69087241214205
-   @RHF iter   5:  -199.51507401507649   -1.54014e-08   5.62809e-07 DIIS
+   @RHF iter   5:  -199.51507401507664   -1.54014e-08   5.62809e-07 DIIS
    PCM polarization energy = -0.69087240897489
-   @RHF iter   6:  -199.51507401511381   -3.73177e-11   6.35922e-08 DIIS
-   PCM polarization energy = -0.69087240855454
-   @RHF iter   7:  -199.51507401511432   -5.11591e-13   3.28182e-10 DIIS
+   @RHF iter   6:  -199.51507401511398   -3.73461e-11   6.35922e-08 DIIS
+   PCM polarization energy = -0.69087240855455
+   @RHF iter   7:  -199.51507401511441   -4.26326e-13   3.28184e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -368,15 +368,15 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:  -199.51507401511432
+  @RHF Final Energy:  -199.51507401511441
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
     One-Electron Energy =                -271.0311192492409873
-    Two-Electron Energy =                  72.2069176426812191
-    PCM Polarization Energy =              -0.6908724085545445
-    Total Energy =                       -199.5150740151143225
+    Two-Electron Energy =                  72.2069176426811481
+    PCM Polarization Energy =              -0.6908724085545457
+    Total Energy =                       -199.5150740151143793
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -397,13 +397,13 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on merzbob at Wed Jun 21 10:03:57 2017
+*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
 Module time:
-	user time   =       1.19 seconds =       0.02 minutes
+	user time   =       0.64 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.19 seconds =       0.02 minutes
+	user time   =       0.64 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
@@ -430,8 +430,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on merzbob
-*** at Wed Jun 21 10:03:58 2017
+*** tstart() called on minazo
+*** at Wed Oct 18 18:17:02 2017
 
 
 	Wfn Parameters:
@@ -501,23 +501,23 @@ Total time:
 	Total:                                     0.004 (MW) /      0.034 (MB)
 
 	Nuclear Rep. energy          =      0.00000000000000
-	SCF energy                   =   -199.51507401511432
-	One-electron energy          =   -271.03111926659273
-	Two-electron energy          =     72.20691766003041
-	Reference energy             =   -199.51507401511688
+	SCF energy                   =   -199.51507401511441
+	One-electron energy          =   -271.03111926659295
+	Two-electron energy          =     72.20691766003047
+	Reference energy             =   -199.51507401511705
 
-*** tstop() called on merzbob at Wed Jun 21 10:03:58 2017
+*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.45 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on merzbob
-*** at Wed Jun 21 10:03:58 2017
+*** tstart() called on minazo
+*** at Wed Oct 18 18:17:02 2017
 
             **************************
             *                        *
@@ -526,8 +526,8 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =    0.000000000000000
-    SCF energy          (wfn)     = -199.515074015114322
-    Reference energy    (file100) = -199.515074015116880
+    SCF energy          (wfn)     = -199.515074015114408
+    Reference energy    (file100) = -199.515074015117051
 
     Input parameters:
     -----------------
@@ -555,7 +555,7 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.0025591085144787
+MP2 correlation energy -0.0025591085144788
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
@@ -572,64 +572,64 @@ MP2 correlation energy -0.0025591085144787
 
 
     Largest TIA Amplitudes:
-              4   7         0.0014317485
-              3   6         0.0014213946
-              2   5        -0.0014166890
+              4   6         0.0014084125
+              3   7         0.0012159964
+              2   5         0.0011737328
+              2   7         0.0008100033
+              3   5        -0.0007785152
               1   4         0.0005585414
               1   0        -0.0003948365
-              2   1         0.0003696497
-              4   3        -0.0003690764
-              3   2        -0.0003684261
-              3   5         0.0002946501
-              2   6         0.0002656615
+              4   5         0.0003887501
+              4   2         0.0003662398
+              2   1        -0.0003273384
 
     Largest TIjAb Amplitudes:
-      4   4   7   7        -0.0049850885
-      3   3   6   6        -0.0049189940
-      2   2   5   5        -0.0048891146
-      3   4   6   7        -0.0040501483
-      4   3   7   6        -0.0040501483
-      2   4   5   7         0.0040334034
-      4   2   7   5         0.0040334034
-      2   3   5   6         0.0039969089
-      3   2   6   5         0.0039969089
-      1   4   4   7        -0.0027340947
+      4   4   6   6        -0.0048368009
+      3   3   7   7        -0.0037069801
+      2   2   5   5        -0.0034810100
+      3   4   7   6        -0.0034149729
+      4   3   6   7        -0.0034149729
+      2   4   5   6        -0.0032667866
+      4   2   6   5        -0.0032667866
+      2   3   5   7        -0.0026931617
+      3   2   7   5        -0.0026931617
+      1   4   4   6        -0.0026895320
 
-    SCF energy       (wfn)                    = -199.515074015114322
-    Reference energy (file100)                = -199.515074015116880
+    SCF energy       (wfn)                    = -199.515074015114408
+    Reference energy (file100)                = -199.515074015117051
 
     Opposite-spin MP2 correlation energy      =   -0.001845915184815
     Same-spin MP2 correlation energy          =   -0.000713193329664
     MP2 correlation energy                    =   -0.002559108514479
-      * MP2 total energy                      = -199.517633123631356
+      * MP2 total energy                      = -199.517633123631526
 
     Opposite-spin CCSD correlation energy     =   -0.001794617616049
     Same-spin CCSD correlation energy         =   -0.000713368559392
     CCSD correlation energy                   =   -0.002507986176748
-      * CCSD total energy                     = -199.517582001293619
+      * CCSD total energy                     = -199.517582001293789
 
 
-*** tstop() called on merzbob at Wed Jun 21 10:03:58 2017
+*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.51 seconds =       0.03 minutes
+	user time   =       0.78 seconds =       0.01 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 	Nuclear repulsion energy (PCM, total algorithm)...................PASSED
 	SCF Total energy (PCM, total algorithm)...........................PASSED
 	SCF Polarization energy (PCM, total algorithm)....................PASSED
 	CCSD Total energy (PCM PTE algorithm).............................PASSED
 	CCSD Correlation energy (PCM PTE algorithm).......................PASSED
 
-*** tstart() called on merzbob
-*** at Wed Jun 21 10:03:58 2017
+*** tstart() called on minazo
+*** at Wed Oct 18 18:17:02 2017
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUS2F618A1C
+    Name: ANONYMOUSF929755E
     Role: ORBITAL
     Keyword: BASIS
     atoms 1 entry MG         line     5 inputblock old-cc-pvdz 
@@ -677,7 +677,7 @@ Total time:
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUS2F618A1C
+  Basis Set: ANONYMOUSF929755E
     Blend: OLD-CC-PVDZ
     Number of shells: 8
     Number of basis function: 18
@@ -698,9 +698,9 @@ Total time:
             "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
    PCMSolver is distributed under the terms of the GNU Lesser General Public License.
 
- * Git last commit hash   : eec3fd6
- * Git last commit date   : Mon Jun 19 14:11:12 2017 -0600
- * Git last commit author : Andy Simmonett
+ * Git last commit hash   : 9d05c056e
+ * Git last commit date   : Wed Oct 18 14:42:40 2017 +0200
+ * Git last commit author : Roberto Di Remigio
 
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
@@ -781,19 +781,19 @@ Permittivity = 78.39
                         Total Energy        Delta E     RMS |[F,P]|
 
    PCM polarization energy = -0.69810830098948
-   @RHF iter   1:  -199.21259729881808   -1.99213e+02   4.90283e-02 
+   @RHF iter   1:  -199.21259729881811   -1.99213e+02   4.90283e-02 
    PCM polarization energy = -0.69088178177825
-   @RHF iter   2:  -199.51217729709143   -2.99580e-01   4.97686e-03 DIIS
-   PCM polarization energy = -0.69087224472921
-   @RHF iter   3:  -199.51507021452446   -2.89292e-03   1.79056e-04 DIIS
-   PCM polarization energy = -0.69087224885454
+   @RHF iter   2:  -199.51217729709134   -2.99580e-01   4.97686e-03 DIIS
+   PCM polarization energy = -0.69087224472920
+   @RHF iter   3:  -199.51507021452451   -2.89292e-03   1.79056e-04 DIIS
+   PCM polarization energy = -0.69087224885453
    @RHF iter   4:  -199.51507399967508   -3.78515e-06   1.16130e-05 DIIS
    PCM polarization energy = -0.69087241214206
-   @RHF iter   5:  -199.51507401507661   -1.54015e-08   5.62809e-07 DIIS
+   @RHF iter   5:  -199.51507401507666   -1.54016e-08   5.62809e-07 DIIS
    PCM polarization energy = -0.69087240897490
-   @RHF iter   6:  -199.51507401511390   -3.72893e-11   6.35922e-08 DIIS
+   @RHF iter   6:  -199.51507401511384   -3.71756e-11   6.35922e-08 DIIS
    PCM polarization energy = -0.69087240855455
-   @RHF iter   7:  -199.51507401511449   -5.96856e-13   3.28182e-10 DIIS
+   @RHF iter   7:  -199.51507401511441   -5.68434e-13   3.28182e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -819,15 +819,15 @@ Permittivity = 78.39
 
   Energy converged.
 
-  @RHF Final Energy:  -199.51507401511449
+  @RHF Final Energy:  -199.51507401511441
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -271.0311192492411010
-    Two-Electron Energy =                  72.2069176426811623
-    PCM Polarization Energy =              -0.6908724085545535
-    Total Energy =                       -199.5150740151144930
+    One-Electron Energy =                -271.0311192492410441
+    Two-Electron Energy =                  72.2069176426811907
+    PCM Polarization Energy =              -0.6908724085545530
+    Total Energy =                       -199.5150740151144078
 
     Alert: EFP and PCM quantities not currently incorporated into SCF psivars.
 
@@ -839,24 +839,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on merzbob at Wed Jun 21 10:03:59 2017
+*** tstop() called on minazo at Wed Oct 18 18:17:02 2017
 Module time:
-	user time   =       0.93 seconds =       0.02 minutes
+	user time   =       0.46 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.47 seconds =       0.04 minutes
+	user time   =       1.24 seconds =       0.02 minutes
 	system time =       0.07 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -881,8 +881,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on merzbob
-*** at Wed Jun 21 10:03:59 2017
+*** tstart() called on minazo
+*** at Wed Oct 18 18:17:03 2017
 
 
 	Wfn Parameters:
@@ -952,23 +952,23 @@ Total time:
 	Total:                                     0.004 (MW) /      0.034 (MB)
 
 	Nuclear Rep. energy          =      0.00000000000000
-	SCF energy                   =   -199.51507401511449
+	SCF energy                   =   -199.51507401511441
 	One-electron energy          =   -271.03111926659273
-	Two-electron energy          =     72.20691766003036
-	Reference energy             =   -199.51507401511694
+	Two-electron energy          =     72.20691766003043
+	Reference energy             =   -199.51507401511685
 
-*** tstop() called on merzbob at Wed Jun 21 10:03:59 2017
+*** tstop() called on minazo at Wed Oct 18 18:17:03 2017
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.00 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.66 seconds =       0.04 minutes
+	user time   =       1.30 seconds =       0.02 minutes
 	system time =       0.08 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on merzbob
-*** at Wed Jun 21 10:03:59 2017
+*** tstart() called on minazo
+*** at Wed Oct 18 18:17:03 2017
 
             **************************
             *                        *
@@ -977,8 +977,8 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =    0.000000000000000
-    SCF energy          (wfn)     = -199.515074015114493
-    Reference energy    (file100) = -199.515074015116937
+    SCF energy          (wfn)     = -199.515074015114408
+    Reference energy    (file100) = -199.515074015116852
 
     Input parameters:
     -----------------
@@ -1014,65 +1014,65 @@ MP2 correlation energy -0.0025521381651380
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.000171788746779    0.000e+00    0.000854    0.001508    0.001508    0.009296
-     1        -0.002518743823619    2.448e-02    0.000182    0.000341    0.000341    0.009423
-     2        -0.002469935373592    2.589e-03    0.000747    0.001359    0.001359    0.009173
-     3        -0.002501399564565    3.631e-04    0.000845    0.001495    0.001495    0.009286
-     4        -0.002501893183064    3.372e-05    0.000853    0.001506    0.001506    0.009286
-     5        -0.002501908391475    4.164e-06    0.000853    0.001506    0.001506    0.009286
-     6        -0.002501911534288    3.522e-07    0.000853    0.001506    0.001506    0.009286
-     7        -0.002501910864580    3.945e-08    0.000853    0.001506    0.001506    0.009286
+     0        -0.000448903837242    0.000e+00    0.000854    0.001508    0.001508    0.009296
+     1        -0.002533585389308    2.163e-02    0.000445    0.000864    0.000864    0.009491
+     2        -0.002473931383894    2.568e-03    0.000763    0.001439    0.001439    0.009204
+     3        -0.002501730446060    3.744e-04    0.000847    0.001501    0.001501    0.009288
+     4        -0.002501898266013    3.320e-05    0.000853    0.001506    0.001506    0.009286
+     5        -0.002501909187206    4.240e-06    0.000853    0.001506    0.001506    0.009286
+     6        -0.002501912094987    4.526e-07    0.000853    0.001506    0.001506    0.009286
+     7        -0.002501910890186    4.845e-08    0.000853    0.001506    0.001506    0.009286
 
     Iterations converged.
 
 
     Largest TIA Amplitudes:
-              2   6         0.0013752164
-              3   5         0.0013363094
-              4   7        -0.0012585573
-              3   7        -0.0005853212
-              1   4         0.0005590770
-              4   5        -0.0005543626
-              4   6         0.0004869332
-              2   7         0.0004492436
-              1   0        -0.0003951970
-              2   2        -0.0003715455
+              3   7         0.0014405065
+              4   5         0.0011872504
+              2   6         0.0011691130
+              2   5         0.0008462510
+              4   6        -0.0008431577
+              1   4         0.0005590766
+              1   0        -0.0003951968
+              4   2         0.0002936351
+              2   1        -0.0002817043
+              3   3        -0.0002809661
 
     Largest TIjAb Amplitudes:
-      2   2   6   6        -0.0046442224
-      3   3   5   5        -0.0044074258
-      4   4   7   7        -0.0039545871
-      2   3   6   5        -0.0036771696
-      3   2   5   6        -0.0036771696
-      2   4   6   7         0.0034095186
-      4   2   7   6         0.0034095186
-      3   4   5   7         0.0032857685
-      4   3   7   5         0.0032857685
-      1   2   4   6        -0.0026300170
+      3   3   7   7        -0.0050568548
+      4   4   5   5        -0.0035631130
+      2   2   6   6        -0.0034671913
+      3   4   7   5        -0.0034228637
+      4   3   5   7        -0.0034228637
+      2   3   6   7        -0.0033577719
+      3   2   7   6        -0.0033577719
+      1   3   4   7        -0.0027548778
+      3   1   7   4        -0.0027548778
+      2   4   6   5        -0.0026031030
 
-    SCF energy       (wfn)                    = -199.515074015114493
-    Reference energy (file100)                = -199.515074015116937
+    SCF energy       (wfn)                    = -199.515074015114408
+    Reference energy (file100)                = -199.515074015116852
 
     Opposite-spin MP2 correlation energy      =   -0.001841076776259
     Same-spin MP2 correlation energy          =   -0.000711061388879
     MP2 correlation energy                    =   -0.002552138165138
-      * MP2 total energy                      = -199.517626153282066
+      * MP2 total energy                      = -199.517626153281981
 
-    Opposite-spin CCSD correlation energy     =   -0.001790521052280
-    Same-spin CCSD correlation energy         =   -0.000711389810996
-    CCSD correlation energy                   =   -0.002501910864580
-      * CCSD total energy                     = -199.517575925981504
+    Opposite-spin CCSD correlation energy     =   -0.001790521063290
+    Same-spin CCSD correlation energy         =   -0.000711389825591
+    CCSD correlation energy                   =   -0.002501910890186
+      * CCSD total energy                     = -199.517575926007027
 
 
-*** tstop() called on merzbob at Wed Jun 21 10:03:59 2017
+*** tstop() called on minazo at Wed Oct 18 18:17:03 2017
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.72 seconds =       0.05 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.35 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 	Nuclear repulsion energy (PCM, total algorithm, old cc-pVDZ spec).PASSED
 	SCF Total energy (PCM, total algorithm, old cc-pVDZ spec).........PASSED
 	SCF Polarization energy (PCM, total algorithm, old cc-pVDZ spec)..PASSED

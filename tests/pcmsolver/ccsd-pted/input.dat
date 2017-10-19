@@ -1,51 +1,123 @@
-nucenergy = 0.0000000000000000          # TEST 
-scf_polenergy = -0.6908724085545570     # TEST
-scf_totalenergy = -199.515074015114     # TEST
-pted_polenergy = -0.000000001401466     # TEST
-pted_correnergy = -0.002501909553866    # TEST
-pted_totalenergy = -199.517575924666460 # TEST
+#! coupled-cluster with PCM
+#! Perturbation-to-the-Energy-and-Density (PTED) algorithm
+
+nucenergy = 0.0000000000000000          # TEST
+scf_polenergy = -0.6908724085545530     # TEST
+scf_totalenergy = -199.5150740151144078 # TEST
+pte_correnergy = -0.002501910890186     # TEST
+pted_polenergy = -0.000000001401470     # TEST
+pted_correnergy = -0.00250191216190     # TEST
+pted_totalenergy = -199.51757592727876  # TEST
 
 molecule Mg
 {
-	symmetry c1
-	Mg 0.00000 0.00000 0.00000
-	2 1
-	units bohr
-	no_reorient
-	no_com
+  symmetry c1
+  Mg 0.00000 0.00000 0.00000
+  2 1
+  units bohr
+  no_reorient
+  no_com
+}
+
+basis {
+assign Mg old-cc-pVDZ
+
+[old-cc-pVDZ]
+spherical
+****
+Mg     0
+S   11   1.00
+  47390.0000000              0.346023D-03
+   7108.0000000              0.268077D-02
+   1618.0000000              0.138367D-01
+    458.4000000              0.551767D-01
+    149.3000000              0.169660D+00
+     53.5900000              0.364703D+00
+     20.7000000              0.406856D+00
+      8.3840000              0.135089D+00
+      2.5420000              0.490884D-02
+      0.8787000              0.286460D-03
+      0.1077000              0.264590D-04
+S   11   1.00
+  47390.0000000             -0.877839D-04
+   7108.0000000             -0.674725D-03
+   1618.0000000             -0.355603D-02
+    458.4000000             -0.142154D-01
+    149.3000000             -0.476748D-01
+     53.5900000             -0.114892D+00
+     20.7000000             -0.200676D+00
+      8.3840000             -0.341224D-01
+      2.5420000              0.570454D+00
+      0.8787000              0.542309D+00
+      0.1077000              0.218128D-01
+S   11   1.00
+  47390.0000000              0.169628D-04
+   7108.0000000              0.129865D-03
+   1618.0000000              0.688831D-03
+    458.4000000              0.273533D-02
+    149.3000000              0.931224D-02
+     53.5900000              0.223265D-01
+     20.7000000              0.411195D-01
+      8.3840000              0.545642D-02
+      2.5420000             -0.134012D+00
+      0.8787000             -0.256176D+00
+      0.1077000              0.605856D+00
+S   1   1.00
+      0.0399900              1.0000000
+P   7   1.00
+    179.9000000              0.538161D-02
+     42.1400000              0.392418D-01
+     13.1300000              0.157445D+00
+      4.6280000              0.358535D+00
+      1.6700000              0.457226D+00
+      0.5857000              0.215918D+00
+      0.1311000              0.664948D-02
+P   7   1.00
+    179.9000000             -0.865948D-03
+     42.1400000             -0.615978D-02
+     13.1300000             -0.261519D-01
+      4.6280000             -0.570647D-01
+      1.6700000             -0.873906D-01
+      0.5857000             -0.122990D-01
+      0.1311000              0.502085D+00
+P   1   1.00
+      0.0411200              1.0000000
+D   1   1.00
+      0.1870000              1.0000000
+****
 }
 
 set
 {
-	basis cc-pVDZ
-	scf_type pk
-	pcm true
-	pcm_scf_type total
-	pcm_cc_type pted
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+  pcm_cc_type pted
 }
 
 pcm =
 {
-	Units = Angstrom
-	Medium
-	{
-		SolverType = IEFPCM
-		Solvent = Water
-	}
-	Cavity
-	{
-		RadiiSet = UFF
-		Type = GePol
-		Scaling = False
-		Area = 1.0
-		Mode = Implicit
-	}
+  Units = Angstrom
+  Medium
+  {
+    SolverType = IEFPCM
+    Solvent = Water
+  }
+  Cavity
+  {
+    RadiiSet = UFF
+    Type = GePol
+    Scaling = False
+    Area = 1.0
+    Mode = Implicit
+  }
 }
 
 energy_pted = energy('ccsd')
 compare_values(Mg.nuclear_repulsion_energy(), nucenergy, 10, "Nuclear repulsion energy (PCM, total algorithm)") # TEST
 compare_values(scf_totalenergy, get_variable("SCF Total energy"), 10, "SCF Total energy (PCM, total algorithm)") # TEST
 compare_values(scf_polenergy, get_variable("PCM POLARIZATION ENERGY"), 8, "SCF Polarization energy (PCM, total algorithm)") #TEST
+compare_values(pte_correnergy, get_variable("PCM-CC-PTE CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTE algorithm)") # TEST
 compare_values(pted_totalenergy, energy_pted, 10, "CCSD Total energy (PCM PTED algorithm)") #TEST
 compare_values(pted_correnergy, get_variable("CURRENT CORRELATION ENERGY"), 10, "CCSD Correlation energy (PCM PTED algorithm)") # TEST
 compare_values(pted_polenergy, get_variable("PCM-CC-PTED CORRELATED POLARIZATION ENERGY"), 8, "CCSD Polarization energy (PCM PTED algorithm)") # TEST
