@@ -22,6 +22,11 @@ code_style_validation.check validator: 'clang-format-3.6',
                             file_extensions: ['.h', '.cc'],
                             ignore_file_patterns: [/^external\//]
 
+# Check code style with YAPF
+code_style_validation.check validator: 'yapf',
+                            file_extensions: ['.py'],
+                            ignore_file_patterns: [/^external\//]
+
 # ------------------------------------------------------------------------------
 # What changed?
 # ------------------------------------------------------------------------------

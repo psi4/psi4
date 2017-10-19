@@ -153,6 +153,7 @@ before_script:
 - ${C_COMPILER} --version
 - |
   if [[ "${RUN_DANGER}" = true ]]; then
+    conda install -c conda-forge yapf
     bundle install --gemfile=.ci/Gemfile
     BUNDLE_GEMFILE=.ci/Gemfile bundle exec danger --dangerfile=.ci/Dangerfile
   fi

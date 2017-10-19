@@ -2,4 +2,4 @@
 source "https://rubygems.org"
 
 gem "danger"
-gem 'danger-code_style_validation', :git => 'https://github.com/robertodr/danger-code_style_validation.git', :branch => 'pass-exe'
+gem "danger-code_style_validation", :git => "https://github.com/flix-tech/danger-code_style_validation.git"
