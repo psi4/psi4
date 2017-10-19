@@ -274,105 +274,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
 
-        /* PCM-CC stuff */
-        if (options.get_bool("PCM") &&
-            (options.get_str("PCM_CC_TYPE") == "PTED")) {  // PTED scheme: R. Cammi, JCP, 131, 164104 (2009)
-            //   Build the PCM polarization charges from the CC density matrix at the current iteration.
-            //   The polarization charges are then contracted with the electrostatic potential integrals
-            //   to build the PCM potential to be added in the CC T and Lambda equations.
-            SharedPCM cc_pcm = std::make_shared<PCM>(options, ref_wfn->psio(), moinfo.nirreps, ref_wfn->basisset());
-            if (params.ref == 0 || params.ref == 1) { /* RHF or ROHF */
-                SharedMatrix MO_OPDM(new Matrix("MO_OPDM", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
-                SharedMatrix MO_PCM_potential(
-                    new Matrix("MO_PCM_potential", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
-
-                int offset = 0;
-                for (int h = 0; h < moinfo.nirreps; ++h) {
-                    for (int i = 0; i < moinfo.orbspi[h]; ++i) {
-                        int iabs = moinfo.pitzer2qt[i + offset];
-                        for (int j = 0; j < moinfo.orbspi[h]; ++j) {
-                            int jabs = moinfo.pitzer2qt[j + offset];
-                            MO_OPDM->set(h, i, j, moinfo.opdm[iabs][jabs]);
-                        }
-                    }
-                    offset += moinfo.orbspi[h];
-                }
-                SharedMatrix C = ref_wfn->Ca();
-                SharedMatrix SO_OPDM = SharedMatrix(new Matrix("SO_OPDM", ref_wfn->nsopi(), ref_wfn->nsopi()));
-                SO_OPDM->back_transform(MO_OPDM, C);
-                // We have to get the 0.5 * (QV) energy contribution
-                double Epcm_correlated = cc_pcm->compute_E(SO_OPDM, psi::PCM::EleOnly);
-                Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
-                double E_correlation = Process::environment.globals["CURRENT CORRELATION ENERGY"];
-                E_correlation -= Epcm_correlated;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
-                double E = Process::environment.globals["CURRENT ENERGY"];
-                E -= Epcm_correlated;
-                Process::environment.globals["CURRENT ENERGY"] = E;
-                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
-                // We now transform it to MO basis...
-                MO_PCM_potential->transform(SO_PCM_potential, C);
-                update_F_pcm_rhf(MO_PCM_potential);
-            } else if (params.ref == 2) { /* UHF case */
-                SharedMatrix MO_OPDM_A(new Matrix("MO_OPDM_A", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
-                SharedMatrix MO_OPDM_B(new Matrix("MO_OPDM_B", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
-
-                SharedMatrix MO_PCM_potential_A(
-                    new Matrix("MO_PCM_potential_A", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
-                SharedMatrix MO_PCM_potential_B(
-                    new Matrix("MO_PCM_potential_B", moinfo.nirreps, moinfo.orbspi, moinfo.orbspi));
-
-                int offset = 0;
-                for (int h = 0; h < moinfo.nirreps; ++h) {
-                    for (int i = 0; i < moinfo.orbspi[h]; ++i) {
-                        int iabs_A = moinfo.pitzer2qt[i + offset];
-                        int iabs_B = moinfo.pitzer2qt[i + offset];
-                        for (int j = 0; j < moinfo.orbspi[h]; ++j) {
-                            int jabs_A = moinfo.pitzer2qt[j + offset];
-                            int jabs_B = moinfo.pitzer2qt[j + offset];
-                            MO_OPDM_A->set(h, i, j, moinfo.opdm_a[iabs_A][jabs_A]);
-                            MO_OPDM_B->set(h, i, j, moinfo.opdm_b[iabs_B][jabs_B]);
-                        }
-                    }
-                    offset += moinfo.orbspi[h];
-                }
-                SharedMatrix Ca = ref_wfn->Ca();
-                SharedMatrix Cb = ref_wfn->Cb();
-                SharedMatrix SO_OPDM_A = SharedMatrix(new Matrix("SO_OPDM_A", ref_wfn->nsopi(), ref_wfn->nsopi()));
-                SharedMatrix SO_OPDM_B = SharedMatrix(new Matrix("SO_OPDM_B", ref_wfn->nsopi(), ref_wfn->nsopi()));
-                SO_OPDM_A->back_transform(MO_OPDM_A, Ca);
-                SO_OPDM_B->back_transform(MO_OPDM_B, Cb);
-                SO_OPDM_A->add(SO_OPDM_B);
-                // We have to get the 0.5 * (QV) energy contribution
-                double Epcm_correlated = cc_pcm->compute_E(SO_OPDM_A, PCM::EleOnly);
-                Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
-                double E_correlation = Process::environment.globals["CURRENT CORRELATION ENERGY"];
-                E_correlation -= Epcm_correlated;
-                Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
-                double E = Process::environment.globals["CURRENT ENERGY"];
-                E -= Epcm_correlated;
-                Process::environment.globals["CURRENT ENERGY"] = E;
-                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
-                // We now transform it to MO basis...
-                MO_PCM_potential_A->transform(SO_PCM_potential, Ca);
-                MO_PCM_potential_B->transform(SO_PCM_potential, Cb);
-                update_F_pcm_uhf(MO_PCM_potential_A, MO_PCM_potential_B);
-            }
-            double Epte = Process::environment.globals["PCM-CC-PTE CORRELATION ENERGY"];
-            outfile->Printf("\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
-            outfile->Printf("\tReference energy (file100)            = %20.15f\n", moinfo.eref);
-            outfile->Printf("\tPTE correlation energy                = %20.15f\n", Epte);
-            outfile->Printf("\tPTED correlated polarization energy   = %20.15f\n",
-                            Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"]);
-            outfile->Printf("\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
-            outfile->Printf("\tPCM-PTE-CCSD correlation energy       = %20.15f\n", Epte);
-            outfile->Printf("\tPCM-PTED-CCSD correlation energy      = %20.15f\n",
-                            Process::environment.globals["CURRENT CORRELATION ENERGY"]);
-            outfile->Printf("      * PCM-PTE-CCSD total energy             = %20.15f\n", moinfo.eref + Epte);
-            outfile->Printf("      * PCM-PTED-CCSD total energy            = %20.15f\n",
-                            Process::environment.globals["CURRENT ENERGY"]);
-        } /* PCM-CC stuff */
-
         if (!params.onepdm) {
             if (!params.aobasis && params.debug_) energy(rho_params[i]);
 
@@ -403,7 +304,112 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             deanti(rho_params[i]);
         }
 
-        /*  dpd_close(0); dpd_close(1); */
+        // Prepare density matrices for PCM-CC and OEprop
+        SharedMatrix Ca = ref_wfn->Ca();
+        SharedMatrix Cb = ref_wfn->Cb();
+
+        Dimension nmopi = ref_wfn->nmopi();
+        Dimension frzvpi = ref_wfn->frzvpi();
+
+        // MO basis alpha and beta correlated OPDMs
+        SharedMatrix MO_OPDM_a =
+            std::make_shared<Matrix>("Alpha density matrix in MO basis", Ca->rowspi(), Ca->colspi());
+        SharedMatrix MO_OPDM_b =
+            std::make_shared<Matrix>("Beta density matrix in MO basis", Cb->rowspi(), Cb->colspi());
+
+        int mo_offset = 0;
+        for (int h = 0; h < Ca->nirrep(); h++) {
+            int nmo = nmopi[h];
+            int nfv = frzvpi[h];
+            int nmor = nmo - nfv;
+            if (!nmo || !nmor) continue;
+
+            // Loop over QT, convert to Pitzer
+            double **MO_OPDM_ap = MO_OPDM_a->pointer(h);
+            double **MO_OPDM_bp = MO_OPDM_b->pointer(h);
+            for (int i = 0; i < nmor; i++) {
+                for (int j = 0; j < nmor; j++) {
+                    int I = moinfo.pitzer2qt[i + mo_offset];
+                    int J = moinfo.pitzer2qt[j + mo_offset];
+                    if (ref_wfn->same_a_b_dens())
+                        MO_OPDM_ap[i][j] = moinfo.opdm[I][J];
+                    else {
+                        MO_OPDM_ap[i][j] = moinfo.opdm_a[I][J];
+                        MO_OPDM_bp[i][j] = moinfo.opdm_b[I][J];
+                    }
+                }
+            }
+            mo_offset += nmo;
+        }
+
+        // SO basis alpha and beta correlated OPDMs
+        SharedMatrix SO_OPDM_a =
+            std::make_shared<Matrix>("Alpha density matrix in SO basis", ref_wfn->nsopi(), ref_wfn->nsopi());
+        SO_OPDM_a->back_transform(MO_OPDM_a, Ca);
+        SharedMatrix SO_OPDM_b =
+            std::make_shared<Matrix>("Beta density matrix in SO basis", ref_wfn->nsopi(), ref_wfn->nsopi());
+        SO_OPDM_b->back_transform(MO_OPDM_b, Cb);
+
+        /* PCM-CC stuff */
+        if (options.get_bool("PCM") &&
+            (options.get_str("PCM_CC_TYPE") == "PTED")) {  // PTED scheme: R. Cammi, JCP, 131, 164104 (2009)
+            //   Build the PCM polarization charges from the CC density matrix at the current iteration.
+            //   The polarization charges are then contracted with the electrostatic potential integrals
+            //   to build the PCM potential to be added in the CC T and Lambda equations.
+            SharedPCM cc_pcm = std::make_shared<PCM>(options, ref_wfn->psio(), moinfo.nirreps, ref_wfn->basisset());
+            if (params.ref == 0 || params.ref == 1) { /* RHF or ROHF */
+                SharedMatrix MO_PCM_potential =
+                    std::make_shared<Matrix>("PCM potential in MO basis", Ca->rowspi(), Ca->colspi());
+                // We have to get the 0.5 * (QV) energy contribution
+                double Epcm_correlated = cc_pcm->compute_E(SO_OPDM_a, psi::PCM::EleOnly);
+                Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                double E_correlation = Process::environment.globals["CURRENT CORRELATION ENERGY"];
+                E_correlation -= Epcm_correlated;
+                Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
+                double E = Process::environment.globals["CURRENT ENERGY"];
+                E -= Epcm_correlated;
+                Process::environment.globals["CURRENT ENERGY"] = E;
+                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
+                // We now transform it to MO basis...
+                MO_PCM_potential->transform(SO_PCM_potential, Ca);
+                update_F_pcm_rhf(MO_PCM_potential);
+            } else if (params.ref == 2) { /* UHF case */
+                SharedMatrix MO_PCM_potential_a =
+                    std::make_shared<Matrix>("Alpha PCM potential in MO basis", Ca->rowspi(), Ca->colspi());
+                SharedMatrix MO_PCM_potential_b =
+                    std::make_shared<Matrix>("Beta PCM potential in MO basis", Cb->rowspi(), Cb->colspi());
+
+                SharedMatrix SO_OPDM(SO_OPDM_a->clone());
+                SO_OPDM->add(SO_OPDM_b);
+                // We have to get the 0.5 * (QV) energy contribution
+                double Epcm_correlated = cc_pcm->compute_E(SO_OPDM, PCM::EleOnly);
+                Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"] = Epcm_correlated;
+                double E_correlation = Process::environment.globals["CURRENT CORRELATION ENERGY"];
+                E_correlation -= Epcm_correlated;
+                Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_correlation;
+                double E = Process::environment.globals["CURRENT ENERGY"];
+                E -= Epcm_correlated;
+                Process::environment.globals["CURRENT ENERGY"] = E;
+                SharedMatrix SO_PCM_potential = cc_pcm->compute_V_electronic();  // This is in SO basis
+                // We now transform it to MO basis...
+                MO_PCM_potential_a->transform(SO_PCM_potential, Ca);
+                MO_PCM_potential_b->transform(SO_PCM_potential, Cb);
+                update_F_pcm_uhf(MO_PCM_potential_a, MO_PCM_potential_b);
+            }
+            double Epte = Process::environment.globals["PCM-CC-PTE CORRELATION ENERGY"];
+            outfile->Printf("\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
+            outfile->Printf("\tReference energy (file100)            = %20.15f\n", moinfo.eref);
+            outfile->Printf("\tPTE correlation energy                = %20.15f\n", Epte);
+            outfile->Printf("\tPTED correlated polarization energy   = %20.15f\n",
+                            Process::environment.globals["PCM-CC-PTED CORRELATED POLARIZATION ENERGY"]);
+            outfile->Printf("\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
+            outfile->Printf("\tPCM-PTE-CCSD correlation energy       = %20.15f\n", Epte);
+            outfile->Printf("\tPCM-PTED-CCSD correlation energy      = %20.15f\n",
+                            Process::environment.globals["CURRENT CORRELATION ENERGY"]);
+            outfile->Printf("      * PCM-PTE-CCSD total energy             = %20.15f\n", moinfo.eref + Epte);
+            outfile->Printf("      * PCM-PTED-CCSD total energy            = %20.15f\n",
+                            Process::environment.globals["CURRENT ENERGY"]);
+        } /* PCM-CC stuff */
 
         if (params.ref == 0) { /** RHF **/
 
@@ -447,17 +453,10 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             iwl_buf_close(&OutBuf_BB, 1);
             iwl_buf_close(&OutBuf_AB, 1);
         }
-        std::shared_ptr<Matrix> Ca = ref_wfn->Ca();
-        std::shared_ptr<Matrix> Cb = ref_wfn->Cb();
 
-        Dimension nmopi = ref_wfn->nmopi();
-        Dimension frzvpi = ref_wfn->frzvpi();
-
-        // Grab the GS OPDM and set it in the ref_wfn object
-        SharedMatrix Pa(new Matrix("P alpha", Ca->colspi(), Ca->colspi()));
-        SharedMatrix Pb(new Matrix("P beta", Cb->colspi(), Cb->colspi()));
-        int mo_offset = 0;
-
+        // Update contents of MO_OPDM_a and MO_OPDM_b
+        // with the total (reference + correlated) OPDM
+        mo_offset = 0;
         for (int h = 0; h < Ca->nirrep(); h++) {
             int nmo = nmopi[h];
             int nfv = frzvpi[h];
@@ -465,17 +464,17 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             if (!nmo || !nmor) continue;
 
             // Loop over QT, convert to Pitzer
-            double **Pap = Pa->pointer(h);
-            double **Pbp = Pb->pointer(h);
+            double **MO_OPDM_ap = MO_OPDM_a->pointer(h);
+            double **MO_OPDM_bp = MO_OPDM_b->pointer(h);
             for (int i = 0; i < nmor; i++) {
                 for (int j = 0; j < nmor; j++) {
                     int I = moinfo.pitzer2qt[i + mo_offset];
                     int J = moinfo.pitzer2qt[j + mo_offset];
                     if (ref_wfn->same_a_b_dens())
-                        Pap[i][j] = moinfo.opdm[I][J];
+                        MO_OPDM_ap[i][j] = moinfo.opdm[I][J];
                     else {
-                        Pap[i][j] = moinfo.opdm_a[I][J];
-                        Pbp[i][j] = moinfo.opdm_b[I][J];
+                        MO_OPDM_ap[i][j] = moinfo.opdm_a[I][J];
+                        MO_OPDM_bp[i][j] = moinfo.opdm_b[I][J];
                     }
                 }
             }
@@ -484,12 +483,12 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
         /*Call OEProp for each root opdm */
         std::shared_ptr<OEProp> oe(new OEProp(ref_wfn));
         if (ref_wfn->same_a_b_dens()) {
-            Pa->scale(0.5);
-            oe->set_Da_mo(Pa);
-            Pb = Pa;
+            MO_OPDM_a->scale(0.5);
+            oe->set_Da_mo(MO_OPDM_a);
+            MO_OPDM_b = MO_OPDM_a;
         } else {
-            oe->set_Da_mo(Pa);
-            oe->set_Db_mo(Pb);
+            oe->set_Da_mo(MO_OPDM_a);
+            oe->set_Db_mo(MO_OPDM_b);
         }
         oe->add("DIPOLE");
         oe->add("QUADRUPOLE");
