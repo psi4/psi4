@@ -207,6 +207,7 @@ class Tensor2d {
     double get_max_element();
     // diagonalize: diagonalize via rsp
     void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
+    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
     // cdsyev: diagonalize via lapack
     void cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
     // davidson: diagonalize via davidson algorithm

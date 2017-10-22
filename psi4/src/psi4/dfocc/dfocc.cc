@@ -75,6 +75,7 @@ void DFOCC::common_init() {
     tol_pcg = options_.get_double("PCG_CONVERGENCE");
     reg_param = options_.get_double("REG_PARAM");
     tol_ldl = options_.get_double("CHOLESKY_TOLERANCE");
+    tol_fno = options_.get_double("FNO_TOLERANCE");
 
     orth_type = options_.get_str("ORTH_TYPE");
     opt_method = options_.get_str("OPT_METHOD");
@@ -105,6 +106,7 @@ void DFOCC::common_init() {
     Wabef_type_ = options_.get_str("PPL_TYPE");
     triples_iabc_type_ = options_.get_str("TRIPLES_IABC_TYPE");
     do_cd = options_.get_str("CHOLESKY");
+    do_fno = options_.get_str("FNO");
 
     // title
     title();
@@ -184,7 +186,7 @@ void DFOCC::common_init() {
     cutoff = pow(10.0, -exp_cutoff);
     int_cutoff_ = pow(10.0, -exp_int_cutoff);
     get_moinfo();
-    pair_index();
+    if (do_fno == "FALSE") pair_index();
 
     // Frozen virtual
     if (nfrzv > 0 && dertype == "FIRST" && wfn_type_ != "DF-CCSD(T)") {
@@ -194,144 +196,25 @@ void DFOCC::common_init() {
         throw PSIEXCEPTION("Frozen virtual approximation is not available for orbital-optimized methods.");
     }
 
+    // common malloc
+    common_malloc();
+
     if (reference_ == "RESTRICTED") {
-        // Memory allocation
-        HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
-        FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
-        FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
-        HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
-        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
-        HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
-        HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
-        eigooA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
-        eigvvA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
-
-        // if we need PDMs
-        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE" ||
-            ekt_ip_ == "TRUE") {
-            GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
-            GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
-            G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
-            G1c_vv = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
-            G1 = SharedTensor2d(new Tensor2d("MO-basis OPDM", nmo_, nmo_));
-            G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
-            G1c = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
-            GF = SharedTensor2d(new Tensor2d("MO-basis GFM", nmo_, nmo_));
-            GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
-            GFoo = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
-            GFvo = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
-            GFov = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
-            GFvv = SharedTensor2d(new Tensor2d("MO-basis GFM <V|V>", nvirA, nvirA));
-            GFtvv = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <V|V>", nvirA, nvirA));
-            WorbA = SharedTensor2d(new Tensor2d("MO-basis alpha MO gradient", nmo_, nmo_));
-            UorbA = SharedTensor2d(new Tensor2d("Alpha MO rotation matrix", nmo_, nmo_));
-            KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
-            KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
-            AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
-            if (orb_opt_ == "FALSE") {
-                WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
-            }
-            if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
-        }
-
         outfile->Printf("\tMO spaces... \n\n");
         outfile->Printf("\t FC   OCC   VIR   FV \n");
         outfile->Printf("\t----------------------\n");
         outfile->Printf("\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
-
     }  // end if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
         if (wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCD") {
             throw PSIEXCEPTION("UHF DF-CCSD has NOT been implemented yet!");
         }
-        // Memory allocation
-        HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
-        HmoB = SharedTensor2d(new Tensor2d("MO-basis beta one-electron ints", nmo_, nmo_));
-        FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
-        FijB = SharedTensor2d(new Tensor2d("Fint <i|j>", naoccB, naoccB));
-        FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
-        FabB = SharedTensor2d(new Tensor2d("Fint <a|b>", navirB, navirB));
-        HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
-        HooB = SharedTensor2d(new Tensor2d("OEI <o|o>", noccB, noccB));
-        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
-        HovB = SharedTensor2d(new Tensor2d("OEI <o|v>", noccB, nvirB));
-        HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
-        HvoB = SharedTensor2d(new Tensor2d("OEI <v|o>", nvirB, noccB));
-        HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
-        HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
-        eigooA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
-        eigooB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <i|j>", naoccB));
-        eigvvA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
-        eigvvB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|b>", navirB));
-
-        // if we need PDMs
-        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || ekt_ip_ == "TRUE") {
-            GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
-            GijB = SharedTensor2d(new Tensor2d("G Intermediate <i|j>", naoccB, naoccB));
-            GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
-            GabB = SharedTensor2d(new Tensor2d("G Intermediate <a|b>", navirB, navirB));
-            G1c_ooA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
-            G1c_ooB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|o>", noccB, noccB));
-            G1c_vvA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
-            G1c_vvB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|v>", nvirB, nvirB));
-            G1cA = SharedTensor2d(new Tensor2d("MO-basis alpha correlation OPDM", nmo_, nmo_));
-            G1cB = SharedTensor2d(new Tensor2d("MO-basis beta correlation OPDM", nmo_, nmo_));
-            G1A = SharedTensor2d(new Tensor2d("MO-basis alpha OPDM", nmo_, nmo_));
-            G1B = SharedTensor2d(new Tensor2d("MO-basis beta OPDM", nmo_, nmo_));
-            G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
-            GFA = SharedTensor2d(new Tensor2d("MO-basis alpha GFM", nmo_, nmo_));
-            GFB = SharedTensor2d(new Tensor2d("MO-basis beta GFM", nmo_, nmo_));
-            GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
-            GFooA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
-            GFooB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|o>", noccB, noccB));
-            GFvoA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
-            GFvoB = SharedTensor2d(new Tensor2d("MO-basis GFM <v|o>", nvirB, noccB));
-            GFovA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
-            GFovB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|v>", noccB, nvirB));
-            GFvvA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|V>", nvirA, nvirA));
-            GFvvB = SharedTensor2d(new Tensor2d("MO-basis GFM <v|v>", nvirB, nvirB));
-            GFtvvA = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <V|V>", nvirA, nvirA));
-            GFtvvB = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <v|v>", nvirB, nvirB));
-            WorbA = SharedTensor2d(new Tensor2d("MO-basis alpha MO gradient", nmo_, nmo_));
-            WorbB = SharedTensor2d(new Tensor2d("MO-basis beta MO gradient", nmo_, nmo_));
-            UorbA = SharedTensor2d(new Tensor2d("Alpha MO rotation matrix", nmo_, nmo_));
-            UorbB = SharedTensor2d(new Tensor2d("Beta MO rotation matrix", nmo_, nmo_));
-            KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
-            KorbB = SharedTensor2d(new Tensor2d("Beta K MO rotation parameters matrix", nmo_, nmo_));
-            KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
-            KsqrB = SharedTensor2d(new Tensor2d("Beta K^2 MO rotation parameters matrix", nmo_, nmo_));
-            AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
-            AvoB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <v|o>", nvirB, noccB));
-            if (orb_opt_ == "FALSE") {
-                WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
-                WvoB = SharedTensor2d(new Tensor2d("Effective MO gradient <v|o>", nvirB, noccB));
-            }
-            if (nfrzc > 0) {
-                AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
-                AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccB, nfrzc));
-            }
-        }
-
-        // ROHF-MP2
-        if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
-            t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-            t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
-            GiaA = SharedTensor2d(new Tensor2d("G Intermediate <I|A>", naoccA, navirA));
-            GiaB = SharedTensor2d(new Tensor2d("G Intermediate <i|a>", naoccB, navirB));
-            GaiA = SharedTensor2d(new Tensor2d("G Intermediate <A|I>", navirA, naoccA));
-            GaiB = SharedTensor2d(new Tensor2d("G Intermediate <a|i>", navirB, naoccB));
-            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
-        }
 
         outfile->Printf("\tMO spaces... \n\n");
         outfile->Printf("\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
         outfile->Printf("\t------------------------------------------\n");
         outfile->Printf("\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
-
     }  // else if (reference_ == "UNRESTRICTED")
 
     // outfile->Printf("\tI am here.\n");
@@ -395,7 +278,7 @@ void DFOCC::title() {
     else if (wfn_type_ == "QCHF")
         outfile->Printf("                      QCHF   \n");
     outfile->Printf("              Program Written by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision September 9, 2017\n");
+    outfile->Printf("              Latest Revision October 22, 2017\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
@@ -582,6 +465,262 @@ double DFOCC::compute_energy() {
     return Etotal;
 
 }  // end of compute_energy
+
+void DFOCC::common_malloc() {
+    if (reference_ == "RESTRICTED") {
+        // Memory allocation
+        HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
+        FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
+        FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
+        HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
+        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
+        HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
+        HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
+        eigooA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
+        eigvvA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE" ||
+            ekt_ip_ == "TRUE") {
+            GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
+            GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
+            G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
+            G1c_vv = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
+            G1 = SharedTensor2d(new Tensor2d("MO-basis OPDM", nmo_, nmo_));
+            G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
+            G1c = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
+            GF = SharedTensor2d(new Tensor2d("MO-basis GFM", nmo_, nmo_));
+            GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
+            GFoo = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
+            GFvo = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
+            GFov = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
+            GFvv = SharedTensor2d(new Tensor2d("MO-basis GFM <V|V>", nvirA, nvirA));
+            GFtvv = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <V|V>", nvirA, nvirA));
+            WorbA = SharedTensor2d(new Tensor2d("MO-basis alpha MO gradient", nmo_, nmo_));
+            UorbA = SharedTensor2d(new Tensor2d("Alpha MO rotation matrix", nmo_, nmo_));
+            KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
+            KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
+            AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
+            if (orb_opt_ == "FALSE") {
+                WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
+            }
+            if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
+        }
+    }  // end if (reference_ == "RESTRICTED")
+
+    else if (reference_ == "UNRESTRICTED") {
+        // Memory allocation
+        HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
+        HmoB = SharedTensor2d(new Tensor2d("MO-basis beta one-electron ints", nmo_, nmo_));
+        FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
+        FijB = SharedTensor2d(new Tensor2d("Fint <i|j>", naoccB, naoccB));
+        FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
+        FabB = SharedTensor2d(new Tensor2d("Fint <a|b>", navirB, navirB));
+        HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
+        HooB = SharedTensor2d(new Tensor2d("OEI <o|o>", noccB, noccB));
+        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
+        HovB = SharedTensor2d(new Tensor2d("OEI <o|v>", noccB, nvirB));
+        HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
+        HvoB = SharedTensor2d(new Tensor2d("OEI <v|o>", nvirB, noccB));
+        HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
+        HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
+        eigooA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
+        eigooB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <i|j>", naoccB));
+        eigvvA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
+        eigvvB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|b>", navirB));
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || ekt_ip_ == "TRUE") {
+            GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
+            GijB = SharedTensor2d(new Tensor2d("G Intermediate <i|j>", naoccB, naoccB));
+            GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
+            GabB = SharedTensor2d(new Tensor2d("G Intermediate <a|b>", navirB, navirB));
+            G1c_ooA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
+            G1c_ooB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|o>", noccB, noccB));
+            G1c_vvA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
+            G1c_vvB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|v>", nvirB, nvirB));
+            G1cA = SharedTensor2d(new Tensor2d("MO-basis alpha correlation OPDM", nmo_, nmo_));
+            G1cB = SharedTensor2d(new Tensor2d("MO-basis beta correlation OPDM", nmo_, nmo_));
+            G1A = SharedTensor2d(new Tensor2d("MO-basis alpha OPDM", nmo_, nmo_));
+            G1B = SharedTensor2d(new Tensor2d("MO-basis beta OPDM", nmo_, nmo_));
+            G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
+            GFA = SharedTensor2d(new Tensor2d("MO-basis alpha GFM", nmo_, nmo_));
+            GFB = SharedTensor2d(new Tensor2d("MO-basis beta GFM", nmo_, nmo_));
+            GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
+            GFooA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
+            GFooB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|o>", noccB, noccB));
+            GFvoA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
+            GFvoB = SharedTensor2d(new Tensor2d("MO-basis GFM <v|o>", nvirB, noccB));
+            GFovA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
+            GFovB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|v>", noccB, nvirB));
+            GFvvA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|V>", nvirA, nvirA));
+            GFvvB = SharedTensor2d(new Tensor2d("MO-basis GFM <v|v>", nvirB, nvirB));
+            GFtvvA = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <V|V>", nvirA, nvirA));
+            GFtvvB = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <v|v>", nvirB, nvirB));
+            WorbA = SharedTensor2d(new Tensor2d("MO-basis alpha MO gradient", nmo_, nmo_));
+            WorbB = SharedTensor2d(new Tensor2d("MO-basis beta MO gradient", nmo_, nmo_));
+            UorbA = SharedTensor2d(new Tensor2d("Alpha MO rotation matrix", nmo_, nmo_));
+            UorbB = SharedTensor2d(new Tensor2d("Beta MO rotation matrix", nmo_, nmo_));
+            KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
+            KorbB = SharedTensor2d(new Tensor2d("Beta K MO rotation parameters matrix", nmo_, nmo_));
+            KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
+            KsqrB = SharedTensor2d(new Tensor2d("Beta K^2 MO rotation parameters matrix", nmo_, nmo_));
+            AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
+            AvoB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <v|o>", nvirB, noccB));
+            if (orb_opt_ == "FALSE") {
+                WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
+                WvoB = SharedTensor2d(new Tensor2d("Effective MO gradient <v|o>", nvirB, noccB));
+            }
+            if (nfrzc > 0) {
+                AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
+                AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccB, nfrzc));
+            }
+        }
+
+        // ROHF-MP2
+        if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
+            t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
+            t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+            GiaA = SharedTensor2d(new Tensor2d("G Intermediate <I|A>", naoccA, navirA));
+            GiaB = SharedTensor2d(new Tensor2d("G Intermediate <i|a>", naoccB, navirB));
+            GaiA = SharedTensor2d(new Tensor2d("G Intermediate <A|I>", navirA, naoccA));
+            GaiB = SharedTensor2d(new Tensor2d("G Intermediate <a|i>", navirB, naoccB));
+            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
+            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+        }
+    }  // else if (reference_ == "UNRESTRICTED")
+
+}  // end of common_malloc
+
+void DFOCC::common_memfree() {
+    if (reference_ == "RESTRICTED") {
+        // Memory allocation
+        HmoA.reset();
+        FijA.reset();
+        FabA.reset();
+        HooA.reset();
+        HovA.reset();
+        HvoA.reset();
+        HvvA.reset();
+        eigooA.reset();
+        eigvvA.reset();
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE" ||
+            ekt_ip_ == "TRUE") {
+            GijA.reset();
+            GabA.reset();
+            G1c_oo.reset();
+            G1c_vv.reset();
+            G1.reset();
+            G1ao.reset();
+            G1c.reset();
+            GF.reset();
+            GFao.reset();
+            GFoo.reset();
+            GFvo.reset();
+            GFov.reset();
+            GFvv.reset();
+            GFtvv.reset();
+            WorbA.reset();
+            UorbA.reset();
+            KorbA.reset();
+            KsqrA.reset();
+            AvoA.reset();
+            if (orb_opt_ == "FALSE") {
+                WvoA.reset();
+            }
+            if (nfrzc > 0) AooA.reset();
+        }
+    }  // end if (reference_ == "RESTRICTED")
+
+    else if (reference_ == "UNRESTRICTED") {
+        // Memory allocation
+        HmoA.reset();
+        HmoB.reset();
+        FijA.reset();
+        FijB.reset();
+        FabA.reset();
+        FabB.reset();
+        HooA.reset();
+        HooB.reset();
+        HovA.reset();
+        HovB.reset();
+        HvoA.reset();
+        HvoB.reset();
+        HvvA.reset();
+        HvvB.reset();
+        eigooA.reset();
+        eigooB.reset();
+        eigvvA.reset();
+        eigvvB.reset();
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || ekt_ip_ == "TRUE") {
+            GijA.reset();
+            GijB.reset();
+            GabA.reset();
+            GabB.reset();
+            G1c_ooA.reset();
+            G1c_ooB.reset();
+            G1c_vvA.reset();
+            G1c_vvB.reset();
+            G1cA.reset();
+            G1cB.reset();
+            G1A.reset();
+            G1B.reset();
+            G1ao.reset();
+            GFA.reset();
+            GFB.reset();
+            GFao.reset();
+            GFooA.reset();
+            GFooB.reset();
+            GFvoA.reset();
+            GFvoB.reset();
+            GFovA.reset();
+            GFovB.reset();
+            GFvvA.reset();
+            GFvvB.reset();
+            GFtvvA.reset();
+            GFtvvB.reset();
+            WorbA.reset();
+            WorbB.reset();
+            UorbA.reset();
+            UorbB.reset();
+            KorbA.reset();
+            KorbB.reset();
+            KsqrA.reset();
+            KsqrB.reset();
+            AvoA.reset();
+            AvoB.reset();
+            if (orb_opt_ == "FALSE") {
+                WvoA.reset();
+                WvoB.reset();
+            }
+            if (nfrzc > 0) {
+                AooA.reset();
+                AooB.reset();
+            }
+        }
+
+        // ROHF-MP2
+        if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
+            t1A.reset();
+            t1B.reset();
+            GiaA.reset();
+            GiaB.reset();
+            GaiA.reset();
+            GaiB.reset();
+            G1c_ovA.reset();
+            G1c_ovB.reset();
+            G1c_voA.reset();
+            G1c_voB.reset();
+        }
+    }  // else if (reference_ == "UNRESTRICTED")
+
+}  // end of common_memfree
 
 }  // namespace dfoccwave
 }  // namespace psi

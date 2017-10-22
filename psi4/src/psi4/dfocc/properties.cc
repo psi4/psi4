@@ -31,6 +31,7 @@
 #include "defines.h"
 #include "dfocc.h"
 #include "ekt.h"
+#include "fno.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/physconst.h"
@@ -133,7 +134,7 @@ void DFOCC::ekt_ip() {
     }  // else if (reference_ == "UNRESTRICTED")
     timer_off("ekt");
     // outfile->Printf("\tekt is done.\n");
-}  // properties.cc
+}  // ekt_ip
 
 }  // namespace dfoccwave
 }  // namespace psi

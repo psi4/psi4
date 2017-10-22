@@ -1428,6 +1428,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
+    /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a
+        custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
+    options.add_str("DFT_FUNCTIONAL", "HF");
+    /*- A custom DFT functional object (built by Python or NULL/None) -*/
+    options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
@@ -2741,6 +2746,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("REG_PARAM",0.4);
     /*- tolerance for Cholesky decomposition of the ERI tensor -*/
     options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
+    /*- Cutoff for occupation of MP2 virtual NOs in FNO-CCSD/CCSD(T).
+        Virtual NOs with occupations less than |dfocc__fno_tolerance|
+        will be discarded. This option is only used if |dfocc__fno| =
+        true. -*/
+    options.add_double("FNO_TOLERANCE", 1.0e-4);
+    /*- Cutoff for occupation of MP2 virtual NOs in FNO-CCSD/CCSD(T).
+        The number of virtual NOs is chosen so the occupation of the
+        truncated virtual space is |dfocc__fno_percentage| percent of
+        occupation of the original MP2 virtual space. This option is only
+        used if |fnocc__fno| = true. This keyword overrides
+        |fnocc__fno_tolerance|. -*/
+    //options.add_double("FNO_PERCENTAGE", 99.0);
+
 
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
@@ -2812,6 +2830,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MOLDEN_WRITE",false);
     /*- Do Cholesky decomposition of the ERI tensor -*/
     options.add_bool("CHOLESKY",false);
+    /*- Do use MP2 NOs to truncate virtual space for CCD/CCSD and (T)? -*/
+    options.add_bool("FNO", false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

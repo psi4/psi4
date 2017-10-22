@@ -1663,6 +1663,17 @@ void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1
 
 }  //
 
+void Tensor2d::diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff,
+                           bool ascending) {
+    int matz;
+    if (ascending)
+        matz = 1;
+    else
+        matz = 3;
+    sq_rsp(dim1_, dim2_, A2d_, eigvalues->A1d_, matz, eigvectors->A2d_, cutoff);
+
+}  //
+
 void Tensor2d::cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues) {
     if (dim1_) {
         int lwork = 3 * dim2_;

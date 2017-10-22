@@ -550,13 +550,21 @@ void DFOCC::ccsd_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE" || do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -745,7 +753,7 @@ void DFOCC::ccsd_manager() {
     if (qchf_ == "TRUE") qchf();
 
     // Fock
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || do_fno == "TRUE") fock();
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
@@ -806,6 +814,8 @@ void DFOCC::ccsd_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
@@ -870,13 +880,21 @@ void DFOCC::ccsd_t_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE", do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -1095,7 +1113,7 @@ void DFOCC::ccsd_t_manager() {
     if (qchf_ == "TRUE") qchf();
 
     // Fock
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE", do_fno == "TRUE") fock();
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
@@ -1156,6 +1174,8 @@ void DFOCC::ccsd_t_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
     Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
@@ -1188,6 +1208,8 @@ void DFOCC::ccsd_t_manager() {
     timer_off("(T)");
     outfile->Printf("\t(T) Correction (a.u.)              : %20.14f\n", E_t);
     outfile->Printf("\tDF-CCSD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-CCSD(T) + delta_MP2 (a.u.)      : %20.14f\n", Eccsd_t + Emp2L - Emp2);
     if (dertype == "FIRST") {
         tstop();
         tstart();
@@ -1251,13 +1273,21 @@ void DFOCC::ccsdl_t_manager() {
     time4grad = 0;     // means i will not compute the gradient
     mo_optimized = 0;  // means MOs are not optimized
 
+    // FNO
+    if (do_fno == "TRUE") {
+        timer_on("FNO Generation");
+        df_corr();
+        fno_wrapper();
+        timer_off("FNO Generation");
+    }
+
     timer_on("DF CC Integrals");
     df_corr();
     trans_corr();
     timer_off("DF CC Integrals");
     outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
 
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE", do_fno == "TRUE") {
         timer_on("DF REF Integrals");
         df_ref();
         trans_ref();
@@ -1493,7 +1523,7 @@ void DFOCC::ccsdl_t_manager() {
     if (qchf_ == "TRUE") qchf();
 
     // Fock
-    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE") fock();
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE", do_fno == "TRUE") fock();
 
     // Compute MP2 energy
     if (reference == "ROHF") t1_1st_sc();
@@ -1554,6 +1584,8 @@ void DFOCC::ccsdl_t_manager() {
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     outfile->Printf("\tDF-CCSD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-CCSD Total Energy (a.u.)        : %20.14f\n", Eccsd);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-CCSD + delta_MP2 (a.u.)         : %20.14f\n", Eccsd + Emp2L - Emp2);
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
     Process::environment.globals["CCSD TOTAL ENERGY"] = Eccsd;
@@ -1581,6 +1613,8 @@ void DFOCC::ccsdl_t_manager() {
     timer_off("(AT)");
     outfile->Printf("\t(AT) Correction (a.u.)             : %20.14f\n", E_at);
     outfile->Printf("\tDF-CCSD(AT) Total Energy (a.u.)    : %20.14f\n", Eccsd_at);
+    outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
+    outfile->Printf("\tDF-CCSD(AT) + delta_MP2 (a.u.)     : %20.14f\n", Eccsd_at + Emp2L - Emp2);
 
     Process::environment.globals["CURRENT ENERGY"] = Eccsd_at;
     Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
